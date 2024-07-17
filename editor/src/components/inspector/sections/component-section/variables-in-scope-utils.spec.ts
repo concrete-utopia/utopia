@@ -1,3 +1,5 @@
+import React from 'react'
+import { stripNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { maybeToArray } from '../../../../core/shared/optional-utils'
 import { emptySet } from '../../../../core/shared/set-utils'
@@ -173,6 +175,55 @@ describe('matchForPropertyValue', () => {
             "position": "relative",
           },
         },
+      ]
+    `)
+  })
+
+  it('matches strings and numbers too if the value of the property is a jsx element', () => {
+    const variableNamesInScope: Array<VariableInfo> = stripNulls([
+      variableInfoFromValue(
+        'data',
+        'data',
+        {
+          size: 300,
+          description: 'relative',
+          open: false,
+          label: React.createElement('div'),
+          likes: ['Alice', 'Bob'],
+          quote: {
+            author: 'E.Poe',
+            text: 'I became insane, with long intervals of horrible sanity.',
+          },
+        },
+        EP.fromString('aaa'),
+        emptySet(),
+      ),
+    ])
+
+    const currentPropertyValue: PropertyValue = {
+      type: 'existing',
+      value: React.createElement('div'),
+    }
+    const targetPropertyName = 'label'
+    const actualResult = matchForPropertyValue(
+      null,
+      currentPropertyValue,
+      targetPropertyName,
+    )(variableNamesInScope)
+
+    const matching = actualResult
+      .flatMap((r) => [
+        r,
+        ...(r.type === 'array' ? r.elements : r.type === 'object' ? r.props : []),
+      ])
+      .filter((r) => r.matches === 'matches')
+      .map((r) => r.expression)
+
+    expect(matching).toMatchInlineSnapshot(`
+      Array [
+        "data.size",
+        "data.description",
+        "data.label",
       ]
     `)
   })

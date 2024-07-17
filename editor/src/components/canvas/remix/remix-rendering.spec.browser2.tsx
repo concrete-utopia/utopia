@@ -2129,7 +2129,7 @@ export default function Index() {
         renderResult,
         windowPoint({ x: absoluteDivBounds.x + 1, y: absoluteDivBounds.y + 1 }),
         windowPoint({ x: 10, y: -77 }),
-        emptyModifiers,
+        cmdModifier,
         async () =>
           renderResult.dispatch(
             [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
@@ -2159,11 +2159,12 @@ export default function Index() {
         AbsoluteDivTestId,
       )
       const absoluteDivBounds = absoluteElement.getBoundingClientRect()
+
       await dragMouse(
         renderResult,
         windowPoint({ x: absoluteDivBounds.x + 1, y: absoluteDivBounds.y + 1 }),
         windowPoint({ x: -10, y: 77 }),
-        emptyModifiers,
+        cmdModifier,
         async () =>
           renderResult.dispatch(
             [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],

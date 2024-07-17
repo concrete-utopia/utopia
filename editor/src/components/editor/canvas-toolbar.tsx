@@ -4,7 +4,7 @@
 import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
-import { Tile, UtopiaStyles, opacity } from '../../uuiui'
+import { Icons, LargerIcons, SmallerIcons, Tile, UtopiaStyles, opacity } from '../../uuiui'
 import { UtopiaTheme } from '../../uuiui'
 import {
   colorTheme,
@@ -21,6 +21,7 @@ import {
   resetCanvas,
   setRightMenuTab,
   switchEditorMode,
+  togglePanel,
 } from './actions/action-creators'
 import { EditorModes } from './editor-modes'
 import {
@@ -61,6 +62,16 @@ import { insertComponentPickerItem } from '../navigator/navigator-item/component
 import { useAtom } from 'jotai'
 import { ActiveRemixSceneAtom } from '../canvas/remix/utopia-remix-root-component'
 import * as EP from '../../core/shared/element-path'
+import { NO_OP } from '../../core/shared/utils'
+import type { DropdownMenuItem } from '../../uuiui/radix-components'
+import { DropdownMenu } from '../../uuiui/radix-components'
+import {
+  TOGGLE_INSPECTOR,
+  TOGGLE_CODE_EDITOR_SHORTCUT,
+  TOGGLE_NAVIGATOR,
+  keyToString,
+  shortcutDetailsWithDefaults,
+} from './shortcut-definitions'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -336,6 +347,76 @@ export const CanvasToolbar = React.memo(() => {
     ((canvasToolbarMode.primary === 'edit' && canvasToolbarMode.secondary !== 'strategy-active') ||
       canvasToolbarMode.primary === 'play')
 
+  const { codeEditorVisible, navigatorVisible, inspectorVisible } = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return {
+        codeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
+        navigatorVisible: store.editor.leftMenu.visible,
+        inspectorVisible: store.editor.rightMenu.visible,
+      }
+    },
+    'storedLayoutToResolvedPanels panel visibility',
+  )
+
+  const panelPopupItems: DropdownMenuItem[] = React.useMemo(
+    () => [
+      {
+        id: 'navigator',
+        label: 'Navigator',
+        checked: navigatorVisible,
+        icon: (
+          <div style={{ transform: 'scale(0.8)' }}>
+            <LargerIcons.Navigator color='white' />
+          </div>
+        ),
+        shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_NAVIGATOR].shortcutKeys[0]),
+        onSelect: () => dispatch([togglePanel('leftmenu')]),
+      },
+      {
+        id: 'rightmenu',
+        label: 'Inspector',
+        icon: (
+          <div style={{ transform: 'scale(0.8)' }}>
+            <LargerIcons.Inspector color='white' />
+          </div>
+        ),
+        checked: inspectorVisible,
+        shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_INSPECTOR].shortcutKeys[0]),
+        onSelect: () => dispatch([togglePanel('rightmenu')]),
+      },
+      {
+        id: 'code-editor',
+        label: 'Code Editor',
+        icon: (
+          <div style={{ transform: 'scale(0.8)' }}>
+            <LargerIcons.Code color='white' />
+          </div>
+        ),
+        checked: codeEditorVisible,
+        shortcut: keyToString(
+          shortcutDetailsWithDefaults[TOGGLE_CODE_EDITOR_SHORTCUT].shortcutKeys[0],
+        ),
+        onSelect: () => dispatch([togglePanel('codeEditor')]),
+      },
+    ],
+    [codeEditorVisible, dispatch, inspectorVisible, navigatorVisible],
+  )
+
+  const panelSelectorOpenButton = React.useCallback(
+    (open: boolean) => (
+      <InsertModeButton
+        testid={commentButtonTestId}
+        iconType={'panels'}
+        iconCategory='tools'
+        primary={open}
+        onClick={NO_OP}
+        keepActiveInLiveMode
+      />
+    ),
+    [commentButtonTestId],
+  )
+
   return (
     <FlexColumn
       style={{ alignItems: 'start', justifySelf: 'center' }}
@@ -449,6 +530,10 @@ export const CanvasToolbar = React.memo(() => {
           />
         </Tooltip>
         {unless(isMyProject, <ViewOnlyBadge />)}
+        <Separator />
+        <Tooltip title='Manage panels'>
+          <DropdownMenu sideOffset={6} items={panelPopupItems} opener={panelSelectorOpenButton} />
+        </Tooltip>
       </div>
       {/* Edit Mode submenus */}
       {when(

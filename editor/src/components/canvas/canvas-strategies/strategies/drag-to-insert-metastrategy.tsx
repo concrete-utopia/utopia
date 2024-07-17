@@ -92,7 +92,7 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   const applicableReparentFactories = getApplicableReparentFactories(
     canvasState,
     pointOnCanvas,
-    interactionData.modifiers.cmd,
+    true, // cmd is necessary to allow reparenting
     true,
     'allow-smaller-parent',
     customStrategyState,

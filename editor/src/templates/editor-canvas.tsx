@@ -147,20 +147,18 @@ function cursorForHoveredControl(
 
 function getDefaultCursorForMode(mode: Mode): CSSCursor {
   switch (mode.type) {
-    case 'select':
-      return CSSCursor.Select
     case 'insert':
       return CSSCursor.Insert
     case 'live':
       return CSSCursor.BrowserAuto
-    case 'textEdit':
-      return CSSCursor.Select
     case 'comment':
       if (isCommentMode(mode)) {
         return CSSCursor.Comment
       }
       return CSSCursor.Select
+    case 'select':
     case 'follow':
+    case 'textEdit':
       return CSSCursor.Select
     default:
       const _exhaustiveCheck: never = mode

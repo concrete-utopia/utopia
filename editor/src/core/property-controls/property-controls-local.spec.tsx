@@ -142,10 +142,32 @@ describe('registered property controls', () => {
           },
           "source": Object {
             "bounds": Object {
-              "endCol": 5,
-              "endLine": 42,
-              "startCol": 4,
-              "startLine": 5,
+              "bounds": Object {
+                "endCol": 4,
+                "endLine": 41,
+                "startCol": 3,
+                "startLine": 4,
+              },
+              "properties": Object {
+                "background": Object {
+                  "endCol": 8,
+                  "endLine": 13,
+                  "startCol": 7,
+                  "startLine": 11,
+                },
+                "label": Object {
+                  "endCol": 8,
+                  "endLine": 10,
+                  "startCol": 7,
+                  "startLine": 8,
+                },
+                "visible": Object {
+                  "endCol": 8,
+                  "endLine": 17,
+                  "startCol": 7,
+                  "startLine": 14,
+                },
+              },
             },
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
@@ -378,10 +400,20 @@ describe('registered property controls', () => {
           },
           "source": Object {
             "bounds": Object {
-              "endCol": 5,
-              "endLine": 16,
-              "startCol": 4,
-              "startLine": 6,
+              "bounds": Object {
+                "endCol": 4,
+                "endLine": 15,
+                "startCol": 3,
+                "startLine": 5,
+              },
+              "properties": Object {
+                "label": Object {
+                  "endCol": 9,
+                  "endLine": 11,
+                  "startCol": 7,
+                  "startLine": 8,
+                },
+              },
             },
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
@@ -1011,10 +1043,32 @@ describe('registered property controls', () => {
           },
           "source": Object {
             "bounds": Object {
-              "endCol": 5,
-              "endLine": 32,
-              "startCol": 4,
-              "startLine": 5,
+              "bounds": Object {
+                "endCol": 4,
+                "endLine": 31,
+                "startCol": 3,
+                "startLine": 4,
+              },
+              "properties": Object {
+                "background": Object {
+                  "endCol": 8,
+                  "endLine": 10,
+                  "startCol": 7,
+                  "startLine": 8,
+                },
+                "label": Object {
+                  "endCol": 36,
+                  "endLine": 7,
+                  "startCol": 7,
+                  "startLine": 7,
+                },
+                "visible": Object {
+                  "endCol": 8,
+                  "endLine": 14,
+                  "startCol": 7,
+                  "startLine": 11,
+                },
+              },
             },
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
@@ -1931,10 +1985,20 @@ describe('registered property controls', () => {
             },
             "source": Object {
               "bounds": Object {
-                "endCol": 5,
-                "endLine": 34,
-                "startCol": 4,
-                "startLine": 6,
+                "bounds": Object {
+                  "endCol": 4,
+                  "endLine": 33,
+                  "startCol": 3,
+                  "startLine": 5,
+                },
+                "properties": Object {
+                  "label": Object {
+                    "endCol": 8,
+                    "endLine": 31,
+                    "startCol": 7,
+                    "startLine": 8,
+                  },
+                },
               },
               "sourceDescriptorFile": "/utopia/components.utopia.js",
               "type": "DESCRIPTOR_FILE",
@@ -2688,10 +2752,20 @@ describe('Lifecycle management of registering components', () => {
         .toMatchInlineSnapshot(`
         Object {
           "bounds": Object {
-            "endCol": 5,
-            "endLine": 12,
-            "startCol": 4,
-            "startLine": 5,
+            "bounds": Object {
+              "endCol": 4,
+              "endLine": 11,
+              "startCol": 3,
+              "startLine": 4,
+            },
+            "properties": Object {
+              "label": Object {
+                "endCol": 8,
+                "endLine": 9,
+                "startCol": 7,
+                "startLine": 7,
+              },
+            },
           },
           "sourceDescriptorFile": "/utopia/components1.utopia.js",
           "type": "DESCRIPTOR_FILE",
@@ -2705,10 +2779,20 @@ describe('Lifecycle management of registering components', () => {
         .toMatchInlineSnapshot(`
         Object {
           "bounds": Object {
-            "endCol": 5,
-            "endLine": 12,
-            "startCol": 4,
-            "startLine": 5,
+            "bounds": Object {
+              "endCol": 4,
+              "endLine": 11,
+              "startCol": 3,
+              "startLine": 4,
+            },
+            "properties": Object {
+              "label": Object {
+                "endCol": 8,
+                "endLine": 9,
+                "startCol": 7,
+                "startLine": 7,
+              },
+            },
           },
           "sourceDescriptorFile": "/utopia/components2.utopia.js",
           "type": "DESCRIPTOR_FILE",
@@ -2746,10 +2830,20 @@ describe('Lifecycle management of registering components', () => {
         .toMatchInlineSnapshot(`
         Object {
           "bounds": Object {
-            "endCol": 5,
-            "endLine": 12,
-            "startCol": 4,
-            "startLine": 5,
+            "bounds": Object {
+              "endCol": 4,
+              "endLine": 11,
+              "startCol": 3,
+              "startLine": 4,
+            },
+            "properties": Object {
+              "label": Object {
+                "endCol": 8,
+                "endLine": 9,
+                "startCol": 7,
+                "startLine": 7,
+              },
+            },
           },
           "sourceDescriptorFile": "/utopia/components1.utopia.js",
           "type": "DESCRIPTOR_FILE",
@@ -2797,10 +2891,20 @@ describe('Lifecycle management of registering components', () => {
         .toMatchInlineSnapshot(`
         Object {
           "bounds": Object {
-            "endCol": 5,
-            "endLine": 12,
-            "startCol": 4,
-            "startLine": 5,
+            "bounds": Object {
+              "endCol": 4,
+              "endLine": 11,
+              "startCol": 3,
+              "startLine": 4,
+            },
+            "properties": Object {
+              "label": Object {
+                "endCol": 8,
+                "endLine": 9,
+                "startCol": 7,
+                "startLine": 7,
+              },
+            },
           },
           "sourceDescriptorFile": "/utopia/components1.utopia.js",
           "type": "DESCRIPTOR_FILE",

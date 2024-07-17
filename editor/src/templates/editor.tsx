@@ -125,6 +125,9 @@ import {
 } from '../components/github/github-repository-clone-flow'
 import { hasReactRouterErrorBeenLogged } from '../core/shared/runtime-report-logs'
 import { InitialOnlineState, startOnlineStatusPolling } from '../components/editor/online-status'
+import { useAnimate } from 'framer-motion'
+import { AnimationContext } from '../components/canvas/ui-jsx-canvas-renderer/animation-context'
+import { anyCodeAhead } from '../components/assets'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -448,7 +451,12 @@ export class Editor {
       const reactRouterErrorPreviouslyLogged = hasReactRouterErrorBeenLogged()
 
       const runDomWalker = shouldRunDOMWalker(dispatchedActions, dispatchResult)
-      const shouldRerender = !dispatchResult.nothingChanged || runDomWalker
+
+      const somethingChanged = !dispatchResult.nothingChanged
+
+      const shouldRerender =
+        (somethingChanged || runDomWalker) &&
+        !anyCodeAhead(dispatchResult.unpatchedEditor.projectContents)
 
       const updateId = canvasUpdateId++
       if (shouldRerender) {
@@ -465,101 +473,100 @@ export class Editor {
             })
           })
         })
+      }
 
-        // run the dom-walker
-        if (runDomWalker) {
-          const domWalkerDispatchResult = runDomWalkerAndSaveResults(
+      // run the dom-walker
+      if (shouldRerender || runDomWalker) {
+        const domWalkerDispatchResult = runDomWalkerAndSaveResults(
+          this.boundDispatch,
+          this.domWalkerMutableState,
+          this.storedState,
+          this.spyCollector,
+          ElementsToRerenderGLOBAL.current,
+        )
+
+        if (domWalkerDispatchResult != null) {
+          this.storedState = domWalkerDispatchResult
+          entireUpdateFinished = Promise.all([
+            entireUpdateFinished,
+            domWalkerDispatchResult.entireUpdateFinished,
+          ])
+        }
+      }
+
+      // true up groups if needed
+      if (this.storedState.unpatchedEditor.trueUpElementsAfterDomWalkerRuns.length > 0) {
+        // updated editor with trued up groups
+        Measure.taskTime(`Group true up ${updateId}`, () => {
+          const projectContentsBeforeGroupTrueUp = this.storedState.unpatchedEditor.projectContents
+          const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
             this.boundDispatch,
-            this.domWalkerMutableState,
+            [{ action: 'TRUE_UP_ELEMENTS' }],
             this.storedState,
             this.spyCollector,
-            ElementsToRerenderGLOBAL.current,
           )
+          this.storedState = dispatchResultWithTruedUpGroups
 
-          if (domWalkerDispatchResult != null) {
-            this.storedState = domWalkerDispatchResult
-            entireUpdateFinished = Promise.all([
-              entireUpdateFinished,
-              domWalkerDispatchResult.entireUpdateFinished,
-            ])
+          entireUpdateFinished = Promise.all([
+            entireUpdateFinished,
+            dispatchResultWithTruedUpGroups.entireUpdateFinished,
+          ])
+
+          if (
+            projectContentsBeforeGroupTrueUp === this.storedState.unpatchedEditor.projectContents
+          ) {
+            // no group-related re-render / re-measure is needed, bail out
+            return
           }
-        }
 
-        // true up groups if needed
-        if (this.storedState.unpatchedEditor.trueUpElementsAfterDomWalkerRuns.length > 0) {
-          // updated editor with trued up groups
-          Measure.taskTime(`Group true up ${updateId}`, () => {
-            const projectContentsBeforeGroupTrueUp =
-              this.storedState.unpatchedEditor.projectContents
-            const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
-              this.boundDispatch,
-              [{ action: 'TRUE_UP_ELEMENTS' }],
-              this.storedState,
-              this.spyCollector,
-            )
-            this.storedState = dispatchResultWithTruedUpGroups
+          // re-render the canvas
+          Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
+            ElementsToRerenderGLOBAL.current = fixElementsToRerender(
+              this.storedState.patchedEditor.canvas.elementsToRerender,
+              dispatchedActions,
+            ) // Mutation!
 
-            entireUpdateFinished = Promise.all([
-              entireUpdateFinished,
-              dispatchResultWithTruedUpGroups.entireUpdateFinished,
-            ])
-
-            if (
-              projectContentsBeforeGroupTrueUp === this.storedState.unpatchedEditor.projectContents
-            ) {
-              // no group-related re-render / re-measure is needed, bail out
-              return
-            }
-
-            // re-render the canvas
-            Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
-              ElementsToRerenderGLOBAL.current = fixElementsToRerender(
-                this.storedState.patchedEditor.canvas.elementsToRerender,
-                dispatchedActions,
-              ) // Mutation!
-
-              ReactDOM.flushSync(() => {
-                ReactDOM.unstable_batchedUpdates(() => {
-                  this.canvasStore.setState(
-                    patchedStoreFromFullStore(this.storedState, 'canvas-store'),
-                  )
-                })
+            ReactDOM.flushSync(() => {
+              ReactDOM.unstable_batchedUpdates(() => {
+                this.canvasStore.setState(
+                  patchedStoreFromFullStore(this.storedState, 'canvas-store'),
+                )
               })
             })
-
-            // re-run the dom-walker
-            Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
-              const domWalkerDispatchResult = runDomWalkerAndSaveResults(
-                this.boundDispatch,
-                this.domWalkerMutableState,
-                this.storedState,
-                this.spyCollector,
-                ElementsToRerenderGLOBAL.current,
-              )
-
-              if (domWalkerDispatchResult != null) {
-                this.storedState = domWalkerDispatchResult
-                entireUpdateFinished = Promise.all([
-                  entireUpdateFinished,
-                  domWalkerDispatchResult.entireUpdateFinished,
-                ])
-              }
-            })
           })
-        }
 
-        this.storedState = editorDispatchClosingOut(
-          this.boundDispatch,
-          dispatchedActions,
-          oldEditorState,
-          {
-            ...this.storedState,
-            entireUpdateFinished: entireUpdateFinished,
-            nothingChanged: dispatchResult.nothingChanged,
-          },
-          reactRouterErrorPreviouslyLogged,
-        )
+          // re-run the dom-walker
+          Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
+            const domWalkerDispatchResult = runDomWalkerAndSaveResults(
+              this.boundDispatch,
+              this.domWalkerMutableState,
+              this.storedState,
+              this.spyCollector,
+              ElementsToRerenderGLOBAL.current,
+            )
+
+            if (domWalkerDispatchResult != null) {
+              this.storedState = domWalkerDispatchResult
+              entireUpdateFinished = Promise.all([
+                entireUpdateFinished,
+                domWalkerDispatchResult.entireUpdateFinished,
+              ])
+            }
+          })
+        })
       }
+
+      this.storedState = editorDispatchClosingOut(
+        this.boundDispatch,
+        dispatchedActions,
+        oldEditorState,
+        {
+          ...this.storedState,
+          entireUpdateFinished: entireUpdateFinished,
+          nothingChanged: dispatchResult.nothingChanged,
+        },
+        reactRouterErrorPreviouslyLogged,
+      )
 
       Measure.taskTime(`Update Editor ${updateId}`, () => {
         ReactDOM.flushSync(() => {
@@ -691,6 +698,8 @@ export const EditorRoot: React.FunctionComponent<{
   spyCollector,
   domWalkerMutableState,
 }) => {
+  const [animationScope, animate] = useAnimate()
+
   return (
     <AtomsDevtools>
       <JotaiProvider>
@@ -701,7 +710,11 @@ export const EditorRoot: React.FunctionComponent<{
                 <CanvasStateContext.Provider value={canvasStore}>
                   <LowPriorityStateContext.Provider value={lowPriorityStore}>
                     <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-                      <EditorComponent />
+                      <AnimationContext.Provider
+                        value={{ animate: animate, scope: animationScope }}
+                      >
+                        <EditorComponent />
+                      </AnimationContext.Provider>
                     </UiJsxCanvasCtxAtom.Provider>
                   </LowPriorityStateContext.Provider>
                 </CanvasStateContext.Provider>

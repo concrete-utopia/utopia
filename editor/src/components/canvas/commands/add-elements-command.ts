@@ -3,7 +3,10 @@ import { includeToastPatch } from '../../../components/editor/actions/toast-help
 import type { EditorState, EditorStatePatch } from '../../../components/editor/store/editor-state'
 import { forUnderlyingTargetFromEditorState } from '../../../components/editor/store/editor-state'
 import { insertJSXElementChildren } from '../../../core/model/element-template-utils'
-import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
+import {
+  getFilePathMappings,
+  getUtopiaJSXComponentsFromSuccess,
+} from '../../../core/model/project-file-utils'
 import type { JSXElementChild } from '../../../core/shared/element-template'
 import type { Imports } from '../../../core/shared/project-file-types'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
@@ -76,8 +79,12 @@ export const runAddElements = (
       const editorStatePatchNewParentFile = getPatchForComponentChange(
         parentSuccess.topLevelElements,
         withElementsInserted,
-        mergeImports(underlyingFilePathNewParent, parentSuccess.imports, command.importsToAdd ?? {})
-          .imports,
+        mergeImports(
+          underlyingFilePathNewParent,
+          getFilePathMappings(editorState.projectContents),
+          parentSuccess.imports,
+          command.importsToAdd ?? {},
+        ).imports,
         underlyingFilePathNewParent,
       )
 

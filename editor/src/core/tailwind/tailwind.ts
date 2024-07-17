@@ -6,10 +6,10 @@ import { isRight, left, right } from '../shared/either'
 import type { RequireFn } from '../shared/npm-dependency-types'
 import type { ProjectFile } from '../shared/project-file-types'
 import { isTextFile } from '../shared/project-file-types'
-import type { Configuration, Sheet } from 'twind'
-import { silent } from 'twind'
-import type { TwindObserver } from 'twind/observe'
-import { create, observe, cssomSheet } from 'twind/observe'
+import type { Sheet, Twind } from '@twind/core'
+import { cssom, observe, defineConfig, tw } from '@twind/core'
+import presetAutoprefix from '@twind/preset-autoprefix'
+import presetTailwind from '@twind/preset-tailwind'
 import React from 'react'
 import { includesDependency } from '../../components/editor/npm-dependency/npm-dependency'
 import { propOrNull } from '../shared/object-utils'
@@ -17,6 +17,9 @@ import { memoize } from '../shared/memoize'
 import { importDefault } from '../es-modules/commonjs-interop'
 import { PostCSSPath, TailwindConfigPath } from './tailwind-config'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import { twind } from '@twind/core'
+
+type TwindConfigType = ReturnType<typeof defineConfig>
 
 function hasRequiredDependenciesForTailwind(packageJsonFile: ProjectFile): boolean {
   const hasTailwindDependency = includesDependency(packageJsonFile, 'tailwindcss')
@@ -86,19 +89,30 @@ function enablesPreflight(tailwindConfig: any): boolean {
   return true
 }
 
-function convertTailwindToTwindConfig(tailwindConfig: any): Configuration {
+function convertTailwindToTwindConfig(tailwindConfig: any): TwindConfigType {
   const preflightEnabled = enablesPreflight(tailwindConfig)
 
-  return {
-    ...tailwindConfig,
-    preflight: preflightEnabled,
-  }
+  const twindConfig = defineConfig({
+    presets: [
+      presetTailwind({
+        disablePreflight: !preflightEnabled,
+      }),
+      presetAutoprefix(),
+    ],
+    // force pushing tailwind's config to twind
+    theme: tailwindConfig.theme,
+    darkMode: tailwindConfig.darkMode,
+    variants: tailwindConfig.variants,
+    preflight: tailwindConfig.preflight,
+  })
+
+  return twindConfig
 }
 
 function getTailwindConfig(
   tailwindFile: ProjectFile | null,
   requireFn: RequireFn,
-): Either<any, Configuration> {
+): Either<any, TwindConfigType> {
   if (tailwindFile != null && isTextFile(tailwindFile)) {
     try {
       const requireResult = requireFn('/', TailwindConfigPath)
@@ -110,6 +124,7 @@ function getTailwindConfig(
         return left('Tailwind config contains no default export')
       }
     } catch (error) {
+      console.error('Error loading tailwind config', error)
       return left(error)
     }
   }
@@ -127,14 +142,14 @@ function useGetTailwindConfigFile(projectContents: ProjectContentTreeRoot): Proj
 function useGetTailwindConfig(
   projectContents: ProjectContentTreeRoot,
   requireFn: RequireFn,
-): Configuration {
+): TwindConfigType {
   const tailwindConfigFile = useGetTailwindConfigFile(projectContents)
   const tailwindConfig = React.useMemo(() => {
     const maybeConfig = getTailwindConfig(tailwindConfigFile, requireFn)
     if (isRight(maybeConfig)) {
       return maybeConfig.value
     } else {
-      return {}
+      return defineConfig({})
     }
   }, [tailwindConfigFile, requireFn])
   return useKeepReferenceEqualityIfPossible(tailwindConfig)
@@ -142,7 +157,7 @@ function useGetTailwindConfig(
 
 interface TwindInstance {
   element: HTMLStyleElement
-  observer: TwindObserver
+  instance: Twind
 }
 
 let twindInstance: TwindInstance | null = null
@@ -153,7 +168,8 @@ export function isTwindEnabled(): boolean {
 
 function clearTwind() {
   if (twindInstance != null) {
-    twindInstance.observer.disconnect()
+    twindInstance.instance.clear()
+    twindInstance.instance.destroy()
     twindInstance.element.parentNode?.removeChild(twindInstance.element)
   }
 }
@@ -197,29 +213,40 @@ const adjustRuleScope = memoize(adjustRuleScopeImpl, {
   matchesArg: (a, b) => a === b,
 })
 
-function updateTwind(config: Configuration, prefixSelector: string | null) {
+function updateTwind(config: TwindConfigType, prefixSelector: string | null) {
   const element = document.head.appendChild(document.createElement('style'))
   element.appendChild(document.createTextNode('')) // Avoid Edge bug where empty style elements doesn't create sheets
+  element.setAttribute('id', `twind-styles-${Math.random().toString(36).slice(2)}`)
 
-  const sheet = cssomSheet({ target: element.sheet ?? undefined })
+  const sheet = cssom(element)
   const customSheet: Sheet = {
+    ...sheet,
     target: sheet.target,
-    insert: (rule, index) => {
+    insert: (rule, index, sheetRule) => {
       const scopedRule = adjustRuleScope(rule, prefixSelector)
-      sheet.insert(scopedRule, index)
+      sheet.insert(scopedRule, index, sheetRule)
     },
   }
 
   clearTwind()
 
-  const observer = observe(
-    document.documentElement,
-    create({ ...config, sheet: customSheet, mode: silent }),
-  )
+  if (twindInstance == null) {
+    const prefixes = ['TWIND_', 'TAILWIND_']
+    window.addEventListener('warning', (event: any | { detail: { code: string } }) => {
+      const isTwindWarning: boolean = prefixes.some((prefix) =>
+        event?.detail?.code?.startsWith?.(prefix),
+      )
+      if (isTwindWarning) {
+        event.preventDefault()
+      }
+    })
+  }
+
+  const instance = observe(twind(config, customSheet), document.documentElement)
 
   twindInstance = {
     element: element,
-    observer: observer,
+    instance: instance,
   }
 }
 
@@ -255,7 +282,7 @@ export function injectTwind(
   const shouldUseTwind = hasDependencies && hasPostCSSPlugin
   const tailwindConfigFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
   const maybeTailwindConfig = getTailwindConfig(tailwindConfigFile, requireFn)
-  const tailwindConfig = isRight(maybeTailwindConfig) ? maybeTailwindConfig.value : {}
+  const tailwindConfig = isRight(maybeTailwindConfig) ? maybeTailwindConfig.value : defineConfig({})
   if (shouldUseTwind) {
     updateTwind(tailwindConfig, prefixSelector)
   } else {

@@ -8,6 +8,7 @@ import type {
   ArrayControlDescription,
   BaseControlDescription,
   ControlDescription,
+  NoneControlDescription,
   ObjectControlDescription,
   RegularControlDescription,
   TupleControlDescription,
@@ -44,11 +45,12 @@ import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import {
   useControlForUnionControl,
+  useGetComponentDataForElementPath,
   useGetPropertyControlsForSelectedComponents,
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import type { ControlStyles } from '../../common/control-styles'
-import type { InspectorInfo } from '../../common/property-path-hooks'
+import { type InspectorInfo } from '../../common/property-path-hooks'
 import { useArraySuperControl } from '../../controls/array-supercontrol'
 import type { SelectOption } from '../../controls/select-control'
 import { UIGridRow } from '../../widgets/ui-grid-row'
@@ -75,7 +77,10 @@ import { ExpandableIndicator } from '../../../navigator/navigator-item/expandabl
 import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
-import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
+import {
+  componentDescriptor,
+  normalisePathToUnderlyingTarget,
+} from '../../../custom-code/code-file'
 import { openCodeEditorFile, replaceElementInScope } from '../../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
@@ -607,14 +612,73 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     'RowForBaseControl selectedViews',
   )
 
+  const dispatch = useDispatch()
+
   const propMetadata = useComponentPropsInspectorInfo(
     selectedViews[0] ?? EP.emptyElementPath,
     propPath,
     isScene,
     controlDescription,
   )
+
+  const componentData = useGetComponentDataForElementPath(selectedViews[0] ?? null)
+
+  const descriptorFile = componentData?.descriptorFile
+
+  const goToAnnotationItems = React.useMemo(() => {
+    // if there are no annotations, or they don't come from a descriptor file skip the menu item
+    if (descriptorFile?.sourceDescriptorFile == null) {
+      return []
+    }
+    // if there are no bounds available for the component annotation, just open the file
+    if (descriptorFile.bounds == null) {
+      return [
+        {
+          name: `Open annotation file`,
+          enabled: true,
+          action: () => {
+            dispatch([openCodeEditorFile(descriptorFile.sourceDescriptorFile, true)])
+          },
+        },
+      ]
+    }
+    // if there are no bounds available for the specific property, just go to the annotation of the component
+    if (descriptorFile?.bounds?.properties[propName] == null) {
+      return [
+        {
+          name: `Open component annotation`,
+          enabled: true,
+          action: () => {
+            if (descriptorFile.bounds != null) {
+              dispatch([
+                openCodeEditorFile(
+                  descriptorFile.sourceDescriptorFile,
+                  true,
+                  descriptorFile.bounds.bounds,
+                ),
+              ])
+            }
+          },
+        },
+      ]
+    }
+    return [
+      {
+        name: `Open property annotation`,
+        enabled: descriptorFile != null,
+        action: () => {
+          const bounds = descriptorFile?.bounds?.properties[propName]
+          if (bounds != null) {
+            dispatch([openCodeEditorFile(descriptorFile.sourceDescriptorFile, true, bounds)])
+          }
+        },
+      },
+    ]
+  }, [descriptorFile, dispatch, propName])
+
   const contextMenuItems = Utils.stripNulls([
-    addOnUnsetValues([propName], propMetadata.onUnsetValues),
+    addOnUnsetValues(['property'], propMetadata.onUnsetValues),
+    ...goToAnnotationItems,
   ])
 
   const labelControlStyle = React.useMemo(
@@ -974,6 +1038,11 @@ const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
   const contextMenuItems = Utils.stripNulls([addOnUnsetValues([index], propMetadata.onUnsetValues)])
 
   const contextMenuId = `context-menu-for-${PP.toString(propPathWithIndex)}`
+
+  if (controlDescription.propertyControl.control === 'none') {
+    return null
+  }
+
   return (
     <InspectorContextMenuWrapper
       id={contextMenuId}
@@ -1122,6 +1191,12 @@ const TupleControlItem = React.memo((props: TupleControlItemProps) => {
   )
   const contextMenuItems = Utils.stripNulls([addOnUnsetValues([index], propMetadata.onUnsetValues)])
 
+  const indexedPropertyControls = controlDescription.propertyControls[index]
+
+  if (indexedPropertyControls.control === 'none') {
+    return null
+  }
+
   return (
     <InspectorContextMenuWrapper
       id={`context-menu-for-${PP.toString(propPathWithIndex)}`}
@@ -1130,7 +1205,7 @@ const TupleControlItem = React.memo((props: TupleControlItemProps) => {
       key={index}
     >
       <RowForControl
-        controlDescription={controlDescription.propertyControls[index]}
+        controlDescription={indexedPropertyControls}
         isScene={isScene}
         propPath={PP.appendPropertyPathElems(propPath, [index])}
         setGlobalCursor={props.setGlobalCursor}
@@ -1284,6 +1359,9 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
         open,
         mapToArray((innerControl: RegularControlDescription, prop: string, index: number) => {
           const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
+          if (innerControl.control === 'none') {
+            return null
+          }
           return (
             <RowForControl
               key={`object-control-row-${PP.toString(innerPropPath)}`}
@@ -1383,7 +1461,7 @@ const RowForUnionControl = React.memo((props: RowForUnionControlProps) => {
 RowForUnionControl.displayName = 'RowForUnionControl'
 
 interface RowForControlProps extends AbstractRowForControlProps {
-  controlDescription: RegularControlDescription
+  controlDescription: Exclude<RegularControlDescription, NoneControlDescription>
   disableToggling?: boolean
 }
 
@@ -1469,65 +1547,12 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     }
   }, [dispatch, locationOfComponentInstance])
 
-  const propertyControlsInfo = useEditorState(
-    Substores.propertyControlsInfo,
-    (store) => store.editor.propertyControlsInfo,
-    'ComponentsectionInner propertyControlsInfo',
-  )
+  const elementPath =
+    propertyControlsAndTargets.length === 0 || propertyControlsAndTargets[0].targets.length !== 1
+      ? null
+      : propertyControlsAndTargets[0].targets[0]
 
-  const componentData = useEditorState(
-    Substores.metadata,
-    (store) => {
-      if (
-        propertyControlsAndTargets.length === 0 ||
-        propertyControlsAndTargets[0].targets.length !== 1
-      ) {
-        return null
-      }
-
-      const element = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        propertyControlsAndTargets[0].targets[0],
-      )
-
-      const targetJSXElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(element)
-      const elementImportInfo = element?.importInfo
-      if (elementImportInfo == null || targetJSXElement == null) {
-        return null
-      }
-
-      const elementName = getJSXElementNameAsString(targetJSXElement.name)
-
-      const exportedName = isImportedOrigin(elementImportInfo)
-        ? elementImportInfo.exportedName ?? elementName
-        : elementName
-
-      const registeredComponent = getRegisteredComponent(
-        exportedName,
-        elementImportInfo.filePath,
-        propertyControlsInfo,
-      )
-
-      const descriptorFile =
-        registeredComponent?.source.type === 'DESCRIPTOR_FILE' ? registeredComponent.source : null
-
-      if (registeredComponent?.label == null) {
-        return {
-          displayName: elementName,
-          descriptorFile: descriptorFile,
-          isRegisteredComponent: registeredComponent != null,
-        }
-      }
-
-      return {
-        displayName: registeredComponent.label,
-        descriptorFile: descriptorFile,
-        isRegisteredComponent: registeredComponent != null,
-        secondaryName: elementName,
-      }
-    },
-    'ComponentSectionInner componentName',
-  )
+  const componentData = useGetComponentDataForElementPath(elementPath)
 
   const openDescriptorFile = React.useCallback(() => {
     if (componentData?.descriptorFile != null) {
@@ -1535,7 +1560,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
         openCodeEditorFile(
           componentData.descriptorFile.sourceDescriptorFile,
           true,
-          componentData.descriptorFile.bounds,
+          componentData.descriptorFile.bounds?.bounds,
         ),
       ])
     }

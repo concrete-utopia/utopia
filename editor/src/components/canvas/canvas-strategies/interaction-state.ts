@@ -559,6 +559,20 @@ export function flexGapHandle(): FlexGapHandle {
   }
 }
 
+export interface GridAxisHandle {
+  type: 'GRID_AXIS_HANDLE'
+  axis: 'column' | 'row'
+  columnOrRow: number
+}
+
+export function gridAxisHandle(axis: 'column' | 'row', columnOrRow: number): GridAxisHandle {
+  return {
+    type: 'GRID_AXIS_HANDLE',
+    axis: axis,
+    columnOrRow: columnOrRow,
+  }
+}
+
 export interface PaddingResizeHandle {
   type: 'PADDING_RESIZE_HANDLE'
   edgePiece: EdgePiece
@@ -602,6 +616,51 @@ export function reorderSlider(): ReorderSlider {
   }
 }
 
+export interface GridCellHandle {
+  type: 'GRID_CELL_HANDLE'
+  id: string
+}
+
+export function gridCellHandle(params: { id: string }): GridCellHandle {
+  return {
+    type: 'GRID_CELL_HANDLE',
+    id: params.id,
+  }
+}
+
+export const GridResizeEdges = ['row-start', 'row-end', 'column-start', 'column-end'] as const
+export type GridResizeEdge = (typeof GridResizeEdges)[number]
+
+export type GridResizeEdgeProperties = {
+  isRow: boolean
+  isColumn: boolean
+  isStart: boolean
+  isEnd: boolean
+}
+
+export function gridResizeEdgeProperties(edge: GridResizeEdge): GridResizeEdgeProperties {
+  return {
+    isRow: edge === 'row-start' || edge === 'row-end',
+    isColumn: edge === 'column-start' || edge === 'column-end',
+    isStart: edge === 'row-start' || edge === 'column-start',
+    isEnd: edge === 'row-end' || edge === 'column-end',
+  }
+}
+
+export interface GridResizeHandle {
+  type: 'GRID_RESIZE_HANDLE'
+  id: string
+  edge: GridResizeEdge
+}
+
+export function gridResizeHandle(id: string, edge: GridResizeEdge): GridResizeHandle {
+  return {
+    type: 'GRID_RESIZE_HANDLE',
+    id: id,
+    edge: edge,
+  }
+}
+
 export type CanvasControlType =
   | BoundingArea
   | ResizeHandle
@@ -610,6 +669,9 @@ export type CanvasControlType =
   | KeyboardCatcherControl
   | ReorderSlider
   | BorderRadiusResizeHandle
+  | GridCellHandle
+  | GridAxisHandle
+  | GridResizeHandle
 
 export function isDragToPan(
   interaction: InteractionSession | null,

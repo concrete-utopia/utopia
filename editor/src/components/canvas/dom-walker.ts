@@ -9,6 +9,8 @@ import type {
   SpecialSizeMeasurements,
   StyleAttributeMetadata,
   ElementInstanceMetadataMap,
+  GridContainerProperties,
+  GridElementProperties,
 } from '../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -16,6 +18,9 @@ import {
   emptySpecialSizeMeasurements,
   emptyComputedStyle,
   emptyAttributeMetadata,
+  gridContainerProperties,
+  gridElementProperties,
+  gridAutoOrTemplateFallback,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import {
@@ -55,6 +60,9 @@ import {
   parseDirection,
   parseFlexDirection,
   parseCSSPx,
+  parseGridPosition,
+  parseGridRange,
+  parseGridAutoOrTemplateBase,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -86,6 +94,7 @@ import { pick } from '../../core/shared/object-utils'
 import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
+import { parseString } from '../../utils/value-parser-utils'
 
 export const ResizeObserver =
   window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -473,7 +482,7 @@ export function runDomWalker({
       return getCanvasRectangleFromElement(
         canvasRootContainer,
         scale,
-        'without-content',
+        'without-text-content',
         'nearest-half',
       )
     })
@@ -668,7 +677,7 @@ function collectMetadataForElement(
     element,
     scale,
     containerRectLazy,
-    'without-content',
+    'without-text-content',
     'nearest-half',
   )
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
@@ -676,7 +685,7 @@ function collectMetadataForElement(
     element,
     scale,
     containerRectLazy,
-    'without-content',
+    'without-text-content',
     'no-rounding',
   )
 
@@ -881,6 +890,47 @@ function getComputedStyle(
   }
 }
 
+function getGridContainerProperties(elementStyle: CSSStyleDeclaration): GridContainerProperties {
+  const gridTemplateColumns = defaultEither(
+    gridAutoOrTemplateFallback(elementStyle.gridTemplateColumns),
+    parseGridAutoOrTemplateBase(elementStyle.gridTemplateColumns),
+  )
+  const gridTemplateRows = defaultEither(
+    gridAutoOrTemplateFallback(elementStyle.gridTemplateRows),
+    parseGridAutoOrTemplateBase(elementStyle.gridTemplateRows),
+  )
+  const gridAutoColumns = defaultEither(
+    gridAutoOrTemplateFallback(elementStyle.gridAutoColumns),
+    parseGridAutoOrTemplateBase(elementStyle.gridAutoColumns),
+  )
+  const gridAutoRows = defaultEither(
+    gridAutoOrTemplateFallback(elementStyle.gridAutoRows),
+    parseGridAutoOrTemplateBase(elementStyle.gridAutoRows),
+  )
+  return gridContainerProperties(
+    gridTemplateColumns,
+    gridTemplateRows,
+    gridAutoColumns,
+    gridAutoRows,
+  )
+}
+
+function getGridElementProperties(elementStyle: CSSStyleDeclaration): GridElementProperties {
+  const gridColumn = defaultEither(null, parseGridRange(elementStyle.gridColumn))
+  const gridColumnStart =
+    defaultEither(null, parseGridPosition(elementStyle.gridColumnStart)) ??
+    gridColumn?.start ??
+    null
+  const gridColumnEnd =
+    defaultEither(null, parseGridPosition(elementStyle.gridColumnEnd)) ?? gridColumn?.end ?? null
+  const gridRow = defaultEither(null, parseGridRange(elementStyle.gridRow))
+  const gridRowStart =
+    defaultEither(null, parseGridPosition(elementStyle.gridRowStart)) ?? gridRow?.start ?? null
+  const gridRowEnd =
+    defaultEither(null, parseGridPosition(elementStyle.gridRowEnd)) ?? gridRow?.end ?? null
+  return gridElementProperties(gridColumnStart, gridColumnEnd, gridRowStart, gridRowEnd)
+}
+
 function getSpecialMeasurements(
   element: HTMLElement,
   closestOffsetParentPath: ElementPath,
@@ -902,7 +952,7 @@ function getSpecialMeasurements(
           element.offsetParent,
           scale,
           containerRectLazy,
-          'without-content',
+          'without-text-content',
           'nearest-half',
         )
       : null
@@ -913,7 +963,7 @@ function getSpecialMeasurements(
           element.parentElement,
           scale,
           containerRectLazy,
-          'without-content',
+          'without-text-content',
           'nearest-half',
         )
       : null
@@ -998,7 +1048,7 @@ function getSpecialMeasurements(
     elementOrContainingParent,
     scale,
     containerRectLazy,
-    'without-content',
+    'without-text-content',
     'nearest-half',
   )
 
@@ -1006,7 +1056,7 @@ function getSpecialMeasurements(
     element,
     scale,
     containerRectLazy,
-    'with-content',
+    'with-text-content',
     'nearest-half',
   )
 
@@ -1053,18 +1103,21 @@ function getSpecialMeasurements(
   const textDecorationLine = elementStyle.textDecorationLine
 
   const textBounds = elementContainsOnlyText(element)
-    ? stretchRect(getCanvasRectangleFromElement(element, scale, 'only-content', 'nearest-half'), {
-        w:
-          maybeValueFromComputedStyle(elementStyle.paddingLeft) +
-          maybeValueFromComputedStyle(elementStyle.paddingRight) +
-          maybeValueFromComputedStyle(elementStyle.marginLeft) +
-          maybeValueFromComputedStyle(elementStyle.marginRight),
-        h:
-          maybeValueFromComputedStyle(elementStyle.paddingTop) +
-          maybeValueFromComputedStyle(elementStyle.paddingBottom) +
-          maybeValueFromComputedStyle(elementStyle.marginTop) +
-          maybeValueFromComputedStyle(elementStyle.marginBottom),
-      })
+    ? stretchRect(
+        getCanvasRectangleFromElement(element, scale, 'only-text-content', 'nearest-half'),
+        {
+          w:
+            maybeValueFromComputedStyle(elementStyle.paddingLeft) +
+            maybeValueFromComputedStyle(elementStyle.paddingRight) +
+            maybeValueFromComputedStyle(elementStyle.marginLeft) +
+            maybeValueFromComputedStyle(elementStyle.marginRight),
+          h:
+            maybeValueFromComputedStyle(elementStyle.paddingTop) +
+            maybeValueFromComputedStyle(elementStyle.paddingBottom) +
+            maybeValueFromComputedStyle(elementStyle.marginTop) +
+            maybeValueFromComputedStyle(elementStyle.marginBottom),
+        },
+      )
     : null
 
   const computedStyleMap =
@@ -1073,6 +1126,11 @@ function getSpecialMeasurements(
     (styleProp: string) => computedStyleMap?.get(styleProp)?.toString() ?? null,
     globalFrame,
   )
+
+  const containerGridProperties = getGridContainerProperties(elementStyle)
+  const containerElementProperties = getGridElementProperties(elementStyle)
+  const containerGridPropertiesFromProps = getGridContainerProperties(element.style)
+  const containerElementPropertyiesFromProps = getGridElementProperties(element.style)
 
   return specialSizeMeasurements(
     offset,
@@ -1118,6 +1176,10 @@ function getSpecialMeasurements(
     textDecorationLine,
     textBounds,
     computedHugProperty,
+    containerGridProperties,
+    containerElementProperties,
+    containerGridPropertiesFromProps,
+    containerElementPropertyiesFromProps,
   )
 }
 
@@ -1145,7 +1207,7 @@ function globalFrameForElement(
   element: HTMLElement,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
-  withContent: 'without-content' | 'with-content',
+  withContent: 'without-text-content' | 'with-text-content',
   rounding: 'nearest-half' | 'no-rounding',
 ) {
   const elementRect = getCanvasRectangleFromElement(element, scale, withContent, rounding)
@@ -1280,7 +1342,7 @@ function walkSceneInner(
     scene,
     globalProps.scale,
     globalProps.containerRectLazy,
-    'without-content',
+    'without-text-content',
     'nearest-half',
   )
 
@@ -1359,7 +1421,7 @@ function walkElements(
       element,
       globalProps.scale,
       globalProps.containerRectLazy,
-      'without-content',
+      'without-text-content',
       'nearest-half',
     )
 

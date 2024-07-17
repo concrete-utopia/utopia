@@ -103,6 +103,8 @@ interface CanvasLabelProps {
   color: string
   textColor: string
   value: string | number
+  onMouseDown?: React.MouseEventHandler
+  testId?: string
 }
 
 export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => {
@@ -113,6 +115,7 @@ export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => 
   const borderRadius = BorderRadius / scale
   return (
     <div
+      data-testid={props.testId}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -126,6 +129,7 @@ export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => 
         borderRadius: borderRadius,
         height: ExplicitHeightHacked / scale,
       }}
+      onMouseDown={props.onMouseDown}
     >
       {value}
     </div>

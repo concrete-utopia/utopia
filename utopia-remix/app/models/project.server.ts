@@ -16,6 +16,7 @@ import {
 } from '../types'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
+import { selectUserDetailsForProjectCollaborator } from './projectCollaborators.server'
 
 const selectProjectWithoutContent: Record<keyof ProjectWithoutContentFromDB, true> = {
   id: true,
@@ -206,7 +207,9 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
       Project: {
         select: {
           ...selectProjectWithoutContent,
-          ProjectCollaborator: { select: { User: true } },
+          ProjectCollaborator: {
+            select: { User: { select: selectUserDetailsForProjectCollaborator } },
+          },
         },
       },
     },

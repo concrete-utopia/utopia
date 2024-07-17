@@ -1,3 +1,4 @@
+import { assertNever } from '../../core/shared/utils'
 import type { Key } from '../../utils/keyboard'
 import { Keyboard } from '../../utils/keyboard'
 import type { ComplexMap } from '../../utils/map'
@@ -47,7 +48,6 @@ export const WRAP_ELEMENT_PICKER_SHORTCUT = 'wrap-element-picker'
 export const GROUP_ELEMENT_DEFAULT_SHORTCUT = 'group-element-default'
 export const TOGGLE_HIDDEN_SHORTCUT = 'toggle-hidden'
 export const INSERT_IMAGE_SHORTCUT = 'insert-image'
-export const TOGGLE_PREVIEW_SHORTCUT = 'toggle-preview'
 export const TOGGLE_LIVE_CANVAS_SHORTCUT = 'toggle-live-canvas'
 export const START_RENAMING_SHORTCUT = 'start-renaming'
 export const INSERT_RECTANGLE_SHORTCUT = 'insert-rectangle'
@@ -88,7 +88,7 @@ export const WRAP_IN_DIV = 'wrap-in-div'
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
-const shortcutDetailsWithDefaults: ShortcutDetails = {
+export const shortcutDetailsWithDefaults: ShortcutDetails = {
   [DELETE_SELECTED_SHORTCUT]: shortcut('Delete the selected element.', [
     key('delete', []),
     key('backspace', []),
@@ -152,7 +152,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [GROUP_ELEMENT_DEFAULT_SHORTCUT]: shortcut('Group elements with a div.', key('g', 'cmd')),
   [TOGGLE_HIDDEN_SHORTCUT]: shortcut('Toggle element as hidden.', key('h', ['cmd', 'shift'])),
   [INSERT_IMAGE_SHORTCUT]: shortcut('Insert an image.', key('i', [])),
-  [TOGGLE_PREVIEW_SHORTCUT]: shortcut('Toggle the preview panel.', key('p', 'cmd')),
   [TOGGLE_LIVE_CANVAS_SHORTCUT]: shortcut(
     'Toggle the canvas between live and edit mode.',
     key('p', ['cmd', 'shift']),
@@ -336,4 +335,32 @@ export function handleShortcuts<T>(
       return callback()
     }
   }
+}
+
+export function keyToString(shortcutKey: Key): string {
+  const mods = shortcutKey.modifiers.map((m) => {
+    switch (m) {
+      case 'alt':
+        return '⌥'
+      case 'cmd':
+        return '⌘'
+      case 'ctrl':
+        return '^'
+      case 'shift':
+        return '⬆'
+      default:
+        assertNever(m)
+    }
+  })
+
+  const char = () => {
+    switch (shortcutKey.character) {
+      case 'period':
+        return '.'
+      default:
+        return shortcutKey.character
+    }
+  }
+
+  return [...mods, char()].join('')
 }

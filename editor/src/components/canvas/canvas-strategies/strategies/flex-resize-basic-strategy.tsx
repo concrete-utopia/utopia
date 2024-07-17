@@ -89,6 +89,10 @@ export function flexResizeBasicStrategy(
     elementParentBounds != null &&
     (elementParentBounds.width !== 0 || elementParentBounds.height !== 0)
 
+  if (MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElements[0])) {
+    return null
+  }
+
   return {
     id: 'FLEX_RESIZE_BASIC',
     name: 'Flex Resize (Basic)',

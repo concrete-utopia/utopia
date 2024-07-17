@@ -84,8 +84,12 @@ import {
   createModuleEvaluator,
   isComponentDescriptorFile,
 } from '../../../core/property-controls/property-controls-local'
-import { setReactRouterErrorHasBeenLogged } from '../../../core/shared/runtime-report-logs'
+import {
+  hasReactRouterErrorBeenLogged,
+  setReactRouterErrorHasBeenLogged,
+} from '../../../core/shared/runtime-report-logs'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
+import { getFilePathMappings } from '../../../core/model/project-file-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -345,6 +349,7 @@ function maybeRequestModelUpdate(
     const parseFinished = getParseResult(
       workers,
       filesToUpdate,
+      getFilePathMappings(projectContents),
       existingUIDs,
       isSteganographyEnabled(),
     )
@@ -491,18 +496,6 @@ export function editorDispatchActionRunner(
   applyProjectChangesToEditor(result.unpatchedEditor, projectChanges)
 
   return result
-}
-
-function reactRouterErrorTriggeredReset(
-  editor: EditorState,
-  reactRouterErrorPreviouslyLogged: boolean,
-): EditorState {
-  if (reactRouterErrorPreviouslyLogged) {
-    setReactRouterErrorHasBeenLogged(false)
-    return UPDATE_FNS.RESET_CANVAS(EditorActions.resetCanvas(), editor)
-  } else {
-    return editor
-  }
 }
 
 export function editorDispatchClosingOut(
@@ -725,13 +718,6 @@ export function editorDispatchClosingOut(
         ...finalStoreV1Final.unpatchedEditor,
         filesModifiedByAnotherUser: updatedFilesModifiedByElsewhere,
       },
-    }
-
-    if (filesChanged.length > 0) {
-      finalStoreV1Final.unpatchedEditor = reactRouterErrorTriggeredReset(
-        finalStoreV1Final.unpatchedEditor,
-        reactRouterErrorPreviouslyLogged,
-      )
     }
   }
 

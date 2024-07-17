@@ -175,6 +175,7 @@ const originalModel = deepFreeze(
   parseSuccess(
     addImport(
       '/code.js',
+      [],
       'utopia-api',
       null,
       [importAlias('View'), importAlias('Scene'), importAlias('Storyboard')],

@@ -624,7 +624,7 @@ export function boundingClientRectToCanvasRectangle(
   const canvasRootRectangle = getCanvasRectangleFromElement(
     canvasRootContainer,
     canvasScale,
-    'without-content',
+    'without-text-content',
     'nearest-half',
   )
   const canvasBounds = offsetRect(canvasRectangle(elementBounds), negate(canvasRootRectangle))

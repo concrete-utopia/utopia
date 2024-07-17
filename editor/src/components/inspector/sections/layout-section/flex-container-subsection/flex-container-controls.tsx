@@ -266,9 +266,7 @@ export const FlexGapControl = React.memo(() => {
 
   return (
     <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
-      <UIGridRow padded={false} variant='<-auto-><----------1fr--------->'>
-        {when(flexDirection.startsWith('row'), <Icons.GapHorizontal />)}
-        {when(flexDirection.startsWith('column'), <Icons.GapVertical />)}
+      <UIGridRow padded={false} variant='<-------------1fr------------->'>
         <NumberInput
           id='flex.container.gap'
           testId='flex.container.gap'
@@ -280,6 +278,10 @@ export const FlexGapControl = React.memo(() => {
           controlStatus={controlStatus}
           numberType='LengthPercent'
           defaultUnitToHide={'px'}
+          DEPRECATED_labelBelow={
+            flexDirection.startsWith('row') ? <Icons.GapHorizontal /> : <Icons.GapVertical />
+          }
+          incrementControls={false}
         />
       </UIGridRow>
     </InspectorContextMenuWrapper>

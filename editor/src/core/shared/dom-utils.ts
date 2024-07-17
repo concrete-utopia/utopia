@@ -2,6 +2,7 @@ import type { ReactDOM } from 'react'
 import type { CanvasRectangle, MaybeInfinityCanvasRectangle } from './math-utils'
 import {
   boundingRectangle,
+  boundingRectangleArray,
   canvasRectangle,
   isNotNullFiniteRectangle,
   roundToNearestHalf,
@@ -279,7 +280,7 @@ function getRoundingFn(rounding: 'nearest-half' | 'no-rounding') {
 export function getCanvasRectangleFromElement(
   element: HTMLElement,
   canvasScale: number,
-  withContent: 'without-content' | 'with-content' | 'only-content',
+  withContent: 'without-text-content' | 'with-text-content' | 'only-text-content',
   rounding: 'nearest-half' | 'no-rounding',
 ): CanvasRectangle {
   const scale = canvasScale < 1 ? 1 / canvasScale : 1
@@ -299,33 +300,31 @@ export function getCanvasRectangleFromElement(
     )
   }
 
-  const boundingRect = element.getBoundingClientRect()
-  const elementRect = domRectToScaledCanvasRectangle(boundingRect)
-  if (withContent === 'without-content') {
-    return elementRect
-  }
-
-  const range = document.createRange()
   switch (withContent) {
-    case 'only-content':
-      range.selectNodeContents(element)
-      break
-    case 'with-content':
-      range.selectNode(element)
-      break
-    default:
-      assertNever(withContent)
-  }
-  const rangeBounding =
-    // this is needed because jsdom can throw an error on the range.getBoundingClientRect() call, see https://github.com/jsdom/jsdom/issues/3002
-    typeof range.getBoundingClientRect === 'function' ? range.getBoundingClientRect() : boundingRect
-  const contentRect = domRectToScaledCanvasRectangle(rangeBounding)
-
-  switch (withContent) {
-    case 'only-content':
-      return contentRect
-    case 'with-content':
-      return boundingRectangle(elementRect, contentRect)
+    case 'without-text-content': {
+      const boundingRect = element.getBoundingClientRect()
+      const elementRect = domRectToScaledCanvasRectangle(boundingRect)
+      return elementRect
+    }
+    case 'only-text-content':
+    case 'with-text-content':
+      let rectangles: Array<CanvasRectangle> = []
+      for (const childNode of element.childNodes) {
+        if (childNode.nodeType === Node.TEXT_NODE) {
+          const range = document.createRange()
+          // this is needed because jsdom can throw an error on the range.getBoundingClientRect() call, see https://github.com/jsdom/jsdom/issues/3002
+          if (typeof range.getBoundingClientRect === 'function') {
+            range.selectNode(childNode)
+            rectangles.push(domRectToScaledCanvasRectangle(range.getBoundingClientRect()))
+          }
+        }
+      }
+      if (withContent === 'with-text-content') {
+        rectangles.push(domRectToScaledCanvasRectangle(element.getBoundingClientRect()))
+      }
+      return (
+        boundingRectangleArray(rectangles) ?? canvasRectangle({ x: 0, y: 0, width: 0, height: 0 })
+      )
     default:
       assertNever(withContent)
   }

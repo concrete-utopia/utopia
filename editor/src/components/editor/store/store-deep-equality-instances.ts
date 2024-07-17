@@ -143,6 +143,15 @@ import type {
   JSOpaqueArbitraryStatement,
   JSAssignmentStatement,
   JSAssignment,
+  GridContainerProperties,
+  GridTemplate,
+  GridAuto,
+  GridElementProperties,
+  GridPositionValue,
+  GridPosition,
+  GridAutoOrTemplateBase,
+  GridAutoOrTemplateDimensions,
+  GridAutoOrTemplateFallback,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -214,6 +223,11 @@ import {
   jsAssignmentStatement,
   jsAssignment,
   jsxMapExpression,
+  gridContainerProperties,
+  gridElementProperties,
+  gridPositionValue,
+  gridAutoOrTemplateFallback,
+  gridAutoOrTemplateDimensions,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -439,6 +453,10 @@ import type {
   ResizeHandle,
   BorderRadiusResizeHandle,
   ZeroDragPermitted,
+  GridCellHandle,
+  GridAxisHandle,
+  GridResizeHandle,
+  GridResizeEdge,
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
   boundingArea,
@@ -447,6 +465,9 @@ import {
   interactionSession,
   keyboardCatcherControl,
   resizeHandle,
+  gridCellHandle,
+  gridAxisHandle,
+  gridResizeHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import type { Modifiers } from '../../../utils/modifiers'
 import type {
@@ -541,11 +562,15 @@ import type {
   CSSFontWeightAndStyle,
   CSSLetterSpacing,
   CSSLineHeight,
+  CSSNumber,
+  CSSNumberUnit,
   CSSTextAlign,
   CSSTextDecorationLine,
   FontSettings,
+  GridCSSNumber,
+  GridCSSNumberUnit,
 } from '../../inspector/common/css-utils'
-import { fontSettings } from '../../inspector/common/css-utils'
+import { cssNumber, fontSettings, gridCSSNumber } from '../../inspector/common/css-utils'
 import type { ElementPaste, ProjectListing } from '../action-types'
 import { projectListing } from '../action-types'
 import type { Bounds, UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -606,6 +631,10 @@ import type { NavigatorRow } from '../../navigator/navigator-row'
 import { condensedNavigatorRow, regularNavigatorRow } from '../../navigator/navigator-row'
 import type { SimpleFunctionWrap, FunctionWrap } from 'utopia-shared/src/types'
 import { simpleFunctionWrap, isSimpleFunctionWrap } from 'utopia-shared/src/types'
+import type {
+  ComponentDescriptorBounds,
+  ComponentDescriptorPropertiesBounds,
+} from '../../../core/property-controls/component-descriptor-parser'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -1932,6 +1961,119 @@ export const ImportInfoKeepDeepEquality: KeepDeepEqualityCall<ImportInfo> = (
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const CSSNumberKeepDeepEquality: KeepDeepEqualityCall<CSSNumber> = combine2EqualityCalls(
+  (cssNum) => cssNum.value,
+  createCallWithTripleEquals<number>(),
+  (cssNum) => cssNum.unit,
+  undefinableDeepEquality(nullableDeepEquality(createCallWithTripleEquals<CSSNumberUnit>())),
+  cssNumber,
+)
+
+export const GridCSSNumberKeepDeepEquality: KeepDeepEqualityCall<GridCSSNumber> =
+  combine3EqualityCalls(
+    (cssNum) => cssNum.value,
+    createCallWithTripleEquals<number>(),
+    (cssNum) => cssNum.unit,
+    nullableDeepEquality(createCallWithTripleEquals<GridCSSNumberUnit>()),
+    (cssNum) => cssNum.areaName,
+    nullableDeepEquality(StringKeepDeepEquality),
+    gridCSSNumber,
+  )
+
+export const GridAutoOrTemplateDimensionsKeepDeepEquality: KeepDeepEqualityCall<GridAutoOrTemplateDimensions> =
+  combine1EqualityCall(
+    (value) => value.dimensions,
+    arrayDeepEquality(GridCSSNumberKeepDeepEquality),
+    gridAutoOrTemplateDimensions,
+  )
+
+export const GridAutoOrTemplateFallbackKeepDeepEquality: KeepDeepEqualityCall<GridAutoOrTemplateFallback> =
+  combine1EqualityCall(
+    (value) => value.value,
+    createCallWithTripleEquals<string>(),
+    gridAutoOrTemplateFallback,
+  )
+
+export const GridAutoOrTemplateBaseKeepDeepEquality: KeepDeepEqualityCall<
+  GridAutoOrTemplateBase
+> = (oldValue, newValue) => {
+  switch (oldValue.type) {
+    case 'DIMENSIONS':
+      if (newValue.type === oldValue.type) {
+        return GridAutoOrTemplateDimensionsKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'FALLBACK':
+      if (newValue.type === oldValue.type) {
+        return GridAutoOrTemplateFallbackKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const GridTemplateKeepDeepEquality: KeepDeepEqualityCall<GridTemplate> =
+  GridAutoOrTemplateBaseKeepDeepEquality
+
+export const GridAutoKeepDeepEquality: KeepDeepEqualityCall<GridAuto> =
+  GridAutoOrTemplateBaseKeepDeepEquality
+
+export function GridContainerPropertiesKeepDeepEquality(): KeepDeepEqualityCall<GridContainerProperties> {
+  return combine4EqualityCalls(
+    (properties) => properties.gridTemplateColumns,
+    nullableDeepEquality(GridTemplateKeepDeepEquality),
+    (properties) => properties.gridTemplateRows,
+    nullableDeepEquality(GridTemplateKeepDeepEquality),
+    (properties) => properties.gridAutoColumns,
+    nullableDeepEquality(GridAutoKeepDeepEquality),
+    (properties) => properties.gridAutoRows,
+    nullableDeepEquality(GridAutoKeepDeepEquality),
+    gridContainerProperties,
+  )
+}
+
+export const GridPositionValueKeepDeepEquality: KeepDeepEqualityCall<GridPositionValue> =
+  combine1EqualityCall(
+    (value) => value.numericalPosition,
+    nullableDeepEquality(createCallWithTripleEquals<number>()),
+    gridPositionValue,
+  )
+
+export const GridPositionKeepDeepEquality: KeepDeepEqualityCall<GridPosition> = (
+  oldValue,
+  newValue,
+) => {
+  if (typeof oldValue === 'string') {
+    if (typeof newValue === 'string') {
+      return createCallWithTripleEquals<GridPosition>()(oldValue, newValue)
+    } else {
+      return keepDeepEqualityResult(newValue, false)
+    }
+  } else {
+    if (typeof newValue === 'string') {
+      return keepDeepEqualityResult(newValue, false)
+    } else {
+      return GridPositionValueKeepDeepEquality(oldValue, newValue)
+    }
+  }
+}
+
+export function GridElementPropertiesKeepDeepEquality(): KeepDeepEqualityCall<GridElementProperties> {
+  return combine4EqualityCalls(
+    (properties) => properties.gridColumnStart,
+    nullableDeepEquality(GridPositionKeepDeepEquality),
+    (properties) => properties.gridColumnEnd,
+    nullableDeepEquality(GridPositionKeepDeepEquality),
+    (properties) => properties.gridRowStart,
+    nullableDeepEquality(GridPositionKeepDeepEquality),
+    (properties) => properties.gridRowEnd,
+    nullableDeepEquality(GridPositionKeepDeepEquality),
+    gridElementProperties,
+  )
+}
+
 export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<SpecialSizeMeasurements> {
   return (oldSize, newSize) => {
     const offsetResult = LocalPointKeepDeepEquality(oldSize.offset, newSize.offset)
@@ -2008,6 +2150,24 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.computedHugProperty.width === newSize.computedHugProperty.width &&
       oldSize.computedHugProperty.height === newSize.computedHugProperty.height
 
+    const gridContainerPropertiesEqual = GridContainerPropertiesKeepDeepEquality()(
+      oldSize.containerGridProperties,
+      newSize.containerGridProperties,
+    ).areEqual
+    const gridElementPropertiesEqual = GridElementPropertiesKeepDeepEquality()(
+      oldSize.elementGridProperties,
+      newSize.elementGridProperties,
+    ).areEqual
+
+    const gridContainerPropertiesFromPropsEqual = GridContainerPropertiesKeepDeepEquality()(
+      oldSize.containerGridPropertiesFromProps,
+      newSize.containerGridPropertiesFromProps,
+    ).areEqual
+    const gridElementPropertiesFromPropsEqual = GridElementPropertiesKeepDeepEquality()(
+      oldSize.elementGridPropertiesFromProps,
+      newSize.elementGridPropertiesFromProps,
+    ).areEqual
+
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -2049,7 +2209,11 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       fontStyleEquals &&
       textDecorationLineEquals &&
       textBoundsEqual &&
-      computedHugPropertyEqual
+      computedHugPropertyEqual &&
+      gridContainerPropertiesEqual &&
+      gridElementPropertiesEqual &&
+      gridContainerPropertiesFromPropsEqual &&
+      gridElementPropertiesFromPropsEqual
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -2095,6 +2259,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.textDecorationLine,
         newSize.textBounds,
         newSize.computedHugProperty,
+        newSize.containerGridProperties,
+        newSize.elementGridProperties,
+        newSize.containerGridPropertiesFromProps,
+        newSize.elementGridPropertiesFromProps,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
@@ -2691,6 +2859,31 @@ export const BorderRadiusResizeHandleKeepDeepEquality: KeepDeepEqualityCall<
   return keepDeepEqualityResult(oldValue, true)
 }
 
+export const GridCellHandleKeepDeepEquality: KeepDeepEqualityCall<GridCellHandle> =
+  combine1EqualityCall(
+    (handle) => handle.id,
+    createCallWithTripleEquals<string>(),
+    (id) => gridCellHandle({ id }),
+  )
+
+export const GridAxisHandleKeepDeepEquality: KeepDeepEqualityCall<GridAxisHandle> =
+  combine2EqualityCalls(
+    (handle) => handle.axis,
+    createCallWithTripleEquals(),
+    (handle) => handle.columnOrRow,
+    createCallWithTripleEquals<number>(),
+    gridAxisHandle,
+  )
+
+export const GridResizeHandleKeepDeepEquality: KeepDeepEqualityCall<GridResizeHandle> =
+  combine2EqualityCalls(
+    (handle) => handle.id,
+    createCallWithTripleEquals<string>(),
+    (handle) => handle.edge,
+    createCallWithTripleEquals<GridResizeEdge>(),
+    gridResizeHandle,
+  )
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -2729,6 +2922,21 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'BORDER_RADIUS_RESIZE_HANDLE':
       if (newValue.type === oldValue.type) {
         return BorderRadiusResizeHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'GRID_CELL_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return GridCellHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'GRID_AXIS_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return GridAxisHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'GRID_RESIZE_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return GridResizeHandleKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
@@ -3146,6 +3354,21 @@ export const BoundsKeepDeepEquality: KeepDeepEqualityCall<Bounds> = combine4Equa
   }),
 )
 
+export const ComponentDescriptorPropertiesBoundsKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptorPropertiesBounds> =
+  objectDeepEquality(BoundsKeepDeepEquality)
+
+export const ComponentDescriptorBoundsKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptorBounds> =
+  combine2EqualityCalls(
+    (descriptorBounds) => descriptorBounds.bounds,
+    BoundsKeepDeepEquality,
+    (descriptorBounds) => descriptorBounds.properties,
+    ComponentDescriptorPropertiesBoundsKeepDeepEquality,
+    (bounds, properties) => ({
+      bounds,
+      properties,
+    }),
+  )
+
 export const HighlightBoundsForUidsKeepDeepEquality: KeepDeepEqualityCall<HighlightBoundsForUids> =
   objectDeepEquality(HighlightBoundsKeepDeepEquality)
 
@@ -3507,7 +3730,7 @@ export const DescriptorFileComponentDescriptorKeepDeepEquality: KeepDeepEquality
     (descriptor) => descriptor.sourceDescriptorFile,
     StringKeepDeepEquality,
     (descriptor) => descriptor.bounds,
-    nullableDeepEquality(BoundsKeepDeepEquality),
+    nullableDeepEquality(ComponentDescriptorBoundsKeepDeepEquality),
     (_, sourceDescriptorFile, lineNumber) =>
       componentDescriptorFromDescriptorFile(sourceDescriptorFile, lineNumber),
   )

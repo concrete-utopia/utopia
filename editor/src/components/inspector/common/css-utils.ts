@@ -16,12 +16,15 @@ import type { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/
 import { findLastIndex } from '../../../core/shared/array-utils'
 import type { Either, Right as EitherRight } from '../../../core/shared/either'
 import {
+  alternativeEither,
+  applicative2Either,
   bimapEither,
   eitherToMaybe,
   flatMapEither,
   isLeft,
   isRight,
   left,
+  leftMapEither,
   mapEither,
   right,
   traverseEither,
@@ -31,6 +34,9 @@ import type {
   JSXAttributes,
   JSExpressionValue,
   JSXElement,
+  GridPosition,
+  GridRange,
+  GridAutoOrTemplateBase,
 } from '../../../core/shared/element-template'
 import {
   emptyComments,
@@ -40,6 +46,9 @@ import {
   isRegularJSXAttribute,
   jsExpressionFunctionCall,
   jsExpressionValue,
+  gridPositionValue,
+  gridRange,
+  gridAutoOrTemplateDimensions,
 } from '../../../core/shared/element-template'
 import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import {
@@ -61,7 +70,7 @@ import {
 } from '../../../core/shared/math-utils'
 import type { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { PrimitiveType, ValueOf } from '../../../core/shared/utils'
+import { assertNever, type PrimitiveType, type ValueOf } from '../../../core/shared/utils'
 import { parseBackgroundSize } from '../../../printer-parsers/css/css-parser-background-size'
 import { parseBorder } from '../../../printer-parsers/css/css-parser-border'
 import Utils from '../../../utils/utils'
@@ -76,6 +85,9 @@ import {
 } from '../../../printer-parsers/css/css-parser-margin'
 import { parseFlex, printFlexAsAttributeValue } from '../../../printer-parsers/css/css-parser-flex'
 import { memoize } from '../../../core/shared/memoize'
+import { parseCSSArray } from '../../../printer-parsers/css/css-parser-utils'
+import type { ParseError } from '../../../utils/value-parser-utils'
+import { descriptionParseError } from '../../../utils/value-parser-utils'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -485,6 +497,7 @@ export type CSSNumberType =
   | 'Unitless'
   | 'UnitlessPercent'
   | 'AnyValid'
+  | 'Grid'
 
 // https://developer.mozilla.org/en-US/docs/Web/CSS/length
 export type FontRelativeLengthUnit = 'cap' | 'ch' | 'em' | 'ex' | 'ic' | 'lh' | 'rem' | 'rlh'
@@ -570,6 +583,27 @@ export interface CSSNumber {
   unit: CSSNumberUnit | null
 }
 
+export type GridCSSNumberUnit = LengthUnit | ResolutionUnit | PercentUnit | 'fr'
+const GridCSSNumberUnits: Array<GridCSSNumberUnit> = [...LengthUnits, ...ResolutionUnits, '%', 'fr']
+
+export interface GridCSSNumber {
+  value: number
+  unit: GridCSSNumberUnit | null
+  areaName: string | null
+}
+
+export function gridCSSNumber(
+  value: number,
+  unit: GridCSSNumberUnit | null,
+  areaName: string | null,
+): GridCSSNumber {
+  return {
+    value: value,
+    unit: unit,
+    areaName: areaName,
+  }
+}
+
 export function cssNumber(value: number, unit: CSSNumberUnit | null = null): CSSNumber {
   return { value, unit }
 }
@@ -647,6 +681,7 @@ const parseCSSResolutionUnit = (input: string) => parseCSSNumberUnit(input, Reso
 const parseCSSUnitlessUnit = (_: string) => left<string, never>(`No unit expected`)
 const parseCSSUnitlessPercentUnit = (input: string) => parseCSSNumberUnit(input, ['%'])
 const parseCSSAnyValidNumberUnit = (input: string) => parseCSSNumberUnit(input, CSSNumberUnits)
+const parseCSSGridUnit = (input: string) => parseCSSNumberUnit(input, GridCSSNumberUnits)
 
 function unitParseFnForType(
   numberType: CSSNumberType,
@@ -676,6 +711,8 @@ function unitParseFnForType(
       return parseCSSUnitlessPercentUnit
     case 'AnyValid':
       return parseCSSAnyValidNumberUnit
+    case 'Grid':
+      return parseCSSGridUnit
     default:
       const _exhaustiveCheck: never = numberType
       throw new Error(`Unable to parse CSSNumber of type ${numberType}`)
@@ -727,6 +764,27 @@ export function printCSSNumber(
   }
 }
 
+export function printArrayCSSNumber(array: Array<GridCSSNumber>): string {
+  return array
+    .map((dimension) => {
+      const printed = printCSSNumber(dimension, null)
+      const areaName = dimension.areaName != null ? `[${dimension.areaName}] ` : ''
+      return `${areaName}${printed}`
+    })
+    .join(' ')
+}
+
+export function printGridAutoOrTemplateBase(input: GridAutoOrTemplateBase): string {
+  switch (input.type) {
+    case 'DIMENSIONS':
+      return printArrayCSSNumber(input.dimensions)
+    case 'FALLBACK':
+      return input.value
+    default:
+      assertNever(input)
+  }
+}
+
 export function printCSSNumberOrKeyword(
   input: CSSNumber | CSSKeyword,
   defaultUnitToSkip: string | null,
@@ -773,6 +831,7 @@ export const parseCSSTimePercent = (input: unknown) => parseCSSNumber(input, 'Ti
 export const parseCSSUnitless = (input: unknown) => parseCSSNumber(input, 'Unitless')
 export const parseCSSUnitlessPercent = (input: unknown) => parseCSSNumber(input, 'UnitlessPercent')
 export const parseCSSAnyValidNumber = (input: unknown) => parseCSSNumber(input, 'AnyValid')
+export const parseCSSGrid = (input: unknown) => parseCSSNumber(input, 'Grid')
 export const parseCSSUnitlessAsNumber = (input: unknown): Either<string, number> => {
   const parsed = parseCSSNumber(input, 'Unitless')
   if (isRight(parsed)) {
@@ -780,6 +839,32 @@ export const parseCSSUnitlessAsNumber = (input: unknown): Either<string, number>
   } else {
     return parsed
   }
+}
+
+const gridCSSTemplateNumberRegex = /^\[(.+)\]\s*(.+)$/
+
+export function parseToCSSGridNumber(input: unknown): Either<string, GridCSSNumber> {
+  function getParts() {
+    if (typeof input === 'string') {
+      const match = input.match(gridCSSTemplateNumberRegex)
+      if (match != null) {
+        return {
+          areaName: match[1],
+          inputToParse: match[2],
+        }
+      }
+    }
+    return { areaName: null, inputToParse: input }
+  }
+  const { areaName, inputToParse } = getParts()
+
+  return mapEither((value) => {
+    return {
+      value: value.value,
+      unit: value.unit as GridCSSNumberUnit | null,
+      areaName: areaName,
+    }
+  }, parseCSSGrid(inputToParse))
 }
 
 export const parseCSSNumber = (
@@ -794,6 +879,81 @@ export const parseCSSNumber = (
     return parseCSSNumericTypeString(input, unitParseFn, defaultUnit)
   } else {
     return left(`Unable to parse invalid number`)
+  }
+}
+
+export function parseGridPosition(input: unknown): Either<string, GridPosition> {
+  if (input === 'auto') {
+    return right('auto')
+  } else if (typeof input === 'string') {
+    const asNumber = parseNumber(input)
+    return mapEither(gridPositionValue, asNumber)
+  } else if (typeof input === 'number') {
+    return right(gridPositionValue(input))
+  } else {
+    return left('Not a valid grid position.')
+  }
+}
+
+export function parseGridRange(input: unknown): Either<string, GridRange> {
+  if (typeof input === 'string') {
+    if (input.includes('/')) {
+      const splitInput = input.split('/')
+      const startParsed = parseGridPosition(splitInput[0])
+      const endParsed = parseGridPosition(splitInput[1])
+      return applicative2Either(gridRange, startParsed, endParsed)
+    } else {
+      const startParsed = parseGridPosition(input)
+      return mapEither((start) => gridRange(start, null), startParsed)
+    }
+  } else {
+    return left('Not a valid grid range.')
+  }
+}
+
+const reGridAreaNameBrackets = /^\[.+\]$/
+
+export function tokenizeGridTemplate(str: string): string[] {
+  let tokens: string[] = []
+  let parts = str.replace(/\]/g, '] ').split(/\s+/)
+
+  while (parts.length > 0) {
+    const part = parts.shift()?.trim()
+    if (part == null) {
+      break
+    }
+    if (part.match(reGridAreaNameBrackets) != null && parts.length > 0) {
+      const withAreaName = `${part} ${parts.shift()}`
+      tokens.push(withAreaName)
+    } else {
+      tokens.push(part)
+    }
+  }
+  return tokens
+}
+
+export function parseGridAutoOrTemplateBase(
+  input: unknown,
+): Either<string, GridAutoOrTemplateBase> {
+  function numberParse(inputToParse: unknown): Either<ParseError, GridCSSNumber> {
+    const result = parseToCSSGridNumber(inputToParse)
+    return leftMapEither<string, ParseError, GridCSSNumber>(descriptionParseError, result)
+  }
+  if (typeof input === 'string') {
+    const parsedCSSArray = parseCSSArray([numberParse])(tokenizeGridTemplate(input))
+    return bimapEither(
+      (error) => {
+        if (error.type === 'DESCRIPTION_PARSE_ERROR') {
+          return error.description
+        } else {
+          return error.toString()
+        }
+      },
+      gridAutoOrTemplateDimensions,
+      parsedCSSArray,
+    )
+  } else {
+    return left('Unknown input.')
   }
 }
 
