@@ -943,7 +943,8 @@ export function parseGridRange(
   }
 }
 
-// this regex matches 'repeat ( [unit] , [value] )', capturing groups around the unit (1) and the value (2)
+// This regex matches 'repeat ( [times] , [value] )', capturing groups around the unit (1) and the value (2)
+// TODO this should be extended to support non-numeric, keyword repeaters
 const reRepeatFunction = /repeat\s*\(\s*(\d+)\s*,\s*([^,\)]+)\s*\)/
 
 export function expandRepeatFunctions(str: string): string {
