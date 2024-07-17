@@ -261,7 +261,7 @@ export function createComponentRendererComponent(params: {
       filePathMappings: rerenderUtopiaContext.filePathMappings,
     }
 
-    const buildResult = React.useRef<React.ReactElement | undefined>(
+    const buildResult = React.useRef<React.ReactElement | null>(
       buildComponentRenderResult(utopiaJsxComponent.rootElement),
     )
 
@@ -314,7 +314,7 @@ export function createComponentRendererComponent(params: {
           break
         case 'EARLY_RETURN_VOID':
           earlyReturn = arbitraryBlockResult
-          buildResult.current = undefined
+          buildResult.current = undefined as any
           break
         case 'EARLY_RETURN_RESULT':
           earlyReturn = arbitraryBlockResult
