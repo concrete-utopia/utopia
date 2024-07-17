@@ -273,11 +273,11 @@ export const basicHugContentsApplicableForContainer = (
         ),
     ).length > 0
 
-  const isElementGrid = MetadataUtils.isGridLayoutedContainer(
+  const isGrid = MetadataUtils.isGridLayoutedContainer(
     MetadataUtils.findElementByElementPath(metadata, elementPath),
   )
 
-  return hasNonFixStickyOrAbsolute && !isElementGrid
+  return hasNonFixStickyOrAbsolute && !isGrid
 }
 
 export const hugContentsApplicableForText = (
