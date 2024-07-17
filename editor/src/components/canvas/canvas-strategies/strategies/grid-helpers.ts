@@ -175,7 +175,7 @@ export function runGridRearrangeMove(
 
   const gridTemplate = containerMetadata.specialSizeMeasurements.containerGridProperties
 
-  const cellGridProperties = getElementGridProperties(originalElementMetadata)
+  const cellGridProperties = getElementGridProperties(originalElementMetadata, newTargetCell)
 
   // calculate the difference between the cell the mouse started the interaction from, and the "root"
   // cell of the element, meaning the top-left-most cell the element occupies.
@@ -321,7 +321,10 @@ function getTargetCell(
   return cell
 }
 
-function getElementGridProperties(element: ElementInstanceMetadata): {
+function getElementGridProperties(
+  element: ElementInstanceMetadata,
+  cellUnderMouse: { row: number; column: number },
+): {
   row: number
   width: number
   column: number
@@ -330,12 +333,15 @@ function getElementGridProperties(element: ElementInstanceMetadata): {
   // get the grid fixtures (start and end for column and row) from the element metadata
   function getGridProperty(field: keyof GridElementProperties, fallback: number) {
     const propValue = element.specialSizeMeasurements.elementGridProperties[field]
-    return propValue == null || propValue === 'auto' ? 0 : propValue.numericalPosition ?? fallback
+    if (propValue == null || propValue === 'auto') {
+      return fallback
+    }
+    return propValue.numericalPosition ?? fallback
   }
-  const column = getGridProperty('gridColumnStart', 0)
-  const height = getGridProperty('gridColumnEnd', 1) - column
-  const row = getGridProperty('gridRowStart', 0)
-  const width = getGridProperty('gridRowEnd', 1) - row
+  const column = getGridProperty('gridColumnStart', cellUnderMouse.column)
+  const height = getGridProperty('gridColumnEnd', cellUnderMouse.column + 1) - column
+  const row = getGridProperty('gridRowStart', cellUnderMouse.row)
+  const width = getGridProperty('gridRowEnd', cellUnderMouse.row + 1) - row
 
   return {
     row,
