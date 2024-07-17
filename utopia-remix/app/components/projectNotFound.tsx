@@ -4,7 +4,6 @@ import cx from 'classnames'
 import type { UserDetails } from 'prisma-client'
 import React, { useMemo } from 'react'
 import { colors } from '../styles/sprinkles.css'
-import { when } from '../util/react-conditionals'
 import { Status } from '../util/statusCodes'
 import * as styles from './projectNotFound.css'
 import { useCDNLink } from '../util/cdnLink'
@@ -82,15 +81,7 @@ function UnauthorizedPage({ projectId, user }: { projectId: string; user: UserDe
         <div style={{ fontSize: '100px', fontWeight: 600, fontStyle: 'italic' }}>Hmmm…</div>
         <div className={styles.runningText}>
           <span>Looks like you need permission to access this project. </span>
-          <span>You're signed in as </span>
-          <a
-            href='/projects'
-            rel='noopener noreferrer'
-            style={{ textDecoration: 'none', color: isDarkMode ? '#80CAFF' : '#0075F9' }}
-          >
-            {user?.email}
-          </a>
-          <span>.</span>
+          <SignedInAs user={user} isDarkMode={isDarkMode} />
         </div>
         <div style={{ display: 'flex', gap: '20px' }}>
           {accessRequested ? (
@@ -146,19 +137,7 @@ function NotFoundPage({ user, projectId }: { user: UserDetails | null; projectId
         <div style={{ fontSize: '42px' }}>Project not found.</div>
         <div className={styles.runningText}>
           <span>Either this project does not exist, or you need to be granted access to it. </span>
-          {when(user?.user_id != null, () => (
-            <>
-              <span>You're signed in as </span>{' '}
-              <a
-                href='/projects'
-                rel='noopener noreferrer'
-                style={{ textDecoration: 'none', color: isDarkMode ? '#80CAFF' : '#0075F9' }}
-              >
-                {user?.email}
-              </a>
-              <span>.</span>
-            </>
-          ))}
+          <SignedInAs user={user} isDarkMode={isDarkMode} />
         </div>
         <div style={{ display: 'flex', gap: '20px' }}>
           {user?.user_id != null ? (
@@ -245,4 +224,20 @@ function ActionButton({
       {text}
     </Button>
   )
+}
+
+function SignedInAs({ user, isDarkMode }: { user: UserDetails | null; isDarkMode: boolean }) {
+  return user?.user_id != null && user?.email != null ? (
+    <>
+      <span>You're signed in as </span>
+      <a
+        href='/projects'
+        rel='noopener noreferrer'
+        style={{ textDecoration: 'none', color: isDarkMode ? '#80CAFF' : '#0075F9' }}
+      >
+        {user?.email}
+      </a>
+      <span>.</span>
+    </>
+  ) : null
 }
