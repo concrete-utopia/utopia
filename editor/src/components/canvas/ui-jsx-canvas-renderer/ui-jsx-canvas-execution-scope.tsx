@@ -81,7 +81,7 @@ export function createExecutionScope(
     }
   } else {
     lastSeenProjectContents = projectContents
-    executionScopeCache = {}
+    clearExecutionScopeCache()
   }
 
   // Build the scope.
@@ -253,6 +253,10 @@ export function createExecutionScope(
   }
   executionScopeCache[filePath] = toReturn
   return toReturn
+}
+
+export function clearExecutionScopeCache() {
+  executionScopeCache = {}
 }
 
 const emptyHighlightBoundsResult = { code: '', highlightBounds: null }
