@@ -943,7 +943,7 @@ export function parseGridRange(
   }
 }
 
-// This regex matches 'repeat ( [times] , [value] )', capturing groups around the unit (1) and the value (2)
+// This regex matches 'repeat ( [times] , [value] )', capturing groups around the repeater (1) and the value (2)
 // TODO this should be extended to support non-numeric, keyword repeaters
 const reRepeatFunction = /repeat\s*\(\s*(\d+)\s*,\s*([^,\)]+)\s*\)/
 
@@ -955,8 +955,8 @@ export function expandRepeatFunctions(str: string): string {
   let match: RegExpMatchArray | null = null
   while ((match = expanded.match(reRepeatFunction)) != null) {
     const times = parseInt(match[1])
-    const unit = match[2]
-    expanded = expanded.replace(match[0], `${unit.trim()} `.repeat(times).trim())
+    const value = match[2]
+    expanded = expanded.replace(match[0], `${value.trim()} `.repeat(times).trim())
   }
 
   return expanded
