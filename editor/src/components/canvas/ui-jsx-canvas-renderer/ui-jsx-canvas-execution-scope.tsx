@@ -75,14 +75,15 @@ export function createExecutionScope(
   editedText: ElementPath | null,
 ): ExecutionScope {
   // Return something from the cache as appropriate.
-  if (lastSeenProjectContents === projectContents) {
-    if (filePath in executionScopeCache) {
-      return executionScopeCache[filePath]
-    }
-  } else {
-    lastSeenProjectContents = projectContents
-    executionScopeCache = {}
-  }
+  // FIXME Uncomment when the caching issue is fixed
+  // if (lastSeenProjectContents === projectContents) {
+  //   if (filePath in executionScopeCache) {
+  //     return executionScopeCache[filePath]
+  //   }
+  // } else {
+  lastSeenProjectContents = projectContents
+  executionScopeCache = {}
+  // }
 
   // Build the scope.
   const { topLevelElements, imports, jsxFactoryFunction, combinedTopLevelArbitraryBlock } =
