@@ -418,10 +418,11 @@ export function useAllowRerenderForPath(
   elementPath: ElementPath | 'rerender-all-elements',
   realPassedProps: any,
 ) {
-  return React.useCallback(
+  const shouldUpdate = React.useMemo(
     () => shouldUpdateInner(elementPath, realPassedProps),
     [elementPath, realPassedProps],
   )
+  return React.useCallback(() => shouldUpdate, [shouldUpdate])
 }
 
 function shouldUpdateInner(
