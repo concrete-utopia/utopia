@@ -967,9 +967,8 @@ function normalizeGridTemplate(template: string): string {
 }
 
 export function tokenizeGridTemplate(template: string): string[] {
-  let parts = normalizeGridTemplate(template).split(/\s+/)
-
   let tokens: string[] = []
+  let parts = normalizeGridTemplate(template).split(/\s+/)
   while (parts.length > 0) {
     const part = parts.shift()?.trim()
     if (part == null) {
