@@ -351,10 +351,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     AlwaysFalse,
   )
 
-  const isRemounted =
-    props.invalidatedCanvasData.mountCountInvalidated ||
-    props.invalidatedCanvasData.domWalkerInvalidated
-
   useClearSpyMetadataOnRemount(props.invalidatedCanvasData, metadataContext)
 
   const elementsToRerenderRef = React.useRef(ElementsToRerenderGLOBAL.current)
@@ -471,6 +467,9 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     )
 
     // IMPORTANT this assumes createExecutionScope ran and did a full walk of the transitive imports!!
+    const isRemounted =
+      props.invalidatedCanvasData.mountCountInvalidated ||
+      props.invalidatedCanvasData.domWalkerInvalidated
     if (isRemounted) {
       // since rerender-all-elements means we did a full rebuild of the canvas scope,
       // any CSS file that was not resolved during this rerender can be unimported
@@ -488,7 +487,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     editedText,
     uiFilePath,
     updateInvalidatedPaths,
-    isRemounted,
+    props.invalidatedCanvasData,
   ])
 
   evaluatedFileNames.current = getListOfEvaluatedFiles()
