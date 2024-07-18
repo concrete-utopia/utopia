@@ -278,10 +278,6 @@ export function pickUiJsxCanvasProps(
   }
 }
 
-function useIsRemounted(invalidatedCanvasData: InvalidatedCanvasData): boolean {
-  return invalidatedCanvasData.mountCountInvalidated || invalidatedCanvasData.domWalkerInvalidated
-}
-
 function useClearSpyMetadataOnRemount(
   invalidatedCanvasData: InvalidatedCanvasData,
   metadataContext: UiJsxCanvasContextData,
@@ -355,7 +351,9 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     AlwaysFalse,
   )
 
-  const isRemounted = useIsRemounted(props.invalidatedCanvasData)
+  const isRemounted =
+    props.invalidatedCanvasData.mountCountInvalidated ||
+    props.invalidatedCanvasData.domWalkerInvalidated
 
   useClearSpyMetadataOnRemount(props.invalidatedCanvasData, metadataContext)
 
