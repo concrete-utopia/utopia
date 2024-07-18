@@ -317,6 +317,8 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       gridRowStart: null,
       gridRowEnd: null,
     },
+    rowGap: null,
+    columnGap: null,
   }
 
   const newDifferentValue: SpecialSizeMeasurements = {
@@ -431,6 +433,8 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       gridRowStart: null,
       gridRowEnd: null,
     },
+    rowGap: null,
+    columnGap: null,
   }
 
   it('same reference returns the same reference', () => {
@@ -606,6 +610,8 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         gridRowStart: null,
         gridRowEnd: null,
       },
+      rowGap: null,
+      columnGap: null,
     },
     computedStyle: {
       a: 'a',
@@ -758,6 +764,8 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         gridRowStart: null,
         gridRowEnd: null,
       },
+      rowGap: null,
+      columnGap: null,
     },
     computedStyle: {
       a: 'a',
@@ -936,6 +944,8 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           gridRowStart: null,
           gridRowEnd: null,
         },
+        rowGap: null,
+        columnGap: null,
       },
       computedStyle: {
         a: 'a',
@@ -1090,6 +1100,8 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           gridRowStart: null,
           gridRowEnd: null,
         },
+        rowGap: null,
+        columnGap: null,
       },
       computedStyle: {
         a: 'a',
@@ -1244,6 +1256,8 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           gridRowStart: null,
           gridRowEnd: null,
         },
+        rowGap: null,
+        columnGap: null,
       },
       computedStyle: {
         a: 'a',
