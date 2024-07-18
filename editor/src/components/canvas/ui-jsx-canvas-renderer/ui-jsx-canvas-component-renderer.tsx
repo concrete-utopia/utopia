@@ -223,8 +223,9 @@ export function createComponentRendererComponent(params: {
       throw new Error(`Element hierarchy is too deep, potentially has become infinite.`)
     }
 
+    const shouldUpdateResult = shouldUpdate()
     // either this updateInvalidatedPaths or the one in SpyWrapper is probably redundant
-    if (shouldUpdate()) {
+    if (shouldUpdateResult) {
       updateInvalidatedPaths((invalidPaths) => {
         // Do not add `svg` elements that are the root element of a component.
         // As they will not be cleared by the DOM walker as they are not instances
@@ -363,7 +364,7 @@ export function createComponentRendererComponent(params: {
           null,
         )
       }
-    } else if (shouldUpdate() || buildResult.current === null) {
+    } else if (shouldUpdateResult || buildResult.current === null) {
       buildResult.current = buildComponentRenderResult(utopiaJsxComponent.rootElement)
     }
     return buildResult.current
