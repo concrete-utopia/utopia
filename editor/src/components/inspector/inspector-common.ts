@@ -409,6 +409,15 @@ export const flexContainerProps = [
   styleP('justifyContent'),
 ]
 
+export const gridContainerProps = [
+  styleP('gap'),
+  styleP('display'),
+  styleP('gridTemplateRows'),
+  styleP('gridTemplateColumns'),
+  styleP('gridAutoColumns'),
+  styleP('gridAutoRows'),
+]
+
 export const flexChildProps = [
   styleP('flex'),
   styleP('flexGrow'),

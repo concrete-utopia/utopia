@@ -30,6 +30,7 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { AllElementProps } from '../../editor/store/editor-state'
+import { convertLayoutToGridCommands } from '../../common/shared-strategies/convert-to-grid-strategy'
 
 export const setFlexAlignStrategies = (
   metadata: ElementInstanceMetadataMap,
@@ -153,6 +154,20 @@ export const addFlexLayoutStrategies = (
     name: 'Add flex layout',
     strategy: () => {
       return convertLayoutToFlexCommands(metadata, elementPathTree, elementPaths, allElementProps)
+    },
+  },
+]
+
+export const addGridLayoutStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
+): Array<InspectorStrategy> => [
+  {
+    name: 'Add flex layout',
+    strategy: () => {
+      return convertLayoutToGridCommands(metadata, elementPathTree, elementPaths, allElementProps)
     },
   },
 ]
