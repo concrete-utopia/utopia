@@ -16,7 +16,8 @@ import type { WhenToRun } from '../../../components/canvas/commands/commands'
 import {
   hugContentsAbsoluteStrategy,
   hugContentsBasicStrategy,
-} from './hug-contents-basic-strategy'
+  hugContentsGridStrategy,
+} from './hug-contents-strategy'
 import {
   fillContainerStrategyFlexParent,
   fillContainerStrategyFlow,
@@ -204,7 +205,10 @@ export const setPropHugStrategies = (
   elementPaths: ElementPath[],
   pathTrees: ElementPathTrees,
   axis: Axis,
-): Array<InspectorStrategy> => [hugContentsBasicStrategy(metadata, elementPaths, pathTrees, axis)]
+): Array<InspectorStrategy> => [
+  hugContentsGridStrategy(metadata, elementPaths, axis),
+  hugContentsBasicStrategy(metadata, elementPaths, pathTrees, axis),
+]
 
 export const setPropHugAbsoluteStrategies = (
   metadata: ElementInstanceMetadataMap,

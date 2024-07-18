@@ -75,7 +75,7 @@ import {
 import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
 import { hugPropertiesFromStyleMap } from '../../core/shared/dom-utils'
-import { setHugContentForAxis } from './inspector-strategies/hug-contents-basic-strategy'
+import { setHugContentForAxis } from './inspector-strategies/hug-contents-strategy'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -255,12 +255,12 @@ export function detectAreElementsFlexContainers(
 export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
   flexDirection.startsWith('column')
 
-export const hugContentsApplicableForContainer = (
+export const basicHugContentsApplicableForContainer = (
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): boolean => {
-  return (
+  const isNonFixStickOrAbsolute =
     mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
@@ -272,7 +272,12 @@ export const hugContentsApplicableForContainer = (
           MetadataUtils.isPositionAbsolute(element)
         ),
     ).length > 0
+
+  const isGrid = MetadataUtils.isGridLayoutedContainer(
+    MetadataUtils.findElementByElementPath(metadata, elementPath),
   )
+
+  return isNonFixStickOrAbsolute && !isGrid
 }
 
 export const hugContentsApplicableForText = (
@@ -999,7 +1004,7 @@ export function getFixedFillHugOptionsForElement(
       isGroup ? 'hug-group' : null,
       'fixed',
       hugContentsApplicableForText(metadata, selectedView) ||
-      (!isGroup && hugContentsApplicableForContainer(metadata, pathTrees, selectedView))
+      (!isGroup && basicHugContentsApplicableForContainer(metadata, pathTrees, selectedView))
         ? 'hug'
         : null,
       fillContainerApplicable(metadata, selectedView) ? 'fill' : null,
