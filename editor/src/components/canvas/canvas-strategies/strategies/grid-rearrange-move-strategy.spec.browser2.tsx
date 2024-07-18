@@ -9,8 +9,11 @@ import { gridCellTargetId } from './grid-helpers'
 
 describe('grid rearrange move strategy', () => {
   it('can rearrange elements on a grid', async () => {
+    const testId = 'aaa'
     const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest({
       scale: 1,
+      pathString: `sb/scene/grid/${testId}`,
+      testId: testId,
     })
     expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
       gridColumnEnd: '7',
@@ -19,9 +22,28 @@ describe('grid rearrange move strategy', () => {
       gridRowStart: '2',
     })
   })
+
+  it('can rearrange element with no explicit grid props set', async () => {
+    const testId = 'bbb'
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest({
+      scale: 1,
+      pathString: `sb/scene/grid/${testId}`,
+      testId: testId,
+    })
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnEnd: 'auto',
+      gridColumnStart: '3',
+      gridRowEnd: 'auto',
+      gridRowStart: '2',
+    })
+  })
+
   it('can rearrange elements on a grid (zoom out)', async () => {
+    const testId = 'aaa'
     const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest({
       scale: 0.5,
+      pathString: `sb/scene/grid/${testId}`,
+      testId: testId,
     })
     expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
       gridColumnEnd: '7',
@@ -32,8 +54,11 @@ describe('grid rearrange move strategy', () => {
   })
 
   it('can rearrange elements on a grid (zoom in)', async () => {
+    const testId = 'aaa'
     const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest({
       scale: 2,
+      pathString: `sb/scene/grid/${testId}`,
+      testId: testId,
     })
     expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
       gridColumnEnd: '7',
@@ -44,10 +69,10 @@ describe('grid rearrange move strategy', () => {
   })
 })
 
-async function runMoveTest(props: { scale: number }) {
+async function runMoveTest(props: { scale: number; pathString: string; testId: string }) {
   const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
-  const elementPathToDrag = EP.fromString('sb/scene/grid/aaa')
+  const elementPathToDrag = EP.fromString(props.pathString)
 
   await selectComponentsForTest(editor, [elementPathToDrag])
 
@@ -77,7 +102,7 @@ async function runMoveTest(props: { scale: number }) {
     ),
   )
 
-  return editor.renderedDOM.getByTestId('aaa').style
+  return editor.renderedDOM.getByTestId(props.testId).style
 }
 
 const ProjectCode = `import * as React from 'react'
@@ -125,16 +150,13 @@ export var storyboard = (
           data-uid='aaa'
           data-testid='aaa'
         />
-        <Placeholder
+        <div
           style={{
             minHeight: 0,
             backgroundColor: '#23565b',
-            gridColumnStart: 5,
-            gridColumnEnd: 7,
-            gridRowStart: 1,
-            gridRowEnd: 3,
           }}
           data-uid='bbb'
+          data-testid='bbb'
         />
         <Placeholder
           style={{
