@@ -86,6 +86,8 @@ import { memoize } from '../../../core/shared/memoize'
 import { parseCSSArray } from '../../../printer-parsers/css/css-parser-utils'
 import type { ParseError } from '../../../utils/value-parser-utils'
 import { descriptionParseError } from '../../../utils/value-parser-utils'
+import * as csstree from 'css-tree'
+import { expandCssTreeNodeValue, parseCssTreeNodeValue } from './css-tree-utils'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -943,23 +945,10 @@ export function parseGridRange(
   }
 }
 
-// This regex matches 'repeat ( [times] , [value] )', capturing groups around the repeater (1) and the value (2)
-// TODO this should be extended to support non-numeric, keyword repeaters
-const reRepeatFunction = /repeat\s*\(\s*(\d+)\s*,\s*([^,\)]+)\s*\)/
-
 export function expandRepeatFunctions(str: string): string {
-  let expanded = str
-
-  // If the string matches the regex, calculate its expansion and replace it in-place,
-  // and try again so we can keep expanding nested repeats.
-  let match: RegExpMatchArray | null = null
-  while ((match = expanded.match(reRepeatFunction)) != null) {
-    const times = parseInt(match[1])
-    const value = match[2]
-    expanded = expanded.replace(match[0], `${value.trim()} `.repeat(times).trim())
-  }
-
-  return expanded
+  const node = parseCssTreeNodeValue(str)
+  const expanded = expandCssTreeNodeValue(node)
+  return csstree.generate(expanded)
 }
 
 const reGridAreaNameBrackets = /^\[.+\]$/

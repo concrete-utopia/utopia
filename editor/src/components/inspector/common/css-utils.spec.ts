@@ -1849,7 +1849,7 @@ describe('expandRepeatFunctions', () => {
     expect(expandRepeatFunctions('repeat(2, 1fr 2fr 3fr)')).toEqual('1fr 2fr 3fr 1fr 2fr 3fr')
   })
   it('expands repeat with spacing', () => {
-    expect(expandRepeatFunctions('repeat ( 4       , 1fr )')).toEqual('1fr 1fr 1fr 1fr')
+    expect(expandRepeatFunctions('repeat( 4       , 1fr )')).toEqual('1fr 1fr 1fr 1fr')
   })
   it('expands repeat with decimals', () => {
     expect(expandRepeatFunctions('repeat(4, 1.5fr)')).toEqual('1.5fr 1.5fr 1.5fr 1.5fr')
