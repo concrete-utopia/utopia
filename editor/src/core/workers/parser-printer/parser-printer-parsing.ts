@@ -3630,7 +3630,12 @@ export function parseOutJSXElements(
         definedElsewhere.push(...attrs.definedElsewhere)
         const isFragment = TS.isJsxFragment(tsElement)
         return flatMapEither((elementName) => {
-          if ((isFragment && elementName == null) || (!isFragment && elementName != null)) {
+          if (
+            (isFragment && elementName == null) ||
+            (!isFragment &&
+              elementName != null &&
+              isJsxNameKnown(elementName, topLevelNames, imports))
+          ) {
             const childrenMinusWhitespaceOnlyTexts: Array<JSXElementChild> =
               getChildrenWithoutWhitespaceOnlyText(childElems)
 
@@ -3806,6 +3811,31 @@ export function parseOutJSXElements(
 }
 
 export const CanvasMetadataName = 'canvasMetadata'
+
+function isJsxNameKnown(
+  name: JSXElementName,
+  knownElements: Array<string>,
+  imports: Imports,
+): boolean {
+  if (isIntrinsicElement(name)) {
+    return true
+  } else {
+    const importsArray = Object.values(imports)
+    const knownImportedNames = stripNulls(
+      flatMapArray(
+        (imp) => [
+          imp.importedWithName,
+          imp.importedAs,
+          ...imp.importedFromWithin.map((i) => i.alias),
+        ],
+        importsArray,
+      ),
+    )
+    const knownNames = knownElements.concat(knownImportedNames as string[])
+    const result = [...knownNames, 'Fragment'].includes(name.baseVariable)
+    return result
+  }
+}
 
 function isReactFragmentName(name: JSXElementName, imports: Imports): boolean {
   if (imports == null) {
@@ -4078,6 +4108,7 @@ export function parseOutFunctionContents(
       let declared: Array<string> = [...topLevelNames]
       if (jsBlock != null) {
         declared.push(...jsBlock.definedWithin)
+        declared.push(...jsBlock.definedElsewhere)
       }
 
       const parsedElements = parseOutJSXElements(
