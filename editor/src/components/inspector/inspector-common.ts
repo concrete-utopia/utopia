@@ -260,7 +260,7 @@ export const basicHugContentsApplicableForContainer = (
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): boolean => {
-  const hasNonFixStickyOrAbsolute =
+  const isNonFixStickOrAbsolute =
     mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
@@ -277,7 +277,7 @@ export const basicHugContentsApplicableForContainer = (
     MetadataUtils.findElementByElementPath(metadata, elementPath),
   )
 
-  return hasNonFixStickyOrAbsolute && !isGrid
+  return isNonFixStickOrAbsolute && !isGrid
 }
 
 export const hugContentsApplicableForText = (
