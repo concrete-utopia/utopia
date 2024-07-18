@@ -54,6 +54,7 @@ import {
   defaultCSSRadialGradientSize,
   defaultCSSRadialOrConicGradientCenter,
   disabledFunctionName,
+  expandRepeatFunctions,
   parseBackgroundColor,
   parseBackgroundImage,
   parseBorderRadius,
@@ -1837,5 +1838,28 @@ describe('tokenizeGridTemplate', () => {
       '[baz] 78',
       '[QUX] 9rem',
     ])
+  })
+})
+
+describe('expandRepeatFunctions', () => {
+  it('expands repeat', async () => {
+    expect(expandRepeatFunctions('repeat(4, 1fr)')).toEqual('1fr 1fr 1fr 1fr')
+  })
+  it('expands repeat with multiple units', () => {
+    expect(expandRepeatFunctions('repeat(2, 1fr 2fr 3fr)')).toEqual('1fr 2fr 3fr 1fr 2fr 3fr')
+  })
+  it('expands repeat with spacing', () => {
+    expect(expandRepeatFunctions('repeat( 4       , 1fr )')).toEqual('1fr 1fr 1fr 1fr')
+  })
+  it('expands repeat with decimals', () => {
+    expect(expandRepeatFunctions('repeat(4, 1.5fr)')).toEqual('1.5fr 1.5fr 1.5fr 1.5fr')
+  })
+  it('expands nested', () => {
+    expect(expandRepeatFunctions('repeat(2, repeat(3, 1fr))')).toEqual('1fr 1fr 1fr 1fr 1fr 1fr')
+
+    // Note: crazytown, I'm not even sure this is valid CSS *but still*
+    expect(expandRepeatFunctions('repeat(2, repeat(2, 1fr repeat(3, 2fr 4em)))')).toEqual(
+      '1fr 2fr 4em 2fr 4em 2fr 4em 1fr 2fr 4em 2fr 4em 2fr 4em 1fr 2fr 4em 2fr 4em 2fr 4em 1fr 2fr 4em 2fr 4em 2fr 4em',
+    )
   })
 })
