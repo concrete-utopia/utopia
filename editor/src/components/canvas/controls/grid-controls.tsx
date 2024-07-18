@@ -1135,7 +1135,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
             left: bounds?.x ?? element.globalFrame.x,
             width: bounds?.width ?? element.globalFrame.width,
             height: bounds?.height ?? element.globalFrame.height,
-            backgroundColor: isResizing ? colorTheme.whiteOpacity30.value : 'transparent',
+            backgroundColor: isResizing ? colorTheme.primary25.value : 'transparent',
           }}
         >
           <div
