@@ -101,25 +101,10 @@ export function createComponentRendererComponent(params: {
 
     const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
 
-    function shouldUpdate() {
-      if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
-        return true
-      }
-
-      if (
-        instancePath != null &&
-        ElementsToRerenderGLOBAL.current.some(
-          (er) => EP.pathsEqual(er, instancePath) || EP.isParentComponentOf(instancePath, er),
-        )
-      ) {
-        return true
-      }
-
-      return areElementsInChildrenOrPropsTree(
-        ElementsToRerenderGLOBAL.current.map(EP.toString),
-        realPassedProps,
-      )
-    }
+    const shouldUpdate = useAllowRerenderForPath(
+      instancePath ?? 'rerender-all-elements',
+      realPassedProps,
+    )
 
     const rerenderUtopiaContext = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom, shouldUpdate)
 
@@ -286,6 +271,7 @@ export function createComponentRendererComponent(params: {
       )
       applyBlockReturnFunctions(scope)
 
+      // possibly problematic: this should ONLY run if shouldUpdate() is true
       const arbitraryBlockResult = runBlockUpdatingScope(
         rootElementPath,
         params.filePath,
@@ -426,4 +412,37 @@ function fastReactChildrenToArray(children: any) {
     return children.filter(React.isValidElement)
   }
   return React.Children.toArray(children).filter(React.isValidElement)
+}
+
+export function useAllowRerenderForPath(
+  elementPath: ElementPath | 'rerender-all-elements',
+  realPassedProps: any,
+) {
+  return React.useCallback(
+    () => shouldUpdateInner(elementPath, realPassedProps),
+    [elementPath, realPassedProps],
+  )
+}
+
+function shouldUpdateInner(
+  elementPath: ElementPath | 'rerender-all-elements',
+  realPassedProps: any,
+) {
+  if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
+    return true
+  }
+
+  if (
+    elementPath != 'rerender-all-elements' &&
+    ElementsToRerenderGLOBAL.current.some(
+      (er) => EP.pathsEqual(er, elementPath) || EP.isParentComponentOf(elementPath, er),
+    )
+  ) {
+    return true
+  }
+
+  return areElementsInChildrenOrPropsTree(
+    ElementsToRerenderGLOBAL.current.map(EP.toString),
+    realPassedProps,
+  )
 }
