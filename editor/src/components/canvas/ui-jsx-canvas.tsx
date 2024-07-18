@@ -67,7 +67,10 @@ import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-load
 import { UTOPIA_INSTANCE_PATH } from '../../core/model/utopia-constants'
 import type { ProjectContentTreeRoot } from '../assets'
 import { getProjectFileByFilePath } from '../assets'
-import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
+import {
+  clearExecutionScopeCache,
+  createExecutionScope,
+} from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import type { RemixValidPathsGenerationContext } from './canvas-utils'
 import { getParseSuccessForFilePath, getValidElementPaths } from './canvas-utils'
@@ -92,6 +95,7 @@ import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
 import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 import { listenForReactRouterErrors } from '../../core/shared/runtime-report-logs'
 import { getFilePathMappings } from '../../core/model/project-file-utils'
+import { useInvalidatedCanvasRemount } from './canvas-component-entry'
 
 applyUIDMonkeyPatch()
 
@@ -205,7 +209,10 @@ export interface CanvasReactClearErrorsCallback {
 export type CanvasReactErrorCallback = CanvasReactReportErrorCallback &
   CanvasReactClearErrorsCallback
 
-export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps & CanvasReactClearErrorsCallback
+export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps &
+  CanvasReactClearErrorsCallback & {
+    invalidatedCanvas: boolean
+  }
 
 export function pickUiJsxCanvasProps(
   editor: EditorState,
@@ -259,24 +266,25 @@ export function pickUiJsxCanvasProps(
   }
 }
 
-function useClearSpyMetadataOnRemount(
-  canvasMountCount: number,
+function useIsRemounted(
+  mountCount: number,
   domWalkerInvalidateCount: number,
+  // if invalidated by a higher component
+  invalidatedCanvas: boolean,
+): boolean {
+  // if invalidated by a direct render
+  const invalidatedMountCount = useInvalidatedCanvasRemount(mountCount, domWalkerInvalidateCount)
+  return invalidatedCanvas || invalidatedMountCount
+}
+
+function useClearSpyMetadataOnRemount(
+  isRemounted: boolean,
   metadataContext: UiJsxCanvasContextData,
 ) {
-  const canvasMountCountRef = React.useRef(canvasMountCount)
-  const domWalkerInvalidateCountRef = React.useRef(domWalkerInvalidateCount)
-
-  const invalidated =
-    canvasMountCountRef.current !== canvasMountCount ||
-    domWalkerInvalidateCountRef.current !== domWalkerInvalidateCount
-
-  if (invalidated) {
+  if (isRemounted) {
     metadataContext.current.spyValues.metadata = {}
+    clearExecutionScopeCache()
   }
-
-  canvasMountCountRef.current = canvasMountCount
-  domWalkerInvalidateCountRef.current = domWalkerInvalidateCount
 }
 
 function clearSpyCollectorInvalidPaths(
@@ -338,7 +346,14 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     DomWalkerInvalidatePathsCtxAtom,
     AlwaysFalse,
   )
-  useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
+
+  const isRemounted = useIsRemounted(
+    props.mountCount,
+    props.domWalkerInvalidateCount,
+    props.invalidatedCanvas,
+  )
+
+  useClearSpyMetadataOnRemount(isRemounted, metadataContext)
 
   const elementsToRerenderRef = React.useRef(ElementsToRerenderGLOBAL.current)
   const shouldRerenderRef = React.useRef(false)
@@ -454,7 +469,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     )
 
     // IMPORTANT this assumes createExecutionScope ran and did a full walk of the transitive imports!!
-    if (shouldRerenderRef.current) {
+    if (isRemounted) {
       // since rerender-all-elements means we did a full rebuild of the canvas scope,
       // any CSS file that was not resolved during this rerender can be unimported
       unimportAllButTheseCSSFiles(resolvedFileNames.current)
@@ -471,6 +486,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     editedText,
     uiFilePath,
     updateInvalidatedPaths,
+    isRemounted,
   ])
 
   evaluatedFileNames.current = getListOfEvaluatedFiles()
