@@ -80,7 +80,7 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
 
   const containerRef = useApplyCanvasOffsetToStyle(true)
 
-  const invalidatedCanvas = useInvalidatedCanvasRemount(
+  const invalidatedCanvasData = useInvalidatedCanvasRemount(
     canvasProps?.mountCount ?? 0,
     canvasProps?.domWalkerInvalidateCount ?? 0,
   )
@@ -112,7 +112,7 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
               <DomWalkerWrapper
                 {...canvasProps}
                 clearErrors={localClearRuntimeErrors}
-                invalidatedCanvas={invalidatedCanvas}
+                invalidatedCanvasData={invalidatedCanvasData}
               />
             </RemoteDependencyBoundary>
           </CanvasErrorBoundary>
@@ -125,17 +125,23 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
 export function useInvalidatedCanvasRemount(
   mountCount: number,
   domWalkerInvalidateCount: number,
-): boolean {
+): {
+  mountCountInvalidated: boolean
+  domWalkerInvalidated: boolean
+} {
   const previousMountCount = React.useRef<number | null>(mountCount)
   const previousDomWalkerInvalidateCount = React.useRef<number | null>(domWalkerInvalidateCount)
-  const invalidated =
-    previousMountCount.current !== mountCount ||
-    previousDomWalkerInvalidateCount.current !== domWalkerInvalidateCount
+
+  const mountCountInvalidated = previousMountCount.current !== mountCount
+  const domWalkerInvalidated = previousDomWalkerInvalidateCount.current !== domWalkerInvalidateCount
 
   previousMountCount.current = mountCount
   previousDomWalkerInvalidateCount.current = domWalkerInvalidateCount
 
-  return invalidated
+  return {
+    mountCountInvalidated,
+    domWalkerInvalidated,
+  }
 }
 
 function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {

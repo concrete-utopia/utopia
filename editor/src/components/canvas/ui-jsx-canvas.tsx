@@ -209,9 +209,21 @@ export interface CanvasReactClearErrorsCallback {
 export type CanvasReactErrorCallback = CanvasReactReportErrorCallback &
   CanvasReactClearErrorsCallback
 
+type InvalidatedCanvasData = {
+  mountCountInvalidated: boolean
+  domWalkerInvalidated: boolean
+}
+
+export function emptyInvalidatedCanvasData(): InvalidatedCanvasData {
+  return {
+    mountCountInvalidated: false,
+    domWalkerInvalidated: false,
+  }
+}
+
 export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps &
   CanvasReactClearErrorsCallback & {
-    invalidatedCanvas: boolean
+    invalidatedCanvasData: InvalidatedCanvasData
   }
 
 export function pickUiJsxCanvasProps(
@@ -266,24 +278,20 @@ export function pickUiJsxCanvasProps(
   }
 }
 
-function useIsRemounted(
-  mountCount: number,
-  domWalkerInvalidateCount: number,
-  // if invalidated by a higher component
-  invalidatedCanvas: boolean,
-): boolean {
-  // if invalidated by a direct render
-  const invalidatedMountCount = useInvalidatedCanvasRemount(mountCount, domWalkerInvalidateCount)
-  return invalidatedCanvas || invalidatedMountCount
+function useIsRemounted(invalidatedCanvasData: InvalidatedCanvasData): boolean {
+  return invalidatedCanvasData.mountCountInvalidated || invalidatedCanvasData.domWalkerInvalidated
 }
 
 function useClearSpyMetadataOnRemount(
-  isRemounted: boolean,
+  invalidatedCanvasData: InvalidatedCanvasData,
   metadataContext: UiJsxCanvasContextData,
 ) {
-  if (isRemounted) {
-    metadataContext.current.spyValues.metadata = {}
+  if (invalidatedCanvasData.mountCountInvalidated) {
     clearExecutionScopeCache()
+  }
+
+  if (invalidatedCanvasData.domWalkerInvalidated) {
+    metadataContext.current.spyValues.metadata = {}
   }
 }
 
@@ -347,13 +355,9 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     AlwaysFalse,
   )
 
-  const isRemounted = useIsRemounted(
-    props.mountCount,
-    props.domWalkerInvalidateCount,
-    props.invalidatedCanvas,
-  )
+  const isRemounted = useIsRemounted(props.invalidatedCanvasData)
 
-  useClearSpyMetadataOnRemount(isRemounted, metadataContext)
+  useClearSpyMetadataOnRemount(props.invalidatedCanvasData, metadataContext)
 
   const elementsToRerenderRef = React.useRef(ElementsToRerenderGLOBAL.current)
   const shouldRerenderRef = React.useRef(false)
