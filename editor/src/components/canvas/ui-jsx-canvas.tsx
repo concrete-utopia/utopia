@@ -85,7 +85,7 @@ import {
   getListOfEvaluatedFiles,
 } from '../../core/shared/code-exec-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
-import { useRefEditorState } from '../editor/store/store-hook'
+import { EditorStateContext, useRefEditorState } from '../editor/store/store-hook'
 import { matchRoutes } from 'react-router'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
@@ -457,7 +457,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     if (shouldRerenderRef.current) {
       // since rerender-all-elements means we did a full rebuild of the canvas scope,
       // any CSS file that was not resolved during this rerender can be unimported
-      unimportAllButTheseCSSFiles(resolvedFileNames.current)
+      // unimportAllButTheseCSSFiles(resolvedFileNames.current)
     }
     return executionScope
   }, [
@@ -558,19 +558,22 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
         all: 'initial',
       }}
     >
-      <Helmet>{parse(linkTags)}</Helmet>
-      <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
-        <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
-          <CanvasContainer
-            validRootPaths={rootValidPathsArray}
-            canvasRootElementElementPath={storyboardRootElementPath}
-          >
-            <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
-              {StoryboardRoot}
-            </SceneLevelUtopiaCtxAtom.Provider>
-          </CanvasContainer>
-        </UtopiaProjectCtxAtom.Provider>
-      </RerenderUtopiaCtxAtom.Provider>
+      {/* deliberately breaking useEditorState and useRefEditorState to enforce the usage of useCanvasState */}
+      <EditorStateContext.Provider value={null}>
+        <Helmet>{parse(linkTags)}</Helmet>
+        <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
+          <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
+            <CanvasContainer
+              validRootPaths={rootValidPathsArray}
+              canvasRootElementElementPath={storyboardRootElementPath}
+            >
+              <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
+                {StoryboardRoot}
+              </SceneLevelUtopiaCtxAtom.Provider>
+            </CanvasContainer>
+          </UtopiaProjectCtxAtom.Provider>
+        </RerenderUtopiaCtxAtom.Provider>
+      </EditorStateContext.Provider>
     </div>
   )
 })
