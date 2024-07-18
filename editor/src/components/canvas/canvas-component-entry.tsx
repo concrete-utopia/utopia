@@ -20,6 +20,7 @@ import { useApplyCanvasOffsetToStyle } from './controls/canvas-offset-wrapper'
 import { useDomWalkerInvalidateCallbacks } from './dom-walker'
 import type {
   CanvasReactReportErrorCallback,
+  UiJsxCanvasProps,
   UiJsxCanvasPropsWithErrorCallback,
 } from './ui-jsx-canvas'
 import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvas, pickUiJsxCanvasProps } from './ui-jsx-canvas'
@@ -80,11 +81,6 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
 
   const containerRef = useApplyCanvasOffsetToStyle(true)
 
-  const invalidatedCanvasData = useInvalidatedCanvasRemount(
-    canvasProps?.mountCount ?? 0,
-    canvasProps?.domWalkerInvalidateCount ?? 0,
-  )
-
   return (
     <>
       {when(canvasProps == null, <CanvasLoadingScreen />)}
@@ -98,29 +94,51 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
         }}
       >
         {canvasProps == null ? null : (
-          <CanvasErrorBoundary
-            filePath={canvasProps.uiFilePath}
-            projectContents={canvasProps.projectContents}
-            reportError={onRuntimeError}
-            requireFn={canvasProps.curriedRequireFn}
-            key={`canvas-error-boundary-${canvasProps.mountCount}`}
-          >
-            <RemoteDependencyBoundary
-              projectContents={canvasProps.projectContents}
-              requireFn={canvasProps.curriedRequireFn}
-            >
-              <DomWalkerWrapper
-                {...canvasProps}
-                clearErrors={localClearRuntimeErrors}
-                invalidatedCanvasData={invalidatedCanvasData}
-              />
-            </RemoteDependencyBoundary>
-          </CanvasErrorBoundary>
+          <CanvasInner
+            canvasProps={canvasProps}
+            onRuntimeError={onRuntimeError}
+            localClearRuntimeErrors={localClearRuntimeErrors}
+          />
         )}
       </div>
     </>
   )
 })
+
+function CanvasInner({
+  canvasProps,
+  onRuntimeError,
+  localClearRuntimeErrors,
+}: {
+  canvasProps: UiJsxCanvasProps
+  onRuntimeError: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
+  localClearRuntimeErrors: () => void
+}) {
+  const invalidatedCanvasData = useInvalidatedCanvasRemount(
+    canvasProps?.mountCount ?? 0,
+    canvasProps?.domWalkerInvalidateCount ?? 0,
+  )
+  return (
+    <CanvasErrorBoundary
+      filePath={canvasProps.uiFilePath}
+      projectContents={canvasProps.projectContents}
+      reportError={onRuntimeError}
+      requireFn={canvasProps.curriedRequireFn}
+      key={`canvas-error-boundary-${canvasProps.mountCount}`}
+    >
+      <RemoteDependencyBoundary
+        projectContents={canvasProps.projectContents}
+        requireFn={canvasProps.curriedRequireFn}
+      >
+        <DomWalkerWrapper
+          {...canvasProps}
+          clearErrors={localClearRuntimeErrors}
+          invalidatedCanvasData={invalidatedCanvasData}
+        />
+      </RemoteDependencyBoundary>
+    </CanvasErrorBoundary>
+  )
+}
 
 export function useInvalidatedCanvasRemount(
   mountCount: number,
@@ -129,8 +147,8 @@ export function useInvalidatedCanvasRemount(
   mountCountInvalidated: boolean
   domWalkerInvalidated: boolean
 } {
-  const previousMountCount = React.useRef<number | null>(mountCount)
-  const previousDomWalkerInvalidateCount = React.useRef<number | null>(domWalkerInvalidateCount)
+  const previousMountCount = React.useRef<number>(mountCount)
+  const previousDomWalkerInvalidateCount = React.useRef<number>(domWalkerInvalidateCount)
 
   const mountCountInvalidated = previousMountCount.current !== mountCount
   const domWalkerInvalidated = previousDomWalkerInvalidateCount.current !== domWalkerInvalidateCount
