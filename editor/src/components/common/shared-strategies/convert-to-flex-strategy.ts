@@ -50,7 +50,7 @@ import {
   onlyChildIsSpan,
   sizeToVisualDimensions,
 } from '../../inspector/inspector-common'
-import { setHugContentForAxis } from '../../inspector/inspector-strategies/hug-contents-basic-strategy'
+import { setHugContentForAxis } from '../../inspector/inspector-strategies/hug-contents-strategy'
 
 type FlexDirectionRowColumn = 'row' | 'column' // a limited subset as we won't never guess row-reverse or column-reverse
 type FlexAlignItems = 'center' | 'flex-end'

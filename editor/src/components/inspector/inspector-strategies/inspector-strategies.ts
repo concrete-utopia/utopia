@@ -17,7 +17,7 @@ import {
   hugContentsAbsoluteStrategy,
   hugContentsBasicStrategy,
   hugContentsGridStrategy,
-} from './hug-contents-basic-strategy'
+} from './hug-contents-strategy'
 import {
   fillContainerStrategyFlexParent,
   fillContainerStrategyFlow,
