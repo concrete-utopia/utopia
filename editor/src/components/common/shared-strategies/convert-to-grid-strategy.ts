@@ -36,9 +36,12 @@ function guessLayoutInfoAlongAxis(
     }
   }
 
+  const averageGap =
+    gaps.length === 0 ? 0 : Math.floor(gaps.reduce((a, b) => a + b, 0) / gaps.length)
+
   return {
     nChildren: childrenAlongAxis,
-    averageGap: Math.floor(gaps.reduce((a, b) => a + b, 0) / gaps.length),
+    averageGap: averageGap,
   }
 }
 
