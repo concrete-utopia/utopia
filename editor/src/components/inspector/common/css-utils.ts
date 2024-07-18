@@ -953,16 +953,23 @@ export function expandRepeatFunctions(str: string): string {
 
 const reGridAreaNameBrackets = /^\[.+\]$/
 
-export function tokenizeGridTemplate(str: string): string[] {
-  let tokens: string[] = []
-  let parts =
-    // 1. expand any `repeat()` functions
-    expandRepeatFunctions(str)
-      // 2. make sure square brackets have a trailing whitespace so we can normalize the parsing
-      .replace(/\]/g, '] ')
-      // 3. tokenize by whitespace
-      .split(/\s+/)
+function normalizeGridTemplate(template: string): string {
+  type normalizeFn = (s: string) => string
 
+  const normalizePasses: normalizeFn[] = [
+    // 1. expand repeat functions
+    expandRepeatFunctions,
+    // 2. normalize area names spacing
+    (s) => s.replace(/\]/g, '] ').replace(/\[/g, ' ['),
+  ]
+
+  return normalizePasses.reduce((working, normalize) => normalize(working), template).trim()
+}
+
+export function tokenizeGridTemplate(template: string): string[] {
+  let parts = normalizeGridTemplate(template).split(/\s+/)
+
+  let tokens: string[] = []
   while (parts.length > 0) {
     const part = parts.shift()?.trim()
     if (part == null) {
