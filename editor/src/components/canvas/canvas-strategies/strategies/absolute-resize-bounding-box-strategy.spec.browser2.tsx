@@ -3124,6 +3124,96 @@ describe('Double click on resize edge', () => {
     expect(div.style.width).toEqual(MaxContent)
     expect(div.style.height).toEqual('445px')
   })
+
+  describe('grids', () => {
+    const project = ({
+      rows: rows,
+      columns: columns,
+    }: {
+      rows: string
+      columns: string
+    }) => `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='sc'
+    >
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateRows: '${rows}',
+          gridTemplateColumns: '${columns}',
+          backgroundColor: '#0074ff',
+          position: 'absolute',
+          left: 135,
+          top: 55,
+          width: 400,
+          height: 400,
+          opacity: '30%',
+        }}
+        data-uid='grid'
+        data-testid='mydiv'
+      >
+        <img
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
+          alt='Utopia logo'
+          style={{
+            objectFit: 'contain',
+            display: 'inline-block',
+            width: 100,
+            height: 100,
+            gridColumnStart: 2,
+            gridColumnEnd: 2,
+            gridRowStart: 2,
+            gridRowEnd: 2,
+          }}
+          data-uid='smyramid'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+    it('removes width when right edge is clicked', async () => {
+      const editor = await renderTestEditorWithCode(
+        project({ rows: '66px 66px 66px 66px', columns: '50px 81px 96px 85px' }),
+        'await-first-dom-report',
+      )
+      const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionRight))
+      expect(div.style.width).toEqual('') // width is removed
+      expect(div.style.height).toEqual('400px')
+    })
+    it('removes height when bottom edge is clicked', async () => {
+      const editor = await renderTestEditorWithCode(
+        project({ rows: '66px 66px 66px 66px', columns: '50px 81px 96px 85px' }),
+        'await-first-dom-report',
+      )
+      const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionBottom))
+      expect(div.style.width).toEqual('400px')
+      expect(div.style.height).toEqual('') // height is removed
+    })
+    it("isn't applicable when the selected grid uses fr along the affected axis", async () => {
+      const editor = await renderTestEditorWithCode(
+        project({ rows: '66px 1fr 66px 66px', columns: '50px 81px 96px 85px' }),
+        'await-first-dom-report',
+      )
+      const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionBottom))
+      expect(div.style.width).toEqual('400px')
+      expect(div.style.height).toEqual('400px')
+    })
+  })
 })
 
 describe('double click on resize corner', () => {

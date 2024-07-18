@@ -890,7 +890,17 @@ function getComputedStyle(
   }
 }
 
-function getGridContainerProperties(elementStyle: CSSStyleDeclaration): GridContainerProperties {
+function getGridContainerProperties(
+  elementStyle: CSSStyleDeclaration | null,
+): GridContainerProperties {
+  if (elementStyle == null) {
+    return {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+    }
+  }
   const gridTemplateColumns = defaultEither(
     gridAutoOrTemplateFallback(elementStyle.gridTemplateColumns),
     parseGridAutoOrTemplateBase(elementStyle.gridTemplateColumns),
@@ -915,20 +925,74 @@ function getGridContainerProperties(elementStyle: CSSStyleDeclaration): GridCont
   )
 }
 
-function getGridElementProperties(elementStyle: CSSStyleDeclaration): GridElementProperties {
-  const gridColumn = defaultEither(null, parseGridRange(elementStyle.gridColumn))
+function getGridElementProperties(
+  container: GridContainerProperties,
+  elementStyle: CSSStyleDeclaration,
+): GridElementProperties {
+  const gridColumn = defaultEither(
+    null,
+    parseGridRange(container, 'column', elementStyle.gridColumn),
+  )
+
   const gridColumnStart =
-    defaultEither(null, parseGridPosition(elementStyle.gridColumnStart)) ??
     gridColumn?.start ??
+    defaultEither(
+      null,
+      parseGridPosition(
+        container,
+        'column',
+        'start',
+        gridColumn?.start ?? null,
+        elementStyle.gridColumnStart,
+      ),
+    ) ??
     null
   const gridColumnEnd =
-    defaultEither(null, parseGridPosition(elementStyle.gridColumnEnd)) ?? gridColumn?.end ?? null
-  const gridRow = defaultEither(null, parseGridRange(elementStyle.gridRow))
+    gridColumn?.end ??
+    defaultEither(
+      null,
+      parseGridPosition(
+        container,
+        'column',
+        'end',
+        gridColumn?.end ?? null,
+        elementStyle.gridColumnEnd,
+      ),
+    ) ??
+    null
+  const adjustedColumnEnd =
+    gridColumnEnd === 'auto' && gridColumn?.end != null ? gridColumn.end : gridColumnEnd
+
+  const gridRow = defaultEither(null, parseGridRange(container, 'row', elementStyle.gridRow))
   const gridRowStart =
-    defaultEither(null, parseGridPosition(elementStyle.gridRowStart)) ?? gridRow?.start ?? null
+    gridRow?.start ??
+    defaultEither(
+      null,
+      parseGridPosition(
+        container,
+        'row',
+        'start',
+        gridRow?.start ?? null,
+        elementStyle.gridRowStart,
+      ),
+    ) ??
+    null
   const gridRowEnd =
-    defaultEither(null, parseGridPosition(elementStyle.gridRowEnd)) ?? gridRow?.end ?? null
-  return gridElementProperties(gridColumnStart, gridColumnEnd, gridRowStart, gridRowEnd)
+    gridRow?.end ??
+    defaultEither(
+      null,
+      parseGridPosition(container, 'row', 'end', gridRow?.end ?? null, elementStyle.gridRowEnd),
+    ) ??
+    null
+  const adjustedRowEnd = gridRowEnd === 'auto' && gridRow?.end != null ? gridRow.end : gridRowEnd
+
+  const result = gridElementProperties(
+    gridColumnStart,
+    adjustedColumnEnd,
+    gridRowStart,
+    adjustedRowEnd,
+  )
+  return result
 }
 
 function getSpecialMeasurements(
@@ -1127,10 +1191,18 @@ function getSpecialMeasurements(
     globalFrame,
   )
 
+  const parentContainerGridProperties = getGridContainerProperties(parentElementStyle)
+
   const containerGridProperties = getGridContainerProperties(elementStyle)
-  const containerElementProperties = getGridElementProperties(elementStyle)
+  const containerElementProperties = getGridElementProperties(
+    parentContainerGridProperties,
+    elementStyle,
+  )
   const containerGridPropertiesFromProps = getGridContainerProperties(element.style)
-  const containerElementPropertyiesFromProps = getGridElementProperties(element.style)
+  const containerElementPropertiesFromProps = getGridElementProperties(
+    parentContainerGridProperties,
+    element.style,
+  )
 
   return specialSizeMeasurements(
     offset,
@@ -1179,7 +1251,7 @@ function getSpecialMeasurements(
     containerGridProperties,
     containerElementProperties,
     containerGridPropertiesFromProps,
-    containerElementPropertyiesFromProps,
+    containerElementPropertiesFromProps,
   )
 }
 

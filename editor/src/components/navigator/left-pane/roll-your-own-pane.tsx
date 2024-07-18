@@ -44,7 +44,7 @@ const defaultRollYourOwnFeatures: RollYourOwnFeatures = {
     adaptiveOpacity: true,
     activeGridColor: '#0099ff77',
     dotgridColor: '#0099ffaa',
-    inactiveGridColor: '#0000000a',
+    inactiveGridColor: '#00000033',
     opacityBaseline: 0.25,
   },
 }

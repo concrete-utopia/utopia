@@ -6,9 +6,7 @@ import type { FramePin } from 'utopia-api/core'
 import {
   FlexAlignment,
   FlexJustifyContent,
-  FlexLength,
   FlexWrap,
-  isPercentPin,
   LayoutSystem,
   UtopiaUtils,
 } from 'utopia-api/core'
@@ -16,7 +14,6 @@ import type { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/
 import { findLastIndex } from '../../../core/shared/array-utils'
 import type { Either, Right as EitherRight } from '../../../core/shared/either'
 import {
-  alternativeEither,
   applicative2Either,
   bimapEither,
   eitherToMaybe,
@@ -37,6 +34,7 @@ import type {
   GridPosition,
   GridRange,
   GridAutoOrTemplateBase,
+  GridContainerProperties,
 } from '../../../core/shared/element-template'
 import {
   emptyComments,
@@ -88,6 +86,8 @@ import { memoize } from '../../../core/shared/memoize'
 import { parseCSSArray } from '../../../printer-parsers/css/css-parser-utils'
 import type { ParseError } from '../../../utils/value-parser-utils'
 import { descriptionParseError } from '../../../utils/value-parser-utils'
+import * as csstree from 'css-tree'
+import { expandCssTreeNodeValue, parseCssTreeNodeValue } from './css-tree-utils'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -882,10 +882,34 @@ export const parseCSSNumber = (
   }
 }
 
-export function parseGridPosition(input: unknown): Either<string, GridPosition> {
+export function parseGridPosition(
+  container: GridContainerProperties,
+  axis: 'row' | 'column',
+  edge: 'start' | 'end',
+  shorthand: GridPosition | null,
+  input: unknown,
+): Either<string, GridPosition> {
   if (input === 'auto') {
     return right('auto')
   } else if (typeof input === 'string') {
+    const referenceTemplate =
+      axis === 'row' ? container.gridTemplateRows : container.gridTemplateColumns
+    if (referenceTemplate?.type === 'DIMENSIONS') {
+      const maybeArea = referenceTemplate.dimensions.findIndex((dim) => dim.areaName === input)
+      if (maybeArea >= 0) {
+        let value = gridPositionValue(maybeArea + 1)
+        if (
+          edge === 'end' &&
+          shorthand != null &&
+          shorthand !== 'auto' &&
+          shorthand.numericalPosition === value.numericalPosition
+        ) {
+          value.numericalPosition = (value.numericalPosition ?? 0) + 1
+        }
+        return right(value)
+      }
+    }
+
     const asNumber = parseNumber(input)
     return mapEither(gridPositionValue, asNumber)
   } else if (typeof input === 'number') {
@@ -895,28 +919,56 @@ export function parseGridPosition(input: unknown): Either<string, GridPosition> 
   }
 }
 
-export function parseGridRange(input: unknown): Either<string, GridRange> {
+export function parseGridRange(
+  container: GridContainerProperties,
+  axis: 'row' | 'column',
+  input: unknown,
+): Either<string, GridRange> {
   if (typeof input === 'string') {
     if (input.includes('/')) {
       const splitInput = input.split('/')
-      const startParsed = parseGridPosition(splitInput[0])
-      const endParsed = parseGridPosition(splitInput[1])
+      const startParsed = parseGridPosition(container, axis, 'start', null, splitInput[0])
+      const endParsed = parseGridPosition(container, axis, 'end', null, splitInput[1])
       return applicative2Either(gridRange, startParsed, endParsed)
     } else {
-      const startParsed = parseGridPosition(input)
-      return mapEither((start) => gridRange(start, null), startParsed)
+      const startParsed = parseGridPosition(container, axis, 'start', null, input)
+      return mapEither((start) => {
+        const end =
+          start !== 'auto' && start.numericalPosition != null
+            ? gridPositionValue(start.numericalPosition + 1)
+            : null
+        return gridRange(start, end)
+      }, startParsed)
     }
   } else {
     return left('Not a valid grid range.')
   }
 }
 
+export function expandRepeatFunctions(str: string): string {
+  const node = parseCssTreeNodeValue(str)
+  const expanded = expandCssTreeNodeValue(node)
+  return csstree.generate(expanded)
+}
+
 const reGridAreaNameBrackets = /^\[.+\]$/
 
-export function tokenizeGridTemplate(str: string): string[] {
-  let tokens: string[] = []
-  let parts = str.replace(/\]/g, '] ').split(/\s+/)
+function normalizeGridTemplate(template: string): string {
+  type normalizeFn = (s: string) => string
 
+  const normalizePasses: normalizeFn[] = [
+    // 1. expand repeat functions
+    expandRepeatFunctions,
+    // 2. normalize area names spacing
+    (s) => s.replace(/\]/g, '] ').replace(/\[/g, ' ['),
+  ]
+
+  return normalizePasses.reduce((working, normalize) => normalize(working), template).trim()
+}
+
+export function tokenizeGridTemplate(template: string): string[] {
+  let tokens: string[] = []
+  let parts = normalizeGridTemplate(template).split(/\s+/)
   while (parts.length > 0) {
     const part = parts.shift()?.trim()
     if (part == null) {
