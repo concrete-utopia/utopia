@@ -619,7 +619,6 @@ import {
   dataCanCondenseProp,
   isDataCanCondenseProp,
 } from '../../../utils/can-condense'
-import { clearExecutionScopeCache } from '../../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
