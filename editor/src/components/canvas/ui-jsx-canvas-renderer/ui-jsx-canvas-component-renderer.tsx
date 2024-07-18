@@ -19,13 +19,13 @@ import type {
   UiJsxCanvasContextData,
   VariableData,
 } from '../ui-jsx-canvas'
-import {
-  DomWalkerInvalidatePathsCtxAtom,
-  UiJsxCanvasCtxAtom,
-  ElementsToRerenderGLOBAL,
-} from '../ui-jsx-canvas'
+import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import type { MutableUtopiaCtxRefData } from './ui-jsx-canvas-contexts'
-import { RerenderUtopiaCtxAtom, SceneLevelUtopiaCtxAtom } from './ui-jsx-canvas-contexts'
+import {
+  ElementsToRerenderContext,
+  RerenderUtopiaCtxAtom,
+  SceneLevelUtopiaCtxAtom,
+} from './ui-jsx-canvas-contexts'
 import { applyPropsParamToPassedProps } from './ui-jsx-canvas-props-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -50,6 +50,7 @@ import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { addFakeSpyEntry } from './ui-jsx-canvas-spy-wrapper'
 import type { FilePathMappings } from '../../../core/model/project-file-utils'
+import type { ElementsToRerender } from '../../editor/store/editor-state'
 
 function tryToGetInstancePath(
   maybePath: ElementPath | null,
@@ -418,9 +419,10 @@ export function useAllowRerenderForPath(
   elementPath: ElementPath | 'rerender-all-elements',
   realPassedProps: any,
 ) {
+  const elementsToRerender = React.useContext(ElementsToRerenderContext)
   const shouldUpdate = React.useMemo(
-    () => shouldUpdateInner(elementPath, realPassedProps),
-    [elementPath, realPassedProps],
+    () => shouldUpdateInner(elementPath, realPassedProps, elementsToRerender),
+    [elementPath, realPassedProps, elementsToRerender],
   )
   return React.useCallback(() => shouldUpdate, [shouldUpdate])
 }
@@ -428,22 +430,20 @@ export function useAllowRerenderForPath(
 function shouldUpdateInner(
   elementPath: ElementPath | 'rerender-all-elements',
   realPassedProps: any,
+  elementsToRerender: ElementsToRerender,
 ) {
-  if (ElementsToRerenderGLOBAL.current === 'rerender-all-elements') {
+  if (elementsToRerender === 'rerender-all-elements') {
     return true
   }
 
   if (
     elementPath != 'rerender-all-elements' &&
-    ElementsToRerenderGLOBAL.current.some(
+    elementsToRerender.some(
       (er) => EP.pathsEqual(er, elementPath) || EP.isParentComponentOf(elementPath, er),
     )
   ) {
     return true
   }
 
-  return areElementsInChildrenOrPropsTree(
-    ElementsToRerenderGLOBAL.current.map(EP.toString),
-    realPassedProps,
-  )
+  return areElementsInChildrenOrPropsTree(elementsToRerender.map(EP.toString), realPassedProps)
 }
