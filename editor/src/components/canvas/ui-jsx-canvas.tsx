@@ -457,7 +457,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     if (shouldRerenderRef.current) {
       // since rerender-all-elements means we did a full rebuild of the canvas scope,
       // any CSS file that was not resolved during this rerender can be unimported
-      // unimportAllButTheseCSSFiles(resolvedFileNames.current)
+      unimportAllButTheseCSSFiles(resolvedFileNames.current)
     }
     return executionScope
   }, [
