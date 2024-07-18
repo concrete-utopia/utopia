@@ -1,15 +1,24 @@
 let
   release = (import ../release.nix {});
-  pkgs = release.pkgs;
-  node = pkgs.nodejs-16_x;
+  pkgs = release.recentPkgs;
+  node = pkgs.nodejs_20;
   stdenv = pkgs.stdenv;
   pnpm = node.pkgs.pnpm;
   yarn = pkgs.yarn.override { nodejs = node; };
 
-  nodePackages = [
+  # nodePackages = [
+  #   node
+  #   pnpm
+  #   yarn
+  # ];
+
+  pythonAndPackages = pkgs.python3.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
+
+  basePackages = [
     node
     pnpm
     yarn
+    pythonAndPackages
   ];
 
   scripts = [
@@ -56,5 +65,5 @@ in pkgs.mkShell {
         for f in $(ls -d ${script}/bin/*); do ln -s $f $out/bin; done
       '') scripts));
     })
-  ] ++ nodePackages;
+  ] ++ basePackages;
 }

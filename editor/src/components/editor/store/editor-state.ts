@@ -688,7 +688,7 @@ export function resizeOptions(
   }
 }
 
-const UnderlyingVSCodeBridgeId = UUID()
+const UnderlyingVSCodeBridgeId = UUID().split('-').join('')
 
 export function getUnderlyingVSCodeBridgeID(): string {
   return UnderlyingVSCodeBridgeId

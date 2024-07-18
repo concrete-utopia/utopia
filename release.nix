@@ -19,6 +19,13 @@ let
     sha256 = "1ndiv385w1qyb3b18vw13991fzb9wg4cl21wglk89grsfsnra41k";
   }) { inherit config; };
 
+  # recentPkgs = import (builtins.fetchTarball {
+  #   name = "nixos-24.05";
+  #   url = https://github.com/NixOS/nixpkgs/archive/24.05.tar.gz;
+  #   # Hash obtained using `nix-prefetch-url --unpack <url>`
+  #   sha256 = "1lr1h35prqkd1mkmzriwlpvxcb34kmhc9dnr48gkm8hh089hifmx";
+  # }) { inherit config; };
+
 in
   { 
     pkgs = pkgs;

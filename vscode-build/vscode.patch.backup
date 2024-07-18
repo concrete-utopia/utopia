@@ -1,0 +1,1323 @@
+diff --git a/build/gulpfile.vscode.js b/build/gulpfile.vscode.js
+index 13c20bed989..2a8452a08ab 100644
+--- a/build/gulpfile.vscode.js
++++ b/build/gulpfile.vscode.js
+@@ -35,13 +35,14 @@ const { compileExtensionsBuildTask } = require('./gulpfile.extensions');
+ 
+ // Build
+ const vscodeEntryPoints = _.flatten([
+-	buildfile.entrypoint('vs/workbench/workbench.desktop.main'),
++	buildfile.entrypoint('vs/workbench/workbench.web.api'),
+ 	buildfile.base,
+ 	buildfile.workerExtensionHost,
+ 	buildfile.workerNotebook,
+ 	buildfile.workerLanguageDetection,
+ 	buildfile.workerLocalFileSearch,
+-	buildfile.workbenchDesktop,
++	buildfile.workbenchWeb,
++	buildfile.keyboardMaps,
+ 	buildfile.code
+ ]);
+ 
+@@ -157,8 +158,8 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
+ 
+ 		const checksums = computeChecksums(out, [
+ 			'vs/base/parts/sandbox/electron-browser/preload.js',
+-			'vs/workbench/workbench.desktop.main.js',
+-			'vs/workbench/workbench.desktop.main.css',
++			'vs/workbench/workbench.web.api.js',
++			'vs/workbench/workbench.web.api.css',
+ 			'vs/workbench/services/extensions/node/extensionHostProcess.js',
+ 			'vs/code/electron-browser/workbench/workbench.html',
+ 			'vs/code/electron-browser/workbench/workbench.js'
+diff --git a/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json b/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json
+deleted file mode 100644
+index 9e26dfeeb6e..00000000000
+--- a/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json
++++ /dev/null
+@@ -1 +0,0 @@
+-{}
+\ No newline at end of file
+diff --git a/extensions/simple-browser/src/simpleBrowserView.ts b/extensions/simple-browser/src/simpleBrowserView.ts
+index 2d7da1aecf8..052f52383f0 100644
+--- a/extensions/simple-browser/src/simpleBrowserView.ts
++++ b/extensions/simple-browser/src/simpleBrowserView.ts
+@@ -139,7 +139,7 @@ export class SimpleBrowserView extends Disposable {
+ 				</header>
+ 				<div class="content">
+ 					<div class="iframe-focused-alert">${localize('view.iframe-focused', "Focus Lock")}</div>
+-					<iframe sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
++					<iframe sandbox="allow-scripts allow-forms allow-same-origin allow-popups"></iframe>
+ 				</div>
+ 
+ 				<script src="${mainJs}" nonce="${nonce}"></script>
+diff --git a/package.json b/package.json
+index 2bca5115cac..53884a9bb17 100644
+--- a/package.json
++++ b/package.json
+@@ -44,15 +44,15 @@
+     "valid-layers-check": "node build/lib/layersChecker.js",
+     "update-distro": "node build/npm/update-distro.js",
+     "web": "node resources/web/code-web.js",
+-    "compile-web": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js compile-web",
+-    "watch-web": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js watch-web",
++    "compile-web": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js compile-web",
++    "watch-web": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js watch-web",
+     "eslint": "node build/eslint",
+     "playwright-install": "node build/azure-pipelines/common/installPlaywright.js",
+-    "compile-build": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js compile-build",
+-    "compile-extensions-build": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js compile-extensions-build",
+-    "minify-vscode": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode",
+-    "minify-vscode-reh": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode-reh",
+-    "minify-vscode-reh-web": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode-reh-web",
++    "compile-build": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js compile-build",
++    "compile-extensions-build": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js compile-extensions-build",
++    "minify-vscode": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js minify-vscode",
++    "minify-vscode-reh": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js minify-vscode-reh",
++    "minify-vscode-reh-web": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js minify-vscode-reh-web",
+     "hygiene": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js hygiene",
+     "core-ci": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js core-ci",
+     "extensions-ci": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js extensions-ci"
+@@ -77,6 +77,7 @@
+     "spdlog": "^0.13.0",
+     "sudo-prompt": "9.2.1",
+     "tas-client-umd": "0.1.4",
++    "utopia-vscode-common": "file:../../utopia-vscode-common",
+     "v8-inspect-profiler": "^0.0.22",
+     "vscode-nsfw": "2.1.8",
+     "vscode-oniguruma": "1.5.1",
+diff --git a/product.json b/product.json
+index 7b60eac641d..b37ebcd9f73 100644
+--- a/product.json
++++ b/product.json
+@@ -1,96 +1,9 @@
+ {
+-	"nameShort": "Code - OSS",
+-	"nameLong": "Code - OSS",
+-	"applicationName": "code-oss",
+-	"dataFolderName": ".vscode-oss",
+-	"win32MutexName": "vscodeoss",
+-	"licenseName": "MIT",
+-	"licenseUrl": "https://github.com/microsoft/vscode/blob/main/LICENSE.txt",
+-	"win32DirName": "Microsoft Code OSS",
+-	"win32NameVersion": "Microsoft Code OSS",
+-	"win32RegValueName": "CodeOSS",
+-	"win32AppId": "{{E34003BB-9E10-4501-8C11-BE3FAA83F23F}",
+-	"win32x64AppId": "{{D77B7E06-80BA-4137-BCF4-654B95CCEBC5}",
+-	"win32arm64AppId": "{{D1ACE434-89C5-48D1-88D3-E2991DF85475}",
+-	"win32UserAppId": "{{C6065F05-9603-4FC4-8101-B9781A25D88E}",
+-	"win32x64UserAppId": "{{CC6B787D-37A0-49E8-AE24-8559A032BE0C}",
+-	"win32arm64UserAppId": "{{3AEBF0C8-F733-4AD4-BADE-FDB816D53D7B}",
+-	"win32AppUserModelId": "Microsoft.CodeOSS",
+-	"win32ShellNameShort": "C&ode - OSS",
+-	"darwinBundleIdentifier": "com.visualstudio.code.oss",
+-	"linuxIconName": "com.visualstudio.code.oss",
+-	"licenseFileName": "LICENSE.txt",
+-	"reportIssueUrl": "https://github.com/microsoft/vscode/issues/new",
+-	"urlProtocol": "code-oss",
+-	"webviewContentExternalBaseUrlTemplate": "https://{{uuid}}.vscode-webview.net/{{quality}}/{{commit}}/out/vs/workbench/contrib/webview/browser/pre/",
+-	"extensionAllowedProposedApi": [
+-		"ms-vscode.vscode-js-profile-flame",
+-		"ms-vscode.vscode-js-profile-table",
+-		"ms-vscode.remotehub",
+-		"ms-vscode.remotehub-insiders",
+-		"GitHub.remotehub",
+-		"GitHub.remotehub-insiders"
+-	],
+-	"builtInExtensions": [
+-		{
+-			"name": "ms-vscode.references-view",
+-			"version": "0.0.81",
+-			"repo": "https://github.com/microsoft/vscode-references-view",
+-			"metadata": {
+-				"id": "dc489f46-520d-4556-ae85-1f9eab3c412d",
+-				"publisherId": {
+-					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
+-					"publisherName": "ms-vscode",
+-					"displayName": "Microsoft",
+-					"flags": "verified"
+-				},
+-				"publisherDisplayName": "Microsoft"
+-			}
+-		},
+-		{
+-			"name": "ms-vscode.js-debug-companion",
+-			"version": "1.0.15",
+-			"repo": "https://github.com/microsoft/vscode-js-debug-companion",
+-			"metadata": {
+-				"id": "99cb0b7f-7354-4278-b8da-6cc79972169d",
+-				"publisherId": {
+-					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
+-					"publisherName": "ms-vscode",
+-					"displayName": "Microsoft",
+-					"flags": "verified"
+-				},
+-				"publisherDisplayName": "Microsoft"
+-			}
+-		},
+-		{
+-			"name": "ms-vscode.js-debug",
+-			"version": "1.61.0",
+-			"repo": "https://github.com/microsoft/vscode-js-debug",
+-			"metadata": {
+-				"id": "25629058-ddac-4e17-abba-74678e126c5d",
+-				"publisherId": {
+-					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
+-					"publisherName": "ms-vscode",
+-					"displayName": "Microsoft",
+-					"flags": "verified"
+-				},
+-				"publisherDisplayName": "Microsoft"
+-			}
+-		},
+-		{
+-			"name": "ms-vscode.vscode-js-profile-table",
+-			"version": "0.0.18",
+-			"repo": "https://github.com/microsoft/vscode-js-profile-visualizer",
+-			"metadata": {
+-				"id": "7e52b41b-71ad-457b-ab7e-0620f1fc4feb",
+-				"publisherId": {
+-					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
+-					"publisherName": "ms-vscode",
+-					"displayName": "Microsoft",
+-					"flags": "verified"
+-				},
+-				"publisherDisplayName": "Microsoft"
+-			}
+-		}
+-	]
++	"productConfiguration": {
++		"nameShort": "Code Web",
++		"nameLong": "Code Web",
++		"applicationName": "code-web",
++		"dataFolderName": ".vscode-web",
++		"version": "1.62.0"
++	}
+ }
+diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
+index 6148eb30092..6948ededa4a 100644
+--- a/src/vs/base/browser/dom.ts
++++ b/src/vs/base/browser/dom.ts
+@@ -365,7 +365,11 @@ export function getClientArea(element: HTMLElement): Dimension {
+ 		return new Dimension(document.documentElement.clientWidth, document.documentElement.clientHeight);
+ 	}
+ 
+-	throw new Error('Unable to figure out browser width and height');
++ 	// this Error would prevent VSCode from loading inside Utopia if the browser tab is not in the foreground
++ 	// throw new Error('Unable to figure out browser width and height');
++ 
++ 	// Instead, we just return 0 x 0, it seems to be fine
++ 	return new Dimension(0, 0);
+ }
+ 
+ class SizeUtils {
+diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
+index 534fe232636..b41446430f0 100644
+--- a/src/vs/code/browser/workbench/workbench.ts
++++ b/src/vs/code/browser/workbench/workbench.ts
+@@ -1,536 +1,101 @@
+-/*---------------------------------------------------------------------------------------------
+- *  Copyright (c) Microsoft Corporation. All rights reserved.
+- *  Licensed under the MIT License. See License.txt in the project root for license information.
+- *--------------------------------------------------------------------------------------------*/
+-
+-import { isStandalone } from 'vs/base/browser/browser';
+-import { streamToBuffer } from 'vs/base/common/buffer';
+-import { CancellationToken } from 'vs/base/common/cancellation';
+-import { Emitter, Event } from 'vs/base/common/event';
+-import { Disposable } from 'vs/base/common/lifecycle';
+-import { Schemas } from 'vs/base/common/network';
+-import { isEqual } from 'vs/base/common/resources';
+-import { URI, UriComponents } from 'vs/base/common/uri';
+-import { generateUuid } from 'vs/base/common/uuid';
+-import { request } from 'vs/base/parts/request/browser/request';
+-import { localize } from 'vs/nls';
+-import { parseLogLevel } from 'vs/platform/log/common/log';
+-import product from 'vs/platform/product/common/product';
+-import { isFolderToOpen, isWorkspaceToOpen } from 'vs/platform/windows/common/windows';
+-import { create, ICredentialsProvider, IHomeIndicator, IProductQualityChangeHandler, ISettingsSyncOptions, IURLCallbackProvider, IWelcomeBanner, IWindowIndicator, IWorkbenchConstructionOptions, IWorkspace, IWorkspaceProvider } from 'vs/workbench/workbench.web.api';
+-
+-function doCreateUri(path: string, queryValues: Map<string, string>): URI {
+-	let query: string | undefined = undefined;
+-
+-	if (queryValues) {
+-		let index = 0;
+-		queryValues.forEach((value, key) => {
+-			if (!query) {
+-				query = '';
+-			}
+-
+-			const prefix = (index++ === 0) ? '' : '&';
+-			query += `${prefix}${key}=${encodeURIComponent(value)}`;
+-		});
+-	}
+-
+-	return URI.parse(window.location.href).with({ path, query });
+-}
+-
+-interface ICredential {
+-	service: string;
+-	account: string;
+-	password: string;
+-}
+-
+-class LocalStorageCredentialsProvider implements ICredentialsProvider {
+-
+-	static readonly CREDENTIALS_OPENED_KEY = 'credentials.provider';
+-
+-	private readonly authService: string | undefined;
+-
+-	constructor() {
+-		let authSessionInfo: { readonly id: string, readonly accessToken: string, readonly providerId: string, readonly canSignOut?: boolean, readonly scopes: string[][] } | undefined;
+-		const authSessionElement = document.getElementById('vscode-workbench-auth-session');
+-		const authSessionElementAttribute = authSessionElement ? authSessionElement.getAttribute('data-settings') : undefined;
+-		if (authSessionElementAttribute) {
+-			try {
+-				authSessionInfo = JSON.parse(authSessionElementAttribute);
+-			} catch (error) { /* Invalid session is passed. Ignore. */ }
+-		}
+-
+-		if (authSessionInfo) {
+-			// Settings Sync Entry
+-			this.setPassword(`${product.urlProtocol}.login`, 'account', JSON.stringify(authSessionInfo));
+-
+-			// Auth extension Entry
+-			this.authService = `${product.urlProtocol}-${authSessionInfo.providerId}.login`;
+-			this.setPassword(this.authService, 'account', JSON.stringify(authSessionInfo.scopes.map(scopes => ({
+-				id: authSessionInfo!.id,
+-				scopes,
+-				accessToken: authSessionInfo!.accessToken
+-			}))));
+-		}
+-	}
+-
+-	private _credentials: ICredential[] | undefined;
+-	private get credentials(): ICredential[] {
+-		if (!this._credentials) {
+-			try {
+-				const serializedCredentials = window.localStorage.getItem(LocalStorageCredentialsProvider.CREDENTIALS_OPENED_KEY);
+-				if (serializedCredentials) {
+-					this._credentials = JSON.parse(serializedCredentials);
+-				}
+-			} catch (error) {
+-				// ignore
+-			}
+-
+-			if (!Array.isArray(this._credentials)) {
+-				this._credentials = [];
+-			}
+-		}
+-
+-		return this._credentials;
+-	}
+-
+-	private save(): void {
+-		window.localStorage.setItem(LocalStorageCredentialsProvider.CREDENTIALS_OPENED_KEY, JSON.stringify(this.credentials));
+-	}
+-
+-	async getPassword(service: string, account: string): Promise<string | null> {
+-		return this.doGetPassword(service, account);
+-	}
+-
+-	private async doGetPassword(service: string, account?: string): Promise<string | null> {
+-		for (const credential of this.credentials) {
+-			if (credential.service === service) {
+-				if (typeof account !== 'string' || account === credential.account) {
+-					return credential.password;
+-				}
+-			}
+-		}
+-
+-		return null;
+-	}
+-
+-	async setPassword(service: string, account: string, password: string): Promise<void> {
+-		this.doDeletePassword(service, account);
+-
+-		this.credentials.push({ service, account, password });
+-
+-		this.save();
+-
+-		try {
+-			if (password && service === this.authService) {
+-				const value = JSON.parse(password);
+-				if (Array.isArray(value) && value.length === 0) {
+-					await this.logout(service);
+-				}
+-			}
+-		} catch (error) {
+-			console.log(error);
+-		}
+-	}
+-
+-	async deletePassword(service: string, account: string): Promise<boolean> {
+-		const result = await this.doDeletePassword(service, account);
+-
+-		if (result && service === this.authService) {
+-			try {
+-				await this.logout(service);
+-			} catch (error) {
+-				console.log(error);
+-			}
+-		}
+-
+-		return result;
+-	}
+-
+-	private async doDeletePassword(service: string, account: string): Promise<boolean> {
+-		let found = false;
+-
+-		this._credentials = this.credentials.filter(credential => {
+-			if (credential.service === service && credential.account === account) {
+-				found = true;
+-
+-				return false;
+-			}
+-
+-			return true;
+-		});
+-
+-		if (found) {
+-			this.save();
+-		}
+-
+-		return found;
+-	}
+-
+-	async findPassword(service: string): Promise<string | null> {
+-		return this.doGetPassword(service);
+-	}
+-
+-	async findCredentials(service: string): Promise<Array<{ account: string, password: string }>> {
+-		return this.credentials
+-			.filter(credential => credential.service === service)
+-			.map(({ account, password }) => ({ account, password }));
+-	}
+-
+-	private async logout(service: string): Promise<void> {
+-		const queryValues: Map<string, string> = new Map();
+-		queryValues.set('logout', String(true));
+-		queryValues.set('service', service);
+-
+-		await request({
+-			url: doCreateUri('/auth/logout', queryValues).toString(true)
+-		}, CancellationToken.None);
+-	}
+-
+-	async clear(): Promise<void> {
+-		window.localStorage.removeItem(LocalStorageCredentialsProvider.CREDENTIALS_OPENED_KEY);
+-	}
+-}
+-
+-class PollingURLCallbackProvider extends Disposable implements IURLCallbackProvider {
+-
+-	static readonly FETCH_INTERVAL = 500; 			// fetch every 500ms
+-	static readonly FETCH_TIMEOUT = 5 * 60 * 1000; 	// ...but stop after 5min
+-
+-	static readonly QUERY_KEYS = {
+-		REQUEST_ID: 'vscode-requestId',
+-		SCHEME: 'vscode-scheme',
+-		AUTHORITY: 'vscode-authority',
+-		PATH: 'vscode-path',
+-		QUERY: 'vscode-query',
+-		FRAGMENT: 'vscode-fragment'
+-	};
+-
+-	private readonly _onCallback = this._register(new Emitter<URI>());
+-	readonly onCallback = this._onCallback.event;
+-
+-	create(options?: Partial<UriComponents>): URI {
+-		const queryValues: Map<string, string> = new Map();
+-
+-		const requestId = generateUuid();
+-		queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.REQUEST_ID, requestId);
+-
+-		const { scheme, authority, path, query, fragment } = options ? options : { scheme: undefined, authority: undefined, path: undefined, query: undefined, fragment: undefined };
+-
+-		if (scheme) {
+-			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.SCHEME, scheme);
+-		}
+-
+-		if (authority) {
+-			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.AUTHORITY, authority);
+-		}
+-
+-		if (path) {
+-			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.PATH, path);
+-		}
+-
+-		if (query) {
+-			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.QUERY, query);
+-		}
+-
+-		if (fragment) {
+-			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.FRAGMENT, fragment);
+-		}
+-
+-		// Start to poll on the callback being fired
+-		this.periodicFetchCallback(requestId, Date.now());
+-
+-		return doCreateUri('/callback', queryValues);
+-	}
+-
+-	private async periodicFetchCallback(requestId: string, startTime: number): Promise<void> {
+-
+-		// Ask server for callback results
+-		const queryValues: Map<string, string> = new Map();
+-		queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.REQUEST_ID, requestId);
+-
+-		const result = await request({
+-			url: doCreateUri('/fetch-callback', queryValues).toString(true)
+-		}, CancellationToken.None);
+-
+-		// Check for callback results
+-		const content = await streamToBuffer(result.stream);
+-		if (content.byteLength > 0) {
+-			try {
+-				this._onCallback.fire(URI.revive(JSON.parse(content.toString())));
+-			} catch (error) {
+-				console.error(error);
+-			}
+-
+-			return; // done
+-		}
+-
+-		// Continue fetching unless we hit the timeout
+-		if (Date.now() - startTime < PollingURLCallbackProvider.FETCH_TIMEOUT) {
+-			setTimeout(() => this.periodicFetchCallback(requestId, startTime), PollingURLCallbackProvider.FETCH_INTERVAL);
+-		}
+-	}
+-}
+-
+-class WorkspaceProvider implements IWorkspaceProvider {
+-
+-	static QUERY_PARAM_EMPTY_WINDOW = 'ew';
+-	static QUERY_PARAM_FOLDER = 'folder';
+-	static QUERY_PARAM_WORKSPACE = 'workspace';
+-
+-	static QUERY_PARAM_PAYLOAD = 'payload';
+-
+-	readonly trusted = true;
+-
+-	constructor(
+-		readonly workspace: IWorkspace,
+-		readonly payload: object
+-	) { }
+-
+-	async open(workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }): Promise<boolean> {
+-		if (options?.reuse && !options.payload && this.isSame(this.workspace, workspace)) {
+-			return true; // return early if workspace and environment is not changing and we are reusing window
+-		}
+-
+-		const targetHref = this.createTargetUrl(workspace, options);
+-		if (targetHref) {
+-			if (options?.reuse) {
+-				window.location.href = targetHref;
+-				return true;
+-			} else {
+-				let result;
+-				if (isStandalone) {
+-					result = window.open(targetHref, '_blank', 'toolbar=no'); // ensures to open another 'standalone' window!
+-				} else {
+-					result = window.open(targetHref);
+-				}
+-
+-				return !!result;
+-			}
+-		}
+-		return false;
+-	}
+-
+-	private createTargetUrl(workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }): string | undefined {
+-
+-		// Empty
+-		let targetHref: string | undefined = undefined;
+-		if (!workspace) {
+-			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_EMPTY_WINDOW}=true`;
+-		}
+-
+-		// Folder
+-		else if (isFolderToOpen(workspace)) {
+-			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_FOLDER}=${encodeURIComponent(workspace.folderUri.toString())}`;
+-		}
+-
+-		// Workspace
+-		else if (isWorkspaceToOpen(workspace)) {
+-			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_WORKSPACE}=${encodeURIComponent(workspace.workspaceUri.toString())}`;
+-		}
+-
+-		// Append payload if any
+-		if (options?.payload) {
+-			targetHref += `&${WorkspaceProvider.QUERY_PARAM_PAYLOAD}=${encodeURIComponent(JSON.stringify(options.payload))}`;
+-		}
+-
+-		return targetHref;
+-	}
+-
+-	private isSame(workspaceA: IWorkspace, workspaceB: IWorkspace): boolean {
+-		if (!workspaceA || !workspaceB) {
+-			return workspaceA === workspaceB; // both empty
+-		}
+-
+-		if (isFolderToOpen(workspaceA) && isFolderToOpen(workspaceB)) {
+-			return isEqual(workspaceA.folderUri, workspaceB.folderUri); // same workspace
+-		}
+-
+-		if (isWorkspaceToOpen(workspaceA) && isWorkspaceToOpen(workspaceB)) {
+-			return isEqual(workspaceA.workspaceUri, workspaceB.workspaceUri); // same workspace
+-		}
+-
+-		return false;
+-	}
+-
+-	hasRemote(): boolean {
+-		if (this.workspace) {
+-			if (isFolderToOpen(this.workspace)) {
+-				return this.workspace.folderUri.scheme === Schemas.vscodeRemote;
+-			}
+-
+-			if (isWorkspaceToOpen(this.workspace)) {
+-				return this.workspace.workspaceUri.scheme === Schemas.vscodeRemote;
+-			}
+-		}
+-
+-		return true;
+-	}
+-}
+-
+-class WindowIndicator implements IWindowIndicator {
+-
+-	readonly onDidChange = Event.None;
+-
+-	readonly label: string;
+-	readonly tooltip: string;
+-	readonly command: string | undefined;
+-
+-	constructor(workspace: IWorkspace) {
+-		let repositoryOwner: string | undefined = undefined;
+-		let repositoryName: string | undefined = undefined;
+-
+-		if (workspace) {
+-			let uri: URI | undefined = undefined;
+-			if (isFolderToOpen(workspace)) {
+-				uri = workspace.folderUri;
+-			} else if (isWorkspaceToOpen(workspace)) {
+-				uri = workspace.workspaceUri;
+-			}
+-
+-			if (uri?.scheme === 'github' || uri?.scheme === 'codespace') {
+-				[repositoryOwner, repositoryName] = uri.authority.split('+');
+-			}
+-		}
+-
+-		// Repo
+-		if (repositoryName && repositoryOwner) {
+-			this.label = localize('playgroundLabelRepository', "$(remote) Visual Studio Code Playground: {0}/{1}", repositoryOwner, repositoryName);
+-			this.tooltip = localize('playgroundRepositoryTooltip', "Visual Studio Code Playground: {0}/{1}", repositoryOwner, repositoryName);
+-		}
+-
+-		// No Repo
+-		else {
+-			this.label = localize('playgroundLabel', "$(remote) Visual Studio Code Playground");
+-			this.tooltip = localize('playgroundTooltip', "Visual Studio Code Playground");
+-		}
+-	}
+-}
+-
+-(function () {
+-
+-	// Find config by checking for DOM
+-	const configElement = document.getElementById('vscode-workbench-web-configuration');
+-	const configElementAttribute = configElement ? configElement.getAttribute('data-settings') : undefined;
+-	if (!configElement || !configElementAttribute) {
+-		throw new Error('Missing web configuration element');
+-	}
+-
+-	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents, workspaceUri?: UriComponents } = JSON.parse(configElementAttribute);
+-
+-	// Find workspace to open and payload
+-	let foundWorkspace = false;
+-	let workspace: IWorkspace;
+-	let payload = Object.create(null);
+-	let logLevel: string | undefined = undefined;
+-
+-	const query = new URL(document.location.href).searchParams;
+-	query.forEach((value, key) => {
+-		switch (key) {
+-
+-			// Folder
+-			case WorkspaceProvider.QUERY_PARAM_FOLDER:
+-				workspace = { folderUri: URI.parse(value) };
+-				foundWorkspace = true;
+-				break;
+-
+-			// Workspace
+-			case WorkspaceProvider.QUERY_PARAM_WORKSPACE:
+-				workspace = { workspaceUri: URI.parse(value) };
+-				foundWorkspace = true;
+-				break;
+-
+-			// Empty
+-			case WorkspaceProvider.QUERY_PARAM_EMPTY_WINDOW:
+-				workspace = undefined;
+-				foundWorkspace = true;
+-				break;
+-
+-			// Payload
+-			case WorkspaceProvider.QUERY_PARAM_PAYLOAD:
+-				try {
+-					payload = JSON.parse(value);
+-				} catch (error) {
+-					console.error(error); // possible invalid JSON
+-				}
+-				break;
+-
+-			// Log level
+-			case 'logLevel':
+-				logLevel = value;
+-				break;
+-		}
+-	});
+-
+-	// If no workspace is provided through the URL, check for config attribute from server
+-	if (!foundWorkspace) {
+-		if (config.folderUri) {
+-			workspace = { folderUri: URI.revive(config.folderUri) };
+-		} else if (config.workspaceUri) {
+-			workspace = { workspaceUri: URI.revive(config.workspaceUri) };
+-		} else {
+-			workspace = undefined;
+-		}
+-	}
+-
+-	// Workspace Provider
+-	const workspaceProvider = new WorkspaceProvider(workspace, payload);
+-
+-	// Home Indicator
+-	const homeIndicator: IHomeIndicator = {
+-		href: 'https://github.com/microsoft/vscode',
+-		icon: 'code',
+-		title: localize('home', "Home")
+-	};
+-
+-	// Welcome Banner
+-	const welcomeBanner: IWelcomeBanner = {
+-		message: localize('welcomeBannerMessage', "{0} Web. Browser based playground for testing.", product.nameShort),
+-		actions: [{
+-			href: 'https://github.com/microsoft/vscode',
+-			label: localize('learnMore', "Learn More")
+-		}]
+-	};
+-
+-	// Window indicator (unless connected to a remote)
+-	let windowIndicator: WindowIndicator | undefined = undefined;
+-	if (!workspaceProvider.hasRemote()) {
+-		windowIndicator = new WindowIndicator(workspace);
+-	}
+-
+-	// Product Quality Change Handler
+-	const productQualityChangeHandler: IProductQualityChangeHandler = (quality) => {
+-		let queryString = `quality=${quality}`;
+-
+-		// Save all other query params we might have
+-		const query = new URL(document.location.href).searchParams;
+-		query.forEach((value, key) => {
+-			if (key !== 'quality') {
+-				queryString += `&${key}=${value}`;
+-			}
+-		});
+-
+-		window.location.href = `${window.location.origin}?${queryString}`;
+-	};
+-
+-	// settings sync options
+-	const settingsSyncOptions: ISettingsSyncOptions | undefined = config.settingsSyncOptions ? {
+-		enabled: config.settingsSyncOptions.enabled,
+-	} : undefined;
+-
+-	// Finally create workbench
+-	create(document.body, {
+-		...config,
+-		developmentOptions: {
+-			logLevel: logLevel ? parseLogLevel(logLevel) : undefined,
+-			...config.developmentOptions
+-		},
+-		settingsSyncOptions,
+-		homeIndicator,
+-		windowIndicator,
+-		welcomeBanner,
+-		productQualityChangeHandler,
+-		workspaceProvider,
+-		urlCallbackProvider: new PollingURLCallbackProvider(),
+-		credentialsProvider: new LocalStorageCredentialsProvider()
+-	});
+-})();
++import {
++  create,
++	IWorkspace,
++  IWorkbenchConstructionOptions,
++  IWorkspaceProvider,
++} from 'vs/workbench/workbench.web.api'
++import { URI } from 'vs/base/common/uri'
++import { setupVSCodeEventListenersForProject } from 'utopia-vscode-common'
++
++// TODO revisit these dummy parts so that they can return something rather than nothing
++// import {
++//   getSingletonServiceDescriptors,
++//   registerSingleton,
++// } from 'vs/platform/instantiation/common/extensions'
++// import { BrandedService, ServiceIdentifier } from 'vs/platform/instantiation/common/instantiation'
++// import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
++
++// const _registry = getSingletonServiceDescriptors()
++
++// function replaceRegisteredSingleton<T, Services extends BrandedService[]>(
++//   id: ServiceIdentifier<T>,
++//   ctor: new (...services: Services) => T,
++//   supportsDelayedInstantiation?: boolean,
++// ): void {
++//   const index = _registry.findIndex((tuple) => tuple[0] === id)
++//   if (index > 0) {
++//     _registry[index] = [
++//       id,
++//       new SyncDescriptor<T>(ctor as new (...args: any[]) => T, [], supportsDelayedInstantiation),
++//     ]
++//   } else {
++//     registerSingleton(id, ctor)
++//   }
++// }
++
++// // Replace services for the parts we don't want to use -
++// // We have to import the original part first to ensure it isn't registered later
++// import 'vs/workbench/browser/parts/panel/panelPart'
++// import { PanelPart } from 'vs/workbench/browser/parts/dummies/panelPart'
++// import { IPanelService } from 'vs/workbench/services/panel/common/panelService'
++// replaceRegisteredSingleton(IPanelService, PanelPart)
++
++// import 'vs/workbench/browser/parts/sidebar/sidebarPart'
++// import { SidebarPart } from 'vs/workbench/browser/parts/dummies/sidebarPart'
++// import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet'
++// replaceRegisteredSingleton(IViewletService, SidebarPart)
++
++// import 'vs/workbench/browser/parts/activitybar/activitybarPart'
++// import { ActivitybarPart } from 'vs/workbench/browser/parts/dummies/activitybarPart'
++// import { IActivityBarService } from 'vs/workbench/services/activityBar/browser/activityBarService'
++// replaceRegisteredSingleton(IActivityBarService, ActivitybarPart)
++
++// import 'vs/workbench/browser/parts/titlebar/titlebarPart'
++// import { TitlebarPart } from 'vs/workbench/browser/parts/dummies/titlebarPart'
++// import { ITitleService } from 'vs/workbench/services/title/common/titleService'
++// replaceRegisteredSingleton(ITitleService, TitlebarPart)
++
++// import 'vs/workbench/browser/parts/statusbar/statusbarPart'
++// import { StatusbarPart } from 'vs/workbench/browser/parts/dummies/statusbarPart'
++// import { IStatusbarService } from 'vs/workbench/services/statusbar/common/statusbar'
++// replaceRegisteredSingleton(IStatusbarService, StatusbarPart)
++
++;(async function () {
++  // create workbench
++  const result = await fetch('/vscode/product.json')
++  const loadedConfig: IWorkbenchConstructionOptions = await result.json()
++
++  // Inject project specific utopia config into the product.json
++  const urlParams = new URLSearchParams(window.location.search)
++  const vsCodeSessionID = urlParams.get('vs_code_session_id')!
++
++  // Use this instance as the webview provider rather than hitting MS servers
++  const webviewEndpoint = `${window.location.origin}/vscode/vscode/vs/workbench/contrib/webview/browser/pre`
++
++  let config = {
++    ...loadedConfig,
++    folderUri: {
++      scheme: vsCodeSessionID,
++      authority: '',
++      path: `/`,
++      query: '',
++      fragment: '',
++    },
++    webviewEndpoint: webviewEndpoint,
++  }
++
++  const workspace = { folderUri: URI.revive(config.folderUri) }
++
++  if (workspace) {
++    const workspaceProvider: IWorkspaceProvider = { 
++			workspace,
++			open: async (workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }) => true,
++			trusted: true 
++		}
++    config = { ...config, workspaceProvider }
++  }
++
++  setupVSCodeEventListenersForProject(vsCodeSessionID)
++
++  create(document.body, config)
++})()
+\ No newline at end of file
+diff --git a/src/vs/editor/common/config/editorOptions.ts b/src/vs/editor/common/config/editorOptions.ts
+index 7d8189c50be..125b6c89d0b 100644
+--- a/src/vs/editor/common/config/editorOptions.ts
++++ b/src/vs/editor/common/config/editorOptions.ts
+@@ -2560,7 +2560,7 @@ class EditorMinimap extends BaseEditorOption<EditorOption.minimap, EditorMinimap
+ 
+ 	constructor() {
+ 		const defaults: EditorMinimapOptions = {
+-			enabled: true,
++			enabled: false,
+ 			size: 'proportional',
+ 			side: 'right',
+ 			showSlider: 'mouseover',
+diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
+index 6b59c1e9faa..a9192e938ef 100644
+--- a/src/vs/workbench/browser/layout.ts
++++ b/src/vs/workbench/browser/layout.ts
+
+// FIXME CONTINUE FROM HERE -------------------------->
+
+@@ -54,6 +54,7 @@ import { AuxiliaryBarPart } from 'vs/workbench/browser/parts/auxiliarybar/auxili
+ export enum Settings {
+ 	ACTIVITYBAR_VISIBLE = 'workbench.activityBar.visible',
+ 	STATUSBAR_VISIBLE = 'workbench.statusBar.visible',
++	SIDEBAR_VISIBLE = 'workbench.sideBar.visible',
+ 
+ 	SIDEBAR_POSITION = 'workbench.sideBar.location',
+ 	PANEL_POSITION = 'workbench.panel.defaultLocation',
+@@ -190,16 +191,16 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		windowBorder: false,
+ 
+ 		menuBar: {
+-			visibility: 'classic' as MenuBarVisibility,
++			visibility: 'hidden' as MenuBarVisibility,
+ 			toggled: false
+ 		},
+ 
+ 		activityBar: {
+-			hidden: false
++			hidden: true
+ 		},
+ 
+ 		sideBar: {
+-			hidden: false,
++			hidden: true,
+ 			position: Position.LEFT,
+ 			width: 300,
+ 			viewletToRestore: undefined as string | undefined
+@@ -214,7 +215,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		},
+ 
+ 		panel: {
+-			hidden: false,
++			hidden: true,
+ 			position: Position.BOTTOM,
+ 			lastNonMaximizedWidth: 300,
+ 			lastNonMaximizedHeight: 300,
+@@ -228,7 +229,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		},
+ 
+ 		statusBar: {
+-			hidden: false
++			hidden: true
+ 		},
+ 
+ 		views: {
+@@ -513,13 +514,13 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		this.state.fullscreen = isFullscreen();
+ 
+ 		// Menubar visibility
+-		this.state.menuBar.visibility = getMenuBarVisibility(this.configurationService);
++		this.state.menuBar.visibility = 'hidden';
+ 
+ 		// Activity bar visibility
+-		this.state.activityBar.hidden = !this.configurationService.getValue<string>(Settings.ACTIVITYBAR_VISIBLE);
++		this.state.activityBar.hidden = true;
+ 
+ 		// Sidebar visibility
+-		this.state.sideBar.hidden = this.storageService.getBoolean(Storage.SIDEBAR_HIDDEN, StorageScope.WORKSPACE, this.contextService.getWorkbenchState() === WorkbenchState.EMPTY);
++		this.state.sideBar.hidden = true;
+ 
+ 		// Sidebar position
+ 		this.state.sideBar.position = (this.configurationService.getValue<string>(Settings.SIDEBAR_POSITION) === 'right') ? Position.RIGHT : Position.LEFT;
+@@ -552,7 +553,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		this.state.editor.editorsToOpen = this.resolveEditorsToOpen(fileService, this.contextService);
+ 
+ 		// Panel visibility
+-		this.state.panel.hidden = this.storageService.getBoolean(Storage.PANEL_HIDDEN, StorageScope.WORKSPACE, true);
++		this.state.panel.hidden = true;
+ 
+ 		// Whether or not the panel was last maximized
+ 		this.state.panel.wasLastMaximized = this.storageService.getBoolean(Storage.PANEL_LAST_IS_MAXIMIZED, StorageScope.WORKSPACE, false);
+@@ -590,7 +591,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		this.state.panel.lastNonMaximizedWidth = this.storageService.getNumber(Storage.PANEL_LAST_NON_MAXIMIZED_WIDTH, StorageScope.GLOBAL, 300);
+ 
+ 		// Statusbar visibility
+-		this.state.statusBar.hidden = !this.configurationService.getValue<string>(Settings.STATUSBAR_VISIBLE);
++		this.state.statusBar.hidden = true;
+ 
+ 		// Zen mode enablement
+ 		this.state.zenMode.restore = this.storageService.getBoolean(Storage.ZEN_MODE_ENABLED, StorageScope.WORKSPACE, false) && this.configurationService.getValue(Settings.ZEN_MODE_RESTORE);
+@@ -1227,7 +1228,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		}
+ 	}
+ 
+-	private setStatusBarHidden(hidden: boolean, skipLayout?: boolean): void {
++	private setStatusBarHidden(_hidden: boolean, skipLayout?: boolean): void {
++		const hidden = true;
+ 		this.state.statusBar.hidden = hidden;
+ 
+ 		// Adjust CSS
+@@ -1453,7 +1455,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		}
+ 	}
+ 
+-	private setActivityBarHidden(hidden: boolean, skipLayout?: boolean): void {
++	private setActivityBarHidden(_hidden: boolean, skipLayout?: boolean): void {
++		const hidden = true;
+ 		this.state.activityBar.hidden = hidden;
+ 
+ 		// Propagate to grid
+@@ -1500,7 +1503,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		]);
+ 	}
+ 
+-	private setSideBarHidden(hidden: boolean, skipLayout?: boolean): void {
++	private setSideBarHidden(_hidden: boolean, skipLayout?: boolean): void {
++		const hidden = true
+ 		this.state.sideBar.hidden = hidden;
+ 
+ 		// Adjust CSS
+@@ -1560,7 +1564,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		return viewContainerModel.activeViewDescriptors.length >= 1;
+ 	}
+ 
+-	private setPanelHidden(hidden: boolean, skipLayout?: boolean): void {
++	private setPanelHidden(_hidden: boolean, skipLayout?: boolean): void {
++		const hidden = true;
+ 		const wasHidden = this.state.panel.hidden;
+ 		this.state.panel.hidden = hidden;
+ 
+@@ -1771,7 +1776,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		return this.state.sideBar.position;
+ 	}
+ 
+-	setMenubarVisibility(visibility: MenuBarVisibility, skipLayout: boolean): void {
++	setMenubarVisibility(_visibility: MenuBarVisibility, skipLayout: boolean): void {
++		const visibility = 'hidden';
+ 		if (this.state.menuBar.visibility !== visibility) {
+ 			this.state.menuBar.visibility = visibility;
+ 
+diff --git a/src/vs/workbench/browser/workbench.contribution.ts b/src/vs/workbench/browser/workbench.contribution.ts
+index 000fd151ee2..d21a981e220 100644
+--- a/src/vs/workbench/browser/workbench.contribution.ts
++++ b/src/vs/workbench/browser/workbench.contribution.ts
+@@ -7,7 +7,7 @@ import product from 'vs/platform/product/common/product';
+ import { Registry } from 'vs/platform/registry/common/platform';
+ import { localize } from 'vs/nls';
+ import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope } from 'vs/platform/configuration/common/configurationRegistry';
+-import { isMacintosh, isWindows, isLinux, isWeb, isNative } from 'vs/base/common/platform';
++import { isMacintosh, isWeb, isNative } from 'vs/base/common/platform';
+ import { workbenchConfigurationNodeBase } from 'vs/workbench/common/configuration';
+ import { isStandalone } from 'vs/base/browser/browser';
+ 
+@@ -278,6 +278,12 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
+ 				'default': 'left',
+ 				'description': localize('sideBarLocation', "Controls the location of the sidebar and activity bar. They can either show on the left or right of the workbench.")
+ 			},
++			'workbench.sideBar.visible': {
++				'type': 'boolean',
++				'default': false,
++				'description': localize('sideBarVisibility', "Controls the visibility of the side bar at the side of the workbench."),
++				'included': false
++			},
+ 			'workbench.panel.defaultLocation': {
+ 				'type': 'string',
+ 				'enum': ['left', 'bottom', 'right'],
+@@ -297,13 +303,15 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
+ 			},
+ 			'workbench.statusBar.visible': {
+ 				'type': 'boolean',
+-				'default': true,
+-				'description': localize('statusBarVisibility', "Controls the visibility of the status bar at the bottom of the workbench.")
++				'default': false,
++				'description': localize('statusBarVisibility', "Controls the visibility of the status bar at the bottom of the workbench."),
++				'included': false
+ 			},
+ 			'workbench.activityBar.visible': {
+ 				'type': 'boolean',
+-				'default': true,
+-				'description': localize('activityBarVisibility', "Controls the visibility of the activity bar in the workbench.")
++				'default': false,
++				'description': localize('activityBarVisibility', "Controls the visibility of the activity bar in the workbench."),
++				'included': false
+ 			},
+ 			'workbench.activityBar.iconClickBehavior': {
+ 				'type': 'string',
+@@ -420,26 +428,26 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
+ 					localize('window.menuBarVisibility.hidden', "Menu is always hidden."),
+ 					localize('window.menuBarVisibility.compact', "Menu is displayed as a compact button in the sidebar. This value is ignored when `#window.titleBarStyle#` is `native`.")
+ 				],
+-				'default': isWeb ? 'compact' : 'classic',
++				'default': 'hidden',
+ 				'scope': ConfigurationScope.APPLICATION,
+ 				'markdownDescription': isMacintosh ?
+ 					localize('menuBarVisibility.mac', "Control the visibility of the menu bar. A setting of 'toggle' means that the menu bar is hidden and executing `Focus Application Menu` will show it. A setting of 'compact' will move the menu into the sidebar.") :
+ 					localize('menuBarVisibility', "Control the visibility of the menu bar. A setting of 'toggle' means that the menu bar is hidden and a single press of the Alt key will show it. A setting of 'compact' will move the menu into the sidebar."),
+-				'included': isWindows || isLinux || isWeb
++				'included': false
+ 			},
+ 			'window.enableMenuBarMnemonics': {
+ 				'type': 'boolean',
+-				'default': true,
++				'default': false,
+ 				'scope': ConfigurationScope.APPLICATION,
+ 				'description': localize('enableMenuBarMnemonics', "Controls whether the main menus can be opened via Alt-key shortcuts. Disabling mnemonics allows to bind these Alt-key shortcuts to editor commands instead."),
+-				'included': isWindows || isLinux
++				'included': false
+ 			},
+ 			'window.customMenuBarAltFocus': {
+ 				'type': 'boolean',
+-				'default': true,
++				'default': false,
+ 				'scope': ConfigurationScope.APPLICATION,
+ 				'markdownDescription': localize('customMenuBarAltFocus', "Controls whether the menu bar will be focused by pressing the Alt-key. This setting has no effect on toggling the menu bar with the Alt-key."),
+-				'included': isWindows || isLinux
++				'included': false
+ 			},
+ 			'window.openFilesInNewWindow': {
+ 				'type': 'string',
+
+// FIXME CONTINUE TO HERE -------------------------->
+
+diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
+index b9beba774a5..40627803528 100644
+--- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
++++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
+@@ -567,6 +567,38 @@ CommandsRegistry.registerCommand({
+ 	}
+ });
+ 
++CommandsRegistry.registerCommand({
++	id: 'workbench.action.files.revertResource',
++	handler: async (accessor, resource: URI) => {
++		const notificationService = accessor.get(INotificationService);
++		const editorGroupService = accessor.get(IEditorGroupsService);
++		const editorService = accessor.get(IEditorService);
++
++		// Retrieve editors for resource
++		const resourceAsString = resource.toString()
++		const matchesTarget = (uri: URI | undefined) => uri != null && uri.toString() === resourceAsString
++		let editors: IEditorIdentifier[] = []
++		
++		editorGroupService.groups.forEach(editorGroup => {
++			editorGroup.editors.forEach(editor => {
++				if (matchesTarget(editor.resource)) {
++					editors.push({ groupId: editorGroup.id, editor: editor })
++				}
++			})
++		})
++
++		if (!editors || editors.length === 0) {
++			return; // nothing to revert
++		}
++
++		try {
++			await editorService.revert(editors.filter(({ editor }) => !editor.hasCapability(EditorInputCapabilities.Untitled) /* all except untitled */), { force: true });
++		} catch (error) {
++			notificationService.error(nls.localize('genericRevertError', "Failed to revert '{0}': {1}", editors.map(({ editor }) => editor.getName()).join(', '), toErrorMessage(error, false)));
++		}
++	}
++});
++
+ CommandsRegistry.registerCommand({
+ 	id: REMOVE_ROOT_FOLDER_COMMAND_ID,
+ 	handler: (accessor, resource: URI | object) => {
+diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
+index 114f1357403..bec56e38917 100644
+--- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
++++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
+@@ -234,12 +234,12 @@ configurationRegistry.registerConfiguration({
+ 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onFocusChange' }, "A dirty editor is automatically saved when the editor loses focus."),
+ 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onWindowChange' }, "A dirty editor is automatically saved when the window loses focus.")
+ 			],
+-			'default': isWeb ? AutoSaveConfiguration.AFTER_DELAY : AutoSaveConfiguration.OFF,
++			'default': AutoSaveConfiguration.OFF,
+ 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSave' }, "Controls auto save of dirty editors. Read more about autosave [here](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save).", AutoSaveConfiguration.OFF, AutoSaveConfiguration.AFTER_DELAY, AutoSaveConfiguration.ON_FOCUS_CHANGE, AutoSaveConfiguration.ON_WINDOW_CHANGE, AutoSaveConfiguration.AFTER_DELAY)
+ 		},
+ 		'files.autoSaveDelay': {
+ 			'type': 'number',
+-			'default': 1000,
++			'default': 100,
+ 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSaveDelay' }, "Controls the delay in ms after which a dirty editor is saved automatically. Only applies when `#files.autoSave#` is set to `{0}`.", AutoSaveConfiguration.AFTER_DELAY)
+ 		},
+ 		'files.watcherExclude': {
+diff --git a/src/vs/workbench/contrib/search/browser/search.contribution.ts b/src/vs/workbench/contrib/search/browser/search.contribution.ts
+index 79e5defa112..318ab13d6fd 100644
+--- a/src/vs/workbench/contrib/search/browser/search.contribution.ts
++++ b/src/vs/workbench/contrib/search/browser/search.contribution.ts
+@@ -889,7 +889,7 @@ configurationRegistry.registerConfiguration({
+ 		'search.quickOpen.includeHistory': {
+ 			type: 'boolean',
+ 			description: nls.localize('search.quickOpen.includeHistory', "Whether to include results from recently opened files in the file results for Quick Open."),
+-			default: true
++			default: false // FIXME We should be filtering history based on project rather than disabling it
+ 		},
+ 		'search.quickOpen.history.filterSortOrder': {
+ 			'type': 'string',
+diff --git a/src/vs/workbench/contrib/url/browser/trustedDomains.ts b/src/vs/workbench/contrib/url/browser/trustedDomains.ts
+index 265a5dc43e3..8f1db546879 100644
+--- a/src/vs/workbench/contrib/url/browser/trustedDomains.ts
++++ b/src/vs/workbench/contrib/url/browser/trustedDomains.ts
+@@ -217,7 +217,11 @@ export function readStaticTrustedDomains(accessor: ServicesAccessor): IStaticTru
+ 
+ 	const defaultTrustedDomains = [
+ 		...productService.linkProtectionTrustedDomains ?? [],
+-		...environmentService.options?.additionalTrustedDomains ?? []
++		...environmentService.options?.additionalTrustedDomains ?? [],
++		"https://utopia.app",
++		"https://utopia.fm",
++		"https://utopia.pizza",
++		"https://utopia95.com"
+ 	];
+ 
+ 	let trustedDomains: string[] = [];
+diff --git a/src/vs/workbench/contrib/webview/browser/pre/main.js b/src/vs/workbench/contrib/webview/browser/pre/main.js
+index 618837df8e2..29b5ba8d333 100644
+--- a/src/vs/workbench/contrib/webview/browser/pre/main.js
++++ b/src/vs/workbench/contrib/webview/browser/pre/main.js
+// FIXME This is missing ------------->
+@@ -810,6 +810,7 @@ onDomReady(() => {
+ 		if (options.allowScripts) {
+ 			sandboxRules.add('allow-scripts');
+ 			sandboxRules.add('allow-downloads');
++			sandboxRules.add('allow-popups');
+ 		}
+ 		if (options.allowForms) {
+ 			sandboxRules.add('allow-forms');
+// FIXME Above is missing ------------->
+diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+index b23847b8bf1..9c2a6875fe0 100644
+--- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
++++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+@@ -370,7 +370,7 @@ export class IFrameWebview extends Disposable implements Webview {
+ 		const element = document.createElement('iframe');
+ 		element.name = this.id;
+ 		element.className = `webview ${options.customClasses || ''}`;
+-		element.sandbox.add('allow-scripts', 'allow-same-origin', 'allow-forms', 'allow-pointer-lock', 'allow-downloads');
++		element.sandbox.add('allow-scripts', 'allow-same-origin', 'allow-forms', 'allow-pointer-lock', 'allow-downloads', 'allow-popups');
+ 		if (!isFirefox) {
+ 			element.setAttribute('allow', 'clipboard-read; clipboard-write;');
+ 		}
+diff --git a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
+index 674eade0db1..f0b7198440f 100644
+--- a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
++++ b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
+@@ -26,7 +26,7 @@ Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
+ 					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.newUntitledFile' }, "Open a new untitled file (only applies when opening an empty window)."),
+ 					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.welcomePageInEmptyWorkbench' }, "Open the Welcome page when opening an empty workbench."),
+ 				],
+-				'default': 'welcomePage',
++				'default': 'none',
+ 				'description': localize('workbench.startupEditor', "Controls which editor is shown at startup, if none are restored from the previous session.")
+ 			},
+ 		}
+diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
+index aedda47bd66..1e685812b0e 100644
+--- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
++++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
+@@ -190,7 +190,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+ 
+ 		// help the file service to activate providers by activating extensions by file system event
+ 		this._register(this._fileService.onWillActivateFileSystemProvider(e => {
+-			e.join(this.activateByEvent(`onFileSystem:${e.scheme}`));
++			e.join(this.activateByEvent(`onFileSystem:utopia`));
+ 		}));
+ 
+ 		this._registry = new ExtensionDescriptionRegistry([]);
+diff --git a/src/vs/workbench/services/workspaces/browser/workspaces.ts b/src/vs/workbench/services/workspaces/browser/workspaces.ts
+index 3b90080dc3d..cf9ac44fca9 100644
+--- a/src/vs/workbench/services/workspaces/browser/workspaces.ts
++++ b/src/vs/workbench/services/workspaces/browser/workspaces.ts
+@@ -5,7 +5,6 @@
+ 
+ import { ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from 'vs/platform/workspaces/common/workspaces';
+ import { URI } from 'vs/base/common/uri';
+-import { hash } from 'vs/base/common/hash';
+ 
+ // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ // NOTE: DO NOT CHANGE. IDENTIFIERS HAVE TO REMAIN STABLE
+@@ -30,5 +29,6 @@ export function getSingleFolderWorkspaceIdentifier(folderPath: URI): ISingleFold
+ }
+ 
+ function getWorkspaceId(uri: URI): string {
+-	return hash(uri.toString()).toString(16);
++	const urlParams = new URLSearchParams(window.location.search);
++	return urlParams.get('vs_code_session_id')!;
+ }
+diff --git a/yarn.lock b/yarn.lock
+index 2f4f87570dd..cdeffa74f26 100644
+--- a/yarn.lock
++++ b/yarn.lock
+@@ -5248,6 +5248,11 @@ ignore@^5.1.4:
+   resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.1.8.tgz#f150a8b50a34289b33e22f5889abd4d8016f0e57"
+   integrity sha512-BMpfD7PpiETpBl/A6S498BaIJ6Y/ABT93ETbby2fP00v4EbvPBXWEoaR1UBPKs3iR53pJY7EtZk5KACI57i1Uw==
+ 
++immediate@~3.0.5:
++  version "3.0.6"
++  resolved "https://registry.yarnpkg.com/immediate/-/immediate-3.0.6.tgz#9db1dbd0faf8de6fbe0f5dd5e56bb606280de69b"
++  integrity sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==
++
+ import-cwd@^2.0.0:
+   version "2.1.0"
+   resolved "https://registry.yarnpkg.com/import-cwd/-/import-cwd-2.1.0.tgz#aa6cf36e722761285cb371ec6519f53e2435b0a9"
+@@ -6138,6 +6143,13 @@ levn@^0.3.0, levn@~0.3.0:
+     prelude-ls "~1.1.2"
+     type-check "~0.3.2"
+ 
++lie@3.1.1:
++  version "3.1.1"
++  resolved "https://registry.yarnpkg.com/lie/-/lie-3.1.1.tgz#9a436b2cc7746ca59de7a41fa469b3efb76bd87e"
++  integrity sha512-RiNhHysUjhrDQntfYSfY4MU24coXXdEOgw9WGcKHNeEwffDYbF//u87M1EWaMGzuFoSbqW0C9C6lEEhDOAswfw==
++  dependencies:
++    immediate "~3.0.5"
++
+ liftoff@^3.1.0:
+   version "3.1.0"
+   resolved "https://registry.yarnpkg.com/liftoff/-/liftoff-3.1.0.tgz#c9ba6081f908670607ee79062d700df062c52ed3"
+@@ -6201,6 +6213,13 @@ loader-utils@^2.0.0:
+     emojis-list "^3.0.0"
+     json5 "^2.1.2"
+ 
++localforage@1.9.0:
++  version "1.9.0"
++  resolved "https://registry.yarnpkg.com/localforage/-/localforage-1.9.0.tgz#f3e4d32a8300b362b4634cc4e066d9d00d2f09d1"
++  integrity sha512-rR1oyNrKulpe+VM9cYmcFn6tsHuokyVHFaCM3+osEmxaHTbEk8oQu6eGDfS6DQLWi/N67XRmB8ECG37OES368g==
++  dependencies:
++    lie "3.1.1"
++
+ locate-path@^3.0.0:
+   version "3.0.0"
+   resolved "https://registry.yarnpkg.com/locate-path/-/locate-path-3.0.0.tgz#dbec3b3ab759758071b58fe59fc41871af21400e"
+@@ -8079,6 +8098,11 @@ prepend-http@^2.0.0:
+   resolved "https://registry.yarnpkg.com/prepend-http/-/prepend-http-2.0.0.tgz#e92434bfa5ea8c19f41cdfd401d741a3c819d897"
+   integrity sha1-6SQ0v6XqjBn0HN/UAddBo8gZ2Jc=
+ 
++prettier@2.8.8:
++  version "2.8.8"
++  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.8.8.tgz#e8c5d7e98a4305ffe3de2e1fc4aca1a71c28b1da"
++  integrity sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==
++
+ pretty-hrtime@^1.0.0:
+   version "1.0.3"
+   resolved "https://registry.yarnpkg.com/pretty-hrtime/-/pretty-hrtime-1.0.3.tgz#b7e3ea42435a4c9b2759d99e0f201eb195802ee1"
+@@ -10213,6 +10237,12 @@ util@^0.12.4:
+     safe-buffer "^5.1.2"
+     which-typed-array "^1.1.2"
+ 
++"utopia-vscode-common@file:../../utopia-vscode-common":
++  version "0.1.4"
++  dependencies:
++    localforage "1.9.0"
++    prettier "2.8.8"
++
+ uuid@^3.0.0:
+   version "3.1.0"
+   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.1.0.tgz#3dd3d3e790abc24d7b0d3a034ffababe28ebbc04"

@@ -5,7 +5,7 @@ const fse = require('fs-extra')
 const glob = require('glob')
 const rmdir = require('rimraf')
 
-const vscodeVersion = '1.61.2'
+const vscodeVersion = '1.91.0'
 
 if (fs.existsSync('vscode')) {
   process.chdir('vscode')
@@ -36,14 +36,14 @@ child_process.execSync('yarn', { stdio: 'inherit' })
 
 // Compile
 child_process.execSync('yarn gulp compile-build', { stdio: 'inherit' })
-child_process.execSync('yarn gulp minify-vscode', { stdio: 'inherit' })
+// child_process.execSync('yarn gulp minify-vscode', { stdio: 'inherit' })
 child_process.execSync('yarn compile-web', { stdio: 'inherit' })
 
 // Remove maps
-const mapFiles = glob.sync('out-vscode-min/**/*.js.map', {})
-mapFiles.forEach((mapFile) => {
-  fs.unlinkSync(mapFile)
-})
+// const mapFiles = glob.sync('out-vscode-min/**/*.js.map', {})
+// mapFiles.forEach((mapFile) => {
+//   fs.unlinkSync(mapFile)
+// })
 
 // Extract compiled files
 if (fs.existsSync('../dist')) {
@@ -52,7 +52,8 @@ if (fs.existsSync('../dist')) {
 
 fs.mkdirSync('../dist')
 fs.mkdirSync('../dist/lib')
-fse.copySync('out-vscode-min', '../dist/vscode')
+// fse.copySync('out-vscode-min', '../dist/vscode')
+fse.copySync('out-vscode', '../dist/vscode')
 fse.copySync('product.json', '../dist/product.json')
 fse.copySync('../node_modules/semver-umd', '../dist/lib/semver-umd')
 fse.copySync('../node_modules/vscode-oniguruma', '../dist/lib/vscode-oniguruma')

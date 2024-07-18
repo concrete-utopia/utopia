@@ -56,7 +56,7 @@ const SECONDARY_BASE_URL: string = PRODUCTION_CONFIG
   : BRANCHES_CONFIG
   ? 'https://momentumworks.co/'
   : BARE_HOST === 'localhost:8000'
-  ? 'http://localhost:8001'
+  ? 'http://localhost:8000'
   : BASE_URL
 
 export const PROBABLY_ELECTRON: boolean =

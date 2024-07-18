@@ -1,35 +1,108 @@
+diff --git a/build/gulpfile.compile.js b/build/gulpfile.compile.js
+index c4947e76cbf..e46583b9073 100644
+--- a/build/gulpfile.compile.js
++++ b/build/gulpfile.compile.js
+@@ -22,7 +22,7 @@ function makeCompileBuildTask(disableMangle) {
+ }
+ 
+ // Full compile, including nls and inline sources in sourcemaps, mangling, minification, for build
+-const compileBuildTask = task.define('compile-build', makeCompileBuildTask(false));
++const compileBuildTask = task.define('compile-build', makeCompileBuildTask(true));
+ gulp.task(compileBuildTask);
+ exports.compileBuildTask = compileBuildTask;
+ 
+diff --git a/build/gulpfile.extensions.js b/build/gulpfile.extensions.js
+index b85425bccfc..97ecef43fde 100644
+--- a/build/gulpfile.extensions.js
++++ b/build/gulpfile.extensions.js
+@@ -78,7 +78,7 @@ const tasks = compilations.map(function (tsconfigFile) {
+ 	const relativeDirname = path.dirname(tsconfigFile.replace(/^(.*\/)?extensions\//i, ''));
+ 
+ 	const overrideOptions = {};
+-	overrideOptions.sourceMap = true;
++	// overrideOptions.sourceMap = true;
+ 
+ 	const name = relativeDirname.replace(/\//g, '-');
+ 
+@@ -129,7 +129,7 @@ const tasks = compilations.map(function (tsconfigFile) {
+ 				.pipe(build ? nlsDev.rewriteLocalizeCalls() : es.through())
+ 				.pipe(build ? util.stripSourceMappingURL() : es.through())
+ 				.pipe(sourcemaps.write('.', {
+-					sourceMappingURL: !build ? null : f => `${baseUrl}/${f.relative}.map`,
++					// sourceMappingURL: !build ? null : f => `${baseUrl}/${f.relative}.map`,
+ 					addComment: !!build,
+ 					includeContent: !!build,
+ 					// note: trailing slash is important, else the source URLs in V8's file coverage are incorrect
 diff --git a/build/gulpfile.vscode.js b/build/gulpfile.vscode.js
-index 13c20bed989..2a8452a08ab 100644
+index c6202c70883..53bb30e5f1d 100644
 --- a/build/gulpfile.vscode.js
 +++ b/build/gulpfile.vscode.js
-@@ -35,13 +35,14 @@ const { compileExtensionsBuildTask } = require('./gulpfile.extensions');
+@@ -39,14 +39,15 @@ const rcedit = promisify(require('rcedit'));
  
  // Build
- const vscodeEntryPoints = _.flatten([
+ const vscodeEntryPoints = [
 -	buildfile.entrypoint('vs/workbench/workbench.desktop.main'),
-+	buildfile.entrypoint('vs/workbench/workbench.web.api'),
++	buildfile.entrypoint('vs/workbench/workbench.web.main'),
  	buildfile.base,
  	buildfile.workerExtensionHost,
  	buildfile.workerNotebook,
  	buildfile.workerLanguageDetection,
  	buildfile.workerLocalFileSearch,
+ 	buildfile.workerProfileAnalysis,
 -	buildfile.workbenchDesktop,
 +	buildfile.workbenchWeb,
 +	buildfile.keyboardMaps,
  	buildfile.code
- ]);
+ ].flat();
  
-@@ -157,8 +158,8 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
+@@ -63,8 +64,6 @@ const vscodeResources = [
+ 	'out-build/vs/base/common/performance.js',
+ 	'out-build/vs/base/node/{stdForkStart.js,terminateProcess.sh,cpuUsage.sh,ps.sh}',
+ 	'out-build/vs/base/browser/ui/codicons/codicon/**',
+-	'out-build/vs/base/parts/sandbox/electron-sandbox/preload.js',
+-	'out-build/vs/base/parts/sandbox/electron-sandbox/preload-aux.js',
+ 	'out-build/vs/workbench/browser/media/*-theme.css',
+ 	'out-build/vs/workbench/contrib/debug/**/*.json',
+ 	'out-build/vs/workbench/contrib/externalTerminal/**/*.scpt',
+@@ -77,7 +76,8 @@ const vscodeResources = [
+ 	'!out-build/vs/workbench/contrib/issue/**/*-dev.html',
+ 	'out-build/vs/**/markdown.css',
+ 	'out-build/vs/workbench/contrib/tasks/**/*.json',
+-	'!**/test/**'
++	'!**/test/**',
++	'!out-build/vs/**/{node,electron-sandbox,electron-main}/**'
+ ];
+ 
+ // Do not change the order of these files! They will
+@@ -209,8 +209,8 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
  
  		const checksums = computeChecksums(out, [
- 			'vs/base/parts/sandbox/electron-browser/preload.js',
+ 			'vs/base/parts/sandbox/electron-sandbox/preload.js',
 -			'vs/workbench/workbench.desktop.main.js',
 -			'vs/workbench/workbench.desktop.main.css',
-+			'vs/workbench/workbench.web.api.js',
-+			'vs/workbench/workbench.web.api.css',
- 			'vs/workbench/services/extensions/node/extensionHostProcess.js',
- 			'vs/code/electron-browser/workbench/workbench.html',
- 			'vs/code/electron-browser/workbench/workbench.js'
++			'vs/workbench/workbench.web.main.js',
++			'vs/workbench/workbench.web.main.css',
+ 			'vs/workbench/api/node/extensionHostProcess.js',
+ 			'vs/code/electron-sandbox/workbench/workbench.html',
+ 			'vs/code/electron-sandbox/workbench/workbench.js'
+@@ -275,7 +275,7 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
+ 			.pipe(util.cleanNodeModules(path.join(__dirname, '.moduleignore')))
+ 			.pipe(util.cleanNodeModules(path.join(__dirname, `.moduleignore.${process.platform}`)))
+ 			.pipe(jsFilter)
+-			.pipe(util.rewriteSourceMappingURL(sourceMappingURLBase))
++			// .pipe(util.rewriteSourceMappingURL(sourceMappingURLBase))
+ 			.pipe(jsFilter.restore)
+ 			.pipe(createAsar(path.join(process.cwd(), 'node_modules'), [
+ 				'**/*.node',
+@@ -343,7 +343,7 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
+ 			.pipe(util.skipDirectories())
+ 			.pipe(util.fixWin32DirectoryPermissions())
+ 			.pipe(filter(['**', '!**/.github/**'], { dot: true })) // https://github.com/microsoft/vscode/issues/116523
+-			.pipe(electron({ ...config, platform, arch: arch === 'armhf' ? 'arm' : arch, ffmpegChromium: false }))
++			// .pipe(electron({ ...config, platform, arch: arch === 'armhf' ? 'arm' : arch, ffmpegChromium: false }))
+ 			.pipe(filter(['**', '!LICENSE', '!version'], { dot: true }));
+ 
+ 		if (platform === 'linux') {
 diff --git a/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json b/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json
 deleted file mode 100644
 index 9e26dfeeb6e..00000000000
@@ -39,58 +112,67 @@ index 9e26dfeeb6e..00000000000
 -{}
 \ No newline at end of file
 diff --git a/extensions/simple-browser/src/simpleBrowserView.ts b/extensions/simple-browser/src/simpleBrowserView.ts
-index 2d7da1aecf8..052f52383f0 100644
+index 5725dcf4f9b..bd677ca2c3b 100644
 --- a/extensions/simple-browser/src/simpleBrowserView.ts
 +++ b/extensions/simple-browser/src/simpleBrowserView.ts
-@@ -139,7 +139,7 @@ export class SimpleBrowserView extends Disposable {
+@@ -165,7 +165,7 @@ export class SimpleBrowserView extends Disposable {
  				</header>
  				<div class="content">
- 					<div class="iframe-focused-alert">${localize('view.iframe-focused', "Focus Lock")}</div>
--					<iframe sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
-+					<iframe sandbox="allow-scripts allow-forms allow-same-origin allow-popups"></iframe>
+ 					<div class="iframe-focused-alert">${vscode.l10n.t("Focus Lock")}</div>
+-					<iframe sandbox="allow-scripts allow-forms allow-same-origin allow-downloads"></iframe>
++					<iframe sandbox="allow-scripts allow-forms allow-same-origin allow-downloads allow-popups"></iframe>
  				</div>
  
  				<script src="${mainJs}" nonce="${nonce}"></script>
 diff --git a/package.json b/package.json
-index 2bca5115cac..53884a9bb17 100644
+index ae706deebbc..0200dec699a 100644
 --- a/package.json
 +++ b/package.json
-@@ -44,15 +44,15 @@
-     "valid-layers-check": "node build/lib/layersChecker.js",
-     "update-distro": "node build/npm/update-distro.js",
-     "web": "node resources/web/code-web.js",
--    "compile-web": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js compile-web",
--    "watch-web": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js watch-web",
-+    "compile-web": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js compile-web",
-+    "watch-web": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js watch-web",
+@@ -47,17 +47,17 @@
+     "update-distro": "node build/npm/update-distro.mjs",
+     "web": "echo 'yarn web' is replaced by './scripts/code-server' or './scripts/code-web'",
+     "compile-cli": "gulp compile-cli",
+-    "compile-web": "node --max-old-space-size=4095 ./node_modules/gulp/bin/gulp.js compile-web",
+-    "watch-web": "node --max-old-space-size=4095 ./node_modules/gulp/bin/gulp.js watch-web",
++    "compile-web": "node --max-old-space-size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js compile-web",
++    "watch-web": "node --max-old-space-size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js watch-web",
+     "watch-cli": "node --max-old-space-size=4095 ./node_modules/gulp/bin/gulp.js watch-cli",
      "eslint": "node build/eslint",
+     "stylelint": "node build/stylelint",
      "playwright-install": "node build/azure-pipelines/common/installPlaywright.js",
--    "compile-build": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js compile-build",
--    "compile-extensions-build": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js compile-extensions-build",
--    "minify-vscode": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode",
--    "minify-vscode-reh": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode-reh",
--    "minify-vscode-reh-web": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode-reh-web",
-+    "compile-build": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js compile-build",
-+    "compile-extensions-build": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js compile-extensions-build",
-+    "minify-vscode": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js minify-vscode",
-+    "minify-vscode-reh": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js minify-vscode-reh",
-+    "minify-vscode-reh-web": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js minify-vscode-reh-web",
-     "hygiene": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js hygiene",
-     "core-ci": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js core-ci",
-     "extensions-ci": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js extensions-ci"
-@@ -77,6 +77,7 @@
-     "spdlog": "^0.13.0",
-     "sudo-prompt": "9.2.1",
-     "tas-client-umd": "0.1.4",
+-    "compile-build": "node --max-old-space-size=4095 ./node_modules/gulp/bin/gulp.js compile-build",
+-    "compile-extensions-build": "node --max-old-space-size=4095 ./node_modules/gulp/bin/gulp.js compile-extensions-build",
+-    "minify-vscode": "node --max-old-space-size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode",
+-    "minify-vscode-reh": "node --max-old-space-size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode-reh",
+-    "minify-vscode-reh-web": "node --max-old-space-size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode-reh-web",
++    "compile-build": "node --max-old-space-size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js compile-build",
++    "compile-extensions-build": "node --max-old-space-size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js compile-extensions-build",
++    "minify-vscode": "node --max-old-space-size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js minify-vscode",
++    "minify-vscode-reh": "node --max-old-space-size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js minify-vscode-reh",
++    "minify-vscode-reh-web": "node --max-old-space-size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js minify-vscode-reh-web",
+     "hygiene": "node --max-old-space-size=4095 ./node_modules/gulp/bin/gulp.js hygiene",
+     "core-ci": "node --max-old-space-size=8095 ./node_modules/gulp/bin/gulp.js core-ci",
+     "core-ci-pr": "node --max-old-space-size=4095 ./node_modules/gulp/bin/gulp.js core-ci-pr",
+@@ -93,13 +93,12 @@
+     "http-proxy-agent": "^7.0.0",
+     "https-proxy-agent": "^7.0.2",
+     "jschardet": "3.1.2",
+-    "kerberos": "^2.0.1",
+     "minimist": "^1.2.6",
+     "native-is-elevated": "0.7.0",
+-    "native-keymap": "^3.3.5",
+     "native-watchdog": "^1.4.1",
+     "node-pty": "1.1.0-beta11",
+     "tas-client-umd": "0.2.0",
 +    "utopia-vscode-common": "file:../../utopia-vscode-common",
-     "v8-inspect-profiler": "^0.0.22",
-     "vscode-nsfw": "2.1.8",
-     "vscode-oniguruma": "1.5.1",
+     "v8-inspect-profiler": "^0.1.1",
+     "vscode-oniguruma": "1.7.0",
+     "vscode-regexpp": "^3.1.0",
 diff --git a/product.json b/product.json
-index 7b60eac641d..b37ebcd9f73 100644
+index 27ae53fe16b..83637043bdc 100644
 --- a/product.json
 +++ b/product.json
-@@ -1,96 +1,9 @@
+@@ -1,84 +1,9 @@
  {
 -	"nameShort": "Code - OSS",
 -	"nameLong": "Code - OSS",
@@ -99,50 +181,36 @@ index 7b60eac641d..b37ebcd9f73 100644
 -	"win32MutexName": "vscodeoss",
 -	"licenseName": "MIT",
 -	"licenseUrl": "https://github.com/microsoft/vscode/blob/main/LICENSE.txt",
+-	"serverLicenseUrl": "https://github.com/microsoft/vscode/blob/main/LICENSE.txt",
+-	"serverGreeting": [],
+-	"serverLicense": [],
+-	"serverLicensePrompt": "",
+-	"serverApplicationName": "code-server-oss",
+-	"serverDataFolderName": ".vscode-server-oss",
+-	"tunnelApplicationName": "code-tunnel-oss",
 -	"win32DirName": "Microsoft Code OSS",
 -	"win32NameVersion": "Microsoft Code OSS",
 -	"win32RegValueName": "CodeOSS",
--	"win32AppId": "{{E34003BB-9E10-4501-8C11-BE3FAA83F23F}",
 -	"win32x64AppId": "{{D77B7E06-80BA-4137-BCF4-654B95CCEBC5}",
 -	"win32arm64AppId": "{{D1ACE434-89C5-48D1-88D3-E2991DF85475}",
--	"win32UserAppId": "{{C6065F05-9603-4FC4-8101-B9781A25D88E}",
 -	"win32x64UserAppId": "{{CC6B787D-37A0-49E8-AE24-8559A032BE0C}",
 -	"win32arm64UserAppId": "{{3AEBF0C8-F733-4AD4-BADE-FDB816D53D7B}",
 -	"win32AppUserModelId": "Microsoft.CodeOSS",
 -	"win32ShellNameShort": "C&ode - OSS",
+-	"win32TunnelServiceMutex": "vscodeoss-tunnelservice",
+-	"win32TunnelMutex": "vscodeoss-tunnel",
 -	"darwinBundleIdentifier": "com.visualstudio.code.oss",
--	"linuxIconName": "com.visualstudio.code.oss",
+-	"linuxIconName": "code-oss",
 -	"licenseFileName": "LICENSE.txt",
 -	"reportIssueUrl": "https://github.com/microsoft/vscode/issues/new",
+-	"nodejsRepository": "https://nodejs.org",
 -	"urlProtocol": "code-oss",
--	"webviewContentExternalBaseUrlTemplate": "https://{{uuid}}.vscode-webview.net/{{quality}}/{{commit}}/out/vs/workbench/contrib/webview/browser/pre/",
--	"extensionAllowedProposedApi": [
--		"ms-vscode.vscode-js-profile-flame",
--		"ms-vscode.vscode-js-profile-table",
--		"ms-vscode.remotehub",
--		"ms-vscode.remotehub-insiders",
--		"GitHub.remotehub",
--		"GitHub.remotehub-insiders"
--	],
+-	"webviewContentExternalBaseUrlTemplate": "https://{{uuid}}.vscode-cdn.net/insider/ef65ac1ba57f57f2a3961bfe94aa20481caca4c6/out/vs/workbench/contrib/webview/browser/pre/",
 -	"builtInExtensions": [
 -		{
--			"name": "ms-vscode.references-view",
--			"version": "0.0.81",
--			"repo": "https://github.com/microsoft/vscode-references-view",
--			"metadata": {
--				"id": "dc489f46-520d-4556-ae85-1f9eab3c412d",
--				"publisherId": {
--					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
--					"publisherName": "ms-vscode",
--					"displayName": "Microsoft",
--					"flags": "verified"
--				},
--				"publisherDisplayName": "Microsoft"
--			}
--		},
--		{
 -			"name": "ms-vscode.js-debug-companion",
--			"version": "1.0.15",
+-			"version": "1.1.2",
+-			"sha256": "e034b8b41beb4e97e02c70f7175bd88abe66048374c2bd629f54bb33354bc2aa",
 -			"repo": "https://github.com/microsoft/vscode-js-debug-companion",
 -			"metadata": {
 -				"id": "99cb0b7f-7354-4278-b8da-6cc79972169d",
@@ -157,7 +225,8 @@ index 7b60eac641d..b37ebcd9f73 100644
 -		},
 -		{
 -			"name": "ms-vscode.js-debug",
--			"version": "1.61.0",
+-			"version": "1.91.0",
+-			"sha256": "53b99146c7fa280f00c74414e09721530c622bf3e5eac2c967ddfb9906b51c80",
 -			"repo": "https://github.com/microsoft/vscode-js-debug",
 -			"metadata": {
 -				"id": "25629058-ddac-4e17-abba-74678e126c5d",
@@ -172,7 +241,8 @@ index 7b60eac641d..b37ebcd9f73 100644
 -		},
 -		{
 -			"name": "ms-vscode.vscode-js-profile-table",
--			"version": "0.0.18",
+-			"version": "1.0.9",
+-			"sha256": "3b62ee4276a2bbea3fe230f94b1d5edd915b05966090ea56f882e1e0ab53e1a6",
 -			"repo": "https://github.com/microsoft/vscode-js-profile-visualizer",
 -			"metadata": {
 -				"id": "7e52b41b-71ad-457b-ab7e-0620f1fc4feb",
@@ -186,578 +256,638 @@ index 7b60eac641d..b37ebcd9f73 100644
 -			}
 -		}
 -	]
+-}
 +	"productConfiguration": {
 +		"nameShort": "Code Web",
 +		"nameLong": "Code Web",
 +		"applicationName": "code-web",
 +		"dataFolderName": ".vscode-web",
-+		"version": "1.62.0"
++		"version": "1.91.1"
 +	}
- }
++}
+\ No newline at end of file
+diff --git a/remote/package.json b/remote/package.json
+index 5b0e80182ea..12c51e286db 100644
+--- a/remote/package.json
++++ b/remote/package.json
+@@ -26,7 +26,6 @@
+     "http-proxy-agent": "^7.0.0",
+     "https-proxy-agent": "^7.0.2",
+     "jschardet": "3.1.2",
+-    "kerberos": "^2.0.1",
+     "minimist": "^1.2.6",
+     "native-watchdog": "^1.4.1",
+     "node-pty": "1.1.0-beta11",
+diff --git a/remote/yarn.lock b/remote/yarn.lock
+index c8e84fc81e1..fb88f9e2ea5 100644
+--- a/remote/yarn.lock
++++ b/remote/yarn.lock
+@@ -171,11 +171,6 @@ agent-base@^7.0.1, agent-base@^7.0.2, agent-base@^7.1.0:
+   dependencies:
+     debug "^4.3.4"
+ 
+-base64-js@^1.3.1:
+-  version "1.5.1"
+-  resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
+-  integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
+-
+ bindings@^1.5.0:
+   version "1.5.0"
+   resolved "https://registry.yarnpkg.com/bindings/-/bindings-1.5.0.tgz#10353c9e945334bc0511a6d90b38fbc7c9c504df"
+@@ -183,15 +178,6 @@ bindings@^1.5.0:
+   dependencies:
+     file-uri-to-path "1.0.0"
+ 
+-bl@^4.0.3:
+-  version "4.1.0"
+-  resolved "https://registry.yarnpkg.com/bl/-/bl-4.1.0.tgz#451535264182bec2fbbc83a62ab98cf11d9f7b3a"
+-  integrity sha512-1W07cM9gS6DcLperZfFSj+bWLtaPGSOHWhPiGzXmvVJbRLdG82sH/Kn8EtW1VqWVA54AKf2h5k5BbnIbwF3h6w==
+-  dependencies:
+-    buffer "^5.5.0"
+-    inherits "^2.0.4"
+-    readable-stream "^3.4.0"
+-
+ braces@^3.0.2:
+   version "3.0.3"
+   resolved "https://registry.yarnpkg.com/braces/-/braces-3.0.3.tgz#490332f40919452272d55a8480adc0c441358789"
+@@ -204,19 +190,6 @@ buffer-crc32@~0.2.3:
+   resolved "https://registry.yarnpkg.com/buffer-crc32/-/buffer-crc32-0.2.13.tgz#0d333e3f00eac50aa1454abd30ef8c2a5d9a7242"
+   integrity sha1-DTM+PwDqxQqhRUq9MO+MKl2ackI=
+ 
+-buffer@^5.5.0:
+-  version "5.7.1"
+-  resolved "https://registry.yarnpkg.com/buffer/-/buffer-5.7.1.tgz#ba62e7c13133053582197160851a8f648e99eed0"
+-  integrity sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==
+-  dependencies:
+-    base64-js "^1.3.1"
+-    ieee754 "^1.1.13"
+-
+-chownr@^1.1.1:
+-  version "1.1.4"
+-  resolved "https://registry.yarnpkg.com/chownr/-/chownr-1.1.4.tgz#6fc9d7b42d32a583596337666e7d08084da2cc6b"
+-  integrity sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg==
+-
+ cookie@^0.4.0:
+   version "0.4.0"
+   resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.4.0.tgz#beb437e7022b3b6d49019d088665303ebe9c14ba"
+@@ -229,35 +202,6 @@ debug@4, debug@^4.3.4:
+   dependencies:
+     ms "2.1.2"
+ 
+-decompress-response@^6.0.0:
+-  version "6.0.0"
+-  resolved "https://registry.yarnpkg.com/decompress-response/-/decompress-response-6.0.0.tgz#ca387612ddb7e104bd16d85aab00d5ecf09c66fc"
+-  integrity sha512-aW35yZM6Bb/4oJlZncMH2LCoZtJXTRxES17vE3hoRiowU2kWHaJKFkSBDnDR+cm9J+9QhXmREyIfv0pji9ejCQ==
+-  dependencies:
+-    mimic-response "^3.1.0"
+-
+-deep-extend@^0.6.0:
+-  version "0.6.0"
+-  resolved "https://registry.yarnpkg.com/deep-extend/-/deep-extend-0.6.0.tgz#c4fa7c95404a17a9c3e8ca7e1537312b736330ac"
+-  integrity sha512-LOHxIOaPYdHlJRtCQfDIVZtfw/ufM8+rVj649RIHzcm/vGwQRXFt6OPqIFWsm2XEMrNIEtWR64sY1LEKD2vAOA==
+-
+-detect-libc@^2.0.0:
+-  version "2.0.1"
+-  resolved "https://registry.yarnpkg.com/detect-libc/-/detect-libc-2.0.1.tgz#e1897aa88fa6ad197862937fbc0441ef352ee0cd"
+-  integrity sha512-463v3ZeIrcWtdgIg6vI6XUncguvr2TnGl4SzDXinkt9mSLpBJKXT3mW6xT3VQdDN11+WVs29pgvivTc4Lp8v+w==
+-
+-end-of-stream@^1.1.0, end-of-stream@^1.4.1:
+-  version "1.4.4"
+-  resolved "https://registry.yarnpkg.com/end-of-stream/-/end-of-stream-1.4.4.tgz#5ae64a5f45057baf3626ec14da0ca5e4b2431eb0"
+-  integrity sha512-+uw1inIHVPQoaVuHzRyXd21icM+cnt4CzD5rW+NC1wjOUSTOs+Te7FOv7AhN7vS9x/oIyhLP5PR1H+phQAHu5Q==
+-  dependencies:
+-    once "^1.4.0"
+-
+-expand-template@^2.0.3:
+-  version "2.0.3"
+-  resolved "https://registry.yarnpkg.com/expand-template/-/expand-template-2.0.3.tgz#6e14b3fcee0f3a6340ecb57d2e8918692052a47c"
+-  integrity sha512-XYfuKMvj4O35f/pOXLObndIRvyQ+/+6AhODh+OKWj9S9498pHHn/IMszH+gt0fBCRWMNfk1ZSp5x3AifmnI2vg==
+-
+ fd-slicer@~1.1.0:
+   version "1.1.0"
+   resolved "https://registry.yarnpkg.com/fd-slicer/-/fd-slicer-1.1.0.tgz#25c7c89cb1f9077f8891bbe61d8f390eae256f1e"
+@@ -277,11 +221,6 @@ fill-range@^7.1.1:
+   dependencies:
+     to-regex-range "^5.0.1"
+ 
+-fs-constants@^1.0.0:
+-  version "1.0.0"
+-  resolved "https://registry.yarnpkg.com/fs-constants/-/fs-constants-1.0.0.tgz#6be0de9be998ce16af8afc24497b9ee9b7ccd9ad"
+-  integrity sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==
+-
+ fs-extra@^11.2.0:
+   version "11.2.0"
+   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.2.0.tgz#e70e17dfad64232287d01929399e0ea7c86b0e5b"
+@@ -291,11 +230,6 @@ fs-extra@^11.2.0:
+     jsonfile "^6.0.1"
+     universalify "^2.0.0"
+ 
+-github-from-package@0.0.0:
+-  version "0.0.0"
+-  resolved "https://registry.yarnpkg.com/github-from-package/-/github-from-package-0.0.0.tgz#97fb5d96bfde8973313f20e8288ef9a167fa64ce"
+-  integrity sha1-l/tdlr/eiXMxPyDoKI75oWf6ZM4=
+-
+ graceful-fs@^4.1.6, graceful-fs@^4.2.0:
+   version "4.2.11"
+   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.11.tgz#4183e4e8bf08bb6e05bbb2f7d2e0c8f712ca40e3"
+@@ -317,21 +251,6 @@ https-proxy-agent@^7.0.2:
+     agent-base "^7.0.2"
+     debug "4"
+ 
+-ieee754@^1.1.13:
+-  version "1.2.1"
+-  resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.2.1.tgz#8eb7a10a63fff25d15a57b001586d177d1b0d352"
+-  integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
+-
+-inherits@^2.0.3, inherits@^2.0.4:
+-  version "2.0.4"
+-  resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.4.tgz#0fa2c64f932917c3433a0ded55363aae37416b7c"
+-  integrity sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==
+-
+-ini@~1.3.0:
+-  version "1.3.8"
+-  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.8.tgz#a29da425b48806f34767a4efce397269af28432c"
+-  integrity sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==
+-
+ ip@^2.0.0:
+   version "2.0.1"
+   resolved "https://registry.yarnpkg.com/ip/-/ip-2.0.1.tgz#e8f3595d33a3ea66490204234b77636965307105"
+@@ -373,22 +292,6 @@ jsonfile@^6.0.1:
+   optionalDependencies:
+     graceful-fs "^4.1.6"
+ 
+-kerberos@^2.0.1:
+-  version "2.0.1"
+-  resolved "https://registry.yarnpkg.com/kerberos/-/kerberos-2.0.1.tgz#663b0b46883b4da84495f60f2e9e399a43a33ef5"
+-  integrity sha512-O/jIgbdGK566eUhFwIcgalbqirYU/r76MW7/UFw06Fd9x5bSwgyZWL/Vm26aAmezQww/G9KYkmmJBkEkPk5HLw==
+-  dependencies:
+-    bindings "^1.5.0"
+-    node-addon-api "^4.3.0"
+-    prebuild-install "7.1.1"
+-
+-lru-cache@^6.0.0:
+-  version "6.0.0"
+-  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-6.0.0.tgz#6d6fe6570ebd96aaf90fcad1dafa3b2566db3a94"
+-  integrity sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==
+-  dependencies:
+-    yallist "^4.0.0"
+-
+ micromatch@^4.0.5:
+   version "4.0.5"
+   resolved "https://registry.yarnpkg.com/micromatch/-/micromatch-4.0.5.tgz#bc8999a7cbbf77cdc89f132f6e467051b49090c6"
+@@ -397,21 +300,11 @@ micromatch@^4.0.5:
+     braces "^3.0.2"
+     picomatch "^2.3.1"
+ 
+-mimic-response@^3.1.0:
+-  version "3.1.0"
+-  resolved "https://registry.yarnpkg.com/mimic-response/-/mimic-response-3.1.0.tgz#2d1d59af9c1b129815accc2c46a022a5ce1fa3c9"
+-  integrity sha512-z0yWI+4FDrrweS8Zmt4Ej5HdJmky15+L2e6Wgn3+iK5fWzb6T3fhNFq2+MeTRb064c6Wr4N/wv0DzQTjNzHNGQ==
+-
+-minimist@^1.2.0, minimist@^1.2.3, minimist@^1.2.6:
++minimist@^1.2.6:
+   version "1.2.6"
+   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.6.tgz#8637a5b759ea0d6e98702cfb3a9283323c93af44"
+   integrity sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==
+ 
+-mkdirp-classic@^0.5.2, mkdirp-classic@^0.5.3:
+-  version "0.5.3"
+-  resolved "https://registry.yarnpkg.com/mkdirp-classic/-/mkdirp-classic-0.5.3.tgz#fa10c9115cc6d8865be221ba47ee9bed78601113"
+-  integrity sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==
+-
+ mkdirp@^1.0.4:
+   version "1.0.4"
+   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-1.0.4.tgz#3eb5ed62622756d79a5f0e2a221dfebad75c2f7e"
+@@ -422,23 +315,11 @@ ms@2.1.2:
+   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
+   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
+ 
+-napi-build-utils@^1.0.1:
+-  version "1.0.2"
+-  resolved "https://registry.yarnpkg.com/napi-build-utils/-/napi-build-utils-1.0.2.tgz#b1fddc0b2c46e380a0b7a76f984dd47c41a13806"
+-  integrity sha512-ONmRUqK7zj7DWX0D9ADe03wbwOBZxNAfF20PlGfCWQcD3+/MakShIHrMqx9YwPTfxDdF1zLeL+RGZiR9kGMLdg==
+-
+ native-watchdog@^1.4.1:
+   version "1.4.2"
+   resolved "https://registry.yarnpkg.com/native-watchdog/-/native-watchdog-1.4.2.tgz#cf9f913157ee992723aa372b6137293c663be9b7"
+   integrity sha512-iT3Uj6FFdrW5vHbQ/ybiznLus9oiUoMJ8A8nyugXv9rV3EBhIodmGs+mztrwQyyBc+PB5/CrskAH/WxaUVRRSQ==
+ 
+-node-abi@^3.3.0:
+-  version "3.8.0"
+-  resolved "https://registry.yarnpkg.com/node-abi/-/node-abi-3.8.0.tgz#679957dc8e7aa47b0a02589dbfde4f77b29ccb32"
+-  integrity sha512-tzua9qWWi7iW4I42vUPKM+SfaF0vQSLAm4yO5J83mSwB7GeoWrDKC/K+8YCnYNwqP5duwazbw2X9l4m8SC2cUw==
+-  dependencies:
+-    semver "^7.3.5"
+-
+ node-addon-api@7.1.0, node-addon-api@^7.1.0:
+   version "7.1.0"
+   resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-7.1.0.tgz#71f609369379c08e251c558527a107107b5e0fdb"
+@@ -454,11 +335,6 @@ node-addon-api@^3.2.1:
+   resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-3.2.1.tgz#81325e0a2117789c0128dab65e7e38f07ceba161"
+   integrity sha512-mmcei9JghVNDYydghQmeDX8KoAm0FAiYyIcUt/N4nhyAipB17pllZQDOJD2fotxABnt4Mdz+dKTO7eftLg4d0A==
+ 
+-node-addon-api@^4.3.0:
+-  version "4.3.0"
+-  resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-4.3.0.tgz#52a1a0b475193e0928e98e0426a0d1254782b77f"
+-  integrity sha512-73sE9+3UaLYYFmDsFZnqCInzPyh3MqIwZO9cw58yIqAZhONrrabrYyYe3TuIqtIiOuTXVhsGau8hcrhhwSsDIQ==
+-
+ node-gyp-build@4.8.1, node-gyp-build@^4.3.0:
+   version "4.8.1"
+   resolved "https://registry.yarnpkg.com/node-gyp-build/-/node-gyp-build-4.8.1.tgz#976d3ad905e71b76086f4f0b0d3637fe79b6cda5"
+@@ -471,13 +347,6 @@ node-pty@1.1.0-beta11:
+   dependencies:
+     node-addon-api "^7.1.0"
+ 
+-once@^1.3.1, once@^1.4.0:
+-  version "1.4.0"
+-  resolved "https://registry.yarnpkg.com/once/-/once-1.4.0.tgz#583b1aa775961d4b113ac17d9c50baef9dd76bd1"
+-  integrity sha1-WDsap3WWHUsROsF9nFC6753Xa9E=
+-  dependencies:
+-    wrappy "1"
+-
+ pend@~1.2.0:
+   version "1.2.0"
+   resolved "https://registry.yarnpkg.com/pend/-/pend-1.2.0.tgz#7a57eb550a6783f9115331fcf4663d5c8e007a50"
+@@ -488,82 +357,11 @@ picomatch@^2.3.1:
+   resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-2.3.1.tgz#3ba3833733646d9d3e4995946c1365a67fb07a42"
+   integrity sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==
+ 
+-prebuild-install@7.1.1:
+-  version "7.1.1"
+-  resolved "https://registry.yarnpkg.com/prebuild-install/-/prebuild-install-7.1.1.tgz#de97d5b34a70a0c81334fd24641f2a1702352e45"
+-  integrity sha512-jAXscXWMcCK8GgCoHOfIr0ODh5ai8mj63L2nWrjuAgXE6tDyYGnx4/8o/rCgU+B4JSyZBKbeZqzhtwtC3ovxjw==
+-  dependencies:
+-    detect-libc "^2.0.0"
+-    expand-template "^2.0.3"
+-    github-from-package "0.0.0"
+-    minimist "^1.2.3"
+-    mkdirp-classic "^0.5.3"
+-    napi-build-utils "^1.0.1"
+-    node-abi "^3.3.0"
+-    pump "^3.0.0"
+-    rc "^1.2.7"
+-    simple-get "^4.0.0"
+-    tar-fs "^2.0.0"
+-    tunnel-agent "^0.6.0"
+-
+ proxy-from-env@^1.1.0:
+   version "1.1.0"
+   resolved "https://registry.yarnpkg.com/proxy-from-env/-/proxy-from-env-1.1.0.tgz#e102f16ca355424865755d2c9e8ea4f24d58c3e2"
+   integrity sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==
+ 
+-pump@^3.0.0:
+-  version "3.0.0"
+-  resolved "https://registry.yarnpkg.com/pump/-/pump-3.0.0.tgz#b4a2116815bde2f4e1ea602354e8c75565107a64"
+-  integrity sha512-LwZy+p3SFs1Pytd/jYct4wpv49HiYCqd9Rlc5ZVdk0V+8Yzv6jR5Blk3TRmPL1ft69TxP0IMZGJ+WPFU2BFhww==
+-  dependencies:
+-    end-of-stream "^1.1.0"
+-    once "^1.3.1"
+-
+-rc@^1.2.7:
+-  version "1.2.8"
+-  resolved "https://registry.yarnpkg.com/rc/-/rc-1.2.8.tgz#cd924bf5200a075b83c188cd6b9e211b7fc0d3ed"
+-  integrity sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==
+-  dependencies:
+-    deep-extend "^0.6.0"
+-    ini "~1.3.0"
+-    minimist "^1.2.0"
+-    strip-json-comments "~2.0.1"
+-
+-readable-stream@^3.1.1, readable-stream@^3.4.0:
+-  version "3.6.0"
+-  resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-3.6.0.tgz#337bbda3adc0706bd3e024426a286d4b4b2c9198"
+-  integrity sha512-BViHy7LKeTz4oNnkcLJ+lVSL6vpiFeX6/d3oSH8zCW7UxP2onchk+vTGB143xuFjHS3deTgkKoXXymXqymiIdA==
+-  dependencies:
+-    inherits "^2.0.3"
+-    string_decoder "^1.1.1"
+-    util-deprecate "^1.0.1"
+-
+-safe-buffer@^5.0.1, safe-buffer@~5.2.0:
+-  version "5.2.1"
+-  resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.2.1.tgz#1eaf9fa9bdb1fdd4ec75f58f9cdb4e6b7827eec6"
+-  integrity sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==
+-
+-semver@^7.3.5:
+-  version "7.5.4"
+-  resolved "https://registry.yarnpkg.com/semver/-/semver-7.5.4.tgz#483986ec4ed38e1c6c48c34894a9182dbff68a6e"
+-  integrity sha512-1bCSESV6Pv+i21Hvpxp3Dx+pSD8lIPt8uVjRrxAUt/nbswYc+tK6Y2btiULjd4+fnq15PX+nqQDC7Oft7WkwcA==
+-  dependencies:
+-    lru-cache "^6.0.0"
+-
+-simple-concat@^1.0.0:
+-  version "1.0.1"
+-  resolved "https://registry.yarnpkg.com/simple-concat/-/simple-concat-1.0.1.tgz#f46976082ba35c2263f1c8ab5edfe26c41c9552f"
+-  integrity sha512-cSFtAPtRhljv69IK0hTVZQ+OfE9nePi/rtJmw5UjHeVyVroEqJXP1sFztKUy1qU+xvz3u/sfYJLa947b7nAN2Q==
+-
+-simple-get@^4.0.0:
+-  version "4.0.1"
+-  resolved "https://registry.yarnpkg.com/simple-get/-/simple-get-4.0.1.tgz#4a39db549287c979d352112fa03fd99fd6bc3543"
+-  integrity sha512-brv7p5WgH0jmQJr1ZDDfKDOSeWWg+OVypG99A/5vYGPqJ6pxiaHLy8nxtFjBA7oMa01ebA9gfh1uMCFqOuXxvA==
+-  dependencies:
+-    decompress-response "^6.0.0"
+-    once "^1.3.1"
+-    simple-concat "^1.0.0"
+-
+ smart-buffer@^4.2.0:
+   version "4.2.0"
+   resolved "https://registry.yarnpkg.com/smart-buffer/-/smart-buffer-4.2.0.tgz#6e1d71fa4f18c05f7d0ff216dd16a481d0e8d9ae"
+@@ -586,39 +384,6 @@ socks@^2.7.1:
+     ip "^2.0.0"
+     smart-buffer "^4.2.0"
+ 
+-string_decoder@^1.1.1:
+-  version "1.3.0"
+-  resolved "https://registry.yarnpkg.com/string_decoder/-/string_decoder-1.3.0.tgz#42f114594a46cf1a8e30b0a84f56c78c3edac21e"
+-  integrity sha512-hkRX8U1WjJFd8LsDJ2yQ/wWWxaopEsABU1XfkM8A+j0+85JAGppt16cr1Whg6KIbb4okU6Mql6BOj+uup/wKeA==
+-  dependencies:
+-    safe-buffer "~5.2.0"
+-
+-strip-json-comments@~2.0.1:
+-  version "2.0.1"
+-  resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
+-  integrity sha1-PFMZQukIwml8DsNEhYwobHygpgo=
+-
+-tar-fs@^2.0.0:
+-  version "2.1.1"
+-  resolved "https://registry.yarnpkg.com/tar-fs/-/tar-fs-2.1.1.tgz#489a15ab85f1f0befabb370b7de4f9eb5cbe8784"
+-  integrity sha512-V0r2Y9scmbDRLCNex/+hYzvp/zyYjvFbHPNgVTKfQvVrb6guiE/fxP+XblDNR011utopbkex2nM4dHNV6GDsng==
+-  dependencies:
+-    chownr "^1.1.1"
+-    mkdirp-classic "^0.5.2"
+-    pump "^3.0.0"
+-    tar-stream "^2.1.4"
+-
+-tar-stream@^2.1.4:
+-  version "2.2.0"
+-  resolved "https://registry.yarnpkg.com/tar-stream/-/tar-stream-2.2.0.tgz#acad84c284136b060dc3faa64474aa9aebd77287"
+-  integrity sha512-ujeqbceABgwMZxEJnk2HDY2DlnUZ+9oEcb1KzTVfYHio0UE6dG71n60d8D2I4qNvleWrrXpmjpt7vZeF1LnMZQ==
+-  dependencies:
+-    bl "^4.0.3"
+-    end-of-stream "^1.4.1"
+-    fs-constants "^1.0.0"
+-    inherits "^2.0.3"
+-    readable-stream "^3.1.1"
+-
+ tas-client-umd@0.2.0:
+   version "0.2.0"
+   resolved "https://registry.yarnpkg.com/tas-client-umd/-/tas-client-umd-0.2.0.tgz#b71cc28f4c9b14f7b62f1ca4669886aa197e390c"
+@@ -631,23 +396,11 @@ to-regex-range@^5.0.1:
+   dependencies:
+     is-number "^7.0.0"
+ 
+-tunnel-agent@^0.6.0:
+-  version "0.6.0"
+-  resolved "https://registry.yarnpkg.com/tunnel-agent/-/tunnel-agent-0.6.0.tgz#27a5dea06b36b04a0a9966774b290868f0fc40fd"
+-  integrity sha1-J6XeoGs2sEoKmWZ3SykIaPD8QP0=
+-  dependencies:
+-    safe-buffer "^5.0.1"
+-
+ universalify@^2.0.0:
+   version "2.0.1"
+   resolved "https://registry.yarnpkg.com/universalify/-/universalify-2.0.1.tgz#168efc2180964e6386d061e094df61afe239b18d"
+   integrity sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==
+ 
+-util-deprecate@^1.0.1:
+-  version "1.0.2"
+-  resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
+-  integrity sha1-RQ1Nyfpw3nMnYvvS1KKJgUGaDM8=
+-
+ uuid@^9.0.1:
+   version "9.0.1"
+   resolved "https://registry.yarnpkg.com/uuid/-/uuid-9.0.1.tgz#e188d4c8853cc722220392c424cd637f32293f30"
+@@ -668,16 +421,6 @@ vscode-textmate@9.0.0:
+   resolved "https://registry.yarnpkg.com/vscode-textmate/-/vscode-textmate-9.0.0.tgz#313c6c8792b0507aef35aeb81b6b370b37c44d6c"
+   integrity sha512-Cl65diFGxz7gpwbav10HqiY/eVYTO1sjQpmRmV991Bj7wAoOAjGQ97PpQcXorDE2Uc4hnGWLY17xme+5t6MlSg==
+ 
+-wrappy@1:
+-  version "1.0.2"
+-  resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
+-  integrity sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=
+-
+-yallist@^4.0.0:
+-  version "4.0.0"
+-  resolved "https://registry.yarnpkg.com/yallist/-/yallist-4.0.0.tgz#9bb92790d9c0effec63be73519e11a35019a3a72"
+-  integrity sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==
+-
+ yauzl@^2.9.2:
+   version "2.10.0"
+   resolved "https://registry.yarnpkg.com/yauzl/-/yauzl-2.10.0.tgz#c7eb17c93e112cb1086fa6d8e51fb0667b79a5f9"
+diff --git a/src/buildfile.js b/src/buildfile.js
+index 9898cd44d1f..f3e2c12989c 100644
+--- a/src/buildfile.js
++++ b/src/buildfile.js
+@@ -74,7 +74,7 @@ exports.keyboardMaps = [
+ ];
+ 
+ exports.code = [
+-	createModuleDescription('vs/code/electron-main/main'),
++	// createModuleDescription('vs/code/electron-main/main'),
+ 	createModuleDescription('vs/code/node/cli'),
+ 	createModuleDescription('vs/code/node/cliProcessMain', ['vs/code/node/cli']),
+ 	createModuleDescription('vs/code/node/sharedProcess/sharedProcessMain'),
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 6148eb30092..6948ededa4a 100644
+index 66d30c3aca3..39d83e4cf96 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -365,7 +365,11 @@ export function getClientArea(element: HTMLElement): Dimension {
- 		return new Dimension(document.documentElement.clientWidth, document.documentElement.clientHeight);
+@@ -496,7 +496,11 @@ export function getClientArea(element: HTMLElement, fallback?: HTMLElement): Dim
+ 		return getClientArea(fallback);
  	}
  
 -	throw new Error('Unable to figure out browser width and height');
-+ 	// this Error would prevent VSCode from loading inside Utopia if the browser tab is not in the foreground
-+ 	// throw new Error('Unable to figure out browser width and height');
-+ 
-+ 	// Instead, we just return 0 x 0, it seems to be fine
-+ 	return new Dimension(0, 0);
++	// this Error would prevent VSCode from loading inside Utopia if the browser tab is not in the foreground
++	// throw new Error('Unable to figure out browser width and height');
++
++	// Instead, we just return 0 x 0, it seems to be fine
++	return new Dimension(0, 0);
  }
  
  class SizeUtils {
+diff --git a/src/vs/base/common/uri.ts b/src/vs/base/common/uri.ts
+index 4d7e51431cb..b6e1c1d9a91 100644
+--- a/src/vs/base/common/uri.ts
++++ b/src/vs/base/common/uri.ts
+@@ -22,7 +22,7 @@ function _validateUri(ret: URI, _strict?: boolean): void {
+ 	// scheme, https://tools.ietf.org/html/rfc3986#section-3.1
+ 	// ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+ 	if (ret.scheme && !_schemePattern.test(ret.scheme)) {
+-		throw new Error('[UriError]: Scheme contains illegal characters.');
++		throw new Error(`[UriError]: Scheme contains illegal characters. Full URI: ${JSON.stringify(ret)}`);
+ 	}
+ 
+ 	// path, http://tools.ietf.org/html/rfc3986#section-3.3
 diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
-index 534fe232636..b41446430f0 100644
+index f8875029a8a..7302bdf3ae6 100644
 --- a/src/vs/code/browser/workbench/workbench.ts
 +++ b/src/vs/code/browser/workbench/workbench.ts
-@@ -1,536 +1,101 @@
--/*---------------------------------------------------------------------------------------------
-- *  Copyright (c) Microsoft Corporation. All rights reserved.
-- *  Licensed under the MIT License. See License.txt in the project root for license information.
-- *--------------------------------------------------------------------------------------------*/
--
+@@ -3,586 +3,104 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
+ 
 -import { isStandalone } from 'vs/base/browser/browser';
--import { streamToBuffer } from 'vs/base/common/buffer';
--import { CancellationToken } from 'vs/base/common/cancellation';
--import { Emitter, Event } from 'vs/base/common/event';
--import { Disposable } from 'vs/base/common/lifecycle';
+-import { mainWindow } from 'vs/base/browser/window';
+-import { VSBuffer, decodeBase64, encodeBase64 } from 'vs/base/common/buffer';
+-import { Emitter } from 'vs/base/common/event';
+-import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
+-import { parse } from 'vs/base/common/marshalling';
 -import { Schemas } from 'vs/base/common/network';
+-import { posix } from 'vs/base/common/path';
 -import { isEqual } from 'vs/base/common/resources';
+-import { ltrim } from 'vs/base/common/strings';
 -import { URI, UriComponents } from 'vs/base/common/uri';
--import { generateUuid } from 'vs/base/common/uuid';
--import { request } from 'vs/base/parts/request/browser/request';
--import { localize } from 'vs/nls';
--import { parseLogLevel } from 'vs/platform/log/common/log';
 -import product from 'vs/platform/product/common/product';
--import { isFolderToOpen, isWorkspaceToOpen } from 'vs/platform/windows/common/windows';
--import { create, ICredentialsProvider, IHomeIndicator, IProductQualityChangeHandler, ISettingsSyncOptions, IURLCallbackProvider, IWelcomeBanner, IWindowIndicator, IWorkbenchConstructionOptions, IWorkspace, IWorkspaceProvider } from 'vs/workbench/workbench.web.api';
+-import { ISecretStorageProvider } from 'vs/platform/secrets/common/secrets';
+-import { isFolderToOpen, isWorkspaceToOpen } from 'vs/platform/window/common/window';
+-import type { IWorkbenchConstructionOptions, IWorkspace, IWorkspaceProvider } from 'vs/workbench/browser/web.api';
+-import { AuthenticationSessionInfo } from 'vs/workbench/services/authentication/browser/authenticationService';
+-import type { IURLCallbackProvider } from 'vs/workbench/services/url/browser/urlService';
+ import { create } from 'vs/workbench/workbench.web.main';
 -
--function doCreateUri(path: string, queryValues: Map<string, string>): URI {
--	let query: string | undefined = undefined;
+-interface ISecretStorageCrypto {
+-	seal(data: string): Promise<string>;
+-	unseal(data: string): Promise<string>;
+-}
 -
--	if (queryValues) {
--		let index = 0;
--		queryValues.forEach((value, key) => {
--			if (!query) {
--				query = '';
--			}
--
--			const prefix = (index++ === 0) ? '' : '&';
--			query += `${prefix}${key}=${encodeURIComponent(value)}`;
--		});
+-class TransparentCrypto implements ISecretStorageCrypto {
+-	async seal(data: string): Promise<string> {
+-		return data;
 -	}
 -
--	return URI.parse(window.location.href).with({ path, query });
+-	async unseal(data: string): Promise<string> {
+-		return data;
+-	}
 -}
 -
--interface ICredential {
--	service: string;
--	account: string;
--	password: string;
+-const enum AESConstants {
+-	ALGORITHM = 'AES-GCM',
+-	KEY_LENGTH = 256,
+-	IV_LENGTH = 12,
 -}
 -
--class LocalStorageCredentialsProvider implements ICredentialsProvider {
+-class ServerKeyedAESCrypto implements ISecretStorageCrypto {
+-	private _serverKey: Uint8Array | undefined;
 -
--	static readonly CREDENTIALS_OPENED_KEY = 'credentials.provider';
+-	/** Gets whether the algorithm is supported; requires a secure context */
+-	public static supported() {
+-		return !!crypto.subtle;
+-	}
 -
--	private readonly authService: string | undefined;
+-	constructor(private readonly authEndpoint: string) { }
 -
--	constructor() {
--		let authSessionInfo: { readonly id: string, readonly accessToken: string, readonly providerId: string, readonly canSignOut?: boolean, readonly scopes: string[][] } | undefined;
--		const authSessionElement = document.getElementById('vscode-workbench-auth-session');
--		const authSessionElementAttribute = authSessionElement ? authSessionElement.getAttribute('data-settings') : undefined;
--		if (authSessionElementAttribute) {
+-	async seal(data: string): Promise<string> {
+-		// Get a new key and IV on every change, to avoid the risk of reusing the same key and IV pair with AES-GCM
+-		// (see also: https://developer.mozilla.org/en-US/docs/Web/API/AesGcmParams#properties)
+-		const iv = mainWindow.crypto.getRandomValues(new Uint8Array(AESConstants.IV_LENGTH));
+-		// crypto.getRandomValues isn't a good-enough PRNG to generate crypto keys, so we need to use crypto.subtle.generateKey and export the key instead
+-		const clientKeyObj = await mainWindow.crypto.subtle.generateKey(
+-			{ name: AESConstants.ALGORITHM as const, length: AESConstants.KEY_LENGTH as const },
+-			true,
+-			['encrypt', 'decrypt']
+-		);
+-
+-		const clientKey = new Uint8Array(await mainWindow.crypto.subtle.exportKey('raw', clientKeyObj));
+-		const key = await this.getKey(clientKey);
+-		const dataUint8Array = new TextEncoder().encode(data);
+-		const cipherText: ArrayBuffer = await mainWindow.crypto.subtle.encrypt(
+-			{ name: AESConstants.ALGORITHM as const, iv },
+-			key,
+-			dataUint8Array
+-		);
+-
+-		// Base64 encode the result and store the ciphertext, the key, and the IV in localStorage
+-		// Note that the clientKey and IV don't need to be secret
+-		const result = new Uint8Array([...clientKey, ...iv, ...new Uint8Array(cipherText)]);
+-		return encodeBase64(VSBuffer.wrap(result));
+-	}
+-
+-	async unseal(data: string): Promise<string> {
+-		// encrypted should contain, in order: the key (32-byte), the IV for AES-GCM (12-byte) and the ciphertext (which has the GCM auth tag at the end)
+-		// Minimum length must be 44 (key+IV length) + 16 bytes (1 block encrypted with AES - regardless of key size)
+-		const dataUint8Array = decodeBase64(data);
+-
+-		if (dataUint8Array.byteLength < 60) {
+-			throw Error('Invalid length for the value for credentials.crypto');
+-		}
+-
+-		const keyLength = AESConstants.KEY_LENGTH / 8;
+-		const clientKey = dataUint8Array.slice(0, keyLength);
+-		const iv = dataUint8Array.slice(keyLength, keyLength + AESConstants.IV_LENGTH);
+-		const cipherText = dataUint8Array.slice(keyLength + AESConstants.IV_LENGTH);
+-
+-		// Do the decryption and parse the result as JSON
+-		const key = await this.getKey(clientKey.buffer);
+-		const decrypted = await mainWindow.crypto.subtle.decrypt(
+-			{ name: AESConstants.ALGORITHM as const, iv: iv.buffer },
+-			key,
+-			cipherText.buffer
+-		);
+-
+-		return new TextDecoder().decode(new Uint8Array(decrypted));
+-	}
+-
+-	/**
+-	 * Given a clientKey, returns the CryptoKey object that is used to encrypt/decrypt the data.
+-	 * The actual key is (clientKey XOR serverKey)
+-	 */
+-	private async getKey(clientKey: Uint8Array): Promise<CryptoKey> {
+-		if (!clientKey || clientKey.byteLength !== AESConstants.KEY_LENGTH / 8) {
+-			throw Error('Invalid length for clientKey');
+-		}
+-
+-		const serverKey = await this.getServerKeyPart();
+-		const keyData = new Uint8Array(AESConstants.KEY_LENGTH / 8);
+-
+-		for (let i = 0; i < keyData.byteLength; i++) {
+-			keyData[i] = clientKey[i]! ^ serverKey[i]!;
+-		}
+-
+-		return mainWindow.crypto.subtle.importKey(
+-			'raw',
+-			keyData,
+-			{
+-				name: AESConstants.ALGORITHM as const,
+-				length: AESConstants.KEY_LENGTH as const,
+-			},
+-			true,
+-			['encrypt', 'decrypt']
+-		);
+-	}
+-
+-	private async getServerKeyPart(): Promise<Uint8Array> {
+-		if (this._serverKey) {
+-			return this._serverKey;
+-		}
+-
+-		let attempt = 0;
+-		let lastError: unknown | undefined;
+-
+-		while (attempt <= 3) {
 -			try {
--				authSessionInfo = JSON.parse(authSessionElementAttribute);
--			} catch (error) { /* Invalid session is passed. Ignore. */ }
--		}
--
--		if (authSessionInfo) {
--			// Settings Sync Entry
--			this.setPassword(`${product.urlProtocol}.login`, 'account', JSON.stringify(authSessionInfo));
--
--			// Auth extension Entry
--			this.authService = `${product.urlProtocol}-${authSessionInfo.providerId}.login`;
--			this.setPassword(this.authService, 'account', JSON.stringify(authSessionInfo.scopes.map(scopes => ({
--				id: authSessionInfo!.id,
--				scopes,
--				accessToken: authSessionInfo!.accessToken
--			}))));
--		}
--	}
--
--	private _credentials: ICredential[] | undefined;
--	private get credentials(): ICredential[] {
--		if (!this._credentials) {
--			try {
--				const serializedCredentials = window.localStorage.getItem(LocalStorageCredentialsProvider.CREDENTIALS_OPENED_KEY);
--				if (serializedCredentials) {
--					this._credentials = JSON.parse(serializedCredentials);
+-				const res = await fetch(this.authEndpoint, { credentials: 'include', method: 'POST' });
+-				if (!res.ok) {
+-					throw new Error(res.statusText);
 -				}
--			} catch (error) {
--				// ignore
--			}
--
--			if (!Array.isArray(this._credentials)) {
--				this._credentials = [];
--			}
--		}
--
--		return this._credentials;
--	}
--
--	private save(): void {
--		window.localStorage.setItem(LocalStorageCredentialsProvider.CREDENTIALS_OPENED_KEY, JSON.stringify(this.credentials));
--	}
--
--	async getPassword(service: string, account: string): Promise<string | null> {
--		return this.doGetPassword(service, account);
--	}
--
--	private async doGetPassword(service: string, account?: string): Promise<string | null> {
--		for (const credential of this.credentials) {
--			if (credential.service === service) {
--				if (typeof account !== 'string' || account === credential.account) {
--					return credential.password;
+-				const serverKey = new Uint8Array(await await res.arrayBuffer());
+-				if (serverKey.byteLength !== AESConstants.KEY_LENGTH / 8) {
+-					throw Error(`The key retrieved by the server is not ${AESConstants.KEY_LENGTH} bit long.`);
 -				}
+-				this._serverKey = serverKey;
+-				return this._serverKey;
+-			} catch (e) {
+-				lastError = e;
+-				attempt++;
+-
+-				// exponential backoff
+-				await new Promise(resolve => setTimeout(resolve, attempt * attempt * 100));
 -			}
 -		}
 -
--		return null;
+-		throw lastError;
 -	}
--
--	async setPassword(service: string, account: string, password: string): Promise<void> {
--		this.doDeletePassword(service, account);
--
--		this.credentials.push({ service, account, password });
--
--		this.save();
--
--		try {
--			if (password && service === this.authService) {
--				const value = JSON.parse(password);
--				if (Array.isArray(value) && value.length === 0) {
--					await this.logout(service);
--				}
--			}
--		} catch (error) {
--			console.log(error);
--		}
--	}
--
--	async deletePassword(service: string, account: string): Promise<boolean> {
--		const result = await this.doDeletePassword(service, account);
--
--		if (result && service === this.authService) {
--			try {
--				await this.logout(service);
--			} catch (error) {
--				console.log(error);
--			}
--		}
--
--		return result;
--	}
--
--	private async doDeletePassword(service: string, account: string): Promise<boolean> {
--		let found = false;
--
--		this._credentials = this.credentials.filter(credential => {
--			if (credential.service === service && credential.account === account) {
--				found = true;
--
--				return false;
--			}
--
--			return true;
--		});
--
--		if (found) {
--			this.save();
--		}
--
--		return found;
--	}
--
--	async findPassword(service: string): Promise<string | null> {
--		return this.doGetPassword(service);
--	}
--
--	async findCredentials(service: string): Promise<Array<{ account: string, password: string }>> {
--		return this.credentials
--			.filter(credential => credential.service === service)
--			.map(({ account, password }) => ({ account, password }));
--	}
--
--	private async logout(service: string): Promise<void> {
--		const queryValues: Map<string, string> = new Map();
--		queryValues.set('logout', String(true));
--		queryValues.set('service', service);
--
--		await request({
--			url: doCreateUri('/auth/logout', queryValues).toString(true)
--		}, CancellationToken.None);
--	}
--
--	async clear(): Promise<void> {
--		window.localStorage.removeItem(LocalStorageCredentialsProvider.CREDENTIALS_OPENED_KEY);
--	}
--}
--
--class PollingURLCallbackProvider extends Disposable implements IURLCallbackProvider {
--
--	static readonly FETCH_INTERVAL = 500; 			// fetch every 500ms
--	static readonly FETCH_TIMEOUT = 5 * 60 * 1000; 	// ...but stop after 5min
--
--	static readonly QUERY_KEYS = {
--		REQUEST_ID: 'vscode-requestId',
--		SCHEME: 'vscode-scheme',
--		AUTHORITY: 'vscode-authority',
--		PATH: 'vscode-path',
--		QUERY: 'vscode-query',
--		FRAGMENT: 'vscode-fragment'
--	};
--
--	private readonly _onCallback = this._register(new Emitter<URI>());
--	readonly onCallback = this._onCallback.event;
--
--	create(options?: Partial<UriComponents>): URI {
--		const queryValues: Map<string, string> = new Map();
--
--		const requestId = generateUuid();
--		queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.REQUEST_ID, requestId);
--
--		const { scheme, authority, path, query, fragment } = options ? options : { scheme: undefined, authority: undefined, path: undefined, query: undefined, fragment: undefined };
--
--		if (scheme) {
--			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.SCHEME, scheme);
--		}
--
--		if (authority) {
--			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.AUTHORITY, authority);
--		}
--
--		if (path) {
--			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.PATH, path);
--		}
--
--		if (query) {
--			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.QUERY, query);
--		}
--
--		if (fragment) {
--			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.FRAGMENT, fragment);
--		}
--
--		// Start to poll on the callback being fired
--		this.periodicFetchCallback(requestId, Date.now());
--
--		return doCreateUri('/callback', queryValues);
--	}
--
--	private async periodicFetchCallback(requestId: string, startTime: number): Promise<void> {
--
--		// Ask server for callback results
--		const queryValues: Map<string, string> = new Map();
--		queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.REQUEST_ID, requestId);
--
--		const result = await request({
--			url: doCreateUri('/fetch-callback', queryValues).toString(true)
--		}, CancellationToken.None);
--
--		// Check for callback results
--		const content = await streamToBuffer(result.stream);
--		if (content.byteLength > 0) {
--			try {
--				this._onCallback.fire(URI.revive(JSON.parse(content.toString())));
--			} catch (error) {
--				console.error(error);
--			}
--
--			return; // done
--		}
--
--		// Continue fetching unless we hit the timeout
--		if (Date.now() - startTime < PollingURLCallbackProvider.FETCH_TIMEOUT) {
--			setTimeout(() => this.periodicFetchCallback(requestId, startTime), PollingURLCallbackProvider.FETCH_INTERVAL);
--		}
--	}
--}
--
--class WorkspaceProvider implements IWorkspaceProvider {
--
--	static QUERY_PARAM_EMPTY_WINDOW = 'ew';
--	static QUERY_PARAM_FOLDER = 'folder';
--	static QUERY_PARAM_WORKSPACE = 'workspace';
--
--	static QUERY_PARAM_PAYLOAD = 'payload';
--
--	readonly trusted = true;
--
--	constructor(
--		readonly workspace: IWorkspace,
--		readonly payload: object
--	) { }
--
--	async open(workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }): Promise<boolean> {
--		if (options?.reuse && !options.payload && this.isSame(this.workspace, workspace)) {
--			return true; // return early if workspace and environment is not changing and we are reusing window
--		}
--
--		const targetHref = this.createTargetUrl(workspace, options);
--		if (targetHref) {
--			if (options?.reuse) {
--				window.location.href = targetHref;
--				return true;
--			} else {
--				let result;
--				if (isStandalone) {
--					result = window.open(targetHref, '_blank', 'toolbar=no'); // ensures to open another 'standalone' window!
--				} else {
--					result = window.open(targetHref);
--				}
--
--				return !!result;
--			}
--		}
--		return false;
--	}
--
--	private createTargetUrl(workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }): string | undefined {
--
--		// Empty
--		let targetHref: string | undefined = undefined;
--		if (!workspace) {
--			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_EMPTY_WINDOW}=true`;
--		}
--
--		// Folder
--		else if (isFolderToOpen(workspace)) {
--			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_FOLDER}=${encodeURIComponent(workspace.folderUri.toString())}`;
--		}
--
--		// Workspace
--		else if (isWorkspaceToOpen(workspace)) {
--			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_WORKSPACE}=${encodeURIComponent(workspace.workspaceUri.toString())}`;
--		}
--
--		// Append payload if any
--		if (options?.payload) {
--			targetHref += `&${WorkspaceProvider.QUERY_PARAM_PAYLOAD}=${encodeURIComponent(JSON.stringify(options.payload))}`;
--		}
--
--		return targetHref;
--	}
--
--	private isSame(workspaceA: IWorkspace, workspaceB: IWorkspace): boolean {
--		if (!workspaceA || !workspaceB) {
--			return workspaceA === workspaceB; // both empty
--		}
--
--		if (isFolderToOpen(workspaceA) && isFolderToOpen(workspaceB)) {
--			return isEqual(workspaceA.folderUri, workspaceB.folderUri); // same workspace
--		}
--
--		if (isWorkspaceToOpen(workspaceA) && isWorkspaceToOpen(workspaceB)) {
--			return isEqual(workspaceA.workspaceUri, workspaceB.workspaceUri); // same workspace
--		}
--
--		return false;
--	}
--
--	hasRemote(): boolean {
--		if (this.workspace) {
--			if (isFolderToOpen(this.workspace)) {
--				return this.workspace.folderUri.scheme === Schemas.vscodeRemote;
--			}
--
--			if (isWorkspaceToOpen(this.workspace)) {
--				return this.workspace.workspaceUri.scheme === Schemas.vscodeRemote;
--			}
--		}
--
--		return true;
--	}
--}
--
--class WindowIndicator implements IWindowIndicator {
--
--	readonly onDidChange = Event.None;
--
--	readonly label: string;
--	readonly tooltip: string;
--	readonly command: string | undefined;
--
--	constructor(workspace: IWorkspace) {
--		let repositoryOwner: string | undefined = undefined;
--		let repositoryName: string | undefined = undefined;
--
--		if (workspace) {
--			let uri: URI | undefined = undefined;
--			if (isFolderToOpen(workspace)) {
--				uri = workspace.folderUri;
--			} else if (isWorkspaceToOpen(workspace)) {
--				uri = workspace.workspaceUri;
--			}
--
--			if (uri?.scheme === 'github' || uri?.scheme === 'codespace') {
--				[repositoryOwner, repositoryName] = uri.authority.split('+');
--			}
--		}
--
--		// Repo
--		if (repositoryName && repositoryOwner) {
--			this.label = localize('playgroundLabelRepository', "$(remote) Visual Studio Code Playground: {0}/{1}", repositoryOwner, repositoryName);
--			this.tooltip = localize('playgroundRepositoryTooltip', "Visual Studio Code Playground: {0}/{1}", repositoryOwner, repositoryName);
--		}
--
--		// No Repo
--		else {
--			this.label = localize('playgroundLabel', "$(remote) Visual Studio Code Playground");
--			this.tooltip = localize('playgroundTooltip', "Visual Studio Code Playground");
--		}
--	}
--}
--
--(function () {
--
--	// Find config by checking for DOM
--	const configElement = document.getElementById('vscode-workbench-web-configuration');
--	const configElementAttribute = configElement ? configElement.getAttribute('data-settings') : undefined;
--	if (!configElement || !configElementAttribute) {
--		throw new Error('Missing web configuration element');
--	}
--
--	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents, workspaceUri?: UriComponents } = JSON.parse(configElementAttribute);
--
--	// Find workspace to open and payload
--	let foundWorkspace = false;
--	let workspace: IWorkspace;
--	let payload = Object.create(null);
--	let logLevel: string | undefined = undefined;
--
--	const query = new URL(document.location.href).searchParams;
--	query.forEach((value, key) => {
--		switch (key) {
--
--			// Folder
--			case WorkspaceProvider.QUERY_PARAM_FOLDER:
--				workspace = { folderUri: URI.parse(value) };
--				foundWorkspace = true;
--				break;
--
--			// Workspace
--			case WorkspaceProvider.QUERY_PARAM_WORKSPACE:
--				workspace = { workspaceUri: URI.parse(value) };
--				foundWorkspace = true;
--				break;
--
--			// Empty
--			case WorkspaceProvider.QUERY_PARAM_EMPTY_WINDOW:
--				workspace = undefined;
--				foundWorkspace = true;
--				break;
--
--			// Payload
--			case WorkspaceProvider.QUERY_PARAM_PAYLOAD:
--				try {
--					payload = JSON.parse(value);
--				} catch (error) {
--					console.error(error); // possible invalid JSON
--				}
--				break;
--
--			// Log level
--			case 'logLevel':
--				logLevel = value;
--				break;
--		}
--	});
--
--	// If no workspace is provided through the URL, check for config attribute from server
--	if (!foundWorkspace) {
--		if (config.folderUri) {
--			workspace = { folderUri: URI.revive(config.folderUri) };
--		} else if (config.workspaceUri) {
--			workspace = { workspaceUri: URI.revive(config.workspaceUri) };
--		} else {
--			workspace = undefined;
--		}
--	}
--
--	// Workspace Provider
--	const workspaceProvider = new WorkspaceProvider(workspace, payload);
--
--	// Home Indicator
--	const homeIndicator: IHomeIndicator = {
--		href: 'https://github.com/microsoft/vscode',
--		icon: 'code',
--		title: localize('home', "Home")
--	};
--
--	// Welcome Banner
--	const welcomeBanner: IWelcomeBanner = {
--		message: localize('welcomeBannerMessage', "{0} Web. Browser based playground for testing.", product.nameShort),
--		actions: [{
--			href: 'https://github.com/microsoft/vscode',
--			label: localize('learnMore', "Learn More")
--		}]
--	};
--
--	// Window indicator (unless connected to a remote)
--	let windowIndicator: WindowIndicator | undefined = undefined;
--	if (!workspaceProvider.hasRemote()) {
--		windowIndicator = new WindowIndicator(workspace);
--	}
--
--	// Product Quality Change Handler
--	const productQualityChangeHandler: IProductQualityChangeHandler = (quality) => {
--		let queryString = `quality=${quality}`;
--
--		// Save all other query params we might have
--		const query = new URL(document.location.href).searchParams;
--		query.forEach((value, key) => {
--			if (key !== 'quality') {
--				queryString += `&${key}=${value}`;
--			}
--		});
--
--		window.location.href = `${window.location.origin}?${queryString}`;
--	};
--
--	// settings sync options
--	const settingsSyncOptions: ISettingsSyncOptions | undefined = config.settingsSyncOptions ? {
--		enabled: config.settingsSyncOptions.enabled,
--	} : undefined;
--
--	// Finally create workbench
--	create(document.body, {
--		...config,
--		developmentOptions: {
--			logLevel: logLevel ? parseLogLevel(logLevel) : undefined,
--			...config.developmentOptions
--		},
--		settingsSyncOptions,
--		homeIndicator,
--		windowIndicator,
--		welcomeBanner,
--		productQualityChangeHandler,
--		workspaceProvider,
--		urlCallbackProvider: new PollingURLCallbackProvider(),
--		credentialsProvider: new LocalStorageCredentialsProvider()
--	});
--})();
 +import {
-+  create,
 +	IWorkspace,
-+  IWorkbenchConstructionOptions,
-+  IWorkspaceProvider,
-+} from 'vs/workbench/workbench.web.api'
++	IWorkbenchConstructionOptions,
++	IWorkspaceProvider,
++} from 'vs/workbench/browser/web.api'
 +import { URI } from 'vs/base/common/uri'
 +import { setupVSCodeEventListenersForProject } from 'utopia-vscode-common'
 +
@@ -815,50 +945,466 @@ index 534fe232636..b41446430f0 100644
 +// replaceRegisteredSingleton(IStatusbarService, StatusbarPart)
 +
 +;(async function () {
-+  // create workbench
-+  const result = await fetch('/vscode/product.json')
-+  const loadedConfig: IWorkbenchConstructionOptions = await result.json()
++		// create workbench
++	const result = await fetch('/vscode/product.json')
++	const loadedConfig: IWorkbenchConstructionOptions = await result.json()
 +
-+  // Inject project specific utopia config into the product.json
-+  const urlParams = new URLSearchParams(window.location.search)
-+  const vsCodeSessionID = urlParams.get('vs_code_session_id')!
++	// Inject project specific utopia config into the product.json
++	const urlParams = new URLSearchParams(window.location.search)
++	const vsCodeSessionID = urlParams.get('vs_code_session_id')!
 +
-+  // Use this instance as the webview provider rather than hitting MS servers
-+  const webviewEndpoint = `${window.location.origin}/vscode/vscode/vs/workbench/contrib/webview/browser/pre`
++	// Use this instance as the webview provider rather than hitting MS servers
++	const webviewEndpoint = `${window.location.origin}/vscode/vscode/vs/workbench/contrib/webview/browser/pre`
 +
-+  let config = {
-+    ...loadedConfig,
-+    folderUri: {
-+      scheme: vsCodeSessionID,
-+      authority: '',
-+      path: `/`,
-+      query: '',
-+      fragment: '',
-+    },
-+    webviewEndpoint: webviewEndpoint,
-+  }
-+
-+  const workspace = { folderUri: URI.revive(config.folderUri) }
-+
-+  if (workspace) {
-+    const workspaceProvider: IWorkspaceProvider = { 
-+			workspace,
++	let config = {
++			...loadedConfig,
++		folderUri: {
++				scheme: vsCodeSessionID,
++			authority: '',
++			path: `/`,
++			query: '',
++			fragment: '',
++	},
++		webviewEndpoint: webviewEndpoint,
+ }
+ 
+-export class LocalStorageSecretStorageProvider implements ISecretStorageProvider {
+-	private readonly _storageKey = 'secrets.provider';
+-
+-	private _secretsPromise: Promise<Record<string, string>> = this.load();
+-
+-	type: 'in-memory' | 'persisted' | 'unknown' = 'persisted';
+-
+-	constructor(
+-		private readonly crypto: ISecretStorageCrypto,
+-	) { }
+-
+-	private async load(): Promise<Record<string, string>> {
+-		const record = this.loadAuthSessionFromElement();
+-		// Get the secrets from localStorage
+-		const encrypted = localStorage.getItem(this._storageKey);
+-		if (encrypted) {
+-			try {
+-				const decrypted = JSON.parse(await this.crypto.unseal(encrypted));
+-				return { ...record, ...decrypted };
+-			} catch (err) {
+-				// TODO: send telemetry
+-				console.error('Failed to decrypt secrets from localStorage', err);
+-				localStorage.removeItem(this._storageKey);
+-			}
+-		}
+-
+-		return record;
+-	}
+-
+-	private loadAuthSessionFromElement(): Record<string, string> {
+-		let authSessionInfo: (AuthenticationSessionInfo & { scopes: string[][] }) | undefined;
+-		const authSessionElement = mainWindow.document.getElementById('vscode-workbench-auth-session');
+-		const authSessionElementAttribute = authSessionElement ? authSessionElement.getAttribute('data-settings') : undefined;
+-		if (authSessionElementAttribute) {
+-			try {
+-				authSessionInfo = JSON.parse(authSessionElementAttribute);
+-			} catch (error) { /* Invalid session is passed. Ignore. */ }
+-		}
+-
+-		if (!authSessionInfo) {
+-			return {};
+-		}
++	const workspace = { folderUri: URI.revive(config.folderUri) }
+ 
+-		const record: Record<string, string> = {};
+-
+-		// Settings Sync Entry
+-		record[`${product.urlProtocol}.loginAccount`] = JSON.stringify(authSessionInfo);
+-
+-		// Auth extension Entry
+-		if (authSessionInfo.providerId !== 'github') {
+-			console.error(`Unexpected auth provider: ${authSessionInfo.providerId}. Expected 'github'.`);
+-			return record;
+-		}
+-
+-		const authAccount = JSON.stringify({ extensionId: 'vscode.github-authentication', key: 'github.auth' });
+-		record[authAccount] = JSON.stringify(authSessionInfo.scopes.map(scopes => ({
+-			id: authSessionInfo.id,
+-			scopes,
+-			accessToken: authSessionInfo.accessToken
+-		})));
+-
+-		return record;
+-	}
+-
+-	async get(key: string): Promise<string | undefined> {
+-		const secrets = await this._secretsPromise;
+-		return secrets[key];
+-	}
+-	async set(key: string, value: string): Promise<void> {
+-		const secrets = await this._secretsPromise;
+-		secrets[key] = value;
+-		this._secretsPromise = Promise.resolve(secrets);
+-		this.save();
+-	}
+-	async delete(key: string): Promise<void> {
+-		const secrets = await this._secretsPromise;
+-		delete secrets[key];
+-		this._secretsPromise = Promise.resolve(secrets);
+-		this.save();
+-	}
+-
+-	private async save(): Promise<void> {
+-		try {
+-			const encrypted = await this.crypto.seal(JSON.stringify(await this._secretsPromise));
+-			localStorage.setItem(this._storageKey, encrypted);
+-		} catch (err) {
+-			console.error(err);
+-		}
++	if (workspace) {
++			const workspaceProvider: IWorkspaceProvider = { 
++				workspace,
 +			open: async (workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }) => true,
 +			trusted: true 
-+		}
-+    config = { ...config, workspaceProvider }
-+  }
-+
-+  setupVSCodeEventListenersForProject(vsCodeSessionID)
-+
-+  create(document.body, config)
+ 	}
++		config = { ...config, workspaceProvider }
+ }
+ 
++	setupVSCodeEventListenersForProject(vsCodeSessionID)
+ 
+-class LocalStorageURLCallbackProvider extends Disposable implements IURLCallbackProvider {
+-
+-	private static REQUEST_ID = 0;
+-
+-	private static QUERY_KEYS: ('scheme' | 'authority' | 'path' | 'query' | 'fragment')[] = [
+-		'scheme',
+-		'authority',
+-		'path',
+-		'query',
+-		'fragment'
+-	];
+-
+-	private readonly _onCallback = this._register(new Emitter<URI>());
+-	readonly onCallback = this._onCallback.event;
+-
+-	private pendingCallbacks = new Set<number>();
+-	private lastTimeChecked = Date.now();
+-	private checkCallbacksTimeout: unknown | undefined = undefined;
+-	private onDidChangeLocalStorageDisposable: IDisposable | undefined;
+-
+-	constructor(private readonly _callbackRoute: string) {
+-		super();
+-	}
+-
+-	create(options: Partial<UriComponents> = {}): URI {
+-		const id = ++LocalStorageURLCallbackProvider.REQUEST_ID;
+-		const queryParams: string[] = [`vscode-reqid=${id}`];
+-
+-		for (const key of LocalStorageURLCallbackProvider.QUERY_KEYS) {
+-			const value = options[key];
+-
+-			if (value) {
+-				queryParams.push(`vscode-${key}=${encodeURIComponent(value)}`);
+-			}
+-		}
+-
+-		// TODO@joao remove eventually
+-		// https://github.com/microsoft/vscode-dev/issues/62
+-		// https://github.com/microsoft/vscode/blob/159479eb5ae451a66b5dac3c12d564f32f454796/extensions/github-authentication/src/githubServer.ts#L50-L50
+-		if (!(options.authority === 'vscode.github-authentication' && options.path === '/dummy')) {
+-			const key = `vscode-web.url-callbacks[${id}]`;
+-			localStorage.removeItem(key);
+-
+-			this.pendingCallbacks.add(id);
+-			this.startListening();
+-		}
+-
+-		return URI.parse(mainWindow.location.href).with({ path: this._callbackRoute, query: queryParams.join('&') });
+-	}
+-
+-	private startListening(): void {
+-		if (this.onDidChangeLocalStorageDisposable) {
+-			return;
+-		}
+-
+-		const fn = () => this.onDidChangeLocalStorage();
+-		mainWindow.addEventListener('storage', fn);
+-		this.onDidChangeLocalStorageDisposable = { dispose: () => mainWindow.removeEventListener('storage', fn) };
+-	}
+-
+-	private stopListening(): void {
+-		this.onDidChangeLocalStorageDisposable?.dispose();
+-		this.onDidChangeLocalStorageDisposable = undefined;
+-	}
+-
+-	// this fires every time local storage changes, but we
+-	// don't want to check more often than once a second
+-	private async onDidChangeLocalStorage(): Promise<void> {
+-		const ellapsed = Date.now() - this.lastTimeChecked;
+-
+-		if (ellapsed > 1000) {
+-			this.checkCallbacks();
+-		} else if (this.checkCallbacksTimeout === undefined) {
+-			this.checkCallbacksTimeout = setTimeout(() => {
+-				this.checkCallbacksTimeout = undefined;
+-				this.checkCallbacks();
+-			}, 1000 - ellapsed);
+-		}
+-	}
+-
+-	private checkCallbacks(): void {
+-		let pendingCallbacks: Set<number> | undefined;
+-
+-		for (const id of this.pendingCallbacks) {
+-			const key = `vscode-web.url-callbacks[${id}]`;
+-			const result = localStorage.getItem(key);
+-
+-			if (result !== null) {
+-				try {
+-					this._onCallback.fire(URI.revive(JSON.parse(result)));
+-				} catch (error) {
+-					console.error(error);
+-				}
+-
+-				pendingCallbacks = pendingCallbacks ?? new Set(this.pendingCallbacks);
+-				pendingCallbacks.delete(id);
+-				localStorage.removeItem(key);
+-			}
+-		}
+-
+-		if (pendingCallbacks) {
+-			this.pendingCallbacks = pendingCallbacks;
+-
+-			if (this.pendingCallbacks.size === 0) {
+-				this.stopListening();
+-			}
+-		}
+-
+-		this.lastTimeChecked = Date.now();
+-	}
+-}
+-
+-class WorkspaceProvider implements IWorkspaceProvider {
+-
+-	private static QUERY_PARAM_EMPTY_WINDOW = 'ew';
+-	private static QUERY_PARAM_FOLDER = 'folder';
+-	private static QUERY_PARAM_WORKSPACE = 'workspace';
+-
+-	private static QUERY_PARAM_PAYLOAD = 'payload';
+-
+-	static create(config: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents }) {
+-		let foundWorkspace = false;
+-		let workspace: IWorkspace;
+-		let payload = Object.create(null);
+-
+-		const query = new URL(document.location.href).searchParams;
+-		query.forEach((value, key) => {
+-			switch (key) {
+-
+-				// Folder
+-				case WorkspaceProvider.QUERY_PARAM_FOLDER:
+-					if (config.remoteAuthority && value.startsWith(posix.sep)) {
+-						// when connected to a remote and having a value
+-						// that is a path (begins with a `/`), assume this
+-						// is a vscode-remote resource as simplified URL.
+-						workspace = { folderUri: URI.from({ scheme: Schemas.vscodeRemote, path: value, authority: config.remoteAuthority }) };
+-					} else {
+-						workspace = { folderUri: URI.parse(value) };
+-					}
+-					foundWorkspace = true;
+-					break;
+-
+-				// Workspace
+-				case WorkspaceProvider.QUERY_PARAM_WORKSPACE:
+-					if (config.remoteAuthority && value.startsWith(posix.sep)) {
+-						// when connected to a remote and having a value
+-						// that is a path (begins with a `/`), assume this
+-						// is a vscode-remote resource as simplified URL.
+-						workspace = { workspaceUri: URI.from({ scheme: Schemas.vscodeRemote, path: value, authority: config.remoteAuthority }) };
+-					} else {
+-						workspace = { workspaceUri: URI.parse(value) };
+-					}
+-					foundWorkspace = true;
+-					break;
+-
+-				// Empty
+-				case WorkspaceProvider.QUERY_PARAM_EMPTY_WINDOW:
+-					workspace = undefined;
+-					foundWorkspace = true;
+-					break;
+-
+-				// Payload
+-				case WorkspaceProvider.QUERY_PARAM_PAYLOAD:
+-					try {
+-						payload = parse(value); // use marshalling#parse() to revive potential URIs
+-					} catch (error) {
+-						console.error(error); // possible invalid JSON
+-					}
+-					break;
+-			}
+-		});
+-
+-		// If no workspace is provided through the URL, check for config
+-		// attribute from server
+-		if (!foundWorkspace) {
+-			if (config.folderUri) {
+-				workspace = { folderUri: URI.revive(config.folderUri) };
+-			} else if (config.workspaceUri) {
+-				workspace = { workspaceUri: URI.revive(config.workspaceUri) };
+-			}
+-		}
+-
+-		return new WorkspaceProvider(workspace, payload, config);
+-	}
+-
+-	readonly trusted = true;
+-
+-	private constructor(
+-		readonly workspace: IWorkspace,
+-		readonly payload: object,
+-		private readonly config: IWorkbenchConstructionOptions
+-	) {
+-	}
+-
+-	async open(workspace: IWorkspace, options?: { reuse?: boolean; payload?: object }): Promise<boolean> {
+-		if (options?.reuse && !options.payload && this.isSame(this.workspace, workspace)) {
+-			return true; // return early if workspace and environment is not changing and we are reusing window
+-		}
+-
+-		const targetHref = this.createTargetUrl(workspace, options);
+-		if (targetHref) {
+-			if (options?.reuse) {
+-				mainWindow.location.href = targetHref;
+-				return true;
+-			} else {
+-				let result;
+-				if (isStandalone()) {
+-					result = mainWindow.open(targetHref, '_blank', 'toolbar=no'); // ensures to open another 'standalone' window!
+-				} else {
+-					result = mainWindow.open(targetHref);
+-				}
+-
+-				return !!result;
+-			}
+-		}
+-		return false;
+-	}
+-
+-	private createTargetUrl(workspace: IWorkspace, options?: { reuse?: boolean; payload?: object }): string | undefined {
+-
+-		// Empty
+-		let targetHref: string | undefined = undefined;
+-		if (!workspace) {
+-			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_EMPTY_WINDOW}=true`;
+-		}
+-
+-		// Folder
+-		else if (isFolderToOpen(workspace)) {
+-			const queryParamFolder = this.encodeWorkspacePath(workspace.folderUri);
+-			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_FOLDER}=${queryParamFolder}`;
+-		}
+-
+-		// Workspace
+-		else if (isWorkspaceToOpen(workspace)) {
+-			const queryParamWorkspace = this.encodeWorkspacePath(workspace.workspaceUri);
+-			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_WORKSPACE}=${queryParamWorkspace}`;
+-		}
+-
+-		// Append payload if any
+-		if (options?.payload) {
+-			targetHref += `&${WorkspaceProvider.QUERY_PARAM_PAYLOAD}=${encodeURIComponent(JSON.stringify(options.payload))}`;
+-		}
+-
+-		return targetHref;
+-	}
+-
+-	private encodeWorkspacePath(uri: URI): string {
+-		if (this.config.remoteAuthority && uri.scheme === Schemas.vscodeRemote) {
+-
+-			// when connected to a remote and having a folder
+-			// or workspace for that remote, only use the path
+-			// as query value to form shorter, nicer URLs.
+-			// however, we still need to `encodeURIComponent`
+-			// to ensure to preserve special characters, such
+-			// as `+` in the path.
+-
+-			return encodeURIComponent(`${posix.sep}${ltrim(uri.path, posix.sep)}`).replaceAll('%2F', '/');
+-		}
+-
+-		return encodeURIComponent(uri.toString(true));
+-	}
+-
+-	private isSame(workspaceA: IWorkspace, workspaceB: IWorkspace): boolean {
+-		if (!workspaceA || !workspaceB) {
+-			return workspaceA === workspaceB; // both empty
+-		}
+-
+-		if (isFolderToOpen(workspaceA) && isFolderToOpen(workspaceB)) {
+-			return isEqual(workspaceA.folderUri, workspaceB.folderUri); // same workspace
+-		}
+-
+-		if (isWorkspaceToOpen(workspaceA) && isWorkspaceToOpen(workspaceB)) {
+-			return isEqual(workspaceA.workspaceUri, workspaceB.workspaceUri); // same workspace
+-		}
+-
+-		return false;
+-	}
+-
+-	hasRemote(): boolean {
+-		if (this.workspace) {
+-			if (isFolderToOpen(this.workspace)) {
+-				return this.workspace.folderUri.scheme === Schemas.vscodeRemote;
+-			}
+-
+-			if (isWorkspaceToOpen(this.workspace)) {
+-				return this.workspace.workspaceUri.scheme === Schemas.vscodeRemote;
+-			}
+-		}
+-
+-		return true;
+-	}
+-}
+-
+-function readCookie(name: string): string | undefined {
+-	const cookies = document.cookie.split('; ');
+-	for (const cookie of cookies) {
+-		if (cookie.startsWith(name + '=')) {
+-			return cookie.substring(name.length + 1);
+-		}
+-	}
+-
+-	return undefined;
+-}
+-
+-(function () {
+-
+-	// Find config by checking for DOM
+-	const configElement = mainWindow.document.getElementById('vscode-workbench-web-configuration');
+-	const configElementAttribute = configElement ? configElement.getAttribute('data-settings') : undefined;
+-	if (!configElement || !configElementAttribute) {
+-		throw new Error('Missing web configuration element');
+-	}
+-	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = JSON.parse(configElementAttribute);
+-	const secretStorageKeyPath = readCookie('vscode-secret-key-path');
+-	const secretStorageCrypto = secretStorageKeyPath && ServerKeyedAESCrypto.supported()
+-		? new ServerKeyedAESCrypto(secretStorageKeyPath) : new TransparentCrypto();
+-
+-	// Create workbench
+-	create(mainWindow.document.body, {
+-		...config,
+-		windowIndicator: config.windowIndicator ?? { label: '$(remote)', tooltip: `${product.nameShort} Web` },
+-		settingsSyncOptions: config.settingsSyncOptions ? { enabled: config.settingsSyncOptions.enabled, } : undefined,
+-		workspaceProvider: WorkspaceProvider.create(config),
+-		urlCallbackProvider: new LocalStorageURLCallbackProvider(config.callbackRoute),
+-		secretStorageProvider: config.remoteAuthority && !secretStorageKeyPath
+-			? undefined /* with a remote without embedder-preferred storage, store on the remote */
+-			: new LocalStorageSecretStorageProvider(secretStorageCrypto),
+-	});
+-})();
++	create(document.body, config)
 +})()
 \ No newline at end of file
 diff --git a/src/vs/editor/common/config/editorOptions.ts b/src/vs/editor/common/config/editorOptions.ts
-index 7d8189c50be..125b6c89d0b 100644
+index 294e7030695..46730d6d518 100644
 --- a/src/vs/editor/common/config/editorOptions.ts
 +++ b/src/vs/editor/common/config/editorOptions.ts
-@@ -2560,7 +2560,7 @@ class EditorMinimap extends BaseEditorOption<EditorOption.minimap, EditorMinimap
+@@ -3093,7 +3093,7 @@ class EditorMinimap extends BaseEditorOption<EditorOption.minimap, IEditorMinima
  
  	constructor() {
  		const defaults: EditorMinimapOptions = {
@@ -867,225 +1413,94 @@ index 7d8189c50be..125b6c89d0b 100644
  			size: 'proportional',
  			side: 'right',
  			showSlider: 'mouseover',
-diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 6b59c1e9faa..a9192e938ef 100644
---- a/src/vs/workbench/browser/layout.ts
-+++ b/src/vs/workbench/browser/layout.ts
-@@ -54,6 +54,7 @@ import { AuxiliaryBarPart } from 'vs/workbench/browser/parts/auxiliarybar/auxili
- export enum Settings {
- 	ACTIVITYBAR_VISIBLE = 'workbench.activityBar.visible',
- 	STATUSBAR_VISIBLE = 'workbench.statusBar.visible',
-+	SIDEBAR_VISIBLE = 'workbench.sideBar.visible',
+diff --git a/src/vs/platform/environment/test/node/nativeModules.integrationTest.ts b/src/vs/platform/environment/test/node/nativeModules.integrationTest.ts
+index 81db8b47267..969922e28fa 100644
+--- a/src/vs/platform/environment/test/node/nativeModules.integrationTest.ts
++++ b/src/vs/platform/environment/test/node/nativeModules.integrationTest.ts
+@@ -26,13 +26,13 @@ flakySuite('Native Modules (all platforms)', () => {
+ 		assert.ok(typeof result === 'boolean', testErrorMessage('native-is-elevated'));
+ 	});
  
- 	SIDEBAR_POSITION = 'workbench.sideBar.location',
- 	PANEL_POSITION = 'workbench.panel.defaultLocation',
-@@ -190,16 +191,16 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
- 		windowBorder: false,
+-	test('native-keymap', async () => {
+-		const keyMap = await import('native-keymap');
+-		assert.ok(typeof keyMap.getCurrentKeyboardLayout === 'function', testErrorMessage('native-keymap'));
++	// test('native-keymap', async () => {
++	// 	const keyMap = await import('native-keymap');
++	// 	assert.ok(typeof keyMap.getCurrentKeyboardLayout === 'function', testErrorMessage('native-keymap'));
  
- 		menuBar: {
--			visibility: 'classic' as MenuBarVisibility,
-+			visibility: 'hidden' as MenuBarVisibility,
- 			toggled: false
- 		},
+-		const result = keyMap.getCurrentKeyboardLayout();
+-		assert.ok(result, testErrorMessage('native-keymap'));
+-	});
++	// 	const result = keyMap.getCurrentKeyboardLayout();
++	// 	assert.ok(result, testErrorMessage('native-keymap'));
++	// });
  
- 		activityBar: {
--			hidden: false
-+			hidden: true
- 		},
+ 	test('native-watchdog', async () => {
+ 		const watchDog = await import('native-watchdog');
+diff --git a/src/vs/platform/keyboardLayout/electron-main/keyboardLayoutMainService.ts b/src/vs/platform/keyboardLayout/electron-main/keyboardLayoutMainService.ts
+index 1d17e4c709e..ca625fccdf9 100644
+--- a/src/vs/platform/keyboardLayout/electron-main/keyboardLayoutMainService.ts
++++ b/src/vs/platform/keyboardLayout/electron-main/keyboardLayoutMainService.ts
+@@ -3,8 +3,8 @@
+  *  Licensed under the MIT License. See License.txt in the project root for license information.
+  *--------------------------------------------------------------------------------------------*/
  
- 		sideBar: {
--			hidden: false,
-+			hidden: true,
- 			position: Position.LEFT,
- 			width: 300,
- 			viewletToRestore: undefined as string | undefined
-@@ -214,7 +215,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
- 		},
- 
- 		panel: {
--			hidden: false,
-+			hidden: true,
- 			position: Position.BOTTOM,
- 			lastNonMaximizedWidth: 300,
- 			lastNonMaximizedHeight: 300,
-@@ -228,7 +229,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
- 		},
- 
- 		statusBar: {
--			hidden: false
-+			hidden: true
- 		},
- 
- 		views: {
-@@ -513,13 +514,13 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
- 		this.state.fullscreen = isFullscreen();
- 
- 		// Menubar visibility
--		this.state.menuBar.visibility = getMenuBarVisibility(this.configurationService);
-+		this.state.menuBar.visibility = 'hidden';
- 
- 		// Activity bar visibility
--		this.state.activityBar.hidden = !this.configurationService.getValue<string>(Settings.ACTIVITYBAR_VISIBLE);
-+		this.state.activityBar.hidden = true;
- 
- 		// Sidebar visibility
--		this.state.sideBar.hidden = this.storageService.getBoolean(Storage.SIDEBAR_HIDDEN, StorageScope.WORKSPACE, this.contextService.getWorkbenchState() === WorkbenchState.EMPTY);
-+		this.state.sideBar.hidden = true;
- 
- 		// Sidebar position
- 		this.state.sideBar.position = (this.configurationService.getValue<string>(Settings.SIDEBAR_POSITION) === 'right') ? Position.RIGHT : Position.LEFT;
-@@ -552,7 +553,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
- 		this.state.editor.editorsToOpen = this.resolveEditorsToOpen(fileService, this.contextService);
- 
- 		// Panel visibility
--		this.state.panel.hidden = this.storageService.getBoolean(Storage.PANEL_HIDDEN, StorageScope.WORKSPACE, true);
-+		this.state.panel.hidden = true;
- 
- 		// Whether or not the panel was last maximized
- 		this.state.panel.wasLastMaximized = this.storageService.getBoolean(Storage.PANEL_LAST_IS_MAXIMIZED, StorageScope.WORKSPACE, false);
-@@ -590,7 +591,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
- 		this.state.panel.lastNonMaximizedWidth = this.storageService.getNumber(Storage.PANEL_LAST_NON_MAXIMIZED_WIDTH, StorageScope.GLOBAL, 300);
- 
- 		// Statusbar visibility
--		this.state.statusBar.hidden = !this.configurationService.getValue<string>(Settings.STATUSBAR_VISIBLE);
-+		this.state.statusBar.hidden = true;
- 
- 		// Zen mode enablement
- 		this.state.zenMode.restore = this.storageService.getBoolean(Storage.ZEN_MODE_ENABLED, StorageScope.WORKSPACE, false) && this.configurationService.getValue(Settings.ZEN_MODE_RESTORE);
-@@ -1227,7 +1228,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
- 		}
+-import type * as nativeKeymap from 'native-keymap';
+-import * as platform from 'vs/base/common/platform';
++// import type * as nativeKeymap from 'native-keymap';
++// import * as platform from 'vs/base/common/platform';
+ import { Emitter } from 'vs/base/common/event';
+ import { Disposable } from 'vs/base/common/lifecycle';
+ import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+@@ -46,18 +46,18 @@ export class KeyboardLayoutMainService extends Disposable implements INativeKeyb
  	}
  
--	private setStatusBarHidden(hidden: boolean, skipLayout?: boolean): void {
-+	private setStatusBarHidden(_hidden: boolean, skipLayout?: boolean): void {
-+		const hidden = true;
- 		this.state.statusBar.hidden = hidden;
+ 	private async _doInitialize(): Promise<void> {
+-		const nativeKeymapMod = await import('native-keymap');
++		// const nativeKeymapMod = await import('native-keymap');
  
- 		// Adjust CSS
-@@ -1453,7 +1455,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
- 		}
+-		this._keyboardLayoutData = readKeyboardLayoutData(nativeKeymapMod);
+-		if (!platform.isCI) {
+-			// See https://github.com/microsoft/vscode/issues/152840
+-			// Do not register the keyboard layout change listener in CI because it doesn't work
+-			// on the build machines and it just adds noise to the build logs.
+-			nativeKeymapMod.onDidChangeKeyboardLayout(() => {
+-				this._keyboardLayoutData = readKeyboardLayoutData(nativeKeymapMod);
+-				this._onDidChangeKeyboardLayout.fire(this._keyboardLayoutData);
+-			});
+-		}
++		// this._keyboardLayoutData = readKeyboardLayoutData(nativeKeymapMod);
++		// if (!platform.isCI) {
++		// 	// See https://github.com/microsoft/vscode/issues/152840
++		// 	// Do not register the keyboard layout change listener in CI because it doesn't work
++		// 	// on the build machines and it just adds noise to the build logs.
++		// 	nativeKeymapMod.onDidChangeKeyboardLayout(() => {
++		// 		this._keyboardLayoutData = readKeyboardLayoutData(nativeKeymapMod);
++		// 		this._onDidChangeKeyboardLayout.fire(this._keyboardLayoutData);
++		// 	});
++		// }
  	}
  
--	private setActivityBarHidden(hidden: boolean, skipLayout?: boolean): void {
-+	private setActivityBarHidden(_hidden: boolean, skipLayout?: boolean): void {
-+		const hidden = true;
- 		this.state.activityBar.hidden = hidden;
- 
- 		// Propagate to grid
-@@ -1500,7 +1503,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
- 		]);
+ 	public async getKeyboardLayoutData(): Promise<IKeyboardLayoutData> {
+@@ -66,8 +66,8 @@ export class KeyboardLayoutMainService extends Disposable implements INativeKeyb
  	}
+ }
  
--	private setSideBarHidden(hidden: boolean, skipLayout?: boolean): void {
-+	private setSideBarHidden(_hidden: boolean, skipLayout?: boolean): void {
-+		const hidden = true
- 		this.state.sideBar.hidden = hidden;
- 
- 		// Adjust CSS
-@@ -1560,7 +1564,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
- 		return viewContainerModel.activeViewDescriptors.length >= 1;
- 	}
- 
--	private setPanelHidden(hidden: boolean, skipLayout?: boolean): void {
-+	private setPanelHidden(_hidden: boolean, skipLayout?: boolean): void {
-+		const hidden = true;
- 		const wasHidden = this.state.panel.hidden;
- 		this.state.panel.hidden = hidden;
- 
-@@ -1771,7 +1776,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
- 		return this.state.sideBar.position;
- 	}
- 
--	setMenubarVisibility(visibility: MenuBarVisibility, skipLayout: boolean): void {
-+	setMenubarVisibility(_visibility: MenuBarVisibility, skipLayout: boolean): void {
-+		const visibility = 'hidden';
- 		if (this.state.menuBar.visibility !== visibility) {
- 			this.state.menuBar.visibility = visibility;
- 
-diff --git a/src/vs/workbench/browser/workbench.contribution.ts b/src/vs/workbench/browser/workbench.contribution.ts
-index 000fd151ee2..d21a981e220 100644
---- a/src/vs/workbench/browser/workbench.contribution.ts
-+++ b/src/vs/workbench/browser/workbench.contribution.ts
-@@ -7,7 +7,7 @@ import product from 'vs/platform/product/common/product';
- import { Registry } from 'vs/platform/registry/common/platform';
- import { localize } from 'vs/nls';
- import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope } from 'vs/platform/configuration/common/configurationRegistry';
--import { isMacintosh, isWindows, isLinux, isWeb, isNative } from 'vs/base/common/platform';
-+import { isMacintosh, isWeb, isNative } from 'vs/base/common/platform';
- import { workbenchConfigurationNodeBase } from 'vs/workbench/common/configuration';
- import { isStandalone } from 'vs/base/browser/browser';
- 
-@@ -278,6 +278,12 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
- 				'default': 'left',
- 				'description': localize('sideBarLocation', "Controls the location of the sidebar and activity bar. They can either show on the left or right of the workbench.")
- 			},
-+			'workbench.sideBar.visible': {
-+				'type': 'boolean',
-+				'default': false,
-+				'description': localize('sideBarVisibility', "Controls the visibility of the side bar at the side of the workbench."),
-+				'included': false
-+			},
- 			'workbench.panel.defaultLocation': {
- 				'type': 'string',
- 				'enum': ['left', 'bottom', 'right'],
-@@ -297,13 +303,15 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
- 			},
- 			'workbench.statusBar.visible': {
- 				'type': 'boolean',
--				'default': true,
--				'description': localize('statusBarVisibility', "Controls the visibility of the status bar at the bottom of the workbench.")
-+				'default': false,
-+				'description': localize('statusBarVisibility', "Controls the visibility of the status bar at the bottom of the workbench."),
-+				'included': false
- 			},
- 			'workbench.activityBar.visible': {
- 				'type': 'boolean',
--				'default': true,
--				'description': localize('activityBarVisibility', "Controls the visibility of the activity bar in the workbench.")
-+				'default': false,
-+				'description': localize('activityBarVisibility', "Controls the visibility of the activity bar in the workbench."),
-+				'included': false
- 			},
- 			'workbench.activityBar.iconClickBehavior': {
- 				'type': 'string',
-@@ -420,26 +428,26 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
- 					localize('window.menuBarVisibility.hidden', "Menu is always hidden."),
- 					localize('window.menuBarVisibility.compact', "Menu is displayed as a compact button in the sidebar. This value is ignored when `#window.titleBarStyle#` is `native`.")
- 				],
--				'default': isWeb ? 'compact' : 'classic',
-+				'default': 'hidden',
- 				'scope': ConfigurationScope.APPLICATION,
- 				'markdownDescription': isMacintosh ?
- 					localize('menuBarVisibility.mac', "Control the visibility of the menu bar. A setting of 'toggle' means that the menu bar is hidden and executing `Focus Application Menu` will show it. A setting of 'compact' will move the menu into the sidebar.") :
- 					localize('menuBarVisibility', "Control the visibility of the menu bar. A setting of 'toggle' means that the menu bar is hidden and a single press of the Alt key will show it. A setting of 'compact' will move the menu into the sidebar."),
--				'included': isWindows || isLinux || isWeb
-+				'included': false
- 			},
- 			'window.enableMenuBarMnemonics': {
- 				'type': 'boolean',
--				'default': true,
-+				'default': false,
- 				'scope': ConfigurationScope.APPLICATION,
- 				'description': localize('enableMenuBarMnemonics', "Controls whether the main menus can be opened via Alt-key shortcuts. Disabling mnemonics allows to bind these Alt-key shortcuts to editor commands instead."),
--				'included': isWindows || isLinux
-+				'included': false
- 			},
- 			'window.customMenuBarAltFocus': {
- 				'type': 'boolean',
--				'default': true,
-+				'default': false,
- 				'scope': ConfigurationScope.APPLICATION,
- 				'markdownDescription': localize('customMenuBarAltFocus', "Controls whether the menu bar will be focused by pressing the Alt-key. This setting has no effect on toggling the menu bar with the Alt-key."),
--				'included': isWindows || isLinux
-+				'included': false
- 			},
- 			'window.openFilesInNewWindow': {
- 				'type': 'string',
+-function readKeyboardLayoutData(nativeKeymapMod: typeof nativeKeymap): IKeyboardLayoutData {
+-	const keyboardMapping = nativeKeymapMod.getKeyMap();
+-	const keyboardLayoutInfo = nativeKeymapMod.getCurrentKeyboardLayout();
+-	return { keyboardMapping, keyboardLayoutInfo };
+-}
++// function readKeyboardLayoutData(nativeKeymapMod: typeof nativeKeymap): IKeyboardLayoutData {
++// 	const keyboardMapping = nativeKeymapMod.getKeyMap();
++// 	const keyboardLayoutInfo = nativeKeymapMod.getCurrentKeyboardLayout();
++// 	return { keyboardMapping, keyboardLayoutInfo };
++// }
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-index b9beba774a5..40627803528 100644
+index 81bf68c3e0b..3443c127c40 100644
 --- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-@@ -567,6 +567,38 @@ CommandsRegistry.registerCommand({
+@@ -566,6 +566,35 @@ CommandsRegistry.registerCommand({
  	}
  });
  
@@ -1095,7 +1510,6 @@ index b9beba774a5..40627803528 100644
 +		const notificationService = accessor.get(INotificationService);
 +		const editorGroupService = accessor.get(IEditorGroupsService);
 +		const editorService = accessor.get(IEditorService);
-+
 +		// Retrieve editors for resource
 +		const resourceAsString = resource.toString()
 +		const matchesTarget = (uri: URI | undefined) => uri != null && uri.toString() === resourceAsString
@@ -1108,11 +1522,9 @@ index b9beba774a5..40627803528 100644
 +				}
 +			})
 +		})
-+
 +		if (!editors || editors.length === 0) {
 +			return; // nothing to revert
 +		}
-+
 +		try {
 +			await editorService.revert(editors.filter(({ editor }) => !editor.hasCapability(EditorInputCapabilities.Untitled) /* all except untitled */), { force: true });
 +		} catch (error) {
@@ -1125,42 +1537,43 @@ index b9beba774a5..40627803528 100644
  	id: REMOVE_ROOT_FOLDER_COMMAND_ID,
  	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index 114f1357403..bec56e38917 100644
+index d525ba5860c..27516c35907 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-@@ -234,12 +234,12 @@ configurationRegistry.registerConfiguration({
- 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onFocusChange' }, "A dirty editor is automatically saved when the editor loses focus."),
- 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onWindowChange' }, "A dirty editor is automatically saved when the window loses focus.")
+@@ -267,13 +267,13 @@ configurationRegistry.registerConfiguration({
+ 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onFocusChange' }, "An editor with changes is automatically saved when the editor loses focus."),
+ 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onWindowChange' }, "An editor with changes is automatically saved when the window loses focus.")
  			],
 -			'default': isWeb ? AutoSaveConfiguration.AFTER_DELAY : AutoSaveConfiguration.OFF,
 +			'default': AutoSaveConfiguration.OFF,
- 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSave' }, "Controls auto save of dirty editors. Read more about autosave [here](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save).", AutoSaveConfiguration.OFF, AutoSaveConfiguration.AFTER_DELAY, AutoSaveConfiguration.ON_FOCUS_CHANGE, AutoSaveConfiguration.ON_WINDOW_CHANGE, AutoSaveConfiguration.AFTER_DELAY)
+ 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSave' }, "Controls [auto save](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save) of editors that have unsaved changes.", AutoSaveConfiguration.OFF, AutoSaveConfiguration.AFTER_DELAY, AutoSaveConfiguration.ON_FOCUS_CHANGE, AutoSaveConfiguration.ON_WINDOW_CHANGE, AutoSaveConfiguration.AFTER_DELAY),
+ 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE
  		},
  		'files.autoSaveDelay': {
  			'type': 'number',
 -			'default': 1000,
 +			'default': 100,
- 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSaveDelay' }, "Controls the delay in ms after which a dirty editor is saved automatically. Only applies when `#files.autoSave#` is set to `{0}`.", AutoSaveConfiguration.AFTER_DELAY)
- 		},
- 		'files.watcherExclude': {
+ 			'minimum': 0,
+ 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSaveDelay' }, "Controls the delay in milliseconds after which an editor with unsaved changes is saved automatically. Only applies when `#files.autoSave#` is set to `{0}`.", AutoSaveConfiguration.AFTER_DELAY),
+ 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE
 diff --git a/src/vs/workbench/contrib/search/browser/search.contribution.ts b/src/vs/workbench/contrib/search/browser/search.contribution.ts
-index 79e5defa112..318ab13d6fd 100644
+index 1da6d744da9..8a81ffc02a6 100644
 --- a/src/vs/workbench/contrib/search/browser/search.contribution.ts
 +++ b/src/vs/workbench/contrib/search/browser/search.contribution.ts
-@@ -889,7 +889,7 @@ configurationRegistry.registerConfiguration({
+@@ -206,7 +206,7 @@ configurationRegistry.registerConfiguration({
  		'search.quickOpen.includeHistory': {
  			type: 'boolean',
  			description: nls.localize('search.quickOpen.includeHistory', "Whether to include results from recently opened files in the file results for Quick Open."),
 -			default: true
-+			default: false // FIXME We should be filtering history based on project rather than disabling it
++			default: false // FIXME Do we still need this? We should be filtering history based on project rather than disabling it
  		},
  		'search.quickOpen.history.filterSortOrder': {
- 			'type': 'string',
+ 			type: 'string',
 diff --git a/src/vs/workbench/contrib/url/browser/trustedDomains.ts b/src/vs/workbench/contrib/url/browser/trustedDomains.ts
-index 265a5dc43e3..8f1db546879 100644
+index 00e3c342a3b..05e4920f6da 100644
 --- a/src/vs/workbench/contrib/url/browser/trustedDomains.ts
 +++ b/src/vs/workbench/contrib/url/browser/trustedDomains.ts
-@@ -217,7 +217,11 @@ export function readStaticTrustedDomains(accessor: ServicesAccessor): IStaticTru
+@@ -145,7 +145,11 @@ export function readStaticTrustedDomains(accessor: ServicesAccessor): IStaticTru
  
  	const defaultTrustedDomains = [
  		...productService.linkProtectionTrustedDomains ?? [],
@@ -1173,70 +1586,58 @@ index 265a5dc43e3..8f1db546879 100644
  	];
  
  	let trustedDomains: string[] = [];
-diff --git a/src/vs/workbench/contrib/webview/browser/pre/main.js b/src/vs/workbench/contrib/webview/browser/pre/main.js
-index 618837df8e2..29b5ba8d333 100644
---- a/src/vs/workbench/contrib/webview/browser/pre/main.js
-+++ b/src/vs/workbench/contrib/webview/browser/pre/main.js
-@@ -810,6 +810,7 @@ onDomReady(() => {
- 		if (options.allowScripts) {
- 			sandboxRules.add('allow-scripts');
- 			sandboxRules.add('allow-downloads');
-+			sandboxRules.add('allow-popups');
- 		}
- 		if (options.allowForms) {
- 			sandboxRules.add('allow-forms');
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index b23847b8bf1..9c2a6875fe0 100644
+index 5d6e403159f..cfadc2c255f 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-@@ -370,7 +370,7 @@ export class IFrameWebview extends Disposable implements Webview {
+@@ -398,7 +398,7 @@ export class WebviewElement extends Disposable implements IWebview, WebviewFindD
  		const element = document.createElement('iframe');
  		element.name = this.id;
  		element.className = `webview ${options.customClasses || ''}`;
 -		element.sandbox.add('allow-scripts', 'allow-same-origin', 'allow-forms', 'allow-pointer-lock', 'allow-downloads');
 +		element.sandbox.add('allow-scripts', 'allow-same-origin', 'allow-forms', 'allow-pointer-lock', 'allow-downloads', 'allow-popups');
+ 
+ 		const allowRules = ['cross-origin-isolated', 'autoplay'];
  		if (!isFirefox) {
- 			element.setAttribute('allow', 'clipboard-read; clipboard-write;');
- 		}
-diff --git a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
-index 674eade0db1..f0b7198440f 100644
---- a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
-+++ b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
-@@ -26,7 +26,7 @@ Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
- 					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.newUntitledFile' }, "Open a new untitled file (only applies when opening an empty window)."),
- 					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.welcomePageInEmptyWorkbench' }, "Open the Welcome page when opening an empty workbench."),
- 				],
--				'default': 'welcomePage',
-+				'default': 'none',
- 				'description': localize('workbench.startupEditor', "Controls which editor is shown at startup, if none are restored from the previous session.")
- 			},
- 		}
+diff --git a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
+index c581ac0e4d2..4d8271add16 100644
+--- a/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
++++ b/src/vs/workbench/contrib/welcomeGettingStarted/browser/gettingStarted.contribution.ts
+@@ -329,7 +329,7 @@ configurationRegistry.registerConfiguration({
+ 				localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.welcomePageInEmptyWorkbench' }, "Open the Welcome page when opening an empty workbench."),
+ 				localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.terminal' }, "Open a new terminal in the editor area."),
+ 			],
+-			'default': 'welcomePage',
++			'default': 'none',
+ 			'description': localize('workbench.startupEditor', "Controls which editor is shown at startup, if none are restored from the previous session.")
+ 		},
+ 		'workbench.welcomePage.preferReducedMotion': {
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index aedda47bd66..1e685812b0e 100644
+index 731a48bf5b0..b77097ce7c2 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-@@ -190,7 +190,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
- 
+@@ -121,7 +121,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  		// help the file service to activate providers by activating extensions by file system event
  		this._register(this._fileService.onWillActivateFileSystemProvider(e => {
--			e.join(this.activateByEvent(`onFileSystem:${e.scheme}`));
-+			e.join(this.activateByEvent(`onFileSystem:utopia`));
+ 			if (e.scheme !== Schemas.vscodeRemote) {
+-				e.join(this.activateByEvent(`onFileSystem:${e.scheme}`));
++				e.join(this.activateByEvent(`onFileSystem:utopia`));
+ 			}
  		}));
  
- 		this._registry = new ExtensionDescriptionRegistry([]);
 diff --git a/src/vs/workbench/services/workspaces/browser/workspaces.ts b/src/vs/workbench/services/workspaces/browser/workspaces.ts
-index 3b90080dc3d..cf9ac44fca9 100644
+index d180ef2896c..8954496c6d8 100644
 --- a/src/vs/workbench/services/workspaces/browser/workspaces.ts
 +++ b/src/vs/workbench/services/workspaces/browser/workspaces.ts
 @@ -5,7 +5,6 @@
  
- import { ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from 'vs/platform/workspaces/common/workspaces';
+ import { ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace';
  import { URI } from 'vs/base/common/uri';
 -import { hash } from 'vs/base/common/hash';
  
  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  // NOTE: DO NOT CHANGE. IDENTIFIERS HAVE TO REMAIN STABLE
-@@ -30,5 +29,6 @@ export function getSingleFolderWorkspaceIdentifier(folderPath: URI): ISingleFold
+@@ -30,5 +29,6 @@ export function getSingleFolderWorkspaceIdentifier(folderUri: URI): ISingleFolde
  }
  
  function getWorkspaceId(uri: URI): string {
@@ -1245,24 +1646,127 @@ index 3b90080dc3d..cf9ac44fca9 100644
 +	return urlParams.get('vs_code_session_id')!;
  }
 diff --git a/yarn.lock b/yarn.lock
-index 2f4f87570dd..cdeffa74f26 100644
+index 71aef4295fa..aa3ab06d872 100644
 --- a/yarn.lock
 +++ b/yarn.lock
-@@ -5248,6 +5248,11 @@ ignore@^5.1.4:
-   resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.1.8.tgz#f150a8b50a34289b33e22f5889abd4d8016f0e57"
-   integrity sha512-BMpfD7PpiETpBl/A6S498BaIJ6Y/ABT93ETbby2fP00v4EbvPBXWEoaR1UBPKs3iR53pJY7EtZk5KACI57i1Uw==
+@@ -2560,7 +2560,7 @@ bindings@^1.5.0:
+   dependencies:
+     file-uri-to-path "1.0.0"
  
-+immediate@~3.0.5:
-+  version "3.0.6"
-+  resolved "https://registry.yarnpkg.com/immediate/-/immediate-3.0.6.tgz#9db1dbd0faf8de6fbe0f5dd5e56bb606280de69b"
-+  integrity sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==
-+
- import-cwd@^2.0.0:
+-bl@^4.0.2, bl@^4.0.3:
++bl@^4.0.2:
+   version "4.1.0"
+   resolved "https://registry.yarnpkg.com/bl/-/bl-4.1.0.tgz#451535264182bec2fbbc83a62ab98cf11d9f7b3a"
+   integrity sha512-1W07cM9gS6DcLperZfFSj+bWLtaPGSOHWhPiGzXmvVJbRLdG82sH/Kn8EtW1VqWVA54AKf2h5k5BbnIbwF3h6w==
+@@ -2914,11 +2914,6 @@ chokidar@^2.0.0:
+   optionalDependencies:
+     fsevents "^1.2.7"
+ 
+-chownr@^1.1.1:
+-  version "1.1.4"
+-  resolved "https://registry.yarnpkg.com/chownr/-/chownr-1.1.4.tgz#6fc9d7b42d32a583596337666e7d08084da2cc6b"
+-  integrity sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg==
+-
+ chownr@^2.0.0:
+   version "2.0.0"
+   resolved "https://registry.yarnpkg.com/chownr/-/chownr-2.0.0.tgz#15bfbe53d2eab4cf70f18a8cd68ebe5b3cb1dece"
+@@ -3568,11 +3563,6 @@ deep-equal@~1.0.1:
+   resolved "https://registry.yarnpkg.com/deep-equal/-/deep-equal-1.0.1.tgz#f5d260292b660e084eff4cdbc9f08ad3247448b5"
+   integrity sha1-9dJgKStmDghO/0zbyfCK0yR0SLU=
+ 
+-deep-extend@^0.6.0:
+-  version "0.6.0"
+-  resolved "https://registry.yarnpkg.com/deep-extend/-/deep-extend-0.6.0.tgz#c4fa7c95404a17a9c3e8ca7e1537312b736330ac"
+-  integrity sha512-LOHxIOaPYdHlJRtCQfDIVZtfw/ufM8+rVj649RIHzcm/vGwQRXFt6OPqIFWsm2XEMrNIEtWR64sY1LEKD2vAOA==
+-
+ deep-is@^0.1.3:
+   version "0.1.4"
+   resolved "https://registry.yarnpkg.com/deep-is/-/deep-is-0.1.4.tgz#a6f2dce612fadd2ef1f519b73551f17e85199831"
+@@ -3684,11 +3674,6 @@ detect-indent@^5.0.0:
+   resolved "https://registry.yarnpkg.com/detect-indent/-/detect-indent-5.0.0.tgz#3871cc0a6a002e8c3e5b3cf7f336264675f06b9d"
+   integrity sha1-OHHMCmoALow+Wzz38zYmRnXwa50=
+ 
+-detect-libc@^2.0.0:
+-  version "2.0.1"
+-  resolved "https://registry.yarnpkg.com/detect-libc/-/detect-libc-2.0.1.tgz#e1897aa88fa6ad197862937fbc0441ef352ee0cd"
+-  integrity sha512-463v3ZeIrcWtdgIg6vI6XUncguvr2TnGl4SzDXinkt9mSLpBJKXT3mW6xT3VQdDN11+WVs29pgvivTc4Lp8v+w==
+-
+ detect-newline@^2.0.0:
    version "2.1.0"
-   resolved "https://registry.yarnpkg.com/import-cwd/-/import-cwd-2.1.0.tgz#aa6cf36e722761285cb371ec6519f53e2435b0a9"
-@@ -6138,6 +6143,13 @@ levn@^0.3.0, levn@~0.3.0:
-     prelude-ls "~1.1.2"
-     type-check "~0.3.2"
+   resolved "https://registry.yarnpkg.com/detect-newline/-/detect-newline-2.1.0.tgz#f41f1c10be4b00e87b5f13da680759f2c5bfd3e2"
+@@ -3887,7 +3872,7 @@ encodeurl@^1.0.2:
+   resolved "https://registry.yarnpkg.com/encodeurl/-/encodeurl-1.0.2.tgz#ad3ff4c86ec2d029322f5a02c3a9a606c95b3f59"
+   integrity sha1-rT/0yG7C0CkyL1oCw6mmBslbP1k=
+ 
+-end-of-stream@^1.0.0, end-of-stream@^1.1.0, end-of-stream@^1.4.1:
++end-of-stream@^1.0.0, end-of-stream@^1.1.0:
+   version "1.4.4"
+   resolved "https://registry.yarnpkg.com/end-of-stream/-/end-of-stream-1.4.4.tgz#5ae64a5f45057baf3626ec14da0ca5e4b2431eb0"
+   integrity sha512-+uw1inIHVPQoaVuHzRyXd21icM+cnt4CzD5rW+NC1wjOUSTOs+Te7FOv7AhN7vS9x/oIyhLP5PR1H+phQAHu5Q==
+@@ -4357,11 +4342,6 @@ expand-brackets@^2.1.4:
+     snapdragon "^0.8.1"
+     to-regex "^3.0.1"
+ 
+-expand-template@^2.0.3:
+-  version "2.0.3"
+-  resolved "https://registry.yarnpkg.com/expand-template/-/expand-template-2.0.3.tgz#6e14b3fcee0f3a6340ecb57d2e8918692052a47c"
+-  integrity sha512-XYfuKMvj4O35f/pOXLObndIRvyQ+/+6AhODh+OKWj9S9498pHHn/IMszH+gt0fBCRWMNfk1ZSp5x3AifmnI2vg==
+-
+ expand-tilde@^2.0.0, expand-tilde@^2.0.2:
+   version "2.0.2"
+   resolved "https://registry.yarnpkg.com/expand-tilde/-/expand-tilde-2.0.2.tgz#97e801aa052df02454de46b02bf621642cdc8502"
+@@ -4757,11 +4737,6 @@ from@^0.1.7, from@~0:
+   resolved "https://registry.yarnpkg.com/from/-/from-0.1.7.tgz#83c60afc58b9c56997007ed1a768b3ab303a44fe"
+   integrity sha1-g8YK/Fi5xWmXAH7Rp2izqzA6RP4=
+ 
+-fs-constants@^1.0.0:
+-  version "1.0.0"
+-  resolved "https://registry.yarnpkg.com/fs-constants/-/fs-constants-1.0.0.tgz#6be0de9be998ce16af8afc24497b9ee9b7ccd9ad"
+-  integrity sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==
+-
+ fs-extra@^11.2.0:
+   version "11.2.0"
+   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.2.0.tgz#e70e17dfad64232287d01929399e0ea7c86b0e5b"
+@@ -4891,11 +4866,6 @@ get-value@^2.0.3, get-value@^2.0.6:
+   resolved "https://registry.yarnpkg.com/get-value/-/get-value-2.0.6.tgz#dc15ca1c672387ca76bd37ac0a395ba2042a2c28"
+   integrity sha1-3BXKHGcjh8p2vTesCjlbogQqLCg=
+ 
+-github-from-package@0.0.0:
+-  version "0.0.0"
+-  resolved "https://registry.yarnpkg.com/github-from-package/-/github-from-package-0.0.0.tgz#97fb5d96bfde8973313f20e8288ef9a167fa64ce"
+-  integrity sha1-l/tdlr/eiXMxPyDoKI75oWf6ZM4=
+-
+ glob-parent@^3.1.0:
+   version "3.1.0"
+   resolved "https://registry.yarnpkg.com/glob-parent/-/glob-parent-3.1.0.tgz#9e6af6299d8d3bd2bd40430832bd113df906c5ae"
+@@ -5680,7 +5650,7 @@ inherits@2.0.3:
+   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.3.tgz#633c2c83e3da42a502f52466022480f4208261de"
+   integrity sha1-Yzwsg+PaQqUC9SRmAiSA9CCCYd4=
+ 
+-ini@^1.3.4, ini@~1.3.0:
++ini@^1.3.4:
+   version "1.3.8"
+   resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.8.tgz#a29da425b48806f34767a4efce397269af28432c"
+   integrity sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==
+@@ -6325,15 +6295,6 @@ just-extend@^4.0.2:
+   resolved "https://registry.yarnpkg.com/just-extend/-/just-extend-4.2.1.tgz#ef5e589afb61e5d66b24eca749409a8939a8c744"
+   integrity sha512-g3UB796vUFIY90VIv/WX3L2c8CS2MdWUww3CNrYmqza1Fg0DURc2K/O4YrnklBdQarSJ/y8JnJYDGc+1iumQjg==
+ 
+-kerberos@^2.0.1:
+-  version "2.0.1"
+-  resolved "https://registry.yarnpkg.com/kerberos/-/kerberos-2.0.1.tgz#663b0b46883b4da84495f60f2e9e399a43a33ef5"
+-  integrity sha512-O/jIgbdGK566eUhFwIcgalbqirYU/r76MW7/UFw06Fd9x5bSwgyZWL/Vm26aAmezQww/G9KYkmmJBkEkPk5HLw==
+-  dependencies:
+-    bindings "^1.5.0"
+-    node-addon-api "^4.3.0"
+-    prebuild-install "7.1.1"
+-
+ keygrip@~1.1.0:
+   version "1.1.0"
+   resolved "https://registry.yarnpkg.com/keygrip/-/keygrip-1.1.0.tgz#871b1681d5e159c62a445b0c74b615e0917e7226"
+@@ -6508,6 +6469,13 @@ levn@^0.4.1:
+     prelude-ls "^1.2.1"
+     type-check "~0.4.0"
  
 +lie@3.1.1:
 +  version "3.1.1"
@@ -1271,10 +1775,10 @@ index 2f4f87570dd..cdeffa74f26 100644
 +  dependencies:
 +    immediate "~3.0.5"
 +
- liftoff@^3.1.0:
-   version "3.1.0"
-   resolved "https://registry.yarnpkg.com/liftoff/-/liftoff-3.1.0.tgz#c9ba6081f908670607ee79062d700df062c52ed3"
-@@ -6201,6 +6213,13 @@ loader-utils@^2.0.0:
+ lie@~3.3.0:
+   version "3.3.0"
+   resolved "https://registry.yarnpkg.com/lie/-/lie-3.3.0.tgz#dcf82dee545f46074daf200c7c1c5a08e0f40f6a"
+@@ -6576,6 +6544,13 @@ loader-utils@^2.0.0:
      emojis-list "^3.0.0"
      json5 "^2.1.2"
  
@@ -1288,9 +1792,100 @@ index 2f4f87570dd..cdeffa74f26 100644
  locate-path@^3.0.0:
    version "3.0.0"
    resolved "https://registry.yarnpkg.com/locate-path/-/locate-path-3.0.0.tgz#dbec3b3ab759758071b58fe59fc41871af21400e"
-@@ -8079,6 +8098,11 @@ prepend-http@^2.0.0:
-   resolved "https://registry.yarnpkg.com/prepend-http/-/prepend-http-2.0.0.tgz#e92434bfa5ea8c19f41cdfd401d741a3c819d897"
-   integrity sha1-6SQ0v6XqjBn0HN/UAddBo8gZ2Jc=
+@@ -6996,7 +6971,7 @@ minimatch@^7.4.3:
+   dependencies:
+     brace-expansion "^2.0.1"
+ 
+-minimist@^1.2.0, minimist@^1.2.3, minimist@^1.2.5, minimist@^1.2.6:
++minimist@^1.2.5, minimist@^1.2.6:
+   version "1.2.7"
+   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.7.tgz#daa1c4d91f507390437c6a8bc01078e7000c4d18"
+   integrity sha512-bzfL1YUZsP41gmu/qjrEk0Q6i2ix/cVeAhbCbqH9u3zYutS1cLg00qhrD0M2MVdCcx4Sc0UpP2eBWo9rotpq6g==
+@@ -7039,7 +7014,7 @@ mixin-deep@^1.2.0:
+     for-in "^1.0.2"
+     is-extendable "^1.0.1"
+ 
+-mkdirp-classic@^0.5.2, mkdirp-classic@^0.5.3:
++mkdirp-classic@^0.5.2:
+   version "0.5.3"
+   resolved "https://registry.yarnpkg.com/mkdirp-classic/-/mkdirp-classic-0.5.3.tgz#fa10c9115cc6d8865be221ba47ee9bed78601113"
+   integrity sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==
+@@ -7190,21 +7165,11 @@ nanomatch@^1.2.9:
+     snapdragon "^0.8.1"
+     to-regex "^3.0.1"
+ 
+-napi-build-utils@^1.0.1:
+-  version "1.0.2"
+-  resolved "https://registry.yarnpkg.com/napi-build-utils/-/napi-build-utils-1.0.2.tgz#b1fddc0b2c46e380a0b7a76f984dd47c41a13806"
+-  integrity sha512-ONmRUqK7zj7DWX0D9ADe03wbwOBZxNAfF20PlGfCWQcD3+/MakShIHrMqx9YwPTfxDdF1zLeL+RGZiR9kGMLdg==
+-
+ native-is-elevated@0.7.0:
+   version "0.7.0"
+   resolved "https://registry.yarnpkg.com/native-is-elevated/-/native-is-elevated-0.7.0.tgz#77499639e232edad1886403969e2bf236294e7af"
+   integrity sha512-tp8hUqK7vexBiyIWKMvmRxdG6kqUtO+3eay9iB0i16NYgvCqE5wMe1Y0guHilpkmRgvVXEWNW4et1+qqcwpLBA==
+ 
+-native-keymap@^3.3.5:
+-  version "3.3.5"
+-  resolved "https://registry.yarnpkg.com/native-keymap/-/native-keymap-3.3.5.tgz#b1da65d32e42bf65e3ff9db05bed319927dc2b01"
+-  integrity sha512-7XDOLPNX1FnUFC/cX3cioBz2M+dO212ai9DuwpfKFzkPu3xTmEzOm5xewOMLXE4V9YoRhNPxvq1H2YpPWDgSsg==
+-
+ native-watchdog@^1.4.1:
+   version "1.4.2"
+   resolved "https://registry.yarnpkg.com/native-watchdog/-/native-watchdog-1.4.2.tgz#cf9f913157ee992723aa372b6137293c663be9b7"
+@@ -7246,13 +7211,6 @@ nise@^5.1.0:
+     just-extend "^4.0.2"
+     path-to-regexp "^1.7.0"
+ 
+-node-abi@^3.3.0:
+-  version "3.8.0"
+-  resolved "https://registry.yarnpkg.com/node-abi/-/node-abi-3.8.0.tgz#679957dc8e7aa47b0a02589dbfde4f77b29ccb32"
+-  integrity sha512-tzua9qWWi7iW4I42vUPKM+SfaF0vQSLAm4yO5J83mSwB7GeoWrDKC/K+8YCnYNwqP5duwazbw2X9l4m8SC2cUw==
+-  dependencies:
+-    semver "^7.3.5"
+-
+ node-addon-api@7.1.0, node-addon-api@^7.1.0:
+   version "7.1.0"
+   resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-7.1.0.tgz#71f609369379c08e251c558527a107107b5e0fdb"
+@@ -7273,11 +7231,6 @@ node-addon-api@^4.2.0:
+   resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-4.2.0.tgz#117cbb5a959dff0992e1c586ae0393573e4d2a87"
+   integrity sha512-eazsqzwG2lskuzBqCGPi7Ac2UgOoMz8JVOXVhTvvPDYhthvNpefx8jWD8Np7Gv+2Sz0FlPWZk0nJV0z598Wn8Q==
+ 
+-node-addon-api@^4.3.0:
+-  version "4.3.0"
+-  resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-4.3.0.tgz#52a1a0b475193e0928e98e0426a0d1254782b77f"
+-  integrity sha512-73sE9+3UaLYYFmDsFZnqCInzPyh3MqIwZO9cw58yIqAZhONrrabrYyYe3TuIqtIiOuTXVhsGau8hcrhhwSsDIQ==
+-
+ node-addon-api@^6.0.0:
+   version "6.0.0"
+   resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-6.0.0.tgz#cfb3574e6df708ff71a30db6c4762d9e06e11c27"
+@@ -8259,24 +8212,6 @@ postcss@^8.4.33:
+     picocolors "^1.0.0"
+     source-map-js "^1.2.0"
+ 
+-prebuild-install@7.1.1:
+-  version "7.1.1"
+-  resolved "https://registry.yarnpkg.com/prebuild-install/-/prebuild-install-7.1.1.tgz#de97d5b34a70a0c81334fd24641f2a1702352e45"
+-  integrity sha512-jAXscXWMcCK8GgCoHOfIr0ODh5ai8mj63L2nWrjuAgXE6tDyYGnx4/8o/rCgU+B4JSyZBKbeZqzhtwtC3ovxjw==
+-  dependencies:
+-    detect-libc "^2.0.0"
+-    expand-template "^2.0.3"
+-    github-from-package "0.0.0"
+-    minimist "^1.2.3"
+-    mkdirp-classic "^0.5.3"
+-    napi-build-utils "^1.0.1"
+-    node-abi "^3.3.0"
+-    pump "^3.0.0"
+-    rc "^1.2.7"
+-    simple-get "^4.0.0"
+-    tar-fs "^2.0.0"
+-    tunnel-agent "^0.6.0"
+-
+ prelude-ls@^1.2.1:
+   version "1.2.1"
+   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.2.1.tgz#debc6489d7a6e6b0e7611888cec880337d316396"
+@@ -8287,6 +8222,11 @@ prelude-ls@~1.1.2:
+   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.1.2.tgz#21932a549f5e52ffd9a827f570e04be62a97da54"
+   integrity sha1-IZMqVJ9eUv/ZqCf1cOBL5iqX2lQ=
  
 +prettier@2.8.8:
 +  version "2.8.8"
@@ -1300,16 +1895,212 @@ index 2f4f87570dd..cdeffa74f26 100644
  pretty-hrtime@^1.0.0:
    version "1.0.3"
    resolved "https://registry.yarnpkg.com/pretty-hrtime/-/pretty-hrtime-1.0.3.tgz#b7e3ea42435a4c9b2759d99e0f201eb195802ee1"
-@@ -10213,6 +10237,12 @@ util@^0.12.4:
-     safe-buffer "^5.1.2"
+@@ -8426,16 +8366,6 @@ randombytes@^2.1.0:
+   dependencies:
+     safe-buffer "^5.1.0"
+ 
+-rc@^1.2.7:
+-  version "1.2.8"
+-  resolved "https://registry.yarnpkg.com/rc/-/rc-1.2.8.tgz#cd924bf5200a075b83c188cd6b9e211b7fc0d3ed"
+-  integrity sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==
+-  dependencies:
+-    deep-extend "^0.6.0"
+-    ini "~1.3.0"
+-    minimist "^1.2.0"
+-    strip-json-comments "~2.0.1"
+-
+ rcedit@^0.3.0:
+   version "0.3.0"
+   resolved "https://registry.yarnpkg.com/rcedit/-/rcedit-0.3.0.tgz#cb5eee185e546f9eda597c248c9906186fa96bce"
+@@ -8494,7 +8424,7 @@ readable-stream@^2.0.0, readable-stream@^2.0.1, readable-stream@^2.0.2, readable
+     string_decoder "~1.1.1"
+     util-deprecate "~1.0.1"
+ 
+-readable-stream@^3.1.1, readable-stream@^3.4.0:
++readable-stream@^3.4.0:
+   version "3.6.0"
+   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-3.6.0.tgz#337bbda3adc0706bd3e024426a286d4b4b2c9198"
+   integrity sha512-BViHy7LKeTz4oNnkcLJ+lVSL6vpiFeX6/d3oSH8zCW7UxP2onchk+vTGB143xuFjHS3deTgkKoXXymXqymiIdA==
+@@ -8793,7 +8723,7 @@ safe-buffer@5.1.2, safe-buffer@~5.1.0, safe-buffer@~5.1.1:
+   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.2.tgz#991ec69d296e0313747d59bdfd2b745c35f8828d"
+   integrity sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g==
+ 
+-safe-buffer@5.2.1, safe-buffer@^5.0.1, safe-buffer@^5.1.0, safe-buffer@~5.2.0:
++safe-buffer@5.2.1, safe-buffer@^5.1.0, safe-buffer@~5.2.0:
+   version "5.2.1"
+   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.2.1.tgz#1eaf9fa9bdb1fdd4ec75f58f9cdb4e6b7827eec6"
+   integrity sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==
+@@ -8879,7 +8809,7 @@ semver@^6.0.0, semver@^6.2.0, semver@^6.3.0:
+   resolved "https://registry.yarnpkg.com/semver/-/semver-6.3.1.tgz#556d2ef8689146e46dcea4bfdd095f3434dffcb4"
+   integrity sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==
+ 
+-semver@^7.3.2, semver@^7.3.4, semver@^7.3.5, semver@^7.3.7, semver@^7.5.2, semver@^7.5.4:
++semver@^7.3.2, semver@^7.3.4, semver@^7.3.7, semver@^7.5.2, semver@^7.5.4:
+   version "7.5.4"
+   resolved "https://registry.yarnpkg.com/semver/-/semver-7.5.4.tgz#483986ec4ed38e1c6c48c34894a9182dbff68a6e"
+   integrity sha512-1bCSESV6Pv+i21Hvpxp3Dx+pSD8lIPt8uVjRrxAUt/nbswYc+tK6Y2btiULjd4+fnq15PX+nqQDC7Oft7WkwcA==
+@@ -8995,20 +8925,6 @@ signal-exit@^4.0.1:
+   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-4.1.0.tgz#952188c1cbd546070e2dd20d0f41c0ae0530cb04"
+   integrity sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==
+ 
+-simple-concat@^1.0.0:
+-  version "1.0.1"
+-  resolved "https://registry.yarnpkg.com/simple-concat/-/simple-concat-1.0.1.tgz#f46976082ba35c2263f1c8ab5edfe26c41c9552f"
+-  integrity sha512-cSFtAPtRhljv69IK0hTVZQ+OfE9nePi/rtJmw5UjHeVyVroEqJXP1sFztKUy1qU+xvz3u/sfYJLa947b7nAN2Q==
+-
+-simple-get@^4.0.0:
+-  version "4.0.1"
+-  resolved "https://registry.yarnpkg.com/simple-get/-/simple-get-4.0.1.tgz#4a39db549287c979d352112fa03fd99fd6bc3543"
+-  integrity sha512-brv7p5WgH0jmQJr1ZDDfKDOSeWWg+OVypG99A/5vYGPqJ6pxiaHLy8nxtFjBA7oMa01ebA9gfh1uMCFqOuXxvA==
+-  dependencies:
+-    decompress-response "^6.0.0"
+-    once "^1.3.1"
+-    simple-concat "^1.0.0"
+-
+ sinon-test@^3.1.3:
+   version "3.1.3"
+   resolved "https://registry.yarnpkg.com/sinon-test/-/sinon-test-3.1.3.tgz#b261e0efd0b479891a243201387f957d7ca61daa"
+@@ -9326,7 +9242,7 @@ streamx@^2.15.0:
+     fast-fifo "^1.1.0"
+     queue-tick "^1.0.1"
+ 
+-"string-width-cjs@npm:string-width@^4.2.0":
++"string-width-cjs@npm:string-width@^4.2.0", string-width@^4.2.3:
+   version "4.2.3"
+   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
+   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
+@@ -9370,15 +9286,6 @@ string-width@^4.1.0, string-width@^4.2.0:
+     is-fullwidth-code-point "^3.0.0"
+     strip-ansi "^6.0.0"
+ 
+-string-width@^4.2.3:
+-  version "4.2.3"
+-  resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
+-  integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
+-  dependencies:
+-    emoji-regex "^8.0.0"
+-    is-fullwidth-code-point "^3.0.0"
+-    strip-ansi "^6.0.1"
+-
+ string-width@^5.0.1, string-width@^5.1.2:
+   version "5.1.2"
+   resolved "https://registry.yarnpkg.com/string-width/-/string-width-5.1.2.tgz#14f8daec6d81e7221d2a357e668cab73bdbca794"
+@@ -9432,7 +9339,7 @@ string_decoder@~1.1.1:
+   dependencies:
+     safe-buffer "~5.1.0"
+ 
+-"strip-ansi-cjs@npm:strip-ansi@^6.0.1":
++"strip-ansi-cjs@npm:strip-ansi@^6.0.1", strip-ansi@^6.0.1:
+   version "6.0.1"
+   resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
+   integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
+@@ -9467,13 +9374,6 @@ strip-ansi@^6.0.0:
+   dependencies:
+     ansi-regex "^5.0.0"
+ 
+-strip-ansi@^6.0.1:
+-  version "6.0.1"
+-  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
+-  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
+-  dependencies:
+-    ansi-regex "^5.0.1"
+-
+ strip-ansi@^7.0.1:
+   version "7.1.0"
+   resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-7.1.0.tgz#d5b6568ca689d8561370b0707685d22434faff45"
+@@ -9508,7 +9408,7 @@ strip-json-comments@3.1.1, strip-json-comments@^3.1.0, strip-json-comments@^3.1.
+   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-3.1.1.tgz#31f1281b3832630434831c310c01cccda8cbe006"
+   integrity sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==
+ 
+-strip-json-comments@^2.0.1, strip-json-comments@~2.0.1:
++strip-json-comments@^2.0.1:
+   version "2.0.1"
+   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
+   integrity sha1-PFMZQukIwml8DsNEhYwobHygpgo=
+@@ -9625,16 +9525,6 @@ tapable@^2.1.1, tapable@^2.2.0:
+   resolved "https://registry.yarnpkg.com/tapable/-/tapable-2.2.0.tgz#5c373d281d9c672848213d0e037d1c4165ab426b"
+   integrity sha512-FBk4IesMV1rBxX2tfiK8RAmogtWn53puLOQlvO8XuwlgxcYbP4mVPS9Ph4aeamSyyVjOl24aYWAuc8U5kCVwMw==
+ 
+-tar-fs@^2.0.0:
+-  version "2.1.1"
+-  resolved "https://registry.yarnpkg.com/tar-fs/-/tar-fs-2.1.1.tgz#489a15ab85f1f0befabb370b7de4f9eb5cbe8784"
+-  integrity sha512-V0r2Y9scmbDRLCNex/+hYzvp/zyYjvFbHPNgVTKfQvVrb6guiE/fxP+XblDNR011utopbkex2nM4dHNV6GDsng==
+-  dependencies:
+-    chownr "^1.1.1"
+-    mkdirp-classic "^0.5.2"
+-    pump "^3.0.0"
+-    tar-stream "^2.1.4"
+-
+ tar-fs@^3.0.4:
+   version "3.0.4"
+   resolved "https://registry.yarnpkg.com/tar-fs/-/tar-fs-3.0.4.tgz#a21dc60a2d5d9f55e0089ccd78124f1d3771dbbf"
+@@ -9644,17 +9534,6 @@ tar-fs@^3.0.4:
+     pump "^3.0.0"
+     tar-stream "^3.1.5"
+ 
+-tar-stream@^2.1.4:
+-  version "2.2.0"
+-  resolved "https://registry.yarnpkg.com/tar-stream/-/tar-stream-2.2.0.tgz#acad84c284136b060dc3faa64474aa9aebd77287"
+-  integrity sha512-ujeqbceABgwMZxEJnk2HDY2DlnUZ+9oEcb1KzTVfYHio0UE6dG71n60d8D2I4qNvleWrrXpmjpt7vZeF1LnMZQ==
+-  dependencies:
+-    bl "^4.0.3"
+-    end-of-stream "^1.4.1"
+-    fs-constants "^1.0.0"
+-    inherits "^2.0.3"
+-    readable-stream "^3.1.1"
+-
+ tar-stream@^3.1.5:
+   version "3.1.6"
+   resolved "https://registry.yarnpkg.com/tar-stream/-/tar-stream-3.1.6.tgz#6520607b55a06f4a2e2e04db360ba7d338cc5bab"
+@@ -9997,13 +9876,6 @@ tsutils@^3.21.0:
+   dependencies:
+     tslib "^1.8.1"
+ 
+-tunnel-agent@^0.6.0:
+-  version "0.6.0"
+-  resolved "https://registry.yarnpkg.com/tunnel-agent/-/tunnel-agent-0.6.0.tgz#27a5dea06b36b04a0a9966774b290868f0fc40fd"
+-  integrity sha1-J6XeoGs2sEoKmWZ3SykIaPD8QP0=
+-  dependencies:
+-    safe-buffer "^5.0.1"
+-
+ tunnel@^0.0.6:
+   version "0.0.6"
+   resolved "https://registry.yarnpkg.com/tunnel/-/tunnel-0.0.6.tgz#72f1314b34a5b192db012324df2cc587ca47f92c"
+@@ -10235,6 +10107,12 @@ util@^0.12.4:
+     is-typed-array "^1.1.3"
      which-typed-array "^1.1.2"
  
 +"utopia-vscode-common@file:../../utopia-vscode-common":
-+  version "0.1.4"
++  version "0.1.6"
 +  dependencies:
 +    localforage "1.9.0"
 +    prettier "2.8.8"
 +
- uuid@^3.0.0:
-   version "3.1.0"
-   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.1.0.tgz#3dd3d3e790abc24d7b0d3a034ffababe28ebbc04"
+ uuid@^8.3.0:
+   version "8.3.2"
+   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
+@@ -10629,7 +10507,7 @@ workerpool@6.2.1:
+   resolved "https://registry.yarnpkg.com/workerpool/-/workerpool-6.2.1.tgz#46fc150c17d826b86a008e5a4508656777e9c343"
+   integrity sha512-ILEIE97kDZvF9Wb9f6h5aXK4swSlKGUcOEGiIYb2OOu/IrDU9iwj0fD//SsA6E5ibwJxpEvhullJY4Sl4GcpAw==
+ 
+-"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
++"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
+   version "7.0.0"
+   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
+   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
+@@ -10664,15 +10542,6 @@ wrap-ansi@^6.2.0:
+     string-width "^4.1.0"
+     strip-ansi "^6.0.0"
+ 
+-wrap-ansi@^7.0.0:
+-  version "7.0.0"
+-  resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
+-  integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
+-  dependencies:
+-    ansi-styles "^4.0.0"
+-    string-width "^4.1.0"
+-    strip-ansi "^6.0.0"
+-
+ wrap-ansi@^8.1.0:
+   version "8.1.0"
+   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-8.1.0.tgz#56dc22368ee570face1b49819975d9b9a5ead214"

@@ -214,9 +214,9 @@ vsCodePathsToPreload = [
         ("extensions.js", VSCodeJS),
         ("vscode/vs/code/browser/workbench/workbench.js", VSCodeJS),
         ("vscode/vs/loader.js", VSCodeJS),
-        ("vscode/vs/workbench/workbench.web.api.css", VSCodeCSS),
-        ("vscode/vs/workbench/workbench.web.api.js", VSCodeJS),
-        ("vscode/vs/workbench/workbench.web.api.nls.js", VSCodeJS)
+        ("vscode/vs/workbench/workbench.web.main.css", VSCodeCSS),
+        ("vscode/vs/workbench/workbench.web.main.js", VSCodeJS),
+        ("vscode/vs/workbench/workbench.web.main.nls.js", VSCodeJS)
         ]
 
 vscodePreloadTypeToPreloadAs :: VSCodePreloadType -> Text
@@ -286,7 +286,7 @@ renderPageWithMetadata possibleProjectID possibleMetadata possibleProject branch
   let ogTags = projectHTMLMetadata possibleMetadata siteRoot
   let projectIDScriptTags = maybe [] projectIDScript possibleProjectID
   let dependenciesTags = dependenciesHtmlFromProject cdnRoot possibleProject
-  let vscodePreloadTags = vscodePreloads cdnRoot commitHash
+  let vscodePreloadTags = vscodePreloads "http://localhost:8000" commitHash
   let parsedTags = parseTags indexHtml
   -- Parse these in reverse because webpack puts the editor script content at the end
   -- of the head element, so we can more easily look for that by looking for the `head`
@@ -529,11 +529,23 @@ addCacheControl = addMiddlewareHeader "Cache-Control" "public, immutable, max-ag
 addCacheControlRevalidate :: Middleware
 addCacheControlRevalidate = addMiddlewareHeader "Cache-Control" "public, must-revalidate, proxy-revalidate, max-age=0"
 
+addCrossOriginOpenerPolicy :: Middleware
+addCrossOriginOpenerPolicy = addMiddlewareHeader "Cross-Origin-Opener-Policy" "same-origin"
+
+addCrossOriginEmbedderPolicy :: Middleware
+addCrossOriginEmbedderPolicy = addMiddlewareHeader "Cross-Origin-Embedder-Policy" "credentialless"
+
 addCDNHeaders :: Middleware
 addCDNHeaders = addCacheControl . addAccessControlAllowOrigin
 
+addEditorAssetsHeaders :: Middleware
+addEditorAssetsHeaders = addCDNHeaders . addCrossOriginOpenerPolicy . addCrossOriginEmbedderPolicy
+
 addCDNHeadersCacheRevalidate :: Middleware
 addCDNHeadersCacheRevalidate = addCacheControlRevalidate . addAccessControlAllowOrigin
+
+addVSCodeHeaders :: Middleware
+addVSCodeHeaders = addCDNHeadersCacheRevalidate . addCrossOriginOpenerPolicy . addCrossOriginEmbedderPolicy
 
 fallbackOn404 :: Application -> Application -> Application
 fallbackOn404 firstApplication secondApplication request sendResponse =
@@ -557,7 +569,7 @@ editorAssetsEndpoint notProxiedPath possibleBranchName = do
   mainApp <- case possibleBranchName of
     Just _  -> pure loadLocally
     Nothing -> maybe (pure loadLocally) loadFromProxy possibleProxyManager
-  pure $ addCDNHeaders $ downloadWithFallbacks mainApp
+  pure $ addEditorAssetsHeaders $ downloadWithFallbacks mainApp
 
 downloadGithubProjectEndpoint :: Maybe Text -> Text -> Text -> ServerMonad BL.ByteString
 downloadGithubProjectEndpoint cookie owner repo = requireUser cookie $ \_ -> do
@@ -580,7 +592,7 @@ websiteAssetsEndpoint notProxiedPath = do
 vsCodeAssetsEndpoint :: ServerMonad Application
 vsCodeAssetsEndpoint = do
   pathToServeFrom <- getVSCodeAssetRoot
-  addCDNHeadersCacheRevalidate <$> servePath pathToServeFrom Nothing
+  addVSCodeHeaders <$> servePath pathToServeFrom Nothing
 
 wrappedWebAppLookup :: (Pieces -> IO LookupResult) -> Pieces -> IO LookupResult
 wrappedWebAppLookup defaultLookup _ =
