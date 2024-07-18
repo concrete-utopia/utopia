@@ -5286,7 +5286,6 @@ export const UPDATE_FNS = {
     }
   },
   RESET_CANVAS: (action: ResetCanvas, editor: EditorModel): EditorModel => {
-    // clearExecutionScopeCache()
     return {
       ...editor,
       canvas: {
