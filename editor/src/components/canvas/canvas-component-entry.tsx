@@ -104,6 +104,7 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
     </>
   )
 })
+CanvasComponentEntryInner.displayName = 'CanvasComponentEntryInner'
 
 function CanvasInner({
   canvasProps,
