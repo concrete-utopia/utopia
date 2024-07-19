@@ -348,12 +348,28 @@ export function getApplicableStrategiesOrderedByFitness(
     return r.fitness - l.fitness
   })
 
-  // Special case for the DO NOTHING strategy - it should never be a fallback strategy
-  const filteredSortedStrategies = sortedStrategies.filter(
-    ({ strategy }, index) => index === 0 || strategy.id !== DoNothingStrategyID,
+  return filterOutInvalidDoNothingStrategies(sortedStrategies)
+}
+
+// Special cases for the DO NOTHING strategy - it should never be a fallback strategy, and it should never appear without real strategies
+function filterOutInvalidDoNothingStrategies(
+  sortedStrategies: Array<StrategyWithFitness>,
+): Array<StrategyWithFitness> {
+  const nonDoNothingStrategies = sortedStrategies.filter(
+    ({ strategy, fitness }) => fitness > 0 && !isDoNothingOrDoNothingAncestorStrategy(strategy),
   )
 
-  return filteredSortedStrategies
+  if (nonDoNothingStrategies.length === 0) {
+    return []
+  }
+
+  return sortedStrategies.filter(
+    ({ strategy }, index) => index === 0 || !isDoNothingOrDoNothingAncestorStrategy(strategy),
+  )
+}
+
+function isDoNothingOrDoNothingAncestorStrategy(strategy: CanvasStrategy): boolean {
+  return strategy.id.startsWith(DoNothingStrategyID)
 }
 
 function pickDefaultCanvasStrategy(
