@@ -112,7 +112,6 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
     </>
   )
 })
-CanvasComponentEntryInner.displayName = 'CanvasComponentEntryInner'
 
 function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
   let [updateInvalidatedPaths] = useDomWalkerInvalidateCallbacks()
