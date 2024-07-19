@@ -5243,7 +5243,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc/78c/d93',
       ])
       expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+        getNavigatorTargetsFromEditorState(
+          renderResult.getEditorState().editor,
+        ).visibleNavigatorTargets.map(navigatorEntryToKey),
       ).toEqual([
         'regular-sb/scene',
         'regular-sb/scene/pg',
@@ -5287,7 +5289,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc/78c/d93',
       ])
       expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+        getNavigatorTargetsFromEditorState(
+          renderResult.getEditorState().editor,
+        ).visibleNavigatorTargets.map(navigatorEntryToKey),
       ).toEqual([
         'regular-sb/scene',
         'regular-sb/scene/pg',
@@ -5331,7 +5335,9 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc/78c/891',
       ])
       expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+        getNavigatorTargetsFromEditorState(
+          renderResult.getEditorState().editor,
+        ).visibleNavigatorTargets.map(navigatorEntryToKey),
       ).toEqual([
         'regular-sb/scene',
         'regular-sb/scene/pg',
@@ -5680,7 +5686,9 @@ describe('Navigator row order', () => {
       'regular-sb/group/zero-length-map-wrapper/e23',
     ])
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual([
       'regular-sb/group',
       'regular-sb/group/70f',
@@ -5749,7 +5757,9 @@ describe('Navigator row order', () => {
       'regular-sb/group/bf0/b78~~~1',
     ])
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual([
       'regular-sb/group',
       'regular-sb/group/0b5',
@@ -5793,7 +5803,9 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc/78c/d93',
     ])
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual([
       'regular-sb/scene',
       'regular-sb/scene/pg',
@@ -5828,7 +5840,9 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc/78c/d93',
     ])
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual([
       'regular-sb/scene',
       'regular-sb/scene/pg',
@@ -5862,7 +5876,9 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc/78c/d93',
     ])
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual([
       'regular-sb/scene',
       'regular-sb/scene/pg',
@@ -5897,7 +5913,9 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc/78c/d93',
     ])
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual([
       'regular-sb/scene',
       'regular-sb/scene/pg',
@@ -5933,7 +5951,9 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc/78c/891',
     ])
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual([
       'regular-sb/scene',
       'regular-sb/scene/pg',
@@ -5960,7 +5980,9 @@ describe('Navigator row order', () => {
       ),
     ).toEqual(['regular-sb/scene'])
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(['regular-sb/scene'])
   })
 })

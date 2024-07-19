@@ -24,6 +24,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { assert } from 'chai'
 import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
+import { getNavigatorTargetsFromEditorState } from '../../../navigator/navigator-utils'
 
 const TestProjectBlockElements = (additionalContainerStyle: string = '') => `
 <div style={{ width: '100%', height: '100%', position: 'absolute', ${additionalContainerStyle} }} data-uid='container'>
@@ -316,7 +317,9 @@ async function dragElement(
     modifiers: modifiers,
     midDragCallback: async () => {
       expect(
-        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+        getNavigatorTargetsFromEditorState(
+          renderResult.getEditorState().editor,
+        ).visibleNavigatorTargets.map(navigatorEntryToKey),
       ).toEqual(expectedNavigatorTargetsDuringMove)
     },
   })
