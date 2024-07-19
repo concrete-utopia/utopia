@@ -59,3 +59,4 @@ export const RemixSceneComponent = React.memo((props: React.PropsWithChildren<Re
     </div>
   )
 })
+RemixSceneComponent.displayName = 'RemixSceneComponent'
