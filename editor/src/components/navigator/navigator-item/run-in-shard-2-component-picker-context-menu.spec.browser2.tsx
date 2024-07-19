@@ -1538,7 +1538,9 @@ export const Column = () => (
           await trigger(renderResult)
 
           expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+            getNavigatorTargetsFromEditorState(
+              renderResult.getEditorState().editor,
+            ).navigatorTargets.map(navigatorEntryToKey),
           ).toEqual([
             'regular-utopia-storyboard-uid/scene-aaa',
             'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -1657,7 +1659,9 @@ export const Column = () => (
           await trigger(renderResult)
 
           expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+            getNavigatorTargetsFromEditorState(
+              renderResult.getEditorState().editor,
+            ).navigatorTargets.map(navigatorEntryToKey),
           ).toEqual([
             'regular-utopia-storyboard-uid/scene-aaa',
             'regular-utopia-storyboard-uid/scene-aaa/app-entity',

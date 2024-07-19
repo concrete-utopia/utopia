@@ -2701,7 +2701,9 @@ export var storyboard = (props) => {
         await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -2876,7 +2878,9 @@ export var storyboard = (props) => {
         await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -5765,7 +5769,9 @@ export var storyboard = (
 
         expect(renderResult.getEditorState().postActionInteractionSession).toBeNull()
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -5816,7 +5822,9 @@ export var storyboard = (
 
         expect(renderResult.getEditorState().postActionInteractionSession).not.toBeNull()
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
