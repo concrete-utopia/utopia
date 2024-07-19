@@ -70,6 +70,8 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
+      const modifiers = interactionSession.interactionData.modifiers
+
       const control = interactionSession.activeControl
       const drag = interactionSession.interactionData.drag
       const dragAmount = control.axis === 'column' ? drag.x : drag.y
@@ -117,16 +119,32 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       const calculatedValue = toFirst(valueOptic, calculatedValues.dimensions)
       const mergedValue = toFirst(valueOptic, mergedValues.dimensions)
       const mergedUnit = toFirst(unitOptic, mergedValues.dimensions)
+      const isFractional = isRight(mergedUnit) && mergedUnit.value === 'fr'
+
+      function newResizedValue(
+        current: number,
+        increment: number,
+        precision: 'coarse' | 'precise',
+      ): number {
+        const newValue = current + increment
+        if (precision === 'precise') {
+          return newValue
+        } else if (isFractional) {
+          // .5x steps
+          return Math.round(newValue * 2) / 2
+        } else {
+          // 10x steps
+          return Math.round(newValue / 10) * 10
+        }
+      }
 
       const newSetting = modify(
         valueOptic,
         (current) =>
-          current +
-          getNewDragValue(
-            dragAmount,
-            isRight(mergedUnit) && mergedUnit.value === 'fr',
-            calculatedValue,
-            mergedValue,
+          newResizedValue(
+            current,
+            getNewDragValue(dragAmount, isFractional, calculatedValue, mergedValue),
+            modifiers.cmd ? 'coarse' : 'precise',
           ),
         mergedValues.dimensions,
       )
