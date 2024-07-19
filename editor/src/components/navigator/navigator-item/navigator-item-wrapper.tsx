@@ -56,6 +56,7 @@ import {
   SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
 import { CondensedEntryItemWrapper } from './navigator-condensed-entry'
+import { navigatorTargetsSelector } from '../navigator-utils'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -142,11 +143,11 @@ export const labelSelector = createCachedSelector(
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 const noOfChildrenSelector = createCachedSelector(
-  (store: DerivedSubstate) => store.derived.navigatorTargets,
+  navigatorTargetsSelector,
   (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
   (navigatorTargets, navigatorEntry) => {
     let result = 0
-    for (const nt of navigatorTargets) {
+    for (const nt of navigatorTargets.navigatorTargets) {
       if (
         isRegularNavigatorEntry(navigatorEntry) &&
         EP.isChildOf(nt.elementPath, navigatorEntry.elementPath)
@@ -269,7 +270,7 @@ const SingleEntryNavigatorItemWrapper: React.FunctionComponent<
   )
 
   const noOfChildren = useEditorState(
-    Substores.derived,
+    Substores.fullStore, // TODO do not use fullStore here
     (store) => {
       return noOfChildrenSelector(store, props.navigatorEntry)
     },
