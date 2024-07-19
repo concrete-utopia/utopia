@@ -1768,9 +1768,9 @@ describe('Navigator', () => {
         'await-first-dom-report',
       )
 
-      const originalNavigatorOrder = renderResult
-        .getEditorState()
-        .derived.navigatorTargets.map(navigatorEntryToKey)
+      const originalNavigatorOrder = getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).navigatorTargets.map(navigatorEntryToKey)
 
       const dragMeElement = await renderResult.renderedDOM.findByTestId(
         `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
@@ -2507,9 +2507,9 @@ describe('Navigator', () => {
           'await-first-dom-report',
         )
 
-        const initialOrder = renderResult
-          .getEditorState()
-          .derived.navigatorTargets.map(navigatorEntryToKey)
+        const initialOrder = getNavigatorTargetsFromEditorState(
+          renderResult.getEditorState().editor,
+        ).navigatorTargets.map(navigatorEntryToKey)
 
         const target = EP.fromString(
           `${BakedInStoryboardUID}/${TestSceneUID}/${SceneRootId}/firstdiv`,
@@ -2548,9 +2548,9 @@ describe('Navigator', () => {
         'await-first-dom-report',
       )
 
-      const initialOrder = renderResult
-        .getEditorState()
-        .derived.navigatorTargets.map(navigatorEntryToKey)
+      const initialOrder = getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).navigatorTargets.map(navigatorEntryToKey)
 
       const target = EP.fromString(
         `${BakedInStoryboardUID}/${TestSceneUID}/${SceneRootId}/firstdiv`,
@@ -2588,9 +2588,9 @@ describe('Navigator', () => {
         'await-first-dom-report',
       )
 
-      const initialOrder = renderResult
-        .getEditorState()
-        .derived.navigatorTargets.map(navigatorEntryToKey)
+      const initialOrder = getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).navigatorTargets.map(navigatorEntryToKey)
 
       const target = EP.fromString(
         `${BakedInStoryboardUID}/${TestSceneUID}/${SceneRootId}/seconddiv`,
