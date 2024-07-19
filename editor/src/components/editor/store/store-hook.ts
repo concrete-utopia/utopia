@@ -128,10 +128,9 @@ export const useEditorState = <K extends StoreKey, S extends (typeof Substores)[
   selector: StateSelector<Parameters<S>[0], U>,
   selectorName: string,
   equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
-  storeContext: React.Context<UtopiaStoreAPI | null> = EditorStateContext,
 ): U => {
   const storeKey: K = storeKey_.name as K
-  const context = React.useContext(storeContext)
+  const context = React.useContext(EditorStateContext)
 
   const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(storeKey, selector, selectorName)
 
@@ -222,9 +221,8 @@ export const useSelectorWithCallback = <K extends StoreKey, S extends (typeof Su
 export const useRefEditorState = <U>(
   selector: StateSelector<EditorStorePatched, U>,
   explainMe = false,
-  storeContext: React.Context<UtopiaStoreAPI | null> = EditorStateContext,
 ): { readonly current: U } => {
-  const context = React.useContext(storeContext)
+  const context = React.useContext(EditorStateContext)
   if (context == null) {
     throw new Error('useStore is missing from editor context')
   }
