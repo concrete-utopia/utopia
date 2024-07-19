@@ -825,7 +825,7 @@ export const navigatorTargetsSelector = createSelector(
     ),
 )
 
-function useGetNavigatorTargets() {
+export function useGetNavigatorTargets(): GetNavigatorTargetsResults {
   return useEditorState(
     // TODO try not to use fullStore here
     Substores.fullStore,

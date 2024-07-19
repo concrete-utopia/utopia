@@ -76,10 +76,10 @@ const targetElementMetadataSelector = createCachedSelector(
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 const targetInNavigatorItemsSelector = createCachedSelector(
-  (store: EditorStorePatched) => store.derived.navigatorTargets,
+  navigatorTargetsSelector,
   (store: EditorStorePatched, target: NavigatorEntry) => target,
   (navigatorTargets, target) => {
-    return navigatorTargets.some((navigatorTarget) => {
+    return navigatorTargets.navigatorTargets.some((navigatorTarget) => {
       return navigatorEntriesEqual(target, navigatorTarget)
     })
   },

@@ -45,7 +45,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { when } from '../../../utils/react-conditionals'
 import { metadataSelector } from '../../inspector/inpector-selectors'
-import { baseNavigatorDepth } from '../navigator-utils'
+import { baseNavigatorDepth, useGetNavigatorTargets } from '../navigator-utils'
 import type {
   ElementInstanceMetadataMap,
   JSXElementChild,
@@ -554,11 +554,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     'NavigatorItemDndWrapper dropTargetHint',
   )
 
-  const navigatorTargets = useEditorState(
-    Substores.derived,
-    (store) => store.derived.navigatorTargets,
-    'NavigatorItemDndWrapper navigatorTargets',
-  )
+  const navigatorTargets = useGetNavigatorTargets().navigatorTargets
 
   const isFirstSibling = React.useMemo(() => {
     const siblings = MetadataUtils.getSiblingsOrdered(

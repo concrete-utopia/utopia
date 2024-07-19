@@ -20,7 +20,7 @@ import {
   showContextMenu,
 } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
-import type { NavigatorEntry } from '../editor/store/editor-state'
+import type { EditorStorePatched, NavigatorEntry } from '../editor/store/editor-state'
 import {
   isRegularNavigatorEntry,
   navigatorEntryToKey,
@@ -35,8 +35,18 @@ import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
 import type { CondensedNavigatorRow, NavigatorRow, RegularNavigatorRow } from './navigator-row'
 import { getEntriesForRow } from './navigator-row'
 import { assertNever } from '../../core/shared/utils'
+import { navigatorTargetsSelector } from './navigator-utils'
+import { createSelector } from 'reselect'
 
 interface ItemProps extends ListChildComponentProps {}
+
+const currentlySelectedNavigatorEntriesSelector = createSelector(
+  navigatorTargetsSelector,
+  (store: EditorStorePatched) => store.editor.selectedViews,
+  (navigatorTargets, selectedViews) => {
+    return getSelectedNavigatorEntries(selectedViews, navigatorTargets.navigatorTargets)
+  },
+)
 
 const Item = React.memo(({ index, style }: ItemProps) => {
   const visibleNavigatorTargets = useEditorState(
@@ -45,21 +55,19 @@ const Item = React.memo(({ index, style }: ItemProps) => {
     'Item visibleNavigatorTargets',
   )
   const editorSliceRef = useRefEditorState((store) => {
-    const currentlySelectedNavigatorEntries = getSelectedNavigatorEntries(
-      store.editor.selectedViews,
-      store.derived.navigatorTargets,
-    )
     return {
       selectedViews: store.editor.selectedViews,
-      navigatorTargets: store.derived.navigatorTargets,
       visibleNavigatorTargets: store.derived.visibleNavigatorTargets,
-      currentlySelectedNavigatorEntries: currentlySelectedNavigatorEntries,
     }
   })
+  const navigatorTargetsRef = useRefEditorState(navigatorTargetsSelector)
+  const currentlySelectedNavigatorEntriesRef = useRefEditorState(
+    currentlySelectedNavigatorEntriesSelector,
+  )
 
   const getCurrentlySelectedNavigatorEntries = React.useCallback((): Array<NavigatorEntry> => {
-    return editorSliceRef.current.currentlySelectedNavigatorEntries
-  }, [editorSliceRef])
+    return currentlySelectedNavigatorEntriesRef.current
+  }, [currentlySelectedNavigatorEntriesRef])
 
   const visibleTargetIndexToRegularIndex = React.useCallback(
     (visibleTargetIndex: number) => {
@@ -68,7 +76,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
       if (visibleNavigatorEntry == null) {
         return null
       } else {
-        const targetIndex = editorSliceRef.current.navigatorTargets.findIndex((target) =>
+        const targetIndex = navigatorTargetsRef.current.navigatorTargets.findIndex((target) =>
           navigatorEntriesEqual(target, visibleNavigatorEntry),
         )
         if (targetIndex >= 0) {
@@ -78,7 +86,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
         }
       }
     },
-    [editorSliceRef],
+    [editorSliceRef, navigatorTargetsRef],
   )
 
   // Used to determine the views that will be selected by starting with the last selected item
@@ -87,7 +95,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
     (visibleTargetIndex: number): Array<ElementPath> => {
       const selectedItemIndexes = editorSliceRef.current.selectedViews
         .map((selection) =>
-          editorSliceRef.current.navigatorTargets.findIndex(
+          navigatorTargetsRef.current.navigatorTargets.findIndex(
             (entry) =>
               isRegularNavigatorEntry(entry) && EP.pathsEqual(entry.elementPath, selection),
           ),
@@ -100,7 +108,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
       }
       const lastSelectedItemIndex = last(selectedItemIndexes)
       if (lastSelectedItemIndex == null) {
-        const lastSelectedItem = editorSliceRef.current.navigatorTargets[targetIndex]
+        const lastSelectedItem = navigatorTargetsRef.current.navigatorTargets[targetIndex]
         if (isRegularNavigatorEntry(lastSelectedItem)) {
           return [lastSelectedItem.elementPath]
         } else {
@@ -120,7 +128,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
           end = lastSelectedItemIndex
         }
         let selectedViewTargets: Array<ElementPath> = editorSliceRef.current.selectedViews
-        Utils.fastForEach(editorSliceRef.current.navigatorTargets, (item, itemIndex) => {
+        Utils.fastForEach(navigatorTargetsRef.current.navigatorTargets, (item, itemIndex) => {
           if (itemIndex >= start && itemIndex <= end && isRegularNavigatorEntry(item)) {
             selectedViewTargets = EP.addPathIfMissing(item.elementPath, selectedViewTargets)
           }
@@ -128,7 +136,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
         return selectedViewTargets
       }
     },
-    [editorSliceRef, visibleTargetIndexToRegularIndex],
+    [editorSliceRef, navigatorTargetsRef, visibleTargetIndexToRegularIndex],
   )
 
   const targetEntry = visibleNavigatorTargets[index]
