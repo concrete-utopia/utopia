@@ -54,6 +54,7 @@ import parse from 'html-react-parser'
 import type { ComponentRendererComponent } from './ui-jsx-canvas-renderer/component-renderer-component'
 import type { MutableUtopiaCtxRefData } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import {
+  ElementsToRerenderContext,
   RerenderUtopiaCtxAtom,
   SceneLevelUtopiaCtxAtom,
   UtopiaProjectCtxAtom,
@@ -561,18 +562,22 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       {/* deliberately breaking useEditorState and useRefEditorState to enforce the usage of useCanvasState */}
       <EditorStateContext.Provider value={null}>
         <Helmet>{parse(linkTags)}</Helmet>
-        <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
-          <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
-            <CanvasContainer
-              validRootPaths={rootValidPathsArray}
-              canvasRootElementElementPath={storyboardRootElementPath}
-            >
-              <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
-                {StoryboardRoot}
-              </SceneLevelUtopiaCtxAtom.Provider>
-            </CanvasContainer>
-          </UtopiaProjectCtxAtom.Provider>
-        </RerenderUtopiaCtxAtom.Provider>
+        <ElementsToRerenderContext.Provider
+          value={useKeepReferenceEqualityIfPossible(ElementsToRerenderGLOBAL.current)} // TODO this should either be moved to EditorState or the context should be moved to the root level
+        >
+          <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
+            <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
+              <CanvasContainer
+                validRootPaths={rootValidPathsArray}
+                canvasRootElementElementPath={storyboardRootElementPath}
+              >
+                <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
+                  {StoryboardRoot}
+                </SceneLevelUtopiaCtxAtom.Provider>
+              </CanvasContainer>
+            </UtopiaProjectCtxAtom.Provider>
+          </RerenderUtopiaCtxAtom.Provider>
+        </ElementsToRerenderContext.Provider>
       </EditorStateContext.Provider>
     </div>
   )
