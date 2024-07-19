@@ -17,7 +17,12 @@ import {
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isLeft } from '../../core/shared/either'
-import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/store/editor-state'
+import type {
+  ConditionalClauseNavigatorEntry,
+  EditorState,
+  EditorStorePatched,
+  NavigatorEntry,
+} from '../editor/store/editor-state'
 import {
   conditionalClauseNavigatorEntry,
   dataReferenceNavigatorEntry,
@@ -56,6 +61,8 @@ import { getUtopiaID } from '../../core/shared/uid-utils'
 import { emptySet } from '../../core/shared/set-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { dataCanCondenseFromMetadata } from '../../utils/can-condense'
+import { createSelector } from 'reselect'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -791,6 +798,53 @@ function getNavigatorRowsForTree(
   }
 
   return condensedTree.flatMap((t) => walkTree(t, 0))
+}
+
+export const navigatorTargetsSelector = createSelector(
+  (state: EditorStorePatched) => state.editor.jsxMetadata,
+  (state: EditorStorePatched) => state.editor.elementPathTree,
+  (state: EditorStorePatched) => state.editor.navigator.collapsedViews,
+  (state: EditorStorePatched) => state.editor.navigator.hiddenInNavigator,
+  (state: EditorStorePatched) => state.editor.propertyControlsInfo,
+  (state: EditorStorePatched) => state.editor.projectContents,
+  (
+    jsxMetadata,
+    elementPathTree,
+    collapsedViews,
+    hiddenInNavigator,
+    propertyControlsInfo,
+    projectContents,
+  ) =>
+    getNavigatorTargets(
+      jsxMetadata,
+      elementPathTree,
+      collapsedViews,
+      hiddenInNavigator,
+      propertyControlsInfo,
+      projectContents,
+    ),
+)
+
+function useGetNavigatorTargets() {
+  return useEditorState(
+    // TODO try not to use fullStore here
+    Substores.fullStore,
+    navigatorTargetsSelector,
+    'useGetNavigatorTargets',
+  )
+}
+
+export function getNavigatorTargetsFromEditorState(
+  editorState: EditorState,
+): GetNavigatorTargetsResults {
+  return getNavigatorTargets(
+    editorState.jsxMetadata,
+    editorState.elementPathTree,
+    editorState.navigator.collapsedViews,
+    editorState.navigator.hiddenInNavigator,
+    editorState.propertyControlsInfo,
+    editorState.projectContents,
+  )
 }
 
 export function getNavigatorTargets(

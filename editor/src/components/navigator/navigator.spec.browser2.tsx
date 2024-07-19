@@ -54,6 +54,7 @@ import { shiftModifier } from '../../utils/modifiers'
 import { back, front } from '../../utils/utils'
 import { createNavigatorReparentPostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
+import { getNavigatorTargetsFromEditorState } from './navigator-utils'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -3680,7 +3681,11 @@ describe('Navigator', () => {
           targetElementPath,
         )
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',
           'regular-sb/scene/app:root',
@@ -3805,7 +3810,11 @@ describe('Navigator', () => {
 
         await doBasicDrag(editor, dragMeElementPath, targetElementPath)
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -3860,7 +3869,11 @@ describe('Navigator', () => {
 
         await doBasicDrag(editor, dragMeElementPath, targetElementPath)
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -3915,7 +3928,11 @@ describe('Navigator', () => {
 
         await doBasicDrag(editor, dragMeElementPath, targetElementPath)
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -3953,7 +3970,11 @@ describe('Navigator', () => {
           targetElementPath,
         )
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',
           'regular-sb/scene/app:root',
@@ -3990,7 +4011,11 @@ describe('Navigator', () => {
           targetElementPath,
         )
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',
           'regular-sb/scene/app:root',
@@ -4026,7 +4051,11 @@ describe('Navigator', () => {
           targetElementPath,
         )
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',
           'regular-sb/scene/app:root',
@@ -4145,7 +4174,11 @@ describe('Navigator', () => {
 
         await doBasicDrag(editor, dragMeElementPath, targetElementPath)
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -4213,7 +4246,11 @@ describe('Navigator', () => {
 
         await doBasicDrag(editor, dragMeElementPath, targetElementPath)
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -4316,7 +4353,11 @@ describe('Navigator', () => {
 
         await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -4380,7 +4421,11 @@ describe('Navigator', () => {
 
         await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -4432,7 +4477,11 @@ describe('Navigator', () => {
 
         await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -4483,7 +4532,11 @@ describe('Navigator', () => {
 
         await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -4534,7 +4587,11 @@ describe('Navigator', () => {
 
         await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -4618,7 +4675,11 @@ describe('Navigator', () => {
 
         await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -4707,7 +4768,11 @@ describe('Navigator', () => {
           ReparentDropTargetTestId,
         )
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -4867,7 +4932,11 @@ describe('Navigator', () => {
 
         await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -5210,7 +5279,11 @@ describe('Navigator', () => {
       )
 
       // before the render prop child is deleted
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-sb/scene',
         'regular-sb/scene/pg',
         'regular-sb/scene/pg:dbc',
@@ -5228,7 +5301,11 @@ describe('Navigator', () => {
       await pressKey('Backspace')
 
       // before the render prop child is deleted
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-sb/scene',
         'regular-sb/scene/pg',
         'regular-sb/scene/pg:dbc',
@@ -5239,7 +5316,11 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc/78c/f59',
       ])
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-sb/scene',
         'regular-sb/scene/pg',
         'regular-sb/scene/pg:dbc',
@@ -5260,7 +5341,11 @@ describe('Navigator', () => {
       )
 
       // before the render prop child is deleted
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-sb/scene',
         'regular-sb/scene/pg',
         'regular-sb/scene/pg:dbc',
@@ -5278,7 +5363,11 @@ describe('Navigator', () => {
       await pressKey('Backspace')
 
       // before the render prop child is deleted
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-sb/scene',
         'regular-sb/scene/pg',
         'regular-sb/scene/pg:dbc',
@@ -5289,7 +5378,11 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc/78c/f59',
       ])
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-sb/scene',
         'regular-sb/scene/pg',
         'regular-sb/scene/pg:dbc',

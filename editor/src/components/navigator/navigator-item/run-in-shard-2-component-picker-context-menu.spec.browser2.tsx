@@ -34,6 +34,7 @@ import { ReplaceElementButtonTestId, addChildButtonTestId } from './navigator-it
 import { NavigatorContainerId } from '../navigator'
 import { act } from 'react-dom/test-utils'
 import { cmdModifier } from '../../../utils/modifiers'
+import { getNavigatorTargetsFromEditorState } from '../navigator-utils'
 
 describe('The navigator component picker context menu', () => {
   const PreferredChildComponents = [
@@ -1202,7 +1203,11 @@ describe('The navigator component picker context menu', () => {
     const menuButton = await waitFor(() => editor.renderedDOM.getByText('Flex Hello'))
     await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
 
-    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+    expect(
+      getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
       'regular-sb/scene',
       'regular-sb/scene/pg',
       'regular-sb/scene/pg:pg-root',
