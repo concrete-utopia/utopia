@@ -2422,7 +2422,6 @@ export function isSlotNavigatorEntry(entry: NavigatorEntry): entry is SlotNaviga
 }
 
 export interface DerivedState {
-  navigatorRows: Array<NavigatorRow>
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
   autoFocusedPaths: Array<ElementPath>
@@ -2436,7 +2435,6 @@ export interface DerivedState {
 
 function emptyDerivedState(editor: EditorState): DerivedState {
   return {
-    navigatorRows: [],
     navigatorTargets: [],
     visibleNavigatorTargets: [],
     autoFocusedPaths: [],
@@ -2863,7 +2861,6 @@ export function deriveState(
     cacheKey === 'patched' ? patchedDeriveCacheableState : unpatchedDeriveCacheableState
 
   const {
-    navigatorRows,
     navigatorTargets,
     visibleNavigatorTargets,
     elementWarnings: warnings,
@@ -2887,7 +2884,6 @@ export function deriveState(
   const filePathMappings = getFilePathMappings(editor.projectContents)
 
   const derived: DerivedState = {
-    navigatorRows: navigatorRows,
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
     autoFocusedPaths: autoFocusedPaths,
