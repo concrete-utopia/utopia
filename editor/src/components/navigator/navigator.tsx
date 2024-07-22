@@ -37,6 +37,7 @@ import { getEntriesForRow } from './navigator-row'
 import { assertNever } from '../../core/shared/utils'
 import { navigatorTargetsSelector } from './navigator-utils'
 import { createSelector } from 'reselect'
+import createCachedSelector from 're-reselect'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -48,12 +49,19 @@ const currentlySelectedNavigatorEntriesSelector = createSelector(
   },
 )
 
+const targetEntrySelector = createCachedSelector(
+  navigatorTargetsSelector,
+  (_: EditorStorePatched, index: number) => index,
+  (navigatorTargets, index) => navigatorTargets.navigatorRows[index],
+)((_, index) => index)
+
 const Item = React.memo(({ index, style }: ItemProps) => {
-  const visibleNavigatorTargets = useEditorState(
-    Substores.derived,
-    (store) => store.derived.navigatorRows,
-    'Item visibleNavigatorTargets',
+  const targetEntry = useEditorState(
+    Substores.fullStore,
+    (store) => targetEntrySelector(store, index),
+    'Item navigatorRows',
   )
+
   const editorSliceRef = useRefEditorState((store) => {
     return {
       selectedViews: store.editor.selectedViews,
@@ -139,7 +147,6 @@ const Item = React.memo(({ index, style }: ItemProps) => {
     [editorSliceRef, navigatorTargetsRef, visibleTargetIndexToRegularIndex],
   )
 
-  const targetEntry = visibleNavigatorTargets[index]
   const componentKey = navigatorRowToKey(targetEntry)
   const deepKeptStyle = useKeepReferenceEqualityIfPossible(style)
 
