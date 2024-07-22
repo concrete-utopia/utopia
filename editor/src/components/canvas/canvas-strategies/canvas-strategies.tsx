@@ -46,7 +46,11 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { setPaddingStrategy } from './strategies/set-padding-strategy'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
-import { DoNothingStrategyID, dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
+import {
+  DoNothingStrategyID,
+  doNothingStrategy,
+  dragToMoveMetaStrategy,
+} from './strategies/drag-to-move-metastrategy'
 import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
 import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
@@ -348,19 +352,31 @@ export function getApplicableStrategiesOrderedByFitness(
     return r.fitness - l.fitness
   })
 
-  return filterOutInvalidDoNothingStrategies(sortedStrategies)
+  return filterOutInvalidDoNothingStrategies(
+    sortedStrategies,
+    canvasState,
+    interactionSession,
+    customStrategyState,
+  )
 }
 
 // Special cases for the DO NOTHING strategy - it should never be a fallback strategy, and it should never appear without real strategies
 function filterOutInvalidDoNothingStrategies(
   sortedStrategies: Array<StrategyWithFitness>,
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession,
+  customStrategyState: CustomStrategyState,
 ): Array<StrategyWithFitness> {
-  const nonDoNothingStrategies = sortedStrategies.filter(
-    ({ strategy, fitness }) => fitness > 0 && strategy.id !== DoNothingStrategyID,
-  )
+  const positiveFitnessStrategies = sortedStrategies.filter(({ strategy, fitness }) => fitness > 0)
 
-  if (nonDoNothingStrategies.length === 0) {
-    return []
+  if (positiveFitnessStrategies.length === 0) {
+    return [
+      {
+        strategy: doNothingStrategy(canvasState, interactionSession, customStrategyState),
+        fitness: 1.5,
+      },
+      ...sortedStrategies,
+    ]
   }
 
   return sortedStrategies.filter(

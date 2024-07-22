@@ -440,7 +440,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
     const flowReorderNotInStrategies = Array.isArray(strategies)
       ? strategies.findIndex((strategy) => strategy.strategy.id === 'FLOW_REORDER')
-      : -1
+      : `no applicable strategies`
 
     expect(flowReorderNotInStrategies).toEqual(-1)
   })
@@ -485,7 +485,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
     const flowReorderNotInStrategies = Array.isArray(strategies)
       ? strategies.findIndex((strategy) => strategy.strategy.id === 'FLOW_REORDER')
-      : -1
+      : `no applicable strategies`
 
     expect(flowReorderNotInStrategies).toEqual(-1)
   })
@@ -504,7 +504,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
     const flowReorderNotInStrategies = Array.isArray(strategies)
       ? strategies.findIndex((strategy) => strategy.strategy.id === 'FLOW_REORDER')
-      : -1
+      : `no applicable strategies`
 
     expect(flowReorderNotInStrategies).toEqual(-1)
   })
