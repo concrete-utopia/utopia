@@ -2602,14 +2602,10 @@ export const UPDATE_FNS = {
       leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
     }
   },
-  WRAP_IN_ELEMENT: (
-    action: WrapInElement,
-    editor: EditorModel,
-    derived: DerivedState,
-  ): EditorModel => {
+  WRAP_IN_ELEMENT: (action: WrapInElement, editor: EditorModel): EditorModel => {
     const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
       action.targets,
-      derived.navigatorTargets,
+      getNavigatorTargetsFromEditorState(editor).navigatorTargets,
     )
 
     const parentPath = commonInsertionPathFromArray(
