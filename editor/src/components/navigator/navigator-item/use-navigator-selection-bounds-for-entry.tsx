@@ -3,6 +3,14 @@ import * as EP from '../../../core/shared/element-path'
 import type { NavigatorEntry } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { isRegulaNavigatorRow } from '../navigator-row'
+import { createSelector } from 'reselect'
+import { navigatorTargetsSelector } from '../navigator-utils'
+
+const navigatorRowsPathsSelector = createSelector(navigatorTargetsSelector, (targets) => {
+  return targets.navigatorRows.map((row) =>
+    isRegulaNavigatorRow(row) ? row.entry.elementPath : row.entries[0].elementPath,
+  )
+})
 
 export function useNavigatorSelectionBoundsForEntry(
   navigatorEntry: NavigatorEntry,
@@ -19,12 +27,8 @@ export function useNavigatorSelectionBoundsForEntry(
   )
 
   const navigatorRowsPaths = useEditorState(
-    Substores.derived,
-    (store) => {
-      return store.derived.navigatorRows.map((row) =>
-        isRegulaNavigatorRow(row) ? row.entry.elementPath : row.entries[0].elementPath,
-      )
-    },
+    Substores.fullStore,
+    navigatorRowsPathsSelector,
     'useNavigatorSelectionBoundsCheck navigatorRowsPaths',
   )
 
