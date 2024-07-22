@@ -63,6 +63,11 @@ import { objectMap } from '../../core/shared/object-utils'
 import { dataCanCondenseFromMetadata } from '../../utils/can-condense'
 import { createSelector } from 'reselect'
 import { Substores, useEditorState } from '../editor/store/store-hook'
+import type {
+  MetadataSubstate,
+  ProjectContentSubstate,
+  PropertyControlsInfoSubstate,
+} from '../editor/store/store-hook-substore-types'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -801,12 +806,12 @@ function getNavigatorRowsForTree(
 }
 
 export const navigatorTargetsSelector = createSelector(
-  (state: EditorStorePatched) => state.editor.jsxMetadata,
-  (state: EditorStorePatched) => state.editor.elementPathTree,
-  (state: EditorStorePatched) => state.editor.navigator.collapsedViews,
-  (state: EditorStorePatched) => state.editor.navigator.hiddenInNavigator,
-  (state: EditorStorePatched) => state.editor.propertyControlsInfo,
-  (state: EditorStorePatched) => state.editor.projectContents,
+  (state: MetadataSubstate) => state.editor.jsxMetadata,
+  (state: MetadataSubstate) => state.editor.elementPathTree,
+  (state: { editor: EditorState }) => state.editor.navigator.collapsedViews,
+  (state: { editor: EditorState }) => state.editor.navigator.hiddenInNavigator,
+  (state: PropertyControlsInfoSubstate) => state.editor.propertyControlsInfo,
+  (state: ProjectContentSubstate) => state.editor.projectContents,
   (
     jsxMetadata,
     elementPathTree,
