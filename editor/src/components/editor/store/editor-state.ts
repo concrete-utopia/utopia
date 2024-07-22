@@ -140,7 +140,6 @@ import { objectMap, pick } from '../../../core/shared/object-utils'
 
 import type { Spec } from 'immutability-helper'
 import { v4 as UUID } from 'uuid'
-import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
