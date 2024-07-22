@@ -364,7 +364,7 @@ function filterOutInvalidDoNothingStrategies(
   }
 
   return sortedStrategies.filter(
-    ({ strategy }, index) => index === 0 || strategy.id.startsWith(DoNothingStrategyID),
+    ({ strategy }, index) => index === 0 || strategy.id !== DoNothingStrategyID,
   )
 }
 
