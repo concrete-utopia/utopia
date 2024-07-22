@@ -386,7 +386,7 @@ export function runSimpleLocalEditorAction(
     case 'UPDATE_PROPERTY_CONTROLS_INFO':
       return UPDATE_FNS.UPDATE_PROPERTY_CONTROLS_INFO(action, state)
     case 'SELECT_FROM_FILE_AND_POSITION':
-      return UPDATE_FNS.SELECT_FROM_FILE_AND_POSITION(action, state, derivedState, dispatch)
+      return UPDATE_FNS.SELECT_FROM_FILE_AND_POSITION(action, state, dispatch)
     case 'SEND_LINTER_REQUEST_MESSAGE':
       // side effect ☢️
       workers.sendLinterRequestMessage(action.filePath, action.content)
