@@ -356,7 +356,7 @@ function filterOutInvalidDoNothingStrategies(
   sortedStrategies: Array<StrategyWithFitness>,
 ): Array<StrategyWithFitness> {
   const nonDoNothingStrategies = sortedStrategies.filter(
-    ({ strategy, fitness }) => fitness > 0 && !isDoNothingOrDoNothingAncestorStrategy(strategy),
+    ({ strategy, fitness }) => fitness > 0 && strategy.id !== DoNothingStrategyID,
   )
 
   if (nonDoNothingStrategies.length === 0) {
@@ -364,12 +364,8 @@ function filterOutInvalidDoNothingStrategies(
   }
 
   return sortedStrategies.filter(
-    ({ strategy }, index) => index === 0 || !isDoNothingOrDoNothingAncestorStrategy(strategy),
+    ({ strategy }, index) => index === 0 || strategy.id.startsWith(DoNothingStrategyID),
   )
-}
-
-function isDoNothingOrDoNothingAncestorStrategy(strategy: CanvasStrategy): boolean {
-  return strategy.id.startsWith(DoNothingStrategyID)
 }
 
 function pickDefaultCanvasStrategy(
