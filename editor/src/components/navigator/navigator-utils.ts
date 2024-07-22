@@ -830,6 +830,11 @@ export const navigatorTargetsSelector = createSelector(
     ),
 )
 
+export const navigatorTargetsSelectorNavigatorTargets = createSelector(
+  navigatorTargetsSelector,
+  (results) => results.navigatorTargets,
+)
+
 export function useGetNavigatorTargets(): GetNavigatorTargetsResults {
   return useEditorState(
     // TODO try not to use fullStore here
