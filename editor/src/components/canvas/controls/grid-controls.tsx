@@ -446,6 +446,8 @@ export const GridControls = controlForStrategyMemoized(() => {
         }
 
         const gap = targetGridContainer.specialSizeMeasurements.gap
+        const rowGap = targetGridContainer.specialSizeMeasurements.rowGap
+        const columnGap = targetGridContainer.specialSizeMeasurements.columnGap
         const padding = targetGridContainer.specialSizeMeasurements.padding
         const gridTemplateColumns =
           targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
@@ -473,6 +475,8 @@ export const GridControls = controlForStrategyMemoized(() => {
           gridTemplateColumnsFromProps: gridTemplateColumnsFromProps,
           gridTemplateRowsFromProps: gridTemplateRowsFromProps,
           gap: gap,
+          rowGap: rowGap,
+          columnGap: columnGap,
           padding: padding,
           rows: rows,
           columns: columns,
@@ -665,6 +669,8 @@ export const GridControls = controlForStrategyMemoized(() => {
                   activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
                 }`,
                 gap: grid.gap ?? 0,
+                rowGap: grid.rowGap ?? 0,
+                columnGap: grid.columnGap ?? 0,
                 padding:
                   grid.padding == null
                     ? 0
