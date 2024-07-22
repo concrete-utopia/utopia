@@ -805,6 +805,21 @@ function getNavigatorRowsForTree(
   return condensedTree.flatMap((t) => walkTree(t, 0))
 }
 
+export function getNavigatorTargetsFromEditorState(
+  editorState: EditorState,
+): GetNavigatorTargetsResults {
+  return navigatorTargetsSelector({ editor: editorState })
+}
+
+export function useGetNavigatorTargets(): GetNavigatorTargetsResults {
+  return useEditorState(
+    // TODO try not to use fullStore here
+    Substores.fullStore,
+    navigatorTargetsSelector,
+    'useGetNavigatorTargets',
+  )
+}
+
 export const navigatorTargetsSelector = createSelector(
   (state: MetadataSubstate) => state.editor.jsxMetadata,
   (state: MetadataSubstate) => state.editor.elementPathTree,
@@ -840,29 +855,7 @@ export const navigatorTargetsSelectorVisibleNavigatorTargets = createSelector(
   (results) => results.visibleNavigatorTargets,
 )
 
-export function useGetNavigatorTargets(): GetNavigatorTargetsResults {
-  return useEditorState(
-    // TODO try not to use fullStore here
-    Substores.fullStore,
-    navigatorTargetsSelector,
-    'useGetNavigatorTargets',
-  )
-}
-
-export function getNavigatorTargetsFromEditorState(
-  editorState: EditorState,
-): GetNavigatorTargetsResults {
-  return getNavigatorTargets(
-    editorState.jsxMetadata,
-    editorState.elementPathTree,
-    editorState.navigator.collapsedViews,
-    editorState.navigator.hiddenInNavigator,
-    editorState.propertyControlsInfo,
-    editorState.projectContents,
-  )
-}
-
-export function getNavigatorTargets(
+function getNavigatorTargets(
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   collapsedViews: Array<ElementPath>,
