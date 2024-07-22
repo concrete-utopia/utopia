@@ -35,7 +35,10 @@ import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
 import type { CondensedNavigatorRow, NavigatorRow, RegularNavigatorRow } from './navigator-row'
 import { getEntriesForRow } from './navigator-row'
 import { assertNever } from '../../core/shared/utils'
-import { navigatorTargetsSelector } from './navigator-utils'
+import {
+  navigatorTargetsSelector,
+  navigatorTargetsSelectorVisibleNavigatorTargets,
+} from './navigator-utils'
 import { createSelector } from 'reselect'
 import createCachedSelector from 're-reselect'
 
@@ -65,9 +68,9 @@ const Item = React.memo(({ index, style }: ItemProps) => {
   const editorSliceRef = useRefEditorState((store) => {
     return {
       selectedViews: store.editor.selectedViews,
-      visibleNavigatorTargets: store.derived.visibleNavigatorTargets,
     }
   })
+
   const navigatorTargetsRef = useRefEditorState(navigatorTargetsSelector)
   const currentlySelectedNavigatorEntriesRef = useRefEditorState(
     currentlySelectedNavigatorEntriesSelector,
@@ -80,7 +83,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
   const visibleTargetIndexToRegularIndex = React.useCallback(
     (visibleTargetIndex: number) => {
       const visibleNavigatorEntry =
-        editorSliceRef.current.visibleNavigatorTargets[visibleTargetIndex]
+        navigatorTargetsRef.current.visibleNavigatorTargets[visibleTargetIndex]
       if (visibleNavigatorEntry == null) {
         return null
       } else {
@@ -94,7 +97,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
         }
       }
     },
-    [editorSliceRef, navigatorTargetsRef],
+    [navigatorTargetsRef],
   )
 
   // Used to determine the views that will be selected by starting with the last selected item

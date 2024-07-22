@@ -2325,7 +2325,9 @@ export var storyboard = (
           y: 2,
         })
         expect(
-          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            editor.getEditorState().editor,
+          ).visibleNavigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',
@@ -2370,7 +2372,9 @@ export var storyboard = (
         })
 
         expect(
-          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            editor.getEditorState().editor,
+          ).visibleNavigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',
@@ -2415,7 +2419,9 @@ export var storyboard = (
         })
 
         expect(
-          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            editor.getEditorState().editor,
+          ).visibleNavigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',

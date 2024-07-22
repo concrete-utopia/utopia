@@ -2703,7 +2703,9 @@ describe('Navigator', () => {
         await editor.getDispatchFollowUpActionsFinished()
 
         expect(
-          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            editor.getEditorState().editor,
+          ).visibleNavigatorTargets.map(navigatorEntryToKey),
         ).toEqual(startingVisibleNavigatorEntries)
       })
 
@@ -2803,7 +2805,9 @@ describe('Navigator', () => {
         await editor.getDispatchFollowUpActionsFinished()
 
         expect(
-          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            editor.getEditorState().editor,
+          ).visibleNavigatorTargets.map(navigatorEntryToKey),
         ).toEqual(startingVisibleNavigatorEntries)
       })
     })

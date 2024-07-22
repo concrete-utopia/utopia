@@ -56,7 +56,10 @@ import {
   SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
 import { CondensedEntryItemWrapper } from './navigator-condensed-entry'
-import { navigatorTargetsSelector } from '../navigator-utils'
+import {
+  navigatorTargetsSelector,
+  navigatorTargetsSelectorNavigatorTargets,
+} from '../navigator-utils'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -326,8 +329,8 @@ const SingleEntryNavigatorItemWrapper: React.FunctionComponent<
   const label = getNavigatorEntryLabel(props.navigatorEntry, labelForTheElement)
 
   const visibleNavigatorTargets = useEditorState(
-    Substores.derived,
-    (store) => store.derived.visibleNavigatorTargets,
+    Substores.fullStore,
+    navigatorTargetsSelectorNavigatorTargets,
     'NavigatorItemWrapper navigatorTargets',
   )
   const dispatch = useDispatch()
