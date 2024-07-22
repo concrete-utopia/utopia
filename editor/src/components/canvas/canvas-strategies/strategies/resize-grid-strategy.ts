@@ -120,23 +120,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       const mergedValue = toFirst(valueOptic, mergedValues.dimensions)
       const mergedUnit = toFirst(unitOptic, mergedValues.dimensions)
       const isFractional = isRight(mergedUnit) && mergedUnit.value === 'fr'
-
-      function newResizedValue(
-        current: number,
-        increment: number,
-        precision: 'coarse' | 'precise',
-      ): number {
-        const newValue = current + increment
-        if (precision === 'precise') {
-          return newValue
-        } else if (isFractional) {
-          // .5x steps
-          return Math.round(newValue * 2) / 2
-        } else {
-          // 10x steps
-          return Math.round(newValue / 10) * 10
-        }
-      }
+      const precision = modifiers.cmd ? 'coarse' : 'precise'
 
       const newSetting = modify(
         valueOptic,
@@ -144,7 +128,8 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
           newResizedValue(
             current,
             getNewDragValue(dragAmount, isFractional, calculatedValue, mergedValue),
-            modifiers.cmd ? 'coarse' : 'precise',
+            precision,
+            isFractional,
           ),
         mergedValues.dimensions,
       )
@@ -192,4 +177,22 @@ function getNewDragValue(
     mergedFractionalValue == 0 ? 10 : (calculatedValue / mergedFractionalValue) * 0.1
   const newValue = roundToNearestWhole((dragAmount / perPointOne) * 10) / 10
   return newValue
+}
+
+function newResizedValue(
+  current: number,
+  increment: number,
+  precision: 'coarse' | 'precise',
+  isFractional: boolean,
+): number {
+  const newValue = current + increment
+  if (precision === 'precise') {
+    return newValue
+  } else if (isFractional) {
+    // .5x steps
+    return Math.round(newValue * 2) / 2
+  } else {
+    // 10x steps
+    return Math.round(newValue / 10) * 10
+  }
 }
