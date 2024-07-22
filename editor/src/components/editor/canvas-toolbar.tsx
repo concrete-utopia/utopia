@@ -278,14 +278,11 @@ export const CanvasToolbar = React.memo(() => {
     }
   }, [canvasToolbarMode.primary, dispatch, dispatchSwitchToSelectModeCloseMenus])
 
-  const currentStrategyState = useEditorState(
+  const editButtonIcon: CanvasStrategyIcon = useEditorState(
     Substores.restOfStore,
-    (store) => store.strategyState,
+    (store) => store.strategyState.currentStrategyIcon ?? { category: 'tools', type: 'pointer' },
     'SettingsPanel currentStrategyState',
   )
-  const editButtonIcon: CanvasStrategyIcon = React.useMemo(() => {
-    return currentStrategyState.currentStrategyIcon ?? { category: 'tools', type: 'pointer' }
-  }, [currentStrategyState.currentStrategyIcon])
 
   const wrapInSubmenu = React.useCallback((wrapped: React.ReactNode) => {
     return (

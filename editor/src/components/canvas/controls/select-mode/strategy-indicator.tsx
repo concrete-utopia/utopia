@@ -65,14 +65,11 @@ export const StrategyIndicator = React.memo(() => {
 export const MoveReorderReparentIndicatorID = 'move-reorder-reparent-indicator'
 
 const MoveReorderReparentIndicator = React.memo(() => {
-  const currentStrategyState = useEditorState(
+  const indicatorText = useEditorState(
     Substores.restOfStore,
-    (store) => store.strategyState,
+    (store) => store.strategyState.currentStrategyDescriptiveLabel ?? 'Interaction',
     'MoveReorderReparentIndicator currentStrategyState',
   )
-  const indicatorText = React.useMemo(() => {
-    return currentStrategyState.currentStrategyDescriptiveLabel ?? 'Interaction'
-  }, [currentStrategyState.currentStrategyDescriptiveLabel])
   const colorTheme = useColorTheme()
   return (
     <FlexRow
