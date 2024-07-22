@@ -55,7 +55,7 @@ describe('Drag To Move Metastrategy', () => {
     const dragDelta = windowPoint({ x: 10, y: 10 })
 
     const midDragCallback = async () => {
-      expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(null)
+      expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('DO_NOTHING')
     }
 
     await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
