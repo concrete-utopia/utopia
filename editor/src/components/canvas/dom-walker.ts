@@ -1147,6 +1147,16 @@ function getSpecialMeasurements(
     mapEither((n) => n.value, parseCSSLength(elementStyle.gap)),
   )
 
+  const rowGap = defaultEither(
+    null,
+    mapEither((n) => n.value, parseCSSLength(elementStyle.rowGap)),
+  )
+
+  const columnGap = defaultEither(
+    null,
+    mapEither((n) => n.value, parseCSSLength(elementStyle.columnGap)),
+  )
+
   const flexGapValue = parseCSSLength(parentElementStyle?.gap)
   const parsedFlexGapValue = isRight(flexGapValue) ? flexGapValue.value.value : 0
 
@@ -1252,6 +1262,8 @@ function getSpecialMeasurements(
     containerElementProperties,
     containerGridPropertiesFromProps,
     containerElementPropertiesFromProps,
+    rowGap,
+    columnGap,
   )
 }
 
