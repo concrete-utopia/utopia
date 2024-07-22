@@ -2422,7 +2422,6 @@ export function isSlotNavigatorEntry(entry: NavigatorEntry): entry is SlotNaviga
 }
 
 export interface DerivedState {
-  visibleNavigatorTargets: Array<NavigatorEntry>
   autoFocusedPaths: Array<ElementPath>
   controls: Array<HigherOrderControl>
   elementWarnings: { [key: string]: ElementWarnings }
@@ -2434,7 +2433,6 @@ export interface DerivedState {
 
 function emptyDerivedState(editor: EditorState): DerivedState {
   return {
-    visibleNavigatorTargets: [],
     autoFocusedPaths: [],
     controls: [],
     elementWarnings: {},
@@ -2791,9 +2789,6 @@ function getElementWarningsInner(
 const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 
 type CacheableDerivedState = {
-  navigatorRows: Array<NavigatorRow>
-  navigatorTargets: Array<NavigatorEntry>
-  visibleNavigatorTargets: Array<NavigatorEntry>
   elementWarnings: { [key: string]: ElementWarnings }
   autoFocusedPaths: Array<ElementPath>
 }
@@ -2807,15 +2802,6 @@ function deriveCacheableStateInner(
   hiddenInNavigator: ElementPath[],
   propertyControlsInfo: PropertyControlsInfo,
 ): CacheableDerivedState {
-  const { navigatorRows, navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
-    jsxMetadata,
-    elementPathTree,
-    collapsedViews,
-    hiddenInNavigator,
-    propertyControlsInfo,
-    projectContents,
-  )
-
   const warnings = getElementWarnings(
     projectContents,
     jsxMetadata,
@@ -2836,9 +2822,6 @@ function deriveCacheableStateInner(
   )
 
   return {
-    navigatorRows: navigatorRows,
-    navigatorTargets: navigatorTargets,
-    visibleNavigatorTargets: visibleNavigatorTargets,
     elementWarnings: warnings,
     autoFocusedPaths: autoFocusedPaths,
   }
@@ -2858,11 +2841,7 @@ export function deriveState(
   const deriveCacheableState =
     cacheKey === 'patched' ? patchedDeriveCacheableState : unpatchedDeriveCacheableState
 
-  const {
-    visibleNavigatorTargets,
-    elementWarnings: warnings,
-    autoFocusedPaths,
-  } = deriveCacheableState(
+  const { elementWarnings: warnings, autoFocusedPaths } = deriveCacheableState(
     editor.projectContents,
     editor.jsxMetadata,
     editor.elementPathTree,
@@ -2881,7 +2860,6 @@ export function deriveState(
   const filePathMappings = getFilePathMappings(editor.projectContents)
 
   const derived: DerivedState = {
-    visibleNavigatorTargets: visibleNavigatorTargets,
     autoFocusedPaths: autoFocusedPaths,
     controls: derivedState.controls,
     elementWarnings: warnings,

@@ -2679,9 +2679,9 @@ describe('Navigator', () => {
           y: 2,
         })
 
-        const startingVisibleNavigatorEntries = editor
-          .getEditorState()
-          .derived.visibleNavigatorTargets.map(navigatorEntryToKey)
+        const startingVisibleNavigatorEntries = getNavigatorTargetsFromEditorState(
+          editor.getEditorState().editor,
+        ).visibleNavigatorTargets.map(navigatorEntryToKey)
 
         expect(startingVisibleNavigatorEntries).toEqual([
           'regular-sb/scene',
@@ -2776,9 +2776,9 @@ describe('Navigator', () => {
           y: 2,
         })
 
-        const startingVisibleNavigatorEntries = editor
-          .getEditorState()
-          .derived.visibleNavigatorTargets.map(navigatorEntryToKey)
+        const startingVisibleNavigatorEntries = getNavigatorTargetsFromEditorState(
+          editor.getEditorState().editor,
+        ).visibleNavigatorTargets.map(navigatorEntryToKey)
 
         expect(startingVisibleNavigatorEntries).toEqual([
           'regular-sb/scene-1',

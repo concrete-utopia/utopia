@@ -66,7 +66,6 @@ import { regularNavigatorRow } from '../../navigator/navigator-row'
 
 describe('DerivedStateKeepDeepEquality', () => {
   const oldValue: DerivedState = {
-    visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
     controls: [],
     elementWarnings: {
@@ -98,7 +97,6 @@ describe('DerivedStateKeepDeepEquality', () => {
     filePathMappings: [],
   }
   const newSameValue: DerivedState = {
-    visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
     controls: [],
     elementWarnings: {
@@ -130,7 +128,6 @@ describe('DerivedStateKeepDeepEquality', () => {
     filePathMappings: [],
   }
   const newDifferentValue: DerivedState = {
-    visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
     controls: [],
     elementWarnings: {
@@ -173,7 +170,6 @@ describe('DerivedStateKeepDeepEquality', () => {
   })
   it('different but similar value handled appropriately', () => {
     const result = DerivedStateKeepDeepEquality()(oldValue, newDifferentValue)
-    expect(result.value.visibleNavigatorTargets).toBe(oldValue.visibleNavigatorTargets)
     expect(result.value.autoFocusedPaths).toBe(oldValue.autoFocusedPaths)
     expect(result.value.controls).toBe(oldValue.controls)
     expect(result.value.elementWarnings).toBe(oldValue.elementWarnings)
