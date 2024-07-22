@@ -128,7 +128,7 @@ describe('DerivedStateKeepDeepEquality', () => {
     filePathMappings: [],
   }
   const newDifferentValue: DerivedState = {
-    autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
+    autoFocusedPaths: [EP.elementPath([['scene'], ['aab']])],
     controls: [],
     elementWarnings: {
       [EP.toString(EP.elementPath([['scene'], ['aaa', 'bbb']]))]: defaultElementWarnings,
@@ -170,7 +170,7 @@ describe('DerivedStateKeepDeepEquality', () => {
   })
   it('different but similar value handled appropriately', () => {
     const result = DerivedStateKeepDeepEquality()(oldValue, newDifferentValue)
-    expect(result.value.autoFocusedPaths).toBe(oldValue.autoFocusedPaths)
+    expect(result.value.autoFocusedPaths).toEqual(newDifferentValue.autoFocusedPaths)
     expect(result.value.controls).toBe(oldValue.controls)
     expect(result.value.elementWarnings).toBe(oldValue.elementWarnings)
     expect(result.value).toEqual(newDifferentValue)
