@@ -1053,7 +1053,6 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
   const poppedDerived = history.current.derived
 
   return {
-    navigatorTargets: poppedDerived.navigatorTargets,
     visibleNavigatorTargets: poppedDerived.visibleNavigatorTargets,
     autoFocusedPaths: poppedDerived.autoFocusedPaths,
     controls: [],
