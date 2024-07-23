@@ -67,7 +67,6 @@ import { regularNavigatorRow } from '../../navigator/navigator-row'
 describe('DerivedStateKeepDeepEquality', () => {
   const oldValue: DerivedState = {
     autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
-    controls: [],
     elementWarnings: {
       [EP.toString(EP.elementPath([['scene'], ['aaa', 'bbb']]))]: defaultElementWarnings,
     },
@@ -98,7 +97,6 @@ describe('DerivedStateKeepDeepEquality', () => {
   }
   const newSameValue: DerivedState = {
     autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
-    controls: [],
     elementWarnings: {
       [EP.toString(EP.elementPath([['scene'], ['aaa', 'bbb']]))]: defaultElementWarnings,
     },
@@ -129,7 +127,6 @@ describe('DerivedStateKeepDeepEquality', () => {
   }
   const newDifferentValue: DerivedState = {
     autoFocusedPaths: [EP.elementPath([['scene'], ['aab']])],
-    controls: [],
     elementWarnings: {
       [EP.toString(EP.elementPath([['scene'], ['aaa', 'bbb']]))]: defaultElementWarnings,
     },
@@ -171,7 +168,6 @@ describe('DerivedStateKeepDeepEquality', () => {
   it('different but similar value handled appropriately', () => {
     const result = DerivedStateKeepDeepEquality()(oldValue, newDifferentValue)
     expect(result.value.autoFocusedPaths).toEqual(newDifferentValue.autoFocusedPaths)
-    expect(result.value.controls).toBe(oldValue.controls)
     expect(result.value.elementWarnings).toBe(oldValue.elementWarnings)
     expect(result.value).toEqual(newDifferentValue)
     expect(result.areEqual).toEqual(false)

@@ -1054,7 +1054,6 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
 
   return {
     autoFocusedPaths: poppedDerived.autoFocusedPaths,
-    controls: [],
     elementWarnings: poppedDerived.elementWarnings,
     projectContentsChecksums: poppedDerived.projectContentsChecksums,
     branchOriginContentsChecksums: poppedDerived.branchOriginContentsChecksums,

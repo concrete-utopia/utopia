@@ -952,11 +952,9 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine7EqualityCalls(
+  return combine6EqualityCalls(
     (state) => state.autoFocusedPaths,
     arrayDeepEquality(ElementPathKeepDeepEquality),
-    (state) => state.controls,
-    HigherOrderControlArrayKeepDeepEquality,
     (state) => state.elementWarnings,
     objectDeepEquality(ElementWarningsKeepDeepEquality),
     (state) => state.projectContentsChecksums,
@@ -969,7 +967,6 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     createCallWithShallowEquals(),
     (
       autoFocusedPaths,
-      controls,
       elementWarnings,
       projectContentsChecksums,
       branchOriginContentsChecksums,
@@ -978,7 +975,6 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     ) => {
       return {
         autoFocusedPaths: autoFocusedPaths,
-        controls: controls,
         elementWarnings: elementWarnings,
         projectContentsChecksums: projectContentsChecksums,
         branchOriginContentsChecksums: branchOriginContentsChecksums,

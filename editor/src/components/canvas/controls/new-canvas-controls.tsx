@@ -143,7 +143,6 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
     (store) => ({
       keysPressed: store.editor.keysPressed,
       editorMode: store.editor.mode,
-      controls: store.derived.controls,
       scale: store.editor.canvas.scale,
       focusedPanel: store.editor.focusedPanel,
       selectedViews: store.editor.selectedViews,

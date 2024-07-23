@@ -2422,7 +2422,6 @@ export function isSlotNavigatorEntry(entry: NavigatorEntry): entry is SlotNaviga
 
 export interface DerivedState {
   autoFocusedPaths: Array<ElementPath>
-  controls: Array<HigherOrderControl>
   elementWarnings: { [key: string]: ElementWarnings }
   projectContentsChecksums: FileChecksumsWithFile
   branchOriginContentsChecksums: FileChecksumsWithFile | null
@@ -2433,7 +2432,6 @@ export interface DerivedState {
 function emptyDerivedState(editor: EditorState): DerivedState {
   return {
     autoFocusedPaths: [],
-    controls: [],
     elementWarnings: {},
     projectContentsChecksums: {},
     branchOriginContentsChecksums: {},
@@ -2860,7 +2858,6 @@ export function deriveState(
 
   const derived: DerivedState = {
     autoFocusedPaths: autoFocusedPaths,
-    controls: derivedState.controls,
     elementWarnings: warnings,
     projectContentsChecksums: getProjectContentsChecksums(
       editor.projectContents,
