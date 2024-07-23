@@ -104,6 +104,7 @@ export const GridCellSubsection = React.memo(() => {
     </>
   )
 })
+GridCellSubsection.displayName = 'GridCellSubsection'
 
 const DimensionsControls = React.memo(
   ({
