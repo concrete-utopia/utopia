@@ -1,7 +1,9 @@
 import { windowPoint } from '../../../../core/shared/math-utils'
 import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
+import { CSSCursor } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { StrategyPickerTestId } from '../../controls/select-mode/canvas-strategy-picker'
+import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 
@@ -78,6 +80,32 @@ describe('Drag To Move Metastrategy', () => {
 
     const midDragCallback = async () => {
       expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('DO_NOTHING')
+    }
+
+    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+      modifiers: emptyModifiers,
+      midDragCallback: midDragCallback,
+    })
+  })
+  it('when DO_NOTHING strategy is used, the not permitted cursor is shown', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProject1),
+      'await-first-dom-report',
+    )
+
+    const targetElement = renderResult.renderedDOM.getByTestId('child-1')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 10, y: 10 })
+
+    const midDragCallback = async () => {
+      expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('DO_NOTHING')
+      expect(getCursorFromEditor(await renderResult.getEditorState().editor)).toEqual(
+        CSSCursor.NotPermitted,
+      )
     }
 
     await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
