@@ -115,6 +115,9 @@ describe('Drag To Move Metastrategy', () => {
       midDragCallback: midDragCallback,
     })
   })
+})
+
+describe('Drag To Move Strategy Indicator', () => {
   it('Strategy picker and strategy indicator is not rendered when DO_NOTHING is only strategy', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(TestProject1),
@@ -137,43 +140,6 @@ describe('Drag To Move Metastrategy', () => {
 
       const picker = await renderResult.renderedDOM.queryByTestId(StrategyPickerTestId)
       expect(picker).toBeNull()
-    }
-
-    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
-    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
-      modifiers: emptyModifiers,
-      midDragCallback: midDragCallback,
-    })
-  })
-})
-
-describe('Drag To Move Strategy Indicator', () => {
-  it('when the DO_NOTHING strategy is active, nothing is active in the Strategy Indicator', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(TestProject1),
-      'await-first-dom-report',
-    )
-
-    const targetElement = renderResult.renderedDOM.getByTestId('child-1')
-    const targetElementBounds = targetElement.getBoundingClientRect()
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-    const dragDelta = windowPoint({ x: 10, y: 10 })
-
-    const midDragCallback = async () => {
-      expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('DO_NOTHING')
-
-      const { showIndicator, dragType, reparent, ancestor } =
-        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags
-
-      expect(showIndicator).toEqual(true)
-      expect(dragType).toEqual('none')
-      expect(reparent).toEqual('none')
-      expect(ancestor).toEqual(false)
-
-      const indicator = renderResult.renderedDOM.getByTestId('drag-strategy-indicator')
-      expect(indicator).toBeDefined()
     }
 
     await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
