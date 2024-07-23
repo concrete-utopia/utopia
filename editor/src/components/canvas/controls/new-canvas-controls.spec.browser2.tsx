@@ -8,9 +8,7 @@ import {
   TestSceneUID,
 } from '../../canvas//ui-jsx.test-utils'
 import { selectComponents } from '../../editor/actions/meta-actions'
-import { CSSCursor } from '../canvas-types'
-import { keyDown, pressKey } from '../event-helpers.test-utils'
-import { CanvasControlsContainerID } from './new-canvas-controls'
+import { keyDown } from '../event-helpers.test-utils'
 
 describe('Canvas Controls', () => {
   it('absolute children outline only included for non-group absolutely positioned elements', async () => {
