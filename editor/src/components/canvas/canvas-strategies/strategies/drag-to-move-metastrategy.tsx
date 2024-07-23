@@ -121,6 +121,7 @@ export function filterStrategiesWhileSpacePressed(
 }
 
 export const DoNothingStrategyID = 'DO_NOTHING'
+export const DoNothingFitness = 1.5
 
 export function doNothingStrategy(canvasState: InteractionCanvasState): CanvasStrategy {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
@@ -150,7 +151,7 @@ export function doNothingStrategy(canvasState: InteractionCanvasState): CanvasSt
         show: 'visible-only-while-active',
       }),
     ],
-    fitness: 1.5,
+    fitness: DoNothingFitness,
     apply: () => {
       return strategyApplicationResult([
         wildcardPatch('mid-interaction', {

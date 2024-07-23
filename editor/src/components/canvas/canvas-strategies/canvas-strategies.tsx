@@ -47,6 +47,7 @@ import { setPaddingStrategy } from './strategies/set-padding-strategy'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
 import {
+  DoNothingFitness,
   DoNothingStrategyID,
   doNothingStrategy,
   dragToMoveMetaStrategy,
@@ -364,11 +365,13 @@ function fixDoNothingStrategies(
 ): Array<StrategyWithFitness> {
   const positiveFitnessStrategyExists = sortedStrategies.find(({ fitness }) => fitness > 0) != null
 
+  const doNothing = doNothingStrategy(canvasState)
+
   if (!positiveFitnessStrategyExists) {
     return [
       {
-        strategy: doNothingStrategy(canvasState),
-        fitness: 1.5,
+        strategy: doNothing,
+        fitness: doNothing.fitness,
       },
       ...sortedStrategies,
     ]
