@@ -59,6 +59,7 @@ import {
   wait,
 } from '../../../../utils/utils.test-utils'
 import CanvasActions from '../../canvas-actions'
+import { getNavigatorTargetsFromEditorState } from '../../../navigator/navigator-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -905,7 +906,11 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     await mouseDoubleClickAtPoint(canvasControlsLayer, dragHereCenter)
 
     // check that `drag-here` is expanded in the navigator
-    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+    expect(
+      getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
       'regular-sb/scene1',
       'regular-sb/scene1/container1',
       'regular-sb/scene1/container1:container-root-div',

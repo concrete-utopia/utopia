@@ -18,6 +18,7 @@ import { selectComponents } from '../../editor/actions/action-creators'
 import type { FlexDirection } from '../../inspector/common/css-utils'
 import type { FlexAlignment, FlexJustifyContent } from '../../inspector/inspector-common'
 import { MaxContent } from '../../inspector/inspector-common'
+import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 
 type LTWH = [
   left: number,
@@ -740,15 +741,19 @@ describe('Smart Convert to Flex Reordering Children if Needed', () => {
       'regular-sb/parent/second',
     ]
 
-    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      originalElementOrder,
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual(originalElementOrder)
 
     await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
 
-    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      originalElementOrder,
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual(originalElementOrder)
   })
 })
 

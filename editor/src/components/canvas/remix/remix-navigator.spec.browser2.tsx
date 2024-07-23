@@ -16,6 +16,7 @@ import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { dragElementWithDNDEvents } from '../event-helpers.test-utils'
 import { windowPoint } from '../../../core/shared/math-utils'
 import { RemixIndexPathLabel } from './remix-utils'
+import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 
 const DefaultRouteTextContent = 'Hello Remix!'
 const RootTextContent = 'This is root!'
@@ -80,14 +81,16 @@ describe('Remix navigator', () => {
     })
 
     const renderResult = await renderRemixProject(project)
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-storyboard/remix-scene',
-        'regular-storyboard/remix-scene:rootdiv',
-        'regular-storyboard/remix-scene:rootdiv/outlet',
-        'regular-storyboard/remix-scene:rootdiv/outlet:remix-div',
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-storyboard/remix-scene',
+      'regular-storyboard/remix-scene:rootdiv',
+      'regular-storyboard/remix-scene:rootdiv/outlet',
+      'regular-storyboard/remix-scene:rootdiv/outlet:remix-div',
+    ])
   })
   it('Shows navigator for remix content with two outlets', async () => {
     const project = createModifiedProject({
@@ -143,16 +146,18 @@ describe('Remix navigator', () => {
     })
 
     const renderResult = await renderRemixProject(project)
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-storyboard/remix-scene',
-        'regular-storyboard/remix-scene:rootdiv',
-        'regular-storyboard/remix-scene:rootdiv/outlet',
-        'regular-storyboard/remix-scene:rootdiv/outlet:remix-div',
-        'regular-storyboard/remix-scene:rootdiv/outlet2',
-        'regular-storyboard/remix-scene:rootdiv/outlet2:remix-div',
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-storyboard/remix-scene',
+      'regular-storyboard/remix-scene:rootdiv',
+      'regular-storyboard/remix-scene:rootdiv/outlet',
+      'regular-storyboard/remix-scene:rootdiv/outlet:remix-div',
+      'regular-storyboard/remix-scene:rootdiv/outlet2',
+      'regular-storyboard/remix-scene:rootdiv/outlet2:remix-div',
+    ])
   })
   it('Navigator for remix content has default color', async () => {
     const project = createModifiedProject({
@@ -382,15 +387,17 @@ describe('Reparenting in Remix projects in the navigator', () => {
       dragDelta,
     )
 
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-storyboard/remix-scene',
-        'regular-storyboard/remix-scene:rootdiv',
-        'regular-storyboard/remix-scene:rootdiv/outlet',
-        'regular-storyboard/remix-scene:rootdiv/outlet:remix-div',
-        'regular-storyboard/remix-scene:rootdiv/outlet:remix-div/drag-div', // <-- reparented here from storyboard
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-storyboard/remix-scene',
+      'regular-storyboard/remix-scene:rootdiv',
+      'regular-storyboard/remix-scene:rootdiv/outlet',
+      'regular-storyboard/remix-scene:rootdiv/outlet:remix-div',
+      'regular-storyboard/remix-scene:rootdiv/outlet:remix-div/drag-div', // <-- reparented here from storyboard
+    ])
   })
 
   it('Can not reparent into Remix Outlet', async () => {
@@ -494,14 +501,16 @@ describe('Reparenting in Remix projects in the navigator', () => {
       dragDelta,
     )
 
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-storyboard/remix-scene',
-        'regular-storyboard/remix-scene:rootdiv',
-        'regular-storyboard/remix-scene:rootdiv/outlet',
-        'regular-storyboard/remix-scene:rootdiv/outlet:remix-div',
-        'regular-storyboard/drag-div', // <-- not reparented
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-storyboard/remix-scene',
+      'regular-storyboard/remix-scene:rootdiv',
+      'regular-storyboard/remix-scene:rootdiv/outlet',
+      'regular-storyboard/remix-scene:rootdiv/outlet:remix-div',
+      'regular-storyboard/drag-div', // <-- not reparented
+    ])
   })
 })

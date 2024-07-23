@@ -49,6 +49,7 @@ import type { WindowPoint } from '../core/shared/math-utils'
 import { pointsEqual } from '../core/shared/math-utils'
 import { useDispatch } from './editor/store/dispatch-context'
 import { useCreateCallbackToShowComponentPicker } from './navigator/navigator-item/component-picker-context-menu'
+import { navigatorTargetsSelector, useGetNavigatorTargets } from './navigator/navigator-utils'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -199,10 +200,10 @@ function useCanvasContextMenuGetData(
       openFile: store.editor.canvas.openFile?.filename ?? null,
       internalClipboard: store.editor.internalClipboard,
       autoFocusedPaths: store.derived.autoFocusedPaths,
-      navigatorTargets: store.derived.navigatorTargets,
       propertyControlsInfo: store.editor.propertyControlsInfo,
     }
   })
+  const navigatorTargetsRef = useRefEditorState(navigatorTargetsSelector)
   const showComponentPicker = useCreateCallbackToShowComponentPicker()
 
   return React.useCallback(() => {
@@ -225,11 +226,11 @@ function useCanvasContextMenuGetData(
       internalClipboard: currentEditor.internalClipboard,
       contextMenuInstance: contextMenuInstance,
       autoFocusedPaths: currentEditor.autoFocusedPaths,
-      navigatorTargets: currentEditor.navigatorTargets,
+      navigatorTargets: navigatorTargetsRef.current.navigatorTargets,
       propertyControlsInfo: currentEditor.propertyControlsInfo,
       showComponentPicker: showComponentPicker,
     }
-  }, [editorSliceRef, contextMenuInstance, showComponentPicker])
+  }, [editorSliceRef, navigatorTargetsRef, contextMenuInstance, showComponentPicker])
 }
 
 export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementContextMenuProps) => {
