@@ -47,6 +47,7 @@ import type { NavigatorEntry } from '../../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import type {
   MetadataSubstate,
+  NavigatorTargetsSubstate,
   ProjectContentAndMetadataSubstate,
 } from '../../../editor/store/store-hook-substore-types'
 import { LayoutIcon } from '../../../navigator/navigator-item/layout-icon'
@@ -77,11 +78,11 @@ type BranchNavigatorEntries = {
 }
 
 const branchNavigatorEntriesSelector = createCachedSelector(
-  (store: ProjectContentAndMetadataSubstate) => store.editor.jsxMetadata,
-  (store: ProjectContentAndMetadataSubstate) => store.editor.elementPathTree,
-  (store: ProjectContentAndMetadataSubstate) => store.editor.projectContents,
+  (store: NavigatorTargetsSubstate) => store.editor.jsxMetadata,
+  (store: NavigatorTargetsSubstate) => store.editor.elementPathTree,
+  (store: NavigatorTargetsSubstate) => store.editor.projectContents,
   navigatorTargetsSelector,
-  (_store: ProjectContentAndMetadataSubstate, paths: ElementPath[]) => paths,
+  (_store: NavigatorTargetsSubstate, paths: ElementPath[]) => paths,
   (
     jsxMetadata,
     elementPathTree,
@@ -294,7 +295,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
   }, [paths, conditionExpression, setConditionExpression, originalConditionExpression, dispatch])
 
   const branchNavigatorEntries = useEditorState(
-    Substores.fullStore,
+    Substores.navigatorTargetsSubstate,
     (store) => branchNavigatorEntriesSelector(store, paths),
     'ConditionalSection branches',
   )

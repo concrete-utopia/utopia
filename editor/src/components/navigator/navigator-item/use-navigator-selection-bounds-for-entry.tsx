@@ -27,7 +27,7 @@ export function useNavigatorSelectionBoundsForEntry(
   )
 
   const navigatorRowsPaths = useEditorState(
-    Substores.fullStore,
+    Substores.navigatorTargetsSubstate,
     navigatorRowsPathsSelector,
     'useNavigatorSelectionBoundsCheck navigatorRowsPaths',
   )

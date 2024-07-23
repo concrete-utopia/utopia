@@ -41,6 +41,10 @@ import {
 } from './navigator-utils'
 import { createSelector } from 'reselect'
 import createCachedSelector from 're-reselect'
+import type {
+  NavigatorTargetsSubstate,
+  SelectedViewsSubstate,
+} from '../editor/store/store-hook-substore-types'
 
 interface ItemProps extends ListChildComponentProps {}
 
@@ -54,13 +58,13 @@ const currentlySelectedNavigatorEntriesSelector = createSelector(
 
 const targetEntrySelector = createCachedSelector(
   navigatorTargetsSelector,
-  (_: EditorStorePatched, index: number) => index,
+  (_: NavigatorTargetsSubstate, index: number) => index,
   (navigatorTargets, index) => navigatorTargets.navigatorRows[index],
 )((_, index) => index)
 
 const Item = React.memo(({ index, style }: ItemProps) => {
   const targetEntry = useEditorState(
-    Substores.fullStore,
+    Substores.navigatorTargetsSubstate,
     (store) => targetEntrySelector(store, index),
     'Item navigatorRows',
   )
@@ -170,7 +174,7 @@ export const NavigatorContainerId = 'navigator'
 
 const selectionIndexSelector = createSelector(
   navigatorTargetsSelector,
-  (store: EditorStorePatched) => store.editor.selectedViews,
+  (store: SelectedViewsSubstate) => store.editor.selectedViews,
   (navigatorTargets, selectedViews) => {
     const selectionIndex =
       selectedViews == null
@@ -187,7 +191,7 @@ const selectionIndexSelector = createSelector(
 export const NavigatorComponent = React.memo(() => {
   const dispatch = useDispatch()
   const minimised = useEditorState(
-    Substores.fullStore,
+    Substores.navigator,
     (store) => {
       return store.editor.navigator.minimised
     },
@@ -200,7 +204,7 @@ export const NavigatorComponent = React.memo(() => {
   )
 
   const { navigatorRows } = useEditorState(
-    Substores.fullStore,
+    Substores.navigatorTargetsSubstate,
     navigatorTargetsSelector,
     'NavigatorComponent navigatorTargetsSelector',
   )

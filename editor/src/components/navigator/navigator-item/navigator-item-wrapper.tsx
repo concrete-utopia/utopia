@@ -33,6 +33,7 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import type {
   DerivedSubstate,
   MetadataSubstate,
+  NavigatorTargetsSubstate,
   ProjectContentAndMetadataSubstate,
   PropertyControlsInfoSubstate,
 } from '../../editor/store/store-hook-substore-types'
@@ -147,7 +148,7 @@ export const labelSelector = createCachedSelector(
 
 const noOfChildrenSelector = createCachedSelector(
   navigatorTargetsSelector,
-  (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
+  (_: NavigatorTargetsSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
   (navigatorTargets, navigatorEntry) => {
     let result = 0
     for (const nt of navigatorTargets.navigatorTargets) {
@@ -273,7 +274,7 @@ const SingleEntryNavigatorItemWrapper: React.FunctionComponent<
   )
 
   const noOfChildren = useEditorState(
-    Substores.fullStore, // TODO do not use fullStore here
+    Substores.navigatorTargetsSubstate, // TODO do not use fullStore here
     (store) => {
       return noOfChildrenSelector(store, props.navigatorEntry)
     },
@@ -329,7 +330,7 @@ const SingleEntryNavigatorItemWrapper: React.FunctionComponent<
   const label = getNavigatorEntryLabel(props.navigatorEntry, labelForTheElement)
 
   const visibleNavigatorTargets = useEditorState(
-    Substores.fullStore,
+    Substores.navigatorTargetsSubstate,
     navigatorTargetsSelectorNavigatorTargets,
     'NavigatorItemWrapper navigatorTargets',
   )
