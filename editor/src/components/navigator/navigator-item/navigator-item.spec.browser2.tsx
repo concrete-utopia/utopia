@@ -1,5 +1,6 @@
 import { renderTestEditorWithCode } from '../../canvas/ui-jsx.test-utils'
 import type { NavigatorEntry } from '../../editor/store/editor-state'
+import { getNavigatorTargetsFromEditorState } from '../navigator-utils'
 import { itemLabelTestIdForEntry } from './item-label'
 import { layoutIconTestIdForEntry } from './layout-icon'
 
@@ -175,7 +176,9 @@ describe('Navigator item row icons', () => {
   // https://github.com/concrete-utopia/utopia/issues/4773
   it('Should show the correct icons for each type of row', async () => {
     const editor = await renderTestEditorWithCode(testProjectCode, 'await-first-dom-report')
-    const visibleNavigatorTargets = editor.getEditorState().derived.visibleNavigatorTargets
+    const visibleNavigatorTargets = getNavigatorTargetsFromEditorState(
+      editor.getEditorState().editor,
+    ).visibleNavigatorTargets
 
     async function checkNavigatorIcon(
       description: string,
@@ -313,7 +316,9 @@ describe('Navigator item row icons', () => {
   // https://github.com/concrete-utopia/utopia/issues/4773
   it('Should show the correct labels for each type of row', async () => {
     const editor = await renderTestEditorWithCode(testProjectCode, 'await-first-dom-report')
-    const visibleNavigatorTargets = editor.getEditorState().derived.visibleNavigatorTargets
+    const visibleNavigatorTargets = getNavigatorTargetsFromEditorState(
+      editor.getEditorState().editor,
+    ).visibleNavigatorTargets
 
     async function checkNavigatorLabel(
       navigatorEntry: NavigatorEntry,

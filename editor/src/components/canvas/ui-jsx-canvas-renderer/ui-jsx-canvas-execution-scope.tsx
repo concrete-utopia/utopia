@@ -75,15 +75,14 @@ export function createExecutionScope(
   editedText: ElementPath | null,
 ): ExecutionScope {
   // Return something from the cache as appropriate.
-  // FIXME Uncomment when the caching issue is fixed
-  // if (lastSeenProjectContents === projectContents) {
-  //   if (filePath in executionScopeCache) {
-  //     return executionScopeCache[filePath]
-  //   }
-  // } else {
-  lastSeenProjectContents = projectContents
-  executionScopeCache = {}
-  // }
+  if (lastSeenProjectContents === projectContents) {
+    if (filePath in executionScopeCache) {
+      return executionScopeCache[filePath]
+    }
+  } else {
+    lastSeenProjectContents = projectContents
+    clearExecutionScopeCache()
+  }
 
   // Build the scope.
   const { topLevelElements, imports, jsxFactoryFunction, combinedTopLevelArbitraryBlock } =
@@ -254,6 +253,10 @@ export function createExecutionScope(
   }
   executionScopeCache[filePath] = toReturn
   return toReturn
+}
+
+export function clearExecutionScopeCache() {
+  executionScopeCache = {}
 }
 
 const emptyHighlightBoundsResult = { code: '', highlightBounds: null }

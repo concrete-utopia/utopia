@@ -1,16 +1,16 @@
 import * as Chai from 'chai'
-import type { FramePin } from 'utopia-api/core'
-import { LayoutSystem } from 'utopia-api/core'
 import { contentsTreeOptic, walkContentsTree } from '../../../components/assets'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
-import { sampleCode } from '../../../core/model/new-project-files'
-import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
+import {
+  emptyTextFile,
+  getFileWithCssImport,
+  sampleCode,
+} from '../../../core/model/new-project-files'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
 import {
-  ScenePath1ForTestUiJsFile,
   ScenePathForTestUiJsFile,
   sampleImportsForTests,
 } from '../../../core/model/test-ui-js-file.test-utils'
@@ -73,7 +73,10 @@ import { NO_OP } from '../../../core/shared/utils'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import { addImport } from '../../../core/workers/common/project-file-utils'
 import { printCode, printCodeOptions } from '../../../core/workers/parser-printer/parser-printer'
-import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
+import {
+  complexDefaultProjectPreParsed,
+  parseProjectContents,
+} from '../../../sample-projects/sample-project-utils.test-utils'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { deepFreeze } from '../../../utils/deep-freeze'
 import Utils from '../../../utils/utils'
@@ -95,13 +98,13 @@ import {
   deriveState,
   editorModelFromPersistentModel,
   emptyCollaborativeEditingSupport,
-  getOpenUIJSFile,
   withUnderlyingTargetFromEditorState,
 } from '../store/editor-state'
 import { childInsertionPath } from '../store/insertion-path'
 import { unpatchedCreateRemixDerivedDataMemo } from '../store/remix-derived-data'
 import {
   insertInsertable,
+  resetCanvas,
   setCanvasFrames,
   setFocusedElement,
   setProp_UNSAFE,
@@ -113,6 +116,9 @@ import {
 import { UPDATE_FNS, replaceFilePath } from './actions'
 import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { simpleDefaultProject } from '../../../sample-projects/sample-project-utils'
+import { InjectedCSSFilePrefix } from '../../../core/webpack-loaders/css-loader'
+import { renderTestEditorWithModel } from '../../../components/canvas/ui-jsx.test-utils'
 
 const chaiExpect = Chai.expect
 
@@ -268,6 +274,27 @@ describe('SET_PROP', () => {
     chaiExpect(mapEither(clearModifiableAttributeUniqueIDs, updatedTestProp)).to.deep.equal(
       right(clearExpressionUniqueIDs(jsExpressionValue(100, emptyComments))),
     )
+  })
+})
+
+describe('RESET_CANVAS', () => {
+  it('keeps css imports when resetting the canvas', async () => {
+    const action = resetCanvas()
+    const project = simpleDefaultProject({
+      storyboardFile: getFileWithCssImport(),
+      additionalFiles: { '/src/app.css': emptyTextFile() },
+    })
+    const updatedProjectContents = parseProjectContents(project.projectContents)
+
+    const projectPreParsed = {
+      ...project,
+      projectContents: updatedProjectContents,
+    }
+
+    const editor = await renderTestEditorWithModel(projectPreParsed, 'await-first-dom-report')
+    expect(document.getElementById(`${InjectedCSSFilePrefix}/src/app.css`)).not.toBeNull()
+    const newEditor = UPDATE_FNS.RESET_CANVAS(action, editor.getEditorState().editor)
+    expect(document.getElementById(`${InjectedCSSFilePrefix}/src/app.css`)).not.toBeNull()
   })
 })
 

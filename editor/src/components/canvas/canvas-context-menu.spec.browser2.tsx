@@ -33,6 +33,7 @@ import {
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
+import { getNavigatorTargetsFromEditorState } from '../navigator/navigator-utils'
 
 function expectAllSelectedViewsToHaveMetadata(editor: EditorRenderResult) {
   const selectedViews = editor.getEditorState().editor.selectedViews
@@ -814,7 +815,11 @@ describe('canvas context menu', () => {
         'await-first-dom-report',
       )
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-utopia-storyboard-uid/scene-aaa',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -831,7 +836,11 @@ describe('canvas context menu', () => {
 
       await pressKey(']', { modifiers: cmdModifier }) // Bring Forward
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-utopia-storyboard-uid/scene-aaa',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -843,7 +852,11 @@ describe('canvas context menu', () => {
 
       await pressKey('[', { modifiers: cmdModifier }) // Send Backward
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-utopia-storyboard-uid/scene-aaa',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -855,7 +868,11 @@ describe('canvas context menu', () => {
 
       await pressKey(']', { modifiers: altCmdModifier }) // Bring To Front
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-utopia-storyboard-uid/scene-aaa',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -867,7 +884,11 @@ describe('canvas context menu', () => {
 
       await pressKey('[', { modifiers: altCmdModifier }) // Send To Back
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-utopia-storyboard-uid/scene-aaa',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity',
         'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',

@@ -1,4 +1,5 @@
 import * as EP from '../../../../core/shared/element-path'
+import { getNavigatorTargetsFromEditorState } from '../../../navigator/navigator-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import type { FragmentLikeType } from './fragment-like-helpers'
 
@@ -57,9 +58,8 @@ export function getClosingFragmentLikeTag(type: FragmentLikeType): string {
 }
 
 export function getRegularNavigatorTargets(renderResult: EditorRenderResult): Array<string> {
-  return renderResult
-    .getEditorState()
-    .derived.navigatorTargets.filter((t) => t.type === 'REGULAR')
+  return getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor)
+    .navigatorTargets.filter((t) => t.type === 'REGULAR')
     .map((t) => t.elementPath)
     .map(EP.toString)
 }

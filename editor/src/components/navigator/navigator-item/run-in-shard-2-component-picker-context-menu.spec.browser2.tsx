@@ -34,6 +34,7 @@ import { ReplaceElementButtonTestId, addChildButtonTestId } from './navigator-it
 import { NavigatorContainerId } from '../navigator'
 import { act } from 'react-dom/test-utils'
 import { cmdModifier } from '../../../utils/modifiers'
+import { getNavigatorTargetsFromEditorState } from '../navigator-utils'
 
 describe('The navigator component picker context menu', () => {
   const PreferredChildComponents = [
@@ -1202,7 +1203,11 @@ describe('The navigator component picker context menu', () => {
     const menuButton = await waitFor(() => editor.renderedDOM.getByText('Flex Hello'))
     await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
 
-    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+    expect(
+      getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
       'regular-sb/scene',
       'regular-sb/scene/pg',
       'regular-sb/scene/pg:pg-root',
@@ -1213,7 +1218,9 @@ describe('The navigator component picker context menu', () => {
       'regular-sb/scene/pg:pg-root/card/contents',
     ])
     expect(
-      editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        editor.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual([
       'regular-sb/scene',
       'regular-sb/scene/pg',
@@ -1533,7 +1540,9 @@ export const Column = () => (
           await trigger(renderResult)
 
           expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+            getNavigatorTargetsFromEditorState(
+              renderResult.getEditorState().editor,
+            ).navigatorTargets.map(navigatorEntryToKey),
           ).toEqual([
             'regular-utopia-storyboard-uid/scene-aaa',
             'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -1652,7 +1661,9 @@ export const Column = () => (
           await trigger(renderResult)
 
           expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+            getNavigatorTargetsFromEditorState(
+              renderResult.getEditorState().editor,
+            ).navigatorTargets.map(navigatorEntryToKey),
           ).toEqual([
             'regular-utopia-storyboard-uid/scene-aaa',
             'regular-utopia-storyboard-uid/scene-aaa/app-entity',

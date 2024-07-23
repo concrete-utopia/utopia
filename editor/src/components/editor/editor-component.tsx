@@ -93,6 +93,10 @@ import {
 import { useGithubPolling } from '../../core/shared/github/helpers'
 import { useAtom } from 'jotai'
 import { clearOpenMenuIds } from '../../core/shared/menu-state'
+import {
+  navigatorTargetsSelector,
+  navigatorTargetsSelectorNavigatorTargets,
+} from '../navigator/navigator-utils'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -150,7 +154,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-  const navigatorTargetsRef = useRefEditorState((store) => store.derived.navigatorTargets)
+  const navigatorTargetsRef = useRefEditorState(navigatorTargetsSelectorNavigatorTargets)
   const colorTheme = useColorTheme()
   const onWindowMouseUp = React.useCallback((event: MouseEvent) => {
     return [EditorActions.updateMouseButtonsPressed(null, event.button)]

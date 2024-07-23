@@ -68,7 +68,10 @@ import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-load
 import { UTOPIA_INSTANCE_PATH } from '../../core/model/utopia-constants'
 import type { ProjectContentTreeRoot } from '../assets'
 import { getProjectFileByFilePath } from '../assets'
-import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
+import {
+  clearExecutionScopeCache,
+  createExecutionScope,
+} from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import type { RemixValidPathsGenerationContext } from './canvas-utils'
 import { getParseSuccessForFilePath, getValidElementPaths } from './canvas-utils'
@@ -86,13 +89,14 @@ import {
   getListOfEvaluatedFiles,
 } from '../../core/shared/code-exec-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
-import { useRefEditorState } from '../editor/store/store-hook'
+import { EditorStateContext, useRefEditorState } from '../editor/store/store-hook'
 import { matchRoutes } from 'react-router'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
 import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 import { listenForReactRouterErrors } from '../../core/shared/runtime-report-logs'
 import { getFilePathMappings } from '../../core/model/project-file-utils'
+import { useInvalidatedCanvasRemount } from './canvas-component-entry'
 
 applyUIDMonkeyPatch()
 
@@ -206,7 +210,22 @@ export interface CanvasReactClearErrorsCallback {
 export type CanvasReactErrorCallback = CanvasReactReportErrorCallback &
   CanvasReactClearErrorsCallback
 
-export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps & CanvasReactClearErrorsCallback
+type InvalidatedCanvasData = {
+  mountCountInvalidated: boolean
+  domWalkerInvalidated: boolean
+}
+
+export function emptyInvalidatedCanvasData(): InvalidatedCanvasData {
+  return {
+    mountCountInvalidated: false,
+    domWalkerInvalidated: false,
+  }
+}
+
+export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps &
+  CanvasReactClearErrorsCallback & {
+    invalidatedCanvasData: InvalidatedCanvasData
+  }
 
 export function pickUiJsxCanvasProps(
   editor: EditorState,
@@ -261,23 +280,17 @@ export function pickUiJsxCanvasProps(
 }
 
 function useClearSpyMetadataOnRemount(
-  canvasMountCount: number,
-  domWalkerInvalidateCount: number,
+  invalidatedCanvasData: InvalidatedCanvasData,
+  isRemounted: boolean,
   metadataContext: UiJsxCanvasContextData,
 ) {
-  const canvasMountCountRef = React.useRef(canvasMountCount)
-  const domWalkerInvalidateCountRef = React.useRef(domWalkerInvalidateCount)
-
-  const invalidated =
-    canvasMountCountRef.current !== canvasMountCount ||
-    domWalkerInvalidateCountRef.current !== domWalkerInvalidateCount
-
-  if (invalidated) {
-    metadataContext.current.spyValues.metadata = {}
+  if (isRemounted) {
+    clearExecutionScopeCache()
   }
 
-  canvasMountCountRef.current = canvasMountCount
-  domWalkerInvalidateCountRef.current = domWalkerInvalidateCount
+  if (invalidatedCanvasData.domWalkerInvalidated) {
+    metadataContext.current.spyValues.metadata = {}
+  }
 }
 
 function clearSpyCollectorInvalidPaths(
@@ -339,7 +352,12 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     DomWalkerInvalidatePathsCtxAtom,
     AlwaysFalse,
   )
-  useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
+
+  const isRemounted =
+    props.invalidatedCanvasData.mountCountInvalidated ||
+    props.invalidatedCanvasData.domWalkerInvalidated
+
+  useClearSpyMetadataOnRemount(props.invalidatedCanvasData, isRemounted, metadataContext)
 
   const elementsToRerenderRef = React.useRef(ElementsToRerenderGLOBAL.current)
   const shouldRerenderRef = React.useRef(false)
@@ -455,7 +473,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     )
 
     // IMPORTANT this assumes createExecutionScope ran and did a full walk of the transitive imports!!
-    if (shouldRerenderRef.current) {
+    if (isRemounted) {
       // since rerender-all-elements means we did a full rebuild of the canvas scope,
       // any CSS file that was not resolved during this rerender can be unimported
       unimportAllButTheseCSSFiles(resolvedFileNames.current)
@@ -472,6 +490,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     editedText,
     uiFilePath,
     updateInvalidatedPaths,
+    isRemounted,
   ])
 
   evaluatedFileNames.current = getListOfEvaluatedFiles()
@@ -559,23 +578,26 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
         all: 'initial',
       }}
     >
-      <Helmet>{parse(linkTags)}</Helmet>
-      <ElementsToRerenderContext.Provider
-        value={useKeepReferenceEqualityIfPossible(ElementsToRerenderGLOBAL.current)} // TODO this should either be moved to EditorState or the context should be moved to the root level
-      >
-        <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
-          <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
-            <CanvasContainer
-              validRootPaths={rootValidPathsArray}
-              canvasRootElementElementPath={storyboardRootElementPath}
-            >
-              <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
-                {StoryboardRoot}
-              </SceneLevelUtopiaCtxAtom.Provider>
-            </CanvasContainer>
-          </UtopiaProjectCtxAtom.Provider>
-        </RerenderUtopiaCtxAtom.Provider>
-      </ElementsToRerenderContext.Provider>
+      {/* deliberately breaking useEditorState and useRefEditorState to enforce the usage of useCanvasState */}
+      <EditorStateContext.Provider value={null}>
+        <Helmet>{parse(linkTags)}</Helmet>
+        <ElementsToRerenderContext.Provider
+          value={useKeepReferenceEqualityIfPossible(ElementsToRerenderGLOBAL.current)} // TODO this should either be moved to EditorState or the context should be moved to the root level
+        >
+          <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
+            <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
+              <CanvasContainer
+                validRootPaths={rootValidPathsArray}
+                canvasRootElementElementPath={storyboardRootElementPath}
+              >
+                <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
+                  {StoryboardRoot}
+                </SceneLevelUtopiaCtxAtom.Provider>
+              </CanvasContainer>
+            </UtopiaProjectCtxAtom.Provider>
+          </RerenderUtopiaCtxAtom.Provider>
+        </ElementsToRerenderContext.Provider>
+      </EditorStateContext.Provider>
     </div>
   )
 })

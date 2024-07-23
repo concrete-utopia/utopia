@@ -20,7 +20,7 @@ import {
   showContextMenu,
 } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
-import type { NavigatorEntry } from '../editor/store/editor-state'
+import type { EditorStorePatched, NavigatorEntry } from '../editor/store/editor-state'
 import {
   isRegularNavigatorEntry,
   navigatorEntryToKey,
@@ -35,40 +35,63 @@ import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
 import type { CondensedNavigatorRow, NavigatorRow, RegularNavigatorRow } from './navigator-row'
 import { getEntriesForRow } from './navigator-row'
 import { assertNever } from '../../core/shared/utils'
+import {
+  navigatorTargetsSelector,
+  navigatorTargetsSelectorVisibleNavigatorTargets,
+} from './navigator-utils'
+import { createSelector } from 'reselect'
+import createCachedSelector from 're-reselect'
+import type {
+  NavigatorTargetsSubstate,
+  SelectedViewsSubstate,
+} from '../editor/store/store-hook-substore-types'
 
 interface ItemProps extends ListChildComponentProps {}
 
+const currentlySelectedNavigatorEntriesSelector = createSelector(
+  navigatorTargetsSelector,
+  (store: EditorStorePatched) => store.editor.selectedViews,
+  (navigatorTargets, selectedViews) => {
+    return getSelectedNavigatorEntries(selectedViews, navigatorTargets.navigatorTargets)
+  },
+)
+
+const targetEntrySelector = createCachedSelector(
+  navigatorTargetsSelector,
+  (_: NavigatorTargetsSubstate, index: number) => index,
+  (navigatorTargets, index) => navigatorTargets.navigatorRows[index],
+)((_, index) => index)
+
 const Item = React.memo(({ index, style }: ItemProps) => {
-  const visibleNavigatorTargets = useEditorState(
-    Substores.derived,
-    (store) => store.derived.navigatorRows,
-    'Item visibleNavigatorTargets',
+  const targetEntry = useEditorState(
+    Substores.navigatorTargetsSubstate,
+    (store) => targetEntrySelector(store, index),
+    'Item navigatorRows',
   )
+
   const editorSliceRef = useRefEditorState((store) => {
-    const currentlySelectedNavigatorEntries = getSelectedNavigatorEntries(
-      store.editor.selectedViews,
-      store.derived.navigatorTargets,
-    )
     return {
       selectedViews: store.editor.selectedViews,
-      navigatorTargets: store.derived.navigatorTargets,
-      visibleNavigatorTargets: store.derived.visibleNavigatorTargets,
-      currentlySelectedNavigatorEntries: currentlySelectedNavigatorEntries,
     }
   })
 
+  const navigatorTargetsRef = useRefEditorState(navigatorTargetsSelector)
+  const currentlySelectedNavigatorEntriesRef = useRefEditorState(
+    currentlySelectedNavigatorEntriesSelector,
+  )
+
   const getCurrentlySelectedNavigatorEntries = React.useCallback((): Array<NavigatorEntry> => {
-    return editorSliceRef.current.currentlySelectedNavigatorEntries
-  }, [editorSliceRef])
+    return currentlySelectedNavigatorEntriesRef.current
+  }, [currentlySelectedNavigatorEntriesRef])
 
   const visibleTargetIndexToRegularIndex = React.useCallback(
     (visibleTargetIndex: number) => {
       const visibleNavigatorEntry =
-        editorSliceRef.current.visibleNavigatorTargets[visibleTargetIndex]
+        navigatorTargetsRef.current.visibleNavigatorTargets[visibleTargetIndex]
       if (visibleNavigatorEntry == null) {
         return null
       } else {
-        const targetIndex = editorSliceRef.current.navigatorTargets.findIndex((target) =>
+        const targetIndex = navigatorTargetsRef.current.navigatorTargets.findIndex((target) =>
           navigatorEntriesEqual(target, visibleNavigatorEntry),
         )
         if (targetIndex >= 0) {
@@ -78,7 +101,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
         }
       }
     },
-    [editorSliceRef],
+    [navigatorTargetsRef],
   )
 
   // Used to determine the views that will be selected by starting with the last selected item
@@ -87,7 +110,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
     (visibleTargetIndex: number): Array<ElementPath> => {
       const selectedItemIndexes = editorSliceRef.current.selectedViews
         .map((selection) =>
-          editorSliceRef.current.navigatorTargets.findIndex(
+          navigatorTargetsRef.current.navigatorTargets.findIndex(
             (entry) =>
               isRegularNavigatorEntry(entry) && EP.pathsEqual(entry.elementPath, selection),
           ),
@@ -100,7 +123,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
       }
       const lastSelectedItemIndex = last(selectedItemIndexes)
       if (lastSelectedItemIndex == null) {
-        const lastSelectedItem = editorSliceRef.current.navigatorTargets[targetIndex]
+        const lastSelectedItem = navigatorTargetsRef.current.navigatorTargets[targetIndex]
         if (isRegularNavigatorEntry(lastSelectedItem)) {
           return [lastSelectedItem.elementPath]
         } else {
@@ -120,7 +143,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
           end = lastSelectedItemIndex
         }
         let selectedViewTargets: Array<ElementPath> = editorSliceRef.current.selectedViews
-        Utils.fastForEach(editorSliceRef.current.navigatorTargets, (item, itemIndex) => {
+        Utils.fastForEach(navigatorTargetsRef.current.navigatorTargets, (item, itemIndex) => {
           if (itemIndex >= start && itemIndex <= end && isRegularNavigatorEntry(item)) {
             selectedViewTargets = EP.addPathIfMissing(item.elementPath, selectedViewTargets)
           }
@@ -128,10 +151,9 @@ const Item = React.memo(({ index, style }: ItemProps) => {
         return selectedViewTargets
       }
     },
-    [editorSliceRef, visibleTargetIndexToRegularIndex],
+    [editorSliceRef, navigatorTargetsRef, visibleTargetIndexToRegularIndex],
   )
 
-  const targetEntry = visibleNavigatorTargets[index]
   const componentKey = navigatorRowToKey(targetEntry)
   const deepKeptStyle = useKeepReferenceEqualityIfPossible(style)
 
@@ -150,28 +172,41 @@ const Item = React.memo(({ index, style }: ItemProps) => {
 
 export const NavigatorContainerId = 'navigator'
 
+const selectionIndexSelector = createSelector(
+  navigatorTargetsSelector,
+  (store: SelectedViewsSubstate) => store.editor.selectedViews,
+  (navigatorTargets, selectedViews) => {
+    const selectionIndex =
+      selectedViews == null
+        ? -1
+        : navigatorTargets.navigatorRows.findIndex((entry) => {
+            return getEntriesForRow(entry).some(
+              (e) => isRegularNavigatorEntry(e) && EP.pathsEqual(e.elementPath, selectedViews[0]),
+            )
+          })
+    return selectionIndex
+  },
+)
+
 export const NavigatorComponent = React.memo(() => {
   const dispatch = useDispatch()
-  const { minimised, visibleNavigatorTargets, selectionIndex } = useEditorState(
-    Substores.fullStore,
+  const minimised = useEditorState(
+    Substores.navigator,
     (store) => {
-      const selectedViews = store.editor.selectedViews
-      const innerVisibleNavigatorTargets = store.derived.navigatorRows
-      const innerSelectionIndex =
-        selectedViews == null
-          ? -1
-          : innerVisibleNavigatorTargets.findIndex((entry) => {
-              return getEntriesForRow(entry).some(
-                (e) => isRegularNavigatorEntry(e) && EP.pathsEqual(e.elementPath, selectedViews[0]),
-              )
-            })
-      return {
-        minimised: store.editor.navigator.minimised,
-        visibleNavigatorTargets: innerVisibleNavigatorTargets,
-        selectionIndex: innerSelectionIndex,
-      }
+      return store.editor.navigator.minimised
     },
-    'NavigatorComponent',
+    'NavigatorComponent navigator.minimised',
+  )
+  const selectionIndex = useEditorState(
+    Substores.fullStore,
+    selectionIndexSelector,
+    'NavigatorComponent selectionIndexSelector',
+  )
+
+  const { navigatorRows } = useEditorState(
+    Substores.navigatorTargetsSubstate,
+    navigatorTargetsSelector,
+    'NavigatorComponent navigatorTargetsSelector',
   )
 
   const itemListRef = React.createRef<VariableSizeList>()
@@ -188,10 +223,10 @@ export const NavigatorComponent = React.memo(() => {
      * When a reorder happens, the items are offset, and the cached sizes are not applied to the right items anymore
      * resetAfterIndex(0, false) clears the cached size of all items, and false means it does not force a re-render
      *
-     * as a first approximation, this useEffect runs on any change to visibleNavigatorTargets
+     * as a first approximation, this useEffect runs on any change to navigatorRows
      */
     itemListRef.current?.resetAfterIndex(0, false)
-  }, [visibleNavigatorTargets, itemListRef])
+  }, [navigatorRows, itemListRef])
 
   const onFocus = React.useCallback(
     (e: React.FocusEvent<HTMLElement>) => {
@@ -216,7 +251,7 @@ export const NavigatorComponent = React.memo(() => {
 
   const getItemSize = React.useCallback(
     (entryIndex: number) => {
-      const navigatorRow = safeIndex(visibleNavigatorTargets, entryIndex)
+      const navigatorRow = safeIndex(navigatorRows, entryIndex)
       if (navigatorRow == null) {
         throw new Error(`Could not find navigator entry at index ${entryIndex}`)
       }
@@ -228,7 +263,7 @@ export const NavigatorComponent = React.memo(() => {
       }
       assertNever(navigatorRow)
     },
-    [visibleNavigatorTargets],
+    [navigatorRows],
   )
 
   const ItemList = (size: Size) => {
@@ -241,7 +276,7 @@ export const NavigatorComponent = React.memo(() => {
           width={'100%'}
           height={size.height}
           itemSize={getItemSize}
-          itemCount={visibleNavigatorTargets.length}
+          itemCount={navigatorRows.length}
           layout={'vertical'}
           style={{ overflowX: 'hidden' }}
         >

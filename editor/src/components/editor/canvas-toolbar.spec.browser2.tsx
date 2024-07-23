@@ -40,6 +40,7 @@ import {
 } from './canvas-toolbar'
 import { StoryboardFilePath, PlaygroundFilePath, navigatorEntryToKey } from './store/editor-state'
 import { cmdModifier } from '../../utils/modifiers'
+import { getNavigatorTargetsFromEditorState } from '../navigator/navigator-utils'
 
 function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: { x: number; y: number }) {
   // FIXME when running in headless chrome, the result of getBoundingClientRect will be slightly
@@ -418,7 +419,11 @@ describe('canvas toolbar', () => {
 
     await insertViaAddElementPopup(editor, 'div')
 
-    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+    expect(
+      getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
       'regular-utopia-storyboard-uid/scene-aaa',
       'regular-utopia-storyboard-uid/scene-aaa/app-entity',
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
