@@ -72,6 +72,7 @@ import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
 import { gridRearrangeMoveDuplicateStrategy } from './strategies/grid-rearrange-move-duplicate-strategy'
+import { twoLevelNestedEquals } from '../../../core/shared/equality-utils'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -352,27 +353,21 @@ export function getApplicableStrategiesOrderedByFitness(
     return r.fitness - l.fitness
   })
 
-  return filterOutInvalidDoNothingStrategies(
-    sortedStrategies,
-    canvasState,
-    interactionSession,
-    customStrategyState,
-  )
+  return fixDoNothingStrategies(sortedStrategies, canvasState)
 }
 
-// Special cases for the DO NOTHING strategy - it should never be a fallback strategy, and it should never appear without real strategies
-function filterOutInvalidDoNothingStrategies(
+// Special cases for the DO NOTHING strategy - it should never be a fallback strategy,
+// and when there is no other applicable strategy then do nothing should always appear as a single one
+function fixDoNothingStrategies(
   sortedStrategies: Array<StrategyWithFitness>,
   canvasState: InteractionCanvasState,
-  interactionSession: InteractionSession,
-  customStrategyState: CustomStrategyState,
 ): Array<StrategyWithFitness> {
-  const positiveFitnessStrategies = sortedStrategies.filter(({ strategy, fitness }) => fitness > 0)
+  const positiveFitnessStrategyExists = sortedStrategies.find(({ fitness }) => fitness > 0) != null
 
-  if (positiveFitnessStrategies.length === 0) {
+  if (!positiveFitnessStrategyExists) {
     return [
       {
-        strategy: doNothingStrategy(canvasState, interactionSession, customStrategyState),
+        strategy: doNothingStrategy(canvasState),
         fitness: 1.5,
       },
       ...sortedStrategies,
@@ -684,4 +679,23 @@ export function getDescriptiveStrategyLabelWithRetargetedPaths(
     return `${originalLabel} (Children)`
   }
   return originalLabel
+}
+
+function isOnlyDoNothingStrategy(strategies: Array<ApplicableStrategy>): boolean {
+  // This is an optimization, we should check all strategies, but we know we can not have do_nothing strategy in non-zero position
+  if (strategies.length > 1) {
+    return false
+  }
+  if (strategies.length === 0) {
+    return true
+  }
+  return strategies[0].strategy.id === 'DO_NOTHING'
+}
+
+export function useIsOnlyDoNothingStrategy(): boolean {
+  return useEditorState(
+    Substores.restOfStore,
+    (store) => isOnlyDoNothingStrategy(store.strategyState.sortedApplicableStrategies ?? []),
+    'useIsOnlyDoNothingStrategy',
+  )
 }

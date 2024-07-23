@@ -1,12 +1,17 @@
 import { windowPoint } from '../../../../core/shared/math-utils'
-import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
+import { altModifier, cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
+import { wait } from '../../../../utils/utils.test-utils'
 import CanvasActions from '../../canvas-actions'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import {
+  keyDown,
+  mouseClickAtPoint,
+  mouseDragFromPointWithDelta,
+} from '../../event-helpers.test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 
 const TestProject1 = `
-<div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+<div style={{ width: '100%', height: '100%' }} data-testid='root' data-uid='aaa'>
   <div
     style={{ backgroundColor: '#aaaaaa33', width: 100, height: 100 }}
     data-uid='child-1'
@@ -41,6 +46,28 @@ const TestProject2 = `
 `
 
 describe('Drag To Move Metastrategy', () => {
+  it('when no there are no applicable strategies, the fallback DO_NOTHING strategy is still added as applicable', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProject1),
+      'await-first-dom-report',
+    )
+
+    const targetElement = renderResult.renderedDOM.getByTestId('root')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 10, y: 10 })
+
+    const midDragCallback = async () => {
+      expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('DO_NOTHING')
+    }
+
+    await mouseClickAtPoint(canvasControlsLayer, startPoint)
+    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+      midDragCallback: midDragCallback,
+    })
+  })
   it('when no reparent or no base move is fit, the fallback DO_NOTHING strategy is used', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(TestProject1),

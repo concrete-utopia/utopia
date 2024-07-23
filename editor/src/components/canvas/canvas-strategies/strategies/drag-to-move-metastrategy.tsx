@@ -29,6 +29,8 @@ import { relativeMoveStrategy } from './relative-move-strategy'
 import { reparentMetaStrategy } from './reparent-metastrategy'
 import { flattenSelection } from './shared-move-strategies-helpers'
 import * as EP from '../../../../core/shared/element-path'
+import { setCursorCommand } from '../../commands/set-cursor-command'
+import { CSSCursor } from '../../canvas-types'
 
 type MoveStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -102,7 +104,7 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
     )
   } else {
     return filterStrategiesWhileSpacePressed(interactionSession.interactionData.spacePressed, [
-      doNothingStrategy(canvasState, interactionSession, customStrategyState),
+      doNothingStrategy(canvasState),
     ])
   }
 }
@@ -120,11 +122,7 @@ export function filterStrategiesWhileSpacePressed(
 
 export const DoNothingStrategyID = 'DO_NOTHING'
 
-export function doNothingStrategy(
-  canvasState: InteractionCanvasState,
-  interactionSession: InteractionSession | null,
-  customStrategyState: CustomStrategyState,
-): CanvasStrategy {
+export function doNothingStrategy(canvasState: InteractionCanvasState): CanvasStrategy {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
   return {
@@ -169,6 +167,7 @@ export function doNothingStrategy(
             },
           },
         }),
+        setCursorCommand(CSSCursor.NotPermitted),
       ])
     },
   }
