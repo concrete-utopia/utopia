@@ -65,6 +65,8 @@ import { createSelector } from 'reselect'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import type {
   MetadataSubstate,
+  NavigatorSubstate,
+  NavigatorTargetsSubstate,
   ProjectContentSubstate,
   PropertyControlsInfoSubstate,
 } from '../editor/store/store-hook-substore-types'
@@ -813,20 +815,19 @@ export function getNavigatorTargetsFromEditorState(
 
 export function useGetNavigatorTargets(): GetNavigatorTargetsResults {
   return useEditorState(
-    // TODO try not to use fullStore here
-    Substores.fullStore,
+    Substores.navigatorTargetsSubstate,
     navigatorTargetsSelector,
     'useGetNavigatorTargets',
   )
 }
 
 export const navigatorTargetsSelector = createSelector(
-  (state: MetadataSubstate) => state.editor.jsxMetadata,
-  (state: MetadataSubstate) => state.editor.elementPathTree,
-  (state: { editor: EditorState }) => state.editor.navigator.collapsedViews,
-  (state: { editor: EditorState }) => state.editor.navigator.hiddenInNavigator,
-  (state: PropertyControlsInfoSubstate) => state.editor.propertyControlsInfo,
-  (state: ProjectContentSubstate) => state.editor.projectContents,
+  (state: NavigatorTargetsSubstate) => state.editor.jsxMetadata,
+  (state: NavigatorTargetsSubstate) => state.editor.elementPathTree,
+  (state: NavigatorTargetsSubstate) => state.editor.navigator.collapsedViews,
+  (state: NavigatorTargetsSubstate) => state.editor.navigator.hiddenInNavigator,
+  (state: NavigatorTargetsSubstate) => state.editor.propertyControlsInfo,
+  (state: NavigatorTargetsSubstate) => state.editor.projectContents,
   (
     jsxMetadata,
     elementPathTree,

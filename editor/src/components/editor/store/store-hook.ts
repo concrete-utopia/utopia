@@ -29,6 +29,7 @@ import type {
   MetadataSubstate,
   MultiplayerSubstate,
   NavigatorSubstate,
+  NavigatorTargetsSubstate,
   OnlineStateSubstate,
   PostActionInteractionSessionSubstate,
   ProjectContentAndMetadataAndVariablesInScopeSubstate,
@@ -51,6 +52,7 @@ import {
   githubSubstateKeys,
   highlightedHoveredViewsSubstateKeys,
   metadataSubstateKeys,
+  navigatorTargetsSubstateKeys,
   projectContentsKeys,
   propertyControlsInfoSubstateKeys,
   restOfEditorStateKeys,
@@ -293,6 +295,9 @@ export const Substores = {
   },
   navigator: (a: NavigatorSubstate, b: NavigatorSubstate) => {
     return NavigatorStateKeepDeepEquality(a.editor.navigator, b.editor.navigator).areEqual
+  },
+  navigatorTargetsSubstate: (a: NavigatorTargetsSubstate, b: NavigatorTargetsSubstate) => {
+    return keysEquality(navigatorTargetsSubstateKeys, a.editor, b.editor)
   },
   postActionInteractionSession: (
     a: PostActionInteractionSessionSubstate,
