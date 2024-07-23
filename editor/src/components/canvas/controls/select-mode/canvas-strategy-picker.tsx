@@ -13,6 +13,8 @@ import {
 } from '../../canvas-strategies/canvas-strategies'
 import type { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
 
+export const StrategyPickerTestId = 'canvas-strategy-picker'
+
 export const CanvasStrategyPicker = React.memo(() => {
   const dispatch = useDispatch()
   const isOnlyDoNothingStrategy = useIsOnlyDoNothingStrategy()
@@ -93,6 +95,7 @@ export const CanvasStrategyPicker = React.memo(() => {
           }}
           onMouseDown={stopPropagation}
           onClick={stopPropagation}
+          data-testid={StrategyPickerTestId}
         >
           <FlexColumn
             style={{
