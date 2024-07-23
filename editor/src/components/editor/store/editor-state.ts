@@ -2882,12 +2882,8 @@ export function deriveState(
   return sanitizedDerivedState
 }
 
-export function createCanvasModelKILLME(
-  editor: EditorState,
-  derivedState: DerivedState,
-): CanvasModel {
+export function createCanvasModelKILLME(editor: EditorState): CanvasModel {
   return {
-    controls: derivedState.controls,
     keysPressed: editor.keysPressed,
     mouseButtonsPressed: editor.mouseButtonsPressed,
     mode: editor.mode,

@@ -861,7 +861,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     const cursor =
       modeOverrideCursor ??
       cursorForKeysPressed(this.props.model.keysPressed, this.props.model.mouseButtonsPressed) ??
-      cursorForHoveredControl(this.props.model.controls, CanvasMousePositionRaw) ??
       getNewCanvasControlsCursor(this.props.editor.cursorStack) ??
       getDefaultCursorForMode(this.props.editor.mode)
 
