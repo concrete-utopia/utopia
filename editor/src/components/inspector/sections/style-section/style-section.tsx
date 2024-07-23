@@ -10,6 +10,8 @@ import { TransformSubsection } from './transform-subsection/transform-subsection
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { getInspectorPreferencesForTargets } from '../../../../core/property-controls/property-controls-utils'
 import { when } from '../../../../utils/react-conditionals'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { GridCellSubsection } from './container-subsection/grid-cell-subsection'
 
 export enum StyleSubsection {
   Layer = 'Layer',
@@ -34,15 +36,24 @@ export const StyleSection = React.memo(() => {
         store.editor.propertyControlsInfo,
         store.editor.projectContents,
       ),
-    'Inspector inspectorPreferences',
+    'StyleSection inspectorPreferences',
   )
 
   const shouldShowContainerSection = inspectorPreferences.includes('layout')
   const shouldTextContainerSection = inspectorPreferences.includes('typography')
   const shouldShowVisualSections = inspectorPreferences.includes('visual')
 
+  const shouldShowGridCellSection = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.length === 1 &&
+      MetadataUtils.isGridCell(store.editor.jsxMetadata, store.editor.selectedViews[0]),
+    'StyleSection shouldShowGridCellSection',
+  )
+
   return (
     <React.Fragment>
+      {when(shouldShowGridCellSection, <GridCellSubsection />)}
       {when(shouldShowContainerSection, <ContainerSubsection />)}
       {when(shouldTextContainerSection, <TextSubsection />)}
       {when(
