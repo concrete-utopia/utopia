@@ -11,7 +11,7 @@ import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { getInspectorPreferencesForTargets } from '../../../../core/property-controls/property-controls-utils'
 import { when } from '../../../../utils/react-conditionals'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { GridCellSubsection } from './container-subsection/grid-cell-subsection'
+import { GridPlacementSubsection } from './container-subsection/grid-cell-subsection'
 
 export enum StyleSubsection {
   Layer = 'Layer',
@@ -53,7 +53,7 @@ export const StyleSection = React.memo(() => {
 
   return (
     <React.Fragment>
-      {when(shouldShowGridCellSection, <GridCellSubsection />)}
+      {when(shouldShowGridCellSection, <GridPlacementSubsection />)}
       {when(shouldShowContainerSection, <ContainerSubsection />)}
       {when(shouldTextContainerSection, <TextSubsection />)}
       {when(

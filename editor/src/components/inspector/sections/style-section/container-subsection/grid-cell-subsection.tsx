@@ -25,7 +25,7 @@ import { when } from '../../../../../utils/react-conditionals'
 
 type CellAdjustMode = 'dimensions' | 'boundaries'
 
-export const GridCellSubsection = React.memo(() => {
+export const GridPlacementSubsection = React.memo(() => {
   const [adjustMode, setAdjustMode] = React.useState<CellAdjustMode>('dimensions')
 
   const cell = useEditorState(
@@ -35,7 +35,7 @@ export const GridCellSubsection = React.memo(() => {
         store.editor.jsxMetadata,
         store.editor.selectedViews[0],
       ),
-    'GridCellSubsection cell',
+    'GridPlacementSubsection cell',
   )
 
   const gridTemplate = useEditorState(
@@ -49,7 +49,7 @@ export const GridCellSubsection = React.memo(() => {
         EP.parentPath(cell.elementPath),
       )?.specialSizeMeasurements.containerGridProperties
     },
-    'GridCellSubsection gridTemplate',
+    'GridPlacementSubsection gridTemplate',
   )
 
   const toggleMoveMode = React.useCallback(() => {
@@ -70,7 +70,7 @@ export const GridCellSubsection = React.memo(() => {
             height: 42,
           }}
         >
-          <span>Grid Cell</span>
+          <span>Grid Placement</span>
         </FlexRow>
       </InspectorSubsectionHeader>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 27px', gridTemplateRows: '1fr' }}>
@@ -104,7 +104,7 @@ export const GridCellSubsection = React.memo(() => {
     </>
   )
 })
-GridCellSubsection.displayName = 'GridCellSubsection'
+GridPlacementSubsection.displayName = 'GridPlacementSubsection'
 
 const DimensionsControls = React.memo(
   ({
