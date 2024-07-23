@@ -223,6 +223,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
               : ' canvas-controls '
           }
           id='canvas-controls'
+          data-testid='canvas-controls'
           style={{
             pointerEvents: 'initial',
             position: 'absolute',
