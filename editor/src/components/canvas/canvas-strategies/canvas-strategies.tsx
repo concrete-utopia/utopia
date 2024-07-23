@@ -47,7 +47,6 @@ import { setPaddingStrategy } from './strategies/set-padding-strategy'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
 import {
-  DoNothingFitness,
   DoNothingStrategyID,
   doNothingStrategy,
   dragToMoveMetaStrategy,
@@ -73,7 +72,6 @@ import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
 import { gridRearrangeMoveDuplicateStrategy } from './strategies/grid-rearrange-move-duplicate-strategy'
-import { twoLevelNestedEquals } from '../../../core/shared/equality-utils'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
