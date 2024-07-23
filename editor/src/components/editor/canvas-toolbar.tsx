@@ -109,6 +109,9 @@ export const CanvasToolbarSearch = React.memo(() => {
 
   const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
   const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
+  const domReconstructedMetadataRef = useRefEditorState(
+    (state) => state.editor.domReconstructedMetadata,
+  )
   const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((state) => state.editor.allElementProps)
   const propertyControlsInfoRef = useRefEditorState((state) => state.editor.propertyControlsInfo)
@@ -125,6 +128,7 @@ export const CanvasToolbarSearch = React.memo(() => {
         allElementPropsRef.current,
         propertyControlsInfoRef.current,
         metadataRef.current,
+        domReconstructedMetadataRef.current,
         elementPathTreesRef.current,
         dispatch,
         insertionTarget,
@@ -136,6 +140,7 @@ export const CanvasToolbarSearch = React.memo(() => {
       allElementPropsRef,
       propertyControlsInfoRef,
       metadataRef,
+      domReconstructedMetadataRef,
       elementPathTreesRef,
       dispatch,
       insertionTarget,

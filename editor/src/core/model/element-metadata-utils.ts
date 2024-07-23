@@ -274,7 +274,7 @@ export const MetadataUtils = {
   ): boolean {
     return (
       MetadataUtils.isProbablyScene(jsxMetadata, path) &&
-      MetadataUtils.getChildrenPathsOrdered(jsxMetadata, pathTree, path).length === 1
+      MetadataUtils.getChildrenPathsOrdered(pathTree, path).length === 1
     )
   },
   isContainingComponentRemixSceneOrOutlet(
@@ -326,7 +326,7 @@ export const MetadataUtils = {
     const parentPath = EP.parentPath(target)
     const siblingPathsOrNull = EP.isRootElementOfInstance(target)
       ? MetadataUtils.getRootViewPathsOrdered(metadata, pathTree, parentPath)
-      : MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, parentPath)
+      : MetadataUtils.getChildrenPathsOrdered(pathTree, parentPath)
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
   },
@@ -696,11 +696,7 @@ export const MetadataUtils = {
     }
     return result
   },
-  getChildrenPathsOrdered(
-    elements: ElementInstanceMetadataMap,
-    pathTree: ElementPathTrees,
-    target: ElementPath,
-  ): Array<ElementPath> {
+  getChildrenPathsOrdered(pathTree: ElementPathTrees, target: ElementPath): Array<ElementPath> {
     const subTree = getSubTree(pathTree, target)
     if (subTree == null) {
       return []
@@ -724,12 +720,28 @@ export const MetadataUtils = {
     }
     return result
   },
+  getChildrenOrderedMultiMetadata(
+    elementsArray: Array<ElementInstanceMetadataMap>,
+    pathTree: ElementPathTrees,
+    target: ElementPath,
+  ): Array<ElementInstanceMetadata> {
+    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(pathTree, target)
+    return mapDropNulls((childPath) => {
+      for (const elements of elementsArray) {
+        const result = MetadataUtils.findElementByElementPath(elements, childPath)
+        if (result != null) {
+          return result
+        }
+      }
+      return null
+    }, childrenPaths)
+  },
   getChildrenOrdered(
     elements: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(elements, pathTree, target)
+    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(pathTree, target)
     return mapDropNulls((childPath) => {
       return MetadataUtils.findElementByElementPath(elements, childPath)
     }, childrenPaths)
@@ -744,7 +756,7 @@ export const MetadataUtils = {
       return []
     } else {
       const rootPaths = MetadataUtils.getRootViewPathsOrdered(elements, pathTree, target)
-      const childrenPaths = MetadataUtils.getChildrenPathsOrdered(elements, pathTree, target)
+      const childrenPaths = MetadataUtils.getChildrenPathsOrdered(pathTree, target)
       return [...rootPaths, ...childrenPaths]
     }
   },
@@ -797,7 +809,7 @@ export const MetadataUtils = {
     // 2) Skip over any Scenes with children at this level
     const withScenesSkipped = flatMapArray((path) => {
       if (MetadataUtils.targetIsScene(metadata, path)) {
-        const sceneChildren = MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path)
+        const sceneChildren = MetadataUtils.getChildrenPathsOrdered(pathTree, path)
         return sceneChildren.length > 0 ? sceneChildren : [path]
       } else {
         return [path]
@@ -811,7 +823,7 @@ export const MetadataUtils = {
       if (rootPath == null) {
         return [path]
       } else {
-        const componentChildren = MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path)
+        const componentChildren = MetadataUtils.getChildrenPathsOrdered(pathTree, path)
         return [rootPath, ...componentChildren]
       }
     }, withScenesSkipped)
@@ -880,11 +892,7 @@ export const MetadataUtils = {
           const subTree = getSubTree(projectTree, rootPath)
           recurseElement(subTree)
         })
-        const children = MetadataUtils.getChildrenPathsOrdered(
-          metadata,
-          pathTree,
-          element.elementPath,
-        )
+        const children = MetadataUtils.getChildrenPathsOrdered(pathTree, element.elementPath)
         fastForEach(children, (child) => {
           const subTree = getSubTree(projectTree, child)
           recurseElement(subTree)
@@ -1507,7 +1515,7 @@ export const MetadataUtils = {
     path: ElementPath,
   ): MaybeInfinityCanvasRectangle | null {
     const aabb = MetadataUtils.getBoundingRectangleInCanvasCoords(
-      MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path),
+      MetadataUtils.getChildrenPathsOrdered(pathTree, path),
       metadata,
     )
     return aabb
@@ -1787,6 +1795,7 @@ export const MetadataUtils = {
     elementsByUID: ElementsByUID,
     fromSpy: ElementInstanceMetadataMap,
     fromDOM: ElementInstanceMetadataMap,
+    fromDOMReconstructed: ElementInstanceMetadataMap,
   ): { mergedMetadata: ElementInstanceMetadataMap; elementPathTree: ElementPathTrees } {
     // This logic effectively puts everything from the spy first,
     // then anything missed out from the DOM right after it.
@@ -1829,7 +1838,7 @@ export const MetadataUtils = {
       }
     })
 
-    const spyOnlyElements = fillSpyOnlyMetadata(fromSpy, fromDOM)
+    const spyOnlyElements = fillSpyOnlyMetadata(fromSpy, fromDOM, fromDOMReconstructed)
 
     workingElements = {
       ...workingElements,
@@ -1844,14 +1853,20 @@ export const MetadataUtils = {
 
     // Note: This will not necessarily be representative of the structured ordering in
     // the code that produced these elements.
-    const pathTree = MetadataUtils.createElementPathTreeFromMetadata(mergedMetadata)
+    const pathTree = MetadataUtils.createElementPathTreeFromMetadata(
+      mergedMetadata,
+      fromDOMReconstructed,
+    )
 
     return {
       mergedMetadata: mergedMetadata,
       elementPathTree: pathTree,
     }
   },
-  createElementPathTreeFromMetadata(metadata: ElementInstanceMetadataMap): ElementPathTrees {
+  createElementPathTreeFromMetadata(
+    metadata: ElementInstanceMetadataMap,
+    domReconstructedMetadata: ElementInstanceMetadataMap,
+  ): ElementPathTrees {
     return buildTree(metadata)
   },
   duplicateElementMetadataAtPath(
@@ -2387,7 +2402,7 @@ export const MetadataUtils = {
     pathTree: ElementPathTrees,
     parentPath: ElementPath,
   ): DetectedLayoutSystem {
-    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, parentPath)
+    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(pathTree, parentPath)
     const children = mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       childrenPaths,
@@ -2413,7 +2428,7 @@ export const MetadataUtils = {
     pathTree: ElementPathTrees,
     parentPath: ElementPath,
   ): FlexDirection | null {
-    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, parentPath)
+    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(pathTree, parentPath)
 
     const fallbackFlexDirection =
       MetadataUtils.findElementByElementPath(metadata, parentPath)?.specialSizeMeasurements
@@ -2566,6 +2581,7 @@ function getNonExpressionDescendantsInner(
 function fillSpyOnlyMetadata(
   fromSpy: ElementInstanceMetadataMap,
   fromDOM: ElementInstanceMetadataMap,
+  fromReconstructedDOM: ElementInstanceMetadataMap,
 ): ElementInstanceMetadataMap {
   const childrenInDomCache: { [pathStr: string]: Array<ElementInstanceMetadata> } = {}
 
@@ -2590,7 +2606,19 @@ function fillSpyOnlyMetadata(
         spyElem.elementPath,
         fromDOM,
       )
-    const childrenAndUnfurledComponentsFromDom = [...childrenFromDom, ...unfurledComponentsFromDom]
+    const {
+      children: childrenFromReconstructedDom,
+      unfurledComponents: unfurledComponentsFromReconstructedDom,
+    } = MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponentsUnordered(
+      spyElem.elementPath,
+      fromReconstructedDOM,
+    )
+    const childrenAndUnfurledComponentsFromDom = [
+      ...childrenFromDom,
+      ...childrenFromReconstructedDom,
+      ...unfurledComponentsFromDom,
+      ...unfurledComponentsFromReconstructedDom,
+    ]
 
     const childrenAndUnfurledComponentsNotInDom = childrenAndUnfurledComponentsFromSpy.filter(
       (childNotInDom) =>
@@ -2623,7 +2651,6 @@ function fillSpyOnlyMetadata(
     return parentLayoutSystem == null
   })
 
-  // Sort and then reverse these, so that lower level elements (with longer paths) are handled ahead of their parents
   // Sort and then reverse these, so that lower level elements (with longer paths) are handled ahead of their parents
   // and ancestors. This means that if there are a grandparent and parent which both lack global frames
   // then the parent is fixed ahead of the grandparent, which will be based on the parent.

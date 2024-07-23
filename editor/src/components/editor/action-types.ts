@@ -780,6 +780,7 @@ export interface SetCodeEditorComponentDescriptorErrors {
 export interface SaveDOMReport {
   action: 'SAVE_DOM_REPORT'
   elementMetadata: ElementInstanceMetadataMap
+  reconstructedMetadata: ElementInstanceMetadataMap
   cachedPaths: Array<ElementPath>
   invalidatedPaths: Array<string>
 }

@@ -52,6 +52,7 @@ type WrapInDivError =
 
 export const wrapInDivStrategy = (
   metadata: ElementInstanceMetadataMap,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   selectedViews: ElementPath[],
   elementPathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
@@ -62,6 +63,7 @@ export const wrapInDivStrategy = (
   strategy: () => {
     const result = wrapInDivCommands(
       metadata,
+      domReconstructedMetadata,
       elementPathTrees,
       allElementProps,
       projectContents,
@@ -77,6 +79,7 @@ export const wrapInDivStrategy = (
 
 function wrapInDivCommands(
   metadata: ElementInstanceMetadataMap,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   projectContents: ProjectContentTreeRoot,
@@ -123,6 +126,7 @@ function wrapInDivCommands(
 
   const parentCommands = getWrapperDivCommands(
     metadata,
+    domReconstructedMetadata,
     elementPathTrees,
     allElementProps,
     insertionPath,
@@ -144,6 +148,7 @@ function wrapInDivCommands(
 
 function getWrapperDivCommands(
   metadata: ElementInstanceMetadataMap,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   parentPath: InsertionPath,
@@ -153,6 +158,7 @@ function getWrapperDivCommands(
 ): CanvasCommand[] {
   const parentType = autoLayoutParentAbsoluteOrStatic(
     metadata,
+    domReconstructedMetadata,
     allElementProps,
     elementPathTrees,
     parentPath.intendedParentPath,
@@ -239,6 +245,7 @@ export function useWrapInDiv(): () => void {
   const wrapInDiv = React.useCallback(() => {
     const result = wrapInDivCommands(
       editorRef.current.jsxMetadata,
+      editorRef.current.domReconstructedMetadata,
       editorRef.current.elementPathTree,
       editorRef.current.allElementProps,
       editorRef.current.projectContents,

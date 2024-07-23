@@ -303,6 +303,7 @@ function onDrop(
   indexPosition: IndexPosition,
   canvasViewportCenter: CanvasPoint,
   jsxMetadata: ElementInstanceMetadataMap,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): Array<EditorAction> {
   const dragSelections = propsOfDraggedItem.getCurrentlySelectedEntries()
@@ -317,6 +318,7 @@ function onDrop(
     indexPosition,
     canvasViewportCenter,
     jsxMetadata,
+    domReconstructedMetadata,
     allElementProps,
   )
 
@@ -643,6 +645,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
                 canvasSize,
               ),
               editorStateRef.current.jsxMetadata,
+              editorStateRef.current.domReconstructedMetadata,
               editorStateRef.current.allElementProps,
             ),
           )
@@ -709,6 +712,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
                 canvasSize,
               ),
               editorStateRef.current.jsxMetadata,
+              editorStateRef.current.domReconstructedMetadata,
               editorStateRef.current.allElementProps,
             ),
           )
@@ -754,6 +758,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
                 canvasSize,
               ),
               editorStateRef.current.jsxMetadata,
+              editorStateRef.current.domReconstructedMetadata,
               editorStateRef.current.allElementProps,
             ),
           )
@@ -960,7 +965,8 @@ export const SyntheticNavigatorItemContainer = React.memo(
           onHoverParentOutline(item, props, monitor)
         },
         drop: (item: NavigatorItemDragAndDropWrapperProps): void => {
-          const { jsxMetadata, spyMetadata, allElementProps } = editorStateRef.current
+          const { jsxMetadata, spyMetadata, domReconstructedMetadata, allElementProps } =
+            editorStateRef.current
           props.editorDispatch([
             ...onDrop(
               item,
@@ -969,6 +975,7 @@ export const SyntheticNavigatorItemContainer = React.memo(
               front(),
               zeroCanvasPoint,
               jsxMetadata,
+              domReconstructedMetadata,
               allElementProps,
             ),
             ...maybeSetConditionalOverrideOnDrop(props.elementPath, jsxMetadata, spyMetadata),

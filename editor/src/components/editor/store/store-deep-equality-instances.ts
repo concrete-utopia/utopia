@@ -2737,12 +2737,18 @@ export const ElementPasteKeepDeepEquality: KeepDeepEqualityCall<ElementPaste> =
   )
 
 export const ElementPasteWithMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementPasteWithMetadata> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (c) => c.elements,
     arrayDeepEquality(ElementPasteKeepDeepEquality),
     (c) => c.targetOriginalContextMetadata,
     ElementInstanceMetadataMapKeepDeepEquality,
-    (elements, targetOriginalContextMetadata) => ({ elements, targetOriginalContextMetadata }),
+    (c) => c.targetOriginalDomReconstructedMetadata,
+    ElementInstanceMetadataMapKeepDeepEquality,
+    (elements, targetOriginalContextMetadata, targetOriginalDomReconstructedMetadata) => ({
+      elements,
+      targetOriginalContextMetadata,
+      targetOriginalDomReconstructedMetadata,
+    }),
   )
 
 export const KeyStateKeepDeepEquality: KeepDeepEqualityCall<KeyState> = combine2EqualityCalls(
@@ -4792,7 +4798,7 @@ export const PasteToReplacePostActionMenuDataKeepDeepEquality: KeepDeepEqualityC
     }),
   )
 export const NavigatorReparentPostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<NavigatorReparentPostActionMenuData> =
-  combine6EqualityCalls(
+  combine7EqualityCalls(
     (menudata) => menudata.dragSources,
     ElementPathArrayKeepDeepEquality,
     (menudata) => menudata.targetParent,
@@ -4803,6 +4809,8 @@ export const NavigatorReparentPostActionMenuDataKeepDeepEquality: KeepDeepEquali
     CanvasPointKeepDeepEquality,
     (menudata) => menudata.jsxMetadata,
     ElementInstanceMetadataMapKeepDeepEquality,
+    (menudata) => menudata.domReconstructedMetadata,
+    ElementInstanceMetadataMapKeepDeepEquality,
     (menudata) => menudata.allElementProps,
     AllElementPropsKeepDeepEquality,
     (
@@ -4811,6 +4819,7 @@ export const NavigatorReparentPostActionMenuDataKeepDeepEquality: KeepDeepEquali
       indexPosition,
       canvasViewportCenter,
       jsxMetadata,
+      domReconstructedMetadata,
       allElementProps,
     ) => ({
       type: 'NAVIGATOR_REPARENT',
@@ -4819,6 +4828,7 @@ export const NavigatorReparentPostActionMenuDataKeepDeepEquality: KeepDeepEquali
       indexPosition: indexPosition,
       canvasViewportCenter: canvasViewportCenter,
       jsxMetadata: jsxMetadata,
+      domReconstructedMetadata: domReconstructedMetadata,
       allElementProps: allElementProps,
     }),
   )
@@ -4986,6 +4996,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   const domMetadataResult = ElementInstanceMetadataMapKeepDeepEquality(
     oldValue.domMetadata,
     newValue.domMetadata,
+  )
+  const domReconstructedMetadataResult = ElementInstanceMetadataMapKeepDeepEquality(
+    oldValue.domReconstructedMetadata,
+    newValue.domReconstructedMetadata,
   )
   const jsxMetadataResult = ElementInstanceMetadataMapKeepDeepEquality(
     oldValue.jsxMetadata,
@@ -5261,6 +5275,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     trueUpElementsAfterDomWalkerRunsResult.areEqual &&
     spyMetadataResult.areEqual &&
     domMetadataResult.areEqual &&
+    domReconstructedMetadataResult.areEqual &&
     jsxMetadataResult.areEqual &&
     elementPathTreeResult.areEqual &&
     projectContentsResult.areEqual &&
@@ -5346,6 +5361,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       trueUpElementsAfterDomWalkerRunsResult.value,
       spyMetadataResult.value,
       domMetadataResult.value,
+      domReconstructedMetadataResult.value,
       jsxMetadataResult.value,
       elementPathTreeResult.value,
       projectContentsResult.value,

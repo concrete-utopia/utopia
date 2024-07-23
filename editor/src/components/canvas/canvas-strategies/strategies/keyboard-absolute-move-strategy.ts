@@ -100,6 +100,7 @@ export function keyboardAbsoluteMoveStrategy(
 
         const snapTargets: ElementPath[] = gatherParentAndSiblingTargets(
           canvasState.startingMetadata,
+          canvasState.startingReconstructedDOMMetadata,
           canvasState.startingAllElementProps,
           canvasState.startingElementPathTree,
           getTargetPathsFromInteractionTarget(canvasState.interactionTarget),

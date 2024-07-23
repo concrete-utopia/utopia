@@ -81,6 +81,8 @@ function getNavigatorReparentCommands(
         currentMetadata: editor.jsxMetadata,
         originalPathTrees: editor.elementPathTree,
         currentPathTrees: editor.elementPathTree,
+        originalDomReconstructedMetadata: editor.domReconstructedMetadata,
+        currentDomReconstructedMetadata: editor.domReconstructedMetadata,
       },
       editor.allElementProps,
       editor.elementPathTree,
@@ -103,11 +105,7 @@ function getNavigatorReparentCommands(
   const oldPathToNewPathMapping: OldPathToNewPathMapping = {}
 
   for (const value of data.dragSources) {
-    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(
-      editor.jsxMetadata,
-      editor.elementPathTree,
-      value,
-    )
+    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(editor.elementPathTree, value)
 
     const pathAfterReparent = elementPathFromInsertionPath(newParentPath, EP.toUid(value))
 
@@ -126,6 +124,7 @@ function getNavigatorReparentCommands(
       pasteTargetsToIgnore: [],
       projectContents: editor.projectContents,
       startingMetadata: editor.jsxMetadata,
+      startingDomReconstructedMetadata: editor.domReconstructedMetadata,
       startingElementPathTrees: editor.elementPathTree,
       startingAllElementProps: editor.allElementProps,
     },
@@ -134,6 +133,7 @@ function getNavigatorReparentCommands(
       elementPasteWithMetadata: {
         elements: [],
         targetOriginalContextMetadata: editor.jsxMetadata,
+        targetOriginalDomReconstructedMetadata: editor.domReconstructedMetadata,
       },
       targetOriginalPathTrees: editor.elementPathTree,
       canvasViewportCenter: data.canvasViewportCenter,
@@ -184,6 +184,7 @@ export const PropsReplacedNavigatorReparentPostActionChoice = (
     {
       elements: elements,
       targetOriginalContextMetadata: filterMetadataForCopy(data.dragSources, data.jsxMetadata),
+      targetOriginalDomReconstructedMetadata: data.domReconstructedMetadata,
     },
     data.allElementProps,
   )?.replacePropCommands
@@ -231,6 +232,7 @@ export function adjustIntendedCoordinatesForGroups(
 export function collectGroupTrueUp(
   projectContents: ProjectContentTreeRoot,
   jsxMetadata: ElementInstanceMetadataMap,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   reparentTargetPath: ElementPath,
@@ -240,6 +242,7 @@ export function collectGroupTrueUp(
   const reparentTargetParentIsGroup = allowGroupTrueUp(
     projectContents,
     jsxMetadata,
+    domReconstructedMetadata,
     pathTrees,
     allElementProps,
     reparentTargetPath,
@@ -253,12 +256,18 @@ export function collectGroupTrueUp(
 
   const maybeElementAncestorGroup =
     EP.getAncestors(oldPath).find((path) => {
-      return allowGroupTrueUp(projectContents, jsxMetadata, pathTrees, allElementProps, path)
+      return allowGroupTrueUp(
+        projectContents,
+        jsxMetadata,
+        domReconstructedMetadata,
+        pathTrees,
+        allElementProps,
+        path,
+      )
     }) ?? null
   if (maybeElementAncestorGroup != null) {
     // the reparented element comes out of a group, so true up the group by its elements
     const groupChildren = MetadataUtils.getChildrenPathsOrdered(
-      jsxMetadata,
       pathTrees,
       maybeElementAncestorGroup,
     )

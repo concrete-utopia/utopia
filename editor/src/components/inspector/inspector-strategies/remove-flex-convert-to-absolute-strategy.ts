@@ -18,7 +18,7 @@ function removeFlexConvertToAbsoluteOne(
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
-  const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath)
+  const children = MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath)
   return [
     ...prunePropsCommands(flexContainerProps, elementPath), // flex-related stuff is pruned
     ...children.flatMap((c) =>

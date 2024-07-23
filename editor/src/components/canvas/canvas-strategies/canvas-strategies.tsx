@@ -195,6 +195,7 @@ export function pickCanvasStateFromEditorState(
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
     startingMetadata: editorState.jsxMetadata,
+    startingReconstructedDOMMetadata: editorState.domReconstructedMetadata,
     startingElementPathTree: editorState.elementPathTree,
     startingAllElementProps: editorState.allElementProps,
     propertyControlsInfo: editorState.propertyControlsInfo,
@@ -216,6 +217,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
     startingMetadata: metadata,
+    startingReconstructedDOMMetadata: editorState.domReconstructedMetadata,
     startingElementPathTree: editorState.elementPathTree, // IMPORTANT! This isn't based on the passed in metadata
     startingAllElementProps: allElementProps ?? editorState.allElementProps,
     propertyControlsInfo: editorState.propertyControlsInfo,

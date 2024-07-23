@@ -620,19 +620,6 @@ export function areSiblings(paths: Array<ElementPath>): boolean {
   return paths.every((p) => isSiblingOf(paths[0], p))
 }
 
-function slicedPathsEqual(l: ElementPathPart, r: ElementPathPart): boolean {
-  const slicedL = l.slice(0, r.length)
-  return elementPathPartsEqual(slicedL, r)
-}
-
-function elementIsDescendant(l: ElementPathPart, r: ElementPathPart): boolean {
-  return l.length > r.length && slicedPathsEqual(l, r)
-}
-
-function elementIsDescendantOrEqualTo(l: ElementPathPart, r: ElementPathPart): boolean {
-  return l.length >= r.length && slicedPathsEqual(l, r)
-}
-
 export function isDescendantOfOrEqualTo(
   target: ElementPath,
   maybeAncestorOrEqual: ElementPath,
@@ -655,33 +642,9 @@ export function findAmongAncestorsOfPath<T>(
 }
 
 export function isDescendantOf(target: ElementPath, maybeAncestor: ElementPath): boolean {
-  const targetElementPath = target.parts
-  const maybeAncestorElementPath = maybeAncestor.parts
-  if (targetElementPath.length >= maybeAncestorElementPath.length) {
-    for (let pathPartIndex = 0; pathPartIndex < maybeAncestorElementPath.length; pathPartIndex++) {
-      const elementPathPart = targetElementPath[pathPartIndex]
-      // all parts up to the last must match, and the last must be a descendant
-      const maybeAncestorElementPathPart = maybeAncestorElementPath[pathPartIndex]
-      if (pathPartIndex < maybeAncestorElementPath.length - 1) {
-        if (!elementPathPartsEqual(elementPathPart, maybeAncestorElementPathPart)) {
-          return false
-        }
-      } else {
-        if (targetElementPath.length === maybeAncestorElementPath.length) {
-          if (!elementIsDescendant(elementPathPart, maybeAncestorElementPathPart)) {
-            return false
-          }
-        } else {
-          if (!elementIsDescendantOrEqualTo(elementPathPart, maybeAncestorElementPathPart)) {
-            return false
-          }
-        }
-      }
-    }
-    return true
-  } else {
-    return false
-  }
+  const targetString = toString(target)
+  const maybeAncestorString = toString(maybeAncestor)
+  return targetString !== maybeAncestorString && targetString.startsWith(maybeAncestorString)
 }
 
 export function getAncestorsForLastPart(path: ElementPath): ElementPath[] {

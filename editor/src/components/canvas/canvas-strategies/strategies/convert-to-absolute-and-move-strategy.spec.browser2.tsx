@@ -1208,12 +1208,15 @@ describe('Convert to absolute/escape hatch', () => {
         )
 
         const jsxMetadataAfter = renderResult.getEditorState().editor.jsxMetadata
+        const domReconstructedMetadataAfter =
+          renderResult.getEditorState().editor.domReconstructedMetadata
         const allElementPropsAfter = renderResult.getEditorState().editor.allElementProps
         const pathTreesAfter = renderResult.getEditorState().editor.elementPathTree
 
         expect(
           treatElementAsFragmentLike(
             jsxMetadataAfter,
+            domReconstructedMetadataAfter,
             allElementPropsAfter,
             pathTreesAfter,
             groupElementPath,

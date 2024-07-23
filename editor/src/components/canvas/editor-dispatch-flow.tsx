@@ -51,6 +51,7 @@ export function runDomWalkerAndSaveResults(
     [
       saveDOMReport(
         domWalkerResult.metadata,
+        domWalkerResult.reconstructedMetadata,
         domWalkerResult.cachedPaths,
         domWalkerResult.invalidatedPaths,
       ),

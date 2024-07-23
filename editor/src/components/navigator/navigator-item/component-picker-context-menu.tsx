@@ -507,6 +507,7 @@ export function insertComponentPickerItem(
   allElementProps: AllElementProps,
   propertyControlsInfo: PropertyControlsInfo,
   metadata: ElementInstanceMetadataMap,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   dispatch: EditorDispatch,
   insertionTarget: InsertionTarget,
@@ -522,6 +523,7 @@ export function insertComponentPickerItem(
         const commands = commandsForFirstApplicableStrategy([
           wrapInDivStrategy(
             metadata,
+            domReconstructedMetadata,
             targets,
             pathTrees,
             allElementProps,
@@ -716,6 +718,7 @@ function insertPreferredChild(
   allElementProps: AllElementProps,
   propertyControlsInfo: PropertyControlsInfo,
   metadata: ElementInstanceMetadataMap,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   dispatch: EditorDispatch,
   insertionTarget: InsertionTarget,
@@ -738,6 +741,7 @@ function insertPreferredChild(
     allElementProps,
     propertyControlsInfo,
     metadata,
+    domReconstructedMetadata,
     pathTrees,
     dispatch,
     insertionTarget,
@@ -813,6 +817,9 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
     const allElementPropsRef = useRefEditorState((state) => state.editor.allElementProps)
     const propertyControlsInfoRef = useRefEditorState((state) => state.editor.propertyControlsInfo)
     const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
+    const domReconstructedMetadataRef = useRefEditorState(
+      (state) => state.editor.domReconstructedMetadata,
+    )
     const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
 
     const onItemClick = React.useCallback(
@@ -824,6 +831,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
           allElementPropsRef.current,
           propertyControlsInfoRef.current,
           metadataRef.current,
+          domReconstructedMetadataRef.current,
           elementPathTreesRef.current,
           dispatch,
           insertionTarget,
@@ -834,6 +842,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
         allElementPropsRef,
         propertyControlsInfoRef,
         metadataRef,
+        domReconstructedMetadataRef,
         elementPathTreesRef,
         dispatch,
         insertionTarget,
@@ -938,6 +947,9 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
     const allElementPropsRef = useRefEditorState((state) => state.editor.allElementProps)
     const propertyControlsInfoRef = useRefEditorState((state) => state.editor.propertyControlsInfo)
     const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
+    const domReconstructedMetadataRef = useRefEditorState(
+      (state) => state.editor.domReconstructedMetadata,
+    )
     const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
 
     const hideAllContextMenus = React.useCallback(() => {
@@ -956,6 +968,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
           allElementPropsRef.current,
           propertyControlsInfoRef.current,
           metadataRef.current,
+          domReconstructedMetadataRef.current,
           elementPathTreesRef.current,
           dispatch,
           insertionTarget,
@@ -969,6 +982,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
         allElementPropsRef,
         propertyControlsInfoRef,
         metadataRef,
+        domReconstructedMetadataRef,
         elementPathTreesRef,
         dispatch,
         insertionTarget,

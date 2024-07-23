@@ -1314,6 +1314,7 @@ export interface NavigatorReparentPostActionMenuData {
   indexPosition: IndexPosition
   canvasViewportCenter: CanvasPoint
   jsxMetadata: ElementInstanceMetadataMap
+  domReconstructedMetadata: ElementInstanceMetadataMap
   allElementProps: AllElementProps
 }
 
@@ -1391,6 +1392,7 @@ export interface EditorState {
   trueUpElementsAfterDomWalkerRuns: Array<TrueUpTarget>
   spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
   domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
+  domReconstructedMetadata: ElementInstanceMetadataMap // This is coming from the already existing dom elements.
   jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
   elementPathTree: ElementPathTrees
   projectContents: ProjectContentTreeRoot
@@ -1475,6 +1477,7 @@ export function editorState(
   trueUpElementsAfterDomWalkerRuns: Array<TrueUpTarget>,
   spyMetadata: ElementInstanceMetadataMap,
   domMetadata: ElementInstanceMetadataMap,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   jsxMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
@@ -1558,6 +1561,7 @@ export function editorState(
     trueUpElementsAfterDomWalkerRuns: trueUpElementsAfterDomWalkerRuns,
     spyMetadata: spyMetadata,
     domMetadata: domMetadata,
+    domReconstructedMetadata: domReconstructedMetadata,
     jsxMetadata: jsxMetadata,
     elementPathTree: elementPathTree,
     projectContents: projectContents,
@@ -2549,6 +2553,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     trueUpElementsAfterDomWalkerRuns: [],
     spyMetadata: emptyJsxMetadata,
     domMetadata: emptyJsxMetadata,
+    domReconstructedMetadata: emptyJsxMetadata,
     jsxMetadata: emptyJsxMetadata,
     elementPathTree: {},
     projectContents: {},
@@ -2726,6 +2731,7 @@ export interface OriginalCanvasAndLocalFrame {
 function getElementWarningsInner(
   projectContents: ProjectContentTreeRoot,
   rootMetadata: ElementInstanceMetadataMap,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
 ): { [key: string]: ElementWarnings } {
@@ -2744,6 +2750,7 @@ function getElementWarningsInner(
     // the parent element isn't appropriately configured.
     const isParentFragmentLike = treatElementAsFragmentLike(
       rootMetadata,
+      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       parentPath,
@@ -2760,6 +2767,7 @@ function getElementWarningsInner(
       ? getGroupState(
           elementMetadata.elementPath,
           rootMetadata,
+          domReconstructedMetadata,
           pathTrees,
           allElementProps,
           projectContents,
@@ -2795,6 +2803,7 @@ type CacheableDerivedState = {
 function deriveCacheableStateInner(
   projectContents: ProjectContentTreeRoot,
   jsxMetadata: ElementInstanceMetadataMap,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   collapsedViews: ElementPath[],
@@ -2804,6 +2813,7 @@ function deriveCacheableStateInner(
   const warnings = getElementWarnings(
     projectContents,
     jsxMetadata,
+    domReconstructedMetadata,
     allElementProps,
     elementPathTree,
   )
@@ -2843,6 +2853,7 @@ export function deriveState(
   const { elementWarnings: warnings, autoFocusedPaths } = deriveCacheableState(
     editor.projectContents,
     editor.jsxMetadata,
+    editor.domReconstructedMetadata,
     editor.elementPathTree,
     editor.allElementProps,
     editor.navigator.collapsedViews,
@@ -2915,6 +2926,7 @@ export function editorModelFromPersistentModel(
     trueUpElementsAfterDomWalkerRuns: [],
     spyMetadata: emptyJsxMetadata,
     domMetadata: emptyJsxMetadata,
+    domReconstructedMetadata: emptyJsxMetadata,
     jsxMetadata: emptyJsxMetadata,
     elementPathTree: {},
     codeResultCache: generateCodeResultCache(
@@ -3401,6 +3413,7 @@ export function reconstructJSXMetadata(editor: EditorState): {
           elementsByUID,
           editor.spyMetadata,
           editor.domMetadata,
+          editor.domReconstructedMetadata,
         )
         return {
           metadata: ElementInstanceMetadataMapKeepDeepEquality(editor.jsxMetadata, mergedMetadata)

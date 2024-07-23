@@ -95,6 +95,7 @@ export function baseFlexReparentToAbsoluteStrategy(
             const escapeHatchCommands = getEscapeHatchCommands(
               filteredSelectedElements,
               canvasState.startingMetadata,
+              canvasState.startingReconstructedDOMMetadata,
               canvasState,
               canvasPoint({ x: 0, y: 0 }),
               'dont-set-hugging-parent-to-fixed',

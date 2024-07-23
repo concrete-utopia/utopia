@@ -236,6 +236,9 @@ const ResizePoint = React.memo(
     )
 
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+    const domReconstructedMetadataRef = useRefEditorState(
+      (store) => store.editor.domReconstructedMetadata,
+    )
     const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
     const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
     const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
@@ -245,13 +248,21 @@ const ResizePoint = React.memo(
         applyCommandsAction(
           resizeToFitCommands(
             metadataRef.current,
+            domReconstructedMetadataRef.current,
             selectedElementsRef.current,
             elementPathTreeRef.current,
             allElementPropsRef.current,
           ),
         ),
       ])
-    }, [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedElementsRef])
+    }, [
+      dispatch,
+      metadataRef,
+      domReconstructedMetadataRef,
+      selectedElementsRef,
+      elementPathTreeRef,
+      allElementPropsRef,
+    ])
 
     const hiddenDuringInteraction = useEditorState(
       Substores.canvas,

@@ -84,6 +84,7 @@ interface EditorStateContext {
   pasteTargetsToIgnore: Array<ElementPath>
   builtInDependencies: BuiltInDependencies
   startingMetadata: ElementInstanceMetadataMap
+  startingDomReconstructedMetadata: ElementInstanceMetadataMap
   startingElementPathTrees: ElementPathTrees
   startingAllElementProps: AllElementProps
 }
@@ -120,8 +121,11 @@ function findIntendedCoordinates(
       {
         originalTargetMetadata: pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
         originalPathTrees: pasteContext.targetOriginalPathTrees,
+        originalDomReconstructedMetadata:
+          pasteContext.elementPasteWithMetadata.targetOriginalDomReconstructedMetadata,
         currentMetadata: editorStateContext.startingMetadata,
         currentPathTrees: editorStateContext.startingElementPathTrees,
+        currentDomReconstructedMetadata: editorStateContext.startingDomReconstructedMetadata,
       },
       editorStateContext.startingAllElementProps,
       editorStateContext.startingElementPathTrees,
@@ -277,6 +281,7 @@ export function staticReparentAndUpdatePosition(
       ? pasteContext.reparentStrategy
       : reparentStrategyForPaste(
           editorStateContext.startingMetadata,
+          editorStateContext.startingDomReconstructedMetadata,
           editorStateContext.startingAllElementProps,
           editorStateContext.startingElementPathTrees,
           target.parentPath.intendedParentPath,
@@ -302,8 +307,10 @@ export function staticReparentAndUpdatePosition(
           newPath,
           target.parentPath.intendedParentPath,
           pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+          pasteContext.elementPasteWithMetadata.targetOriginalDomReconstructedMetadata,
           pasteContext.targetOriginalPathTrees,
           editor.jsxMetadata,
+          editor.domReconstructedMetadata,
           editor.elementPathTree,
           editor.projectContents,
           pastedElementMetadata?.specialSizeMeasurements.position ?? null,
@@ -322,8 +329,11 @@ export function staticReparentAndUpdatePosition(
                   originalTargetMetadata:
                     pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
                   originalPathTrees: pasteContext.targetOriginalPathTrees,
+                  originalDomReconstructedMetadata:
+                    pasteContext.elementPasteWithMetadata.targetOriginalDomReconstructedMetadata,
                   currentMetadata: editor.jsxMetadata,
                   currentPathTrees: editor.elementPathTree,
+                  currentDomReconstructedMetadata: editor.domReconstructedMetadata,
                 },
                 elementToInsert.intendedCoordinates,
                 oldPathToNewPathMapping,
@@ -345,6 +355,7 @@ export function staticReparentAndUpdatePosition(
     collectGroupTrueUp(
       editorStateContext.projectContents,
       editorStateContext.startingMetadata,
+      editorStateContext.startingDomReconstructedMetadata,
       editorStateContext.startingElementPathTrees,
       editorStateContext.startingAllElementProps,
       target.parentPath.intendedParentPath,
@@ -387,6 +398,7 @@ export const PropsPreservedPastePostActionChoice = (
         pasteTargetsToIgnore: postActionMenuData.pasteTargetsToIgnore,
         projectContents: store.projectContents,
         startingMetadata: store.jsxMetadata,
+        startingDomReconstructedMetadata: store.domReconstructedMetadata,
         startingElementPathTrees: store.elementPathTree,
         startingAllElementProps: store.allElementProps,
       },
@@ -427,6 +439,7 @@ export const PropsReplacedPastePostActionChoice = (
           pasteTargetsToIgnore: postActionMenuData.pasteTargetsToIgnore,
           projectContents: store.projectContents,
           startingMetadata: store.jsxMetadata,
+          startingDomReconstructedMetadata: store.domReconstructedMetadata,
           startingElementPathTrees: store.elementPathTree,
           startingAllElementProps: store.allElementProps,
         },
@@ -472,6 +485,9 @@ export const PropsPreservedPasteHerePostActionChoice = (
 
     const originalMetadata =
       editor.internalClipboard.elements[0].copyDataWithPropsPreserved.targetOriginalContextMetadata
+    const originalDomReconstructedMetadata =
+      editor.internalClipboard.elements[0].copyDataWithPropsPreserved
+        .targetOriginalDomReconstructedMetadata
     const originalPathTree =
       editor.internalClipboard.elements[0].targetOriginalContextElementPathTrees
 
@@ -484,6 +500,7 @@ export const PropsPreservedPasteHerePostActionChoice = (
         pasteTargetsToIgnore: [],
         projectContents: editor.projectContents,
         startingMetadata: editor.jsxMetadata,
+        startingDomReconstructedMetadata: editor.domReconstructedMetadata,
         startingElementPathTrees: editor.elementPathTree,
         startingAllElementProps: editor.allElementProps,
       },
@@ -492,6 +509,7 @@ export const PropsPreservedPasteHerePostActionChoice = (
         elementPasteWithMetadata: {
           elements: elementToPaste,
           targetOriginalContextMetadata: originalMetadata,
+          targetOriginalDomReconstructedMetadata: originalDomReconstructedMetadata,
         },
         targetOriginalPathTrees: originalPathTree,
         canvasViewportCenter: zeroCanvasPoint,
@@ -539,6 +557,9 @@ export const PropsReplacedPasteHerePostActionChoice = (
       const originalMetadata =
         editor.internalClipboard.elements[0].copyDataWithPropsPreserved
           .targetOriginalContextMetadata
+      const originalDomReconstructedMetadata =
+        editor.internalClipboard.elements[0].copyDataWithPropsPreserved
+          .targetOriginalDomReconstructedMetadata
       const originalPathTree =
         editor.internalClipboard.elements[0].targetOriginalContextElementPathTrees
 
@@ -551,6 +572,7 @@ export const PropsReplacedPasteHerePostActionChoice = (
           pasteTargetsToIgnore: [],
           projectContents: editor.projectContents,
           startingMetadata: editor.jsxMetadata,
+          startingDomReconstructedMetadata: editor.domReconstructedMetadata,
           startingElementPathTrees: editor.elementPathTree,
           startingAllElementProps: editor.allElementProps,
         },
@@ -559,6 +581,7 @@ export const PropsReplacedPasteHerePostActionChoice = (
           elementPasteWithMetadata: {
             elements: elementToPaste,
             targetOriginalContextMetadata: originalMetadata,
+            targetOriginalDomReconstructedMetadata: originalDomReconstructedMetadata,
           },
           targetOriginalPathTrees: originalPathTree,
           canvasViewportCenter: zeroCanvasPoint,
@@ -643,6 +666,9 @@ export const PropsPreservedPasteToReplacePostActionChoice = (
     const elementToPaste = editor.internalClipboard.elements[0].copyDataWithPropsPreserved.elements
     const originalMetadata =
       editor.internalClipboard.elements[0].copyDataWithPropsPreserved.targetOriginalContextMetadata
+    const originalDomReconstructedMetadata =
+      editor.internalClipboard.elements[0].copyDataWithPropsPreserved
+        .targetOriginalDomReconstructedMetadata
     const originalPathTree =
       editor.internalClipboard.elements[0].targetOriginalContextElementPathTrees
 
@@ -652,6 +678,7 @@ export const PropsPreservedPasteToReplacePostActionChoice = (
       data.targets,
       elementToPaste,
       originalMetadata,
+      originalDomReconstructedMetadata,
       originalPathTree,
     )
   },
@@ -683,6 +710,9 @@ export const PropsReplacedPasteToReplacePostActionChoice = (
       const originalMetadata =
         editor.internalClipboard.elements[0].copyDataWithPropsPreserved
           .targetOriginalContextMetadata
+      const originalDomReconstructedMetadata =
+        editor.internalClipboard.elements[0].copyDataWithPropsPreserved
+          .targetOriginalDomReconstructedMetadata
       const originalPathTree =
         editor.internalClipboard.elements[0].targetOriginalContextElementPathTrees
 
@@ -692,6 +722,7 @@ export const PropsReplacedPasteToReplacePostActionChoice = (
         data.targets,
         elementToPaste,
         originalMetadata,
+        originalDomReconstructedMetadata,
         originalPathTree,
       )
     },
@@ -704,6 +735,7 @@ function pasteToReplaceCommands(
   unfilteredTargets: Array<ElementPath>,
   elementsToPaste: Array<ElementPaste>,
   originalMetadata: ElementInstanceMetadataMap,
+  originalDomReconstructedMetadata: ElementInstanceMetadataMap,
   originalPathTree: ElementPathTrees,
 ): Array<CanvasCommand> {
   const targets = unfilteredTargets.filter((target) => !EP.isRootElementOfInstance(target))
@@ -749,6 +781,7 @@ function pasteToReplaceCommands(
             pasteTargetsToIgnore: [],
             projectContents: updatedEditor.projectContents,
             startingMetadata: editor.jsxMetadata,
+            startingDomReconstructedMetadata: editor.domReconstructedMetadata,
             startingElementPathTrees: editor.elementPathTree,
             startingAllElementProps: editor.allElementProps,
           },
@@ -757,6 +790,7 @@ function pasteToReplaceCommands(
             elementPasteWithMetadata: {
               elements: elementsToPaste,
               targetOriginalContextMetadata: originalMetadata,
+              targetOriginalDomReconstructedMetadata: originalDomReconstructedMetadata,
             },
             targetOriginalPathTrees: originalPathTree,
             canvasViewportCenter: zeroCanvasPoint,

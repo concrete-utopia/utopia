@@ -56,8 +56,10 @@ export interface ElementPathSnapshots {
 export interface MetadataSnapshots {
   originalTargetMetadata: ElementInstanceMetadataMap
   originalPathTrees: ElementPathTrees
+  originalDomReconstructedMetadata: ElementInstanceMetadataMap
   currentMetadata: ElementInstanceMetadataMap
   currentPathTrees: ElementPathTrees
+  currentDomReconstructedMetadata: ElementInstanceMetadataMap
 }
 
 export const stripPinsConvertToVisualSize =
@@ -280,6 +282,7 @@ export const convertFragmentLikeChildrenToVisualSize =
   () => {
     const isElementFragmentLike = treatElementAsFragmentLike(
       metadata.originalTargetMetadata,
+      metadata.originalDomReconstructedMetadata,
       oldAllElementProps,
       metadata.originalPathTrees,
       elementToReparent.oldPath,
@@ -290,6 +293,7 @@ export const convertFragmentLikeChildrenToVisualSize =
 
     const childPaths = replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata.originalTargetMetadata,
+      metadata.originalDomReconstructedMetadata,
       oldAllElementProps,
       metadata.originalPathTrees,
       [elementToReparent.oldPath],

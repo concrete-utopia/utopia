@@ -134,7 +134,7 @@ export const updateFlexDirectionStrategies = (
 
       return elements.flatMap((path) => [
         setProperty('always', path, PP.create('style', 'flexDirection'), flexDirection),
-        ...MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, path).flatMap((child) => [
+        ...MetadataUtils.getChildrenPathsOrdered(pathTrees, path).flatMap((child) => [
           ...prunePropsCommands(flexChildProps, child),
           ...sizeToVisualDimensions(metadata, pathTrees, child),
         ]),
@@ -145,6 +145,7 @@ export const updateFlexDirectionStrategies = (
 
 export const addFlexLayoutStrategies = (
   metadata: ElementInstanceMetadataMap,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   elementPaths: ElementPath[],
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
@@ -152,7 +153,13 @@ export const addFlexLayoutStrategies = (
   {
     name: 'Add flex layout',
     strategy: () => {
-      return convertLayoutToFlexCommands(metadata, elementPathTree, elementPaths, allElementProps)
+      return convertLayoutToFlexCommands(
+        metadata,
+        domReconstructedMetadata,
+        elementPathTree,
+        elementPaths,
+        allElementProps,
+      )
     },
   },
 ]
@@ -212,11 +219,18 @@ export const setPropHugStrategies = (
 
 export const setPropHugAbsoluteStrategies = (
   metadata: ElementInstanceMetadataMap,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   elementPaths: ElementPath[],
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
 ): Array<InspectorStrategy> => [
-  hugContentsAbsoluteStrategy(metadata, elementPaths, pathTrees, allElementProps),
+  hugContentsAbsoluteStrategy(
+    metadata,
+    domReconstructedMetadata,
+    elementPaths,
+    pathTrees,
+    allElementProps,
+  ),
 ]
 
 export const setSpacingModeSpaceBetweenStrategies = (

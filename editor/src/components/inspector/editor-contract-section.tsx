@@ -56,45 +56,53 @@ const disabledControlStyles: ControlStyles = {
   mainColor: colorTheme.fg5.value,
 }
 
-const selectedElementGrouplikeTypeSelector = createSelector(
-  metadataSelector,
-  (store: MetadataSubstate) => store.editor.allElementProps,
-  (store: MetadataSubstate) => store.editor.elementPathTree,
-  selectedViewsSelector,
-  (metadata, allElementProps, pathTrees, selectedViews) => {
-    if (selectedViews.length !== 1) {
-      return null
-    }
-    return getElementFragmentLikeType(metadata, allElementProps, pathTrees, selectedViews[0])
-  },
-)
-
 const selectedElementContractSelector = createSelector(
   metadataSelector,
-  (store: MetadataSubstate) => store.editor.allElementProps,
-  (store: MetadataSubstate) => store.editor.elementPathTree,
-  selectedViewsSelector,
-  (metadata, allElementProps, pathTrees, selectedViews): EditorContract | null => {
-    if (selectedViews.length !== 1) {
-      return null // TODO make it work for mixed selection
-    }
-    return getEditorContractForElement(metadata, allElementProps, pathTrees, selectedViews[0])
-  },
-)
-
-export const allSelectedElementsContractSelector = createSelector(
-  metadataSelector,
+  (store: MetadataSubstate) => store.editor.domReconstructedMetadata,
   (store: MetadataSubstate) => store.editor.allElementProps,
   (store: MetadataSubstate) => store.editor.elementPathTree,
   selectedViewsSelector,
   (
     metadata,
+    domReconstructedMetadata,
+    allElementProps,
+    pathTrees,
+    selectedViews,
+  ): EditorContract | null => {
+    if (selectedViews.length !== 1) {
+      return null // TODO make it work for mixed selection
+    }
+    return getEditorContractForElement(
+      metadata,
+      domReconstructedMetadata,
+      allElementProps,
+      pathTrees,
+      selectedViews[0],
+    )
+  },
+)
+
+export const allSelectedElementsContractSelector = createSelector(
+  metadataSelector,
+  (store: MetadataSubstate) => store.editor.domReconstructedMetadata,
+  (store: MetadataSubstate) => store.editor.allElementProps,
+  (store: MetadataSubstate) => store.editor.elementPathTree,
+  selectedViewsSelector,
+  (
+    metadata,
+    domReconstructedMetadata,
     allElementProps,
     pathTrees,
     selectedViews,
   ): EditorContract | 'mixed-multiselection' => {
     const contracts = selectedViews.map((selectedView) =>
-      getEditorContractForElement(metadata, allElementProps, pathTrees, selectedView),
+      getEditorContractForElement(
+        metadata,
+        domReconstructedMetadata,
+        allElementProps,
+        pathTrees,
+        selectedView,
+      ),
     )
     if (allElemsEqual(contracts)) {
       return contracts[0]
@@ -137,6 +145,9 @@ export const EditorContractDropdown = React.memo(() => {
   const dispatch = useDispatch()
 
   const metadataRef = useRefEditorState(metadataSelector)
+  const domReconstructedMetadataRef = useRefEditorState(
+    (store) => store.editor.domReconstructedMetadata,
+  )
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
 
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
@@ -185,6 +196,7 @@ export const EditorContractDropdown = React.memo(() => {
 
       const commands = getCommandsForConversionToDesiredType(
         metadataRef.current,
+        domReconstructedMetadataRef.current,
         elementPathTreeRef.current,
         allElementPropsRef.current,
         selectedViews,
@@ -197,12 +209,13 @@ export const EditorContractDropdown = React.memo(() => {
       }
     },
     [
-      allElementPropsRef,
-      dispatch,
-      metadataRef,
-      elementPathTreeRef,
       selectedElementContract,
       selectedViews,
+      metadataRef,
+      domReconstructedMetadataRef,
+      elementPathTreeRef,
+      allElementPropsRef,
+      dispatch,
     ],
   )
 
@@ -249,6 +262,7 @@ export const EditorContractDropdown = React.memo(() => {
           disabledOptions.group = maybeReasonForConversionForbidden(
             getInstanceForFrameToGroupConversion(
               metadataRef.current,
+              domReconstructedMetadataRef.current,
               elementPathTreeRef.current,
               allElementPropsRef.current,
               view,
@@ -257,6 +271,7 @@ export const EditorContractDropdown = React.memo(() => {
           disabledOptions.fragment = maybeReasonForConversionForbidden(
             getInstanceForFrameToFragmentConversion(
               metadataRef.current,
+              domReconstructedMetadataRef.current,
               elementPathTreeRef.current,
               allElementPropsRef.current,
               view,
@@ -267,6 +282,7 @@ export const EditorContractDropdown = React.memo(() => {
           disabledOptions.frame = maybeReasonForConversionForbidden(
             getInstanceForFragmentToFrameConversion(
               metadataRef.current,
+              domReconstructedMetadataRef.current,
               elementPathTreeRef.current,
               allElementPropsRef.current,
               view,
@@ -276,6 +292,7 @@ export const EditorContractDropdown = React.memo(() => {
           disabledOptions.group = maybeReasonForConversionForbidden(
             getInstanceForFragmentToGroupConversion(
               metadataRef.current,
+              domReconstructedMetadataRef.current,
               elementPathTreeRef.current,
               allElementPropsRef.current,
               view,
@@ -286,6 +303,7 @@ export const EditorContractDropdown = React.memo(() => {
           disabledOptions.frame = maybeReasonForConversionForbidden(
             getInstanceForGroupToFrameConversion(
               metadataRef.current,
+              domReconstructedMetadataRef.current,
               elementPathTreeRef.current,
               allElementPropsRef.current,
               view,
@@ -302,7 +320,14 @@ export const EditorContractDropdown = React.memo(() => {
       maybeDisable(FrameOption, disabledOptions.frame != null, disabledOptions.frame),
       maybeDisable(GroupOption, disabledOptions.group != null, disabledOptions.group),
     ]
-  }, [selectedViews, metadataRef, elementPathTreeRef, allElementPropsRef, currentValue])
+  }, [
+    selectedViews,
+    currentValue.value,
+    metadataRef,
+    domReconstructedMetadataRef,
+    elementPathTreeRef,
+    allElementPropsRef,
+  ])
 
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
@@ -314,6 +339,7 @@ export const EditorContractDropdown = React.memo(() => {
           const state = getGroupState(
             path,
             store.editor.jsxMetadata,
+            store.editor.domReconstructedMetadata,
             store.editor.elementPathTree,
             store.editor.allElementProps,
             projectContentsRef.current,

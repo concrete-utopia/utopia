@@ -112,6 +112,7 @@ export function absoluteDuplicateStrategy(
           if (
             !isElementSizelessDiv(
               canvasState.startingMetadata,
+              canvasState.startingReconstructedDOMMetadata,
               canvasState.startingAllElementProps,
               canvasState.startingElementPathTree,
               selectedElement,
@@ -198,13 +199,19 @@ function isApplicable(filteredSelectedElements: ElementPath[]): IsAbsoluteMoveAp
 
 function isElementSizelessDiv(
   metadata: ElementInstanceMetadataMap,
+  domReconstrucatedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): boolean {
   return (
-    getElementFragmentLikeType(metadata, allElementProps, elementPathTrees, elementPath) ===
-    'sizeless-div'
+    getElementFragmentLikeType(
+      metadata,
+      domReconstrucatedMetadata,
+      allElementProps,
+      elementPathTrees,
+      elementPath,
+    ) === 'sizeless-div'
   )
 }
 

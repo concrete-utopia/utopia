@@ -173,6 +173,7 @@ export function absoluteResizeBoundingBoxStrategy(
             )
             const parentAndSiblings: ElementPath[] = gatherParentAndSiblingTargets(
               canvasState.startingMetadata,
+              canvasState.startingReconstructedDOMMetadata,
               canvasState.startingAllElementProps,
               canvasState.startingElementPathTree,
               originalTargets,
@@ -181,6 +182,7 @@ export function absoluteResizeBoundingBoxStrategy(
               edgePosition,
               originalTargets,
               canvasState.startingMetadata,
+              canvasState.startingReconstructedDOMMetadata,
               canvasState.startingAllElementProps,
               canvasState.startingElementPathTree,
             )
@@ -189,6 +191,7 @@ export function absoluteResizeBoundingBoxStrategy(
               snapTargets,
               originalTargets,
               canvasState.startingMetadata,
+              canvasState.startingReconstructedDOMMetadata,
               edgePosition,
               newBoundingBox,
               canvasState.scale,
@@ -221,6 +224,7 @@ export function absoluteResizeBoundingBoxStrategy(
               // resized frame to respect the min/max dimensions that come from them.
               const newFrame = applyConstraintsAdjustmentsToFrame(
                 canvasState.startingMetadata,
+                canvasState.startingReconstructedDOMMetadata,
                 canvasState.startingAllElementProps,
                 canvasState.startingElementPathTree,
                 selectedElement,
@@ -307,6 +311,7 @@ export function absoluteResizeBoundingBoxStrategy(
  */
 function applyConstraintsAdjustmentsToFrame(
   jsxMetadata: ElementInstanceMetadataMap,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   target: ElementPath,
@@ -316,7 +321,13 @@ function applyConstraintsAdjustmentsToFrame(
 ): CanvasRectangle {
   const resizeAffectsChildren =
     treatElementAsGroupLike(jsxMetadata, target) ||
-    treatElementAsFragmentLike(jsxMetadata, allElementProps, pathTrees, target)
+    treatElementAsFragmentLike(
+      jsxMetadata,
+      domReconstructedMetadata,
+      allElementProps,
+      pathTrees,
+      target,
+    )
   if (!resizeAffectsChildren) {
     // this can become anything that can affect the layout of its children
     return newFrame

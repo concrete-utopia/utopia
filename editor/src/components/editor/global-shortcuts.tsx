@@ -605,6 +605,7 @@ export function handleKeyDown(
                 editor.selectedViews,
                 editor.projectContents,
                 editor.jsxMetadata,
+                editor.domReconstructedMetadata,
                 editor.allElementProps,
                 editor.elementPathTree,
                 navigatorTargetsRef.current,
@@ -906,6 +907,7 @@ export function handleKeyDown(
               )
             : addFlexLayoutStrategies(
                 editor.jsxMetadata,
+                editor.domReconstructedMetadata,
                 elementsConsideredForFlexConversion,
                 editor.elementPathTree,
                 editor.allElementProps,
@@ -923,6 +925,7 @@ export function handleKeyDown(
 
         const commands = toggleAbsolutePositioningCommands(
           editor.jsxMetadata,
+          editor.domReconstructedMetadata,
           editor.allElementProps,
           editor.elementPathTree,
           editor.selectedViews,
@@ -940,6 +943,7 @@ export function handleKeyDown(
         }
         const commands = toggleResizeToFitSetToFixed(
           editor.jsxMetadata,
+          editor.domReconstructedMetadata,
           editor.selectedViews,
           editor.elementPathTree,
           editor.allElementProps,
@@ -966,6 +970,7 @@ export function handleKeyDown(
         const commands = commandsForFirstApplicableStrategy([
           wrapInDivStrategy(
             editor.jsxMetadata,
+            editor.domReconstructedMetadata,
             editor.selectedViews,
             editor.elementPathTree,
             editor.allElementProps,

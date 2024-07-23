@@ -51,6 +51,7 @@ import { getTargetParentForPaste } from '../components/canvas/canvas-strategies/
 export interface ElementPasteWithMetadata {
   elements: ElementPaste[]
   targetOriginalContextMetadata: ElementInstanceMetadataMap
+  targetOriginalDomReconstructedMetadata: ElementInstanceMetadataMap
 }
 
 export interface CopyData {
@@ -365,6 +366,7 @@ export function createClipboardDataFromSelection(
   const copyDataWithPropsPreserved: ElementPasteWithMetadata = {
     elements: jsxElements,
     targetOriginalContextMetadata: filterMetadataForCopy(editor.selectedViews, editor.jsxMetadata),
+    targetOriginalDomReconstructedMetadata: editor.domReconstructedMetadata,
   }
 
   const copyDataWithPropsReplaced =

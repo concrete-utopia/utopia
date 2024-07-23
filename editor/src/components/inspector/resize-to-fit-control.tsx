@@ -91,6 +91,9 @@ export const ResizeToFitControl = React.memo(() => {
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const domReconstructedMetadataRef = useRefEditorState(
+    (store) => store.editor.domReconstructedMetadata,
+  )
 
   const onlyOneElementSelected = useEditorState(
     Substores.selectedViews,
@@ -117,6 +120,7 @@ export const ResizeToFitControl = React.memo(() => {
     if (isHugApplicable) {
       const commands = resizeToFitCommands(
         metadataRef.current,
+        domReconstructedMetadataRef.current,
         selectedViewsRef.current,
         elementPathTreeRef.current,
         allElementPropsRef.current,
@@ -128,6 +132,7 @@ export const ResizeToFitControl = React.memo(() => {
   }, [
     isHugApplicable,
     metadataRef,
+    domReconstructedMetadataRef,
     selectedViewsRef,
     elementPathTreeRef,
     allElementPropsRef,
@@ -153,6 +158,9 @@ export const ResizeToFitFillFixedControl = React.memo<ResizeToFitControlProps>((
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const domReconstructedMetadataRef = useRefEditorState(
+    (store) => store.editor.domReconstructedMetadata,
+  )
 
   const onlyOneElementSelected = useEditorState(
     Substores.selectedViews,
@@ -178,6 +186,7 @@ export const ResizeToFitFillFixedControl = React.memo<ResizeToFitControlProps>((
   const onSetToFixedSize = React.useCallback(() => {
     const commands = setToFixedSizeCommands(
       metadataRef.current,
+      domReconstructedMetadataRef.current,
       elementPathTreeRef.current,
       allElementPropsRef.current,
       selectedViewsRef.current,
@@ -185,7 +194,14 @@ export const ResizeToFitFillFixedControl = React.memo<ResizeToFitControlProps>((
     if (commands.length > 0) {
       dispatch([applyCommandsAction(commands)])
     }
-  }, [dispatch, metadataRef, elementPathTreeRef, allElementPropsRef, selectedViewsRef])
+  }, [
+    metadataRef,
+    domReconstructedMetadataRef,
+    elementPathTreeRef,
+    allElementPropsRef,
+    selectedViewsRef,
+    dispatch,
+  ])
 
   const disabledStyles = (enabled: boolean): CSSProperties =>
     enabled

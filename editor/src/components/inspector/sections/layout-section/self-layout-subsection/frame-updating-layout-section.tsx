@@ -135,6 +135,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           const state = getGroupState(
             path,
             store.editor.jsxMetadata,
+            store.editor.domReconstructedMetadata,
             store.editor.elementPathTree,
             store.editor.allElementProps,
             projectContentsRef.current,

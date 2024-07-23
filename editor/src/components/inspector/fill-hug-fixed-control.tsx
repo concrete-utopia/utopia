@@ -167,6 +167,9 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
 
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
+  const domReconstructedMetadataRef = useRefEditorState(
+    (store) => store.editor.domReconstructedMetadata,
+  )
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
@@ -194,6 +197,7 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
         if (treatElementAsGroupLike(metadataRef.current, firstSelectedView) && value === 'fixed') {
           const conversion = getInstanceForGroupToFrameConversion(
             metadataRef.current,
+            domReconstructedMetadataRef.current,
             elementPathTreeRef.current,
             allElementPropsRef.current,
             firstSelectedView,
@@ -205,6 +209,7 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
               applyCommandsAction(
                 convertGroupToFrameCommands(
                   metadataRef.current,
+                  domReconstructedMetadataRef.current,
                   elementPathTreeRef.current,
                   allElementPropsRef.current,
                   firstSelectedView,
@@ -243,15 +248,16 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
       }
     }
   }, [
-    dimension,
-    axis,
-    allElementPropsRef,
-    dispatch,
-    metadataRef,
-    elementPathTreeRef,
-    selectedViewsRef,
     currentValueRef,
+    selectedViewsRef,
+    metadataRef,
+    dimension,
+    elementPathTreeRef,
+    allElementPropsRef,
+    axis,
     fillsOtherAxisRef,
+    dispatch,
+    domReconstructedMetadataRef,
   ])
 
   return onSubmitFixedFillHugType

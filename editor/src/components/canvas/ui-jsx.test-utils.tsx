@@ -434,6 +434,7 @@ export async function renderTestEditorWithModel(
       if (domWalkerResult != null) {
         const saveDomReportAction = saveDOMReport(
           domWalkerResult.metadata,
+          domWalkerResult.reconstructedMetadata,
           domWalkerResult.cachedPaths,
           domWalkerResult.invalidatedPaths,
         )
@@ -499,6 +500,7 @@ export async function renderTestEditorWithModel(
           if (domWalkerResult != null) {
             const saveDomReportAction = saveDOMReport(
               domWalkerResult.metadata,
+              domWalkerResult.reconstructedMetadata,
               domWalkerResult.cachedPaths,
               domWalkerResult.invalidatedPaths,
             )

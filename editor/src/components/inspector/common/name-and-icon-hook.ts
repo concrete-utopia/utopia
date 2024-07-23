@@ -41,6 +41,7 @@ export function useMetadata(): ElementInstanceMetadataMap {
 
 const namesAndIconsAllPathsResultSelector = createSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
+  (store: MetadataSubstate) => store.editor.domReconstructedMetadata,
   (store: MetadataSubstate) => store.editor.allElementProps,
   (store: MetadataSubstate) => store.editor.elementPathTree,
   (store: EditorStorePatched) => store.derived.autoFocusedPaths,
@@ -49,6 +50,7 @@ const namesAndIconsAllPathsResultSelector = createSelector(
   (store: ProjectContentSubstate) => store.editor.projectContents,
   (
     metadata,
+    domReconstructedMetadata,
     allElementProps,
     pathTrees,
     autoFocusedPaths,
@@ -60,6 +62,7 @@ const namesAndIconsAllPathsResultSelector = createSelector(
     for (const metadataElement of objectValues(metadata)) {
       const nameAndIconResult = getNameAndIconResult(
         metadata,
+        domReconstructedMetadata,
         allElementProps,
         metadataElement,
         pathTrees,
@@ -88,6 +91,7 @@ export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
 
 function getNameAndIconResult(
   metadata: ElementInstanceMetadataMap,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementInstanceMetadata: ElementInstanceMetadata,
   pathTrees: ElementPathTrees,
@@ -111,6 +115,7 @@ function getNameAndIconResult(
     iconProps: createComponentOrElementIconProps(
       elementInstanceMetadata.elementPath,
       metadata,
+      domReconstructedMetadata,
       pathTrees,
       autoFocusedPaths,
       null,

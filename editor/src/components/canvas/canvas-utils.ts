@@ -1209,6 +1209,7 @@ export function snapPoint(
   elementsToTarget: ElementPath[],
   selectedViews: Array<ElementPath>,
   jsxMetadata: ElementInstanceMetadataMap,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   canvasScale: number,
   pointToSnap: CanvasPoint,
   enableSnapping: boolean,
@@ -1229,7 +1230,13 @@ export function snapPoint(
   })
 
   const anyElementFragmentLike = selectedViews.some((elementPath) =>
-    treatElementAsFragmentLike(jsxMetadata, allElementProps, pathTrees, elementPath),
+    treatElementAsFragmentLike(
+      jsxMetadata,
+      domReconstructedMetadata,
+      allElementProps,
+      pathTrees,
+      elementPath,
+    ),
   )
 
   const threshold = centerBased === 'center-based' ? SnappingThreshold * 2 : SnappingThreshold

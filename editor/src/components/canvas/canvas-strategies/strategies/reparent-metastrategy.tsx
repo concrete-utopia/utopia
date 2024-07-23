@@ -177,6 +177,7 @@ function getStartingTargetParentsToFilterOutInner(
     interactionData.modifiers.cmd,
     canvasState,
     canvasState.startingMetadata,
+    canvasState.startingReconstructedDOMMetadata,
     canvasState.startingElementPathTree,
     canvasState.startingAllElementProps,
     allowSmallerParent,
@@ -257,6 +258,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
 
   const allDraggedElementsAbsolute = replaceFragmentLikePathsWithTheirChildrenRecursive(
     canvasState.startingMetadata,
+    canvasState.startingReconstructedDOMMetadata,
     canvasState.startingAllElementProps,
     canvasState.startingElementPathTree,
     reparentSubjects,
