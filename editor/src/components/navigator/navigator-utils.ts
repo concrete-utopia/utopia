@@ -17,7 +17,12 @@ import {
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isLeft } from '../../core/shared/either'
-import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/store/editor-state'
+import type {
+  ConditionalClauseNavigatorEntry,
+  EditorState,
+  EditorStorePatched,
+  NavigatorEntry,
+} from '../editor/store/editor-state'
 import {
   conditionalClauseNavigatorEntry,
   dataReferenceNavigatorEntry,
@@ -56,6 +61,15 @@ import { getUtopiaID } from '../../core/shared/uid-utils'
 import { emptySet } from '../../core/shared/set-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { dataCanCondenseFromMetadata } from '../../utils/can-condense'
+import { createSelector } from 'reselect'
+import { Substores, useEditorState } from '../editor/store/store-hook'
+import type {
+  MetadataSubstate,
+  NavigatorSubstate,
+  NavigatorTargetsSubstate,
+  ProjectContentSubstate,
+  PropertyControlsInfoSubstate,
+} from '../editor/store/store-hook-substore-types'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -793,7 +807,56 @@ function getNavigatorRowsForTree(
   return condensedTree.flatMap((t) => walkTree(t, 0))
 }
 
-export function getNavigatorTargets(
+export function getNavigatorTargetsFromEditorState(
+  editorState: EditorState,
+): GetNavigatorTargetsResults {
+  return navigatorTargetsSelector({ editor: editorState })
+}
+
+export function useGetNavigatorTargets(): GetNavigatorTargetsResults {
+  return useEditorState(
+    Substores.navigatorTargetsSubstate,
+    navigatorTargetsSelector,
+    'useGetNavigatorTargets',
+  )
+}
+
+export const navigatorTargetsSelector = createSelector(
+  (state: NavigatorTargetsSubstate) => state.editor.jsxMetadata,
+  (state: NavigatorTargetsSubstate) => state.editor.elementPathTree,
+  (state: NavigatorTargetsSubstate) => state.editor.navigator.collapsedViews,
+  (state: NavigatorTargetsSubstate) => state.editor.navigator.hiddenInNavigator,
+  (state: NavigatorTargetsSubstate) => state.editor.propertyControlsInfo,
+  (state: NavigatorTargetsSubstate) => state.editor.projectContents,
+  (
+    jsxMetadata,
+    elementPathTree,
+    collapsedViews,
+    hiddenInNavigator,
+    propertyControlsInfo,
+    projectContents,
+  ) =>
+    getNavigatorTargets(
+      jsxMetadata,
+      elementPathTree,
+      collapsedViews,
+      hiddenInNavigator,
+      propertyControlsInfo,
+      projectContents,
+    ),
+)
+
+export const navigatorTargetsSelectorNavigatorTargets = createSelector(
+  navigatorTargetsSelector,
+  (results) => results.navigatorTargets,
+)
+
+export const navigatorTargetsSelectorVisibleNavigatorTargets = createSelector(
+  navigatorTargetsSelector,
+  (results) => results.visibleNavigatorTargets,
+)
+
+function getNavigatorTargets(
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   collapsedViews: Array<ElementPath>,

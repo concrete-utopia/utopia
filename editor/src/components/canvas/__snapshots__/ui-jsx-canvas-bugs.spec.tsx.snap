@@ -167,6 +167,7 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "columnGap": null,
       "computedHugProperty": Object {
         "height": null,
         "width": null,
@@ -235,6 +236,7 @@ Object {
       "position": "static",
       "providesBoundsForAbsoluteChildren": false,
       "renderedChildrenCount": 0,
+      "rowGap": null,
       "textBounds": null,
       "textDecorationLine": null,
       "usesParentBounds": false,
@@ -310,6 +312,7 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "columnGap": null,
       "computedHugProperty": Object {
         "height": null,
         "width": null,
@@ -378,6 +381,7 @@ Object {
       "position": "static",
       "providesBoundsForAbsoluteChildren": false,
       "renderedChildrenCount": 0,
+      "rowGap": null,
       "textBounds": null,
       "textDecorationLine": null,
       "usesParentBounds": false,

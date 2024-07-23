@@ -86,6 +86,8 @@ import { memoize } from '../../../core/shared/memoize'
 import { parseCSSArray } from '../../../printer-parsers/css/css-parser-utils'
 import type { ParseError } from '../../../utils/value-parser-utils'
 import { descriptionParseError } from '../../../utils/value-parser-utils'
+import * as csstree from 'css-tree'
+import { expandCssTreeNodeValue, parseCssTreeNodeValue } from './css-tree-utils'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -943,12 +945,30 @@ export function parseGridRange(
   }
 }
 
+export function expandRepeatFunctions(str: string): string {
+  const node = parseCssTreeNodeValue(str)
+  const expanded = expandCssTreeNodeValue(node)
+  return csstree.generate(expanded)
+}
+
 const reGridAreaNameBrackets = /^\[.+\]$/
 
-export function tokenizeGridTemplate(str: string): string[] {
-  let tokens: string[] = []
-  let parts = str.replace(/\]/g, '] ').split(/\s+/)
+function normalizeGridTemplate(template: string): string {
+  type normalizeFn = (s: string) => string
 
+  const normalizePasses: normalizeFn[] = [
+    // 1. expand repeat functions
+    expandRepeatFunctions,
+    // 2. normalize area names spacing
+    (s) => s.replace(/\]/g, '] ').replace(/\[/g, ' ['),
+  ]
+
+  return normalizePasses.reduce((working, normalize) => normalize(working), template).trim()
+}
+
+export function tokenizeGridTemplate(template: string): string[] {
+  let tokens: string[] = []
+  let parts = normalizeGridTemplate(template).split(/\s+/)
   while (parts.length > 0) {
     const part = parts.shift()?.trim()
     if (part == null) {

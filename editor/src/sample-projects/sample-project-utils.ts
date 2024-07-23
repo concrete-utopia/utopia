@@ -41,7 +41,13 @@ export function totallyEmptyDefaultProject(): PersistentModel {
   return persistentModel
 }
 
-export function simpleDefaultProject(): PersistentModel {
+export function simpleDefaultProject({
+  storyboardFile = getDefaultUIJsFile(),
+  additionalFiles = {},
+}: {
+  storyboardFile?: TextFile
+  additionalFiles?: { [path: string]: TextFile }
+} = {}): PersistentModel {
   const projectContents: ProjectContents = {
     '/package.json': textFile(
       textFileContents(
@@ -55,11 +61,12 @@ export function simpleDefaultProject(): PersistentModel {
     ),
     '/src': directory(),
     '/src/app.js': appJSFile(),
-    [StoryboardFilePath]: getDefaultUIJsFile(),
+    [StoryboardFilePath]: storyboardFile,
     '/assets': directory(),
     '/public': directory(),
     '/src/index.js': getSamplePreviewFile(),
     '/public/index.html': getSamplePreviewHTMLFile(),
+    ...additionalFiles,
   }
 
   let persistentModel = persistentModelForProjectContents(contentsToTree(projectContents))

@@ -31,6 +31,7 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
+import { navigatorTargetsSelector } from '../navigator-utils'
 
 export const NavigatorRowClickableWrapper = React.memo(
   (props: { row: NavigatorRow; children: React.ReactNode }) => {
@@ -73,7 +74,7 @@ export function useGetNavigatorClickActions(
   selected: boolean,
   row: NavigatorRow,
 ) {
-  const navigatorTargets = useRefEditorState((store) => store.derived.navigatorTargets)
+  const navigatorTargets = useRefEditorState(navigatorTargetsSelector)
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const collapsedViews = useRefEditorState((store) => store.editor.navigator.collapsedViews)
   const projectContents = useRefEditorState((store) => store.editor.projectContents)
@@ -89,7 +90,7 @@ export function useGetNavigatorClickActions(
       } else if (e.shiftKey) {
         return actionsForRangeSelection(
           targetPath,
-          navigatorTargets.current,
+          navigatorTargets.current.navigatorTargets,
           selectedViews.current,
           collapsedViews.current,
           projectContents.current,

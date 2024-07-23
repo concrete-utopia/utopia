@@ -10,6 +10,7 @@ import * as EP from '../../core/shared/element-path'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { navigatorEntryToKey } from '../editor/store/editor-state'
 import { getMapCounterTestId } from './navigator-item/map-counter'
+import { getNavigatorTargetsFromEditorState } from './navigator-utils'
 
 function getProjectCode<T>(arr: Array<T>, countOverride?: number): string {
   return formatTestProjectCode(`import * as React from 'react'
@@ -233,7 +234,9 @@ describe('maps in the navigator', () => {
 
         expectOverriddenCounterWithCount(counter, overrideCount, overrideSuccess)
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual(expectedTargets)
       })
     })

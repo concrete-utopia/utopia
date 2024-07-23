@@ -31,7 +31,12 @@ import type {
   CanvasReactErrorCallback,
   UiJsxCanvasPropsWithErrorCallback,
 } from './ui-jsx-canvas'
-import { emptyUiJsxCanvasContextData, UiJsxCanvasCtxAtom, UiJsxCanvas } from './ui-jsx-canvas'
+import {
+  emptyUiJsxCanvasContextData,
+  UiJsxCanvasCtxAtom,
+  UiJsxCanvas,
+  emptyInvalidatedCanvasData,
+} from './ui-jsx-canvas'
 import { CanvasErrorBoundary } from './canvas-component-entry'
 import { EditorStateContext, OriginalMainEditorStateContext } from '../editor/store/store-hook'
 import { getStoreHook } from '../inspector/common/inspector.test-utils'
@@ -213,6 +218,7 @@ export function renderCanvasReturnResultAndError(
       domWalkerAdditionalElementsToUpdate: [],
       editedText: null,
       autoFocusedPaths: storeHookForTest.getState().derived.autoFocusedPaths,
+      invalidatedCanvasData: emptyInvalidatedCanvasData(),
     }
   } else {
     canvasProps = {
@@ -232,6 +238,7 @@ export function renderCanvasReturnResultAndError(
       domWalkerAdditionalElementsToUpdate: [],
       editedText: null,
       autoFocusedPaths: storeHookForTest.getState().derived.autoFocusedPaths,
+      invalidatedCanvasData: emptyInvalidatedCanvasData(),
     }
   }
 
