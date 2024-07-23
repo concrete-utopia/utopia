@@ -79,17 +79,9 @@ type BranchNavigatorEntries = {
 
 const branchNavigatorEntriesSelector = createCachedSelector(
   (store: NavigatorTargetsSubstate) => store.editor.jsxMetadata,
-  (store: NavigatorTargetsSubstate) => store.editor.elementPathTree,
-  (store: NavigatorTargetsSubstate) => store.editor.projectContents,
   navigatorTargetsSelector,
   (_store: NavigatorTargetsSubstate, paths: ElementPath[]) => paths,
-  (
-    jsxMetadata,
-    elementPathTree,
-    projectContents,
-    navigatorTargets,
-    paths,
-  ): BranchNavigatorEntries | null => {
+  (jsxMetadata, navigatorTargets, paths): BranchNavigatorEntries | null => {
     if (paths.length !== 1) {
       return null
     }
