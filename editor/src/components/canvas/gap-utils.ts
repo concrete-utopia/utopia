@@ -57,6 +57,17 @@ export function cursorFromFlexDirection(direction: FlexDirection): CSSCursor {
   }
 }
 
+export function cursorFromAxis(axis: 'row' | 'column'): CSSCursor {
+  switch (axis) {
+    case 'column':
+      return CSSCursor.GapNS
+    case 'row':
+      return CSSCursor.GapEW
+    default:
+      assertNever(axis)
+  }
+}
+
 export function gapControlBounds(
   parentBounds: CanvasRectangle,
   bounds: CanvasRectangle,
@@ -152,6 +163,44 @@ export function gapControlBoundsFromMetadata(
     gap,
     flexDirection,
   )
+}
+
+export interface GridGapData {
+  row: CSSNumberWithRenderedValue
+  column: CSSNumberWithRenderedValue
+}
+
+export function maybeGridGapData(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): GridGapData | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (
+    element == null ||
+    element.specialSizeMeasurements.display !== 'grid' ||
+    isLeft(element.element) ||
+    !isJSXElement(element.element.value)
+  ) {
+    return null
+  }
+
+  const rowGap = element.specialSizeMeasurements.rowGap ?? element.specialSizeMeasurements.gap ?? 0
+  const rowGapFromProps: CSSNumber | undefined = defaultEither(
+    undefined,
+    getLayoutProperty('rowGap', right(element.element.value.props), styleStringInArray),
+  )
+
+  const columnGap =
+    element.specialSizeMeasurements.columnGap ?? element.specialSizeMeasurements.gap ?? 0
+  const columnGapFromProps: CSSNumber | undefined = defaultEither(
+    undefined,
+    getLayoutProperty('columnGap', right(element.element.value.props), styleStringInArray),
+  )
+
+  return {
+    row: { renderedValuePx: rowGap, value: rowGapFromProps ?? cssNumber(0) },
+    column: { renderedValuePx: columnGap, value: columnGapFromProps ?? cssNumber(0) },
+  }
 }
 
 export interface FlexGapData {

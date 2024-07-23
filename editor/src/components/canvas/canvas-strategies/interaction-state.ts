@@ -573,6 +573,18 @@ export function gridAxisHandle(axis: 'column' | 'row', columnOrRow: number): Gri
   }
 }
 
+export interface GridGapHandle {
+  type: 'GRID_GAP_HANDLE'
+  axis: 'column' | 'row'
+}
+
+export function gridGapHandler(axis: 'column' | 'row'): GridGapHandle {
+  return {
+    type: 'GRID_GAP_HANDLE',
+    axis: axis,
+  }
+}
+
 export interface PaddingResizeHandle {
   type: 'PADDING_RESIZE_HANDLE'
   edgePiece: EdgePiece
@@ -665,6 +677,7 @@ export type CanvasControlType =
   | BoundingArea
   | ResizeHandle
   | FlexGapHandle
+  | GridGapHandle
   | PaddingResizeHandle
   | KeyboardCatcherControl
   | ReorderSlider

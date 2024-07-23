@@ -106,6 +106,8 @@ export type StyleLayoutProp =
   | 'borderBottomLeftRadius'
   | 'borderBottomRightRadius'
   | 'zIndex'
+  | 'rowGap'
+  | 'columnGap'
 
 export function framePointForPinnedProp(pinnedProp: LayoutPinnedProp): FramePoint {
   switch (pinnedProp) {
