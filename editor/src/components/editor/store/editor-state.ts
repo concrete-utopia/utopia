@@ -191,6 +191,8 @@ import type { CommentFilterMode } from '../../inspector/sections/comment-section
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { OnlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
+import { createSelector } from 'reselect'
+import createCachedSelector from 're-reselect'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2422,7 +2424,6 @@ export function isSlotNavigatorEntry(entry: NavigatorEntry): entry is SlotNaviga
 
 export interface DerivedState {
   autoFocusedPaths: Array<ElementPath>
-  elementWarnings: { [key: string]: ElementWarnings }
   projectContentsChecksums: FileChecksumsWithFile
   branchOriginContentsChecksums: FileChecksumsWithFile | null
   remixData: RemixDerivedData | null
@@ -2432,7 +2433,6 @@ export interface DerivedState {
 function emptyDerivedState(editor: EditorState): DerivedState {
   return {
     autoFocusedPaths: [],
-    elementWarnings: {},
     projectContentsChecksums: {},
     branchOriginContentsChecksums: {},
     remixData: null,
@@ -2783,10 +2783,9 @@ function getElementWarningsInner(
   return result
 }
 
-const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
+export const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 
 type CacheableDerivedState = {
-  elementWarnings: { [key: string]: ElementWarnings }
   autoFocusedPaths: Array<ElementPath>
 }
 
@@ -2799,13 +2798,6 @@ function deriveCacheableStateInner(
   hiddenInNavigator: ElementPath[],
   propertyControlsInfo: PropertyControlsInfo,
 ): CacheableDerivedState {
-  const warnings = getElementWarnings(
-    projectContents,
-    jsxMetadata,
-    allElementProps,
-    elementPathTree,
-  )
-
   const autoFocusedPaths = MetadataUtils.getAllPaths(jsxMetadata, elementPathTree).filter(
     (path) => {
       return MetadataUtils.isAutofocusable(
@@ -2819,7 +2811,6 @@ function deriveCacheableStateInner(
   )
 
   return {
-    elementWarnings: warnings,
     autoFocusedPaths: autoFocusedPaths,
   }
 }
@@ -2838,7 +2829,7 @@ export function deriveState(
   const deriveCacheableState =
     cacheKey === 'patched' ? patchedDeriveCacheableState : unpatchedDeriveCacheableState
 
-  const { elementWarnings: warnings, autoFocusedPaths } = deriveCacheableState(
+  const { autoFocusedPaths } = deriveCacheableState(
     editor.projectContents,
     editor.jsxMetadata,
     editor.elementPathTree,
@@ -2858,7 +2849,6 @@ export function deriveState(
 
   const derived: DerivedState = {
     autoFocusedPaths: autoFocusedPaths,
-    elementWarnings: warnings,
     projectContentsChecksums: getProjectContentsChecksums(
       editor.projectContents,
       oldDerivedState?.projectContentsChecksums ?? {},

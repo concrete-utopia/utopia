@@ -55,6 +55,7 @@ import { back, front } from '../../utils/utils'
 import { createNavigatorReparentPostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
 import { getNavigatorTargetsFromEditorState } from './navigator-utils'
+import { getElementWarningsSelector } from '../editor/store/editor-state-helpers'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -5041,7 +5042,7 @@ describe('Navigator', () => {
       )
       await selectComponentsForTest(editor, [EP.fromString('sb/group/groupchild')])
 
-      const { elementWarnings } = editor.getEditorState().derived
+      const elementWarnings = getElementWarningsSelector(editor.getEditorState(), 'patched')
 
       expect(elementWarnings['sb/group/groupchild'].absoluteWithUnpositionedParent).toEqual(false)
       expect(elementWarnings['sb/fragment/fragmentchild'].absoluteWithUnpositionedParent).toEqual(

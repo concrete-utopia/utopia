@@ -32,6 +32,7 @@ import { isEntryAPlaceholder } from '../../canvas/canvas-utils'
 import type { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import type {
+  EditorStorePatched,
   ElementWarnings,
   NavigatorEntry,
   SlotNavigatorEntry,
@@ -69,6 +70,7 @@ import { MapListSourceCartoucheNavigator } from '../../inspector/sections/layout
 import { regularNavigatorRow } from '../navigator-row'
 import { NavigatorRowClickableWrapper } from './navigator-item-clickable-wrapper'
 import { useNavigatorSelectionBoundsForEntry } from './use-navigator-selection-bounds-for-entry'
+import { getElementWarningsSelector } from '../../editor/store/editor-state-helpers'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -385,8 +387,8 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
 )((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
 
 export const elementWarningsSelector = createCachedSelector(
-  (store: DerivedSubstate) => store.derived.elementWarnings,
-  (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
+  (store) => getElementWarningsSelector(store, 'patched'),
+  (_: EditorStorePatched, navigatorEntry: NavigatorEntry) => navigatorEntry,
   (elementWarnings, navigatorEntry) => {
     if (isRegularNavigatorEntry(navigatorEntry)) {
       return elementWarnings[EP.toString(navigatorEntry.elementPath)] ?? defaultElementWarnings
@@ -453,7 +455,7 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const elementWarnings = useEditorState(
-    Substores.derived,
+    Substores.fullStore,
     (store) => elementWarningsSelector(store, props.navigatorEntry),
     'NavigatorItem elementWarningsSelector',
   )

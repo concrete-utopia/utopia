@@ -539,7 +539,7 @@ const WrappedLayoutIcon = React.memo(
     )
 
     const elementWarnings = useEditorState(
-      Substores.derived,
+      Substores.fullStore,
       (store) => elementWarningsSelector(store, props.entry),
       'WrappedLayoutIcon elementWarningsSelector',
     )
