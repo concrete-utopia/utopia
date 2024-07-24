@@ -15,21 +15,29 @@ import { Substores, useEditorState, useRefEditorState } from '../editor/store/st
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   addFlexLayoutStrategies,
+  addGridLayoutStrategies,
   removeFlexLayoutStrategies,
 } from './inspector-strategies/inspector-strategies'
-import { detectAreElementsFlexContainers } from './inspector-common'
+import {
+  detectAreElementsFlexContainers,
+  detectAreElementsGridContainers,
+} from './inspector-common'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { NO_OP } from '../../core/shared/utils'
+import type { DropdownMenuItem } from '../../uuiui/radix-components'
+import { DropdownMenu } from '../../uuiui/radix-components'
 
 export const AddRemoveLayoutSystemControlTestId = (): string => 'AddRemoveLayoutSystemControlTestId'
 
 interface AddRemoveLayoutSystemControlProps {}
 
 export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemControlProps>(() => {
-  const isFlexLayoutedContainer = useEditorState(
+  const isLayoutedContainer = useEditorState(
     Substores.metadata,
     (store) =>
-      detectAreElementsFlexContainers(metadataSelector(store), selectedViewsSelector(store)),
+      detectAreElementsFlexContainers(metadataSelector(store), selectedViewsSelector(store)) ||
+      detectAreElementsGridContainers(metadataSelector(store), selectedViewsSelector(store)),
     'AddRemoveLayoutSystemControl isFlexLayoutedContainer',
   )
 
@@ -39,11 +47,25 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
-  const addLayoutSystem = React.useCallback(
+  const addFlexLayoutSystem = React.useCallback(
     () =>
       executeFirstApplicableStrategy(
         dispatch,
         addFlexLayoutStrategies(
+          elementMetadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+        ),
+      ),
+    [allElementPropsRef, dispatch, elementMetadataRef, elementPathTreeRef, selectedViewsRef],
+  )
+
+  const addGridLayoutSystem = React.useCallback(
+    () =>
+      executeFirstApplicableStrategy(
+        dispatch,
+        addGridLayoutStrategies(
           elementMetadataRef.current,
           selectedViewsRef.current,
           elementPathTreeRef.current,
@@ -68,6 +90,23 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
 
   const colorTheme = useColorTheme()
 
+  const addLayoutSystemOpenerButton = React.useCallback(
+    () => (
+      <SquareButton data-testid={AddRemoveLayoutSystemControlTestId()} highlight onClick={NO_OP}>
+        <Icn category='semantic' type='plus' width={12} height={12} />
+      </SquareButton>
+    ),
+    [],
+  )
+
+  const addLayoutSystemMenuDropdownItems = React.useMemo(
+    (): DropdownMenuItem[] => [
+      { id: 'add-flex-layout', label: 'Flex', onSelect: addFlexLayoutSystem },
+      { id: 'add-grid-layout', label: 'Grid', onSelect: addGridLayoutSystem },
+    ],
+    [addFlexLayoutSystem, addGridLayoutSystem],
+  )
+
   return (
     <InspectorSectionHeader
       css={{
@@ -89,7 +128,7 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
       >
         <span style={{ textTransform: 'capitalize', fontSize: '11px' }}>Layout System</span>
       </FlexRow>
-      {isFlexLayoutedContainer ? (
+      {isLayoutedContainer ? (
         <SquareButton
           data-testid={AddRemoveLayoutSystemControlTestId()}
           highlight
@@ -98,13 +137,12 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
           <Icn category='semantic' type='cross' width={12} height={12} />
         </SquareButton>
       ) : (
-        <SquareButton
-          data-testid={AddRemoveLayoutSystemControlTestId()}
-          highlight
-          onClick={addLayoutSystem}
-        >
-          <Icn category='semantic' type='plus' width={12} height={12} />
-        </SquareButton>
+        <DropdownMenu
+          align='end'
+          alignOffset={6}
+          items={addLayoutSystemMenuDropdownItems}
+          opener={addLayoutSystemOpenerButton}
+        />
       )}
     </InspectorSectionHeader>
   )

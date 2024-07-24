@@ -42,6 +42,7 @@ export interface DropdownMenuItem {
 export interface DropdownMenuProps {
   opener: (open: boolean) => React.ReactNode
   items: DropdownMenuItem[]
+  align?: RadixDropdownMenu.DropdownMenuContentProps['align']
   sideOffset?: number
   alignOffset?: number
 }
@@ -71,7 +72,7 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
           onEscapeKeyDown={onEscapeKeyDown}
           sideOffset={props.sideOffset}
           collisionPadding={{ top: -4 }}
-          align='start'
+          align={props.align ?? 'start'}
           alignOffset={props.alignOffset}
         >
           {props.items.map((item) => (

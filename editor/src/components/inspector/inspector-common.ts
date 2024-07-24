@@ -252,6 +252,15 @@ export function detectAreElementsFlexContainers(
   )
 }
 
+export function detectAreElementsGridContainers(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+): boolean {
+  return strictEvery(elementPaths, (path) =>
+    MetadataUtils.isGridLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, path)),
+  )
+}
+
 export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
   flexDirection.startsWith('column')
 
