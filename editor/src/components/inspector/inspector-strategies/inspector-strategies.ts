@@ -3,6 +3,7 @@ import { setProperty } from '../../canvas/commands/set-property-command'
 import type { Axis, FlexAlignment, FlexJustifyContent } from '../inspector-common'
 import {
   filterKeepFlexContainers,
+  filterKeepGridContainers,
   flexChildProps,
   prunePropsCommands,
   sizeToVisualDimensions,
@@ -182,6 +183,28 @@ export const removeFlexLayoutStrategies = (
     name: 'Remove flex layout',
     strategy: () => {
       const elements = filterKeepFlexContainers(metadata, elementPaths)
+
+      if (elements.length === 0) {
+        return null
+      }
+
+      return elements.map((path) =>
+        deleteProperties('always', path, [PP.create('style', 'display')]),
+      )
+    },
+  },
+]
+
+export const removeGridLayoutStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+  pathTrees: ElementPathTrees,
+): Array<InspectorStrategy> => [
+  removeFlexConvertToAbsolute(metadata, elementPaths, pathTrees),
+  {
+    name: 'Remove grid layout',
+    strategy: () => {
+      const elements = filterKeepGridContainers(metadata, elementPaths)
 
       if (elements.length === 0) {
         return null

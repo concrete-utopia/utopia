@@ -236,6 +236,15 @@ export function filterKeepFlexContainers(
   )
 }
 
+export function filterKeepGridContainers(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+): ElementPath[] {
+  return elementPaths.filter((e: ElementPath | null) =>
+    MetadataUtils.isGridLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, e)),
+  )
+}
+
 export function numberOfFlexContainers(
   metadata: ElementInstanceMetadataMap,
   elementPaths: ElementPath[],
