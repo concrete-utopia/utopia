@@ -165,7 +165,7 @@ export const addGridLayoutStrategies = (
   allElementProps: AllElementProps,
 ): Array<InspectorStrategy> => [
   {
-    name: 'Add flex layout',
+    name: 'Add grid layout',
     strategy: () => {
       return convertLayoutToGridCommands(metadata, elementPathTree, elementPaths, allElementProps)
     },
