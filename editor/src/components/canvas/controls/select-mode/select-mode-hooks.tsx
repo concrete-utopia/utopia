@@ -693,7 +693,7 @@ function useSelectOrLiveModeSelectAndHover(
         const foundTargetIsSelected = foundTarget?.isSelected ?? false
 
         if (foundTarget != null && foundTargetIsSelected && doubleClick) {
-          const autoFocusedPaths = getAutofocusedPathsSelector(editorStoreRef.current, 'patched')
+          const autoFocusedPaths = getAutofocusedPathsSelector(editorStoreRef.current)
           const isFocusableComponent = MetadataUtils.isManuallyFocusableComponent(
             foundTarget.elementPath,
             editorStoreRef.current.editor.jsxMetadata,

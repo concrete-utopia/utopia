@@ -275,7 +275,7 @@ export function pickUiJsxCanvasProps(
       projectContents: editor.projectContents,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
       editedText: editedText,
-      autoFocusedPaths: getAutofocusedPathsSelector({ editor: editor }, 'patched'),
+      autoFocusedPaths: getAutofocusedPathsSelector({ editor: editor }),
     }
   }
 }

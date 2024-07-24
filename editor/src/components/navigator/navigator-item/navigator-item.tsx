@@ -390,7 +390,7 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
 )((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
 
 export const elementWarningsSelector = createCachedSelector(
-  (store) => getElementWarningsSelector(store, 'patched'),
+  (store) => getElementWarningsSelector(store),
   (_: EditorStorePatched, navigatorEntry: NavigatorEntry) => navigatorEntry,
   (elementWarnings, navigatorEntry) => {
     if (isRegularNavigatorEntry(navigatorEntry)) {
@@ -430,7 +430,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   const autoFocusedPaths = useEditorState(
     Substores.fullStore,
-    (store) => getAutofocusedPathsSelector(store, 'patched'),
+    getAutofocusedPathsSelector,
     'NavigatorItem autoFocusedPaths',
   )
 

@@ -83,7 +83,7 @@ export const CondensedEntryItemWrapper = React.memo(
 
     const autoFocusedPaths = useEditorState(
       Substores.fullStore,
-      (store) => getAutofocusedPathsSelector(store, 'patched'),
+      getAutofocusedPathsSelector,
       'CondensedEntryItemWrapper autoFocusedPaths',
     )
 

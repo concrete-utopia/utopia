@@ -615,7 +615,7 @@ function getTargetParentForPasteHere(
     ...EP.getAncestors(target.value.parentPath.intendedParentPath),
   ]
   const sceneComponentRoot = allPaths.find((path) =>
-    getAutofocusedPathsSelector({ editor: editor }, 'patched').some((autofocused) =>
+    getAutofocusedPathsSelector({ editor: editor }).some((autofocused) =>
       EP.pathsEqual(autofocused, EP.parentPath(path)),
     ),
   )

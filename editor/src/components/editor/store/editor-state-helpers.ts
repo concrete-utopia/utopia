@@ -1,26 +1,24 @@
-import createCachedSelector from 're-reselect'
+import { createSelector } from 'reselect'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { getElementWarnings } from './editor-state'
 import type {
   MetadataSubstate,
   ProjectContentSubstate,
   RestOfEditorState,
 } from './store-hook-substore-types'
-import { getElementWarnings } from './editor-state'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
-export const getElementWarningsSelector = createCachedSelector(
-  (store: ProjectContentSubstate, storeType: 'patched' | 'unpatched') =>
-    store.editor.projectContents,
+export const getElementWarningsSelector = createSelector(
+  (store: ProjectContentSubstate) => store.editor.projectContents,
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (store: MetadataSubstate) => store.editor.allElementProps,
   (store: MetadataSubstate) => store.editor.elementPathTree,
   (projectContents, jsxMetadata, allElementProps, elementPathTree) => {
     return getElementWarnings(projectContents, jsxMetadata, allElementProps, elementPathTree)
   },
-)((store, storeType: 'patched' | 'unpatched') => storeType)
+)
 
-export const getAutofocusedPathsSelector = createCachedSelector(
-  (store: ProjectContentSubstate, storeType: 'patched' | 'unpatched') =>
-    store.editor.projectContents,
+export const getAutofocusedPathsSelector = createSelector(
+  (store: ProjectContentSubstate) => store.editor.projectContents,
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (store: MetadataSubstate) => store.editor.elementPathTree,
   (store: RestOfEditorState) => store.editor.propertyControlsInfo,
@@ -35,4 +33,4 @@ export const getAutofocusedPathsSelector = createCachedSelector(
       )
     })
   },
-)((store, storeType: 'patched' | 'unpatched') => storeType)
+)

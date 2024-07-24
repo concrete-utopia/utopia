@@ -5042,7 +5042,7 @@ describe('Navigator', () => {
       )
       await selectComponentsForTest(editor, [EP.fromString('sb/group/groupchild')])
 
-      const elementWarnings = getElementWarningsSelector(editor.getEditorState(), 'patched')
+      const elementWarnings = getElementWarningsSelector(editor.getEditorState())
 
       expect(elementWarnings['sb/group/groupchild'].absoluteWithUnpositionedParent).toEqual(false)
       expect(elementWarnings['sb/fragment/fragmentchild'].absoluteWithUnpositionedParent).toEqual(

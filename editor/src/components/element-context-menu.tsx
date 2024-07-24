@@ -200,7 +200,7 @@ function useCanvasContextMenuGetData(
       pathTrees: store.editor.elementPathTree,
       openFile: store.editor.canvas.openFile?.filename ?? null,
       internalClipboard: store.editor.internalClipboard,
-      autoFocusedPaths: getAutofocusedPathsSelector(store, 'patched'),
+      autoFocusedPaths: getAutofocusedPathsSelector(store),
       propertyControlsInfo: store.editor.propertyControlsInfo,
     }
   })

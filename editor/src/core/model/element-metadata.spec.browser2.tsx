@@ -844,7 +844,7 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
     )
     const metadata = editor.getEditorState().editor.jsxMetadata
     const pathTrees = editor.getEditorState().editor.elementPathTree
-    const autoFocusedPaths = getAutofocusedPathsSelector(editor.getEditorState(), 'patched')
+    const autoFocusedPaths = getAutofocusedPathsSelector(editor.getEditorState())
     const allPaths = MetadataUtils.getAllPaths(metadata, pathTrees)
     const propertyControlsInfo = editor.getEditorState().editor.propertyControlsInfo
     const projectContents = editor.getEditorState().editor.projectContents
@@ -890,7 +890,7 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
     )
     const metadata = editor.getEditorState().editor.jsxMetadata
     const pathTrees = editor.getEditorState().editor.elementPathTree
-    const autoFocusedPaths = getAutofocusedPathsSelector(editor.getEditorState(), 'patched')
+    const autoFocusedPaths = getAutofocusedPathsSelector(editor.getEditorState())
     const allPaths = MetadataUtils.getAllPaths(metadata, pathTrees)
     const propertyControlsInfo = editor.getEditorState().editor.propertyControlsInfo
     const projectContents = editor.getEditorState().editor.projectContents
@@ -1003,7 +1003,7 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
     )
     const metadata = renderResult.getEditorState().editor.jsxMetadata
     const pathTrees = renderResult.getEditorState().editor.elementPathTree
-    const autoFocusedPaths = getAutofocusedPathsSelector(renderResult.getEditorState(), 'patched')
+    const autoFocusedPaths = getAutofocusedPathsSelector(renderResult.getEditorState())
     const filePathMappings = renderResult.getEditorState().derived.filePathMappings
     const propertyControlsInfo = renderResult.getEditorState().editor.propertyControlsInfo
     const projectContents = renderResult.getEditorState().editor.projectContents

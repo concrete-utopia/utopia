@@ -218,7 +218,7 @@ export function renderCanvasReturnResultAndError(
       projectContents: storeHookForTest.getState().editor.projectContents,
       domWalkerAdditionalElementsToUpdate: [],
       editedText: null,
-      autoFocusedPaths: getAutofocusedPathsSelector(storeHookForTest.getState(), 'patched'),
+      autoFocusedPaths: getAutofocusedPathsSelector(storeHookForTest.getState()),
       invalidatedCanvasData: emptyInvalidatedCanvasData(),
     }
   } else {
@@ -238,7 +238,7 @@ export function renderCanvasReturnResultAndError(
       projectContents: storeHookForTest.getState().editor.projectContents,
       domWalkerAdditionalElementsToUpdate: [],
       editedText: null,
-      autoFocusedPaths: getAutofocusedPathsSelector(storeHookForTest.getState(), 'patched'),
+      autoFocusedPaths: getAutofocusedPathsSelector(storeHookForTest.getState()),
       invalidatedCanvasData: emptyInvalidatedCanvasData(),
     }
   }

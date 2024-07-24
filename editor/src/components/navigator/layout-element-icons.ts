@@ -59,7 +59,7 @@ export function useLayoutOrElementIcon(navigatorEntry: NavigatorEntry): LayoutIc
 export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase | null {
   const autoFocusedPaths = useEditorState(
     Substores.fullStore,
-    (store) => getAutofocusedPathsSelector(store, 'patched'),
+    getAutofocusedPathsSelector,
     'useComponentIcon autoFocusedPaths',
   )
   const filePathMappings = useEditorState(
