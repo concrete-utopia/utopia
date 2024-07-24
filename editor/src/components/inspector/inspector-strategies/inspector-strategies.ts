@@ -5,13 +5,17 @@ import {
   filterKeepFlexContainers,
   filterKeepGridContainers,
   flexChildProps,
+  gridContainerProps,
   prunePropsCommands,
   sizeToVisualDimensions,
 } from '../inspector-common'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import type { CSSNumber, FlexDirection } from '../common/css-utils'
-import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
+import {
+  removeFlexConvertToAbsolute,
+  removeGridConvertToAbsolute,
+} from './remove-flex-convert-to-absolute-strategy'
 import type { InspectorStrategy } from './inspector-strategy'
 import type { WhenToRun } from '../../../components/canvas/commands/commands'
 import {
@@ -200,7 +204,7 @@ export const removeGridLayoutStrategies = (
   elementPaths: ElementPath[],
   pathTrees: ElementPathTrees,
 ): Array<InspectorStrategy> => [
-  removeFlexConvertToAbsolute(metadata, elementPaths, pathTrees),
+  removeGridConvertToAbsolute(metadata, elementPaths, pathTrees),
   {
     name: 'Remove grid layout',
     strategy: () => {
@@ -210,9 +214,7 @@ export const removeGridLayoutStrategies = (
         return null
       }
 
-      return elements.map((path) =>
-        deleteProperties('always', path, [PP.create('style', 'display')]),
-      )
+      return elements.map((path) => deleteProperties('always', path, gridContainerProps))
     },
   },
 ]
