@@ -979,13 +979,14 @@ interface ChainedNumberControlProps {
   idPrefix: string
   style?: React.CSSProperties
   setGlobalCursor?: (cursor: CSSCursor | null) => void
+  wrap?: boolean
 }
 
 export const ChainedNumberInput: React.FunctionComponent<
   React.PropsWithChildren<ChainedNumberControlProps>
-> = React.memo(({ propsArray, idPrefix, style, setGlobalCursor }) => {
+> = React.memo(({ propsArray, idPrefix, style, setGlobalCursor, wrap }) => {
   return (
-    <FlexRow style={style}>
+    <FlexRow style={{ ...style, flexWrap: wrap ? 'wrap' : 'nowrap' }}>
       {propsArray.map((props, i) => {
         switch (i) {
           case 0: {

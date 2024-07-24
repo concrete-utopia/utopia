@@ -520,7 +520,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         case 'one-value':
           return [
             {
-              style: { width: '25%' },
+              style: { width: '50%' },
               value: values.oneValue?.value,
               DEPRECATED_labelBelow: labels?.oneValue ?? '↔',
               minimum: 0,
@@ -551,7 +551,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         case 'per-direction':
           return [
             {
-              style: { width: '25%' },
+              style: { width: '48%' },
               value: values.twoValue.horizontal?.value,
               DEPRECATED_labelBelow: labels?.horizontal ?? 'H',
               minimum: 0,
@@ -575,7 +575,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               testId: `${name}-H`,
             },
             {
-              style: { width: '25%' },
+              style: { width: '48%' },
               value: values.twoValue.vertical?.value,
               DEPRECATED_labelBelow: labels?.vertical ?? 'V',
               minimum: 0,
@@ -602,7 +602,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         case 'per-side':
           return [
             {
-              style: { width: '25%' },
+              style: { width: '48%' },
               value: values.fourValue.top?.value,
               DEPRECATED_labelBelow: labels?.top ?? 'T',
               minimum: 0,
@@ -620,7 +620,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               testId: `${name}-T`,
             },
             {
-              style: { width: '25%' },
+              style: { width: '48%' },
               value: values.fourValue.right?.value,
               DEPRECATED_labelBelow: labels?.right ?? 'R',
               minimum: 0,
@@ -638,7 +638,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               testId: `${name}-R`,
             },
             {
-              style: { width: '25%' },
+              style: { width: '48%' },
               value: values.fourValue.bottom?.value,
               DEPRECATED_labelBelow: labels?.bottom ?? 'B',
               minimum: 0,
@@ -656,7 +656,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               testId: `${name}-B`,
             },
             {
-              style: { width: '25%' },
+              style: { width: '48%' },
               value: values.fourValue.left?.value,
               DEPRECATED_labelBelow: labels?.left ?? 'L',
               minimum: 0,
@@ -724,7 +724,11 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   const cycleModeControl = React.useMemo(() => {
     return (
       <Tooltip title={tooltipTitle}>
-        <SquareButton data-testid={`${name}-cycle-mode`} onClick={props.onCycleMode}>
+        <SquareButton
+          data-testid={`${name}-cycle-mode`}
+          onClick={props.onCycleMode}
+          style={{ width: 16 }}
+        >
           {modeIcon}
         </SquareButton>
       </Tooltip>
@@ -743,8 +747,9 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     >
       <ChainedNumberInput
         idPrefix={name}
-        style={{ flex: 1, gap: 4 }}
+        style={{ flex: 1, gap: 8 }}
         propsArray={chainedPropsToRender}
+        wrap={true}
       />
       {cycleModeControl}
     </div>
