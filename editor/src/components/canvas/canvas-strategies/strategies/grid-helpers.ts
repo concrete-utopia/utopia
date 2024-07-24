@@ -380,7 +380,7 @@ function asMaybeNamedAreaOrValue(
   value: number | string | null,
 ): string | number {
   if (value == null) {
-    return 1 // normalize! grid numbers should always be positive!
+    return 1
   } else if (typeof value === 'number') {
     const template = axis === 'row' ? grid.gridTemplateRows : grid.gridTemplateColumns
     if (template?.type === 'DIMENSIONS') {
@@ -389,7 +389,7 @@ function asMaybeNamedAreaOrValue(
         return maybeAreaStart.areaName
       }
     }
-    return Math.max(1, value) // normalize! grid numbers should always be positive!
+    return value === 0 ? 1 : value
   }
   return value
 }
