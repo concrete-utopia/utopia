@@ -390,7 +390,7 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
 )((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
 
 export const elementWarningsSelector = createCachedSelector(
-  (store) => getElementWarningsSelector(store),
+  getElementWarningsSelector,
   (_: EditorStorePatched, navigatorEntry: NavigatorEntry) => navigatorEntry,
   (elementWarnings, navigatorEntry) => {
     if (isRegularNavigatorEntry(navigatorEntry)) {
