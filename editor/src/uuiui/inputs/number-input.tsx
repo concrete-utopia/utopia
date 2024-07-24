@@ -677,6 +677,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             borderRadius: 2,
             display: 'flex',
             flexDirection: 'row',
+            gap: 5,
             alignItems: 'center',
             boxShadow: 'inset 0px 0px 0px 1px transparent',
             ...chainedStyles,
@@ -826,6 +827,7 @@ export const NumberInput = React.memo<NumberInputProps>(
                   textAlign: 'center',
                   display: 'block',
                   color: controlStyles.secondaryColor,
+                  width: 20,
                   ...labelBelowStyle,
                 }}
               >

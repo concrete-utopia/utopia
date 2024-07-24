@@ -9,8 +9,8 @@ export const ContainerSubsection = React.memo(() => {
   return (
     <div style={{ borderTop: `1px solid ${colorTheme.seperator.value}`, padding: '10px 0' }}>
       <UIGridRow padded variant={'<--1fr--><--1fr-->'}>
-        <BlendModeRow />
         <OpacityRow />
+        <BlendModeRow />
       </UIGridRow>
       <PaddingRow />
     </div>
