@@ -304,55 +304,52 @@ const TemplateDimensionControl = React.memo(
           ),
         ]
 
-        // if the removed col/row is on the edge of the grid, update the positions of cells that would be affected
-        const deletedFromTheEdge = index >= values.length - 1
-        if (deletedFromTheEdge) {
-          const adjustedGridTemplate = removeTemplateValueAtIndex(
-            grid.specialSizeMeasurements.containerGridProperties,
-            axis,
-            index,
-          )
+        // adjust the position of the elements if they need to be moved
+        const adjustedGridTemplate = removeTemplateValueAtIndex(
+          grid.specialSizeMeasurements.containerGridProperties,
+          axis,
+          index,
+        )
 
-          const gridIndex = index + 1 // grid boundaries are 1-based
+        const gridIndex = index + 1 // grid boundaries are 1-based
 
-          const children = MetadataUtils.getChildrenUnordered(metadataRef.current, grid.elementPath)
-          for (const child of children) {
-            let updated: Partial<GridElementProperties> = {
-              ...child.specialSizeMeasurements.elementGridProperties,
-            }
-
-            function needsAdjusting(pos: GridPosition | null, bound: number) {
-              return pos != null &&
-                pos !== 'auto' &&
-                pos.numericalPosition != null &&
-                pos.numericalPosition >= bound
-                ? pos.numericalPosition
-                : null
-            }
-
-            const position = child.specialSizeMeasurements.elementGridProperties
-            if (axis === 'column') {
-              const adjustColumnStart = needsAdjusting(position.gridColumnStart, gridIndex)
-              const adjustColumnEnd = needsAdjusting(position.gridColumnEnd, gridIndex + 1)
-              if (adjustColumnStart != null) {
-                updated.gridColumnStart = gridPositionValue(adjustColumnStart - 1)
-              }
-              if (adjustColumnEnd != null) {
-                updated.gridColumnEnd = gridPositionValue(adjustColumnEnd - 1)
-              }
-            } else {
-              const adjustRowStart = needsAdjusting(position.gridRowStart, gridIndex)
-              const adjustRowEnd = needsAdjusting(position.gridRowEnd, gridIndex + 1)
-              if (adjustRowStart != null) {
-                updated.gridRowStart = gridPositionValue(adjustRowStart - 1)
-              }
-              if (adjustRowEnd != null) {
-                updated.gridRowEnd = gridPositionValue(adjustRowEnd - 1)
-              }
-            }
-
-            commands.push(...setGridPropsCommands(child.elementPath, adjustedGridTemplate, updated))
+        const children = MetadataUtils.getChildrenUnordered(metadataRef.current, grid.elementPath)
+        for (const child of children) {
+          let updated: Partial<GridElementProperties> = {
+            ...child.specialSizeMeasurements.elementGridProperties,
           }
+
+          function needsAdjusting(pos: GridPosition | null, bound: number) {
+            return pos != null &&
+              pos !== 'auto' &&
+              pos.numericalPosition != null &&
+              pos.numericalPosition >= bound
+              ? pos.numericalPosition
+              : null
+          }
+
+          const position = child.specialSizeMeasurements.elementGridProperties
+          if (axis === 'column') {
+            const adjustColumnStart = needsAdjusting(position.gridColumnStart, gridIndex)
+            const adjustColumnEnd = needsAdjusting(position.gridColumnEnd, gridIndex + 1)
+            if (adjustColumnStart != null) {
+              updated.gridColumnStart = gridPositionValue(adjustColumnStart - 1)
+            }
+            if (adjustColumnEnd != null) {
+              updated.gridColumnEnd = gridPositionValue(adjustColumnEnd - 1)
+            }
+          } else {
+            const adjustRowStart = needsAdjusting(position.gridRowStart, gridIndex)
+            const adjustRowEnd = needsAdjusting(position.gridRowEnd, gridIndex + 1)
+            if (adjustRowStart != null) {
+              updated.gridRowStart = gridPositionValue(adjustRowStart - 1)
+            }
+            if (adjustRowEnd != null) {
+              updated.gridRowEnd = gridPositionValue(adjustRowEnd - 1)
+            }
+          }
+
+          commands.push(...setGridPropsCommands(child.elementPath, adjustedGridTemplate, updated))
         }
 
         dispatch([applyCommandsAction(commands)])
@@ -411,7 +408,6 @@ const TemplateDimensionControl = React.memo(
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
-                    fontStyle: col.areaName == null ? 'italic' : 'normal',
                   }}
                   title={col.areaName ?? undefined}
                 >
