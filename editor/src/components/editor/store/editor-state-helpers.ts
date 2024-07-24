@@ -2,13 +2,13 @@ import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getElementWarnings } from './editor-state'
 import type {
+  MetadataAndPropertyControlsInfoSubstate,
   MetadataSubstate,
-  ProjectContentSubstate,
-  RestOfEditorState,
+  ProjectContentAndMetadataSubstate,
 } from './store-hook-substore-types'
 
 export const getElementWarningsSelector = createSelector(
-  (store: ProjectContentSubstate) => store.editor.projectContents,
+  (store: ProjectContentAndMetadataSubstate) => store.editor.projectContents,
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (store: MetadataSubstate) => store.editor.allElementProps,
   (store: MetadataSubstate) => store.editor.elementPathTree,
@@ -18,10 +18,10 @@ export const getElementWarningsSelector = createSelector(
 )
 
 export const getAutofocusedPathsSelector = createSelector(
-  (store: ProjectContentSubstate) => store.editor.projectContents,
+  (store: MetadataAndPropertyControlsInfoSubstate) => store.editor.projectContents,
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (store: MetadataSubstate) => store.editor.elementPathTree,
-  (store: RestOfEditorState) => store.editor.propertyControlsInfo,
+  (store: MetadataAndPropertyControlsInfoSubstate) => store.editor.propertyControlsInfo,
   (projectContents, jsxMetadata, elementPathTree, propertyControlsInfo) => {
     return MetadataUtils.getAllPaths(jsxMetadata, elementPathTree).filter((path) => {
       return MetadataUtils.isAutofocusable(

@@ -434,7 +434,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   )
 
   const autoFocusedPaths = useEditorState(
-    Substores.fullStore,
+    Substores.metadataAndPropertyControlsInfo,
     getAutofocusedPathsSelector,
     'autoFocusedPaths',
   )

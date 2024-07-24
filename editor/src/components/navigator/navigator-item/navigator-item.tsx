@@ -429,7 +429,7 @@ export const NavigatorItem: React.FunctionComponent<
   const colorTheme = useColorTheme()
 
   const autoFocusedPaths = useEditorState(
-    Substores.fullStore,
+    Substores.metadataAndPropertyControlsInfo,
     getAutofocusedPathsSelector,
     'NavigatorItem autoFocusedPaths',
   )
