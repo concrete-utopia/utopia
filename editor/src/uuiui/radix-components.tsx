@@ -63,7 +63,7 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
 
   return (
     <RadixDropdownMenu.Root open={open} onOpenChange={onOpen}>
-      <RadixDropdownMenu.Trigger style={{ background: 'none', border: 'none' }}>
+      <RadixDropdownMenu.Trigger style={{ background: 'none', border: 'none', padding: 0 }}>
         {props.opener(open)}
       </RadixDropdownMenu.Trigger>
       <RadixDropdownMenu.Portal>
