@@ -195,7 +195,7 @@ export const FlexSection = React.memo(() => {
   return (
     <div>
       <AddRemoveLayoutSystemControl />
-      <FlexCol css={{ gap: 10 }}>
+      <FlexCol css={{ gap: 10, paddingBottom: 10 }}>
         {when(
           layoutSystem === 'grid' || layoutSystem === 'flex',
           <UIGridRow padded={true} variant='<-------------1fr------------->'>
