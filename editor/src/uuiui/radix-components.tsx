@@ -48,6 +48,7 @@ export interface DropdownMenuItem {
 export interface DropdownMenuProps {
   opener: (open: boolean) => React.ReactNode
   items: DropdownMenuItem[]
+  align?: RadixDropdownMenu.DropdownMenuContentProps['align']
   sideOffset?: number
   alignOffset?: number
 }
@@ -232,6 +233,7 @@ export interface DropdownMenuContainerProps {
   opener: (open: boolean) => React.ReactNode
   contents: React.ReactNode
   onClose?: () => void
+  align?: RadixDropdownMenu.DropdownMenuContentProps['align']
   sideOffset?: number
   alignOffset?: number
   style?: React.CSSProperties
@@ -259,7 +261,7 @@ export const DropdownMenuContainer = React.memo<DropdownMenuContainerProps>((pro
 
   return (
     <RadixDropdownMenu.Root open={open} onOpenChange={onOpenCallback}>
-      <RadixDropdownMenu.Trigger style={{ background: 'none', border: 'none' }}>
+      <RadixDropdownMenu.Trigger style={{ background: 'none', border: 'none', padding: 0 }}>
         {props.opener(open)}
       </RadixDropdownMenu.Trigger>
       <RadixDropdownMenu.Portal>
@@ -268,7 +270,7 @@ export const DropdownMenuContainer = React.memo<DropdownMenuContainerProps>((pro
           onEscapeKeyDown={onEscapeKeyDown}
           sideOffset={props.sideOffset}
           collisionPadding={{ top: -4 }}
-          align='start'
+          align={props.align ?? 'start'}
           alignOffset={props.alignOffset}
           style={{ ...props.style }}
         >
