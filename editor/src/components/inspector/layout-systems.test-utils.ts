@@ -6,15 +6,26 @@ import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
   AddRemoveLayoutSystemControlTestId,
   AddFlexLayoutOptionId,
+  AddGridLayoutOptionId,
 } from './add-remove-layout-system-control'
 
-export async function addFlexLayout(editor: EditorRenderResult) {
+async function openLayoutDropdown(editor: EditorRenderResult) {
   const flexDirectionToggle = editor.renderedDOM.getAllByTestId(
     AddRemoveLayoutSystemControlTestId(),
   )[0]
   await userEvent.click(within(flexDirectionToggle).getByRole('button'))
+}
+
+export async function addFlexLayout(editor: EditorRenderResult) {
+  await openLayoutDropdown(editor)
   const flexOption = editor.renderedDOM.getByTestId(ItemContainerTestId(AddFlexLayoutOptionId))
   await userEvent.click(flexOption)
+}
+
+export async function addGridLayout(editor: EditorRenderResult) {
+  await openLayoutDropdown(editor)
+  const gridOption = editor.renderedDOM.getByTestId(ItemContainerTestId(AddGridLayoutOptionId))
+  await userEvent.click(gridOption)
 }
 
 export async function removeFlexLayout(editor: EditorRenderResult) {
