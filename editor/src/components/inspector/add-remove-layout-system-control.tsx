@@ -147,7 +147,6 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
         <div data-testid={AddRemoveLayoutSystemControlTestId()}>
           <DropdownMenu
             align='end'
-            alignOffset={6}
             items={addLayoutSystemMenuDropdownItems}
             opener={addLayoutSystemOpenerButton}
           />
