@@ -49,7 +49,7 @@ export const removeGridConvertToAbsolute = (
   elementPaths: ElementPath[],
   pathTrees: ElementPathTrees,
 ): InspectorStrategy => ({
-  name: 'Remove flex layout and convert children to absolute',
+  name: 'Remove grid layout and convert children to absolute',
   strategy: () => {
     const commands = filterKeepGridContainers(metadata, elementPaths).flatMap((elementPath) => {
       const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath)
