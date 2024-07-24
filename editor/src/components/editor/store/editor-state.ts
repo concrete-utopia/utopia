@@ -2423,7 +2423,6 @@ export function isSlotNavigatorEntry(entry: NavigatorEntry): entry is SlotNaviga
 }
 
 export interface DerivedState {
-  autoFocusedPaths: Array<ElementPath>
   projectContentsChecksums: FileChecksumsWithFile
   branchOriginContentsChecksums: FileChecksumsWithFile | null
   remixData: RemixDerivedData | null
@@ -2432,7 +2431,6 @@ export interface DerivedState {
 
 function emptyDerivedState(editor: EditorState): DerivedState {
   return {
-    autoFocusedPaths: [],
     projectContentsChecksums: {},
     branchOriginContentsChecksums: {},
     remixData: null,
@@ -2785,39 +2783,6 @@ function getElementWarningsInner(
 
 export const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 
-type CacheableDerivedState = {
-  autoFocusedPaths: Array<ElementPath>
-}
-
-function deriveCacheableStateInner(
-  projectContents: ProjectContentTreeRoot,
-  jsxMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTrees,
-  allElementProps: AllElementProps,
-  collapsedViews: ElementPath[],
-  hiddenInNavigator: ElementPath[],
-  propertyControlsInfo: PropertyControlsInfo,
-): CacheableDerivedState {
-  const autoFocusedPaths = MetadataUtils.getAllPaths(jsxMetadata, elementPathTree).filter(
-    (path) => {
-      return MetadataUtils.isAutofocusable(
-        jsxMetadata,
-        elementPathTree,
-        path,
-        propertyControlsInfo,
-        projectContents,
-      )
-    },
-  )
-
-  return {
-    autoFocusedPaths: autoFocusedPaths,
-  }
-}
-
-const patchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
-const unpatchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
-
 export function deriveState(
   editor: EditorState,
   oldDerivedState: DerivedState | null,
@@ -2825,19 +2790,6 @@ export function deriveState(
   createRemixDerivedDataMemo: RemixDerivedDataFactory,
 ): DerivedState {
   const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
-
-  const deriveCacheableState =
-    cacheKey === 'patched' ? patchedDeriveCacheableState : unpatchedDeriveCacheableState
-
-  const { autoFocusedPaths } = deriveCacheableState(
-    editor.projectContents,
-    editor.jsxMetadata,
-    editor.elementPathTree,
-    editor.allElementProps,
-    editor.navigator.collapsedViews,
-    editor.navigator.hiddenInNavigator,
-    editor.propertyControlsInfo,
-  )
 
   const remixDerivedData = createRemixDerivedDataMemo(
     editor.projectContents,
@@ -2848,7 +2800,6 @@ export function deriveState(
   const filePathMappings = getFilePathMappings(editor.projectContents)
 
   const derived: DerivedState = {
-    autoFocusedPaths: autoFocusedPaths,
     projectContentsChecksums: getProjectContentsChecksums(
       editor.projectContents,
       oldDerivedState?.projectContentsChecksums ?? {},

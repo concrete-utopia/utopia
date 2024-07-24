@@ -620,6 +620,7 @@ import {
   isDataCanCondenseProp,
 } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
+import { getAutofocusedPathsSelector } from '../store/editor-state-helpers'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1053,7 +1054,6 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
   const poppedDerived = history.current.derived
 
   return {
-    autoFocusedPaths: poppedDerived.autoFocusedPaths,
     projectContentsChecksums: poppedDerived.projectContentsChecksums,
     branchOriginContentsChecksums: poppedDerived.branchOriginContentsChecksums,
     remixData: poppedDerived.remixData,
@@ -5059,7 +5059,7 @@ export const UPDATE_FNS = {
       MetadataUtils.isManuallyFocusableComponent(
         action.focusedElementPath,
         editor.jsxMetadata,
-        derived.autoFocusedPaths,
+        getAutofocusedPathsSelector({ editor: editor }),
         derived.filePathMappings,
         editor.propertyControlsInfo,
         editor.projectContents,

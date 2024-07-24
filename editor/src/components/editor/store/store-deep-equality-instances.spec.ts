@@ -66,7 +66,6 @@ import { regularNavigatorRow } from '../../navigator/navigator-row'
 
 describe('DerivedStateKeepDeepEquality', () => {
   const oldValue: DerivedState = {
-    autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
     projectContentsChecksums: {
       [StoryboardFilePath]: {
         checksum: 'aaaaa',
@@ -93,7 +92,6 @@ describe('DerivedStateKeepDeepEquality', () => {
     filePathMappings: [],
   }
   const newSameValue: DerivedState = {
-    autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
     projectContentsChecksums: {
       [StoryboardFilePath]: {
         checksum: 'aaaaa',
@@ -120,7 +118,6 @@ describe('DerivedStateKeepDeepEquality', () => {
     filePathMappings: [],
   }
   const newDifferentValue: DerivedState = {
-    autoFocusedPaths: [EP.elementPath([['scene'], ['aab']])],
     projectContentsChecksums: {
       [StoryboardFilePath]: {
         checksum: 'aaaaa',

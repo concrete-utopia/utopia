@@ -952,9 +952,7 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine5EqualityCalls(
-    (state) => state.autoFocusedPaths,
-    arrayDeepEquality(ElementPathKeepDeepEquality),
+  return combine4EqualityCalls(
     (state) => state.projectContentsChecksums,
     FileChecksumsWithFileKeepDeepEquality,
     (state) => state.branchOriginContentsChecksums,
@@ -963,15 +961,8 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     createCallWithTripleEquals(),
     (state) => state.filePathMappings,
     createCallWithShallowEquals(),
-    (
-      autoFocusedPaths,
-      projectContentsChecksums,
-      branchOriginContentsChecksums,
-      remixData,
-      filePathMappings,
-    ) => {
+    (projectContentsChecksums, branchOriginContentsChecksums, remixData, filePathMappings) => {
       return {
-        autoFocusedPaths: autoFocusedPaths,
         projectContentsChecksums: projectContentsChecksums,
         branchOriginContentsChecksums: branchOriginContentsChecksums,
         remixData: remixData,
