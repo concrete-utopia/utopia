@@ -52,7 +52,7 @@ export const removeGridConvertToAbsolute = (
   name: 'Remove grid layout and convert children to absolute',
   strategy: () => {
     const commands = filterKeepGridContainers(metadata, elementPaths).flatMap((elementPath) => {
-      const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath)
+      const children = MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath)
       return [
         ...prunePropsCommands(gridContainerProps, elementPath),
         ...children.flatMap((c) =>
