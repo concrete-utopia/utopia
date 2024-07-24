@@ -62,6 +62,7 @@ import {
 } from '../canvas-strategies/canvas-strategies'
 import CanvasActions from '../canvas-actions'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
+import { addFlexLayout } from '../../inspector/layout-systems.test-utils'
 
 const DefaultRouteTextContent = 'Hello Remix!'
 const RootTextContent = 'This is root!'
@@ -1756,8 +1757,7 @@ export default function Index() {
 
     const absoluteDiv = await clickElementOnCanvasControlsLayer(renderResult, AbsoluteDivTestId)
 
-    const targetElement = renderResult.renderedDOM.getByTestId(AddRemoveLayoutSystemControlTestId())
-    await mouseClickAtPoint(targetElement, { x: 1, y: 1 }, { modifiers: cmdModifier })
+    await addFlexLayout(renderResult)
 
     expect(absoluteDiv.style.display).toEqual('flex')
   })
