@@ -47,6 +47,8 @@ export interface DropdownMenuProps {
   alignOffset?: number
 }
 
+export const ItemContainerTestId = (id: string) => `item-container-${id}`
+
 export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
   const stopPropagation = React.useCallback((e: React.KeyboardEvent) => {
     const hasModifiers = e.altKey || e.metaKey || e.shiftKey || e.ctrlKey
@@ -76,7 +78,11 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
           alignOffset={props.alignOffset}
         >
           {props.items.map((item) => (
-            <RadixItemContainer key={item.id} onSelect={item.onSelect}>
+            <RadixItemContainer
+              data-testid={ItemContainerTestId(item.id)}
+              key={item.id}
+              onSelect={item.onSelect}
+            >
               <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                 {when(
                   shouldShowCheckboxes,

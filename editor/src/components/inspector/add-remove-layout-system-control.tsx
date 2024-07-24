@@ -29,6 +29,8 @@ import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import { DropdownMenu } from '../../uuiui/radix-components'
 
 export const AddRemoveLayoutSystemControlTestId = (): string => 'AddRemoveLayoutSystemControlTestId'
+export const AddFlexLayoutOptionId = 'add-flex-layout'
+export const AddGridLayoutOptionId = 'add-grid-layout'
 
 interface AddRemoveLayoutSystemControlProps {}
 
@@ -106,8 +108,8 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
 
   const addLayoutSystemMenuDropdownItems = React.useMemo(
     (): DropdownMenuItem[] => [
-      { id: 'add-flex-layout', label: 'Flex', onSelect: addFlexLayoutSystem },
-      { id: 'add-grid-layout', label: 'Grid', onSelect: addGridLayoutSystem },
+      { id: AddFlexLayoutOptionId, label: 'Flex', onSelect: addFlexLayoutSystem },
+      { id: AddGridLayoutOptionId, label: 'Grid', onSelect: addGridLayoutSystem },
     ],
     [addFlexLayoutSystem, addGridLayoutSystem],
   )
@@ -142,12 +144,14 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
           <Icn category='semantic' type='cross' width={12} height={12} />
         </SquareButton>
       ) : (
-        <DropdownMenu
-          align='end'
-          alignOffset={6}
-          items={addLayoutSystemMenuDropdownItems}
-          opener={addLayoutSystemOpenerButton}
-        />
+        <div data-testid={AddRemoveLayoutSystemControlTestId()}>
+          <DropdownMenu
+            align='end'
+            alignOffset={6}
+            items={addLayoutSystemMenuDropdownItems}
+            opener={addLayoutSystemOpenerButton}
+          />
+        </div>
       )}
     </InspectorSectionHeader>
   )

@@ -1,10 +1,14 @@
 import { shiftModifier } from '../../utils/modifiers'
 import { expectSingleUndo2Saves } from '../../utils/utils.test-utils'
+import { ItemContainerTestId } from '../../uuiui/radix-components'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
-import { AddRemoveLayoutSystemControlTestId } from './add-remove-layout-system-control'
+import {
+  AddFlexLayoutOptionId,
+  AddRemoveLayoutSystemControlTestId,
+} from './add-remove-layout-system-control'
 
 describe('add layout system', () => {
   it('add and remove layout system via keyboard shortcut', async () => {
@@ -206,9 +210,12 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
 }
 
 async function clickOn(editor: EditorRenderResult) {
-  const flexDirectionToggle = editor.renderedDOM.getByTestId(AddRemoveLayoutSystemControlTestId())
-
+  const flexDirectionToggle = editor.renderedDOM.getAllByTestId(
+    AddRemoveLayoutSystemControlTestId(),
+  )[0]
   await mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 })
+  const flexOption = editor.renderedDOM.getByTestId(ItemContainerTestId(AddFlexLayoutOptionId))
+  await mouseClickAtPoint(flexOption, { x: 2, y: 2 })
 }
 
 function project({ width, height }: { width: string; height: string }): string {
