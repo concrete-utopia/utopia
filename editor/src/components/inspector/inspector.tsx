@@ -87,12 +87,12 @@ import {
   getInspectorPreferencesForTargets,
 } from '../../core/property-controls/property-controls-utils'
 import { ListSection } from './sections/layout-section/list-section'
-import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
 import { isIntrinsicElementMetadata } from '../../core/model/project-file-utils'
 import { assertNever } from '../../core/shared/utils'
 import { DataReferenceSection } from './sections/data-reference-section'
 import { replaceFirstChildAndDeleteSiblings } from '../editor/element-children'
 import { InspectorSectionHeader } from './section-header'
+import { GridPlacementSubsection } from './sections/style-section/container-subsection/grid-cell-subsection'
 
 export interface ElementPathElement {
   name?: string
@@ -403,6 +403,14 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
 
   const shouldShowSimplifiedLayoutSection = inspectorPreferences.includes('layout')
 
+  const shouldShowGridCellSection = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.length === 1 &&
+      MetadataUtils.isGridCell(store.editor.jsxMetadata, store.editor.selectedViews[0]),
+    'Inspector shouldShowGridCellSection',
+  )
+
   function renderInspectorContents() {
     return (
       <React.Fragment>
@@ -474,6 +482,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                         <ConstraintsSection />
                       </>,
                     )}
+                    {when(shouldShowGridCellSection, <GridPlacementSubsection />)}
                     {when(shouldShowFlexSection, <FlexSection />)}
                     {when(
                       multiselectedContract === 'frame' || multiselectedContract === 'wrapper-div',
