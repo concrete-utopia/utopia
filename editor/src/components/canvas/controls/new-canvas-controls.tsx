@@ -182,8 +182,13 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
 
   const ref = React.useRef<HTMLDivElement | null>(null)
 
-  const altKeyPressed = canvasControlProps.keysPressed.alt ?? false
-  const selectModeCursor = altKeyPressed ? CSSCursor.Duplicate : props.cursor
+  const selectModeCursor = React.useMemo(() => {
+    const altKeyPressed = canvasControlProps.keysPressed.alt ?? false
+    if (altKeyPressed) {
+      return CSSCursor.Duplicate
+    }
+    return props.cursor
+  }, [props.cursor, canvasControlProps.keysPressed.alt])
 
   if (isLiveMode(canvasControlProps.editorMode) && !canvasControlProps.keysPressed.cmd) {
     return (
