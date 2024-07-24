@@ -808,32 +808,22 @@ export const NumberInput = React.memo<NumberInputProps>(
             </div>
           ) : null}
           {DEPRECATED_labelBelow == null && controlStatus != 'off' ? null : (
-            <React.Fragment>
-              {isFauxcused ? (
-                <div
-                  style={{
-                    background: 'transparent',
-                    zIndex: 1,
-                  }}
-                ></div>
-              ) : null}
-              <div
-                data-testid={`${testId}-mouse-down-handler`}
-                onMouseDown={onLabelMouseDown}
-                style={{
-                  paddingLeft: 4,
-                  cursor: CSSCursor.ResizeEW,
-                  fontSize: 9,
-                  textAlign: 'center',
-                  display: 'block',
-                  color: controlStyles.secondaryColor,
-                  width: 20,
-                  ...labelBelowStyle,
-                }}
-              >
-                {DEPRECATED_labelBelow}
-              </div>
-            </React.Fragment>
+            <div
+              data-testid={`${testId}-mouse-down-handler`}
+              onMouseDown={onLabelMouseDown}
+              style={{
+                paddingLeft: 4,
+                cursor: CSSCursor.ResizeEW,
+                fontSize: 9,
+                textAlign: 'center',
+                display: 'block',
+                color: controlStyles.secondaryColor,
+                width: 20,
+                ...labelBelowStyle,
+              }}
+            >
+              {DEPRECATED_labelBelow}
+            </div>
           )}
           <InspectorInput
             {...inputProps}
