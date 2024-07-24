@@ -148,7 +148,6 @@ export const FlexSection = React.memo(() => {
           </>,
         )}
       </FlexCol>
-      ,
     </div>
   )
 })
