@@ -7,11 +7,17 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
 import CanvasActions from '../../canvas-actions'
-import { useDelayedCurrentStrategy } from '../../canvas-strategies/canvas-strategies'
+import {
+  useDelayedCurrentStrategy,
+  useIsOnlyDoNothingStrategy,
+} from '../../canvas-strategies/canvas-strategies'
 import type { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
+
+export const StrategyPickerTestId = 'canvas-strategy-picker'
 
 export const CanvasStrategyPicker = React.memo(() => {
   const dispatch = useDispatch()
+  const isOnlyDoNothingStrategy = useIsOnlyDoNothingStrategy()
   const allApplicableStrategies = useEditorState(
     Substores.restOfStore,
     (store) =>
@@ -81,7 +87,7 @@ export const CanvasStrategyPicker = React.memo(() => {
   return (
     <>
       {when(
-        activeStrategy != null,
+        !isOnlyDoNothingStrategy && activeStrategy != null,
         <div
           style={{
             pointerEvents: 'initial',
@@ -89,6 +95,7 @@ export const CanvasStrategyPicker = React.memo(() => {
           }}
           onMouseDown={stopPropagation}
           onClick={stopPropagation}
+          data-testid={StrategyPickerTestId}
         >
           <FlexColumn
             style={{

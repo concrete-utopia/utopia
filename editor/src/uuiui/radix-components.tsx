@@ -42,9 +42,12 @@ export interface DropdownMenuItem {
 export interface DropdownMenuProps {
   opener: (open: boolean) => React.ReactNode
   items: DropdownMenuItem[]
+  align?: RadixDropdownMenu.DropdownMenuContentProps['align']
   sideOffset?: number
   alignOffset?: number
 }
+
+export const ItemContainerTestId = (id: string) => `item-container-${id}`
 
 export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
   const stopPropagation = React.useCallback((e: React.KeyboardEvent) => {
@@ -62,7 +65,7 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
 
   return (
     <RadixDropdownMenu.Root open={open} onOpenChange={onOpen}>
-      <RadixDropdownMenu.Trigger style={{ background: 'none', border: 'none' }}>
+      <RadixDropdownMenu.Trigger style={{ background: 'none', border: 'none', padding: 0 }}>
         {props.opener(open)}
       </RadixDropdownMenu.Trigger>
       <RadixDropdownMenu.Portal>
@@ -71,11 +74,15 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
           onEscapeKeyDown={onEscapeKeyDown}
           sideOffset={props.sideOffset}
           collisionPadding={{ top: -4 }}
-          align='start'
+          align={props.align ?? 'start'}
           alignOffset={props.alignOffset}
         >
           {props.items.map((item) => (
-            <RadixItemContainer key={item.id} onSelect={item.onSelect}>
+            <RadixItemContainer
+              data-testid={ItemContainerTestId(item.id)}
+              key={item.id}
+              onSelect={item.onSelect}
+            >
               <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                 {when(
                   shouldShowCheckboxes,

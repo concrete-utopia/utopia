@@ -10,6 +10,7 @@ import {
 } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import type { DragToMoveIndicatorFlags } from '../../../editor/store/editor-state'
+import { useIsOnlyDoNothingStrategy } from '../../canvas-strategies/canvas-strategies'
 
 export function useGetDragStrategyIndicatorFlags(): {
   indicatorFlags: DragToMoveIndicatorFlags
@@ -35,9 +36,14 @@ const StrategyIndicatorWidth = 240
 export const StrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
   const indicatorFlagsInfo = useGetDragStrategyIndicatorFlags()
+  const isOnlyDoNothing = useIsOnlyDoNothingStrategy()
 
   if (indicatorFlagsInfo == null) {
     // return null
+  }
+
+  if (isOnlyDoNothing) {
+    return null
   }
 
   return (

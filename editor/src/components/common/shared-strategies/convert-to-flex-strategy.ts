@@ -51,9 +51,8 @@ import {
   sizeToVisualDimensions,
 } from '../../inspector/inspector-common'
 import { setHugContentForAxis } from '../../inspector/inspector-strategies/hug-contents-strategy'
-
-type FlexDirectionRowColumn = 'row' | 'column' // a limited subset as we won't never guess row-reverse or column-reverse
-type FlexAlignItems = 'center' | 'flex-end'
+import type { FlexAlignItems, FlexDirectionRowColumn } from './convert-strategies-common'
+import { getChildrenPathsForContainer } from './convert-strategies-common'
 
 function checkConstraintsForThreeElementRow(
   allElementProps: AllElementProps,
@@ -268,16 +267,11 @@ export function convertLayoutToFlexCommands(
       ]
     }
 
-    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(elementPathTree, path).flatMap(
-      (child) =>
-        isElementNonDOMElement(metadata, allElementProps, elementPathTree, child)
-          ? replaceNonDOMElementPathsWithTheirChildrenRecursive(
-              metadata,
-              allElementProps,
-              elementPathTree,
-              [child],
-            )
-          : child,
+    const childrenPaths = getChildrenPathsForContainer(
+      metadata,
+      elementPathTree,
+      path,
+      allElementProps,
     )
 
     const parentFlexDirection =

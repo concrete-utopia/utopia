@@ -236,6 +236,15 @@ export function filterKeepFlexContainers(
   )
 }
 
+export function filterKeepGridContainers(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+): ElementPath[] {
+  return elementPaths.filter((e: ElementPath | null) =>
+    MetadataUtils.isGridLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, e)),
+  )
+}
+
 export function numberOfFlexContainers(
   metadata: ElementInstanceMetadataMap,
   elementPaths: ElementPath[],
@@ -249,6 +258,15 @@ export function detectAreElementsFlexContainers(
 ): boolean {
   return strictEvery(elementPaths, (path) =>
     MetadataUtils.isFlexLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, path)),
+  )
+}
+
+export function detectAreElementsGridContainers(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+): boolean {
+  return strictEvery(elementPaths, (path) =>
+    MetadataUtils.isGridLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, path)),
   )
 }
 
@@ -407,6 +425,15 @@ export const flexContainerProps = [
   styleP('display'),
   styleP('alignItems'),
   styleP('justifyContent'),
+]
+
+export const gridContainerProps = [
+  styleP('gap'),
+  styleP('display'),
+  styleP('gridTemplateRows'),
+  styleP('gridTemplateColumns'),
+  styleP('gridAutoColumns'),
+  styleP('gridAutoRows'),
 ]
 
 export const flexChildProps = [
