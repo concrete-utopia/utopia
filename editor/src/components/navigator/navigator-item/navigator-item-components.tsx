@@ -235,7 +235,6 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
           height: 12,
           width: 12,
         }}
-        data-testid={addChildButtonTestId(target)}
       >
         <Icn
           category='semantic'
@@ -246,7 +245,7 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
         />
       </Button>
     ),
-    [iconColor, target],
+    [iconColor],
   )
 
   if (!supportsChildren) {
@@ -254,11 +253,13 @@ const AddChildButton = React.memo((props: AddChildButtonProps) => {
   }
 
   return (
-    <ComponentPickerDropDown
-      opener={opener}
-      insertionTarget={INSERT_AS_CHILD_TARGET}
-      targets={targets}
-    />
+    <div data-testid={addChildButtonTestId(target)}>
+      <ComponentPickerDropDown
+        opener={opener}
+        insertionTarget={INSERT_AS_CHILD_TARGET}
+        targets={targets}
+      />
+    </div>
   )
 })
 
@@ -300,7 +301,6 @@ const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
   const opener = React.useCallback(
     () => (
       <Button
-        data-testid={ReplaceElementButtonTestId(target, prop)}
         onClick={NO_OP}
         style={{
           height: 12,
@@ -316,11 +316,17 @@ const ReplaceElementButton = React.memo((props: ReplaceElementButtonProps) => {
         />
       </Button>
     ),
-    [iconColor, prop, target],
+    [iconColor],
   )
 
   return (
-    <ComponentPickerDropDown opener={opener} insertionTarget={insertionTarget} targets={targets} />
+    <div data-testid={ReplaceElementButtonTestId(target, prop)}>
+      <ComponentPickerDropDown
+        opener={opener}
+        insertionTarget={insertionTarget}
+        targets={targets}
+      />
+    </div>
   )
 })
 

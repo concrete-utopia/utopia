@@ -28,13 +28,14 @@ import {
   componentPickerOptionTestId,
   componentPickerTestIdForProp,
 } from './component-picker'
-import { fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent, waitFor, within } from '@testing-library/react'
 import { labelTestIdForComponentIcon } from './component-picker-context-menu'
 import { ReplaceElementButtonTestId, addChildButtonTestId } from './navigator-item-components'
 import { NavigatorContainerId } from '../navigator'
 import { act } from 'react-dom/test-utils'
 import { cmdModifier } from '../../../utils/modifiers'
 import { getNavigatorTargetsFromEditorState } from '../navigator-utils'
+import userEvent from '@testing-library/user-event'
 
 describe('The navigator component picker context menu', () => {
   const PreferredChildComponents = [
@@ -565,10 +566,7 @@ describe('The navigator component picker context menu', () => {
   it('simple picker returns the correct registered components for children', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
-    const addChildButton = editor.renderedDOM.getByTestId(
-      addChildButtonTestId(EP.fromString('sb/card')),
-    )
-    await mouseClickAtPoint(addChildButton, { x: 2, y: 2 })
+    await openDropdown(editor, addChildButtonTestId(EP.fromString('sb/card')))
 
     const flexRowRow = editor.renderedDOM.queryByTestId(
       labelTestIdForComponentIcon('FlexRow', '/src/utils', 'row'),
@@ -831,10 +829,7 @@ describe('The navigator component picker context menu', () => {
   it('Selecting a component with no variants from the simple picker for adding a child should insert that component into the render prop', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
-    const addChildButton = editor.renderedDOM.getByTestId(
-      addChildButtonTestId(EP.fromString('sb/card')),
-    )
-    await mouseClickAtPoint(addChildButton, { x: 2, y: 2 })
+    await openDropdown(editor, addChildButtonTestId(EP.fromString('sb/card')))
 
     const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
     await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
@@ -962,13 +957,10 @@ describe('The navigator component picker context menu', () => {
   it('Selecting a component from the simple picker in a submenu for adding a child should insert that component into the render prop', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
-    const addChildButton = editor.renderedDOM.getByTestId(
-      addChildButtonTestId(EP.fromString('sb/card')),
-    )
-    await mouseClickAtPoint(addChildButton, { x: 2, y: 2 })
+    await openDropdown(editor, addChildButtonTestId(EP.fromString('sb/card')))
 
     const submenuButton = await waitFor(() => editor.renderedDOM.getByText('FlexRow'))
-    await mouseMoveToPoint(submenuButton, { x: 3, y: 3 })
+    await mouseClickAtPoint(submenuButton, { x: 3, y: 3 })
 
     const renderedOptionVariant = await waitFor(() =>
       editor.renderedDOM.getByText('with three placeholders'),
@@ -1029,10 +1021,7 @@ describe('The navigator component picker context menu', () => {
   it('Selecting a List from the simple picker for adding a child should insert the code for the List', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
-    const addChildButton = editor.renderedDOM.getByTestId(
-      addChildButtonTestId(EP.fromString('sb/card')),
-    )
-    await mouseClickAtPoint(addChildButton, { x: 2, y: 2 })
+    await openDropdown(editor, addChildButtonTestId(EP.fromString('sb/card')))
 
     const submenuButton = await waitFor(() => editor.renderedDOM.getByText('List'))
     await mouseClickAtPoint(submenuButton, { x: 2, y: 2 })
@@ -1281,10 +1270,7 @@ describe('The navigator component picker context menu', () => {
       { x: 2, y: 2 },
     )
 
-    await mouseClickAtPoint(
-      editor.renderedDOM.getByTestId('replace-element-button-sb/scene/flexrow/map/img~~~1'),
-      { x: 2, y: 2 },
-    )
+    await openDropdown(editor, 'replace-element-button-sb/scene/flexrow/map/img~~~1')
 
     await mouseClickAtPoint(editor.renderedDOM.getByText('div'), { x: 2, y: 2 })
 
@@ -1382,10 +1368,7 @@ export var storyboard = (
       { x: 2, y: 2 },
     )
 
-    await mouseClickAtPoint(
-      editor.renderedDOM.getByTestId('replace-element-button-sb/scene/flexrow/conditional/img'),
-      { x: 2, y: 2 },
-    )
+    await openDropdown(editor, 'replace-element-button-sb/scene/flexrow/conditional/img')
 
     await mouseClickAtPoint(editor.renderedDOM.getByText('Column'), { x: 2, y: 2 })
 
@@ -1790,8 +1773,7 @@ export const Column = () => (
     it('Works when clicking the navigator button', async () => {
       const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
       await selectComponentsForTest(editor, [target])
-      const replaceButton = editor.renderedDOM.getByTestId(ReplaceElementButtonTestId(target, null))
-      await mouseClickAtPoint(replaceButton, { x: 2, y: 2 })
+      await openDropdown(editor, ReplaceElementButtonTestId(target, null))
 
       const menuButton = await waitFor(() => editor.renderedDOM.getAllByText('FlexCol')[1]) // The first result is from other-utils
       await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
@@ -1890,10 +1872,7 @@ export const Column = () => (
     it('Works when clicking the navigator button', async () => {
       const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
       await selectComponentsForTest(editor, [target])
-      const replaceButton = editor.renderedDOM.getByTestId(
-        ReplaceElementButtonTestId(target, 'title'),
-      )
-      await mouseClickAtPoint(replaceButton, { x: 2, y: 2 })
+      await openDropdown(editor, ReplaceElementButtonTestId(target, 'title'))
 
       const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
       await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
@@ -1948,10 +1927,7 @@ export const Column = () => (
       const targetPath = EP.fromString('sb/scene/pg:pg-root')
       await selectComponentsForTest(editor, [targetPath])
 
-      const replaceButton = editor.renderedDOM.getByTestId(
-        ReplaceElementButtonTestId(targetPath, null),
-      )
-      await mouseClickAtPoint(replaceButton, { x: 2, y: 2 })
+      await openDropdown(editor, ReplaceElementButtonTestId(targetPath, null))
 
       const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
       await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
@@ -2194,4 +2170,9 @@ async function openContextMenuAndClick(editor: EditorRenderResult, selectors: Se
   }
 
   await editor.getDispatchFollowUpActionsFinished()
+}
+
+async function openDropdown(editor: EditorRenderResult, testid: string) {
+  const flexDirectionToggle = editor.renderedDOM.getAllByTestId(testid)[0]
+  await userEvent.click(within(flexDirectionToggle).getByRole('button'))
 }
