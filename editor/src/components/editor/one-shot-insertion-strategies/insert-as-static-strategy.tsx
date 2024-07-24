@@ -18,7 +18,6 @@ import type { InsertionPath } from '../store/insertion-path'
 export const insertAsStaticStrategy = (
   element: ElementToReparent,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   parentInsertionPath: InsertionPath,
@@ -30,7 +29,6 @@ export const insertAsStaticStrategy = (
   strategy: () => {
     const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       elementPathTree,
       parentInsertionPath.intendedParentPath,
@@ -42,7 +40,6 @@ export const insertAsStaticStrategy = (
 
     const result = getReparentOutcome(
       metadata,
-      domReconstructedMetadata,
       elementPathTree,
       allElementProps,
       builtInDependencies,

@@ -34,14 +34,12 @@ export const SnappingThreshold = 5
 
 function getSnapTargetsForElementPath(
   componentMetadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<ElementPath> {
   const parent = getFirstNonFragmentLikeParent(
     componentMetadata,
-    domReconstructedMetadata,
     allElementProps,
     pathTrees,
     elementPath,
@@ -49,7 +47,6 @@ function getSnapTargetsForElementPath(
 
   const siblings = replaceFragmentLikePathsWithTheirChildrenRecursive(
     componentMetadata,
-    domReconstructedMetadata,
     allElementProps,
     pathTrees,
     MetadataUtils.getChildrenPathsOrdered(pathTrees, parent),
@@ -66,19 +63,14 @@ function getSnapTargetsForElementPath(
 
 export function gatherParentAndSiblingTargets(
   componentMetadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   targets: Array<ElementPath>,
 ) {
   return targets.flatMap((target) =>
-    getSnapTargetsForElementPath(
-      componentMetadata,
-      domReconstructedMetadata,
-      allElementProps,
-      pathTrees,
-      target,
-    ).filter((snapTarget) => targets.every((t) => !EP.pathsEqual(snapTarget, t))),
+    getSnapTargetsForElementPath(componentMetadata, allElementProps, pathTrees, target).filter(
+      (snapTarget) => targets.every((t) => !EP.pathsEqual(snapTarget, t)),
+    ),
   )
 }
 
@@ -98,30 +90,15 @@ export function collectParentAndSiblingGuidelines(
 
 function getFirstNonFragmentLikeParent(
   componentMetadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): ElementPath {
   const parentPath = EP.parentPath(elementPath)
-  if (
-    !treatElementAsFragmentLike(
-      componentMetadata,
-      domReconstructedMetadata,
-      allElementProps,
-      pathTrees,
-      parentPath,
-    )
-  ) {
+  if (!treatElementAsFragmentLike(componentMetadata, allElementProps, pathTrees, parentPath)) {
     return parentPath
   }
-  return getFirstNonFragmentLikeParent(
-    componentMetadata,
-    domReconstructedMetadata,
-    allElementProps,
-    pathTrees,
-    parentPath,
-  )
+  return getFirstNonFragmentLikeParent(componentMetadata, allElementProps, pathTrees, parentPath)
 }
 
 export function getSnappedGuidelines(

@@ -138,7 +138,6 @@ const GroupImport: Imports = {
 
 export function isAbsolutePositionedFrame(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
@@ -150,7 +149,6 @@ export function isAbsolutePositionedFrame(
     MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath).length > 0 &&
     replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
@@ -237,7 +235,6 @@ export type JSXFragmentConversion = {
 
 export function getInstanceForFragmentToFrameConversion(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
@@ -259,7 +256,6 @@ export function getInstanceForFragmentToFrameConversion(
     (path) => MetadataUtils.findElementByElementPath(metadata, path),
     replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
@@ -341,7 +337,6 @@ export function actuallyConvertFramentToFrame(
 
 export function convertFragmentToFrame(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
@@ -351,7 +346,6 @@ export function convertFragmentToFrame(
 ): CanvasCommand[] {
   const instance = getInstanceForFragmentToFrameConversion(
     metadata,
-    domReconstructedMetadata,
     pathTrees,
     allElementProps,
     elementPath,
@@ -366,7 +360,6 @@ export function convertFragmentToFrame(
 
 export function getInstanceForFragmentToGroupConversion(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
@@ -385,7 +378,6 @@ export function getInstanceForFragmentToGroupConversion(
     (path) => MetadataUtils.findElementByElementPath(metadata, path),
     replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
@@ -412,14 +404,12 @@ export function getInstanceForFragmentToGroupConversion(
 
 export function convertFragmentToGroup(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): CanvasCommand[] {
   const instance = getInstanceForFragmentToGroupConversion(
     metadata,
-    domReconstructedMetadata,
     pathTrees,
     allElementProps,
     elementPath,
@@ -499,23 +489,12 @@ export function useConvertWrapperToFrame() {
   const dispatch = useDispatch()
   const editorStateRef = useRefEditorState((store) => store)
   return React.useCallback(() => {
-    const {
-      jsxMetadata,
-      domReconstructedMetadata,
-      allElementProps,
-      elementPathTree,
-      selectedViews,
-    } = editorStateRef.current.editor
+    const { jsxMetadata, allElementProps, elementPathTree, selectedViews } =
+      editorStateRef.current.editor
     dispatch([
       applyCommandsAction(
         selectedViews.flatMap((sv) =>
-          convertWrapperToFrameCommands(
-            jsxMetadata,
-            domReconstructedMetadata,
-            allElementProps,
-            elementPathTree,
-            sv,
-          ),
+          convertWrapperToFrameCommands(jsxMetadata, allElementProps, elementPathTree, sv),
         ),
       ),
     ])
@@ -524,25 +503,15 @@ export function useConvertWrapperToFrame() {
 
 function convertWrapperToFrameCommands(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): CanvasCommand[] {
-  return (
-    convertSizelessDivToFrameCommands(
-      metadata,
-      domReconstructedMetadata,
-      allElementProps,
-      pathTrees,
-      elementPath,
-    ) ?? []
-  )
+  return convertSizelessDivToFrameCommands(metadata, allElementProps, pathTrees, elementPath) ?? []
 }
 
 export function convertSizelessDivToFrameCommands(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
@@ -571,7 +540,6 @@ export function convertSizelessDivToFrameCommands(
     (path) => MetadataUtils.findElementByElementPath(metadata, path),
     replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
@@ -614,7 +582,6 @@ export function convertSizelessDivToFrameCommands(
 
 export function getInstanceForFrameToFragmentConversion(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
@@ -628,7 +595,6 @@ export function getInstanceForFrameToFragmentConversion(
     (path) => MetadataUtils.findElementByElementPath(metadata, path),
     replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
@@ -645,14 +611,12 @@ export function getInstanceForFrameToFragmentConversion(
 
 export function convertGroupOrFrameToFragmentCommands(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const instance = getInstanceForFrameToFragmentConversion(
     metadata,
-    domReconstructedMetadata,
     pathTrees,
     allElementProps,
     elementPath,
@@ -707,7 +671,6 @@ export function isConversionForbidden(c: unknown): c is ConversionForbidden {
 
 export function getInstanceForFrameToGroupConversion(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
@@ -721,7 +684,6 @@ export function getInstanceForFrameToGroupConversion(
     (path) => MetadataUtils.findElementByElementPath(metadata, path),
     replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
@@ -738,14 +700,12 @@ export function getInstanceForFrameToGroupConversion(
 
 export function convertFrameToGroup(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const instance = getInstanceForFrameToGroupConversion(
     metadata,
-    domReconstructedMetadata,
     pathTrees,
     allElementProps,
     elementPath,
@@ -787,7 +747,6 @@ export function convertFrameToGroup(
 
 export function getInstanceForGroupToFrameConversion(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
@@ -801,7 +760,6 @@ export function getInstanceForGroupToFrameConversion(
     (path) => MetadataUtils.findElementByElementPath(metadata, path),
     replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
@@ -818,14 +776,12 @@ export function getInstanceForGroupToFrameConversion(
 
 export function convertGroupToFrameCommands(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const instance = getInstanceForGroupToFrameConversion(
     metadata,
-    domReconstructedMetadata,
     pathTrees,
     allElementProps,
     elementPath,
@@ -871,14 +827,12 @@ export function elementCanBeAGroupChild(
 
 export function groupConversionCommands(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<CanvasCommand> | null {
   const fragmentLikeType = getElementFragmentLikeType(
     metadata,
-    domReconstructedMetadata,
     allElementProps,
     pathTrees,
     elementPath,
@@ -891,7 +845,6 @@ export function groupConversionCommands(
   if (fragmentLikeType === 'sizeless-div') {
     const convertCommands = convertSizelessDivToFrameCommands(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       elementPath,
@@ -908,7 +861,6 @@ export function createWrapInGroupActions(
   selectedViews: Array<ElementPath>,
   projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPathTrees: ElementPathTrees,
   navigatorTargets: Array<NavigatorEntry>,
@@ -1047,7 +999,6 @@ export function createWrapInGroupActions(
       metadata,
       replaceNonDomElementWithFirstDomAncestorPath(
         metadata,
-        domReconstructedMetadata,
         allElementProps,
         elementPathTrees,
         parentPath.intendedParentPath,
@@ -1113,7 +1064,6 @@ export function createWrapInGroupActions(
     orderedActionTargets.forEach((maybeTarget) => {
       return replaceFragmentLikePathsWithTheirChildrenRecursive(
         metadata,
-        domReconstructedMetadata,
         allElementProps,
         elementPathTrees,
         [maybeTarget],
@@ -1323,7 +1273,6 @@ function setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
 
 export function getCommandsForConversionToDesiredType(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   selectedViews: Array<ElementPath>,
@@ -1346,7 +1295,6 @@ export function getCommandsForConversionToDesiredType(
       if (desiredType === 'frame') {
         return convertFragmentToFrame(
           metadata,
-          domReconstructedMetadata,
           elementPathTree,
           allElementProps,
           elementPath,
@@ -1355,13 +1303,7 @@ export function getCommandsForConversionToDesiredType(
       }
 
       if (desiredType === 'group') {
-        return convertFragmentToGroup(
-          metadata,
-          domReconstructedMetadata,
-          elementPathTree,
-          allElementProps,
-          elementPath,
-        )
+        return convertFragmentToGroup(metadata, elementPathTree, allElementProps, elementPath)
       }
       assertNever(desiredType)
     }
@@ -1375,7 +1317,6 @@ export function getCommandsForConversionToDesiredType(
 
         return convertWrapperToFrameCommands(
           metadata,
-          domReconstructedMetadata,
           allElementProps,
           elementPathTree,
           elementPath,
@@ -1385,7 +1326,6 @@ export function getCommandsForConversionToDesiredType(
       if (desiredType === 'fragment') {
         return convertGroupOrFrameToFragmentCommands(
           metadata,
-          domReconstructedMetadata,
           elementPathTree,
           allElementProps,
           elementPath,
@@ -1393,13 +1333,7 @@ export function getCommandsForConversionToDesiredType(
       }
 
       if (desiredType === 'group') {
-        return convertFrameToGroup(
-          metadata,
-          domReconstructedMetadata,
-          elementPathTree,
-          allElementProps,
-          elementPath,
-        )
+        return convertFrameToGroup(metadata, elementPathTree, allElementProps, elementPath)
       }
       assertNever(desiredType)
     }
@@ -1413,7 +1347,6 @@ export function getCommandsForConversionToDesiredType(
       if (desiredType === 'fragment') {
         return convertGroupOrFrameToFragmentCommands(
           metadata,
-          domReconstructedMetadata,
           elementPathTree,
           allElementProps,
           elementPath,
@@ -1421,13 +1354,7 @@ export function getCommandsForConversionToDesiredType(
       }
 
       if (desiredType === 'frame') {
-        return convertGroupToFrameCommands(
-          metadata,
-          domReconstructedMetadata,
-          elementPathTree,
-          allElementProps,
-          elementPath,
-        )
+        return convertGroupToFrameCommands(metadata, elementPathTree, allElementProps, elementPath)
       }
       assertNever(desiredType)
     }

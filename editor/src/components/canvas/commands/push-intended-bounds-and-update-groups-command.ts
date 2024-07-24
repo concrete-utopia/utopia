@@ -174,7 +174,6 @@ function getUpdateResizedGroupChildrenCommands(
     const targetIsGroup = allowGroupTrueUp(
       editor.projectContents,
       editor.jsxMetadata,
-      editor.domReconstructedMetadata,
       editor.elementPathTree,
       editor.allElementProps,
       frameAndTarget.target,
@@ -204,7 +203,6 @@ function getUpdateResizedGroupChildrenCommands(
         // if the target is a group and the reason for resizing is _NOT_ child-changed, then resize all the children to fit the new AABB
         const childrenWithFragmentsRetargeted = replaceFragmentLikePathsWithTheirChildrenRecursive(
           editor.jsxMetadata,
-          editor.domReconstructedMetadata,
           editor.allElementProps,
           editor.elementPathTree,
           children,
@@ -327,7 +325,6 @@ function getResizeAncestorGroupsCommands(
   for (const frameAndTarget of targets) {
     const parentPath = replaceNonDomElementWithFirstDomAncestorPath(
       editor.jsxMetadata,
-      editor.domReconstructedMetadata,
       editor.allElementProps,
       editor.elementPathTree,
       EP.parentPath(frameAndTarget.target),
@@ -335,7 +332,6 @@ function getResizeAncestorGroupsCommands(
     const groupTrueUpPermitted = allowGroupTrueUp(
       editor.projectContents,
       editor.jsxMetadata,
-      editor.domReconstructedMetadata,
       editor.elementPathTree,
       editor.allElementProps,
       parentPath,
@@ -409,7 +405,6 @@ function getResizeAncestorGroupsCommands(
             commandsToRun.push(
               ...keepElementPutInParent(
                 editor.jsxMetadata,
-                editor.domReconstructedMetadata,
                 editor.allElementProps,
                 editor.elementPathTree,
                 childPath,
@@ -576,7 +571,6 @@ function setGroupPins(
 
 function keepElementPutInParent(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPathTrees: ElementPathTrees,
   targetMaybeFragent: ElementPath,
@@ -585,7 +579,6 @@ function keepElementPutInParent(
 ): Array<CanvasCommand> {
   const targets = replaceFragmentLikePathsWithTheirChildrenRecursive(
     metadata,
-    domReconstructedMetadata,
     allElementProps,
     elementPathTrees,
     [targetMaybeFragent],

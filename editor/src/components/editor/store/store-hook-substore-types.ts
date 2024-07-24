@@ -49,7 +49,6 @@ export const metadataSubstateKeys = [
   'focusedElementPath',
   'spyMetadata',
   'domMetadata',
-  'domReconstructedMetadata',
   'jsxMetadata',
   'elementPathTree',
   'allElementProps',

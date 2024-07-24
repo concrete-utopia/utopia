@@ -244,7 +244,6 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
             return getEscapeHatchCommands(
               getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
               canvasState.startingMetadata,
-              canvasState.startingReconstructedDOMMetadata,
               canvasState,
               snappedDragVector,
               setHuggingParentToFixed,
@@ -384,7 +383,6 @@ function getAutoLayoutSiblingsInner(
 export function getEscapeHatchCommands(
   _selectedElements: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   canvasState: InteractionCanvasState,
   dragDelta: CanvasVector | null,
   setHuggingParentToFixed: SetHuggingParentToFixed,
@@ -408,7 +406,6 @@ export function getEscapeHatchCommands(
 
   const elementsToConvertToAbsolute = replaceFragmentLikePathsWithTheirChildrenRecursive(
     metadata,
-    domReconstructedMetadata,
     canvasState.startingAllElementProps,
     canvasState.startingElementPathTree,
     sortedElements,
@@ -518,7 +515,6 @@ function collectReparentCommands(
   }
   const outcomeResult = getReparentOutcome(
     canvasState.startingMetadata,
-    canvasState.startingReconstructedDOMMetadata,
     canvasState.startingElementPathTree,
     canvasState.startingAllElementProps,
     canvasState.builtInDependencies,

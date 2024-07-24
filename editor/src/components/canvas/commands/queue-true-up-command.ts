@@ -39,22 +39,12 @@ export const runQueueTrueUpElement: CommandFunction<QueueTrueUpElement> = (
 export function getRequiredGroupTrueUps(
   projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   target: ElementPath,
 ): Array<QueueTrueUpElement> {
   const parentPath = EP.parentPath(target)
-  if (
-    allowGroupTrueUp(
-      projectContents,
-      metadata,
-      domReconstructedMetadata,
-      pathTrees,
-      allElementProps,
-      parentPath,
-    )
-  ) {
+  if (allowGroupTrueUp(projectContents, metadata, pathTrees, allElementProps, parentPath)) {
     const siblings = MetadataUtils.getSiblingsOrdered(metadata, pathTrees, target)
     return [
       queueTrueUpElement(siblings.map((sibling) => trueUpGroupElementChanged(sibling.elementPath))),

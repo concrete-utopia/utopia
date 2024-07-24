@@ -162,9 +162,6 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
   const builtInDependenciesRef = useRefEditorState((store) => store.builtInDependencies)
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-  const domReconstructedMetadataRef = useRefEditorState(
-    (store) => store.editor.domReconstructedMetadata,
-  )
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
@@ -231,7 +228,6 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
         insertAsAbsoluteStrategy(
           element,
           jsxMetadataRef.current,
-          domReconstructedMetadataRef.current,
           elementPathTreeRef.current,
           allElementPropsRef.current,
           targetParent.value.parentPath,
@@ -242,7 +238,6 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
         insertAsStaticStrategy(
           element,
           jsxMetadataRef.current,
-          domReconstructedMetadataRef.current,
           elementPathTreeRef.current,
           allElementPropsRef.current,
           targetParent.value.parentPath,
@@ -253,17 +248,16 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
       ])
     },
     [
-      projectContentsRef,
-      openFileRef,
-      selectedViewsRef,
-      jsxMetadataRef,
-      elementPathTreeRef,
-      propertyControlsInfoRef,
-      dispatch,
-      domReconstructedMetadataRef,
       allElementPropsRef,
       builtInDependenciesRef,
+      dispatch,
+      elementPathTreeRef,
+      jsxMetadataRef,
       nodeModulesRef,
+      openFileRef,
+      projectContentsRef,
+      selectedViewsRef,
+      propertyControlsInfoRef,
     ],
   )
 }

@@ -198,7 +198,6 @@ export function keyboardAbsoluteResizeStrategy(
         })
         const parentsAndSiblings: ElementPath[] = gatherParentAndSiblingTargets(
           canvasState.startingMetadata,
-          canvasState.startingReconstructedDOMMetadata,
           canvasState.startingAllElementProps,
           canvasState.startingElementPathTree,
           getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
@@ -207,7 +206,6 @@ export function keyboardAbsoluteResizeStrategy(
           deduplicateEdges(movementsWithEdges.map((m) => m.edge)),
           selectedElements,
           canvasState.startingMetadata,
-          canvasState.startingReconstructedDOMMetadata,
           canvasState.startingAllElementProps,
           canvasState.startingElementPathTree,
         )
@@ -245,20 +243,12 @@ function getChildrenToSnapTo(
   edgePositions: EdgePosition[],
   targets: Array<ElementPath>,
   componentMetadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
 ) {
   return uniqBy(
     edgePositions.flatMap((edge) =>
-      childrenBoundsToSnapTo(
-        edge,
-        targets,
-        componentMetadata,
-        domReconstructedMetadata,
-        allElementProps,
-        pathTrees,
-      ),
+      childrenBoundsToSnapTo(edge, targets, componentMetadata, allElementProps, pathTrees),
     ),
     (l, r) => EP.toString(l) === EP.toString(r),
   )

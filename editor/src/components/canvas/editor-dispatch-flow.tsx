@@ -51,13 +51,13 @@ export function runDomWalkerAndSaveResults(
     [
       saveDOMReport(
         domWalkerResult.metadata,
-        domWalkerResult.reconstructedMetadata,
         domWalkerResult.cachedPaths,
         domWalkerResult.invalidatedPaths,
       ),
     ],
     storedState,
     spyCollector,
+    domWalkerResult.reconstructedMetadata,
   )
   return dispatchResultWithMetadata
 }

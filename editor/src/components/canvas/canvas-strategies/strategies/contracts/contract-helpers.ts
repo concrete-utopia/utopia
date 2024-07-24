@@ -13,18 +13,11 @@ export type EditorContract = 'fragment' | 'frame' | 'group' | 'wrapper-div'
 
 export function getEditorContractForElement(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   path: ElementPath,
 ): EditorContract {
-  const fragmentLikeType = getElementFragmentLikeType(
-    metadata,
-    domReconstructedMetadata,
-    allElementProps,
-    pathTrees,
-    path,
-  )
+  const fragmentLikeType = getElementFragmentLikeType(metadata, allElementProps, pathTrees, path)
   const isGroupLike = treatElementAsGroupLike(metadata, path)
   if (isGroupLike) {
     return 'group'

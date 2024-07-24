@@ -39,14 +39,12 @@ export type StaticReparentTarget =
 
 export function reparentStrategyForPaste(
   currentMetadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   parent: ElementPath,
 ): ReparentStrategy {
   return autoLayoutParentAbsoluteOrStatic(
     currentMetadata,
-    domReconstructedMetadata,
     allElementProps,
     pathTrees,
     parent,
@@ -69,7 +67,6 @@ export function findReparentStrategies(
     cmdPressed,
     canvasState,
     metadata,
-    canvasState.startingReconstructedDOMMetadata,
     canvasState.startingElementPathTree,
     canvasState.startingAllElementProps,
     allowSmallerParent,

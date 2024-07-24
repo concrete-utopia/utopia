@@ -244,7 +244,6 @@ export function positionElementToCoordinatesCommands(
 
   const elementIsFragmentLike = treatElementAsFragmentLike(
     metadata.originalTargetMetadata,
-    metadata.originalDomReconstructedMetadata,
     oldAllElementProps,
     metadata.originalPathTrees,
     elementToReparent.oldPath,
@@ -256,7 +255,6 @@ export function positionElementToCoordinatesCommands(
 
   const children = replaceFragmentLikePathsWithTheirChildrenRecursive(
     metadata.originalTargetMetadata,
-    metadata.originalDomReconstructedMetadata,
     oldAllElementProps,
     metadata.originalPathTrees,
     [elementToReparent.oldPath],
@@ -313,10 +311,8 @@ export function getReparentPropertyChanges(
   target: ElementPath,
   newParent: ElementPath,
   originalContextMetadata: ElementInstanceMetadataMap,
-  originalDomReconstructedMetadata: ElementInstanceMetadataMap,
   originalPathTrees: ElementPathTrees,
   currentMetadata: ElementInstanceMetadataMap,
-  currentDomReconstructedMetadata: ElementInstanceMetadataMap,
   currentPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
   targetOriginalStylePosition: CSSPosition | null,
@@ -327,13 +323,11 @@ export function getReparentPropertyChanges(
   const newPath = EP.appendToPath(newParent, EP.toUid(target))
 
   const elementPathSnapshot = { oldPath: originalElementPath, newPath: newPath }
-  const metadataSnapshot: MetadataSnapshots = {
+  const metadataSnapshot = {
     originalTargetMetadata: originalContextMetadata,
-    originalPathTrees: originalPathTrees,
-    originalDomReconstructedMetadata: originalDomReconstructedMetadata,
     currentMetadata: currentMetadata,
+    originalPathTrees: originalPathTrees,
     currentPathTrees: currentPathTrees,
-    currentDomReconstructedMetadata: currentDomReconstructedMetadata,
   }
 
   switch (reparentStrategy) {

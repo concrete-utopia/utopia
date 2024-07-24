@@ -40,7 +40,6 @@ export function useLayoutOrElementIcon(navigatorEntry: NavigatorEntry): LayoutIc
       return createElementIconPropsFromMetadata(
         navigatorEntry.elementPath,
         metadata,
-        store.editor.domReconstructedMetadata,
         pathTrees,
         navigatorEntry,
         store.editor.allElementProps,
@@ -88,7 +87,6 @@ export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase |
 export function createComponentOrElementIconProps(
   elementPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   autoFocusedPaths: Array<ElementPath>,
   navigatorEntry: NavigatorEntry | null,
@@ -109,7 +107,6 @@ export function createComponentOrElementIconProps(
     createElementIconPropsFromMetadata(
       elementPath,
       metadata,
-      domReconstructedMetadata,
       pathTrees,
       navigatorEntry,
       allElementProps,
@@ -153,7 +150,6 @@ function isConditionalBranchText(
 export function createElementIconPropsFromMetadata(
   elementPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   navigatorEntry: NavigatorEntry | null,
   allElementProps: AllElementProps,
@@ -218,7 +214,6 @@ export function createElementIconPropsFromMetadata(
 
   const fragmentLikeType = getElementFragmentLikeType(
     metadata,
-    domReconstructedMetadata,
     allElementProps,
     pathTrees,
     elementPath,

@@ -758,7 +758,6 @@ export function isFixedHugFillModeAppliedOnAnySide(
 
 export function setToFixedSizeCommands(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   allElementProps: ElementProps,
   targetElements: Array<ElementPath>,
@@ -769,13 +768,7 @@ export function setToFixedSizeCommands(
     const isGroup = treatElementAsGroupLike(metadata, targetElement)
     // Only convert the group to a frame if it is not itself a child of a group.
     if (isGroup && !isChildOfGroup) {
-      return convertGroupToFrameCommands(
-        metadata,
-        domReconstructedMetadata,
-        elementPathTree,
-        allElementProps,
-        targetElement,
-      )
+      return convertGroupToFrameCommands(metadata, elementPathTree, allElementProps, targetElement)
     } else {
       return sizeToVisualDimensions(metadata, elementPathTree, targetElement)
     }
@@ -897,7 +890,6 @@ export function detectPackedSpacedSetting(
 
 export function resizeToFitCommands(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
@@ -914,13 +906,7 @@ export function resizeToFitCommands(
   if (commands.length == 0) {
     return (
       commandsForFirstApplicableStrategy(
-        setPropHugAbsoluteStrategies(
-          metadata,
-          domReconstructedMetadata,
-          selectedViews,
-          elementPathTree,
-          allElementProps,
-        ),
+        setPropHugAbsoluteStrategies(metadata, selectedViews, elementPathTree, allElementProps),
       ) ?? []
     )
   }
@@ -990,7 +976,6 @@ export function setElementTopLeft(
 
 export function toggleResizeToFitSetToFixed(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
@@ -1004,20 +989,8 @@ export function toggleResizeToFitSetToFixed(
   const isSetToHug = isFixedHugFillModeApplied(metadata, firstElementPath, 'hug')
 
   return isSetToHug
-    ? setToFixedSizeCommands(
-        metadata,
-        domReconstructedMetadata,
-        elementPathTree,
-        allElementProps,
-        elementPaths,
-      )
-    : resizeToFitCommands(
-        metadata,
-        domReconstructedMetadata,
-        elementPaths,
-        elementPathTree,
-        allElementProps,
-      )
+    ? setToFixedSizeCommands(metadata, elementPathTree, allElementProps, elementPaths)
+    : resizeToFitCommands(metadata, elementPaths, elementPathTree, allElementProps)
 }
 
 export function getFixedFillHugOptionsForElement(
@@ -1201,7 +1174,6 @@ export function isFixedHugFillEqual(
 
 export function toggleAbsolutePositioningCommands(
   jsxMetadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPathTree: ElementPathTrees,
   selectedViews: Array<ElementPath>,
@@ -1209,7 +1181,6 @@ export function toggleAbsolutePositioningCommands(
   const commands = selectedViews.flatMap((elementPath) => {
     const maybeGroupConversionCommands = groupConversionCommands(
       jsxMetadata,
-      domReconstructedMetadata,
       allElementProps,
       elementPathTree,
       elementPath,

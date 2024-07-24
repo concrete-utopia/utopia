@@ -78,7 +78,6 @@ export function treatElementAsGroupLikeFromMetadata(
 export function allowGroupTrueUp(
   projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   path: ElementPath,
@@ -88,7 +87,6 @@ export function allowGroupTrueUp(
     const groupValidity = getGroupValidity(
       path,
       metadata,
-      domReconstructedMetadata,
       pathTrees,
       allElementProps,
       projectContents,
@@ -281,21 +279,13 @@ export function getGroupStateFromJSXElement(
   jsxElement: JSXElement,
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   projectContents: ProjectContentTreeRoot,
 ): GroupState {
   return (
     maybeGroupHasPercentagePins(jsxElement) ??
-    maybeInvalidGroupChildren(
-      path,
-      metadata,
-      domReconstructedMetadata,
-      pathTrees,
-      allElementProps,
-      projectContents,
-    ) ??
+    maybeInvalidGroupChildren(path, metadata, pathTrees, allElementProps, projectContents) ??
     'valid'
   )
 }
@@ -303,7 +293,6 @@ export function getGroupStateFromJSXElement(
 export function getGroupState(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   projectContents: ProjectContentTreeRoot,
@@ -316,7 +305,6 @@ export function getGroupState(
     group,
     path,
     metadata,
-    domReconstructedMetadata,
     pathTrees,
     allElementProps,
     projectContents,
@@ -326,7 +314,6 @@ export function getGroupState(
 function maybeInvalidGroupChildren(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   projectContents: ProjectContentTreeRoot,
@@ -336,7 +323,6 @@ function maybeInvalidGroupChildren(
   )
   const flattenedChildPaths = replaceNonDOMElementPathsWithTheirChildrenRecursive(
     metadata,
-    domReconstructedMetadata,
     allElementProps,
     pathTrees,
     childPaths,
@@ -365,19 +351,11 @@ export function getGroupChildStateFromJSXElement(jsxElement: JSXElement): GroupS
 export function getGroupValidity(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   projectContents: ProjectContentTreeRoot,
 ): GroupValidity {
-  const groupState = getGroupState(
-    path,
-    metadata,
-    domReconstructedMetadata,
-    pathTrees,
-    allElementProps,
-    projectContents,
-  )
+  const groupState = getGroupState(path, metadata, pathTrees, allElementProps, projectContents)
   return groupValidityFromGroupState(groupState)
 }
 
@@ -541,7 +519,6 @@ export function groupStateFromJSXElement(
   element: JSXElement,
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   projectContents: ProjectContentTreeRoot,
@@ -552,7 +529,6 @@ export function groupStateFromJSXElement(
       element,
       path,
       metadata,
-      domReconstructedMetadata,
       pathTrees,
       allElementProps,
       projectContents,

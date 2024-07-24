@@ -177,7 +177,6 @@ export const hugContentsBasicStrategy = (
 })
 export const hugContentsAbsoluteStrategy = (
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   targets: ElementPath[],
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
@@ -194,14 +193,7 @@ export const hugContentsAbsoluteStrategy = (
     }
 
     return targetsWithOnlyAbsoluteChildren.flatMap(
-      (path) =>
-        convertSizelessDivToFrameCommands(
-          metadata,
-          domReconstructedMetadata,
-          allElementProps,
-          pathTrees,
-          path,
-        ) ?? [],
+      (path) => convertSizelessDivToFrameCommands(metadata, allElementProps, pathTrees, path) ?? [],
     )
   },
 })

@@ -73,7 +73,6 @@ export interface CanvasData {
   canvasOffset: CanvasPoint
   selectedViews: Array<ElementPath>
   jsxMetadata: ElementInstanceMetadataMap
-  domReconstructedMetadata: ElementInstanceMetadataMap
   projectContents: ProjectContentTreeRoot
   filePathMappings: FilePathMappings
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
@@ -457,7 +456,6 @@ export const group: ContextMenuItem<CanvasData> = {
           data.selectedViews,
           data.projectContents,
           data.jsxMetadata,
-          data.domReconstructedMetadata,
           data.allElementProps,
           data.pathTrees,
           data.navigatorTargets,
@@ -481,13 +479,7 @@ export const unwrap: ContextMenuItem<CanvasData> = {
           data.pathTrees,
           data.propertyControlsInfo,
         ) ||
-        treatElementAsFragmentLike(
-          data.jsxMetadata,
-          data.domReconstructedMetadata,
-          data.allElementProps,
-          data.pathTrees,
-          path,
-        ),
+        treatElementAsFragmentLike(data.jsxMetadata, data.allElementProps, data.pathTrees, path),
     )
   },
   action: (data, dispatch?: EditorDispatch) => {

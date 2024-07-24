@@ -729,7 +729,6 @@ export function editorMoveMultiSelectedTemplates(
 
     const outcomeResult = getReparentOutcome(
       editor.jsxMetadata,
-      editor.domReconstructedMetadata,
       editor.elementPathTree,
       editor.allElementProps,
       builtInDependencies,
@@ -856,7 +855,6 @@ export function reparentElementToUnwrap(
     reparentToUnwrapAsAbsoluteStrategy(
       pathToReparent(target),
       editor.jsxMetadata,
-      editor.domReconstructedMetadata,
       editor.elementPathTree,
       editor.allElementProps,
       insertionPath,
@@ -868,7 +866,6 @@ export function reparentElementToUnwrap(
     convertToAbsoluteAndReparentToUnwrapStrategy(
       pathToReparent(target),
       editor.jsxMetadata,
-      editor.domReconstructedMetadata,
       editor.elementPathTree,
       editor.allElementProps,
       insertionPath,
@@ -907,7 +904,6 @@ export function restoreEditorState(
     trueUpElementsAfterDomWalkerRuns: [], // <- we reset the elements true-up value
     spyMetadata: desiredEditor.spyMetadata,
     domMetadata: desiredEditor.domMetadata,
-    domReconstructedMetadata: desiredEditor.domReconstructedMetadata,
     jsxMetadata: desiredEditor.jsxMetadata,
     elementPathTree: desiredEditor.elementPathTree,
     projectContents: desiredEditor.projectContents,
@@ -1182,7 +1178,6 @@ function shouldCascadeDelete(editor: EditorState, path: ElementPath): boolean {
     // it's a framgent
     treatElementAsFragmentLike(
       editor.jsxMetadata,
-      editor.domReconstructedMetadata,
       editor.allElementProps,
       editor.elementPathTree,
       path,
@@ -1826,7 +1821,6 @@ export const UPDATE_FNS = {
             { ...element, props: updatedProps.value },
             action.target,
             editor.jsxMetadata,
-            editor.domReconstructedMetadata,
             editor.elementPathTree,
             editor.allElementProps,
             editor.projectContents,
@@ -2766,7 +2760,6 @@ export const UPDATE_FNS = {
 
       const elementIsFragmentLike = treatElementAsFragmentLike(
         workingEditor.jsxMetadata,
-        workingEditor.domReconstructedMetadata,
         workingEditor.allElementProps,
         workingEditor.elementPathTree,
         target,
@@ -4371,10 +4364,6 @@ export const UPDATE_FNS = {
       editor.spyMetadata,
       spyResult,
     ).value
-    const finalReconstructedMetadata = ElementInstanceMetadataMapKeepDeepEquality(
-      editor.domReconstructedMetadata,
-      action.reconstructedMetadata,
-    ).value
 
     const stayedTheSame =
       editor.domMetadata === finalDomMetadata && editor.spyMetadata === finalSpyMetadata
@@ -4386,7 +4375,6 @@ export const UPDATE_FNS = {
         ...editor,
         // TODO move the reconstructMetadata call here, and remove currentAllElementProps
         domMetadata: finalDomMetadata,
-        domReconstructedMetadata: finalReconstructedMetadata,
         spyMetadata: finalSpyMetadata,
         currentAllElementProps: {
           ...spyCollector.current.spyValues.allElementProps,
@@ -5754,7 +5742,6 @@ export const UPDATE_FNS = {
       const commands = getEscapeHatchCommands(
         action.targets,
         editor.jsxMetadata,
-        editor.domReconstructedMetadata,
         canvasState,
         null,
         action.setHuggingParentToFixed,

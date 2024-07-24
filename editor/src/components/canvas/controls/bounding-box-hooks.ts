@@ -18,7 +18,6 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getMetadata } from '../../editor/store/editor-state'
 import { elementHasOnlyTextChildren } from '../canvas-utils'
 import { isFixedHugFillModeApplied } from '../../inspector/inspector-common'
-import * as EP from '../../../core/shared/element-path'
 
 interface NotNullRefObject<T> {
   readonly current: T

@@ -147,7 +147,6 @@ export function reduxDevtoolsSendActions(
             action: action.action,
             cachedPaths: action.cachedPaths,
             elementMetadata: simplifiedMetadataMap(action.elementMetadata),
-            reconstructedMetadata: simplifiedMetadataMap(action.reconstructedMetadata),
           }
         }
         // By default, we only log the name of the action, and omit the payload

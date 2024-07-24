@@ -97,12 +97,6 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     'FlexGapControl metadata',
   )
 
-  const domReconstructedMetadata = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.domReconstructedMetadata,
-    'FlexGapControl domReconstructedMetadata',
-  )
-
   const elementPathTrees = useEditorState(
     Substores.metadata,
     (store) => store.editor.elementPathTree,
@@ -132,7 +126,6 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   const children = recurseIntoChildrenOfMapOrFragment(
     metadata,
-    domReconstructedMetadata,
     allElementProps,
     elementPathTrees,
     selectedElement,

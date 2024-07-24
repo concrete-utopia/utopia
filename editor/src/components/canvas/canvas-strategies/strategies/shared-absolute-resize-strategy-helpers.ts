@@ -156,7 +156,6 @@ export function snapBoundingBox(
   elementsToSnapTo: ElementPath[],
   selectedElements: Array<ElementPath>,
   jsxMetadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   draggedCorner: EdgePosition,
   resizedBounds: CanvasRectangle,
   canvasScale: number,
@@ -180,7 +179,6 @@ export function snapBoundingBox(
     elementsToSnapTo,
     selectedElements,
     jsxMetadata,
-    domReconstructedMetadata,
     canvasScale,
     draggedPointMovedWithoutSnap,
     true,
@@ -278,7 +276,6 @@ export function childrenBoundsToSnapTo(
   resizingFromEdge: EdgePosition,
   targets: ElementPath[],
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
 ): ElementPath[] {
@@ -288,7 +285,6 @@ export function childrenBoundsToSnapTo(
     )
     return replaceNonDOMElementPathsWithTheirChildrenRecursive(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       childPaths,

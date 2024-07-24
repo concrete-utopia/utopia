@@ -184,7 +184,6 @@ function applyStaticReparent(
           // Reparent the element.
           const outcomeResult = getReparentOutcome(
             canvasState.startingMetadata,
-            canvasState.startingReconstructedDOMMetadata,
             canvasState.startingElementPathTree,
             canvasState.startingAllElementProps,
             canvasState.builtInDependencies,

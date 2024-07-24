@@ -68,7 +68,6 @@ export function baseAbsoluteReparentStrategy(
     const filteredSelectedElements = flattenSelection(selectedElements)
     const isApplicable = replaceFragmentLikePathsWithTheirChildrenRecursive(
       canvasState.startingMetadata,
-      canvasState.startingReconstructedDOMMetadata,
       canvasState.startingAllElementProps,
       canvasState.startingElementPathTree,
       filteredSelectedElements,
@@ -151,7 +150,6 @@ export function baseAbsoluteReparentStrategy(
                     newParent,
                     null,
                     canvasState.startingMetadata,
-                    canvasState.startingReconstructedDOMMetadata,
                     canvasState.startingElementPathTree,
                     canvasState.startingAllElementProps,
                     canvasState.builtInDependencies,
@@ -194,7 +192,6 @@ export function baseAbsoluteReparentStrategy(
                   setElementsToRerenderCommand(elementsToRerender),
                   ...maybeAddContainLayout(
                     canvasState.startingMetadata,
-                    canvasState.startingReconstructedDOMMetadata,
                     canvasState.startingAllElementProps,
                     canvasState.startingElementPathTree,
                     newParent.intendedParentPath,
@@ -225,7 +222,6 @@ export function createAbsoluteReparentAndOffsetCommands(
   newParent: InsertionPath,
   indexPosition: IndexPosition | null,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTree: ElementPathTrees,
   elementProps: AllElementProps,
   builtInDependencies: BuiltInDependencies,
@@ -235,7 +231,6 @@ export function createAbsoluteReparentAndOffsetCommands(
 ) {
   const reparentResult = getReparentOutcome(
     metadata,
-    domReconstructedMetadata,
     pathTree,
     elementProps,
     builtInDependencies,
@@ -252,7 +247,6 @@ export function createAbsoluteReparentAndOffsetCommands(
   } else {
     const offsetCommands = replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
-      domReconstructedMetadata,
       elementProps,
       pathTree,
       [target],
@@ -278,14 +272,12 @@ export function createAbsoluteReparentAndOffsetCommands(
 
 function maybeAddContainLayout(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   path: ElementPath,
 ): CanvasCommand[] {
   const closestNonFragmentParent = getClosestNonFragmentParent(
     metadata,
-    domReconstructedMetadata,
     allElementProps,
     pathTrees,
     path,
@@ -306,22 +298,13 @@ function maybeAddContainLayout(
 
 function getClosestNonFragmentParent(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   path: ElementPath,
 ): ElementPath {
   let currentPath = path
   while (!EP.isStoryboardPath(currentPath)) {
-    if (
-      !treatElementAsFragmentLike(
-        metadata,
-        domReconstructedMetadata,
-        allElementProps,
-        pathTrees,
-        currentPath,
-      )
-    ) {
+    if (!treatElementAsFragmentLike(metadata, allElementProps, pathTrees, currentPath)) {
       return currentPath
     }
     currentPath = EP.parentPath(currentPath)

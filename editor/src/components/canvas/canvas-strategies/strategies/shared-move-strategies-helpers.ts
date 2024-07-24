@@ -162,7 +162,6 @@ export function applyMoveCommon(
       )
       const snapTargets: ElementPath[] = gatherParentAndSiblingTargets(
         canvasState.startingMetadata,
-        canvasState.startingReconstructedDOMMetadata,
         canvasState.startingAllElementProps,
         canvasState.startingElementPathTree,
         targetsForSnapping,

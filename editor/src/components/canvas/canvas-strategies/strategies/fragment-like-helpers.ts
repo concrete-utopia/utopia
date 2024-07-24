@@ -22,7 +22,6 @@ export function retargetStrategyToChildrenOfFragmentLikeElements(
 
   return replaceFragmentLikePathsWithTheirChildrenRecursiveFullReturnValue(
     canvasState.startingMetadata,
-    canvasState.startingReconstructedDOMMetadata,
     canvasState.startingAllElementProps,
     canvasState.startingElementPathTree,
     targetsWithoutDescedants,
@@ -53,7 +52,6 @@ export function retargetStrategyToTopMostFragmentLikeElement(
 
   return optionallyReplacePathWithFragmentLikeParentRecursive(
     canvasState.startingMetadata,
-    canvasState.startingReconstructedDOMMetadata,
     canvasState.startingAllElementProps,
     canvasState.startingElementPathTree,
     targetsWithoutDescedants,
@@ -62,14 +60,12 @@ export function retargetStrategyToTopMostFragmentLikeElement(
 
 export function replaceFragmentLikePathsWithTheirChildrenRecursive(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   paths: Array<ElementPath>,
 ): Array<ElementPath> {
   return replaceFragmentLikePathsWithTheirChildrenRecursiveFullReturnValue(
     metadata,
-    domReconstructedMetadata,
     allElementProps,
     pathTrees,
     paths,
@@ -83,7 +79,6 @@ const replaceFragmentLikePathsWithTheirChildrenRecursiveFullReturnValue = memoiz
 
 function replaceFragmentLikePathsWithTheirChildrenRecursiveInner(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   paths: Array<ElementPath>,
@@ -93,22 +88,13 @@ function replaceFragmentLikePathsWithTheirChildrenRecursiveInner(
   const updatedPaths = paths.flatMap((path) => {
     const elementIsFragmentLike = treatElementAsFragmentLike(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       path,
     )
 
     if (elementIsFragmentLike) {
-      const childrenAndUnfurled =
-        MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponentsUnordered(path, {
-          ...metadata,
-          ...domReconstructedMetadata,
-        })
-      const children = [
-        ...childrenAndUnfurled.children,
-        ...childrenAndUnfurled.unfurledComponents,
-      ].map((elementMetadata) => elementMetadata.elementPath)
+      const children = MetadataUtils.getChildrenPathsOrdered(pathTrees, path)
       if (children.length === 0) {
         // with no children, actually let's just return the original element
         return path
@@ -118,7 +104,6 @@ function replaceFragmentLikePathsWithTheirChildrenRecursiveInner(
       // Balazs: I think this is breaking the Memo!!!!!! this should be calling replaceFragmentLikePathsWithTheirChildrenRecursiveInner
       return replaceFragmentLikePathsWithTheirChildrenRecursive(
         metadata,
-        domReconstructedMetadata,
         allElementProps,
         pathTrees,
         children,
@@ -138,7 +123,6 @@ export const replaceNonDOMElementPathsWithTheirChildrenRecursive = memoize(
 
 function replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   paths: Array<ElementPath>,
@@ -148,7 +132,6 @@ function replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
   const updatedPaths = paths.flatMap((path) => {
     const elementIsNonDOMElement = isElementNonDOMElement(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       path,
@@ -164,7 +147,6 @@ function replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
       pathsWereReplaced = true
       return replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
         metadata,
-        domReconstructedMetadata,
         allElementProps,
         pathTrees,
         children,
@@ -179,7 +161,6 @@ function replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
 
 export function optionallyReplacePathWithFragmentLikeParentRecursive(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   siblingPaths: Array<ElementPath>,
@@ -193,29 +174,18 @@ export function optionallyReplacePathWithFragmentLikeParentRecursive(
   }
 
   if (
-    !siblingPaths.every((t) =>
-      treatElementAsFragmentLike(metadata, domReconstructedMetadata, allElementProps, pathTrees, t),
-    )
+    !siblingPaths.every((t) => treatElementAsFragmentLike(metadata, allElementProps, pathTrees, t))
   ) {
     return siblingPaths
   }
 
   const parent = EP.parentPath(siblingPaths[0])
-  if (
-    !treatElementAsFragmentLike(
-      metadata,
-      domReconstructedMetadata,
-      allElementProps,
-      pathTrees,
-      parent,
-    )
-  ) {
+  if (!treatElementAsFragmentLike(metadata, allElementProps, pathTrees, parent)) {
     return siblingPaths
   }
 
   return optionallyReplacePathWithFragmentLikeParentRecursive(
     metadata,
-    domReconstructedMetadata,
     allElementProps,
     pathTrees,
     [parent],
@@ -224,7 +194,6 @@ export function optionallyReplacePathWithFragmentLikeParentRecursive(
 
 export function replaceNonDomElementWithFirstDomAncestorPath(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   maybeNonDomElement: ElementPath,
@@ -232,7 +201,6 @@ export function replaceNonDomElementWithFirstDomAncestorPath(
   if (
     treatElementAsFragmentLike(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       maybeNonDomElement,
@@ -242,7 +210,6 @@ export function replaceNonDomElementWithFirstDomAncestorPath(
     // if the element is fragment-like, try testing its parent path
     return replaceNonDomElementWithFirstDomAncestorPath(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       EP.parentPath(maybeNonDomElement),
@@ -263,7 +230,6 @@ type SizelessDivsConsideredFragmentLike =
 
 export function getElementFragmentLikeType(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   path: ElementPath,
@@ -296,11 +262,7 @@ export function getElementFragmentLikeType(
     return null
   }
 
-  const children = MetadataUtils.getChildrenOrderedMultiMetadata(
-    [metadata, domReconstructedMetadata],
-    pathTrees,
-    path,
-  )
+  const children = MetadataUtils.getChildrenOrdered(metadata, pathTrees, path)
   const childrenCount = children.length
   if (childrenCount === 0) {
     // do not treat elements with zero children as fragment-like
@@ -325,7 +287,6 @@ export function getElementFragmentLikeType(
 
 export function treatElementAsFragmentLike(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   path: ElementPath,
@@ -334,7 +295,6 @@ export function treatElementAsFragmentLike(
   return (
     getElementFragmentLikeType(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       path,
@@ -345,14 +305,12 @@ export function treatElementAsFragmentLike(
 
 export function isElementNonDOMElement(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): boolean {
   const fragmentLikeType = getElementFragmentLikeType(
     metadata,
-    domReconstructedMetadata,
     allElementProps,
     pathTrees,
     elementPath,

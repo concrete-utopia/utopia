@@ -99,7 +99,6 @@ export function createNavigatorReparentPostActionActions(
   indexPosition: IndexPosition,
   canvasViewportCenter: CanvasPoint,
   jsxMetadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): Array<EditorAction> {
   const navigatorReparentPostActionMenuData: NavigatorReparentPostActionMenuData = {
@@ -110,7 +109,6 @@ export function createNavigatorReparentPostActionActions(
     canvasViewportCenter: canvasViewportCenter,
     jsxMetadata: jsxMetadata,
     allElementProps: allElementProps,
-    domReconstructedMetadata: domReconstructedMetadata,
   }
 
   const defaultChoice =

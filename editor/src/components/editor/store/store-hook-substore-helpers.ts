@@ -11,7 +11,6 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   trueUpElementsAfterDomWalkerRuns: [],
   spyMetadata: null as any,
   domMetadata: null as any,
-  domReconstructedMetadata: null as any,
   jsxMetadata: null as any,
   elementPathTree: {},
   projectContents: {},

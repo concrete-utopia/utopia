@@ -109,7 +109,6 @@ type CommandsOrNotApplicable = Array<CanvasCommand> | 'not-applicable'
 
 function convertSingleChildWith100PercentSize(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPathTree: ElementPathTrees,
   parentFlexDirection: FlexDirection | null,
@@ -137,7 +136,6 @@ function convertSingleChildWith100PercentSize(
     return [
       ...ifElementIsFragmentLikeFirstConvertItToFrame(
         metadata,
-        domReconstructedMetadata,
         allElementProps,
         elementPathTree,
         path,
@@ -163,7 +161,6 @@ function convertSingleChildWith100PercentSize(
 
 function convertThreeElementGroupRow(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPathTree: ElementPathTrees,
   path: ElementPath,
@@ -211,7 +208,6 @@ function convertThreeElementGroupRow(
             // Configure the parent element.
             ...getCommandsForConversionToDesiredType(
               metadata,
-              domReconstructedMetadata,
               elementPathTree,
               allElementProps,
               [path],
@@ -251,7 +247,6 @@ function convertThreeElementGroupRow(
 
 export function convertLayoutToFlexCommands(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   elementPaths: Array<ElementPath>,
   allElementProps: AllElementProps,
@@ -275,16 +270,9 @@ export function convertLayoutToFlexCommands(
 
     const childrenPaths = MetadataUtils.getChildrenPathsOrdered(elementPathTree, path).flatMap(
       (child) =>
-        isElementNonDOMElement(
-          metadata,
-          domReconstructedMetadata,
-          allElementProps,
-          elementPathTree,
-          child,
-        )
+        isElementNonDOMElement(metadata, allElementProps, elementPathTree, child)
           ? replaceNonDOMElementPathsWithTheirChildrenRecursive(
               metadata,
-              domReconstructedMetadata,
               allElementProps,
               elementPathTree,
               [child],
@@ -311,7 +299,6 @@ export function convertLayoutToFlexCommands(
     // Special case: We only have a single child which has a size of 100%.
     const possibleSingleChildWith100PercentSize = convertSingleChildWith100PercentSize(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       elementPathTree,
       parentFlexDirection,
@@ -326,7 +313,6 @@ export function convertLayoutToFlexCommands(
     // Special case: Group with 3 child elements in a row with some specific `data-constraints`.
     const possibleThreeElementGroupRow = convertThreeElementGroupRow(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       elementPathTree,
       path,
@@ -340,7 +326,6 @@ export function convertLayoutToFlexCommands(
 
     const rearrangedChildrenPaths = rearrangedPathsWithFlexConversionMeasurementBoundariesIntact(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       elementPathTree,
       path,
@@ -370,7 +355,6 @@ export function convertLayoutToFlexCommands(
     return [
       ...ifElementIsFragmentLikeFirstConvertItToFrame(
         metadata,
-        domReconstructedMetadata,
         allElementProps,
         elementPathTree,
         path,
@@ -394,14 +378,12 @@ export function convertLayoutToFlexCommands(
 
 function ifElementIsFragmentLikeFirstConvertItToFrame(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPathTrees: ElementPathTrees,
   target: ElementPath,
 ): Array<CanvasCommand> {
   const type = getElementFragmentLikeType(
     metadata,
-    domReconstructedMetadata,
     allElementProps,
     elementPathTrees,
     target,
@@ -421,7 +403,6 @@ function ifElementIsFragmentLikeFirstConvertItToFrame(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       replaceFragmentLikePathsWithTheirChildrenRecursive(
         metadata,
-        domReconstructedMetadata,
         allElementProps,
         elementPathTrees,
         MetadataUtils.getChildrenPathsOrdered(elementPathTrees, target),
@@ -738,7 +719,6 @@ interface TopLevelChildrenAndGroups {
 
 function getTopLevelChildrenAndMeasurementBoundaries(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   parentPath: ElementPath,
@@ -749,15 +729,12 @@ function getTopLevelChildrenAndMeasurementBoundaries(
   const childrenPaths = MetadataUtils.getChildrenPathsOrdered(pathTrees, parentPath)
 
   for (const child of childrenPaths) {
-    if (
-      isElementNonDOMElement(metadata, domReconstructedMetadata, allElementProps, pathTrees, child)
-    ) {
+    if (isElementNonDOMElement(metadata, allElementProps, pathTrees, child)) {
       maesurementBoundaries.push({
         element: child,
         leaves: new Set(
           replaceNonDOMElementPathsWithTheirChildrenRecursive(
             metadata,
-            domReconstructedMetadata,
             allElementProps,
             pathTrees,
             [child],
@@ -812,7 +789,6 @@ function checkAllChildrenPartOfSingleGroup(
  */
 function rearrangedPathsWithFlexConversionMeasurementBoundariesIntact(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   parentPath: ElementPath,
@@ -820,7 +796,6 @@ function rearrangedPathsWithFlexConversionMeasurementBoundariesIntact(
 ): Array<ElementPath> | null {
   const childrenAndGroups = getTopLevelChildrenAndMeasurementBoundaries(
     metadata,
-    domReconstructedMetadata,
     allElementProps,
     pathTrees,
     parentPath,

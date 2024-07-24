@@ -1235,14 +1235,12 @@ export function setMainUIFile(uiFile: string): SetMainUIFile {
 
 export function saveDOMReport(
   elementMetadata: ElementInstanceMetadataMap,
-  reconstructedMetadata: ElementInstanceMetadataMap,
   cachedPaths: Array<ElementPath>,
   invalidatedPaths: Array<string>,
 ): SaveDOMReport {
   return {
     action: 'SAVE_DOM_REPORT',
     elementMetadata: elementMetadata,
-    reconstructedMetadata: reconstructedMetadata,
     cachedPaths: cachedPaths,
     invalidatedPaths: invalidatedPaths,
   }

@@ -113,7 +113,6 @@ export interface InteractionCanvasState {
   scale: number
   canvasOffset: CanvasVector
   startingMetadata: ElementInstanceMetadataMap
-  startingReconstructedDOMMetadata: ElementInstanceMetadataMap
   startingElementPathTree: ElementPathTrees
   startingAllElementProps: AllElementProps
   propertyControlsInfo: PropertyControlsInfo

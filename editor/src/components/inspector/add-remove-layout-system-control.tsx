@@ -35,9 +35,6 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
 
   const dispatch = useDispatch()
   const elementMetadataRef = useRefEditorState(metadataSelector)
-  const domReconstructedMetadataRef = useRefEditorState(
-    (store) => store.editor.domReconstructedMetadata,
-  )
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
@@ -48,20 +45,12 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
         dispatch,
         addFlexLayoutStrategies(
           elementMetadataRef.current,
-          domReconstructedMetadataRef.current,
           selectedViewsRef.current,
           elementPathTreeRef.current,
           allElementPropsRef.current,
         ),
       ),
-    [
-      allElementPropsRef,
-      dispatch,
-      domReconstructedMetadataRef,
-      elementMetadataRef,
-      elementPathTreeRef,
-      selectedViewsRef,
-    ],
+    [allElementPropsRef, dispatch, elementMetadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
   const removeLayoutSystem = React.useCallback(

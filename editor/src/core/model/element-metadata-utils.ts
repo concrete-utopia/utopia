@@ -1853,20 +1853,14 @@ export const MetadataUtils = {
 
     // Note: This will not necessarily be representative of the structured ordering in
     // the code that produced these elements.
-    const pathTree = MetadataUtils.createElementPathTreeFromMetadata(
-      mergedMetadata,
-      fromDOMReconstructed,
-    )
+    const pathTree = MetadataUtils.createElementPathTreeFromMetadata(mergedMetadata)
 
     return {
       mergedMetadata: mergedMetadata,
       elementPathTree: pathTree,
     }
   },
-  createElementPathTreeFromMetadata(
-    metadata: ElementInstanceMetadataMap,
-    domReconstructedMetadata: ElementInstanceMetadataMap,
-  ): ElementPathTrees {
+  createElementPathTreeFromMetadata(metadata: ElementInstanceMetadataMap): ElementPathTrees {
     return buildTree(metadata)
   },
   duplicateElementMetadataAtPath(

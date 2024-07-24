@@ -51,7 +51,6 @@ export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
 
   const children = recurseIntoChildrenOfMapOrFragment(
     canvasState.startingMetadata,
-    canvasState.startingReconstructedDOMMetadata,
     canvasState.startingAllElementProps,
     canvasState.startingElementPathTree,
     EP.parentPath(selectedElement),

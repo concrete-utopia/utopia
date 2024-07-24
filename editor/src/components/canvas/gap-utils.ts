@@ -194,7 +194,6 @@ export function maybeFlexGapData(
 
 export function recurseIntoChildrenOfMapOrFragment(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   target: ElementPath,
@@ -213,7 +212,6 @@ export function recurseIntoChildrenOfMapOrFragment(
     const isMap = MetadataUtils.isJSXMapExpression(elementPath, metadata)
     const isFragmentLike = treatElementAsFragmentLike(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       pathTrees,
       elementPath,
@@ -221,13 +219,7 @@ export function recurseIntoChildrenOfMapOrFragment(
     )
 
     if (isFragmentLike || isMap) {
-      return recurseIntoChildrenOfMapOrFragment(
-        metadata,
-        domReconstructedMetadata,
-        allElementProps,
-        pathTrees,
-        elementPath,
-      )
+      return recurseIntoChildrenOfMapOrFragment(metadata, allElementProps, pathTrees, elementPath)
     }
     const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
     if (instance == null) {

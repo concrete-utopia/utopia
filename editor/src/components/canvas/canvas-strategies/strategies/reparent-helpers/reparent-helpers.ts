@@ -333,7 +333,6 @@ export function replaceJSXElementCopyData(
     copyDataReplaced: {
       elements: updatedElements,
       targetOriginalContextMetadata: workingMetadata,
-      targetOriginalDomReconstructedMetadata: copyData.targetOriginalDomReconstructedMetadata,
     },
     replacePropCommands: setPropCommands,
   }
@@ -522,7 +521,6 @@ export function absolutePositionForReparent(
 
   const isElementFragmentLike = treatElementAsFragmentLike(
     metadata.currentMetadata,
-    metadata.currentDomReconstructedMetadata,
     allElementProps,
     elementPathTrees,
     targetParent,

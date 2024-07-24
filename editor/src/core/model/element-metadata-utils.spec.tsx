@@ -1246,7 +1246,7 @@ describe('getting the root paths', () => {
   it('getAllPaths returns the instance paths in a depth first manner', () => {
     const actualResult = MetadataUtils.getAllPaths(
       testJsxMetadata,
-      MetadataUtils.createElementPathTreeFromMetadata(testJsxMetadata, {}),
+      MetadataUtils.createElementPathTreeFromMetadata(testJsxMetadata),
     )
     const expectedResult: Array<ElementPath> = [
       testComponentSceneElement.elementPath,
@@ -1283,7 +1283,7 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
   it('with no collapsed paths', () => {
     const actualResult = MetadataUtils.createOrderedElementPathsFromElements(
       testJsxMetadata,
-      MetadataUtils.createElementPathTreeFromMetadata(testJsxMetadata, {}),
+      MetadataUtils.createElementPathTreeFromMetadata(testJsxMetadata),
       [],
       [],
     )
@@ -1295,7 +1295,7 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
   it('with the scene collapsed', () => {
     const actualResult = MetadataUtils.createOrderedElementPathsFromElements(
       testJsxMetadata,
-      MetadataUtils.createElementPathTreeFromMetadata(testJsxMetadata, {}),
+      MetadataUtils.createElementPathTreeFromMetadata(testJsxMetadata),
       [testComponentSceneElement.elementPath],
       [],
     )
@@ -1311,7 +1311,7 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
   it('with collapsed roots', () => {
     const actualResult = MetadataUtils.createOrderedElementPathsFromElements(
       testJsxMetadata,
-      MetadataUtils.createElementPathTreeFromMetadata(testJsxMetadata, {}),
+      MetadataUtils.createElementPathTreeFromMetadata(testJsxMetadata),
       [testComponentRoot1.elementPath, testComponentSceneChildElement.elementPath],
       [],
     )

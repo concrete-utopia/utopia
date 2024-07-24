@@ -139,7 +139,6 @@ describe('Groups', () => {
           applyCommandsAction(
             convertFragmentToGroup(
               editorState.jsxMetadata,
-              editorState.domReconstructedMetadata,
               editorState.elementPathTree,
               editorState.allElementProps,
               targetPath,
@@ -261,7 +260,6 @@ describe('Groups', () => {
           applyCommandsAction(
             convertFrameToGroup(
               editorState.jsxMetadata,
-              editorState.domReconstructedMetadata,
               editorState.elementPathTree,
               editorState.allElementProps,
               targetPath,

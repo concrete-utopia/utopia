@@ -23,7 +23,6 @@ import type { UnwrapInspectorStrategy } from './unwrap-strategies-common'
 export const convertToAbsoluteAndReparentToUnwrapStrategy = (
   element: PathToReparent,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   parentInsertionPath: InsertionPath,
@@ -36,7 +35,6 @@ export const convertToAbsoluteAndReparentToUnwrapStrategy = (
   strategy: () => {
     const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       elementPathTree,
       EP.parentPath(element.target),
@@ -49,7 +47,6 @@ export const convertToAbsoluteAndReparentToUnwrapStrategy = (
 
     const result = getReparentOutcome(
       metadata,
-      domReconstructedMetadata,
       elementPathTree,
       allElementProps,
       builtInDependencies,

@@ -150,7 +150,6 @@ function getElementName(
 
 export function getReparentOutcome(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   builtInDependencies: BuiltInDependencies,
@@ -197,7 +196,6 @@ export function getReparentOutcome(
         ...getRequiredGroupTrueUps(
           projectContents,
           metadata,
-          domReconstructedMetadata,
           pathTrees,
           allElementProps,
           toReparent.target,

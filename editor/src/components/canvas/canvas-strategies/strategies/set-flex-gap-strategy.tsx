@@ -71,7 +71,6 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
 
   const children = recurseIntoChildrenOfMapOrFragment(
     canvasState.startingMetadata,
-    canvasState.startingReconstructedDOMMetadata,
     canvasState.startingAllElementProps,
     canvasState.startingElementPathTree,
     selectedElement,

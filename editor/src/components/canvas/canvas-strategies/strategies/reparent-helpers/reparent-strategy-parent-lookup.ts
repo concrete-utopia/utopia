@@ -49,7 +49,6 @@ export function getReparentTargetUnified(
   cmdPressed: boolean, // TODO: this should be removed from here and replaced by meaningful flag(s) (similar to allowSmallerParent)
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
@@ -64,7 +63,6 @@ export function getReparentTargetUnified(
     cmdPressed,
     canvasState,
     metadata,
-    domReconstructedMetadata,
     elementPathTree,
     allElementProps,
     allowSmallerParent,
@@ -76,7 +74,6 @@ export function getReparentTargetUnified(
   const targetParentWithPaddedInsertionZone: ReparentTarget | null =
     findParentByPaddedInsertionZone(
       metadata,
-      domReconstructedMetadata,
       elementPathTree,
       allElementProps,
       validTargetParentsUnderPoint,
@@ -99,7 +96,6 @@ export function getReparentTargetUnified(
   const targetParentUnderPoint: ReparentTarget = findParentUnderPointByArea(
     targetParentPath,
     metadata,
-    domReconstructedMetadata,
     elementPathTree,
     allElementProps,
     canvasScale,
@@ -154,7 +150,6 @@ function findValidTargetsUnderPoint(
   cmdPressed: boolean, // TODO: this should be removed from here and replaced by meaningful flag(s) (similar to allowSmallerParent)
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
@@ -207,15 +202,7 @@ function findValidTargetsUnderPoint(
         return emptyConditional
       }
     }
-    if (
-      treatElementAsFragmentLike(
-        metadata,
-        domReconstructedMetadata,
-        allElementProps,
-        elementPathTree,
-        target,
-      )
-    ) {
+    if (treatElementAsFragmentLike(metadata, allElementProps, elementPathTree, target)) {
       // we disallow reparenting into sizeless Fragment-like elements
       return null
     }
@@ -353,7 +340,6 @@ function isTargetParentOutsideOfContainingComponentUnderMouse(
 
 function findParentByPaddedInsertionZone(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   validTargetparentsUnderPoint: ElementPath[],
@@ -386,7 +372,6 @@ function findParentByPaddedInsertionZone(
     }
     const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
       metadata,
-      domReconstructedMetadata,
       allElementProps,
       elementPathTree,
       element,
@@ -452,7 +437,6 @@ function findParentByPaddedInsertionZone(
 function findParentUnderPointByArea(
   targetParentPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   canvasScale: number,
@@ -465,7 +449,6 @@ function findParentUnderPointByArea(
   )
   const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
     metadata,
-    domReconstructedMetadata,
     allElementProps,
     elementPathTree,
     targetParentPath,
@@ -565,7 +548,6 @@ function findIndexForSingleAxisAutolayoutParent(
 
 export function autoLayoutParentAbsoluteOrStatic(
   metadata: ElementInstanceMetadataMap,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   parent: ElementPath,
@@ -593,13 +575,7 @@ export function autoLayoutParentAbsoluteOrStatic(
     return 'REPARENT_AS_STATIC'
   }
 
-  const isFragmentLike = treatElementAsFragmentLike(
-    metadata,
-    domReconstructedMetadata,
-    allElementProps,
-    pathTrees,
-    parent,
-  )
+  const isFragmentLike = treatElementAsFragmentLike(metadata, allElementProps, pathTrees, parent)
   if (isFragmentLike) {
     return 'REPARENT_AS_ABSOLUTE'
   }
