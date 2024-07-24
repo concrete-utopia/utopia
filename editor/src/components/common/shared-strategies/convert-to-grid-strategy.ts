@@ -6,7 +6,9 @@ import type { CanvasCommand } from '../../canvas/commands/commands'
 import {
   flexContainerProps,
   gridContainerProps,
+  nukeAllAbsolutePositioningPropsCommands,
   prunePropsCommands,
+  sizeToVisualDimensions,
 } from '../../inspector/inspector-common'
 import { getChildrenPathsForContainer } from './convert-strategies-common'
 import type { CanvasFrameAndTarget } from '../../canvas/canvas-types'
@@ -93,6 +95,10 @@ export function convertLayoutToGridCommands(
     return [
       ...prunePropsCommands(flexContainerProps, elementPath),
       ...prunePropsCommands(gridContainerProps, elementPath),
+      ...childrenPaths.flatMap((child) => [
+        ...nukeAllAbsolutePositioningPropsCommands(child),
+        ...sizeToVisualDimensions(metadata, elementPathTree, child),
+      ]),
       setProperty('always', elementPath, PP.create('style', 'display'), 'grid'),
       setProperty('always', elementPath, PP.create('style', 'gap'), gap),
       setProperty(
