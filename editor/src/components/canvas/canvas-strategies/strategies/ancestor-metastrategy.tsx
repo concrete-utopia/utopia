@@ -18,10 +18,13 @@ import type {
   InteractionLifecycle,
 } from '../canvas-strategy-types'
 import { getTargetPathsFromInteractionTarget, targetPaths } from '../canvas-strategy-types'
+import { DoNothingStrategyID } from './drag-to-move-metastrategy'
 import {
   retargetStrategyToChildrenOfFragmentLikeElements,
   treatElementAsFragmentLike,
 } from './fragment-like-helpers'
+
+const ANCESTOR_INCOMPATIBLE_STRATEGIES = [DoNothingStrategyID]
 
 export function ancestorMetaStrategy(
   allOtherStrategies: Array<MetaCanvasStrategy>,
@@ -138,29 +141,34 @@ export function ancestorMetaStrategy(
         )
       }
       return allOtherStrategies.flatMap((metaStrategy) =>
-        metaStrategy(adjustedCanvasState, interactionSession, customStrategyState).map((s) => ({
-          ...s,
-          id: `${s.id}_ANCESTOR_${level}`,
-          name: applyLevelSuffix(s.name, level),
-          fitness: fitness(s),
-          apply: appendCommandsToApplyResult(
-            s.apply,
-            [
-              appendElementsToRerenderCommand([target]),
-              highlightElementsCommand([parentPath]),
-              setCursorCommand(CSSCursor.MovingMagic),
-            ],
-            [
-              wildcardPatch('mid-interaction', {
-                canvas: {
-                  controls: {
-                    dragToMoveIndicatorFlags: { ancestor: { $set: true } },
+        metaStrategy(adjustedCanvasState, interactionSession, customStrategyState).flatMap((s) => {
+          if (ANCESTOR_INCOMPATIBLE_STRATEGIES.includes(s.id)) {
+            return []
+          }
+          return {
+            ...s,
+            id: `${s.id}_ANCESTOR_${level}`,
+            name: applyLevelSuffix(s.name, level),
+            fitness: fitness(s),
+            apply: appendCommandsToApplyResult(
+              s.apply,
+              [
+                appendElementsToRerenderCommand([target]),
+                highlightElementsCommand([parentPath]),
+                setCursorCommand(CSSCursor.MovingMagic),
+              ],
+              [
+                wildcardPatch('mid-interaction', {
+                  canvas: {
+                    controls: {
+                      dragToMoveIndicatorFlags: { ancestor: { $set: true } },
+                    },
                   },
-                },
-              }),
-            ],
-          ),
-        })),
+                }),
+              ],
+            ),
+          }
+        }),
       )
     }
   }

@@ -34,7 +34,7 @@ export const StyleSection = React.memo(() => {
         store.editor.propertyControlsInfo,
         store.editor.projectContents,
       ),
-    'Inspector inspectorPreferences',
+    'StyleSection inspectorPreferences',
   )
 
   const shouldShowContainerSection = inspectorPreferences.includes('layout')
