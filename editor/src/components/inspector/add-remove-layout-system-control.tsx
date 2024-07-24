@@ -29,8 +29,8 @@ import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import { DropdownMenu } from '../../uuiui/radix-components'
 
 export const AddRemoveLayoutSystemControlTestId = (): string => 'AddRemoveLayoutSystemControlTestId'
-export const AddFlexLayoutOptionId = 'add-flex-layout'
-export const AddGridLayoutOptionId = 'add-grid-layout'
+export const AddFlexLayoutOptionId = 'add-flex-layout-option'
+export const AddGridLayoutOptionId = 'add-grid-layout-option'
 
 interface AddRemoveLayoutSystemControlProps {}
 
