@@ -64,6 +64,7 @@ import { getAllLockedElementPaths } from '../../../../core/shared/element-lockin
 import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
 import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks'
 import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
+import { getAutofocusedPathsSelector } from '../../../editor/store/editor-state-helpers'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -692,10 +693,11 @@ function useSelectOrLiveModeSelectAndHover(
         const foundTargetIsSelected = foundTarget?.isSelected ?? false
 
         if (foundTarget != null && foundTargetIsSelected && doubleClick) {
+          const autoFocusedPaths = getAutofocusedPathsSelector(editorStoreRef.current, 'patched')
           const isFocusableComponent = MetadataUtils.isManuallyFocusableComponent(
             foundTarget.elementPath,
             editorStoreRef.current.editor.jsxMetadata,
-            editorStoreRef.current.derived.autoFocusedPaths,
+            autoFocusedPaths,
             editorStoreRef.current.derived.filePathMappings,
             editorStoreRef.current.editor.propertyControlsInfo,
             editorStoreRef.current.editor.projectContents,

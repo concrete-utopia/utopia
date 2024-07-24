@@ -75,6 +75,7 @@ import { useStatus } from '../../../../liveblocks.config'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { getAutofocusedPathsSelector } from '../../editor/store/editor-state-helpers'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -301,7 +302,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     focusedElementPath,
     projectContents,
     pathTrees,
-    autoFocusedPaths,
     filePathMappings,
     propertyControlsInfo,
   } = useEditorState(
@@ -320,7 +320,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         allElementProps: store.editor.allElementProps,
         projectContents: store.editor.projectContents,
         pathTrees: store.editor.elementPathTree,
-        autoFocusedPaths: store.derived.autoFocusedPaths,
         filePathMappings: store.derived.filePathMappings,
         propertyControlsInfo: store.editor.propertyControlsInfo,
       }
@@ -432,6 +431,12 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       }
     },
     [contextMenuEnabled, editorMode.type, dispatch, selectModeHooks],
+  )
+
+  const autoFocusedPaths = useEditorState(
+    Substores.fullStore,
+    (store) => getAutofocusedPathsSelector(store, 'patched'),
+    'autoFocusedPaths',
   )
 
   const renderHighlightControls = () => {

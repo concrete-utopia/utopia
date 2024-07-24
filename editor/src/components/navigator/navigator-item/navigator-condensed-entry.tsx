@@ -24,6 +24,7 @@ import {
 } from './navigator-item-clickable-wrapper'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { useNavigatorSelectionBoundsForEntry } from './use-navigator-selection-bounds-for-entry'
+import { getAutofocusedPathsSelector } from '../../editor/store/editor-state-helpers'
 
 function useEntryLabel(entry: NavigatorEntry) {
   const labelForTheElement = useEditorState(
@@ -81,8 +82,8 @@ export const CondensedEntryItemWrapper = React.memo(
     )
 
     const autoFocusedPaths = useEditorState(
-      Substores.derived,
-      (store) => store.derived.autoFocusedPaths,
+      Substores.fullStore,
+      (store) => getAutofocusedPathsSelector(store, 'patched'),
       'CondensedEntryItemWrapper autoFocusedPaths',
     )
 

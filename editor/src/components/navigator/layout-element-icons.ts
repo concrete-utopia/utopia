@@ -25,6 +25,7 @@ import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
 import type { PropertyControlsInfo } from '../custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../assets'
+import { getAutofocusedPathsSelector } from '../editor/store/editor-state-helpers'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -57,8 +58,8 @@ export function useLayoutOrElementIcon(navigatorEntry: NavigatorEntry): LayoutIc
 
 export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase | null {
   const autoFocusedPaths = useEditorState(
-    Substores.derived,
-    (store) => store.derived.autoFocusedPaths,
+    Substores.fullStore,
+    (store) => getAutofocusedPathsSelector(store, 'patched'),
     'useComponentIcon autoFocusedPaths',
   )
   const filePathMappings = useEditorState(

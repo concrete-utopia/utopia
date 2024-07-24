@@ -70,7 +70,10 @@ import { MapListSourceCartoucheNavigator } from '../../inspector/sections/layout
 import { regularNavigatorRow } from '../navigator-row'
 import { NavigatorRowClickableWrapper } from './navigator-item-clickable-wrapper'
 import { useNavigatorSelectionBoundsForEntry } from './use-navigator-selection-bounds-for-entry'
-import { getElementWarningsSelector } from '../../editor/store/editor-state-helpers'
+import {
+  getAutofocusedPathsSelector,
+  getElementWarningsSelector,
+} from '../../editor/store/editor-state-helpers'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -426,8 +429,8 @@ export const NavigatorItem: React.FunctionComponent<
   const colorTheme = useColorTheme()
 
   const autoFocusedPaths = useEditorState(
-    Substores.derived,
-    (store) => store.derived.autoFocusedPaths,
+    Substores.fullStore,
+    (store) => getAutofocusedPathsSelector(store, 'patched'),
     'NavigatorItem autoFocusedPaths',
   )
 

@@ -41,6 +41,7 @@ import { contentsToTree } from '../../components/assets'
 import type { VariableData } from '../../components/canvas/ui-jsx-canvas'
 import { StoryboardFilePath } from '../../components/editor/store/editor-state'
 import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
+import { getAutofocusedPathsSelector } from '../../components/editor/store/editor-state-helpers'
 
 describe('Frame calculation for fragments', () => {
   // Components with root fragments do not appear in the DOM, so the dom walker does not find them, and they
@@ -843,7 +844,7 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
     )
     const metadata = editor.getEditorState().editor.jsxMetadata
     const pathTrees = editor.getEditorState().editor.elementPathTree
-    const autoFocusedPaths = editor.getEditorState().derived.autoFocusedPaths
+    const autoFocusedPaths = getAutofocusedPathsSelector(editor.getEditorState(), 'patched')
     const allPaths = MetadataUtils.getAllPaths(metadata, pathTrees)
     const propertyControlsInfo = editor.getEditorState().editor.propertyControlsInfo
     const projectContents = editor.getEditorState().editor.projectContents
@@ -889,7 +890,7 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
     )
     const metadata = editor.getEditorState().editor.jsxMetadata
     const pathTrees = editor.getEditorState().editor.elementPathTree
-    const autoFocusedPaths = editor.getEditorState().derived.autoFocusedPaths
+    const autoFocusedPaths = getAutofocusedPathsSelector(editor.getEditorState(), 'patched')
     const allPaths = MetadataUtils.getAllPaths(metadata, pathTrees)
     const propertyControlsInfo = editor.getEditorState().editor.propertyControlsInfo
     const projectContents = editor.getEditorState().editor.projectContents
@@ -1002,7 +1003,7 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
     )
     const metadata = renderResult.getEditorState().editor.jsxMetadata
     const pathTrees = renderResult.getEditorState().editor.elementPathTree
-    const autoFocusedPaths = renderResult.getEditorState().derived.autoFocusedPaths
+    const autoFocusedPaths = getAutofocusedPathsSelector(renderResult.getEditorState(), 'patched')
     const filePathMappings = renderResult.getEditorState().derived.filePathMappings
     const propertyControlsInfo = renderResult.getEditorState().editor.propertyControlsInfo
     const projectContents = renderResult.getEditorState().editor.projectContents

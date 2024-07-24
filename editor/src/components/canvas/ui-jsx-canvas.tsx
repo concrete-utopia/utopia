@@ -97,6 +97,7 @@ import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 import { listenForReactRouterErrors } from '../../core/shared/runtime-report-logs'
 import { getFilePathMappings } from '../../core/model/project-file-utils'
 import { useInvalidatedCanvasRemount } from './canvas-component-entry'
+import { getAutofocusedPathsSelector } from '../editor/store/editor-state-helpers'
 
 applyUIDMonkeyPatch()
 
@@ -274,7 +275,7 @@ export function pickUiJsxCanvasProps(
       projectContents: editor.projectContents,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
       editedText: editedText,
-      autoFocusedPaths: derived.autoFocusedPaths,
+      autoFocusedPaths: getAutofocusedPathsSelector({ editor: editor }, 'patched'),
     }
   }
 }

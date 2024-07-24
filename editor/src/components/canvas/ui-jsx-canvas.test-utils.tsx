@@ -52,6 +52,7 @@ import { SampleNodeModules } from '../custom-code/code-file.test-utils'
 import { UPDATE_FNS } from '../editor/actions/actions'
 import { updateNodeModulesContents } from '../editor/actions/action-creators'
 import { unpatchedCreateRemixDerivedDataMemo } from '../editor/store/remix-derived-data'
+import { getAutofocusedPathsSelector } from '../editor/store/editor-state-helpers'
 
 export interface PartialCanvasProps {
   hiddenInstances: UiJsxCanvasProps['hiddenInstances']
@@ -217,7 +218,7 @@ export function renderCanvasReturnResultAndError(
       projectContents: storeHookForTest.getState().editor.projectContents,
       domWalkerAdditionalElementsToUpdate: [],
       editedText: null,
-      autoFocusedPaths: storeHookForTest.getState().derived.autoFocusedPaths,
+      autoFocusedPaths: getAutofocusedPathsSelector(storeHookForTest.getState(), 'patched'),
       invalidatedCanvasData: emptyInvalidatedCanvasData(),
     }
   } else {
@@ -237,7 +238,7 @@ export function renderCanvasReturnResultAndError(
       projectContents: storeHookForTest.getState().editor.projectContents,
       domWalkerAdditionalElementsToUpdate: [],
       editedText: null,
-      autoFocusedPaths: storeHookForTest.getState().derived.autoFocusedPaths,
+      autoFocusedPaths: getAutofocusedPathsSelector(storeHookForTest.getState(), 'patched'),
       invalidatedCanvasData: emptyInvalidatedCanvasData(),
     }
   }
