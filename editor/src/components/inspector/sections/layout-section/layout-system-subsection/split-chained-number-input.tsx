@@ -552,30 +552,6 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
           return [
             {
               style: { width: '48%' },
-              value: values.twoValue.horizontal?.value,
-              DEPRECATED_labelBelow: labels?.horizontal ?? 'H',
-              minimum: 0,
-              onSubmitValue: onSubmitValueHorizontal(false),
-              onTransientSubmitValue: onSubmitValueHorizontal(true),
-              numberType: numberType,
-              controlStatus: values.twoValue.horizontal?.controlStatus,
-              defaultUnitToHide: 'px',
-              onMouseEnter: onMouseEnterForControls([
-                rightCanvasControls?.onHover,
-                leftCanvasControls?.onHover,
-              ]),
-              onMouseLeave: onMouseLeave,
-              inputProps: {
-                onFocus: onFocusForControls([
-                  rightCanvasControls?.onFocus,
-                  leftCanvasControls?.onFocus,
-                ]),
-                onBlur: onBlur,
-              },
-              testId: `${name}-H`,
-            },
-            {
-              style: { width: '48%' },
               value: values.twoValue.vertical?.value,
               DEPRECATED_labelBelow: labels?.vertical ?? 'V',
               minimum: 0,
@@ -597,6 +573,30 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
                 onBlur: onBlur,
               },
               testId: `${name}-V`,
+            },
+            {
+              style: { width: '48%' },
+              value: values.twoValue.horizontal?.value,
+              DEPRECATED_labelBelow: labels?.horizontal ?? 'H',
+              minimum: 0,
+              onSubmitValue: onSubmitValueHorizontal(false),
+              onTransientSubmitValue: onSubmitValueHorizontal(true),
+              numberType: numberType,
+              controlStatus: values.twoValue.horizontal?.controlStatus,
+              defaultUnitToHide: 'px',
+              onMouseEnter: onMouseEnterForControls([
+                rightCanvasControls?.onHover,
+                leftCanvasControls?.onHover,
+              ]),
+              onMouseLeave: onMouseLeave,
+              inputProps: {
+                onFocus: onFocusForControls([
+                  rightCanvasControls?.onFocus,
+                  leftCanvasControls?.onFocus,
+                ]),
+                onBlur: onBlur,
+              },
+              testId: `${name}-H`,
             },
           ]
         case 'per-side':
@@ -639,24 +639,6 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             },
             {
               style: { width: '48%' },
-              value: values.fourValue.bottom?.value,
-              DEPRECATED_labelBelow: labels?.bottom ?? 'B',
-              minimum: 0,
-              onSubmitValue: onSubmitValueBottom(false),
-              onTransientSubmitValue: onSubmitValueBottom(true),
-              controlStatus: values.fourValue.bottom?.controlStatus,
-              numberType: numberType,
-              defaultUnitToHide: 'px',
-              onMouseEnter: onMouseEnterForControls([bottomCanvasControls?.onHover]),
-              onMouseLeave: onMouseLeave,
-              inputProps: {
-                onFocus: onFocusForControls([bottomCanvasControls?.onFocus]),
-                onBlur: onBlur,
-              },
-              testId: `${name}-B`,
-            },
-            {
-              style: { width: '48%' },
               value: values.fourValue.left?.value,
               DEPRECATED_labelBelow: labels?.left ?? 'L',
               minimum: 0,
@@ -672,6 +654,24 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
                 onBlur: onBlur,
               },
               testId: `${name}-L`,
+            },
+            {
+              style: { width: '48%' },
+              value: values.fourValue.bottom?.value,
+              DEPRECATED_labelBelow: labels?.bottom ?? 'B',
+              minimum: 0,
+              onSubmitValue: onSubmitValueBottom(false),
+              onTransientSubmitValue: onSubmitValueBottom(true),
+              controlStatus: values.fourValue.bottom?.controlStatus,
+              numberType: numberType,
+              defaultUnitToHide: 'px',
+              onMouseEnter: onMouseEnterForControls([bottomCanvasControls?.onHover]),
+              onMouseLeave: onMouseLeave,
+              inputProps: {
+                onFocus: onFocusForControls([bottomCanvasControls?.onFocus]),
+                onBlur: onBlur,
+              },
+              testId: `${name}-B`,
             },
           ]
         case null:
