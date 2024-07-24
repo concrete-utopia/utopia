@@ -1,8 +1,6 @@
 import React from 'react'
 import * as PP from '../../../../../core/shared/property-path'
-import { PropertyLabel } from '../../../widgets/property-label'
 import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
-import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PopupList } from '../../../../../uuiui'
 import type { SelectOption } from '../../../../../uuiui-deps'
 import { InspectorContextMenuItems, InspectorContextMenuWrapper } from '../../../../../uuiui-deps'
@@ -62,16 +60,14 @@ export const BlendModeRow = React.memo(() => {
       items={blendModeContextMenuItems}
       data={null}
     >
-      <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
-        <PopupList
-          containerMode='default'
-          value={whichBlendModeOption}
-          options={blendModeOptions}
-          onSubmitValue={onSubmitBlendModeOption}
-          controlStyles={blendModeMetadata.controlStyles}
-          style={{ background: 'transparent', width: 133 }}
-        />
-      </UIGridRow>
+      <PopupList
+        containerMode='default'
+        value={whichBlendModeOption}
+        options={blendModeOptions}
+        onSubmitValue={onSubmitBlendModeOption}
+        controlStyles={blendModeMetadata.controlStyles}
+        style={{ background: 'transparent', width: 133 }}
+      />
     </InspectorContextMenuWrapper>
   )
 })

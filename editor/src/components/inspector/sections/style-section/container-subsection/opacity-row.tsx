@@ -1,7 +1,5 @@
 import React from 'react'
 import * as PP from '../../../../../core/shared/property-path'
-import { PropertyLabel } from '../../../widgets/property-label'
-import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { useWrappedEmptyOrUnknownOnSubmitValue, SimplePercentInput } from '../../../../../uuiui'
 import { InspectorContextMenuItems, InspectorContextMenuWrapper } from '../../../../../uuiui-deps'
@@ -43,24 +41,22 @@ export const OpacityRow = React.memo(() => {
       items={opacityContextMenuItems}
       data={null}
     >
-      <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
-        <SimplePercentInput
-          id='opacity-input'
-          testId='opacity-input'
-          value={opacity?.value ?? 0}
-          onSubmitValue={wrappedOnSubmitValue}
-          onTransientSubmitValue={wrappedOnTransientSubmitValue}
-          onForcedSubmitValue={wrappedOnSubmitValue}
-          controlStatus={opacityMetadata.controlStatus}
-          DEPRECATED_labelBelow={<span style={{ fontSize: 12 }}>α</span>}
-          minimum={0}
-          maximum={1}
-          stepSize={0.01}
-          inputProps={{ onMouseDown: (e) => e.stopPropagation() }}
-          defaultUnitToHide={null}
-          incrementControls={false}
-        />
-      </UIGridRow>
+      <SimplePercentInput
+        id='opacity-input'
+        testId='opacity-input'
+        value={opacity?.value ?? 0}
+        onSubmitValue={wrappedOnSubmitValue}
+        onTransientSubmitValue={wrappedOnTransientSubmitValue}
+        onForcedSubmitValue={wrappedOnSubmitValue}
+        controlStatus={opacityMetadata.controlStatus}
+        DEPRECATED_labelBelow={<span style={{ fontSize: 12 }}>α</span>}
+        minimum={0}
+        maximum={1}
+        stepSize={0.01}
+        inputProps={{ onMouseDown: (e) => e.stopPropagation() }}
+        defaultUnitToHide={null}
+        incrementControls={false}
+      />
     </InspectorContextMenuWrapper>
   )
 })
