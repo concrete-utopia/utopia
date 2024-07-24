@@ -252,7 +252,6 @@ export const BorderRadiusControl = React.memo(() => {
       values={values}
       canvasControls={canvasControlsForSides}
       eventHandler={eventHandler}
-      cycleModePosition='back'
     />
   )
 })

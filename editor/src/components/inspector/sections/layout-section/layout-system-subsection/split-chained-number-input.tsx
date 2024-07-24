@@ -102,8 +102,6 @@ export interface SplitChainedNumberInputValues {
   }
 }
 
-export type CycleModePosition = 'front' | 'back'
-
 export interface SplitChainedNumberInputProps<T> {
   name: string
   mode: ControlMode | null
@@ -131,7 +129,6 @@ export interface SplitChainedNumberInputProps<T> {
   values: SplitChainedNumberInputValues
   numberType: CSSNumberType
   eventHandler: SplitChainedNumberInputEventHandler
-  cycleModePosition?: CycleModePosition
 }
 
 export type SplitChainedNumberInputEventHandler = (
@@ -460,7 +457,6 @@ const whenCSSNumber = (fn: (v: CSSNumber | null) => any) => (v: UnknownOrEmptyIn
 
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
   const { name, canvasControls, numberType, eventHandler, labels, values } = props
-  const cycleModePosition = props.cycleModePosition ?? 'front'
 
   const setHoveredCanvasControls = useSetAtom(InspectorHoveredCanvasControls)
   const setFocusedCanvasControls = useSetAtom(InspectorFocusedCanvasControls)
@@ -728,11 +724,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   const cycleModeControl = React.useMemo(() => {
     return (
       <Tooltip title={tooltipTitle}>
-        <SquareButton
-          data-testid={`${name}-cycle-mode`}
-          onClick={props.onCycleMode}
-          style={{ paddingRight: 4 }}
-        >
+        <SquareButton data-testid={`${name}-cycle-mode`} onClick={props.onCycleMode}>
           {modeIcon}
         </SquareButton>
       </Tooltip>
@@ -745,15 +737,16 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         display: 'flex',
         flexDirection: 'row',
         gap: 10,
+        justifyContent: 'space-between',
+        flex: 1,
       }}
     >
-      {when(cycleModePosition === 'front', cycleModeControl)}
       <ChainedNumberInput
         idPrefix={name}
         style={{ flex: 1, gap: 4 }}
         propsArray={chainedPropsToRender}
       />
-      {when(cycleModePosition === 'back', cycleModeControl)}
+      {cycleModeControl}
     </div>
   )
 })
