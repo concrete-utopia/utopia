@@ -8,7 +8,7 @@ import {
 } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import type { AllElementProps } from '../../editor/store/editor-state'
 
-export type FlexDirectionRowColumn = 'row' | 'column' // a limited subset as we won't never guess row-reverse or column-reverse
+export type FlexDirectionRowColumn = 'row' | 'column' // a limited subset as we never guess row-reverse or column-reverse
 export type FlexAlignItems = 'center' | 'flex-end'
 
 export function getChildrenPathsForContainer(
