@@ -217,7 +217,7 @@ export async function mouseDragFromPointToPoint(
     await mouseMoveToPoint(eventSourceElement, startPoint, options)
   }
   if (options.realMouseDown) {
-    dispatchMouseDownEventAtPoint(startPoint)
+    dispatchMouseDownEventAtPoint(startPoint, options)
   } else {
     await mouseDownAtPoint(eventSourceElement, startPoint, options)
   }

@@ -11,6 +11,7 @@ import {
 } from './fragment-like-helpers.test-utils'
 import type { FragmentLikeType } from './fragment-like-helpers'
 import { AllFragmentLikeTypes } from './fragment-like-helpers'
+import { getNavigatorTargetsFromEditorState } from '../../../navigator/navigator-utils'
 
 const TestProject = (
   display: 'block' | 'inline-block',
@@ -207,7 +208,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowDown)
 
     await pressKeysRepeat(renderResult, 'ArrowUp', 1)
@@ -222,7 +225,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
 
     // pressing keyboard left and right reorders elements
@@ -238,7 +243,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowRight)
 
     await pressKeysRepeat(renderResult, 'ArrowLeft', 1)
@@ -253,7 +260,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowLeft)
   })
 
@@ -287,7 +296,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowDown)
 
     await pressKeysRepeat(renderResult, 'ArrowUp', 1)
@@ -302,7 +313,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
 
     // pressing keyboard left and right reorders elements in the opposite direction than in the ltr case
@@ -318,7 +331,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowRight)
 
     await pressKeysRepeat(renderResult, 'ArrowRight', 1)
@@ -333,7 +348,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowLeft)
   })
 
@@ -367,7 +384,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowDown)
 
     await pressKeysRepeat(renderResult, 'ArrowUp', 1)
@@ -382,7 +401,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
 
     // pressing keyboard left and right reorders elements
@@ -398,7 +419,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowRight)
 
     await pressKeysRepeat(renderResult, 'ArrowLeft', 1)
@@ -413,7 +436,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowLeft)
   })
 
@@ -447,7 +472,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowDown)
 
     await pressKeysRepeat(renderResult, 'ArrowUp', 1)
@@ -462,7 +489,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
 
     // pressing keyboard left and right reorders elements in the opposite direction than in the ltr case
@@ -478,7 +507,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowRight)
 
     await pressKeysRepeat(renderResult, 'ArrowRight', 1)
@@ -493,7 +524,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowLeft)
   })
   it('pressing the arrow keys reorders in a flex column-reverse layout', async () => {
@@ -526,7 +559,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowDown)
 
     await pressKeysRepeat(renderResult, 'ArrowDown', 1)
@@ -541,7 +576,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
 
     // pressing keyboard left and right reorders elements in reverse order
@@ -557,7 +594,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowRight)
 
     await pressKeysRepeat(renderResult, 'ArrowRight', 1)
@@ -572,7 +611,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowLeft)
   })
   it('pressing the arrow keys reorders in a flex column-reverse layout with rtl text direction', async () => {
@@ -605,7 +646,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowDown)
 
     await pressKeysRepeat(renderResult, 'ArrowDown', 1)
@@ -620,7 +663,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
 
     // pressing keyboard left and right reorders elements in "normal order", because flex reverse and rtl together reverses the directions twice
@@ -636,7 +681,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/aaa',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowRight)
 
     await pressKeysRepeat(renderResult, 'ArrowRight', 1)
@@ -651,7 +698,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowLeft)
   })
 
@@ -684,7 +733,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowDown)
 
     await pressKeysRepeat(renderResult, 'ArrowUp', 1)
@@ -699,7 +750,9 @@ describe('Keyboard Reorder Strategy', () => {
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/ddd',
     ]
     expect(
-      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      getNavigatorTargetsFromEditorState(
+        renderResult.getEditorState().editor,
+      ).visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
   })
 

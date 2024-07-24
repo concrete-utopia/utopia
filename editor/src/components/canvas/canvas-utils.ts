@@ -1774,55 +1774,57 @@ function getValidElementPathsFromElement(
   let paths = includeElementInPath ? [path] : []
   if (isJSXElementLike(element)) {
     const isRemixScene = isRemixSceneElement(element, filePath, projectContents)
-    const remixPathGenerationContext = getRemixValidPathsGenerationContext(path)
-    if (remixPathGenerationContext.type === 'active' && isRemixScene) {
-      function makeValidPathsFromModule(routeModulePath: string, parentPathInner: ElementPath) {
-        const file = getProjectFileByFilePath(projectContents, routeModulePath)
-        if (file == null || file.type !== 'TEXT_FILE') {
-          return
+    if (isRemixScene) {
+      const remixPathGenerationContext = getRemixValidPathsGenerationContext(path)
+      if (remixPathGenerationContext.type === 'active') {
+        function makeValidPathsFromModule(routeModulePath: string, parentPathInner: ElementPath) {
+          const file = getProjectFileByFilePath(projectContents, routeModulePath)
+          if (file == null || file.type !== 'TEXT_FILE') {
+            return
+          }
+
+          const topLevelElement = getDefaultExportedTopLevelElement(file)
+
+          if (topLevelElement == null) {
+            return
+          }
+
+          paths.push(
+            ...getValidElementPathsFromElement(
+              focusedElementPath,
+              topLevelElement,
+              parentPathInner,
+              projectContents,
+              autoFocusedPaths,
+              routeModulePath,
+              uiFilePath,
+              false,
+              true,
+              true,
+              resolve,
+              getRemixValidPathsGenerationContext,
+            ),
+          )
         }
 
-        const topLevelElement = getDefaultExportedTopLevelElement(file)
+        /**
+         * The null check is here to guard against the case when a route with children is missing an outlet
+         * that would render the children
+         */
 
-        if (topLevelElement == null) {
-          return
-        }
-
-        paths.push(
-          ...getValidElementPathsFromElement(
-            focusedElementPath,
-            topLevelElement,
-            parentPathInner,
-            projectContents,
-            autoFocusedPaths,
-            routeModulePath,
-            uiFilePath,
-            false,
-            true,
-            true,
-            resolve,
-            getRemixValidPathsGenerationContext,
-          ),
-        )
-      }
-
-      /**
-       * The null check is here to guard against the case when a route with children is missing an outlet
-       * that would render the children
-       */
-
-      for (const route of remixPathGenerationContext.currentlyRenderedRouteModules) {
-        const entry = remixPathGenerationContext.routeModulesToRelativePaths[route.id]
-        if (entry != null) {
-          const { relativePaths, filePath: filePathOfRouteModule } = entry
-          for (const relativePath of relativePaths) {
-            const basePath = EP.appendTwoPaths(path, relativePath)
-            makeValidPathsFromModule(filePathOfRouteModule, basePath)
+        for (const route of remixPathGenerationContext.currentlyRenderedRouteModules) {
+          const entry = remixPathGenerationContext.routeModulesToRelativePaths[route.id]
+          if (entry != null) {
+            const { relativePaths, filePath: filePathOfRouteModule } = entry
+            for (const relativePath of relativePaths) {
+              const basePath = EP.appendTwoPaths(path, relativePath)
+              makeValidPathsFromModule(filePathOfRouteModule, basePath)
+            }
           }
         }
-      }
 
-      return paths
+        return paths
+      }
     }
 
     const isScene = isSceneElement(element, filePath, projectContents)

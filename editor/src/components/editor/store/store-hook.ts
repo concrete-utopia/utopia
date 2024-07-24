@@ -29,6 +29,7 @@ import type {
   MetadataSubstate,
   MultiplayerSubstate,
   NavigatorSubstate,
+  NavigatorTargetsSubstate,
   OnlineStateSubstate,
   PostActionInteractionSessionSubstate,
   ProjectContentAndMetadataAndVariablesInScopeSubstate,
@@ -51,6 +52,7 @@ import {
   githubSubstateKeys,
   highlightedHoveredViewsSubstateKeys,
   metadataSubstateKeys,
+  navigatorTargetsSubstateKeys,
   projectContentsKeys,
   propertyControlsInfoSubstateKeys,
   restOfEditorStateKeys,
@@ -128,9 +130,10 @@ export const useEditorState = <K extends StoreKey, S extends (typeof Substores)[
   selector: StateSelector<Parameters<S>[0], U>,
   selectorName: string,
   equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
+  storeContext: React.Context<UtopiaStoreAPI | null> = EditorStateContext,
 ): U => {
   const storeKey: K = storeKey_.name as K
-  const context = React.useContext(EditorStateContext)
+  const context = React.useContext(storeContext)
 
   const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(storeKey, selector, selectorName)
 
@@ -221,8 +224,9 @@ export const useSelectorWithCallback = <K extends StoreKey, S extends (typeof Su
 export const useRefEditorState = <U>(
   selector: StateSelector<EditorStorePatched, U>,
   explainMe = false,
+  storeContext: React.Context<UtopiaStoreAPI | null> = EditorStateContext,
 ): { readonly current: U } => {
-  const context = React.useContext(EditorStateContext)
+  const context = React.useContext(storeContext)
   if (context == null) {
     throw new Error('useStore is missing from editor context')
   }
@@ -291,6 +295,9 @@ export const Substores = {
   },
   navigator: (a: NavigatorSubstate, b: NavigatorSubstate) => {
     return NavigatorStateKeepDeepEquality(a.editor.navigator, b.editor.navigator).areEqual
+  },
+  navigatorTargetsSubstate: (a: NavigatorTargetsSubstate, b: NavigatorTargetsSubstate) => {
+    return keysEquality(navigatorTargetsSubstateKeys, a.editor, b.editor)
   },
   postActionInteractionSession: (
     a: PostActionInteractionSessionSubstate,

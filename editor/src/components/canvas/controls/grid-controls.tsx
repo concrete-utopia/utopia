@@ -3,6 +3,7 @@
 import { jsx } from '@emotion/react'
 import type { AnimationControls } from 'framer-motion'
 import { motion, useAnimationControls } from 'framer-motion'
+import type { CSSProperties } from 'react'
 import React from 'react'
 import type { ElementPath } from 'utopia-shared/src/types'
 import type { GridCSSNumber } from '../../../components/inspector/common/css-utils'
@@ -25,6 +26,7 @@ import {
   offsetPoint,
   pointDifference,
   pointsEqual,
+  scaleRect,
   windowPoint,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
@@ -44,12 +46,16 @@ import { Substores, useEditorState, useRefEditorState } from '../../editor/store
 import { useRollYourOwnFeatures } from '../../navigator/left-pane/roll-your-own-pane'
 import CanvasActions from '../canvas-actions'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
-import type { GridResizeEdge } from '../canvas-strategies/interaction-state'
+import type {
+  GridResizeEdge,
+  GridResizeEdgeProperties,
+} from '../canvas-strategies/interaction-state'
 import {
   GridResizeEdges,
   createInteractionViaMouse,
   gridAxisHandle,
   gridCellHandle,
+  gridResizeEdgeProperties,
   gridResizeHandle,
 } from '../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../dom-lookup'
@@ -229,6 +235,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           justifyContent: 'center',
           cursor: gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start'),
           fontSize: 8,
+          position: 'relative',
         }}
         css={{
           opacity: resizing ? 1 : 0.5,
@@ -239,6 +246,10 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         onMouseDown={mouseDownHandler}
       >
         {props.axis === 'row' ? '↕' : '↔'}
+        {when(
+          props.dimension.areaName != null,
+          <span style={{ position: 'absolute', top: 12 }}>{props.dimension.areaName}</span>,
+        )}
       </div>
       {when(
         resizing,
@@ -435,6 +446,8 @@ export const GridControls = controlForStrategyMemoized(() => {
         }
 
         const gap = targetGridContainer.specialSizeMeasurements.gap
+        const rowGap = targetGridContainer.specialSizeMeasurements.rowGap
+        const columnGap = targetGridContainer.specialSizeMeasurements.columnGap
         const padding = targetGridContainer.specialSizeMeasurements.padding
         const gridTemplateColumns =
           targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
@@ -462,6 +475,8 @@ export const GridControls = controlForStrategyMemoized(() => {
           gridTemplateColumnsFromProps: gridTemplateColumnsFromProps,
           gridTemplateRowsFromProps: gridTemplateRowsFromProps,
           gap: gap,
+          rowGap: rowGap,
+          columnGap: columnGap,
           padding: padding,
           rows: rows,
           columns: columns,
@@ -654,6 +669,8 @@ export const GridControls = controlForStrategyMemoized(() => {
                   activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
                 }`,
                 gap: grid.gap ?? 0,
+                rowGap: grid.rowGap ?? 0,
+                columnGap: grid.columnGap ?? 0,
                 padding:
                   grid.padding == null
                     ? 0
@@ -1049,9 +1066,12 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
 
     const isResizing = bounds != null
 
+    const [resizingEdge, setResizingEdge] = React.useState<GridResizeEdge | null>(null)
+
     const onMouseUp = React.useCallback(() => {
       setBounds(null)
       setStartingBounds(null)
+      setResizingEdge(null)
     }, [])
 
     React.useEffect(() => {
@@ -1067,6 +1087,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
       (uid: string, edge: GridResizeEdge) => (event: React.MouseEvent) => {
         event.stopPropagation()
         const frame = zeroRectIfNullOrInfinity(element?.globalFrame ?? null)
+        setResizingEdge(edge)
         setBounds(frame)
         setStartingBounds(frame)
         const start = windowToCanvasCoordinates(
@@ -1088,10 +1109,22 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
       [canvasOffsetRef, dispatch, element?.globalFrame, scale],
     )
 
+    const canShowHandles = React.useMemo(() => {
+      if (isResizing) {
+        return true
+      }
+      if (element?.globalFrame == null || isInfinityRectangle(element.globalFrame)) {
+        return false
+      }
+      const scaledFrame = scaleRect(element.globalFrame, scale)
+      return scaledFrame.width * scale > 30 && scaledFrame.height > 30
+    }, [element, scale, isResizing])
+
     if (
       element == null ||
       element.globalFrame == null ||
-      isInfinityRectangle(element.globalFrame)
+      isInfinityRectangle(element.globalFrame) ||
+      !canShowHandles
     ) {
       return null
     }
@@ -1108,62 +1141,67 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
             left: bounds?.x ?? element.globalFrame.x,
             width: bounds?.width ?? element.globalFrame.width,
             height: bounds?.height ?? element.globalFrame.height,
-            display: 'grid',
-            gridTemplateRows: '10px 1fr 10px',
-            gridTemplateColumns: '10px 1fr 10px',
-            gridTemplateAreas: "'empty1 rs empty2' 'cs empty3 ce' 'empty4 re empty5'",
-            backgroundColor: isResizing ? colorTheme.whiteOpacity30.value : 'transparent',
+            backgroundColor: isResizing ? colorTheme.primary25.value : 'transparent',
           }}
         >
-          {GridResizeEdges.map((edge) => (
-            <div
-              key={edge}
-              style={{
-                pointerEvents: 'none',
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: 2 / scale,
-                gridArea: gridEdgeToGridArea(edge),
-                cursor: gridEdgeToCSSCursor(edge),
-              }}
-            >
-              <div
-                data-testid={GridResizeEdgeTestId(edge)}
-                onMouseDown={startResizeInteraction(EP.toUid(element.elementPath), edge)}
-                style={{
-                  pointerEvents: 'initial',
-                  ...gridEdgeToWidthHeight(edge, scale),
-                  backgroundColor: colorTheme.white.value,
-                  boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
-					${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px ${1 / scale}px ${
-                    2 / scale
-                  }px ${1 / scale}px`,
-                }}
-              />
-            </div>
-          ))}
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              pointerEvents: 'none',
+            }}
+          >
+            {GridResizeEdges.map((edge) => {
+              const properties = gridResizeEdgeProperties(edge)
+              const visible = !isResizing || resizingEdge === edge
+              return (
+                <div
+                  key={edge}
+                  style={{
+                    visibility: visible ? 'visible' : 'hidden',
+                    position: 'absolute',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    pointerEvents: 'none',
+                    ...gridEdgeToWidthHeight(properties, scale),
+                  }}
+                >
+                  <div
+                    data-testid={GridResizeEdgeTestId(edge)}
+                    onMouseDown={startResizeInteraction(EP.toUid(element.elementPath), edge)}
+                    style={{
+                      width: properties.isRow
+                        ? GRID_RESIZE_HANDLE_SIZES.long
+                        : GRID_RESIZE_HANDLE_SIZES.short,
+                      height: properties.isColumn
+                        ? GRID_RESIZE_HANDLE_SIZES.long
+                        : GRID_RESIZE_HANDLE_SIZES.short,
+                      borderRadius: 4,
+                      cursor: gridEdgeToCSSCursor(edge),
+                      pointerEvents: 'initial',
+                      backgroundColor: colorTheme.white.value,
+                      boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
+                        ${1 / scale}px, ${
+                        colorTheme.canvasControlsSizeBoxShadowColor20.value
+                      } 0px ${1 / scale}px ${2 / scale}px ${1 / scale}px`,
+                      zoom: 1 / scale,
+                    }}
+                  />
+                </div>
+              )
+            })}
+          </div>
         </div>
       </CanvasOffsetWrapper>
     )
   },
 )
 
-function gridEdgeToGridArea(edge: GridResizeEdge): string {
-  switch (edge) {
-    case 'column-end':
-      return 'ce'
-    case 'column-start':
-      return 'cs'
-    case 'row-end':
-      return 're'
-    case 'row-start':
-      return 'rs'
-    default:
-      assertNever(edge)
-  }
+const GRID_RESIZE_HANDLE_SIZES = {
+  long: 24,
+  short: 4,
 }
 
 function gridEdgeToEdgePosition(edge: GridResizeEdge): EdgePosition {
@@ -1194,25 +1232,13 @@ function gridEdgeToCSSCursor(edge: GridResizeEdge): CSSCursor {
   }
 }
 
-function gridEdgeToWidthHeight(
-  edge: GridResizeEdge,
-  scale: number,
-): {
-  width: number
-  height: number
-  borderRadius: number
-} {
-  const LONG_EDGE = 24 / scale
-  const SHORT_EDGE = 4 / scale
-
-  switch (edge) {
-    case 'column-end':
-    case 'column-start':
-      return { width: SHORT_EDGE, height: LONG_EDGE, borderRadius: SHORT_EDGE / 2 }
-    case 'row-end':
-    case 'row-start':
-      return { width: LONG_EDGE, height: SHORT_EDGE, borderRadius: SHORT_EDGE / 2 }
-    default:
-      assertNever(edge)
+function gridEdgeToWidthHeight(props: GridResizeEdgeProperties, scale: number): CSSProperties {
+  return {
+    width: props.isColumn ? (GRID_RESIZE_HANDLE_SIZES.short * 4) / scale : '100%',
+    height: props.isRow ? (GRID_RESIZE_HANDLE_SIZES.short * 4) / scale : '100%',
+    top: props.isStart ? 0 : undefined,
+    left: props.isStart ? 0 : undefined,
+    right: props.isEnd ? 0 : undefined,
+    bottom: props.isEnd ? 0 : undefined,
   }
 }

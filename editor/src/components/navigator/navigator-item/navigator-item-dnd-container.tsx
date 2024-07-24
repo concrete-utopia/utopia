@@ -45,7 +45,11 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { when } from '../../../utils/react-conditionals'
 import { metadataSelector } from '../../inspector/inpector-selectors'
-import { baseNavigatorDepth } from '../navigator-utils'
+import {
+  baseNavigatorDepth,
+  navigatorTargetsSelector,
+  useGetNavigatorTargets,
+} from '../navigator-utils'
 import type {
   ElementInstanceMetadataMap,
   JSXElementChild,
@@ -554,11 +558,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     'NavigatorItemDndWrapper dropTargetHint',
   )
 
-  const navigatorTargets = useEditorState(
-    Substores.derived,
-    (store) => store.derived.navigatorTargets,
-    'NavigatorItemDndWrapper navigatorTargets',
-  )
+  const navigatorTargets = useGetNavigatorTargets().navigatorTargets
 
   const isFirstSibling = React.useMemo(() => {
     const siblings = MetadataUtils.getSiblingsOrdered(
@@ -793,14 +793,14 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     !isHintDisallowed(props.elementPath, editorStateRef.current.jsxMetadata) &&
     isCollapsedCondtionalEntry
 
-  const navigatorRows = useRefEditorState((store) => store.derived.navigatorRows)
+  const navigatorRows = useRefEditorState(navigatorTargetsSelector)
 
   const margin = (() => {
     if (dropTargetHint == null) {
       return 0
     }
 
-    const targetRow = navigatorRows.current.find((row) =>
+    const targetRow = navigatorRows.current.navigatorRows.find((row) =>
       isRegulaNavigatorRow(row)
         ? EP.pathsEqual(row.entry.elementPath, dropTargetHint.targetParent.elementPath)
         : row.entries.some((entry) =>

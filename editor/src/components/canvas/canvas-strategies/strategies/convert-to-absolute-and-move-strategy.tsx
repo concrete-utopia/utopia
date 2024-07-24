@@ -198,12 +198,13 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
         ]
       : []
 
-    const baseFitness = getFitness(
+    const fitness = getFitness(
       interactionSession,
       hasAutoLayoutSiblings,
       autoLayoutSiblingsBounds,
       originalTargets.length > 1,
       isPositionRelative,
+      setHuggingParentToFixed,
     )
 
     return {
@@ -227,8 +228,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
         }),
         ...autoLayoutSiblingsControl,
       ], // Uses existing hooks in select-mode-hooks.tsx
-      fitness:
-        setHuggingParentToFixed === 'set-hugging-parent-to-fixed' ? baseFitness + 0.1 : baseFitness, // by default we set the parent to fixed size
+      fitness: fitness,
       apply: () => {
         if (
           interactionSession != null &&
@@ -285,6 +285,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
   }
 }
 
+const VeryHighWeight = 100
 const BaseWeight = 0.5
 const DragConversionWeight = 1.5 // needs to be higher then FlexReorderFitness in flex-reorder-strategy
 
@@ -294,42 +295,56 @@ function getFitness(
   autoLayoutSiblingsBounds: CanvasRectangle | null,
   multipleTargets: boolean,
   isPositionRelative: boolean,
+  setHuggingParentToFixed: SetHuggingParentToFixed,
 ): number {
   if (
     interactionSession != null &&
     interactionSession.interactionData.type === 'DRAG' &&
-    interactionSession.activeControl.type === 'BOUNDING_AREA'
+    !(
+      interactionSession.interactionData.modifiers.ctrl ||
+      interactionSession.interactionData.spacePressed
+    )
   ) {
-    if (interactionSession.interactionData.spacePressed) {
-      // If space is pressed, this should happening!
-      return 100
-    }
+    return 0
+  }
+  const baseFitness = (() => {
+    if (
+      interactionSession != null &&
+      interactionSession.interactionData.type === 'DRAG' &&
+      interactionSession.activeControl.type === 'BOUNDING_AREA'
+    ) {
+      if (interactionSession.interactionData.spacePressed) {
+        // If space is pressed, this should happening!
+        return VeryHighWeight
+      }
 
-    if (interactionSession.interactionData.drag == null) {
-      return BaseWeight
-    }
-
-    if (!hasAutoLayoutSiblings) {
-      if (multipleTargets || isPositionRelative) {
-        // multi-selection should require a spacebar press to activate
-        // position relative can be just moved with relative move, no need to convert to absolute when relative move is applicable
+      if (interactionSession.interactionData.drag == null) {
         return BaseWeight
       }
-      return DragConversionWeight
+
+      if (!hasAutoLayoutSiblings) {
+        if (multipleTargets || isPositionRelative) {
+          // multi-selection should require a spacebar press to activate
+          // position relative can be just moved with relative move, no need to convert to absolute when relative move is applicable
+          return BaseWeight
+        }
+        return DragConversionWeight
+      }
+
+      const pointOnCanvas = offsetPoint(
+        interactionSession.interactionData.dragStart,
+        interactionSession.interactionData.drag,
+      )
+
+      const isInsideBoundingBoxOfSiblings =
+        autoLayoutSiblingsBounds != null &&
+        rectContainsPoint(autoLayoutSiblingsBounds, pointOnCanvas)
+
+      return isInsideBoundingBoxOfSiblings || isPositionRelative ? BaseWeight : DragConversionWeight
     }
-
-    const pointOnCanvas = offsetPoint(
-      interactionSession.interactionData.dragStart,
-      interactionSession.interactionData.drag,
-    )
-
-    const isInsideBoundingBoxOfSiblings =
-      autoLayoutSiblingsBounds != null && rectContainsPoint(autoLayoutSiblingsBounds, pointOnCanvas)
-
-    return isInsideBoundingBoxOfSiblings || isPositionRelative ? BaseWeight : DragConversionWeight
-  }
-
-  return 0
+    return 0
+  })()
+  return setHuggingParentToFixed === 'set-hugging-parent-to-fixed' ? baseFitness + 0.1 : baseFitness // by default we set the parent to fixed size
 }
 
 const getAutoLayoutSiblingsBounds = memoize(getAutoLayoutSiblingsBoundsInner, { maxSize: 1 })

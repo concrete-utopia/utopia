@@ -114,6 +114,7 @@ import {
   jsAssignmentStatement,
   clearAssignmentUniqueIDsAndSourceMaps,
   clearJSExpressionOtherJavaScriptUniqueIDs,
+  propertiesExposedByParams,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import type {
@@ -4105,7 +4106,7 @@ export function parseOutFunctionContents(
         jsBlock = null
       }
 
-      let declared: Array<string> = [...topLevelNames]
+      let declared: Array<string> = [...topLevelNames, ...propertiesExposedByParams(params)]
       if (jsBlock != null) {
         declared.push(...jsBlock.definedWithin)
       }

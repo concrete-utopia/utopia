@@ -952,13 +952,7 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine10EqualityCalls(
-    (state) => state.navigatorRows,
-    arrayDeepEquality(NavigatorRowKeepDeepEquality),
-    (state) => state.navigatorTargets,
-    arrayDeepEquality(NavigatorEntryKeepDeepEquality),
-    (state) => state.visibleNavigatorTargets,
-    arrayDeepEquality(NavigatorEntryKeepDeepEquality),
+  return combine7EqualityCalls(
     (state) => state.autoFocusedPaths,
     arrayDeepEquality(ElementPathKeepDeepEquality),
     (state) => state.controls,
@@ -974,9 +968,6 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     (state) => state.filePathMappings,
     createCallWithShallowEquals(),
     (
-      navigatorRows,
-      navigatorTargets,
-      visibleNavigatorTargets,
       autoFocusedPaths,
       controls,
       elementWarnings,
@@ -986,9 +977,6 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
       filePathMappings,
     ) => {
       return {
-        navigatorRows: navigatorRows,
-        navigatorTargets: navigatorTargets,
-        visibleNavigatorTargets: visibleNavigatorTargets,
         autoFocusedPaths: autoFocusedPaths,
         controls: controls,
         elementWarnings: elementWarnings,
@@ -1970,11 +1958,13 @@ export const CSSNumberKeepDeepEquality: KeepDeepEqualityCall<CSSNumber> = combin
 )
 
 export const GridCSSNumberKeepDeepEquality: KeepDeepEqualityCall<GridCSSNumber> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (cssNum) => cssNum.value,
     createCallWithTripleEquals<number>(),
     (cssNum) => cssNum.unit,
     nullableDeepEquality(createCallWithTripleEquals<GridCSSNumberUnit>()),
+    (cssNum) => cssNum.areaName,
+    nullableDeepEquality(StringKeepDeepEquality),
     gridCSSNumber,
   )
 
@@ -2261,6 +2251,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.elementGridProperties,
         newSize.containerGridPropertiesFromProps,
         newSize.elementGridPropertiesFromProps,
+        newSize.rowGap,
+        newSize.columnGap,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }

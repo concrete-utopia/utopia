@@ -67,7 +67,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
         const applicableReparentFactories = getApplicableReparentFactories(
           canvasState,
           pointOnCanvas,
-          false,
+          true, // cmd is necessary to allow reparenting
           true,
           'allow-smaller-parent',
           customStrategyState,

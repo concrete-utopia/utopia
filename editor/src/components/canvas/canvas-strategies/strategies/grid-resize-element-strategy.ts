@@ -87,6 +87,15 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
+      const container = MetadataUtils.findElementByElementPath(
+        canvasState.startingMetadata,
+        EP.parentPath(selectedElement),
+      )
+      if (container == null) {
+        return emptyStrategyApplicationResult
+      }
+      const gridTemplate = container.specialSizeMeasurements.containerGridProperties
+
       let gridProps: GridElementProperties = MetadataUtils.findElementByElementPath(
         canvasState.startingMetadata,
         selectedElement,
@@ -127,7 +136,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
       }
 
       return strategyApplicationResult(
-        setGridPropsCommands(selectedElement, gridPropsWithDragOver(gridProps)),
+        setGridPropsCommands(selectedElement, gridTemplate, gridPropsWithDragOver(gridProps)),
         {
           grid: { ...customState.grid, targetCell },
         },

@@ -1,22 +1,32 @@
 import * as React from 'react'
+import { twoLevelNestedEquals } from '../../../../core/shared/equality-utils'
 import { mod } from '../../../../core/shared/math-utils'
 import { when } from '../../../../utils/react-conditionals'
-import { FlexRow, FlexColumn, UtopiaStyles, colorTheme, UtopiaTheme } from '../../../../uuiui'
+import { colorTheme, FlexColumn, FlexRow, UtopiaStyles, UtopiaTheme } from '../../../../uuiui'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
 import CanvasActions from '../../canvas-actions'
-import { useDelayedCurrentStrategy } from '../../canvas-strategies/canvas-strategies'
+import {
+  useDelayedCurrentStrategy,
+  useIsOnlyDoNothingStrategy,
+} from '../../canvas-strategies/canvas-strategies'
 import type { CanvasStrategy } from '../../canvas-strategies/canvas-strategy-types'
+
+export const StrategyPickerTestId = 'canvas-strategy-picker'
 
 export const CanvasStrategyPicker = React.memo(() => {
   const dispatch = useDispatch()
-  const { allApplicableStrategies } = useEditorState(
+  const isOnlyDoNothingStrategy = useIsOnlyDoNothingStrategy()
+  const allApplicableStrategies = useEditorState(
     Substores.restOfStore,
-    (store) => ({
-      allApplicableStrategies: store.strategyState.sortedApplicableStrategies,
-    }),
+    (store) =>
+      store.strategyState.sortedApplicableStrategies?.map((s) => ({
+        id: s.strategy.id,
+        name: s.name,
+      })),
     'CanvasStrategyPicker strategyState.currentStrategy',
+    twoLevelNestedEquals,
   )
   const activeStrategy = useDelayedCurrentStrategy()
   const isStrategyFailure = useEditorState(
@@ -26,8 +36,8 @@ export const CanvasStrategyPicker = React.memo(() => {
   )
 
   const onSetStrategy = React.useCallback(
-    (newStrategy: CanvasStrategy) => {
-      dispatch([CanvasActions.setUsersPreferredStrategy(newStrategy.id)])
+    (id: CanvasStrategy['id']) => {
+      dispatch([CanvasActions.setUsersPreferredStrategy(id)])
     },
     [dispatch],
   )
@@ -48,7 +58,7 @@ export const CanvasStrategyPicker = React.memo(() => {
 
         if (event.key === 'Tab') {
           const activeStrategyIndex = allApplicableStrategies.findIndex(
-            ({ strategy }) => strategy.id === activeStrategy,
+            ({ id }) => id === activeStrategy,
           )
 
           const newStrategyIndex = event.shiftKey
@@ -56,14 +66,14 @@ export const CanvasStrategyPicker = React.memo(() => {
             : activeStrategyIndex + 1
 
           const nextStrategyIndex = mod(newStrategyIndex, allApplicableStrategies.length)
-          const nextStrategy = allApplicableStrategies[nextStrategyIndex].strategy
+          const nextStrategy = allApplicableStrategies[nextStrategyIndex]
 
-          onSetStrategy(nextStrategy)
+          onSetStrategy(nextStrategy.id)
         } else if (!isNaN(keyIntValue)) {
           const index = keyIntValue - 1
           const nextStrategy = allApplicableStrategies[index]
           if (nextStrategy != null) {
-            onSetStrategy(nextStrategy.strategy)
+            onSetStrategy(nextStrategy.id)
           }
         }
       }
@@ -77,7 +87,7 @@ export const CanvasStrategyPicker = React.memo(() => {
   return (
     <>
       {when(
-        activeStrategy != null,
+        !isOnlyDoNothingStrategy && activeStrategy != null,
         <div
           style={{
             pointerEvents: 'initial',
@@ -85,6 +95,7 @@ export const CanvasStrategyPicker = React.memo(() => {
           }}
           onMouseDown={stopPropagation}
           onClick={stopPropagation}
+          data-testid={StrategyPickerTestId}
         >
           <FlexColumn
             style={{
@@ -98,26 +109,23 @@ export const CanvasStrategyPicker = React.memo(() => {
               boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
             }}
           >
-            {allApplicableStrategies?.map(({ strategy, name }, index) => {
+            {allApplicableStrategies?.map(({ id, name }, index) => {
               return (
                 <FlexRow
-                  key={strategy.id}
+                  key={id}
                   style={{
                     height: 19,
                     paddingLeft: 4,
                     paddingRight: 4,
                     borderRadius: 6,
-                    backgroundColor:
-                      strategy.id === activeStrategy ? colorTheme.bg3.value : undefined,
+                    backgroundColor: id === activeStrategy ? colorTheme.bg3.value : undefined,
                     color: colorTheme.textColor.value,
-                    opacity: isStrategyFailure && strategy.id === activeStrategy ? 0.5 : 1,
+                    opacity: isStrategyFailure && id === activeStrategy ? 0.5 : 1,
                   }}
                 >
                   <KeyIndicator keyNumber={index + 1} />
                   <span
-                    data-testid={
-                      strategy.id === activeStrategy ? 'strategy-picker-active-row' : undefined
-                    }
+                    data-testid={id === activeStrategy ? 'strategy-picker-active-row' : undefined}
                   >
                     {name}
                   </span>

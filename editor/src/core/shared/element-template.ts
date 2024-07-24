@@ -2720,6 +2720,8 @@ export interface SpecialSizeMeasurements {
   elementGridProperties: GridElementProperties
   containerGridPropertiesFromProps: GridContainerProperties
   elementGridPropertiesFromProps: GridElementProperties
+  rowGap: number | null
+  columnGap: number | null
 }
 
 export function specialSizeMeasurements(
@@ -2768,6 +2770,8 @@ export function specialSizeMeasurements(
   elementGridProperties: GridElementProperties,
   containerGridPropertiesFromProps: GridContainerProperties,
   elementGridPropertiesFromProps: GridElementProperties,
+  rowGap: number | null,
+  columnGap: number | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -2815,6 +2819,8 @@ export function specialSizeMeasurements(
     elementGridProperties,
     containerGridPropertiesFromProps,
     elementGridPropertiesFromProps,
+    rowGap,
+    columnGap,
   }
 }
 
@@ -2887,6 +2893,8 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     gridRowStart: null,
     gridRowEnd: null,
   },
+  null,
+  null,
 )
 
 export function walkElement(

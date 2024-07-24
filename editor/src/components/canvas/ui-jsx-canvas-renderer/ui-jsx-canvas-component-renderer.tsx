@@ -19,13 +19,13 @@ import type {
   UiJsxCanvasContextData,
   VariableData,
 } from '../ui-jsx-canvas'
-import {
-  DomWalkerInvalidatePathsCtxAtom,
-  UiJsxCanvasCtxAtom,
-  ElementsToRerenderGLOBAL,
-} from '../ui-jsx-canvas'
+import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import type { MutableUtopiaCtxRefData } from './ui-jsx-canvas-contexts'
-import { RerenderUtopiaCtxAtom, SceneLevelUtopiaCtxAtom } from './ui-jsx-canvas-contexts'
+import {
+  ElementsToRerenderContext,
+  RerenderUtopiaCtxAtom,
+  SceneLevelUtopiaCtxAtom,
+} from './ui-jsx-canvas-contexts'
 import { applyPropsParamToPassedProps } from './ui-jsx-canvas-props-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -50,6 +50,7 @@ import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { addFakeSpyEntry } from './ui-jsx-canvas-spy-wrapper'
 import type { FilePathMappings } from '../../../core/model/project-file-utils'
+import type { ElementsToRerender } from '../../editor/store/editor-state'
 
 function tryToGetInstancePath(
   maybePath: ElementPath | null,
@@ -101,18 +102,10 @@ export function createComponentRendererComponent(params: {
 
     const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
 
-    function shouldUpdate() {
-      return (
-        ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
-        ElementsToRerenderGLOBAL.current.some((er) => {
-          return (
-            (instancePath != null &&
-              (EP.pathsEqual(er, instancePath) || EP.isParentComponentOf(instancePath, er))) ||
-            isElementInChildrenOrPropsTree(EP.toString(er), realPassedProps)
-          )
-        })
-      )
-    }
+    const shouldUpdate = useAllowRerenderForPath(
+      instancePath ?? 'rerender-all-elements',
+      realPassedProps,
+    )
 
     const rerenderUtopiaContext = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom, shouldUpdate)
 
@@ -279,6 +272,7 @@ export function createComponentRendererComponent(params: {
       )
       applyBlockReturnFunctions(scope)
 
+      // possibly problematic: this should ONLY run if shouldUpdate() is true
       const arbitraryBlockResult = runBlockUpdatingScope(
         rootElementPath,
         params.filePath,
@@ -356,7 +350,7 @@ export function createComponentRendererComponent(params: {
           null,
         )
       }
-    } else if (shouldUpdate()) {
+    } else if (shouldUpdate() || buildResult.current === null) {
       buildResult.current = buildComponentRenderResult(utopiaJsxComponent.rootElement)
     }
     return buildResult.current
@@ -379,21 +373,77 @@ function isRenderProp(prop: any): prop is { props: { [UTOPIA_PATH_KEY]: string }
   )
 }
 
-function isElementInChildrenOrPropsTree(elementPath: string, props: any): boolean {
-  const childrenArr = React.Children.toArray(props.children).filter(React.isValidElement)
-  const elementIsChild = childrenArr.some((c) => (c.props as any)[UTOPIA_PATH_KEY] === elementPath)
-  if (elementIsChild) {
-    return true
+function areElementsInChildrenOrPropsTree(elementPaths: Array<string>, props: any): boolean {
+  const childrenArr = fastReactChildrenToArray(props.children)
+
+  for (let c of childrenArr) {
+    if (elementPaths.includes((c.props as any)[UTOPIA_PATH_KEY])) {
+      return true
+    }
   }
 
-  const elementsInProps = Object.values(props).filter(isRenderProp)
-  const isElementInProps = elementsInProps.some((p) => p.props[UTOPIA_PATH_KEY] === elementPath)
-  if (isElementInProps) {
-    return true
+  for (let p in props) {
+    if (React.isValidElement(p) && elementPaths.includes((p.props as any)[UTOPIA_PATH_KEY])) {
+      return true
+    }
   }
 
-  return (
-    childrenArr.some((c) => isElementInChildrenOrPropsTree(elementPath, c.props)) ||
-    elementsInProps.some((p) => isElementInChildrenOrPropsTree(elementPath, p.props))
+  for (let c of childrenArr) {
+    if (areElementsInChildrenOrPropsTree(elementPaths, c.props)) {
+      return true
+    }
+  }
+
+  for (let p in props) {
+    if (isRenderProp(p) && areElementsInChildrenOrPropsTree(elementPaths, p.props)) {
+      return true
+    }
+  }
+  return false
+}
+
+function fastReactChildrenToArray(children: any) {
+  if (children == null || typeof children === 'string') {
+    return []
+  }
+  if (React.isValidElement(children)) {
+    return [children]
+  }
+  if (Array.isArray(children)) {
+    return children.filter(React.isValidElement)
+  }
+  return React.Children.toArray(children).filter(React.isValidElement)
+}
+
+export function useAllowRerenderForPath(
+  elementPath: ElementPath | 'rerender-all-elements',
+  realPassedProps: any,
+) {
+  const elementsToRerender = React.useContext(ElementsToRerenderContext)
+  const shouldUpdate = React.useMemo(
+    () => shouldUpdateInner(elementPath, realPassedProps, elementsToRerender),
+    [elementPath, realPassedProps, elementsToRerender],
   )
+  return React.useCallback(() => shouldUpdate, [shouldUpdate])
+}
+
+function shouldUpdateInner(
+  elementPath: ElementPath | 'rerender-all-elements',
+  realPassedProps: any,
+  elementsToRerender: ElementsToRerender,
+) {
+  if (elementsToRerender === 'rerender-all-elements') {
+    return true
+  }
+
+  if (
+    elementPath != 'rerender-all-elements' &&
+    elementsToRerender.some(
+      (er) => EP.pathsEqual(er, elementPath) || EP.isParentComponentOf(elementPath, er),
+    )
+  ) {
+    return true
+  }
+
+  return areElementsInChildrenOrPropsTree(elementsToRerender.map(EP.toString), realPassedProps)
 }

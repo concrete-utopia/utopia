@@ -1,5 +1,6 @@
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { GridTemplate } from '../../../core/shared/element-template'
 import { type ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
@@ -15,7 +16,7 @@ import { cssKeyword } from '../common/css-utils'
 import type { Axis } from '../inspector-common'
 import {
   detectFillHugFixedState,
-  hugContentsApplicableForContainer,
+  basicHugContentsApplicableForContainer,
   hugContentsApplicableForText,
   MaxContent,
   nukeSizingPropsForAxisCommand,
@@ -28,6 +29,8 @@ import { queueTrueUpElement } from '../../canvas/commands/queue-true-up-command'
 import { trueUpGroupElementChanged } from '../../../components/editor/store/editor-state'
 import type { AllElementProps } from '../../../components/editor/store/editor-state'
 import { convertSizelessDivToFrameCommands } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { deleteProperties } from '../../canvas/commands/delete-properties-command'
+import { assertNever } from '../../../core/shared/utils'
 
 const CHILDREN_CONVERTED_TOAST_ID = 'CHILDREN_CONVERTED_TOAST_ID'
 
@@ -87,6 +90,70 @@ function hugContentsSingleElement(
   ]
 }
 
+function gridTemplateUsesFr(template: GridTemplate | null) {
+  return (
+    template != null &&
+    template.type === 'DIMENSIONS' &&
+    template.dimensions.some((d) => d.unit === 'fr')
+  )
+}
+
+function elementUsesFrAlongAxis(
+  axis: Axis,
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+) {
+  const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (instance == null) {
+    return false
+  }
+  const { containerGridProperties, containerGridPropertiesFromProps } =
+    instance.specialSizeMeasurements
+
+  switch (axis) {
+    case 'horizontal':
+      return (
+        gridTemplateUsesFr(containerGridProperties.gridTemplateColumns) ||
+        gridTemplateUsesFr(containerGridPropertiesFromProps.gridTemplateColumns)
+      )
+    case 'vertical':
+      return (
+        gridTemplateUsesFr(containerGridProperties.gridTemplateRows) ||
+        gridTemplateUsesFr(containerGridPropertiesFromProps.gridTemplateRows)
+      )
+    default:
+      assertNever(axis)
+  }
+}
+
+export const hugContentsGridStrategy = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+  axis: Axis,
+): InspectorStrategy => ({
+  name: 'Set Grid to Hug',
+  strategy: () => {
+    // only run the strategy if all selected elements are grids
+    const allSelectedElementsGrids = elementPaths.every((e) =>
+      MetadataUtils.isGridLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, e)),
+    )
+
+    // only run the strategy if no selected element uses fr along the affected
+    // axis, because that implies that the container needs to be sized
+    const anyElementUsesFrAlongAxis = elementPaths.some((e) =>
+      elementUsesFrAlongAxis(axis, metadata, e),
+    )
+
+    if (!allSelectedElementsGrids || anyElementUsesFrAlongAxis) {
+      return null
+    }
+
+    return elementPaths.flatMap((elementPath) =>
+      deleteProperties('always', elementPath, [PP.create('style', widthHeightFromAxis(axis))]),
+    )
+  },
+})
+
 export const hugContentsBasicStrategy = (
   metadata: ElementInstanceMetadataMap,
   elementPaths: ElementPath[],
@@ -97,7 +164,7 @@ export const hugContentsBasicStrategy = (
   strategy: () => {
     const elements = elementPaths.filter(
       (path) =>
-        hugContentsApplicableForContainer(metadata, pathTrees, path) ||
+        basicHugContentsApplicableForContainer(metadata, pathTrees, path) ||
         hugContentsApplicableForText(metadata, path),
     )
 

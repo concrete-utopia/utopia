@@ -1,6 +1,9 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadata,
+  GridContainerProperties,
+} from '../../../../core/shared/element-template'
 import {
   isFiniteRectangle,
   offsetPoint,
@@ -92,6 +95,15 @@ export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
           rectContainsPointInclusive(c.globalFrame, pointOnCanvas),
       )
 
+      const container = MetadataUtils.findElementByElementPath(
+        canvasState.startingMetadata,
+        EP.parentPath(selectedElement),
+      )
+      if (container == null) {
+        return emptyStrategyApplicationResult
+      }
+      const gridTemplate = container.specialSizeMeasurements.containerGridProperties
+
       let commands: CanvasCommand[] = []
 
       if (
@@ -104,6 +116,7 @@ export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
             swapToElementUid: EP.toUid(pointerOverChild.elementPath),
             children: children,
             parentPath: EP.parentPath(selectedElement),
+            gridTemplate: gridTemplate,
           }),
         )
       }
@@ -131,11 +144,13 @@ function swapChildrenCommands({
   swapToElementUid,
   children,
   parentPath,
+  gridTemplate,
 }: {
   grabbedElementUid: string
   swapToElementUid: string
   children: ElementInstanceMetadata[]
   parentPath: ElementPath
+  gridTemplate: GridContainerProperties
 }): CanvasCommand[] {
   const grabbedElement = children.find((c) => EP.toUid(c.elementPath) === grabbedElementUid)
   const swapToElement = children.find((c) => EP.toUid(c.elementPath) === swapToElementUid)
@@ -170,10 +185,12 @@ function swapChildrenCommands({
     ),
     ...setGridPropsCommands(
       grabbedElement.elementPath,
+      gridTemplate,
       swapToElement.specialSizeMeasurements.elementGridProperties,
     ),
     ...setGridPropsCommands(
       swapToElement.elementPath,
+      gridTemplate,
       grabbedElement.specialSizeMeasurements.elementGridProperties,
     ),
   ]

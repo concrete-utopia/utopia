@@ -47,6 +47,7 @@ import type { NavigatorEntry } from '../../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import type {
   MetadataSubstate,
+  NavigatorTargetsSubstate,
   ProjectContentAndMetadataSubstate,
 } from '../../../editor/store/store-hook-substore-types'
 import { LayoutIcon } from '../../../navigator/navigator-item/layout-icon'
@@ -54,7 +55,7 @@ import {
   getNavigatorEntryLabel,
   labelSelector,
 } from '../../../navigator/navigator-item/navigator-item-wrapper'
-import { getNavigatorTargets } from '../../../navigator/navigator-utils'
+import { navigatorTargetsSelector } from '../../../navigator/navigator-utils'
 import type { ControlStatus } from '../../common/control-status'
 import { getControlStyles } from '../../common/control-styles'
 import { usePropControlledStateV2 } from '../../common/inspector-utils'
@@ -77,11 +78,10 @@ type BranchNavigatorEntries = {
 }
 
 const branchNavigatorEntriesSelector = createCachedSelector(
-  (store: ProjectContentAndMetadataSubstate) => store.editor.jsxMetadata,
-  (store: ProjectContentAndMetadataSubstate) => store.editor.elementPathTree,
-  (store: ProjectContentAndMetadataSubstate) => store.editor.projectContents,
-  (_store: ProjectContentAndMetadataSubstate, paths: ElementPath[]) => paths,
-  (jsxMetadata, elementPathTree, projectContents, paths): BranchNavigatorEntries | null => {
+  (store: NavigatorTargetsSubstate) => store.editor.jsxMetadata,
+  navigatorTargetsSelector,
+  (_store: NavigatorTargetsSubstate, paths: ElementPath[]) => paths,
+  (jsxMetadata, navigatorTargets, paths): BranchNavigatorEntries | null => {
     if (paths.length !== 1) {
       return null
     }
@@ -96,14 +96,7 @@ const branchNavigatorEntriesSelector = createCachedSelector(
 
     const conditional = elementMetadata.element.value
 
-    const navigatorEntries = getNavigatorTargets(
-      jsxMetadata,
-      elementPathTree,
-      [],
-      [],
-      {},
-      projectContents,
-    ).navigatorTargets
+    const navigatorEntries = navigatorTargets.navigatorTargets
 
     function getNavigatorEntry(clause: JSXElementChild): NavigatorEntry | null {
       return (
@@ -294,7 +287,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
   }, [paths, conditionExpression, setConditionExpression, originalConditionExpression, dispatch])
 
   const branchNavigatorEntries = useEditorState(
-    Substores.projectContentsAndMetadata,
+    Substores.navigatorTargetsSubstate,
     (store) => branchNavigatorEntriesSelector(store, paths),
     'ConditionalSection branches',
   )
