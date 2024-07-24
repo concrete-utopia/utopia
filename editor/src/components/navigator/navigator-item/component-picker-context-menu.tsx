@@ -251,6 +251,8 @@ function preferredChildrenForTarget(
   return []
 }
 
+export const SyntheticListChildName = 'List'
+
 function augmentPreferredChildren(
   preferredChildren: PreferredChildComponentDescriptorWithIcon[],
   insertionTarget: InsertionTarget,
@@ -259,7 +261,7 @@ function augmentPreferredChildren(
     return [
       ...preferredChildren,
       {
-        name: 'List',
+        name: SyntheticListChildName,
         moduleName: null,
         variants: [mapComponentInfo],
         icon: 'code',
@@ -941,32 +943,9 @@ export const ComponentPickerDropDown = React.memo<ComponentPickerDropDownProps>(
 
   const preferredChildItems = React.useMemo(
     (): DropdownMenuItem[] =>
-      preferredChildren.map((child) => ({
-        id: labelTestIdForComponentIcon(child.name, child.moduleName ?? '', child.icon),
-        label: child.name,
-        onSelect:
-          child.variants.length > 0
-            ? NO_OP
-            : () =>
-                insertPreferredChildInner({
-                  name: child.name,
-                  elementToInsert: (uid) =>
-                    jsxElement(child.name, uid, jsxAttributesFromMap({}), []),
-                  additionalImports: defaultImportsForComponentModule(child.name, child.moduleName),
-                }),
-
-        icon: <PreferredChildIcon icon={child.icon} />,
-        subMenuItems: child.variants.map((variant) => ({
-          id: `${child.name}-${variant.insertMenuLabel}}`,
-          label: variant.insertMenuLabel,
-          onSelect: () =>
-            insertPreferredChildInner({
-              name: child.name,
-              elementToInsert: (uid) => ({ uid: uid, ...variant.elementToInsert() }),
-              additionalImports: variant.importsToAdd,
-            }),
-        })),
-      })),
+      preferredChildren.map((child) =>
+        makeInsertableComponeentMenuItem(child, insertPreferredChildInner),
+      ),
     [insertPreferredChildInner, preferredChildren],
   )
 
@@ -1270,3 +1249,48 @@ export const ComponentPickerContextMenu = React.memo(() => {
     </React.Fragment>
   )
 })
+
+function makeInsertableComponeentMenuItem(
+  child: PreferredChildComponentDescriptorWithIcon,
+  insertPreferredChildInner: (preferredChildToInsert: ElementToInsert) => void,
+): DropdownMenuItem {
+  if (child.name === SyntheticListChildName) {
+    return {
+      id: labelTestIdForComponentIcon(child.name, child.moduleName ?? '', child.icon),
+      label: child.name,
+      onSelect: () =>
+        insertPreferredChildInner({
+          name: child.name,
+          elementToInsert: (uid) => ({ uid: uid, ...child.variants[0].elementToInsert() }),
+          additionalImports: child.variants[0].importsToAdd,
+        }),
+
+      icon: <PreferredChildIcon icon={child.icon} />,
+    }
+  }
+  return {
+    id: labelTestIdForComponentIcon(child.name, child.moduleName ?? '', child.icon),
+    label: child.name,
+    onSelect:
+      child.variants.length > 0
+        ? NO_OP
+        : () =>
+            insertPreferredChildInner({
+              name: child.name,
+              elementToInsert: (uid) => jsxElement(child.name, uid, jsxAttributesFromMap({}), []),
+              additionalImports: defaultImportsForComponentModule(child.name, child.moduleName),
+            }),
+
+    icon: <PreferredChildIcon icon={child.icon} />,
+    subMenuItems: child.variants.map((variant) => ({
+      id: `${child.name}-${variant.insertMenuLabel}}`,
+      label: variant.insertMenuLabel,
+      onSelect: () =>
+        insertPreferredChildInner({
+          name: child.name,
+          elementToInsert: (uid) => ({ uid: uid, ...variant.elementToInsert() }),
+          additionalImports: variant.importsToAdd,
+        }),
+    })),
+  }
+}
