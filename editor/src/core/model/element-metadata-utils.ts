@@ -375,6 +375,13 @@ export const MetadataUtils = {
     const parent = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
     return MetadataUtils.isGridLayoutedContainer(parent)
   },
+  isComponentInstanceFromMetadata(
+    metadata: ElementInstanceMetadataMap,
+    path: ElementPath,
+  ): boolean {
+    const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+    return elementMetadata?.componentInstance ?? false
+  },
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
   },
