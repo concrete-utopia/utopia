@@ -81,6 +81,7 @@ specifiers:
   '@stitches/react': 1.2.8
   '@svgr/plugin-jsx': 5.5.0
   '@testing-library/react': 14.0.0
+  '@testing-library/user-event': 14.5.2
   '@tippyjs/react': 4.1.0
   '@twind/core': 1.1.3
   '@twind/preset-autoprefix': 1.0.7
@@ -377,6 +378,7 @@ dependencies:
   '@shopify/hydrogen': 2024.4.1_mm4hmzfspm7s5gpesqzvatlufi
   '@stitches/react': 1.2.8_react@18.1.0
   '@svgr/plugin-jsx': 5.5.0
+  '@testing-library/user-event': 14.5.2
   '@tippyjs/react': 4.1.0_ef5jwxihqo6n7gxfmzogljlgcm
   '@twind/core': 1.1.3_typescript@5.2.2
   '@twind/preset-autoprefix': 1.0.7_n5n7exiee3gfge3vguymadfcha
@@ -4802,6 +4804,13 @@ packages:
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: true
+
+  /@testing-library/user-event/14.5.2:
+    resolution: {integrity: sha512-YAh82Wh4TIrxYLmfGcixwD18oIjyC1pFQC2Y01F2lzV2HTMiYrI0nze0FD0ocB//CKS/7jIUgae+adPqxK5yCQ==}
+    engines: {node: '>=12', npm: '>=6'}
+    peerDependencies:
+      '@testing-library/dom': '>=7.21.4'
+    dev: false
 
   /@thisismanta/pessimist/1.2.0:
     resolution: {integrity: sha512-rm8/zjNMuO9hPYhEMavVIIxmvawJJB8mthvbVXd74XUW7V/SbgmtDBQjICbCWKjluvA+gh+cqi7dv85/jexknA==}
