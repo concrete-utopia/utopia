@@ -1,6 +1,6 @@
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
-import { altModifier } from '../../../utils/modifiers'
+import { altModifier, cmdModifier } from '../../../utils/modifiers'
 import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -130,5 +130,38 @@ describe('Mouse Cursor', () => {
     const canvasControls = renderResult.renderedDOM.getByTestId('canvas-controls')
 
     expect(canvasControls.style.cursor).toContain('cursor-duplicate.png')
+  })
+  it('Uses the zoom in cursor in select mode when Z is pressed', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet('<div/>'),
+      'await-first-dom-report',
+    )
+
+    await keyDown('Z')
+    const canvasControls = renderResult.renderedDOM.getByTestId('canvas-controls')
+
+    expect(canvasControls.style.cursor).toContain('cursor-zoom-in.png')
+  })
+  it('Uses the zoom out cursor in select mode when ALT-Z is pressed', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet('<div/>'),
+      'await-first-dom-report',
+    )
+
+    await keyDown('Z', { modifiers: altModifier })
+    const canvasControls = renderResult.renderedDOM.getByTestId('canvas-controls')
+
+    expect(canvasControls.style.cursor).toContain('cursor-zoom-out.png')
+  })
+  it('Uses the zoom in cursor in select mode when CMD-Z is pressed (and not zoom in)', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet('<div/>'),
+      'await-first-dom-report',
+    )
+
+    await keyDown('Z', { modifiers: cmdModifier })
+    const canvasControls = renderResult.renderedDOM.getByTestId('canvas-controls')
+
+    expect(canvasControls.style.cursor).toContain('cursor-default.png')
   })
 })

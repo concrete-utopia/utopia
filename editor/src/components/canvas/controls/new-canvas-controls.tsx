@@ -16,7 +16,6 @@ import type {
 import { getMetadata } from '../../editor/store/editor-state'
 import type { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import type { CanvasPositions } from '../canvas-types'
-import { CSSCursor } from '../canvas-types'
 import { HighlightControl } from './highlight-control'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
@@ -182,14 +181,6 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
 
   const ref = React.useRef<HTMLDivElement | null>(null)
 
-  const selectModeCursor = React.useMemo(() => {
-    const altKeyPressed = canvasControlProps.keysPressed.alt ?? false
-    if (altKeyPressed) {
-      return CSSCursor.Duplicate
-    }
-    return props.cursor
-  }, [props.cursor, canvasControlProps.keysPressed.alt])
-
   if (isLiveMode(canvasControlProps.editorMode) && !canvasControlProps.keysPressed.cmd) {
     return (
       <div
@@ -238,7 +229,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
             width: `100%`,
             height: `100%`,
             zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
-            cursor: selectModeCursor,
+            cursor: props.cursor,
             visibility: canvasControlProps.canvasScrollAnimation ? 'hidden' : 'initial',
           }}
         >

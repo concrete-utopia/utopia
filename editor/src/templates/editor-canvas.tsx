@@ -125,6 +125,9 @@ function cursorForKeysPressed(
     // must omit `cmd` to avoid triggering on undo/redo
     return keysPressed['alt'] ? CSSCursor.ZoomOut : CSSCursor.ZoomIn
   }
+  if (keysPressed['alt']) {
+    return CSSCursor.Duplicate
+  }
   if (keysPressed['space']) {
     // Primary button pressed.
     if (mouseButtonsPressed.has(0)) {
