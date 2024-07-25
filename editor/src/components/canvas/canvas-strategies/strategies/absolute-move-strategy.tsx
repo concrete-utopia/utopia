@@ -38,6 +38,15 @@ export function absoluteMoveStrategy(
   const { pathsWereReplaced, paths: retargetedTargets } =
     retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
+  if (
+    pathsWereReplaced &&
+    originalTargets.some((originalTarget) =>
+      MetadataUtils.isComponentInstanceFromMetadata(canvasState.startingMetadata, originalTarget),
+    )
+  ) {
+    return null
+  }
+
   const isApplicable =
     retargetedTargets.length > 0 &&
     flattenSelection(retargetedTargets).every((element) => {

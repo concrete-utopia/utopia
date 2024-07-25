@@ -59,11 +59,7 @@ export function getCommandsForPushIntendedBounds(
         }
         break
       case 'TRUE_UP_CHILDREN_OF_GROUP_CHANGED':
-        const children = MetadataUtils.getChildrenPathsOrdered(
-          metadata,
-          pathTree,
-          trueUpTarget.targetParent,
-        )
+        const children = MetadataUtils.getChildrenPathsOrdered(pathTree, trueUpTarget.targetParent)
         groupTargets.push(
           ...mapDropNulls((child) => {
             const frame = getFrame(child)

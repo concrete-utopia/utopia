@@ -399,7 +399,7 @@ function ifElementIsFragmentLikeFirstConvertItToFrame(
         metadata,
         allElementProps,
         elementPathTrees,
-        MetadataUtils.getChildrenPathsOrdered(metadata, elementPathTrees, target),
+        MetadataUtils.getChildrenPathsOrdered(elementPathTrees, target),
       ),
     )
 
@@ -720,7 +720,7 @@ function getTopLevelChildrenAndMeasurementBoundaries(
   let topLevelChildren: Array<string> = []
   let maesurementBoundaries: Array<NonDOMElementWithLeaves> = []
 
-  const childrenPaths = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, parentPath)
+  const childrenPaths = MetadataUtils.getChildrenPathsOrdered(pathTrees, parentPath)
 
   for (const child of childrenPaths) {
     if (isElementNonDOMElement(metadata, allElementProps, pathTrees, child)) {
