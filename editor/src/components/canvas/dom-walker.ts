@@ -877,6 +877,9 @@ function collectMetadata(
   collectedPaths: Array<ElementPath>
 } {
   // Determine if the parent has been visited so far.
+  // When a child element of another element is found, we want to collect the metadata for it if
+  // the DOM walker hasn't visited its parent (by element path). As it still forms part of the parent's
+  // frame, so we want to include it.
   const parentVisited = originalElementPaths.some((originalElementPath) => {
     const parentPath = EP.parentPath(originalElementPath.path)
     return EP.containsPath(parentPath, globalProps.pathsCollectedMutable)

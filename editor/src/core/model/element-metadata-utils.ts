@@ -727,22 +727,6 @@ export const MetadataUtils = {
     }
     return result
   },
-  getChildrenOrderedMultiMetadata(
-    elementsArray: Array<ElementInstanceMetadataMap>,
-    pathTree: ElementPathTrees,
-    target: ElementPath,
-  ): Array<ElementInstanceMetadata> {
-    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(pathTree, target)
-    return mapDropNulls((childPath) => {
-      for (const elements of elementsArray) {
-        const result = MetadataUtils.findElementByElementPath(elements, childPath)
-        if (result != null) {
-          return result
-        }
-      }
-      return null
-    }, childrenPaths)
-  },
   getChildrenOrdered(
     elements: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
