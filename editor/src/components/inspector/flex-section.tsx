@@ -32,7 +32,11 @@ import { gridCSSNumber, isCSSNumber, type GridCSSNumber } from './common/css-uti
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { setProperty } from '../canvas/commands/set-property-command'
 import * as PP from '../../core/shared/property-path'
-import type { GridContainerProperties, GridPosition } from '../../core/shared/element-template'
+import type {
+  GridAutoOrTemplateBase,
+  GridContainerProperties,
+  GridPosition,
+} from '../../core/shared/element-template'
 import {
   gridPositionValue,
   type ElementInstanceMetadata,
@@ -135,61 +139,19 @@ export const FlexSection = React.memo(() => {
   )
 
   const columns: GridCSSNumber[] = React.useMemo(() => {
-    if (grid == null) {
-      return []
-    }
-
-    const fromProps =
-      grid.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateColumns
-    const calculated = grid.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
-
-    if (fromProps?.type !== 'DIMENSIONS' && calculated?.type !== 'DIMENSIONS') {
-      return []
-    }
-
-    let dimensions: GridCSSNumber[] = []
-
-    if (calculated?.type === 'DIMENSIONS') {
-      dimensions.push(...calculated.dimensions)
-    }
-    if (fromProps?.type === 'DIMENSIONS') {
-      if (dimensions.length === 0) {
-        return fromProps.dimensions
-      } else if (dimensions.length === fromProps.dimensions.length) {
-        return fromProps.dimensions
-      }
-    }
-
-    return dimensions
+    return getGridTemplateAxisValues({
+      calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateColumns ?? null,
+      fromProps:
+        grid?.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateColumns ?? null,
+    })
   }, [grid])
 
   const rows: GridCSSNumber[] = React.useMemo(() => {
-    if (grid == null) {
-      return []
-    }
-
-    const fromProps = grid.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows
-    const calculated = grid.specialSizeMeasurements.containerGridProperties.gridTemplateRows
-
-    if (fromProps?.type !== 'DIMENSIONS' && calculated?.type === 'DIMENSIONS') {
-      return []
-    }
-
-    let merged: GridCSSNumber[] = []
-
-    if (calculated?.type === 'DIMENSIONS') {
-      merged.push(...calculated.dimensions)
-    }
-
-    if (fromProps?.type === 'DIMENSIONS') {
-      if (merged.length === 0) {
-        return fromProps.dimensions
-      } else if (merged.length === fromProps.dimensions.length) {
-        return fromProps.dimensions
-      }
-    }
-
-    return merged
+    return getGridTemplateAxisValues({
+      calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateRows ?? null,
+      fromProps:
+        grid?.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows ?? null,
+    })
   }, [grid])
 
   return (
@@ -477,4 +439,24 @@ function gridNumbersToTemplateString(values: GridCSSNumber[]) {
       return areaName + `${v.value}` + unit
     })
     .join(' ')
+}
+
+function getGridTemplateAxisValues(template: {
+  calculated: GridAutoOrTemplateBase | null
+  fromProps: GridAutoOrTemplateBase | null
+}): GridCSSNumber[] {
+  const { calculated, fromProps } = template
+  if (fromProps?.type !== 'DIMENSIONS' && calculated?.type !== 'DIMENSIONS') {
+    return []
+  }
+
+  const calculatedDimensions = calculated?.type === 'DIMENSIONS' ? calculated.dimensions : []
+  const fromPropsDimensions = fromProps?.type === 'DIMENSIONS' ? fromProps.dimensions : []
+  if (calculatedDimensions.length === 0) {
+    return fromPropsDimensions
+  } else if (calculatedDimensions.length === fromPropsDimensions.length) {
+    return fromPropsDimensions
+  } else {
+    return calculatedDimensions
+  }
 }
