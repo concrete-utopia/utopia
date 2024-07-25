@@ -1,3 +1,10 @@
+import type {
+  JSExpressionNestedObject,
+  JSExpressionValue,
+  JSXAttributesEntry,
+  JSXElement,
+} from 'utopia-shared/src/types'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { getRectCenter, localRectangle } from '../../../../core/shared/math-utils'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
@@ -205,15 +212,28 @@ describe('grid rearrange move strategy', () => {
       gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 10),
     )
 
-    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd, gridArea } =
-      editor.renderedDOM.getByTestId('grid-child').style
-    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd, gridArea }).toEqual({
-      gridArea: '',
-      gridColumnEnd: '11',
-      gridColumnStart: '7',
-      gridRowStart: '2',
-      gridRowEnd: 'auto',
-    })
+    const styleProp = (
+      unsafeCast<JSXElement>(
+        MetadataUtils.getJsxElementChildFromMetadata(
+          editor.getEditorState().editor.jsxMetadata,
+          EP.fromString('sb/scene/grid/ddd'),
+        ),
+      ).props.find(
+        (p): p is JSXAttributesEntry => p.type === 'JSX_ATTRIBUTES_ENTRY' && p.key === 'style',
+      )?.value as JSExpressionNestedObject
+    ).content.flatMap((c) =>
+      c.type === 'PROPERTY_ASSIGNMENT'
+        ? [[c.key, unsafeCast<JSExpressionValue<any>>(c.value).value]]
+        : [],
+    )
+
+    expect(styleProp).toEqual([
+      ['minHeight', 0],
+      ['backgroundColor', '#db48f6'],
+      ['gridColumnStart', 7],
+      ['gridColumnEnd', 11],
+      ['gridRow', 2],
+    ])
   })
 })
 
@@ -334,11 +354,11 @@ export var storyboard = (
         }}
         data-uid='grid'
       >
-        <div
+         <div
           style={{
             minHeight: 0,
-            backgroundColor: '#f3785f',
-            gridArea: '2 / 3 / 7 / 10',
+            gridArea: '2 / 7 / 3 / 10',
+            backgroundColor: '#db48f6',
           }}
           data-uid='ddd'
           data-testid='grid-child'
@@ -348,3 +368,7 @@ export var storyboard = (
   </Storyboard>
 )
 `
+
+function unsafeCast<T>(a: unknown): T {
+  return a as T
+}
