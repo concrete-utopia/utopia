@@ -534,11 +534,7 @@ function getPreferredSelectionForEvent(
   // with continuous clicking mousedown should select
   switch (eventType) {
     case 'mousedown':
-      return isDoubleClick
-        ? 'dont-prefer-selected'
-        : cmdModifier
-        ? 'dont-prefer-selected'
-        : 'prefer-selected'
+      return isDoubleClick || cmdModifier ? 'dont-prefer-selected' : 'prefer-selected'
     case 'mouseup':
       return isDoubleClick ? 'prefer-selected' : 'dont-prefer-selected'
     default:
