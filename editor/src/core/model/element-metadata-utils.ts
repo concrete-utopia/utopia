@@ -1842,12 +1842,28 @@ export const MetadataUtils = {
       ...elementsInheritingFromAncestors,
     }
 
+    // This should exclude entries which have been incorporated into the DOM metadata
+    // as a result of those elements being children of visited DOM elements but that
+    // did not have their parents (by element path) visited.
+    let trimmedMetadata: ElementInstanceMetadataMap = {}
+    for (const elementMetadata of Object.values(mergedMetadata)) {
+      const ancestorPaths = EP.getAncestors(elementMetadata.elementPath).filter(
+        (path) => EP.fullDepth(path) > 2,
+      )
+      const allAncestorsExist = ancestorPaths.every((path) => EP.toString(path) in mergedMetadata)
+      if (allAncestorsExist || EP.fullDepth(elementMetadata.elementPath) <= 2) {
+        trimmedMetadata[EP.toString(elementMetadata.elementPath)] = elementMetadata
+      }
+      // In the above code we're using the fullDepth to effectively not bother checking things like
+      // storyboards and scenes as those will always be included.
+    }
+
     // Note: This will not necessarily be representative of the structured ordering in
     // the code that produced these elements.
-    const pathTree = MetadataUtils.createElementPathTreeFromMetadata(mergedMetadata)
+    const pathTree = MetadataUtils.createElementPathTreeFromMetadata(trimmedMetadata)
 
     return {
-      mergedMetadata: mergedMetadata,
+      mergedMetadata: trimmedMetadata,
       elementPathTree: pathTree,
     }
   },
