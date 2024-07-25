@@ -1,3 +1,7 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+/** @jsxFrag React.Fragment */
+import { jsx } from '@emotion/react'
 import * as RadixDropdownMenu from '@radix-ui/react-dropdown-menu'
 import { styled } from '@stitches/react'
 import React from 'react'
@@ -43,6 +47,7 @@ export interface DropdownMenuItem {
   icon?: React.ReactNode
   checked?: boolean
   subMenuItems?: Omit<DropdownMenuItem, 'subMenuItems'>[]
+  danger?: boolean
 }
 
 export interface DropdownMenuProps {
@@ -65,17 +70,32 @@ interface DropdownItemProps {
   icon: React.ReactNode | null
   checked: boolean | null
   shortcut: string | null
+  danger: boolean | null
   subMenuItems: Omit<DropdownMenuItem, 'subMenuItems'>[] | null
 }
 
 const ItemContainer = React.memo<
-  React.PropsWithChildren<{ isSubmenu: boolean; onSelect: OnSelect; testid: string }>
->(({ children, isSubmenu, onSelect, testid }) => {
+  React.PropsWithChildren<{
+    isSubmenu: boolean
+    onSelect: OnSelect
+    testid: string
+    danger: boolean | null
+  }>
+>(({ children, isSubmenu, onSelect, testid, danger }) => {
   if (isSubmenu) {
     return (
       <RadixDropdownMenu.Sub>
         <RadixDropdownMenu.SubTrigger>
-          <DropdownMenuItemContainer data-testid={testid}>{children}</DropdownMenuItemContainer>
+          <DropdownMenuItemContainer
+            css={{
+              ':hover': {
+                backgroundColor: danger ? colorTheme.errorForeground.value : undefined,
+              },
+            }}
+            data-testid={testid}
+          >
+            {children}
+          </DropdownMenuItemContainer>
         </RadixDropdownMenu.SubTrigger>
       </RadixDropdownMenu.Sub>
     )
@@ -83,7 +103,16 @@ const ItemContainer = React.memo<
 
   return (
     <RadixDropdownMenu.Item onSelect={onSelect}>
-      <DropdownMenuItemContainer data-testid={testid}>{children}</DropdownMenuItemContainer>
+      <DropdownMenuItemContainer
+        css={{
+          ':hover': {
+            backgroundColor: danger ? colorTheme.errorForeground.value : undefined,
+          },
+        }}
+        data-testid={testid}
+      >
+        {children}
+      </DropdownMenuItemContainer>
     </RadixDropdownMenu.Item>
   )
 })
@@ -100,6 +129,7 @@ export const DropdownItem = React.memo<DropdownItemProps>((props) => {
     label,
     shortcut,
     subMenuItems,
+    danger,
   } = props
 
   const shouldShowCheckboxesForSubmenuItems = subMenuItems?.some((s) => s.checked === true) ?? false
@@ -110,6 +140,7 @@ export const DropdownItem = React.memo<DropdownItemProps>((props) => {
       testid={itemId}
       isSubmenu={!isNullOrEmptyArray(subMenuItems)}
       onSelect={onSelect}
+      danger={danger}
     >
       <div
         style={{
@@ -153,6 +184,7 @@ export const DropdownItem = React.memo<DropdownItemProps>((props) => {
                         checked={child.checked ?? null}
                         shortcut={child.shortcut ?? null}
                         subMenuItems={null}
+                        danger={child.danger ?? null}
                       />
                     ))}
                   </RadixDropdownSubcontent>
@@ -190,6 +222,7 @@ export const DropdownMenuItemList = React.memo<DropdownMenuItemListProps>((props
           checked={item.checked ?? null}
           shortcut={item.shortcut ?? null}
           subMenuItems={item.subMenuItems ?? null}
+          danger={item.danger ?? null}
         />
       ))}
     </>

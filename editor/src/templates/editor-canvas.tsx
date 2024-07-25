@@ -133,6 +133,9 @@ function cursorForKeysPressed(
       return CSSCursor.OpenHand
     }
   }
+  if (keysPressed['alt']) {
+    return CSSCursor.Duplicate
+  }
   return null
 }
 
