@@ -4,6 +4,7 @@ import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/p
 import { useWrappedEmptyOrUnknownOnSubmitValue, SimplePercentInput } from '../../../../../uuiui'
 import { InspectorContextMenuItems, InspectorContextMenuWrapper } from '../../../../../uuiui-deps'
 import { setCSSNumberValue } from '../../../common/css-utils'
+import { PropertyLabel } from '../../../widgets/property-label'
 
 const opacityProp = [PP.create('style', 'opacity')]
 
@@ -41,6 +42,7 @@ export const OpacityRow = React.memo(() => {
       items={opacityContextMenuItems}
       data={null}
     >
+      <PropertyLabel target={opacityProp}>Opacity</PropertyLabel>
       <SimplePercentInput
         id='opacity-input'
         testId='opacity-input'
