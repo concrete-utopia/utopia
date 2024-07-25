@@ -17,6 +17,7 @@ import {
   addFlexLayoutStrategies,
   addGridLayoutStrategies,
   removeFlexLayoutStrategies,
+  removeGridLayoutStrategies,
 } from './inspector-strategies/inspector-strategies'
 import {
   detectAreElementsFlexContainers,
@@ -79,14 +80,18 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
 
   const removeLayoutSystem = React.useCallback(
     () =>
-      executeFirstApplicableStrategy(
-        dispatch,
-        removeFlexLayoutStrategies(
+      executeFirstApplicableStrategy(dispatch, [
+        ...removeFlexLayoutStrategies(
           elementMetadataRef.current,
           selectedViewsRef.current,
           elementPathTreeRef.current,
         ),
-      ),
+        ...removeGridLayoutStrategies(
+          elementMetadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+        ),
+      ]),
     [dispatch, elementMetadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
