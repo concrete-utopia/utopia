@@ -227,7 +227,6 @@ const TemplateDimensionControl = React.memo(
     title: string
   }) => {
     const dispatch = useDispatch()
-    const colorTheme = useColorTheme()
 
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
@@ -411,11 +410,11 @@ const TemplateDimensionControl = React.memo(
             id: `remove-${axis}`,
             label: 'Delete',
             onSelect: onRemove(index),
-            highlightBackgroundColor: colorTheme.errorForeground.value,
+            danger: true,
           },
         ]
       },
-      [onRemove, axis, colorTheme, onRename],
+      [onRemove, axis, onRename],
     )
 
     const openDropdown = React.useCallback(

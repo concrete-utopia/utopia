@@ -40,7 +40,7 @@ export interface DropdownMenuItem {
   icon?: React.ReactNode
   checked?: boolean
   onSelect: () => void
-  highlightBackgroundColor?: string
+  danger?: boolean
 }
 
 export interface DropdownMenuProps {
@@ -88,7 +88,7 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
               onSelect={item.onSelect}
               css={{
                 ':hover': {
-                  backgroundColor: item.highlightBackgroundColor,
+                  backgroundColor: item.danger ? colorTheme.errorForeground.value : undefined,
                 },
               }}
             >
