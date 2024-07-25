@@ -528,12 +528,17 @@ export function useHighlightCallbacks(
 function getPreferredSelectionForEvent(
   eventType: 'mousedown' | 'mouseup' | string,
   isDoubleClick: boolean,
+  cmdModifier: boolean,
 ): 'prefer-selected' | 'dont-prefer-selected' {
   // mousedown keeps selection on a single click to allow dragging overlapping elements and selection happens on mouseup
   // with continuous clicking mousedown should select
   switch (eventType) {
     case 'mousedown':
-      return isDoubleClick ? 'dont-prefer-selected' : 'prefer-selected'
+      return isDoubleClick
+        ? 'dont-prefer-selected'
+        : cmdModifier
+        ? 'dont-prefer-selected'
+        : 'prefer-selected'
     case 'mouseup':
       return isDoubleClick ? 'prefer-selected' : 'dont-prefer-selected'
     default:
@@ -561,6 +566,7 @@ function useSelectOrLiveModeSelectAndHover(
   )
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
   const interactionSessionHappened = React.useRef(false)
+  const draggedOverThreshold = React.useRef(false)
   const didWeHandleMouseDown = React.useRef(false) //  this is here to avoid selecting when closing text editing
 
   const { onMouseMove: innerOnMouseMove } = useHighlightCallbacks(
@@ -582,6 +588,14 @@ function useSelectOrLiveModeSelectAndHover(
           editorStoreRef.current.editor.canvas.interactionSession,
           editorStoreRef.current.editor.keysPressed['space'],
         ) || event.buttons === 4
+
+      const draggingOverThreshold =
+        editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.type === 'DRAG'
+          ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.drag != null
+          : false
+
+      draggedOverThreshold.current = draggedOverThreshold.current || draggingOverThreshold
+
       if (isDragIntention) {
         return
       }
@@ -601,20 +615,23 @@ function useSelectOrLiveModeSelectAndHover(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const isLeftClick = event.button === 0
       const isRightClick = event.type === 'contextmenu' && event.detail === 0
-      const isDragIntention =
+      const isCanvasPanIntention =
         editorStoreRef.current.editor.keysPressed['space'] || event.button === 1
-      const hasInteractionSessionWithMouseMoved =
+
+      const draggingOverThreshold =
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.type === 'DRAG'
           ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.drag != null
           : false
+
       const hasInteractionSession = editorStoreRef.current.editor.canvas.interactionSession != null
       const hadInteractionSessionThatWasCancelled =
         interactionSessionHappened.current && !hasInteractionSession
 
       const activeControl = editorStoreRef.current.editor.canvas.interactionSession?.activeControl
+
       const mouseUpSelectionAllowed =
         didWeHandleMouseDown.current &&
-        !hadInteractionSessionThatWasCancelled &&
+        (!hadInteractionSessionThatWasCancelled || !draggedOverThreshold.current) &&
         (activeControl == null || activeControl.type === 'BOUNDING_AREA')
 
       if (event.type === 'mousedown') {
@@ -625,6 +642,7 @@ function useSelectOrLiveModeSelectAndHover(
         interactionSessionHappened.current = false
         // didWeHandleMouseDown is used to avoid selecting when closing text editing
         didWeHandleMouseDown.current = false
+        draggedOverThreshold.current = false
 
         if (!mouseUpSelectionAllowed) {
           // We should skip this mouseup
@@ -633,8 +651,8 @@ function useSelectOrLiveModeSelectAndHover(
       }
 
       if (
-        isDragIntention ||
-        hasInteractionSessionWithMouseMoved ||
+        isCanvasPanIntention ||
+        draggingOverThreshold ||
         !active ||
         !(isLeftClick || isRightClick)
       ) {
@@ -643,8 +661,13 @@ function useSelectOrLiveModeSelectAndHover(
       }
 
       const doubleClick = event.type === 'mousedown' && event.detail > 0 && event.detail % 2 === 0
+      const cmdMouseDown = event.type === 'mousedown' && event.metaKey
       const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
-      const preferAlreadySelected = getPreferredSelectionForEvent(event.type, doubleClick)
+      const preferAlreadySelected = getPreferredSelectionForEvent(
+        event.type,
+        doubleClick,
+        event.metaKey,
+      )
       const foundTarget = findValidTarget(
         selectableViews,
         windowPoint(point(event.clientX, event.clientY)),
@@ -658,7 +681,7 @@ function useSelectOrLiveModeSelectAndHover(
       if (foundTarget != null || isDeselect) {
         if (
           event.button !== 2 &&
-          event.type !== 'mouseup' &&
+          (event.type !== 'mouseup' || cmdMouseDown) &&
           foundTarget != null &&
           draggingAllowed &&
           // grid has its own drag handling
