@@ -142,7 +142,7 @@ describe('Mouse Cursor', () => {
 
     expect(canvasControls.style.cursor).toContain('cursor-zoom-in.png')
   })
-  it('Uses the zoom out cursor in select mode when ALT-Z is pressed', async () => {
+  it('Uses the zoom out cursor in select mode when ALT-Z is pressed (and not duplicate)', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet('<div/>'),
       'await-first-dom-report',
@@ -153,7 +153,7 @@ describe('Mouse Cursor', () => {
 
     expect(canvasControls.style.cursor).toContain('cursor-zoom-out.png')
   })
-  it('Uses the zoom in cursor in select mode when CMD-Z is pressed (and not zoom in)', async () => {
+  it('Uses the default cursor in select mode when CMD-Z is pressed (and not zoom in)', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet('<div/>'),
       'await-first-dom-report',
@@ -163,5 +163,16 @@ describe('Mouse Cursor', () => {
     const canvasControls = renderResult.renderedDOM.getByTestId('canvas-controls')
 
     expect(canvasControls.style.cursor).toContain('cursor-default.png')
+  })
+  it('Uses the open hand cursor in select mode when SPACE is pressed', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet('<div/>'),
+      'await-first-dom-report',
+    )
+
+    await keyDown('space', { modifiers: cmdModifier })
+    const canvasControls = renderResult.renderedDOM.getByTestId('canvas-controls')
+
+    expect(canvasControls.style.cursor).toContain('cursor-open-hand.png')
   })
 })
