@@ -36,7 +36,7 @@ child_process.execSync('yarn', { stdio: 'inherit' })
 
 // Compile
 child_process.execSync('yarn gulp compile-build', { stdio: 'inherit' })
-// child_process.execSync('yarn gulp minify-vscode', { stdio: 'inherit' })
+child_process.execSync('yarn gulp minify-vscode', { stdio: 'inherit' })
 child_process.execSync('yarn compile-web', { stdio: 'inherit' })
 
 // Remove maps

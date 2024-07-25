@@ -124,6 +124,27 @@ index 5725dcf4f9b..bd677ca2c3b 100644
  				</div>
  
  				<script src="${mainJs}" nonce="${nonce}"></script>
+diff --git a/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts b/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts
+index 7c40993d6df..0f6f8522b56 100644
+--- a/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts
++++ b/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts
+@@ -62,6 +62,8 @@ export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
+ 	 * TypingsInstaller internals.
+ 	 */
+ 	private async handleResponse(response: InstallerResponse): Promise<void> {
++		console.log(`Typings installer response ${response}`)
++
+ 		switch (response.kind) {
+ 			case 'action::packageInstalled':
+ 			case 'action::invalidate':
+@@ -70,6 +72,7 @@ export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
+ 				break;
+ 			case 'event::beginInstallTypes':
+ 			case 'event::endInstallTypes':
++			case 'action::watchTypingLocations':
+ 				// Don't care.
+ 				break;
+ 			default:
 diff --git a/package.json b/package.json
 index ae706deebbc..0200dec699a 100644
 --- a/package.json

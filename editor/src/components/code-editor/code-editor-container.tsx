@@ -12,6 +12,7 @@ const VSCodeIframeContainer = React.memo((props: { vsCodeSessionID: string }) =>
   const baseIframeSrc = createIframeUrl(MONACO_EDITOR_IFRAME_BASE_URL, 'vscode-editor-iframe/')
   const url = new URL(baseIframeSrc)
   url.searchParams.append('vs_code_session_id', vsCodeSessionID)
+  url.searchParams.append('vscode-coi', '')
 
   setBranchNameFromURL(url.searchParams)
 
@@ -28,6 +29,7 @@ const VSCodeIframeContainer = React.memo((props: { vsCodeSessionID: string }) =>
           key={'vscode-editor'}
           id={VSCODE_EDITOR_IFRAME_ID}
           src={url.toString()}
+          // src={'http://localhost:8080/?vscode-coi'}
           allow='autoplay'
           style={{
             width: '100%',
