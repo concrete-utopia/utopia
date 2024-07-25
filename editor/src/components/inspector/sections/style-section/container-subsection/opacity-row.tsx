@@ -42,7 +42,7 @@ export const OpacityRow = React.memo(() => {
       items={opacityContextMenuItems}
       data={null}
     >
-      <PropertyLabel target={opacityProp}>Opacity</PropertyLabel>
+      {/* <PropertyLabel target={opacityProp}>Opacity</PropertyLabel> */}
       <SimplePercentInput
         id='opacity-input'
         testId='opacity-input'

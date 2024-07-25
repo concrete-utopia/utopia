@@ -8,7 +8,7 @@ import { UIGridRow } from '../../../widgets/ui-grid-row'
 export const ContainerSubsection = React.memo(() => {
   return (
     <div style={{ borderTop: `1px solid ${colorTheme.seperator.value}`, padding: '10px 0' }}>
-      <InspectorSubsectionHeader>
+      {/* <InspectorSubsectionHeader>
         <FlexRow
           style={{
             flexGrow: 1,
@@ -18,7 +18,7 @@ export const ContainerSubsection = React.memo(() => {
         >
           <span>Container</span>
         </FlexRow>
-      </InspectorSubsectionHeader>
+      </InspectorSubsectionHeader> */}
       <UIGridRow padded variant={'<--1fr--><--1fr-->|22px|'}>
         <OpacityRow />
         <BlendModeRow />

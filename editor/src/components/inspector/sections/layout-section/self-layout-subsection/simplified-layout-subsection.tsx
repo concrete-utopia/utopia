@@ -28,8 +28,8 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
   const showWrapperSectionWarning = selectedElementContract === 'wrapper-div'
 
   return (
-    <FlexColumn style={{ paddingBottom: 8 }}>
-      <InspectorSubsectionHeader>
+    <FlexColumn>
+      <InspectorSubsectionHeader style={{ border: 'none' }}>
         <FlexRow
           style={{
             flexGrow: 1,
