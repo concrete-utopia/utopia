@@ -42,10 +42,10 @@ export const OpacityRow = React.memo(() => {
       items={opacityContextMenuItems}
       data={null}
     >
-      {/* <PropertyLabel target={opacityProp}>Opacity</PropertyLabel> */}
       <SimplePercentInput
-        id='opacity-input'
-        testId='opacity-input'
+        id='opacity'
+        key='opacity'
+        testId='opacity'
         value={opacity?.value ?? 0}
         onSubmitValue={wrappedOnSubmitValue}
         onTransientSubmitValue={wrappedOnTransientSubmitValue}

@@ -175,8 +175,7 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
         alignItems: 'center',
         height: UtopiaTheme.layout.rowHeight.normal,
         background: colorTheme.inspectorBackground.value,
-        padding: '8px 0px 8px 0px',
-        // borderBottom: `1px solid ${colorTheme.seperator.value}`,
+        padding: '8px 0px',
         flexShrink: 0,
       }}
     >
