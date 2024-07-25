@@ -54,7 +54,7 @@ async function dragElement(
       midDragCallback: midDragCallback,
     })
   } else {
-    await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: modifiers })
+    await mouseDownAtPoint(canvasControlsLayer, startPoint)
     await mouseMoveToPoint(canvasControlsLayer, endPoint, {
       modifiers: modifiers,
       eventOptions: { buttons: 1 },
