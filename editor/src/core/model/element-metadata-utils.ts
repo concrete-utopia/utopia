@@ -378,6 +378,8 @@ export const MetadataUtils = {
       isRight(parent.element) &&
       isJSXElement(parent.element.value) &&
       parent.element.value.children.length > 0 &&
+      parent.specialSizeMeasurements.containerGridProperties.gridTemplateColumns != null &&
+      parent.specialSizeMeasurements.containerGridProperties.gridTemplateRows != null &&
       MetadataUtils.isGridLayoutedContainer(parent)
     )
   },
