@@ -373,7 +373,15 @@ export const MetadataUtils = {
   },
   isGridCell(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
     const parent = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
-    return MetadataUtils.isGridLayoutedContainer(parent)
+    return (
+      parent != null &&
+      isRight(parent.element) &&
+      isJSXElement(parent.element.value) &&
+      parent.element.value.children.length > 0 &&
+      parent.specialSizeMeasurements.containerGridProperties.gridTemplateColumns != null &&
+      parent.specialSizeMeasurements.containerGridProperties.gridTemplateRows != null &&
+      MetadataUtils.isGridLayoutedContainer(parent)
+    )
   },
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
