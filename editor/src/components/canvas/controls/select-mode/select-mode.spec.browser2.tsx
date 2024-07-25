@@ -33,7 +33,6 @@ import type { Modifiers } from '../../../../utils/modifiers'
 import { cmdModifier, emptyModifiers, shiftCmdModifier } from '../../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../../utils/utils.test-utils'
 
 async function fireSingleClickEvents(
   target: HTMLElement,
@@ -1532,6 +1531,7 @@ describe('mouseup selection', () => {
       </div>
     `)
 
+  const ScenePath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID]])
   const RedPath = EP.elementPath([
     [BakedInStoryboardUID, TestSceneUID, TestAppUID],
     ['app-root', 'red'],
@@ -1562,7 +1562,171 @@ describe('mouseup selection', () => {
     return getDOMRectCentre(elementRect)
   }
 
-  it('mouseup in the gap between a multi-selection will select the element behind if no drag happens', async () => {
+  describe('Interactions in selected scene', () => {
+    it('Can select element in selected scene by clicking on it', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        MouseupTestProject,
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch([selectComponents([ScenePath], false)], true)
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const redCentre = await getElementCentre('red', renderResult)
+      await mouseDownAtPoint(canvasControlsLayer, redCentre)
+
+      // selection should not change on mouse down
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([ScenePath])
+      await mouseUpAtPoint(canvasControlsLayer, redCentre)
+
+      // selection should change on mouse up
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath])
+
+      // Check nothing has changed in the project
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(MouseupTestProject)
+    })
+
+    it('Can select element in selected scene by dragging it under the drag threshold', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        MouseupTestProject,
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch([selectComponents([ScenePath], false)], true)
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const redCentre = await getElementCentre('red', renderResult)
+      await mouseMoveToPoint(canvasControlsLayer, redCentre)
+
+      await mouseDownAtPoint(canvasControlsLayer, redCentre)
+      // selection should not change on mouse down
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([ScenePath])
+
+      await mouseMoveToPoint(canvasControlsLayer, { x: redCentre.x + 1, y: redCentre.y + 1 })
+
+      await mouseUpAtPoint(canvasControlsLayer, { x: redCentre.x + 1, y: redCentre.y + 1 })
+
+      // selection should change on mouse up because dragging was below threshold, so this interaction was something like a click
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath])
+
+      // Check nothing has changed in the project
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(MouseupTestProject)
+    })
+
+    it('When the scene is selected, dragging an element inside it drags the scene and the selection doesnt change', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        MouseupTestProject,
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch([selectComponents([ScenePath], false)], true)
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const redCentre = await getElementCentre('red', renderResult)
+      await mouseMoveToPoint(canvasControlsLayer, redCentre)
+      await mouseDownAtPoint(canvasControlsLayer, redCentre)
+
+      // selection should not change on mouse down
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([ScenePath])
+
+      await mouseMoveToPoint(canvasControlsLayer, { x: redCentre.x + 100, y: redCentre.y + 100 })
+      await mouseUpAtPoint(canvasControlsLayer, { x: redCentre.x + 100, y: redCentre.y + 100 })
+
+      // selection should not change on mouse up because dragging of the scene was successful
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([ScenePath])
+
+      // Dragging was successful so the project has changed
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).not.toEqual(MouseupTestProject)
+    })
+
+    it('When the scene is selected, cmd-mousedown selects the element inside it', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        MouseupTestProject,
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch([selectComponents([ScenePath], false)], true)
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const redCentre = await getElementCentre('red', renderResult)
+      await mouseMoveToPoint(canvasControlsLayer, redCentre)
+
+      await mouseDownAtPoint(canvasControlsLayer, redCentre, { modifiers: cmdModifier })
+
+      // selection should change on mouse down because cmd was down
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath])
+    })
+
+    it('When the scene is selected, cmd-drag drags the element inside it', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        MouseupTestProject,
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch([selectComponents([ScenePath], false)], true)
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const redCentre = await getElementCentre('red', renderResult)
+      await mouseMoveToPoint(canvasControlsLayer, redCentre)
+
+      await mouseDownAtPoint(canvasControlsLayer, redCentre, { modifiers: cmdModifier })
+
+      // selection should change on mouse down because cmd was down. This is necessary, the following drag will move the element inside
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath])
+
+      await mouseMoveToPoint(
+        canvasControlsLayer,
+        { x: redCentre.x + 100, y: redCentre.y + 100 },
+        { modifiers: cmdModifier },
+      )
+      await mouseUpAtPoint(canvasControlsLayer, { x: redCentre.x + 100, y: redCentre.y + 100 })
+
+      // selection is still on dragged the element
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath])
+
+      // Dragging was successful so the project has changed
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).not.toEqual(MouseupTestProject)
+    })
+
+    it('When the scene is selected, cmd-dragging it below the drag threshold selects the element inside it', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        MouseupTestProject,
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch([selectComponents([ScenePath], false)], true)
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      const redCentre = await getElementCentre('red', renderResult)
+      await mouseMoveToPoint(canvasControlsLayer, redCentre)
+
+      await mouseDownAtPoint(canvasControlsLayer, redCentre, { modifiers: cmdModifier })
+
+      // selection should change on mouse down because cmd was down
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath])
+
+      await mouseMoveToPoint(
+        canvasControlsLayer,
+        { x: redCentre.x + 100, y: redCentre.y + 100 },
+        { modifiers: cmdModifier },
+      )
+      await mouseUpAtPoint(canvasControlsLayer, { x: redCentre.x + 1, y: redCentre.y + 1 })
+
+      // selection is still on the element which was already selected on mousedown
+      expect(renderResult.getEditorState().editor.selectedViews).toEqual([RedPath])
+
+      // Dragging was not successful so the project hasn't changed
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).not.toEqual(MouseupTestProject)
+    })
+  })
+
+  it('mouseup in the gap between a multi-selection will not select the element behind if no drag happens', async () => {
     const renderResult = await renderTestEditorWithCode(
       MouseupTestProject,
       'await-first-dom-report',
