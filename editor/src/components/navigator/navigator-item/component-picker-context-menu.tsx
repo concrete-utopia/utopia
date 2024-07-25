@@ -967,6 +967,7 @@ export const ComponentPickerDropDown = React.memo<ComponentPickerDropDownProps>(
               checked={null}
               shortcut={null}
               subMenuItems={null}
+              danger={null}
             />
           </>
         )
