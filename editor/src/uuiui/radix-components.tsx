@@ -1,3 +1,6 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
 import * as RadixDropdownMenu from '@radix-ui/react-dropdown-menu'
 import { styled } from '@stitches/react'
 import React from 'react'
@@ -37,6 +40,7 @@ export interface DropdownMenuItem {
   icon?: React.ReactNode
   checked?: boolean
   onSelect: () => void
+  highlightBackgroundColor?: string
 }
 
 export interface DropdownMenuProps {
@@ -82,6 +86,11 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
               data-testid={ItemContainerTestId(item.id)}
               key={item.id}
               onSelect={item.onSelect}
+              css={{
+                ':hover': {
+                  backgroundColor: item.highlightBackgroundColor,
+                },
+              }}
             >
               <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                 {when(

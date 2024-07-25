@@ -25,8 +25,8 @@ import {
 } from './inspector-strategies/inspector-strategies'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import type { DetectedLayoutSystem } from 'utopia-shared/src/types'
-import { assertNever } from '../../core/shared/utils'
-import { Icons, NumberInput, SquareButton, Subdued } from '../../uuiui'
+import { assertNever, NO_OP } from '../../core/shared/utils'
+import { Icons, NumberInput, SquareButton, Subdued, useColorTheme } from '../../uuiui'
 import type { CSSNumber, GridCSSNumberUnit, UnknownOrEmptyInput } from './common/css-utils'
 import { gridCSSNumber, isCSSNumber, type GridCSSNumber } from './common/css-utils'
 import { applyCommandsAction } from '../editor/actions/action-creators'
@@ -44,6 +44,10 @@ import {
 } from '../../core/shared/element-template'
 import { setGridPropsCommands } from '../canvas/canvas-strategies/strategies/grid-helpers'
 import { type CanvasCommand } from '../canvas/commands/commands'
+import type { DropdownMenuItem } from '../../uuiui/radix-components'
+import { DropdownMenu } from '../../uuiui/radix-components'
+
+const axisDropdownMenuButton = 'axisDropdownMenuButton'
 
 export const layoutSystemSelector = createSelector(
   metadataSelector,
@@ -223,6 +227,7 @@ const TemplateDimensionControl = React.memo(
     title: string
   }) => {
     const dispatch = useDispatch()
+    const colorTheme = useColorTheme()
 
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
@@ -333,6 +338,100 @@ const TemplateDimensionControl = React.memo(
       ])
     }, [dispatch, grid, axis, values])
 
+    const onRename = React.useCallback(
+      (index: number) => () => {
+        const container = grid.specialSizeMeasurements.containerGridProperties
+        const dimensions =
+          axis === 'column' ? container.gridTemplateColumns : container.gridTemplateRows
+        if (dimensions?.type !== 'DIMENSIONS') {
+          return
+        }
+        const currentAreaName = dimensions.dimensions[index]?.areaName ?? undefined
+
+        const rawNewAreaName = window.prompt('Area name:', currentAreaName)?.trim()
+        if (rawNewAreaName == null) {
+          return
+        }
+
+        const newAreaName: string | null =
+          rawNewAreaName.length === 0 ? null : sanitizeAreaName(rawNewAreaName)
+
+        const newValues = values.map((value, idx) => {
+          if (idx !== index) {
+            return value
+          }
+          return {
+            ...value,
+            areaName: newAreaName,
+          }
+        })
+
+        let commands: CanvasCommand[] = [
+          setProperty(
+            'always',
+            grid.elementPath,
+            PP.create('style', axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows'),
+            gridNumbersToTemplateString(newValues),
+          ),
+        ]
+
+        // replace the area name in the template and update the grid children so they
+        // reference the new area name, if they used to reference the previous one
+        const adjustedGridTemplate = renameAreaInTemplateAtIndex(
+          container,
+          axis,
+          index,
+          newAreaName,
+        )
+        const children = MetadataUtils.getChildrenUnordered(metadataRef.current, grid.elementPath)
+        for (const child of children) {
+          commands.push(
+            ...setGridPropsCommands(
+              child.elementPath,
+              adjustedGridTemplate,
+              child.specialSizeMeasurements.elementGridProperties,
+            ),
+          )
+        }
+
+        dispatch([applyCommandsAction(commands)])
+      },
+      [grid, axis, values, dispatch, metadataRef],
+    )
+
+    const dropdownMenuItems = React.useCallback(
+      (index: number): DropdownMenuItem[] => {
+        return [
+          {
+            id: `rename-${axis}`,
+            label: 'Rename',
+            onSelect: onRename(index),
+          },
+          {
+            id: `remove-${axis}`,
+            label: 'Delete',
+            onSelect: onRemove(index),
+            highlightBackgroundColor: colorTheme.errorForeground.value,
+          },
+        ]
+      },
+      [onRemove, axis, colorTheme, onRename],
+    )
+
+    const openDropdown = React.useCallback(
+      () => (
+        <SquareButton
+          data-testid={'openDropdown'}
+          highlight
+          onClick={NO_OP}
+          style={{ width: 12, height: 22 }}
+        >
+          <Icons.Threedots />
+        </SquareButton>
+      ),
+      [],
+    )
+
     return (
       <div
         style={{
@@ -353,11 +452,11 @@ const TemplateDimensionControl = React.memo(
               key={`col-${col}-${index}`}
               style={{ display: 'flex', alignItems: 'center', gap: 6 }}
               css={{
-                '& > .removeButton': {
+                [`& > .${axisDropdownMenuButton}`]: {
                   visibility: 'hidden',
                 },
                 ':hover': {
-                  '& > .removeButton': {
+                  [`& > .${axisDropdownMenuButton}`]: {
                     visibility: 'visible',
                   },
                 },
@@ -386,9 +485,8 @@ const TemplateDimensionControl = React.memo(
                   testId={`col-${col}-${index}`}
                 />
               </div>
-              <SquareButton className='removeButton'>
-                {/* TODO replace this with a context menu! */}
-                <Icons.Cross onClick={onRemove(index)} />
+              <SquareButton className={axisDropdownMenuButton}>
+                <DropdownMenu align='end' items={dropdownMenuItems(index)} opener={openDropdown} />
               </SquareButton>
             </div>
           )
@@ -431,6 +529,39 @@ function removeTemplateValueAtIndex(
   }
 }
 
+function renameAreaInTemplateAtIndex(
+  original: GridContainerProperties,
+  axis: 'column' | 'row',
+  index: number,
+  newAreaName: string | null,
+) {
+  function renameDimension(dimension: GridCSSNumber, idx: number) {
+    return idx === index ? { ...dimension, areaName: newAreaName } : dimension
+  }
+
+  const gridTemplateRows =
+    axis === 'row' && original.gridTemplateRows?.type === 'DIMENSIONS'
+      ? {
+          ...original.gridTemplateRows,
+          dimensions: original.gridTemplateRows.dimensions.map(renameDimension),
+        }
+      : original.gridTemplateRows
+
+  const gridTemplateColumns =
+    axis === 'column' && original.gridTemplateColumns?.type === 'DIMENSIONS'
+      ? {
+          ...original.gridTemplateColumns,
+          dimensions: original.gridTemplateColumns.dimensions.map(renameDimension),
+        }
+      : original.gridTemplateColumns
+
+  return {
+    ...original,
+    gridTemplateRows: gridTemplateRows,
+    gridTemplateColumns: gridTemplateColumns,
+  }
+}
+
 function gridNumbersToTemplateString(values: GridCSSNumber[]) {
   return values
     .map((v) => {
@@ -459,4 +590,10 @@ function getGridTemplateAxisValues(template: {
   } else {
     return calculatedDimensions
   }
+}
+
+const reAlphanumericDashUnderscore = /[^0-9a-z\-_]+/gi
+
+function sanitizeAreaName(areaName: string): string {
+  return areaName.replace(reAlphanumericDashUnderscore, '-')
 }
