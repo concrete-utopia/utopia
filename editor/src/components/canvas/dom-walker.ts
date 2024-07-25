@@ -447,34 +447,34 @@ export function backfillDomMetadata(
   // Find the paths missing from the metadata, which are ancestors of paths in the metadata which are not present in the metadata.
   const missingPaths = new Set<string>()
   let parentsAndChildrenToRebuild: { [parent: string]: Array<string> } = {}
-  for (const elementMetadata of Object.values(metadata)) {
-    function addPathToParentsAndChildren(pathToAdd: ElementPath): void {
-      const parentPath = EP.parentPath(pathToAdd)
+  function addPathToParentsAndChildren(pathToAdd: ElementPath): void {
+    const parentPath = EP.parentPath(pathToAdd)
 
-      const parentPathString = EP.toString(parentPath)
-      // Build up parentsAndChildrenToRebuild.
-      let pathsToFillChildren: Array<string>
-      if (parentPathString in parentsAndChildrenToRebuild) {
-        pathsToFillChildren = parentsAndChildrenToRebuild[parentPathString]
-      } else {
-        pathsToFillChildren = []
-        parentsAndChildrenToRebuild[parentPathString] = pathsToFillChildren
-      }
-      pathsToFillChildren.push(EP.toString(pathToAdd))
+    const parentPathString = EP.toString(parentPath)
+    // Build up parentsAndChildrenToRebuild.
+    let pathsToFillChildren: Array<string>
+    if (parentPathString in parentsAndChildrenToRebuild) {
+      pathsToFillChildren = parentsAndChildrenToRebuild[parentPathString]
+    } else {
+      pathsToFillChildren = []
+      parentsAndChildrenToRebuild[parentPathString] = pathsToFillChildren
     }
-    function fillPath(pathToFill: ElementPath): void {
-      addPathToParentsAndChildren(pathToFill)
-      if (!EP.isEmptyPath(pathToFill)) {
-        const pathStringToFill = EP.toString(pathToFill)
-        if (!missingPaths.has(pathStringToFill) && !(pathStringToFill in metadata)) {
-          missingPaths.add(pathStringToFill)
-          const parentPath = EP.parentPath(pathToFill)
-          if (parentPath != null) {
-            fillPath(parentPath)
-          }
+    pathsToFillChildren.push(EP.toString(pathToAdd))
+  }
+  function fillPath(pathToFill: ElementPath): void {
+    addPathToParentsAndChildren(pathToFill)
+    if (!EP.isEmptyPath(pathToFill)) {
+      const pathStringToFill = EP.toString(pathToFill)
+      if (!missingPaths.has(pathStringToFill) && !(pathStringToFill in metadata)) {
+        missingPaths.add(pathStringToFill)
+        const parentPath = EP.parentPath(pathToFill)
+        if (parentPath != null) {
+          fillPath(parentPath)
         }
       }
     }
+  }
+  for (const elementMetadata of Object.values(metadata)) {
     const metadataPath = elementMetadata.elementPath
     addPathToParentsAndChildren(metadataPath)
     fillPath(EP.parentPath(metadataPath))
