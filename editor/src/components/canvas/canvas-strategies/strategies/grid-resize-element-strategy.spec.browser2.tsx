@@ -195,6 +195,26 @@ describe('grid rearrange move strategy', () => {
       }
     })
   })
+
+  it('removes the grid-area prop on resize', async () => {
+    const editor = await renderTestEditorWithCode(ProjectCodeWithGridArea, 'await-first-dom-report')
+
+    await runCellResizeTest(
+      editor,
+      'column-end',
+      gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 10),
+    )
+
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd, gridArea } =
+      editor.renderedDOM.getByTestId('grid-child').style
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd, gridArea }).toEqual({
+      gridArea: '',
+      gridColumnEnd: '11',
+      gridColumnStart: '7',
+      gridRowStart: '2',
+      gridRowEnd: 'auto',
+    })
+  })
 })
 
 const ProjectCode = `import * as React from 'react'
@@ -271,6 +291,54 @@ export var storyboard = (
             gridColumnStart: 7,
             gridRowStart: 2,
             backgroundColor: '#db48f6',
+          }}
+          data-uid='ddd'
+          data-testid='grid-child'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+
+const ProjectCodeWithGridArea = `import * as React from 'react'
+import { Scene, Storyboard, Placeholder } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 847,
+        height: 895,
+        position: 'absolute',
+        left: 46,
+        top: 131,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateRows: '75px 75px 75px 75px',
+          gridTemplateColumns:
+            '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
+          gridGap: 16,
+          height: 482,
+          width: 786,
+          position: 'absolute',
+          left: 31,
+          top: 0,
+        }}
+        data-uid='grid'
+      >
+        <div
+          style={{
+            minHeight: 0,
+            backgroundColor: '#f3785f',
+            gridArea: '2 / 3 / 7 / 10',
           }}
           data-uid='ddd'
           data-testid='grid-child'
