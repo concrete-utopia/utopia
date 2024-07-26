@@ -29,7 +29,6 @@ import { assertNever, NO_OP } from '../../core/shared/utils'
 import { Icons, NumberInput, SquareButton, Subdued } from '../../uuiui'
 import type { CSSNumber, GridCSSNumberUnit, UnknownOrEmptyInput } from './common/css-utils'
 import {
-  cssNumber,
   cssNumberToString,
   gridCSSNumber,
   isCSSNumber,
@@ -635,43 +634,56 @@ const GapRowColumnControl = React.memo(() => {
   const rowGap = useInspectorLayoutInfo('rowGap')
 
   const onSubmit = React.useCallback(
-    (target: 'columnGap' | 'rowGap') => (value: UnknownOrEmptyInput<CSSNumber>) => {
-      if (grid == null) {
-        return
-      }
-
-      function serializeValue(v: CSSNumber) {
-        return v.unit == null || v.unit === 'px' ? v.value : cssNumberToString(v)
-      }
-
-      if (isCSSNumber(value)) {
-        let updates: PropertyToUpdate[] = []
-
-        // set the new value on the target prop
-        updates.push(propertyToSet(PP.create('style', target), serializeValue(value)))
-
-        // if there's a gap, it needs to be stripped out and replaced with explicit
-        // rowGap/colGap pairs.
-        if (gap.controlStatus === 'detected') {
-          // clean up the other gaps
-          updates.push(
-            propertyToDelete(PP.create('style', 'gap')),
-            propertyToDelete(PP.create('style', 'gridGap')),
-          )
-          // set the counterpart props
-          if (target === 'columnGap' && rowGap.controlStatus !== 'unset') {
-            updates.push(propertyToSet(PP.create('style', 'rowGap'), serializeValue(rowGap.value)))
-          }
-          if (target === 'rowGap' && columnGap.controlStatus !== 'unset') {
-            updates.push(
-              propertyToSet(PP.create('style', 'columnGap'), serializeValue(columnGap.value)),
-            )
-          }
+    (target: 'columnGap' | 'rowGap') =>
+      (value: UnknownOrEmptyInput<CSSNumber>, transient?: boolean) => {
+        if (grid == null) {
+          return
         }
-        dispatch([applyCommandsAction([updateBulkProperties('always', grid.elementPath, updates)])])
-      }
-    },
-    [columnGap, rowGap, dispatch, grid, gap],
+
+        function serializeValue(v: CSSNumber) {
+          return v.unit == null || v.unit === 'px' ? v.value : cssNumberToString(v)
+        }
+
+        if (isCSSNumber(value)) {
+          let updates: PropertyToUpdate[] = []
+
+          // if there's a gap, it needs to be stripped out and replaced with explicit
+          // rowGap/colGap pairs.
+          if (gap.controlStatus !== 'unset') {
+            // clean up the other gaps
+            updates.push(
+              propertyToDelete(PP.create('style', 'gap')),
+              propertyToDelete(PP.create('style', 'gridGap')),
+            )
+
+            // set the counterpart props
+            updates.push(
+              propertyToSet(
+                PP.create('style', 'columnGap'),
+                serializeValue(target === 'columnGap' ? value : gap.value),
+              ),
+            )
+            updates.push(
+              propertyToSet(
+                PP.create('style', 'rowGap'),
+                serializeValue(target === 'rowGap' ? value : gap.value),
+              ),
+            )
+          } else {
+            // set the new value on the target prop
+            if (target === 'columnGap') {
+              columnGap.onSubmitValue(value, transient)
+            } else {
+              rowGap.onSubmitValue(value, transient)
+            }
+          }
+
+          dispatch([
+            applyCommandsAction([updateBulkProperties('always', grid.elementPath, updates)]),
+          ])
+        }
+      },
+    [dispatch, grid, gap, rowGap, columnGap],
   )
 
   if (grid == null) {
@@ -681,17 +693,13 @@ const GapRowColumnControl = React.memo(() => {
   return (
     <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
       <NumberInput
-        value={
-          grid.specialSizeMeasurements.columnGap === null
-            ? null
-            : cssNumber(grid.specialSizeMeasurements.columnGap)
-        }
+        value={columnGap.value}
         numberType={'Length'}
         onSubmitValue={onSubmit('columnGap')}
         onTransientSubmitValue={onSubmit('columnGap')}
         onForcedSubmitValue={onSubmit('columnGap')}
         defaultUnitToHide={'px'}
-        testId={`grid-column-gap`}
+        testId={'grid-column-gap'}
         labelInner={{
           category: 'inspector-element',
           type: 'gapHorizontal',
@@ -705,7 +713,7 @@ const GapRowColumnControl = React.memo(() => {
         onTransientSubmitValue={onSubmit('rowGap')}
         onForcedSubmitValue={onSubmit('rowGap')}
         defaultUnitToHide={'px'}
-        testId={`grid-row-gap`}
+        testId={'grid-row-gap'}
         labelInner={{
           category: 'inspector-element',
           type: 'gapVertical',
