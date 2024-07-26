@@ -15,7 +15,6 @@ import type { ParseSuccess } from 'utopia-shared/src/types'
 export type DuplicateUIDsResult = Map<string, string>
 
 interface GetAllUniqueUIDsResult {
-  uniqueIDs: Set<string>
   duplicateIDs: DuplicateUIDsResult
   filePathToUids: FileToUidMapping
 }
@@ -200,21 +199,19 @@ function collectUidsForFile(
 }
 
 function collectUidsForEachFile(projectContents: ProjectContentTreeRoot): GetAllUniqueUIDsResult {
-  let workingAllUids: Set<string> = emptySet<string>()
   let workingFileToUidMapping: FileToUidMapping = new Map()
   let workingDupliactedUIDs: DuplicateUIDsResult = new Map()
   walkContentsTreeForParseSuccess(projectContents, (filePath, parseSuccess) => {
     const mappingsForFile = collectUidsForFile(filePath, parseSuccess)
-    mappingsForFile.uniqueIDs.forEach((uid) => {
-      workingAllUids.add(uid)
-    })
+    // mappingsForFile.uniqueIDs.forEach((uid) => {
+    //   workingAllUids.add(uid)
+    // })
     workingFileToUidMapping.set(filePath, mappingsForFile.uniqueIDs)
     mappingsForFile.duplicateIDs.forEach((file, uid) => {
       workingDupliactedUIDs.set(uid, file)
     })
   })
   return {
-    uniqueIDs: workingAllUids, // TODO do not actually create here, only in helper function!!!!!
     filePathToUids: workingFileToUidMapping,
     duplicateIDs: workingDupliactedUIDs,
   }
