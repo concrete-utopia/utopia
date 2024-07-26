@@ -73,7 +73,7 @@ async function dragElement(
   modifiers: Modifiers,
   midDragCallback?: () => Promise<void>,
 ): Promise<void> {
-  await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers })
   await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers,
     midDragCallback,
