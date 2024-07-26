@@ -49,6 +49,8 @@ import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { executeFirstApplicableStrategy } from '../../../inspector-strategies/inspector-strategy'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import * as EP from '../../../../../core/shared/element-path'
+import type { EditorDispatch } from '../../../../editor/action-types'
+import { transientActions } from '../../../../editor/actions/action-creators'
 
 type TLWH = 'top' | 'left' | 'width' | 'height'
 
@@ -89,6 +91,12 @@ interface LTWHPixelValues {
 
 export const FrameUpdatingLayoutSection = React.memo(() => {
   const dispatch = useDispatch()
+
+  const transientDispatch: EditorDispatch = React.useCallback(
+    (actions, priority) => dispatch([transientActions([...actions])], priority),
+    [dispatch],
+  )
+
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
@@ -207,14 +215,16 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
   )
 
   const updateFrame = React.useCallback(
-    (frameUpdate: FrameUpdate) => {
+    (frameUpdate: FrameUpdate, transient: boolean) => {
+      const dispatchToUse = transient ? transientDispatch : dispatch
+
       switch (frameUpdate.type) {
         case 'DELTA_FRAME_UPDATE':
           if (
             frameUpdate.edgePosition === EdgePositionTop ||
             frameUpdate.edgePosition === EdgePositionLeft
           ) {
-            executeFirstApplicableStrategy(dispatch, [
+            executeFirstApplicableStrategy(dispatchToUse, [
               moveInspectorStrategy(
                 metadataRef.current,
                 selectedViewsRef.current,
@@ -223,7 +233,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
               ),
             ])
           } else {
-            executeFirstApplicableStrategy(dispatch, [
+            executeFirstApplicableStrategy(dispatchToUse, [
               resizeInspectorStrategy(
                 metadataRef.current,
                 selectedViewsRef.current,
@@ -241,7 +251,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
             frameUpdate.edgePosition === EdgePositionLeft
           ) {
             const leftOrTop = frameUpdate.edgePosition === EdgePositionLeft ? 'left' : 'top'
-            executeFirstApplicableStrategy(dispatch, [
+            executeFirstApplicableStrategy(dispatchToUse, [
               directMoveInspectorStrategy(
                 metadataRef.current,
                 selectedViewsRef.current,
@@ -253,7 +263,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           } else {
             const widthOrHeight =
               frameUpdate.edgePosition === EdgePositionRight ? 'width' : 'height'
-            executeFirstApplicableStrategy(dispatch, [
+            executeFirstApplicableStrategy(dispatchToUse, [
               directResizeInspectorStrategy(
                 metadataRef.current,
                 selectedViewsRef.current,
@@ -268,7 +278,14 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           assertNever(frameUpdate)
       }
     },
-    [dispatch, metadataRef, originalGlobalFrame, projectContentsRef, selectedViewsRef],
+    [
+      dispatch,
+      metadataRef,
+      originalGlobalFrame,
+      projectContentsRef,
+      selectedViewsRef,
+      transientDispatch,
+    ],
   )
 
   return (
@@ -355,7 +372,7 @@ interface LayoutPinPropertyControlProps {
   label: string
   property: TLWH
   currentValues: Array<number>
-  updateFrame: (frameUpdate: FrameUpdate) => void
+  updateFrame: (frameUpdate: FrameUpdate, transient: boolean) => void
   invalid?: boolean
 }
 
@@ -392,7 +409,7 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
   currentValuesRef.current = currentValues
 
   const onSubmitValue = React.useCallback(
-    (newValue: UnknownOrEmptyInput<CSSNumber>) => {
+    (newValue: UnknownOrEmptyInput<CSSNumber>, transient: boolean = false) => {
       const calculatedSingleCommonValue = getSingleCommonValue(currentValuesRef.current)
       if (isUnknownInputValue(newValue)) {
         // Ignore right now.
@@ -404,14 +421,14 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
         if (newValue.unit == null || newValue.unit === 'px') {
           const edgePosition = getTLWHEdgePosition(property)
           if (calculatedSingleCommonValue == null) {
-            updateFrame(directFrameUpdate(edgePosition, newValue.value))
+            updateFrame(directFrameUpdate(edgePosition, newValue.value), transient)
           } else {
             const movement = getMovementFromValues(
               property,
               calculatedSingleCommonValue,
               newValue.value,
             )
-            updateFrame(deltaFrameUpdate(edgePosition, movement))
+            updateFrame(deltaFrameUpdate(edgePosition, movement), transient)
           }
         } else {
           console.error('Attempting to use a value with a unit, which is invalid.')

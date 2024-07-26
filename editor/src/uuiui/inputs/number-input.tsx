@@ -287,15 +287,15 @@ export const NumberInput = React.memo<NumberInputProps>(
         const newValue = setCSSNumberValue(value, newNumericValue)
         if (transient) {
           if (onTransientSubmitValue != null) {
-            onTransientSubmitValue(newValue)
+            onTransientSubmitValue(newValue, transient)
           } else if (onSubmitValue != null) {
-            onSubmitValue(newValue)
+            onSubmitValue(newValue, transient)
           }
         } else {
           if (onForcedSubmitValue != null) {
-            onForcedSubmitValue(newValue)
+            onForcedSubmitValue(newValue, transient)
           } else if (onSubmitValue != null) {
-            onSubmitValue(newValue)
+            onSubmitValue(newValue, transient)
           }
         }
         repeatedValueRef.current = newValue
@@ -354,15 +354,15 @@ export const NumberInput = React.memo<NumberInputProps>(
 
         if (transient) {
           if (onTransientSubmitValue != null) {
-            onTransientSubmitValue(newValue)
+            onTransientSubmitValue(newValue, transient)
           } else if (onSubmitValue != null) {
-            onSubmitValue(newValue)
+            onSubmitValue(newValue, transient)
           }
         } else {
           if (onForcedSubmitValue != null) {
-            onForcedSubmitValue(newValue)
+            onForcedSubmitValue(newValue, transient)
           } else if (onSubmitValue != null) {
-            onSubmitValue(newValue)
+            onSubmitValue(newValue, transient)
           }
         }
         updateValue(newValue)
