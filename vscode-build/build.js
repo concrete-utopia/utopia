@@ -5,7 +5,7 @@ const fse = require('fs-extra')
 const glob = require('glob')
 const rmdir = require('rimraf')
 
-const vscodeVersion = '1.61.2'
+const vscodeVersion = '1.91.1'
 
 if (fs.existsSync('vscode')) {
   process.chdir('vscode')
@@ -35,15 +35,16 @@ child_process.execSync(`git apply ../vscode.patch`, {
 child_process.execSync('yarn', { stdio: 'inherit' })
 
 // Compile
-child_process.execSync('yarn gulp compile-build', { stdio: 'inherit' })
-child_process.execSync('yarn gulp minify-vscode', { stdio: 'inherit' })
-child_process.execSync('yarn compile-web', { stdio: 'inherit' })
+// child_process.execSync('yarn compile-build', { stdio: 'inherit' }) // yarn compile-build ?
+// child_process.execSync('yarn minify-vscode', { stdio: 'inherit' }) // yarn minify-vscode ?
+child_process.execSync('yarn gulp vscode-web-min', { stdio: 'inherit' })
+child_process.execSync('yarn compile-web', { stdio: 'inherit' }) // Maybe don't need this?
 
-// Remove maps
-const mapFiles = glob.sync('out-vscode-min/**/*.js.map', {})
-mapFiles.forEach((mapFile) => {
-  fs.unlinkSync(mapFile)
-})
+// // Remove maps
+// const mapFiles = glob.sync('out-vscode-min/**/*.js.map', {})
+// mapFiles.forEach((mapFile) => {
+//   fs.unlinkSync(mapFile)
+// })
 
 // Extract compiled files
 if (fs.existsSync('../dist')) {
@@ -52,19 +53,20 @@ if (fs.existsSync('../dist')) {
 
 fs.mkdirSync('../dist')
 fs.mkdirSync('../dist/lib')
-fse.copySync('out-vscode-min', '../dist/vscode')
+fse.copySync('out-vscode-web-min', '../dist/vscode')
+fse.copySync('resources', '../dist/vscode/resources')
 fse.copySync('product.json', '../dist/product.json')
 fse.copySync('../node_modules/semver-umd', '../dist/lib/semver-umd')
 fse.copySync('../node_modules/vscode-oniguruma', '../dist/lib/vscode-oniguruma')
 fse.copySync('../node_modules/vscode-textmate', '../dist/lib/vscode-textmate')
-fse.copySync('../node_modules/utopia-vscode-common', '../dist/lib/utopia-vscode-common')
+// fse.copySync('../node_modules/utopia-vscode-common', '../dist/lib/utopia-vscode-common')
 
-const extensionNM = glob.sync('extensions/**/node_modules', {})
-extensionNM.forEach((modules) => {
-  rmdir.sync(modules, { recursive: true })
-})
-fse.copySync('extensions', '../dist/extensions')
+// const extensionNM = glob.sync('extensions/**/node_modules', {})
+// extensionNM.forEach((modules) => {
+//   rmdir.sync(modules, { recursive: true })
+// })
+// fse.copySync('extensions', '../dist/extensions')
 
-// Pull in the utopia extension and update the extensions metadata
-process.chdir('../')
-child_process.execSync('yarn pull-utopia-extension', { stdio: 'inherit' })
+// // Pull in the utopia extension and update the extensions metadata
+// process.chdir('../')
+// // child_process.execSync('yarn pull-utopia-extension', { stdio: 'inherit' })
