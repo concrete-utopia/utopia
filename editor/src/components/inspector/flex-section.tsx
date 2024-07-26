@@ -189,6 +189,7 @@ export const FlexSection = React.memo(() => {
           <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
             {grid != null ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <GapRowColumnControl />
                 <TemplateDimensionControl
                   axis={'column'}
                   grid={grid}
@@ -196,7 +197,6 @@ export const FlexSection = React.memo(() => {
                   title='Columns'
                 />
                 <TemplateDimensionControl axis={'row'} grid={grid} values={rows} title='Rows' />
-                <GapRowColumnControl />
               </div>
             ) : null}
           </UIGridRow>,
