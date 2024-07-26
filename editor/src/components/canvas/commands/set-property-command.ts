@@ -1,3 +1,4 @@
+import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import type {
@@ -20,9 +21,10 @@ export interface SetProperty extends BaseCommand {
   value: string | number
 }
 
-export type PropertyToUpdate =
-  | { type: 'SET'; path: PropertyPath; value: string | number }
-  | { type: 'DELETE'; path: PropertyPath }
+export type PropertyToUpdate = PropertyToSet | PropertyToDelete
+
+type PropertyToSet = { type: 'SET'; path: PropertyPath; value: string | number }
+type PropertyToDelete = { type: 'DELETE'; path: PropertyPath }
 
 export function propertyToSet(path: PropertyPath, value: string | number): PropertyToUpdate {
   return {
@@ -112,7 +114,10 @@ export const runBulkUpdateProperties: CommandFunction<UpdateBulkProperties> = (
   command: UpdateBulkProperties,
 ) => {
   // 1. Apply DELETE updates
-  const propsToDelete = command.properties.filter((p) => p.type === 'DELETE')
+  const propsToDelete: PropertyToDelete[] = mapDropNulls(
+    (p) => (p.type === 'DELETE' ? p : null),
+    command.properties,
+  )
   const withDeletedProps = deleteValuesAtPath(
     editorState,
     command.element,
@@ -120,7 +125,10 @@ export const runBulkUpdateProperties: CommandFunction<UpdateBulkProperties> = (
   )
 
   // 2. Apply SET updates
-  const propsToSet = command.properties.filter((p) => p.type === 'SET')
+  const propsToSet: PropertyToSet[] = mapDropNulls(
+    (p) => (p.type === 'SET' ? p : null),
+    command.properties,
+  )
   const withSetProps = applyValuesAtPath(
     withDeletedProps.editorStateWithChanges,
     command.element,
