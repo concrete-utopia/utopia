@@ -72,7 +72,7 @@ async function dragElement(
   modifiers: Modifiers,
   checkCursor: CheckCursor | null,
   midDragCallback: (() => Promise<void>) | null,
-  mouseDownModifiers: Modifiers,
+  mouseDownModifiers?: Modifiers,
 ) {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
