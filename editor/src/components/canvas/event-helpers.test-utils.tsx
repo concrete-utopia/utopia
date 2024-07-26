@@ -178,6 +178,7 @@ export async function mouseDragFromPointWithDelta(
   dragDelta: Point,
   options: {
     modifiers?: Modifiers
+    mouseDownModifiers?: Modifiers
     eventOptions?: MouseEventInit
     staggerMoveEvents?: boolean
     midDragCallback?: () => Promise<void>
