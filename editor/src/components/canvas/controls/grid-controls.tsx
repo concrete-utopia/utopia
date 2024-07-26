@@ -425,7 +425,7 @@ export const GridControls = controlForStrategyMemoized(() => {
   )
 
   const grids = useEditorState(
-    Substores.metadataAndPropertyControlsInfo,
+    Substores.metadata,
     (store) => {
       return mapDropNulls((view) => {
         const element = MetadataUtils.findElementByElementPath(jsxMetadata, view)
@@ -449,6 +449,7 @@ export const GridControls = controlForStrategyMemoized(() => {
         const rowGap = targetGridContainer.specialSizeMeasurements.rowGap
         const columnGap = targetGridContainer.specialSizeMeasurements.columnGap
         const padding = targetGridContainer.specialSizeMeasurements.padding
+
         const gridTemplateColumns =
           targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
         const gridTemplateRows =
@@ -648,35 +649,45 @@ export const GridControls = controlForStrategyMemoized(() => {
         {/* grid lines */}
         {grids.map((grid) => {
           const placeholders = Array.from(Array(grid.cells).keys())
+          let style: CSSProperties = {
+            position: 'absolute',
+            top: grid.frame.y,
+            left: grid.frame.x,
+            width: grid.frame.width,
+            height: grid.frame.height,
+            display: 'grid',
+            gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
+            gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
+            backgroundColor:
+              activelyDraggingOrResizingCell != null ? colorTheme.primary10.value : 'transparent',
+            border: `1px solid ${
+              activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
+            }`,
+            padding:
+              grid.padding == null
+                ? 0
+                : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
+          }
+
+          // Gap needs to be set only if the other two are not present or we'll have rendering issues
+          // due to how measurements are calculated.
+          if (grid.rowGap != null && grid.columnGap != null) {
+            style.rowGap = grid.rowGap
+            style.columnGap = grid.columnGap
+          } else {
+            if (grid.gap != null) {
+              style.gap = grid.gap
+            }
+            if (grid.rowGap != null) {
+              style.rowGap = grid.rowGap
+            }
+            if (grid.columnGap != null) {
+              style.columnGap = grid.columnGap
+            }
+          }
 
           return (
-            <div
-              key={`grid-${EP.toString(grid.elementPath)}`}
-              style={{
-                position: 'absolute',
-                top: grid.frame.y,
-                left: grid.frame.x,
-                width: grid.frame.width,
-                height: grid.frame.height,
-                display: 'grid',
-                gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
-                gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
-                backgroundColor:
-                  activelyDraggingOrResizingCell != null
-                    ? colorTheme.primary10.value
-                    : 'transparent',
-                border: `1px solid ${
-                  activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
-                }`,
-                gap: grid.gap ?? 0,
-                rowGap: grid.rowGap ?? 0,
-                columnGap: grid.columnGap ?? 0,
-                padding:
-                  grid.padding == null
-                    ? 0
-                    : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
-              }}
-            >
+            <div key={`grid-${EP.toString(grid.elementPath)}`} style={style}>
               {placeholders.map((cell) => {
                 const countedRow = Math.floor(cell / grid.columns) + 1
                 const countedColumn = Math.floor(cell % grid.columns) + 1
