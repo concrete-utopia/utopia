@@ -22,6 +22,12 @@ import {
   getAllUniqueUidsInnerFourth,
   lookupFilePathForUidFourth,
 } from './get-unique-ids-fourth'
+import {
+  clearCachedUidsPerFileFifth,
+  getAllUniqueUidsFifth,
+  getAllUniqueUidsInnerFifth,
+  lookupFilePathForUidFifth,
+} from './get-unique-ids-fifth'
 
 export async function benchmarkGetUniqueUids(): Promise<void> {
   await Benny.suite(
@@ -50,6 +56,15 @@ export async function benchmarkGetUniqueUids(): Promise<void> {
         clearCachedUidsPerFileFourth()
         const mapping = getAllUniqueUidsInnerFourth(parsedProjectContents)
         const result = lookupFilePathForUidFourth(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
+      }
+    }),
+    Benny.add('getUniqueUids FIFTH', async function setup() {
+      const parsedProjectContents = parseProjectContents(LargeHydrogenProject.projectContents)
+
+      return function benchmark() {
+        clearCachedUidsPerFileFifth()
+        const mapping = getAllUniqueUidsInnerFifth(parsedProjectContents)
+        const result = lookupFilePathForUidFifth(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
       }
     }),
     Benny.add('getUniqueUids THIRD', async function setup() {
@@ -85,13 +100,22 @@ export async function benchmarkGetUniqueUids(): Promise<void> {
         const result = lookupFilePathForUid(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
       }
     }),
-    Benny.add('getUniqueUids FOURT', async function setup() {
+    Benny.add('getUniqueUids FOURTH', async function setup() {
       let parsedProjectContents = parseProjectContents(LargeHydrogenProject.projectContents)
 
       return function benchmark() {
         parsedProjectContents = changeOneFileInProjectContents(parsedProjectContents)
         const mapping = getAllUniqueUidsFourth(parsedProjectContents)
         const result = lookupFilePathForUidFourth(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
+      }
+    }),
+    Benny.add('getUniqueUids FIFTH', async function setup() {
+      let parsedProjectContents = parseProjectContents(LargeHydrogenProject.projectContents)
+
+      return function benchmark() {
+        parsedProjectContents = changeOneFileInProjectContents(parsedProjectContents)
+        const mapping = getAllUniqueUidsFifth(parsedProjectContents)
+        const result = lookupFilePathForUidFifth(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
       }
     }),
     Benny.add('getUniqueUids THIRD', async function setup() {
@@ -131,6 +155,14 @@ export async function benchmarkGetUniqueUids(): Promise<void> {
 
       return function benchmark() {
         const result = lookupFilePathForUidFourth(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
+      }
+    }),
+    Benny.add('getUniqueUids FIFTH', async function setup() {
+      let parsedProjectContents = parseProjectContents(LargeHydrogenProject.projectContents)
+      const mapping = getAllUniqueUidsFifth(parsedProjectContents)
+
+      return function benchmark() {
+        const result = lookupFilePathForUidFifth(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
       }
     }),
     Benny.add('getUniqueUids THIRD', async function setup() {

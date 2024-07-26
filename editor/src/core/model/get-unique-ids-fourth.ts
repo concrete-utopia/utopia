@@ -238,6 +238,7 @@ export function lookupFilePathForUidFourth(mapping: FileToUidMapping, uid: strin
   mapping.forEach((uidMapping, filePath) => {
     if (uidMapping.has(uid)) {
       result = filePath
+      // TODO stop looping
     }
   })
 

@@ -243,7 +243,8 @@ export function lookupFilePathForUid(
   let result: string | null | undefined = null
   mapping.forEach((uidMapping, filePath) => {
     if (uidMapping.has(uid)) {
-      result = uidMapping.get(uid)
+      result = filePath
+      // TODO stop looping
     }
   })
 
