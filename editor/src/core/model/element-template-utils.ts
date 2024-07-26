@@ -852,25 +852,31 @@ export function componentHonoursPropsPosition(component: UtopiaJSXComponent): bo
   if (component.params == null) {
     return false
   } else {
-    const rootElement = component.rootElement
-    if (isJSXElement(rootElement)) {
-      const leftStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'left'))
-      const topStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'top'))
-      const rightStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'right'))
-      const bottomStyleAttr = getJSXAttributesAtPath(
-        rootElement.props,
-        PP.create('style', 'bottom'),
-      )
-      return (
-        ((propertyComesFromPropsStyle(component.params, leftStyleAttr, 'left') ||
-          propertyComesFromPropsStyle(component.params, rightStyleAttr, 'right')) &&
-          (propertyComesFromPropsStyle(component.params, topStyleAttr, 'top') ||
-            propertyComesFromPropsStyle(component.params, bottomStyleAttr, 'bottom'))) ||
-        propsStyleIsSpreadInto(component.params, rootElement.props)
-      )
-    } else {
-      return false
+    const nonNullParams = component.params
+    function recursiveHonoursCheck(element: JSXElementChild): boolean {
+      switch (element.type) {
+        case 'JSX_ELEMENT':
+          const leftStyleAttr = getJSXAttributesAtPath(element.props, PP.create('style', 'left'))
+          const topStyleAttr = getJSXAttributesAtPath(element.props, PP.create('style', 'top'))
+          const rightStyleAttr = getJSXAttributesAtPath(element.props, PP.create('style', 'right'))
+          const bottomStyleAttr = getJSXAttributesAtPath(
+            element.props,
+            PP.create('style', 'bottom'),
+          )
+          return (
+            ((propertyComesFromPropsStyle(nonNullParams, leftStyleAttr, 'left') ||
+              propertyComesFromPropsStyle(nonNullParams, rightStyleAttr, 'right')) &&
+              (propertyComesFromPropsStyle(nonNullParams, topStyleAttr, 'top') ||
+                propertyComesFromPropsStyle(nonNullParams, bottomStyleAttr, 'bottom'))) ||
+            propsStyleIsSpreadInto(nonNullParams, element.props)
+          )
+        case 'JSX_FRAGMENT':
+          return element.children.every(recursiveHonoursCheck)
+        default:
+          return false
+      }
     }
+    return recursiveHonoursCheck(component.rootElement)
   }
 }
 
@@ -878,21 +884,27 @@ export function componentHonoursPropsSize(component: UtopiaJSXComponent): boolea
   if (component.params == null) {
     return false
   } else {
-    const rootElement = component.rootElement
-    if (isJSXElement(rootElement)) {
-      const widthStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'width'))
-      const heightStyleAttr = getJSXAttributesAtPath(
-        rootElement.props,
-        PP.create('style', 'height'),
-      )
-      return (
-        (propertyComesFromPropsStyle(component.params, widthStyleAttr, 'width') &&
-          propertyComesFromPropsStyle(component.params, heightStyleAttr, 'height')) ||
-        propsStyleIsSpreadInto(component.params, rootElement.props)
-      )
-    } else {
-      return false
+    const nonNullParams = component.params
+    function recursiveHonoursCheck(element: JSXElementChild): boolean {
+      switch (element.type) {
+        case 'JSX_ELEMENT':
+          const widthStyleAttr = getJSXAttributesAtPath(element.props, PP.create('style', 'width'))
+          const heightStyleAttr = getJSXAttributesAtPath(
+            element.props,
+            PP.create('style', 'height'),
+          )
+          return (
+            (propertyComesFromPropsStyle(nonNullParams, widthStyleAttr, 'width') &&
+              propertyComesFromPropsStyle(nonNullParams, heightStyleAttr, 'height')) ||
+            propsStyleIsSpreadInto(nonNullParams, element.props)
+          )
+        case 'JSX_FRAGMENT':
+          return element.children.every(recursiveHonoursCheck)
+        default:
+          return false
+      }
     }
+    return recursiveHonoursCheck(component.rootElement)
   }
 }
 
