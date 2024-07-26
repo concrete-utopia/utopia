@@ -55,6 +55,7 @@ import {
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { ConvertToAbsoluteAndMoveStrategyID } from './convert-to-absolute-and-move-strategy'
 import CanvasActions from '../../canvas-actions'
+import { ctrlModifier } from '../../../../utils/modifiers'
 
 const complexProject = () => {
   const code = `
@@ -1805,12 +1806,7 @@ describe('Escape hatch strategy on awkward project', () => {
         y: 15,
       },
       {
-        modifiers: {
-          alt: false,
-          cmd: true,
-          ctrl: true,
-          shift: false,
-        },
+        modifiers: ctrlModifier,
       },
     )
 
