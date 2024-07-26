@@ -1216,7 +1216,14 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 40, y: 25 })
 
-    await dragElement(canvasControlsLayer, startPoint, dragDelta, cmdModifier)
+    await dragElement(
+      canvasControlsLayer,
+      startPoint,
+      dragDelta,
+      cmdModifier,
+      undefined,
+      cmdModifier,
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
