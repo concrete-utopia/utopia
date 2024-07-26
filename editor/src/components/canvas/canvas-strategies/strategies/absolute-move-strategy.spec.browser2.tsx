@@ -316,7 +316,7 @@ describe('Absolute Move Strategy', () => {
 
       await selectComponentsForTest(editor, [targetElement])
 
-      await dragByPixels(editor, windowPoint({ x: 15, y: 15 }), 'bbb', cmdModifier)
+      await dragByPixels(editor, windowPoint({ x: 15, y: 15 }), 'bbb')
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -947,8 +947,6 @@ describe('Absolute Move Strategy', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb/ccc`),
     ])
 
-    // await wait(10000)
-
     await dragByPixels(editor, windowPoint({ x: 15, y: 15 }), 'bbb')
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
@@ -1215,7 +1213,7 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 40, y: 25 })
 
-    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, cmdModifier)
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
