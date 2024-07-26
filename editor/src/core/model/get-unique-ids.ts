@@ -199,7 +199,9 @@ export function extractUIDFromTopLevelElement(
   }
 }
 
-function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllUniqueUIDsResult {
+export function getAllUniqueUidsInnerOld(
+  projectContents: ProjectContentTreeRoot,
+): GetAllUniqueUIDsResult {
   const workingResult = emptyGetAllUniqueUIDsWorkingResult()
 
   walkContentsTreeForParseSuccess(projectContents, (filePath, parseSuccess) => {
@@ -212,7 +214,7 @@ function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllU
   return getAllUniqueUIDsResultFromWorkingResult(workingResult)
 }
 
-export const getAllUniqueUids = memoize(getAllUniqueUidsInner)
+export const getAllUniqueUids = memoize(getAllUniqueUidsInnerOld)
 
 export function getAllUniqueUidsFromAttributes(attributes: JSXAttributes): GetAllUniqueUIDsResult {
   const workingResult = emptyGetAllUniqueUIDsWorkingResult()

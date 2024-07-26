@@ -3492,12 +3492,12 @@ export function getElementPathsInBounds(
   }
 }
 
-export function modifyParseSuccessAtPath(
+export function modifyParseSuccessAtPath<E extends { projectContents: ProjectContentTreeRoot }>(
   filePath: string,
-  editor: EditorState,
+  editor: E,
   modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess,
   throwForErrors: boolean = true,
-): EditorState {
+): E {
   const projectFile = getProjectFileByFilePath(editor.projectContents, filePath)
   if (projectFile != null && isTextFile(projectFile)) {
     const parsedFileContents = projectFile.fileContents.parsed
