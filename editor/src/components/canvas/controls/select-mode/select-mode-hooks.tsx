@@ -336,26 +336,43 @@ export function useFindValidTarget(): (
         elementPathTree,
         allElementProps,
       } = storeRef.current
-      const validElementMouseOver: ElementPath | null =
-        preferAlreadySelected === 'prefer-selected'
-          ? getSelectionOrValidTargetAtPoint(
-              componentMetadata,
-              selectedViews,
-              hiddenInstances,
-              selectableViews,
-              mousePoint,
-              canvasScale,
-              canvasOffset,
-              elementPathTree,
-              allElementProps,
-            )
-          : getValidTargetAtPoint(
-              selectableViews,
-              mousePoint,
-              canvasScale,
-              canvasOffset,
-              componentMetadata,
-            )
+      const validElementMouseOver: ElementPath | null = (() => {
+        if (preferAlreadySelected === 'prefer-selected') {
+          return getSelectionOrValidTargetAtPoint(
+            componentMetadata,
+            selectedViews,
+            hiddenInstances,
+            selectableViews,
+            mousePoint,
+            canvasScale,
+            canvasOffset,
+            elementPathTree,
+            allElementProps,
+          )
+        }
+        const newSelection = getValidTargetAtPoint(
+          selectableViews,
+          mousePoint,
+          canvasScale,
+          canvasOffset,
+          componentMetadata,
+        )
+        if (newSelection != null) {
+          return newSelection
+        }
+        return getSelectionOrValidTargetAtPoint(
+          componentMetadata,
+          selectedViews,
+          hiddenInstances,
+          selectableViews,
+          mousePoint,
+          canvasScale,
+          canvasOffset,
+          elementPathTree,
+          allElementProps,
+        )
+      })()
+
       const validElementPath: ElementPath | null =
         validElementMouseOver != null ? validElementMouseOver : null
       if (validElementPath != null) {
