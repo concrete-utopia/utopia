@@ -1141,12 +1141,7 @@ describe('Convert to absolute/escape hatch', () => {
             y: elementBounds.y + 10,
           },
           {
-            modifiers: {
-              alt: false,
-              cmd: true,
-              ctrl: true,
-              shift: false,
-            },
+            modifiers: ctrlModifier,
           },
         )
 
