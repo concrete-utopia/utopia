@@ -200,7 +200,7 @@ export function extractUIDFromTopLevelElement(
   }
 }
 
-type UidToFilePathMapping = Map<string, string>
+type FileToUidMapping = Map<string, Set<string>>
 
 let CachedUidsPerFile = new WeakMap<ParseSuccess, Set<string>>()
 
@@ -220,28 +220,37 @@ function collectUidsForFile(filePath: string, parseSuccess: ParseSuccess): Set<s
   return result
 }
 
-function collectUidsForEachFile(projectContents: ProjectContentTreeRoot): UidToFilePathMapping {
-  let result: UidToFilePathMapping = new Map()
+function collectUidsForEachFile(projectContents: ProjectContentTreeRoot): FileToUidMapping {
+  let result: FileToUidMapping = new Map()
   walkContentsTreeForParseSuccess(projectContents, (filePath, parseSuccess) => {
     const mappingsForFile = collectUidsForFile(filePath, parseSuccess)
-    mappingsForFile.forEach((uid) => {
-      result.set(uid, filePath)
-    })
+    result.set(filePath, mappingsForFile)
   })
   return result
 }
 
-export function clearCachedUidsPerFileThird() {
+export function clearCachedUidsPerFileFourth() {
   CachedUidsPerFile = new WeakMap()
 }
 
-export function getAllUniqueUidsInnerNewThird(
+export function lookupFilePathForUidFourth(mapping: FileToUidMapping, uid: string): string | null {
+  let result: string | null | undefined = null
+  mapping.forEach((uidMapping, filePath) => {
+    if (uidMapping.has(uid)) {
+      result = filePath
+    }
+  })
+
+  return result ?? null
+}
+
+export function getAllUniqueUidsInnerFourth(
   projectContents: ProjectContentTreeRoot,
-): UidToFilePathMapping {
+): FileToUidMapping {
   return collectUidsForEachFile(projectContents)
 }
 
-export const getAllUniqueUidsNewThird = memoize(getAllUniqueUidsInnerNewThird)
+export const getAllUniqueUidsFourth = memoize(getAllUniqueUidsInnerFourth)
 
 export function getAllUniqueUidsFromAttributes(attributes: JSXAttributes): GetAllUniqueUIDsResult {
   const workingResult = emptyGetAllUniqueUIDsWorkingResult()

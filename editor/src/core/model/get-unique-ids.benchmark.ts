@@ -16,6 +16,12 @@ import {
   getAllUniqueUidsNewThird,
 } from './get-unique-ids-threets'
 import { LargeHydrogenProject } from './test-large-persistent-model.test-utils'
+import {
+  clearCachedUidsPerFileFourth,
+  getAllUniqueUidsFourth,
+  getAllUniqueUidsInnerFourth,
+  lookupFilePathForUidFourth,
+} from './get-unique-ids-fourth'
 
 export async function benchmarkGetUniqueUids(): Promise<void> {
   await Benny.suite(
@@ -35,6 +41,15 @@ export async function benchmarkGetUniqueUids(): Promise<void> {
         clearCachedUidsPerFile()
         const mapping = getAllUniqueUidsInnerNew(parsedProjectContents)
         const result = lookupFilePathForUid(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
+      }
+    }),
+    Benny.add('getUniqueUids FOURTH', async function setup() {
+      const parsedProjectContents = parseProjectContents(LargeHydrogenProject.projectContents)
+
+      return function benchmark() {
+        clearCachedUidsPerFileFourth()
+        const mapping = getAllUniqueUidsInnerFourth(parsedProjectContents)
+        const result = lookupFilePathForUidFourth(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
       }
     }),
     Benny.add('getUniqueUids THIRD', async function setup() {
@@ -70,6 +85,15 @@ export async function benchmarkGetUniqueUids(): Promise<void> {
         const result = lookupFilePathForUid(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
       }
     }),
+    Benny.add('getUniqueUids FOURT', async function setup() {
+      let parsedProjectContents = parseProjectContents(LargeHydrogenProject.projectContents)
+
+      return function benchmark() {
+        parsedProjectContents = changeOneFileInProjectContents(parsedProjectContents)
+        const mapping = getAllUniqueUidsFourth(parsedProjectContents)
+        const result = lookupFilePathForUidFourth(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
+      }
+    }),
     Benny.add('getUniqueUids THIRD', async function setup() {
       let parsedProjectContents = parseProjectContents(LargeHydrogenProject.projectContents)
 
@@ -101,9 +125,18 @@ export async function benchmarkGetUniqueUids(): Promise<void> {
         const result = lookupFilePathForUid(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
       }
     }),
+    Benny.add('getUniqueUids FOURTH', async function setup() {
+      let parsedProjectContents = parseProjectContents(LargeHydrogenProject.projectContents)
+      const mapping = getAllUniqueUidsFourth(parsedProjectContents)
+
+      return function benchmark() {
+        const result = lookupFilePathForUidFourth(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
+      }
+    }),
     Benny.add('getUniqueUids THIRD', async function setup() {
       let parsedProjectContents = parseProjectContents(LargeHydrogenProject.projectContents)
       const mapping = getAllUniqueUidsNewThird(parsedProjectContents)
+      const result1 = mapping.get('8d4c5e9960f004aebf00a97dabe7cd80')
 
       return function benchmark() {
         const result = mapping.get('8d4c5e9960f004aebf00a97dabe7cd80')
