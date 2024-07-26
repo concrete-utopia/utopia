@@ -4312,14 +4312,14 @@ describe('Undo behavior in inspector', () => {
     })
 
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
-      'opacity-number-input',
+      'opacity',
     )) as HTMLInputElement
-    matchInlineSnapshotBrowser(opacityControl.value, `"0.5"`)
+    matchInlineSnapshotBrowser(opacityControl.value, `"50%"`)
 
     // change the opacity of the selected element
-    await setControlValue('opacity-number-input', '0.6', renderResult.renderedDOM)
+    await setControlValue('opacity', '60', renderResult.renderedDOM)
 
-    matchInlineSnapshotBrowser(opacityControl.value, `"0.6"`)
+    matchInlineSnapshotBrowser(opacityControl.value, `"60%"`)
     matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
@@ -4332,7 +4332,7 @@ describe('Undo behavior in inspector', () => {
 
     // type a new value '0.8' to opacityControl
     await act(async () => {
-      fireEvent.change(opacityControl, { target: { value: '0.8' } })
+      fireEvent.change(opacityControl, { target: { value: '80' } })
     })
 
     // press Cmd + Z on the opacityControl
@@ -4343,9 +4343,8 @@ describe('Undo behavior in inspector', () => {
 
     // the control's value should now be undone
     matchInlineSnapshotBrowser(
-      ((await renderResult.renderedDOM.findByTestId('opacity-number-input')) as HTMLInputElement)
-        .value,
-      `"0.5"`,
+      ((await renderResult.renderedDOM.findByTestId('opacity')) as HTMLInputElement).value,
+      `"50%"`,
     )
 
     // await for the code to be updated
