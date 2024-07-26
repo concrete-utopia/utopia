@@ -303,7 +303,7 @@ function getCandidateSelectableViews(
 export function useFindValidTarget(): (
   selectableViews: Array<ElementPath>,
   mousePoint: WindowPoint | null,
-  preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
+  preferAlreadySelected: 'prefer-selected' | 'prefer-more-specific-selection',
 ) => {
   elementPath: ElementPath
   isSelected: boolean
@@ -325,7 +325,7 @@ export function useFindValidTarget(): (
     (
       selectableViews: Array<ElementPath>,
       mousePoint: WindowPoint | null,
-      preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
+      preferAlreadySelected: 'prefer-selected' | 'prefer-more-specific-selection',
     ) => {
       const {
         selectedViews,
@@ -469,7 +469,11 @@ export function useCalculateHighlightedViews(
   return React.useCallback(
     (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
       const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
-      const validElementPath = findValidTarget(selectableViews, targetPoint, 'dont-prefer-selected')
+      const validElementPath = findValidTarget(
+        selectableViews,
+        targetPoint,
+        'prefer-more-specific-selection',
+      )
       const validElementPathForHover = findValidTarget(
         selectableViews,
         targetPoint,
@@ -546,14 +550,14 @@ function getPreferredSelectionForEvent(
   eventType: 'mousedown' | 'mouseup' | string,
   isDoubleClick: boolean,
   cmdModifier: boolean,
-): 'prefer-selected' | 'dont-prefer-selected' {
+): 'prefer-selected' | 'prefer-more-specific-selection' {
   // mousedown keeps selection on a single click to allow dragging overlapping elements and selection happens on mouseup
   // with continuous clicking mousedown should select
   switch (eventType) {
     case 'mousedown':
-      return isDoubleClick || cmdModifier ? 'dont-prefer-selected' : 'prefer-selected'
+      return isDoubleClick || cmdModifier ? 'prefer-more-specific-selection' : 'prefer-selected'
     case 'mouseup':
-      return isDoubleClick ? 'prefer-selected' : 'dont-prefer-selected'
+      return isDoubleClick ? 'prefer-selected' : 'prefer-more-specific-selection'
     default:
       return 'prefer-selected'
   }
