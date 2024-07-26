@@ -37,6 +37,7 @@ async function dragElement(
   modifiers: Modifiers,
   includeMouseUp: boolean,
   midDragCallback?: () => Promise<void>,
+  mouseDownModifiers?: Modifiers,
 ): Promise<void> {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
@@ -51,6 +52,7 @@ async function dragElement(
   if (includeMouseUp) {
     await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
       modifiers: modifiers,
+      mouseDownModifiers: mouseDownModifiers,
       midDragCallback: midDragCallback,
     })
   } else {

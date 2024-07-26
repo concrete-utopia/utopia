@@ -52,6 +52,7 @@ async function dragByPixels(
   delta: WindowPoint,
   testid: string,
   modifiers: Modifiers = emptyModifiers,
+  mouseDownModifiers?: Modifiers,
 ) {
   const targetElement = editor.renderedDOM.getByTestId(testid)
   const targetElementBounds = targetElement.getBoundingClientRect()
@@ -60,6 +61,7 @@ async function dragByPixels(
 
   await mouseDragFromPointWithDelta(canvasControlsLayer, targetElementCenter, delta, {
     modifiers,
+    mouseDownModifiers,
     midDragCallback: async () => {
       NO_OP()
     },
@@ -72,8 +74,9 @@ async function dragElement(
   dragDelta: WindowPoint,
   modifiers: Modifiers,
   midDragCallback?: () => Promise<void>,
+  mouseDownModifiers?: Modifiers,
 ): Promise<void> {
-  await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers })
+  await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: mouseDownModifiers })
   await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers,
     midDragCallback,
