@@ -27,6 +27,7 @@ import {
   maybeFlexGapData,
   gapControlBoundsFromMetadata,
   recurseIntoChildrenOfMapOrFragment,
+  maybeGridGapData,
 } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { CSSNumberWithRenderedValue } from './controls-common'
@@ -131,12 +132,13 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
     elementPathTrees,
     selectedElement,
   )
-  const flexGap = maybeFlexGapData(metadata, selectedElement)
-  if (flexGap == null) {
+  const gridGap = maybeGridGapData(metadata, selectedElement)
+  if (gridGap == null) {
     return null
   }
 
-  const flexGapValue = updatedGapValue ?? flexGap.value
+  const gridGapX = updatedGapValueX ?? gridGap.row
+  const gridGapY = updatedGapValueY ?? gridGap.column
 
   const controlBounds = gapControlBoundsFromMetadata(
     metadata,
@@ -181,7 +183,7 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
         ),
       }
     }
-  }, [children, flexGap.direction, flexGapValue.renderedValuePx])
+  }, [children])
 
   const justifyContent = React.useMemo(() => {
     return (
