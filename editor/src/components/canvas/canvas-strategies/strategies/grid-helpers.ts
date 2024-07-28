@@ -232,6 +232,7 @@ export function setGridPropsCommands(
   let commands: CanvasCommand[] = [
     deleteProperties('always', elementPath, [
       PP.create('style', 'gridRow'),
+      PP.create('style', 'gridArea'),
       PP.create('style', 'gridColumn'),
       PP.create('style', 'gridColumnStart'),
       PP.create('style', 'gridColumnEnd'),
@@ -380,7 +381,7 @@ function asMaybeNamedAreaOrValue(
   value: number | string | null,
 ): string | number {
   if (value == null) {
-    return 0
+    return 1
   } else if (typeof value === 'number') {
     const template = axis === 'row' ? grid.gridTemplateRows : grid.gridTemplateColumns
     if (template?.type === 'DIMENSIONS') {
@@ -389,6 +390,7 @@ function asMaybeNamedAreaOrValue(
         return maybeAreaStart.areaName
       }
     }
+    return value === 0 ? 1 : value
   }
   return value
 }

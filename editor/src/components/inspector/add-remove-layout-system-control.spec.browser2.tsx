@@ -4,9 +4,9 @@ import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-control
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
-import { AddRemoveLayoutSystemControlTestId } from './add-remove-layout-system-control'
+import { addFlexLayout, addGridLayout, removeLayout } from './layout-systems.test-utils'
 
-describe('add layout system', () => {
+describe('add flex layout', () => {
   it('add and remove layout system via keyboard shortcut', async () => {
     const editor = await renderTestEditorWithCode(
       project({ width: '100px', height: '100px' }),
@@ -35,13 +35,13 @@ describe('add layout system', () => {
     )
     const div = await selectDiv(editor)
     await expectSingleUndo2Saves(editor, async () => {
-      await clickOn(editor)
+      await addFlexLayout(editor)
     })
 
     expect(div.style.display).toEqual('flex')
 
     await expectSingleUndo2Saves(editor, async () => {
-      await clickOn(editor)
+      await removeLayout(editor)
     })
 
     expect(div.style.display).toEqual('')
@@ -54,7 +54,7 @@ describe('add layout system', () => {
     )
     const div = await selectDiv(editor)
     await expectSingleUndo2Saves(editor, async () => {
-      await clickOn(editor)
+      await addFlexLayout(editor)
     })
 
     expect(div.style.display).toEqual('flex')
@@ -73,7 +73,7 @@ describe('add layout system', () => {
     )
     const div = await selectDiv(editor)
     await expectSingleUndo2Saves(editor, async () => {
-      await clickOn(editor)
+      await addFlexLayout(editor)
     })
 
     expect(div.style.display).toEqual('flex')
@@ -121,7 +121,7 @@ describe('add layout system', () => {
       'await-first-dom-report',
     )
     const div = await selectDiv(editor)
-    await clickOn(editor)
+    await addFlexLayout(editor)
 
     expect(div.style.display).toEqual('flex')
 
@@ -171,7 +171,7 @@ describe('add layout system', () => {
       'await-first-dom-report',
     )
     const div = await selectDiv(editor)
-    await clickOn(editor)
+    await addFlexLayout(editor)
 
     expect(div.style.display).toEqual('flex')
 
@@ -191,6 +191,27 @@ describe('add layout system', () => {
   })
 })
 
+describe('add grid layout', () => {
+  it('can convert to a grid', async () => {
+    const editor = await renderTestEditorWithCode(
+      project({ width: '100px', height: '100px' }),
+      'await-first-dom-report',
+    )
+    const div = await selectDiv(editor)
+    await expectSingleUndo2Saves(editor, async () => {
+      await addGridLayout(editor)
+    })
+
+    expect(div.style.display).toEqual('grid')
+
+    await expectSingleUndo2Saves(editor, async () => {
+      await removeLayout(editor)
+    })
+
+    expect(div.style.display).toEqual('')
+  })
+})
+
 async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const div = editor.renderedDOM.getByTestId('mydiv')
@@ -203,12 +224,6 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
   await mouseClickAtPoint(canvasControlsLayer, divCorner)
 
   return div
-}
-
-async function clickOn(editor: EditorRenderResult) {
-  const flexDirectionToggle = editor.renderedDOM.getByTestId(AddRemoveLayoutSystemControlTestId())
-
-  await mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 })
 }
 
 function project({ width, height }: { width: string; height: string }): string {

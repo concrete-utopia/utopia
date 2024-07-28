@@ -40,8 +40,11 @@ import Utils from '../../utils/utils'
 import type {
   CanvasPoint,
   CanvasRectangle,
+  CoordinateMarker,
+  InfinityRectangle,
   LocalPoint,
   LocalRectangle,
+  Rectangle,
 } from '../../core/shared/math-utils'
 import {
   canvasPoint,
@@ -51,6 +54,9 @@ import {
   infinityCanvasRectangle,
   infinityLocalRectangle,
   stretchRect,
+  boundingRectangleArray,
+  infinityRectangle,
+  isFiniteRectangle,
 } from '../../core/shared/math-utils'
 import type { CSSNumber, CSSPosition } from '../inspector/common/css-utils'
 import {
@@ -75,12 +81,13 @@ import {
 import { PERFORMANCE_MARKS_ALLOWED } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
+import type { PathWithString } from '../../core/shared/uid-utils'
 import {
   getDeepestPathOnDomElement,
   getPathStringsOnDomElement,
   getPathWithStringsOnDomElement,
 } from '../../core/shared/uid-utils'
-import { pluck, uniqBy } from '../../core/shared/array-utils'
+import { mapDropNulls, pluck, uniqBy } from '../../core/shared/array-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
@@ -94,7 +101,7 @@ import { pick } from '../../core/shared/object-utils'
 import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
-import { parseString } from '../../utils/value-parser-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 export const ResizeObserver =
   window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -294,7 +301,6 @@ export interface DomWalkerMutableStateData {
   invalidatedPaths: Set<string> // warning: all subtrees under each invalidated path should invalidated
   invalidatedPathsForStylesheetCache: Set<string>
   initComplete: boolean
-
   mutationObserver: MutationObserver
   resizeObserver: ResizeObserver
 }
@@ -307,7 +313,6 @@ export function createDomWalkerMutableState(
     invalidatedPaths: emptySet(),
     invalidatedPathsForStylesheetCache: emptySet(),
     initComplete: true,
-
     mutationObserver: null as any,
     resizeObserver: null as any,
   }
@@ -333,7 +338,6 @@ interface RunDomWalkerParams {
   scale: number
   additionalElementsToUpdate: Array<ElementPath>
   elementsToFocusOn: ElementsToRerender
-
   domWalkerMutableState: DomWalkerMutableStateData
   rootMetadataInStateRef: { readonly current: ElementInstanceMetadataMap }
 }
@@ -348,6 +352,7 @@ interface DomWalkerInternalGlobalProps {
   scale: number
   containerRectLazy: () => CanvasRectangle
   additionalElementsToUpdate: Array<ElementPath>
+  pathsCollectedMutable: Array<ElementPath>
 }
 
 function runSelectiveDomWalker(
@@ -384,6 +389,9 @@ function runSelectiveDomWalker(
                 const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
                 return globalProps.validPaths.some((vp) => EP.pathsEqual(vp, staticPath))
               })
+              globalProps.pathsCollectedMutable.push(
+                ...foundValidPaths.map((pathWithString) => pathWithString.path),
+              )
 
               const { collectedMetadata } = collectAndCreateMetadataForElement(
                 element,
@@ -428,6 +436,135 @@ function runSelectiveDomWalker(
   }
 }
 
+export interface BackfillDomMetadataResult {
+  updatedMetadata: ElementInstanceMetadataMap
+  reconstructedMetadata: ElementInstanceMetadataMap
+}
+
+export function backfillDomMetadata(
+  metadata: ElementInstanceMetadataMap,
+): BackfillDomMetadataResult {
+  // Find the paths missing from the metadata, which are ancestors of paths in the metadata which are not present in the metadata.
+  const missingPaths = new Set<string>()
+  let parentsAndChildrenToRebuild: { [parent: string]: Array<string> } = {}
+  function addPathToParentsAndChildren(pathToAdd: ElementPath): void {
+    const parentPath = EP.parentPath(pathToAdd)
+
+    const parentPathString = EP.toString(parentPath)
+    // Build up parentsAndChildrenToRebuild.
+    let pathsToFillChildren: Array<string>
+    if (parentPathString in parentsAndChildrenToRebuild) {
+      pathsToFillChildren = parentsAndChildrenToRebuild[parentPathString]
+    } else {
+      pathsToFillChildren = []
+      parentsAndChildrenToRebuild[parentPathString] = pathsToFillChildren
+    }
+    pathsToFillChildren.push(EP.toString(pathToAdd))
+  }
+  function fillPath(pathToFill: ElementPath): void {
+    addPathToParentsAndChildren(pathToFill)
+    if (!EP.isEmptyPath(pathToFill)) {
+      const pathStringToFill = EP.toString(pathToFill)
+      if (!missingPaths.has(pathStringToFill) && !(pathStringToFill in metadata)) {
+        missingPaths.add(pathStringToFill)
+        const parentPath = EP.parentPath(pathToFill)
+        if (parentPath != null) {
+          fillPath(parentPath)
+        }
+      }
+    }
+  }
+  for (const elementMetadata of Object.values(metadata)) {
+    const metadataPath = elementMetadata.elementPath
+    addPathToParentsAndChildren(metadataPath)
+    fillPath(EP.parentPath(metadataPath))
+  }
+
+  // Work from the bottommost up the paths to the topmost, filling in the metadata as we go.
+  let updatedMetadata: ElementInstanceMetadataMap = { ...metadata }
+  const pathsToFill = Array.from(missingPaths).sort().reverse()
+  for (const pathToFill of pathsToFill) {
+    const pathToFillPath = EP.fromString(pathToFill)
+    const childPaths = parentsAndChildrenToRebuild[pathToFill] ?? []
+    const children = mapDropNulls((childPath) => updatedMetadata[childPath], childPaths)
+
+    function getBoundingFrameFromChildren<C extends CoordinateMarker>(
+      childrenFrames: Array<Rectangle<C> | InfinityRectangle<C>>,
+    ) {
+      const childrenNonInfinityFrames = childrenFrames.filter(isFiniteRectangle)
+      const childrenBoundingFrame =
+        childrenNonInfinityFrames.length === childrenFrames.length
+          ? boundingRectangleArray(childrenNonInfinityFrames)
+          : (infinityRectangle as InfinityRectangle<C>)
+
+      return childrenBoundingFrame
+    }
+
+    const childrenBoundingGlobalFrame = getBoundingFrameFromChildren(
+      mapDropNulls((c) => c.globalFrame, children),
+    )
+
+    const childrenBoundingLocalFrame = getBoundingFrameFromChildren(
+      mapDropNulls((c) => c.localFrame, children),
+    )
+
+    const childrenBoundingGlobalFrameWithTextContent = getBoundingFrameFromChildren(
+      mapDropNulls((c) => c.specialSizeMeasurements.globalFrameWithTextContent, children),
+    )
+
+    // Insert a default entry in for this.
+    if (!(pathToFill in updatedMetadata)) {
+      updatedMetadata[pathToFill] = elementInstanceMetadata(
+        pathToFillPath,
+        left('unknown'),
+        null,
+        null,
+        null,
+        false,
+        false,
+        emptySpecialSizeMeasurements,
+        emptyComputedStyle,
+        emptyAttributeMetadata,
+        null,
+        null,
+        'not-a-conditional',
+        null,
+        null,
+        null,
+      )
+    }
+
+    // Update the frames.
+    const currentMetadata = updatedMetadata[pathToFill]
+    updatedMetadata[pathToFill] = {
+      ...currentMetadata,
+      globalFrame: childrenBoundingGlobalFrame,
+      localFrame: childrenBoundingLocalFrame,
+      nonRoundedGlobalFrame: childrenBoundingGlobalFrame,
+      specialSizeMeasurements: {
+        ...currentMetadata.specialSizeMeasurements,
+        globalFrameWithTextContent: childrenBoundingGlobalFrameWithTextContent,
+      },
+    }
+  }
+
+  let updatedMetadataToReturn: ElementInstanceMetadataMap = {}
+  let reconstructedMetadata: ElementInstanceMetadataMap = {}
+  for (const [metadataKey, metadataValue] of Object.entries(updatedMetadata)) {
+    // Either updating existing values or squirrelling away the entries in the reconstructed metadata.
+    if (metadataKey in metadata) {
+      updatedMetadataToReturn[metadataKey] = metadataValue
+    } else {
+      reconstructedMetadata[metadataKey] = metadataValue
+    }
+  }
+
+  return {
+    updatedMetadata: updatedMetadataToReturn,
+    reconstructedMetadata: reconstructedMetadata,
+  }
+}
+
 // Dom walker has 3 modes for performance reasons:
 // Fastest is the selective mode, this runs when elementsToFocusOn is not 'rerender-all-elements'. In this case it only collects the metadata of the elements in elementsToFocusOn
 // Middle speed is when initComplete is true, in this case it traverses the full dom but only collects the metadata for the not invalidated elements (stored in invalidatedPaths)
@@ -441,6 +578,7 @@ export function runDomWalker({
   rootMetadataInStateRef,
 }: RunDomWalkerParams): {
   metadata: ElementInstanceMetadataMap
+  reconstructedMetadata: ElementInstanceMetadataMap
   cachedPaths: ElementPath[]
   invalidatedPaths: string[]
 } | null {
@@ -508,6 +646,7 @@ export function runDomWalker({
       scale: scale,
       containerRectLazy: containerRect,
       additionalElementsToUpdate: [...additionalElementsToUpdate, ...selectedViews],
+      pathsCollectedMutable: [],
     }
 
     // This assumes that the canvas root is rendering a Storyboard fragment.
@@ -530,7 +669,14 @@ export function runDomWalker({
     }
     domWalkerMutableState.initComplete = true // Mutation!
 
-    return { metadata: metadata, cachedPaths: cachedPaths, invalidatedPaths: invalidatedPaths }
+    const { updatedMetadata, reconstructedMetadata } = backfillDomMetadata(metadata)
+
+    return {
+      metadata: updatedMetadata,
+      reconstructedMetadata: reconstructedMetadata,
+      cachedPaths: cachedPaths,
+      invalidatedPaths: invalidatedPaths,
+    }
   } else {
     // TODO flip if-else
     return null
@@ -717,6 +863,7 @@ function isAnyPathInvalidated(
 
 function collectMetadata(
   element: HTMLElement,
+  originalElementPaths: Array<PathWithString>,
   pathsForElement: Array<ElementPath>,
   stringPathsForElement: Array<string>,
   parentPoint: CanvasPoint,
@@ -729,7 +876,16 @@ function collectMetadata(
   cachedPaths: Array<ElementPath>
   collectedPaths: Array<ElementPath>
 } {
-  if (pathsForElement.length === 0) {
+  // Determine if the parent has been visited so far.
+  // When a child element of another element is found, we want to collect the metadata for it if
+  // the DOM walker hasn't visited its parent (by element path). As it still forms part of the parent's
+  // frame, so we want to include it.
+  const parentVisited = originalElementPaths.some((originalElementPath) => {
+    const parentPath = EP.parentPath(originalElementPath.path)
+    return EP.containsPath(parentPath, globalProps.pathsCollectedMutable)
+  })
+
+  if (pathsForElement.length === 0 && parentVisited) {
     return {
       collectedMetadata: {},
       cachedPaths: [],
@@ -737,6 +893,7 @@ function collectMetadata(
     }
   }
   const shouldCollect =
+    !parentVisited ||
     invalidated ||
     isAnyPathInvalidated(stringPathsForElement, globalProps.invalidatedPaths) ||
     pathsForElement.some((pathForElement) => {
@@ -749,14 +906,11 @@ function collectMetadata(
       element,
       parentPoint,
       closestOffsetParentPath,
-      pathsForElement,
+      parentVisited ? pathsForElement : originalElementPaths.map((path) => path.path),
       globalProps,
     )
   } else {
-    const cachedMetadata = pick(
-      pathsForElement.map(EP.toString),
-      globalProps.rootMetadataInStateRef.current,
-    )
+    const cachedMetadata = pick(stringPathsForElement, globalProps.rootMetadataInStateRef.current)
 
     if (Object.keys(cachedMetadata).length === pathsForElement.length) {
       return {
@@ -768,6 +922,7 @@ function collectMetadata(
       // If any path is missing cached metadata we must forcibly invalidate the element
       return collectMetadata(
         element,
+        originalElementPaths,
         pathsForElement,
         stringPathsForElement,
         parentPoint,
@@ -1316,6 +1471,7 @@ function walkCanvasRootFragment(
   }
 
   globalProps.invalidatedPaths.delete(EP.toString(canvasRootPath)) // global mutation!
+  globalProps.pathsCollectedMutable.push(canvasRootPath)
 
   if (
     ObserversAvailable &&
@@ -1390,9 +1546,11 @@ function walkScene(
         ...globalProps,
         forceInvalidated: invalidatedScene,
       })
+      globalProps.pathsCollectedMutable.push(instancePath)
 
       const { collectedMetadata: sceneMetadata, cachedPaths: sceneCachedPaths } = collectMetadata(
         scene,
+        [{ path: instancePath, asString: sceneID }],
         [instancePath],
         [sceneID],
         canvasPoint({ x: 0, y: 0 }),
@@ -1516,6 +1674,9 @@ function walkElements(
         return EP.pathsEqual(staticPath, validPath)
       })
     })
+    globalProps.pathsCollectedMutable.push(
+      ...foundValidPaths.map((pathWithString) => pathWithString.path),
+    )
 
     // Build the metadata for the children of this DOM node.
     let childPaths: Array<ElementPath> = []
@@ -1541,6 +1702,7 @@ function walkElements(
 
     const { collectedMetadata, cachedPaths, collectedPaths } = collectMetadata(
       element,
+      pathsWithStrings,
       pluck(foundValidPaths, 'path'),
       pluck(foundValidPaths, 'asString'),
       parentPoint,

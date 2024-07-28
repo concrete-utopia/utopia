@@ -15,7 +15,7 @@ import type {
 } from '../../editor/store/editor-state'
 import { getMetadata } from '../../editor/store/editor-state'
 import type { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
-import type { CanvasPositions, CSSCursor } from '../canvas-types'
+import type { CSSCursor, CanvasPositions } from '../canvas-types'
 import { HighlightControl } from './highlight-control'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
@@ -219,6 +219,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
               : ' canvas-controls '
           }
           id='canvas-controls'
+          data-testid='canvas-controls'
           style={{
             pointerEvents: 'initial',
             position: 'absolute',

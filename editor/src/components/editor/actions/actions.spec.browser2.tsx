@@ -82,6 +82,7 @@ import { getDomRectCenter } from '../../../core/shared/dom-utils'
 import { FloatingPostActionMenuTestId } from '../../canvas/controls/select-mode/post-action-menu'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
+import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -604,7 +605,11 @@ describe('actions', () => {
         'await-first-dom-report',
       )
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-sb/scene',
         'regular-sb/scene/map',
         'regular-sb/scene/map/card~~~1',
@@ -622,7 +627,11 @@ describe('actions', () => {
 
       await pressKey('Backspace')
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-sb/scene',
         'regular-sb/scene/map',
         'regular-sb/scene/map/card~~~1',
@@ -2316,7 +2325,9 @@ export var storyboard = (
           y: 2,
         })
         expect(
-          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            editor.getEditorState().editor,
+          ).visibleNavigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',
@@ -2361,7 +2372,9 @@ export var storyboard = (
         })
 
         expect(
-          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            editor.getEditorState().editor,
+          ).visibleNavigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',
@@ -2406,7 +2419,9 @@ export var storyboard = (
         })
 
         expect(
-          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            editor.getEditorState().editor,
+          ).visibleNavigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',
@@ -2515,7 +2530,11 @@ export var storyboard = (
         await pressKey('Esc')
         await editor.getDispatchFollowUpActionsFinished()
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -2688,7 +2707,9 @@ export var storyboard = (props) => {
         await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -2863,7 +2884,9 @@ export var storyboard = (props) => {
         await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -5752,7 +5775,9 @@ export var storyboard = (
 
         expect(renderResult.getEditorState().postActionInteractionSession).toBeNull()
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -5803,7 +5828,9 @@ export var storyboard = (
 
         expect(renderResult.getEditorState().postActionInteractionSession).not.toBeNull()
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',

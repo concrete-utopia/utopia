@@ -1,12 +1,14 @@
 import { windowPoint } from '../../../../core/shared/math-utils'
 import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
-import CanvasActions from '../../canvas-actions'
+import { CSSCursor } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { StrategyPickerTestId } from '../../controls/select-mode/canvas-strategy-picker'
+import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 
 const TestProject1 = `
-<div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+<div style={{ width: '100%', height: '100%' }} data-testid='root' data-uid='aaa'>
   <div
     style={{ backgroundColor: '#aaaaaa33', width: 100, height: 100 }}
     data-uid='child-1'
@@ -41,6 +43,28 @@ const TestProject2 = `
 `
 
 describe('Drag To Move Metastrategy', () => {
+  it('when no there are no applicable strategies, the fallback DO_NOTHING strategy is still added as applicable', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProject1),
+      'await-first-dom-report',
+    )
+
+    const targetElement = renderResult.renderedDOM.getByTestId('root')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 10, y: 10 })
+
+    const midDragCallback = async () => {
+      expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('DO_NOTHING')
+    }
+
+    await mouseClickAtPoint(canvasControlsLayer, startPoint)
+    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+      midDragCallback: midDragCallback,
+    })
+  })
   it('when no reparent or no base move is fit, the fallback DO_NOTHING strategy is used', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(TestProject1),
@@ -56,6 +80,32 @@ describe('Drag To Move Metastrategy', () => {
 
     const midDragCallback = async () => {
       expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('DO_NOTHING')
+    }
+
+    await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+    await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+      modifiers: emptyModifiers,
+      midDragCallback: midDragCallback,
+    })
+  })
+  it('when DO_NOTHING strategy is used, the not permitted cursor is shown', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(TestProject1),
+      'await-first-dom-report',
+    )
+
+    const targetElement = renderResult.renderedDOM.getByTestId('child-1')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const dragDelta = windowPoint({ x: 10, y: 10 })
+
+    const midDragCallback = async () => {
+      expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('DO_NOTHING')
+      expect(getCursorFromEditor(await renderResult.getEditorState().editor)).toEqual(
+        CSSCursor.NotPermitted,
+      )
     }
 
     await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
@@ -96,7 +146,7 @@ describe('Drag To Move Metastrategy', () => {
 })
 
 describe('Drag To Move Strategy Indicator', () => {
-  it('when the DO_NOTHING strategy is active, nothing is active in the Strategy Indicator', async () => {
+  it('Strategy picker and strategy indicator is not rendered when DO_NOTHING is only strategy', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(TestProject1),
       'await-first-dom-report',
@@ -111,17 +161,13 @@ describe('Drag To Move Strategy Indicator', () => {
 
     const midDragCallback = async () => {
       expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual('DO_NOTHING')
+      expect(renderResult.getEditorState().strategyState.sortedApplicableStrategies).toHaveLength(1)
 
-      const { showIndicator, dragType, reparent, ancestor } =
-        renderResult.getEditorState().editor.canvas.controls.dragToMoveIndicatorFlags
+      const indicator = await renderResult.renderedDOM.queryByTestId('drag-strategy-indicator')
+      expect(indicator).toBeNull()
 
-      expect(showIndicator).toEqual(true)
-      expect(dragType).toEqual('none')
-      expect(reparent).toEqual('none')
-      expect(ancestor).toEqual(false)
-
-      const indicator = renderResult.renderedDOM.getByTestId('drag-strategy-indicator')
-      expect(indicator).toBeDefined()
+      const picker = await renderResult.renderedDOM.queryByTestId(StrategyPickerTestId)
+      expect(picker).toBeNull()
     }
 
     await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })

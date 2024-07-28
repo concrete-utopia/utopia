@@ -619,6 +619,7 @@ import {
   dataCanCondenseProp,
   isDataCanCondenseProp,
 } from '../../../utils/can-condense'
+import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1052,9 +1053,6 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
   const poppedDerived = history.current.derived
 
   return {
-    navigatorRows: poppedDerived.navigatorRows,
-    navigatorTargets: poppedDerived.navigatorTargets,
-    visibleNavigatorTargets: poppedDerived.visibleNavigatorTargets,
     autoFocusedPaths: poppedDerived.autoFocusedPaths,
     controls: [],
     elementWarnings: poppedDerived.elementWarnings,
@@ -1512,7 +1510,6 @@ let checkpointTimeoutId: number | undefined = undefined
 let canvasScrollAnimationTimer: number | undefined = undefined
 
 function updateSelectedComponentsFromEditorPosition(
-  derived: DerivedState,
   editor: EditorState,
   dispatch: EditorDispatch,
   filePath: string,
@@ -1525,12 +1522,16 @@ function updateSelectedComponentsFromEditorPosition(
 
   const highlightBoundsForUids = getHighlightBoundsForFile(editor, filePath)
   const allElementPathsOptic = traverseArray<NavigatorEntry>().compose(fromField('elementPath'))
+
+  // TODO this is wasteful here, instead we should get the allElementPaths through a more conservative way, for example taking all the keys of JSXMetadata
+  const navigatorTargets = getNavigatorTargetsFromEditorState(editor)
+
   const newlySelectedElements = getElementPathsInBounds(
     line,
     highlightBoundsForUids,
     toArrayOf(
       allElementPathsOptic,
-      derived.navigatorTargets.filter((t) => !isConditionalClauseNavigatorEntry(t)),
+      navigatorTargets.navigatorTargets.filter((t) => !isConditionalClauseNavigatorEntry(t)),
     ),
   )
 
@@ -2599,14 +2600,10 @@ export const UPDATE_FNS = {
       leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
     }
   },
-  WRAP_IN_ELEMENT: (
-    action: WrapInElement,
-    editor: EditorModel,
-    derived: DerivedState,
-  ): EditorModel => {
+  WRAP_IN_ELEMENT: (action: WrapInElement, editor: EditorModel): EditorModel => {
     const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
       action.targets,
-      derived.navigatorTargets,
+      getNavigatorTargetsFromEditorState(editor).navigatorTargets,
     )
 
     const parentPath = commonInsertionPathFromArray(
@@ -5029,11 +5026,9 @@ export const UPDATE_FNS = {
   SELECT_FROM_FILE_AND_POSITION: (
     action: SelectFromFileAndPosition,
     editor: EditorModel,
-    derived: DerivedState,
     dispatch: EditorDispatch,
   ): EditorModel => {
     return updateSelectedComponentsFromEditorPosition(
-      derived,
       editor,
       dispatch,
       action.filePath,

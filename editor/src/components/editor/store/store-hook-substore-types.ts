@@ -18,6 +18,7 @@ export type Substates = {
   projectContents: ProjectContentSubstate
   canvas: CanvasSubstate
   canvasOffset: CanvasOffsetSubstate
+  navigatorTargetsSubstate: NavigatorTargetsSubstate
   derived: { derived: DerivedState }
   restOfEditor: RestOfEditorState
   restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'>
@@ -56,6 +57,19 @@ const emptyMetadataSubstate = {
   editor: pick(metadataSubstateKeys, EmptyEditorStateForKeysOnly),
 } as const
 export type MetadataSubstate = typeof emptyMetadataSubstate
+
+// NavigatorTargetsSubstate
+export const navigatorTargetsSubstateKeys = [
+  'jsxMetadata',
+  'elementPathTree',
+  'navigator',
+  'propertyControlsInfo',
+  'projectContents',
+] as const
+const emptyNavigatorTargetsSubstate = {
+  editor: pick(navigatorTargetsSubstateKeys, EmptyEditorStateForKeysOnly),
+} as const
+export type NavigatorTargetsSubstate = typeof emptyNavigatorTargetsSubstate
 
 // SelectedViewsSubstate
 export const selectedViewsSubstateKeys = ['selectedViews'] as const

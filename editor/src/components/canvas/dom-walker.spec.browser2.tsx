@@ -200,6 +200,85 @@ describe('DOM Walker', () => {
     })
   })
 
+  it('Fragments at the root of a component result in correctly sized elements', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const MyComp = (props) => {
+  return (
+    <>
+      <div
+        data-uid='first-div'
+        style={{
+          backgroundColor: '#FFFF0B',
+          position: 'absolute',
+          left: 71,
+          top: 141,
+          width: 226,
+          height: 56,
+        }}
+      >
+        MyComp
+      </div>
+      {props.children}
+      <div
+        data-uid='second-div'
+        style={{
+          backgroundColor: '#0CE3FF',
+          position: 'absolute',
+          left: 72,
+          top: 246,
+          width: 232,
+          height: 54,
+        }}
+      >
+        Also MyComp
+      </div>
+    </>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-uid='container'
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 300,
+        top: 163,
+        width: 395,
+        height: 453,
+      }}
+    >
+      <MyComp data-uid='mycomp'>
+        <div
+          data-uid='inner-div'
+          style={{
+            backgroundColor: 'pink',
+            position: 'absolute',
+            left: 20,
+            top: 20,
+            width: 50,
+            height: 50,
+          }}
+        />
+      </MyComp>
+    </div>
+  </Storyboard>
+)`,
+      'await-first-dom-report',
+    )
+    const metadata = renderResult.getEditorState().editor.jsxMetadata
+    expect(metadata['storyboard/container/mycomp'].globalFrame).toEqual({
+      x: 320,
+      y: 183,
+      width: 284,
+      height: 280,
+    })
+  })
+
   it('Handles path invalidation when no scene is present', async () => {
     const renderResult = await renderTestEditorWithCode(
       TestProjectWithoutScene,

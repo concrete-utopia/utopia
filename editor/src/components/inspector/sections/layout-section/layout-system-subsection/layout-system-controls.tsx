@@ -58,21 +58,21 @@ import {
   splitChainedEventValueForProp,
   SplitChainedNumberInput,
 } from './split-chained-number-input'
-import { NO_OP } from '../../../../../core/shared/utils'
 
 interface LayoutSystemControlProps {
   layoutSystem: DetectedLayoutSystem | null
   providesCoordinateSystemForChildren: boolean
+  onChange: (value: DetectedLayoutSystem) => void
 }
 
-export const DisabledFlexGroupPicker = React.memo((props: LayoutSystemControlProps) => {
+export const LayoutSystemControl = React.memo((props: LayoutSystemControlProps) => {
   return (
     <OptionChainControl
       id={'layoutSystem'}
       key={'layoutSystem'}
       testId={'layoutSystem'}
-      onSubmitValue={NO_OP}
-      value={'flex'}
+      onSubmitValue={props.onChange}
+      value={props.layoutSystem}
       options={layoutSystemOptions}
       controlStatus={'simple'}
       controlStyles={getControlStyles('simple')}

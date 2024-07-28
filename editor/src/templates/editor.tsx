@@ -437,6 +437,7 @@ export class Editor {
         dispatchedActions,
         oldEditorState,
         this.spyCollector,
+        {},
       )
 
       invalidateDomWalkerIfNecessary(
@@ -504,6 +505,7 @@ export class Editor {
             [{ action: 'TRUE_UP_ELEMENTS' }],
             this.storedState,
             this.spyCollector,
+            {},
           )
           this.storedState = dispatchResultWithTruedUpGroups
 

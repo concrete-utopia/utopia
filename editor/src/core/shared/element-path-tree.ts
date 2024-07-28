@@ -36,21 +36,23 @@ export function elementPathTree(
 
 export type ElementPathTrees = { [key: string]: ElementPathTree }
 
-export function buildTree(metadata: ElementInstanceMetadataMap): ElementPathTrees {
-  const elementPaths = Object.values(metadata).map((m) => m.elementPath)
-  if (elementPaths.length === 0) {
-    return {}
-  }
-  const root = EP.getStoryboardPathFromPath(elementPaths[0])
-  if (root == null) {
-    return {}
-  }
-
-  const missingParents = getMissingParentPaths(elementPaths, metadata)
-  const paths = getReorderedPaths(elementPaths, metadata, missingParents)
-
+export function buildTree(...metadatas: Array<ElementInstanceMetadataMap>): ElementPathTrees {
   let tree: ElementPathTrees = {}
-  buildTreeRecursive_MUTATE(root, tree, paths, metadata)
+  for (const metadata of metadatas) {
+    const elementPaths = Object.values(metadata).map((m) => m.elementPath)
+    if (elementPaths.length === 0) {
+      return {}
+    }
+    const root = EP.getStoryboardPathFromPath(elementPaths[0])
+    if (root == null) {
+      return {}
+    }
+
+    const missingParents = getMissingParentPaths(elementPaths, metadata)
+    const paths = getReorderedPaths(elementPaths, metadata, missingParents)
+
+    buildTreeRecursive_MUTATE(root, tree, paths, metadata)
+  }
 
   return tree
 }

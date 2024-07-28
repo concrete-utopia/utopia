@@ -46,7 +46,11 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { setPaddingStrategy } from './strategies/set-padding-strategy'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
-import { DoNothingStrategyID, dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
+import {
+  DoNothingStrategyID,
+  doNothingStrategy,
+  dragToMoveMetaStrategy,
+} from './strategies/drag-to-move-metastrategy'
 import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
 import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
@@ -349,12 +353,32 @@ export function getApplicableStrategiesOrderedByFitness(
     return r.fitness - l.fitness
   })
 
-  // Special case for the DO NOTHING strategy - it should never be a fallback strategy
-  const filteredSortedStrategies = sortedStrategies.filter(
+  return fixDoNothingStrategies(sortedStrategies, canvasState)
+}
+
+// Special cases for the DO NOTHING strategy - it should never be a fallback strategy,
+// and when there is no other applicable strategy then do nothing should always appear as a single one
+function fixDoNothingStrategies(
+  sortedStrategies: Array<StrategyWithFitness>,
+  canvasState: InteractionCanvasState,
+): Array<StrategyWithFitness> {
+  const positiveFitnessStrategyExists = sortedStrategies.find(({ fitness }) => fitness > 0) != null
+
+  const doNothing = doNothingStrategy(canvasState)
+
+  if (!positiveFitnessStrategyExists) {
+    return [
+      {
+        strategy: doNothing,
+        fitness: doNothing.fitness,
+      },
+      ...sortedStrategies,
+    ]
+  }
+
+  return sortedStrategies.filter(
     ({ strategy }, index) => index === 0 || strategy.id !== DoNothingStrategyID,
   )
-
-  return filteredSortedStrategies
 }
 
 function pickDefaultCanvasStrategy(
@@ -657,4 +681,23 @@ export function getDescriptiveStrategyLabelWithRetargetedPaths(
     return `${originalLabel} (Children)`
   }
   return originalLabel
+}
+
+function isOnlyDoNothingStrategy(strategies: Array<ApplicableStrategy>): boolean {
+  // This is an optimization, we should check all strategies, but we know we can not have do_nothing strategy in non-zero position
+  if (strategies.length > 1) {
+    return false
+  }
+  if (strategies.length === 0) {
+    return true
+  }
+  return strategies[0].strategy.id === 'DO_NOTHING'
+}
+
+export function useIsOnlyDoNothingStrategy(): boolean {
+  return useEditorState(
+    Substores.restOfStore,
+    (store) => isOnlyDoNothingStrategy(store.strategyState.sortedApplicableStrategies ?? []),
+    'useIsOnlyDoNothingStrategy',
+  )
 }
