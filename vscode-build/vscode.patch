@@ -11,6 +11,19 @@ index c4947e76cbf..e46583b9073 100644
  gulp.task(compileBuildTask);
  exports.compileBuildTask = compileBuildTask;
  
+diff --git a/build/gulpfile.vscode.web.js b/build/gulpfile.vscode.web.js
+index 50c7e6fb631..629a119108b 100644
+--- a/build/gulpfile.vscode.web.js
++++ b/build/gulpfile.vscode.web.js
+@@ -186,7 +186,7 @@ function packageTask(sourceFolderName, destinationFolderName) {
+ 		const json = require('gulp-json-editor');
+ 
+ 		const src = gulp.src(sourceFolderName + '/**', { base: '.' })
+-			.pipe(rename(function (path) { path.dirname = path.dirname.replace(new RegExp('^' + sourceFolderName), 'out'); }));
++			.pipe(rename(function (path) { path.dirname = path.dirname.replace(new RegExp('^' + sourceFolderName), 'vscode'); }));
+ 
+ 		const extensions = gulp.src('.build/web/extensions/**', { base: '.build/web', dot: true });
+ 
 diff --git a/package.json b/package.json
 index 2103fe1fe1a..c3d495f5379 100644
 --- a/package.json

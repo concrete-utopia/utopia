@@ -51,9 +51,8 @@ if (fs.existsSync('../dist')) {
   fs.rmdirSync('../dist', { recursive: true })
 }
 
-fs.mkdirSync('../dist')
+fse.moveSync('../vscode-web', '../dist')
 fs.mkdirSync('../dist/lib')
-fse.copySync('out-vscode-web-min', '../dist/vscode')
 fse.copySync('resources', '../dist/vscode/resources')
 fse.copySync('product.json', '../dist/product.json')
 fse.copySync('../node_modules/semver-umd', '../dist/lib/semver-umd')
