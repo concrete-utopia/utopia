@@ -20,7 +20,7 @@ const DropdownMenuItemContainer = styled('div', {
   padding: '6px 8px',
   cursor: 'pointer',
   color: colorTheme.contextMenuForeground.value,
-  '[data-highlighted] > &': {
+  '[tabindex="0"] > &': {
     backgroundColor: colorTheme.contextMenuHighlightBackground.value,
     color: colorTheme.contextMenuForeground.value,
     borderRadius: 6,
@@ -229,6 +229,8 @@ export const DropdownMenuItemList = React.memo<DropdownMenuItemListProps>((props
   )
 })
 
+const COLLISION_PADDING = { top: -4 }
+
 export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
   const [open, onOpen] = React.useState(false)
   const stopPropagation = React.useCallback((e: React.KeyboardEvent) => {
@@ -251,7 +253,7 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
           onKeyDown={stopPropagation}
           onEscapeKeyDown={onEscapeKeyDown}
           sideOffset={props.sideOffset}
-          collisionPadding={{ top: -4 }}
+          collisionPadding={COLLISION_PADDING}
           align='start'
           alignOffset={props.alignOffset}
         >
