@@ -89,12 +89,7 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
 
   const addLayoutSystemOpenerButton = React.useCallback(
     () => (
-      <SquareButton
-        data-testid={AddRemoveLayoutSystemControlTestId()}
-        highlight
-        onClick={NO_OP}
-        style={{ width: 12, height: 22 }}
-      >
+      <SquareButton highlight onClick={NO_OP} style={{ width: 12, height: 22 }}>
         <Icons.Threedots />
       </SquareButton>
     ),
