@@ -53,15 +53,15 @@ describe('remove-flex-convert-to-absolute strategy', () => {
     expect(root.style.gap).toEqual('')
     expect(root.style.paddingTop).toEqual('10px')
     expect(root.style.paddingBottom).toEqual('10px')
-    expect(root.style.width).toEqual('500px')
-    expect(root.style.height).toEqual('400px')
+    expect(root.style.width).toEqual('540px')
+    expect(root.style.height).toEqual('420px')
 
     const one = editor.renderedDOM.getByTestId('one')
     expect(one.style.position).toEqual('absolute')
-    expect(one.style.left).toEqual('173px')
-    expect(one.style.top).toEqual('140px')
-    expect(one.style.height).toEqual('250px')
-    expect(one.style.width).toEqual('154px')
+    expect(one.style.left).toEqual('187px')
+    expect(one.style.top).toEqual('147px')
+    expect(one.style.height).toEqual('264px')
+    expect(one.style.width).toEqual('167px')
     expect(one.style.gridColumn).toEqual('')
     expect(one.style.gridColumnStart).toEqual('')
     expect(one.style.gridColumnEnd).toEqual('')
@@ -73,8 +73,8 @@ describe('remove-flex-convert-to-absolute strategy', () => {
     expect(two.style.position).toEqual('absolute')
     expect(two.style.left).toEqual('10px')
     expect(two.style.top).toEqual('10px')
-    expect(two.style.height).toEqual('120px')
-    expect(two.style.width).toEqual('480px')
+    expect(two.style.height).toEqual('127px')
+    expect(two.style.width).toEqual('520px')
     expect(two.style.gridColumn).toEqual('')
     expect(two.style.gridColumnStart).toEqual('')
     expect(two.style.gridColumnEnd).toEqual('')
@@ -165,8 +165,8 @@ export var storyboard = (
       style={{
         backgroundColor: '#fff',
         position: 'absolute',
-        width: 500,
-        height: 400,
+        width: 540,
+        height: 420,
         gap: 10,
         display: 'grid',
         gridTemplateColumns: '1fr 1fr 1fr',
