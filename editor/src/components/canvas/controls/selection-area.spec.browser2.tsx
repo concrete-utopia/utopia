@@ -739,6 +739,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           moveBeforeMouseDown: true,
           staggerMoveEvents: true,
           modifiers: shiftModifier,
+          mouseDownModifiers: shiftModifier,
         },
       )
 
@@ -759,6 +760,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           moveBeforeMouseDown: true,
           staggerMoveEvents: true,
           modifiers: shiftModifier,
+          mouseDownModifiers: shiftModifier,
         },
       )
 
@@ -813,7 +815,12 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       container,
       { x: rect.x + 620, y: rect.y + 100 },
       { x: rect.x + 670, y: rect.y + 310 },
-      { moveBeforeMouseDown: true, staggerMoveEvents: true, modifiers: shiftModifier },
+      {
+        moveBeforeMouseDown: true,
+        staggerMoveEvents: true,
+        modifiers: shiftModifier,
+        mouseDownModifiers: shiftModifier,
+      },
     )
 
     expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
