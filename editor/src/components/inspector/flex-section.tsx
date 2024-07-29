@@ -61,14 +61,25 @@ import { useInspectorLayoutInfo } from './common/property-path-hooks'
 
 const axisDropdownMenuButton = 'axisDropdownMenuButton'
 
-export const layoutSystemSelector = createSelector(
+function getLayoutSystem(
+  layoutSystem: DetectedLayoutSystem | null | undefined,
+): 'grid' | 'flex' | null {
+  if (layoutSystem === 'grid' || layoutSystem === 'flex') {
+    return layoutSystem
+  }
+
+  return null
+}
+
+const layoutSystemSelector = createSelector(
   metadataSelector,
   selectedViewsSelector,
   (metadata, selectedViews) => {
-    const detectedLayoutSystems = selectedViews.map(
-      (path) =>
+    const detectedLayoutSystems = selectedViews.map((path) =>
+      getLayoutSystem(
         MetadataUtils.findElementByElementPath(metadata, path)?.specialSizeMeasurements
-          .layoutSystemForChildren ?? null,
+          .layoutSystemForChildren,
+      ),
     )
 
     const allLayoutSystemsTheSame = strictEvery(
@@ -173,54 +184,54 @@ export const FlexSection = React.memo(() => {
   return (
     <div>
       <AddRemoveLayoutSystemControl />
-      <FlexCol css={{ gap: 10, paddingBottom: 10 }}>
-        {when(
-          layoutSystem === 'grid' || layoutSystem === 'flex',
+      {when(
+        layoutSystem != null,
+        <FlexCol css={{ gap: 10, paddingBottom: 10 }}>
           <UIGridRow padded={true} variant='<-------------1fr------------->'>
             <LayoutSystemControl
               layoutSystem={layoutSystem}
               providesCoordinateSystemForChildren={false}
               onChange={onLayoutSystemChange}
             />
-          </UIGridRow>,
-        )}
-        {when(
-          layoutSystem === 'grid',
-          <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
-            {grid != null ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <GapRowColumnControl />
-                <TemplateDimensionControl
-                  axis={'column'}
-                  grid={grid}
-                  values={columns}
-                  title='Columns'
-                />
-                <TemplateDimensionControl axis={'row'} grid={grid} values={rows} title='Rows' />
-              </div>
-            ) : null}
-          </UIGridRow>,
-        )}
-        {when(
-          layoutSystem === 'flex',
-          <React.Fragment>
-            <UIGridRow padded variant='<--1fr--><--1fr-->'>
-              <UIGridRow padded={false} variant='<-------------1fr------------->'>
-                <NineBlockControl />
-                <ThreeBarControl />
+          </UIGridRow>
+          {when(
+            layoutSystem === 'grid',
+            <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
+              {grid != null ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <GapRowColumnControl />
+                  <TemplateDimensionControl
+                    axis={'column'}
+                    grid={grid}
+                    values={columns}
+                    title='Columns'
+                  />
+                  <TemplateDimensionControl axis={'row'} grid={grid} values={rows} title='Rows' />
+                </div>
+              ) : null}
+            </UIGridRow>,
+          )}
+          {when(
+            layoutSystem === 'flex',
+            <React.Fragment>
+              <UIGridRow padded variant='<--1fr--><--1fr-->'>
+                <UIGridRow padded={false} variant='<-------------1fr------------->'>
+                  <NineBlockControl />
+                  <ThreeBarControl />
+                </UIGridRow>
+                <FlexCol css={{ gap: 10 }}>
+                  <FlexDirectionToggle />
+                  <FlexContainerControls seeMoreVisible={true} />
+                  <FlexGapControl />
+                </FlexCol>
               </UIGridRow>
-              <FlexCol css={{ gap: 10 }}>
-                <FlexDirectionToggle />
-                <FlexContainerControls seeMoreVisible={true} />
-                <FlexGapControl />
-              </FlexCol>
-            </UIGridRow>
-            <UIGridRow padded={false} variant='<-------------1fr------------->'>
-              <SpacedPackedControl />
-            </UIGridRow>
-          </React.Fragment>,
-        )}
-      </FlexCol>
+              <UIGridRow padded={false} variant='<-------------1fr------------->'>
+                <SpacedPackedControl />
+              </UIGridRow>
+            </React.Fragment>,
+          )}
+        </FlexCol>,
+      )}
     </div>
   )
 })

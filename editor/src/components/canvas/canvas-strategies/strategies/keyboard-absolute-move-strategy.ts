@@ -44,6 +44,16 @@ export function keyboardAbsoluteMoveStrategy(
 ): CanvasStrategy | null {
   const { pathsWereReplaced, paths: selectedElements } =
     retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+
+  if (
+    pathsWereReplaced &&
+    selectedElements.some((originalTarget) =>
+      MetadataUtils.isComponentInstanceFromMetadata(canvasState.startingMetadata, originalTarget),
+    )
+  ) {
+    return null
+  }
+
   if (selectedElements.length === 0) {
     return null
   }

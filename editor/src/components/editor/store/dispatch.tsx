@@ -90,6 +90,7 @@ import {
 } from '../../../core/shared/runtime-report-logs'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
 import { getFilePathMappings } from '../../../core/model/project-file-utils'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -464,6 +465,7 @@ export function editorDispatchActionRunner(
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   spyCollector: UiJsxCanvasContextData,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies, // only override this for tests
 ): DispatchResult {
   const actionGroupsToProcess = dispatchedActions.reduce(reducerToSplitToActionGroups, [[]])
@@ -476,6 +478,7 @@ export function editorDispatchActionRunner(
         working,
         spyCollector,
         strategiesToUse,
+        domReconstructedMetadata,
       )
       return newStore
     },
@@ -823,12 +826,14 @@ function applyProjectChangesToEditor(
 
 export const UTOPIA_DUPLICATE_UID_ERROR_MESSAGE = (dispatchedActions: string) =>
   `A dispatched action resulted in duplicated UIDs. Suspicious actions: ${dispatchedActions}`
+
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
   storedState: DispatchResult,
   spyCollector: UiJsxCanvasContextData,
   strategiesToUse: Array<MetaCanvasStrategy>,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
 ): DispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions), dispatchedActions)
 
@@ -874,7 +879,10 @@ function editorDispatchInner(
       domMetadataChanged || spyMetadataChanged || allElementPropsChanged || variablesInScopeChanged
 
     if (metadataChanged) {
-      const { metadata, elementPathTree } = reconstructJSXMetadata(result.unpatchedEditor)
+      const { metadata, elementPathTree } = reconstructJSXMetadata(
+        result.unpatchedEditor,
+        domReconstructedMetadata,
+      )
       // Cater for the strategies wiping out the metadata on completion.
       const storedStateHasEmptyElementPathTree = isEmptyObject(
         storedState.unpatchedEditor.elementPathTree,

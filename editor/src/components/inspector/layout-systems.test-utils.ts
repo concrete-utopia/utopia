@@ -28,7 +28,7 @@ export async function addGridLayout(editor: EditorRenderResult) {
   await userEvent.click(gridOption)
 }
 
-export async function removeFlexLayout(editor: EditorRenderResult) {
+export async function removeLayout(editor: EditorRenderResult) {
   const flexDirectionToggle = editor.renderedDOM.getAllByTestId(
     AddRemoveLayoutSystemControlTestId(),
   )[0]

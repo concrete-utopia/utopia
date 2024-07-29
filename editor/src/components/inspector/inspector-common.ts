@@ -281,7 +281,7 @@ export const basicHugContentsApplicableForContainer = (
   const isNonFixStickOrAbsolute =
     mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
-      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
+      MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
     ).filter(
       (element) =>
         !(

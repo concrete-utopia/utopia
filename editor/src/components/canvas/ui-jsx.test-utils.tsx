@@ -352,6 +352,7 @@ export async function renderTestEditorWithModel(
       actions,
       workingEditorState,
       spyCollector,
+      {},
       innerStrategiesToUse,
     )
 
@@ -443,6 +444,7 @@ export async function renderTestEditorWithModel(
           [saveDomReportAction],
           workingEditorState,
           spyCollector,
+          domWalkerResult.reconstructedMetadata,
         )
         workingEditorState = carryDispatchResultFields(workingEditorState, editorWithNewMetadata)
       }
@@ -458,6 +460,7 @@ export async function renderTestEditorWithModel(
           [{ action: 'TRUE_UP_ELEMENTS' }],
           workingEditorState,
           spyCollector,
+          {},
         )
         workingEditorState = carryDispatchResultFields(
           workingEditorState,
@@ -508,6 +511,7 @@ export async function renderTestEditorWithModel(
               [saveDomReportAction],
               workingEditorState,
               spyCollector,
+              domWalkerResult.reconstructedMetadata,
             )
             workingEditorState = carryDispatchResultFields(
               workingEditorState,

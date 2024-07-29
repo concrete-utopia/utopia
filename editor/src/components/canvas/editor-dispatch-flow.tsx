@@ -57,6 +57,7 @@ export function runDomWalkerAndSaveResults(
     ],
     storedState,
     spyCollector,
+    domWalkerResult.reconstructedMetadata,
   )
   return dispatchResultWithMetadata
 }

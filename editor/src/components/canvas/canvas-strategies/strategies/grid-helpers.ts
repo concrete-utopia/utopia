@@ -232,6 +232,7 @@ export function setGridPropsCommands(
   let commands: CanvasCommand[] = [
     deleteProperties('always', elementPath, [
       PP.create('style', 'gridRow'),
+      PP.create('style', 'gridArea'),
       PP.create('style', 'gridColumn'),
       PP.create('style', 'gridColumnStart'),
       PP.create('style', 'gridColumnEnd'),
