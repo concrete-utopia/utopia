@@ -36,7 +36,7 @@ import type {
   ControlMode,
   SplitChainedEvent,
   SplitControlValues,
-} from './split-chained-number-input'
+} from '../../layout-section/layout-system-subsection/split-chained-number-input'
 import {
   SplitChainedNumberInput,
   aggregateGroups,
@@ -46,7 +46,7 @@ import {
   getSplitControlValues,
   longhandShorthandEventHandler,
   splitChainedEventValueForProp,
-} from './split-chained-number-input'
+} from '../../layout-section/layout-system-subsection/split-chained-number-input'
 
 function buildPaddingPropsToUnset(propertyTarget: ReadonlyArray<string>): Array<PropertyPath> {
   return [

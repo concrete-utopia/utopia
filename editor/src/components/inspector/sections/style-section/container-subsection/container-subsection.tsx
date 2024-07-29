@@ -1,10 +1,10 @@
 import React from 'react'
 import { FlexRow, Icons, InspectorSubsectionHeader } from '../../../../../uuiui'
 import { SeeMoreHOC, useToggle } from '../../../widgets/see-more'
-import { PaddingRow } from '../../layout-section/layout-system-subsection/layout-system-controls'
 import { BlendModeRow } from './blendmode-row'
 import { OpacityRow } from './opacity-row'
 import { OverflowRow } from './overflow-row'
+import { PaddingRow } from './padding-row'
 
 export const ContainerSubsection = React.memo(() => {
   const [seeMoreVisible, toggleSeeMoreVisible] = useToggle(false)
