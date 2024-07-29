@@ -10,7 +10,6 @@ import { FlexDirectionToggle } from './flex-direction-control'
 import { selectedViewsSelector, metadataSelector } from './inpector-selectors'
 import { NineBlockControl } from './nine-block-controls'
 import { UIGridRow } from './widgets/ui-grid-row'
-import { LayoutSystemControl } from '../../components/inspector/sections/layout-section/layout-system-subsection/layout-system-controls'
 import { SpacedPackedControl } from './spaced-packed-control'
 import { ThreeBarControl } from './three-bar-control'
 import { FlexGapControl } from './sections/layout-section/flex-container-subsection/flex-container-controls'
@@ -26,7 +25,7 @@ import {
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import type { DetectedLayoutSystem } from 'utopia-shared/src/types'
 import { assertNever, NO_OP } from '../../core/shared/utils'
-import { Icons, NumberInput, SquareButton, Subdued, useColorTheme } from '../../uuiui'
+import { Icons, NumberInput, SquareButton, Subdued } from '../../uuiui'
 import type { CSSNumber, GridCSSNumberUnit, UnknownOrEmptyInput } from './common/css-utils'
 import { gridCSSNumber, isCSSNumber, type GridCSSNumber } from './common/css-utils'
 import { applyCommandsAction } from '../editor/actions/action-creators'
@@ -175,13 +174,6 @@ export const FlexSection = React.memo(() => {
       {when(
         layoutSystem != null,
         <FlexCol css={{ gap: 10, paddingBottom: 10 }}>
-          <UIGridRow padded={true} variant='<-------------1fr------------->'>
-            <LayoutSystemControl
-              layoutSystem={layoutSystem}
-              providesCoordinateSystemForChildren={false}
-              onChange={onLayoutSystemChange}
-            />
-          </UIGridRow>
           {when(
             layoutSystem === 'grid',
             <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
