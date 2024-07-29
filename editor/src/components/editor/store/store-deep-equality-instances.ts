@@ -2156,6 +2156,12 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       newSize.elementGridPropertiesFromProps,
     ).areEqual
 
+    const rowGapEquals = NullableNumberKeepDeepEquality(oldSize.rowGap, newSize.rowGap).areEqual
+    const columnGapEquals = NullableNumberKeepDeepEquality(
+      oldSize.columnGap,
+      newSize.columnGap,
+    ).areEqual
+
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -2201,7 +2207,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       gridContainerPropertiesEqual &&
       gridElementPropertiesEqual &&
       gridContainerPropertiesFromPropsEqual &&
-      gridElementPropertiesFromPropsEqual
+      gridElementPropertiesFromPropsEqual &&
+      rowGapEquals &&
+      columnGapEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {

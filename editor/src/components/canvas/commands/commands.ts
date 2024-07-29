@@ -47,8 +47,8 @@ import type { DeleteProperties } from './delete-properties-command'
 import { runDeleteProperties } from './delete-properties-command'
 import type { AddImportsToFile } from './add-imports-to-file-command'
 import { runAddImportsToFile } from './add-imports-to-file-command'
-import type { SetProperty } from './set-property-command'
-import { runSetProperty } from './set-property-command'
+import type { UpdateBulkProperties, SetProperty } from './set-property-command'
+import { runBulkUpdateProperties, runSetProperty } from './set-property-command'
 import type { AddToReparentedToPaths } from './add-to-reparented-to-paths-command'
 import { runAddToReparentedToPaths } from './add-to-reparented-to-paths-command'
 import type { InsertElementInsertionSubject } from './insert-element-insertion-subject'
@@ -139,6 +139,7 @@ export type CanvasCommand =
   | WrapInContainerCommand
   | QueueTrueUpElement
   | SetActiveFrames
+  | UpdateBulkProperties
 
 export function runCanvasCommand(
   editorState: EditorState,
@@ -191,6 +192,8 @@ export function runCanvasCommand(
       return runDeleteProperties(editorState, command)
     case 'SET_PROPERTY':
       return runSetProperty(editorState, command)
+    case 'UPDATE_BULK_PROPERTIES':
+      return runBulkUpdateProperties(editorState, command)
     case 'UPDATE_PROP_IF_EXISTS':
       return runUpdatePropIfExists(editorState, command)
     case 'ADD_IMPORTS_TO_FILE':

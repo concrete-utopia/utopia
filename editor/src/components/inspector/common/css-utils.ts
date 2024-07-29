@@ -4628,6 +4628,14 @@ export const cssEmptyValues: ParsedCSSProperties = {
     unit: null,
   },
   zIndex: undefined,
+  rowGap: {
+    value: 0,
+    unit: null,
+  },
+  columnGap: {
+    value: 0,
+    unit: null,
+  },
 }
 
 type CSSParsers = {
@@ -4702,6 +4710,8 @@ export const cssParsers: CSSParsers = {
   height: parseCSSLengthPercent,
   flexBasis: parseCSSLengthPercent,
   zIndex: parseCSSUnitless,
+  rowGap: parseCSSLengthPercent,
+  columnGap: parseCSSLengthPercent,
 }
 
 type CSSPrinters = {
@@ -4778,6 +4788,8 @@ const cssPrinters: CSSPrinters = {
   rowGap: printCSSNumberAsAttributeValue('px'),
   columnGap: printCSSNumberAsAttributeValue('px'),
   zIndex: printCSSNumberUnitlessOrUndefinedAsAttributeValue,
+  rowGap: printCSSNumberAsAttributeValue('px'),
+  columnGap: printCSSNumberAsAttributeValue('px'),
 }
 
 export interface UtopianElementProperties {
@@ -5500,6 +5512,14 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
     unit: 'px',
   },
   zIndex: undefined,
+  rowGap: {
+    value: 0,
+    unit: 'px',
+  },
+  columnGap: {
+    value: 0,
+    unit: 'px',
+  },
 }
 
 export function isTrivialDefaultValue(
