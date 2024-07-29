@@ -2,15 +2,7 @@
 /** @jsx jsx */
 import React from 'react'
 import { jsx } from '@emotion/react'
-import {
-  Icons,
-  FlexRow,
-  SquareButton,
-  FunctionIcons,
-  InspectorSectionHeader,
-  useColorTheme,
-  Icn,
-} from '../../uuiui'
+import { Icons, FlexRow, SquareButton, InspectorSectionHeader, useColorTheme } from '../../uuiui'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
@@ -19,16 +11,14 @@ import {
   removeFlexLayoutStrategies,
   removeGridLayoutStrategies,
 } from './inspector-strategies/inspector-strategies'
-import {
-  detectAreElementsFlexContainers,
-  detectAreElementsGridContainers,
-} from './inspector-common'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { NO_OP } from '../../core/shared/utils'
+import { NO_OP, assertNever } from '../../core/shared/utils'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import { DropdownMenu } from '../../uuiui/radix-components'
 import { stripNulls } from '../../core/shared/array-utils'
+import { layoutSystemSelector } from './flex-section'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 export const AddRemoveLayoutSystemControlTestId = (): string => 'AddRemoveLayoutSystemControlTestId'
 export const AddFlexLayoutOptionId = 'add-flex-layout'
@@ -38,11 +28,9 @@ export const RemoveLayoutSystemOptionId = 'remove-layout-system'
 interface AddRemoveLayoutSystemControlProps {}
 
 export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemControlProps>(() => {
-  const isLayoutedContainer = useEditorState(
+  const layoutSystem = useEditorState(
     Substores.metadata,
-    (store) =>
-      detectAreElementsFlexContainers(metadataSelector(store), selectedViewsSelector(store)) ||
-      detectAreElementsGridContainers(metadataSelector(store), selectedViewsSelector(store)),
+    layoutSystemSelector,
     'AddRemoveLayoutSystemControl isFlexLayoutedContainer',
   )
 
@@ -118,17 +106,31 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
       stripNulls([
         { id: AddFlexLayoutOptionId, label: 'Flex', onSelect: addFlexLayoutSystem },
         { id: AddGridLayoutOptionId, label: 'Grid', onSelect: addGridLayoutSystem },
-        !isLayoutedContainer
-          ? null
-          : {
-              id: RemoveLayoutSystemOptionId,
-              label: 'Remove',
-              onSelect: removeLayoutSystem,
-              danger: true,
-            },
+        optionalMap(
+          () => ({
+            id: RemoveLayoutSystemOptionId,
+            label: 'Remove',
+            onSelect: removeLayoutSystem,
+            danger: true,
+          }),
+          layoutSystem,
+        ),
       ]),
-    [addFlexLayoutSystem, addGridLayoutSystem, isLayoutedContainer, removeLayoutSystem],
+    [addFlexLayoutSystem, addGridLayoutSystem, layoutSystem, removeLayoutSystem],
   )
+
+  const label = () => {
+    switch (layoutSystem) {
+      case null:
+        return 'Layout System'
+      case 'flex':
+        return 'Flex'
+      case 'grid':
+        return 'Grid'
+      default:
+        assertNever(layoutSystem)
+    }
+  }
 
   return (
     <InspectorSectionHeader
@@ -149,7 +151,7 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
           gap: 8,
         }}
       >
-        <span style={{ textTransform: 'capitalize', fontSize: '11px' }}>Layout System</span>
+        <span style={{ textTransform: 'capitalize', fontSize: '11px' }}>{label()}</span>
       </FlexRow>
       <div data-testid={AddRemoveLayoutSystemControlTestId()}>
         <DropdownMenu

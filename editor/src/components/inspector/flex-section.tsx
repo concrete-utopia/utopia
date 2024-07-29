@@ -58,7 +58,7 @@ function getLayoutSystem(
   return null
 }
 
-const layoutSystemSelector = createSelector(
+export const layoutSystemSelector = createSelector(
   metadataSelector,
   selectedViewsSelector,
   (metadata, selectedViews) => {
@@ -87,57 +87,6 @@ export const FlexSection = React.memo(() => {
     Substores.metadata,
     layoutSystemSelector,
     'FlexSection areAllElementsInFlexLayout',
-  )
-
-  const dispatch = useDispatch()
-  const elementMetadataRef = useRefEditorState(metadataSelector)
-  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
-  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
-
-  const addFlexLayoutSystem = React.useCallback(
-    () =>
-      executeFirstApplicableStrategy(
-        dispatch,
-        addFlexLayoutStrategies(
-          elementMetadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-        ),
-      ),
-    [allElementPropsRef, dispatch, elementMetadataRef, elementPathTreeRef, selectedViewsRef],
-  )
-
-  const addGridLayoutSystem = React.useCallback(
-    () =>
-      executeFirstApplicableStrategy(
-        dispatch,
-        addGridLayoutStrategies(
-          elementMetadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-        ),
-      ),
-    [allElementPropsRef, dispatch, elementMetadataRef, elementPathTreeRef, selectedViewsRef],
-  )
-
-  const onLayoutSystemChange = React.useCallback(
-    (value: DetectedLayoutSystem) => {
-      switch (value) {
-        case 'flex':
-          return addFlexLayoutSystem()
-        case 'grid':
-          return addGridLayoutSystem()
-        case 'flow':
-        case 'none':
-          return
-        default:
-          assertNever(value)
-      }
-    },
-    [addFlexLayoutSystem, addGridLayoutSystem],
   )
 
   const grid = useEditorState(
