@@ -17,7 +17,7 @@ export function getChildrenPathsForContainer(
   path: ElementPath,
   allElementProps: AllElementProps,
 ) {
-  return MetadataUtils.getChildrenPathsOrdered(metadata, elementPathTree, path).flatMap((child) =>
+  return MetadataUtils.getChildrenPathsOrdered(elementPathTree, path).flatMap((child) =>
     isElementNonDOMElement(metadata, allElementProps, elementPathTree, child)
       ? replaceNonDOMElementPathsWithTheirChildrenRecursive(
           metadata,

@@ -43,6 +43,7 @@ import {
   isJSIdentifierForName,
   isJSExpressionOtherJavaScript,
   isJSXMapExpression,
+  isIntrinsicHTMLElement,
 } from '../shared/element-template'
 import type {
   StaticElementPathPart,
@@ -1692,4 +1693,8 @@ export function findContainingComponentForPathInProjectContents(
     )
     return containingComponent
   })
+}
+
+export function isComponentInstance(element: JSXElementChild): boolean {
+  return isJSXElement(element) && !isIntrinsicHTMLElement(element.name)
 }

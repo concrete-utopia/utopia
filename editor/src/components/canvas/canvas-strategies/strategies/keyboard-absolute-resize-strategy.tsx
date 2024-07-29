@@ -125,6 +125,18 @@ export function keyboardAbsoluteResizeStrategy(
     retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
   if (
+    pathsWereReplaced &&
+    getTargetPathsFromInteractionTarget(canvasState.interactionTarget).some((originalTarget) => {
+      return MetadataUtils.isComponentInstanceFromMetadata(
+        canvasState.startingMetadata,
+        originalTarget,
+      )
+    })
+  ) {
+    return null
+  }
+
+  if (
     selectedElements.length === 0 ||
     !selectedElements.every((element) => {
       return supportsAbsoluteResize(canvasState.startingMetadata, element, canvasState)

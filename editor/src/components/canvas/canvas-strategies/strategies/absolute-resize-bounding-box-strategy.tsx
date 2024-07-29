@@ -77,6 +77,15 @@ export function absoluteResizeBoundingBoxStrategy(
 
   const { pathsWereReplaced, paths } = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
+  if (
+    pathsWereReplaced &&
+    originalTargets.some((originalTarget) =>
+      MetadataUtils.isComponentInstanceFromMetadata(canvasState.startingMetadata, originalTarget),
+    )
+  ) {
+    return null
+  }
+
   const retargetedTargets = flattenSelection(paths)
 
   if (

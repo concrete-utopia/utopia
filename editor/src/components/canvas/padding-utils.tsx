@@ -272,7 +272,7 @@ export function getSizeUpdateCommandsForNewPadding(
   const selectedElement = selectedElements[0]
   const targetFrame = MetadataUtils.getFrameOrZeroRect(selectedElement, metadata)
 
-  const allChildPaths = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, selectedElement)
+  const allChildPaths = MetadataUtils.getChildrenPathsOrdered(pathTrees, selectedElement)
 
   const nonAbsoluteChildrenPaths = allChildPaths.filter((childPath) =>
     MetadataUtils.targetParticipatesInAutoLayout(metadata, childPath),
