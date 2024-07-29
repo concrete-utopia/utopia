@@ -976,7 +976,7 @@ export const ChainedNumberInput: React.FunctionComponent<
   React.PropsWithChildren<ChainedNumberControlProps>
 > = React.memo(({ propsArray, idPrefix, style, setGlobalCursor, wrap }) => {
   return (
-    <FlexRow style={{ ...style, flexWrap: wrap ? 'wrap' : 'nowrap' }}>
+    <FlexRow style={{ flexWrap: wrap ? 'wrap' : 'nowrap', ...style }}>
       {propsArray.map((props, i) => {
         switch (i) {
           case 0: {

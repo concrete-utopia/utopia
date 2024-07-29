@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import * as PP from '../../../../../core/shared/property-path'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { useWrappedEmptyOrUnknownOnSubmitValue, SimplePercentInput } from '../../../../../uuiui'
@@ -15,6 +15,10 @@ export const OpacityRow = React.memo(() => {
   const scale = opacity.unit === '%' ? 100 : 1
 
   const isVisible = useIsSubSectionVisible('opacity')
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+  }, [])
 
   const opacityContextMenuItems = InspectorContextMenuItems.optionalAddOnUnsetValues(
     opacity != null,
@@ -55,7 +59,7 @@ export const OpacityRow = React.memo(() => {
         minimum={0}
         maximum={1}
         stepSize={0.01}
-        inputProps={{ onMouseDown: (e) => e.stopPropagation() }}
+        inputProps={{ onMouseDown: handleMouseDown }}
         defaultUnitToHide={null}
         incrementControls={false}
       />
