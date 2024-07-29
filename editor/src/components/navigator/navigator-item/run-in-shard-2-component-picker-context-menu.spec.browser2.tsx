@@ -548,17 +548,17 @@ describe('The navigator component picker context menu', () => {
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
     const flexRowRow = editor.renderedDOM.queryByTestId(
-      labelTestIdForComponentIcon('FlexRow', '/src/utils', 'row'),
+      labelTestIdForComponentIcon('FlexRow', '/src/utils', 'row', 0),
     )
     expect(flexRowRow).not.toBeNull()
 
     const flexColRow = editor.renderedDOM.queryByTestId(
-      labelTestIdForComponentIcon('FlexCol', '/src/utils', 'column'),
+      labelTestIdForComponentIcon('FlexCol', '/src/utils', 'column', 1),
     )
     expect(flexColRow).not.toBeNull()
 
     const randomComponentRow = editor.renderedDOM.queryByTestId(
-      labelTestIdForComponentIcon('RandomComponent', '/src/utils', 'component'),
+      labelTestIdForComponentIcon('RandomComponent', '/src/utils', 'component', 2),
     )
     expect(randomComponentRow).not.toBeNull()
   })
@@ -569,22 +569,22 @@ describe('The navigator component picker context menu', () => {
     await openDropdown(editor, addChildButtonTestId(EP.fromString('sb/card')))
 
     const flexRowRow = editor.renderedDOM.queryByTestId(
-      labelTestIdForComponentIcon('FlexRow', '/src/utils', 'row'),
+      labelTestIdForComponentIcon('FlexRow', '/src/utils', 'row', 0),
     )
     expect(flexRowRow).not.toBeNull()
 
     const flexColRow = editor.renderedDOM.queryByTestId(
-      labelTestIdForComponentIcon('FlexCol', '/src/utils', 'column'),
+      labelTestIdForComponentIcon('FlexCol', '/src/utils', 'column', 1),
     )
     expect(flexColRow).not.toBeNull()
 
     const randomComponentRow = editor.renderedDOM.queryByTestId(
-      labelTestIdForComponentIcon('RandomComponent', '/src/utils', 'component'),
+      labelTestIdForComponentIcon('RandomComponent', '/src/utils', 'component', 2),
     )
     expect(randomComponentRow).not.toBeNull()
 
     const listRow = editor.renderedDOM.queryByTestId(
-      labelTestIdForComponentIcon('List', '', 'code'),
+      labelTestIdForComponentIcon('List', '', 'code', 3),
     )
     expect(listRow).not.toBeNull()
   })

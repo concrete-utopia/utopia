@@ -770,8 +770,9 @@ export function labelTestIdForComponentIcon(
   componentName: string,
   moduleName: string,
   icon: Icon,
+  idx: number, // used for tiebreaking
 ): string {
-  return `variant-label-${componentName}-${moduleName}-${icon}`
+  return `variant-label-${componentName}-${moduleName}-${icon}-${idx}`
 }
 
 function useAllInsertableComponents(targets: ElementPath[], insertionTarget: InsertionTarget) {
@@ -943,8 +944,8 @@ export const ComponentPickerDropDown = React.memo<ComponentPickerDropDownProps>(
 
   const preferredChildItems = React.useMemo(
     (): DropdownMenuItem[] =>
-      preferredChildren.map((child) =>
-        makeInsertableComponeentMenuItem(child, insertPreferredChildInner),
+      preferredChildren.map((child, idx) =>
+        makeInsertableComponeentMenuItem(child, insertPreferredChildInner, idx),
       ),
     [insertPreferredChildInner, preferredChildren],
   )
@@ -1074,13 +1075,18 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
     const wrapperRef = React.useRef<HTMLDivElement>(null)
 
     const items: Array<ContextMenuItem<unknown>> = preferredChildren
-      .flatMap<ContextMenuItem<unknown>>((data) => {
+      .flatMap<ContextMenuItem<unknown>>((data, idx) => {
         const iconProps = iconPropsForIcon(data.icon)
 
         const submenuLabel = (
           <FlexRow
             style={{ gap: 10, width: 228 }}
-            data-testid={labelTestIdForComponentIcon(data.name, data.moduleName ?? '', data.icon)}
+            data-testid={labelTestIdForComponentIcon(
+              data.name,
+              data.moduleName ?? '',
+              data.icon,
+              idx,
+            )}
           >
             <Icn {...iconProps} width={12} height={12} />
             {data.name}
@@ -1254,10 +1260,11 @@ export const ComponentPickerContextMenu = React.memo(() => {
 function makeInsertableComponeentMenuItem(
   child: PreferredChildComponentDescriptorWithIcon,
   insertPreferredChildInner: (preferredChildToInsert: ElementToInsert) => void,
+  idx: number,
 ): DropdownMenuItem {
   if (child.name === SyntheticListChildName) {
     return {
-      id: labelTestIdForComponentIcon(child.name, child.moduleName ?? '', child.icon),
+      id: labelTestIdForComponentIcon(child.name, child.moduleName ?? '', child.icon, idx),
       label: child.name,
       onSelect: () =>
         insertPreferredChildInner({
@@ -1270,7 +1277,7 @@ function makeInsertableComponeentMenuItem(
     }
   }
   return {
-    id: labelTestIdForComponentIcon(child.name, child.moduleName ?? '', child.icon),
+    id: labelTestIdForComponentIcon(child.name, child.moduleName ?? '', child.icon, idx),
     label: child.name,
     onSelect:
       child.variants.length > 0
