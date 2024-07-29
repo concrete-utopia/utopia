@@ -413,7 +413,8 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'Inspector shouldShowGridCellSection',
   )
 
-  const shouldShowContainerSection = inspectorPreferences.includes('layout')
+  const shouldShowContainerSection =
+    selectedViews.length > 0 && inspectorPreferences.includes('layout')
 
   function renderInspectorContents() {
     return (
