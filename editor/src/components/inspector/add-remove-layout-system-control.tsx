@@ -28,10 +28,12 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { NO_OP } from '../../core/shared/utils'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import { DropdownMenu } from '../../uuiui/radix-components'
+import { stripNulls } from '../../core/shared/array-utils'
 
 export const AddRemoveLayoutSystemControlTestId = (): string => 'AddRemoveLayoutSystemControlTestId'
 export const AddFlexLayoutOptionId = 'add-flex-layout'
 export const AddGridLayoutOptionId = 'add-grid-layout'
+export const RemoveLayoutSystemOptionId = 'remove-layout-system'
 
 interface AddRemoveLayoutSystemControlProps {}
 
@@ -112,11 +114,20 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
   )
 
   const addLayoutSystemMenuDropdownItems = React.useMemo(
-    (): DropdownMenuItem[] => [
-      { id: AddFlexLayoutOptionId, label: 'Flex', onSelect: addFlexLayoutSystem },
-      { id: AddGridLayoutOptionId, label: 'Grid', onSelect: addGridLayoutSystem },
-    ],
-    [addFlexLayoutSystem, addGridLayoutSystem],
+    (): DropdownMenuItem[] =>
+      stripNulls([
+        { id: AddFlexLayoutOptionId, label: 'Flex', onSelect: addFlexLayoutSystem },
+        { id: AddGridLayoutOptionId, label: 'Grid', onSelect: addGridLayoutSystem },
+        !isLayoutedContainer
+          ? null
+          : {
+              id: RemoveLayoutSystemOptionId,
+              label: 'Remove',
+              onSelect: removeLayoutSystem,
+              danger: true,
+            },
+      ]),
+    [addFlexLayoutSystem, addGridLayoutSystem, isLayoutedContainer, removeLayoutSystem],
   )
 
   return (
@@ -140,23 +151,13 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
       >
         <span style={{ textTransform: 'capitalize', fontSize: '11px' }}>Layout System</span>
       </FlexRow>
-      {isLayoutedContainer ? (
-        <SquareButton
-          data-testid={AddRemoveLayoutSystemControlTestId()}
-          highlight
-          onClick={removeLayoutSystem}
-        >
-          <Icn category='semantic' type='cross' width={12} height={12} />
-        </SquareButton>
-      ) : (
-        <div data-testid={AddRemoveLayoutSystemControlTestId()}>
-          <DropdownMenu
-            align='end'
-            items={addLayoutSystemMenuDropdownItems}
-            opener={addLayoutSystemOpenerButton}
-          />
-        </div>
-      )}
+      <div data-testid={AddRemoveLayoutSystemControlTestId()}>
+        <DropdownMenu
+          align='end'
+          items={addLayoutSystemMenuDropdownItems}
+          opener={addLayoutSystemOpenerButton}
+        />
+      </div>
     </InspectorSectionHeader>
   )
 })
