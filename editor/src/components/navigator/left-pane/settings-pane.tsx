@@ -330,7 +330,12 @@ export const SettingsPane = React.memo(() => {
         </UIGridRow>
         <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
           <span style={{ fontWeight: 500 }}>Theme</span>
-          <PopupList value={theme} options={themeOptions} onSubmitValue={handleSubmitValueTheme} />
+          <PopupList
+            value={theme}
+            options={themeOptions}
+            onSubmitValue={handleSubmitValueTheme}
+            style={{ background: 'transparent' }}
+          />
         </UIGridRow>
         <UIGridRow
           padded
