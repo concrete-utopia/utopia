@@ -76,7 +76,6 @@ export const STATIC_BASE_URL: string =
 
 export const FLOATING_PREVIEW_BASE_URL: string = SECONDARY_BASE_URL
 export const PROPERTY_CONTROLS_INFO_BASE_URL: string = SECONDARY_BASE_URL
-export const MONACO_EDITOR_IFRAME_BASE_URL: string = SECONDARY_BASE_URL
 
 export const ASSET_ENDPOINT = UTOPIA_BACKEND + 'asset/'
 export const THUMBNAIL_ENDPOINT = UTOPIA_BACKEND + 'thumbnail/'
