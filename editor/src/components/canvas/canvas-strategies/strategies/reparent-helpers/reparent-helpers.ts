@@ -114,7 +114,7 @@ export function isAllowedToReparent(
     (_) => true,
     (elementFromMetadata) =>
       !elementReferencesElsewhere(elementFromMetadata) &&
-      MetadataUtils.targetHonoursPropsPosition(projectContents, metadata),
+      MetadataUtils.targetHonoursPropsToPositionElement(projectContents, metadata),
     metadata.element,
   )
 }
@@ -139,7 +139,7 @@ export function isAllowedToNavigatorReparent(
       return foldEither(
         (_) => true,
         (elementFromMetadata) =>
-          MetadataUtils.targetHonoursPropsPosition(projectContents, metadata),
+          MetadataUtils.targetHonoursPropsToPositionElement(projectContents, metadata),
         metadata.element,
       )
     }

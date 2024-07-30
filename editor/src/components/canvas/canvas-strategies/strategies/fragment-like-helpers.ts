@@ -18,13 +18,13 @@ export function retargetStrategyToChildrenOfFragmentLikeElements(
 ): ReplacedPaths {
   const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
-  const targetsWithoutDescedants = flattenSelection(targets)
+  const targetsWithoutDescendants = flattenSelection(targets)
 
   return replaceFragmentLikePathsWithTheirChildrenRecursiveFullReturnValue(
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
     canvasState.startingElementPathTree,
-    targetsWithoutDescedants,
+    targetsWithoutDescendants,
   )
 }
 

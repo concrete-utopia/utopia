@@ -26,7 +26,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { honoursPropsSize } from './absolute-utils'
+import { honoursPropsToSizeElement } from './absolute-utils'
 import {
   getLockedAspectRatio,
   isAnySelectedElementAspectRatioLocked,
@@ -51,7 +51,7 @@ export function flexResizeBasicStrategy(
       selectedElements[0],
       canvasState.startingMetadata,
     ) ||
-    !honoursPropsSize(canvasState, selectedElements[0])
+    !honoursPropsToSizeElement(canvasState, selectedElements[0])
   ) {
     return null
   }

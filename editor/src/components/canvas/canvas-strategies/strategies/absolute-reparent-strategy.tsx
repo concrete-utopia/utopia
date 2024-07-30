@@ -34,7 +34,10 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
-import { honoursPropsPosition, shouldKeepMovingDraggedGroupChildren } from './absolute-utils'
+import {
+  honoursPropsToPositionElement,
+  shouldKeepMovingDraggedGroupChildren,
+} from './absolute-utils'
 import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   treatElementAsFragmentLike,
@@ -79,7 +82,7 @@ export function baseAbsoluteReparentStrategy(
 
       return (
         elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-        honoursPropsPosition(canvasState, element)
+        honoursPropsToPositionElement(canvasState, element)
       )
     })
     if (!isApplicable) {

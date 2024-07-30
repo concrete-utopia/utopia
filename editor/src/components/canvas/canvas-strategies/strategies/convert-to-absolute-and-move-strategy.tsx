@@ -54,7 +54,7 @@ import {
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
-import { honoursPropsPosition } from './absolute-utils'
+import { honoursPropsToPositionElement } from './absolute-utils'
 import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
   controlWithProps,
@@ -146,7 +146,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
         )
         return (
           elementMetadata?.specialSizeMeasurements.position !== 'absolute' &&
-          honoursPropsPosition(canvasState, element)
+          honoursPropsToPositionElement(canvasState, element)
         )
       })
     ) {
@@ -742,7 +742,7 @@ function createSetParentsToFixedSizeCommands(
             const element = MetadataUtils.findElementByElementPath(metadata, p)
             if (
               element == null ||
-              !MetadataUtils.targetHonoursPropsSize(projectContents, element)
+              !MetadataUtils.targetHonoursPropsToSizeElement(projectContents, element)
             ) {
               return null
             }

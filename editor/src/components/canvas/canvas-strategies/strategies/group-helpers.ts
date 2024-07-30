@@ -372,11 +372,11 @@ export function getGroupChildState(
     return 'unknown'
   }
 
-  if (!MetadataUtils.targetHonoursPropsPosition(projectContents, elementMetadata)) {
+  if (!MetadataUtils.targetHonoursPropsToPositionElement(projectContents, elementMetadata)) {
     return 'child-does-not-honour-props-position'
   }
 
-  if (!MetadataUtils.targetHonoursPropsSize(projectContents, elementMetadata)) {
+  if (!MetadataUtils.targetHonoursPropsToSizeElement(projectContents, elementMetadata)) {
     return 'child-does-not-honour-props-size'
   }
 

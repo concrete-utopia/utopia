@@ -32,7 +32,7 @@ import {
 } from '../../canvas-utils'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
+import { honoursPropsToPositionElement, honoursPropsToSizeElement } from './absolute-utils'
 
 export type AbsolutePin = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 
@@ -123,8 +123,8 @@ export function supportsAbsoluteResize(
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
   return (
     elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-    honoursPropsPosition(canvasState, element) &&
-    honoursPropsSize(canvasState, element)
+    honoursPropsToPositionElement(canvasState, element) &&
+    honoursPropsToSizeElement(canvasState, element)
   )
 }
 

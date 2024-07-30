@@ -46,6 +46,7 @@ import { cartesianProduct } from '../../../../core/shared/array-utils'
 import { NO_OP } from '../../../../core/shared/utils'
 import { MoveReorderReparentIndicatorID } from '../../controls/select-mode/strategy-indicator'
 import { CanvasToolbarEditButtonID } from '../../../editor/canvas-toolbar'
+import { ComponentsHonouringPropsStylesProject } from './common-projects'
 
 async function dragByPixels(
   editor: EditorRenderResult,
@@ -613,6 +614,291 @@ describe('Absolute Move Strategy', () => {
       )
     })
   })
+
+  it('moves a component instance that honours the position properties by updating the instance', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      ComponentsHonouringPropsStylesProject,
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString('storyboard/scene/mycompdiv')
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+
+    await dragByPixels(renderResult, windowPoint({ x: 15, y: 15 }), 'mycompdivinnerdiv')
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState()))
+      .toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export const MyCompDiv = (props) => {
+  return (
+    <div
+      data-uid='mycompdivinnerdiv'
+      data-testid='mycompdivinnerdiv'
+      style={props.style}
+    >
+      MyCompDiv
+    </div>
+  )
+}
+
+export const MyCompFrag = (props) => {
+  return (
+    <>
+      <div
+        data-uid='mycompfraginnerdiv'
+        data-testid='mycompfraginnerdiv'
+        style={props.style}
+      >
+        MyCompFrag
+      </div>
+    </>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-uid='scene'
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 118,
+        top: 172,
+        width: 300,
+        height: 300,
+      }}
+    >
+      <MyCompDiv
+        data-uid='mycompdiv'
+        style={{
+          position: 'absolute',
+          width: 137,
+          height: 91.5,
+          left: 150,
+          top: 51,
+        }}
+      />
+      <MyCompFrag
+        data-uid='mycompfrag'
+        style={{
+          position: 'absolute',
+          width: 150,
+          height: 60.5,
+          left: 21,
+          top: 36,
+        }}
+      />
+      <div
+        data-uid='regulardiv'
+        data-testid='regulardiv'
+        style={{
+          position: 'absolute',
+          backgroundColor: 'lightblue',
+          left: 171,
+          top: 109,
+          height: 93,
+          width: 108,
+        }}
+      >
+        Regular Div
+      </div>
+    </div>
+  </Storyboard>
+)
+`)
+  })
+  it('moves a component instance that honours the position properties (inside a fragment) by updating the instance', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      ComponentsHonouringPropsStylesProject,
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString('storyboard/scene/mycompfrag')
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+
+    await dragByPixels(renderResult, windowPoint({ x: 15, y: 15 }), 'mycompfraginnerdiv')
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState()))
+      .toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export const MyCompDiv = (props) => {
+  return (
+    <div
+      data-uid='mycompdivinnerdiv'
+      data-testid='mycompdivinnerdiv'
+      style={props.style}
+    >
+      MyCompDiv
+    </div>
+  )
+}
+
+export const MyCompFrag = (props) => {
+  return (
+    <>
+      <div
+        data-uid='mycompfraginnerdiv'
+        data-testid='mycompfraginnerdiv'
+        style={props.style}
+      >
+        MyCompFrag
+      </div>
+    </>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-uid='scene'
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 118,
+        top: 172,
+        width: 300,
+        height: 300,
+      }}
+    >
+      <MyCompDiv
+        data-uid='mycompdiv'
+        style={{
+          position: 'absolute',
+          width: 137,
+          height: 91.5,
+          left: 137,
+          top: 36,
+        }}
+      />
+      <MyCompFrag
+        data-uid='mycompfrag'
+        style={{
+          position: 'absolute',
+          width: 150,
+          height: 60.5,
+          left: 36,
+          top: 52,
+        }}
+      />
+      <div
+        data-uid='regulardiv'
+        data-testid='regulardiv'
+        style={{
+          position: 'absolute',
+          backgroundColor: 'lightblue',
+          left: 171,
+          top: 109,
+          height: 93,
+          width: 108,
+        }}
+      >
+        Regular Div
+      </div>
+    </div>
+  </Storyboard>
+)
+`)
+  })
+  it('moves a regular div by updating it', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      ComponentsHonouringPropsStylesProject,
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString('storyboard/scene/regulardiv')
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+
+    const dragDelta = windowPoint({ x: 0, y: 30 })
+    await dragByPixels(renderResult, windowPoint({ x: 15, y: 15 }), 'regulardiv')
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState()))
+      .toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export const MyCompDiv = (props) => {
+  return (
+    <div
+      data-uid='mycompdivinnerdiv'
+      data-testid='mycompdivinnerdiv'
+      style={props.style}
+    >
+      MyCompDiv
+    </div>
+  )
+}
+
+export const MyCompFrag = (props) => {
+  return (
+    <>
+      <div
+        data-uid='mycompfraginnerdiv'
+        data-testid='mycompfraginnerdiv'
+        style={props.style}
+      >
+        MyCompFrag
+      </div>
+    </>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-uid='scene'
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 118,
+        top: 172,
+        width: 300,
+        height: 300,
+      }}
+    >
+      <MyCompDiv
+        data-uid='mycompdiv'
+        style={{
+          position: 'absolute',
+          width: 137,
+          height: 91.5,
+          left: 137,
+          top: 36,
+        }}
+      />
+      <MyCompFrag
+        data-uid='mycompfrag'
+        style={{
+          position: 'absolute',
+          width: 150,
+          height: 60.5,
+          left: 21,
+          top: 36,
+        }}
+      />
+      <div
+        data-uid='regulardiv'
+        data-testid='regulardiv'
+        style={{
+          position: 'absolute',
+          backgroundColor: 'lightblue',
+          left: 186,
+          top: 128,
+          height: 93,
+          width: 108,
+        }}
+      >
+        Regular Div
+      </div>
+    </div>
+  </Storyboard>
+)
+`)
+  })
+
   it('moves component instances that honour the position properties', async () => {
     const renderResult = await renderTestEditorWithCode(
       projectDoesHonourPositionProperties(20, 20),

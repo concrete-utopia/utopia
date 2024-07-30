@@ -514,6 +514,8 @@ export function backfillDomMetadata(
       mapDropNulls((c) => c.specialSizeMeasurements.globalFrameWithTextContent, children),
     )
 
+    const commonPosition = MetadataUtils.getCommonPosition(children)
+
     // Insert a default entry in for this.
     if (!(pathToFill in updatedMetadata)) {
       updatedMetadata[pathToFill] = elementInstanceMetadata(
@@ -546,6 +548,7 @@ export function backfillDomMetadata(
       specialSizeMeasurements: {
         ...currentMetadata.specialSizeMeasurements,
         globalFrameWithTextContent: childrenBoundingGlobalFrameWithTextContent,
+        position: commonPosition ?? currentMetadata.specialSizeMeasurements.position,
       },
     }
   }
@@ -1466,7 +1469,7 @@ function globalFrameForElement(
   containerRectLazy: () => CanvasRectangle,
   withContent: 'without-text-content' | 'with-text-content',
   rounding: 'nearest-half' | 'no-rounding',
-) {
+): CanvasRectangle {
   const elementRect = getCanvasRectangleFromElement(element, scale, withContent, rounding)
 
   return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))

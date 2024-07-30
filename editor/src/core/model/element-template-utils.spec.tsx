@@ -68,8 +68,8 @@ import { emptySet } from '../shared/set-utils'
 import { getUtopiaID } from '../shared/uid-utils'
 import { MetadataUtils } from './element-metadata-utils'
 import {
-  componentHonoursPropsPosition,
-  componentHonoursPropsSize,
+  honoursPropsToPositionComponent,
+  honoursPropsToSizeComponent,
   componentUsesProperty,
   findJSXElementChildAtPath,
   guaranteeUniqueUids,
@@ -423,7 +423,7 @@ export const TestComponent = (props) => {
   })
 })
 
-describe('componentHonoursPropsPosition', () => {
+describe('honoursPropsToPositionComponent', () => {
   it('returns true for a component that uses top and left directly', () => {
     const component = getComponentFromCode(
       'TestComponent',
@@ -433,7 +433,10 @@ export const TestComponent = (props) => {
 }
     `,
     )
-    const result = componentHonoursPropsPosition(component)
+    const result = honoursPropsToPositionComponent(
+      component,
+      EP.fromString('storyboard/scene/scene-1'),
+    )
     expect(result).toEqual(true)
   })
   it('returns true for a component that uses top and right directly', () => {
@@ -445,7 +448,10 @@ export const TestComponent = (props) => {
 }
     `,
     )
-    const result = componentHonoursPropsPosition(component)
+    const result = honoursPropsToPositionComponent(
+      component,
+      EP.fromString('storyboard/scene/scene-1'),
+    )
     expect(result).toEqual(true)
   })
   it('returns false for a component that uses left and right only', () => {
@@ -457,7 +463,10 @@ export const TestComponent = (props) => {
 }
     `,
     )
-    const result = componentHonoursPropsPosition(component)
+    const result = honoursPropsToPositionComponent(
+      component,
+      EP.fromString('storyboard/scene/scene-1'),
+    )
     expect(result).toEqual(false)
   })
   it('returns false for a component that uses top only', () => {
@@ -469,7 +478,10 @@ export const TestComponent = (props) => {
 }
     `,
     )
-    const result = componentHonoursPropsPosition(component)
+    const result = honoursPropsToPositionComponent(
+      component,
+      EP.fromString('storyboard/scene/scene-1'),
+    )
     expect(result).toEqual(false)
   })
   it('returns false for a component that uses nothing from props', () => {
@@ -481,7 +493,10 @@ export const TestComponent = (props) => {
 }
     `,
     )
-    const result = componentHonoursPropsPosition(component)
+    const result = honoursPropsToPositionComponent(
+      component,
+      EP.fromString('storyboard/scene/scene-1'),
+    )
     expect(result).toEqual(false)
   })
   it('returns false for a component that has no props parameter', () => {
@@ -493,7 +508,10 @@ export const TestComponent = () => {
 }
     `,
     )
-    const result = componentHonoursPropsPosition(component)
+    const result = honoursPropsToPositionComponent(
+      component,
+      EP.fromString('storyboard/scene/scene-1'),
+    )
     expect(result).toEqual(false)
   })
   it('returns true for a component that uses top and left directly with destructuring', () => {
@@ -505,7 +523,10 @@ export const TestComponent = ({style}) => {
 }
     `,
     )
-    const result = componentHonoursPropsPosition(component)
+    const result = honoursPropsToPositionComponent(
+      component,
+      EP.fromString('storyboard/scene/scene-1'),
+    )
     expect(result).toEqual(true)
   })
   it('returns true for a component that uses bottom and right directly', () => {
@@ -517,7 +538,10 @@ export const TestComponent = (props) => {
 }
     `,
     )
-    const result = componentHonoursPropsPosition(component)
+    const result = honoursPropsToPositionComponent(
+      component,
+      EP.fromString('storyboard/scene/scene-1'),
+    )
     expect(result).toEqual(true)
   })
   it('returns true for a component that spreads style into the props', () => {
@@ -529,7 +553,10 @@ export const TestComponent = (props) => {
 }
     `,
     )
-    const result = componentHonoursPropsPosition(component)
+    const result = honoursPropsToPositionComponent(
+      component,
+      EP.fromString('storyboard/scene/scene-1'),
+    )
     expect(result).toEqual(true)
   })
   it('returns true for a component that assigns props.style to style directly', () => {
@@ -541,7 +568,10 @@ export const TestComponent = (props) => {
 }
     `,
     )
-    const result = componentHonoursPropsPosition(component)
+    const result = honoursPropsToPositionComponent(
+      component,
+      EP.fromString('storyboard/scene/scene-1'),
+    )
     expect(result).toEqual(true)
   })
   it('returns true for a component that spreads style into the props with destructuring', () => {
@@ -553,7 +583,10 @@ export const TestComponent = ({style}) => {
 }
     `,
     )
-    const result = componentHonoursPropsPosition(component)
+    const result = honoursPropsToPositionComponent(
+      component,
+      EP.fromString('storyboard/scene/scene-1'),
+    )
     expect(result).toEqual(true)
   })
   it('returns true for a component that assigns to style directly with destructuring', () => {
@@ -565,12 +598,15 @@ export const TestComponent = ({style}) => {
 }
     `,
     )
-    const result = componentHonoursPropsPosition(component)
+    const result = honoursPropsToPositionComponent(
+      component,
+      EP.fromString('storyboard/scene/scene-1'),
+    )
     expect(result).toEqual(true)
   })
 })
 
-describe('componentHonoursPropsSize', () => {
+describe('honoursPropsToSizeComponent', () => {
   it('returns true for a component that uses width and height directly', () => {
     const component = getComponentFromCode(
       'TestComponent',
@@ -580,7 +616,7 @@ export const TestComponent = (props) => {
 }
     `,
     )
-    const result = componentHonoursPropsSize(component)
+    const result = honoursPropsToSizeComponent(component)
     expect(result).toEqual(true)
   })
   it('returns false for a component that uses width only', () => {
@@ -592,7 +628,7 @@ export const TestComponent = (props) => {
 }
     `,
     )
-    const result = componentHonoursPropsSize(component)
+    const result = honoursPropsToSizeComponent(component)
     expect(result).toEqual(false)
   })
   it('returns false for a component that do not use anything from props', () => {
@@ -604,7 +640,7 @@ export const TestComponent = (props) => {
 }
     `,
     )
-    const result = componentHonoursPropsSize(component)
+    const result = honoursPropsToSizeComponent(component)
     expect(result).toEqual(false)
   })
   it('returns false for a component that has no props parameter', () => {
@@ -616,7 +652,7 @@ export const TestComponent = () => {
 }
     `,
     )
-    const result = componentHonoursPropsSize(component)
+    const result = honoursPropsToSizeComponent(component)
     expect(result).toEqual(false)
   })
   it('returns true for a component that uses width and height directly with destructuring', () => {
@@ -628,7 +664,7 @@ export const TestComponent = ({style}) => {
 }
     `,
     )
-    const result = componentHonoursPropsSize(component)
+    const result = honoursPropsToSizeComponent(component)
     expect(result).toEqual(true)
   })
   it('returns true for a component that spreads props.style into the props', () => {
@@ -640,7 +676,7 @@ export const TestComponent = (props) => {
 }
     `,
     )
-    const result = componentHonoursPropsSize(component)
+    const result = honoursPropsToSizeComponent(component)
     expect(result).toEqual(true)
   })
   it('returns true for a component that assigns props.style to style directly', () => {
@@ -652,7 +688,7 @@ export const TestComponent = (props) => {
 }
     `,
     )
-    const result = componentHonoursPropsSize(component)
+    const result = honoursPropsToSizeComponent(component)
     expect(result).toEqual(true)
   })
   it('returns true for a component that spreads style into the props with destructuring', () => {
@@ -664,7 +700,7 @@ export const TestComponent = ({style}) => {
 }
     `,
     )
-    const result = componentHonoursPropsSize(component)
+    const result = honoursPropsToSizeComponent(component)
     expect(result).toEqual(true)
   })
   it('returns true for a component that assigns to style directly with destructuring', () => {
@@ -676,7 +712,7 @@ export const TestComponent = ({style}) => {
 }
     `,
     )
-    const result = componentHonoursPropsSize(component)
+    const result = honoursPropsToSizeComponent(component)
     expect(result).toEqual(true)
   })
 })

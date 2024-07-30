@@ -15,21 +15,21 @@ export function supportsStyle(canvasState: InteractionCanvasState, element: Elem
   )
 }
 
-export function honoursPropsSize(
+export function honoursPropsToSizeElement(
   canvasState: InteractionCanvasState,
   element: ElementPath,
 ): boolean {
-  return MetadataUtils.targetHonoursPropsSize(
+  return MetadataUtils.targetHonoursPropsToSizeElement(
     canvasState.projectContents,
     MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
   )
 }
 
-export function honoursPropsPosition(
+export function honoursPropsToPositionElement(
   canvasState: InteractionCanvasState,
   element: ElementPath,
 ): boolean {
-  return MetadataUtils.targetHonoursPropsPosition(
+  return MetadataUtils.targetHonoursPropsToPositionElement(
     canvasState.projectContents,
     MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
   )

@@ -43,7 +43,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { honoursPropsSize } from './absolute-utils'
+import { honoursPropsToSizeElement } from './absolute-utils'
 import {
   getLockedAspectRatio,
   isAnySelectedElementAspectRatioLocked,
@@ -63,7 +63,10 @@ export function basicResizeStrategy(
 ): CanvasStrategy | null {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
-  if (selectedElements.length !== 1 || !honoursPropsSize(canvasState, selectedElements[0])) {
+  if (
+    selectedElements.length !== 1 ||
+    !honoursPropsToSizeElement(canvasState, selectedElements[0])
+  ) {
     return null
   }
 

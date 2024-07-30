@@ -31,7 +31,7 @@ import {
 import { defaultIfNull } from '../../../../core/shared/optional-utils'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import type { CanvasFrameAndTarget } from '../../canvas-types'
-import { honoursPropsPosition } from './absolute-utils'
+import { honoursPropsToPositionElement } from './absolute-utils'
 import type { InteractionSession } from '../interaction-state'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
@@ -44,15 +44,6 @@ export function keyboardAbsoluteMoveStrategy(
 ): CanvasStrategy | null {
   const { pathsWereReplaced, paths: selectedElements } =
     retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
-
-  if (
-    pathsWereReplaced &&
-    selectedElements.some((originalTarget) =>
-      MetadataUtils.isComponentInstanceFromMetadata(canvasState.startingMetadata, originalTarget),
-    )
-  ) {
-    return null
-  }
 
   if (selectedElements.length === 0) {
     return null
@@ -135,7 +126,7 @@ function isApplicable(canvasState: InteractionCanvasState, selectedElements: Arr
     )
     return (
       elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-      honoursPropsPosition(canvasState, element)
+      honoursPropsToPositionElement(canvasState, element)
     )
   })
 }

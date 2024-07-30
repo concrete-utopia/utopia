@@ -14,13 +14,14 @@ import {
   getTargetPathsFromInteractionTarget,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { honoursPropsPosition } from './absolute-utils'
+import { honoursPropsToPositionElement } from './absolute-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import {
   applyMoveCommon,
   getAdjustMoveCommands,
   flattenSelection,
 } from './shared-move-strategies-helpers'
+import * as EP from '../../../../core/shared/element-path'
 
 export type ShouldRunApplicabilityCheck =
   | 'run-applicability-check'
@@ -38,26 +39,10 @@ export function absoluteMoveStrategy(
   const { pathsWereReplaced, paths: retargetedTargets } =
     retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
-  if (
-    pathsWereReplaced &&
-    originalTargets.some((originalTarget) =>
-      MetadataUtils.isComponentInstanceFromMetadata(canvasState.startingMetadata, originalTarget),
-    )
-  ) {
-    return null
-  }
-
   const isApplicable =
     retargetedTargets.length > 0 &&
     flattenSelection(retargetedTargets).every((element) => {
-      const elementMetadata = MetadataUtils.findElementByElementPath(
-        canvasState.startingMetadata,
-        element,
-      )
-      return (
-        elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-        honoursPropsPosition(canvasState, element)
-      )
+      return honoursPropsToPositionElement(canvasState, element)
     })
 
   if (runApplicabilityCheck === 'run-applicability-check' && !isApplicable) {
