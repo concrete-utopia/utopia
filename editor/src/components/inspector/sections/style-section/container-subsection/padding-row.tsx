@@ -345,7 +345,6 @@ const PaddingControl = React.memo(() => {
       mode={modeToUse}
       onCycleMode={onCycleMode}
       values={values}
-      cycleModePosition='back'
     />
   )
 })

@@ -102,8 +102,6 @@ export interface SplitChainedNumberInputValues {
   }
 }
 
-export type CycleModePosition = 'front' | 'back'
-
 export interface SplitChainedNumberInputProps<T> {
   name: string
   mode: ControlMode | null
@@ -131,7 +129,6 @@ export interface SplitChainedNumberInputProps<T> {
   values: SplitChainedNumberInputValues
   numberType: CSSNumberType
   eventHandler: SplitChainedNumberInputEventHandler
-  cycleModePosition?: CycleModePosition
 }
 
 export type SplitChainedNumberInputEventHandler = (
@@ -460,7 +457,6 @@ const whenCSSNumber = (fn: (v: CSSNumber | null) => any) => (v: UnknownOrEmptyIn
 
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
   const { name, canvasControls, numberType, eventHandler, labels, values } = props
-  const cycleModePosition = props.cycleModePosition ?? 'front'
 
   const setHoveredCanvasControls = useSetAtom(InspectorHoveredCanvasControls)
   const setFocusedCanvasControls = useSetAtom(InspectorFocusedCanvasControls)
@@ -524,7 +520,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         case 'one-value':
           return [
             {
-              style: { width: '25%' },
+              style: { width: '50%' },
               value: values.oneValue?.value,
               DEPRECATED_labelBelow: labels?.oneValue ?? '↔',
               minimum: 0,
@@ -555,31 +551,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         case 'per-direction':
           return [
             {
-              style: { width: '25%' },
-              value: values.twoValue.horizontal?.value,
-              DEPRECATED_labelBelow: labels?.horizontal ?? 'H',
-              minimum: 0,
-              onSubmitValue: onSubmitValueHorizontal(false),
-              onTransientSubmitValue: onSubmitValueHorizontal(true),
-              numberType: numberType,
-              controlStatus: values.twoValue.horizontal?.controlStatus,
-              defaultUnitToHide: 'px',
-              onMouseEnter: onMouseEnterForControls([
-                rightCanvasControls?.onHover,
-                leftCanvasControls?.onHover,
-              ]),
-              onMouseLeave: onMouseLeave,
-              inputProps: {
-                onFocus: onFocusForControls([
-                  rightCanvasControls?.onFocus,
-                  leftCanvasControls?.onFocus,
-                ]),
-                onBlur: onBlur,
-              },
-              testId: `${name}-H`,
-            },
-            {
-              style: { width: '25%' },
+              style: { width: '48%' },
               value: values.twoValue.vertical?.value,
               DEPRECATED_labelBelow: labels?.vertical ?? 'V',
               minimum: 0,
@@ -602,11 +574,35 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               },
               testId: `${name}-V`,
             },
+            {
+              style: { width: '48%' },
+              value: values.twoValue.horizontal?.value,
+              DEPRECATED_labelBelow: labels?.horizontal ?? 'H',
+              minimum: 0,
+              onSubmitValue: onSubmitValueHorizontal(false),
+              onTransientSubmitValue: onSubmitValueHorizontal(true),
+              numberType: numberType,
+              controlStatus: values.twoValue.horizontal?.controlStatus,
+              defaultUnitToHide: 'px',
+              onMouseEnter: onMouseEnterForControls([
+                rightCanvasControls?.onHover,
+                leftCanvasControls?.onHover,
+              ]),
+              onMouseLeave: onMouseLeave,
+              inputProps: {
+                onFocus: onFocusForControls([
+                  rightCanvasControls?.onFocus,
+                  leftCanvasControls?.onFocus,
+                ]),
+                onBlur: onBlur,
+              },
+              testId: `${name}-H`,
+            },
           ]
         case 'per-side':
           return [
             {
-              style: { width: '25%' },
+              style: { width: '48%' },
               value: values.fourValue.top?.value,
               DEPRECATED_labelBelow: labels?.top ?? 'T',
               minimum: 0,
@@ -624,7 +620,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               testId: `${name}-T`,
             },
             {
-              style: { width: '25%' },
+              style: { width: '48%' },
               value: values.fourValue.right?.value,
               DEPRECATED_labelBelow: labels?.right ?? 'R',
               minimum: 0,
@@ -642,25 +638,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               testId: `${name}-R`,
             },
             {
-              style: { width: '25%' },
-              value: values.fourValue.bottom?.value,
-              DEPRECATED_labelBelow: labels?.bottom ?? 'B',
-              minimum: 0,
-              onSubmitValue: onSubmitValueBottom(false),
-              onTransientSubmitValue: onSubmitValueBottom(true),
-              controlStatus: values.fourValue.bottom?.controlStatus,
-              numberType: numberType,
-              defaultUnitToHide: 'px',
-              onMouseEnter: onMouseEnterForControls([bottomCanvasControls?.onHover]),
-              onMouseLeave: onMouseLeave,
-              inputProps: {
-                onFocus: onFocusForControls([bottomCanvasControls?.onFocus]),
-                onBlur: onBlur,
-              },
-              testId: `${name}-B`,
-            },
-            {
-              style: { width: '25%' },
+              style: { width: '48%' },
               value: values.fourValue.left?.value,
               DEPRECATED_labelBelow: labels?.left ?? 'L',
               minimum: 0,
@@ -676,6 +654,24 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
                 onBlur: onBlur,
               },
               testId: `${name}-L`,
+            },
+            {
+              style: { width: '48%' },
+              value: values.fourValue.bottom?.value,
+              DEPRECATED_labelBelow: labels?.bottom ?? 'B',
+              minimum: 0,
+              onSubmitValue: onSubmitValueBottom(false),
+              onTransientSubmitValue: onSubmitValueBottom(true),
+              controlStatus: values.fourValue.bottom?.controlStatus,
+              numberType: numberType,
+              defaultUnitToHide: 'px',
+              onMouseEnter: onMouseEnterForControls([bottomCanvasControls?.onHover]),
+              onMouseLeave: onMouseLeave,
+              inputProps: {
+                onFocus: onFocusForControls([bottomCanvasControls?.onFocus]),
+                onBlur: onBlur,
+              },
+              testId: `${name}-B`,
             },
           ]
         case null:
@@ -731,7 +727,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         <SquareButton
           data-testid={`${name}-cycle-mode`}
           onClick={props.onCycleMode}
-          style={{ paddingRight: 4 }}
+          style={{ width: 16 }}
         >
           {modeIcon}
         </SquareButton>
@@ -745,15 +741,17 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         display: 'flex',
         flexDirection: 'row',
         gap: 10,
+        justifyContent: 'space-between',
+        flex: 1,
       }}
     >
-      {when(cycleModePosition === 'front', cycleModeControl)}
       <ChainedNumberInput
         idPrefix={name}
-        style={{ flex: 1, gap: 4 }}
+        style={{ flex: 1, gap: 8 }}
         propsArray={chainedPropsToRender}
+        wrap={true}
       />
-      {when(cycleModePosition === 'back', cycleModeControl)}
+      {cycleModeControl}
     </div>
   )
 })

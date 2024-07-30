@@ -27,9 +27,20 @@ import type { DetectedLayoutSystem } from 'utopia-shared/src/types'
 import { assertNever, NO_OP } from '../../core/shared/utils'
 import { Icons, NumberInput, SquareButton, Subdued } from '../../uuiui'
 import type { CSSNumber, GridCSSNumberUnit, UnknownOrEmptyInput } from './common/css-utils'
-import { gridCSSNumber, isCSSNumber, type GridCSSNumber } from './common/css-utils'
+import {
+  cssNumberToString,
+  gridCSSNumber,
+  isCSSNumber,
+  type GridCSSNumber,
+} from './common/css-utils'
 import { applyCommandsAction } from '../editor/actions/action-creators'
-import { setProperty } from '../canvas/commands/set-property-command'
+import type { PropertyToUpdate } from '../canvas/commands/set-property-command'
+import {
+  propertyToDelete,
+  propertyToSet,
+  updateBulkProperties,
+  setProperty,
+} from '../canvas/commands/set-property-command'
 import * as PP from '../../core/shared/property-path'
 import type {
   GridAutoOrTemplateBase,
@@ -45,6 +56,7 @@ import { setGridPropsCommands } from '../canvas/canvas-strategies/strategies/gri
 import { type CanvasCommand } from '../canvas/commands/commands'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import { DropdownMenu } from '../../uuiui/radix-components'
+import { useInspectorLayoutInfo } from './common/property-path-hooks'
 
 const axisDropdownMenuButton = 'axisDropdownMenuButton'
 
@@ -126,19 +138,18 @@ export const FlexSection = React.memo(() => {
           {when(
             layoutSystem === 'grid',
             <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {grid != null ? (
-                  <React.Fragment>
-                    <TemplateDimensionControl
-                      axis={'column'}
-                      grid={grid}
-                      values={columns}
-                      title='Columns'
-                    />
-                    <TemplateDimensionControl axis={'row'} grid={grid} values={rows} title='Rows' />
-                  </React.Fragment>
-                ) : null}
-              </div>
+              {grid != null ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <GapRowColumnControl />
+                  <TemplateDimensionControl
+                    axis={'column'}
+                    grid={grid}
+                    values={columns}
+                    title='Columns'
+                  />
+                  <TemplateDimensionControl axis={'row'} grid={grid} values={rows} title='Rows' />
+                </div>
+              ) : null}
             </UIGridRow>,
           )}
           {when(
@@ -548,3 +559,120 @@ const reAlphanumericDashUnderscore = /[^0-9a-z\-_]+/gi
 function sanitizeAreaName(areaName: string): string {
   return areaName.replace(reAlphanumericDashUnderscore, '-')
 }
+
+const GapRowColumnControl = React.memo(() => {
+  const dispatch = useDispatch()
+
+  const grid = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (store.editor.selectedViews.length !== 1) {
+        return null
+      }
+      const element = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        store.editor.selectedViews[0],
+      )
+      if (!MetadataUtils.isGridLayoutedContainer(element)) {
+        return null
+      }
+      return element
+    },
+    'GapRowColumnControl grid',
+  )
+
+  const gap = useInspectorLayoutInfo('gap') // also matches gridGap
+  const columnGap = useInspectorLayoutInfo('columnGap')
+  const rowGap = useInspectorLayoutInfo('rowGap')
+
+  const onSubmit = React.useCallback(
+    (target: 'columnGap' | 'rowGap') =>
+      (value: UnknownOrEmptyInput<CSSNumber>, transient?: boolean) => {
+        if (grid == null) {
+          return
+        }
+
+        function serializeValue(v: CSSNumber) {
+          return v.unit == null || v.unit === 'px' ? v.value : cssNumberToString(v)
+        }
+
+        if (isCSSNumber(value)) {
+          let updates: PropertyToUpdate[] = []
+
+          // if there's a gap, it needs to be stripped out and replaced with explicit
+          // rowGap/colGap pairs.
+          if (gap.controlStatus !== 'unset') {
+            // clean up the other gaps
+            updates.push(
+              propertyToDelete(PP.create('style', 'gap')),
+              propertyToDelete(PP.create('style', 'gridGap')),
+            )
+
+            // set the counterpart props
+            updates.push(
+              propertyToSet(
+                PP.create('style', 'columnGap'),
+                serializeValue(target === 'columnGap' ? value : gap.value),
+              ),
+            )
+            updates.push(
+              propertyToSet(
+                PP.create('style', 'rowGap'),
+                serializeValue(target === 'rowGap' ? value : gap.value),
+              ),
+            )
+          } else {
+            // set the new value on the target prop
+            if (target === 'columnGap') {
+              columnGap.onSubmitValue(value, transient)
+            } else {
+              rowGap.onSubmitValue(value, transient)
+            }
+          }
+
+          dispatch([
+            applyCommandsAction([updateBulkProperties('always', grid.elementPath, updates)]),
+          ])
+        }
+      },
+    [dispatch, grid, gap, rowGap, columnGap],
+  )
+
+  if (grid == null) {
+    return null
+  }
+
+  return (
+    <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
+      <NumberInput
+        value={columnGap.value}
+        numberType={'Length'}
+        onSubmitValue={onSubmit('columnGap')}
+        onTransientSubmitValue={onSubmit('columnGap')}
+        onForcedSubmitValue={onSubmit('columnGap')}
+        defaultUnitToHide={'px'}
+        testId={'grid-column-gap'}
+        labelInner={{
+          category: 'inspector-element',
+          type: 'gapHorizontal',
+          color: 'subdued',
+        }}
+      />
+      <NumberInput
+        value={rowGap.value}
+        numberType={'Length'}
+        onSubmitValue={onSubmit('rowGap')}
+        onTransientSubmitValue={onSubmit('rowGap')}
+        onForcedSubmitValue={onSubmit('rowGap')}
+        defaultUnitToHide={'px'}
+        testId={'grid-row-gap'}
+        labelInner={{
+          category: 'inspector-element',
+          type: 'gapVertical',
+          color: 'subdued',
+        }}
+      />
+    </UIGridRow>
+  )
+})
+GapRowColumnControl.displayName = 'GapRowColumnControl'

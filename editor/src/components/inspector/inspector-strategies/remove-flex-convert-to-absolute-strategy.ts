@@ -12,8 +12,10 @@ import {
   getConvertIndividualElementToAbsoluteCommandsFromMetadata,
   filterKeepGridContainers,
   gridContainerProps,
+  gridElementProps,
 } from '../inspector-common'
 import type { InspectorStrategy } from './inspector-strategy'
+import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 
 function removeFlexConvertToAbsoluteOne(
   metadata: ElementInstanceMetadataMap,
@@ -58,6 +60,7 @@ export const removeGridConvertToAbsolute = (
         ...children.flatMap((c) =>
           getConvertIndividualElementToAbsoluteCommandsFromMetadata(c, metadata, pathTrees),
         ), // all children are converted to absolute,
+        ...children.map((path) => deleteProperties('always', path, gridElementProps)), // remove grid-specific child props
         ...sizeToVisualDimensions(metadata, pathTrees, elementPath), // container is sized to keep its visual dimensions
       ]
     })

@@ -671,6 +671,13 @@ export const PopupList = React.memo<PopupListProps>(
               outline: '0 !important',
               position: 'relative',
               transition: 'all 100ms',
+              paddingRight: 4,
+              '&:hover': {
+                justifyContent: 'space-between',
+              },
+              '&:focus-within': {
+                justifyContent: 'space-between',
+              },
             }),
             singleValue: () => ({
               label: 'singleValue',
@@ -734,12 +741,11 @@ export const PopupList = React.memo<PopupListProps>(
               height: OptionHeight,
               boxSizing: 'border-box',
               overflow: 'hidden',
-              padding: `2px 2px 2px ${ValueContainerLeftPadding}px`,
+              padding: `2px 8px 2px ${ValueContainerLeftPadding}px`,
               position: 'relative',
               borderRadius: UtopiaTheme.inputBorderRadius,
               display: 'flex',
               alignItems: 'center',
-              flexGrow: containerMode === 'noBorder' ? 0 : 1,
             }),
             indicatorSeparator: displayNone,
             clearIndicator: displayNone,
