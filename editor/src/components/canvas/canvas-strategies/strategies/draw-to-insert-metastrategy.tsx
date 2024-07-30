@@ -491,7 +491,7 @@ function getInsertionCommands(
   return null
 }
 
-function getStyleAttributesForFrameInAbsolutePosition(
+export function getStyleAttributesForFrameInAbsolutePosition(
   subject: InsertionSubject,
   frame: CanvasRectangle,
 ) {
@@ -549,7 +549,7 @@ function getStyleAttributesForFixedPositionAndSizeHug(
   )
 }
 
-function updateInsertionSubjectWithAttributes(
+export function updateInsertionSubjectWithAttributes(
   subject: InsertionSubject,
   updatedAttributes: JSXAttributes,
 ): InsertionSubject {

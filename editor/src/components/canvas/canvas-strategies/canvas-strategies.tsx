@@ -1,11 +1,15 @@
 import React from 'react'
 import { createSelector } from 'reselect'
-import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
+import {
+  addAllUniquelyBy,
+  mapDropNulls,
+  sortBy,
+  stripNulls,
+} from '../../../core/shared/array-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import type {
   AllElementProps,
-  DerivedState,
   EditorState,
   EditorStorePatched,
 } from '../../editor/store/editor-state'
@@ -72,6 +76,7 @@ import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
 import { gridRearrangeMoveDuplicateStrategy } from './strategies/grid-rearrange-move-duplicate-strategy'
+import { gridDrawToInsertStrategy } from './strategies/grid-draw-to-insert-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -175,11 +180,22 @@ const keyboardShortcutStrategies: MetaCanvasStrategy = (
   )
 }
 
+const drawToInsertStrategies: MetaCanvasStrategy = (
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+  customStrategyState: CustomStrategyState,
+): Array<CanvasStrategy> => {
+  return stripNulls([
+    ...drawToInsertMetaStrategy(canvasState, interactionSession, customStrategyState),
+    gridDrawToInsertStrategy(canvasState, interactionSession, customStrategyState),
+  ])
+}
+
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
   preventOnRootElements(resizeStrategies),
   propertyControlStrategies,
-  drawToInsertMetaStrategy,
+  drawToInsertStrategies,
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
   keyboardShortcutStrategies,

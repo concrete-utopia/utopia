@@ -8,7 +8,7 @@ import {
   type GridElementProperties,
   type GridPosition,
 } from '../../../../core/shared/element-template'
-import type { CanvasVector } from '../../../../core/shared/math-utils'
+import type { CanvasVector, WindowRectangle } from '../../../../core/shared/math-utils'
 import {
   offsetPoint,
   rectContainsPoint,
@@ -53,8 +53,10 @@ function getGridCellAtPoint(
   windowPoint: WindowPoint,
   canvasScale: number,
   duplicating: boolean,
-): { id: string; coordinates: GridCellCoordinates } | null {
-  function maybeRecursivelyFindCellAtPoint(elements: Element[]): Element | null {
+): { id: string; coordinates: GridCellCoordinates; cellWindowRectangle: WindowRectangle } | null {
+  function maybeRecursivelyFindCellAtPoint(
+    elements: Element[],
+  ): { element: Element; cellWindowRectangle: WindowRectangle } | null {
     // If this used during duplication, the canvas controls will be in the way and we need to traverse the children too.
     for (const element of elements) {
       if (isGridCellTargetId(element.id)) {
@@ -64,7 +66,7 @@ function getGridCellAtPoint(
             ? scaleRect(windowRectangle(domRect), canvasScale)
             : windowRectangle(domRect)
         if (rectContainsPoint(windowRect, windowPoint)) {
-          return element
+          return { element: element, cellWindowRectangle: windowRect }
         }
       }
 
@@ -86,10 +88,12 @@ function getGridCellAtPoint(
     return null
   }
 
-  const row = cellUnderMouse.getAttribute('data-grid-row')
-  const column = cellUnderMouse.getAttribute('data-grid-column')
+  const { element, cellWindowRectangle } = cellUnderMouse
+  const row = element.getAttribute('data-grid-row')
+  const column = element.getAttribute('data-grid-column')
   return {
-    id: cellUnderMouse.id,
+    id: element.id,
+    cellWindowRectangle: cellWindowRectangle,
     coordinates: gridCellCoordinates(
       row == null ? 0 : parseInt(row),
       column == null ? 0 : parseInt(column),
@@ -134,7 +138,8 @@ export function runGridRearrangeMove(
     canvasScale,
     duplicating,
     mouseWindowPoint,
-  )
+  )?.gridCellCoordinates
+
   if (newTargetCell == null) {
     return {
       commands: [],
@@ -303,23 +308,27 @@ export function setGridPropsCommands(
   return commands
 }
 
-function getTargetCell(
+export function getTargetCell(
   previousTargetCell: GridCellCoordinates | null,
   canvasScale: number,
   duplicating: boolean,
   mouseWindowPoint: WindowPoint,
-): GridCellCoordinates | null {
+): { gridCellCoordinates: GridCellCoordinates; cellWindowRectangle: WindowRectangle } | null {
   let cell = previousTargetCell ?? null
   const cellUnderMouse = duplicating
     ? getGridCellUnderMouseRecursive(mouseWindowPoint, canvasScale)
     : getGridCellUnderMouse(mouseWindowPoint, canvasScale)
-  if (cellUnderMouse != null) {
-    cell = cellUnderMouse.coordinates
-  }
-  if (cell == null || cell.row < 1 || cell.column < 1) {
+  if (cellUnderMouse == null) {
     return null
   }
-  return cell
+  cell = cellUnderMouse.coordinates
+  if (cell.row < 1 || cell.column < 1) {
+    return null
+  }
+  return {
+    gridCellCoordinates: cell,
+    cellWindowRectangle: cellUnderMouse.cellWindowRectangle,
+  }
 }
 
 function getElementGridProperties(
