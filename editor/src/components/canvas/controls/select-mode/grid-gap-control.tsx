@@ -16,15 +16,13 @@ import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import type { EditorDispatch } from '../../../editor/action-types'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import type { CSSNumber, FlexDirection } from '../../../inspector/common/css-utils'
+import type { CSSNumber } from '../../../inspector/common/css-utils'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, gridGapHandle } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import {
-  cursorFromFlexDirection,
-  gapControlBoundsFromMetadata,
   recurseIntoChildrenOfMapOrFragment,
   maybeGridGapData,
   gridGapControlBoundsFromMetadata,
@@ -40,13 +38,7 @@ import {
   type FlexJustifyContent,
   getFlexAlignment,
 } from '../../../inspector/inspector-common'
-import {
-  flipFlexDirection,
-  isReversedFlexDirection,
-  reverseFlexAlignment,
-  reverseJustifyContent,
-} from '../../../../core/model/flex-utils'
-import { optionalMap } from '../../../../core/shared/optional-utils'
+import { CSSCursor } from '../../../../uuiui-deps'
 
 interface GridGapControlProps {
   selectedElement: ElementPath
@@ -152,10 +144,10 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
     } else {
       const rowSize = {
         width: bounds.width,
-        height: gridGap.row.renderedValuePx,
+        height: gridGapX.renderedValuePx,
       }
       const columnSize = {
-        width: gridGap.column.renderedValuePx,
+        width: gridGapY.renderedValuePx,
         height: bounds.height,
       }
       return {
@@ -163,30 +155,26 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
         column: columnSize,
       }
     }
-  }, [children, gridGap.column.renderedValuePx, gridGap.row.renderedValuePx])
+  }, [children, gridGapY.renderedValuePx, gridGapX.renderedValuePx])
 
-  const controlBounds = {
-    row: {
-      bounds: gridGapControlBoundsFromMetadata(
-        metadata,
-        selectedElement,
-        children.map((c) => c.elementPath),
-        gridGap.row.renderedValuePx,
-        'row',
-      ),
-      size: gapControlSizes.row,
-    },
-    column: {
-      bounds: gridGapControlBoundsFromMetadata(
-        metadata,
-        selectedElement,
-        children.map((c) => c.elementPath),
-        gridGap.column.renderedValuePx,
-        'column',
-      ),
-      size: gapControlSizes.column,
-    },
-  }
+  const controlBounds = [
+    ...gridGapControlBoundsFromMetadata(
+      metadata,
+      selectedElement,
+      children.map((c) => c.elementPath),
+      gridGapX.value,
+      'row',
+      gapControlSizes.row,
+    ),
+    ...gridGapControlBoundsFromMetadata(
+      metadata,
+      selectedElement,
+      children.map((c) => c.elementPath),
+      gridGapY.value,
+      'column',
+      gapControlSizes.column,
+    ),
+  ]
 
   const justifyContent = React.useMemo(() => {
     return (
@@ -205,7 +193,7 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
   return (
     <CanvasOffsetWrapper>
       <div data-testid={GridGapControlTestId} style={{ pointerEvents: 'none' }}>
-        {controlBounds.map(({ bounds, path: p }) => {
+        {controlBounds.map(({ gap, bounds, axis, path: p, size: contentArea }) => {
           const path = EP.toString(p)
           return (
             <GapControlSegment
@@ -217,12 +205,12 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
               path={path}
               bounds={bounds}
               contentArea={contentArea}
-              flexDirection={flexGap.direction}
               accentColor={accentColor}
               scale={scale}
               backgroundShown={backgroundShown}
               isDragging={isDragging}
-              gapValue={flexGapValue.value}
+              axis={axis}
+              gapValue={gap}
               justifyContent={justifyContent}
               alignItems={alignItems}
             />
@@ -257,13 +245,13 @@ const gapControlSizeConstants = (
   hitAreaPadding: constants.hitAreaPadding / scale,
 })
 
-interface GapControlSegmentProps {
+interface GridGapControlSegmentProps {
   hoverStart: React.MouseEventHandler
   hoverEnd: React.MouseEventHandler
   onMouseDown: React.MouseEventHandler
   bounds: CanvasRectangle
   contentArea: Size
-  flexDirection: FlexDirection
+  axis: 'row' | 'column'
   gapValue: CSSNumber
   elementHovered: boolean
   path: string
@@ -275,7 +263,7 @@ interface GapControlSegmentProps {
   alignItems: FlexAlignment | null
 }
 
-const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
+const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
   const {
     hoverStart,
     hoverEnd,
@@ -284,7 +272,6 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     contentArea,
     isDragging,
     gapValue,
-    flexDirection,
     accentColor: accentColor,
     elementHovered,
     scale,
@@ -292,6 +279,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     backgroundShown,
     justifyContent,
     alignItems,
+    axis,
   } = props
 
   const colorTheme = useColorTheme()
@@ -299,7 +287,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
 
   const { dragBorderWidth, hitAreaPadding, paddingIndicatorOffset, borderWidth } =
     gapControlSizeConstants(DefaultGapControlSizeConstants, scale)
-  const { width, height } = handleDimensions(flexDirection, scale)
+  const { width, height } = handleDimensions(axis, scale)
 
   const handleHoverStartInner = React.useCallback(() => {
     setIndicatorShown(true)
@@ -318,20 +306,12 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
   const shouldShowBackground = !isDragging && backgroundShown
 
   // Invert the flex direction for the handle.
-  const segmentFlexDirection = flipFlexDirection(flexDirection)
+  const segmentFlexDirection = axis === 'row' ? 'column' : 'row'
 
   // Effectively flip the properties for the main and cross axis, but only permitting
   // values which we know can be applied to that axis.
-  const segmentJustifyContent =
-    optionalMap((justify) => {
-      // Ensures that the handles appear correctly aligned when the direction is reversed.
-      return isReversedFlexDirection(flexDirection) ? reverseJustifyContent(justify) : justify
-    }, getFlexJustifyContent(alignItems)) ?? undefined
-  const segmentAlignItems =
-    optionalMap((alignment) => {
-      // Ensures that the handles appear correctly aligned when the direction is reversed.
-      return isReversedFlexDirection(flexDirection) ? reverseFlexAlignment(alignment) : alignment
-    }, getFlexAlignment(justifyContent)) ?? undefined
+  const segmentJustifyContent = getFlexJustifyContent(alignItems) ?? undefined
+  const segmentAlignItems = getFlexAlignment(justifyContent) ?? undefined
 
   return (
     <div
@@ -370,7 +350,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
           style={{
             visibility: shouldShowHandle ? 'visible' : 'hidden',
             padding: hitAreaPadding,
-            cursor: cursorFromFlexDirection(flexDirection),
+            cursor: axis === 'row' ? CSSCursor.GapNS : CSSCursor.GapEW,
           }}
           onMouseDown={onMouseDown}
           onMouseEnter={handleHoverStartInner}
@@ -405,14 +385,14 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
   )
 })
 
-function handleDimensions(flexDirection: FlexDirection, scale: number): Size {
-  if (flexDirection === 'row' || flexDirection === 'row-reverse') {
+function handleDimensions(axis: 'row' | 'column', scale: number): Size {
+  if (axis === 'row') {
     return size(3 / scale, 12 / scale)
   }
-  if (flexDirection === 'column' || flexDirection === 'column-reverse') {
+  if (axis === 'column') {
     return size(12 / scale, 4 / scale)
   }
-  assertNever(flexDirection)
+  assertNever(axis)
 }
 
 function startInteraction(

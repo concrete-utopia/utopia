@@ -7,9 +7,7 @@ import {
   canvasVector,
 } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { assertNever } from '../../../../core/shared/utils'
 import type { Modifiers } from '../../../../utils/modifiers'
-import type { FlexDirection } from '../../../inspector/common/css-utils'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { deleteProperties } from '../../commands/delete-properties-command'
@@ -21,15 +19,11 @@ import {
   offsetMeasurementByDelta,
   precisionFromModifiers,
 } from '../../controls/select-mode/controls-common'
-import { FlexGapControl } from '../../controls/select-mode/flex-gap-control'
 import type { FloatingIndicatorProps } from '../../controls/select-mode/floating-number-indicator'
 import { FloatingIndicator } from '../../controls/select-mode/floating-number-indicator'
-import type { FlexGapData, GridGapData } from '../../gap-utils'
+import type { GridGapData } from '../../gap-utils'
 import {
   cursorFromAxis,
-  cursorFromFlexDirection,
-  dragDeltaForOrientation,
-  maybeFlexGapData,
   maybeGridGapData,
   recurseIntoChildrenOfMapOrFragment,
 } from '../../gap-utils'
@@ -43,7 +37,6 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { singleAxisAutoLayoutDirections } from './flow-reorder-helpers'
 import { colorTheme } from '../../../../uuiui'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
 import { GridGapControl } from '../../controls/select-mode/grid-gap-control'
@@ -244,27 +237,30 @@ function gridGapValueIndicatorProps(
     return null
   }
 
+  const activeControlAxis = interactionSession.activeControl.axis
+
   const { drag, dragStart } = interactionSession.interactionData
 
-  const rawDragDelta = dragDeltaForOrientation(flexGap.direction, drag)
+  const rawDragDelta = activeControlAxis === 'row' ? drag.x : drag.y
 
-  const dragDelta = Math.max(-flexGap.value.renderedValuePx, rawDragDelta)
+  const dragDelta = Math.max(-gridGap[activeControlAxis].renderedValuePx, rawDragDelta)
 
   const rawFlexGapMeasurement = offsetMeasurementByDelta(
-    flexGap.value,
+    gridGap[activeControlAxis],
     rawDragDelta,
     precisionFromModifiers(interactionSession.interactionData.modifiers),
   )
 
   const updatedFlexGapMeasurement = offsetMeasurementByDelta(
-    flexGap.value,
+    gridGap[activeControlAxis],
     dragDelta,
     precisionFromModifiers(interactionSession.interactionData.modifiers),
   )
 
-  const position = flexGap.direction.startsWith('row')
-    ? canvasPoint({ x: dragStart.x + drag.x, y: dragStart.y })
-    : canvasPoint({ x: dragStart.x, y: dragStart.y + drag.y })
+  const position =
+    activeControlAxis === 'row'
+      ? canvasPoint({ x: dragStart.x + drag.x, y: dragStart.y })
+      : canvasPoint({ x: dragStart.x, y: dragStart.y + drag.y })
 
   return {
     value: indicatorMessage(

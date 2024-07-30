@@ -7,7 +7,7 @@ import type {
   ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
 import { isJSXElement } from '../../core/shared/element-template'
-import type { CanvasRectangle, CanvasVector } from '../../core/shared/math-utils'
+import type { CanvasRectangle, CanvasVector, Size } from '../../core/shared/math-utils'
 import { canvasRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
@@ -169,9 +169,16 @@ export function gridGapControlBoundsFromMetadata(
   elementMetadata: ElementInstanceMetadataMap,
   parentPath: ElementPath,
   children: ElementPath[],
-  gap: number,
-  flexDirection: FlexDirection,
-): Array<PathWithBounds> {
+  gap: CSSNumber,
+  axis: 'row' | 'column',
+  contentArea: Size,
+): Array<
+  PathWithBounds & {
+    gap: CSSNumber
+    axis: 'row' | 'column'
+    size: Size
+  }
+> {
   const elementPadding =
     MetadataUtils.findElementByElementPath(elementMetadata, parentPath)?.specialSizeMeasurements
       .padding ?? sides(0, 0, 0, 0)
@@ -182,14 +189,8 @@ export function gridGapControlBoundsFromMetadata(
 
   const parentBounds = inset(elementPadding, parentFrame)
 
-  // Needs to handle reversed content as that will be flipped in the visual order, which changes
-  // what elements will be either side of the gaps.
-  const possiblyReversedChildren = isReversedFlexDirection(flexDirection)
-    ? reverse(children)
-    : children
-
   const childCanvasBounds = stripNulls(
-    possiblyReversedChildren
+    children
       .map((childPath) => {
         const childFrame = MetadataUtils.getFrameInCanvasCoords(childPath, elementMetadata)
         if (childFrame == null || isInfinityRectangle(childFrame)) {
@@ -201,12 +202,7 @@ export function gridGapControlBoundsFromMetadata(
       .slice(0, -1),
   )
 
-  return paddingControlContainerBoundsFromChildBounds(
-    parentBounds,
-    childCanvasBounds,
-    gap,
-    flexDirection,
-  )
+  return []
 }
 
 export interface GridGapData {
