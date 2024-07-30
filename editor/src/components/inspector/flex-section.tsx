@@ -10,7 +10,6 @@ import { FlexDirectionToggle } from './flex-direction-control'
 import { selectedViewsSelector, metadataSelector } from './inpector-selectors'
 import { NineBlockControl } from './nine-block-controls'
 import { UIGridRow } from './widgets/ui-grid-row'
-import { LayoutSystemControl } from '../../components/inspector/sections/layout-section/layout-system-subsection/layout-system-controls'
 import { SpacedPackedControl } from './spaced-packed-control'
 import { ThreeBarControl } from './three-bar-control'
 import { FlexGapControl } from './sections/layout-section/flex-container-subsection/flex-container-controls'
@@ -71,7 +70,7 @@ function getLayoutSystem(
   return null
 }
 
-const layoutSystemSelector = createSelector(
+export const layoutSystemSelector = createSelector(
   metadataSelector,
   selectedViewsSelector,
   (metadata, selectedViews) => {
@@ -100,57 +99,6 @@ export const FlexSection = React.memo(() => {
     Substores.metadata,
     layoutSystemSelector,
     'FlexSection areAllElementsInFlexLayout',
-  )
-
-  const dispatch = useDispatch()
-  const elementMetadataRef = useRefEditorState(metadataSelector)
-  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
-  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
-
-  const addFlexLayoutSystem = React.useCallback(
-    () =>
-      executeFirstApplicableStrategy(
-        dispatch,
-        addFlexLayoutStrategies(
-          elementMetadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-        ),
-      ),
-    [allElementPropsRef, dispatch, elementMetadataRef, elementPathTreeRef, selectedViewsRef],
-  )
-
-  const addGridLayoutSystem = React.useCallback(
-    () =>
-      executeFirstApplicableStrategy(
-        dispatch,
-        addGridLayoutStrategies(
-          elementMetadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-        ),
-      ),
-    [allElementPropsRef, dispatch, elementMetadataRef, elementPathTreeRef, selectedViewsRef],
-  )
-
-  const onLayoutSystemChange = React.useCallback(
-    (value: DetectedLayoutSystem) => {
-      switch (value) {
-        case 'flex':
-          return addFlexLayoutSystem()
-        case 'grid':
-          return addGridLayoutSystem()
-        case 'flow':
-        case 'none':
-          return
-        default:
-          assertNever(value)
-      }
-    },
-    [addFlexLayoutSystem, addGridLayoutSystem],
   )
 
   const grid = useEditorState(
@@ -187,13 +135,6 @@ export const FlexSection = React.memo(() => {
       {when(
         layoutSystem != null,
         <FlexCol css={{ gap: 10, paddingBottom: 10 }}>
-          <UIGridRow padded={true} variant='<-------------1fr------------->'>
-            <LayoutSystemControl
-              layoutSystem={layoutSystem}
-              providesCoordinateSystemForChildren={false}
-              onChange={onLayoutSystemChange}
-            />
-          </UIGridRow>
           {when(
             layoutSystem === 'grid',
             <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
