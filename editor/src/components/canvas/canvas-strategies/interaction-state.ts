@@ -578,7 +578,7 @@ export interface GridGapHandle {
   axis: 'column' | 'row'
 }
 
-export function gridGapHandler(axis: 'column' | 'row'): GridGapHandle {
+export function gridGapHandle(axis: 'column' | 'row'): GridGapHandle {
   return {
     type: 'GRID_GAP_HANDLE',
     axis: axis,

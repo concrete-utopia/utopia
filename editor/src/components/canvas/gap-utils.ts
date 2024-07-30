@@ -165,6 +165,50 @@ export function gapControlBoundsFromMetadata(
   )
 }
 
+export function gridGapControlBoundsFromMetadata(
+  elementMetadata: ElementInstanceMetadataMap,
+  parentPath: ElementPath,
+  children: ElementPath[],
+  gap: number,
+  flexDirection: FlexDirection,
+): Array<PathWithBounds> {
+  const elementPadding =
+    MetadataUtils.findElementByElementPath(elementMetadata, parentPath)?.specialSizeMeasurements
+      .padding ?? sides(0, 0, 0, 0)
+  const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, elementMetadata)
+  if (parentFrame == null || isInfinityRectangle(parentFrame)) {
+    return []
+  }
+
+  const parentBounds = inset(elementPadding, parentFrame)
+
+  // Needs to handle reversed content as that will be flipped in the visual order, which changes
+  // what elements will be either side of the gaps.
+  const possiblyReversedChildren = isReversedFlexDirection(flexDirection)
+    ? reverse(children)
+    : children
+
+  const childCanvasBounds = stripNulls(
+    possiblyReversedChildren
+      .map((childPath) => {
+        const childFrame = MetadataUtils.getFrameInCanvasCoords(childPath, elementMetadata)
+        if (childFrame == null || isInfinityRectangle(childFrame)) {
+          return null
+        } else {
+          return { path: childPath, bounds: childFrame }
+        }
+      })
+      .slice(0, -1),
+  )
+
+  return paddingControlContainerBoundsFromChildBounds(
+    parentBounds,
+    childCanvasBounds,
+    gap,
+    flexDirection,
+  )
+}
+
 export interface GridGapData {
   row: CSSNumberWithRenderedValue
   column: CSSNumberWithRenderedValue

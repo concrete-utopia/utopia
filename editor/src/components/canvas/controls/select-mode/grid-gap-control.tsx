@@ -20,14 +20,14 @@ import type { CSSNumber, FlexDirection } from '../../../inspector/common/css-uti
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
-import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
+import { createInteractionViaMouse, gridGapHandle } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import {
   cursorFromFlexDirection,
-  maybeFlexGapData,
   gapControlBoundsFromMetadata,
   recurseIntoChildrenOfMapOrFragment,
   maybeGridGapData,
+  gridGapControlBoundsFromMetadata,
 } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { CSSNumberWithRenderedValue } from './controls-common'
@@ -140,50 +140,53 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
   const gridGapX = updatedGapValueX ?? gridGap.row
   const gridGapY = updatedGapValueY ?? gridGap.column
 
-  const controlBounds = gapControlBoundsFromMetadata(
-    metadata,
-    selectedElement,
-    children.map((c) => c.elementPath),
-    flexGapValue.renderedValuePx,
-    flexGap.direction,
-  )
-
-  const contentArea = React.useMemo((): Size => {
-    function valueForDimension(
-      directions: FlexDirection[],
-      direction: FlexDirection,
-      directionSize: number,
-      gapSize: number,
-    ) {
-      return directions.includes(direction) ? directionSize : gapSize
-    }
-
+  const gapControlSizes = React.useMemo((): { row: Size; column: Size } => {
     const bounds = boundingRectangleArray(
       mapDropNulls(
         (c) => (c.localFrame != null && isFiniteRectangle(c.localFrame) ? c.localFrame : null),
         children,
       ),
     )
-
     if (bounds == null) {
-      return zeroSize
+      return { row: zeroSize, column: zeroSize }
     } else {
+      const rowSize = {
+        width: bounds.width,
+        height: gridGap.row.renderedValuePx,
+      }
+      const columnSize = {
+        width: gridGap.column.renderedValuePx,
+        height: bounds.height,
+      }
       return {
-        width: valueForDimension(
-          ['column', 'column-reverse'],
-          flexGap.direction,
-          bounds.width,
-          flexGapValue.renderedValuePx,
-        ),
-        height: valueForDimension(
-          ['row', 'row-reverse'],
-          flexGap.direction,
-          bounds.height,
-          flexGapValue.renderedValuePx,
-        ),
+        row: rowSize,
+        column: columnSize,
       }
     }
-  }, [children])
+  }, [children, gridGap.column.renderedValuePx, gridGap.row.renderedValuePx])
+
+  const controlBounds = {
+    row: {
+      bounds: gridGapControlBoundsFromMetadata(
+        metadata,
+        selectedElement,
+        children.map((c) => c.elementPath),
+        gridGap.row.renderedValuePx,
+        'row',
+      ),
+      size: gapControlSizes.row,
+    },
+    column: {
+      bounds: gridGapControlBoundsFromMetadata(
+        metadata,
+        selectedElement,
+        children.map((c) => c.elementPath),
+        gridGap.column.renderedValuePx,
+        'column',
+      ),
+      size: gapControlSizes.column,
+    },
+  }
 
   const justifyContent = React.useMemo(() => {
     return (
@@ -430,7 +433,7 @@ function startInteraction(
         createInteractionViaMouse(
           canvasPositions.canvasPositionRaw,
           Modifier.modifiersForEvent(event),
-          flexGapHandle(),
+          gridGapHandle('row'),
           'zero-drag-not-permitted',
         ),
       ),
