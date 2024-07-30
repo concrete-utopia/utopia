@@ -513,7 +513,8 @@ export const FontFamilySelectPopup = React.memo(
               width: UtopiaTheme.layout.inspectorSmallPaddedWidth, // TODO should this be resize-aware
               boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
               zIndex: 1,
-              borderRadius: UtopiaTheme.inputBorderRadius,
+              borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+              overflow: 'hidden',
             }}
           >
             <FlexRow style={{ padding: 12 }}>

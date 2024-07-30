@@ -181,7 +181,6 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         gap: 0,
         width: '100%',
         height: '100%',
-        borderRadius: 10,
         paddingBottom: shownInToolbar ? '8px' : undefined,
       }}
       onKeyDown={onKeyDown}
@@ -220,7 +219,7 @@ const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionPr
   return (
     <div
       style={{
-        padding: shownInToolbar ? undefined : '0px 8px 8px 8px',
+        padding: shownInToolbar ? undefined : '0px 0px 8px 0px',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -481,7 +480,6 @@ const ComponentPickerComponentSection = React.memo(
                 style={{
                   alignItems: 'center',
                   cursor: 'pointer',
-                  margin: shownInToolbar ? undefined : '0 8px',
                   borderRadius: 4,
                   // indentation!
                   paddingLeft: 8,
