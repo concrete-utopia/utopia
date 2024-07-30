@@ -100,7 +100,7 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
     (): DropdownMenuItem[] =>
       stripNulls([
         { id: AddFlexLayoutOptionId, label: 'Convert to Flex', onSelect: addFlexLayoutSystem },
-        { id: AddGridLayoutOptionId, label: 'Conver to Grid', onSelect: addGridLayoutSystem },
+        { id: AddGridLayoutOptionId, label: 'Convert to Grid', onSelect: addGridLayoutSystem },
         optionalMap(
           () => ({
             id: RemoveLayoutSystemOptionId,
