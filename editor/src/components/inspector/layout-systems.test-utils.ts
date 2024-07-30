@@ -1,6 +1,5 @@
 import { within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ItemContainerTestId } from '../../uuiui/radix-components'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
@@ -18,13 +17,13 @@ async function openLayoutDropdown(editor: EditorRenderResult) {
 
 export async function addFlexLayout(editor: EditorRenderResult) {
   await openLayoutDropdown(editor)
-  const flexOption = editor.renderedDOM.getByTestId(ItemContainerTestId(AddFlexLayoutOptionId))
+  const flexOption = editor.renderedDOM.getByTestId(AddFlexLayoutOptionId)
   await userEvent.click(flexOption)
 }
 
 export async function addGridLayout(editor: EditorRenderResult) {
   await openLayoutDropdown(editor)
-  const gridOption = editor.renderedDOM.getByTestId(ItemContainerTestId(AddGridLayoutOptionId))
+  const gridOption = editor.renderedDOM.getByTestId(AddGridLayoutOptionId)
   await userEvent.click(gridOption)
 }
 

@@ -356,8 +356,8 @@ export const CanvasToolbar = React.memo(() => {
     'storedLayoutToResolvedPanels panel visibility',
   )
 
-  const panelPopupItems: DropdownMenuItem[] = React.useMemo(
-    () => [
+  const panelPopupItems = React.useMemo(
+    (): DropdownMenuItem[] => [
       {
         id: 'navigator',
         label: 'Navigator',
@@ -369,6 +369,11 @@ export const CanvasToolbar = React.memo(() => {
         ),
         shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_NAVIGATOR].shortcutKeys[0]),
         onSelect: () => dispatch([togglePanel('leftmenu')]),
+        subMenuItems: [
+          { id: 'aaa', label: 'aaa', onSelect: NO_OP },
+          { id: 'bbb', label: 'bbb', onSelect: NO_OP },
+          { id: 'ccc', label: 'ccc', onSelect: NO_OP },
+        ],
       },
       {
         id: 'rightmenu',
