@@ -371,7 +371,9 @@ export const GridControls = controlForStrategyMemoized(() => {
     Substores.canvas,
     (store) =>
       store.editor.canvas.interactionSession != null &&
-      store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE'
+      store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE' &&
+      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
+      store.editor.canvas.interactionSession?.interactionData.drag != null
         ? store.editor.canvas.interactionSession.activeControl.id
         : null,
     'GridControls activelyDraggingOrResizingCell',
@@ -659,7 +661,9 @@ export const GridControls = controlForStrategyMemoized(() => {
             gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
             gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
             backgroundColor:
-              activelyDraggingOrResizingCell != null ? colorTheme.primary10.value : 'transparent',
+              activelyDraggingOrResizingCell != null
+                ? features.Grid.activeGridBackground
+                : 'transparent',
             border: `1px solid ${
               activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
             }`,
