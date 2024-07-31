@@ -7,6 +7,7 @@ import {
   canvasRectangle,
   canvasVector,
   offsetPoint,
+  roundRectangleToNearestWhole,
   size,
 } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
@@ -269,23 +270,27 @@ function getFrameForInsertion(
     const frame =
       interactionData.drag ?? canvasVector({ x: defaultSize.width, y: defaultSize.height })
 
-    return canvasRectangle({
-      x: offset.x - frame.x,
-      y: offset.y - frame.y,
-      width: frame.x,
-      height: frame.y,
-    })
+    return roundRectangleToNearestWhole(
+      canvasRectangle({
+        x: offset.x - frame.x,
+        y: offset.y - frame.y,
+        width: frame.x,
+        height: frame.y,
+      }),
+    )
   }
 
   if (interactionData.type === 'HOVER') {
     const pointOnCanvas = interactionData.point
 
-    return canvasRectangle({
-      x: pointOnCanvas.x,
-      y: pointOnCanvas.y,
-      width: defaultSize.width,
-      height: defaultSize.height,
-    })
+    return roundRectangleToNearestWhole(
+      canvasRectangle({
+        x: pointOnCanvas.x,
+        y: pointOnCanvas.y,
+        width: defaultSize.width,
+        height: defaultSize.height,
+      }),
+    )
   }
 
   assertNever(interactionData)
