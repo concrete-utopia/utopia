@@ -133,7 +133,7 @@ const propertyControlStrategies: MetaCanvasStrategy = (
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
     (factory) => factory(canvasState, interactionSession, customStrategyState),
-    [setPaddingStrategy, setFlexGapStrategy, /*setGridGapStrategy,*/ setBorderRadiusStrategy],
+    [setPaddingStrategy, setFlexGapStrategy, setGridGapStrategy, setBorderRadiusStrategy],
   )
 }
 
