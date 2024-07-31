@@ -9,7 +9,7 @@ import {
   offsetPoint,
 } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
-import { type InsertionSubject } from '../../../editor/editor-modes'
+import { EditorModes, type InsertionSubject } from '../../../editor/editor-modes'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 import type { InsertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
 import { insertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
@@ -37,6 +37,7 @@ import {
 import { getTargetCell, setGridPropsCommands } from './grid-helpers'
 import { newReparentSubjects } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
+import { stripNulls } from '../../../../core/shared/array-utils'
 
 export const gridDrawToInsertStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -79,10 +80,12 @@ export const gridDrawToInsertStrategy: CanvasStrategyFactory = (
     return null
   }
 
+  const name = `Draw into Grid${insertionSubject.textEdit ? ' (text)' : ''}`
+
   return {
     id: 'grid-draw-to-insert-strategy',
-    name: 'Draw into Grid',
-    descriptiveLabel: 'Draw into Grid',
+    name: name,
+    descriptiveLabel: name,
     icon: {
       category: 'tools',
       type: 'pointer',
@@ -154,6 +157,24 @@ export const gridDrawToInsertStrategy: CanvasStrategyFactory = (
           gridRowEnd: { numericalPosition: gridCellCoordinates.row + 1 },
           gridColumnEnd: { numericalPosition: gridCellCoordinates.column + 1 },
         }),
+        ...stripNulls([
+          insertionSubject.textEdit
+            ? wildcardPatch('on-complete', {
+                mode: {
+                  $set: EditorModes.textEditMode(
+                    EP.appendToPath(targetParent, insertionSubject.uid),
+                    canvasPointToWindowPoint(
+                      pointOnCanvas,
+                      canvasState.scale,
+                      canvasState.canvasOffset,
+                    ),
+                    'existing',
+                    'no-text-selection',
+                  ),
+                },
+              })
+            : null,
+        ]),
       ])
     },
   }
