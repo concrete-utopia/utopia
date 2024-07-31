@@ -7,7 +7,7 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
-import { findElementPathUnderPoint, type MetaCanvasStrategy } from '../canvas-strategies'
+import { findElementPathUnderInteractionPoint, type MetaCanvasStrategy } from '../canvas-strategies'
 import type {
   CanvasStrategy,
   CustomStrategyState,
@@ -30,7 +30,7 @@ export const drawToInsertTextMetaStrategy: MetaCanvasStrategy = (
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
-  const elementUnderCursor = findElementPathUnderPoint(canvasState, interactionSession)
+  const elementUnderCursor = findElementPathUnderInteractionPoint(canvasState, interactionSession)
   if (
     MetadataUtils.isGridLayoutedContainer(
       MetadataUtils.findElementByElementPath(canvasState.startingMetadata, elementUnderCursor),

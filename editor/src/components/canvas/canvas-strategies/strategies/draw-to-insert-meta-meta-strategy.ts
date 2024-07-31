@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { stripNulls } from '../../../../core/shared/array-utils'
-import { findElementPathUnderPoint, type MetaCanvasStrategy } from '../canvas-strategies'
+import { findElementPathUnderInteractionPoint, type MetaCanvasStrategy } from '../canvas-strategies'
 import type { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { drawToInsertMetaStrategy } from './draw-to-insert-metastrategy'
@@ -11,7 +11,7 @@ export const drawToInsertMetaMetaStrategy: MetaCanvasStrategy = (
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ) => {
-  const targetParent = findElementPathUnderPoint(canvasState, interactionSession)
+  const targetParent = findElementPathUnderInteractionPoint(canvasState, interactionSession)
 
   if (
     MetadataUtils.isGridLayoutedContainer(

@@ -715,7 +715,7 @@ export function getWrappingCommands(
   ]
 }
 
-export function findElementPathUnderPoint(
+export function findElementPathUnderInteractionPoint(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): ElementPath | null {
