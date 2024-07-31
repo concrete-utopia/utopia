@@ -51,6 +51,34 @@ export const gridDrawToInsertStrategy: CanvasStrategyFactory = (
     return null
   }
 
+  if (interactionSession == null || interactionSession.interactionData.type === 'KEYBOARD') {
+    return null
+  }
+
+  const { interactionData } = interactionSession
+
+  const pointOnCanvas =
+    interactionData.type === 'DRAG' ? interactionData.originalDragStart : interactionData.point
+
+  const targetParent = getReparentTargetUnified(
+    newReparentSubjects(insertionSubject.defaultSize),
+    pointOnCanvas,
+    true, // cmd is necessary to allow reparenting,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
+    canvasState.startingAllElementProps,
+    'allow-smaller-parent',
+    ['supportsChildren'],
+    canvasState.propertyControlsInfo,
+  )?.newParent.intendedParentPath
+
+  const parent = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, targetParent)
+
+  if (targetParent == null || parent == null || !MetadataUtils.isGridLayoutedContainer(parent)) {
+    return null
+  }
+
   return {
     id: 'grid-draw-to-insert-strategy',
     name: 'Draw into Grid',
@@ -69,60 +97,22 @@ export const gridDrawToInsertStrategy: CanvasStrategyFactory = (
     ],
     fitness: 5,
     apply: (strategyLifecycle) => {
-      if (interactionSession == null || interactionSession.interactionData.type === 'KEYBOARD') {
-        return emptyStrategyApplicationResult
-      }
-
-      const pointOnCanvas =
-        interactionSession.interactionData.type === 'DRAG'
-          ? interactionSession.interactionData.originalDragStart
-          : interactionSession.interactionData.point
-
-      const targetParent = getReparentTargetUnified(
-        newReparentSubjects(insertionSubject.defaultSize),
-        pointOnCanvas,
-        true, // cmd is necessary to allow reparenting,
-        canvasState,
-        canvasState.startingMetadata,
-        canvasState.startingElementPathTree,
-        canvasState.startingAllElementProps,
-        'allow-smaller-parent',
-        ['supportsChildren'],
-        canvasState.propertyControlsInfo,
-      )?.newParent.intendedParentPath
-
-      const parent = MetadataUtils.findElementByElementPath(
-        canvasState.startingMetadata,
-        targetParent,
-      )
-
-      if (
-        targetParent == null ||
-        parent == null ||
-        !MetadataUtils.isGridLayoutedContainer(parent)
-      ) {
-        return emptyStrategyApplicationResult
-      }
-
-      if (
-        strategyLifecycle === 'mid-interaction' &&
-        interactionSession.interactionData.type === 'HOVER'
-      ) {
+      if (strategyLifecycle === 'mid-interaction' && interactionData.type === 'HOVER') {
         return strategyApplicationResult([
           wildcardPatch('mid-interaction', {
             selectedViews: { $set: [] },
           }),
-          updateHighlightedViews('mid-interaction', [targetParent]), // TODO: highlight the grid cell here
+          updateHighlightedViews('mid-interaction', [targetParent]),
         ])
       }
 
       const windowPointToUse =
-        interactionSession.interactionData.type === 'DRAG'
+        interactionData.type === 'DRAG'
           ? offsetPoint(
-              interactionSession.interactionData.dragStart,
-              interactionSession.interactionData.drag ?? canvasVector({ x: 0, y: 0 }),
+              interactionData.dragStart,
+              interactionData.drag ?? canvasVector({ x: 0, y: 0 }),
             )
-          : interactionSession.interactionData.point
+          : interactionData.point
 
       const mouseWindowPoint = canvasPointToWindowPoint(
         windowPointToUse,
@@ -151,11 +141,7 @@ export const gridDrawToInsertStrategy: CanvasStrategyFactory = (
       const insertionCommand = getInsertionCommand(
         targetParent,
         insertionSubject,
-        getFrameForInsertion(
-          interactionSession.interactionData,
-          insertionSubject.defaultSize,
-          offset,
-        ),
+        getFrameForInsertion(interactionData, insertionSubject.defaultSize, offset),
       )
 
       const gridTemplate = parent.specialSizeMeasurements.containerGridProperties
