@@ -163,11 +163,10 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
     <Menu key={id} id={id} animation={false} onVisibilityChange={onVisibilityChange}>
       <div
         style={{
-          maxHeight: '90vh',
+          maxHeight: 'calc(100vh - 100px)',
           overflowY: 'scroll',
           overflowX: 'hidden',
           scrollbarWidth: 'none',
-          // scrollbarColor: `${colorTheme.subduedBorder.cssValue} transparent`,
         }}
         onWheel={stopPropagation}
       >
