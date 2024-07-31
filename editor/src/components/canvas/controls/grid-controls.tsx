@@ -371,7 +371,9 @@ export const GridControls = controlForStrategyMemoized(() => {
     Substores.canvas,
     (store) =>
       store.editor.canvas.interactionSession != null &&
-      store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE'
+      store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE' &&
+      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
+      store.editor.canvas.interactionSession?.interactionData.drag != null
         ? store.editor.canvas.interactionSession.activeControl.id
         : null,
     'GridControls activelyDraggingOrResizingCell',
@@ -651,15 +653,17 @@ export const GridControls = controlForStrategyMemoized(() => {
           const placeholders = Array.from(Array(grid.cells).keys())
           let style: CSSProperties = {
             position: 'absolute',
-            top: grid.frame.y,
-            left: grid.frame.x,
+            top: grid.frame.y - 1, // account for border!
+            left: grid.frame.x - 1, // account for border!
             width: grid.frame.width,
             height: grid.frame.height,
             display: 'grid',
             gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
             gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
             backgroundColor:
-              activelyDraggingOrResizingCell != null ? colorTheme.primary10.value : 'transparent',
+              activelyDraggingOrResizingCell != null
+                ? features.Grid.activeGridBackground
+                : 'transparent',
             border: `1px solid ${
               activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
             }`,
@@ -707,7 +711,17 @@ export const GridControls = controlForStrategyMemoized(() => {
                     id={id}
                     data-testid={id}
                     style={{
-                      border: `1px solid ${borderColor}`,
+                      borderTop: `1px solid ${borderColor}`,
+                      borderLeft: `1px solid ${borderColor}`,
+                      borderBottom:
+                        countedRow >= grid.rows || (grid.rowGap != null && grid.rowGap > 0)
+                          ? `1px solid ${borderColor}`
+                          : undefined,
+                      borderRight:
+                        countedColumn >= grid.columns ||
+                        (grid.columnGap != null && grid.columnGap > 0)
+                          ? `1px solid ${borderColor}`
+                          : undefined,
                       position: 'relative',
                     }}
                     data-grid-row={countedRow}
