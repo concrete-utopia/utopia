@@ -7,6 +7,7 @@ import {
   canvasRectangle,
   canvasVector,
   offsetPoint,
+  size,
 } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { EditorModes, type InsertionSubject } from '../../../editor/editor-modes'
@@ -141,10 +142,17 @@ export const gridDrawToInsertStrategy: CanvasStrategyFactory = (
         y: mouseWindowPoint.y - cellWindowRectangle.y,
       })
 
+      const defaultSize =
+        interactionData.type === 'DRAG' &&
+        interactionData.drag == null &&
+        strategyLifecycle === 'end-interaction'
+          ? insertionSubject.defaultSize
+          : size(0, 0)
+
       const insertionCommand = getInsertionCommand(
         targetParent,
         insertionSubject,
-        getFrameForInsertion(interactionData, insertionSubject.defaultSize, offset),
+        getFrameForInsertion(interactionData, defaultSize, offset),
       )
 
       const gridTemplate = parent.specialSizeMeasurements.containerGridProperties
@@ -182,13 +190,12 @@ export const gridDrawToInsertStrategy: CanvasStrategyFactory = (
 
 function getFrameForInsertion(
   interactionData: DragInteractionData | HoverInteractionData,
-  insertionSubjectSize: Size,
+  defaultSize: Size,
   offset: CanvasPoint,
 ): CanvasRectangle {
   if (interactionData.type === 'DRAG') {
     const frame =
-      interactionData.drag ??
-      canvasVector({ x: insertionSubjectSize.width, y: insertionSubjectSize.height })
+      interactionData.drag ?? canvasVector({ x: defaultSize.width, y: defaultSize.height })
 
     return canvasRectangle({
       x: offset.x - frame.x,
@@ -204,8 +211,8 @@ function getFrameForInsertion(
     return canvasRectangle({
       x: pointOnCanvas.x,
       y: pointOnCanvas.y,
-      width: insertionSubjectSize.width,
-      height: insertionSubjectSize.height,
+      width: defaultSize.width,
+      height: defaultSize.height,
     })
   }
 
