@@ -160,35 +160,36 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
   )
 
   return (
-    <Menu key={id} id={id} animation={false} onVisibilityChange={onVisibilityChange}>
-      <div
-        style={{
-          maxHeight: 'calc(100vh - 100px)',
-          overflowY: 'scroll',
-          overflowX: 'hidden',
-          scrollbarWidth: 'none',
-        }}
-        onWheel={stopPropagation}
-      >
-        {splitItems.map((item, index) => {
-          if (item?.type === 'submenu') {
-            return (
-              <SubmenuComponent
-                key={`context-menu-${index}`}
-                label={<span style={{ display: 'flex', alignItems: 'center' }}>{item.label}</span>}
-                arrow={<Icons.ExpansionArrowRightWhite style={{ marginLeft: 8 }} />}
-              >
-                {item.items.map(renderItem)}
-              </SubmenuComponent>
-            )
-          } else {
-            if (item === null) {
-              return null
-            }
-            return renderItem(item.item, index)
+    <Menu
+      key={id}
+      id={id}
+      animation={false}
+      onVisibilityChange={onVisibilityChange}
+      onWheel={stopPropagation}
+      style={{
+        maxHeight: 'calc(100vh - 80px)',
+        overflow: 'visible scroll',
+        scrollbarWidth: 'none',
+      }}
+    >
+      {splitItems.map((item, index) => {
+        if (item?.type === 'submenu') {
+          return (
+            <SubmenuComponent
+              key={`context-menu-${index}`}
+              label={<span style={{ display: 'flex', alignItems: 'center' }}>{item.label}</span>}
+              arrow={<Icons.ExpansionArrowRightWhite style={{ marginLeft: 8 }} />}
+            >
+              {item.items.map(renderItem)}
+            </SubmenuComponent>
+          )
+        } else {
+          if (item === null) {
+            return null
           }
-        })}
-      </div>
+          return renderItem(item.item, index)
+        }
+      })}
     </Menu>
   )
 }
