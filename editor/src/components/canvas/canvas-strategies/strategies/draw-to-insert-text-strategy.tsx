@@ -1,13 +1,13 @@
 import { EditorModes } from '../../../../components/editor/editor-modes'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { stripNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { updateSelectedRightMenuTab } from '../../../editor/actions/actions'
 import { CSSCursor } from '../../canvas-types'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
-import type { MetaCanvasStrategy } from '../canvas-strategies'
+import { findElementPathUnderPoint, type MetaCanvasStrategy } from '../canvas-strategies'
 import type {
   CanvasStrategy,
   CustomStrategyState,
@@ -20,15 +20,25 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { drawToInsertFitness, drawToInsertStrategyFactory } from './draw-to-insert-metastrategy'
+import { gridDrawToInsertText } from './grid-draw-to-insert-strategy'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 
 export const DRAW_TO_INSERT_TEXT_STRATEGY_ID = 'draw-to-insert-text'
 
-export const drawToInsertTextStrategy: MetaCanvasStrategy = (
+export const drawToInsertTextMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
+  const elementUnderCursor = findElementPathUnderPoint(canvasState, interactionSession)
+  if (
+    MetadataUtils.isGridLayoutedContainer(
+      MetadataUtils.findElementByElementPath(canvasState.startingMetadata, elementUnderCursor),
+    )
+  ) {
+    return stripNulls([gridDrawToInsertText(canvasState, interactionSession, customStrategyState)])
+  }
+
   const name = 'Draw to insert (Text)'
 
   if (

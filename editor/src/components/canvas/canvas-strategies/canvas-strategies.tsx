@@ -65,7 +65,7 @@ import * as EP from '../../../core/shared/element-path'
 import { keyboardSetFontSizeStrategy } from './strategies/keyboard-set-font-size-strategy'
 import { keyboardSetFontWeightStrategy } from './strategies/keyboard-set-font-weight-strategy'
 import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-strategy'
-import { drawToInsertTextStrategy } from './strategies/draw-to-insert-text-strategy'
+import { drawToInsertTextMetaStrategy } from './strategies/draw-to-insert-text-strategy'
 import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 import type { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
@@ -77,12 +77,14 @@ import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
 import { gridRearrangeMoveDuplicateStrategy } from './strategies/grid-rearrange-move-duplicate-strategy'
-import { gridDrawToInsertStrategy } from './strategies/grid-draw-to-insert-strategy'
 import type { CanvasCommand } from '../commands/commands'
 import { foldAndApplyCommandsInner } from '../commands/commands'
 import { updateFunctionCommand } from '../commands/update-function-command'
 import { wrapInContainerCommand } from '../commands/wrap-in-container-command'
 import type { ElementPath } from 'utopia-shared/src/types'
+import { drawToInsertMetaMetaStrategy } from './strategies/draw-to-insert-meta-meta-strategy'
+import { reparentSubjectsForInteractionTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
+import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -186,26 +188,15 @@ const keyboardShortcutStrategies: MetaCanvasStrategy = (
   )
 }
 
-const drawToInsertStrategies: MetaCanvasStrategy = (
-  canvasState: InteractionCanvasState,
-  interactionSession: InteractionSession | null,
-  customStrategyState: CustomStrategyState,
-): Array<CanvasStrategy> => {
-  return stripNulls([
-    ...drawToInsertMetaStrategy(canvasState, interactionSession, customStrategyState),
-    gridDrawToInsertStrategy(canvasState, interactionSession, customStrategyState),
-  ])
-}
-
 export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
   preventOnRootElements(resizeStrategies),
   propertyControlStrategies,
-  drawToInsertStrategies,
+  drawToInsertMetaMetaStrategy,
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
   keyboardShortcutStrategies,
-  drawToInsertTextStrategy,
+  drawToInsertTextMetaStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -722,6 +713,37 @@ export function getWrappingCommands(
         ).statePatches,
     ),
   ]
+}
+
+export function findElementPathUnderPoint(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): ElementPath | null {
+  const reparentSubjects = reparentSubjectsForInteractionTarget(canvasState.interactionTarget)
+
+  if (interactionSession == null || interactionSession.interactionData.type === 'KEYBOARD') {
+    return null
+  }
+
+  const { interactionData } = interactionSession
+
+  const pointOnCanvas =
+    interactionData.type === 'DRAG' ? interactionData.originalDragStart : interactionData.point
+
+  const targetParent = getReparentTargetUnified(
+    reparentSubjects,
+    pointOnCanvas,
+    true, // cmd is necessary to allow reparenting,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
+    canvasState.startingAllElementProps,
+    'allow-smaller-parent',
+    ['supportsChildren'],
+    canvasState.propertyControlsInfo,
+  )?.newParent.intendedParentPath
+
+  return targetParent ?? null
 }
 
 export function getDescriptiveStrategyLabelWithRetargetedPaths(
