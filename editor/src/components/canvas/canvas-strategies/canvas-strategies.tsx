@@ -11,6 +11,7 @@ import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import type {
   AllElementProps,
   EditorState,
+  EditorStatePatch,
   EditorStorePatched,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
@@ -77,6 +78,11 @@ import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-stra
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
 import { gridRearrangeMoveDuplicateStrategy } from './strategies/grid-rearrange-move-duplicate-strategy'
 import { gridDrawToInsertStrategy } from './strategies/grid-draw-to-insert-strategy'
+import type { CanvasCommand } from '../commands/commands'
+import { foldAndApplyCommandsInner } from '../commands/commands'
+import { updateFunctionCommand } from '../commands/update-function-command'
+import { wrapInContainerCommand } from '../commands/wrap-in-container-command'
+import type { ElementPath } from 'utopia-shared/src/types'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -671,11 +677,16 @@ export function onlyFitWhenDraggingThisControl(
   }
 }
 
+export interface WrapperWithUid {
+  wrapper: InsertionSubjectWrapper
+  uid: string
+}
+
 export function getWrapperWithGeneratedUid(
   customStrategyState: CustomStrategyState,
   canvasState: InteractionCanvasState,
   subjects: Array<InsertionSubject>,
-): { wrapper: InsertionSubjectWrapper; uid: string } | null {
+): WrapperWithUid | null {
   const insertionSubjectWrapper = subjects.at(0)?.insertionSubjectWrapper ?? null
   if (insertionSubjectWrapper == null) {
     return null
@@ -686,6 +697,31 @@ export function getWrapperWithGeneratedUid(
     generateUidWithExistingComponents(canvasState.projectContents)
 
   return { wrapper: insertionSubjectWrapper, uid: uid }
+}
+
+export function getWrappingCommands(
+  wrappedElementPath: ElementPath,
+  wrapperWithUid: WrapperWithUid,
+): CanvasCommand[] {
+  return [
+    updateFunctionCommand(
+      'always',
+      (editorState, lifecycle): Array<EditorStatePatch> =>
+        foldAndApplyCommandsInner(
+          editorState,
+          [],
+          [
+            wrapInContainerCommand(
+              'always',
+              wrappedElementPath,
+              wrapperWithUid.uid,
+              wrapperWithUid.wrapper,
+            ),
+          ],
+          lifecycle,
+        ).statePatches,
+    ),
+  ]
 }
 
 export function getDescriptiveStrategyLabelWithRetargetedPaths(

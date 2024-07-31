@@ -18,7 +18,11 @@ import { updateHighlightedViews } from '../../commands/update-highlighted-views-
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { GridControls } from '../../controls/grid-controls'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
-import type { CanvasStrategyFactory } from '../canvas-strategies'
+import {
+  getWrapperWithGeneratedUid,
+  getWrappingCommands,
+  type CanvasStrategyFactory,
+} from '../canvas-strategies'
 import {
   emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
@@ -157,33 +161,52 @@ export const gridDrawToInsertStrategy: CanvasStrategyFactory = (
 
       const gridTemplate = parent.specialSizeMeasurements.containerGridProperties
 
-      return strategyApplicationResult([
-        insertionCommand,
-        ...setGridPropsCommands(EP.appendToPath(targetParent, insertionSubject.uid), gridTemplate, {
-          gridRowStart: { numericalPosition: gridCellCoordinates.row },
-          gridColumnStart: { numericalPosition: gridCellCoordinates.column },
-          gridRowEnd: { numericalPosition: gridCellCoordinates.row + 1 },
-          gridColumnEnd: { numericalPosition: gridCellCoordinates.column + 1 },
-        }),
-        ...stripNulls([
-          insertionSubject.textEdit
-            ? wildcardPatch('on-complete', {
-                mode: {
-                  $set: EditorModes.textEditMode(
-                    EP.appendToPath(targetParent, insertionSubject.uid),
-                    canvasPointToWindowPoint(
-                      pointOnCanvas,
-                      canvasState.scale,
-                      canvasState.canvasOffset,
-                    ),
-                    'existing',
-                    'no-text-selection',
-                  ),
-                },
-              })
-            : null,
-        ]),
+      const insertedElementPath = EP.appendToPath(targetParent, insertionSubject.uid)
+
+      const maybeWrapperWithUid = getWrapperWithGeneratedUid(customStrategyState, canvasState, [
+        insertionSubject,
       ])
+
+      const wrappingCommands =
+        maybeWrapperWithUid == null
+          ? []
+          : getWrappingCommands(insertedElementPath, maybeWrapperWithUid)
+
+      return strategyApplicationResult(
+        [
+          insertionCommand,
+          ...setGridPropsCommands(insertedElementPath, gridTemplate, {
+            gridRowStart: { numericalPosition: gridCellCoordinates.row },
+            gridColumnStart: { numericalPosition: gridCellCoordinates.column },
+            gridRowEnd: { numericalPosition: gridCellCoordinates.row + 1 },
+            gridColumnEnd: { numericalPosition: gridCellCoordinates.column + 1 },
+          }),
+          ...wrappingCommands,
+          ...stripNulls([
+            insertionSubject.textEdit
+              ? wildcardPatch('on-complete', {
+                  mode: {
+                    $set: EditorModes.textEditMode(
+                      insertedElementPath,
+                      canvasPointToWindowPoint(
+                        pointOnCanvas,
+                        canvasState.scale,
+                        canvasState.canvasOffset,
+                      ),
+                      'existing',
+                      'no-text-selection',
+                    ),
+                  },
+                })
+              : null,
+          ]),
+        ],
+        {
+          strategyGeneratedUidsCache: {
+            [insertionSubject.uid]: maybeWrapperWithUid?.uid,
+          },
+        },
+      )
     },
   }
 }

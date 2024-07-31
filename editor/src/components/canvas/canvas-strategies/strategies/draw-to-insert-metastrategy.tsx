@@ -35,6 +35,7 @@ import type { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strate
 import {
   findCanvasStrategy,
   getWrapperWithGeneratedUid,
+  getWrappingCommands,
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
   RegisteredCanvasStrategies,
@@ -318,27 +319,7 @@ export function drawToInsertStrategyFactory(
               const newPath = EP.appendToPath(targetParent.intendedParentPath, insertionSubject.uid)
 
               const optionalWrappingCommand =
-                maybeWrapperWithUid != null
-                  ? [
-                      updateFunctionCommand(
-                        'always',
-                        (editorState, lifecycle): Array<EditorStatePatch> =>
-                          foldAndApplyCommandsInner(
-                            editorState,
-                            [],
-                            [
-                              wrapInContainerCommand(
-                                'always',
-                                newPath,
-                                maybeWrapperWithUid.uid,
-                                maybeWrapperWithUid.wrapper,
-                              ),
-                            ],
-                            lifecycle,
-                          ).statePatches,
-                      ),
-                    ]
-                  : []
+                maybeWrapperWithUid != null ? getWrappingCommands(newPath, maybeWrapperWithUid) : []
 
               return strategyApplicationResult(
                 [insertionCommand.command, reparentCommand, ...optionalWrappingCommand],
