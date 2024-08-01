@@ -1,4 +1,9 @@
-import { fromArrayIndex, fromField, notNull } from '../../../../core/shared/optics/optic-creators'
+import {
+  fromArrayIndex,
+  fromField,
+  fromTypeGuard,
+  notNull,
+} from '../../../../core/shared/optics/optic-creators'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import * as PP from '../../../../core/shared/property-path'
@@ -13,8 +18,12 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import type { GridCSSNumber } from '../../../../components/inspector/common/css-utils'
-import { printArrayCSSNumber } from '../../../../components/inspector/common/css-utils'
+import type { GridDimension } from '../../../../components/inspector/common/css-utils'
+import {
+  isCSSNumber,
+  isGridCSSNumber,
+  printArrayGridDimension,
+} from '../../../../components/inspector/common/css-utils'
 import { modify, toFirst } from '../../../../core/shared/optics/optic-utilities'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import type { Either } from '../../../../core/shared/either'
@@ -109,12 +118,15 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         }),
       }
 
-      const unitOptic = fromArrayIndex<GridCSSNumber>(control.columnOrRow)
+      const unitOptic = fromArrayIndex<GridDimension>(control.columnOrRow)
+        .compose(fromTypeGuard(isGridCSSNumber))
+        .compose(fromField('value'))
         .compose(fromField('unit'))
         .compose(notNull())
-      const valueOptic = fromArrayIndex<GridCSSNumber>(control.columnOrRow).compose(
-        fromField('value'),
-      )
+      const valueOptic = fromArrayIndex<GridDimension>(control.columnOrRow)
+        .compose(fromTypeGuard(isGridCSSNumber))
+        .compose(fromField('value'))
+        .compose(fromField('value'))
 
       const calculatedValue = toFirst(valueOptic, calculatedValues.dimensions)
       const mergedValue = toFirst(valueOptic, mergedValues.dimensions)
@@ -133,7 +145,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
           ),
         mergedValues.dimensions,
       )
-      const propertyValueAsString = printArrayCSSNumber(newSetting)
+      const propertyValueAsString = printArrayGridDimension(newSetting)
 
       const commands = [
         setProperty(
