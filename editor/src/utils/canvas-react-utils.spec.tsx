@@ -65,7 +65,7 @@ describe('Monkey Function', () => {
   it('class components have a working context', () => {
     const MyContext = React.createContext({ value: 'wrong!' })
     class TestClass extends React.Component {
-      declare context: React.ContextType<typeof MyContext>
+      context!: React.ContextType<typeof MyContext>
       render() {
         return (
           <div data-uid='inner-div' data-path='inner-div'>
@@ -91,7 +91,7 @@ describe('Monkey Function', () => {
   it('class components have a working context, third variant', () => {
     const MyContext = React.createContext({ value: 'wrong!' })
     class TestClass extends React.Component {
-      declare context: React.ContextType<typeof MyContext>
+      context!: React.ContextType<typeof MyContext>
       render() {
         return (
           <div data-uid='inner-div' data-path='inner-div'>
