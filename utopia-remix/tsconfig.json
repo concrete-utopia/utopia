@@ -7,7 +7,7 @@
     "jsx": "react-jsx",
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
-    "target": "ES2022",
+    "target": "ES2023",
     "strict": true,
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
