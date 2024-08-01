@@ -25,10 +25,10 @@ index 50c7e6fb631..629a119108b 100644
  		const extensions = gulp.src('.build/web/extensions/**', { base: '.build/web', dot: true });
  
 diff --git a/package.json b/package.json
-index 2103fe1fe1a..c3d495f5379 100644
+index 2103fe1fe1a..92954953615 100644
 --- a/package.json
 +++ b/package.json
-@@ -96,7 +96,6 @@
+@@ -96,10 +96,10 @@
      "kerberos": "^2.0.1",
      "minimist": "^1.2.6",
      "native-is-elevated": "0.7.0",
@@ -36,6 +36,10 @@ index 2103fe1fe1a..c3d495f5379 100644
      "native-watchdog": "^1.4.1",
      "node-pty": "1.1.0-beta11",
      "tas-client-umd": "0.2.0",
++    "utopia-vscode-common": "file:../../utopia-vscode-common",
+     "v8-inspect-profiler": "^0.1.1",
+     "vscode-oniguruma": "1.7.0",
+     "vscode-regexpp": "^3.1.0",
 diff --git a/product.json b/product.json
 index 27ae53fe16b..782dce05a93 100644
 --- a/product.json
@@ -1219,6 +1223,83 @@ index 1d17e4c709e..00109563f5c 100644
 -	const keyboardLayoutInfo = nativeKeymapMod.getCurrentKeyboardLayout();
 -	return { keyboardMapping, keyboardLayoutInfo };
 -}
+diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
+index b0688133537..322777365eb 100644
+--- a/src/vs/workbench/browser/workbench.ts
++++ b/src/vs/workbench/browser/workbench.ts
+@@ -50,6 +50,8 @@ import { AccessibilityProgressSignalScheduler } from 'vs/platform/accessibilityS
+ import { setProgressAcccessibilitySignalScheduler } from 'vs/base/browser/ui/progressbar/progressAccessibilitySignal';
+ import { AccessibleViewRegistry } from 'vs/platform/accessibility/browser/accessibleViewRegistry';
+ import { NotificationAccessibleView } from 'vs/workbench/browser/parts/notifications/notificationAccessibleView';
++import { ICommandService } from '../../platform/commands/common/commands';
++import { isDeletePathChange, isEnsureDirectoryExistsChange, isInitProject, isWriteProjectFileChange, messageListenersReady } from 'utopia-vscode-common';
+ 
+ export interface IWorkbenchOptions {
+ 
+@@ -193,6 +195,63 @@ export class Workbench extends Layout {
+ 				this.restore(lifecycleService);
+ 			});
+ 
++			// Chain off of the previous one to ensure the ordering of changes is maintained.
++			// FIXME Do we still need this?
++			let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
++
++			let intervalID: number | null = null
++
++			mainWindow.addEventListener('message', (messageEvent: MessageEvent) => {
++				const { data } = messageEvent;
++				if (isInitProject(data)) {
++					if (intervalID != null) {
++						window.clearInterval(intervalID)
++					}
++					console.log(`Received init message`)
++					// initIndexedDBBridge(vsCodeSessionID, data.projectContents, data.openFilePath)
++				} else if (isDeletePathChange(data)) {
++					applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
++						// await deletePath(toFSPath(data.fullPath), data.recursive)
++					})
++				} else if (isWriteProjectFileChange(data)) {
++					applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
++						// await writeProjectFile(data.projectFile)
++					})
++				} else if (isEnsureDirectoryExistsChange(data)) {
++					applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
++						// await ensureDirectoryExists(toFSPath(data.fullPath))
++					})
++					// FIXME we shouldn't differentiate these
++				// } else if (isToVSCodeExtensionMessage(data)) {
++				// 	applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
++				// 		// await sendMessage(data.message)
++				// 	})
++				}
++
++
++				if (typeof data === 'object') {
++					if ((data as any)?.['type'] === 'INIT_PROJECT') {
++						const commandService = this.serviceCollection.get(ICommandService);
++						if (commandService == null) {
++							console.log(`There is no command service`);
++						} else {
++							(commandService as ICommandService).executeCommand('memfs.workspaceInit');
++						}
++					}
++					else if ((data as any)?.['type'] === 'MEMFS_FILE_UPDATE') {
++						console.log(`There was a file update`, data);
++					}
++				}
++			});
++
++			intervalID = window.setInterval(() => {
++				try {
++					window.top?.postMessage(messageListenersReady(), '*')
++				} catch (error) {
++					console.error('Error posting messageListenersReady', error)
++				}
++			}, 500)
++
+ 			return instantiationService;
+ 		} catch (error) {
+ 			onUnexpectedError(error);
 diff --git a/yarn.lock b/yarn.lock
 index 71aef4295fa..7689f69b84e 100644
 --- a/yarn.lock

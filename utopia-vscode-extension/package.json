@@ -5,7 +5,10 @@
   "description": "For providing communication between Utopia and VS Code",
   "version": "0.0.2",
   "license": "MIT",
-  "enableProposedApi": true,
+  "enabledApiProposals": [
+    "fileSearchProvider",
+    "textSearchProvider"
+  ],
   "private": true,
   "activationEvents": [
     "onFileSystem:utopia",
@@ -43,6 +46,13 @@
       {
         "language": "javascript",
         "path": "./snippets.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "utopia.toVSCodeMessage",
+        "title": "Utopia Message to VS Code",
+        "category": "Utopia"
       }
     ]
   },
