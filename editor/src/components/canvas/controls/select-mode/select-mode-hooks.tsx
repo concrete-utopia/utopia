@@ -304,7 +304,7 @@ function getCandidateSelectableViews(
 }
 
 export function useFindValidTarget(): (
-  selectableViews: Array<ElementPath>,
+  selectableViews: SelectableViews,
   mousePoint: WindowPoint | null,
   preferAlreadySelected: 'prefer-selected' | 'prefer-more-specific-selection',
 ) => {
