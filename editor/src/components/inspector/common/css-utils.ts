@@ -868,7 +868,7 @@ export const parseCSSGrid = (input: unknown): Either<string, GridDimension> => {
   if (isRight(maybeNumber)) {
     return right(gridCSSNumber(maybeNumber.value, null))
   }
-  if (typeof input === 'string' && isValidGridDimensionKeyword(input)) {
+  if (isValidGridDimensionKeyword(input)) {
     return right(gridCSSKeyword(cssKeyword(input), null))
   }
   return left('invalid css grid dimension')
@@ -882,7 +882,7 @@ export const parseCSSUnitlessAsNumber = (input: unknown): Either<string, number>
   }
 }
 
-const validGridDimensionKeywords: string[] = [
+const validGridDimensionKeywords = [
   'auto',
   'min-content',
   'max-content',
@@ -894,10 +894,12 @@ const validGridDimensionKeywords: string[] = [
   'auto-fit',
   'auto-fill',
   // NOTE: function keywords are omitted as they are treated separately
-]
+] as const
 
-export function isValidGridDimensionKeyword(s: string): boolean {
-  return validGridDimensionKeywords.includes(s)
+type ValidGridDimensionKeyword = (typeof validGridDimensionKeywords)[number]
+
+export function isValidGridDimensionKeyword(value: unknown): value is ValidGridDimensionKeyword {
+  return validGridDimensionKeywords.includes(value as ValidGridDimensionKeyword)
 }
 
 const gridCSSTemplateNumberRegex = /^\[(.+)\]\s*(.+)$/
