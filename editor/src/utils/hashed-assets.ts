@@ -39,14 +39,14 @@ export function getPossiblyHashedURL(url: string): string {
   return appendToPath(STATIC_BASE_URL, relativeURL)
 }
 
+// prioritise the toolbar assets for now, so first click shows them immediately
 const prioritisedAssets = [
-  '/editor/icons/light/semantic/hamburgermenu-black-24x24@2x.png',
-  '/editor/icons/light/semantic/closedcube-black-24x24@2x.png',
-  '/editor/icons/light/semantic/closedcube-white-24x24@2x.png',
-  '/editor/icons/light/filetype/ui-darkgray-18x18@2x.png',
-  '/editor/icons/light/filetype/js-darkgray-18x18@2x.png',
-  '/editor/icons/light/semantic/externallink-large-black-24x24@2x.png',
-  '/editor/icons/light/semantic/cross-small-gray-16x16@2x.png',
+  '/editor/icons/tools/comment-white-18x18@2x.png',
+  // next line is for the pointer when it's not selected (by default it is)
+  '/editor/icons/tools/pointer-black-18x18@2x.png',
+  '/editor/icons/tools/play-white-18x18@2x.png',
+  '/editor/icons/tools/text-white-18x18@2x.png',
+  '/editor/icons/tools/panels-white-18x18@2x.png',
 ]
 
 export function preloadPrioritizedAssets() {
