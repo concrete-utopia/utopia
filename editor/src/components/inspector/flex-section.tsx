@@ -423,10 +423,10 @@ const TemplateDimensionControl = React.memo(
             <Icons.Plus width={12} height={12} onClick={onAdd} />
           </SquareButton>
         </div>
-        {values.map((col, index) => {
+        {values.map((value, index) => {
           return (
             <div
-              key={`col-${col}-${index}`}
+              key={`col-${value}-${index}`}
               style={{ display: 'flex', alignItems: 'center', gap: 6 }}
               css={{
                 [`& > .${axisDropdownMenuButton}`]: {
@@ -447,22 +447,22 @@ const TemplateDimensionControl = React.memo(
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                   }}
-                  title={col.areaName ?? undefined}
+                  title={value.areaName ?? undefined}
                 >
-                  {col.areaName ?? index + 1}
+                  {value.areaName ?? index + 1}
                 </Subdued>
                 <NumberInput
                   style={{ flex: 1 }}
                   value={
                     // TODO: this is just temporary!!!
-                    isGridCSSNumber(col) ? col.value : cssNumber(0)
+                    isGridCSSNumber(value) ? value.value : cssNumber(0)
                   }
                   numberType={'Length'}
                   onSubmitValue={onUpdate(index)}
                   onTransientSubmitValue={onUpdate(index)}
                   onForcedSubmitValue={onUpdate(index)}
                   defaultUnitToHide={null}
-                  testId={`col-${col}-${index}`}
+                  testId={`col-${value}-${index}`}
                 />
               </div>
               <SquareButton className={axisDropdownMenuButton}>
