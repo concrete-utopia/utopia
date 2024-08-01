@@ -6,8 +6,11 @@ import { motion, useAnimationControls } from 'framer-motion'
 import type { CSSProperties } from 'react'
 import React from 'react'
 import type { ElementPath } from 'utopia-shared/src/types'
-import type { GridCSSNumber } from '../../../components/inspector/common/css-utils'
-import { printGridAutoOrTemplateBase } from '../../../components/inspector/common/css-utils'
+import type { GridDimension } from '../../../components/inspector/common/css-utils'
+import {
+  printGridAutoOrTemplateBase,
+  printGridCSSNumber,
+} from '../../../components/inspector/common/css-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { defaultEither } from '../../../core/shared/either'
@@ -111,19 +114,19 @@ function getNullableAutoOrTemplateBaseString(
   }
 }
 
-function getFromPropsOptic(index: number): Optic<GridAutoOrTemplateBase | null, GridCSSNumber> {
+function getFromPropsOptic(index: number): Optic<GridAutoOrTemplateBase | null, GridDimension> {
   return notNull<GridAutoOrTemplateBase>()
     .compose(fromTypeGuard(isGridAutoOrTemplateDimensions))
     .compose(fromField('dimensions'))
     .compose(fromArrayIndex(index))
 }
 
-function gridCSSNumberToLabel(gridCSSNumber: GridCSSNumber): string {
-  return `${gridCSSNumber.value}${gridCSSNumber.unit ?? ''}`
+function gridCSSNumberToLabel(gridCSSNumber: GridDimension): string {
+  return printGridCSSNumber(gridCSSNumber)
 }
 
 function getLabelForAxis(
-  fromDOM: GridCSSNumber,
+  fromDOM: GridDimension,
   index: number,
   fromProps: GridAutoOrTemplateBase | null,
 ): string {
@@ -136,7 +139,7 @@ const GRID_RESIZE_HANDLE_CONTAINER_SIZE = 30 // px
 const GRID_RESIZE_HANDLE_SIZE = 15 // px
 
 export interface GridResizingControlProps {
-  dimension: GridCSSNumber
+  dimension: GridDimension
   dimensionIndex: number
   axis: 'row' | 'column'
   containingFrame: CanvasRectangle
@@ -314,11 +317,11 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
             display: 'grid',
             gridTemplateColumns:
               props.axis === 'column'
-                ? props.axisValues.dimensions.map((dim) => `${dim.value}${dim.unit}`).join(' ')
+                ? props.axisValues.dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
                 : undefined,
             gridTemplateRows:
               props.axis === 'row'
-                ? props.axisValues.dimensions.map((dim) => `${dim.value}${dim.unit}`).join(' ')
+                ? props.axisValues.dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
                 : undefined,
             gap: props.gap ?? 0,
             paddingLeft:

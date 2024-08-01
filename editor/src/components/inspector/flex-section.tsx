@@ -18,20 +18,20 @@ import { FlexCol } from 'utopia-api'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { strictEvery } from '../../core/shared/array-utils'
 import { useDispatch } from '../editor/store/dispatch-context'
-import {
-  addFlexLayoutStrategies,
-  addGridLayoutStrategies,
-} from './inspector-strategies/inspector-strategies'
-import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import type { DetectedLayoutSystem } from 'utopia-shared/src/types'
-import { assertNever, NO_OP } from '../../core/shared/utils'
+import { NO_OP } from '../../core/shared/utils'
 import { Icons, NumberInput, SquareButton, Subdued } from '../../uuiui'
-import type { CSSNumber, GridCSSNumberUnit, UnknownOrEmptyInput } from './common/css-utils'
+import type { CSSKeyword, CSSNumber, UnknownOrEmptyInput } from './common/css-utils'
 import {
+  cssNumber,
   cssNumberToString,
+  gridCSSKeyword,
   gridCSSNumber,
+  isCSSKeyword,
   isCSSNumber,
-  type GridCSSNumber,
+  isGridCSSKeyword,
+  isGridCSSNumber,
+  type GridDimension,
 } from './common/css-utils'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import type { PropertyToUpdate } from '../canvas/commands/set-property-command'
@@ -113,7 +113,7 @@ export const FlexSection = React.memo(() => {
     'FlexSection grid',
   )
 
-  const columns: GridCSSNumber[] = React.useMemo(() => {
+  const columns: GridDimension[] = React.useMemo(() => {
     return getGridTemplateAxisValues({
       calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateColumns ?? null,
       fromProps:
@@ -121,7 +121,7 @@ export const FlexSection = React.memo(() => {
     })
   }, [grid])
 
-  const rows: GridCSSNumber[] = React.useMemo(() => {
+  const rows: GridDimension[] = React.useMemo(() => {
     return getGridTemplateAxisValues({
       calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateRows ?? null,
       fromProps:
@@ -185,7 +185,7 @@ const TemplateDimensionControl = React.memo(
     title,
   }: {
     grid: ElementInstanceMetadata
-    values: GridCSSNumber[]
+    values: GridDimension[]
     axis: 'column' | 'row'
     title: string
   }) => {
@@ -194,28 +194,43 @@ const TemplateDimensionControl = React.memo(
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
     const onUpdate = React.useCallback(
-      (index: number) => (value: UnknownOrEmptyInput<CSSNumber>) => {
-        if (!isCSSNumber(value)) {
-          return
+      (index: number) => (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<string>>) => {
+        if (isCSSKeyword(value)) {
+          const newValues = [...values]
+          newValues[index] = isCSSNumber(value)
+            ? gridCSSNumber(value, null)
+            : gridCSSKeyword(value, null)
+
+          return dispatch([
+            applyCommandsAction([
+              setProperty(
+                'always',
+                grid.elementPath,
+                PP.create('style', axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows'),
+                gridNumbersToTemplateString(newValues),
+              ),
+            ]),
+          ])
+        } else if (isCSSNumber(value)) {
+          const gridValueAtIndex = values[index]
+          const maybeUnit = isGridCSSNumber(gridValueAtIndex) ? gridValueAtIndex.value.unit : null
+          const newValues = [...values]
+          newValues[index] = gridCSSNumber(
+            cssNumber(value.value, value.unit ?? maybeUnit),
+            gridValueAtIndex.areaName,
+          )
+
+          dispatch([
+            applyCommandsAction([
+              setProperty(
+                'always',
+                grid.elementPath,
+                PP.create('style', axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows'),
+                gridNumbersToTemplateString(newValues),
+              ),
+            ]),
+          ])
         }
-
-        const newValues = [...values]
-        newValues[index] = gridCSSNumber(
-          value.value,
-          (value.unit as GridCSSNumberUnit) ?? values[index].unit,
-          values[index].areaName,
-        )
-
-        dispatch([
-          applyCommandsAction([
-            setProperty(
-              'always',
-              grid.elementPath,
-              PP.create('style', axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows'),
-              gridNumbersToTemplateString(newValues),
-            ),
-          ]),
-        ])
       },
       [grid, values, dispatch, axis],
     )
@@ -287,7 +302,7 @@ const TemplateDimensionControl = React.memo(
     )
 
     const onAdd = React.useCallback(() => {
-      const newValues = values.concat(gridCSSNumber(1, 'fr', null))
+      const newValues = values.concat(gridCSSNumber(cssNumber(1, 'fr'), null))
       dispatch([
         applyCommandsAction([
           setProperty(
@@ -438,7 +453,10 @@ const TemplateDimensionControl = React.memo(
                 </Subdued>
                 <NumberInput
                   style={{ flex: 1 }}
-                  value={col}
+                  value={
+                    // TODO: this is just temporary!!!
+                    isGridCSSNumber(col) ? col.value : cssNumber(0)
+                  }
                   numberType={'Length'}
                   onSubmitValue={onUpdate(index)}
                   onTransientSubmitValue={onUpdate(index)}
@@ -464,7 +482,7 @@ function removeTemplateValueAtIndex(
   axis: 'column' | 'row',
   index: number,
 ): GridContainerProperties {
-  function removeDimension(dimensions: GridCSSNumber[]) {
+  function removeDimension(dimensions: GridDimension[]) {
     return dimensions.filter((_, idx) => idx !== index)
   }
 
@@ -497,7 +515,7 @@ function renameAreaInTemplateAtIndex(
   index: number,
   newAreaName: string | null,
 ) {
-  function renameDimension(dimension: GridCSSNumber, idx: number) {
+  function renameDimension(dimension: GridDimension, idx: number) {
     return idx === index ? { ...dimension, areaName: newAreaName } : dimension
   }
 
@@ -524,12 +542,15 @@ function renameAreaInTemplateAtIndex(
   }
 }
 
-function gridNumbersToTemplateString(values: GridCSSNumber[]) {
+function gridNumbersToTemplateString(values: GridDimension[]) {
   return values
     .map((v) => {
+      if (isGridCSSKeyword(v)) {
+        return v.value.value
+      }
       const areaName = v.areaName != null ? `[${v.areaName}] ` : ''
-      const unit = v.unit != null ? `${v.unit}` : ''
-      return areaName + `${v.value}` + unit
+      const unit = v.value.unit != null ? `${v.value.unit}` : ''
+      return areaName + `${v.value.value}` + unit
     })
     .join(' ')
 }
@@ -537,7 +558,7 @@ function gridNumbersToTemplateString(values: GridCSSNumber[]) {
 function getGridTemplateAxisValues(template: {
   calculated: GridAutoOrTemplateBase | null
   fromProps: GridAutoOrTemplateBase | null
-}): GridCSSNumber[] {
+}): GridDimension[] {
   const { calculated, fromProps } = template
   if (fromProps?.type !== 'DIMENSIONS' && calculated?.type !== 'DIMENSIONS') {
     return []
