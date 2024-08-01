@@ -72,6 +72,7 @@ import {
   isJSIdentifier,
   isJSPropertyAccess,
   isJSElementAccess,
+  isIntrinsicHTMLElementString,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -1169,9 +1170,18 @@ export const MetadataUtils = {
       return honoursPropsToSizeComponent(underlyingComponent)
     }
   },
+  isIntrinsicElement(element: Either<string, JSXElementChild>): boolean {
+    return foldEither(
+      isIntrinsicHTMLElementString,
+      (elementInstance) =>
+        isJSXElement(elementInstance) && isIntrinsicHTMLElement(elementInstance.name),
+      element,
+    )
+  },
   findTargetThatHonoursPropsToPositionElement(
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadata | null,
+    checkPosition: 'check-position' | 'ignore-position',
   ): ElementPath | null {
     if (metadata == null) {
       return null
@@ -1181,8 +1191,16 @@ export const MetadataUtils = {
         metadata.importInfo,
       )
       if (underlyingComponent == null) {
-        // Could be an external third party component, assuming true for now.
-        return metadata.elementPath
+        if (
+          (checkPosition === 'check-position' &&
+            metadata.specialSizeMeasurements.position === 'absolute') ||
+          (checkPosition === 'ignore-position' && this.isIntrinsicElement(metadata.element))
+        ) {
+          // Could be an external third party component, assuming true for now.
+          return metadata.elementPath
+        } else {
+          return null
+        }
       } else {
         return findElementThatHonoursPropsToPositionComponent(
           underlyingComponent,
@@ -1194,10 +1212,12 @@ export const MetadataUtils = {
   targetHonoursPropsToPositionElement(
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadata | null,
+    checkPosition: 'check-position' | 'ignore-position',
   ): boolean {
     const possibleTarget = this.findTargetThatHonoursPropsToPositionElement(
       projectContents,
       metadata,
+      checkPosition,
     )
     return possibleTarget != null
   },
@@ -2603,7 +2623,7 @@ export const MetadataUtils = {
     target: ElementPath,
   ): CanvasRectangle | null {
     let workingPath: ElementPath | null = target
-    while (workingPath != null) {
+    while (workingPath != null && !EP.isEmptyPath(workingPath)) {
       const element = MetadataUtils.findElementByElementPath(metadata, workingPath)
       if (element != null) {
         let bounds: CanvasRectangle | null = null
@@ -2628,7 +2648,7 @@ export const MetadataUtils = {
     target: ElementPath,
   ): FlexDirection | null {
     let workingPath: ElementPath | null = target
-    while (workingPath != null) {
+    while (workingPath != null && !EP.isEmptyPath(workingPath)) {
       const element = MetadataUtils.findElementByElementPath(metadata, workingPath)
       if (element != null) {
         const parentFlexDirection = element.specialSizeMeasurements.parentFlexDirection

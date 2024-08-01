@@ -37,18 +37,18 @@ describe('Keyboard Absolute Resize Strategy', () => {
     'Key %s with modifiers %o works with a TL pinned absolute element',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, deltaW: number, deltaH: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 
       const initialEditor: EditorState = prepareEditorState(
         `
-    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
-      <View
+    <div style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <div
         style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
-    </View>
+    </div>
     `,
         [targetElement],
       )
@@ -57,14 +57,14 @@ describe('Keyboard Absolute Resize Strategy', () => {
 
       expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
-        <View
+          `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <div
           style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: ${
             250 + deltaW
           }, height: ${300 + deltaH} }}
           data-uid='bbb'
         />
-      </View>`,
+      </div>`,
         ),
       )
     },
@@ -87,18 +87,18 @@ describe('Keyboard Absolute Resize Strategy', () => {
     'Key %s with modifiers %o works with a TL pinned absolute element with px values',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, deltaW: number, deltaH: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 
       const initialEditor: EditorState = prepareEditorState(
         `
-    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
-      <View
+    <div style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <div
         style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: '50px', width: '250px', height: '300px' }}
         data-uid='bbb'
       />
-    </View>
+    </div>
     `,
         [targetElement],
       )
@@ -110,14 +110,14 @@ describe('Keyboard Absolute Resize Strategy', () => {
 
       expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
-        <View
+          `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <div
           style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: '50px', width: ${
             !horizontalKeysPressed ? "'250px'" : 250 + deltaW
           }, height: ${!verticalKeysPressed ? "'300px'" : 300 + deltaH} }}
           data-uid='bbb'
         />
-      </View>`,
+      </div>`,
         ),
       )
     },
@@ -140,18 +140,18 @@ describe('Keyboard Absolute Resize Strategy', () => {
     'Key %s with modifiers %o works with a RB pinned absolute element',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, deltaW: number, deltaH: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 
       const initialEditor: EditorState = prepareEditorState(
         `
-    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
-      <View
+    <div style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <div
         style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: 100, bottom: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
-    </View>
+    </div>
     `,
         [targetElement],
       )
@@ -160,13 +160,13 @@ describe('Keyboard Absolute Resize Strategy', () => {
 
       expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
-        <View
+          `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <div
           style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: ${100 - deltaW}
           , bottom: ${50 - deltaH}, width: ${250 + deltaW}, height: ${300 + deltaH} }}
           data-uid='bbb'
         />
-      </View>`,
+      </div>`,
         ),
       )
     },
@@ -189,18 +189,18 @@ describe('Keyboard Absolute Resize Strategy', () => {
     'Key %s with modifiers %o works with a TLRB pinned absolute element',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, deltaW: number, deltaH: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 
       const initialEditor: EditorState = prepareEditorState(
         `
-    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
-      <View
+    <div style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <div
         style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, right: 100, bottom: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
-    </View>
+    </div>
     `,
         [targetElement],
       )
@@ -209,14 +209,14 @@ describe('Keyboard Absolute Resize Strategy', () => {
 
       expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
-        <View
+          `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <div
           style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, right: ${
             100 - deltaW
           }, bottom: ${50 - deltaH}, width: ${250 + deltaW}, height: ${300 + deltaH} }}
           data-uid='bbb'
         />
-      </View>`,
+      </div>`,
         ),
       )
     },
@@ -240,18 +240,18 @@ describe('Keyboard Absolute Resize Strategy', () => {
     'Key %s with modifiers %o replaces expressions and fires a toast',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, deltaW: number, deltaH: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 
       const initialEditor: EditorState = prepareEditorState(
         `
-    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
-      <View
+    <div style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <div
         style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250 + props.width, height: 300 + props.height }}
         data-uid='bbb'
       />
-    </View>
+    </div>
     `,
         [targetElement],
       )
@@ -263,14 +263,14 @@ describe('Keyboard Absolute Resize Strategy', () => {
 
       expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
-          <View
+          `<div style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <div
             style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: ${
               !horizontalKeysPressed ? '250 + props.width' : 250 + deltaW
             }, height: ${!verticalKeysPressed ? '300 + props.height' : 300 + deltaH} }}
             data-uid='bbb'
           />
-        </View>`,
+        </div>`,
         ),
       )
     },

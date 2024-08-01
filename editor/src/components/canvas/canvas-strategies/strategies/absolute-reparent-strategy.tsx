@@ -75,15 +75,7 @@ export function baseAbsoluteReparentStrategy(
       canvasState.startingElementPathTree,
       filteredSelectedElements,
     ).every((element) => {
-      const elementMetadata = MetadataUtils.findElementByElementPath(
-        canvasState.startingMetadata,
-        element,
-      )
-
-      return (
-        elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-        honoursPropsToPositionElement(canvasState, element)
-      )
+      return honoursPropsToPositionElement(canvasState, element, 'check-position')
     })
     if (!isApplicable) {
       return null

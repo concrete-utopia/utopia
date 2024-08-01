@@ -28,10 +28,12 @@ export function honoursPropsToSizeElement(
 export function honoursPropsToPositionElement(
   canvasState: InteractionCanvasState,
   element: ElementPath,
+  checkPosition: 'check-position' | 'ignore-position',
 ): boolean {
   return MetadataUtils.targetHonoursPropsToPositionElement(
     canvasState.projectContents,
     MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
+    checkPosition,
   )
 }
 

@@ -44,6 +44,7 @@ import {
   isJSExpressionOtherJavaScript,
   isJSXMapExpression,
   isIntrinsicHTMLElement,
+  modifiableAttributeIsAttributeNotFound,
 } from '../shared/element-template'
 import type {
   StaticElementPathPart,
@@ -846,6 +847,25 @@ export function componentUsesProperty(component: UtopiaJSXComponent, property: s
     return false
   } else {
     return elementUsesProperty(component.rootElement, component.params, property)
+  }
+}
+
+export function doesElementLookLikeItCanBePositioned(element: JSXElementChild): boolean {
+  if (isJSXElement(element)) {
+    const positionStyle = getJSXAttributesAtPath(element.props, PP.create('style', 'position'))
+    const leftStyleAttr = getJSXAttributesAtPath(element.props, PP.create('style', 'left'))
+    const topStyleAttr = getJSXAttributesAtPath(element.props, PP.create('style', 'top'))
+    const rightStyleAttr = getJSXAttributesAtPath(element.props, PP.create('style', 'right'))
+    const bottomStyleAttr = getJSXAttributesAtPath(element.props, PP.create('style', 'bottom'))
+    return (
+      !modifiableAttributeIsAttributeNotFound(positionStyle) &&
+      !modifiableAttributeIsAttributeNotFound(leftStyleAttr) &&
+      !modifiableAttributeIsAttributeNotFound(topStyleAttr) &&
+      !modifiableAttributeIsAttributeNotFound(rightStyleAttr) &&
+      !modifiableAttributeIsAttributeNotFound(bottomStyleAttr)
+    )
+  } else {
+    return false
   }
 }
 

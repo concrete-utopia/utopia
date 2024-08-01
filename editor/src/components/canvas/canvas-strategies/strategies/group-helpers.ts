@@ -372,7 +372,13 @@ export function getGroupChildState(
     return 'unknown'
   }
 
-  if (!MetadataUtils.targetHonoursPropsToPositionElement(projectContents, elementMetadata)) {
+  if (
+    !MetadataUtils.targetHonoursPropsToPositionElement(
+      projectContents,
+      elementMetadata,
+      'check-position',
+    )
+  ) {
     return 'child-does-not-honour-props-position'
   }
 

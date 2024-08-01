@@ -120,10 +120,8 @@ export function supportsAbsoluteResize(
   element: ElementPath,
   canvasState: InteractionCanvasState,
 ): boolean {
-  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, element)
   return (
-    elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-    honoursPropsToPositionElement(canvasState, element) &&
+    honoursPropsToPositionElement(canvasState, element, 'check-position') &&
     honoursPropsToSizeElement(canvasState, element)
   )
 }

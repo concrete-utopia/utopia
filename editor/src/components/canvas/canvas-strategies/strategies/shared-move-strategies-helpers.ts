@@ -62,7 +62,10 @@ import { memoize } from '../../../../core/shared/memoize'
 import { is } from '../../../../core/shared/equality-utils'
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import type { InspectorStrategy } from '../../../../components/inspector/inspector-strategies/inspector-strategy'
-import { rectangleToSixFramePoints } from '../../commands/utils/group-resize-utils'
+import {
+  rectangleToSixFramePoints,
+  rectangleToSixFramePointsOptionalContainer,
+} from '../../commands/utils/group-resize-utils'
 import invariant from '../../../../third-party/remix/invariant'
 import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
 import {
@@ -71,7 +74,10 @@ import {
 } from '../../commands/set-css-length-command'
 import type { ActiveFrame, ActiveFrameAction } from '../../commands/set-active-frames-command'
 import { activeFrameTargetRect, setActiveFrames } from '../../commands/set-active-frames-command'
-import { findElementThatHonoursPropsToPositionComponent } from '../../../../core/model/element-template-utils'
+import {
+  doesElementLookLikeItCanBePositioned,
+  findElementThatHonoursPropsToPositionComponent,
+} from '../../../../core/model/element-template-utils'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../../custom-code/code-file'
 
 export interface MoveCommandsOptions {
@@ -272,16 +278,23 @@ export function getMoveCommandsForSelectedElement(
       projectContents,
       elementMetadata.importInfo,
     )
-    invariant(
-      underlyingComponent != null,
-      `Error in getMoveCommandsForSelectedElement: for ${EP.toString(
+    if (underlyingComponent == null) {
+      // If the underlying component can't be found (like if it comes from a 3rd party import),
+      // then check to see if this element has the pre-requisite props to be positioned.
+      const looksLikeItCanBePositioned = foldEither(
+        () => false,
+        doesElementLookLikeItCanBePositioned,
+        elementMetadata.element,
+      )
+      if (looksLikeItCanBePositioned) {
+        targetThatHonoursPositionProps = selectedElement
+      }
+    } else {
+      targetThatHonoursPositionProps = findElementThatHonoursPropsToPositionComponent(
+        underlyingComponent,
         selectedElement,
-      )} the underlying component could not be found.`,
-    )
-    targetThatHonoursPositionProps = findElementThatHonoursPropsToPositionComponent(
-      underlyingComponent,
-      selectedElement,
-    )
+      )
+    }
   }
   invariant(
     targetThatHonoursPositionProps != null,
@@ -306,12 +319,6 @@ export function getMoveCommandsForSelectedElement(
     `Error in getMoveCommandsForSelectedElement: the ${EP.toString(
       selectedElement,
     )} element's global frame was null or infinity`,
-  )
-  invariant(
-    elementParentBounds != null,
-    `Error in getMoveCommandsForSelectedElement: the ${EP.toString(
-      selectedElement,
-    )} element's coordinateSystemBounds was null`,
   )
 
   if (element == null) {
@@ -484,7 +491,7 @@ export function createMoveCommandsForElementCreatingMissingPins(
   mappedPath: ElementPath,
   drag: CanvasVector,
   globalFrame: CanvasRectangle,
-  elementParentBounds: CanvasRectangle,
+  elementParentBounds: CanvasRectangle | null,
   elementParentFlexDirection: FlexDirection | null,
 ): {
   commands: Array<SetCssLengthProperty>
@@ -506,7 +513,7 @@ export function createMoveCommandsForElementCreatingMissingPins(
 
   const intendedGlobalFrame = roundRectangleToNearestWhole(offsetRect(globalFrame, drag))
 
-  const intendedLocalFullFrame = rectangleToSixFramePoints(
+  const intendedLocalFullFrame = rectangleToSixFramePointsOptionalContainer(
     canvasRectangleToLocalRectangle(intendedGlobalFrame, elementParentBounds),
     elementParentBounds,
   )
@@ -518,6 +525,9 @@ export function createMoveCommandsForElementCreatingMissingPins(
     )
 
     const adjustedValue = intendedLocalFullFrame[pin]
+    if (adjustedValue == null) {
+      return null
+    }
 
     return setCssLengthProperty(
       'always',

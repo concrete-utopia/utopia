@@ -42,7 +42,7 @@ export function absoluteMoveStrategy(
   const isApplicable =
     retargetedTargets.length > 0 &&
     flattenSelection(retargetedTargets).every((element) => {
-      return honoursPropsToPositionElement(canvasState, element)
+      return honoursPropsToPositionElement(canvasState, element, 'check-position')
     })
 
   if (runApplicabilityCheck === 'run-applicability-check' && !isApplicable) {

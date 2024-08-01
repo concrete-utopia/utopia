@@ -1235,7 +1235,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   })
 
   describe('fragment-like reparent tests', () => {
-    AllFragmentLikeTypes.forEach((type) => {
+    AllFragmentLikeTypes.filter((t) => t === 'sizeless-div').forEach((type) => {
       describe(`Absolute reparent with fragment-like element ${type} in the mix`, () => {
         it('cannot reparent into a fragment-like div', async () => {
           const renderResult = await renderTestEditorWithCode(

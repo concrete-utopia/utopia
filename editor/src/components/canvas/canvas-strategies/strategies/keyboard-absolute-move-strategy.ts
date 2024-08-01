@@ -120,14 +120,7 @@ export function keyboardAbsoluteMoveStrategy(
 
 function isApplicable(canvasState: InteractionCanvasState, selectedElements: Array<ElementPath>) {
   return selectedElements.every((element) => {
-    const elementMetadata = MetadataUtils.findElementByElementPath(
-      canvasState.startingMetadata,
-      element,
-    )
-    return (
-      elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-      honoursPropsToPositionElement(canvasState, element)
-    )
+    return honoursPropsToPositionElement(canvasState, element, 'check-position')
   })
 }
 

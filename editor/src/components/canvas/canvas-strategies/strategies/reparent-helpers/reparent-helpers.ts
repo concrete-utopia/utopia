@@ -112,9 +112,16 @@ export function isAllowedToReparent(
 
   return foldEither(
     (_) => true,
-    (elementFromMetadata) =>
-      !elementReferencesElsewhere(elementFromMetadata) &&
-      MetadataUtils.targetHonoursPropsToPositionElement(projectContents, metadata),
+    (elementFromMetadata) => {
+      return (
+        !elementReferencesElsewhere(elementFromMetadata) &&
+        MetadataUtils.targetHonoursPropsToPositionElement(
+          projectContents,
+          metadata,
+          'check-position',
+        )
+      )
+    },
     metadata.element,
   )
 }
@@ -139,7 +146,11 @@ export function isAllowedToNavigatorReparent(
       return foldEither(
         (_) => true,
         (elementFromMetadata) =>
-          MetadataUtils.targetHonoursPropsToPositionElement(projectContents, metadata),
+          MetadataUtils.targetHonoursPropsToPositionElement(
+            projectContents,
+            metadata,
+            'check-position',
+          ),
         metadata.element,
       )
     }

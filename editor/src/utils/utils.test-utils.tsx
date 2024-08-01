@@ -36,6 +36,7 @@ import {
   getJSXElementNameAsString,
   walkElements,
   emptyComments,
+  sameFileOrigin,
 } from '../core/shared/element-template'
 import { jsxAttributesToProps } from '../core/shared/jsx-attributes'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
@@ -391,7 +392,7 @@ function createFakeMetadataForJSXElement(
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadata,
       label: props[PP.toString(PathForSceneDataLabel)],
-      importInfo: null,
+      importInfo: sameFileOrigin('/file.js', element.name.baseVariable),
       conditionValue: 'not-a-conditional',
       textContent: textContents,
       earlyReturn: null,
@@ -430,7 +431,7 @@ function createFakeMetadataForStoryboard(elementPath: ElementPath): ElementInsta
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadata,
     label: null,
-    importInfo: null,
+    importInfo: sameFileOrigin(StoryboardFilePath, 'storyboard'),
     conditionValue: 'not-a-conditional',
     textContent: null,
     earlyReturn: null,

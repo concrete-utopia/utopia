@@ -121,7 +121,7 @@ export function basicResizeStrategy(
       interactionSession != null &&
       interactionSession.interactionData.type === 'DRAG' &&
       interactionSession.activeControl.type === 'RESIZE_HANDLE'
-        ? 1
+        ? 2
         : 0,
     apply: (_strategyLifecycle: InteractionLifecycle) => {
       if (

@@ -146,7 +146,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
         )
         return (
           elementMetadata?.specialSizeMeasurements.position !== 'absolute' &&
-          honoursPropsToPositionElement(canvasState, element)
+          honoursPropsToPositionElement(canvasState, element, 'ignore-position')
         )
       })
     ) {
