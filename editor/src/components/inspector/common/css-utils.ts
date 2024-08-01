@@ -597,14 +597,17 @@ export type GridCSSNumber = BaseGridDimension & {
 
 export type GridCSSKeyword = BaseGridDimension & {
   type: 'KEYWORD'
-  value: CSSKeyword<string>
+  value: CSSKeyword<ValidGridDimensionKeyword>
 }
 
 export function isGridCSSKeyword(dim: GridDimension): dim is GridCSSKeyword {
   return dim.type === 'KEYWORD'
 }
 
-export function gridCSSKeyword(value: CSSKeyword<string>, areaName: string | null): GridCSSKeyword {
+export function gridCSSKeyword(
+  value: CSSKeyword<ValidGridDimensionKeyword>,
+  areaName: string | null,
+): GridCSSKeyword {
   return {
     type: 'KEYWORD',
     value: value,
@@ -896,7 +899,7 @@ const validGridDimensionKeywords = [
   // NOTE: function keywords are omitted as they are treated separately
 ] as const
 
-type ValidGridDimensionKeyword = (typeof validGridDimensionKeywords)[number]
+export type ValidGridDimensionKeyword = (typeof validGridDimensionKeywords)[number]
 
 export function isValidGridDimensionKeyword(value: unknown): value is ValidGridDimensionKeyword {
   return validGridDimensionKeywords.includes(value as ValidGridDimensionKeyword)
