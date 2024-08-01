@@ -78,6 +78,7 @@ import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasLabel } from './select-mode/controls-common'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import type { Sides } from 'utopia-api/core'
+import type { Axis } from '../gap-utils'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -141,7 +142,7 @@ const GRID_RESIZE_HANDLE_SIZE = 15 // px
 export interface GridResizingControlProps {
   dimension: GridDimension
   dimensionIndex: number
-  axis: 'row' | 'column'
+  axis: Axis
   containingFrame: CanvasRectangle
   fromPropsAxisValues: GridAutoOrTemplateBase | null
   padding: number | null
@@ -289,7 +290,7 @@ export interface GridResizingProps {
   axisValues: GridAutoOrTemplateBase | null
   fromPropsAxisValues: GridAutoOrTemplateBase | null
   containingFrame: CanvasRectangle
-  axis: 'row' | 'column'
+  axis: Axis
   gap: number | null
   padding: Sides | null
 }
@@ -409,89 +410,7 @@ export const GridControls = controlForStrategyMemoized(() => {
     'GridControls interactionData',
   )
 
-  const interactionLatestMetadata = useEditorState(
-    Substores.canvas,
-    (store) =>
-      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG'
-        ? store.editor.canvas.interactionSession.latestMetadata
-        : null,
-    'GridControls interactionLatestMetadata',
-  )
-
-  const editorMetadata = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.jsxMetadata,
-    'GridControls editorMetadata',
-  )
-
-  const jsxMetadata = React.useMemo(
-    () => interactionLatestMetadata ?? editorMetadata,
-    [interactionLatestMetadata, editorMetadata],
-  )
-
-  const grids = useEditorState(
-    Substores.metadata,
-    (store) => {
-      return mapDropNulls((view) => {
-        const element = MetadataUtils.findElementByElementPath(jsxMetadata, view)
-        const parent = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(view))
-
-        const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element)
-          ? element
-          : MetadataUtils.isGridLayoutedContainer(parent)
-          ? parent
-          : null
-
-        if (
-          targetGridContainer == null ||
-          targetGridContainer.globalFrame == null ||
-          !isFiniteRectangle(targetGridContainer.globalFrame)
-        ) {
-          return null
-        }
-
-        const gap = targetGridContainer.specialSizeMeasurements.gap
-        const rowGap = targetGridContainer.specialSizeMeasurements.rowGap
-        const columnGap = targetGridContainer.specialSizeMeasurements.columnGap
-        const padding = targetGridContainer.specialSizeMeasurements.padding
-
-        const gridTemplateColumns =
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
-        const gridTemplateRows =
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows
-        const gridTemplateColumnsFromProps =
-          targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
-            .gridTemplateColumns
-        const gridTemplateRowsFromProps =
-          targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
-            .gridTemplateRows
-
-        const columns = getCellsCount(
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
-        )
-        const rows = getCellsCount(
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
-        )
-
-        return {
-          elementPath: targetGridContainer.elementPath,
-          frame: targetGridContainer.globalFrame,
-          gridTemplateColumns: gridTemplateColumns,
-          gridTemplateRows: gridTemplateRows,
-          gridTemplateColumnsFromProps: gridTemplateColumnsFromProps,
-          gridTemplateRowsFromProps: gridTemplateRowsFromProps,
-          gap: gap,
-          rowGap: rowGap,
-          columnGap: columnGap,
-          padding: padding,
-          rows: rows,
-          columns: columns,
-          cells: rows * columns,
-        }
-      }, store.editor.selectedViews)
-    },
-    'GridControls grids',
-  )
+  const { grids, jsxMetadata } = useActiveGridsData()
 
   const cells = React.useMemo(() => {
     return grids.flatMap((grid) => {
@@ -694,7 +613,13 @@ export const GridControls = controlForStrategyMemoized(() => {
           }
 
           return (
-            <div key={`grid-${EP.toString(grid.elementPath)}`} style={style}>
+            <div
+              key={`grid-${EP.toString(grid.elementPath)}`}
+              id={`grid-${EP.toString(grid.elementPath)}`}
+              data-grid-rows={grid.rows}
+              data-grid-columns={grid.columns}
+              style={style}
+            >
               {placeholders.map((cell) => {
                 const countedRow = Math.floor(cell / grid.columns) + 1
                 const countedColumn = Math.floor(cell % grid.columns) + 1
@@ -1269,4 +1194,91 @@ function gridEdgeToWidthHeight(props: GridResizeEdgeProperties, scale: number): 
     right: props.isEnd ? 0 : undefined,
     bottom: props.isEnd ? 0 : undefined,
   }
+}
+
+export function useActiveGridsData() {
+  const interactionLatestMetadata = useEditorState(
+    Substores.canvas,
+    (store) =>
+      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG'
+        ? store.editor.canvas.interactionSession.latestMetadata
+        : null,
+    'GridControls interactionLatestMetadata',
+  )
+
+  const editorMetadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'GridControls editorMetadata',
+  )
+
+  const jsxMetadata = React.useMemo(
+    () => interactionLatestMetadata ?? editorMetadata,
+    [interactionLatestMetadata, editorMetadata],
+  )
+
+  const grids = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return mapDropNulls((view) => {
+        const element = MetadataUtils.findElementByElementPath(jsxMetadata, view)
+        const parent = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(view))
+
+        const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element)
+          ? element
+          : MetadataUtils.isGridLayoutedContainer(parent)
+          ? parent
+          : null
+
+        if (
+          targetGridContainer == null ||
+          targetGridContainer.globalFrame == null ||
+          !isFiniteRectangle(targetGridContainer.globalFrame)
+        ) {
+          return null
+        }
+
+        const gap = targetGridContainer.specialSizeMeasurements.gap
+        const rowGap = targetGridContainer.specialSizeMeasurements.rowGap
+        const columnGap = targetGridContainer.specialSizeMeasurements.columnGap
+        const padding = targetGridContainer.specialSizeMeasurements.padding
+
+        const gridTemplateColumns =
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
+        const gridTemplateRows =
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows
+        const gridTemplateColumnsFromProps =
+          targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
+            .gridTemplateColumns
+        const gridTemplateRowsFromProps =
+          targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
+            .gridTemplateRows
+
+        const columns = getCellsCount(
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
+        )
+        const rows = getCellsCount(
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
+        )
+
+        return {
+          elementPath: targetGridContainer.elementPath,
+          frame: targetGridContainer.globalFrame,
+          gridTemplateColumns: gridTemplateColumns,
+          gridTemplateRows: gridTemplateRows,
+          gridTemplateColumnsFromProps: gridTemplateColumnsFromProps,
+          gridTemplateRowsFromProps: gridTemplateRowsFromProps,
+          gap: gap,
+          rowGap: rowGap,
+          columnGap: columnGap,
+          padding: padding,
+          rows: rows,
+          columns: columns,
+          cells: rows * columns,
+        }
+      }, store.editor.selectedViews)
+    },
+    'GridControls grids',
+  )
+  return { grids, jsxMetadata }
 }

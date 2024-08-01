@@ -22,6 +22,7 @@ import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, gridGapHandle } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
+import type { Axis } from '../../gap-utils'
 import {
   recurseIntoChildrenOfMapOrFragment,
   maybeGridGapData,
@@ -39,18 +40,20 @@ import {
   getFlexAlignment,
 } from '../../../inspector/inspector-common'
 import { CSSCursor } from '../../../../uuiui-deps'
+import { useBoundingBox } from '../bounding-box-hooks'
+import { isZeroSizedElement } from '../outline-utils'
 
 interface GridGapControlProps {
   selectedElement: ElementPath
-  updatedGapValueX: CSSNumberWithRenderedValue | null
-  updatedGapValueY: CSSNumberWithRenderedValue | null
+  updatedGapValueRow: CSSNumberWithRenderedValue | null
+  updatedGapValueColumn: CSSNumberWithRenderedValue | null
 }
 
-export const GridGapControlTestId = 'flex-gap-control'
-export const GridGapControlHandleTestId = 'flex-gap-control-handle'
+export const GridGapControlTestId = 'grid-gap-control'
+export const GridGapControlHandleTestId = 'grid-gap-control-handle'
 
 export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((props) => {
-  const { selectedElement, updatedGapValueX, updatedGapValueY } = props
+  const { selectedElement, updatedGapValueRow, updatedGapValueColumn } = props
   const colorTheme = useColorTheme()
   const accentColor = colorTheme.gapControlsBg.value
 
@@ -111,9 +114,9 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
 
   const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
-  const onMouseDown = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      startInteraction(e, dispatch, canvasOffset.current, scale)
+  const axisMouseDownHandler = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>, axis: Axis) => {
+      startInteraction(e, dispatch, canvasOffset.current, scale, axis)
     },
     [canvasOffset, dispatch, scale],
   )
@@ -129,8 +132,23 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
     return null
   }
 
-  const gridGapX = updatedGapValueX ?? gridGap.row
-  const gridGapY = updatedGapValueY ?? gridGap.column
+  const controlRef = useBoundingBox(
+    [selectedElement],
+    (ref, safeGappedBoundingBox, realBoundingBox) => {
+      if (isZeroSizedElement(realBoundingBox)) {
+        ref.current.style.display = 'none'
+      } else {
+        ref.current.style.display = 'block'
+        ref.current.style.left = safeGappedBoundingBox.x + 'px'
+        ref.current.style.top = safeGappedBoundingBox.y + 'px'
+        ref.current.style.width = safeGappedBoundingBox.width + 'px'
+        ref.current.style.height = safeGappedBoundingBox.height + 'px'
+      }
+    },
+  )
+
+  const gridGapRow = updatedGapValueRow ?? gridGap.row
+  const gridGapColumn = updatedGapValueColumn ?? gridGap.column
 
   const gapControlSizes = React.useMemo((): { row: Size; column: Size } => {
     const bounds = boundingRectangleArray(
@@ -144,10 +162,10 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
     } else {
       const rowSize = {
         width: bounds.width,
-        height: gridGapX.renderedValuePx,
+        height: gridGapRow.renderedValuePx,
       }
       const columnSize = {
-        width: gridGapY.renderedValuePx,
+        width: gridGapColumn.renderedValuePx,
         height: bounds.height,
       }
       return {
@@ -155,26 +173,15 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
         column: columnSize,
       }
     }
-  }, [children, gridGapY.renderedValuePx, gridGapX.renderedValuePx])
+  }, [children, gridGapRow.renderedValuePx, gridGapColumn.renderedValuePx])
 
-  const controlBounds = [
-    ...gridGapControlBoundsFromMetadata(
-      metadata,
-      selectedElement,
-      children.map((c) => c.elementPath),
-      gridGapX.value,
-      'row',
-      gapControlSizes.row,
-    ),
-    ...gridGapControlBoundsFromMetadata(
-      metadata,
-      selectedElement,
-      children.map((c) => c.elementPath),
-      gridGapY.value,
-      'column',
-      gapControlSizes.column,
-    ),
-  ]
+  const controlBounds = gridGapControlBoundsFromMetadata(
+    metadata,
+    selectedElement,
+    children.map((c) => c.elementPath),
+    { row: gridGapRow.value, column: gridGapColumn.value },
+    gapControlSizes,
+  )
 
   const justifyContent = React.useMemo(() => {
     return (
@@ -192,15 +199,21 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
 
   return (
     <CanvasOffsetWrapper>
-      <div data-testid={GridGapControlTestId} style={{ pointerEvents: 'none' }}>
+      <div
+        data-testid={GridGapControlTestId}
+        style={{ pointerEvents: 'none', position: 'absolute' }}
+        ref={controlRef}
+      >
         {controlBounds.map(({ gap, bounds, axis, path: p, size: contentArea }) => {
           const path = EP.toString(p)
+          const GapControlSegmentComponent =
+            axis === 'row' ? RowGapControlSegment : ColumnGapControlSegment
           return (
-            <GapControlSegment
+            <GapControlSegmentComponent
               key={path}
               hoverStart={controlHoverStart}
               hoverEnd={controlHoverEnd}
-              onMouseDown={onMouseDown}
+              mouseDownHandler={axisMouseDownHandler}
               elementHovered={elementHovered}
               path={path}
               bounds={bounds}
@@ -248,10 +261,10 @@ const gapControlSizeConstants = (
 interface GridGapControlSegmentProps {
   hoverStart: React.MouseEventHandler
   hoverEnd: React.MouseEventHandler
-  onMouseDown: React.MouseEventHandler
+  onMouseDown?: React.MouseEventHandler
   bounds: CanvasRectangle
   contentArea: Size
-  axis: 'row' | 'column'
+  axis: Axis
   gapValue: CSSNumber
   elementHovered: boolean
   path: string
@@ -262,6 +275,28 @@ interface GridGapControlSegmentProps {
   justifyContent: FlexJustifyContent | null
   alignItems: FlexAlignment | null
 }
+
+interface AxisGapControlSegmentProps extends GridGapControlSegmentProps {
+  mouseDownHandler: (e: React.MouseEvent<HTMLDivElement>, axis: Axis) => void
+}
+
+const RowGapControlSegment = React.memo<AxisGapControlSegmentProps>((props) => {
+  const { mouseDownHandler } = props
+  const onMouseDown = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => mouseDownHandler(e, 'row'),
+    [mouseDownHandler],
+  )
+  return <GapControlSegment {...props} onMouseDown={onMouseDown} />
+})
+
+const ColumnGapControlSegment = React.memo<AxisGapControlSegmentProps>((props) => {
+  const { mouseDownHandler } = props
+  const onMouseDown = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => mouseDownHandler(e, 'column'),
+    [mouseDownHandler],
+  )
+  return <GapControlSegment {...props} onMouseDown={onMouseDown} />
+})
 
 const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
   const {
@@ -342,55 +377,59 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
           height: contentArea.height,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'space-evenly',
+          flexDirection: axis,
         }}
       >
-        <div
-          data-testid={`${GridGapControlHandleTestId}-${path}`}
-          style={{
-            visibility: shouldShowHandle ? 'visible' : 'hidden',
-            padding: hitAreaPadding,
-            cursor: axis === 'row' ? CSSCursor.GapNS : CSSCursor.GapEW,
-          }}
-          onMouseDown={onMouseDown}
-          onMouseEnter={handleHoverStartInner}
-        >
+        {[1, 2, 3].map((i) => (
           <div
+            key={i}
+            data-testid={`${GridGapControlHandleTestId}-${path}`}
             style={{
-              position: 'absolute',
-              paddingTop: paddingIndicatorOffset,
-              paddingLeft: paddingIndicatorOffset,
-              pointerEvents: 'none',
+              visibility: shouldShowHandle ? 'visible' : 'hidden',
+              padding: hitAreaPadding,
+              cursor: axis === 'row' ? CSSCursor.GapNS : CSSCursor.GapEW,
             }}
+            onMouseDown={onMouseDown}
+            onMouseEnter={handleHoverStartInner}
           >
-            {when(
-              shouldShowIndicator,
-              <CanvasLabel
-                value={printCSSNumber(gapValue, null)}
-                scale={scale}
-                color={colorTheme.brandNeonPink.value}
-                textColor={colorTheme.white.value}
-              />,
-            )}
+            <div
+              style={{
+                position: 'absolute',
+                paddingTop: paddingIndicatorOffset,
+                paddingLeft: paddingIndicatorOffset,
+                pointerEvents: 'none',
+              }}
+            >
+              {when(
+                shouldShowIndicator,
+                <CanvasLabel
+                  value={printCSSNumber(gapValue, null)}
+                  scale={scale}
+                  color={colorTheme.brandNeonPink.value}
+                  textColor={colorTheme.white.value}
+                />,
+              )}
+            </div>
+            <PillHandle
+              width={width}
+              height={height}
+              pillColor={colorTheme.brandNeonPink.value}
+              borderWidth={borderWidth}
+            />
           </div>
-          <PillHandle
-            width={width}
-            height={height}
-            pillColor={colorTheme.brandNeonPink.value}
-            borderWidth={borderWidth}
-          />
-        </div>
+        ))}
       </div>
     </div>
   )
 })
 
-function handleDimensions(axis: 'row' | 'column', scale: number): Size {
+function handleDimensions(axis: Axis, scale: number): Size {
   if (axis === 'row') {
-    return size(3 / scale, 12 / scale)
+    return size(12 / scale, 4 / scale)
   }
   if (axis === 'column') {
-    return size(12 / scale, 4 / scale)
+    return size(3 / scale, 12 / scale)
   }
   assertNever(axis)
 }
@@ -400,6 +439,7 @@ function startInteraction(
   dispatch: EditorDispatch,
   canvasOffset: CanvasVector,
   scale: number,
+  axis: Axis,
 ) {
   if (event.buttons === 1 && event.button !== 2) {
     event.stopPropagation()
@@ -413,7 +453,7 @@ function startInteraction(
         createInteractionViaMouse(
           canvasPositions.canvasPositionRaw,
           Modifier.modifiersForEvent(event),
-          gridGapHandle('row'),
+          gridGapHandle(axis),
           'zero-drag-not-permitted',
         ),
       ),

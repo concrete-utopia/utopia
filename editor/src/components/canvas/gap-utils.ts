@@ -57,12 +57,12 @@ export function cursorFromFlexDirection(direction: FlexDirection): CSSCursor {
   }
 }
 
-export function cursorFromAxis(axis: 'row' | 'column'): CSSCursor {
+export function cursorFromAxis(axis: Axis): CSSCursor {
   switch (axis) {
     case 'column':
-      return CSSCursor.GapNS
-    case 'row':
       return CSSCursor.GapEW
+    case 'row':
+      return CSSCursor.GapNS
     default:
       assertNever(axis)
   }
@@ -169,13 +169,12 @@ export function gridGapControlBoundsFromMetadata(
   elementMetadata: ElementInstanceMetadataMap,
   parentPath: ElementPath,
   children: ElementPath[],
-  gap: CSSNumber,
-  axis: 'row' | 'column',
-  contentArea: Size,
+  gaps: { row: CSSNumber; column: CSSNumber },
+  contentArea: { row: Size; column: Size },
 ): Array<
   PathWithBounds & {
     gap: CSSNumber
-    axis: 'row' | 'column'
+    axis: Axis
     size: Size
   }
 > {
@@ -189,20 +188,53 @@ export function gridGapControlBoundsFromMetadata(
 
   const parentBounds = inset(elementPadding, parentFrame)
 
-  const childCanvasBounds = stripNulls(
-    children
-      .map((childPath) => {
-        const childFrame = MetadataUtils.getFrameInCanvasCoords(childPath, elementMetadata)
-        if (childFrame == null || isInfinityRectangle(childFrame)) {
-          return null
-        } else {
-          return { path: childPath, bounds: childFrame }
-        }
-      })
-      .slice(0, -1),
-  )
+  const parentGridPlaceholderId = `grid-${EP.toString(parentPath)}`
+  const parentGrid = document.getElementById(parentGridPlaceholderId)
+  if (parentGrid == null) {
+    return []
+  }
+  const parentGridBounds = parentGrid?.getBoundingClientRect()
+  const placeholderChildren = Array.from(parentGrid?.children ?? [])
+  const gridRows = parseInt(parentGrid?.getAttribute('data-grid-rows') ?? '0')
+  const gridColumns = parseInt(parentGrid?.getAttribute('data-grid-columns') ?? '0')
+  // create an empty array with gridRows - 1 cells
+  const rowGaps = Array.from({ length: gridRows - 1 }, (_, i) => {
+    // cell i represents the gap between child [i * gridColumns] and child [(i+1) * gridColumns]
+    const firstChildBounds = placeholderChildren[i * gridColumns].getBoundingClientRect()
+    const secondChildBounds = placeholderChildren[(i + 1) * gridColumns].getBoundingClientRect()
+    return {
+      path: parentPath,
+      bounds: canvasRectangle({
+        x: 0,
+        y: firstChildBounds.bottom - parentGridBounds.y,
+        width: parentGridBounds.width,
+        height: secondChildBounds.top - firstChildBounds.bottom,
+      }),
+      gap: gaps.row,
+      axis: 'row' as Axis,
+      size: contentArea.row,
+    }
+  })
+  // create an empty array with gridColumns - 1 cells
+  const columnGaps = Array.from({ length: gridColumns - 1 }, (_, i) => {
+    // cell i represents the gap between child [i] and child [i + 1]
+    const firstChildBounds = placeholderChildren[i].getBoundingClientRect()
+    const secondChildBounds = placeholderChildren[i + 1].getBoundingClientRect()
+    return {
+      path: parentPath,
+      bounds: canvasRectangle({
+        x: firstChildBounds.right - parentGridBounds.x,
+        y: 0,
+        width: secondChildBounds.left - firstChildBounds.right,
+        height: parentGridBounds.height,
+      }),
+      gap: gaps.column,
+      axis: 'column' as 'row' | 'column',
+      size: contentArea.column,
+    }
+  })
 
-  return []
+  return rowGaps.concat(columnGaps)
 }
 
 export interface GridGapData {
@@ -318,3 +350,5 @@ export function recurseIntoChildrenOfMapOrFragment(
     return [instance]
   })
 }
+
+export type Axis = 'row' | 'column'

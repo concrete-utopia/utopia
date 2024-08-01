@@ -114,16 +114,18 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
     'precise'
 
   const updatedGridGapMeasurement = {
-    x: offsetMeasurementByDelta(gridGap.row, dragDelta.x, adjustPrecision),
-    y: offsetMeasurementByDelta(gridGap.column, dragDelta.y, adjustPrecision),
+    row: offsetMeasurementByDelta(gridGap.row, dragDelta.y, adjustPrecision),
+    column: offsetMeasurementByDelta(gridGap.column, dragDelta.x, adjustPrecision),
   }
 
   const resizeControl = controlWithProps({
     control: GridGapControl,
     props: {
       selectedElement: selectedElement,
-      updatedGapValueX: isDragOngoing(interactionSession) ? updatedGridGapMeasurement.x : null,
-      updatedGapValueY: isDragOngoing(interactionSession) ? updatedGridGapMeasurement.y : null,
+      updatedGapValueRow: isDragOngoing(interactionSession) ? updatedGridGapMeasurement.row : null,
+      updatedGapValueColumn: isDragOngoing(interactionSession)
+        ? updatedGridGapMeasurement.column
+        : null,
     },
     key: 'grid-gap-resize-control',
     show: 'visible-except-when-other-strategy-is-active',
@@ -167,10 +169,10 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
       }
 
       const axis = interactionSession.activeControl.axis
-      const shouldTearOffGapByAxis = axis === 'row' ? shouldTearOffGap.x : shouldTearOffGap.y
+      const shouldTearOffGapByAxis = axis === 'row' ? shouldTearOffGap.y : shouldTearOffGap.x
       const axisStyleProp = axis === 'row' ? StyleRowGapProp : StyleColumnGapProp
       const gridGapMeasurement =
-        axis === 'row' ? updatedGridGapMeasurement.x : updatedGridGapMeasurement.y
+        axis === 'row' ? updatedGridGapMeasurement.row : updatedGridGapMeasurement.column
 
       if (shouldTearOffGapByAxis) {
         return strategyApplicationResult([
@@ -241,7 +243,7 @@ function gridGapValueIndicatorProps(
 
   const { drag, dragStart } = interactionSession.interactionData
 
-  const rawDragDelta = activeControlAxis === 'row' ? drag.x : drag.y
+  const rawDragDelta = activeControlAxis === 'row' ? drag.y : drag.x
 
   const dragDelta = Math.max(-gridGap[activeControlAxis].renderedValuePx, rawDragDelta)
 
@@ -259,8 +261,8 @@ function gridGapValueIndicatorProps(
 
   const position =
     activeControlAxis === 'row'
-      ? canvasPoint({ x: dragStart.x + drag.x, y: dragStart.y })
-      : canvasPoint({ x: dragStart.x, y: dragStart.y + drag.y })
+      ? canvasPoint({ x: dragStart.x, y: dragStart.y + drag.y })
+      : canvasPoint({ x: dragStart.x + drag.x, y: dragStart.y })
 
   return {
     value: indicatorMessage(
