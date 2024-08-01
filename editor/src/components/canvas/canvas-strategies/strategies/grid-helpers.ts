@@ -386,8 +386,11 @@ function asMaybeNamedAreaOrValue(
     const template = axis === 'row' ? grid.gridTemplateRows : grid.gridTemplateColumns
     if (template?.type === 'DIMENSIONS') {
       const maybeAreaStart = template.dimensions.at(value - 1)
-      if (maybeAreaStart != null && maybeAreaStart.areaName != null) {
-        return maybeAreaStart.areaName
+      if (maybeAreaStart != null) {
+        const areaStart = maybeAreaStart
+        if (areaStart.areaName != null) {
+          return areaStart.areaName
+        }
       }
     }
     return value === 0 ? 1 : value

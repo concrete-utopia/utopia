@@ -3,8 +3,9 @@
 import { jsx } from '@emotion/react'
 import * as RadixDropdownMenu from '@radix-ui/react-dropdown-menu'
 import { styled } from '@stitches/react'
+import type { CSSProperties } from 'react'
 import React from 'react'
-import { colorTheme } from './styles/theme'
+import { colorTheme, UtopiaStyles } from './styles/theme'
 import { Icons } from './icons'
 import { when } from '../utils/react-conditionals'
 
@@ -41,6 +42,8 @@ export interface DropdownMenuItem {
   checked?: boolean
   onSelect: () => void
   danger?: boolean
+  separator?: boolean
+  disabled?: boolean
 }
 
 export interface DropdownMenuProps {
@@ -49,6 +52,8 @@ export interface DropdownMenuProps {
   align?: RadixDropdownMenu.DropdownMenuContentProps['align']
   sideOffset?: number
   alignOffset?: number
+  onOpenChange?: (open: boolean) => void
+  style?: CSSProperties
 }
 
 export const ItemContainerTestId = (id: string) => `item-container-${id}`
@@ -62,13 +67,21 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
   }, [])
   const onEscapeKeyDown = React.useCallback((e: KeyboardEvent) => e.stopPropagation(), [])
 
-  const [open, onOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(false)
 
   const shouldShowCheckboxes = props.items.some((i) => i.checked != null)
   const shouldShowIcons = props.items.some((i) => i.icon != null)
 
+  const onOpenChange = React.useCallback(
+    (isOpen: boolean) => {
+      setOpen(isOpen)
+      props.onOpenChange?.(isOpen)
+    },
+    [props, setOpen],
+  )
+
   return (
-    <RadixDropdownMenu.Root open={open} onOpenChange={onOpen}>
+    <RadixDropdownMenu.Root open={open} onOpenChange={onOpenChange}>
       <RadixDropdownMenu.Trigger style={{ background: 'none', border: 'none', padding: 0 }}>
         {props.opener(open)}
       </RadixDropdownMenu.Trigger>
@@ -80,34 +93,63 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
           collisionPadding={{ top: -4 }}
           align={props.align ?? 'start'}
           alignOffset={props.alignOffset}
+          style={{ ...props.style, boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow }}
         >
-          {props.items.map((item) => (
-            <RadixItemContainer
-              data-testid={ItemContainerTestId(item.id)}
-              key={item.id}
-              onSelect={item.onSelect}
-              css={{
-                ':hover': {
-                  backgroundColor: item.danger ? colorTheme.errorForeground.value : undefined,
-                },
-              }}
-            >
-              <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                {when(
-                  shouldShowCheckboxes,
-                  <div style={{ opacity: item.checked ? 1 : 0 }}>
-                    <Icons.Checkmark color='white' />
-                  </div>,
-                )}
-                {when(
-                  shouldShowIcons,
-                  <div style={{ opacity: item.icon == null ? 0 : 1 }}>{item.icon}</div>,
-                )}
-                <span>{item.label}</span>
-              </div>
-              <span style={{ opacity: 0.5 }}>{item.shortcut}</span>
-            </RadixItemContainer>
-          ))}
+          {props.items.map((item) => {
+            if (item.separator) {
+              return (
+                <RadixItemContainer
+                  key={item.id}
+                  css={{
+                    ':hover': {
+                      backgroundColor: 'inherit',
+                    },
+                    cursor: 'default',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '100%',
+                      height: 1,
+                      backgroundColor: colorTheme.fg4.value,
+                    }}
+                  />
+                </RadixItemContainer>
+              )
+            }
+            return (
+              <RadixItemContainer
+                data-testid={ItemContainerTestId(item.id)}
+                key={item.id}
+                onSelect={item.onSelect}
+                css={{
+                  ':hover': {
+                    backgroundColor: item.danger
+                      ? colorTheme.errorForeground.value
+                      : item.disabled
+                      ? 'inherit'
+                      : undefined,
+                  },
+                  cursor: item.disabled ? 'default' : undefined,
+                }}
+              >
+                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                  {when(
+                    shouldShowCheckboxes,
+                    <div style={{ opacity: item.checked ? 1 : 0 }}>
+                      <Icons.Checkmark color='white' />
+                    </div>,
+                  )}
+                  {when(
+                    shouldShowIcons,
+                    <div style={{ opacity: item.icon == null ? 0 : 1 }}>{item.icon}</div>,
+                  )}
+                  <span>{item.label}</span>
+                </div>
+                <span style={{ opacity: 0.5 }}>{item.shortcut}</span>
+              </RadixItemContainer>
+            )
+          })}
         </RadixDropdownContent>
       </RadixDropdownMenu.Portal>
     </RadixDropdownMenu.Root>
