@@ -78,20 +78,6 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  // // do not show the gap control if the children are wrapped
-  // if (
-  //   singleAxisAutoLayoutDirections(
-  //     children,
-  //     canvasState.startingMetadata,
-  //     children[0].specialSizeMeasurements.parentLayoutSystem ?? 'none',
-  //     MetadataUtils.flexDirectionToSimpleFlexDirection(
-  //       children[0].specialSizeMeasurements.parentFlexDirection ?? 'row',
-  //     ),
-  //   ) === 'non-single-axis-autolayout'
-  // ) {
-  //   return null
-  // }
-
   const gridGap = maybeGridGapData(canvasState.startingMetadata, selectedElement)
   if (gridGap == null) {
     return null
@@ -247,13 +233,13 @@ function gridGapValueIndicatorProps(
 
   const dragDelta = Math.max(-gridGap[activeControlAxis].renderedValuePx, rawDragDelta)
 
-  const rawFlexGapMeasurement = offsetMeasurementByDelta(
+  const rawGridGapMeasurement = offsetMeasurementByDelta(
     gridGap[activeControlAxis],
     rawDragDelta,
     precisionFromModifiers(interactionSession.interactionData.modifiers),
   )
 
-  const updatedFlexGapMeasurement = offsetMeasurementByDelta(
+  const updatedGridGapMeasurement = offsetMeasurementByDelta(
     gridGap[activeControlAxis],
     dragDelta,
     precisionFromModifiers(interactionSession.interactionData.modifiers),
@@ -266,8 +252,8 @@ function gridGapValueIndicatorProps(
 
   return {
     value: indicatorMessage(
-      rawFlexGapMeasurement.renderedValuePx > GridGapTearThreshold,
-      updatedFlexGapMeasurement,
+      rawGridGapMeasurement.renderedValuePx > GridGapTearThreshold,
+      updatedGridGapMeasurement,
     ),
     position: position,
   }
