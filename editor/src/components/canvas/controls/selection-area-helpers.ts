@@ -191,6 +191,7 @@ function isElementIntersactionActuallyUnderAreaAndVisible(
       canvasScale,
       canvasOffset,
       jsxMetadata,
+      [],
     ).some((other) => EP.pathsEqual(path, other))
     if (!pathActuallyUnderArea) {
       return false

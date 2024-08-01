@@ -81,7 +81,7 @@ export function useSelectionArea(
 
       const allTargetsMatchingSelectableViews = allTargetsUnderArea.filter(
         (path) =>
-          EP.containsPath(path, selectableViews) ||
+          EP.containsPath(path, selectableViews.selectable) ||
           MetadataUtils.isProbablyScene(storeRef.current.jsxMetadata, path),
       )
 

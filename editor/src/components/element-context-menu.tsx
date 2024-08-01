@@ -143,6 +143,7 @@ function useCanvasContextMenuItems(
                 data.scale,
                 data.canvasOffset,
                 data.jsxMetadata,
+                [],
               )
               lastMousePosition = WindowMousePositionRaw
             }

@@ -65,7 +65,10 @@ import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/grou
 import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks'
 import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
 
-const DRAG_START_THRESHOLD = 2
+interface SelectableViews {
+  selectable: ElementPath[]
+  locked: ElementPath[]
+}
 
 export function isDragInteractionActive(editorState: EditorState): boolean {
   return editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
@@ -234,7 +237,7 @@ export function getSelectableViews(
   allElementsDirectlySelectable: boolean,
   childrenSelectable: boolean,
   lockedElements: LockedElements,
-): ElementPath[] {
+): SelectableViews {
   const allLockedElementPaths = getAllLockedElementPaths(
     componentMetadata,
     elementPathTree,
@@ -251,7 +254,7 @@ export function getSelectableViews(
 
   const selectableElements = filterNonSelectableElements(hiddenInstances, candidateSelectableViews)
 
-  return selectableElements
+  return { selectable: selectableElements, locked: allLockedElementPaths }
 }
 
 function getCandidateSelectableViews(
@@ -301,7 +304,7 @@ function getCandidateSelectableViews(
 }
 
 export function useFindValidTarget(): (
-  selectableViews: Array<ElementPath>,
+  { selectable: selectableViews, locked: lockedViews }: SelectableViews,
   mousePoint: WindowPoint | null,
   preferAlreadySelected: 'prefer-selected' | 'prefer-more-specific-selection',
 ) => {
@@ -323,7 +326,7 @@ export function useFindValidTarget(): (
 
   return React.useCallback(
     (
-      selectableViews: Array<ElementPath>,
+      selectableViews: SelectableViews,
       mousePoint: WindowPoint | null,
       preferAlreadySelected: 'prefer-selected' | 'prefer-more-specific-selection',
     ) => {
@@ -342,20 +345,22 @@ export function useFindValidTarget(): (
             componentMetadata,
             selectedViews,
             hiddenInstances,
-            selectableViews,
+            selectableViews.selectable,
             mousePoint,
             canvasScale,
             canvasOffset,
             elementPathTree,
             allElementProps,
+            selectableViews.locked,
           )
         }
         const newSelection = getValidTargetAtPoint(
-          selectableViews,
+          selectableViews.selectable,
           mousePoint,
           canvasScale,
           canvasOffset,
           componentMetadata,
+          selectableViews.locked,
         )
         if (newSelection != null) {
           return newSelection
@@ -364,12 +369,13 @@ export function useFindValidTarget(): (
           componentMetadata,
           selectedViews,
           hiddenInstances,
-          selectableViews,
+          selectableViews.selectable,
           mousePoint,
           canvasScale,
           canvasOffset,
           elementPathTree,
           allElementProps,
+          selectableViews.locked,
         )
       })()
 
@@ -406,7 +412,7 @@ export function useGetSelectableViewsForSelectMode() {
     (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
       const { componentMetadata, elementPathTree, selectedViews, hiddenInstances, lockedElements } =
         storeRef.current
-      const selectableViews = getSelectableViews(
+      const { selectable: selectableViews } = getSelectableViews(
         componentMetadata,
         elementPathTree,
         selectedViews,
@@ -423,7 +429,7 @@ export function useGetSelectableViewsForSelectMode() {
 
 export function useGetSelectableViewsForSelectModeFromSelectedViews(
   selectedViews: Array<ElementPath>,
-): (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => Array<ElementPath> {
+): (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => SelectableViews {
   const storeRef = useRefEditorState((store) => {
     return {
       componentMetadata: store.editor.jsxMetadata,
@@ -470,12 +476,12 @@ export function useCalculateHighlightedViews(
     (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
       const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
       const validElementPath = findValidTarget(
-        selectableViews,
+        { selectable: selectableViews, locked: [] },
         targetPoint,
         'prefer-more-specific-selection',
       )
       const validElementPathForHover = findValidTarget(
-        selectableViews,
+        { selectable: selectableViews, locked: [] },
         targetPoint,
         'prefer-selected',
       )
@@ -589,7 +595,8 @@ function useSelectOrLiveModeSelectAndHover(
   const { onMouseMove: innerOnMouseMove } = useHighlightCallbacks(
     active,
     cmdPressed,
-    getSelectableViewsForSelectMode,
+    (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) =>
+      getSelectableViewsForSelectMode(allElementsDirectlySelectable, childrenSelectable).selectable,
   )
 
   const editorStoreRef = useRefEditorState((store) => ({

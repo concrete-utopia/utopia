@@ -533,6 +533,7 @@ export function handleKeyDown(
             editor.canvas.scale,
             editor.canvas.realCanvasOffset,
             editor.jsxMetadata,
+            [],
           )
           const nextTarget = Canvas.getNextTarget(
             editor.jsxMetadata,
