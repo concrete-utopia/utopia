@@ -21,7 +21,12 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import type { DetectedLayoutSystem } from 'utopia-shared/src/types'
 import { NO_OP } from '../../core/shared/utils'
 import { Icons, NumberInput, SquareButton, Subdued } from '../../uuiui'
-import type { CSSKeyword, CSSNumber, UnknownOrEmptyInput } from './common/css-utils'
+import type {
+  CSSKeyword,
+  CSSNumber,
+  UnknownOrEmptyInput,
+  ValidGridDimensionKeyword,
+} from './common/css-utils'
 import {
   cssNumber,
   cssNumberToString,
@@ -195,44 +200,51 @@ const TemplateDimensionControl = React.memo(
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
     const onUpdate = React.useCallback(
-      (index: number) => (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<string>>) => {
-        if (isCSSKeyword(value)) {
-          const newValues = [...values]
-          newValues[index] = isCSSNumber(value)
-            ? gridCSSNumber(value, null)
-            : gridCSSKeyword(value, null)
+      (index: number) =>
+        (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<ValidGridDimensionKeyword>>) => {
+          if (isCSSKeyword(value)) {
+            const newValues = [...values]
+            newValues[index] = isCSSNumber(value)
+              ? gridCSSNumber(value, null)
+              : gridCSSKeyword(value, null)
 
-          return dispatch([
-            applyCommandsAction([
-              setProperty(
-                'always',
-                grid.elementPath,
-                PP.create('style', axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows'),
-                gridNumbersToTemplateString(newValues),
-              ),
-            ]),
-          ])
-        } else if (isCSSNumber(value)) {
-          const gridValueAtIndex = values[index]
-          const maybeUnit = isGridCSSNumber(gridValueAtIndex) ? gridValueAtIndex.value.unit : null
-          const newValues = [...values]
-          newValues[index] = gridCSSNumber(
-            cssNumber(value.value, value.unit ?? maybeUnit),
-            gridValueAtIndex.areaName,
-          )
+            return dispatch([
+              applyCommandsAction([
+                setProperty(
+                  'always',
+                  grid.elementPath,
+                  PP.create(
+                    'style',
+                    axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows',
+                  ),
+                  gridNumbersToTemplateString(newValues),
+                ),
+              ]),
+            ])
+          } else if (isCSSNumber(value)) {
+            const gridValueAtIndex = values[index]
+            const maybeUnit = isGridCSSNumber(gridValueAtIndex) ? gridValueAtIndex.value.unit : null
+            const newValues = [...values]
+            newValues[index] = gridCSSNumber(
+              cssNumber(value.value, value.unit ?? maybeUnit),
+              gridValueAtIndex.areaName,
+            )
 
-          dispatch([
-            applyCommandsAction([
-              setProperty(
-                'always',
-                grid.elementPath,
-                PP.create('style', axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows'),
-                gridNumbersToTemplateString(newValues),
-              ),
-            ]),
-          ])
-        }
-      },
+            dispatch([
+              applyCommandsAction([
+                setProperty(
+                  'always',
+                  grid.elementPath,
+                  PP.create(
+                    'style',
+                    axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows',
+                  ),
+                  gridNumbersToTemplateString(newValues),
+                ),
+              ]),
+            ])
+          }
+        },
       [grid, values, dispatch, axis],
     )
 
@@ -424,10 +436,10 @@ const TemplateDimensionControl = React.memo(
             <Icons.Plus width={12} height={12} onClick={onAdd} />
           </SquareButton>
         </div>
-        {values.map((col, index) => {
+        {values.map((value, index) => {
           return (
             <div
-              key={`col-${col}-${index}`}
+              key={`col-${value}-${index}`}
               style={{ display: 'flex', alignItems: 'center', gap: 6 }}
               css={{
                 [`& > .${axisDropdownMenuButton}`]: {
@@ -448,14 +460,14 @@ const TemplateDimensionControl = React.memo(
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                   }}
-                  title={col.areaName ?? undefined}
+                  title={value.areaName ?? undefined}
                 >
-                  {col.areaName ?? index + 1}
+                  {value.areaName ?? index + 1}
                 </Subdued>
                 <DropdownNumberInput
                   style={{ flex: 1 }}
-                  testId={`col-${col}-${index}`}
-                  value={col.value}
+                  testId={`value-${value}-${index}`}
+                  value={value.value}
                   keywords={[
                     { label: 'Auto', value: 'auto' },
                     { label: 'Min-Content', value: 'min-content' },
