@@ -65,8 +65,14 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
 
   const [elementHovered, setElementHovered] = useState<boolean>(false)
 
-  const [backgroundShown, setBackgroundShown] = React.useState<boolean>(false)
-  const [controlHoverStart, controlHoverEnd] = useHoverWithDelay(0, setBackgroundShown)
+  const [rowBackgroundShown, setRowBackgroundShown] = React.useState<boolean>(false)
+  const [columnBackgroundShown, setColumnBackgroundShown] = React.useState<boolean>(false)
+
+  const [rowControlHoverStart, rowControlHoverEnd] = useHoverWithDelay(0, setRowBackgroundShown)
+  const [columnControlHoverStart, columnControlHoverEnd] = useHoverWithDelay(
+    0,
+    setColumnBackgroundShown,
+  )
 
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
   React.useEffect(() => {
@@ -119,6 +125,15 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
       startInteraction(e, dispatch, canvasOffset.current, scale, axis)
     },
     [canvasOffset, dispatch, scale],
+  )
+  const rowMouseDownHandler = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => axisMouseDownHandler(e, 'row'),
+    [axisMouseDownHandler],
+  )
+
+  const columnMouseDownHandler = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => axisMouseDownHandler(e, 'column'),
+    [axisMouseDownHandler],
   )
 
   const children = recurseIntoChildrenOfMapOrFragment(
@@ -206,26 +221,40 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
       >
         {controlBounds.map(({ gap, bounds, axis, path: p, size: contentArea }) => {
           const path = EP.toString(p)
-          const GapControlSegmentComponent =
-            axis === 'row' ? RowGapControlSegment : ColumnGapControlSegment
+          const gapControlProps = {
+            mouseDownHandler: axisMouseDownHandler,
+            path: path,
+            bounds: bounds,
+            contentArea: contentArea,
+            accentColor: accentColor,
+            scale: scale,
+            isDragging: isDragging,
+            axis: axis,
+            gapValue: gap,
+            justifyContent: justifyContent,
+            alignItems: alignItems,
+            elementHovered: elementHovered,
+          }
+          if (axis === 'row') {
+            return (
+              <GapControlSegment
+                {...gapControlProps}
+                key={path}
+                onMouseDown={rowMouseDownHandler}
+                hoverStart={rowControlHoverStart}
+                hoverEnd={rowControlHoverEnd}
+                backgroundShown={rowBackgroundShown}
+              />
+            )
+          }
           return (
-            <GapControlSegmentComponent
+            <GapControlSegment
+              {...gapControlProps}
               key={path}
-              hoverStart={controlHoverStart}
-              hoverEnd={controlHoverEnd}
-              mouseDownHandler={axisMouseDownHandler}
-              elementHovered={elementHovered}
-              path={path}
-              bounds={bounds}
-              contentArea={contentArea}
-              accentColor={accentColor}
-              scale={scale}
-              backgroundShown={backgroundShown}
-              isDragging={isDragging}
-              axis={axis}
-              gapValue={gap}
-              justifyContent={justifyContent}
-              alignItems={alignItems}
+              onMouseDown={columnMouseDownHandler}
+              hoverStart={columnControlHoverStart}
+              hoverEnd={columnControlHoverEnd}
+              backgroundShown={columnBackgroundShown}
             />
           )
         })}
@@ -259,9 +288,9 @@ const gapControlSizeConstants = (
 })
 
 interface GridGapControlSegmentProps {
+  onMouseDown: React.MouseEventHandler
   hoverStart: React.MouseEventHandler
   hoverEnd: React.MouseEventHandler
-  onMouseDown?: React.MouseEventHandler
   bounds: CanvasRectangle
   contentArea: Size
   axis: Axis
@@ -275,28 +304,6 @@ interface GridGapControlSegmentProps {
   justifyContent: FlexJustifyContent | null
   alignItems: FlexAlignment | null
 }
-
-interface AxisGapControlSegmentProps extends GridGapControlSegmentProps {
-  mouseDownHandler: (e: React.MouseEvent<HTMLDivElement>, axis: Axis) => void
-}
-
-const RowGapControlSegment = React.memo<AxisGapControlSegmentProps>((props) => {
-  const { mouseDownHandler } = props
-  const onMouseDown = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => mouseDownHandler(e, 'row'),
-    [mouseDownHandler],
-  )
-  return <GapControlSegment {...props} onMouseDown={onMouseDown} />
-})
-
-const ColumnGapControlSegment = React.memo<AxisGapControlSegmentProps>((props) => {
-  const { mouseDownHandler } = props
-  const onMouseDown = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => mouseDownHandler(e, 'column'),
-    [mouseDownHandler],
-  )
-  return <GapControlSegment {...props} onMouseDown={onMouseDown} />
-})
 
 const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
   const {
