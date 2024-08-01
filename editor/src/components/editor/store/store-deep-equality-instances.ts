@@ -448,6 +448,7 @@ import type {
   GridAxisHandle,
   GridResizeHandle,
   GridResizeEdge,
+  GridGapHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
   boundingArea,
@@ -459,6 +460,7 @@ import {
   gridCellHandle,
   gridAxisHandle,
   gridResizeHandle,
+  gridGapHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import type { Modifiers } from '../../../utils/modifiers'
 import type {
@@ -634,6 +636,7 @@ import type {
   ComponentDescriptorBounds,
   ComponentDescriptorPropertiesBounds,
 } from '../../../core/property-controls/component-descriptor-parser'
+import type { Axis } from '../../../components/canvas/gap-utils'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -2900,6 +2903,9 @@ export const GridResizeHandleKeepDeepEquality: KeepDeepEqualityCall<GridResizeHa
     gridResizeHandle,
   )
 
+export const GridGapHandleKeepDeepEquality: KeepDeepEqualityCall<GridGapHandle> =
+  combine1EqualityCall((handle) => handle.axis, createCallWithTripleEquals<Axis>(), gridGapHandle)
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -2953,6 +2959,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'GRID_RESIZE_HANDLE':
       if (newValue.type === oldValue.type) {
         return GridResizeHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'GRID_GAP_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return GridGapHandleKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

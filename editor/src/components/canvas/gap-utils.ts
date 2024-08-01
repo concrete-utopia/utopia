@@ -168,25 +168,24 @@ export function gapControlBoundsFromMetadata(
 export function gridGapControlBoundsFromMetadata(
   elementMetadata: ElementInstanceMetadataMap,
   parentPath: ElementPath,
-  children: ElementPath[],
   gaps: { row: CSSNumber; column: CSSNumber },
   contentArea: { row: Size; column: Size },
-): Array<
-  PathWithBounds & {
-    gap: CSSNumber
-    axis: Axis
-    size: Size
-  }
-> {
-  const elementPadding =
-    MetadataUtils.findElementByElementPath(elementMetadata, parentPath)?.specialSizeMeasurements
-      .padding ?? sides(0, 0, 0, 0)
-  const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, elementMetadata)
-  if (parentFrame == null || isInfinityRectangle(parentFrame)) {
-    return []
-  }
+): Array<{
+  bounds: CanvasRectangle
+  gapId: string
+  gap: CSSNumber
+  axis: Axis
+  size: Size
+}> {
+  // const elementPadding =
+  //   MetadataUtils.findElementByElementPath(elementMetadata, parentPath)?.specialSizeMeasurements
+  //     .padding ?? sides(0, 0, 0, 0)
+  // const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, elementMetadata)
+  // if (parentFrame == null || isInfinityRectangle(parentFrame)) {
+  //   return []
+  // }
 
-  const parentBounds = inset(elementPadding, parentFrame)
+  // const parentBounds = inset(elementPadding, parentFrame)
 
   const parentGridPlaceholderId = `grid-${EP.toString(parentPath)}`
   const parentGrid = document.getElementById(parentGridPlaceholderId)
@@ -203,7 +202,7 @@ export function gridGapControlBoundsFromMetadata(
     const firstChildBounds = placeholderChildren[i * gridColumns].getBoundingClientRect()
     const secondChildBounds = placeholderChildren[(i + 1) * gridColumns].getBoundingClientRect()
     return {
-      path: parentPath,
+      gapId: `${EP.toString(parentPath)}-row-gap-${i}`,
       bounds: canvasRectangle({
         x: 0,
         y: firstChildBounds.bottom - parentGridBounds.y,
@@ -221,7 +220,7 @@ export function gridGapControlBoundsFromMetadata(
     const firstChildBounds = placeholderChildren[i].getBoundingClientRect()
     const secondChildBounds = placeholderChildren[i + 1].getBoundingClientRect()
     return {
-      path: parentPath,
+      gapId: `${EP.toString(parentPath)}-column-gap-${i}`,
       bounds: canvasRectangle({
         x: firstChildBounds.right - parentGridBounds.x,
         y: 0,
@@ -229,7 +228,7 @@ export function gridGapControlBoundsFromMetadata(
         height: parentGridBounds.height,
       }),
       gap: gaps.column,
-      axis: 'column' as 'row' | 'column',
+      axis: 'column' as Axis,
       size: contentArea.column,
     }
   })

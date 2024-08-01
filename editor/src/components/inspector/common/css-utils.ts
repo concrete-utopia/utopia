@@ -4670,14 +4670,6 @@ export const cssEmptyValues: ParsedCSSProperties = {
     value: 0,
     unit: null,
   },
-  rowGap: {
-    value: 0,
-    unit: null,
-  },
-  columnGap: {
-    value: 0,
-    unit: null,
-  },
   width: {
     value: 0,
     unit: null,
@@ -4767,8 +4759,6 @@ export const cssParsers: CSSParsers = {
   flexShrink: parseCSSUnitlessAsNumber,
   display: parseDisplay,
   gap: parseCSSLengthPercent,
-  rowGap: parseCSSLengthPercent,
-  columnGap: parseCSSLengthPercent,
   width: parseCSSLengthPercent,
   height: parseCSSLengthPercent,
   flexBasis: parseCSSLengthPercent,
@@ -4848,8 +4838,6 @@ const cssPrinters: CSSPrinters = {
   height: printCSSNumberOrUndefinedAsAttributeValue('px'),
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
   gap: printCSSNumberAsAttributeValue('px'),
-  rowGap: printCSSNumberAsAttributeValue('px'),
-  columnGap: printCSSNumberAsAttributeValue('px'),
   zIndex: printCSSNumberUnitlessOrUndefinedAsAttributeValue,
   rowGap: printCSSNumberAsAttributeValue('px'),
   columnGap: printCSSNumberAsAttributeValue('px'),
@@ -5563,14 +5551,6 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   gapMain: { value: 0, unit: null },
   flexBasis: undefined,
   gap: {
-    value: 0,
-    unit: 'px',
-  },
-  rowGap: {
-    value: 0,
-    unit: 'px',
-  },
-  columnGap: {
     value: 0,
     unit: 'px',
   },

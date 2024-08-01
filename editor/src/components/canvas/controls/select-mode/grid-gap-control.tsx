@@ -193,7 +193,6 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
   const controlBounds = gridGapControlBoundsFromMetadata(
     metadata,
     selectedElement,
-    children.map((c) => c.elementPath),
     { row: gridGapRow.value, column: gridGapColumn.value },
     gapControlSizes,
   )
@@ -219,11 +218,10 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
         style={{ pointerEvents: 'none', position: 'absolute' }}
         ref={controlRef}
       >
-        {controlBounds.map(({ gap, bounds, axis, path: p, size: contentArea }) => {
-          const path = EP.toString(p)
+        {controlBounds.map(({ gap, bounds, axis, gapId, size: contentArea }) => {
           const gapControlProps = {
             mouseDownHandler: axisMouseDownHandler,
-            path: path,
+            gapId: gapId,
             bounds: bounds,
             contentArea: contentArea,
             accentColor: accentColor,
@@ -239,7 +237,7 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
             return (
               <GapControlSegment
                 {...gapControlProps}
-                key={path}
+                key={gapId}
                 onMouseDown={rowMouseDownHandler}
                 hoverStart={rowControlHoverStart}
                 hoverEnd={rowControlHoverEnd}
@@ -250,7 +248,7 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
           return (
             <GapControlSegment
               {...gapControlProps}
-              key={path}
+              key={gapId}
               onMouseDown={columnMouseDownHandler}
               hoverStart={columnControlHoverStart}
               hoverEnd={columnControlHoverEnd}
@@ -296,7 +294,7 @@ interface GridGapControlSegmentProps {
   axis: Axis
   gapValue: CSSNumber
   elementHovered: boolean
-  path: string
+  gapId: string
   accentColor: string
   scale: number
   isDragging: boolean
@@ -317,7 +315,7 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
     accentColor: accentColor,
     elementHovered,
     scale,
-    path,
+    gapId,
     backgroundShown,
     justifyContent,
     alignItems,
@@ -357,10 +355,10 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
 
   return (
     <div
-      key={path}
+      key={gapId}
       onMouseEnter={hoverStart}
       onMouseLeave={handleHoverEndInner}
-      data-testid={`gap-control-segment-${path}`}
+      data-testid={`gap-control-segment-${gapId}`}
       style={{
         pointerEvents: 'all',
         position: 'absolute',
@@ -391,7 +389,7 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            data-testid={`${GridGapControlHandleTestId}-${path}`}
+            data-testid={`${GridGapControlHandleTestId}-${gapId}`}
             style={{
               visibility: shouldShowHandle ? 'visible' : 'hidden',
               padding: hitAreaPadding,
