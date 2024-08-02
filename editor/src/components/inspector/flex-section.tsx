@@ -28,6 +28,7 @@ import type {
   ValidGridDimensionKeyword,
 } from './common/css-utils'
 import {
+  cssKeyword,
   cssNumber,
   cssNumberToString,
   gridCSSKeyword,
@@ -36,6 +37,7 @@ import {
   isCSSNumber,
   isGridCSSKeyword,
   isGridCSSNumber,
+  isValidGridDimensionKeyword,
   type GridDimension,
 } from './common/css-utils'
 import { applyCommandsAction } from '../editor/actions/action-creators'
@@ -182,6 +184,12 @@ export const FlexSection = React.memo(() => {
     </div>
   )
 })
+
+const gridDimensionDropdownKeywords = [
+  { label: 'Auto', value: cssKeyword('auto') },
+  { label: 'Min-Content', value: cssKeyword('min-content') },
+  { label: 'Max-Content', value: cssKeyword('max-content') },
+]
 
 const TemplateDimensionControl = React.memo(
   ({
@@ -468,11 +476,8 @@ const TemplateDimensionControl = React.memo(
                   style={{ flex: 1 }}
                   testId={`value-${value}-${index}`}
                   value={value.value}
-                  keywords={[
-                    { label: 'Auto', value: 'auto' },
-                    { label: 'Min-Content', value: 'min-content' },
-                    { label: 'Max-Content', value: 'max-content' },
-                  ]}
+                  keywords={gridDimensionDropdownKeywords}
+                  keywordTypeCheck={isValidGridDimensionKeyword}
                   onSubmitValue={onUpdate(index)}
                 />
               </div>

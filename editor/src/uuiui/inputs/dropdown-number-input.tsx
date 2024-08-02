@@ -8,25 +8,26 @@ import type {
   CSSNumber,
   UnknownOrEmptyInput,
 } from '../../components/inspector/common/css-utils'
-import { cssKeyword, isCSSNumber } from '../../components/inspector/common/css-utils'
+import { isCSSNumber } from '../../components/inspector/common/css-utils'
 import { NO_OP } from '../../core/shared/utils'
 
-type DropdownNumberInputProps = {
-  onSubmitValue: (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword>) => void
-  value: CSSNumber | CSSKeyword
+type DropdownNumberInputProps<T extends string> = {
   testId: string
-  keywords: { label: string; value: string }[]
   style?: CSSProperties
+  onSubmitValue: (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<T>>) => void
+  value: CSSNumber | CSSKeyword<T>
+  keywords: Array<{ label: string; value: CSSKeyword<T> }>
+  keywordTypeCheck: (keyword: unknown) => keyword is T
 }
 
-export const DropdownNumberInput = React.memo((props: DropdownNumberInputProps) => {
+export function DropdownNumberInput<T extends string>(props: DropdownNumberInputProps<T>) {
   const { onSubmitValue: propsOnSubmitValue } = props
 
   const [hover, setHover] = React.useState(false)
   const [dropdownOpen, setDropdownOpen] = React.useState(false)
 
   const onSubmitValue = React.useCallback(
-    (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword>) => {
+    (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<T>>) => {
       propsOnSubmitValue(value)
       setHover(false)
     },
@@ -54,7 +55,7 @@ export const DropdownNumberInput = React.memo((props: DropdownNumberInputProps) 
           id: `dropdown-label-${keyword.value}`,
           icon: <div style={{ width: 16, height: 16 }} />,
           label: keyword.label,
-          onSelect: () => onSubmitValue(cssKeyword(keyword.value)),
+          onSelect: () => onSubmitValue(keyword.value),
         }
       }),
     ],
@@ -103,5 +104,4 @@ export const DropdownNumberInput = React.memo((props: DropdownNumberInputProps) 
       </div>
     </div>
   )
-})
-DropdownNumberInput.displayName = 'KeywordNumberInput'
+}
