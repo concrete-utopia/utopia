@@ -107,12 +107,6 @@ function useCanvasContextMenuItems(
 ): Array<ContextMenuItem<CanvasData>> {
   const elementNamesAndIcons = useNamesAndIconsAllPaths()
 
-  const lockedElements = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.lockedElements,
-    'useCanvasContextMenuItems, lockedElements',
-  )
-
   if (contextMenuInstance === 'context-menu-canvas-no-selection') {
     return ContextMenuItemsNoSelection
   } else if (contextMenuInstance === 'context-menu-canvas') {
@@ -149,7 +143,7 @@ function useCanvasContextMenuItems(
                 data.scale,
                 data.canvasOffset,
                 data.jsxMetadata,
-                lockedElements,
+                data.lockedElements,
               )
               lastMousePosition = WindowMousePositionRaw
             }
@@ -208,6 +202,7 @@ function useCanvasContextMenuGetData(
       internalClipboard: store.editor.internalClipboard,
       autoFocusedPaths: store.derived.autoFocusedPaths,
       propertyControlsInfo: store.editor.propertyControlsInfo,
+      lockedElements: store.editor.lockedElements,
     }
   })
   const navigatorTargetsRef = useRefEditorState(navigatorTargetsSelector)
@@ -236,6 +231,7 @@ function useCanvasContextMenuGetData(
       navigatorTargets: navigatorTargetsRef.current.navigatorTargets,
       propertyControlsInfo: currentEditor.propertyControlsInfo,
       showComponentPicker: showComponentPicker,
+      lockedElements: currentEditor.lockedElements,
     }
   }, [editorSliceRef, navigatorTargetsRef, contextMenuInstance, showComponentPicker])
 }
