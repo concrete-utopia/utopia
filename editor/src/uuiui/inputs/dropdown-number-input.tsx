@@ -33,9 +33,20 @@ export function DropdownNumberInput<T extends string>(props: DropdownNumberInput
     },
     [propsOnSubmitValue],
   )
+
+  const dropdownButtonId = `${props.testId}-dropdown`
+
   const dropdownButton = React.useCallback(
-    () => <Icons.ExpansionArrowDown testId={`${props.testId}-dropdown`} />,
-    [props.testId],
+    () => (
+      <Icons.ExpansionArrowDown
+        testId={dropdownButtonId}
+        style={{
+          visibility: hover || dropdownOpen ? 'visible' : 'hidden',
+          cursor: 'pointer',
+        }}
+      />
+    ),
+    [dropdownButtonId, hover, dropdownOpen],
   )
 
   const dropdownItems = React.useMemo(
@@ -95,7 +106,6 @@ export function DropdownNumberInput<T extends string>(props: DropdownNumberInput
           top: 0,
           bottom: 0,
           right: 0,
-          cursor: 'pointer',
         }}
       >
         <DropdownMenu
