@@ -35,6 +35,7 @@ import {
   gridCSSNumber,
   isCSSKeyword,
   isCSSNumber,
+  isEmptyInputValue,
   isGridCSSKeyword,
   isGridCSSNumber,
   isValidGridDimensionKeyword,
@@ -220,6 +221,8 @@ const TemplateDimensionControl = React.memo(
             )
           } else if (isCSSKeyword(value)) {
             newValues[index] = gridCSSKeyword(value, gridValueAtIndex.areaName)
+          } else if (isEmptyInputValue(value)) {
+            newValues[index] = gridCSSKeyword(cssKeyword('auto'), gridValueAtIndex.areaName)
           }
 
           dispatch([
@@ -425,6 +428,7 @@ const TemplateDimensionControl = React.memo(
           </SquareButton>
         </div>
         {values.map((value, index) => {
+          const testId = `grid-dimension-${axis}-${index}`
           return (
             <div
               key={`col-${value}-${index}`}
@@ -454,7 +458,7 @@ const TemplateDimensionControl = React.memo(
                 </Subdued>
                 <DropdownNumberInput
                   style={{ flex: 1 }}
-                  testId={`value-${value}-${index}`}
+                  testId={testId}
                   value={value.value}
                   keywords={gridDimensionDropdownKeywords}
                   keywordTypeCheck={isValidGridDimensionKeyword}

@@ -8,11 +8,12 @@ import type {
   UnknownOrEmptyInput,
 } from '../../components/inspector/common/css-utils'
 import {
-  cssNumber,
+  emptyInputValue,
   isCSSNumber,
   isEmptyInputValue,
   isUnknownInputValue,
   parseCSSNumber,
+  unknownInputValue,
 } from '../../components/inspector/common/css-utils'
 import type {
   InspectorControlProps,
@@ -40,15 +41,12 @@ export function NumberOrKeywordInput<T extends string>(props: NumberOrKeywordInp
   const onSubmitValue: OnSubmitValue<UnknownOrEmptyInput<string>> = React.useCallback(
     (value) => {
       const parsedNewValue = parseInput<T>(value, props.validKeywords)
-      if (parsedNewValue === 'invalid') {
+      if (isUnknownInputValue(parsedNewValue)) {
         setStringValue(toStringValue(props.value))
-        return
+        propsOnSubmitValue(parsedNewValue.value === '' ? emptyInputValue() : parsedNewValue)
+      } else {
+        propsOnSubmitValue(parsedNewValue)
       }
-
-      if (!isUnknownInputValue(value)) {
-        setStringValue(isEmptyInputValue(value) ? '' : value)
-      }
-      propsOnSubmitValue(parsedNewValue)
     },
     [props.value, props.validKeywords, propsOnSubmitValue],
   )
@@ -77,21 +75,16 @@ export function NumberOrKeywordInput<T extends string>(props: NumberOrKeywordInp
 function parseInput<T extends string>(
   value: UnknownOrEmptyInput<string>,
   validKeywords: Array<CSSKeyword<T>>,
-): UnknownOrEmptyInput<CSSNumber | CSSKeyword<T> | 'invalid'> {
+): UnknownOrEmptyInput<CSSNumber | CSSKeyword<T>> {
   if (!isUnknownInputValue(value) && !isEmptyInputValue(value)) {
     const parsedNumber = parseCSSNumber(value, 'AnyValid', null)
     if (isRight(parsedNumber)) {
       return parsedNumber.value
     } else {
-      const keyword = validKeywords.find((k) => k.value === value)
-      if (keyword != null) {
-        return keyword
-      } else {
-        return 'invalid'
-      }
+      return validKeywords.find((k) => k.value === value) ?? unknownInputValue(value)
     }
   }
-  return cssNumber(0)
+  return value
 }
 
 function toStringValue(v: CSSNumber | CSSKeyword) {

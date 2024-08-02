@@ -33,7 +33,10 @@ export function DropdownNumberInput<T extends string>(props: DropdownNumberInput
     },
     [propsOnSubmitValue],
   )
-  const dropdownButton = React.useCallback(() => <Icons.ExpansionArrowDown />, [])
+  const dropdownButton = React.useCallback(
+    () => <Icons.ExpansionArrowDown testId={`${props.testId}-dropdown`} />,
+    [props.testId],
+  )
 
   const dropdownItems = React.useMemo(
     (): DropdownMenuItem[] => [
@@ -52,7 +55,7 @@ export function DropdownNumberInput<T extends string>(props: DropdownNumberInput
       },
       ...props.keywords.map((keyword): DropdownMenuItem => {
         return {
-          id: `dropdown-label-${keyword.value}`,
+          id: `dropdown-label-${keyword.value.value}`,
           icon: <div style={{ width: 16, height: 16 }} />,
           label: keyword.label,
           onSelect: () => onSubmitValue(keyword.value),
