@@ -27,7 +27,6 @@ import Utils from '../../utils/utils'
 import { memoize } from '../../core/shared/memoize'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { optionalMap } from '../../core/shared/optional-utils'
 
 type FindParentSceneValidPathsCache = Map<Element, Array<ElementPath> | null>
 
@@ -139,7 +138,6 @@ export function firstAncestorOrItselfWithValidElementPath(
 
   let resultPath: ElementPath | null = null
   let maxDepth = -1
-  // if (validStaticElementPaths.size == 2) debugger
   for (const validPath of validStaticElementPaths) {
     const validPathFromString = EP.fromString(validPath)
     // We try to find a valid dynamic path with the deepest possible element path.
@@ -307,7 +305,7 @@ function findFirstValidParentForSingleElementUncached(
   let foundValidElementPath: ElementPath | null = null
 
   for (const element of elementsUnderPoint) {
-    const f = firstAncestorOrItselfWithValidElementPath(
+    const p = firstAncestorOrItselfWithValidElementPath(
       validPathsSet,
       element,
       parentSceneValidPathsCache,
@@ -315,9 +313,9 @@ function findFirstValidParentForSingleElementUncached(
       point,
       lockedElements,
     )
-    if (f != null) {
-      foundValidElementPath = f.path
-      if (!f.locked) {
+    if (p != null) {
+      foundValidElementPath = p.path
+      if (!p.locked) {
         break
       }
     }

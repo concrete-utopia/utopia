@@ -232,7 +232,7 @@ export function getSelectableViews(
   allElementsDirectlySelectable: boolean,
   childrenSelectable: boolean,
   lockedElements: LockedElements,
-): Array<ElementPath> {
+): ElementPath[] {
   const allLockedElementPaths = getAllLockedElementPaths(
     componentMetadata,
     elementPathTree,
@@ -247,7 +247,9 @@ export function getSelectableViews(
     allLockedElementPaths,
   )
 
-  return filterNonSelectableElements(hiddenInstances, candidateSelectableViews)
+  const selectableElements = filterNonSelectableElements(hiddenInstances, candidateSelectableViews)
+
+  return selectableElements
 }
 
 function getCandidateSelectableViews(
@@ -590,8 +592,7 @@ function useSelectOrLiveModeSelectAndHover(
   const { onMouseMove: innerOnMouseMove } = useHighlightCallbacks(
     active,
     cmdPressed,
-    (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) =>
-      getSelectableViewsForSelectMode(allElementsDirectlySelectable, childrenSelectable),
+    getSelectableViewsForSelectMode,
   )
 
   const editorStoreRef = useRefEditorState((store) => ({
