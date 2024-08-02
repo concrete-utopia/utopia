@@ -407,7 +407,7 @@ export function useGetSelectableViewsForSelectMode() {
     (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
       const { componentMetadata, elementPathTree, selectedViews, hiddenInstances, lockedElements } =
         storeRef.current
-      const { selectable: selectableViews } = getSelectableViews(
+      const selectableViews = getSelectableViews(
         componentMetadata,
         elementPathTree,
         selectedViews,
@@ -471,12 +471,12 @@ export function useCalculateHighlightedViews(
     (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
       const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
       const validElementPath = findValidTarget(
-        { selectable: selectableViews, locked: [] },
+        selectableViews,
         targetPoint,
         'prefer-more-specific-selection',
       )
       const validElementPathForHover = findValidTarget(
-        { selectable: selectableViews, locked: [] },
+        selectableViews,
         targetPoint,
         'prefer-selected',
       )

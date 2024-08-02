@@ -48,7 +48,7 @@ export function useTextEditModeSelectAndHover(active: boolean): MouseCallbacks {
       const textEditableViews = getTextEditableViews()
 
       const foundTarget = findValidTarget(
-        { selectable: textEditableViews, locked: [] },
+        textEditableViews,
         windowPoint(point(event.clientX, event.clientY)),
         'prefer-more-specific-selection',
       )
