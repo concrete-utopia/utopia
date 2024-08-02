@@ -65,8 +65,11 @@ export function DropdownNumberInput<T extends string>(props: DropdownNumberInput
   return (
     <div
       style={{
+        ...props.style,
         position: 'relative',
         borderRadius: 2,
+        display: 'flex',
+        alignItems: 'center',
       }}
       onMouseOver={() => setHover(true)}
       onMouseOut={() => setHover(false)}
@@ -78,7 +81,7 @@ export function DropdownNumberInput<T extends string>(props: DropdownNumberInput
         onSubmitValue={onSubmitValue}
         incrementalControls={false}
         validKeywords={props.keywords.map((k) => k.value)}
-        style={props.style}
+        style={{ flex: 1 }}
       />
       <div
         style={{
