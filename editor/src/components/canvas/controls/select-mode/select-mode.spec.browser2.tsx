@@ -1842,6 +1842,21 @@ const Foo = (props) => {
     // can't select props child because it is covered by the internal child and grandchild
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([InternalGrandChild])
   })
+  it('In not locked the unfocused component with overlapping internals is selected instead of the props child', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      LockingTestProjectWithComponent,
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const propsChildCenter = await getElementCentre('Foo_props_child', renderResult)
+
+    await mouseClickAtPoint(canvasControlsLayer, propsChildCenter, { modifiers: cmdModifier })
+
+    // can't select props child because it is covered by the unlocked internals of the component
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([FooPath])
+  })
 
   it('When the internal grandchild is locked, its internal parent is selected instead of the props child, because it is unlocked and covers props child', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1888,6 +1903,22 @@ const Foo = (props) => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     await renderResult.dispatch([setFocusedElement(FooPath)], true)
+    await renderResult.dispatch([toggleSelectionLock([InternalChild], 'locked-hierarchy')], true)
+    const propsChildCenter = await getElementCentre('Foo_props_child', renderResult)
+
+    await mouseClickAtPoint(canvasControlsLayer, propsChildCenter, { modifiers: cmdModifier })
+
+    // can select props child because even though it is covered by the internal child and grandchild, they are both locked by the hierarchy lock of the internal child
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([PropsChildPath])
+  })
+  it('When the internal child is hierarchy locked, props child can be selected, because all internal covering elements are locked (with the component not focused)', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      LockingTestProjectWithComponent,
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
     await renderResult.dispatch([toggleSelectionLock([InternalChild], 'locked-hierarchy')], true)
     const propsChildCenter = await getElementCentre('Foo_props_child', renderResult)
 
