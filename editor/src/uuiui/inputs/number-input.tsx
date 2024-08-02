@@ -137,7 +137,6 @@ export interface NumberInputOptions {
   numberType: CSSNumberType
   defaultUnitToHide: CSSNumberUnit | null
   pasteHandler?: boolean
-  showBorder?: boolean
 }
 
 export interface AbstractNumberInputProps<T extends CSSNumber | number>
@@ -191,7 +190,6 @@ export const NumberInput = React.memo<NumberInputProps>(
     onMouseLeave,
     invalid,
     pasteHandler,
-    showBorder,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const colorTheme = useColorTheme()
@@ -680,7 +678,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             flexDirection: 'row',
             gap: 5,
             alignItems: 'center',
-            boxShadow: `inset 0px 0px 0px 1px ${showBorder ? colorTheme.fg7.value : 'transparent'}`,
+            boxShadow: 'inset 0px 0px 0px 1px transparent',
             ...chainedStyles,
             '&:hover': {
               boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
