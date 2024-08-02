@@ -1,7 +1,7 @@
 import React from 'react'
 import { PopupList } from '../../../uuiui'
 import type { SelectOption } from '../../../uuiui-deps'
-import { DEPRECATED_NumberOrKeywordControl } from '../../../uuiui/inputs/number-or-keyword-input'
+import { NumberOrKeywordControl } from '../../../uuiui/inputs/number-or-keyword-input'
 import type { ControlStatus } from '../common/control-status'
 import type {
   CSSBackgroundLayers,
@@ -229,7 +229,7 @@ export const BGSizeMetadataControl: React.FunctionComponent<
       />
       {widthValue != null && heightValue != null ? (
         <>
-          <DEPRECATED_NumberOrKeywordControl
+          <NumberOrKeywordControl
             style={{ gridColumn: '5 / span 1' }}
             id='bgSize-width-component'
             testId='bgSize-width-component'
@@ -241,7 +241,7 @@ export const BGSizeMetadataControl: React.FunctionComponent<
             controlStatus={props.controlStatus}
             DEPRECATED_labelBelow='width'
           />
-          <DEPRECATED_NumberOrKeywordControl
+          <NumberOrKeywordControl
             style={{ gridColumn: '7 / span 1' }}
             id='bgSize-height-component'
             testId='bgSize-height-component'

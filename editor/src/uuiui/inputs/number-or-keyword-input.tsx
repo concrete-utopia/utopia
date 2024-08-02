@@ -56,7 +56,7 @@ interface NumberOrKeywordControlProps extends InspectorControlProps {
   labelBelowStyle?: React.CSSProperties
 }
 
-export const DEPRECATED_NumberOrKeywordControl = React.memo<NumberOrKeywordControlProps>(
+export const NumberOrKeywordControl = React.memo<NumberOrKeywordControlProps>(
   ({
     value,
     numberInputOptions,
