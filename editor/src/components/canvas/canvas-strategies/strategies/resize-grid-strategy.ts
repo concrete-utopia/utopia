@@ -131,8 +131,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       const calculatedValue = toFirst(valueOptic, calculatedValues.dimensions)
       const mergedValue = toFirst(valueOptic, mergedValues.dimensions)
       const mergedUnit = toFirst(unitOptic, mergedValues.dimensions)
-      const isFractional =
-        isRight(mergedUnit) && isCSSNumber(mergedUnit.value) && mergedUnit.value.unit === 'fr'
+      const isFractional = isRight(mergedUnit) && mergedUnit.value === 'fr'
       const precision = modifiers.cmd ? 'coarse' : 'precise'
 
       const newSetting = modify(
