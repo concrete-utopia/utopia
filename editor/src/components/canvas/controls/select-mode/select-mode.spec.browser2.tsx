@@ -33,6 +33,7 @@ import type { Modifiers } from '../../../../utils/modifiers'
 import { cmdModifier, emptyModifiers, shiftCmdModifier } from '../../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
+import { wait } from '../../../../utils/utils.test-utils'
 
 async function fireSingleClickEvents(
   target: HTMLElement,
@@ -1486,6 +1487,434 @@ describe('Select mode focusing and un-focusing', () => {
   })
 })
 
+describe('Locking and selection', () => {
+  const LockingTestProject = makeTestProjectCodeWithSnippet(`
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='app-root'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 59,
+          top: 69,
+          width: 304,
+          height: 295,
+        }}
+        data-uid='locked'
+        data-testid='locked'
+      />
+    </div>
+  `)
+  const LockedPath = EP.elementPath([
+    [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+    ['app-root', 'locked'],
+  ])
+
+  const LockingTestProjectWithOverlappingSiblings = makeTestProjectCodeWithSnippet(`
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='app-root'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 59,
+          top: 69,
+          width: 304,
+          height: 295,
+        }}
+        data-uid='unlocked'
+        data-testid='unlocked'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 76,
+          top: 85,
+          width: 304,
+          height: 295,
+        }}
+        data-uid='locked'
+        data-testid='locked'
+      />
+    </div>
+  `)
+  const UnLockedPath = EP.elementPath([
+    [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+    ['app-root', 'unlocked'],
+  ])
+
+  const LockingTestProjectWithOverlappingSiblingsAndParent = makeTestProjectCodeWithSnippet(`
+  <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='app-root'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 59,
+          top: 69,
+          width: 304,
+          height: 295,
+        }}
+        data-uid='unlocked'
+        data-testid='unlocked'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 76,
+          top: 85,
+          width: 304,
+          height: 295,
+        }}
+        data-uid='parent-of-locked'
+        data-testid='parent-of-locked'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 18,
+            top: 15,
+            width: 247,
+            height: 250,
+          }}
+          data-uid='locked-child'
+          data-testid='locked-child'
+        />
+      </div>
+    </div>
+    `)
+
+  const ParentOfLockedPath = EP.elementPath([
+    [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+    ['app-root', 'parent-of-locked'],
+  ])
+  const LockedChildPath = EP.elementPath([
+    [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+    ['app-root', 'parent-of-locked', 'locked-child'],
+  ])
+
+  it('Cant select locked element', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      LockingTestProject,
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const lockedCenter = await getElementCentre('locked', renderResult)
+
+    await mouseClickAtPoint(canvasControlsLayer, lockedCenter)
+
+    // can select when it is not locked yet
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([LockedPath])
+
+    await renderResult.dispatch([selectComponents([], false)], true)
+    await renderResult.dispatch([toggleSelectionLock([LockedPath], 'locked')], true)
+
+    await mouseClickAtPoint(canvasControlsLayer, lockedCenter)
+
+    // can't select now because it is locked
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([])
+  })
+  it('Can select element behind locked element', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      LockingTestProjectWithOverlappingSiblings,
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const lockedCenter = await getElementCentre('locked', renderResult)
+
+    await mouseClickAtPoint(canvasControlsLayer, lockedCenter)
+
+    // can select the top element when it is not locked yet
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([LockedPath])
+
+    await renderResult.dispatch([selectComponents([], false)], true)
+    await renderResult.dispatch([toggleSelectionLock([LockedPath], 'locked')], true)
+
+    await mouseClickAtPoint(canvasControlsLayer, lockedCenter)
+
+    // the bottom element is selected, because we can click through the locked element
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([UnLockedPath])
+  })
+  it('Unlocked parent of locked element is selected and not the element behind it', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      LockingTestProjectWithOverlappingSiblingsAndParent,
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const lockedCenter = await getElementCentre('locked-child', renderResult)
+
+    await renderResult.dispatch([toggleSelectionLock([LockedChildPath], 'locked')], true)
+
+    await mouseClickAtPoint(canvasControlsLayer, lockedCenter)
+
+    // the parent of the locked element is selected, because that still covers the unlocked element behind
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([ParentOfLockedPath])
+  })
+  it('Can select behind hierarchy locked parent and its child', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      LockingTestProjectWithOverlappingSiblingsAndParent,
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const lockedCenter = await getElementCentre('locked-child', renderResult)
+
+    await renderResult.dispatch(
+      [toggleSelectionLock([LockedChildPath, ParentOfLockedPath], 'locked')],
+      true,
+    )
+
+    await mouseClickAtPoint(canvasControlsLayer, lockedCenter)
+
+    // the parent is hierachy locked (so its child is locked too), so we can select the unlocked element behind the locked parent and its child
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([UnLockedPath])
+  })
+})
+
+describe('Locking and selection in components', () => {
+  const LockingTestProjectWithComponent = `
+    import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='${TestSceneUID}'
+    >
+      <Playground
+        style={{}}
+        data-uid='${TestAppUID}'
+      />
+    </Scene>
+  </Storyboard>
+)
+
+export var Playground = ({ style }) => {
+  return (
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+        ...style,
+      }}
+      data-uid='root'
+      data-label='root'
+    >
+      <Foo data-uid='Foo'>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 65,
+            top: 58,
+            width: 329,
+            height: 266,
+          }}
+          data-label='Foo_props_child'
+          data-uid='Foo_props_child'
+          data-testid='Foo_props_child'
+        />
+      </Foo>
+    </div>
+  )
+}
+
+const Foo = (props) => {
+  return (
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 91,
+        top: 81,
+        width: 484,
+        height: 390,
+      }}
+      data-label='Foo_root_div'
+      data-uid='Foo_root_div'
+    >
+      {props.children}
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 44,
+          top: 38,
+          width: 390,
+          height: 303,
+        }}
+        data-label='Foo_internal_child'
+        data-uid='Foo_internal_child'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 118,
+            top: 27,
+            width: 149,
+            height: 162,
+          }}
+            data-label='Foo_internal_grandchild'
+          data-uid='Foo_internal_grandchild'
+        />
+      </div>
+    </div>
+  )
+}
+  `
+
+  const FooPath = EP.elementPath([
+    [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+    ['root', 'Foo'],
+  ])
+
+  const PropsChildPath = EP.elementPath([
+    [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+    ['root', 'Foo', 'Foo_props_child'],
+  ])
+
+  const InternalChild = EP.elementPath([
+    [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+    ['root', 'Foo'],
+    ['Foo_root_div', 'Foo_internal_child'],
+  ])
+
+  const InternalGrandChild = EP.elementPath([
+    [BakedInStoryboardUID, TestSceneUID, TestAppUID],
+    ['root', 'Foo'],
+    ['Foo_root_div', 'Foo_internal_child', 'Foo_internal_grandchild'],
+  ])
+
+  it('In not locked case overlapping internal child is selected instead of the props child', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      LockingTestProjectWithComponent,
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await renderResult.dispatch([setFocusedElement(FooPath)], true)
+
+    const propsChildCenter = await getElementCentre('Foo_props_child', renderResult)
+
+    await mouseClickAtPoint(canvasControlsLayer, propsChildCenter, { modifiers: cmdModifier })
+
+    // can't select props child because it is covered by the internal child and grandchild
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([InternalGrandChild])
+  })
+
+  it('When the internal grandchild is locked, its internal parent is selected instead of the props child, because it is unlocked and covers props child', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      LockingTestProjectWithComponent,
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await renderResult.dispatch([setFocusedElement(FooPath)], true)
+    await renderResult.dispatch([toggleSelectionLock([InternalGrandChild], 'locked')], true)
+
+    const propsChildCenter = await getElementCentre('Foo_props_child', renderResult)
+
+    await mouseClickAtPoint(canvasControlsLayer, propsChildCenter, { modifiers: cmdModifier })
+
+    // can't select props child because it is covered by the internal child and grandchild, grandchild is locked so child is selected
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([InternalChild])
+  })
+
+  it('When the internal child is locked, the unlocked granchild is selected instead of the props child, because it covers it', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      LockingTestProjectWithComponent,
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await renderResult.dispatch([setFocusedElement(FooPath)], true)
+    await renderResult.dispatch([toggleSelectionLock([InternalChild], 'locked')], true)
+    const propsChildCenter = await getElementCentre('Foo_props_child', renderResult)
+
+    await mouseClickAtPoint(canvasControlsLayer, propsChildCenter, { modifiers: cmdModifier })
+
+    // can't select props child because it is covered by the internal child and grandchild, internal child is locked, but grandchild is not
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([InternalGrandChild])
+  })
+  it('When the internal child is hierarchy locked, props child can be selected, because all internal covering elements are locked', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      LockingTestProjectWithComponent,
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await renderResult.dispatch([setFocusedElement(FooPath)], true)
+    await renderResult.dispatch([toggleSelectionLock([InternalChild], 'locked-hierarchy')], true)
+    const propsChildCenter = await getElementCentre('Foo_props_child', renderResult)
+
+    await mouseClickAtPoint(canvasControlsLayer, propsChildCenter, { modifiers: cmdModifier })
+
+    // can select props child because even though it is covered by the internal child and grandchild, they are both locked by the hierarchy lock of the internal child
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([PropsChildPath])
+  })
+})
+
+async function getElementRect(testId: string, renderResult: EditorRenderResult) {
+  const targetElement = await renderResult.renderedDOM.findByTestId(testId)
+  return targetElement.getBoundingClientRect()
+}
+
+function getDOMRectCentre(domRect: DOMRect) {
+  return {
+    x: domRect.x + domRect.width / 2,
+    y: domRect.y + domRect.height / 2,
+  }
+}
+
+async function getElementCentre(testId: string, renderResult: EditorRenderResult) {
+  const elementRect = await getElementRect(testId, renderResult)
+  return getDOMRectCentre(elementRect)
+}
+
 describe('mouseup selection', () => {
   const MouseupTestProject = makeTestProjectCodeWithSnippet(`
       <div
@@ -1544,23 +1973,6 @@ describe('mouseup selection', () => {
     [BakedInStoryboardUID, TestSceneUID, TestAppUID],
     ['app-root', 'green'],
   ])
-
-  async function getElementRect(testId: string, renderResult: EditorRenderResult) {
-    const targetElement = await renderResult.renderedDOM.findByTestId(testId)
-    return targetElement.getBoundingClientRect()
-  }
-
-  function getDOMRectCentre(domRect: DOMRect) {
-    return {
-      x: domRect.x + domRect.width / 2,
-      y: domRect.y + domRect.height / 2,
-    }
-  }
-
-  async function getElementCentre(testId: string, renderResult: EditorRenderResult) {
-    const elementRect = await getElementRect(testId, renderResult)
-    return getDOMRectCentre(elementRect)
-  }
 
   describe('Interactions in selected scene', () => {
     it('Can select element in selected scene by clicking on it', async () => {
