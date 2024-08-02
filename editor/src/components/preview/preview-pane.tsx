@@ -289,7 +289,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
             },
           }}
         >
-          <SquareButton highlight onClick={this.onRestartClick}>
+          <SquareButton highlightOnHover onClick={this.onRestartClick}>
             <LargerIcons.Refresh />
           </SquareButton>
           <input
@@ -314,11 +314,11 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
           {this.props.editedFilename == null ? null : (
             <Subdued>{this.props.editedFilename}</Subdued>
           )}
-          <SquareButton highlight onClick={this.toggleRunning}>
+          <SquareButton highlightOnHover onClick={this.toggleRunning}>
             {this.state.running ? <LargerIcons.StopButton /> : <LargerIcons.PlayButton />}
           </SquareButton>
           <a target='_blank' rel='noopener noreferrer' href={floatingPreviewURL}>
-            <SquareButton highlight>
+            <SquareButton highlightOnHover>
               <LargerIcons.ExternalLink />
             </SquareButton>
           </a>
@@ -345,7 +345,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
             }}
           >
             <SquareButton
-              highlight
+              highlightOnHover
               disabled={!this.state.running || this.state.scale <= 0.25}
               onMouseUp={this.scaleDown}
             >
@@ -362,7 +362,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
               containerMode='noBorder'
             />
             <SquareButton
-              highlight
+              highlightOnHover
               disabled={!this.state.running || this.state.scale >= 4}
               onClick={this.scaleUp}
             >
@@ -394,7 +394,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
                 backgroundColor: colorTheme.secondaryBackground.value,
               }}
             >
-              <Button onClick={this.toggleRunning} spotlight>
+              <Button onClick={this.toggleRunning} highlightAlways>
                 <Icn category='semantic' type='playbutton' width={24} height={24} />
               </Button>
               <Subdued style={{ marginTop: 8 }}>Start Preview</Subdued>

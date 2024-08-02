@@ -167,7 +167,7 @@ const GridSection = React.memo(() => {
   return (
     <FlexColumn style={{ gap: 10 }}>
       <UIGridRow padded variant='<-------------1fr------------->'>
-        <Button highlight spotlight onClick={resetDefaults}>
+        <Button highlightOnHover highlightAlways onClick={resetDefaults}>
           Reset defaults
         </Button>
       </UIGridRow>

@@ -498,7 +498,7 @@ const AddTailwindButton = (props: AddTailwindButtonProps) => {
   return (
     <Button
       primary
-      highlight
+      highlightOnHover
       style={{
         margin: 8,
         height: 24,

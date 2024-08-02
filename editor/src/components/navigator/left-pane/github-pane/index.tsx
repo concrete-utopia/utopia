@@ -66,8 +66,8 @@ export const AuthenticateWithGithubButton = () => {
   const triggerAuthentication = useOnClickAuthenticateWithGithub()
   return (
     <Button
-      spotlight
-      highlight
+      highlightAlways
+      highlightOnHover
       style={{
         padding: '1em',
         borderRadius: 3,
@@ -387,8 +387,8 @@ const BranchBlock = () => {
         </FlexColumn>
         <UIGridRow padded={false} variant='<-------------1fr------------->'>
           <Button
-            spotlight
-            highlight
+            highlightAlways
+            highlightOnHover
             style={{ padding: '0 6px', marginTop: 6 }}
             onMouseUp={refreshBranchesOnMouseUp}
             disabled={isListingBranches}
@@ -406,8 +406,8 @@ const BranchBlock = () => {
           currentBranch != null,
           <UIGridRow padded={false} variant='<-------------1fr------------->'>
             <Button
-              spotlight
-              highlight
+              highlightAlways
+              highlightOnHover
               style={{ color: colorTheme.errorForeground.value }}
               onClick={clearBranch}
             >
@@ -585,8 +585,8 @@ const RemoteChangesBlock = () => {
           />
           <Button
             disabled={isGithubUpdating(githubOperations)}
-            spotlight
-            highlight
+            highlightAlways
+            highlightOnHover
             style={{
               gap: 4,
               background: colorTheme.secondaryOrange.value,
@@ -811,8 +811,8 @@ const LocalChangesBlock = () => {
           )}
           <Button
             disabled={isGithubCommitting(githubOperations)}
-            spotlight
-            highlight
+            highlightAlways
+            highlightOnHover
             style={{
               gap: 4,
               background: colorTheme.secondaryBlue.value,
@@ -831,7 +831,7 @@ const LocalChangesBlock = () => {
             )}
           </Button>
           <div style={{ textAlign: 'center' }}>or</div>
-          <Button spotlight highlight onClick={togglePushToNewBranch}>
+          <Button highlightAlways highlightOnHover onClick={togglePushToNewBranch}>
             {when(pushToNewBranch, <span>Push To Current Branch</span>)}
             {unless(pushToNewBranch, <span>Push To New Branch</span>)}
           </Button>
@@ -883,7 +883,7 @@ const PullRequestButton = () => {
   }
   return (
     <UIGridRow padded variant='<-------------1fr------------->'>
-      <Button spotlight highlight onClick={openPR}>
+      <Button highlightAlways highlightOnHover onClick={openPR}>
         Open a Pull Request
       </Button>
     </UIGridRow>
@@ -1039,8 +1039,8 @@ const BranchNotLoadedBlock = () => {
         {flow == null ? (
           <>
             <Button
-              spotlight
-              highlight
+              highlightAlways
+              highlightOnHover
               onClick={updateFlow('loadFromBranch')}
               style={{
                 gap: 4,
@@ -1053,8 +1053,8 @@ const BranchNotLoadedBlock = () => {
             <div style={{ textAlign: 'center' }}>or</div>
             <FlexColumn style={{ gap: 2 }}>
               <Button
-                spotlight
-                highlight
+                highlightAlways
+                highlightOnHover
                 style={{ gap: 4, padding: '0 6px' }}
                 onClick={updateFlow('pushToBranch')}
               >
@@ -1072,8 +1072,8 @@ const BranchNotLoadedBlock = () => {
                 Github.
                 <Button
                   disabled={isGithubLoadingAnyBranch(githubOperations)}
-                  spotlight
-                  highlight
+                  highlightAlways
+                  highlightOnHover
                   style={{
                     marginTop: 6,
                     gap: 4,
@@ -1099,8 +1099,8 @@ const BranchNotLoadedBlock = () => {
                 />
                 <Button
                   disabled={isGithubCommitting(githubOperations)}
-                  spotlight
-                  highlight
+                  highlightAlways
+                  highlightOnHover
                   style={{ marginTop: 6, gap: 4, padding: '0 6px' }}
                   onClick={pushToBranch}
                 >
@@ -1120,8 +1120,8 @@ const BranchNotLoadedBlock = () => {
                 />
                 <Button
                   disabled={isGithubCommitting(githubOperations)}
-                  spotlight
-                  highlight
+                  highlightAlways
+                  highlightOnHover
                   style={{ marginTop: 6, gap: 4, padding: '0 6px' }}
                   onClick={pushToBranch}
                 >
@@ -1132,7 +1132,12 @@ const BranchNotLoadedBlock = () => {
             )}
             {when(
               flow !== 'createBranch',
-              <Button spotlight highlight onClick={updateFlow(null)} style={{ marginTop: 6 }}>
+              <Button
+                highlightAlways
+                highlightOnHover
+                onClick={updateFlow(null)}
+                style={{ marginTop: 6 }}
+              >
                 Cancel
               </Button>,
             )}
@@ -1258,8 +1263,8 @@ export const GithubPane = React.memo(() => {
                   @{githubUser?.login}
                 </Button>
                 <Button
-                  highlight
-                  spotlight
+                  highlightOnHover
+                  highlightAlways
                   style={{ padding: '0 6px' }}
                   onClick={onClickRefresh}
                   disabled={refreshingGithubData}

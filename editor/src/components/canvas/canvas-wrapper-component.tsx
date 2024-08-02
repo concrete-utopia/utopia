@@ -158,7 +158,7 @@ export const SafeModeErrorOverlay = React.memo(() => {
           <Button
             primary={true}
             outline={false}
-            highlight
+            highlightOnHover
             onClick={onTryAgain}
             style={{
               paddingLeft: 4,

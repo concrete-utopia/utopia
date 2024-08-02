@@ -360,8 +360,8 @@ export const EditorContractDropdown = React.memo(() => {
           placement='left'
         >
           <Button
-            highlight
-            spotlight
+            highlightOnHover
+            highlightAlways
             data-testid={EditorFixProblemsButtonTestId}
             style={{
               backgroundColor: colorTheme.errorForeground20.value,

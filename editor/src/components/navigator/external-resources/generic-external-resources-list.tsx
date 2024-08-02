@@ -106,7 +106,7 @@ export const GenericExternalResourcesList = React.memo(() => {
           <Title>External Resources</Title>
         </FlexRow>
         {minimised ? null : (
-          <SquareButton highlight onClick={toggleOpenAddInsertField}>
+          <SquareButton highlightOnHover onClick={toggleOpenAddInsertField}>
             <FunctionIcons.Add
               style={{
                 flexGrow: 0,
@@ -122,6 +122,7 @@ export const GenericExternalResourcesList = React.memo(() => {
             values.value.genericExternalResources.map((value, i) =>
               editingIndexOrInserting === i ? (
                 <GenericExternalResourcesInput
+                  key={'ListItem-' + i}
                   hrefValueToEdit={value.href}
                   relValueToEdit={value.rel}
                   closeField={closeInsertAndEditingFields}
@@ -129,7 +130,7 @@ export const GenericExternalResourcesList = React.memo(() => {
                 />
               ) : (
                 <GenericExternalResourcesListItem
-                  key={value.href}
+                  key={'ListItem-' + i}
                   value={value}
                   index={i}
                   setEditingIndex={setEditingIndexOrInserting}

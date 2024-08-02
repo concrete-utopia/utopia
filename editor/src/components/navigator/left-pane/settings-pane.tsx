@@ -286,7 +286,7 @@ export const SettingsPane = React.memo(() => {
           <UIGridRow padded variant='<-------------1fr------------->'>
             <Button
               outline={false}
-              highlight
+              highlightOnHover
               onClick={onForkProjectClicked}
               style={{
                 width: '100%',
@@ -304,8 +304,8 @@ export const SettingsPane = React.memo(() => {
         <UIGridRow padded variant='<-------------1fr------------->'>
           <a href='/projects' target='_blank' rel='noopener rofererrer'>
             <Button
-              highlight
-              spotlight
+              highlightOnHover
+              highlightAlways
               outline={false}
               style={{
                 width: '100%',
@@ -346,7 +346,7 @@ export const SettingsPane = React.memo(() => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <Button
               outline={false}
-              highlight
+              highlightOnHover
               onClick={onSavePanelsDefaultLayout}
               style={{
                 cursor: 'pointer',
@@ -356,10 +356,15 @@ export const SettingsPane = React.memo(() => {
             >
               Set as default
             </Button>
-            <Button outline={false} highlight spotlight onClick={onResetPanelsLayout}>
+            <Button outline={false} highlightOnHover highlightAlways onClick={onResetPanelsLayout}>
               Reset for this project
             </Button>
-            <Button outline={false} highlight spotlight onClick={onResetPanelsDefaultLayout}>
+            <Button
+              outline={false}
+              highlightOnHover
+              highlightAlways
+              onClick={onResetPanelsDefaultLayout}
+            >
               Restore defaults
             </Button>
           </div>

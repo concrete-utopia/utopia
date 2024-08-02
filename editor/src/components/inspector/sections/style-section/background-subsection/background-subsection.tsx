@@ -350,7 +350,7 @@ export const BackgroundSubsection = React.memo(() => {
               propertySet={propertyStatus.set}
             />
             <SquareButton
-              highlight
+              highlightOnHover
               onMouseDown={insertBackgroundLayerMouseDown}
               style={{ width: 12 }}
             >

@@ -546,8 +546,8 @@ const FollowingOverlay = React.memo(() => {
             >
               <div>You're following {followedUser?.name}</div>
               <Button
-                highlight
-                spotlight
+                highlightOnHover
+                highlightAlways
                 onClick={stopFollowing}
                 css={{
                   padding: '4px 10px',

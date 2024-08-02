@@ -399,10 +399,10 @@ const FileBrowserActionSheet = React.memo((props: FileBrowserActionSheetProps) =
   if (props.visible) {
     return (
       <ActionSheet>
-        <SquareButton highlight onClick={addFolderClick} style={{ margin: 0 }}>
+        <SquareButton highlightOnHover onClick={addFolderClick} style={{ margin: 0 }}>
           <Icons.FolderClosed tooltipText='Add New Folder' />
         </SquareButton>
-        <SquareButton highlight onClick={addTextFileClick} style={{ margin: 0 }}>
+        <SquareButton highlightOnHover onClick={addTextFileClick} style={{ margin: 0 }}>
           <Icons.NewTextFile tooltipText='Add Code File' />
         </SquareButton>
       </ActionSheet>

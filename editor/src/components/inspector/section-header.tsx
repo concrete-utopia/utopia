@@ -35,7 +35,7 @@ export function InspectorSectionHeader({
         {title}
       </div>
       <SectionActionSheet className='actionsheet' style={{ gap: 4 }}>
-        <SquareButton highlight style={{ width: 12 }}>
+        <SquareButton highlightOnHover style={{ width: 12 }}>
           <ExpandableIndicator visible collapsed={!open} selected={false} />
         </SquareButton>
       </SectionActionSheet>

@@ -61,8 +61,8 @@ const RevertButton = ({
   return (
     <Button
       style={{ padding: '0 6px', gap: 4 }}
-      spotlight
-      highlight
+      highlightAlways
+      highlightOnHover
       disabled={disabled}
       onMouseUp={onMouseUp}
     >
@@ -141,8 +141,8 @@ const ConflictButton = React.memo((props: ConflictButtonProps) => {
     <MenuProvider id={menuId} itemsLength={menuItems.length}>
       <Button
         style={{ padding: '0 6px' }}
-        spotlight
-        highlight
+        highlightAlways
+        highlightOnHover
         disabled={props.disabled}
         onClick={openContextMenu}
       >

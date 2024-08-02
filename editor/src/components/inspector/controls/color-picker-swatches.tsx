@@ -109,8 +109,8 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
         </div>
         {colorSwatches.length > 0 && (
           <Button
-            spotlight
-            highlight
+            highlightAlways
+            highlightOnHover
             style={{
               padding: '0 6px',
             }}
@@ -152,8 +152,8 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
 
         {!editing && (
           <Button
-            spotlight
-            highlight
+            highlightAlways
+            highlightOnHover
             style={{
               padding: '0 6px',
               width: SWATCH_SIZE,

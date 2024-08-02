@@ -509,7 +509,7 @@ const ClassNameControl = React.memo(() => {
         <span style={{ flexGrow: 1, cursor: 'pointer' }} onClick={toggleIsExpanded}>
           CSS
         </span>
-        <SquareButton highlight onClick={toggleIsExpanded}>
+        <SquareButton highlightOnHover onClick={toggleIsExpanded}>
           <ExpandableIndicator visible collapsed={!isExpanded} selected={false} />
         </SquareButton>
       </InspectorSubsectionHeader>

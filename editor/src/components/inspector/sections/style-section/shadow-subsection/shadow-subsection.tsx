@@ -326,7 +326,7 @@ export const ShadowSubsection = React.memo(() => {
               onUnsetValues={onUnsetValues}
               propertySet={propertyStatus.set}
             />
-            <SquareButton highlight onMouseDown={insertShadowValue} style={{ width: 12 }}>
+            <SquareButton highlightOnHover onMouseDown={insertShadowValue} style={{ width: 12 }}>
               <Icn
                 onMouseDown={insertShadowValue}
                 category='semantic'

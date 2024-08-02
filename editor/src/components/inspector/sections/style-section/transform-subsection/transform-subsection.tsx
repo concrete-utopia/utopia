@@ -361,7 +361,11 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
         incrementControls={false}
       />
-      <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1, width: 12 }}>
+      <SquareButton
+        highlightOnHover
+        onMouseDown={removeTransformItem}
+        style={{ marginTop: 1, width: 12 }}
+      >
         <Icons.Minus width={12} height={12} />
       </SquareButton>
     </PropertyRow>
@@ -513,7 +517,11 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
         incrementControls={false}
       />
-      <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1, width: 12 }}>
+      <SquareButton
+        highlightOnHover
+        onMouseDown={removeTransformItem}
+        style={{ marginTop: 1, width: 12 }}
+      >
         <Icons.Minus width={12} height={12} />
       </SquareButton>
     </PropertyRow>
@@ -581,7 +589,7 @@ export const TransformSubsection = React.memo(() => {
                 propertySet={propertyStatus.set}
               />
               <SquareButton
-                highlight
+                highlightOnHover
                 onMouseDown={insertCSSTransformMouseDown}
                 style={{ width: 12 }}
               >

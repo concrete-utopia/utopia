@@ -89,7 +89,7 @@ export const SharingDialog = React.memo(() => {
           {when(
             iframeLoaded,
             <Button
-              highlight
+              highlightOnHover
               style={{
                 position: 'absolute',
                 top: 14,

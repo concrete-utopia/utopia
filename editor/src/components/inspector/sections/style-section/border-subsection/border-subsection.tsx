@@ -183,7 +183,7 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
                 propertySet={propertyStatus.set}
               />
               <SquareButton
-                highlight
+                highlightOnHover
                 onMouseDown={onInsertMouseDown}
                 disabled={borderSet}
                 style={{ width: 12 }}

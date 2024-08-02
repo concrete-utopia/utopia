@@ -5,8 +5,8 @@ import { colorTheme, UtopiaTheme } from './styles/theme'
 
 export interface ButtonProps {
   hidden?: boolean
-  highlight?: boolean
-  spotlight?: boolean
+  highlightOnHover?: boolean
+  highlightAlways?: boolean
   outline?: boolean
   disabled?: boolean
   primary?: boolean
@@ -18,8 +18,8 @@ export interface ButtonProps {
  * Button
  * Inline button for UI elements, including small icon buttons on rows
  * @param hidden: invisible
- * @param highlight: should highlight on hover
- * @param spotlight: slightly visible background
+ * @param highlightOnHover: slightly visible background on hover
+ * @param highlightAlways: slightly visible background always
  * @param outline: draws borders
  * @param disabled: no interactions, style opacity. Also prevents pointer events
  * @param primary: uses primary color scheme
@@ -32,16 +32,16 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => {
     background = props.overriddenBackground
   } else if (props.primary) {
     background = colorTheme.primary.value
-  } else if (props.spotlight) {
+  } else if (props.highlightAlways) {
     background = colorTheme.buttonBackground.value
   }
 
   let hoverBackground: Property.Background<string | number> | undefined = 'transparent'
   if (props.overriddenBackground != null) {
     hoverBackground = props.overriddenBackground
-  } else if (props.primary && props.highlight) {
+  } else if (props.primary && props.highlightOnHover) {
     hoverBackground = colorTheme.primary.value
-  } else if (props.highlight) {
+  } else if (props.highlightOnHover) {
     hoverBackground = colorTheme.buttonHoverBackground.value
   }
 
@@ -51,7 +51,7 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => {
     display: props.hidden ? 'none' : 'flex',
     flexGrow: 0,
     flexShrink: 0,
-    border: 'none',
+    // border: 'none',
     boxSixing: 'border-box',
     flexDirection: 'row',
     alignItems: 'center',
@@ -65,6 +65,9 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => {
     boxShadow: props.outline ? `inset 0px 0px 0px 1px ${colorTheme.buttonShadow.value}` : undefined,
     color: props.primary ? 'white' : 'inherit',
     background: background,
+    '&:hover': {
+      background: hoverBackground,
+    },
   }
 })
 

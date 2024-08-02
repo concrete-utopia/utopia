@@ -326,7 +326,7 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
         {unless(
           loggedIn,
           <Button
-            highlight
+            highlightOnHover
             style={{
               paddingLeft: 8,
               paddingRight: 8,

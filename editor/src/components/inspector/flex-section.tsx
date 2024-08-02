@@ -411,7 +411,7 @@ const TemplateDimensionControl = React.memo(
       () => (
         <SquareButton
           data-testid={'openDropdown'}
-          highlight
+          highlightOnHover
           onClick={NO_OP}
           style={{ width: 12, height: 22 }}
         >

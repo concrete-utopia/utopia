@@ -250,7 +250,7 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
         stepSize={0.1}
         incrementControls={false}
       />
-      <SquareButton highlight onMouseDown={removeShadow} style={{ marginTop: 1, width: 12 }}>
+      <SquareButton highlightOnHover onMouseDown={removeShadow} style={{ marginTop: 1, width: 12 }}>
         <Icons.Minus width={12} height={12} />
       </SquareButton>
     </PropertyRow>
@@ -321,7 +321,7 @@ export const TextShadowSubsection = React.memo(() => {
                 onUnsetValues={onUnsetValues}
                 propertySet={propertyStatus.set}
               />
-              <SquareButton highlight onMouseDown={insertShadow} style={{ width: 12 }}>
+              <SquareButton highlightOnHover onMouseDown={insertShadow} style={{ width: 12 }}>
                 <Icn category='semantic' type='plus' width={12} height={12} />
               </SquareButton>
             </FlexRow>

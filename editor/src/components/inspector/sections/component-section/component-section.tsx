@@ -902,7 +902,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
           </PropertyLabelAndPlusButton>
           {propertyStatus.overwritable && !propertyStatus.controlled ? (
             <SquareButton
-              highlight
+              highlightOnHover
               onMouseDown={toggleInsertRow}
               data-testid={`toggle-insert-${PP.toString(propPath)}`}
             >
@@ -1579,7 +1579,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
             <span onClick={openInstanceFile}>Component</span>
           )}
         </FlexRow>
-        <SquareButton highlight style={{ width: 12 }} onClick={toggleSection}>
+        <SquareButton highlightOnHover style={{ width: 12 }} onClick={toggleSection}>
           <ExpandableIndicator
             testId='component-section-expand'
             visible

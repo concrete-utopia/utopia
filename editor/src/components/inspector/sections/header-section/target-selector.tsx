@@ -410,10 +410,15 @@ const TargetListHeader = React.memo((props: TargetListHeaderProps) => {
         Target
       </H1>
       <SectionActionSheet className='actionsheet' style={{ gap: 4 }}>
-        <SquareButton highlight disabled={isAdding} onClick={startAdding} style={{ width: 12 }}>
+        <SquareButton
+          highlightOnHover
+          disabled={isAdding}
+          onClick={startAdding}
+          style={{ width: 12 }}
+        >
           <Icn category='semantic' type='cross' width={12} height={12} />
         </SquareButton>
-        <SquareButton highlight onClick={togglePathPanel} style={{ width: 12 }}>
+        <SquareButton highlightOnHover onClick={togglePathPanel} style={{ width: 12 }}>
           <ExpandableIndicator
             testId='target-selector'
             visible

@@ -161,8 +161,8 @@ const RepositoryRow = (props: RepositoryRowProps) => {
         props.searchable,
         <Button
           className='search-button'
-          highlight
-          spotlight
+          highlightOnHover
+          highlightAlways
           style={{ padding: '0 6px' }}
           onClick={searchPublicRepo}
         >
@@ -372,8 +372,8 @@ export const RepositoryListing = React.memo(
           )}
         </FlexColumn>
         <Button
-          spotlight
-          highlight
+          highlightAlways
+          highlightOnHover
           style={{ padding: '0 6px' }}
           disabled={isLoadingRepositories}
           onMouseDown={refreshReposOnClick}
@@ -399,8 +399,8 @@ export const RepositoryListing = React.memo(
         {when(
           targetRepository != null,
           <Button
-            spotlight
-            highlight
+            highlightAlways
+            highlightOnHover
             style={{ color: colorTheme.errorForeground.value }}
             onClick={clearRepository}
           >

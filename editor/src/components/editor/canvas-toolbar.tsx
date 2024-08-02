@@ -640,8 +640,8 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
       data-testid={props.testid}
       style={{ height: 26, width: 26, borderRadius: 3, ...props.style }}
       primary={primary}
-      spotlight={secondary}
-      highlight
+      highlightAlways={secondary}
+      highlightOnHover
       onClick={props.onClick}
       disabled={disabled || (canvasInLiveMode && !keepActiveInLiveMode)}
       overriddenBackground={secondary ? 'transparent' : undefined}
