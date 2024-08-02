@@ -107,6 +107,12 @@ function useCanvasContextMenuItems(
 ): Array<ContextMenuItem<CanvasData>> {
   const elementNamesAndIcons = useNamesAndIconsAllPaths()
 
+  const lockedElements = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.lockedElements,
+    'useCanvasContextMenuItems, lockedElements',
+  )
+
   if (contextMenuInstance === 'context-menu-canvas-no-selection') {
     return ContextMenuItemsNoSelection
   } else if (contextMenuInstance === 'context-menu-canvas') {
@@ -143,7 +149,7 @@ function useCanvasContextMenuItems(
                 data.scale,
                 data.canvasOffset,
                 data.jsxMetadata,
-                [],
+                lockedElements,
               )
               lastMousePosition = WindowMousePositionRaw
             }

@@ -65,11 +65,6 @@ import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/grou
 import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks'
 import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
 
-interface SelectableViews {
-  selectable: ElementPath[]
-  locked: ElementPath[]
-}
-
 export function isDragInteractionActive(editorState: EditorState): boolean {
   return editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
 }
@@ -237,7 +232,7 @@ export function getSelectableViews(
   allElementsDirectlySelectable: boolean,
   childrenSelectable: boolean,
   lockedElements: LockedElements,
-): SelectableViews {
+): Array<ElementPath> {
   const allLockedElementPaths = getAllLockedElementPaths(
     componentMetadata,
     elementPathTree,
@@ -252,9 +247,7 @@ export function getSelectableViews(
     allLockedElementPaths,
   )
 
-  const selectableElements = filterNonSelectableElements(hiddenInstances, candidateSelectableViews)
-
-  return { selectable: selectableElements, locked: allLockedElementPaths }
+  return filterNonSelectableElements(hiddenInstances, candidateSelectableViews)
 }
 
 function getCandidateSelectableViews(
@@ -304,7 +297,7 @@ function getCandidateSelectableViews(
 }
 
 export function useFindValidTarget(): (
-  selectableViews: SelectableViews,
+  selectableViews: Array<ElementPath>,
   mousePoint: WindowPoint | null,
   preferAlreadySelected: 'prefer-selected' | 'prefer-more-specific-selection',
 ) => {
@@ -321,12 +314,13 @@ export function useFindValidTarget(): (
       focusedElementPath: store.editor.focusedElementPath,
       elementPathTree: store.editor.elementPathTree,
       allElementProps: store.editor.allElementProps,
+      lockedElements: store.editor.lockedElements,
     }
   })
 
   return React.useCallback(
     (
-      selectableViews: SelectableViews,
+      selectableViews: Array<ElementPath>,
       mousePoint: WindowPoint | null,
       preferAlreadySelected: 'prefer-selected' | 'prefer-more-specific-selection',
     ) => {
@@ -338,6 +332,7 @@ export function useFindValidTarget(): (
         canvasOffset,
         elementPathTree,
         allElementProps,
+        lockedElements,
       } = storeRef.current
       const validElementMouseOver: ElementPath | null = (() => {
         if (preferAlreadySelected === 'prefer-selected') {
@@ -345,22 +340,22 @@ export function useFindValidTarget(): (
             componentMetadata,
             selectedViews,
             hiddenInstances,
-            selectableViews.selectable,
+            selectableViews,
             mousePoint,
             canvasScale,
             canvasOffset,
             elementPathTree,
             allElementProps,
-            selectableViews.locked,
+            lockedElements,
           )
         }
         const newSelection = getValidTargetAtPoint(
-          selectableViews.selectable,
+          selectableViews,
           mousePoint,
           canvasScale,
           canvasOffset,
           componentMetadata,
-          selectableViews.locked,
+          lockedElements,
         )
         if (newSelection != null) {
           return newSelection
@@ -369,13 +364,13 @@ export function useFindValidTarget(): (
           componentMetadata,
           selectedViews,
           hiddenInstances,
-          selectableViews.selectable,
+          selectableViews,
           mousePoint,
           canvasScale,
           canvasOffset,
           elementPathTree,
           allElementProps,
-          selectableViews.locked,
+          lockedElements,
         )
       })()
 
@@ -429,7 +424,7 @@ export function useGetSelectableViewsForSelectMode() {
 
 export function useGetSelectableViewsForSelectModeFromSelectedViews(
   selectedViews: Array<ElementPath>,
-): (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => SelectableViews {
+): (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => Array<ElementPath> {
   const storeRef = useRefEditorState((store) => {
     return {
       componentMetadata: store.editor.jsxMetadata,
@@ -596,7 +591,7 @@ function useSelectOrLiveModeSelectAndHover(
     active,
     cmdPressed,
     (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) =>
-      getSelectableViewsForSelectMode(allElementsDirectlySelectable, childrenSelectable).selectable,
+      getSelectableViewsForSelectMode(allElementsDirectlySelectable, childrenSelectable),
   )
 
   const editorStoreRef = useRefEditorState((store) => ({

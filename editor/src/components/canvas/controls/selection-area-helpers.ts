@@ -16,6 +16,7 @@ import {
 } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { KeysPressed } from '../../../utils/keyboard'
+import type { LockedElements } from '../../editor/store/editor-state'
 import type { InteractionSession } from '../canvas-strategies/interaction-state'
 import { isDragToPan } from '../canvas-strategies/interaction-state'
 import { canvasPointToWindowPoint, getAllTargetsAtPoint } from '../dom-lookup'
@@ -59,6 +60,7 @@ export const filterUnderSelectionArea = (
   canvasOffset: CanvasVector,
   area: CanvasRectangle | null,
   selectedViews: ElementPath[],
+  lockedElements: LockedElements,
 ): ElementPath[] => {
   if (area == null) {
     return []
@@ -124,6 +126,7 @@ export const filterUnderSelectionArea = (
           element.path,
           element.frame,
           element.selected,
+          lockedElements,
         )
       }
       return true
@@ -168,6 +171,7 @@ function isElementIntersactionActuallyUnderAreaAndVisible(
   path: ElementPath,
   frame: CanvasRectangle | null,
   isSelected: boolean,
+  lockedElements: LockedElements,
 ): boolean {
   if (area != null && frame != null && isFiniteRectangle(frame)) {
     const intersect = rectangleIntersection(area, frame)
@@ -191,7 +195,7 @@ function isElementIntersactionActuallyUnderAreaAndVisible(
       canvasScale,
       canvasOffset,
       jsxMetadata,
-      [],
+      lockedElements,
     ).some((other) => EP.pathsEqual(path, other))
     if (!pathActuallyUnderArea) {
       return false
