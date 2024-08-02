@@ -207,51 +207,31 @@ const TemplateDimensionControl = React.memo(
 
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
-    const onUpdate = React.useCallback(
+    const onSubmitValue = React.useCallback(
       (index: number) =>
         (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<ValidGridDimensionKeyword>>) => {
-          if (isCSSKeyword(value)) {
-            const newValues = [...values]
-            newValues[index] = isCSSNumber(value)
-              ? gridCSSNumber(value, null)
-              : gridCSSKeyword(value, null)
-
-            return dispatch([
-              applyCommandsAction([
-                setProperty(
-                  'always',
-                  grid.elementPath,
-                  PP.create(
-                    'style',
-                    axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows',
-                  ),
-                  gridNumbersToTemplateString(newValues),
-                ),
-              ]),
-            ])
-          } else if (isCSSNumber(value)) {
-            const gridValueAtIndex = values[index]
+          const newValues = [...values]
+          const gridValueAtIndex = values[index]
+          if (isCSSNumber(value)) {
             const maybeUnit = isGridCSSNumber(gridValueAtIndex) ? gridValueAtIndex.value.unit : null
-            const newValues = [...values]
             newValues[index] = gridCSSNumber(
               cssNumber(value.value, value.unit ?? maybeUnit),
               gridValueAtIndex.areaName,
             )
-
-            dispatch([
-              applyCommandsAction([
-                setProperty(
-                  'always',
-                  grid.elementPath,
-                  PP.create(
-                    'style',
-                    axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows',
-                  ),
-                  gridNumbersToTemplateString(newValues),
-                ),
-              ]),
-            ])
+          } else if (isCSSKeyword(value)) {
+            newValues[index] = gridCSSKeyword(value, gridValueAtIndex.areaName)
           }
+
+          dispatch([
+            applyCommandsAction([
+              setProperty(
+                'always',
+                grid.elementPath,
+                PP.create('style', axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows'),
+                gridNumbersToTemplateString(newValues),
+              ),
+            ]),
+          ])
         },
       [grid, values, dispatch, axis],
     )
@@ -478,7 +458,7 @@ const TemplateDimensionControl = React.memo(
                   value={value.value}
                   keywords={gridDimensionDropdownKeywords}
                   keywordTypeCheck={isValidGridDimensionKeyword}
-                  onSubmitValue={onUpdate(index)}
+                  onSubmitValue={onSubmitValue(index)}
                 />
               </div>
               <SquareButton className={axisDropdownMenuButton}>
@@ -561,12 +541,15 @@ function renameAreaInTemplateAtIndex(
 function gridNumbersToTemplateString(values: GridDimension[]) {
   return values
     .map((v) => {
-      if (isGridCSSKeyword(v)) {
-        return v.value.value
+      function getValue(): string {
+        if (isGridCSSKeyword(v)) {
+          return v.value.value
+        }
+        return `${v.value.value}${v.value.unit != null ? `${v.value.unit}` : 'px'}`
       }
       const areaName = v.areaName != null ? `[${v.areaName}] ` : ''
-      const unit = v.value.unit != null ? `${v.value.unit}` : ''
-      return areaName + `${v.value.value}` + unit
+      const value = getValue()
+      return `${areaName}${value}`
     })
     .join(' ')
 }
