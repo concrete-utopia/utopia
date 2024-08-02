@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 import React from 'react'
 import { Icons } from '../icons'
 import { DropdownMenu, type DropdownMenuItem } from '../radix-components'
-import { NumberOrKeywordInput } from './new-number-or-keyword-control'
+import { NumberOrKeywordInput } from './new-number-or-keyword-input'
 import type {
   CSSKeyword,
   CSSNumber,
