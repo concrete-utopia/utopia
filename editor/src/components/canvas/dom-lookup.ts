@@ -116,7 +116,7 @@ export function firstAncestorOrItselfWithValidElementPath(
     return null
   }
 
-  const isLocked = staticAndDynamicTargetElementPaths.some((p) => {
+  const isLocked = staticAndDynamicTargetElementPaths.every((p) => {
     if (EP.containsPath(p.dynamic, lockedElements.simpleLock)) {
       return true
     }
