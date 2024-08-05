@@ -2447,8 +2447,8 @@ describe('Groups behaviors', () => {
             position: 'absolute',
             left: 0,
             top: 0,
-            width: 150,
-            height: 150,
+            width: 100,
+            height: 100,
             right: undefined,
             bottom: undefined,
           })
@@ -2474,8 +2474,8 @@ describe('Groups behaviors', () => {
             position: 'absolute',
             left: 0,
             top: 0,
-            width: 200,
-            height: 200,
+            width: 100,
+            height: 100,
             right: undefined,
             bottom: undefined,
           })
