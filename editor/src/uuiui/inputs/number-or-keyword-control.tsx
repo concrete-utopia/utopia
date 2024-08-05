@@ -1,7 +1,12 @@
 import type { CSSProperties } from 'react'
 import React from 'react'
 import { Icons } from '../icons'
-import { DropdownMenu, type DropdownMenuItem } from '../radix-components'
+import {
+  DropdownMenu,
+  regularDropdownMenuItem,
+  separatorDropdownMenuItem,
+  type DropdownMenuItem,
+} from '../radix-components'
 import { NumberOrKeywordInput } from './new-number-or-keyword-input'
 import type {
   CSSKeyword,
@@ -51,26 +56,21 @@ export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordC
 
   const dropdownItems = React.useMemo(
     (): DropdownMenuItem[] => [
-      {
+      regularDropdownMenuItem({
         id: 'dropdown-input-value',
         icon: <Icons.Checkmark color='white' width={16} height={16} />,
         label: `${props.value.value}${isCSSNumber(props.value) ? props.value.unit ?? '' : ''}`,
         disabled: true,
         onSelect: NO_OP,
-      },
-      {
-        id: 'dropdown-separator',
-        label: 'separator',
-        separator: true,
-        onSelect: NO_OP,
-      },
+      }),
+      separatorDropdownMenuItem('dropdown-separator'),
       ...props.keywords.map((keyword): DropdownMenuItem => {
-        return {
+        return regularDropdownMenuItem({
           id: `dropdown-label-${keyword.value.value}`,
           icon: <div style={{ width: 16, height: 16 }} />,
           label: keyword.label,
           onSelect: () => onSubmitValue(keyword.value),
-        }
+        })
       }),
     ],
     [props.value, props.keywords, onSubmitValue],

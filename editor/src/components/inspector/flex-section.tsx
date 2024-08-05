@@ -63,7 +63,7 @@ import {
 import { setGridPropsCommands } from '../canvas/canvas-strategies/strategies/grid-helpers'
 import { type CanvasCommand } from '../canvas/commands/commands'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
-import { DropdownMenu } from '../../uuiui/radix-components'
+import { DropdownMenu, regularDropdownMenuItem } from '../../uuiui/radix-components'
 import { useInspectorLayoutInfo } from './common/property-path-hooks'
 import { NumberOrKeywordControl } from '../../uuiui/inputs/number-or-keyword-control'
 
@@ -383,17 +383,17 @@ const TemplateDimensionControl = React.memo(
     const dropdownMenuItems = React.useCallback(
       (index: number): DropdownMenuItem[] => {
         return [
-          {
+          regularDropdownMenuItem({
             id: `rename-${axis}`,
             label: 'Rename',
             onSelect: onRename(index),
-          },
-          {
+          }),
+          regularDropdownMenuItem({
             id: `remove-${axis}`,
             label: 'Delete',
             onSelect: onRemove(index),
             danger: true,
-          },
+          }),
         ]
       },
       [onRemove, axis, onRename],

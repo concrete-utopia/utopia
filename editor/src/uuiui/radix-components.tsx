@@ -34,17 +34,46 @@ const RadixDropdownContent = styled(RadixDropdownMenu.Content, {
   gridTemplateRows: '1fr auto',
 })
 
-export interface DropdownMenuItem {
+type BaseDropdownMenuItem = {
   id: string
-  label: React.ReactNode
+}
+
+type RegularDropdownMenuItem = BaseDropdownMenuItem & {
+  type: 'LABELED'
   shortcut?: string
   icon?: React.ReactNode
   checked?: boolean
-  onSelect: () => void
   danger?: boolean
-  separator?: boolean
+  label: React.ReactNode
+  onSelect: () => void
   disabled?: boolean
 }
+
+export function regularDropdownMenuItem(
+  props: Omit<RegularDropdownMenuItem, 'type'>,
+): RegularDropdownMenuItem {
+  return {
+    type: 'LABELED',
+    ...props,
+  }
+}
+
+export function separatorDropdownMenuItem(id: string): SeparatorDropdownMenuItem {
+  return {
+    id: id,
+    type: 'SEPARATOR',
+  }
+}
+
+type SeparatorDropdownMenuItem = BaseDropdownMenuItem & {
+  type: 'SEPARATOR'
+}
+
+function isSeparatorDropdownMenuItem(item: DropdownMenuItem): item is SeparatorDropdownMenuItem {
+  return item.type === 'SEPARATOR'
+}
+
+export type DropdownMenuItem = RegularDropdownMenuItem | SeparatorDropdownMenuItem
 
 export interface DropdownMenuProps {
   opener: (open: boolean) => React.ReactNode
@@ -69,8 +98,10 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
 
   const [open, setOpen] = React.useState(false)
 
-  const shouldShowCheckboxes = props.items.some((i) => i.checked != null)
-  const shouldShowIcons = props.items.some((i) => i.icon != null)
+  const shouldShowCheckboxes = props.items.some(
+    (i) => !isSeparatorDropdownMenuItem(i) && i.checked != null,
+  )
+  const shouldShowIcons = props.items.some((i) => !isSeparatorDropdownMenuItem(i) && i.icon != null)
 
   const onOpenChange = React.useCallback(
     (isOpen: boolean) => {
@@ -96,26 +127,8 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
           style={{ ...props.style, boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow }}
         >
           {props.items.map((item) => {
-            if (item.separator) {
-              return (
-                <RadixItemContainer
-                  key={item.id}
-                  css={{
-                    ':hover': {
-                      backgroundColor: 'inherit',
-                    },
-                    cursor: 'default',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '100%',
-                      height: 1,
-                      backgroundColor: colorTheme.fg4.value,
-                    }}
-                  />
-                </RadixItemContainer>
-              )
+            if (isSeparatorDropdownMenuItem(item)) {
+              return <Separator key={item.id} />
             }
             return (
               <RadixItemContainer
@@ -155,3 +168,25 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
     </RadixDropdownMenu.Root>
   )
 })
+
+const Separator = React.memo(() => {
+  return (
+    <RadixItemContainer
+      css={{
+        ':hover': {
+          backgroundColor: 'inherit',
+        },
+        cursor: 'default',
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          height: 1,
+          backgroundColor: colorTheme.fg4.value,
+        }}
+      />
+    </RadixItemContainer>
+  )
+})
+Separator.displayName = 'Separator'
