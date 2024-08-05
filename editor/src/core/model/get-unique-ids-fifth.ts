@@ -11,6 +11,7 @@ import { emptySet } from '../shared/set-utils'
 import { assertNever, fastForEach } from '../shared/utils'
 import { memoize } from '../shared/memoize'
 import type { ParseSuccess } from 'utopia-shared/src/types'
+import { mapFirstApplicable } from '../shared/array-utils'
 
 export type DuplicateUIDsResult = Map<string, string>
 
@@ -222,15 +223,13 @@ export function clearCachedUidsPerFileFifth() {
 }
 
 export function lookupFilePathForUidFifth(mapping: FileToUidMapping, uid: string): string | null {
-  let result: string | null | undefined = null
-  mapping.forEach((uidMapping, filePath) => {
+  // let result: string | null | undefined = null
+  return mapFirstApplicable(mapping.entries(), ([filePath, uidMapping]) => {
     if (uidMapping.has(uid)) {
-      result = filePath
-      // TODO stop looping
+      return filePath
     }
+    return null
   })
-
-  return result ?? null
 }
 
 export function getAllUniqueUidsInnerFifth(
