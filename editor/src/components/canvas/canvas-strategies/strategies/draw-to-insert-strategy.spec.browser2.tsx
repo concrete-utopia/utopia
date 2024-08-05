@@ -175,8 +175,8 @@ export var storyboard = (
         width: 700,
         height: 759,
         position: 'absolute',
-        left: 212,
-        top: 128,
+        left: 0,
+        top: 0,
       }}
       data-label='Playground'
       data-uid='scene'
@@ -215,7 +215,7 @@ export var storyboard = (
 
       const target: WindowPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue(
         windowPoint({
-          x: gridBB.x + 250,
+          x: gridBB.x + 300,
           y: gridBB.y + 150,
         }),
       ) as WindowPoint
@@ -238,7 +238,7 @@ export var storyboard = (
         gridColumn: '2',
         gridRow: '1',
         height: '100px',
-        left: '-19px',
+        left: '31px',
         position: 'absolute',
         top: '48px',
         width: '100px',
