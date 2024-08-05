@@ -183,13 +183,13 @@ export var storyboard = (
     >
       <div
         style={{
-          height: 314,
           position: 'absolute',
-          left: 44,
-          top: 45,
-          width: 476,
+          left: 10,
+          top: 10,
+          width: 500,
+          height: 300,
           display: 'grid',
-          gap: 5,
+          gap: 2,
           gridTemplateColumns: '1fr 1fr 1fr',
           gridTemplateRows: '1fr',
           backgroundColor: '#9dc1ea',
@@ -238,9 +238,9 @@ export var storyboard = (
         gridColumn: '2',
         gridRow: '1',
         height: '100px',
-        left: '-24px',
+        left: '-19px',
         position: 'absolute',
-        top: '55px',
+        top: '48px',
         width: '100px',
       })
     })
@@ -265,8 +265,8 @@ export var storyboard = (
 
       await mouseMoveToPoint(canvasControlsLayer, target)
       await mouseDragFromPointToPoint(canvasControlsLayer, target, {
-        x: target.x + 42,
-        y: target.y + 68,
+        x: target.x + 40,
+        y: target.y + 60,
       })
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -281,11 +281,11 @@ export var storyboard = (
       expect({ gridRow, gridColumn, width, height, position, top, left }).toEqual({
         gridColumn: '2',
         gridRow: '1',
-        height: '68px',
-        left: '77px',
+        height: '60px',
+        left: '82px',
         position: 'absolute',
-        top: '156px',
-        width: '42px',
+        top: '149px',
+        width: '40px',
       })
     })
   })
