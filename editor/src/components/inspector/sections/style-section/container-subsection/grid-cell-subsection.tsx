@@ -196,10 +196,14 @@ const DimensionsControls = React.memo(
               value={getValue(cell.specialSizeMeasurements.elementGridProperties.gridColumnStart)}
               numberType='Unitless'
               defaultUnitToHide={null}
-              testId='grid-cell-row-start'
+              testId='grid-cell-column-start'
               onSubmitValue={onSubmitPosition('gridColumnStart')}
               inputProps={{ placeholder: 'auto' }}
-              labelInner={'X'}
+              labelInner={{
+                category: 'inspector-element',
+                type: 'gridColumn',
+                color: 'subdued',
+              }}
             />
             <NumberInput
               value={getValue(cell.specialSizeMeasurements.elementGridProperties.gridRowStart)}
@@ -208,12 +212,16 @@ const DimensionsControls = React.memo(
               testId='grid-cell-row-start'
               onSubmitValue={onSubmitPosition('gridRowStart')}
               inputProps={{ placeholder: 'auto' }}
-              labelInner={'Y'}
+              labelInner={{
+                category: 'inspector-element',
+                type: 'gridRow',
+                color: 'subdued',
+              }}
             />
           </UIGridRow>
         </UIGridRow>
         <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
-          <div>Dimensions</div>
+          <div>Size</div>
           <FlexRow style={{ gap: 4 }}>
             <NumberInput
               value={cssNumber(width)}
@@ -223,8 +231,8 @@ const DimensionsControls = React.memo(
               onSubmitValue={onSubmitPosition('width')}
               inputProps={{ placeholder: 'auto' }}
               labelInner={{
-                category: 'layout/commands',
-                type: 'fixed-width',
+                category: 'inspector-element',
+                type: 'rowSpan',
                 color: 'subdued',
               }}
             />
@@ -236,8 +244,8 @@ const DimensionsControls = React.memo(
               onSubmitValue={onSubmitPosition('height')}
               inputProps={{ placeholder: 'auto' }}
               labelInner={{
-                category: 'layout/commands',
-                type: 'fixed-height',
+                category: 'inspector-element',
+                type: 'columnSpan',
                 color: 'subdued',
               }}
             />
@@ -290,7 +298,11 @@ const BoundariesControls = React.memo(
               testId='grid-cell-column-start'
               onSubmitValue={onSubmitPosition('gridColumnStart')}
               inputProps={{ placeholder: 'auto' }}
-              labelInner={'X'}
+              labelInner={{
+                category: 'inspector-element',
+                type: 'gridColumn-start',
+                color: 'subdued',
+              }}
             />
             <NumberInput
               value={getValue(cell.specialSizeMeasurements.elementGridProperties.gridRowStart)}
@@ -299,7 +311,11 @@ const BoundariesControls = React.memo(
               testId='grid-cell-row-start'
               onSubmitValue={onSubmitPosition('gridRowStart')}
               inputProps={{ placeholder: 'auto' }}
-              labelInner={'Y'}
+              labelInner={{
+                category: 'inspector-element',
+                type: 'gridRow-start',
+                color: 'subdued',
+              }}
             />
           </FlexRow>
         </UIGridRow>
@@ -313,7 +329,11 @@ const BoundariesControls = React.memo(
               testId='grid-cell-column-end'
               onSubmitValue={onSubmitPosition('gridColumnEnd')}
               inputProps={{ placeholder: 'auto' }}
-              labelInner={'X'}
+              labelInner={{
+                category: 'inspector-element',
+                type: 'gridColumn-end',
+                color: 'subdued',
+              }}
             />
             <NumberInput
               value={getValue(cell.specialSizeMeasurements.elementGridProperties.gridRowEnd)}
@@ -322,7 +342,11 @@ const BoundariesControls = React.memo(
               testId='grid-cell-row-end'
               onSubmitValue={onSubmitPosition('gridRowEnd')}
               inputProps={{ placeholder: 'auto' }}
-              labelInner={'Y'}
+              labelInner={{
+                category: 'inspector-element',
+                type: 'gridRow-end',
+                color: 'subdued',
+              }}
             />
           </FlexRow>
         </UIGridRow>

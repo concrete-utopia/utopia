@@ -86,11 +86,9 @@ function setFlexDirectionSwapAxesSingleElement(
 
   const currentFlexDirection = detectFlexDirectionOne(metadata, selectedElement)
 
-  const commands = MetadataUtils.getChildrenPathsOrdered(
-    metadata,
-    elementPathTree,
-    selectedElement,
-  ).flatMap((child) => swapAxesCommands(metadata, child, currentFlexDirection, direction))
+  const commands = MetadataUtils.getChildrenPathsOrdered(elementPathTree, selectedElement).flatMap(
+    (child) => swapAxesCommands(metadata, child, currentFlexDirection, direction),
+  )
 
   if (commands.length === 0) {
     return []

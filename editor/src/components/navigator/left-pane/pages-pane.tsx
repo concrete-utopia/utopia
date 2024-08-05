@@ -52,7 +52,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { ElementPath } from 'utopia-shared/src/types'
 import type { DropdownMenuItem } from '../../../uuiui/radix-components'
-import { DropdownMenu } from '../../../uuiui/radix-components'
+import { DropdownMenu, regularDropdownMenuItem } from '../../../uuiui/radix-components'
 
 type RouteMatch = {
   path: string
@@ -178,11 +178,13 @@ export const PagesPane = React.memo((props) => {
 
   const addPageDropdownItems: DropdownMenuItem[] = React.useMemo(
     () =>
-      pageTemplates.map((t) => ({
-        id: t.label,
-        label: t.label,
-        onSelect: addPageAction(t),
-      })),
+      pageTemplates.map((t) =>
+        regularDropdownMenuItem({
+          id: t.label,
+          label: t.label,
+          onSelect: addPageAction(t),
+        }),
+      ),
     [addPageAction, pageTemplates],
   )
 

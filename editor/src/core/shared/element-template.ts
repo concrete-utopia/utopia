@@ -22,10 +22,9 @@ import { assertNever, fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { objectMap } from './object-utils'
 import type {
-  CSSNumber,
   CSSPosition,
   FlexDirection,
-  GridCSSNumber,
+  GridDimension,
 } from '../../components/inspector/common/css-utils'
 import type { ModifiableAttribute } from './jsx-attributes'
 import * as EP from './element-path'
@@ -2604,11 +2603,11 @@ export function gridAutoOrTemplateFallback(value: string): GridAutoOrTemplateFal
 
 export interface GridAutoOrTemplateDimensions {
   type: 'DIMENSIONS'
-  dimensions: Array<GridCSSNumber>
+  dimensions: Array<GridDimension>
 }
 
 export function gridAutoOrTemplateDimensions(
-  dimensions: Array<GridCSSNumber>,
+  dimensions: Array<GridDimension>,
 ): GridAutoOrTemplateDimensions {
   return {
     type: 'DIMENSIONS',

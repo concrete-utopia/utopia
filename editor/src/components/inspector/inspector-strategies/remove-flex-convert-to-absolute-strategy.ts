@@ -12,15 +12,17 @@ import {
   getConvertIndividualElementToAbsoluteCommandsFromMetadata,
   filterKeepGridContainers,
   gridContainerProps,
+  gridElementProps,
 } from '../inspector-common'
 import type { InspectorStrategy } from './inspector-strategy'
+import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 
 function removeFlexConvertToAbsoluteOne(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
-  const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath)
+  const children = MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath)
   return [
     ...prunePropsCommands(flexContainerProps, elementPath), // flex-related stuff is pruned
     ...children.flatMap((c) =>
@@ -52,12 +54,13 @@ export const removeGridConvertToAbsolute = (
   name: 'Remove grid layout and convert children to absolute',
   strategy: () => {
     const commands = filterKeepGridContainers(metadata, elementPaths).flatMap((elementPath) => {
-      const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath)
+      const children = MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath)
       return [
         ...prunePropsCommands(gridContainerProps, elementPath),
         ...children.flatMap((c) =>
           getConvertIndividualElementToAbsoluteCommandsFromMetadata(c, metadata, pathTrees),
         ), // all children are converted to absolute,
+        ...children.map((path) => deleteProperties('always', path, gridElementProps)), // remove grid-specific child props
         ...sizeToVisualDimensions(metadata, pathTrees, elementPath), // container is sized to keep its visual dimensions
       ]
     })

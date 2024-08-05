@@ -79,7 +79,7 @@ import {
   exportType,
   singleFileBuildResult,
 } from '../../../core/workers/common/worker-types'
-import type { Sides, Focus, Styling, Emphasis, Icon, InspectorSpec } from 'utopia-api/core'
+import type { Sides, Focus, Styling, Emphasis, Icon } from 'utopia-api/core'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -131,7 +131,6 @@ import type {
   JSXConditionalExpression,
   ActiveAndDefaultConditionValues,
   JSXMapExpression,
-  JSExpressionMapOrOtherJavascript,
   JSExpressionOtherJavaScript,
   JSIdentifier,
   JSPropertyAccess,
@@ -157,11 +156,6 @@ import {
   elementInstanceMetadata,
   isArraySpread,
   isArrayValue,
-  modifiableAttributeIsAttributeFunctionCall,
-  modifiableAttributeIsAttributeNestedArray,
-  modifiableAttributeIsAttributeNestedObject,
-  modifiableAttributeIsAttributeOtherJavaScript,
-  isJSXAttributeValue,
   isJSXElement,
   isJSXFragment,
   isJSXTextBlock,
@@ -270,9 +264,7 @@ import {
   NullableNumberKeepDeepEquality,
   combine9EqualityCalls,
   unionDeepEquality,
-  combine14EqualityCalls,
   combine11EqualityCalls,
-  combine15EqualityCalls,
   combine16EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
@@ -415,7 +407,6 @@ import {
   draggingFromSidebar,
   fileUploadInfo,
   fileRevertModal,
-  emptyGithubData,
   dragToMoveIndicatorFlags,
   projectGithubSettings,
   newColorSwatch,
@@ -567,10 +558,18 @@ import type {
   CSSTextAlign,
   CSSTextDecorationLine,
   FontSettings,
+  GridCSSKeyword,
   GridCSSNumber,
-  GridCSSNumberUnit,
+  GridDimension,
 } from '../../inspector/common/css-utils'
-import { cssNumber, fontSettings, gridCSSNumber } from '../../inspector/common/css-utils'
+import {
+  cssNumber,
+  fontSettings,
+  gridCSSKeyword,
+  gridCSSNumber,
+  isGridCSSKeyword,
+  isGridCSSNumber,
+} from '../../inspector/common/css-utils'
 import type { ElementPaste, ProjectListing } from '../action-types'
 import { projectListing } from '../action-types'
 import type { Bounds, UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -1958,20 +1957,39 @@ export const CSSNumberKeepDeepEquality: KeepDeepEqualityCall<CSSNumber> = combin
 )
 
 export const GridCSSNumberKeepDeepEquality: KeepDeepEqualityCall<GridCSSNumber> =
-  combine3EqualityCalls(
-    (cssNum) => cssNum.value,
-    createCallWithTripleEquals<number>(),
-    (cssNum) => cssNum.unit,
-    nullableDeepEquality(createCallWithTripleEquals<GridCSSNumberUnit>()),
-    (cssNum) => cssNum.areaName,
-    nullableDeepEquality(StringKeepDeepEquality),
+  combine2EqualityCalls(
+    (p) => p.value,
+    CSSNumberKeepDeepEquality,
+    (p) => p.areaName,
+    NullableStringKeepDeepEquality,
     gridCSSNumber,
+  )
+
+export const GridCSSKeywordKeepDeepEquality: KeepDeepEqualityCall<GridCSSKeyword> =
+  combine2EqualityCalls(
+    (p) => p.value,
+    createCallWithTripleEquals(),
+    (p) => p.areaName,
+    NullableStringKeepDeepEquality,
+    gridCSSKeyword,
+  )
+
+export const GridDimensionKeepDeepEquality: KeepDeepEqualityCall<GridDimension> =
+  combine1EqualityCall(
+    (dimension) => dimension,
+    unionDeepEquality(
+      GridCSSNumberKeepDeepEquality,
+      GridCSSKeywordKeepDeepEquality,
+      isGridCSSNumber,
+      isGridCSSKeyword,
+    ),
+    (dimension) => dimension,
   )
 
 export const GridAutoOrTemplateDimensionsKeepDeepEquality: KeepDeepEqualityCall<GridAutoOrTemplateDimensions> =
   combine1EqualityCall(
     (value) => value.dimensions,
-    arrayDeepEquality(GridCSSNumberKeepDeepEquality),
+    arrayDeepEquality(GridDimensionKeepDeepEquality),
     gridAutoOrTemplateDimensions,
   )
 
@@ -2156,6 +2174,12 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       newSize.elementGridPropertiesFromProps,
     ).areEqual
 
+    const rowGapEquals = NullableNumberKeepDeepEquality(oldSize.rowGap, newSize.rowGap).areEqual
+    const columnGapEquals = NullableNumberKeepDeepEquality(
+      oldSize.columnGap,
+      newSize.columnGap,
+    ).areEqual
+
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -2201,7 +2225,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       gridContainerPropertiesEqual &&
       gridElementPropertiesEqual &&
       gridContainerPropertiesFromPropsEqual &&
-      gridElementPropertiesFromPropsEqual
+      gridElementPropertiesFromPropsEqual &&
+      rowGapEquals &&
+      columnGapEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {

@@ -177,7 +177,6 @@ function applyStaticReparent(
             ) ?? zeroCanvasRect
 
           const siblingsOfTarget = MetadataUtils.getChildrenPathsOrdered(
-            canvasState.startingMetadata,
             canvasState.startingElementPathTree,
             newParent.intendedParentPath,
           )

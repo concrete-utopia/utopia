@@ -37,13 +37,11 @@ export const StyleSection = React.memo(() => {
     'StyleSection inspectorPreferences',
   )
 
-  const shouldShowContainerSection = inspectorPreferences.includes('layout')
   const shouldTextContainerSection = inspectorPreferences.includes('typography')
   const shouldShowVisualSections = inspectorPreferences.includes('visual')
 
   return (
     <React.Fragment>
-      {when(shouldShowContainerSection, <ContainerSubsection />)}
       {when(shouldTextContainerSection, <TextSubsection />)}
       {when(
         shouldShowVisualSections,

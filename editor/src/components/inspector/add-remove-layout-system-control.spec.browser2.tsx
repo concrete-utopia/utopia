@@ -4,7 +4,7 @@ import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-control
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
-import { addFlexLayout, addGridLayout, removeFlexLayout } from './layout-systems.test-utils'
+import { addFlexLayout, addGridLayout, removeLayout } from './layout-systems.test-utils'
 
 describe('add flex layout', () => {
   it('add and remove layout system via keyboard shortcut', async () => {
@@ -41,7 +41,7 @@ describe('add flex layout', () => {
     expect(div.style.display).toEqual('flex')
 
     await expectSingleUndo2Saves(editor, async () => {
-      await removeFlexLayout(editor)
+      await removeLayout(editor)
     })
 
     expect(div.style.display).toEqual('')
@@ -203,6 +203,12 @@ describe('add grid layout', () => {
     })
 
     expect(div.style.display).toEqual('grid')
+
+    await expectSingleUndo2Saves(editor, async () => {
+      await removeLayout(editor)
+    })
+
+    expect(div.style.display).toEqual('')
   })
 })
 

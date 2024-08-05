@@ -3377,7 +3377,10 @@ export function parseFailureAsErrorMessages(
   }
 }
 
-export function reconstructJSXMetadata(editor: EditorState): {
+export function reconstructJSXMetadata(
+  editor: EditorState,
+  domReconstructedMetadata: ElementInstanceMetadataMap,
+): {
   metadata: ElementInstanceMetadataMap
   elementPathTree: ElementPathTrees
 } {
@@ -3401,6 +3404,7 @@ export function reconstructJSXMetadata(editor: EditorState): {
           elementsByUID,
           editor.spyMetadata,
           editor.domMetadata,
+          domReconstructedMetadata,
         )
         return {
           metadata: ElementInstanceMetadataMapKeepDeepEquality(editor.jsxMetadata, mergedMetadata)

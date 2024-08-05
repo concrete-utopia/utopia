@@ -66,6 +66,10 @@ const gridTemplates = {
     gridColumnGap: 4,
     gridTemplateColumns: '1fr 1fr',
   },
+  '<--1fr--><--1fr-->|22px|': {
+    gridColumnGap: 4,
+    gridTemplateColumns: '1fr 1fr 22px',
+  },
   '<--1fr--><--1fr-->|-18px-|': {
     gridColumnGap: 4,
     // multiple columns with 1fr don't actually resize evenly as expected,

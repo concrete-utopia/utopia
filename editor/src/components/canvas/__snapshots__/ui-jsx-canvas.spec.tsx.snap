@@ -65,7 +65,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -287,7 +287,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -1781,7 +1781,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -2003,7 +2003,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -2494,7 +2494,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -2716,7 +2716,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -2884,7 +2884,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:567": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -3099,7 +3099,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -3321,7 +3321,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -5397,7 +5397,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -5619,7 +5619,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -12898,7 +12898,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -13120,7 +13120,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -13497,7 +13497,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -13646,7 +13646,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -13844,7 +13844,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -14066,7 +14066,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -14562,7 +14562,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -14784,7 +14784,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -14952,7 +14952,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -15701,7 +15701,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -15917,7 +15917,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -16133,7 +16133,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -16416,7 +16416,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -16638,7 +16638,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -16806,7 +16806,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -17555,7 +17555,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -17771,7 +17771,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -17987,7 +17987,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -18264,7 +18264,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -18486,7 +18486,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -18863,7 +18863,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -19012,7 +19012,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -19222,7 +19222,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -19444,7 +19444,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -20206,7 +20206,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -20356,7 +20356,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -20568,7 +20568,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -20805,7 +20805,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -20988,7 +20988,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -21450,7 +21450,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -21792,7 +21792,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -22029,7 +22029,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -22212,7 +22212,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -22674,7 +22674,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -23017,7 +23017,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -23254,7 +23254,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -23437,7 +23437,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -23950,7 +23950,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -24344,7 +24344,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -24581,7 +24581,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -24764,7 +24764,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -25277,7 +25277,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -25657,7 +25657,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -25879,7 +25879,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -26047,7 +26047,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:bbb": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -26366,7 +26366,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -26588,7 +26588,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -26756,7 +26756,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -28682,7 +28682,7 @@ export var storyboard = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -35154,7 +35154,7 @@ export var storyboard = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -36202,7 +36202,7 @@ export var storyboard = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -37250,7 +37250,7 @@ export var storyboard = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -37711,7 +37711,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -37933,7 +37933,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -38344,7 +38344,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -38510,7 +38510,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -38726,7 +38726,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -38948,7 +38948,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -39116,7 +39116,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -39380,7 +39380,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -39602,7 +39602,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -40184,7 +40184,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -40406,7 +40406,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -40574,7 +40574,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -40850,7 +40850,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -41075,7 +41075,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/dd5": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -41311,7 +41311,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -41548,7 +41548,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -41731,7 +41731,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -42084,7 +42084,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -42321,7 +42321,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -42711,7 +42711,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -42894,7 +42894,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -43249,7 +43249,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -43587,7 +43587,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -43807,7 +43807,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -44766,7 +44766,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/002": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -44916,7 +44916,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/0dc": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -45066,7 +45066,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/0f9": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -45216,7 +45216,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/1a2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -45368,7 +45368,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/24d": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -45518,7 +45518,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/2e4": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -45668,7 +45668,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/3bc": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -46215,7 +46215,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/447": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -46367,7 +46367,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/4b6": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -46517,7 +46517,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/540": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -46667,7 +46667,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/5f7": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -46817,7 +46817,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/61e": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -46967,7 +46967,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/843": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -47117,7 +47117,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/a35": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -47267,7 +47267,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/aeb": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -47417,7 +47417,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/bb2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -47567,7 +47567,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/c19": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -47717,7 +47717,7 @@ export var App = (props) => {
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/ec8": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -47934,7 +47934,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -48156,7 +48156,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -48324,7 +48324,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -49073,7 +49073,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -49289,7 +49289,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -49505,7 +49505,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -49788,7 +49788,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -50010,7 +50010,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -50178,7 +50178,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -50925,7 +50925,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -51141,7 +51141,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -51357,7 +51357,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -51640,7 +51640,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -51862,7 +51862,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -52030,7 +52030,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -52865,7 +52865,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~1": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -53081,7 +53081,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~2": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -53297,7 +53297,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~3": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -53571,7 +53571,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -53808,7 +53808,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -53991,7 +53991,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -54253,7 +54253,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -54485,7 +54485,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -54701,7 +54701,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -55410,7 +55410,7 @@ Object {
   "eee/fff": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -55609,7 +55609,7 @@ Object {
   "eee/fff/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -56005,7 +56005,7 @@ Object {
   "eee/fff/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -56403,7 +56403,7 @@ Object {
   "ccc/ddd": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -56602,7 +56602,7 @@ Object {
   "ccc/ddd/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -56747,7 +56747,7 @@ Object {
   "ccc/ddd/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -57227,7 +57227,7 @@ Object {
   "ccc/ddd": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -57426,7 +57426,7 @@ Object {
   "ccc/ddd/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -57571,7 +57571,7 @@ Object {
   "ccc/ddd/app-entity:card": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -57776,7 +57776,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -57975,7 +57975,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -58120,7 +58120,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -58346,7 +58346,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -58572,7 +58572,7 @@ Object {
   "utopia-storyboard-uid/scene": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -58771,7 +58771,7 @@ Object {
   "utopia-storyboard-uid/scene/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -59667,7 +59667,7 @@ Object {
   "utopia-storyboard-uid/scene": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -59866,7 +59866,7 @@ Object {
   "utopia-storyboard-uid/scene/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -60011,7 +60011,7 @@ Object {
   "utopia-storyboard-uid/scene/app-entity:BBB": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -60248,7 +60248,7 @@ Object {
   "eee/fff": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -60470,7 +60470,7 @@ Object {
   "eee/fff/app": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -60638,7 +60638,7 @@ Object {
   "eee/fff/app:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -62268,7 +62268,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -62490,7 +62490,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -62658,7 +62658,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -63073,7 +63073,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -63295,7 +63295,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -63463,7 +63463,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -63693,7 +63693,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -63915,7 +63915,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -64083,7 +64083,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -66721,7 +66721,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -66943,7 +66943,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -67111,7 +67111,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -67320,7 +67320,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -67542,7 +67542,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -67926,7 +67926,7 @@ Object {
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,

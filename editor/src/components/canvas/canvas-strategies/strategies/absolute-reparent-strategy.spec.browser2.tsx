@@ -72,6 +72,7 @@ async function dragElement(
   modifiers: Modifiers,
   checkCursor: CheckCursor | null,
   midDragCallback: (() => Promise<void>) | null,
+  mouseDownModifiers?: Modifiers,
 ) {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
@@ -90,6 +91,7 @@ async function dragElement(
   await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
   await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers: modifiers,
+    mouseDownModifiers: mouseDownModifiers,
     midDragCallback: combinedMidDragCallback,
   })
 }
@@ -1325,7 +1327,15 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           )
 
           const dragDelta = windowPoint({ x: 50, y: 0 })
-          await dragElement(renderResult, 'child-1', dragDelta, cmdModifier, null, null)
+          await dragElement(
+            renderResult,
+            'child-1',
+            dragDelta,
+            cmdModifier,
+            null,
+            null,
+            cmdModifier,
+          )
 
           await renderResult.getDispatchFollowUpActionsFinished()
 

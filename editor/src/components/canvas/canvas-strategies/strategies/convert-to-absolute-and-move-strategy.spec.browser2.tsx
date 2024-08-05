@@ -55,6 +55,7 @@ import {
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { ConvertToAbsoluteAndMoveStrategyID } from './convert-to-absolute-and-move-strategy'
 import CanvasActions from '../../canvas-actions'
+import { ctrlModifier } from '../../../../utils/modifiers'
 
 const complexProject = () => {
   const code = `
@@ -1140,12 +1141,7 @@ describe('Convert to absolute/escape hatch', () => {
             y: elementBounds.y + 10,
           },
           {
-            modifiers: {
-              alt: false,
-              cmd: true,
-              ctrl: true,
-              shift: false,
-            },
+            modifiers: ctrlModifier,
           },
         )
 
@@ -1805,12 +1801,7 @@ describe('Escape hatch strategy on awkward project', () => {
         y: 15,
       },
       {
-        modifiers: {
-          alt: false,
-          cmd: true,
-          ctrl: true,
-          shift: false,
-        },
+        modifiers: ctrlModifier,
       },
     )
 

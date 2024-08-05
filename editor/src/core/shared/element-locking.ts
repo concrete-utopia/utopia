@@ -20,7 +20,7 @@ export function updateSimpleLocks(
     // You rarely want to select a root element of a component instance, except when it is a leaf element
     const isNonLeafRootElement =
       EP.isRootElementOfInstance(value.elementPath) &&
-      MetadataUtils.getChildrenPathsOrdered(newMetadata, pathTree, value.elementPath).length > 0
+      MetadataUtils.getChildrenPathsOrdered(pathTree, value.elementPath).length > 0
 
     // Remix Outlet are rarely needed to be selected
     const isRemixOutlet = MetadataUtils.isProbablyRemixOutlet(newMetadata, value.elementPath)

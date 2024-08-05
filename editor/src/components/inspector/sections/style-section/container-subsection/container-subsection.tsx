@@ -1,37 +1,18 @@
 import React from 'react'
-import { FlexRow, Icons, InspectorSubsectionHeader } from '../../../../../uuiui'
-import { SeeMoreHOC, useToggle } from '../../../widgets/see-more'
-import { PaddingRow } from '../../layout-section/layout-system-subsection/layout-system-controls'
+import { colorTheme } from '../../../../../uuiui'
 import { BlendModeRow } from './blendmode-row'
 import { OpacityRow } from './opacity-row'
-import { OverflowRow } from './overflow-row'
+import { PaddingRow } from './padding-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 
 export const ContainerSubsection = React.memo(() => {
-  const [seeMoreVisible, toggleSeeMoreVisible] = useToggle(false)
-
   return (
-    <>
-      <InspectorSubsectionHeader>
-        <FlexRow
-          style={{
-            flexGrow: 1,
-            gap: 8,
-            height: 42,
-          }}
-        >
-          <span>Container</span>
-        </FlexRow>
-        <Icons.Threedots
-          color={seeMoreVisible ? 'secondary' : 'subdued'}
-          onClick={toggleSeeMoreVisible}
-        />
-      </InspectorSubsectionHeader>
-      <OpacityRow />
-      <OverflowRow />
-      <PaddingRow />
-      <SeeMoreHOC visible={seeMoreVisible}>
+    <div style={{ borderTop: `1px solid ${colorTheme.seperator.value}`, padding: '10px 0' }}>
+      <UIGridRow padded variant={'<--1fr--><--1fr-->|22px|'}>
+        <OpacityRow />
         <BlendModeRow />
-      </SeeMoreHOC>
-    </>
+      </UIGridRow>
+      <PaddingRow />
+    </div>
   )
 })

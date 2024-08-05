@@ -178,6 +178,7 @@ export async function mouseDragFromPointWithDelta(
   dragDelta: Point,
   options: {
     modifiers?: Modifiers
+    mouseDownModifiers?: Modifiers
     eventOptions?: MouseEventInit
     staggerMoveEvents?: boolean
     midDragCallback?: () => Promise<void>
@@ -197,6 +198,7 @@ export async function mouseDragFromPointToPoint(
   endPoint: Point,
   options: {
     modifiers?: Modifiers
+    mouseDownModifiers?: Modifiers
     eventOptions?: MouseEventInit
     staggerMoveEvents?: boolean
     midDragCallback?: () => Promise<void>
@@ -216,10 +218,13 @@ export async function mouseDragFromPointToPoint(
   if (options.moveBeforeMouseDown) {
     await mouseMoveToPoint(eventSourceElement, startPoint, options)
   }
+
+  const mouseDownOptions = { ...options, modifiers: options.mouseDownModifiers }
+
   if (options.realMouseDown) {
-    dispatchMouseDownEventAtPoint(startPoint, options)
+    dispatchMouseDownEventAtPoint(startPoint, mouseDownOptions)
   } else {
-    await mouseDownAtPoint(eventSourceElement, startPoint, options)
+    await mouseDownAtPoint(eventSourceElement, startPoint, mouseDownOptions)
   }
 
   if (staggerMoveEvents) {

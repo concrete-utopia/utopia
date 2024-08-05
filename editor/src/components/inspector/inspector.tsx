@@ -90,9 +90,13 @@ import { ListSection } from './sections/layout-section/list-section'
 import { isIntrinsicElementMetadata } from '../../core/model/project-file-utils'
 import { assertNever } from '../../core/shared/utils'
 import { DataReferenceSection } from './sections/data-reference-section'
-import { replaceFirstChildAndDeleteSiblings } from '../editor/element-children'
+import {
+  elementSupportsChildrenFromPropertyControls,
+  replaceFirstChildAndDeleteSiblings,
+} from '../editor/element-children'
 import { InspectorSectionHeader } from './section-header'
 import { GridPlacementSubsection } from './sections/style-section/container-subsection/grid-cell-subsection'
+import { ContainerSubsection } from './sections/style-section/container-subsection/container-subsection'
 
 export interface ElementPathElement {
   name?: string
@@ -174,7 +178,8 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
         alignItems: 'center',
         height: UtopiaTheme.layout.rowHeight.normal,
         background: colorTheme.inspectorBackground.value,
-        padding: '8px 0',
+        padding: '8px 0px',
+        flexShrink: 0,
       }}
     >
       <AlignDistributeButton
@@ -377,6 +382,20 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'Inspector inspectorPreferences',
   )
 
+  const supportsChildren = useEditorState(
+    Substores.metadataAndPropertyControlsInfo,
+    (store) => {
+      return store.editor.selectedViews.every((view) =>
+        elementSupportsChildrenFromPropertyControls(
+          store.editor.jsxMetadata,
+          store.editor.propertyControlsInfo,
+          view,
+        ),
+      )
+    },
+    'Inspector supportChildren',
+  )
+
   const {
     value: styleSectionOpen,
     toggle: toggleStyleSection,
@@ -399,7 +418,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const shouldShowClassNameSubsection = isTwindEnabled() && inspectorPreferences.includes('visual')
   const shouldShowTargetSelectorSection = canEdit && inspectorPreferences.includes('visual')
   const shouldShowFlexSection =
-    multiselectedContract === 'frame' && inspectorPreferences.includes('layout-system')
+    multiselectedContract === 'frame' &&
+    inspectorPreferences.includes('layout-system') &&
+    supportsChildren
 
   const shouldShowSimplifiedLayoutSection = inspectorPreferences.includes('layout')
 
@@ -410,6 +431,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
       MetadataUtils.isGridCell(store.editor.jsxMetadata, store.editor.selectedViews[0]),
     'Inspector shouldShowGridCellSection',
   )
+
+  const shouldShowContainerSection =
+    selectedViews.length > 0 && inspectorPreferences.includes('layout')
 
   function renderInspectorContents() {
     return (
@@ -450,9 +474,18 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                   paddingBottom: 50,
                 }}
               >
+                {rootElementIsSelected ? (
+                  <RootElementIndicator />
+                ) : (
+                  when(
+                    shouldShowAlignmentButtons,
+                    <AlignmentButtons numberOfTargets={selectedViews.length} />,
+                  )
+                )}
                 {anyComponents || multiselectedContract === 'fragment' ? (
                   <ComponentSection isScene={false} />
                 ) : null}
+
                 {unless(
                   shouldHideInspectorSections,
                   <InspectorSectionHeader
@@ -465,20 +498,13 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                 {when(
                   shouldShowStyleSectionContents,
                   <>
-                    {rootElementIsSelected ? (
-                      <RootElementIndicator />
-                    ) : (
-                      when(
-                        shouldShowAlignmentButtons,
-                        <AlignmentButtons numberOfTargets={selectedViews.length} />,
-                      )
-                    )}
                     {when(multiselectedContract === 'fragment', <FragmentSection />)}
                     {when(
                       multiselectedContract !== 'fragment' && shouldShowSimplifiedLayoutSection,
                       // Position and Sizing sections are shown if Frame or Group is selected
                       <>
                         <SimplifiedLayoutSubsection />
+                        {when(shouldShowContainerSection, <ContainerSubsection />)}
                         <ConstraintsSection />
                       </>,
                     )}

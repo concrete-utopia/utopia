@@ -47,7 +47,7 @@ Object {
   "sb/scene": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
@@ -246,7 +246,7 @@ Object {
   "sb/scene/app": Object {
     "assignedToProp": null,
     "attributeMetadatada": Object {},
-    "componentInstance": false,
+    "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
     "earlyReturn": null,
