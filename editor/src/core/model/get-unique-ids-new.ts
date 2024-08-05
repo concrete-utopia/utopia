@@ -218,11 +218,11 @@ function collectUidsForEachFile(projectContents: ProjectContentTreeRoot): GetAll
   }
 }
 
-export function clearCachedUidsPerFileFifth() {
+export function clearCachedUidsPerFileForTests() {
   CachedUidsPerFile = new WeakMap()
 }
 
-export function lookupFilePathForUidFifth(mapping: FileToUidMapping, uid: string): string | null {
+export function lookupFilePathForUid(mapping: FileToUidMapping, uid: string): string | null {
   // let result: string | null | undefined = null
   return mapFirstApplicable(mapping.entries(), ([filePath, uidMapping]) => {
     if (uidMapping.has(uid)) {
@@ -232,10 +232,10 @@ export function lookupFilePathForUidFifth(mapping: FileToUidMapping, uid: string
   })
 }
 
-export function getAllUniqueUidsInnerFifth(
+export function getUniqueUidsMappingInner(
   projectContents: ProjectContentTreeRoot,
-): FileToUidMapping {
-  return collectUidsForEachFile(projectContents).filePathToUids
+): GetAllUniqueUIDsResult {
+  return collectUidsForEachFile(projectContents)
 }
 
-export const getAllUniqueUidsFifth = memoize(getAllUniqueUidsInnerFifth)
+export const getUniqeUidsMapping = memoize(getUniqueUidsMappingInner)
