@@ -32,6 +32,7 @@ export interface StringInputProps
   onSubmitValue?: (value: string) => void
   onEscape?: () => void
   pasteHandler?: boolean
+  showBorder?: boolean
 }
 
 export const StringInput = React.memo(
@@ -45,6 +46,7 @@ export const StringInput = React.memo(
         placeholder: initialPlaceHolder,
         DEPRECATED_labelBelow: labelBelow,
         testId,
+        showBorder,
         ...inputProps
       },
       propsRef,
@@ -98,6 +100,7 @@ export const StringInput = React.memo(
               color: controlStyles.mainColor,
               position: 'relative',
               background: 'transparent',
+              boxShadow: showBorder ? `inset 0px 0px 0px 1px ${colorTheme.fg7.value}` : undefined,
               '&:hover': {
                 boxShadow: includeBoxShadow
                   ? `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`
