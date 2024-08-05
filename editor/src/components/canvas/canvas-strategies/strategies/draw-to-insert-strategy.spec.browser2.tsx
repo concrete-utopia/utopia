@@ -215,8 +215,8 @@ export var storyboard = (
 
       const target: WindowPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue(
         windowPoint({
-          x: gridBB.x + gridBB.width / 2,
-          y: gridBB.y + gridBB.height / 2,
+          x: gridBB.x + 250,
+          y: gridBB.y + 150,
         }),
       ) as WindowPoint
 
@@ -258,8 +258,8 @@ export var storyboard = (
 
       const target: WindowPoint = windowPoint(
         slightlyOffsetWindowPointBecauseVeryWeirdIssue({
-          x: Math.ceil(gridBB.x + gridBB.width / 2),
-          y: Math.ceil(gridBB.y + gridBB.height / 2),
+          x: gridBB.x + 250,
+          y: gridBB.y + 150,
         }),
       )
 
