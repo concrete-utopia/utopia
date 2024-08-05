@@ -256,10 +256,12 @@ export var storyboard = (
       const grid = editor.renderedDOM.getByTestId('grid')
       const gridBB = grid.getBoundingClientRect()
 
-      const target: WindowPoint = windowPoint({
-        x: Math.ceil(gridBB.x + gridBB.width / 2),
-        y: Math.ceil(gridBB.y + gridBB.height / 2),
-      })
+      const target: WindowPoint = windowPoint(
+        slightlyOffsetWindowPointBecauseVeryWeirdIssue({
+          x: Math.ceil(gridBB.x + gridBB.width / 2),
+          y: Math.ceil(gridBB.y + gridBB.height / 2),
+        }),
+      )
 
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -282,9 +284,9 @@ export var storyboard = (
         gridColumn: '2',
         gridRow: '1',
         height: '60px',
-        left: '82px',
+        left: '81px',
         position: 'absolute',
-        top: '149px',
+        top: '148px',
         width: '40px',
       })
     })
