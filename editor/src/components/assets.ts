@@ -23,8 +23,7 @@ import { sha1 } from 'sha.js'
 import type { GithubFileChanges, TreeConflicts } from '../core/shared/github/helpers'
 import type { FileChecksumsWithFile } from './editor/store/editor-state'
 import { memoize } from '../core/shared/memoize'
-import type { Optic } from '../core/shared/optics/optics'
-import { traversal } from '../core/shared/optics/optics'
+import { makeOptic, type Optic } from '../core/shared/optics/optics'
 import type {
   AssetFileWithFileName,
   ProjectContentTreeRoot,
@@ -380,13 +379,11 @@ export function walkContentsTree(
   })
 }
 
-export const contentsTreeOptic: Optic<ProjectContentTreeRoot, PathAndFileEntry> = traversal(
-  (tree) => {
-    let result: Array<PathAndFileEntry> = []
+export const contentsTreeOptic: Optic<ProjectContentTreeRoot, PathAndFileEntry> = makeOptic(
+  (tree, callback) => {
     walkContentsTree(tree, (fullPath, file) => {
-      result.push({ fullPath: fullPath, file: file })
+      callback({ fullPath: fullPath, file: file })
     })
-    return result
   },
   (tree: ProjectContentTreeRoot, modify: (entry: PathAndFileEntry) => PathAndFileEntry) => {
     let result: ProjectContentTreeRoot = {}

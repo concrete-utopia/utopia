@@ -18,20 +18,28 @@ import { FlexCol } from 'utopia-api'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { strictEvery } from '../../core/shared/array-utils'
 import { useDispatch } from '../editor/store/dispatch-context'
-import {
-  addFlexLayoutStrategies,
-  addGridLayoutStrategies,
-} from './inspector-strategies/inspector-strategies'
-import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import type { DetectedLayoutSystem } from 'utopia-shared/src/types'
-import { assertNever, NO_OP } from '../../core/shared/utils'
+import { NO_OP } from '../../core/shared/utils'
 import { Icons, NumberInput, SquareButton, Subdued } from '../../uuiui'
-import type { CSSNumber, GridCSSNumberUnit, UnknownOrEmptyInput } from './common/css-utils'
+import type {
+  CSSKeyword,
+  CSSNumber,
+  UnknownOrEmptyInput,
+  ValidGridDimensionKeyword,
+} from './common/css-utils'
 import {
+  cssKeyword,
+  cssNumber,
   cssNumberToString,
+  gridCSSKeyword,
   gridCSSNumber,
+  isCSSKeyword,
   isCSSNumber,
-  type GridCSSNumber,
+  isEmptyInputValue,
+  isGridCSSKeyword,
+  isGridCSSNumber,
+  isValidGridDimensionKeyword,
+  type GridDimension,
 } from './common/css-utils'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import type { PropertyToUpdate } from '../canvas/commands/set-property-command'
@@ -55,8 +63,9 @@ import {
 import { setGridPropsCommands } from '../canvas/canvas-strategies/strategies/grid-helpers'
 import { type CanvasCommand } from '../canvas/commands/commands'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
-import { DropdownMenu } from '../../uuiui/radix-components'
+import { DropdownMenu, regularDropdownMenuItem } from '../../uuiui/radix-components'
 import { useInspectorLayoutInfo } from './common/property-path-hooks'
+import { NumberOrKeywordControl } from '../../uuiui/inputs/number-or-keyword-control'
 
 const axisDropdownMenuButton = 'axisDropdownMenuButton'
 
@@ -113,7 +122,7 @@ export const FlexSection = React.memo(() => {
     'FlexSection grid',
   )
 
-  const columns: GridCSSNumber[] = React.useMemo(() => {
+  const columns: GridDimension[] = React.useMemo(() => {
     return getGridTemplateAxisValues({
       calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateColumns ?? null,
       fromProps:
@@ -121,7 +130,7 @@ export const FlexSection = React.memo(() => {
     })
   }, [grid])
 
-  const rows: GridCSSNumber[] = React.useMemo(() => {
+  const rows: GridDimension[] = React.useMemo(() => {
     return getGridTemplateAxisValues({
       calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateRows ?? null,
       fromProps:
@@ -177,6 +186,12 @@ export const FlexSection = React.memo(() => {
   )
 })
 
+const gridDimensionDropdownKeywords = [
+  { label: 'Auto', value: cssKeyword('auto') },
+  { label: 'Min-Content', value: cssKeyword('min-content') },
+  { label: 'Max-Content', value: cssKeyword('max-content') },
+]
+
 const TemplateDimensionControl = React.memo(
   ({
     grid,
@@ -185,7 +200,7 @@ const TemplateDimensionControl = React.memo(
     title,
   }: {
     grid: ElementInstanceMetadata
-    values: GridCSSNumber[]
+    values: GridDimension[]
     axis: 'column' | 'row'
     title: string
   }) => {
@@ -193,30 +208,34 @@ const TemplateDimensionControl = React.memo(
 
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
-    const onUpdate = React.useCallback(
-      (index: number) => (value: UnknownOrEmptyInput<CSSNumber>) => {
-        if (!isCSSNumber(value)) {
-          return
-        }
+    const onSubmitValue = React.useCallback(
+      (index: number) =>
+        (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<ValidGridDimensionKeyword>>) => {
+          const newValues = [...values]
+          const gridValueAtIndex = values[index]
+          if (isCSSNumber(value)) {
+            const maybeUnit = isGridCSSNumber(gridValueAtIndex) ? gridValueAtIndex.value.unit : null
+            newValues[index] = gridCSSNumber(
+              cssNumber(value.value, value.unit ?? maybeUnit),
+              gridValueAtIndex.areaName,
+            )
+          } else if (isCSSKeyword(value)) {
+            newValues[index] = gridCSSKeyword(value, gridValueAtIndex.areaName)
+          } else if (isEmptyInputValue(value)) {
+            newValues[index] = gridCSSKeyword(cssKeyword('auto'), gridValueAtIndex.areaName)
+          }
 
-        const newValues = [...values]
-        newValues[index] = gridCSSNumber(
-          value.value,
-          (value.unit as GridCSSNumberUnit) ?? values[index].unit,
-          values[index].areaName,
-        )
-
-        dispatch([
-          applyCommandsAction([
-            setProperty(
-              'always',
-              grid.elementPath,
-              PP.create('style', axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows'),
-              gridNumbersToTemplateString(newValues),
-            ),
-          ]),
-        ])
-      },
+          dispatch([
+            applyCommandsAction([
+              setProperty(
+                'always',
+                grid.elementPath,
+                PP.create('style', axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows'),
+                gridNumbersToTemplateString(newValues),
+              ),
+            ]),
+          ])
+        },
       [grid, values, dispatch, axis],
     )
 
@@ -287,7 +306,7 @@ const TemplateDimensionControl = React.memo(
     )
 
     const onAdd = React.useCallback(() => {
-      const newValues = values.concat(gridCSSNumber(1, 'fr', null))
+      const newValues = values.concat(gridCSSNumber(cssNumber(1, 'fr'), null))
       dispatch([
         applyCommandsAction([
           setProperty(
@@ -364,17 +383,17 @@ const TemplateDimensionControl = React.memo(
     const dropdownMenuItems = React.useCallback(
       (index: number): DropdownMenuItem[] => {
         return [
-          {
+          regularDropdownMenuItem({
             id: `rename-${axis}`,
             label: 'Rename',
             onSelect: onRename(index),
-          },
-          {
+          }),
+          regularDropdownMenuItem({
             id: `remove-${axis}`,
             label: 'Delete',
             onSelect: onRemove(index),
             danger: true,
-          },
+          }),
         ]
       },
       [onRemove, axis, onRename],
@@ -408,10 +427,11 @@ const TemplateDimensionControl = React.memo(
             <Icons.Plus width={12} height={12} onClick={onAdd} />
           </SquareButton>
         </div>
-        {values.map((col, index) => {
+        {values.map((value, index) => {
+          const testId = `grid-dimension-${axis}-${index}`
           return (
             <div
-              key={`col-${col}-${index}`}
+              key={`col-${value}-${index}`}
               style={{ display: 'flex', alignItems: 'center', gap: 6 }}
               css={{
                 [`& > .${axisDropdownMenuButton}`]: {
@@ -432,19 +452,17 @@ const TemplateDimensionControl = React.memo(
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                   }}
-                  title={col.areaName ?? undefined}
+                  title={value.areaName ?? undefined}
                 >
-                  {col.areaName ?? index + 1}
+                  {value.areaName ?? index + 1}
                 </Subdued>
-                <NumberInput
+                <NumberOrKeywordControl
                   style={{ flex: 1 }}
-                  value={col}
-                  numberType={'Length'}
-                  onSubmitValue={onUpdate(index)}
-                  onTransientSubmitValue={onUpdate(index)}
-                  onForcedSubmitValue={onUpdate(index)}
-                  defaultUnitToHide={null}
-                  testId={`col-${col}-${index}`}
+                  testId={testId}
+                  value={value.value}
+                  keywords={gridDimensionDropdownKeywords}
+                  keywordTypeCheck={isValidGridDimensionKeyword}
+                  onSubmitValue={onSubmitValue(index)}
                 />
               </div>
               <SquareButton className={axisDropdownMenuButton}>
@@ -464,7 +482,7 @@ function removeTemplateValueAtIndex(
   axis: 'column' | 'row',
   index: number,
 ): GridContainerProperties {
-  function removeDimension(dimensions: GridCSSNumber[]) {
+  function removeDimension(dimensions: GridDimension[]) {
     return dimensions.filter((_, idx) => idx !== index)
   }
 
@@ -497,7 +515,7 @@ function renameAreaInTemplateAtIndex(
   index: number,
   newAreaName: string | null,
 ) {
-  function renameDimension(dimension: GridCSSNumber, idx: number) {
+  function renameDimension(dimension: GridDimension, idx: number) {
     return idx === index ? { ...dimension, areaName: newAreaName } : dimension
   }
 
@@ -524,12 +542,18 @@ function renameAreaInTemplateAtIndex(
   }
 }
 
-function gridNumbersToTemplateString(values: GridCSSNumber[]) {
+function gridNumbersToTemplateString(values: GridDimension[]) {
   return values
     .map((v) => {
+      function getValue(): string {
+        if (isGridCSSKeyword(v)) {
+          return v.value.value
+        }
+        return `${v.value.value}${v.value.unit != null ? `${v.value.unit}` : 'px'}`
+      }
       const areaName = v.areaName != null ? `[${v.areaName}] ` : ''
-      const unit = v.unit != null ? `${v.unit}` : ''
-      return areaName + `${v.value}` + unit
+      const value = getValue()
+      return `${areaName}${value}`
     })
     .join(' ')
 }
@@ -537,7 +561,7 @@ function gridNumbersToTemplateString(values: GridCSSNumber[]) {
 function getGridTemplateAxisValues(template: {
   calculated: GridAutoOrTemplateBase | null
   fromProps: GridAutoOrTemplateBase | null
-}): GridCSSNumber[] {
+}): GridDimension[] {
   const { calculated, fromProps } = template
   if (fromProps?.type !== 'DIMENSIONS' && calculated?.type !== 'DIMENSIONS') {
     return []

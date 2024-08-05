@@ -1,34 +1,35 @@
-import type { Optic } from './optics'
-import { prism, lens, traversal, iso } from './optics'
+import { makeOptic, type Optic } from './optics'
 import type { Either } from '../either'
-import { right, left, foldEither } from '../either'
+import { right, left, foldEither, forEachLeft, forEachRight } from '../either'
 
 // Produces a prism from a type guard, so that only instances of `S` that are an `A` make it through.
 export function fromTypeGuard<S, A extends S>(typeGuard: (s: S) => s is A): Optic<S, A> {
-  return prism(
-    (s) => {
+  return makeOptic(
+    (s, f) => {
       if (typeGuard(s)) {
-        return right(s)
-      } else {
-        return left('Failed typeguard.')
+        f(s)
       }
     },
-    (a) => {
-      return a
+    (s, modify) => {
+      if (typeGuard(s)) {
+        return modify(s)
+      } else {
+        return s
+      }
     },
   )
 }
 
 // Produces a lens down into a fixed field of a type as it may be defined in an interface.
 export function fromField<S, K extends keyof S>(fieldName: K): Optic<S, S[K]> {
-  return lens(
-    (s) => {
-      return s[fieldName]
+  return makeOptic(
+    (s, f) => {
+      f(s[fieldName])
     },
-    (s, a) => {
+    (s, modify) => {
       return {
         ...s,
-        [fieldName]: a,
+        [fieldName]: modify(s[fieldName]),
       }
     },
   )
@@ -36,15 +37,13 @@ export function fromField<S, K extends keyof S>(fieldName: K): Optic<S, S[K]> {
 
 // Produces a traversal which points into a field of a dictionary, as it may or may not be present.
 export function fromObjectField<A, S extends { [key: string]: A }>(fieldName: string): Optic<S, A> {
-  return traversal(
-    (s: S) => {
+  return makeOptic(
+    (s, f) => {
       if (fieldName in s) {
-        return [s[fieldName]]
-      } else {
-        return []
+        f(s[fieldName])
       }
     },
-    (s: S, modify: (a: A) => A) => {
+    (s, modify) => {
       if (fieldName in s) {
         return {
           ...s,
@@ -59,20 +58,18 @@ export function fromObjectField<A, S extends { [key: string]: A }>(fieldName: st
 
 // Produces a traversal over a particular element of an array.
 export function fromArrayIndex<A>(index: number): Optic<Array<A>, A> {
-  return traversal(
-    (array) => {
-      if (index in array) {
-        return [array[index]]
-      } else {
-        return []
+  return makeOptic(
+    (s, f) => {
+      if (index < s.length) {
+        f(s[index])
       }
     },
-    (array: Array<A>, modify: (a: A) => A) => {
-      return array.map((arrayValue, arrayIndex) => {
-        if (arrayIndex === index) {
-          return modify(arrayValue)
+    (s, modify) => {
+      return s.map((a, i) => {
+        if (i === index) {
+          return modify(a)
         } else {
-          return arrayValue
+          return a
         }
       })
     },
@@ -80,48 +77,52 @@ export function fromArrayIndex<A>(index: number): Optic<Array<A>, A> {
 }
 
 export function pairTupleFirst<A1, A2>(): Optic<[A1, A2], A1> {
-  return lens(
-    ([a1, _a2]) => {
-      return a1
+  return makeOptic(
+    ([a1, _a2], f) => {
+      f(a1)
     },
-    ([_a1, a2], newA1) => {
-      return [newA1, a2]
+    ([a1, a2], modify) => {
+      return [modify(a1), a2]
     },
   )
 }
 
 export function pairTupleSecond<A1, A2>(): Optic<[A1, A2], A2> {
-  return lens(
-    ([_a1, a2]) => {
-      return a2
+  return makeOptic(
+    ([_a1, a2], f) => {
+      f(a2)
     },
-    ([a1, _a2], newA2) => {
-      return [a1, newA2]
+    ([a1, a2], modify) => {
+      return [a1, modify(a2)]
     },
   )
 }
 
 // Produces a traversal over an array, presenting each value of the array.
 export function traverseArray<A>(): Optic<Array<A>, A> {
-  return traversal(
-    (a) => {
-      return a
+  return makeOptic(
+    (s, f) => {
+      for (const a of s) {
+        f(a)
+      }
     },
-    (array: Array<A>, modify: (a: A) => A) => {
-      return array.map(modify)
+    (s, modify) => {
+      return s.map(modify)
     },
   )
 }
 
 // Produces a traversal over the values of an object.
 export function objectValues<A>(): Optic<{ [key: string]: A }, A> {
-  return traversal(
-    (s) => {
-      return Object.values(s)
+  return makeOptic(
+    (s, f) => {
+      for (const key in s) {
+        f(s[key])
+      }
     },
-    (object: { [key: string]: A }, modify: (a: A) => A) => {
+    (s, modify) => {
       let result: { [key: string]: A } = {}
-      for (const [key, value] of Object.entries(object)) {
+      for (const [key, value] of Object.entries(s)) {
         result[key] = modify(value)
       }
       return result
@@ -131,15 +132,17 @@ export function objectValues<A>(): Optic<{ [key: string]: A }, A> {
 
 // Produces a traversal over the keys and values of an object.
 export function objectEntries<A>(): Optic<{ [key: string]: A }, [string, A]> {
-  return traversal(
-    (s) => {
-      return Object.entries(s)
+  return makeOptic(
+    (s, f) => {
+      for (const key in s) {
+        f([key, s[key]])
+      }
     },
-    (object: { [key: string]: A }, modify: (a: [string, A]) => [string, A]) => {
+    (s, modify) => {
       let result: { [key: string]: A } = {}
-      for (const entry of Object.entries(object)) {
-        const [key, value] = modify(entry)
-        result[key] = value
+      for (const [key, value] of Object.entries(s)) {
+        const [newKey, newValue] = modify([key, value])
+        result[newKey] = newValue
       }
       return result
     },
@@ -149,64 +152,78 @@ export function objectEntries<A>(): Optic<{ [key: string]: A }, [string, A]> {
 // Produces a prism which only allows values which result in true being returned
 // from the predicate supplied.
 export function filtered<A>(predicate: (a: A) => boolean): Optic<A, A> {
-  return prism(
-    (a) => {
-      if (predicate(a)) {
-        return right(a)
-      } else {
-        return left(`Value fails the filter predicate.`)
+  return makeOptic(
+    (s, f) => {
+      if (predicate(s)) {
+        f(s)
       }
     },
-    (a) => {
-      return a
+    (s, modify) => {
+      if (predicate(s)) {
+        return modify(s)
+      } else {
+        return s
+      }
     },
   )
 }
 
 // Produces an iso which gives us the inverse value of a boolean.
-export const not: Optic<boolean, boolean> = iso(
-  (s) => !s,
-  (a) => !a,
+export const not: Optic<boolean, boolean> = makeOptic(
+  (s, f) => {
+    f(!s)
+  },
+  (s, modify) => {
+    return !modify(!s)
+  },
 )
 
 // Produces a prism into the left side of an `Either`.
 export function eitherLeft<L, R>(): Optic<Either<L, R>, L> {
-  return prism((either) => {
-    return foldEither(
-      (l) => {
-        return right(l)
-      },
-      () => {
-        return left(`Either is not a left.`)
-      },
-      either,
-    )
-  }, left)
+  return makeOptic(
+    (either, f) => {
+      forEachLeft(either, f)
+    },
+    (either, modify) => {
+      return foldEither(
+        (l) => {
+          return left(modify(l))
+        },
+        (r) => {
+          return right(r)
+        },
+        either,
+      )
+    },
+  )
 }
 
 // Produces a prism into the right side of an `Either`.
 export function eitherRight<L, R>(): Optic<Either<L, R>, R> {
-  return prism((either) => {
-    return foldEither(
-      () => {
-        return left(`Either is not a right.`)
-      },
-      (r) => {
-        return right(r)
-      },
-      either,
-    )
-  }, right)
+  return makeOptic(
+    (either, f) => {
+      forEachRight(either, f)
+    },
+    (either, modify) => {
+      return foldEither(
+        (l) => {
+          return left(l)
+        },
+        (r) => {
+          return right(modify(r))
+        },
+        either,
+      )
+    },
+  )
 }
 
 // Produces a prism which excludes values which are `null`.
 export function notNull<S>(): Optic<S | null, S> {
-  return prism(
-    (valueOrNull) => {
-      if (valueOrNull === null) {
-        return left(`Value was null.`)
-      } else {
-        return right(valueOrNull)
+  return makeOptic(
+    (valueOrNull, f) => {
+      if (valueOrNull !== null) {
+        f(valueOrNull)
       }
     },
     (value) => value,
@@ -215,12 +232,10 @@ export function notNull<S>(): Optic<S | null, S> {
 
 // Produces a prism which excludes values which are `undefined`.
 export function notUndefined<S>(): Optic<S | undefined, S> {
-  return prism(
-    (valueOrUndefined) => {
-      if (valueOrUndefined === undefined) {
-        return left(`Value was undefined.`)
-      } else {
-        return right(valueOrUndefined)
+  return makeOptic(
+    (valueOrUndefined, f) => {
+      if (valueOrUndefined !== undefined) {
+        f(valueOrUndefined)
       }
     },
     (value) => value,
@@ -229,12 +244,10 @@ export function notUndefined<S>(): Optic<S | undefined, S> {
 
 // Produces a prism which excludes values which are `null` or `undefined`.
 export function notNullOrUndefined<S>(): Optic<S | null | undefined, S> {
-  return prism(
-    (valueOrNullOrUndefined) => {
-      if (valueOrNullOrUndefined == null) {
-        return left(`Value was null or undefined.`)
-      } else {
-        return right(valueOrNullOrUndefined)
+  return makeOptic(
+    (valueOrNullUndefined, f) => {
+      if (valueOrNullUndefined !== null && valueOrNullUndefined !== undefined) {
+        f(valueOrNullUndefined)
       }
     },
     (value) => value,
@@ -243,28 +256,28 @@ export function notNullOrUndefined<S>(): Optic<S | null | undefined, S> {
 
 // A no-op prism, which logs values as they travel through it in either direction.
 export function logOptic<S>(): Optic<S, S> {
-  return iso(
-    (s) => {
+  return makeOptic(
+    (s, f) => {
       // eslint-disable-next-line no-console
-      console.log('logOptic: from', JSON.stringify(s, null, 2))
-      return s
+      console.log('Log: ', s)
+      f(s)
     },
-    (s) => {
+    (s, modify) => {
       // eslint-disable-next-line no-console
-      console.log('logOptic: to', JSON.stringify(s, null, 2))
-      return s
+      console.log('Log: ', s)
+      return modify(s)
     },
   )
 }
 
 // An identity lens which returns the new value on an update.
 export function identityOptic<S>(): Optic<S, S> {
-  return lens(
-    (s) => {
-      return s
+  return makeOptic(
+    (s, f) => {
+      f(s)
     },
-    (_, s) => {
-      return s
+    (s, modify) => {
+      return modify(s)
     },
   )
 }

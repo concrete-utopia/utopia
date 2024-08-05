@@ -44,6 +44,7 @@ export function useSelectionArea(
       allElementProps: store.editor.allElementProps,
       interactionSession: store.editor.canvas.interactionSession,
       keysPressed: store.editor.keysPressed,
+      lockedElements: store.editor.lockedElements,
     }
   })
 
@@ -93,6 +94,7 @@ export function useSelectionArea(
         storeRef.current.canvasOffset,
         area,
         localSelectedViews,
+        storeRef.current.lockedElements,
       )
     },
     [storeRef, localSelectedViews, getSelectableViews],
