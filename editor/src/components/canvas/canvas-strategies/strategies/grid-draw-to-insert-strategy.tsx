@@ -1,7 +1,12 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import type { CanvasPoint, CanvasRectangle, Size } from '../../../../core/shared/math-utils'
+import type {
+  CanvasPoint,
+  CanvasRectangle,
+  Size,
+  WindowRectangle,
+} from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
   canvasRectangle,
@@ -164,25 +169,10 @@ const gridDrawToInsertStrategyInner =
           ])
         }
 
-        const windowPointToUse =
-          interactionData.type === 'DRAG'
-            ? offsetPoint(
-                interactionData.dragStart,
-                interactionData.drag ?? canvasVector({ x: 0, y: 0 }),
-              )
-            : interactionData.point
-
-        const mouseWindowPoint = canvasPointToWindowPoint(
-          windowPointToUse,
-          canvasState.scale,
-          canvasState.canvasOffset,
-        )
-
-        const newTargetCell = getTargetCell(
-          customStrategyState.grid.targetCell,
-          canvasState.scale,
-          false,
-          mouseWindowPoint,
+        const newTargetCell = getGridCellUnderCursor(
+          interactionData,
+          canvasState,
+          customStrategyState,
         )
 
         if (newTargetCell == null) {
@@ -191,10 +181,7 @@ const gridDrawToInsertStrategyInner =
 
         const { gridCellCoordinates, cellWindowRectangle } = newTargetCell
 
-        const offset: CanvasPoint = canvasPoint({
-          x: mouseWindowPoint.x - cellWindowRectangle.x,
-          y: mouseWindowPoint.y - cellWindowRectangle.y,
-        })
+        const offset = getOffsetFromGridCell(interactionData, canvasState, cellWindowRectangle)
 
         const defaultSize =
           interactionData.type === 'DRAG' &&
@@ -311,4 +298,48 @@ function getInsertionCommand(
   const insertionPath = childInsertionPath(parentPath)
 
   return insertElementInsertionSubject('always', updatedInsertionSubject, insertionPath)
+}
+
+function getGridCellUnderCursor(
+  interactionData: DragInteractionData | HoverInteractionData,
+  canvasState: InteractionCanvasState,
+  customStrategyState: CustomStrategyState,
+) {
+  const windowPointToUse =
+    interactionData.type === 'DRAG' ? interactionData.dragStart : interactionData.point
+
+  const mouseWindowPoint = canvasPointToWindowPoint(
+    windowPointToUse,
+    canvasState.scale,
+    canvasState.canvasOffset,
+  )
+
+  return getTargetCell(
+    customStrategyState.grid.targetCell,
+    canvasState.scale,
+    false,
+    mouseWindowPoint,
+  )
+}
+
+function getOffsetFromGridCell(
+  interactionData: DragInteractionData | HoverInteractionData,
+  canvasState: InteractionCanvasState,
+  cellWindowRectangle: WindowRectangle,
+) {
+  const windowPointToUse =
+    interactionData.type === 'DRAG'
+      ? offsetPoint(interactionData.dragStart, interactionData.drag ?? canvasVector({ x: 0, y: 0 }))
+      : interactionData.point
+
+  const mouseWindowPoint = canvasPointToWindowPoint(
+    windowPointToUse,
+    canvasState.scale,
+    canvasState.canvasOffset,
+  )
+
+  return canvasPoint({
+    x: mouseWindowPoint.x - cellWindowRectangle.x,
+    y: mouseWindowPoint.y - cellWindowRectangle.y,
+  })
 }
