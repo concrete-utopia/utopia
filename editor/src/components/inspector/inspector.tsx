@@ -90,7 +90,10 @@ import { ListSection } from './sections/layout-section/list-section'
 import { isIntrinsicElementMetadata } from '../../core/model/project-file-utils'
 import { assertNever } from '../../core/shared/utils'
 import { DataReferenceSection } from './sections/data-reference-section'
-import { replaceFirstChildAndDeleteSiblings } from '../editor/element-children'
+import {
+  elementSupportsChildrenFromPropertyControls,
+  replaceFirstChildAndDeleteSiblings,
+} from '../editor/element-children'
 import { InspectorSectionHeader } from './section-header'
 import { GridPlacementSubsection } from './sections/style-section/container-subsection/grid-cell-subsection'
 import { ContainerSubsection } from './sections/style-section/container-subsection/container-subsection'
@@ -379,6 +382,20 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'Inspector inspectorPreferences',
   )
 
+  const supportsChildren = useEditorState(
+    Substores.metadataAndPropertyControlsInfo,
+    (store) => {
+      return store.editor.selectedViews.every((view) =>
+        elementSupportsChildrenFromPropertyControls(
+          store.editor.jsxMetadata,
+          store.editor.propertyControlsInfo,
+          view,
+        ),
+      )
+    },
+    'Inspector supportChildren',
+  )
+
   const {
     value: styleSectionOpen,
     toggle: toggleStyleSection,
@@ -401,7 +418,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const shouldShowClassNameSubsection = isTwindEnabled() && inspectorPreferences.includes('visual')
   const shouldShowTargetSelectorSection = canEdit && inspectorPreferences.includes('visual')
   const shouldShowFlexSection =
-    multiselectedContract === 'frame' && inspectorPreferences.includes('layout-system')
+    multiselectedContract === 'frame' &&
+    inspectorPreferences.includes('layout-system') &&
+    supportsChildren
 
   const shouldShowSimplifiedLayoutSection = inspectorPreferences.includes('layout')
 
