@@ -122,7 +122,7 @@ export const FlexSection = React.memo(() => {
     'FlexSection grid',
   )
 
-  const columns: GridDimension[] = React.useMemo(() => {
+  const columns: GridAxisValues = React.useMemo(() => {
     return getGridTemplateAxisValues({
       calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateColumns ?? null,
       fromProps:
@@ -130,7 +130,7 @@ export const FlexSection = React.memo(() => {
     })
   }, [grid])
 
-  const rows: GridDimension[] = React.useMemo(() => {
+  const rows: GridAxisValues = React.useMemo(() => {
     return getGridTemplateAxisValues({
       calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateRows ?? null,
       fromProps:
@@ -153,10 +153,17 @@ export const FlexSection = React.memo(() => {
                   <TemplateDimensionControl
                     axis={'column'}
                     grid={grid}
-                    values={columns}
+                    values={columns.dimensions}
+                    fromProps={columns.fromProps}
                     title='Columns'
                   />
-                  <TemplateDimensionControl axis={'row'} grid={grid} values={rows} title='Rows' />
+                  <TemplateDimensionControl
+                    axis={'row'}
+                    grid={grid}
+                    values={rows.dimensions}
+                    fromProps={rows.fromProps}
+                    title='Rows'
+                  />
                 </div>
               ) : null}
             </UIGridRow>,
@@ -197,10 +204,12 @@ const TemplateDimensionControl = React.memo(
     grid,
     values,
     axis,
+    fromProps,
     title,
   }: {
     grid: ElementInstanceMetadata
     values: GridDimension[]
+    fromProps: boolean
     axis: 'column' | 'row'
     title: string
   }) => {
@@ -208,7 +217,7 @@ const TemplateDimensionControl = React.memo(
 
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
-    const onSubmitValue = React.useCallback(
+    const onUpdate = React.useCallback(
       (index: number) =>
         (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<ValidGridDimensionKeyword>>) => {
           const newValues = [...values]
@@ -459,10 +468,11 @@ const TemplateDimensionControl = React.memo(
                 <NumberOrKeywordControl
                   style={{ flex: 1 }}
                   testId={testId}
-                  value={value.value}
+                  value={!fromProps ? cssKeyword('auto') : value.value}
                   keywords={gridDimensionDropdownKeywords}
                   keywordTypeCheck={isValidGridDimensionKeyword}
-                  onSubmitValue={onSubmitValue(index)}
+                  onSubmitValue={onUpdate(index)}
+                  controlStatus={!fromProps ? 'off' : undefined}
                 />
               </div>
               <SquareButton className={axisDropdownMenuButton}>
@@ -558,23 +568,26 @@ function gridNumbersToTemplateString(values: GridDimension[]) {
     .join(' ')
 }
 
+type GridAxisValues = { dimensions: GridDimension[]; fromProps: boolean }
+
 function getGridTemplateAxisValues(template: {
   calculated: GridAutoOrTemplateBase | null
   fromProps: GridAutoOrTemplateBase | null
-}): GridDimension[] {
+}): GridAxisValues {
   const { calculated, fromProps } = template
   if (fromProps?.type !== 'DIMENSIONS' && calculated?.type !== 'DIMENSIONS') {
-    return []
+    return { dimensions: [], fromProps: false }
   }
 
   const calculatedDimensions = calculated?.type === 'DIMENSIONS' ? calculated.dimensions : []
   const fromPropsDimensions = fromProps?.type === 'DIMENSIONS' ? fromProps.dimensions : []
-  if (calculatedDimensions.length === 0) {
-    return fromPropsDimensions
-  } else if (calculatedDimensions.length === fromPropsDimensions.length) {
-    return fromPropsDimensions
+  if (
+    calculatedDimensions.length === 0 ||
+    calculatedDimensions.length === fromPropsDimensions.length
+  ) {
+    return { dimensions: fromPropsDimensions, fromProps: true }
   } else {
-    return calculatedDimensions
+    return { dimensions: calculatedDimensions, fromProps: false }
   }
 }
 
