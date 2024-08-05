@@ -11,7 +11,7 @@ import type {
 import { isCSSNumber } from '../../components/inspector/common/css-utils'
 import { NO_OP } from '../../core/shared/utils'
 
-type DropdownNumberInputProps<T extends string> = {
+type NumberOrKeywordControlProps<T extends string> = {
   testId: string
   style?: CSSProperties
   onSubmitValue: (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<T>>) => void
@@ -20,7 +20,7 @@ type DropdownNumberInputProps<T extends string> = {
   keywordTypeCheck: (keyword: unknown) => keyword is T
 }
 
-export function DropdownNumberInput<T extends string>(props: DropdownNumberInputProps<T>) {
+export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordControlProps<T>) {
   const { onSubmitValue: propsOnSubmitValue } = props
 
   const [hover, setHover] = React.useState(false)

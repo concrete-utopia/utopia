@@ -65,7 +65,7 @@ import { type CanvasCommand } from '../canvas/commands/commands'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import { DropdownMenu } from '../../uuiui/radix-components'
 import { useInspectorLayoutInfo } from './common/property-path-hooks'
-import { DropdownNumberInput } from '../../uuiui/inputs/dropdown-number-input'
+import { NumberOrKeywordControl } from '../../uuiui/inputs/number-or-keyword-control'
 
 const axisDropdownMenuButton = 'axisDropdownMenuButton'
 
@@ -456,7 +456,7 @@ const TemplateDimensionControl = React.memo(
                 >
                   {value.areaName ?? index + 1}
                 </Subdued>
-                <DropdownNumberInput
+                <NumberOrKeywordControl
                   style={{ flex: 1 }}
                   testId={testId}
                   value={value.value}
