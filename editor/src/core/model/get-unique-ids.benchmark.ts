@@ -10,7 +10,7 @@ import {
   getAllUniqueUidsFifth,
   getAllUniqueUidsInnerFifth,
   lookupFilePathForUidFifth,
-} from './get-unique-ids-fifth'
+} from './get-unique-ids-new'
 
 export async function benchmarkGetUniqueUids(): Promise<void> {
   await Benny.suite(
