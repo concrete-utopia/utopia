@@ -22,7 +22,7 @@ import * as EP from '../../core/shared/element-path'
 import { getPathsOnDomElement } from '../../core/shared/uid-utils'
 import Canvas, { TargetSearchType } from './canvas'
 import type { CanvasPositions } from './canvas-types'
-import type { AllElementProps } from '../editor/store/editor-state'
+import type { AllElementProps, LockedElements } from '../editor/store/editor-state'
 import Utils from '../../utils/utils'
 import { memoize } from '../../core/shared/memoize'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
@@ -108,12 +108,27 @@ export function firstAncestorOrItselfWithValidElementPath(
   parentSceneValidPathsCache: FindParentSceneValidPathsCache,
   metadata: ElementInstanceMetadataMap,
   point: CanvasPoint,
-): ElementPath | null {
+  lockedElements: LockedElements,
+): { path: ElementPath; locked: boolean } | null {
   const staticAndDynamicTargetElementPaths = getStaticAndDynamicElementPathsForDomElement(target)
 
   if (staticAndDynamicTargetElementPaths.length === 0) {
     return null
   }
+
+  const isLocked = staticAndDynamicTargetElementPaths.every((p) => {
+    if (EP.containsPath(p.dynamic, lockedElements.simpleLock)) {
+      return true
+    }
+    if (
+      lockedElements.hierarchyLock.some((hierarchyLock) =>
+        EP.isDescendantOfOrEqualTo(p.dynamic, hierarchyLock),
+      )
+    ) {
+      return true
+    }
+    return false
+  })
 
   const validStaticElementPaths = getValidStaticElementPathsForDomElement(
     target,
@@ -208,7 +223,7 @@ export function firstAncestorOrItselfWithValidElementPath(
     }
   }
 
-  return resultPath
+  return resultPath == null ? null : { path: resultPath, locked: isLocked }
 }
 
 export function getValidTargetAtPoint(
@@ -217,6 +232,7 @@ export function getValidTargetAtPoint(
   canvasScale: number,
   canvasOffset: CanvasVector,
   metadata: ElementInstanceMetadataMap,
+  lockedElements: LockedElements,
 ): ElementPath | null {
   if (point == null) {
     return null
@@ -234,6 +250,7 @@ export function getValidTargetAtPoint(
     parentSceneValidPathsCache,
     metadata,
     pointOnCanvas,
+    lockedElements,
   )
 }
 
@@ -243,6 +260,7 @@ export function getAllTargetsAtPoint(
   canvasScale: number,
   canvasOffset: CanvasVector,
   metadata: ElementInstanceMetadataMap,
+  lockedElements: LockedElements,
 ): Array<ElementPath> {
   if (point == null) {
     return []
@@ -261,6 +279,7 @@ export function getAllTargetsAtPoint(
     parentSceneValidPathsCache,
     metadata,
     pointOnCanvas,
+    lockedElements,
   )
 }
 
@@ -274,6 +293,7 @@ function findFirstValidParentForSingleElementUncached(
   parentSceneValidPathsCache: FindParentSceneValidPathsCache,
   metadata: ElementInstanceMetadataMap,
   point: CanvasPoint,
+  lockedElements: LockedElements,
 ) {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -281,19 +301,27 @@ function findFirstValidParentForSingleElementUncached(
       : new Set(
           validElementPathsForLookup.map((path) => EP.toString(EP.makeLastPartOfPathStatic(path))),
         )
+
+  let foundValidElementPath: ElementPath | null = null
+
   for (const element of elementsUnderPoint) {
-    const foundValidElementPath = firstAncestorOrItselfWithValidElementPath(
+    const p = firstAncestorOrItselfWithValidElementPath(
       validPathsSet,
       element,
       parentSceneValidPathsCache,
       metadata,
       point,
+      lockedElements,
     )
-    if (foundValidElementPath != null) {
-      return foundValidElementPath
+    if (p != null) {
+      foundValidElementPath = p.path
+      if (!p.locked) {
+        break
+      }
     }
   }
-  return null
+
+  return foundValidElementPath
 }
 
 const findFirstValidParentsForAllElements = memoize(findFirstValidParentsForAllElementsUncached, {
@@ -306,6 +334,7 @@ function findFirstValidParentsForAllElementsUncached(
   parentSceneValidPathsCache: FindParentSceneValidPathsCache,
   metadata: ElementInstanceMetadataMap,
   point: CanvasPoint,
+  lockedElements: LockedElements,
 ): Array<ElementPath> {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -321,7 +350,8 @@ function findFirstValidParentsForAllElementsUncached(
         parentSceneValidPathsCache,
         metadata,
         point,
-      )
+        lockedElements,
+      )?.path
       if (foundValidElementPath != null) {
         return foundValidElementPath
       } else {
@@ -342,6 +372,7 @@ export function getSelectionOrValidTargetAtPoint(
   canvasOffset: CanvasVector,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
+  lockedElements: LockedElements,
 ): ElementPath | null {
   if (point == null) {
     return null
@@ -356,6 +387,7 @@ export function getSelectionOrValidTargetAtPoint(
     canvasOffset,
     elementPathTree,
     allElementProps,
+    lockedElements,
   )
   if (target === 'selection') {
     return selectedViews[0] ?? null
@@ -374,6 +406,7 @@ function getSelectionOrFirstTargetAtPoint(
   canvasOffset: CanvasVector,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
+  lockedElements: LockedElements,
 ): 'selection' | ElementPath | null {
   if (point == null) {
     return null
@@ -415,10 +448,13 @@ function getSelectionOrFirstTargetAtPoint(
       parentSceneValidPathsCache,
       componentMetadata,
       pointOnCanvas,
+      lockedElements,
     )
     if (foundValidElementPath != null) {
-      elementFromDOM = foundValidElementPath
-      break
+      elementFromDOM = foundValidElementPath.path
+      if (!foundValidElementPath.locked) {
+        break
+      }
     }
   }
 

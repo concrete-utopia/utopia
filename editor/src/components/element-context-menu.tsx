@@ -143,6 +143,7 @@ function useCanvasContextMenuItems(
                 data.scale,
                 data.canvasOffset,
                 data.jsxMetadata,
+                data.lockedElements,
               )
               lastMousePosition = WindowMousePositionRaw
             }
@@ -201,6 +202,7 @@ function useCanvasContextMenuGetData(
       internalClipboard: store.editor.internalClipboard,
       autoFocusedPaths: store.derived.autoFocusedPaths,
       propertyControlsInfo: store.editor.propertyControlsInfo,
+      lockedElements: store.editor.lockedElements,
     }
   })
   const navigatorTargetsRef = useRefEditorState(navigatorTargetsSelector)
@@ -229,6 +231,7 @@ function useCanvasContextMenuGetData(
       navigatorTargets: navigatorTargetsRef.current.navigatorTargets,
       propertyControlsInfo: currentEditor.propertyControlsInfo,
       showComponentPicker: showComponentPicker,
+      lockedElements: currentEditor.lockedElements,
     }
   }, [editorSliceRef, navigatorTargetsRef, contextMenuInstance, showComponentPicker])
 }

@@ -65,8 +65,6 @@ import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/grou
 import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks'
 import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
 
-const DRAG_START_THRESHOLD = 2
-
 export function isDragInteractionActive(editorState: EditorState): boolean {
   return editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
 }
@@ -318,6 +316,7 @@ export function useFindValidTarget(): (
       focusedElementPath: store.editor.focusedElementPath,
       elementPathTree: store.editor.elementPathTree,
       allElementProps: store.editor.allElementProps,
+      lockedElements: store.editor.lockedElements,
     }
   })
 
@@ -335,6 +334,7 @@ export function useFindValidTarget(): (
         canvasOffset,
         elementPathTree,
         allElementProps,
+        lockedElements,
       } = storeRef.current
       const validElementMouseOver: ElementPath | null = (() => {
         if (preferAlreadySelected === 'prefer-selected') {
@@ -348,6 +348,7 @@ export function useFindValidTarget(): (
             canvasOffset,
             elementPathTree,
             allElementProps,
+            lockedElements,
           )
         }
         const newSelection = getValidTargetAtPoint(
@@ -356,6 +357,7 @@ export function useFindValidTarget(): (
           canvasScale,
           canvasOffset,
           componentMetadata,
+          lockedElements,
         )
         if (newSelection != null) {
           return newSelection
@@ -370,6 +372,7 @@ export function useFindValidTarget(): (
           canvasOffset,
           elementPathTree,
           allElementProps,
+          lockedElements,
         )
       })()
 
