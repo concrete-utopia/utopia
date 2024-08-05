@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "FastCheck.assert"] }] */
 import * as FastCheck from 'fast-check'
 import fastDeepEquals from 'fast-deep-equal'
 import { left, right } from '../either'
@@ -8,7 +9,6 @@ import {
   exists,
   foldLOf,
   forEachOf,
-  inverseGet,
   modify,
   set,
   toArrayOf,
@@ -142,45 +142,6 @@ describe('toLast', () => {
         integerArray.length === 0
           ? left('No values present.')
           : right(integerArray[integerArray.length - 1]),
-      )
-    })
-    FastCheck.assert(property, { verbose: true })
-  })
-})
-
-describe('inverseGet', () => {
-  it('returns the expected value with an ISO', () => {
-    const property = FastCheck.property(FastCheck.boolean(), (bool) => {
-      return fastDeepEquals(inverseGet(not, bool), right(!bool))
-    })
-    FastCheck.assert(property, { verbose: true })
-  })
-  it('returns the expected value with a LENS', () => {
-    const property = FastCheck.property(FastCheck.string(), (testField) => {
-      return fastDeepEquals(
-        inverseGet(fromField<FromFieldTest, 'testField'>('testField'), testField),
-        left(`Unable to invert a LENS.`),
-      )
-    })
-    FastCheck.assert(property, { verbose: true })
-  })
-  it('returns the expected value with a PRISM', () => {
-    const property = FastCheck.property(FastCheck.integer(), (number) => {
-      return fastDeepEquals(
-        inverseGet(
-          filtered((toCheck: number) => toCheck > 1000),
-          number,
-        ),
-        right(number),
-      )
-    })
-    FastCheck.assert(property, { verbose: true })
-  })
-  it('returns the expected value with a TRAVERSAL', () => {
-    const property = FastCheck.property(FastCheck.integer(), (number) => {
-      return fastDeepEquals(
-        inverseGet(traverseArray(), number),
-        left(`Unable to invert a TRAVERSAL.`),
       )
     })
     FastCheck.assert(property, { verbose: true })
