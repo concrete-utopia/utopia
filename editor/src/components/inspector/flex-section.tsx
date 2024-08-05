@@ -123,19 +123,25 @@ export const FlexSection = React.memo(() => {
   )
 
   const columns = React.useMemo(() => {
-    return getGridTemplateAxisValues({
-      calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateColumns ?? null,
-      fromProps:
-        grid?.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateColumns ?? null,
-    })
+    return mergeGridTemplateValues(
+      getGridTemplateAxisValues({
+        calculated:
+          grid?.specialSizeMeasurements.containerGridProperties.gridTemplateColumns ?? null,
+        fromProps:
+          grid?.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateColumns ??
+          null,
+      }),
+    )
   }, [grid])
 
   const rows = React.useMemo(() => {
-    return getGridTemplateAxisValues({
-      calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateRows ?? null,
-      fromProps:
-        grid?.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows ?? null,
-    })
+    return mergeGridTemplateValues(
+      getGridTemplateAxisValues({
+        calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateRows ?? null,
+        fromProps:
+          grid?.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows ?? null,
+      }),
+    )
   }, [grid])
 
   return (
@@ -153,17 +159,10 @@ export const FlexSection = React.memo(() => {
                   <TemplateDimensionControl
                     axis={'column'}
                     grid={grid}
-                    valuesCalculated={columns.calculated}
-                    valuesFromProps={columns.fromProps}
+                    values={columns}
                     title='Columns'
                   />
-                  <TemplateDimensionControl
-                    axis={'row'}
-                    grid={grid}
-                    valuesCalculated={rows.calculated}
-                    valuesFromProps={rows.fromProps}
-                    title='Rows'
-                  />
+                  <TemplateDimensionControl axis={'row'} grid={grid} values={rows} title='Rows' />
                 </div>
               ) : null}
             </UIGridRow>,
@@ -202,14 +201,12 @@ const gridDimensionDropdownKeywords = [
 const TemplateDimensionControl = React.memo(
   ({
     grid,
-    valuesCalculated,
-    valuesFromProps,
+    values,
     axis,
     title,
   }: {
     grid: ElementInstanceMetadata
-    valuesCalculated: GridDimension[]
-    valuesFromProps: GridDimension[]
+    values: GridDimension[]
     axis: 'column' | 'row'
     title: string
   }) => {
@@ -220,16 +217,6 @@ const TemplateDimensionControl = React.memo(
     const onUpdate = React.useCallback(
       (index: number) =>
         (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<ValidGridDimensionKeyword>>) => {
-          const values = valuesCalculated.map((c, idx) => {
-            if (valuesFromProps.length === 0) {
-              return gridCSSKeyword(cssKeyword('auto'), c.areaName)
-            }
-            if (valuesFromProps[idx] == null) {
-              return c
-            }
-            return valuesFromProps[idx]
-          })
-
           const newValues = [...values]
           const gridValueAtIndex = values[index]
           if (isCSSNumber(value)) {
@@ -255,12 +242,12 @@ const TemplateDimensionControl = React.memo(
             ]),
           ])
         },
-      [grid, valuesCalculated, valuesFromProps, dispatch, axis],
+      [grid, values, dispatch, axis],
     )
 
     const onRemove = React.useCallback(
       (index: number) => () => {
-        const newValues = valuesCalculated.filter((_, idx) => idx !== index)
+        const newValues = values.filter((_, idx) => idx !== index)
 
         let commands: CanvasCommand[] = [
           setProperty(
@@ -321,11 +308,11 @@ const TemplateDimensionControl = React.memo(
 
         dispatch([applyCommandsAction(commands)])
       },
-      [grid, valuesCalculated, dispatch, axis, metadataRef],
+      [grid, values, dispatch, axis, metadataRef],
     )
 
     const onAdd = React.useCallback(() => {
-      const newValues = valuesCalculated.concat(gridCSSNumber(cssNumber(1, 'fr'), null))
+      const newValues = values.concat(gridCSSNumber(cssNumber(1, 'fr'), null))
       dispatch([
         applyCommandsAction([
           setProperty(
@@ -336,7 +323,7 @@ const TemplateDimensionControl = React.memo(
           ),
         ]),
       ])
-    }, [dispatch, grid, axis, valuesCalculated])
+    }, [dispatch, grid, axis, values])
 
     const onRename = React.useCallback(
       (index: number) => () => {
@@ -356,7 +343,7 @@ const TemplateDimensionControl = React.memo(
         const newAreaName: string | null =
           rawNewAreaName.length === 0 ? null : sanitizeAreaName(rawNewAreaName)
 
-        const newValues = valuesCalculated.map((value, idx) => {
+        const newValues = values.map((value, idx) => {
           if (idx !== index) {
             return value
           }
@@ -396,7 +383,7 @@ const TemplateDimensionControl = React.memo(
 
         dispatch([applyCommandsAction(commands)])
       },
-      [grid, axis, valuesCalculated, dispatch, metadataRef],
+      [grid, axis, values, dispatch, metadataRef],
     )
 
     const dropdownMenuItems = React.useCallback(
@@ -446,67 +433,53 @@ const TemplateDimensionControl = React.memo(
             <Icons.Plus width={12} height={12} onClick={onAdd} />
           </SquareButton>
         </div>
-        {valuesCalculated
-          .map((c, idx) => {
-            if (valuesFromProps.length === 0) {
-              return gridCSSKeyword(cssKeyword('auto'), c.areaName)
-            }
-            if (valuesFromProps[idx] == null) {
-              return c
-            }
-            return valuesFromProps[idx]
-          })
-          .map((value, index) => {
-            const testId = `grid-dimension-${axis}-${index}`
-            return (
-              <div
-                key={`col-${value}-${index}`}
-                style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                css={{
+        {values.map((value, index) => {
+          const testId = `grid-dimension-${axis}-${index}`
+          return (
+            <div
+              key={`col-${value}-${index}`}
+              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+              css={{
+                [`& > .${axisDropdownMenuButton}`]: {
+                  visibility: 'hidden',
+                },
+                ':hover': {
                   [`& > .${axisDropdownMenuButton}`]: {
-                    visibility: 'hidden',
+                    visibility: 'visible',
                   },
-                  ':hover': {
-                    [`& > .${axisDropdownMenuButton}`]: {
-                      visibility: 'visible',
-                    },
-                  },
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
-                  <Subdued
-                    style={{
-                      width: 40,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                    title={value.areaName ?? undefined}
-                  >
-                    {value.areaName ?? index + 1}
-                  </Subdued>
-                  <NumberOrKeywordControl
-                    style={{ flex: 1 }}
-                    testId={testId}
-                    value={value.value}
-                    keywords={gridDimensionDropdownKeywords}
-                    keywordTypeCheck={isValidGridDimensionKeyword}
-                    onSubmitValue={onUpdate(index)}
-                    controlStatus={
-                      isGridCSSKeyword(value) && value.value.value === 'auto' ? 'off' : undefined
-                    }
-                  />
-                </div>
-                <SquareButton className={axisDropdownMenuButton}>
-                  <DropdownMenu
-                    align='end'
-                    items={dropdownMenuItems(index)}
-                    opener={openDropdown}
-                  />
-                </SquareButton>
+                },
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+                <Subdued
+                  style={{
+                    width: 40,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                  title={value.areaName ?? undefined}
+                >
+                  {value.areaName ?? index + 1}
+                </Subdued>
+                <NumberOrKeywordControl
+                  style={{ flex: 1 }}
+                  testId={testId}
+                  value={value.value}
+                  keywords={gridDimensionDropdownKeywords}
+                  keywordTypeCheck={isValidGridDimensionKeyword}
+                  onSubmitValue={onUpdate(index)}
+                  controlStatus={
+                    isGridCSSKeyword(value) && value.value.value === 'auto' ? 'off' : undefined
+                  }
+                />
               </div>
-            )
-          })}
+              <SquareButton className={axisDropdownMenuButton}>
+                <DropdownMenu align='end' items={dropdownMenuItems(index)} opener={openDropdown} />
+              </SquareButton>
+            </div>
+          )
+        })}
       </div>
     )
   },
@@ -730,3 +703,21 @@ const GapRowColumnControl = React.memo(() => {
   )
 })
 GapRowColumnControl.displayName = 'GapRowColumnControl'
+
+function mergeGridTemplateValues({
+  calculated,
+  fromProps,
+}: {
+  calculated: GridDimension[]
+  fromProps: GridDimension[]
+}): GridDimension[] {
+  return calculated.map((c, index) => {
+    if (fromProps.length === 0) {
+      return gridCSSKeyword(cssKeyword('auto'), c.areaName)
+    }
+    if (fromProps[index] == null) {
+      return c
+    }
+    return fromProps[index]
+  })
+}
