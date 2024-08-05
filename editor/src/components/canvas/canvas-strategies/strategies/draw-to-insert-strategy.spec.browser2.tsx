@@ -39,7 +39,7 @@ function ensureInInsertMode(renderResult: EditorRenderResult): void {
   expect(renderResult.getEditorState().editor.mode.type).toEqual('insert')
 }
 
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "runInsertTest", "runClickToInsertTest", "drawToInsertTestMaybeAddsFlexGrow", "testDrawToInsertImageAspectRatio" ] }] */
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "runClickToInsertTest" ] }] */
 
 describe('draw-to-insert', () => {
   describe('Inserting into absolute', () => {
@@ -213,12 +213,10 @@ export var storyboard = (
       const grid = editor.renderedDOM.getByTestId('grid')
       const gridBB = grid.getBoundingClientRect()
 
-      const target: WindowPoint = slightlyOffsetWindowPointBecauseVeryWeirdIssue(
-        windowPoint({
-          x: gridBB.x + 300,
-          y: gridBB.y + 150,
-        }),
-      ) as WindowPoint
+      const target: WindowPoint = windowPoint({
+        x: gridBB.x + 300,
+        y: gridBB.y + 150,
+      })
 
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -238,9 +236,9 @@ export var storyboard = (
         gridColumn: '2',
         gridRow: '1',
         height: '100px',
-        left: '31px',
+        left: '32px',
         position: 'absolute',
-        top: '48px',
+        top: '49px',
         width: '100px',
       })
     })
@@ -256,12 +254,10 @@ export var storyboard = (
       const grid = editor.renderedDOM.getByTestId('grid')
       const gridBB = grid.getBoundingClientRect()
 
-      const target: WindowPoint = windowPoint(
-        slightlyOffsetWindowPointBecauseVeryWeirdIssue({
-          x: gridBB.x + 250,
-          y: gridBB.y + 150,
-        }),
-      )
+      const target: WindowPoint = windowPoint({
+        x: gridBB.x + 250,
+        y: gridBB.y + 150,
+      })
 
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -284,9 +280,9 @@ export var storyboard = (
         gridColumn: '2',
         gridRow: '1',
         height: '60px',
-        left: '81px',
+        left: '82px',
         position: 'absolute',
-        top: '148px',
+        top: '149px',
         width: '40px',
       })
     })
