@@ -6,7 +6,7 @@ import {
   MetadataUtils,
 } from '../../../../core/model/element-metadata-utils'
 import { isImg } from '../../../../core/model/project-file-utils'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { mapDropNulls, stripNulls } from '../../../../core/shared/array-utils'
 import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import { elementPath } from '../../../../core/shared/element-path'
@@ -34,6 +34,7 @@ import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-rep
 import type { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
 import {
   findCanvasStrategy,
+  findElementPathUnderInteractionPoint,
   getWrapperWithGeneratedUid,
   getWrappingCommands,
   pickCanvasStateFromEditorState,
@@ -66,6 +67,7 @@ import { wrapInContainerCommand } from '../../commands/wrap-in-container-command
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
+import { gridDrawToInsertStrategy } from './grid-draw-to-insert-strategy'
 
 /**
  *
@@ -88,6 +90,18 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
     )
   ) {
     return []
+  }
+
+  const targetParent = findElementPathUnderInteractionPoint(canvasState, interactionSession)
+
+  if (
+    MetadataUtils.isGridLayoutedContainer(
+      MetadataUtils.findElementByElementPath(canvasState.startingMetadata, targetParent),
+    )
+  ) {
+    return stripNulls([
+      gridDrawToInsertStrategy(canvasState, interactionSession, customStrategyState),
+    ])
   }
 
   const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)

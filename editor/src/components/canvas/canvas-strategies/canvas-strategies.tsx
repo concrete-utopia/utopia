@@ -1,11 +1,6 @@
 import React from 'react'
 import { createSelector } from 'reselect'
-import {
-  addAllUniquelyBy,
-  mapDropNulls,
-  sortBy,
-  stripNulls,
-} from '../../../core/shared/array-utils'
+import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import type {
@@ -82,7 +77,6 @@ import { foldAndApplyCommandsInner } from '../commands/commands'
 import { updateFunctionCommand } from '../commands/update-function-command'
 import { wrapInContainerCommand } from '../commands/wrap-in-container-command'
 import type { ElementPath } from 'utopia-shared/src/types'
-import { drawToInsertMetaMetaStrategy } from './strategies/draw-to-insert-meta-meta-strategy'
 import { reparentSubjectsForInteractionTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
 
@@ -192,7 +186,7 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   ...AncestorCompatibleStrategies,
   preventOnRootElements(resizeStrategies),
   propertyControlStrategies,
-  drawToInsertMetaMetaStrategy,
+  drawToInsertMetaStrategy,
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
   keyboardShortcutStrategies,
