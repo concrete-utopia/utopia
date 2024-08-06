@@ -982,6 +982,17 @@ export function parseGridPosition(
   }
 }
 
+const GridAutoFlowValues = ['row', 'column', 'dense', 'row dense', 'column dense'] as const
+export type GridAutoFlow = (typeof GridAutoFlowValues)[number]
+
+export function parseGridAutoFlow(rawValue: string): GridAutoFlow | null {
+  if (GridAutoFlowValues.some((v) => v === rawValue)) {
+    return rawValue as GridAutoFlow
+  }
+
+  return null
+}
+
 export function parseGridRange(
   container: GridContainerProperties,
   axis: 'row' | 'column',

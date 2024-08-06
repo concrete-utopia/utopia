@@ -20,7 +20,7 @@ import { strictEvery } from '../../core/shared/array-utils'
 import { useDispatch } from '../editor/store/dispatch-context'
 import type { DetectedLayoutSystem } from 'utopia-shared/src/types'
 import { NO_OP } from '../../core/shared/utils'
-import { Icons, NumberInput, SquareButton, Subdued } from '../../uuiui'
+import { FlexRow, Icons, NumberInput, SquareButton, Subdued } from '../../uuiui'
 import type {
   CSSKeyword,
   CSSNumber,
@@ -700,3 +700,12 @@ const GapRowColumnControl = React.memo(() => {
   )
 })
 GapRowColumnControl.displayName = 'GapRowColumnControl'
+
+const AutoFlowControl = React.memo(() => {
+  return (
+    <FlexRow>
+      <div style={{ fontWeight: 600 }}>Auto Flow</div>
+    </FlexRow>
+  )
+})
+AutoFlowControl.displayName = 'AutoFlowControl'

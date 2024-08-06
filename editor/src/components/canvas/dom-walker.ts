@@ -69,6 +69,7 @@ import {
   parseGridPosition,
   parseGridRange,
   parseGridAutoOrTemplateBase,
+  parseGridAutoFlow,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -101,7 +102,6 @@ import { pick } from '../../core/shared/object-utils'
 import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 export const ResizeObserver =
   window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -1054,6 +1054,7 @@ function getGridContainerProperties(
       gridTemplateRows: null,
       gridAutoColumns: null,
       gridAutoRows: null,
+      gridAutoFlow: null,
     }
   }
   const gridTemplateColumns = defaultEither(
@@ -1077,6 +1078,7 @@ function getGridContainerProperties(
     gridTemplateRows,
     gridAutoColumns,
     gridAutoRows,
+    parseGridAutoFlow(elementStyle.gridAutoFlow),
   )
 }
 
@@ -1159,6 +1161,8 @@ function getSpecialMeasurements(
   const elementStyle = window.getComputedStyle(element)
   const layoutSystemForChildren = elementLayoutSystem(elementStyle)
   const position = getPosition(elementStyle)
+
+  elementStyle.gridAutoFlow
 
   const offset = {
     x: roundToNearestHalf(element.offsetLeft),
