@@ -15,11 +15,14 @@ import { executeFirstApplicableStrategy } from './inspector-strategies/inspector
 import { useDispatch } from '../editor/store/dispatch-context'
 import { NO_OP, assertNever } from '../../core/shared/utils'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
-import { DropdownMenu, regularDropdownMenuItem } from '../../uuiui/radix-components'
+import {
+  DropdownMenu,
+  regularDropdownMenuItem,
+  separatorDropdownMenuItem,
+} from '../../uuiui/radix-components'
 import { stripNulls } from '../../core/shared/array-utils'
 import { layoutSystemSelector } from './flex-section'
-import { optionalMap } from '../../core/shared/optional-utils'
-import { GridAdvancedButtonAndModal } from './controls/grid-advanced'
+import { AdvancedGridModal } from './controls/advanced-grid-modal'
 
 export const AddRemoveLayoutSystemControlTestId = (): string => 'AddRemoveLayoutSystemControlTestId'
 export const AddFlexLayoutOptionId = 'add-flex-layout'
@@ -29,6 +32,14 @@ export const RemoveLayoutSystemOptionId = 'remove-layout-system'
 interface AddRemoveLayoutSystemControlProps {}
 
 export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemControlProps>(() => {
+  const [popupOpen, setPopupOpen] = React.useState(false)
+  const closePopup = React.useCallback(() => {
+    setPopupOpen(false)
+  }, [])
+  const openPopup = React.useCallback(() => {
+    setPopupOpen(true)
+  }, [])
+
   const layoutSystem = useEditorState(
     Substores.metadata,
     layoutSystemSelector,
@@ -90,39 +101,73 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
 
   const addLayoutSystemOpenerButton = React.useCallback(
     () => (
-      <SquareButton highlight onClick={NO_OP} style={{ width: 12, height: 22 }}>
-        {layoutSystem == null ? <Icons.Plus /> : <Icons.Threedots />}
+      <SquareButton
+        highlight
+        onClick={NO_OP}
+        style={{
+          width: 12,
+          height: 22,
+        }}
+      >
+        {layoutSystem == null ? <Icons.SmallPlus /> : <Icons.Threedots />}
       </SquareButton>
     ),
     [layoutSystem],
   )
 
-  const addLayoutSystemMenuDropdownItems = React.useMemo(
-    (): DropdownMenuItem[] =>
-      stripNulls([
-        regularDropdownMenuItem({
-          id: AddFlexLayoutOptionId,
-          label: 'Convert to Flex',
-          onSelect: addFlexLayoutSystem,
-        }),
-        regularDropdownMenuItem({
-          id: AddGridLayoutOptionId,
-          label: 'Convert to Grid',
-          onSelect: addGridLayoutSystem,
-        }),
-        optionalMap(
-          () =>
-            regularDropdownMenuItem({
-              id: RemoveLayoutSystemOptionId,
-              label: 'Remove layout system',
-              onSelect: removeLayoutSystem,
-              danger: true,
-            }),
-          layoutSystem,
-        ),
-      ]),
-    [addFlexLayoutSystem, addGridLayoutSystem, layoutSystem, removeLayoutSystem],
-  )
+  const addLayoutSystemMenuDropdownItems = React.useMemo((): DropdownMenuItem[] => {
+    const gridItems: DropdownMenuItem[] = [
+      regularDropdownMenuItem({
+        id: 'more-settings',
+        label: 'Advanced',
+        onSelect: openPopup,
+      }),
+      regularDropdownMenuItem({
+        id: AddFlexLayoutOptionId,
+        label: 'Convert to Flex',
+        onSelect: addFlexLayoutSystem,
+      }),
+      separatorDropdownMenuItem('dropdown-separator'),
+      regularDropdownMenuItem({
+        id: RemoveLayoutSystemOptionId,
+        label: 'Remove Grid',
+        onSelect: removeLayoutSystem,
+        danger: true,
+      }),
+    ]
+
+    const flexItems: DropdownMenuItem[] = [
+      regularDropdownMenuItem({
+        id: AddGridLayoutOptionId,
+        label: 'Convert to Grid',
+        onSelect: addGridLayoutSystem,
+      }),
+      separatorDropdownMenuItem('dropdown-separator'),
+      regularDropdownMenuItem({
+        id: RemoveLayoutSystemOptionId,
+        label: 'Remove Flex',
+        onSelect: removeLayoutSystem,
+        danger: true,
+      }),
+    ]
+
+    const noLayoutItems: DropdownMenuItem[] = [
+      regularDropdownMenuItem({
+        id: AddFlexLayoutOptionId,
+        label: 'Flex',
+        onSelect: addFlexLayoutSystem,
+      }),
+      regularDropdownMenuItem({
+        id: AddGridLayoutOptionId,
+        label: 'Grid',
+        onSelect: addGridLayoutSystem,
+      }),
+    ]
+
+    return stripNulls(
+      layoutSystem === 'grid' ? gridItems : layoutSystem === 'flex' ? flexItems : noLayoutItems,
+    )
+  }, [addFlexLayoutSystem, addGridLayoutSystem, layoutSystem, removeLayoutSystem, openPopup])
 
   const label = () => {
     switch (layoutSystem) {
@@ -157,10 +202,12 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
         }}
       >
         <span style={{ textTransform: 'capitalize', fontSize: '11px' }}>{label()}</span>
-        <GridAdvancedButtonAndModal
+        <AdvancedGridModal
           id='grid-advanced1'
           testId='grid-advanced1'
           key='grid-advanced1'
+          closePopup={closePopup}
+          popupOpen={popupOpen}
         />
       </FlexRow>
       <div data-testid={AddRemoveLayoutSystemControlTestId()}>

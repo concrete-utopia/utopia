@@ -162,9 +162,8 @@ const fontStyles = {
 const popup: React.CSSProperties = {
   background: colorTheme.neutralBackground.value,
   boxShadow: shadowStyles.high.boxShadow,
-  paddingTop: 4,
-  paddingBottom: 4,
-  borderRadius: 4,
+  padding: '4px 0',
+  borderRadius: 10,
 }
 
 const checkerboardBackground: Pick<

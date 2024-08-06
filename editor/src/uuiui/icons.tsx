@@ -277,6 +277,7 @@ export const Icons = {
   Pipette: makeIcon({ type: 'pipette', color: 'main' }),
   Minus: makeIcon({ type: 'minus', color: 'main' }),
   Plus: makeIcon({ type: 'plus', color: 'main' }),
+  SmallPlus: makeIcon({ type: 'plus', color: 'main', width: 12, height: 12 }),
   Play: makeIcon({ type: 'play', color: 'main' }),
   React: makeIcon({ type: 'react', color: 'primary' }),
   Refresh: makeIcon({ type: 'refresh', color: 'main' }),

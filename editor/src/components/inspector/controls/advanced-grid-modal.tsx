@@ -3,10 +3,11 @@ import { InspectorModal } from '../widgets/inspector-modal'
 import { FlexColumn, Icons, SquareButton, UtopiaStyles } from '../../../uuiui'
 import { UIGridRow } from '../widgets/ui-grid-row'
 
-export interface GridAdvancedButtonAndModalProps {
+export interface AdvancedGridModalProps {
   id: string
   testId: string
   key: string
+  popupOpen?: boolean
   openPopup?: (id: string) => void
   closePopup?: () => void
   style?: React.CSSProperties
@@ -16,12 +17,11 @@ export interface GridAdvancedButtonAndModalProps {
   }
 }
 
-export const GridAdvancedButtonAndModal = React.memo((props: GridAdvancedButtonAndModalProps) => {
-  const [popupOpen, setPopupOpen] = React.useState(false)
-  const pickerOffset = props.pickerOffset != null ? props.pickerOffset : { x: -250, y: 0 }
-  const closePopup = React.useCallback(() => setPopupOpen(false), [setPopupOpen])
-  const togglePopup = React.useCallback(() => setPopupOpen((value) => !value), [setPopupOpen])
-  const picker = !popupOpen ? null : (
+export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
+  const pickerOffset = props.pickerOffset != null ? props.pickerOffset : { x: -280, y: -20 }
+  const closePopup = props.closePopup ?? (() => {})
+
+  const picker = (
     <InspectorModal
       offsetX={pickerOffset.x}
       offsetY={pickerOffset.y}
@@ -38,14 +38,10 @@ export const GridAdvancedButtonAndModal = React.memo((props: GridAdvancedButtonA
     >
       <FlexColumn>
         <UIGridRow padded variant='<--------auto-------->||22px|'>
-          <b>Title</b>
-          <SquareButton highlight onMouseDown={closePopup}>
+          Grid Settings
+          <SquareButton highlight onMouseDown={props.closePopup}>
             ×
           </SquareButton>
-        </UIGridRow>
-        <UIGridRow padded variant='<-auto-><----------1fr--------->'>
-          <span>Label</span>
-          <input value='value' />
         </UIGridRow>
         <UIGridRow padded variant='<-auto-><----------1fr--------->'>
           <span>Label</span>
@@ -62,17 +58,7 @@ export const GridAdvancedButtonAndModal = React.memo((props: GridAdvancedButtonA
       className={`ignore-react-onclickoutside-${props.id}`}
       style={props.style}
     >
-      {picker}
-      <SquareButton
-        className={`widget-grid-control`}
-        key={`${props.id}-surround`}
-        spotlight={popupOpen}
-        highlight
-        // @eslint-ignore
-        onMouseDown={togglePopup}
-      >
-        <Icons.Gear />
-      </SquareButton>
+      {props.popupOpen ? picker : null}
     </div>
   )
 })
