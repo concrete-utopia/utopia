@@ -29,6 +29,7 @@ import type {
   ValidGridDimensionKeyword,
 } from './common/css-utils'
 import {
+  GridAutoFlowValues,
   cssKeyword,
   cssNumber,
   cssNumberToString,
@@ -70,7 +71,7 @@ import { DropdownMenu, regularDropdownMenuItem } from '../../uuiui/radix-compone
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from './common/property-path-hooks'
 import { NumberOrKeywordControl } from '../../uuiui/inputs/number-or-keyword-control'
 import type { SelectOption } from './controls/select-control'
-import { getControlStyles } from './common/control-styles'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 const axisDropdownMenuButton = 'axisDropdownMenuButton'
 
@@ -711,12 +712,7 @@ export const AutoFlowPopupId = 'auto-flow-control'
 
 const selectOption = (value: GridAutoFlow): SelectOption => ({ label: value, value: value })
 
-const SUPPORTED_GRID_AUTO_FLOW_VALUES: Array<GridAutoFlow> = ['row', 'column']
-
-const GRID_AUTO_FLOW_DROPDOWN_OPTIONS: Array<SelectOption> =
-  SUPPORTED_GRID_AUTO_FLOW_VALUES.map(selectOption)
-
-const SIMPLE_CONTROL_STYLES = getControlStyles('simple') // TODO
+const GRID_AUTO_FLOW_DROPDOWN_OPTIONS: Array<SelectOption> = GridAutoFlowValues.map(selectOption)
 
 const AutoFlowControl = React.memo(() => {
   const dispatch = useDispatch()
@@ -739,15 +735,10 @@ const AutoFlowControl = React.memo(() => {
     'AutoFlowControl gridAutoFlowValue',
   )
 
-  const currentValue = React.useMemo(() => {
-    if (
-      gridAutoFlowValue != null &&
-      SUPPORTED_GRID_AUTO_FLOW_VALUES.some((v) => v === gridAutoFlowValue)
-    ) {
-      return selectOption(gridAutoFlowValue)
-    }
-    return undefined
-  }, [gridAutoFlowValue])
+  const currentValue = React.useMemo(
+    () => optionalMap((v) => selectOption(v), gridAutoFlowValue) ?? undefined,
+    [gridAutoFlowValue],
+  )
 
   const onSubmit = React.useCallback(
     (option: SelectOption) => {
@@ -767,6 +758,8 @@ const AutoFlowControl = React.memo(() => {
     [dispatch, selectededViewsRef],
   )
 
+  const { controlStyles, controlStatus } = useInspectorStyleInfo('gridAutoFlow')
+
   return (
     <FlexRow style={{ gap: 6 }}>
       <div style={{ fontWeight: 600 }}>Auto Flow</div>
@@ -775,8 +768,11 @@ const AutoFlowControl = React.memo(() => {
         value={currentValue}
         options={GRID_AUTO_FLOW_DROPDOWN_OPTIONS}
         onSubmitValue={onSubmit}
-        controlStyles={SIMPLE_CONTROL_STYLES}
-        style={{ background: 'transparent' }}
+        controlStyles={controlStyles}
+        style={{
+          background: 'transparent',
+          opacity: controlStatus !== 'detected' ? undefined : 0.5,
+        }}
       />
     </FlexRow>
   )
