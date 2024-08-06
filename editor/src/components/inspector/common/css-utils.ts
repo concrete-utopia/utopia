@@ -953,7 +953,7 @@ export function parseGridPosition(
   input: unknown,
 ): Either<string, GridPosition> {
   if (input === 'auto') {
-    return right('auto')
+    return right(cssKeyword('auto'))
   } else if (typeof input === 'string') {
     const referenceTemplate =
       axis === 'row' ? container.gridTemplateRows : container.gridTemplateColumns
@@ -964,7 +964,7 @@ export function parseGridPosition(
         if (
           edge === 'end' &&
           shorthand != null &&
-          shorthand !== 'auto' &&
+          !isCSSKeyword(shorthand) &&
           shorthand.numericalPosition === value.numericalPosition
         ) {
           value.numericalPosition = (value.numericalPosition ?? 0) + 1
@@ -997,7 +997,7 @@ export function parseGridRange(
       const startParsed = parseGridPosition(container, axis, 'start', null, input)
       return mapEither((start) => {
         const end =
-          start !== 'auto' && start.numericalPosition != null
+          !isCSSKeyword(start) && start.numericalPosition != null
             ? gridPositionValue(start.numericalPosition + 1)
             : null
         return gridRange(start, end)
