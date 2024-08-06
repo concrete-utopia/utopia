@@ -22,14 +22,15 @@ import type {
 } from '../../components/inspector/controls/control'
 import { isRight } from '../../core/shared/either'
 import { StringInput } from './string-input'
+import { Icn, type IcnProps } from '../icn'
 
 export interface NumberOrKeywordInputProps<T extends string> extends InspectorControlProps {
   value: CSSNumber | CSSKeyword<T>
   onSubmitValue: OnSubmitValueOrUnknownOrEmpty<CSSNumber | CSSKeyword<T>>
   validKeywords: Array<CSSKeyword<T>>
-  labelBelowStyle?: React.CSSProperties
   incrementalControls?: boolean
   showBorder?: boolean
+  labelInner?: string | IcnProps
 }
 
 export function NumberOrKeywordInput<T extends string>(props: NumberOrKeywordInputProps<T>) {
@@ -57,18 +58,37 @@ export function NumberOrKeywordInput<T extends string>(props: NumberOrKeywordInp
   )
 
   return (
-    <StringInput
-      style={props.style}
-      showBorder={props.showBorder}
-      className={props.className}
-      id={props.id}
-      controlStatus={props.controlStatus}
-      DEPRECATED_labelBelow={props.DEPRECATED_labelBelow}
-      value={stringValue}
-      onChange={onChange}
-      onSubmitValue={onSubmitValue}
-      testId={props.testId}
-    />
+    <div style={{ position: 'relative' }}>
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {typeof props.labelInner === 'object' && 'type' in props.labelInner ? (
+          <Icn {...props.labelInner} />
+        ) : (
+          props.labelInner
+        )}
+      </div>
+      <StringInput
+        innerStyle={{ paddingLeft: props.labelInner != null ? 15 : 0 }}
+        style={props.style}
+        showBorder={props.showBorder}
+        className={props.className}
+        id={props.id}
+        controlStatus={props.controlStatus}
+        value={stringValue}
+        onChange={onChange}
+        onSubmitValue={onSubmitValue}
+        testId={props.testId}
+      />
+    </div>
   )
 }
 
