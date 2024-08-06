@@ -12,7 +12,7 @@ import {
   printGridCSSNumber,
 } from '../../../components/inspector/common/css-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../../core/shared/array-utils'
+import { mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import { defaultEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -429,66 +429,75 @@ export const GridControls = controlForStrategyMemoized(() => {
     [interactionLatestMetadata, editorMetadata],
   )
 
+  const hoveredGrids = useEditorState(
+    Substores.canvas,
+    (store) => stripNulls([store.editor.canvas.controls.gridControls]),
+    'FlexReparentTargetIndicator lines',
+  )
+
   const grids = useEditorState(
     Substores.metadata,
     (store) => {
-      return mapDropNulls((view) => {
-        const element = MetadataUtils.findElementByElementPath(jsxMetadata, view)
-        const parent = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(view))
+      return mapDropNulls(
+        (view) => {
+          const element = MetadataUtils.findElementByElementPath(jsxMetadata, view)
+          const parent = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(view))
 
-        const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element)
-          ? element
-          : MetadataUtils.isGridLayoutedContainer(parent)
-          ? parent
-          : null
+          const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element)
+            ? element
+            : MetadataUtils.isGridLayoutedContainer(parent)
+            ? parent
+            : null
 
-        if (
-          targetGridContainer == null ||
-          targetGridContainer.globalFrame == null ||
-          !isFiniteRectangle(targetGridContainer.globalFrame)
-        ) {
-          return null
-        }
+          if (
+            targetGridContainer == null ||
+            targetGridContainer.globalFrame == null ||
+            !isFiniteRectangle(targetGridContainer.globalFrame)
+          ) {
+            return null
+          }
 
-        const gap = targetGridContainer.specialSizeMeasurements.gap
-        const rowGap = targetGridContainer.specialSizeMeasurements.rowGap
-        const columnGap = targetGridContainer.specialSizeMeasurements.columnGap
-        const padding = targetGridContainer.specialSizeMeasurements.padding
+          const gap = targetGridContainer.specialSizeMeasurements.gap
+          const rowGap = targetGridContainer.specialSizeMeasurements.rowGap
+          const columnGap = targetGridContainer.specialSizeMeasurements.columnGap
+          const padding = targetGridContainer.specialSizeMeasurements.padding
 
-        const gridTemplateColumns =
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
-        const gridTemplateRows =
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows
-        const gridTemplateColumnsFromProps =
-          targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
-            .gridTemplateColumns
-        const gridTemplateRowsFromProps =
-          targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
-            .gridTemplateRows
+          const gridTemplateColumns =
+            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
+          const gridTemplateRows =
+            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows
+          const gridTemplateColumnsFromProps =
+            targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
+              .gridTemplateColumns
+          const gridTemplateRowsFromProps =
+            targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
+              .gridTemplateRows
 
-        const columns = getCellsCount(
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
-        )
-        const rows = getCellsCount(
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
-        )
+          const columns = getCellsCount(
+            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
+          )
+          const rows = getCellsCount(
+            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
+          )
 
-        return {
-          elementPath: targetGridContainer.elementPath,
-          frame: targetGridContainer.globalFrame,
-          gridTemplateColumns: gridTemplateColumns,
-          gridTemplateRows: gridTemplateRows,
-          gridTemplateColumnsFromProps: gridTemplateColumnsFromProps,
-          gridTemplateRowsFromProps: gridTemplateRowsFromProps,
-          gap: gap,
-          rowGap: rowGap,
-          columnGap: columnGap,
-          padding: padding,
-          rows: rows,
-          columns: columns,
-          cells: rows * columns,
-        }
-      }, store.editor.selectedViews)
+          return {
+            elementPath: targetGridContainer.elementPath,
+            frame: targetGridContainer.globalFrame,
+            gridTemplateColumns: gridTemplateColumns,
+            gridTemplateRows: gridTemplateRows,
+            gridTemplateColumnsFromProps: gridTemplateColumnsFromProps,
+            gridTemplateRowsFromProps: gridTemplateRowsFromProps,
+            gap: gap,
+            rowGap: rowGap,
+            columnGap: columnGap,
+            padding: padding,
+            rows: rows,
+            columns: columns,
+            cells: rows * columns,
+          }
+        },
+        [...store.editor.selectedViews, ...hoveredGrids],
+      )
     },
     'GridControls grids',
   )

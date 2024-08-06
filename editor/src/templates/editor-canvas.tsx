@@ -464,6 +464,7 @@ export function runLocalCanvasAction(
             [],
             emptyDragToMoveIndicatorFlags,
             null,
+            null,
           ),
         },
       }
