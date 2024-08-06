@@ -2,8 +2,8 @@ import { type ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { isRight } from '../core/shared/either'
 import type { JSXElementChild } from '../core/shared/element-template'
-import { isJSXElement, type ElementInstanceMetadataMap } from '../core/shared/element-template'
-import { getFromPropOrFlagComment } from '../core/shared/comment-flags'
+import { type ElementInstanceMetadataMap } from '../core/shared/element-template'
+import { getFromPropOrFlagComment } from '../core/shared/utopia-flags'
 
 export function dataCanCondenseFromMetadata(
   metadata: ElementInstanceMetadataMap,
@@ -11,10 +11,7 @@ export function dataCanCondenseFromMetadata(
 ): boolean {
   const target = MetadataUtils.findElementByElementPath(metadata, path)
   return (
-    target != null &&
-    isRight(target.element) &&
-    isJSXElement(target.element.value) &&
-    canCondenseJSXElementChild(target.element.value)
+    target != null && isRight(target.element) && canCondenseJSXElementChild(target.element.value)
   )
 }
 
