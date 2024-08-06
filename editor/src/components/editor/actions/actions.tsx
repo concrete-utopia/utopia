@@ -2264,10 +2264,13 @@ export const UPDATE_FNS = {
           if (canCondense === true) {
             return removePropOrFlagComment(element, 'can-condense')
           }
-          return saveToPropOrFlagComment(element, {
-            type: 'can-condense',
-            value: true,
-          })
+          // Note: we just return the element if we can not annotate it
+          return (
+            saveToPropOrFlagComment(element, {
+              type: 'can-condense',
+              value: true,
+            }) ?? element
+          )
         },
         working,
       )

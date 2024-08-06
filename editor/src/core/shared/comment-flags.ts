@@ -268,7 +268,7 @@ export function getFromPropOrFlagComment(
 export function saveToPropOrFlagComment<T extends JSXElementChild>(
   element: T,
   flag: UtopiaPropOrCommentFlag,
-): T {
+): T | null {
   if (isJSXElement(element)) {
     const newProps = element.props.filter((p) => !isUtopiaPropFlag(p, flag.type))
     const newProp = makeUtopiaFlagProp(flag)
@@ -290,8 +290,8 @@ export function saveToPropOrFlagComment<T extends JSXElementChild>(
       comments: { ...element.comments, leadingComments: newLeadingComments },
     }
   }
-  console.warn('Can not save to prop or to comment flag', element, flag)
-  return element
+  // we don't return the element if we could not annotate it
+  return null
 }
 
 export function removePropOrFlagComment<T extends JSXElementChild>(
