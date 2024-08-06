@@ -318,7 +318,6 @@ export function useOnControlHover(controlId: string) {
   )
   const [hoverStart, hoverEnd] = useHoverWithDelay(0, setGapHovered)
 
-  // explicit for readability
   return [hoverStart, hoverEnd] as const
 }
 
