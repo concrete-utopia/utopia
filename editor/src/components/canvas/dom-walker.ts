@@ -1162,7 +1162,6 @@ function getSpecialMeasurements(
   const layoutSystemForChildren = elementLayoutSystem(elementStyle)
   const position = getPosition(elementStyle)
 
-  elementStyle.gridAutoFlow
 
   const offset = {
     x: roundToNearestHalf(element.offsetLeft),
