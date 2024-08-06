@@ -1283,7 +1283,7 @@ index b0688133537..4353093fd5b 100644
  		} catch (error) {
  			onUnexpectedError(error);
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-index 81bf68c3e0b..cf35ed85366 100644
+index 81bf68c3e0b..1075398b4b8 100644
 --- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
 @@ -53,6 +53,7 @@ import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs';
@@ -1294,10 +1294,43 @@ index 81bf68c3e0b..cf35ed85366 100644
  
  export const openWindowCommand = (accessor: ServicesAccessor, toOpen: IWindowOpenable[], options?: IOpenWindowOptions) => {
  	if (Array.isArray(toOpen)) {
-@@ -734,3 +735,10 @@ CommandsRegistry.registerCommand({
+@@ -734,3 +735,43 @@ CommandsRegistry.registerCommand({
  		});
  	}
  });
++
++CommandsRegistry.registerCommand({
++	id: 'workbench.action.files.revertResource',
++	handler: async (accessor, resource: URI) => {
++		const notificationService = accessor.get(INotificationService);
++		const editorGroupService = accessor.get(IEditorGroupsService);
++		const editorService = accessor.get(IEditorService);
++
++		// Retrieve editors for resource
++		const resourceAsString = resource.toString()
++		const matchesTarget = (uri: URI | undefined) => uri != null && uri.toString() === resourceAsString
++		let editors: IEditorIdentifier[] = []
++		
++		editorGroupService.groups.forEach(editorGroup => {
++			editorGroup.editors.forEach(editor => {
++				if (matchesTarget(editor.resource)) {
++					editors.push({ groupId: editorGroup.id, editor: editor })
++				}
++			})
++		})
++
++		if (!editors || editors.length === 0) {
++			return; // nothing to revert
++		}
++
++		try {
++			await editorService.revert(editors.filter(({ editor }) => !editor.hasCapability(EditorInputCapabilities.Untitled) /* all except untitled */), { force: true });
++		} catch (error) {
++			notificationService.error(nls.localize('genericRevertError', "Failed to revert '{0}': {1}", editors.map(({ editor }) => editor.getName()).join(', '), toErrorMessage(error, false)));
++		}
++	}
++});
++
 +
 +CommandsRegistry.registerCommand({
 +	id: 'utopia.toUtopiaMessage',
