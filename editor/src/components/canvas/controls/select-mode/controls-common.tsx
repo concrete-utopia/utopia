@@ -15,7 +15,7 @@ import { treatElementAsGroupLikeFromMetadata } from '../../canvas-strategies/str
 import { assertNever } from '../../../../core/shared/utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import type { PropertyControlsInfo } from '../../../custom-code/code-file'
-import { atom, useSetAtom } from 'jotai'
+import { atom, useAtom, useSetAtom } from 'jotai'
 import { Substores, useEditorState } from '../../../../components/editor/store/store-hook'
 import * as EP from '../../../../core/shared/element-path'
 
@@ -320,4 +320,15 @@ export function useOnControlHover(controlId: string) {
 
   // explicit for readability
   return [hoverStart, hoverEnd] as const
+}
+
+export function useIsControlHovered(selectedElement: ElementPath, controlId: string) {
+  const [hoveredInspectorControlAtom] = useAtom(HoveredInspectorControlAtom)
+
+  const isHoveredInInspector = React.useMemo(
+    () => hoveredInspectorControlAtom === `${EP.toString(selectedElement)}-${controlId}`,
+    [controlId, hoveredInspectorControlAtom, selectedElement],
+  )
+
+  return isHoveredInInspector
 }
