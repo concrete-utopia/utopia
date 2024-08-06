@@ -67,8 +67,8 @@ function guessMatchingGridSetup(children: Array<CanvasFrameAndTarget>): {
 
   return {
     gap: (horizontalData.averageGap + verticalData.averageGap) / 2,
-    numberOfColumns: horizontalData.nChildren,
-    numberOfRows: verticalData.nChildren,
+    numberOfColumns: Math.max(1, horizontalData.nChildren),
+    numberOfRows: Math.max(1, verticalData.nChildren),
   }
 }
 

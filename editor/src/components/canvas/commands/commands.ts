@@ -86,6 +86,10 @@ import { runPushIntendedBoundsAndUpdateGroups } from './push-intended-bounds-and
 import type { PushIntendedBoundsAndUpdateHuggingElements } from './push-intended-bounds-and-update-hugging-elements-command'
 import { runPushIntendedBoundsAndUpdateHuggingElements } from './push-intended-bounds-and-update-hugging-elements-command'
 import { runSetActiveFrames, type SetActiveFrames } from './set-active-frames-command'
+import {
+  runShowGridControlsCommand,
+  type ShowGridControlsCommand,
+} from './show-grid-controls-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -140,6 +144,7 @@ export type CanvasCommand =
   | QueueTrueUpElement
   | SetActiveFrames
   | UpdateBulkProperties
+  | ShowGridControlsCommand
 
 export function runCanvasCommand(
   editorState: EditorState,
@@ -226,6 +231,8 @@ export function runCanvasCommand(
       return runQueueTrueUpElement(editorState, command)
     case 'SET_ACTIVE_FRAMES':
       return runSetActiveFrames(editorState, command)
+    case 'SHOW_GRID_CONTROLS':
+      return runShowGridControlsCommand(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

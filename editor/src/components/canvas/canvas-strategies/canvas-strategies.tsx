@@ -5,8 +5,8 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import type {
   AllElementProps,
-  DerivedState,
   EditorState,
+  EditorStatePatch,
   EditorStorePatched,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
@@ -60,7 +60,7 @@ import * as EP from '../../../core/shared/element-path'
 import { keyboardSetFontSizeStrategy } from './strategies/keyboard-set-font-size-strategy'
 import { keyboardSetFontWeightStrategy } from './strategies/keyboard-set-font-weight-strategy'
 import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-strategy'
-import { drawToInsertTextStrategy } from './strategies/draw-to-insert-text-strategy'
+import { drawToInsertTextMetaStrategy } from './strategies/draw-to-insert-text-strategy'
 import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 import type { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
@@ -73,6 +73,13 @@ import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-stra
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
 import { gridRearrangeMoveDuplicateStrategy } from './strategies/grid-rearrange-move-duplicate-strategy'
 import { setGridGapStrategy } from './strategies/set-grid-gap-strategy'
+import type { CanvasCommand } from '../commands/commands'
+import { foldAndApplyCommandsInner } from '../commands/commands'
+import { updateFunctionCommand } from '../commands/update-function-command'
+import { wrapInContainerCommand } from '../commands/wrap-in-container-command'
+import type { ElementPath } from 'utopia-shared/src/types'
+import { reparentSubjectsForInteractionTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
+import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -184,7 +191,7 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
   keyboardShortcutStrategies,
-  drawToInsertTextStrategy,
+  drawToInsertTextMetaStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -656,11 +663,16 @@ export function onlyFitWhenDraggingThisControl(
   }
 }
 
+export interface WrapperWithUid {
+  wrapper: InsertionSubjectWrapper
+  uid: string
+}
+
 export function getWrapperWithGeneratedUid(
   customStrategyState: CustomStrategyState,
   canvasState: InteractionCanvasState,
   subjects: Array<InsertionSubject>,
-): { wrapper: InsertionSubjectWrapper; uid: string } | null {
+): WrapperWithUid | null {
   const insertionSubjectWrapper = subjects.at(0)?.insertionSubjectWrapper ?? null
   if (insertionSubjectWrapper == null) {
     return null
@@ -671,6 +683,62 @@ export function getWrapperWithGeneratedUid(
     generateUidWithExistingComponents(canvasState.projectContents)
 
   return { wrapper: insertionSubjectWrapper, uid: uid }
+}
+
+export function getWrappingCommands(
+  wrappedElementPath: ElementPath,
+  wrapperWithUid: WrapperWithUid,
+): CanvasCommand[] {
+  return [
+    updateFunctionCommand(
+      'always',
+      (editorState, lifecycle): Array<EditorStatePatch> =>
+        foldAndApplyCommandsInner(
+          editorState,
+          [],
+          [
+            wrapInContainerCommand(
+              'always',
+              wrappedElementPath,
+              wrapperWithUid.uid,
+              wrapperWithUid.wrapper,
+            ),
+          ],
+          lifecycle,
+        ).statePatches,
+    ),
+  ]
+}
+
+export function findElementPathUnderInteractionPoint(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): ElementPath | null {
+  const reparentSubjects = reparentSubjectsForInteractionTarget(canvasState.interactionTarget)
+
+  if (interactionSession == null || interactionSession.interactionData.type === 'KEYBOARD') {
+    return null
+  }
+
+  const { interactionData } = interactionSession
+
+  const pointOnCanvas =
+    interactionData.type === 'DRAG' ? interactionData.originalDragStart : interactionData.point
+
+  const targetParent = getReparentTargetUnified(
+    reparentSubjects,
+    pointOnCanvas,
+    true, // cmd is necessary to allow reparenting,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
+    canvasState.startingAllElementProps,
+    'allow-smaller-parent',
+    ['supportsChildren'],
+    canvasState.propertyControlsInfo,
+  )?.newParent.intendedParentPath
+
+  return targetParent ?? null
 }
 
 export function getDescriptiveStrategyLabelWithRetargetedPaths(

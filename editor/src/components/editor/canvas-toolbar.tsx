@@ -64,7 +64,7 @@ import { ActiveRemixSceneAtom } from '../canvas/remix/utopia-remix-root-componen
 import * as EP from '../../core/shared/element-path'
 import { NO_OP } from '../../core/shared/utils'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
-import { DropdownMenu } from '../../uuiui/radix-components'
+import { DropdownMenu, regularDropdownMenuItem } from '../../uuiui/radix-components'
 import {
   TOGGLE_INSPECTOR,
   TOGGLE_CODE_EDITOR_SHORTCUT,
@@ -358,44 +358,29 @@ export const CanvasToolbar = React.memo(() => {
 
   const panelPopupItems: DropdownMenuItem[] = React.useMemo(
     () => [
-      {
+      regularDropdownMenuItem({
         id: 'navigator',
         label: 'Navigator',
         checked: navigatorVisible,
-        icon: (
-          <div style={{ transform: 'scale(0.8)' }}>
-            <LargerIcons.Navigator color='white' />
-          </div>
-        ),
         shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_NAVIGATOR].shortcutKeys[0]),
         onSelect: () => dispatch([togglePanel('leftmenu')]),
-      },
-      {
+      }),
+      regularDropdownMenuItem({
         id: 'rightmenu',
         label: 'Inspector',
-        icon: (
-          <div style={{ transform: 'scale(0.8)' }}>
-            <LargerIcons.Inspector color='white' />
-          </div>
-        ),
         checked: inspectorVisible,
         shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_INSPECTOR].shortcutKeys[0]),
         onSelect: () => dispatch([togglePanel('rightmenu')]),
-      },
-      {
+      }),
+      regularDropdownMenuItem({
         id: 'code-editor',
         label: 'Code Editor',
-        icon: (
-          <div style={{ transform: 'scale(0.8)' }}>
-            <LargerIcons.Code color='white' />
-          </div>
-        ),
         checked: codeEditorVisible,
         shortcut: keyToString(
           shortcutDetailsWithDefaults[TOGGLE_CODE_EDITOR_SHORTCUT].shortcutKeys[0],
         ),
         onSelect: () => dispatch([togglePanel('codeEditor')]),
-      },
+      }),
     ],
     [codeEditorVisible, dispatch, inspectorVisible, navigatorVisible],
   )

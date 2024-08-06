@@ -15,7 +15,7 @@ import { executeFirstApplicableStrategy } from './inspector-strategies/inspector
 import { useDispatch } from '../editor/store/dispatch-context'
 import { NO_OP, assertNever } from '../../core/shared/utils'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
-import { DropdownMenu } from '../../uuiui/radix-components'
+import { DropdownMenu, regularDropdownMenuItem } from '../../uuiui/radix-components'
 import { stripNulls } from '../../core/shared/array-utils'
 import { layoutSystemSelector } from './flex-section'
 import { optionalMap } from '../../core/shared/optional-utils'
@@ -99,15 +99,24 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
   const addLayoutSystemMenuDropdownItems = React.useMemo(
     (): DropdownMenuItem[] =>
       stripNulls([
-        { id: AddFlexLayoutOptionId, label: 'Convert to Flex', onSelect: addFlexLayoutSystem },
-        { id: AddGridLayoutOptionId, label: 'Convert to Grid', onSelect: addGridLayoutSystem },
+        regularDropdownMenuItem({
+          id: AddFlexLayoutOptionId,
+          label: 'Convert to Flex',
+          onSelect: addFlexLayoutSystem,
+        }),
+        regularDropdownMenuItem({
+          id: AddGridLayoutOptionId,
+          label: 'Convert to Grid',
+          onSelect: addGridLayoutSystem,
+        }),
         optionalMap(
-          () => ({
-            id: RemoveLayoutSystemOptionId,
-            label: 'Remove layout system',
-            onSelect: removeLayoutSystem,
-            danger: true,
-          }),
+          () =>
+            regularDropdownMenuItem({
+              id: RemoveLayoutSystemOptionId,
+              label: 'Remove layout system',
+              onSelect: removeLayoutSystem,
+              danger: true,
+            }),
           layoutSystem,
         ),
       ]),
