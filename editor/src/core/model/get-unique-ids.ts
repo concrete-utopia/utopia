@@ -13,21 +13,32 @@ import { memoize } from '../shared/memoize'
 
 export type DuplicateUIDsResult = { [key: string]: Array<Array<string>> }
 
+type SecretTypeToDeliberatelyBreakCodeForRefactoring_DELETE_ME = { cica: { [uid: string]: string } }
+
 interface GetAllUniqueUIDsResult {
   duplicateIDs: DuplicateUIDsResult
   allIDs: Array<string>
-  uidsToFilePaths: { [uid: string]: string }
+  uidsToFilePaths: SecretTypeToDeliberatelyBreakCodeForRefactoring_DELETE_ME
 }
 
-export function getAllUniqueUidsFromLookup(lookup: { [uid: string]: string }): Array<string> {
+export function getAllUniqueUidsFromLookup(
+  lookup: SecretTypeToDeliberatelyBreakCodeForRefactoring_DELETE_ME,
+): Array<string> {
   return Object.keys(lookup)
+}
+
+export function getFilePathForUid(
+  mapping: SecretTypeToDeliberatelyBreakCodeForRefactoring_DELETE_ME,
+  uid: string,
+): string {
+  return mapping.cica[uid]
 }
 
 interface GetAllUniqueUIDsWorkingResult {
   uniqueIDs: { [key: string]: Array<string> }
   duplicateIDs: { [key: string]: Array<Array<string>> }
   allIDs: Set<string>
-  uidsToFilePaths: { [uid: string]: string }
+  uidsToFilePaths: SecretTypeToDeliberatelyBreakCodeForRefactoring_DELETE_ME
 }
 
 export function emptyGetAllUniqueUIDsWorkingResult(): GetAllUniqueUIDsWorkingResult {
@@ -35,7 +46,7 @@ export function emptyGetAllUniqueUIDsWorkingResult(): GetAllUniqueUIDsWorkingRes
     uniqueIDs: {},
     duplicateIDs: {},
     allIDs: emptySet(),
-    uidsToFilePaths: {},
+    uidsToFilePaths: { cica: {} },
   }
 }
 
@@ -57,7 +68,7 @@ function checkUID(
   value: any,
 ): void {
   workingResult.allIDs.add(uid)
-  workingResult.uidsToFilePaths[uid] = filePath
+  workingResult.uidsToFilePaths.cica[uid] = filePath
   if (uid in workingResult.duplicateIDs) {
     workingResult.duplicateIDs[uid].push(debugPath)
   } else {
