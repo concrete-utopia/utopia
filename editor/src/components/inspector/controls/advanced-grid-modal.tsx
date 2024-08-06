@@ -2,6 +2,7 @@ import React from 'react'
 import { InspectorModal } from '../widgets/inspector-modal'
 import { FlexColumn, Icons, SquareButton, UtopiaStyles } from '../../../uuiui'
 import { UIGridRow } from '../widgets/ui-grid-row'
+import { OptionChainControl } from './option-chain-control'
 
 export interface AdvancedGridModalProps {
   id: string
@@ -32,7 +33,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
         ...UtopiaStyles.popup,
         zIndex: 3,
         minWidth: 230,
-        minHeight: 200,
+        maxHeight: 200,
         overflowY: 'scroll',
       }}
     >
@@ -43,9 +44,14 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
             ×
           </SquareButton>
         </UIGridRow>
-        <UIGridRow padded variant='<-auto-><----------1fr--------->'>
-          <span>Label</span>
-          <input value='value' />
+        <UIGridRow padded variant='|--67px--|<--------1fr-------->'>
+          <span>Align</span>
+        </UIGridRow>
+        <UIGridRow padded variant='|--67px--|<--------1fr-------->'>
+          <span>Justify</span>
+        </UIGridRow>
+        <UIGridRow padded variant='|--67px--|<--------1fr-------->'>
+          <span>Auto Flow</span>
         </UIGridRow>
       </FlexColumn>
     </InspectorModal>
