@@ -429,7 +429,8 @@ function getWidthOrHeight(props: GridElementProperties, dimension: 'width' | 'he
 
 function getLabelsFromTemplate(gridTemplate: GridContainerProperties) {
   const getAxisLabels = (axis: 'gridTemplateColumns' | 'gridTemplateRows') => {
-    if (gridTemplate[axis]?.type !== 'DIMENSIONS') {
+    const template = gridTemplate[axis]
+    if (template?.type !== 'DIMENSIONS') {
       return []
     }
     return mapDropNulls((d, index) => {
@@ -437,7 +438,7 @@ function getLabelsFromTemplate(gridTemplate: GridContainerProperties) {
         return null
       }
       return { areaName: d.areaName, position: index + 1 }
-    }, gridTemplate[axis].dimensions)
+    }, template.dimensions)
   }
   const columnLabels = getAxisLabels('gridTemplateColumns')
 

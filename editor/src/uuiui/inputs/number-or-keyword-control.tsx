@@ -17,6 +17,7 @@ import { isCSSNumber } from '../../components/inspector/common/css-utils'
 import { NO_OP } from '../../core/shared/utils'
 import type { ControlStatus } from '../../uuiui-deps'
 import type { IcnProps } from '../icn'
+import { mapDropNulls } from '../../core/shared/array-utils'
 
 export type KeywordForControl<T extends string> =
   | { label: string; value: CSSKeyword<T> }
@@ -112,7 +113,9 @@ export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordC
         showBorder={hover || dropdownOpen}
         onSubmitValue={onSubmitValue}
         incrementalControls={false}
-        validKeywords={props.keywords.filter((k) => k !== 'separator').map((k) => k.value)}
+        validKeywords={mapDropNulls((k) => (k !== 'separator' ? k : null), props.keywords).map(
+          (k) => k.value,
+        )}
         style={{ flex: 1 }}
         controlStatus={hover || dropdownOpen ? 'detected' : props.controlStatus}
         labelInner={props.labelInner}
