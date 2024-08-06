@@ -20,10 +20,11 @@ import { strictEvery } from '../../core/shared/array-utils'
 import { useDispatch } from '../editor/store/dispatch-context'
 import type { DetectedLayoutSystem } from 'utopia-shared/src/types'
 import { NO_OP } from '../../core/shared/utils'
-import { FlexRow, Icons, NumberInput, SquareButton, Subdued } from '../../uuiui'
+import { FlexRow, Icons, NumberInput, PopupList, SquareButton, Subdued } from '../../uuiui'
 import type {
   CSSKeyword,
   CSSNumber,
+  GridAutoFlow,
   UnknownOrEmptyInput,
   ValidGridDimensionKeyword,
 } from './common/css-utils'
@@ -41,7 +42,7 @@ import {
   isValidGridDimensionKeyword,
   type GridDimension,
 } from './common/css-utils'
-import { applyCommandsAction } from '../editor/actions/action-creators'
+import { applyCommandsAction, setProp_UNSAFE } from '../editor/actions/action-creators'
 import type { PropertyToUpdate } from '../canvas/commands/set-property-command'
 import {
   propertyToDelete,
@@ -56,7 +57,9 @@ import type {
   GridPosition,
 } from '../../core/shared/element-template'
 import {
+  emptyComments,
   gridPositionValue,
+  jsExpressionValue,
   type ElementInstanceMetadata,
   type GridElementProperties,
 } from '../../core/shared/element-template'
@@ -64,8 +67,10 @@ import { setGridPropsCommands } from '../canvas/canvas-strategies/strategies/gri
 import { type CanvasCommand } from '../canvas/commands/commands'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import { DropdownMenu, regularDropdownMenuItem } from '../../uuiui/radix-components'
-import { useInspectorLayoutInfo } from './common/property-path-hooks'
+import { useInspectorLayoutInfo, useInspectorStyleInfo } from './common/property-path-hooks'
 import { NumberOrKeywordControl } from '../../uuiui/inputs/number-or-keyword-control'
+import type { SelectOption } from './controls/select-control'
+import { getControlStyles } from './common/control-styles'
 
 const axisDropdownMenuButton = 'axisDropdownMenuButton'
 
@@ -150,6 +155,7 @@ export const FlexSection = React.memo(() => {
               {grid != null ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <GapRowColumnControl />
+                  <AutoFlowControl />
                   <TemplateDimensionControl
                     axis={'column'}
                     grid={grid}
@@ -701,10 +707,77 @@ const GapRowColumnControl = React.memo(() => {
 })
 GapRowColumnControl.displayName = 'GapRowColumnControl'
 
+export const AutoFlowPopupId = 'auto-flow-control'
+
+const selectOption = (value: GridAutoFlow): SelectOption => ({ label: value, value: value })
+
+const SUPPORTED_GRID_AUTO_FLOW_VALUES: Array<GridAutoFlow> = ['row', 'column']
+
+const GRID_AUTO_FLOW_DROPDOWN_OPTIONS: Array<SelectOption> =
+  SUPPORTED_GRID_AUTO_FLOW_VALUES.map(selectOption)
+
+const SIMPLE_CONTROL_STYLES = getControlStyles('simple') // TODO
+
 const AutoFlowControl = React.memo(() => {
+  const dispatch = useDispatch()
+  const selectededViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+
+  const gridAutoFlowValue = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const gridAutoFlowValues = store.editor.selectedViews.map(
+        (view) =>
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view)
+            ?.specialSizeMeasurements.containerGridProperties.gridAutoFlow ?? null,
+      )
+      const allValuesMatch = strictEvery(gridAutoFlowValues, (v) => v === gridAutoFlowValues.at(0))
+      if (allValuesMatch) {
+        return gridAutoFlowValues.at(0) ?? null
+      }
+      return null
+    },
+    'AutoFlowControl gridAutoFlowValue',
+  )
+
+  const currentValue = React.useMemo(() => {
+    if (
+      gridAutoFlowValue != null &&
+      SUPPORTED_GRID_AUTO_FLOW_VALUES.some((v) => v === gridAutoFlowValue)
+    ) {
+      return selectOption(gridAutoFlowValue)
+    }
+    return undefined
+  }, [gridAutoFlowValue])
+
+  const onSubmit = React.useCallback(
+    (option: SelectOption) => {
+      if (selectededViewsRef.current.length === 0) {
+        return
+      }
+      dispatch(
+        selectededViewsRef.current.map((target) =>
+          setProp_UNSAFE(
+            target,
+            PP.create('style', 'gridAutoFlow'),
+            jsExpressionValue(option.value, emptyComments),
+          ),
+        ),
+      )
+    },
+    [dispatch, selectededViewsRef],
+  )
+
   return (
-    <FlexRow>
+    <FlexRow style={{ gap: 6 }}>
       <div style={{ fontWeight: 600 }}>Auto Flow</div>
+      <PopupList
+        id={AutoFlowPopupId}
+        value={currentValue}
+        options={GRID_AUTO_FLOW_DROPDOWN_OPTIONS}
+        onSubmitValue={onSubmit}
+        controlStyles={SIMPLE_CONTROL_STYLES}
+        style={{ background: 'transparent' }}
+      />
     </FlexRow>
   )
 })
