@@ -17,7 +17,6 @@ type SecretTypeToDeliberatelyBreakCodeForRefactoring_DELETE_ME = { cica: { [uid:
 
 interface GetAllUniqueUIDsResult {
   duplicateIDs: DuplicateUIDsResult
-  allIDs: Array<string>
   uidsToFilePaths: SecretTypeToDeliberatelyBreakCodeForRefactoring_DELETE_ME
 }
 
@@ -55,7 +54,6 @@ export function getAllUniqueUIDsResultFromWorkingResult(
 ): GetAllUniqueUIDsResult {
   return {
     duplicateIDs: workingResult.duplicateIDs,
-    allIDs: Array.from(workingResult.allIDs),
     uidsToFilePaths: workingResult.uidsToFilePaths,
   }
 }

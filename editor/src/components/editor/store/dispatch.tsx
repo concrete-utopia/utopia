@@ -68,7 +68,7 @@ import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-s
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 import { arrayOfPathsEqual, removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { notice } from '../../../components/common/notice'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../../core/model/get-unique-ids'
 import { updateSimpleLocks } from '../../../core/shared/element-locking'
 import {
   getFilesToUpdate,
@@ -788,7 +788,9 @@ function maybeCullElementPathCache(
 }
 
 export function cullElementPathCache(): void {
-  const allExistingUids = getAllUniqueUids(lastProjectContents).allIDs
+  const allExistingUids = getAllUniqueUidsFromLookup(
+    getAllUniqueUids(lastProjectContents).uidsToFilePaths,
+  )
   removePathsWithDeadUIDs(new Set(allExistingUids))
 }
 

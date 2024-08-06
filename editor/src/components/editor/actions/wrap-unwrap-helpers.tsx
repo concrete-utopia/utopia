@@ -65,7 +65,7 @@ import { addElement } from '../../canvas/commands/add-element-command'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { fixUtopiaElementGeneric } from '../../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../../core/model/get-unique-ids'
 import { foldEither, right } from '../../../core/shared/either'
 import { editorStateToElementChildOptic } from '../../../core/model/common-optics'
 import { fromField, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
@@ -345,7 +345,9 @@ export function wrapElementInsertions(
   const staticTarget =
     optionalMap(childInsertionPath, targetThatIsRootElementOfCommonParent) ?? parentPath
 
-  const existingIDsMutable = new Set(getAllUniqueUids(editor.projectContents).allIDs)
+  const existingIDsMutable = new Set(
+    getAllUniqueUidsFromLookup(getAllUniqueUids(editor.projectContents).uidsToFilePaths),
+  )
   const elementToInsert = fixUtopiaElementGeneric<typeof rawElementToInsert>(
     rawElementToInsert,
     existingIDsMutable,

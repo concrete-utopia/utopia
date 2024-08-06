@@ -54,6 +54,7 @@ import { foldEither } from '../../../core/shared/either'
 import {
   getAllUniqueUids,
   getAllUniqueUIdsFromElementChild,
+  getAllUniqueUidsFromLookup,
 } from '../../../core/model/get-unique-ids'
 import { contentsToTree } from '../../../components/assets'
 import {
@@ -667,7 +668,10 @@ function checkUIDValues([first, second]: [JSXElementChild, JSXElementChild]): bo
   return (
     isEmptyObject(firstUIDsResult.duplicateIDs) &&
     isEmptyObject(secondUIDsResult.duplicateIDs) &&
-    intersection([new Set(firstUIDsResult.allIDs), new Set(secondUIDsResult.allIDs)]).size === 0
+    intersection([
+      new Set(getAllUniqueUidsFromLookup(firstUIDsResult.uidsToFilePaths)),
+      new Set(getAllUniqueUidsFromLookup(secondUIDsResult.uidsToFilePaths)),
+    ]).size === 0
   )
 }
 
