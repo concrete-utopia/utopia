@@ -578,10 +578,13 @@ const CSSNumberUnits: Array<CSSNumberUnit> = [
   '%',
 ]
 
-export interface CSSNumber {
+export type CSSNumber = {
   value: number
   unit: CSSNumberUnit | null
+  emptyValue?: boolean
 }
+
+export type EmptyCssNumber = CSSNumber & { emptyValue: true }
 
 export type GridCSSNumberUnit = LengthUnit | ResolutionUnit | PercentUnit | 'fr'
 const GridCSSNumberUnits: Array<GridCSSNumberUnit> = [...LengthUnits, ...ResolutionUnits, '%', 'fr']
@@ -638,6 +641,10 @@ export function printGridCSSNumber(dim: GridDimension): string {
 
 export function cssNumber(value: number, unit: CSSNumberUnit | null = null): CSSNumber {
   return { value, unit }
+}
+
+export function emptyCssNumber(): EmptyCssNumber {
+  return { value: 0, unit: null, emptyValue: true }
 }
 
 export function isCSSNumber(value: unknown): value is CSSNumber {
