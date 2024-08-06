@@ -30,13 +30,7 @@ import {
 } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { CSSNumberWithRenderedValue } from './controls-common'
-import {
-  CanvasLabel,
-  HoveredInspectorControlAtom,
-  PillHandle,
-  useHoverWithDelay,
-  useIsControlHovered,
-} from './controls-common'
+import { CanvasLabel, PillHandle, useHoverWithDelay, useIsControlHovered } from './controls-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import {
@@ -52,7 +46,6 @@ import {
   reverseJustifyContent,
 } from '../../../../core/model/flex-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { useAtom } from 'jotai'
 
 interface FlexGapControlProps {
   selectedElement: ElementPath
