@@ -46,7 +46,7 @@ import { cartesianProduct } from '../../../../core/shared/array-utils'
 import { NO_OP } from '../../../../core/shared/utils'
 import { MoveReorderReparentIndicatorID } from '../../controls/select-mode/strategy-indicator'
 import { CanvasToolbarEditButtonID } from '../../../editor/canvas-toolbar'
-import { ComponentsHonouringPropsStylesProject } from './common-projects'
+import { ComponentsHonouringPropsStylesProject } from './common-projects.test-utils'
 
 async function dragByPixels(
   editor: EditorRenderResult,

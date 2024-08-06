@@ -77,7 +77,7 @@ import {
   SmallElementSize,
 } from '../../controls/bounding-box-hooks'
 import { act } from 'react-dom/test-utils'
-import { ComponentsHonouringPropsStylesProject } from './common-projects'
+import { ComponentsHonouringPropsStylesProject } from './common-projects.test-utils'
 
 // no mouseup here! it starts the interaction and resizes with drag delta
 async function startDragUsingActions(
