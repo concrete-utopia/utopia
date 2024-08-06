@@ -28,6 +28,7 @@ type NumberOrKeywordControlProps<T extends string> = {
   style?: CSSProperties
   onSubmitValue: (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<T>>) => void
   value: CSSNumber | CSSKeyword<T>
+  valueAlias?: string
   keywords: Array<KeywordForControl<T>>
   keywordTypeCheck: (keyword: unknown) => keyword is T
   controlStatus?: ControlStatus
@@ -70,7 +71,9 @@ export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordC
         regularDropdownMenuItem({
           id: 'dropdown-input-value',
           icon: <Icons.Checkmark color='white' width={16} height={16} />,
-          label: `${props.value.value}${isCSSNumber(props.value) ? props.value.unit ?? '' : ''}`,
+          label: `${props.value.value}${isCSSNumber(props.value) ? props.value.unit ?? '' : ''}${
+            props.valueAlias != null ? ` (${props.valueAlias})` : ''
+          }`,
           disabled: true,
           onSelect: NO_OP,
         }),
@@ -93,7 +96,7 @@ export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordC
       }),
     )
     return items
-  }, [props.value, props.keywords, onSubmitValue, props.controlStatus])
+  }, [props.value, props.keywords, onSubmitValue, props.controlStatus, props.valueAlias])
 
   const keywordsWithoutSeparators = React.useMemo(() => {
     return mapDropNulls((k) => (k !== 'separator' ? k : null), props.keywords).map((k) => k.value)

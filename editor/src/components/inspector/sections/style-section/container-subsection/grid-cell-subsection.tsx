@@ -215,6 +215,20 @@ const DimensionsControls = React.memo(
       [dispatch, cell, gridTemplate, width, height, columnLabels, rowLabels],
     )
 
+    const columnStartValue = React.useMemo(() => {
+      return getValueWithAlias(
+        cell.specialSizeMeasurements.elementGridProperties.gridColumnStart,
+        columnLabels,
+      )
+    }, [cell, columnLabels])
+
+    const rowStartValue = React.useMemo(() => {
+      return getValueWithAlias(
+        cell.specialSizeMeasurements.elementGridProperties.gridRowStart,
+        rowLabels,
+      )
+    }, [cell, rowLabels])
+
     return (
       <>
         <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
@@ -223,10 +237,8 @@ const DimensionsControls = React.memo(
             <NumberOrKeywordControl
               testId='input-position-column-start'
               onSubmitValue={onSubmitPosition('gridColumnStart')}
-              value={
-                getValue(cell.specialSizeMeasurements.elementGridProperties.gridColumnStart) ??
-                cssKeyword('auto')
-              }
+              value={columnStartValue.value}
+              valueAlias={columnStartValue.alias}
               keywords={keywordsForPosition(columnLabels.map((l) => l.areaName))}
               keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.areaName))}
               labelInner={{
@@ -238,10 +250,8 @@ const DimensionsControls = React.memo(
             <NumberOrKeywordControl
               testId='input-position-row-start'
               onSubmitValue={onSubmitPosition('gridRowStart')}
-              value={
-                getValue(cell.specialSizeMeasurements.elementGridProperties.gridRowStart) ??
-                cssKeyword('auto')
-              }
+              value={rowStartValue.value}
+              valueAlias={rowStartValue.alias}
               keywords={keywordsForPosition(rowLabels.map((l) => l.areaName))}
               keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.areaName))}
               labelInner={{
@@ -333,16 +343,42 @@ const BoundariesControls = React.memo(
       [dispatch, cell, gridTemplate, columnLabels, rowLabels],
     )
 
+    const columnStartValue = React.useMemo(() => {
+      return getValueWithAlias(
+        cell.specialSizeMeasurements.elementGridProperties.gridColumnStart,
+        columnLabels,
+      )
+    }, [cell, columnLabels])
+
+    const columnEndValue = React.useMemo(() => {
+      return getValueWithAlias(
+        cell.specialSizeMeasurements.elementGridProperties.gridColumnEnd,
+        columnLabels,
+      )
+    }, [cell, columnLabels])
+
+    const rowStartValue = React.useMemo(() => {
+      return getValueWithAlias(
+        cell.specialSizeMeasurements.elementGridProperties.gridRowStart,
+        rowLabels,
+      )
+    }, [cell, rowLabels])
+
+    const rowEndValue = React.useMemo(() => {
+      return getValueWithAlias(
+        cell.specialSizeMeasurements.elementGridProperties.gridRowEnd,
+        rowLabels,
+      )
+    }, [cell, rowLabels])
+
     return (
       <>
         <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
           <div>Start</div>
           <FlexRow style={{ gap: 4 }}>
             <NumberOrKeywordControl
-              value={
-                getValue(cell.specialSizeMeasurements.elementGridProperties.gridColumnStart) ??
-                cssKeyword('auto')
-              }
+              value={columnStartValue.value}
+              valueAlias={columnStartValue.alias}
               testId='grid-cell-column-start'
               onSubmitValue={onSubmitPosition('gridColumnStart')}
               labelInner={{
@@ -354,10 +390,8 @@ const BoundariesControls = React.memo(
               keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.areaName))}
             />
             <NumberOrKeywordControl
-              value={
-                getValue(cell.specialSizeMeasurements.elementGridProperties.gridRowStart) ??
-                cssKeyword('auto')
-              }
+              value={rowStartValue.value}
+              valueAlias={rowStartValue.alias}
               testId='grid-cell-row-start'
               onSubmitValue={onSubmitPosition('gridRowStart')}
               labelInner={{
@@ -374,10 +408,8 @@ const BoundariesControls = React.memo(
           <div>End</div>
           <FlexRow style={{ gap: 4 }}>
             <NumberOrKeywordControl
-              value={
-                getValue(cell.specialSizeMeasurements.elementGridProperties.gridColumnEnd) ??
-                cssKeyword('auto')
-              }
+              value={columnEndValue.value}
+              valueAlias={columnEndValue.alias}
               testId='grid-cell-column-end'
               onSubmitValue={onSubmitPosition('gridColumnEnd')}
               labelInner={{
@@ -389,10 +421,8 @@ const BoundariesControls = React.memo(
               keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.areaName))}
             />
             <NumberOrKeywordControl
-              value={
-                getValue(cell.specialSizeMeasurements.elementGridProperties.gridRowEnd) ??
-                cssKeyword('auto')
-              }
+              value={rowEndValue.value}
+              valueAlias={rowEndValue.alias}
               testId='grid-cell-row-end'
               onSubmitValue={onSubmitPosition('gridRowEnd')}
               labelInner={{
@@ -473,4 +503,16 @@ function maybeValueFromAreaName(
     return gridPositionValue(areaMatch.position)
   }
   return null
+}
+
+function getValueWithAlias(
+  position: GridPosition | null,
+  labels: { areaName: string; position: number }[],
+) {
+  const value = getValue(position) ?? cssKeyword('auto')
+  if (isCSSKeyword(value)) {
+    return { value: value }
+  }
+  const areaName = labels.find((l) => l.position === value.value)
+  return { value: value, alias: areaName?.areaName }
 }
