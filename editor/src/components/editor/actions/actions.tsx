@@ -528,7 +528,7 @@ import {
   makeUtopiaFlagComment,
   removePropOrFlagComment,
   saveToPropOrFlagComment,
-} from '../../../core/shared/utopia-flags'
+} from '../../../core/shared/comment-flags'
 import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
 import type { ConditionalClauseInsertBehavior, InsertionPath } from '../store/insertion-path'

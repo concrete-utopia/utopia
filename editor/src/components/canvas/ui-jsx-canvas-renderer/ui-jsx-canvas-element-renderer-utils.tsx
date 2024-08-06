@@ -74,7 +74,7 @@ import {
   findUtopiaCommentFlag,
   isUtopiaPropOrCommentFlagConditional,
   isUtopiaPropOrCommentFlagMapCount,
-} from '../../../core/shared/utopia-flags'
+} from '../../../core/shared/comment-flags'
 import { RemixSceneComponent } from './remix-scene-component'
 import { STEGANOGRAPHY_ENABLED, isFeatureEnabled } from '../../../utils/feature-switches'
 import { jsxElementChildToText } from './jsx-element-child-to-text'

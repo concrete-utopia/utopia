@@ -1,7 +1,7 @@
 import { v4 as UUID } from 'uuid'
 import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
 import { mapDropNulls } from './array-utils'
-import { deepFindUtopiaCommentFlag, isUtopiaPropOrCommentFlagUid } from './utopia-flags'
+import { deepFindUtopiaCommentFlag, isUtopiaPropOrCommentFlagUid } from './comment-flags'
 import { getDOMAttribute } from './dom-utils'
 import type { Either } from './either'
 import { flatMapEither, foldEither, isLeft, isRight, left, right } from './either'

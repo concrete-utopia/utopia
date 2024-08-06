@@ -7,7 +7,7 @@ import type { ElementPath } from '../../../core/shared/project-file-types'
 import {
   findUtopiaCommentFlag,
   isUtopiaPropOrCommentFlagMapCount,
-} from '../../../core/shared/utopia-flags'
+} from '../../../core/shared/comment-flags'
 import { isRight } from '../../../core/shared/either'
 import { isJSXMapExpression } from '../../../core/shared/element-template'
 import { assertNever } from '../../../core/shared/utils'
