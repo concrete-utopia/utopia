@@ -95,6 +95,10 @@ export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordC
     return items
   }, [props.value, props.keywords, onSubmitValue, props.controlStatus])
 
+  const keywordsWithoutSeparators = React.useMemo(() => {
+    return mapDropNulls((k) => (k !== 'separator' ? k : null), props.keywords).map((k) => k.value)
+  }, [props.keywords])
+
   return (
     <div
       style={{
@@ -113,9 +117,7 @@ export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordC
         showBorder={hover || dropdownOpen}
         onSubmitValue={onSubmitValue}
         incrementalControls={false}
-        validKeywords={mapDropNulls((k) => (k !== 'separator' ? k : null), props.keywords).map(
-          (k) => k.value,
-        )}
+        validKeywords={keywordsWithoutSeparators}
         style={{ flex: 1 }}
         controlStatus={hover || dropdownOpen ? 'detected' : props.controlStatus}
         labelInner={props.labelInner}
