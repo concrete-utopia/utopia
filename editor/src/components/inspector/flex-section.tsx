@@ -66,6 +66,7 @@ import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import { DropdownMenu, regularDropdownMenuItem } from '../../uuiui/radix-components'
 import { useInspectorLayoutInfo } from './common/property-path-hooks'
 import { NumberOrKeywordControl } from '../../uuiui/inputs/number-or-keyword-control'
+import { GridAdvancedButtonAndModal } from './controls/grid-advanced'
 
 const axisDropdownMenuButton = 'axisDropdownMenuButton'
 

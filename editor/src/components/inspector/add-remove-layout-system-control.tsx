@@ -19,6 +19,7 @@ import { DropdownMenu, regularDropdownMenuItem } from '../../uuiui/radix-compone
 import { stripNulls } from '../../core/shared/array-utils'
 import { layoutSystemSelector } from './flex-section'
 import { optionalMap } from '../../core/shared/optional-utils'
+import { GridAdvancedButtonAndModal } from './controls/grid-advanced'
 
 export const AddRemoveLayoutSystemControlTestId = (): string => 'AddRemoveLayoutSystemControlTestId'
 export const AddFlexLayoutOptionId = 'add-flex-layout'
@@ -156,6 +157,11 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
         }}
       >
         <span style={{ textTransform: 'capitalize', fontSize: '11px' }}>{label()}</span>
+        <GridAdvancedButtonAndModal
+          id='grid-advanced1'
+          testId='grid-advanced1'
+          key='grid-advanced1'
+        />
       </FlexRow>
       <div data-testid={AddRemoveLayoutSystemControlTestId()}>
         <DropdownMenu
