@@ -72,8 +72,8 @@ import type { TextEditorProps } from '../../text-editor/text-editor'
 import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 import {
   findUtopiaCommentFlag,
-  isUtopiaCommentFlagConditional,
-  isUtopiaCommentFlagMapCount,
+  isUtopiaPropOrCommentFlagConditional,
+  isUtopiaPropOrCommentFlagMapCount,
 } from '../../../core/shared/comment-flags'
 import { RemixSceneComponent } from './remix-scene-component'
 import { STEGANOGRAPHY_ENABLED, isFeatureEnabled } from '../../../utils/feature-switches'
@@ -248,7 +248,9 @@ export function renderCoreElement(
     }
     case 'JSX_MAP_EXPRESSION': {
       const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
-      const mapCountOverride = isUtopiaCommentFlagMapCount(commentFlag) ? commentFlag.value : null
+      const mapCountOverride = isUtopiaPropOrCommentFlagMapCount(commentFlag)
+        ? commentFlag.value
+        : null
 
       const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
 
@@ -352,7 +354,7 @@ export function renderCoreElement(
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
       const mapCountOverride =
-        isJSXMapExpression(element) && isUtopiaCommentFlagMapCount(commentFlag)
+        isJSXMapExpression(element) && isUtopiaPropOrCommentFlagMapCount(commentFlag)
           ? commentFlag.value
           : null
 
@@ -495,7 +497,7 @@ export function renderCoreElement(
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
       const commentFlag = findUtopiaCommentFlag(element.comments, 'conditional')
-      const override = isUtopiaCommentFlagConditional(commentFlag) ? commentFlag.value : null
+      const override = isUtopiaPropOrCommentFlagConditional(commentFlag) ? commentFlag.value : null
       const defaultConditionValueAsAny = jsxAttributeToValue(
         inScope,
         element.condition,
