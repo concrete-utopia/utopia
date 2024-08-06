@@ -174,12 +174,14 @@ Object {
       },
       "containerGridProperties": Object {
         "gridAutoColumns": null,
+        "gridAutoFlow": null,
         "gridAutoRows": null,
         "gridTemplateColumns": null,
         "gridTemplateRows": null,
       },
       "containerGridPropertiesFromProps": Object {
         "gridAutoColumns": null,
+        "gridAutoFlow": null,
         "gridAutoRows": null,
         "gridTemplateColumns": null,
         "gridTemplateRows": null,
@@ -319,12 +321,14 @@ Object {
       },
       "containerGridProperties": Object {
         "gridAutoColumns": null,
+        "gridAutoFlow": null,
         "gridAutoRows": null,
         "gridTemplateColumns": null,
         "gridTemplateRows": null,
       },
       "containerGridPropertiesFromProps": Object {
         "gridAutoColumns": null,
+        "gridAutoFlow": null,
         "gridAutoRows": null,
         "gridTemplateColumns": null,
         "gridTemplateRows": null,
