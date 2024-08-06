@@ -91,7 +91,7 @@ import {
 } from '../../shared/dom-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { contentsToTree } from '../../../components/assets'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../../core/model/get-unique-ids'
 import {
   filtered,
   fromField,
@@ -6182,12 +6182,12 @@ export var whatever2 = (props) => <View data-uid='aaa'>
               const fullHighlightBoundsUIDs = new Set(Object.keys(success.fullHighlightBounds))
               const allUIDsAreEqual = setsEqual(
                 fullHighlightBoundsUIDs,
-                new Set(singleFileUniqueIDsResult.uniqueIDs),
+                new Set(getAllUniqueUidsFromLookup(singleFileUniqueIDsResult.uidsToFilePaths)),
               )
               if (!allUIDsAreEqual) {
                 throw new Error(
                   `All UIDs [${Array.from(
-                    singleFileUniqueIDsResult.uniqueIDs,
+                    getAllUniqueUidsFromLookup(singleFileUniqueIDsResult.uidsToFilePaths),
                   ).sort()}] do not match the full highlight bounds UIDs: [${Array.from(
                     fullHighlightBoundsUIDs,
                   ).sort()}]`,

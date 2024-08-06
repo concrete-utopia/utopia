@@ -232,7 +232,7 @@ export function lookupFilePathForUid(mapping: FileToUidMapping, uid: string): st
   })
 }
 
-export function getAllUniqueUidsFromLookup(mapping: FileToUidMapping): Array<string> {
+export function getAllUniqueUidsFromLookupNew(mapping: FileToUidMapping): Array<string> {
   let result: Array<string> = []
   for (const [filePath, uids] of mapping.entries()) {
     result.push(...Array.from(uids))

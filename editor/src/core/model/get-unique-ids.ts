@@ -14,10 +14,13 @@ import { memoize } from '../shared/memoize'
 export type DuplicateUIDsResult = { [key: string]: Array<Array<string>> }
 
 interface GetAllUniqueUIDsResult {
-  uniqueIDs: Array<string>
   duplicateIDs: DuplicateUIDsResult
   allIDs: Array<string>
   uidsToFilePaths: { [uid: string]: string }
+}
+
+export function getAllUniqueUidsFromLookup(lookup: { [uid: string]: string }): Array<string> {
+  return Object.keys(lookup)
 }
 
 interface GetAllUniqueUIDsWorkingResult {
@@ -40,7 +43,6 @@ export function getAllUniqueUIDsResultFromWorkingResult(
   workingResult: GetAllUniqueUIDsWorkingResult,
 ): GetAllUniqueUIDsResult {
   return {
-    uniqueIDs: Object.keys(workingResult.uniqueIDs),
     duplicateIDs: workingResult.duplicateIDs,
     allIDs: Array.from(workingResult.allIDs),
     uidsToFilePaths: workingResult.uidsToFilePaths,
@@ -214,15 +216,20 @@ export function getAllUniqueUidsInnerOld(
   return getAllUniqueUIDsResultFromWorkingResult(workingResult)
 }
 
-export const getAllUniqueUids = memoize(getAllUniqueUidsInnerOld)
+export const getAllUniqueUidsForTest = memoize(getAllUniqueUidsInnerOld)
 
-export function getAllUniqueUidsFromAttributes(attributes: JSXAttributes): GetAllUniqueUIDsResult {
+export const getAllUniqueUids = (projectContents: ProjectContentTreeRoot): GetAllUniqueUIDsResult =>
+  getAllUniqueUIDsResultFromWorkingResult(emptyGetAllUniqueUIDsWorkingResult())
+
+export function getAllUniqueUidsFromAttributes(attributes: JSXAttributes): Array<string> {
   const workingResult = emptyGetAllUniqueUIDsWorkingResult()
 
   const debugPath: Array<string> = []
   extractUidFromAttributes(workingResult, '', debugPath, attributes) // FIXME filePath
 
-  return getAllUniqueUIDsResultFromWorkingResult(workingResult)
+  return getAllUniqueUidsFromLookup(
+    getAllUniqueUIDsResultFromWorkingResult(workingResult).uidsToFilePaths,
+  )
 }
 
 export function getAllUniqueUIdsFromElementChild(

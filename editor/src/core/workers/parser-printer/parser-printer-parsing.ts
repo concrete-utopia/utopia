@@ -3106,8 +3106,8 @@ function forciblyUpdateDataUID(
   )
   // Remove any UIDs that have been eliminated as a result of the update.
   if (props != null && updatedProps != null) {
-    const attributeUniqueUIDsBefore = new Set(getAllUniqueUidsFromAttributes(props).uniqueIDs)
-    const attributeUniqueUIDsAfter = new Set(getAllUniqueUidsFromAttributes(updatedProps).uniqueIDs)
+    const attributeUniqueUIDsBefore = new Set(getAllUniqueUidsFromAttributes(props))
+    const attributeUniqueUIDsAfter = new Set(getAllUniqueUidsFromAttributes(updatedProps))
     const uidsToRemove = difference(attributeUniqueUIDsBefore, attributeUniqueUIDsAfter)
     uidsToRemove.forEach((uidToRemove) => {
       delete highlightBoundsResult[uidToRemove]

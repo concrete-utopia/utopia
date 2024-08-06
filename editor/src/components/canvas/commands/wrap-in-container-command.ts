@@ -37,7 +37,7 @@ import { jsxTextBlock } from '../../../core/shared/element-template'
 import type { CSSProperties } from 'react'
 import type { Property } from 'csstype'
 import { generateConsistentUID } from '../../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../../core/model/get-unique-ids'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 import { forEachRight, right } from '../../../core/shared/either'
 
@@ -254,7 +254,7 @@ function getInsertionSubjectWrapperConditionalFalseBranch(
 ): JSXElementChild {
   const uid = generateConsistentUID(
     'false-branch',
-    new Set(getAllUniqueUids(projectContents).uniqueIDs),
+    new Set(getAllUniqueUidsFromLookup(getAllUniqueUids(projectContents).uidsToFilePaths)),
   )
 
   const style = getInsertionSubjectStyleFromConditionalTrueBranch(trueBranch)

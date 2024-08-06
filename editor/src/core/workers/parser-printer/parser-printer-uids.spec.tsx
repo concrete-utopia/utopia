@@ -36,7 +36,7 @@ import { emptySet } from '../../shared/set-utils'
 import { createCodeFile } from '../../../components/custom-code/code-file.test-utils'
 import { renderTestEditorWithProjectContent } from '../../../components/canvas/ui-jsx.test-utils'
 import { updateFile } from '../../../components/editor/actions/action-creators'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../../core/model/get-unique-ids'
 
 function addCodeFileToProjectContents(
   projectContents: ProjectContentTreeRoot,
@@ -81,7 +81,7 @@ describe('parseCode', () => {
           ),
         )
         const result = getAllUniqueUids(projectContents)
-        expect(result.uniqueIDs).toHaveLength(493)
+        expect(getAllUniqueUidsFromLookup(result.uidsToFilePaths)).toHaveLength(493)
         expect(result.duplicateIDs).toEqual({})
       },
       (_) => {
@@ -114,7 +114,7 @@ describe('parseCode', () => {
     )
 
     const result = getAllUniqueUids(projectContents)
-    expect(result.uniqueIDs).toHaveLength(7)
+    expect(getAllUniqueUidsFromLookup(result.uidsToFilePaths)).toHaveLength(7)
     expect(result.duplicateIDs).toEqual({})
   })
 
@@ -157,7 +157,7 @@ describe('parseCode', () => {
     )
 
     const result = getAllUniqueUids(projectContents)
-    expect(result.uniqueIDs).toHaveLength(14)
+    expect(getAllUniqueUidsFromLookup(result.uidsToFilePaths)).toHaveLength(14)
     expect(result.duplicateIDs).toEqual({})
   })
 
@@ -231,7 +231,7 @@ describe('parseCode', () => {
     )
 
     const result = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(result.uniqueIDs).toHaveLength(26)
+    expect(getAllUniqueUidsFromLookup(result.uidsToFilePaths)).toHaveLength(26)
     expect(result.duplicateIDs).toEqual({})
   })
 
@@ -290,7 +290,7 @@ describe('parseCode', () => {
     )
 
     const resultBefore = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(resultBefore.uniqueIDs).toHaveLength(17)
+    expect(getAllUniqueUidsFromLookup(resultBefore.uidsToFilePaths)).toHaveLength(17)
     expect(resultBefore.duplicateIDs).toEqual({})
 
     await renderResult.dispatch(
@@ -319,7 +319,7 @@ describe('parseCode', () => {
     )
 
     const resultAfter = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(resultAfter.uniqueIDs).toHaveLength(25)
+    expect(getAllUniqueUidsFromLookup(resultAfter.uidsToFilePaths)).toHaveLength(25)
     expect(resultAfter.duplicateIDs).toEqual({})
   })
 })
