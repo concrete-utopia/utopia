@@ -27,6 +27,8 @@ import type { FlexDirection } from '../../../common/css-utils'
 import { when } from '../../../../../utils/react-conditionals'
 import { Substores, useEditorState } from '../../../../editor/store/store-hook'
 import { flexDirectionSelector } from '../../../inpector-selectors'
+import { FlexGapControlTestId } from '../../../../../components/canvas/controls/select-mode/flex-gap-control'
+import { useOnControlHover } from '../../../../../components/canvas/controls/select-mode/controls-common'
 
 type uglyLabel =
   | 'left'
@@ -264,9 +266,16 @@ export const FlexGapControl = React.memo(() => {
     'FlexGapControl flexDirection',
   )
 
+  const [hoverStart, hoverEnd] = useOnControlHover(FlexGapControlTestId)
+
   return (
     <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
-      <UIGridRow padded={false} variant='<-------------1fr------------->'>
+      <UIGridRow
+        padded={false}
+        variant='<-------------1fr------------->'
+        onMouseEnter={hoverStart}
+        onMouseLeave={hoverEnd}
+      >
         <NumberInput
           id='flex.container.gap'
           testId='flex.container.gap'

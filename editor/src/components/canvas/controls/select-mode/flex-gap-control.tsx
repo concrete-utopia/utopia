@@ -30,7 +30,12 @@ import {
 } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { CSSNumberWithRenderedValue } from './controls-common'
-import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
+import {
+  CanvasLabel,
+  HoveredInspectorControlAtom,
+  PillHandle,
+  useHoverWithDelay,
+} from './controls-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import {
@@ -46,6 +51,7 @@ import {
   reverseJustifyContent,
 } from '../../../../core/model/flex-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
+import { useAtom } from 'jotai'
 
 interface FlexGapControlProps {
   selectedElement: ElementPath
@@ -70,6 +76,13 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   const [backgroundShown, setBackgroundShown] = React.useState<boolean>(false)
   const [controlHoverStart, controlHoverEnd] = useHoverWithDelay(0, setBackgroundShown)
+
+  const [hoveredInspectorControlAtom] = useAtom(HoveredInspectorControlAtom)
+
+  const isHoveredInInspector = React.useMemo(
+    () => hoveredInspectorControlAtom === `${EP.toString(selectedElement)}-${FlexGapControlTestId}`,
+    [hoveredInspectorControlAtom, selectedElement],
+  )
 
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
   React.useEffect(() => {
@@ -214,7 +227,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               flexDirection={flexGap.direction}
               accentColor={accentColor}
               scale={scale}
-              backgroundShown={backgroundShown}
+              backgroundShown={backgroundShown || isHoveredInInspector}
               isDragging={isDragging}
               gapValue={flexGapValue.value}
               justifyContent={justifyContent}

@@ -15,8 +15,13 @@ import { treatElementAsGroupLikeFromMetadata } from '../../canvas-strategies/str
 import { assertNever } from '../../../../core/shared/utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import type { PropertyControlsInfo } from '../../../custom-code/code-file'
+import { atom, useSetAtom } from 'jotai'
+import { Substores, useEditorState } from '../../../../components/editor/store/store-hook'
+import * as EP from '../../../../core/shared/element-path'
 
 export const Emdash: string = '\u2014'
+
+export const HoveredInspectorControlAtom = atom<string | null>(null)
 
 export interface CSSNumberWithRenderedValue {
   value: CSSNumber
@@ -292,4 +297,27 @@ export function shouldShowControls(
   }
 
   return true
+}
+
+export function useOnControlHover(controlId: string) {
+  const selectedElement = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.selectedViews?.[0],
+    'selectedElement',
+  )
+  const setHoveredInspectorControl = useSetAtom(HoveredInspectorControlAtom)
+  const setGapHovered = React.useCallback(
+    (isHovered: boolean) => {
+      setHoveredInspectorControl(
+        isHovered && selectedElement != null
+          ? `${EP.toString(selectedElement)}-${controlId}`
+          : null,
+      )
+    },
+    [controlId, selectedElement, setHoveredInspectorControl],
+  )
+  const [hoverStart, hoverEnd] = useHoverWithDelay(0, setGapHovered)
+
+  // explicit for readability
+  return [hoverStart, hoverEnd] as const
 }
