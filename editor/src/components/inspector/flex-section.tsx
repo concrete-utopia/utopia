@@ -713,7 +713,10 @@ GapRowColumnControl.displayName = 'GapRowColumnControl'
 
 const AutoFlowPopupId = 'auto-flow-control'
 
-const selectOption = (value: GridAutoFlow): SelectOption => ({ label: value, value: value })
+const selectOption = (value: GridAutoFlow | 'unset'): SelectOption => ({
+  label: value,
+  value: value,
+})
 
 const GRID_AUTO_FLOW_DROPDOWN_OPTIONS: Array<SelectOption> = GridAutoFlowValues.map(selectOption)
 
@@ -738,9 +741,14 @@ const AutoFlowControl = React.memo(() => {
     'AutoFlowControl gridAutoFlowValue',
   )
 
+  const { controlStyles, controlStatus } = useInspectorStyleInfo('gridAutoFlow')
+
   const currentValue = React.useMemo(
-    () => optionalMap((v) => selectOption(v), gridAutoFlowValue) ?? undefined,
-    [gridAutoFlowValue],
+    () =>
+      controlStatus === 'detected'
+        ? selectOption('unset')
+        : optionalMap((v) => selectOption(v), gridAutoFlowValue) ?? undefined,
+    [controlStatus, gridAutoFlowValue],
   )
 
   const onSubmit = React.useCallback(
@@ -760,8 +768,6 @@ const AutoFlowControl = React.memo(() => {
     },
     [dispatch, selectededViewsRef],
   )
-
-  const { controlStyles, controlStatus } = useInspectorStyleInfo('gridAutoFlow')
 
   return (
     <FlexRow style={{ gap: 6 }}>
