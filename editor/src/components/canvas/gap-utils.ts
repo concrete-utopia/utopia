@@ -177,16 +177,6 @@ export function gridGapControlBoundsFromMetadata(
   axis: Axis
   size: Size
 }> {
-  // const elementPadding =
-  //   MetadataUtils.findElementByElementPath(elementMetadata, parentPath)?.specialSizeMeasurements
-  //     .padding ?? sides(0, 0, 0, 0)
-  // const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, elementMetadata)
-  // if (parentFrame == null || isInfinityRectangle(parentFrame)) {
-  //   return []
-  // }
-
-  // const parentBounds = inset(elementPadding, parentFrame)
-
   const parentGridPlaceholderId = `grid-${EP.toString(parentPath)}`
   const parentGrid = document.getElementById(parentGridPlaceholderId)
   if (parentGrid == null) {
