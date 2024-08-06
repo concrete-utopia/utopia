@@ -130,7 +130,7 @@ export function doNothingStrategy(canvasState: InteractionCanvasState): CanvasSt
     id: DoNothingStrategyID,
     name: 'No Default Available',
     descriptiveLabel: 'Doing Nothing',
-    icon: { category: 'semantic', type: 'cross-medium' },
+    icon: { category: 'tools', type: 'noop' },
     controlsToRender: [
       controlWithProps({
         control: DragOutlineControl,
