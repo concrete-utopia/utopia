@@ -185,7 +185,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
       }
 
       const allElementUids = new Set(
-        getAllUniqueUidsFromLookup(getAllUniqueUids(projectContentsRef.current).uidsToFilePaths),
+        getAllUniqueUidsFromLookup(getAllUniqueUids(projectContentsRef.current).filePathToUids),
       )
 
       const wrappedUid = generateConsistentUID('wrapper', allElementUids)

@@ -512,7 +512,7 @@ export function insertComponentPickerItem(
   insertionTarget: InsertionTarget,
 ) {
   const uniqueIds = new Set(
-    getAllUniqueUidsFromLookup(getAllUniqueUids(projectContents).uidsToFilePaths),
+    getAllUniqueUidsFromLookup(getAllUniqueUids(projectContents).filePathToUids),
   )
   const elementWithoutUID = toInsert.element()
   // TODO: for most of the operations we still only support one target
@@ -723,7 +723,7 @@ function insertPreferredChild(
   insertionTarget: InsertionTarget,
 ) {
   const uniqueIds = new Set(
-    getAllUniqueUidsFromLookup(getAllUniqueUids(projectContents).uidsToFilePaths),
+    getAllUniqueUidsFromLookup(getAllUniqueUids(projectContents).filePathToUids),
   )
   const uid = generateConsistentUID('prop', uniqueIds)
   const toInsert = elementToInsertToInsertableComponent(

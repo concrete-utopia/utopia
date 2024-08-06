@@ -98,7 +98,7 @@ function wrapInDivCommands(
   }
 
   const allIds = new Set(
-    getAllUniqueUidsFromLookup(getAllUniqueUids(projectContents).uidsToFilePaths),
+    getAllUniqueUidsFromLookup(getAllUniqueUids(projectContents).filePathToUids),
   )
 
   const wrapperUid = generateConsistentUID('wrapper', allIds)

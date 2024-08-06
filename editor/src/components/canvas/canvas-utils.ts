@@ -1455,9 +1455,7 @@ export function duplicate(
   let workingEditorState: EditorState = editor
 
   const existingIDsMutable = new Set(
-    getAllUniqueUidsFromLookup(
-      getAllUniqueUids(workingEditorState.projectContents).uidsToFilePaths,
-    ),
+    getAllUniqueUidsFromLookup(getAllUniqueUids(workingEditorState.projectContents).filePathToUids),
   )
   for (const path of paths) {
     let metadataUpdate: (metadata: ElementInstanceMetadataMap) => ElementInstanceMetadataMap = (

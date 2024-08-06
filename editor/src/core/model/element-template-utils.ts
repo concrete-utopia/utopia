@@ -95,7 +95,7 @@ export function generateUidWithExistingComponents(projectContents: ProjectConten
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
     const existingUIDS = getAllUniqueUidsFromLookup(
-      getAllUniqueUids(projectContents).uidsToFilePaths,
+      getAllUniqueUids(projectContents).filePathToUids,
     )
     return generateUID(new Set(existingUIDS))
   } else {
@@ -110,7 +110,7 @@ export function generateUidWithExistingComponentsAndExtraUids(
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
     const existingUIDSFromProject = getAllUniqueUidsFromLookup(
-      getAllUniqueUids(projectContents).uidsToFilePaths,
+      getAllUniqueUids(projectContents).filePathToUids,
     )
     return generateUID(new Set([...existingUIDSFromProject, ...additionalUids]))
   } else {

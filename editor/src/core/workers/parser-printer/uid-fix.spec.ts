@@ -669,8 +669,8 @@ function checkUIDValues([first, second]: [JSXElementChild, JSXElementChild]): bo
     isEmptyObject(firstUIDsResult.duplicateIDs) &&
     isEmptyObject(secondUIDsResult.duplicateIDs) &&
     intersection([
-      new Set(getAllUniqueUidsFromLookup(firstUIDsResult.uidsToFilePaths)),
-      new Set(getAllUniqueUidsFromLookup(secondUIDsResult.uidsToFilePaths)),
+      new Set(getAllUniqueUidsFromLookup(firstUIDsResult.filePathToUids)),
+      new Set(getAllUniqueUidsFromLookup(secondUIDsResult.filePathToUids)),
     ]).size === 0
   )
 }

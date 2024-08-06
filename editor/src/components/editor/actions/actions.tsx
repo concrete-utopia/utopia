@@ -4127,7 +4127,7 @@ export const UPDATE_FNS = {
 
     // 2. Parse the file upfront.
     const existingUIDs = new Set(
-      getAllUniqueUidsFromLookup(getAllUniqueUids(editor.projectContents).uidsToFilePaths),
+      getAllUniqueUidsFromLookup(getAllUniqueUids(editor.projectContents).filePathToUids),
     )
     const parsedResult = getParseFileResult(
       newFileName,
@@ -5373,7 +5373,7 @@ export const UPDATE_FNS = {
       }
 
       const existingUids = new Set(
-        getAllUniqueUidsFromLookup(getAllUniqueUids(editor.projectContents).uidsToFilePaths),
+        getAllUniqueUidsFromLookup(getAllUniqueUids(editor.projectContents).filePathToUids),
       )
 
       const newUID = generateConsistentUID('new', existingUids)
@@ -5906,7 +5906,7 @@ export const UPDATE_FNS = {
           } else {
             const alreadyExistingUIDs = getAllUniqueUidsFromLookup(
               getAllUniqueUids(removeFromProjectContents(editor.projectContents, action.fullPath))
-                .uidsToFilePaths,
+                .filePathToUids,
             )
             const fixUIDsState: FixUIDsState = {
               mutableAllNewUIDs: new Set(alreadyExistingUIDs),

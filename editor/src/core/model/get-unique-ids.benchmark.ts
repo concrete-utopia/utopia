@@ -19,7 +19,7 @@ export async function benchmarkGetUniqueUids(): Promise<void> {
       const parsedProjectContents = parseProjectContents(LargeHydrogenProject.projectContents)
 
       return function benchmark() {
-        const mapping = getAllUniqueUidsInnerOld(parsedProjectContents).uidsToFilePaths
+        const mapping = getAllUniqueUidsInnerOld(parsedProjectContents).filePathToUids
         const result = getFilePathForUid(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
       }
     }),
@@ -46,7 +46,7 @@ export async function benchmarkGetUniqueUids(): Promise<void> {
 
       return function benchmark() {
         parsedProjectContents = changeOneFileInProjectContents(parsedProjectContents)
-        const mapping = getAllUniqueUids(parsedProjectContents).uidsToFilePaths
+        const mapping = getAllUniqueUids(parsedProjectContents).filePathToUids
         const result = getFilePathForUid(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
       }
     }),
@@ -73,10 +73,10 @@ export async function benchmarkGetUniqueUids(): Promise<void> {
 
       return function benchmark() {
         const changedProjectContents = changeOneFileInProjectContents(parsedProjectContents)
-        const newMapping = getAllUniqueUids(changedProjectContents).uidsToFilePaths
+        const newMapping = getAllUniqueUids(changedProjectContents).filePathToUids
         const newResult = getFilePathForUid(newMapping, '8d4c5e9960f004aebf00a97dabe7cd80')
 
-        const oldMapping = getAllUniqueUids(parsedProjectContents).uidsToFilePaths
+        const oldMapping = getAllUniqueUids(parsedProjectContents).filePathToUids
         const oldResult = getFilePathForUid(oldMapping, '8d4c5e9960f004aebf00a97dabe7cd80')
       }
     }),
@@ -106,7 +106,7 @@ export async function benchmarkGetUniqueUids(): Promise<void> {
     'lookup of only the file based on UID',
     Benny.add('OLD getUniqueUids', async function setup() {
       let parsedProjectContents = parseProjectContents(LargeHydrogenProject.projectContents)
-      const mapping = getAllUniqueUids(parsedProjectContents).uidsToFilePaths
+      const mapping = getAllUniqueUids(parsedProjectContents).filePathToUids
 
       return function benchmark() {
         const result = getFilePathForUid(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')

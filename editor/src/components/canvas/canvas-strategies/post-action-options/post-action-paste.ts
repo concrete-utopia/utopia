@@ -177,7 +177,7 @@ function pasteChoiceCommon(
     pasteContext.elementPasteWithMetadata.elements.map((elementPaste) => {
       const existingIDs = [
         ...getAllUniqueUidsFromLookup(
-          getAllUniqueUids(editorStateContext.projectContents).uidsToFilePaths,
+          getAllUniqueUids(editorStateContext.projectContents).filePathToUids,
         ),
         ...fixedUIDMappingNewUIDS,
       ]

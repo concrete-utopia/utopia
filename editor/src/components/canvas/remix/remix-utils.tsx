@@ -441,7 +441,7 @@ export function getRouteComponentNameForOutlet(
     return null
   }
 
-  const uidsToFilePath = getAllUniqueUids(projectContents).uidsToFilePaths
+  const uidsToFilePath = getAllUniqueUids(projectContents).filePathToUids
   const filePath = getFilePathForUid(uidsToFilePath, EP.toUid(outletChild))
   if (filePath == null) {
     return null

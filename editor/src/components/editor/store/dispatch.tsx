@@ -789,7 +789,7 @@ function maybeCullElementPathCache(
 
 export function cullElementPathCache(): void {
   const allExistingUids = getAllUniqueUidsFromLookup(
-    getAllUniqueUids(lastProjectContents).uidsToFilePaths,
+    getAllUniqueUids(lastProjectContents).filePathToUids,
   )
   removePathsWithDeadUIDs(new Set(allExistingUids))
 }

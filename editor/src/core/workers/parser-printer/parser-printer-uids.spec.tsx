@@ -81,7 +81,7 @@ describe('parseCode', () => {
           ),
         )
         const result = getAllUniqueUids(projectContents)
-        expect(getAllUniqueUidsFromLookup(result.uidsToFilePaths)).toHaveLength(493)
+        expect(getAllUniqueUidsFromLookup(result.filePathToUids)).toHaveLength(493)
         expect(result.duplicateIDs).toEqual({})
       },
       (_) => {
@@ -114,7 +114,7 @@ describe('parseCode', () => {
     )
 
     const result = getAllUniqueUids(projectContents)
-    expect(getAllUniqueUidsFromLookup(result.uidsToFilePaths)).toHaveLength(7)
+    expect(getAllUniqueUidsFromLookup(result.filePathToUids)).toHaveLength(7)
     expect(result.duplicateIDs).toEqual({})
   })
 
@@ -157,7 +157,7 @@ describe('parseCode', () => {
     )
 
     const result = getAllUniqueUids(projectContents)
-    expect(getAllUniqueUidsFromLookup(result.uidsToFilePaths)).toHaveLength(14)
+    expect(getAllUniqueUidsFromLookup(result.filePathToUids)).toHaveLength(14)
     expect(result.duplicateIDs).toEqual({})
   })
 
@@ -231,7 +231,7 @@ describe('parseCode', () => {
     )
 
     const result = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(getAllUniqueUidsFromLookup(result.uidsToFilePaths)).toHaveLength(26)
+    expect(getAllUniqueUidsFromLookup(result.filePathToUids)).toHaveLength(26)
     expect(result.duplicateIDs).toEqual({})
   })
 
@@ -290,7 +290,7 @@ describe('parseCode', () => {
     )
 
     const resultBefore = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(getAllUniqueUidsFromLookup(resultBefore.uidsToFilePaths)).toHaveLength(17)
+    expect(getAllUniqueUidsFromLookup(resultBefore.filePathToUids)).toHaveLength(17)
     expect(resultBefore.duplicateIDs).toEqual({})
 
     await renderResult.dispatch(
@@ -319,7 +319,7 @@ describe('parseCode', () => {
     )
 
     const resultAfter = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(getAllUniqueUidsFromLookup(resultAfter.uidsToFilePaths)).toHaveLength(25)
+    expect(getAllUniqueUidsFromLookup(resultAfter.filePathToUids)).toHaveLength(25)
     expect(resultAfter.duplicateIDs).toEqual({})
   })
 })

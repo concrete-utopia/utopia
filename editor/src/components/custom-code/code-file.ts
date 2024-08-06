@@ -484,7 +484,7 @@ export function normalisePathToUnderlyingTarget(
   const lastPartOfPath = EP.takeLastPartOfPath(elementPath)
 
   const allUidsWithFiles = getAllUniqueUids(projectContents)
-  const filePathFromUID = getFilePathForUid(allUidsWithFiles.uidsToFilePaths, EP.toUid(staticPath))
+  const filePathFromUID = getFilePathForUid(allUidsWithFiles.filePathToUids, EP.toUid(staticPath))
   const fileFromUID =
     filePathFromUID == null ? null : getProjectFileByFilePath(projectContents, filePathFromUID)
 

@@ -6182,12 +6182,12 @@ export var whatever2 = (props) => <View data-uid='aaa'>
               const fullHighlightBoundsUIDs = new Set(Object.keys(success.fullHighlightBounds))
               const allUIDsAreEqual = setsEqual(
                 fullHighlightBoundsUIDs,
-                new Set(getAllUniqueUidsFromLookup(singleFileUniqueIDsResult.uidsToFilePaths)),
+                new Set(getAllUniqueUidsFromLookup(singleFileUniqueIDsResult.filePathToUids)),
               )
               if (!allUIDsAreEqual) {
                 throw new Error(
                   `All UIDs [${Array.from(
-                    getAllUniqueUidsFromLookup(singleFileUniqueIDsResult.uidsToFilePaths),
+                    getAllUniqueUidsFromLookup(singleFileUniqueIDsResult.filePathToUids),
                   ).sort()}] do not match the full highlight bounds UIDs: [${Array.from(
                     fullHighlightBoundsUIDs,
                   ).sort()}]`,
