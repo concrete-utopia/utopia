@@ -128,20 +128,26 @@ export const FlexSection = React.memo(() => {
     'FlexSection grid',
   )
 
-  const columns: GridDimension[] = React.useMemo(() => {
-    return getGridTemplateAxisValues({
-      calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateColumns ?? null,
-      fromProps:
-        grid?.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateColumns ?? null,
-    })
+  const columns = React.useMemo(() => {
+    return mergeGridTemplateValues(
+      getGridTemplateAxisValues({
+        calculated:
+          grid?.specialSizeMeasurements.containerGridProperties.gridTemplateColumns ?? null,
+        fromProps:
+          grid?.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateColumns ??
+          null,
+      }),
+    )
   }, [grid])
 
-  const rows: GridDimension[] = React.useMemo(() => {
-    return getGridTemplateAxisValues({
-      calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateRows ?? null,
-      fromProps:
-        grid?.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows ?? null,
-    })
+  const rows = React.useMemo(() => {
+    return mergeGridTemplateValues(
+      getGridTemplateAxisValues({
+        calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateRows ?? null,
+        fromProps:
+          grid?.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows ?? null,
+      }),
+    )
   }, [grid])
 
   return (
@@ -215,7 +221,7 @@ const TemplateDimensionControl = React.memo(
 
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
-    const onSubmitValue = React.useCallback(
+    const onUpdate = React.useCallback(
       (index: number) =>
         (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<ValidGridDimensionKeyword>>) => {
           const newValues = [...values]
@@ -469,7 +475,10 @@ const TemplateDimensionControl = React.memo(
                   value={value.value}
                   keywords={gridDimensionDropdownKeywords}
                   keywordTypeCheck={isValidGridDimensionKeyword}
-                  onSubmitValue={onSubmitValue(index)}
+                  onSubmitValue={onUpdate(index)}
+                  controlStatus={
+                    isGridCSSKeyword(value) && value.value.value === 'auto' ? 'off' : undefined
+                  }
                 />
               </div>
               <SquareButton className={axisDropdownMenuButton}>
@@ -568,21 +577,15 @@ function gridNumbersToTemplateString(values: GridDimension[]) {
 function getGridTemplateAxisValues(template: {
   calculated: GridAutoOrTemplateBase | null
   fromProps: GridAutoOrTemplateBase | null
-}): GridDimension[] {
+}): { calculated: GridDimension[]; fromProps: GridDimension[] } {
   const { calculated, fromProps } = template
   if (fromProps?.type !== 'DIMENSIONS' && calculated?.type !== 'DIMENSIONS') {
-    return []
+    return { calculated: [], fromProps: [] }
   }
 
   const calculatedDimensions = calculated?.type === 'DIMENSIONS' ? calculated.dimensions : []
   const fromPropsDimensions = fromProps?.type === 'DIMENSIONS' ? fromProps.dimensions : []
-  if (calculatedDimensions.length === 0) {
-    return fromPropsDimensions
-  } else if (calculatedDimensions.length === fromPropsDimensions.length) {
-    return fromPropsDimensions
-  } else {
-    return calculatedDimensions
-  }
+  return { calculated: calculatedDimensions, fromProps: fromPropsDimensions }
 }
 
 const reAlphanumericDashUnderscore = /[^0-9a-z\-_]+/gi
@@ -708,7 +711,7 @@ const GapRowColumnControl = React.memo(() => {
 })
 GapRowColumnControl.displayName = 'GapRowColumnControl'
 
-export const AutoFlowPopupId = 'auto-flow-control'
+const AutoFlowPopupId = 'auto-flow-control'
 
 const selectOption = (value: GridAutoFlow): SelectOption => ({ label: value, value: value })
 
@@ -778,3 +781,21 @@ const AutoFlowControl = React.memo(() => {
   )
 })
 AutoFlowControl.displayName = 'AutoFlowControl'
+
+function mergeGridTemplateValues({
+  calculated,
+  fromProps,
+}: {
+  calculated: GridDimension[]
+  fromProps: GridDimension[]
+}): GridDimension[] {
+  return calculated.map((c, index) => {
+    if (fromProps.length === 0) {
+      return gridCSSKeyword(cssKeyword('auto'), c.areaName)
+    }
+    if (fromProps[index] == null) {
+      return c
+    }
+    return fromProps[index]
+  })
+}

@@ -49,6 +49,7 @@ import { getTargetCell, setGridPropsCommands } from './grid-helpers'
 import { newReparentSubjects } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
 import { stripNulls } from '../../../../core/shared/array-utils'
+import { showGridControls } from '../../commands/show-grid-controls-command'
 
 export const gridDrawToInsertText: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -165,6 +166,7 @@ const gridDrawToInsertStrategyInner =
             wildcardPatch('mid-interaction', {
               selectedViews: { $set: [] },
             }),
+            showGridControls('mid-interaction', targetParent),
             updateHighlightedViews('mid-interaction', [targetParent]),
           ])
         }
