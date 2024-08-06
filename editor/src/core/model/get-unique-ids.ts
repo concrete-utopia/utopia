@@ -216,10 +216,7 @@ export function getAllUniqueUidsInnerOld(
   return getAllUniqueUIDsResultFromWorkingResult(workingResult)
 }
 
-export const getAllUniqueUidsForTest = memoize(getAllUniqueUidsInnerOld)
-
-export const getAllUniqueUids = (projectContents: ProjectContentTreeRoot): GetAllUniqueUIDsResult =>
-  getAllUniqueUIDsResultFromWorkingResult(emptyGetAllUniqueUIDsWorkingResult())
+export const getAllUniqueUids = memoize(getAllUniqueUidsInnerOld)
 
 export function getAllUniqueUidsFromAttributes(attributes: JSXAttributes): Array<string> {
   const workingResult = emptyGetAllUniqueUIDsWorkingResult()
