@@ -6,6 +6,7 @@ import type {
   ElementInstanceMetadata,
   GridContainerProperties,
   GridElementProperties,
+  GridPositionValue,
   ValidGridPositionKeyword,
 } from '../../../../../core/shared/element-template'
 import {
@@ -151,24 +152,16 @@ const DimensionsControls = React.memo(
             ? gridPositionValue(e.value)
             : cssKeyword(e.value)
 
-          let newValues = {
-            ...cell.specialSizeMeasurements.elementGridProperties,
+          const maybeAreaValue = maybeValueFromAreaName(
+            value,
+            dimension === 'gridColumnStart' || dimension === 'width' ? columnLabels : rowLabels,
+          )
+          if (maybeAreaValue != null) {
+            value = maybeAreaValue
           }
 
-          if (isCSSKeyword(value)) {
-            if (dimension === 'gridColumnStart' || dimension === 'width') {
-              const keyword = value
-              const areaMatch = columnLabels.find((l) => l.areaName === keyword.value)
-              if (areaMatch != null) {
-                value = gridPositionValue(areaMatch.position)
-              }
-            } else {
-              const keyword = value
-              const areaMatch = rowLabels.find((l) => l.areaName === keyword.value)
-              if (areaMatch != null) {
-                value = gridPositionValue(areaMatch.position)
-              }
-            }
+          let newValues = {
+            ...cell.specialSizeMeasurements.elementGridProperties,
           }
 
           switch (dimension) {
@@ -319,20 +312,14 @@ const BoundariesControls = React.memo(
             ? gridPositionValue(e.value)
             : cssKeyword(e.value)
 
-          if (isCSSKeyword(value)) {
-            if (dimension === 'gridColumnStart' || dimension === 'gridColumnEnd') {
-              const keyword = value
-              const areaMatch = columnLabels.find((l) => l.areaName === keyword.value)
-              if (areaMatch != null) {
-                value = gridPositionValue(areaMatch.position)
-              }
-            } else {
-              const keyword = value
-              const areaMatch = rowLabels.find((l) => l.areaName === keyword.value)
-              if (areaMatch != null) {
-                value = gridPositionValue(areaMatch.position)
-              }
-            }
+          const maybeAreaValue = maybeValueFromAreaName(
+            value,
+            dimension === 'gridColumnStart' || dimension === 'gridColumnEnd'
+              ? columnLabels
+              : rowLabels,
+          )
+          if (maybeAreaValue != null) {
+            value = maybeAreaValue
           }
 
           const newValues = {
@@ -471,4 +458,18 @@ function keywordsForPosition(labels: string[]) {
     )
   }
   return items
+}
+
+function maybeValueFromAreaName(
+  value: GridPosition,
+  labels: { areaName: string; position: number }[],
+): GridPositionValue | null {
+  if (!isCSSKeyword(value)) {
+    return null
+  }
+  const areaMatch = labels.find((l) => l.areaName === value.value)
+  if (areaMatch != null) {
+    return gridPositionValue(areaMatch.position)
+  }
+  return null
 }
