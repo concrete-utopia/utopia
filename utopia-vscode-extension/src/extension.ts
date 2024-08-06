@@ -21,10 +21,10 @@ import {
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 import type { TextDocumentChangeEvent, TextDocumentWillSaveEvent, Uri } from 'vscode'
+import type { FSError } from './in-mem-fs'
 import {
   clearFileUnsavedContent,
   exists,
-  type FSError,
   readFileAsUTF8,
   setErrorHandler,
   writeFileUnsavedContentAsUTF8,

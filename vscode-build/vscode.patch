@@ -24,6 +24,14 @@ index 50c7e6fb631..629a119108b 100644
  
  		const extensions = gulp.src('.build/web/extensions/**', { base: '.build/web', dot: true });
  
+diff --git a/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json b/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json
+deleted file mode 100644
+index 9e26dfeeb6e..00000000000
+--- a/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json
++++ /dev/null
+@@ -1 +0,0 @@
+-{}
+\ No newline at end of file
 diff --git a/package.json b/package.json
 index 2103fe1fe1a..92954953615 100644
 --- a/package.json
@@ -41,7 +49,7 @@ index 2103fe1fe1a..92954953615 100644
      "vscode-oniguruma": "1.7.0",
      "vscode-regexpp": "^3.1.0",
 diff --git a/product.json b/product.json
-index 27ae53fe16b..782dce05a93 100644
+index 27ae53fe16b..83637043bdc 100644
 --- a/product.json
 +++ b/product.json
 @@ -1,84 +1,9 @@
@@ -134,7 +142,7 @@ index 27ae53fe16b..782dce05a93 100644
 +		"nameLong": "Code Web",
 +		"applicationName": "code-web",
 +		"dataFolderName": ".vscode-web",
-+		"version": "1.62.0"
++		"version": "1.91.1"
 +	}
 +}
 \ No newline at end of file
@@ -1224,7 +1232,7 @@ index 1d17e4c709e..00109563f5c 100644
 -	return { keyboardMapping, keyboardLayoutInfo };
 -}
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index b0688133537..322777365eb 100644
+index b0688133537..4353093fd5b 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -50,6 +50,8 @@ import { AccessibilityProgressSignalScheduler } from 'vs/platform/accessibilityS
@@ -1232,11 +1240,11 @@ index b0688133537..322777365eb 100644
  import { AccessibleViewRegistry } from 'vs/platform/accessibility/browser/accessibleViewRegistry';
  import { NotificationAccessibleView } from 'vs/workbench/browser/parts/notifications/notificationAccessibleView';
 +import { ICommandService } from '../../platform/commands/common/commands';
-+import { isDeletePathChange, isEnsureDirectoryExistsChange, isInitProject, isWriteProjectFileChange, messageListenersReady } from 'utopia-vscode-common';
++import { isFromUtopiaToVSCodeMessage, messageListenersReady } from 'utopia-vscode-common';
  
  export interface IWorkbenchOptions {
  
-@@ -193,6 +195,63 @@ export class Workbench extends Layout {
+@@ -193,6 +195,37 @@ export class Workbench extends Layout {
  				this.restore(lifecycleService);
  			});
  
@@ -1248,43 +1256,17 @@ index b0688133537..322777365eb 100644
 +
 +			mainWindow.addEventListener('message', (messageEvent: MessageEvent) => {
 +				const { data } = messageEvent;
-+				if (isInitProject(data)) {
-+					if (intervalID != null) {
-+						window.clearInterval(intervalID)
-+					}
-+					console.log(`Received init message`)
-+					// initIndexedDBBridge(vsCodeSessionID, data.projectContents, data.openFilePath)
-+				} else if (isDeletePathChange(data)) {
-+					applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
-+						// await deletePath(toFSPath(data.fullPath), data.recursive)
-+					})
-+				} else if (isWriteProjectFileChange(data)) {
-+					applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
-+						// await writeProjectFile(data.projectFile)
-+					})
-+				} else if (isEnsureDirectoryExistsChange(data)) {
-+					applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
-+						// await ensureDirectoryExists(toFSPath(data.fullPath))
-+					})
-+					// FIXME we shouldn't differentiate these
-+				// } else if (isToVSCodeExtensionMessage(data)) {
-+				// 	applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
-+				// 		// await sendMessage(data.message)
-+				// 	})
-+				}
-+
-+
-+				if (typeof data === 'object') {
-+					if ((data as any)?.['type'] === 'INIT_PROJECT') {
-+						const commandService = this.serviceCollection.get(ICommandService);
-+						if (commandService == null) {
-+							console.log(`There is no command service`);
-+						} else {
-+							(commandService as ICommandService).executeCommand('memfs.workspaceInit');
++				if (isFromUtopiaToVSCodeMessage(data)) {
++					const commandService = this.serviceCollection.get(ICommandService);
++					if (commandService == null) {
++						console.error(`There is no command service`);
++					} else {
++						if (intervalID != null) {
++							window.clearInterval(intervalID)
 +						}
-+					}
-+					else if ((data as any)?.['type'] === 'MEMFS_FILE_UPDATE') {
-+						console.log(`There was a file update`, data);
++						applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
++							(commandService as ICommandService).executeCommand('utopia.toVSCodeMessage', data);
++						})
 +					}
 +				}
 +			});
@@ -1300,11 +1282,104 @@ index b0688133537..322777365eb 100644
  			return instantiationService;
  		} catch (error) {
  			onUnexpectedError(error);
+diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
+index 81bf68c3e0b..cf35ed85366 100644
+--- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
++++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
+@@ -53,6 +53,7 @@ import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs';
+ import { RemoveRootFolderAction } from 'vs/workbench/browser/actions/workspaceActions';
+ import { OpenEditorsView } from 'vs/workbench/contrib/files/browser/views/openEditorsView';
+ import { ExplorerView } from 'vs/workbench/contrib/files/browser/views/explorerView';
++import { mainWindow } from '../../../../base/browser/window';
+ 
+ export const openWindowCommand = (accessor: ServicesAccessor, toOpen: IWindowOpenable[], options?: IOpenWindowOptions) => {
+ 	if (Array.isArray(toOpen)) {
+@@ -734,3 +735,10 @@ CommandsRegistry.registerCommand({
+ 		});
+ 	}
+ });
++
++CommandsRegistry.registerCommand({
++	id: 'utopia.toUtopiaMessage',
++	handler: async (_accessor, message: any) => {
++		mainWindow.top?.postMessage(message);
++	}
++});
+\ No newline at end of file
+diff --git a/src/vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService.ts b/src/vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService.ts
+index e1913359976..6c6e80eeabc 100644
+--- a/src/vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService.ts
++++ b/src/vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService.ts
+@@ -51,10 +51,10 @@ export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScanne
+ 			if (builtinExtensionsServiceUrl) {
+ 				let bundledExtensions: IBundledExtension[] = [];
+ 
+-				if (environmentService.isBuilt) {
+-					// Built time configuration (do NOT modify)
+-					bundledExtensions = [/*BUILD->INSERT_BUILTIN_EXTENSIONS*/];
+-				} else {
++				// if (environmentService.isBuilt) {
++				// 	// Built time configuration (do NOT modify)
++				// 	bundledExtensions = [/*BUILD->INSERT_BUILTIN_EXTENSIONS*/];
++				// } else {
+ 					// Find builtin extensions by checking for DOM
+ 					const builtinExtensionsElement = mainWindow.document.getElementById('vscode-workbench-builtin-extensions');
+ 					const builtinExtensionsElementAttribute = builtinExtensionsElement ? builtinExtensionsElement.getAttribute('data-settings') : undefined;
+@@ -63,7 +63,7 @@ export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScanne
+ 							bundledExtensions = JSON.parse(builtinExtensionsElementAttribute);
+ 						} catch (error) { /* ignore error*/ }
+ 					}
+-				}
++				// }
+ 
+ 				this.builtinExtensionsPromises = bundledExtensions.map(async e => {
+ 					const id = getGalleryExtensionId(e.packageJSON.publisher, e.packageJSON.name);
+diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
+index 731a48bf5b0..b77097ce7c2 100644
+--- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
++++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
+@@ -121,7 +121,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+ 		// help the file service to activate providers by activating extensions by file system event
+ 		this._register(this._fileService.onWillActivateFileSystemProvider(e => {
+ 			if (e.scheme !== Schemas.vscodeRemote) {
+-				e.join(this.activateByEvent(`onFileSystem:${e.scheme}`));
++				e.join(this.activateByEvent(`onFileSystem:utopia`));
+ 			}
+ 		}));
+ 
 diff --git a/yarn.lock b/yarn.lock
-index 71aef4295fa..7689f69b84e 100644
+index 71aef4295fa..3cfe4dade65 100644
 --- a/yarn.lock
 +++ b/yarn.lock
-@@ -7200,11 +7200,6 @@ native-is-elevated@0.7.0:
+@@ -6508,6 +6508,13 @@ levn@^0.4.1:
+     prelude-ls "^1.2.1"
+     type-check "~0.4.0"
+ 
++lie@3.1.1:
++  version "3.1.1"
++  resolved "https://registry.yarnpkg.com/lie/-/lie-3.1.1.tgz#9a436b2cc7746ca59de7a41fa469b3efb76bd87e"
++  integrity sha512-RiNhHysUjhrDQntfYSfY4MU24coXXdEOgw9WGcKHNeEwffDYbF//u87M1EWaMGzuFoSbqW0C9C6lEEhDOAswfw==
++  dependencies:
++    immediate "~3.0.5"
++
+ lie@~3.3.0:
+   version "3.3.0"
+   resolved "https://registry.yarnpkg.com/lie/-/lie-3.3.0.tgz#dcf82dee545f46074daf200c7c1c5a08e0f40f6a"
+@@ -6576,6 +6583,13 @@ loader-utils@^2.0.0:
+     emojis-list "^3.0.0"
+     json5 "^2.1.2"
+ 
++localforage@1.9.0:
++  version "1.9.0"
++  resolved "https://registry.yarnpkg.com/localforage/-/localforage-1.9.0.tgz#f3e4d32a8300b362b4634cc4e066d9d00d2f09d1"
++  integrity sha512-rR1oyNrKulpe+VM9cYmcFn6tsHuokyVHFaCM3+osEmxaHTbEk8oQu6eGDfS6DQLWi/N67XRmB8ECG37OES368g==
++  dependencies:
++    lie "3.1.1"
++
+ locate-path@^3.0.0:
+   version "3.0.0"
+   resolved "https://registry.yarnpkg.com/locate-path/-/locate-path-3.0.0.tgz#dbec3b3ab759758071b58fe59fc41871af21400e"
+@@ -7200,11 +7214,6 @@ native-is-elevated@0.7.0:
    resolved "https://registry.yarnpkg.com/native-is-elevated/-/native-is-elevated-0.7.0.tgz#77499639e232edad1886403969e2bf236294e7af"
    integrity sha512-tp8hUqK7vexBiyIWKMvmRxdG6kqUtO+3eay9iB0i16NYgvCqE5wMe1Y0guHilpkmRgvVXEWNW4et1+qqcwpLBA==
  
@@ -1316,3 +1391,28 @@ index 71aef4295fa..7689f69b84e 100644
  native-watchdog@^1.4.1:
    version "1.4.2"
    resolved "https://registry.yarnpkg.com/native-watchdog/-/native-watchdog-1.4.2.tgz#cf9f913157ee992723aa372b6137293c663be9b7"
+@@ -8287,6 +8296,11 @@ prelude-ls@~1.1.2:
+   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.1.2.tgz#21932a549f5e52ffd9a827f570e04be62a97da54"
+   integrity sha1-IZMqVJ9eUv/ZqCf1cOBL5iqX2lQ=
+ 
++prettier@2.8.8:
++  version "2.8.8"
++  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.8.8.tgz#e8c5d7e98a4305ffe3de2e1fc4aca1a71c28b1da"
++  integrity sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==
++
+ pretty-hrtime@^1.0.0:
+   version "1.0.3"
+   resolved "https://registry.yarnpkg.com/pretty-hrtime/-/pretty-hrtime-1.0.3.tgz#b7e3ea42435a4c9b2759d99e0f201eb195802ee1"
+@@ -10235,6 +10249,12 @@ util@^0.12.4:
+     is-typed-array "^1.1.3"
+     which-typed-array "^1.1.2"
+ 
++"utopia-vscode-common@file:../../utopia-vscode-common":
++  version "0.1.6"
++  dependencies:
++    localforage "1.9.0"
++    prettier "2.8.8"
++
+ uuid@^8.3.0:
+   version "8.3.2"
+   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"

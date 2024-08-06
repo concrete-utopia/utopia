@@ -48,14 +48,10 @@ import {
   createDirectoryWithoutError,
   isFile,
   isNotDirectoryError,
+  pathIsFile,
 } from './in-mem-fs'
-import {
-  appendToPath,
-  dirname,
-  RootDir,
-  type ProjectFile,
-  vsCodeFileDelete,
-} from 'utopia-vscode-common'
+import { appendToPath, dirname, vsCodeFileDelete } from 'utopia-vscode-common'
+import type { ProjectFile } from 'utopia-vscode-common'
 import { addSchemeToPath, allPathsUpToPath } from './path-utils'
 
 interface EventQueue<T> {
@@ -354,7 +350,9 @@ export class UtopiaFSExtension
     _token: CancellationToken,
   ): Array<Uri> {
     // TODO Support all search options
-    const { result: foundPaths } = this.filterFilePaths(query.pattern, options.maxResults)
+    const lowerCaseQuery = query.pattern.toLocaleLowerCase()
+    const filePaths = this.getAllFilePaths()
+    const foundPaths = filePaths.filter((p) => p.toLocaleLowerCase().includes(lowerCaseQuery))
     return foundPaths.map((p) => addSchemeToPath(this.projectID, p))
   }
 
@@ -368,9 +366,12 @@ export class UtopiaFSExtension
   ): TextSearchComplete {
     // This appears to only be callable from the side bar that isn't available in Utopia
     // TODO Support all search options
-    const { result: filePaths, limitHit } = this.filterFilePaths(options.includes[0])
+    const filePaths = this.filterFilePaths(options.includes[0])
 
     if (filePaths.length > 0) {
+      const isCaseSensitive = query.isCaseSensitive ?? false
+      const lowerCaseQuery = query.pattern.toLocaleLowerCase()
+
       for (const filePath of filePaths) {
         if (token.isCancellationRequested) {
           break
@@ -381,7 +382,9 @@ export class UtopiaFSExtension
         const lines = splitIntoLines(content)
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i]
-          const index = line.indexOf(query.pattern)
+          const index = isCaseSensitive
+            ? line.indexOf(query.pattern)
+            : line.toLocaleLowerCase().indexOf(lowerCaseQuery)
           if (index !== -1) {
             progress.report({
               uri: addSchemeToPath(this.projectID, filePath),
@@ -402,49 +405,35 @@ export class UtopiaFSExtension
       }
     }
 
-    return { limitHit: limitHit }
+    return { limitHit: false }
   }
 
   // Common
 
-  private filterFilePaths(
-    query: string | undefined,
-    maxResults?: number,
-  ): { result: Array<string>; limitHit: boolean } {
-    const filePaths = this.getAllPaths()
-    let result: string[] = []
-    let limitHit = false
-    let remainingCount = maxResults == null ? Infinity : maxResults
+  private filterFilePaths(query: string | undefined): Array<string> {
+    const filePaths = this.getAllFilePaths()
+    if (query == null) {
+      return filePaths
+    }
 
-    const pattern = query ? new RegExp(convertSimple2RegExpPattern(query)) : null
+    let result: string[] = []
+    const pattern = new RegExp(convertSimple2RegExpPattern(query))
 
     for (const path of filePaths) {
-      if (remainingCount < 0) {
-        break
-      }
-
       if (!pattern || pattern.exec(path)) {
-        if (remainingCount === 0) {
-          // We've already found the max number of results, but we want to flag that there are more
-          limitHit = true
-        } else {
-          result.push(path)
-        }
-        remainingCount--
+        result.push(path)
       }
     }
 
-    return {
-      result: result,
-      limitHit: limitHit,
-    }
+    return result
   }
 
-  getAllPaths(): Array<string> {
+  getAllFilePaths(): Array<string> {
     if (this.allFilePaths == null) {
-      const result = getDescendentPaths(RootDir)
-      this.allFilePaths = result
-      return result
+      const allPaths = getDescendentPaths('')
+      const allFilePaths = allPaths.filter((p) => pathIsFile(p))
+      this.allFilePaths = allFilePaths
+      return allFilePaths
     } else {
       return this.allFilePaths
     }

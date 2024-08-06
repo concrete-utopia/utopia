@@ -292,8 +292,26 @@ export function utopiaReady(): UtopiaReady {
   }
 }
 
-export function isUtopiaReadyMessage(messageData: unknown): messageData is UtopiaReady {
+export function isUtopiaReady(messageData: unknown): messageData is UtopiaReady {
   return typeof messageData === 'object' && (messageData as any)?.['type'] === 'UTOPIA_READY'
+}
+
+export function isFromUtopiaToVSCodeMessage(
+  messageData: unknown,
+): messageData is FromUtopiaToVSCodeMessage {
+  return (
+    isInitProject(messageData) ||
+    isWriteProjectFileChange(messageData) ||
+    isDeletePathChange(messageData) ||
+    isEnsureDirectoryExistsChange(messageData) ||
+    isOpenFileMessage(messageData) ||
+    isUpdateDecorationsMessage(messageData) ||
+    isSelectedElementChanged(messageData) ||
+    isGetUtopiaVSCodeConfig(messageData) ||
+    isSetFollowSelectionConfig(messageData) ||
+    isSetVSCodeTheme(messageData) ||
+    isUtopiaReady(messageData)
+  )
 }
 
 export type FromUtopiaToVSCodeMessage =
