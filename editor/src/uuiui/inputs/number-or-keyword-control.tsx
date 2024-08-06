@@ -15,6 +15,7 @@ import type {
 } from '../../components/inspector/common/css-utils'
 import { isCSSNumber } from '../../components/inspector/common/css-utils'
 import { NO_OP } from '../../core/shared/utils'
+import type { ControlStatus } from '../../uuiui-deps'
 
 type NumberOrKeywordControlProps<T extends string> = {
   testId: string
@@ -23,6 +24,7 @@ type NumberOrKeywordControlProps<T extends string> = {
   value: CSSNumber | CSSKeyword<T>
   keywords: Array<{ label: string; value: CSSKeyword<T> }>
   keywordTypeCheck: (keyword: unknown) => keyword is T
+  controlStatus?: ControlStatus
 }
 
 export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordControlProps<T>) {
@@ -54,16 +56,21 @@ export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordC
     [dropdownButtonId, hover, dropdownOpen],
   )
 
-  const dropdownItems = React.useMemo(
-    (): DropdownMenuItem[] => [
-      regularDropdownMenuItem({
-        id: 'dropdown-input-value',
-        icon: <Icons.Checkmark color='white' width={16} height={16} />,
-        label: `${props.value.value}${isCSSNumber(props.value) ? props.value.unit ?? '' : ''}`,
-        disabled: true,
-        onSelect: NO_OP,
-      }),
-      separatorDropdownMenuItem('dropdown-separator'),
+  const dropdownItems = React.useMemo((): DropdownMenuItem[] => {
+    let items: DropdownMenuItem[] = []
+    if (props.controlStatus !== 'off') {
+      items.push(
+        regularDropdownMenuItem({
+          id: 'dropdown-input-value',
+          icon: <Icons.Checkmark color='white' width={16} height={16} />,
+          label: `${props.value.value}${isCSSNumber(props.value) ? props.value.unit ?? '' : ''}`,
+          disabled: true,
+          onSelect: NO_OP,
+        }),
+        separatorDropdownMenuItem('dropdown-separator'),
+      )
+    }
+    items.push(
       ...props.keywords.map((keyword): DropdownMenuItem => {
         return regularDropdownMenuItem({
           id: `dropdown-label-${keyword.value.value}`,
@@ -72,9 +79,9 @@ export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordC
           onSelect: () => onSubmitValue(keyword.value),
         })
       }),
-    ],
-    [props.value, props.keywords, onSubmitValue],
-  )
+    )
+    return items
+  }, [props.value, props.keywords, onSubmitValue, props.controlStatus])
 
   return (
     <div
@@ -96,6 +103,7 @@ export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordC
         incrementalControls={false}
         validKeywords={props.keywords.map((k) => k.value)}
         style={{ flex: 1 }}
+        controlStatus={hover || dropdownOpen ? 'detected' : props.controlStatus}
       />
       <div
         style={{
