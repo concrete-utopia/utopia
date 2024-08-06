@@ -821,6 +821,7 @@ export interface EditorStateCanvasControls {
   reparentedToPaths: Array<ElementPath>
   dragToMoveIndicatorFlags: DragToMoveIndicatorFlags
   parentOutlineHighlight: ElementPath | null
+  gridControls: ElementPath | null
 }
 
 export function editorStateCanvasControls(
@@ -832,6 +833,7 @@ export function editorStateCanvasControls(
   reparentedToPaths: Array<ElementPath>,
   dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags,
   parentOutlineHighlight: ElementPath | null,
+  gridControls: ElementPath | null,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
@@ -842,6 +844,7 @@ export function editorStateCanvasControls(
     reparentedToPaths: reparentedToPaths,
     dragToMoveIndicatorFlags: dragToMoveIndicatorFlagsValue,
     parentOutlineHighlight: parentOutlineHighlight,
+    gridControls: gridControls,
   }
 }
 
@@ -2626,6 +2629,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
+        gridControls: null,
       },
     },
     inspector: {
@@ -3000,6 +3004,7 @@ export function editorModelFromPersistentModel(
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
+        gridControls: null,
       },
     },
     inspector: {
