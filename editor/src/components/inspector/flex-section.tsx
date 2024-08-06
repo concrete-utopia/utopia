@@ -20,8 +20,16 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { strictEvery } from '../../core/shared/array-utils'
 import { useDispatch } from '../editor/store/dispatch-context'
 import type { DetectedLayoutSystem } from 'utopia-shared/src/types'
-import { NO_OP } from '../../core/shared/utils'
-import { Icons, NumberInput, SquareButton, Subdued } from '../../uuiui'
+import { NO_OP, assertNever } from '../../core/shared/utils'
+import {
+  FlexRow,
+  Icons,
+  InspectorSectionIcons,
+  NumberInput,
+  SquareButton,
+  Subdued,
+  Tooltip,
+} from '../../uuiui'
 import type {
   CSSKeyword,
   CSSNumber,
@@ -621,9 +629,22 @@ const GapRowColumnControl = React.memo(() => {
   const columnGap = useInspectorLayoutInfo('columnGap')
   const rowGap = useInspectorLayoutInfo('rowGap')
 
-  const [controlState, setControlState] = React.useState<GridGapControlSplitState>(
+  const [controlSplitState, setControlSplitState] = React.useState<GridGapControlSplitState>(
     cssNumberEqual(columnGap.value, rowGap.value) ? 'unified' : 'split',
   )
+
+  const cycleControlSplitState = React.useCallback(() => {
+    setControlSplitState((state) => {
+      switch (state) {
+        case 'split':
+          return 'unified'
+        case 'unified':
+          return 'split'
+        default:
+          assertNever(state)
+      }
+    })
+  }, [])
 
   const onSubmitSplitValue = React.useCallback(
     (target: 'columnGap' | 'rowGap') =>
@@ -699,32 +720,52 @@ const GapRowColumnControl = React.memo(() => {
     [dispatch, grid],
   )
 
+  const tooltipTitle =
+    controlSplitState === 'unified'
+      ? 'Longhand gap'
+      : controlSplitState === 'split'
+      ? 'Shorthand gap'
+      : assertNever(controlSplitState)
+
+  const modeIcon = React.useMemo(() => {
+    switch (controlSplitState) {
+      case 'split':
+        return <InspectorSectionIcons.SplitFull />
+      case 'unified':
+        return <InspectorSectionIcons.SplitHalf />
+      default:
+        assertNever(controlSplitState)
+    }
+  }, [controlSplitState])
+
   if (grid == null) {
     return null
   }
 
   return (
-    <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
+    <FlexRow style={{ justifyContent: 'space-between' }}>
       {when(
-        controlState === 'unified',
-        <NumberInput
-          value={columnGap.value}
-          numberType={'Length'}
-          onSubmitValue={onSubmitUnifiedValue}
-          onTransientSubmitValue={onSubmitUnifiedValue}
-          onForcedSubmitValue={onSubmitUnifiedValue}
-          defaultUnitToHide={'px'}
-          testId={'grid-column-gap'}
-          labelInner={{
-            category: 'inspector-element',
-            type: 'gapHorizontal',
-            color: 'subdued',
-          }}
-        />,
+        controlSplitState === 'unified',
+        <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
+          <NumberInput
+            value={columnGap.value}
+            numberType={'Length'}
+            onSubmitValue={onSubmitUnifiedValue}
+            onTransientSubmitValue={onSubmitUnifiedValue}
+            onForcedSubmitValue={onSubmitUnifiedValue}
+            defaultUnitToHide={'px'}
+            testId={'grid-column-gap'}
+            labelInner={{
+              category: 'inspector-element',
+              type: 'gapHorizontal',
+              color: 'subdued',
+            }}
+          />
+        </UIGridRow>,
       )}
       {when(
-        controlState === 'split',
-        <>
+        controlSplitState === 'split',
+        <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
           <NumberInput
             value={columnGap.value}
             numberType={'Length'}
@@ -753,9 +794,18 @@ const GapRowColumnControl = React.memo(() => {
               color: 'subdued',
             }}
           />
-        </>,
+        </UIGridRow>,
       )}
-    </UIGridRow>
+      <Tooltip title={tooltipTitle}>
+        <SquareButton
+          data-testid={`grid-gap-cycle-mode`}
+          onClick={cycleControlSplitState}
+          style={{ width: 16 }}
+        >
+          {modeIcon}
+        </SquareButton>
+      </Tooltip>
+    </FlexRow>
   )
 })
 GapRowColumnControl.displayName = 'GapRowColumnControl'
