@@ -307,13 +307,10 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
   const {
     hoverStart,
     hoverEnd,
-    onMouseDown,
     bounds,
     contentArea,
     isDragging,
-    gapValue,
     accentColor: accentColor,
-    elementHovered,
     scale,
     gapId,
     backgroundShown,
@@ -322,30 +319,25 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
     axis,
   } = props
 
-  const colorTheme = useColorTheme()
-  const [indicatorShown, setIndicatorShown] = React.useState<boolean>(false)
+  const [indicatorShown, setIndicatorShown] = React.useState<number | null>(null)
 
-  const { dragBorderWidth, hitAreaPadding, paddingIndicatorOffset, borderWidth } =
-    gapControlSizeConstants(DefaultGapControlSizeConstants, scale)
-  const { width, height } = handleDimensions(axis, scale)
+  const { dragBorderWidth } = gapControlSizeConstants(DefaultGapControlSizeConstants, scale)
 
-  const handleHoverStartInner = React.useCallback(() => {
-    setIndicatorShown(true)
+  const handleHoverStartInner = React.useCallback((indicatorIndex: number) => {
+    setIndicatorShown(indicatorIndex)
   }, [])
 
   const handleHoverEndInner = React.useCallback(
     (e: React.MouseEvent) => {
       hoverEnd(e)
-      setIndicatorShown(false)
+      setIndicatorShown(null)
     },
     [hoverEnd],
   )
 
-  const shouldShowIndicator = !isDragging && indicatorShown
-  const shouldShowHandle = !isDragging && elementHovered
   const shouldShowBackground = !isDragging && backgroundShown
 
-  // Invert the flex direction for the handle.
+  // Invert the direction for the handle.
   const segmentFlexDirection = axis === 'row' ? 'column' : 'row'
 
   // Effectively flip the properties for the main and cross axis, but only permitting
@@ -387,47 +379,94 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
         }}
       >
         {[1, 2, 3].map((i) => (
-          <div
+          <GridGapHandler
             key={i}
-            data-testid={`${GridGapControlHandleTestId}-${gapId}`}
-            style={{
-              visibility: shouldShowHandle ? 'visible' : 'hidden',
-              padding: hitAreaPadding,
-              cursor: axis === 'row' ? CSSCursor.GapNS : CSSCursor.GapEW,
-            }}
-            onMouseDown={onMouseDown}
-            onMouseEnter={handleHoverStartInner}
-          >
-            <div
-              style={{
-                position: 'absolute',
-                paddingTop: paddingIndicatorOffset,
-                paddingLeft: paddingIndicatorOffset,
-                pointerEvents: 'none',
-              }}
-            >
-              {when(
-                shouldShowIndicator,
-                <CanvasLabel
-                  value={printCSSNumber(gapValue, null)}
-                  scale={scale}
-                  color={colorTheme.brandNeonPink.value}
-                  textColor={colorTheme.white.value}
-                />,
-              )}
-            </div>
-            <PillHandle
-              width={width}
-              height={height}
-              pillColor={colorTheme.brandNeonPink.value}
-              borderWidth={borderWidth}
-            />
-          </div>
+            index={i}
+            {...props}
+            handleHoverStartInner={handleHoverStartInner}
+            indicatorShown={indicatorShown}
+          />
         ))}
       </div>
     </div>
   )
 })
+
+type GridGapHandlerProps = {
+  gapId: string
+  index: number
+  scale: number
+  gapValue: CSSNumber
+  axis: Axis
+  onMouseDown: React.MouseEventHandler
+  isDragging: boolean
+  handleHoverStartInner: (index: number) => void
+  indicatorShown: number | null
+  elementHovered: boolean
+}
+function GridGapHandler({
+  gapId,
+  index,
+  scale,
+  gapValue,
+  axis,
+  onMouseDown,
+  handleHoverStartInner,
+  isDragging,
+  indicatorShown,
+  elementHovered,
+}: GridGapHandlerProps) {
+  const { width, height } = handleDimensions(axis, scale)
+  const { hitAreaPadding, paddingIndicatorOffset, borderWidth } = gapControlSizeConstants(
+    DefaultGapControlSizeConstants,
+    scale,
+  )
+  const colorTheme = useColorTheme()
+  const shouldShowIndicator = !isDragging && indicatorShown === index
+  const shouldShowHandle = !isDragging && elementHovered
+
+  const handleHoverStart = React.useCallback(() => {
+    handleHoverStartInner(index)
+  }, [handleHoverStartInner, index])
+
+  return (
+    <div
+      data-testid={`${GridGapControlHandleTestId}-${gapId}`}
+      style={{
+        visibility: shouldShowHandle ? 'visible' : 'hidden',
+        padding: hitAreaPadding,
+        cursor: axis === 'row' ? CSSCursor.GapNS : CSSCursor.GapEW,
+      }}
+      onMouseDown={onMouseDown}
+      onMouseEnter={handleHoverStart}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          paddingTop: paddingIndicatorOffset,
+          paddingLeft: paddingIndicatorOffset,
+          pointerEvents: 'none',
+        }}
+      >
+        {when(
+          shouldShowIndicator,
+          <CanvasLabel
+            value={printCSSNumber(gapValue, null)}
+            scale={scale}
+            color={colorTheme.brandNeonPink.value}
+            textColor={colorTheme.white.value}
+          />,
+        )}
+      </div>
+      <PillHandle
+        width={width}
+        height={height}
+        pillColor={colorTheme.brandNeonPink.value}
+        borderWidth={borderWidth}
+      />
+    </div>
+  )
+}
 
 function handleDimensions(axis: Axis, scale: number): Size {
   if (axis === 'row') {
