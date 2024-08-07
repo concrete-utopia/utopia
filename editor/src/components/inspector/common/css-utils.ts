@@ -578,10 +578,9 @@ const CSSNumberUnits: Array<CSSNumberUnit> = [
   '%',
 ]
 
-export type CSSNumber = {
+export interface CSSNumber {
   value: number
   unit: CSSNumberUnit | null
-  emptyValue?: boolean
 }
 
 export type GridCSSNumberUnit = LengthUnit | ResolutionUnit | PercentUnit | 'fr'
