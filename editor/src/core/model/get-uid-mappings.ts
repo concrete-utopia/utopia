@@ -220,7 +220,6 @@ export function clearCachedUidsPerFileForTests() {
 }
 
 export function getFilePathForUid(mapping: FileToUidMapping, uid: string): string | null {
-  // let result: string | null | undefined = null
   return mapFirstApplicable(mapping.entries(), ([filePath, uidMapping]) => {
     if (uidMapping.has(uid)) {
       return filePath
