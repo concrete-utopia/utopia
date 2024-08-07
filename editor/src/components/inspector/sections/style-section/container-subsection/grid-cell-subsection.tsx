@@ -217,7 +217,7 @@ const DimensionsControls = React.memo(
 
     return (
       <>
-        <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
+        <UIGridRow padded variant='|--50px--|<--------1fr-------->'>
           <div>Position</div>
           <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
             <NumberOrKeywordControl
@@ -252,7 +252,7 @@ const DimensionsControls = React.memo(
             />
           </UIGridRow>
         </UIGridRow>
-        <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
+        <UIGridRow padded variant='|--50px--|<--------1fr-------->'>
           <div>Size</div>
           <FlexRow style={{ gap: 4 }}>
             <NumberInput
@@ -267,6 +267,8 @@ const DimensionsControls = React.memo(
                 type: 'rowSpan',
                 color: 'subdued',
               }}
+              descriptionLabel='Cols'
+              incrementControls={false}
             />
             <NumberInput
               value={cssNumber(height)}
@@ -280,6 +282,8 @@ const DimensionsControls = React.memo(
                 type: 'columnSpan',
                 color: 'subdued',
               }}
+              descriptionLabel='Rows'
+              incrementControls={false}
             />
           </FlexRow>
         </UIGridRow>

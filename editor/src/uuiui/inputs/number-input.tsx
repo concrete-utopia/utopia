@@ -50,8 +50,8 @@ import {
   InspectorInput,
 } from './base-input'
 import { usePropControlledStateV2 } from '../../components/inspector/common/inspector-utils'
-import { useIsMyProject } from '../../components/editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../utilities/disable-subtree'
+import { Ellipsis } from '../../components/navigator/left-pane/github-pane/github-file-changes-list'
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
 
@@ -137,6 +137,7 @@ export interface NumberInputOptions {
   numberType: CSSNumberType
   defaultUnitToHide: CSSNumberUnit | null
   pasteHandler?: boolean
+  descriptionLabel?: string
 }
 
 export interface AbstractNumberInputProps<T extends CSSNumber | number>
@@ -190,6 +191,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     onMouseLeave,
     invalid,
     pasteHandler,
+    descriptionLabel,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const colorTheme = useColorTheme()
@@ -666,6 +668,14 @@ export const NumberInput = React.memo<NumberInputProps>(
           }
         : undefined
 
+    const labelInnerIsIcon =
+      labelInner != null && typeof labelInner === 'object' && 'type' in labelInner
+
+    const labelInnerIsIconOrNull = labelInner == null || labelInnerIsIcon
+
+    const showDescriptionLabel =
+      labelInnerIsIconOrNull && !isFocused && descriptionLabel != null && value != null
+
     return (
       <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={style}>
         <div
@@ -722,11 +732,7 @@ export const NumberInput = React.memo<NumberInputProps>(
                 }}
                 onMouseDown={onLabelMouseDown}
               >
-                {typeof labelInner === 'object' && 'type' in labelInner ? (
-                  <Icn {...labelInner} />
-                ) : (
-                  labelInner
-                )}
+                {labelInnerIsIcon ? <Icn {...labelInner} /> : labelInner}
               </div>
             </div>
           ) : null}
@@ -840,7 +846,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             value={displayValue}
             ref={ref}
             style={{
-              color: colorTheme.fg1.value,
+              color: showDescriptionLabel ? 'transparent' : colorTheme.fg1.value,
             }}
             css={{
               '::placeholder': { color: invalid ? colorTheme.error.value : undefined },
@@ -856,6 +862,29 @@ export const NumberInput = React.memo<NumberInputProps>(
             onChange={onChange}
             autoComplete='off'
           />
+          {showDescriptionLabel ? (
+            <Ellipsis
+              style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                left: labelInnerIsIconOrNull ? 22 : 0,
+                pointerEvents: 'none',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <div
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}
+              >
+                <span>
+                  {value.value}
+                  {value.unit ?? ''}
+                </span>
+                <span style={{ fontSize: 10 }}>{descriptionLabel}</span>
+              </div>
+            </Ellipsis>
+          ) : null}
         </div>
       </div>
     )
