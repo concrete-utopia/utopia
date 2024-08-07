@@ -11,7 +11,7 @@ import { when } from '../utils/react-conditionals'
 
 const RadixItemContainer = styled(RadixDropdownMenu.Item, {
   minWidth: 128,
-  padding: '4px 8px',
+  padding: '4px 6px',
   display: 'flex',
   gap: 12,
   justifyContent: 'space-between',
@@ -26,7 +26,7 @@ const RadixItemContainer = styled(RadixDropdownMenu.Item, {
 })
 
 const RadixDropdownContent = styled(RadixDropdownMenu.Content, {
-  padding: '6px 8px',
+  padding: 4,
   flexDirection: 'column',
   backgroundColor: colorTheme.contextMenuBackground.value,
   borderRadius: 6,
