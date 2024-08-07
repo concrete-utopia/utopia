@@ -14,9 +14,10 @@ import {
   isValidGridPositionKeyword,
   type GridPosition,
 } from '../../../../../core/shared/element-template'
-import { when } from '../../../../../utils/react-conditionals'
+import { unless, when } from '../../../../../utils/react-conditionals'
 import {
   FlexRow,
+  Icons,
   InspectorSectionIcons,
   InspectorSubsectionHeader,
   NumberInput,
@@ -41,6 +42,8 @@ import { UIGridRow } from '../../../widgets/ui-grid-row'
 type CellAdjustMode = 'dimensions' | 'boundaries'
 
 export const GridPlacementSubsection = React.memo(() => {
+  const dispatch = useDispatch()
+
   const [adjustMode, setAdjustMode] = React.useState<CellAdjustMode>('dimensions')
 
   const cell = useEditorState(
@@ -71,6 +74,32 @@ export const GridPlacementSubsection = React.memo(() => {
     setAdjustMode((current) => (current === 'boundaries' ? 'dimensions' : 'boundaries'))
   }, [])
 
+  const isAllDefaults = React.useMemo(() => {
+    if (cell == null) {
+      return false
+    }
+    const data = cell.specialSizeMeasurements.elementGridPropertiesFromProps
+    return (
+      data.gridColumnStart == null &&
+      data.gridColumnEnd == null &&
+      data.gridRowStart == null &&
+      data.gridRowEnd == null
+    )
+  }, [cell])
+
+  const writeDefaults = React.useCallback(() => {
+    if (cell == null || gridTemplate == null) {
+      return
+    }
+
+    const commands = setGridPropsCommands(
+      cell.elementPath,
+      gridTemplate,
+      cell.specialSizeMeasurements.elementGridProperties,
+    )
+    dispatch([applyCommandsAction(commands)])
+  }, [dispatch, cell, gridTemplate])
+
   if (cell == null || gridTemplate == null) {
     return null
   }
@@ -87,35 +116,44 @@ export const GridPlacementSubsection = React.memo(() => {
         >
           <span>Grid Placement</span>
         </FlexRow>
+        {when(
+          isAllDefaults,
+          <SquareButton highlight style={{ width: 12 }}>
+            <Icons.Plus width={12} height={12} onClick={writeDefaults} />
+          </SquareButton>,
+        )}
       </InspectorSubsectionHeader>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 27px', gridTemplateRows: '1fr' }}>
-        <div>
-          {when(
-            adjustMode === 'dimensions',
-            <DimensionsControls cell={cell} gridTemplate={gridTemplate} />,
-          )}
-          {when(
-            adjustMode === 'boundaries',
-            <BoundariesControls cell={cell} gridTemplate={gridTemplate} />,
-          )}
-        </div>
-        <div
-          style={{
-            alignSelf: 'start',
-            height: 34,
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          <SquareButton style={{ padding: 0 }}>
-            {adjustMode === 'dimensions' ? (
-              <InspectorSectionIcons.SplitFull onClick={toggleMoveMode} />
-            ) : (
-              <InspectorSectionIcons.SplitHalf onClick={toggleMoveMode} />
+      {unless(
+        isAllDefaults,
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 27px', gridTemplateRows: '1fr' }}>
+          <div>
+            {when(
+              adjustMode === 'dimensions',
+              <DimensionsControls cell={cell} gridTemplate={gridTemplate} />,
             )}
-          </SquareButton>
-        </div>
-      </div>
+            {when(
+              adjustMode === 'boundaries',
+              <BoundariesControls cell={cell} gridTemplate={gridTemplate} />,
+            )}
+          </div>
+          <div
+            style={{
+              alignSelf: 'start',
+              height: 34,
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <SquareButton style={{ padding: 0 }}>
+              {adjustMode === 'dimensions' ? (
+                <InspectorSectionIcons.SplitFull onClick={toggleMoveMode} />
+              ) : (
+                <InspectorSectionIcons.SplitHalf onClick={toggleMoveMode} />
+              )}
+            </SquareButton>
+          </div>
+        </div>,
+      )}
     </>
   )
 })
