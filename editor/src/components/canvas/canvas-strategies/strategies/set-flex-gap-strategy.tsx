@@ -17,6 +17,7 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
 import {
+  fallbackEmptyValue,
   indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
@@ -181,7 +182,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
           'always',
           selectedElement,
           StyleGapProp,
-          printCSSNumber(updatedFlexGapMeasurement.value, null),
+          printCSSNumber(fallbackEmptyValue(updatedFlexGapMeasurement), null),
         ),
         setCursorCommand(cursorFromFlexDirection(flexGap.direction)),
         setElementsToRerenderCommand([...selectedElements, ...children.map((c) => c.elementPath)]),

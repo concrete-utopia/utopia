@@ -1,11 +1,11 @@
 import { cssNumberWithRenderedValue, fallbackEmptyValue } from './controls-common'
-import { cssNumber, emptyCssNumber } from '../../../../components/inspector/common/css-utils'
+import { cssNumber } from '../../../../components/inspector/common/css-utils'
 describe('empty css value', () => {
   const renderedValuePx = 16
   const tests = [
     {
       title: 'should fallback to rendered px in case of an empty value',
-      cssNumber: emptyCssNumber(),
+      cssNumber: null,
       expected: { value: 16, unit: 'px' },
     },
     {

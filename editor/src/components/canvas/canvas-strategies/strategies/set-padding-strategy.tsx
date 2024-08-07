@@ -59,6 +59,7 @@ import type {
 } from '../../controls/select-mode/controls-common'
 import {
   canShowCanvasPropControl,
+  fallbackEmptyValue,
   indicatorMessage,
   offsetMeasurementByDelta,
   shouldShowControls,
@@ -215,7 +216,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
           if (value == null || value.renderedValuePx < 0) {
             return []
           }
-          return [[p, printCssNumberWithDefaultUnit(value.value, 'px')]]
+          return [[p, printCssNumberWithDefaultUnit(fallbackEmptyValue(value), 'px')]]
         },
       )
 

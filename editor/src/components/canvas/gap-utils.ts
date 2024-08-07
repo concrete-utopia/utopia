@@ -14,7 +14,6 @@ import { assertNever } from '../../core/shared/utils'
 import { CSSCursor } from './canvas-types'
 import type { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
 import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
-import { emptyCssNumber } from '../inspector/common/css-utils'
 import type { Sides } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'
 import { styleStringInArray } from '../../utils/common-constants'
@@ -189,7 +188,7 @@ export function maybeFlexGapData(
   return {
     value: {
       renderedValuePx: gap,
-      value: gapFromProps ?? emptyCssNumber(),
+      value: gapFromProps ?? null,
     },
     direction: flexDirection,
   }

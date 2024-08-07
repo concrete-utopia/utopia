@@ -19,7 +19,7 @@ import type { PropertyControlsInfo } from '../../../custom-code/code-file'
 export const Emdash: string = '\u2014'
 
 export interface CSSNumberWithRenderedValue {
-  value: CSSNumber
+  value: CSSNumber | null
   renderedValuePx: number
 }
 
@@ -31,7 +31,7 @@ export const unitlessCSSNumberWithRenderedValue = (
 })
 
 export const cssNumberWithRenderedValue = (
-  value: CSSNumber,
+  value: CSSNumber | null,
   renderedValuePx: number,
 ): CSSNumberWithRenderedValue => ({ value, renderedValuePx })
 
@@ -188,7 +188,8 @@ export function indicatorMessage(
   value: CSSNumberWithRenderedValue,
 ): string | number {
   if (isOverThreshold) {
-    return printCSSNumber(value.value, value.value.unit)
+    const valueOrRendered = fallbackEmptyValue(value)
+    return printCSSNumber(valueOrRendered, valueOrRendered.unit)
   }
 
   return Emdash // emdash
@@ -297,7 +298,7 @@ export function shouldShowControls(
 }
 
 export function fallbackEmptyValue(numberWithRenderedValue: CSSNumberWithRenderedValue): CSSNumber {
-  return numberWithRenderedValue.value.emptyValue == true
+  return numberWithRenderedValue.value == null
     ? cssNumber(numberWithRenderedValue.renderedValuePx, 'px')
     : numberWithRenderedValue.value
 }
