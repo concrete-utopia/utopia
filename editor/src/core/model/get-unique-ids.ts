@@ -10,89 +10,52 @@ import {
 import { emptySet } from '../shared/set-utils'
 import { assertNever, fastForEach } from '../shared/utils'
 import { memoize } from '../shared/memoize'
+import type { ParseSuccess } from 'utopia-shared/src/types'
+import { mapFirstApplicable } from '../shared/array-utils'
 
-export type DuplicateUIDsResult = { [key: string]: Array<Array<string>> }
-
-type SecretTypeToDeliberatelyBreakCodeForRefactoring_DELETE_ME = { cica: { [uid: string]: string } }
+export type DuplicateUIDsResult = Map<string, string>
 
 interface GetAllUniqueUIDsResult {
   duplicateIDs: DuplicateUIDsResult
-  filePathToUids: SecretTypeToDeliberatelyBreakCodeForRefactoring_DELETE_ME
+  filePathToUids: FileToUidMapping
 }
 
-export function getAllUniqueUidsFromLookup(
-  lookup: SecretTypeToDeliberatelyBreakCodeForRefactoring_DELETE_ME,
-): Array<string> {
-  return Object.keys(lookup)
-}
-
-export function getFilePathForUid(
-  mapping: SecretTypeToDeliberatelyBreakCodeForRefactoring_DELETE_ME,
-  uid: string,
-): string {
-  return mapping.cica[uid]
-}
-
-interface GetAllUniqueUIDsWorkingResult {
-  uniqueIDs: { [key: string]: Array<string> }
-  duplicateIDs: { [key: string]: Array<Array<string>> }
-  allIDs: Set<string>
-  uidsToFilePaths: SecretTypeToDeliberatelyBreakCodeForRefactoring_DELETE_ME
-}
-
-export function emptyGetAllUniqueUIDsWorkingResult(): GetAllUniqueUIDsWorkingResult {
-  return {
-    uniqueIDs: {},
-    duplicateIDs: {},
-    allIDs: emptySet(),
-    uidsToFilePaths: { cica: {} },
-  }
-}
-
-export function getAllUniqueUIDsResultFromWorkingResult(
-  workingResult: GetAllUniqueUIDsWorkingResult,
-): GetAllUniqueUIDsResult {
-  return {
-    duplicateIDs: workingResult.duplicateIDs,
-    filePathToUids: workingResult.uidsToFilePaths,
-  }
+interface GetAllUniqueUidsResultForFile {
+  uniqueIDs: Set<string>
+  duplicateIDs: DuplicateUIDsResult
 }
 
 function checkUID(
-  workingResult: GetAllUniqueUIDsWorkingResult,
+  working: Set<string>,
+  duplicatedIDs: DuplicateUIDsResult,
   filePath: string,
-  debugPath: Array<string>,
   uid: string,
-  value: any,
 ): void {
-  workingResult.allIDs.add(uid)
-  workingResult.uidsToFilePaths.cica[uid] = filePath
-  if (uid in workingResult.duplicateIDs) {
-    workingResult.duplicateIDs[uid].push(debugPath)
-  } else {
-    if (uid in workingResult.uniqueIDs) {
-      const currentUniqueIDsEntry = workingResult.uniqueIDs[uid]
-      workingResult.duplicateIDs[uid] = [currentUniqueIDsEntry, debugPath]
-      delete workingResult.uniqueIDs[uid]
-    } else {
-      workingResult.uniqueIDs[uid] = debugPath
-    }
+  if (working.has(uid)) {
+    duplicatedIDs.set(uid, filePath)
   }
+
+  working.add(uid)
 }
 
 function extractUidFromAttributes(
-  workingResult: GetAllUniqueUIDsWorkingResult,
+  working: Set<string>,
+  workingDupliactedUIDs: DuplicateUIDsResult,
   filePath: string,
-  debugPath: Array<string>,
   attributes: JSXAttributes,
 ): void {
   for (const attributePart of attributes) {
     switch (attributePart.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
-        extractUidFromJSXElementChild(workingResult, filePath, debugPath, attributePart.value)
+        extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, attributePart.value)
         break
       case 'JSX_ATTRIBUTES_SPREAD':
-        extractUidFromJSXElementChild(workingResult, filePath, debugPath, attributePart.spreadValue)
+        extractUidFromJSXElementChild(
+          working,
+          workingDupliactedUIDs,
+          filePath,
+          attributePart.spreadValue,
+        )
         break
       default:
         assertNever(attributePart)
@@ -101,29 +64,28 @@ function extractUidFromAttributes(
 }
 
 function extractUidFromJSXElementChild(
-  workingResult: GetAllUniqueUIDsWorkingResult,
+  working: Set<string>,
+  workingDupliactedUIDs: DuplicateUIDsResult,
   filePath: string,
-  debugPath: Array<string>,
   element: JSXElementChild,
 ): void {
-  const newDebugPath = [...debugPath, element.uid]
-  checkUID(workingResult, filePath, newDebugPath, element.uid, element)
+  checkUID(working, workingDupliactedUIDs, filePath, element.uid) // TODO handle duplicate UID
   switch (element.type) {
     case 'JSX_ELEMENT':
       fastForEach(element.children, (child) =>
-        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, child),
+        extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, child),
       )
-      extractUidFromAttributes(workingResult, filePath, newDebugPath, element.props)
+      extractUidFromAttributes(working, workingDupliactedUIDs, filePath, element.props)
       break
     case 'JSX_FRAGMENT':
       fastForEach(element.children, (child) =>
-        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, child),
+        extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, child),
       )
       break
     case 'JSX_CONDITIONAL_EXPRESSION':
-      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.condition)
-      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.whenTrue)
-      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.whenFalse)
+      extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, element.condition)
+      extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, element.whenTrue)
+      extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, element.whenFalse)
       break
     case 'JSX_TEXT_BLOCK':
       break
@@ -131,36 +93,36 @@ function extractUidFromJSXElementChild(
       break
     case 'ATTRIBUTE_NESTED_ARRAY':
       for (const contentPart of element.content) {
-        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, contentPart.value)
+        extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, contentPart.value)
       }
       break
     case 'ATTRIBUTE_NESTED_OBJECT':
       for (const contentPart of element.content) {
-        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, contentPart.value)
+        extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, contentPart.value)
       }
       break
     case 'JSX_MAP_EXPRESSION':
-      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.valueToMap)
-      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.mapFunction)
+      extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, element.valueToMap)
+      extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, element.mapFunction)
       break
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       for (const elementWithin of Object.values(element.elementsWithin)) {
-        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, elementWithin)
+        extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, elementWithin)
       }
       break
     case 'ATTRIBUTE_FUNCTION_CALL':
       for (const parameter of element.parameters) {
-        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, parameter)
+        extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, parameter)
       }
       break
     case 'JS_IDENTIFIER':
       break
     case 'JS_PROPERTY_ACCESS':
-      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.onValue)
+      extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, element.onValue)
       break
     case 'JS_ELEMENT_ACCESS':
-      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.onValue)
-      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.element)
+      extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, element.onValue)
+      extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, element.element)
       break
     default:
       assertNever(element)
@@ -168,38 +130,42 @@ function extractUidFromJSXElementChild(
 }
 
 function extractUIDFromArbitraryBlock(
-  workingResult: GetAllUniqueUIDsWorkingResult,
+  working: Set<string>,
+  workingDupliactedUIDs: DuplicateUIDsResult,
   filePath: string,
-  debugPath: Array<string>,
   arbitraryBlock: ArbitraryJSBlock,
 ): void {
-  const newDebugPath = [...debugPath, arbitraryBlock.uid]
-  checkUID(workingResult, filePath, newDebugPath, arbitraryBlock.uid, arbitraryBlock)
+  checkUID(working, workingDupliactedUIDs, filePath, arbitraryBlock.uid)
   for (const elementWithin of Object.values(arbitraryBlock.elementsWithin)) {
-    extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, elementWithin)
+    extractUidFromJSXElementChild(working, workingDupliactedUIDs, filePath, elementWithin)
   }
 }
 
 export function extractUIDFromTopLevelElement(
-  workingResult: GetAllUniqueUIDsWorkingResult,
+  working: Set<string>,
+  workingDupliactedUIDs: DuplicateUIDsResult,
   filePath: string,
-  debugPath: Array<string>,
   topLevelElement: TopLevelElement,
 ): void {
   switch (topLevelElement.type) {
     case 'UTOPIA_JSX_COMPONENT':
-      extractUidFromJSXElementChild(workingResult, filePath, debugPath, topLevelElement.rootElement)
+      extractUidFromJSXElementChild(
+        working,
+        workingDupliactedUIDs,
+        filePath,
+        topLevelElement.rootElement,
+      )
       if (topLevelElement.arbitraryJSBlock != null) {
         extractUIDFromArbitraryBlock(
-          workingResult,
+          working,
+          workingDupliactedUIDs,
           filePath,
-          debugPath,
           topLevelElement.arbitraryJSBlock,
         )
       }
       break
     case 'ARBITRARY_JS_BLOCK':
-      extractUIDFromArbitraryBlock(workingResult, filePath, debugPath, topLevelElement)
+      extractUIDFromArbitraryBlock(working, workingDupliactedUIDs, filePath, topLevelElement)
       break
     case 'IMPORT_STATEMENT':
       break
@@ -210,41 +176,102 @@ export function extractUIDFromTopLevelElement(
   }
 }
 
-export function getAllUniqueUidsInnerOld(
-  projectContents: ProjectContentTreeRoot,
-): GetAllUniqueUIDsResult {
-  const workingResult = emptyGetAllUniqueUIDsWorkingResult()
+type FileToUidMapping = Map<string, Set<string>>
 
+let CachedUidsPerFile = new WeakMap<ParseSuccess, GetAllUniqueUidsResultForFile>()
+
+function collectUidsForFile(
+  filePath: string,
+  parseSuccess: ParseSuccess,
+): GetAllUniqueUidsResultForFile {
+  const cachedResult = CachedUidsPerFile.get(parseSuccess)
+  if (cachedResult != null) {
+    return cachedResult
+  }
+
+  let workingUniqueIDSet = emptySet<string>()
+  let workingDupliactedUIDs: DuplicateUIDsResult = new Map()
+  fastForEach(parseSuccess.topLevelElements, (tle) => {
+    extractUIDFromTopLevelElement(workingUniqueIDSet, workingDupliactedUIDs, filePath, tle)
+  })
+  const result = { uniqueIDs: workingUniqueIDSet, duplicateIDs: workingDupliactedUIDs }
+  CachedUidsPerFile.set(parseSuccess, result)
+  return result
+}
+
+function collectUidsForEachFile(projectContents: ProjectContentTreeRoot): GetAllUniqueUIDsResult {
+  let workingFileToUidMapping: FileToUidMapping = new Map()
+  let workingDupliactedUIDs: DuplicateUIDsResult = new Map()
   walkContentsTreeForParseSuccess(projectContents, (filePath, parseSuccess) => {
-    fastForEach(parseSuccess.topLevelElements, (tle) => {
-      const debugPath = [filePath]
-      extractUIDFromTopLevelElement(workingResult, filePath, debugPath, tle)
+    const mappingsForFile = collectUidsForFile(filePath, parseSuccess)
+    // mappingsForFile.uniqueIDs.forEach((uid) => {
+    //   workingAllUids.add(uid)
+    // })
+    workingFileToUidMapping.set(filePath, mappingsForFile.uniqueIDs)
+    mappingsForFile.duplicateIDs.forEach((file, uid) => {
+      workingDupliactedUIDs.set(uid, file)
     })
   })
-
-  return getAllUniqueUIDsResultFromWorkingResult(workingResult)
+  return {
+    filePathToUids: workingFileToUidMapping,
+    duplicateIDs: workingDupliactedUIDs,
+  }
 }
 
-export const getAllUniqueUids = memoize(getAllUniqueUidsInnerOld)
-
-export function getAllUniqueUidsFromAttributes(attributes: JSXAttributes): Array<string> {
-  const workingResult = emptyGetAllUniqueUIDsWorkingResult()
-
-  const debugPath: Array<string> = []
-  extractUidFromAttributes(workingResult, '', debugPath, attributes) // FIXME filePath
-
-  return getAllUniqueUidsFromLookup(
-    getAllUniqueUIDsResultFromWorkingResult(workingResult).filePathToUids,
-  )
+export function clearCachedUidsPerFileForTests() {
+  CachedUidsPerFile = new WeakMap()
 }
 
-export function getAllUniqueUIdsFromElementChild(
-  expression: JSXElementChild,
+export function getFilePathForUid(mapping: FileToUidMapping, uid: string): string | null {
+  // let result: string | null | undefined = null
+  return mapFirstApplicable(mapping.entries(), ([filePath, uidMapping]) => {
+    if (uidMapping.has(uid)) {
+      return filePath
+    }
+    return null
+  })
+}
+
+export function getAllUniqueUidsFromLookup(mapping: FileToUidMapping): Array<string> {
+  let result: Array<string> = []
+  for (const [filePath, uids] of mapping.entries()) {
+    result.push(...Array.from(uids))
+  }
+  return result
+}
+
+export function getUniqueUidsMappingInner(
+  projectContents: ProjectContentTreeRoot,
 ): GetAllUniqueUIDsResult {
-  const workingResult = emptyGetAllUniqueUIDsWorkingResult()
+  return collectUidsForEachFile(projectContents)
+}
 
-  const debugPath: Array<string> = []
-  extractUidFromJSXElementChild(workingResult, '', debugPath, expression) // FIXME filePath
+export const getAllUniqueUids = memoize(getUniqueUidsMappingInner)
 
-  return getAllUniqueUIDsResultFromWorkingResult(workingResult)
+export function getAllUniqueUIdsFromElementChild(expression: JSXElementChild): {
+  allUids: Set<string>
+  duplicateIDs: DuplicateUIDsResult
+} {
+  let workingUniqueIDSet = emptySet<string>()
+  let workingDupliactedUIDs: DuplicateUIDsResult = new Map()
+  extractUidFromJSXElementChild(workingUniqueIDSet, workingDupliactedUIDs, '', expression) // FIXME filePath
+
+  return {
+    allUids: workingUniqueIDSet,
+    duplicateIDs: workingDupliactedUIDs,
+  }
+}
+
+export function getAllUniqueUidsFromAttributes(attributes: JSXAttributes): {
+  allUids: Set<string>
+  duplicateIDs: DuplicateUIDsResult
+} {
+  let workingUniqueIDSet = emptySet<string>()
+  let workingDupliactedUIDs: DuplicateUIDsResult = new Map()
+  extractUidFromAttributes(workingUniqueIDSet, workingDupliactedUIDs, '', attributes) // FIXME filePath
+
+  return {
+    allUids: workingUniqueIDSet,
+    duplicateIDs: workingDupliactedUIDs,
+  }
 }
