@@ -69,7 +69,7 @@ function extractUidFromJSXElementChild(
   filePath: string,
   element: JSXElementChild,
 ): void {
-  checkUID(working, workingDupliactedUIDs, filePath, element.uid) // TODO handle duplicate UID
+  checkUID(working, workingDupliactedUIDs, filePath, element.uid)
   switch (element.type) {
     case 'JSX_ELEMENT':
       fastForEach(element.children, (child) =>
