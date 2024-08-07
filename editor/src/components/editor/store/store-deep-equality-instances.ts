@@ -568,6 +568,7 @@ import {
   fontSettings,
   gridCSSKeyword,
   gridCSSNumber,
+  isCSSKeyword,
   isGridCSSKeyword,
   isGridCSSNumber,
 } from '../../inspector/common/css-utils'
@@ -2054,14 +2055,14 @@ export const GridPositionKeepDeepEquality: KeepDeepEqualityCall<GridPosition> = 
   oldValue,
   newValue,
 ) => {
-  if (typeof oldValue === 'string') {
-    if (typeof newValue === 'string') {
+  if (isCSSKeyword(oldValue)) {
+    if (isCSSKeyword(newValue)) {
       return createCallWithTripleEquals<GridPosition>()(oldValue, newValue)
     } else {
       return keepDeepEqualityResult(newValue, false)
     }
   } else {
-    if (typeof newValue === 'string') {
+    if (isCSSKeyword(newValue)) {
       return keepDeepEqualityResult(newValue, false)
     } else {
       return GridPositionValueKeepDeepEquality(oldValue, newValue)

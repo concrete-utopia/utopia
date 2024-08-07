@@ -33,6 +33,7 @@ export interface StringInputProps
   onEscape?: () => void
   pasteHandler?: boolean
   showBorder?: boolean
+  innerStyle?: React.CSSProperties
 }
 
 export const StringInput = React.memo(
@@ -41,6 +42,7 @@ export const StringInput = React.memo(
       {
         controlStatus = 'simple',
         style,
+        innerStyle,
         focusOnMount = false,
         includeBoxShadow = true,
         placeholder: initialPlaceHolder,
@@ -95,6 +97,7 @@ export const StringInput = React.memo(
         >
           <div
             className='string-input-container'
+            style={innerStyle}
             css={{
               borderRadius: 2,
               color: controlStyles.mainColor,
