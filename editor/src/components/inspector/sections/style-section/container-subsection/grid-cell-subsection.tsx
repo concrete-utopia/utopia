@@ -277,7 +277,7 @@ const DimensionsControls = React.memo(
                 type: 'rowSpan',
                 color: 'subdued',
               }}
-              descriptionLabel='Cols'
+              descriptionLabel={width === 1 ? 'Col' : 'Cols'}
               incrementControls={false}
             />
             <NumberInput
@@ -292,7 +292,7 @@ const DimensionsControls = React.memo(
                 type: 'columnSpan',
                 color: 'subdued',
               }}
-              descriptionLabel='Rows'
+              descriptionLabel={height === 1 ? 'Row' : 'Rows'}
               incrementControls={false}
             />
           </FlexRow>
