@@ -1,4 +1,20 @@
 import React from 'react'
+import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../../../../core/shared/array-utils'
+import * as EP from '../../../../../core/shared/element-path'
+import type {
+  ElementInstanceMetadata,
+  GridContainerProperties,
+  GridElementProperties,
+  GridPositionValue,
+  ValidGridPositionKeyword,
+} from '../../../../../core/shared/element-template'
+import {
+  gridPositionValue,
+  isValidGridPositionKeyword,
+  type GridPosition,
+} from '../../../../../core/shared/element-template'
+import { when } from '../../../../../utils/react-conditionals'
 import {
   FlexRow,
   InspectorSectionIcons,
@@ -6,22 +22,21 @@ import {
   NumberInput,
   SquareButton,
 } from '../../../../../uuiui'
-import { Substores, useEditorState } from '../../../../editor/store/store-hook'
-import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
-import type {
-  ElementInstanceMetadata,
-  GridContainerProperties,
-  GridElementProperties,
-} from '../../../../../core/shared/element-template'
-import { gridPositionValue, type GridPosition } from '../../../../../core/shared/element-template'
-import type { CSSNumber, UnknownOrEmptyInput } from '../../../common/css-utils'
-import { cssNumber, isCSSNumber, isEmptyInputValue } from '../../../common/css-utils'
-import { UIGridRow } from '../../../widgets/ui-grid-row'
-import { useDispatch } from '../../../../editor/store/dispatch-context'
-import { applyCommandsAction } from '../../../../editor/actions/action-creators'
+import type { KeywordForControl } from '../../../../../uuiui/inputs/number-or-keyword-control'
+import { NumberOrKeywordControl } from '../../../../../uuiui/inputs/number-or-keyword-control'
 import { setGridPropsCommands } from '../../../../canvas/canvas-strategies/strategies/grid-helpers'
-import * as EP from '../../../../../core/shared/element-path'
-import { when } from '../../../../../utils/react-conditionals'
+import { applyCommandsAction } from '../../../../editor/actions/action-creators'
+import { useDispatch } from '../../../../editor/store/dispatch-context'
+import { Substores, useEditorState } from '../../../../editor/store/store-hook'
+import type { CSSKeyword, CSSNumber, UnknownOrEmptyInput } from '../../../common/css-utils'
+import {
+  cssKeyword,
+  cssNumber,
+  isCSSKeyword,
+  isCSSNumber,
+  isEmptyInputValue,
+} from '../../../common/css-utils'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 
 type CellAdjustMode = 'dimensions' | 'boundaries'
 
@@ -124,13 +139,26 @@ const DimensionsControls = React.memo(
       return getWidthOrHeight(cell.specialSizeMeasurements.elementGridProperties, 'height')
     }, [cell])
 
+    const { columnLabels, rowLabels } = React.useMemo(() => {
+      return getLabelsFromTemplate(gridTemplate)
+    }, [gridTemplate])
+
     const onSubmitPosition = React.useCallback(
       (dimension: 'gridRowStart' | 'height' | 'gridColumnStart' | 'width') =>
-        (e: UnknownOrEmptyInput<CSSNumber>) => {
-          const value: GridPosition =
-            isEmptyInputValue(e) || typeof e.value === 'string'
-              ? 'auto'
-              : gridPositionValue(e.value)
+        (e: UnknownOrEmptyInput<CSSNumber | CSSKeyword<ValidGridPositionKeyword>>) => {
+          let value: GridPosition = isEmptyInputValue(e)
+            ? cssKeyword('auto')
+            : isCSSNumber(e)
+            ? gridPositionValue(e.value)
+            : cssKeyword(e.value)
+
+          const maybeAreaValue = maybeValueFromAreaName(
+            value,
+            dimension === 'gridColumnStart' || dimension === 'width' ? columnLabels : rowLabels,
+          )
+          if (maybeAreaValue != null) {
+            value = maybeAreaValue
+          }
 
           let newValues = {
             ...cell.specialSizeMeasurements.elementGridProperties,
@@ -140,17 +168,17 @@ const DimensionsControls = React.memo(
             case 'gridColumnStart':
               newValues.gridColumnStart = value
               if (
-                newValues.gridColumnStart !== 'auto' &&
-                newValues.gridColumnStart?.numericalPosition != null &&
-                isCSSNumber(e)
+                !isCSSKeyword(newValues.gridColumnStart) &&
+                newValues.gridColumnStart.numericalPosition != null &&
+                !isCSSKeyword(value)
               ) {
-                newValues.gridColumnEnd = gridPositionValue(e.value + width)
+                newValues.gridColumnEnd = gridPositionValue((value.numericalPosition ?? 0) + width)
               }
               break
             case 'gridRowStart':
               newValues.gridRowStart = value
               if (
-                newValues.gridRowStart !== 'auto' &&
+                !isCSSKeyword(newValues.gridRowStart) &&
                 newValues.gridRowStart?.numericalPosition != null &&
                 isCSSNumber(e)
               ) {
@@ -159,7 +187,7 @@ const DimensionsControls = React.memo(
               break
             case 'width':
               if (
-                newValues.gridColumnStart !== 'auto' &&
+                !isCSSKeyword(newValues.gridColumnStart) &&
                 newValues.gridColumnStart?.numericalPosition != null &&
                 isCSSNumber(e)
               ) {
@@ -170,7 +198,7 @@ const DimensionsControls = React.memo(
               break
             case 'height':
               if (
-                newValues.gridRowStart !== 'auto' &&
+                !isCSSKeyword(newValues.gridRowStart) &&
                 newValues.gridRowStart?.numericalPosition != null &&
                 isCSSNumber(e)
               ) {
@@ -184,34 +212,48 @@ const DimensionsControls = React.memo(
 
           dispatch([applyCommandsAction(commands)])
         },
-      [dispatch, cell, gridTemplate, width, height],
+      [dispatch, cell, gridTemplate, width, height, columnLabels, rowLabels],
     )
+
+    const columnStartValue = React.useMemo(() => {
+      return getValueWithAlias(
+        cell.specialSizeMeasurements.elementGridProperties.gridColumnStart,
+        columnLabels,
+      )
+    }, [cell, columnLabels])
+
+    const rowStartValue = React.useMemo(() => {
+      return getValueWithAlias(
+        cell.specialSizeMeasurements.elementGridProperties.gridRowStart,
+        rowLabels,
+      )
+    }, [cell, rowLabels])
 
     return (
       <>
         <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
           <div>Position</div>
           <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
-            <NumberInput
-              value={getValue(cell.specialSizeMeasurements.elementGridProperties.gridColumnStart)}
-              numberType='Unitless'
-              defaultUnitToHide={null}
-              testId='grid-cell-column-start'
+            <NumberOrKeywordControl
+              testId='input-position-column-start'
               onSubmitValue={onSubmitPosition('gridColumnStart')}
-              inputProps={{ placeholder: 'auto' }}
+              value={columnStartValue.value}
+              valueAlias={columnStartValue.alias}
+              keywords={keywordsForPosition(columnLabels.map((l) => l.areaName))}
+              keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.areaName))}
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridColumn',
                 color: 'subdued',
               }}
             />
-            <NumberInput
-              value={getValue(cell.specialSizeMeasurements.elementGridProperties.gridRowStart)}
-              numberType='Unitless'
-              defaultUnitToHide={null}
-              testId='grid-cell-row-start'
+            <NumberOrKeywordControl
+              testId='input-position-row-start'
               onSubmitValue={onSubmitPosition('gridRowStart')}
-              inputProps={{ placeholder: 'auto' }}
+              value={rowStartValue.value}
+              valueAlias={rowStartValue.alias}
+              keywords={keywordsForPosition(rowLabels.map((l) => l.areaName))}
+              keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.areaName))}
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridRow',
@@ -267,13 +309,28 @@ const BoundariesControls = React.memo(
   }) => {
     const dispatch = useDispatch()
 
+    const { columnLabels, rowLabels } = React.useMemo(() => {
+      return getLabelsFromTemplate(gridTemplate)
+    }, [gridTemplate])
+
     const onSubmitPosition = React.useCallback(
       (dimension: 'gridRowStart' | 'gridRowEnd' | 'gridColumnStart' | 'gridColumnEnd') =>
-        (e: UnknownOrEmptyInput<CSSNumber>) => {
-          const value: GridPosition =
-            isEmptyInputValue(e) || typeof e.value === 'string'
-              ? 'auto'
-              : gridPositionValue(e.value)
+        (e: UnknownOrEmptyInput<CSSNumber | CSSKeyword<ValidGridPositionKeyword>>) => {
+          let value: GridPosition = isEmptyInputValue(e)
+            ? cssKeyword('auto')
+            : isCSSNumber(e)
+            ? gridPositionValue(e.value)
+            : cssKeyword(e.value)
+
+          const maybeAreaValue = maybeValueFromAreaName(
+            value,
+            dimension === 'gridColumnStart' || dimension === 'gridColumnEnd'
+              ? columnLabels
+              : rowLabels,
+          )
+          if (maybeAreaValue != null) {
+            value = maybeAreaValue
+          }
 
           const newValues = {
             ...cell.specialSizeMeasurements.elementGridProperties,
@@ -283,70 +340,98 @@ const BoundariesControls = React.memo(
 
           dispatch([applyCommandsAction(commands)])
         },
-      [dispatch, cell, gridTemplate],
+      [dispatch, cell, gridTemplate, columnLabels, rowLabels],
     )
+
+    const columnStartValue = React.useMemo(() => {
+      return getValueWithAlias(
+        cell.specialSizeMeasurements.elementGridProperties.gridColumnStart,
+        columnLabels,
+      )
+    }, [cell, columnLabels])
+
+    const columnEndValue = React.useMemo(() => {
+      return getValueWithAlias(
+        cell.specialSizeMeasurements.elementGridProperties.gridColumnEnd,
+        columnLabels,
+      )
+    }, [cell, columnLabels])
+
+    const rowStartValue = React.useMemo(() => {
+      return getValueWithAlias(
+        cell.specialSizeMeasurements.elementGridProperties.gridRowStart,
+        rowLabels,
+      )
+    }, [cell, rowLabels])
+
+    const rowEndValue = React.useMemo(() => {
+      return getValueWithAlias(
+        cell.specialSizeMeasurements.elementGridProperties.gridRowEnd,
+        rowLabels,
+      )
+    }, [cell, rowLabels])
 
     return (
       <>
         <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
           <div>Start</div>
           <FlexRow style={{ gap: 4 }}>
-            <NumberInput
-              value={getValue(cell.specialSizeMeasurements.elementGridProperties.gridColumnStart)}
-              numberType='Unitless'
-              defaultUnitToHide={null}
+            <NumberOrKeywordControl
+              value={columnStartValue.value}
+              valueAlias={columnStartValue.alias}
               testId='grid-cell-column-start'
               onSubmitValue={onSubmitPosition('gridColumnStart')}
-              inputProps={{ placeholder: 'auto' }}
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridColumn-start',
                 color: 'subdued',
               }}
+              keywords={keywordsForPosition(columnLabels.map((l) => l.areaName))}
+              keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.areaName))}
             />
-            <NumberInput
-              value={getValue(cell.specialSizeMeasurements.elementGridProperties.gridRowStart)}
-              numberType='Unitless'
-              defaultUnitToHide={null}
+            <NumberOrKeywordControl
+              value={rowStartValue.value}
+              valueAlias={rowStartValue.alias}
               testId='grid-cell-row-start'
               onSubmitValue={onSubmitPosition('gridRowStart')}
-              inputProps={{ placeholder: 'auto' }}
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridRow-start',
                 color: 'subdued',
               }}
+              keywords={keywordsForPosition(rowLabels.map((l) => l.areaName))}
+              keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.areaName))}
             />
           </FlexRow>
         </UIGridRow>
         <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
           <div>End</div>
           <FlexRow style={{ gap: 4 }}>
-            <NumberInput
-              value={getValue(cell.specialSizeMeasurements.elementGridProperties.gridColumnEnd)}
-              numberType='Unitless'
-              defaultUnitToHide={null}
+            <NumberOrKeywordControl
+              value={columnEndValue.value}
+              valueAlias={columnEndValue.alias}
               testId='grid-cell-column-end'
               onSubmitValue={onSubmitPosition('gridColumnEnd')}
-              inputProps={{ placeholder: 'auto' }}
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridColumn-end',
                 color: 'subdued',
               }}
+              keywords={keywordsForPosition(columnLabels.map((l) => l.areaName))}
+              keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.areaName))}
             />
-            <NumberInput
-              value={getValue(cell.specialSizeMeasurements.elementGridProperties.gridRowEnd)}
-              numberType='Unitless'
-              defaultUnitToHide={null}
+            <NumberOrKeywordControl
+              value={rowEndValue.value}
+              valueAlias={rowEndValue.alias}
               testId='grid-cell-row-end'
               onSubmitValue={onSubmitPosition('gridRowEnd')}
-              inputProps={{ placeholder: 'auto' }}
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridRow-end',
                 color: 'subdued',
               }}
+              keywords={keywordsForPosition(rowLabels.map((l) => l.areaName))}
+              keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.areaName))}
             />
           </FlexRow>
         </UIGridRow>
@@ -357,7 +442,7 @@ const BoundariesControls = React.memo(
 BoundariesControls.displayName = 'BoundariesControls'
 
 function getValue(pos: GridPosition | null): CSSNumber | null {
-  if (pos == null || pos === 'auto' || pos.numericalPosition == null) {
+  if (pos == null || isCSSKeyword(pos) || pos.numericalPosition == null) {
     return null
   }
   return cssNumber(pos.numericalPosition)
@@ -370,4 +455,64 @@ function getWidthOrHeight(props: GridElementProperties, dimension: 'width' | 'he
     return 1
   }
   return end.value - start.value
+}
+
+function getLabelsFromTemplate(gridTemplate: GridContainerProperties) {
+  const getAxisLabels = (axis: 'gridTemplateColumns' | 'gridTemplateRows') => {
+    const template = gridTemplate[axis]
+    if (template?.type !== 'DIMENSIONS') {
+      return []
+    }
+    return mapDropNulls((d, index) => {
+      if (d.areaName == null) {
+        return null
+      }
+      return { areaName: d.areaName, position: index + 1 }
+    }, template.dimensions)
+  }
+  const columnLabels = getAxisLabels('gridTemplateColumns')
+
+  const rowLabels = getAxisLabels('gridTemplateRows')
+
+  return { columnLabels, rowLabels }
+}
+
+function keywordsForPosition(labels: string[]) {
+  let items: KeywordForControl<string>[] = [{ label: 'Auto', value: cssKeyword('auto') }]
+  if (labels.length > 0) {
+    items.push('separator')
+    items.push(
+      ...labels.map((r) => ({
+        label: r,
+        value: cssKeyword(r),
+      })),
+    )
+  }
+  return items
+}
+
+function maybeValueFromAreaName(
+  value: GridPosition,
+  labels: { areaName: string; position: number }[],
+): GridPositionValue | null {
+  if (!isCSSKeyword(value)) {
+    return null
+  }
+  const areaMatch = labels.find((l) => l.areaName === value.value)
+  if (areaMatch != null) {
+    return gridPositionValue(areaMatch.position)
+  }
+  return null
+}
+
+function getValueWithAlias(
+  position: GridPosition | null,
+  labels: { areaName: string; position: number }[],
+) {
+  const value = getValue(position) ?? cssKeyword('auto')
+  if (isCSSKeyword(value)) {
+    return { value: value }
+  }
+  const areaName = labels.find((l) => l.position === value.value)
+  return { value: value, alias: areaName?.areaName }
 }

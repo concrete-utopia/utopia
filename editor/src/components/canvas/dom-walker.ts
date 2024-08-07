@@ -69,6 +69,7 @@ import {
   parseGridPosition,
   parseGridRange,
   parseGridAutoOrTemplateBase,
+  isCSSKeyword,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -1116,7 +1117,7 @@ function getGridElementProperties(
     ) ??
     null
   const adjustedColumnEnd =
-    gridColumnEnd === 'auto' && gridColumn?.end != null ? gridColumn.end : gridColumnEnd
+    isCSSKeyword(gridColumnEnd) && gridColumn?.end != null ? gridColumn.end : gridColumnEnd
 
   const gridRow = defaultEither(null, parseGridRange(container, 'row', elementStyle.gridRow))
   const gridRowStart =
@@ -1139,7 +1140,7 @@ function getGridElementProperties(
       parseGridPosition(container, 'row', 'end', gridRow?.end ?? null, elementStyle.gridRowEnd),
     ) ??
     null
-  const adjustedRowEnd = gridRowEnd === 'auto' && gridRow?.end != null ? gridRow.end : gridRowEnd
+  const adjustedRowEnd = isCSSKeyword(gridRowEnd) && gridRow?.end != null ? gridRow.end : gridRowEnd
 
   const result = gridElementProperties(
     gridColumnStart,

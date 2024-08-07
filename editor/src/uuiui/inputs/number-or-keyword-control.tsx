@@ -16,15 +16,23 @@ import type {
 import { isCSSNumber } from '../../components/inspector/common/css-utils'
 import { NO_OP } from '../../core/shared/utils'
 import type { ControlStatus } from '../../uuiui-deps'
+import type { IcnProps } from '../icn'
+import { mapDropNulls } from '../../core/shared/array-utils'
+
+export type KeywordForControl<T extends string> =
+  | { label: string; value: CSSKeyword<T> }
+  | 'separator'
 
 type NumberOrKeywordControlProps<T extends string> = {
   testId: string
   style?: CSSProperties
   onSubmitValue: (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<T>>) => void
   value: CSSNumber | CSSKeyword<T>
-  keywords: Array<{ label: string; value: CSSKeyword<T> }>
+  valueAlias?: string
+  keywords: Array<KeywordForControl<T>>
   keywordTypeCheck: (keyword: unknown) => keyword is T
   controlStatus?: ControlStatus
+  labelInner?: string | IcnProps
 }
 
 export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordControlProps<T>) {
@@ -63,15 +71,22 @@ export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordC
         regularDropdownMenuItem({
           id: 'dropdown-input-value',
           icon: <Icons.Checkmark color='white' width={16} height={16} />,
-          label: `${props.value.value}${isCSSNumber(props.value) ? props.value.unit ?? '' : ''}`,
+          label: `${props.value.value}${isCSSNumber(props.value) ? props.value.unit ?? '' : ''}${
+            props.valueAlias != null ? ` (${props.valueAlias})` : ''
+          }`,
           disabled: true,
           onSelect: NO_OP,
         }),
-        separatorDropdownMenuItem('dropdown-separator'),
       )
     }
+    if (props.keywords.length > 0) {
+      items.push(separatorDropdownMenuItem('dropdown-separator'))
+    }
     items.push(
-      ...props.keywords.map((keyword): DropdownMenuItem => {
+      ...props.keywords.map((keyword, idx): DropdownMenuItem => {
+        if (keyword === 'separator') {
+          return separatorDropdownMenuItem(`keyword-separator-${idx}`)
+        }
         return regularDropdownMenuItem({
           id: `dropdown-label-${keyword.value.value}`,
           icon: <div style={{ width: 16, height: 16 }} />,
@@ -81,7 +96,11 @@ export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordC
       }),
     )
     return items
-  }, [props.value, props.keywords, onSubmitValue, props.controlStatus])
+  }, [props.value, props.keywords, onSubmitValue, props.controlStatus, props.valueAlias])
+
+  const keywordsWithoutSeparators = React.useMemo(() => {
+    return mapDropNulls((k) => (k !== 'separator' ? k : null), props.keywords).map((k) => k.value)
+  }, [props.keywords])
 
   return (
     <div
@@ -101,9 +120,10 @@ export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordC
         showBorder={hover || dropdownOpen}
         onSubmitValue={onSubmitValue}
         incrementalControls={false}
-        validKeywords={props.keywords.map((k) => k.value)}
+        validKeywords={keywordsWithoutSeparators}
         style={{ flex: 1 }}
         controlStatus={hover || dropdownOpen ? 'detected' : props.controlStatus}
+        labelInner={props.labelInner}
       />
       <div
         style={{
