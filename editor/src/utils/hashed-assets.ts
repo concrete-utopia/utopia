@@ -41,13 +41,12 @@ export function getPossiblyHashedURL(url: string): string {
 
 // prioritise the toolbar assets for now, so first click shows them immediately
 const prioritisedAssets = [
-  '/editor/icons/semantic/checkmark-white-16x16@2x.png',
-  '/editor/icons/tools/comment-white-18x18@2x.png',
+  '/editor/icons/light/semantic/checkmark-white-16x16@2x.png',
+  '/editor/icons/light/tools/comment-white-18x18@2x.png',
   // next line is for the pointer when it's not selected (by default it is)
-  '/editor/icons/tools/pointer-black-18x18@2x.png',
-  '/editor/icons/tools/play-white-18x18@2x.png',
-  '/editor/icons/tools/text-white-18x18@2x.png',
-  '/editor/icons/tools/panels-white-18x18@2x.png',
+  '/editor/icons/light/tools/pointer-black-18x18@2x.png',
+  '/editor/icons/light/tools/text-white-18x18@2x.png',
+  '/editor/icons/light/tools/panels-white-18x18@2x.png',
 ]
 
 export function preloadPrioritizedAssets() {
