@@ -368,16 +368,8 @@ function useGridData(elementPaths: ElementPath[]) {
     (store) => {
       return mapDropNulls((view) => {
         const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view)
-        const parent = MetadataUtils.findElementByElementPath(
-          store.editor.jsxMetadata,
-          EP.parentPath(view),
-        )
 
-        const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element)
-          ? element
-          : MetadataUtils.isGridLayoutedContainer(parent)
-          ? parent
-          : null
+        const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element) ? element : null
 
         if (
           targetGridContainer == null ||
@@ -473,7 +465,11 @@ export const GridRowColumnResizingControls =
     )
   })
 
-export const GridControls = controlForStrategyMemoized(() => {
+export interface GridControlsProps {
+  targets: ElementPath[]
+}
+
+export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ targets }) => {
   const dispatch = useDispatch()
   const controls = useAnimationControls()
   const colorTheme = useColorTheme()
@@ -541,19 +537,13 @@ export const GridControls = controlForStrategyMemoized(() => {
     [interactionLatestMetadata, editorMetadata],
   )
 
-  const selectedViews = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews,
-    'GridControls selectedViews',
-  )
-
   const hoveredGrids = useEditorState(
     Substores.canvas,
     (store) => stripNulls([store.editor.canvas.controls.gridControls]),
     'FlexReparentTargetIndicator lines',
   )
 
-  const grids = useGridData([...selectedViews, ...hoveredGrids])
+  const grids = useGridData([...targets, ...hoveredGrids])
 
   const cells = React.useMemo(() => {
     return grids.flatMap((grid) => {

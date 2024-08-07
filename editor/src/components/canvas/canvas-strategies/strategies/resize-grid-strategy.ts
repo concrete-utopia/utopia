@@ -69,7 +69,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       },
       {
         control: GridControls,
-        props: {},
+        props: { targets: [EP.parentPath(selectedElement)] },
         key: `grid-controls-${EP.toString(selectedElement)}`,
         show: 'always-visible',
       },

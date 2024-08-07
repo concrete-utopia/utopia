@@ -52,7 +52,7 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
     controlsToRender: [
       {
         control: GridControls,
-        props: {},
+        props: { targets: [EP.parentPath(selectedElement)] },
         key: `grid-controls-${EP.toString(selectedElement)}`,
         show: 'always-visible',
       },
