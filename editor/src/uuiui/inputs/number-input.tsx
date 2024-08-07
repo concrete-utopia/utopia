@@ -51,7 +51,6 @@ import {
 } from './base-input'
 import { usePropControlledStateV2 } from '../../components/inspector/common/inspector-utils'
 import { useControlsDisabledInSubtree } from '../utilities/disable-subtree'
-import { Ellipsis } from '../../components/navigator/left-pane/github-pane/github-file-changes-list'
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
 
@@ -863,7 +862,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             autoComplete='off'
           />
           {showDescriptionLabel ? (
-            <Ellipsis
+            <div
               style={{
                 position: 'absolute',
                 top: 0,
@@ -883,7 +882,7 @@ export const NumberInput = React.memo<NumberInputProps>(
                 </span>
                 <span style={{ fontSize: 10 }}>{descriptionLabel}</span>
               </div>
-            </Ellipsis>
+            </div>
           ) : null}
         </div>
       </div>
