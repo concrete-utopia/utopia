@@ -260,6 +260,11 @@ export const NumberInput = React.memo<NumberInputProps>(
       setScrubThresholdPassedState(b)
     }
 
+    const simulatedPointerRef = React.useRef(null)
+    const pointerOriginRef = React.useRef(null)
+
+    const simulatedMouseDeltaX = React.useRef(0)
+
     const [valueChangedSinceFocus, setValueChangedSinceFocus] = React.useState<boolean>(false)
 
     const scaleFactor = valueUnit === '%' ? 100 : 1
@@ -398,8 +403,17 @@ export const NumberInput = React.memo<NumberInputProps>(
       (e: MouseEvent) => {
         onThresholdPassed(e, () => {
           if (!scrubThresholdPassed.current) {
+            console.log('scrub threshold passed')
             setScrubThresholdPassed(true)
+            if (pointerOriginRef.current) {
+              console.log('requesting pointer lock')
+              // @ts-ignore
+              pointerOriginRef.current.requestPointerLock()
+            }
           }
+          console.log('scrubbing')
+          simulatedMouseDeltaX.current = e.screenX - dragOriginX.current
+
           setScrubValue(
             valueUnit,
             e.screenX,
@@ -409,14 +423,33 @@ export const NumberInput = React.memo<NumberInputProps>(
             true,
           )
         })
+
+        setScrubValue(
+          valueUnit,
+          e.screenX,
+          e.screenY,
+          dragOriginX.current,
+          dragOriginY.current,
+          true,
+        )
       },
       [setScrubValue, valueUnit],
     )
 
     const scrubOnMouseUp = React.useCallback(
       (e: MouseEvent) => {
+        console.log('removing event listeners')
         window.removeEventListener('mouseup', scrubOnMouseUp)
         window.removeEventListener('mousemove', scrubOnMouseMove)
+
+        // removing pointer lock
+        if (document.pointerLockElement === pointerOriginRef.current) {
+          console.log('exiting pointer lock')
+          document.exitPointerLock()
+          console.log('removing pointer lock event listeners')
+          // TODO we need a pointer lock event listener
+          // since users can exit pointer lock by pressing escape
+        }
 
         setIsFauxcused(false)
         ref.current?.focus()
@@ -635,6 +668,7 @@ export const NumberInput = React.memo<NumberInputProps>(
         if (e.button === 0) {
           e.stopPropagation()
           setIsFauxcused(true)
+          console.log('adding event listeners oMouseMove and onMouseUp')
           window.addEventListener('mousemove', scrubOnMouseMove)
           window.addEventListener('mouseup', scrubOnMouseUp)
           setLabelDragDirection('horizontal')
@@ -642,6 +676,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           setDragOriginX(e.screenX)
           setDragOriginY(e.screenY)
           setGlobalCursor?.(CSSCursor.ResizeEW)
+          simulatedMouseDeltaX.current = 0
         }
       },
       [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, value, disabled],
@@ -667,7 +702,29 @@ export const NumberInput = React.memo<NumberInputProps>(
         : undefined
 
     return (
-      <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={style}>
+      <div
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        ref={pointerOriginRef}
+        style={style}
+      >
+        {/* this will contain the fake mouse pointer, but for debugging I always show it */}
+        <div
+          ref={simulatedPointerRef}
+          className='simulatedPosition'
+          style={{
+            transform: `translateX(${simulatedMouseDeltaX.current}px)`,
+            width: 5,
+            height: 5,
+            background: 'red',
+            position: 'fixed',
+            visibility: scrubThresholdPassed.current ? 'visible' : 'hidden',
+            // i know, but it works
+            zIndex: 999999,
+          }}
+        >
+          {scrubThresholdPassed.current ? simulatedMouseDeltaX.current : '-'}
+        </div>
         <div
           className='number-input-container'
           css={{
