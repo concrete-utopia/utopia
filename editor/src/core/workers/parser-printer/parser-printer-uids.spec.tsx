@@ -36,7 +36,7 @@ import { emptySet } from '../../shared/set-utils'
 import { createCodeFile } from '../../../components/custom-code/code-file.test-utils'
 import { renderTestEditorWithProjectContent } from '../../../components/canvas/ui-jsx.test-utils'
 import { updateFile } from '../../../components/editor/actions/action-creators'
-import { getUidMappings, getAllUniqueUidsFromLookup } from '../../model/get-uid-mappings'
+import { getUidMappings, getAllUniqueUidsFromMapping } from '../../model/get-uid-mappings'
 
 function addCodeFileToProjectContents(
   projectContents: ProjectContentTreeRoot,
@@ -81,7 +81,7 @@ describe('parseCode', () => {
           ),
         )
         const result = getUidMappings(projectContents)
-        expect(getAllUniqueUidsFromLookup(result.filePathToUids)).toHaveLength(493)
+        expect(getAllUniqueUidsFromMapping(result.filePathToUids)).toHaveLength(493)
         expect(result.duplicateIDs).toEqual({})
       },
       (_) => {
@@ -114,7 +114,7 @@ describe('parseCode', () => {
     )
 
     const result = getUidMappings(projectContents)
-    expect(getAllUniqueUidsFromLookup(result.filePathToUids)).toHaveLength(7)
+    expect(getAllUniqueUidsFromMapping(result.filePathToUids)).toHaveLength(7)
     expect(result.duplicateIDs).toEqual({})
   })
 
@@ -157,7 +157,7 @@ describe('parseCode', () => {
     )
 
     const result = getUidMappings(projectContents)
-    expect(getAllUniqueUidsFromLookup(result.filePathToUids)).toHaveLength(14)
+    expect(getAllUniqueUidsFromMapping(result.filePathToUids)).toHaveLength(14)
     expect(result.duplicateIDs).toEqual({})
   })
 
@@ -231,7 +231,7 @@ describe('parseCode', () => {
     )
 
     const result = getUidMappings(renderResult.getEditorState().editor.projectContents)
-    expect(getAllUniqueUidsFromLookup(result.filePathToUids)).toHaveLength(26)
+    expect(getAllUniqueUidsFromMapping(result.filePathToUids)).toHaveLength(26)
     expect(result.duplicateIDs).toEqual({})
   })
 
@@ -290,7 +290,7 @@ describe('parseCode', () => {
     )
 
     const resultBefore = getUidMappings(renderResult.getEditorState().editor.projectContents)
-    expect(getAllUniqueUidsFromLookup(resultBefore.filePathToUids)).toHaveLength(17)
+    expect(getAllUniqueUidsFromMapping(resultBefore.filePathToUids)).toHaveLength(17)
     expect(resultBefore.duplicateIDs).toEqual({})
 
     await renderResult.dispatch(
@@ -319,7 +319,7 @@ describe('parseCode', () => {
     )
 
     const resultAfter = getUidMappings(renderResult.getEditorState().editor.projectContents)
-    expect(getAllUniqueUidsFromLookup(resultAfter.filePathToUids)).toHaveLength(25)
+    expect(getAllUniqueUidsFromMapping(resultAfter.filePathToUids)).toHaveLength(25)
     expect(resultAfter.duplicateIDs).toEqual({})
   })
 })

@@ -54,7 +54,7 @@ import { foldEither } from '../../../core/shared/either'
 import {
   getUidMappings,
   getAllUniqueUIdsFromElementChild,
-  getAllUniqueUidsFromLookup,
+  getAllUniqueUidsFromMapping,
 } from '../../model/get-uid-mappings'
 import { contentsToTree } from '../../../components/assets'
 import {

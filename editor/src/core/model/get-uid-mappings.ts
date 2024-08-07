@@ -232,14 +232,6 @@ export function getFilePathForUid(mapping: FileToUidMapping, uid: string): strin
   })
 }
 
-export function getAllUniqueUidsFromLookup(mapping: FileToUidMapping): Array<string> {
-  let result: Array<string> = []
-  for (const [filePath, uids] of mapping.entries()) {
-    result.push(...Array.from(uids))
-  }
-  return result
-}
-
 export function getUniqueUidsMappingInner(
   projectContents: ProjectContentTreeRoot,
 ): GetAllUniqueUIDsResult {
@@ -247,6 +239,14 @@ export function getUniqueUidsMappingInner(
 }
 
 export const getUidMappings = memoize(getUniqueUidsMappingInner)
+
+export function getAllUniqueUidsFromMapping(mapping: FileToUidMapping): Array<string> {
+  let result: Array<string> = []
+  for (const [filePath, uids] of mapping.entries()) {
+    result.push(...Array.from(uids))
+  }
+  return result
+}
 
 export function getAllUniqueUIdsFromElementChild(expression: JSXElementChild): {
   allUids: Set<string>

@@ -91,7 +91,7 @@ import {
 } from '../../shared/dom-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { contentsToTree } from '../../../components/assets'
-import { getUidMappings, getAllUniqueUidsFromLookup } from '../../model/get-uid-mappings'
+import { getUidMappings, getAllUniqueUidsFromMapping } from '../../model/get-uid-mappings'
 import {
   filtered,
   fromField,
@@ -6182,12 +6182,12 @@ export var whatever2 = (props) => <View data-uid='aaa'>
               const fullHighlightBoundsUIDs = new Set(Object.keys(success.fullHighlightBounds))
               const allUIDsAreEqual = setsEqual(
                 fullHighlightBoundsUIDs,
-                new Set(getAllUniqueUidsFromLookup(singleFileUniqueIDsResult.filePathToUids)),
+                new Set(getAllUniqueUidsFromMapping(singleFileUniqueIDsResult.filePathToUids)),
               )
               if (!allUIDsAreEqual) {
                 throw new Error(
                   `All UIDs [${Array.from(
-                    getAllUniqueUidsFromLookup(singleFileUniqueIDsResult.filePathToUids),
+                    getAllUniqueUidsFromMapping(singleFileUniqueIDsResult.filePathToUids),
                   ).sort()}] do not match the full highlight bounds UIDs: [${Array.from(
                     fullHighlightBoundsUIDs,
                   ).sort()}]`,
