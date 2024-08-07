@@ -43,6 +43,29 @@ export function rectangleToSixFramePoints(
   }
 }
 
+export type FrameWithAllPointsSomeOptional = {
+  left: number
+  top: number
+  right: number | null
+  bottom: number | null
+  width: number
+  height: number
+}
+
+export function rectangleToSixFramePointsOptionalContainer(
+  rectangle: SimpleRectangle,
+  containerSize: Size | null,
+): FrameWithAllPointsSomeOptional {
+  return {
+    left: rectangle.x,
+    right: containerSize == null ? null : containerSize.width - (rectangle.x + rectangle.width),
+    width: rectangle.width,
+    top: rectangle.y,
+    bottom: containerSize == null ? null : containerSize.height - (rectangle.y + rectangle.height),
+    height: rectangle.height,
+  }
+}
+
 export function sixFramePointsToCanvasRectangle(
   frameWithAllPoints: FrameWithAllPoints,
 ): CanvasRectangle {

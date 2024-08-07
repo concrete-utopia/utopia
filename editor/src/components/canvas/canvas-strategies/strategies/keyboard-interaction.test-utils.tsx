@@ -6,8 +6,15 @@ import type {
   ElementInstanceMetadataMap,
   SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
-import { jsxElement, jsxElementName } from '../../../../core/shared/element-template'
-import { canvasRectangle } from '../../../../core/shared/math-utils'
+import {
+  elementInstanceMetadata,
+  emptySpecialSizeMeasurements,
+  importedOrigin,
+  jsxElement,
+  jsxElementName,
+  sameFileOrigin,
+} from '../../../../core/shared/element-template'
+import { canvasRectangle, localRectangle } from '../../../../core/shared/math-utils'
 import type { KeyCharacter } from '../../../../utils/keyboard'
 import type { Modifiers } from '../../../../utils/modifiers'
 import type { EditorState } from '../../../editor/store/editor-state'
@@ -33,19 +40,32 @@ export function pressKeys(
   modifiers: Modifiers,
 ): EditorState {
   const metadata: ElementInstanceMetadataMap = {
-    'scene-aaa/app-entity:aaa/bbb': {
-      elementPath: elementPath([
-        ['scene-aaa', 'app-entity'],
+    'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb': elementInstanceMetadata(
+      elementPath([
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ]),
-      element: right(jsxElement(jsxElementName('View', []), 'bbb', [], [])),
-      specialSizeMeasurements: {
+      right(jsxElement(jsxElementName('div', []), 'bbb', [], [])),
+      canvasRectangle({ x: 50, y: 50, width: 250, height: 300 }),
+      localRectangle({ x: 50, y: 50, width: 250, height: 300 }),
+      canvasRectangle({ x: 50, y: 50, width: 250, height: 300 }),
+      false,
+      false,
+      {
+        ...emptySpecialSizeMeasurements,
         position: 'absolute',
         immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
         coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-      } as SpecialSizeMeasurements,
-      globalFrame: { x: 50, y: 50, width: 250, height: 300 },
-    } as ElementInstanceMetadata,
+      },
+      null,
+      null,
+      null,
+      sameFileOrigin('div', 'div'),
+      'not-a-conditional',
+      null,
+      null,
+      null,
+    ),
   }
   const interactionSession: InteractionSession = {
     ...createInteractionViaKeyboard(

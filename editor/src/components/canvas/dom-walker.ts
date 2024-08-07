@@ -388,7 +388,9 @@ function runSelectiveDomWalker(
             } else {
               const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
                 const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
-                return globalProps.validPaths.some((vp) => EP.pathsEqual(vp, staticPath))
+                return globalProps.validPaths.some((vp) =>
+                  EP.isDescendantOfOrEqualTo(staticPath, vp),
+                )
               })
               globalProps.pathsCollectedMutable.push(
                 ...foundValidPaths.map((pathWithString) => pathWithString.path),
@@ -513,6 +515,8 @@ export function backfillDomMetadata(
       mapDropNulls((c) => c.specialSizeMeasurements.globalFrameWithTextContent, children),
     )
 
+    const commonPosition = MetadataUtils.getCommonPosition(children)
+
     // Insert a default entry in for this.
     if (!(pathToFill in updatedMetadata)) {
       updatedMetadata[pathToFill] = elementInstanceMetadata(
@@ -545,6 +549,7 @@ export function backfillDomMetadata(
       specialSizeMeasurements: {
         ...currentMetadata.specialSizeMeasurements,
         globalFrameWithTextContent: childrenBoundingGlobalFrameWithTextContent,
+        position: commonPosition ?? currentMetadata.specialSizeMeasurements.position,
       },
     }
   }
@@ -936,13 +941,29 @@ function collectMetadata(
   }
 }
 
+interface CollectAndCreateMetadataForElementResult {
+  collectedMetadata: ElementInstanceMetadataMap
+  cachedPaths: Array<ElementPath>
+  collectedPaths: Array<ElementPath>
+}
+
 function collectAndCreateMetadataForElement(
   element: HTMLElement,
   parentPoint: CanvasPoint,
   closestOffsetParentPath: ElementPath,
   pathsForElement: ElementPath[],
   globalProps: DomWalkerInternalGlobalProps,
-) {
+): CollectAndCreateMetadataForElementResult {
+  // If there's no paths to store these against, no point in collecting the metadata.
+  if (pathsForElement.length === 0) {
+    return {
+      collectedMetadata: {},
+      cachedPaths: [],
+      collectedPaths: pathsForElement,
+    }
+  }
+
+  // Otherwise actually collect the metadata.
   const {
     tagName,
     globalFrame,
@@ -1451,7 +1472,7 @@ function globalFrameForElement(
   containerRectLazy: () => CanvasRectangle,
   withContent: 'without-text-content' | 'with-text-content',
   rounding: 'nearest-half' | 'no-rounding',
-) {
+): CanvasRectangle {
   const elementRect = getCanvasRectangleFromElement(element, scale, withContent, rounding)
 
   return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))

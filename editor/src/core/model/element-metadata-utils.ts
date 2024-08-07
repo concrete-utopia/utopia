@@ -72,6 +72,7 @@ import {
   isJSIdentifier,
   isJSPropertyAccess,
   isJSElementAccess,
+  isIntrinsicHTMLElementString,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -107,11 +108,12 @@ import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
 import type { ElementSupportsChildren } from './element-template-utils'
 import {
-  componentHonoursPropsPosition,
-  componentHonoursPropsSize,
+  honoursPropsToPositionComponent,
+  honoursPropsToSizeComponent,
   componentUsesProperty,
   findJSXElementChildAtPath,
   elementChildSupportsChildrenAlsoText,
+  findElementThatHonoursPropsToPositionComponent,
 } from './element-template-utils'
 import {
   isImportedComponent,
@@ -142,6 +144,7 @@ import { buildTree, getSubTree, getCanvasRoots, elementPathTree } from '../share
 import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import type {
+  CSSPosition,
   Direction,
   FlexDirection,
   ForwardOrReverse,
@@ -170,6 +173,7 @@ import type { RemixRoutingTable } from '../../components/editor/store/remix-deri
 import { exists, toFirst } from '../shared/optics/optic-utilities'
 import { eitherRight, fromField, fromTypeGuard, notNull } from '../shared/optics/optic-creators'
 import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
+import { getSingleValueOnly } from '../shared/set-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1142,7 +1146,7 @@ export const MetadataUtils = {
       }
     }
   },
-  targetHonoursPropsSize(
+  targetHonoursPropsToSizeElement(
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadata | null,
   ): boolean {
@@ -1163,27 +1167,59 @@ export const MetadataUtils = {
       // Could be an external third party component, assuming true for now.
       return true
     } else {
-      return componentHonoursPropsSize(underlyingComponent)
+      return honoursPropsToSizeComponent(underlyingComponent)
     }
   },
-  targetHonoursPropsPosition(
+  isIntrinsicElement(element: Either<string, JSXElementChild>): boolean {
+    return foldEither(
+      isIntrinsicHTMLElementString,
+      (elementInstance) =>
+        isJSXElement(elementInstance) && isIntrinsicHTMLElement(elementInstance.name),
+      element,
+    )
+  },
+  findTargetThatHonoursPropsToPositionElement(
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadata | null,
-  ): boolean {
+    checkPosition: 'check-position' | 'ignore-position',
+  ): ElementPath | null {
     if (metadata == null) {
-      return false
+      return null
     } else {
       const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
         projectContents,
         metadata.importInfo,
       )
       if (underlyingComponent == null) {
-        // Could be an external third party component, assuming true for now.
-        return true
+        if (
+          (checkPosition === 'check-position' &&
+            metadata.specialSizeMeasurements.position === 'absolute') ||
+          (checkPosition === 'ignore-position' && this.isIntrinsicElement(metadata.element))
+        ) {
+          // Could be an external third party component, assuming true for now.
+          return metadata.elementPath
+        } else {
+          return null
+        }
       } else {
-        return componentHonoursPropsPosition(underlyingComponent)
+        return findElementThatHonoursPropsToPositionComponent(
+          underlyingComponent,
+          metadata.elementPath,
+        )
       }
     }
+  },
+  targetHonoursPropsToPositionElement(
+    projectContents: ProjectContentTreeRoot,
+    metadata: ElementInstanceMetadata | null,
+    checkPosition: 'check-position' | 'ignore-position',
+  ): boolean {
+    const possibleTarget = this.findTargetThatHonoursPropsToPositionElement(
+      projectContents,
+      metadata,
+      checkPosition,
+    )
+    return possibleTarget != null
   },
   intrinsicElementThatSupportsChildren: (element: JSXElementChild) => {
     return (
@@ -2567,6 +2603,63 @@ export const MetadataUtils = {
     }
     return MetadataUtils.findSceneOfTarget(parent, metadata)
   },
+  getCommonPosition(metadataEntries: Array<ElementInstanceMetadata>): CSSPosition | null {
+    let positions: Set<CSSPosition> = new Set()
+    for (const entry of metadataEntries) {
+      if (entry.specialSizeMeasurements.position != null) {
+        positions.add(entry.specialSizeMeasurements.position)
+      }
+    }
+
+    if (positions.size === 1) {
+      return getSingleValueOnly(positions)
+    } else {
+      return null
+    }
+  },
+  getCoordinateSystemBounds(
+    metadata: ElementInstanceMetadataMap,
+    selectedElement: ElementPath,
+    target: ElementPath,
+  ): CanvasRectangle | null {
+    let workingPath: ElementPath | null = target
+    while (workingPath != null && !EP.isEmptyPath(workingPath)) {
+      const element = MetadataUtils.findElementByElementPath(metadata, workingPath)
+      if (element != null) {
+        let bounds: CanvasRectangle | null = null
+        if (EP.isDescendantOfOrEqualTo(workingPath, selectedElement)) {
+          bounds = element.specialSizeMeasurements.coordinateSystemBounds
+        } else {
+          bounds =
+            element.globalFrame != null && isInfinityRectangle(element.globalFrame)
+              ? null
+              : element.globalFrame
+        }
+        if (bounds != null) {
+          return bounds
+        }
+      }
+      workingPath = EP.parentPath(workingPath)
+    }
+    return null
+  },
+  getParentFlexDirection(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): FlexDirection | null {
+    let workingPath: ElementPath | null = target
+    while (workingPath != null && !EP.isEmptyPath(workingPath)) {
+      const element = MetadataUtils.findElementByElementPath(metadata, workingPath)
+      if (element != null) {
+        const parentFlexDirection = element.specialSizeMeasurements.parentFlexDirection
+        if (parentFlexDirection != null) {
+          return parentFlexDirection
+        }
+      }
+      workingPath = EP.parentPath(workingPath)
+    }
+    return null
+  },
 }
 
 function getNonExpressionDescendantsInner(
@@ -2722,6 +2815,8 @@ function fillSpyOnlyMetadata(
       workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
       null
 
+    const commonPosition = MetadataUtils.getCommonPosition(childrenFromWorking)
+
     workingElements[pathStr] = {
       ...spyElem,
       globalFrame: childrenBoundingGlobalFrame,
@@ -2730,6 +2825,7 @@ function fillSpyOnlyMetadata(
         ...spyElem.specialSizeMeasurements,
         globalContentBoxForChildren: globalContentBoxForChildrenFromDomOrParent,
         globalFrameWithTextContent: childrenBoundingGlobalFrameWithTextContent,
+        position: commonPosition ?? spyElem.specialSizeMeasurements.position,
       },
     }
   })
@@ -3091,7 +3187,7 @@ export function createFakeMetadataForElement(
     parentElement?.specialSizeMeasurements.padding ??
     sides(undefined, undefined, undefined, undefined)
   specialSizeMeasurements.parentFlexGap = parentElement?.specialSizeMeasurements.gap ?? 0
-  specialSizeMeasurements.coordinateSystemBounds = zeroCanvasRect
+  specialSizeMeasurements.coordinateSystemBounds = null
 
   return elementInstanceMetadata(
     path,

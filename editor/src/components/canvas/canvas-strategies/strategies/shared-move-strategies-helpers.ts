@@ -5,11 +5,13 @@ import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-
 import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { isRight, right } from '../../../../core/shared/either'
+import { foldEither, isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import type {
-  ElementInstanceMetadataMap,
-  JSXElement,
+import {
+  isIntrinsicElement,
+  type ElementInstanceMetadataMap,
+  type JSXElement,
+  isJSXElement,
 } from '../../../../core/shared/element-template'
 import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import {
@@ -60,7 +62,10 @@ import { memoize } from '../../../../core/shared/memoize'
 import { is } from '../../../../core/shared/equality-utils'
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import type { InspectorStrategy } from '../../../../components/inspector/inspector-strategies/inspector-strategy'
-import { rectangleToSixFramePoints } from '../../commands/utils/group-resize-utils'
+import {
+  rectangleToSixFramePoints,
+  rectangleToSixFramePointsOptionalContainer,
+} from '../../commands/utils/group-resize-utils'
 import invariant from '../../../../third-party/remix/invariant'
 import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
 import {
@@ -69,6 +74,11 @@ import {
 } from '../../commands/set-css-length-command'
 import type { ActiveFrame, ActiveFrameAction } from '../../commands/set-active-frames-command'
 import { activeFrameTargetRect, setActiveFrames } from '../../commands/set-active-frames-command'
+import {
+  doesElementLookLikeItCanBePositioned,
+  findElementThatHonoursPropsToPositionComponent,
+} from '../../../../core/model/element-template-utils'
+import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../../custom-code/code-file'
 
 export interface MoveCommandsOptions {
   ignoreLocalFrame?: boolean
@@ -253,13 +263,52 @@ export function getMoveCommandsForSelectedElement(
     projectContents,
   )
 
-  const elementMetadata = MetadataUtils.findElementByElementPath(
-    startingMetadata, // TODO should this be using the current metadata?
-    selectedElement,
+  const elementMetadata = startingMetadata[EP.toString(selectedElement)]
+  let targetThatHonoursPositionProps: ElementPath | null = null
+  const isIntrinsic = foldEither(
+    () => true,
+    (elementForIntrinsicCheck) =>
+      isJSXElement(elementForIntrinsicCheck) && isIntrinsicElement(elementForIntrinsicCheck.name),
+    elementMetadata.element,
   )
-
-  const elementParentBounds =
-    elementMetadata?.specialSizeMeasurements.coordinateSystemBounds ?? null
+  if (isIntrinsic) {
+    targetThatHonoursPositionProps = selectedElement
+  } else {
+    const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
+      projectContents,
+      elementMetadata.importInfo,
+    )
+    if (underlyingComponent == null) {
+      // If the underlying component can't be found (like if it comes from a 3rd party import),
+      // then check to see if this element has the pre-requisite props to be positioned.
+      const looksLikeItCanBePositioned = foldEither(
+        () => false,
+        doesElementLookLikeItCanBePositioned,
+        elementMetadata.element,
+      )
+      if (looksLikeItCanBePositioned) {
+        targetThatHonoursPositionProps = selectedElement
+      }
+    } else {
+      targetThatHonoursPositionProps = findElementThatHonoursPropsToPositionComponent(
+        underlyingComponent,
+        selectedElement,
+      )
+    }
+  }
+  invariant(
+    targetThatHonoursPositionProps != null,
+    `Error in getMoveCommandsForSelectedElement: for ${EP.toString(
+      selectedElement,
+    )} the target that honours the position props could not be identified.`,
+  )
+  // When changing a component instance that honours the position props, this should find the coordinate system bounds
+  // for the elements that will be changed, not for the component instance.
+  const elementParentBounds = MetadataUtils.getCoordinateSystemBounds(
+    startingMetadata,
+    selectedElement,
+    targetThatHonoursPositionProps,
+  )
 
   const globalFrame = nullIfInfinity(
     MetadataUtils.getFrameInCanvasCoords(selectedElement, startingMetadata),
@@ -267,21 +316,19 @@ export function getMoveCommandsForSelectedElement(
 
   invariant(
     globalFrame != null,
-    `Error in changeBounds: the ${EP.toString(
+    `Error in getMoveCommandsForSelectedElement: the ${EP.toString(
       selectedElement,
     )} element's global frame was null or infinity`,
-  )
-  invariant(
-    elementParentBounds != null,
-    `Error in changeBounds: the ${EP.toString(
-      selectedElement,
-    )} element's coordinateSystemBounds was null`,
   )
 
   if (element == null) {
     return { commands: [], intendedBounds: [] }
   }
 
+  const parentFlexDirection = MetadataUtils.getParentFlexDirection(
+    startingMetadata,
+    selectedElement,
+  )
   if (options?.ignoreLocalFrame === true) {
     return createMoveCommandsForElementPositionRelative(
       element,
@@ -290,7 +337,7 @@ export function getMoveCommandsForSelectedElement(
       drag,
       globalFrame,
       elementParentBounds,
-      elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null,
+      parentFlexDirection,
     )
   }
 
@@ -301,7 +348,7 @@ export function getMoveCommandsForSelectedElement(
     drag,
     globalFrame,
     elementParentBounds,
-    elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null,
+    parentFlexDirection,
   )
 }
 
@@ -444,7 +491,7 @@ export function createMoveCommandsForElementCreatingMissingPins(
   mappedPath: ElementPath,
   drag: CanvasVector,
   globalFrame: CanvasRectangle,
-  elementParentBounds: CanvasRectangle,
+  elementParentBounds: CanvasRectangle | null,
   elementParentFlexDirection: FlexDirection | null,
 ): {
   commands: Array<SetCssLengthProperty>
@@ -466,7 +513,7 @@ export function createMoveCommandsForElementCreatingMissingPins(
 
   const intendedGlobalFrame = roundRectangleToNearestWhole(offsetRect(globalFrame, drag))
 
-  const intendedLocalFullFrame = rectangleToSixFramePoints(
+  const intendedLocalFullFrame = rectangleToSixFramePointsOptionalContainer(
     canvasRectangleToLocalRectangle(intendedGlobalFrame, elementParentBounds),
     elementParentBounds,
   )
@@ -478,6 +525,9 @@ export function createMoveCommandsForElementCreatingMissingPins(
     )
 
     const adjustedValue = intendedLocalFullFrame[pin]
+    if (adjustedValue == null) {
+      return null
+    }
 
     return setCssLengthProperty(
       'always',

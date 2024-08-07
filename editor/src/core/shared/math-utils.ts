@@ -1147,9 +1147,12 @@ export function clamp(min: number, max: number, value: number): number {
 
 export function canvasRectangleToLocalRectangle(
   canvasRect: CanvasRectangle,
-  parentRect: CanvasRectangle,
+  parentRect: CanvasRectangle | null,
 ): LocalRectangle {
-  const diff = roundPointToNearestHalf(pointDifference(parentRect, canvasRect))
+  const diff =
+    parentRect == null
+      ? canvasRect
+      : roundPointToNearestHalf(pointDifference(parentRect, canvasRect))
   return localRectangle({
     x: diff.x,
     y: diff.y,

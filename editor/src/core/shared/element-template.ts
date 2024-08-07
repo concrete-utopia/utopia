@@ -2850,7 +2850,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     y: 0,
   } as LocalPoint,
   null,
-  zeroCanvasRect,
+  null,
   null,
   true,
   EP.emptyElementPath,
