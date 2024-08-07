@@ -8,7 +8,7 @@ import {
   type GridElementProperties,
   type GridPosition,
 } from '../../../../core/shared/element-template'
-import type { CanvasVector } from '../../../../core/shared/math-utils'
+import type { CanvasVector, WindowRectangle } from '../../../../core/shared/math-utils'
 import {
   offsetPoint,
   rectContainsPoint,
@@ -26,6 +26,7 @@ import type { GridCellCoordinates } from '../../controls/grid-controls'
 import { gridCellCoordinates } from '../../controls/grid-controls'
 import * as EP from '../../../../core/shared/element-path'
 import { deleteProperties } from '../../commands/delete-properties-command'
+import { isCSSKeyword } from '../../../inspector/common/css-utils'
 
 export function getGridCellUnderMouse(mousePoint: WindowPoint, canvasScale: number) {
   return getGridCellAtPoint(mousePoint, canvasScale, false)
@@ -53,8 +54,10 @@ function getGridCellAtPoint(
   windowPoint: WindowPoint,
   canvasScale: number,
   duplicating: boolean,
-): { id: string; coordinates: GridCellCoordinates } | null {
-  function maybeRecursivelyFindCellAtPoint(elements: Element[]): Element | null {
+): { id: string; coordinates: GridCellCoordinates; cellWindowRectangle: WindowRectangle } | null {
+  function maybeRecursivelyFindCellAtPoint(
+    elements: Element[],
+  ): { element: Element; cellWindowRectangle: WindowRectangle } | null {
     // If this used during duplication, the canvas controls will be in the way and we need to traverse the children too.
     for (const element of elements) {
       if (isGridCellTargetId(element.id)) {
@@ -64,7 +67,7 @@ function getGridCellAtPoint(
             ? scaleRect(windowRectangle(domRect), canvasScale)
             : windowRectangle(domRect)
         if (rectContainsPoint(windowRect, windowPoint)) {
-          return element
+          return { element: element, cellWindowRectangle: windowRect }
         }
       }
 
@@ -86,10 +89,12 @@ function getGridCellAtPoint(
     return null
   }
 
-  const row = cellUnderMouse.getAttribute('data-grid-row')
-  const column = cellUnderMouse.getAttribute('data-grid-column')
+  const { element, cellWindowRectangle } = cellUnderMouse
+  const row = element.getAttribute('data-grid-row')
+  const column = element.getAttribute('data-grid-column')
   return {
-    id: cellUnderMouse.id,
+    id: element.id,
+    cellWindowRectangle: cellWindowRectangle,
     coordinates: gridCellCoordinates(
       row == null ? 0 : parseInt(row),
       column == null ? 0 : parseInt(column),
@@ -134,7 +139,8 @@ export function runGridRearrangeMove(
     canvasScale,
     duplicating,
     mouseWindowPoint,
-  )
+  )?.gridCellCoordinates
+
   if (newTargetCell == null) {
     return {
       commands: [],
@@ -217,8 +223,8 @@ export function gridPositionToValue(p: GridPosition | null | undefined): string 
   if (p == null) {
     return null
   }
-  if (p === 'auto') {
-    return 'auto'
+  if (isCSSKeyword(p)) {
+    return p.value
   }
 
   return p.numericalPosition
@@ -303,23 +309,27 @@ export function setGridPropsCommands(
   return commands
 }
 
-function getTargetCell(
+export function getTargetCell(
   previousTargetCell: GridCellCoordinates | null,
   canvasScale: number,
   duplicating: boolean,
   mouseWindowPoint: WindowPoint,
-): GridCellCoordinates | null {
+): { gridCellCoordinates: GridCellCoordinates; cellWindowRectangle: WindowRectangle } | null {
   let cell = previousTargetCell ?? null
   const cellUnderMouse = duplicating
     ? getGridCellUnderMouseRecursive(mouseWindowPoint, canvasScale)
     : getGridCellUnderMouse(mouseWindowPoint, canvasScale)
-  if (cellUnderMouse != null) {
-    cell = cellUnderMouse.coordinates
-  }
-  if (cell == null || cell.row < 1 || cell.column < 1) {
+  if (cellUnderMouse == null) {
     return null
   }
-  return cell
+  cell = cellUnderMouse.coordinates
+  if (cell.row < 1 || cell.column < 1) {
+    return null
+  }
+  return {
+    gridCellCoordinates: cell,
+    cellWindowRectangle: cellUnderMouse.cellWindowRectangle,
+  }
 }
 
 function getElementGridProperties(
@@ -334,7 +344,7 @@ function getElementGridProperties(
   // get the grid fixtures (start and end for column and row) from the element metadata
   function getGridProperty(field: keyof GridElementProperties, fallback: number) {
     const propValue = element.specialSizeMeasurements.elementGridProperties[field]
-    if (propValue == null || propValue === 'auto') {
+    if (propValue == null || isCSSKeyword(propValue)) {
       return fallback
     }
     return propValue.numericalPosition ?? fallback

@@ -22,8 +22,10 @@ import { assertNever, fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { objectMap } from './object-utils'
 import type {
+  CSSKeyword,
   CSSPosition,
   FlexDirection,
+  GridAutoFlow,
   GridDimension,
 } from '../../components/inspector/common/css-utils'
 import type { ModifiableAttribute } from './jsx-attributes'
@@ -2570,7 +2572,23 @@ export function gridPositionValue(numericalPosition: number | null): GridPositio
   }
 }
 
-export type GridPosition = GridPositionValue | 'auto'
+export const validGridPositionKeywords = ['auto']
+
+export type ValidGridPositionKeyword = string // using <string> because valid keywords are also area names we cannot know in advance
+
+export type GridPosition = GridPositionValue | CSSKeyword<ValidGridPositionKeyword>
+
+export const isValidGridPositionKeyword =
+  (labels: string[]) =>
+  (u: unknown): u is ValidGridPositionKeyword => {
+    if (u == null || typeof u !== 'string') {
+      return false
+    }
+    if (validGridPositionKeywords.includes(u)) {
+      return true
+    }
+    return labels.includes(u)
+  }
 
 export interface GridRange {
   start: GridPosition
@@ -2636,6 +2654,7 @@ export interface GridContainerProperties {
   gridTemplateRows: GridTemplateRows | null
   gridAutoColumns: GridAutoColumns | null
   gridAutoRows: GridAutoRows | null
+  gridAutoFlow: GridAutoFlow | null
 }
 
 export function gridContainerProperties(
@@ -2643,12 +2662,14 @@ export function gridContainerProperties(
   gridTemplateRows: GridTemplateRows | null,
   gridAutoColumns: GridAutoColumns | null,
   gridAutoRows: GridAutoRows | null,
+  gridAutoFlow: GridAutoFlow | null,
 ): GridContainerProperties {
   return {
     gridTemplateColumns: gridTemplateColumns,
     gridTemplateRows: gridTemplateRows,
     gridAutoColumns: gridAutoColumns,
     gridAutoRows: gridAutoRows,
+    gridAutoFlow: gridAutoFlow,
   }
 }
 
@@ -2873,6 +2894,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     gridTemplateRows: null,
     gridAutoColumns: null,
     gridAutoRows: null,
+    gridAutoFlow: null,
   },
   {
     gridColumnStart: null,
@@ -2885,6 +2907,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     gridTemplateRows: null,
     gridAutoColumns: null,
     gridAutoRows: null,
+    gridAutoFlow: null,
   },
   {
     gridColumnStart: null,

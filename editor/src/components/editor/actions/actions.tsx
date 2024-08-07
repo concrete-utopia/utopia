@@ -522,7 +522,13 @@ import {
 import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-utils'
-import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
+import {
+  getFromPropOrFlagComment,
+  isUtopiaPropOrCommentFlag,
+  makeUtopiaFlagComment,
+  removePropOrFlagComment,
+  saveToPropOrFlagComment,
+} from '../../../core/shared/comment-flags'
 import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
 import type { ConditionalClauseInsertBehavior, InsertionPath } from '../store/insertion-path'
@@ -614,11 +620,7 @@ import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/ui
 import { nextSelectedTab } from '../../navigator/left-pane/left-pane-utils'
 import { getRemixRootDir } from '../store/remix-derived-data'
 import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-item/component-picker-context-menu'
-import {
-  canCondenseJSXElementChild,
-  dataCanCondenseProp,
-  isDataCanCondenseProp,
-} from '../../../utils/can-condense'
+import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
@@ -2255,20 +2257,20 @@ export const UPDATE_FNS = {
   TOGGLE_DATA_CAN_CONDENSE: (action: ToggleDataCanCondense, editor: EditorModel): EditorModel => {
     let working = { ...editor }
     for (const path of action.targets) {
-      working = modifyOpenJsxElementAtPath(
+      working = modifyOpenJsxChildAtPath(
         path,
         (element) => {
           const canCondense = canCondenseJSXElementChild(element)
-          // remove any data-can-condense props
-          const props = element.props.filter((prop) => !isDataCanCondenseProp(prop))
-          // if it needs to switch to true, append the new prop
-          if (!canCondense) {
-            props.push(dataCanCondenseProp(true))
+          if (canCondense === true) {
+            return removePropOrFlagComment(element, 'can-condense')
           }
-          return {
-            ...element,
-            props: props,
-          }
+          // Note: we just return the element if we can not annotate it
+          return (
+            saveToPropOrFlagComment(element, {
+              type: 'can-condense',
+              value: true,
+            }) ?? element
+          )
         },
         working,
       )
@@ -4492,7 +4494,7 @@ export const UPDATE_FNS = {
         }
 
         function isNotConditionalFlag(c: Comment): boolean {
-          return !isUtopiaCommentFlag(c, 'conditional')
+          return !isUtopiaPropOrCommentFlag(c, 'conditional')
         }
 
         const leadingComments = [...element.comments.leadingComments.filter(isNotConditionalFlag)]
@@ -4523,7 +4525,7 @@ export const UPDATE_FNS = {
         }
 
         function isNotMapCountFlag(c: Comment): boolean {
-          return !isUtopiaCommentFlag(c, 'map-count')
+          return !isUtopiaPropOrCommentFlag(c, 'map-count')
         }
 
         const leadingComments = [...element.comments.leadingComments.filter(isNotMapCountFlag)]

@@ -364,22 +364,12 @@ export const CanvasToolbar = React.memo(() => {
         id: 'navigator',
         label: 'Navigator',
         checked: navigatorVisible,
-        icon: (
-          <div style={{ transform: 'scale(0.8)' }}>
-            <LargerIcons.Navigator color='white' />
-          </div>
-        ),
         shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_NAVIGATOR].shortcutKeys[0]),
         onSelect: () => dispatch([togglePanel('leftmenu')]),
       }),
       regularDropdownMenuItem({
         id: 'rightmenu',
         label: 'Inspector',
-        icon: (
-          <div style={{ transform: 'scale(0.8)' }}>
-            <LargerIcons.Inspector color='white' />
-          </div>
-        ),
         checked: inspectorVisible,
         shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_INSPECTOR].shortcutKeys[0]),
         onSelect: () => dispatch([togglePanel('rightmenu')]),
@@ -387,11 +377,6 @@ export const CanvasToolbar = React.memo(() => {
       regularDropdownMenuItem({
         id: 'code-editor',
         label: 'Code Editor',
-        icon: (
-          <div style={{ transform: 'scale(0.8)' }}>
-            <LargerIcons.Code color='white' />
-          </div>
-        ),
         checked: codeEditorVisible,
         shortcut: keyToString(
           shortcutDetailsWithDefaults[TOGGLE_CODE_EDITOR_SHORTCUT].shortcutKeys[0],

@@ -561,12 +561,14 @@ import type {
   GridCSSKeyword,
   GridCSSNumber,
   GridDimension,
+  GridAutoFlow,
 } from '../../inspector/common/css-utils'
 import {
   cssNumber,
   fontSettings,
   gridCSSKeyword,
   gridCSSNumber,
+  isCSSKeyword,
   isGridCSSKeyword,
   isGridCSSNumber,
 } from '../../inspector/common/css-utils'
@@ -2027,7 +2029,7 @@ export const GridAutoKeepDeepEquality: KeepDeepEqualityCall<GridAuto> =
   GridAutoOrTemplateBaseKeepDeepEquality
 
 export function GridContainerPropertiesKeepDeepEquality(): KeepDeepEqualityCall<GridContainerProperties> {
-  return combine4EqualityCalls(
+  return combine5EqualityCalls(
     (properties) => properties.gridTemplateColumns,
     nullableDeepEquality(GridTemplateKeepDeepEquality),
     (properties) => properties.gridTemplateRows,
@@ -2036,6 +2038,8 @@ export function GridContainerPropertiesKeepDeepEquality(): KeepDeepEqualityCall<
     nullableDeepEquality(GridAutoKeepDeepEquality),
     (properties) => properties.gridAutoRows,
     nullableDeepEquality(GridAutoKeepDeepEquality),
+    (properties) => properties.gridAutoFlow,
+    nullableDeepEquality(createCallWithTripleEquals<GridAutoFlow>()),
     gridContainerProperties,
   )
 }
@@ -2051,14 +2055,14 @@ export const GridPositionKeepDeepEquality: KeepDeepEqualityCall<GridPosition> = 
   oldValue,
   newValue,
 ) => {
-  if (typeof oldValue === 'string') {
-    if (typeof newValue === 'string') {
+  if (isCSSKeyword(oldValue)) {
+    if (isCSSKeyword(newValue)) {
       return createCallWithTripleEquals<GridPosition>()(oldValue, newValue)
     } else {
       return keepDeepEqualityResult(newValue, false)
     }
   } else {
-    if (typeof newValue === 'string') {
+    if (isCSSKeyword(newValue)) {
       return keepDeepEqualityResult(newValue, false)
     } else {
       return GridPositionValueKeepDeepEquality(oldValue, newValue)
@@ -2629,7 +2633,7 @@ export const DragToMoveIndicatorFlagsKeepDeepEquality: KeepDeepEqualityCall<Drag
   )
 
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
-  combine8EqualityCalls(
+  combine9EqualityCalls(
     (controls) => controls.snappingGuidelines,
     arrayDeepEquality(GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality),
     (controls) => controls.outlineHighlights,
@@ -2645,6 +2649,8 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     (controls) => controls.dragToMoveIndicatorFlags,
     DragToMoveIndicatorFlagsKeepDeepEquality,
     (controls) => controls.parentOutlineHighlight,
+    nullableDeepEquality(ElementPathKeepDeepEquality),
+    (controls) => controls.gridControls,
     nullableDeepEquality(ElementPathKeepDeepEquality),
     editorStateCanvasControls,
   )

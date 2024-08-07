@@ -69,6 +69,8 @@ import {
   parseGridPosition,
   parseGridRange,
   parseGridAutoOrTemplateBase,
+  parseGridAutoFlow,
+  isCSSKeyword,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -101,7 +103,6 @@ import { pick } from '../../core/shared/object-utils'
 import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 export const ResizeObserver =
   window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -1054,6 +1055,7 @@ function getGridContainerProperties(
       gridTemplateRows: null,
       gridAutoColumns: null,
       gridAutoRows: null,
+      gridAutoFlow: null,
     }
   }
   const gridTemplateColumns = defaultEither(
@@ -1077,6 +1079,7 @@ function getGridContainerProperties(
     gridTemplateRows,
     gridAutoColumns,
     gridAutoRows,
+    parseGridAutoFlow(elementStyle.gridAutoFlow),
   )
 }
 
@@ -1116,7 +1119,7 @@ function getGridElementProperties(
     ) ??
     null
   const adjustedColumnEnd =
-    gridColumnEnd === 'auto' && gridColumn?.end != null ? gridColumn.end : gridColumnEnd
+    isCSSKeyword(gridColumnEnd) && gridColumn?.end != null ? gridColumn.end : gridColumnEnd
 
   const gridRow = defaultEither(null, parseGridRange(container, 'row', elementStyle.gridRow))
   const gridRowStart =
@@ -1139,7 +1142,7 @@ function getGridElementProperties(
       parseGridPosition(container, 'row', 'end', gridRow?.end ?? null, elementStyle.gridRowEnd),
     ) ??
     null
-  const adjustedRowEnd = gridRowEnd === 'auto' && gridRow?.end != null ? gridRow.end : gridRowEnd
+  const adjustedRowEnd = isCSSKeyword(gridRowEnd) && gridRow?.end != null ? gridRow.end : gridRowEnd
 
   const result = gridElementProperties(
     gridColumnStart,
