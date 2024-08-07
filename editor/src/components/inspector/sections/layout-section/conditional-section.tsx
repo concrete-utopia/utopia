@@ -8,7 +8,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import {
   findUtopiaCommentFlag,
-  isUtopiaCommentFlagConditional,
+  isUtopiaPropOrCommentFlagConditional,
 } from '../../../../core/shared/comment-flags'
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
@@ -137,7 +137,7 @@ const conditionOverrideSelector = createCachedSelector(
     let conditions = new Set<boolean | null>()
     elements.forEach((element) => {
       const flag = findUtopiaCommentFlag(element.comments, 'conditional')
-      if (isUtopiaCommentFlagConditional(flag)) {
+      if (isUtopiaPropOrCommentFlagConditional(flag)) {
         conditions.add(flag.value)
       }
     })
