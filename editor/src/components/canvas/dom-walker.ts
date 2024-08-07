@@ -69,6 +69,7 @@ import {
   parseGridPosition,
   parseGridRange,
   parseGridAutoOrTemplateBase,
+  parseGridAutoFlow,
   isCSSKeyword,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
@@ -102,7 +103,6 @@ import { pick } from '../../core/shared/object-utils'
 import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 export const ResizeObserver =
   window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -1055,6 +1055,7 @@ function getGridContainerProperties(
       gridTemplateRows: null,
       gridAutoColumns: null,
       gridAutoRows: null,
+      gridAutoFlow: null,
     }
   }
   const gridTemplateColumns = defaultEither(
@@ -1078,6 +1079,7 @@ function getGridContainerProperties(
     gridTemplateRows,
     gridAutoColumns,
     gridAutoRows,
+    parseGridAutoFlow(elementStyle.gridAutoFlow),
   )
 }
 

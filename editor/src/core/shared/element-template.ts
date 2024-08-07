@@ -25,6 +25,7 @@ import type {
   CSSKeyword,
   CSSPosition,
   FlexDirection,
+  GridAutoFlow,
   GridDimension,
 } from '../../components/inspector/common/css-utils'
 import type { ModifiableAttribute } from './jsx-attributes'
@@ -2653,6 +2654,7 @@ export interface GridContainerProperties {
   gridTemplateRows: GridTemplateRows | null
   gridAutoColumns: GridAutoColumns | null
   gridAutoRows: GridAutoRows | null
+  gridAutoFlow: GridAutoFlow | null
 }
 
 export function gridContainerProperties(
@@ -2660,12 +2662,14 @@ export function gridContainerProperties(
   gridTemplateRows: GridTemplateRows | null,
   gridAutoColumns: GridAutoColumns | null,
   gridAutoRows: GridAutoRows | null,
+  gridAutoFlow: GridAutoFlow | null,
 ): GridContainerProperties {
   return {
     gridTemplateColumns: gridTemplateColumns,
     gridTemplateRows: gridTemplateRows,
     gridAutoColumns: gridAutoColumns,
     gridAutoRows: gridAutoRows,
+    gridAutoFlow: gridAutoFlow,
   }
 }
 
@@ -2890,6 +2894,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     gridTemplateRows: null,
     gridAutoColumns: null,
     gridAutoRows: null,
+    gridAutoFlow: null,
   },
   {
     gridColumnStart: null,
@@ -2902,6 +2907,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     gridTemplateRows: null,
     gridAutoColumns: null,
     gridAutoRows: null,
+    gridAutoFlow: null,
   },
   {
     gridColumnStart: null,

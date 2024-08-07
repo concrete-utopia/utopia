@@ -561,6 +561,7 @@ import type {
   GridCSSKeyword,
   GridCSSNumber,
   GridDimension,
+  GridAutoFlow,
 } from '../../inspector/common/css-utils'
 import {
   cssNumber,
@@ -2028,7 +2029,7 @@ export const GridAutoKeepDeepEquality: KeepDeepEqualityCall<GridAuto> =
   GridAutoOrTemplateBaseKeepDeepEquality
 
 export function GridContainerPropertiesKeepDeepEquality(): KeepDeepEqualityCall<GridContainerProperties> {
-  return combine4EqualityCalls(
+  return combine5EqualityCalls(
     (properties) => properties.gridTemplateColumns,
     nullableDeepEquality(GridTemplateKeepDeepEquality),
     (properties) => properties.gridTemplateRows,
@@ -2037,6 +2038,8 @@ export function GridContainerPropertiesKeepDeepEquality(): KeepDeepEqualityCall<
     nullableDeepEquality(GridAutoKeepDeepEquality),
     (properties) => properties.gridAutoRows,
     nullableDeepEquality(GridAutoKeepDeepEquality),
+    (properties) => properties.gridAutoFlow,
+    nullableDeepEquality(createCallWithTripleEquals<GridAutoFlow>()),
     gridContainerProperties,
   )
 }
