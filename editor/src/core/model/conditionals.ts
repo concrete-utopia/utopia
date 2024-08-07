@@ -16,7 +16,10 @@ import type { ElementPathTree, ElementPathTrees } from '../shared/element-path-t
 import { getUtopiaID } from '../shared/uid-utils'
 import type { Optic } from '../shared/optics/optics'
 import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
-import { findUtopiaCommentFlag, isUtopiaCommentFlagConditional } from '../shared/comment-flags'
+import {
+  findUtopiaCommentFlag,
+  isUtopiaPropOrCommentFlagConditional,
+} from '../shared/comment-flags'
 import { isLeft, isRight } from '../shared/either'
 import { MetadataUtils } from './element-metadata-utils'
 import { forceNotNull } from '../shared/optional-utils'
@@ -81,7 +84,7 @@ export function getClauseOptic(
 
 export function getConditionalFlag(element: JSXConditionalExpression): boolean | null {
   const flag = findUtopiaCommentFlag(element.comments, 'conditional')
-  if (!isUtopiaCommentFlagConditional(flag)) {
+  if (!isUtopiaPropOrCommentFlagConditional(flag)) {
     return null
   }
   return flag.value

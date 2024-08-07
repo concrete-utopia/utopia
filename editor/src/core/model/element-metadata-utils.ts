@@ -105,7 +105,7 @@ import { optionalMap } from '../shared/optional-utils'
 import type { Imports, PropertyPath, ElementPath, NodeModules } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
-import type { ElementSupportsChildren } from './element-template-utils'
+import type { ElementSupportsChildren, HonoursPosition } from './element-template-utils'
 import {
   componentHonoursPropsPosition,
   componentHonoursPropsSize,
@@ -1169,9 +1169,9 @@ export const MetadataUtils = {
   targetHonoursPropsPosition(
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadata | null,
-  ): boolean {
+  ): HonoursPosition {
     if (metadata == null) {
-      return false
+      return 'does-not-honour'
     } else {
       const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
         projectContents,
@@ -1179,7 +1179,7 @@ export const MetadataUtils = {
       )
       if (underlyingComponent == null) {
         // Could be an external third party component, assuming true for now.
-        return true
+        return 'absolute-position-and-honours-numeric-props'
       } else {
         return componentHonoursPropsPosition(underlyingComponent)
       }
