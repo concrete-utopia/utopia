@@ -3,6 +3,7 @@ import * as EP from '../../../../core/shared/element-path'
 import type { GridElementProperties, GridPosition } from '../../../../core/shared/element-template'
 import { offsetPoint } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
+import { isCSSKeyword } from '../../../inspector/common/css-utils'
 import { GridControls, GridResizeControls } from '../../controls/grid-controls'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
@@ -157,10 +158,10 @@ function orderedGridPositions({
 } {
   if (
     start == null ||
-    start === 'auto' ||
+    isCSSKeyword(start) ||
     start.numericalPosition == null ||
     end == null ||
-    end === 'auto' ||
+    isCSSKeyword(end) ||
     end.numericalPosition == null
   ) {
     return { start, end }

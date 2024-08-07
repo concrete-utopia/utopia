@@ -26,6 +26,7 @@ import type { GridCellCoordinates } from '../../controls/grid-controls'
 import { gridCellCoordinates } from '../../controls/grid-controls'
 import * as EP from '../../../../core/shared/element-path'
 import { deleteProperties } from '../../commands/delete-properties-command'
+import { isCSSKeyword } from '../../../inspector/common/css-utils'
 
 export function getGridCellUnderMouse(mousePoint: WindowPoint, canvasScale: number) {
   return getGridCellAtPoint(mousePoint, canvasScale, false)
@@ -222,8 +223,8 @@ export function gridPositionToValue(p: GridPosition | null | undefined): string 
   if (p == null) {
     return null
   }
-  if (p === 'auto') {
-    return 'auto'
+  if (isCSSKeyword(p)) {
+    return p.value
   }
 
   return p.numericalPosition
@@ -343,7 +344,7 @@ function getElementGridProperties(
   // get the grid fixtures (start and end for column and row) from the element metadata
   function getGridProperty(field: keyof GridElementProperties, fallback: number) {
     const propValue = element.specialSizeMeasurements.elementGridProperties[field]
-    if (propValue == null || propValue === 'auto') {
+    if (propValue == null || isCSSKeyword(propValue)) {
       return fallback
     }
     return propValue.numericalPosition ?? fallback

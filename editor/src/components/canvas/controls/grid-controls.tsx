@@ -8,6 +8,7 @@ import React from 'react'
 import type { ElementPath } from 'utopia-shared/src/types'
 import type { GridDimension } from '../../../components/inspector/common/css-utils'
 import {
+  isCSSKeyword,
   printGridAutoOrTemplateBase,
   printGridCSSNumber,
 } from '../../../components/inspector/common/css-utils'
@@ -521,13 +522,13 @@ export const GridControls = controlForStrategyMemoized(() => {
           column:
             columnFromProps == null
               ? countedColumn
-              : columnFromProps === 'auto'
+              : isCSSKeyword(columnFromProps)
               ? countedColumn
               : columnFromProps.numericalPosition ?? countedColumn,
           row:
             rowFromProps == null
               ? countedRow
-              : rowFromProps === 'auto'
+              : isCSSKeyword(rowFromProps)
               ? countedRow
               : rowFromProps.numericalPosition ?? countedRow,
           index: index,

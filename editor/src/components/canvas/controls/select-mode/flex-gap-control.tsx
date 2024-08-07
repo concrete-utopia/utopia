@@ -30,7 +30,13 @@ import {
 } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { CSSNumberWithRenderedValue } from './controls-common'
-import { CanvasLabel, PillHandle, useHoverWithDelay, useIsControlHovered } from './controls-common'
+import {
+  CanvasLabel,
+  PillHandle,
+  useHoverWithDelay,
+  fallbackEmptyValue,
+  useIsControlHovered,
+} from './controls-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import {
@@ -203,6 +209,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
       <div data-testid={FlexGapControlTestId} style={{ pointerEvents: 'none' }}>
         {controlBounds.map(({ bounds, path: p }) => {
           const path = EP.toString(p)
+          const valueToShow = fallbackEmptyValue(flexGapValue)
           return (
             <GapControlSegment
               key={path}
@@ -218,7 +225,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               scale={scale}
               backgroundShown={backgroundShown || isGapHoveredInTheInspector}
               isDragging={isDragging}
-              gapValue={flexGapValue.value}
+              gapValue={valueToShow}
               justifyContent={justifyContent}
               alignItems={alignItems}
             />
