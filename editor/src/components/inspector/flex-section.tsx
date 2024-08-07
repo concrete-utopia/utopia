@@ -286,7 +286,7 @@ const TemplateDimensionControl = React.memo(
 
           function needsAdjusting(pos: GridPosition | null, bound: number) {
             return pos != null &&
-              pos !== 'auto' &&
+              !isCSSKeyword(pos) &&
               pos.numericalPosition != null &&
               pos.numericalPosition >= bound
               ? pos.numericalPosition
