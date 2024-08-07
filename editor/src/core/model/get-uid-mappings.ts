@@ -204,9 +204,6 @@ function collectUidsForEachFile(projectContents: ProjectContentTreeRoot): GetAll
   let workingDupliactedUIDs: DuplicateUIDsResult = new Map()
   walkContentsTreeForParseSuccess(projectContents, (filePath, parseSuccess) => {
     const mappingsForFile = collectUidsForFile(filePath, parseSuccess)
-    // mappingsForFile.uniqueIDs.forEach((uid) => {
-    //   workingAllUids.add(uid)
-    // })
     workingFileToUidMapping.set(filePath, mappingsForFile.uniqueIDs)
     mappingsForFile.duplicateIDs.forEach((file, uid) => {
       workingDupliactedUIDs.set(uid, file)
