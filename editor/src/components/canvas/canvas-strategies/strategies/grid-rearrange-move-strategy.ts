@@ -1,6 +1,10 @@
+import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadataMap,
+  GridAutoOrTemplateBase,
+} from '../../../../core/shared/element-template'
 import * as PP from '../../../../core/shared/property-path'
 import { printGridAutoOrTemplateBase } from '../../../inspector/common/css-utils'
 import type { PropertyToUpdate } from '../../commands/set-property-command'
@@ -45,28 +49,8 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
 
   const gridPath = EP.parentPath(selectedElement)
 
-  const grid = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, gridPath)
-  if (grid == null) {
-    return null
-  }
-
-  const templateFromProps = grid.specialSizeMeasurements.containerGridPropertiesFromProps
-  const templateRowsFromProps = templateFromProps.gridTemplateRows
-  if (templateRowsFromProps == null) {
-    return null
-  }
-  const templateColsFromProps = templateFromProps.gridTemplateColumns
-  if (templateColsFromProps == null) {
-    return null
-  }
-
-  const templateCalculated = grid.specialSizeMeasurements.containerGridProperties
-  const templateRowsCalculated = templateCalculated.gridTemplateRows
-  if (templateRowsCalculated == null) {
-    return null
-  }
-  const templateColsCalculated = templateCalculated.gridTemplateColumns
-  if (templateColsCalculated == null) {
+  const initialTemplates = getGridTemplates(canvasState.startingMetadata, gridPath)
+  if (initialTemplates == null) {
     return null
   }
 
@@ -124,11 +108,11 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         updateBulkProperties('mid-interaction', gridPath, [
           propertyToSet(
             PP.create('style', 'gridTemplateColumns'),
-            printGridAutoOrTemplateBase(templateColsCalculated),
+            printGridAutoOrTemplateBase(initialTemplates.calculated.columns),
           ),
           propertyToSet(
             PP.create('style', 'gridTemplateRows'),
-            printGridAutoOrTemplateBase(templateRowsCalculated),
+            printGridAutoOrTemplateBase(initialTemplates.calculated.rows),
           ),
         ]),
       ]
@@ -138,10 +122,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         updateBulkProperties(
           'on-complete',
           gridPath,
-          restoreGridTemplateFromProps({
-            columns: templateColsFromProps,
-            rows: templateRowsFromProps,
-          }),
+          restoreGridTemplateFromProps(initialTemplates.fromProps),
         ),
       ]
 
@@ -178,4 +159,42 @@ function restoreGridTemplateFromProps(params: {
     properties.push(propertyToSet(PP.create('style', 'gridTemplateRows'), newRows))
   }
   return properties
+}
+
+function getGridTemplates(jsxMetadata: ElementInstanceMetadataMap, gridPath: ElementPath) {
+  const grid = MetadataUtils.findElementByElementPath(jsxMetadata, gridPath)
+  if (grid == null) {
+    return null
+  }
+
+  const templateFromProps = grid.specialSizeMeasurements.containerGridPropertiesFromProps
+  const templateRowsFromProps = templateFromProps.gridTemplateRows
+  if (templateRowsFromProps == null) {
+    return null
+  }
+  const templateColsFromProps = templateFromProps.gridTemplateColumns
+  if (templateColsFromProps == null) {
+    return null
+  }
+
+  const templateCalculated = grid.specialSizeMeasurements.containerGridProperties
+  const templateRowsCalculated = templateCalculated.gridTemplateRows
+  if (templateRowsCalculated == null) {
+    return null
+  }
+  const templateColsCalculated = templateCalculated.gridTemplateColumns
+  if (templateColsCalculated == null) {
+    return null
+  }
+
+  return {
+    calculated: {
+      columns: templateColsCalculated,
+      rows: templateRowsCalculated,
+    },
+    fromProps: {
+      columns: templateColsFromProps,
+      rows: templateRowsFromProps,
+    },
+  }
 }
