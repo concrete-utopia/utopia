@@ -68,7 +68,7 @@ import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-s
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 import { arrayOfPathsEqual, removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { notice } from '../../../components/common/notice'
-import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../../core/model/get-unique-ids'
+import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../../core/model/get-uid-mappings'
 import { updateSimpleLocks } from '../../../core/shared/element-locking'
 import {
   getFilesToUpdate,

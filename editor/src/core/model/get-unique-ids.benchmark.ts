@@ -3,7 +3,7 @@ import type { ParseSuccess } from 'utopia-shared/src/types'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { modifyParseSuccessAtPath } from '../../components/editor/store/editor-state'
 import { parseProjectContents } from '../../sample-projects/sample-project-utils.test-utils'
-import { getAllUniqueUids, getFilePathForUid } from './get-unique-ids'
+import { getAllUniqueUids, getFilePathForUid } from './get-uid-mappings'
 import { LargeHydrogenProject } from './test-large-persistent-model.test-utils'
 
 export async function benchmarkGetUniqueUids(): Promise<void> {

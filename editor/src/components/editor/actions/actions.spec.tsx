@@ -115,7 +115,7 @@ import {
 } from './action-creators'
 import { UPDATE_FNS, replaceFilePath } from './actions'
 import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getAllUniqueUids } from '../../../core/model/get-uid-mappings'
 import { simpleDefaultProject } from '../../../sample-projects/sample-project-utils'
 import { InjectedCSSFilePrefix } from '../../../core/webpack-loaders/css-loader'
 import { renderTestEditorWithModel } from '../../../components/canvas/ui-jsx.test-utils'

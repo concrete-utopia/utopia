@@ -5,7 +5,10 @@ import {
   generateUidWithExistingComponents,
   pathPartsFromJSXElementChild,
 } from '../../../../core/model/element-template-utils'
-import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../../../core/model/get-unique-ids'
+import {
+  getAllUniqueUids,
+  getAllUniqueUidsFromLookup,
+} from '../../../../core/model/get-uid-mappings'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { stripNulls, zip } from '../../../../core/shared/array-utils'
 import type { Either } from '../../../../core/shared/either'

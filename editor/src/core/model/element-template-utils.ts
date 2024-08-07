@@ -83,7 +83,7 @@ import {
 } from '../../components/editor/store/insertion-path'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import { isNullJSXAttributeValue } from '../shared/element-template'
-import { getAllUniqueUids, getAllUniqueUidsFromLookup } from './get-unique-ids'
+import { getAllUniqueUids, getAllUniqueUidsFromLookup } from './get-uid-mappings'
 import type { ElementPathTrees } from '../shared/element-path-tree'
 import { MetadataUtils } from './element-metadata-utils'
 import { mapValues } from '../shared/object-utils'

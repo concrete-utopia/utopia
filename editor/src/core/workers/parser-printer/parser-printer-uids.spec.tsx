@@ -36,7 +36,7 @@ import { emptySet } from '../../shared/set-utils'
 import { createCodeFile } from '../../../components/custom-code/code-file.test-utils'
 import { renderTestEditorWithProjectContent } from '../../../components/canvas/ui-jsx.test-utils'
 import { updateFile } from '../../../components/editor/actions/action-creators'
-import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../../core/model/get-unique-ids'
+import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../model/get-uid-mappings'
 
 function addCodeFileToProjectContents(
   projectContents: ProjectContentTreeRoot,

@@ -55,7 +55,7 @@ import {
   getAllUniqueUids,
   getAllUniqueUIdsFromElementChild,
   getAllUniqueUidsFromLookup,
-} from '../../../core/model/get-unique-ids'
+} from '../../model/get-uid-mappings'
 import { contentsToTree } from '../../../components/assets'
 import {
   filtered,

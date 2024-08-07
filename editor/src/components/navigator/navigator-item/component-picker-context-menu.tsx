@@ -44,7 +44,7 @@ import {
 } from './component-picker'
 import type { PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
 import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/uid-utils'
-import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../../core/model/get-unique-ids'
+import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../../core/model/get-uid-mappings'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 import { ContextMenuWrapper_DEPRECATED } from '../../context-menu-wrapper'
 import { BodyMenuOpenClass, assertNever } from '../../../core/shared/utils'

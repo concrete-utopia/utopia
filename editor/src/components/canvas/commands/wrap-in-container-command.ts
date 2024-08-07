@@ -37,7 +37,7 @@ import { jsxTextBlock } from '../../../core/shared/element-template'
 import type { CSSProperties } from 'react'
 import type { Property } from 'csstype'
 import { generateConsistentUID } from '../../../core/shared/uid-utils'
-import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../../core/model/get-unique-ids'
+import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../../core/model/get-uid-mappings'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 import { forEachRight, right } from '../../../core/shared/either'
 

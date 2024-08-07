@@ -91,7 +91,7 @@ import {
 } from '../../shared/dom-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { contentsToTree } from '../../../components/assets'
-import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../../core/model/get-unique-ids'
+import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../model/get-uid-mappings'
 import {
   filtered,
   fromField,

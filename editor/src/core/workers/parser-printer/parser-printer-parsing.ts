@@ -151,7 +151,7 @@ import {
 import { isEmptyString } from '../../shared/string-utils'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { emptySet } from '../../../core/shared/set-utils'
-import { getAllUniqueUidsFromAttributes } from '../../../core/model/get-unique-ids'
+import { getAllUniqueUidsFromAttributes } from '../../model/get-uid-mappings'
 import type { SteganographyMode } from './parser-printer'
 import { hashObject } from '../../shared/hash'
 

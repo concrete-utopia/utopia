@@ -23,7 +23,7 @@ import type { BuiltInDependencies } from '../../core/es-modules/package-manager/
 import { resolveModulePath } from '../../core/es-modules/package-manager/module-resolution'
 import type { EvaluationCache } from '../../core/es-modules/package-manager/package-manager'
 import { getCurriedEditorRequireFn } from '../../core/es-modules/package-manager/package-manager'
-import { getAllUniqueUids, getFilePathForUid } from '../../core/model/get-unique-ids'
+import { getAllUniqueUids, getFilePathForUid } from '../../core/model/get-uid-mappings'
 import type { Either } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import type {
