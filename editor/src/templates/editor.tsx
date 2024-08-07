@@ -420,6 +420,7 @@ export class Editor {
   ): {
     entireUpdateFinished: Promise<any>
   } => {
+    // console.log(dispatchedActions.map((a) => a.action))
     const Measure = createPerformanceMeasure()
     Measure.logActions(dispatchedActions)
 

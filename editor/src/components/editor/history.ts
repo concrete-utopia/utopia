@@ -72,6 +72,7 @@ export function undo(
   stateHistory: StateHistory,
   runSideEffects: RunEffects,
 ): StateHistory {
+  // console.log('undo!')
   // FIXME Undo should update the time stamp of any affected files
   if (runSideEffects === 'run-side-effects') {
     // Unwind any asset renames.
@@ -129,6 +130,7 @@ export function add(
   derived: DerivedState,
   assetRenames: Array<AssetRename>,
 ): StateHistory {
+  // console.log('added to history!')
   let previous =
     stateHistory.previous.length > MAX_HISTORY
       ? stateHistory.previous.slice(0, MAX_HISTORY)
