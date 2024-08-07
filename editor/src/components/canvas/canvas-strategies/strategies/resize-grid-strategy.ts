@@ -8,7 +8,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import * as PP from '../../../../core/shared/property-path'
 import { setProperty } from '../../commands/set-property-command'
-import { GridControls } from '../../controls/grid-controls'
+import { GridControls, GridRowColumnResizingControls } from '../../controls/grid-controls'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -61,6 +61,12 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       type: 'pointer',
     },
     controlsToRender: [
+      {
+        control: GridRowColumnResizingControls,
+        props: { target: selectedElement },
+        key: `grid-row-col-resize-controls-${EP.toString(selectedElement)}`,
+        show: 'always-visible',
+      },
       {
         control: GridControls,
         props: {},

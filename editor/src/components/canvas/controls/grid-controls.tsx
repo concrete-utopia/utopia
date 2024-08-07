@@ -362,6 +362,117 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
 })
 GridResizing.displayName = 'GridResizing'
 
+function useGridData(elementPaths: ElementPath[]) {
+  const grids = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return mapDropNulls((view) => {
+        const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view)
+        const parent = MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          EP.parentPath(view),
+        )
+
+        const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element)
+          ? element
+          : MetadataUtils.isGridLayoutedContainer(parent)
+          ? parent
+          : null
+
+        if (
+          targetGridContainer == null ||
+          targetGridContainer.globalFrame == null ||
+          !isFiniteRectangle(targetGridContainer.globalFrame)
+        ) {
+          return null
+        }
+
+        const gap = targetGridContainer.specialSizeMeasurements.gap
+        const rowGap = targetGridContainer.specialSizeMeasurements.rowGap
+        const columnGap = targetGridContainer.specialSizeMeasurements.columnGap
+        const padding = targetGridContainer.specialSizeMeasurements.padding
+
+        const gridTemplateColumns =
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
+        const gridTemplateRows =
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows
+        const gridTemplateColumnsFromProps =
+          targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
+            .gridTemplateColumns
+        const gridTemplateRowsFromProps =
+          targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
+            .gridTemplateRows
+
+        const columns = getCellsCount(
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
+        )
+        const rows = getCellsCount(
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
+        )
+
+        return {
+          elementPath: targetGridContainer.elementPath,
+          frame: targetGridContainer.globalFrame,
+          gridTemplateColumns: gridTemplateColumns,
+          gridTemplateRows: gridTemplateRows,
+          gridTemplateColumnsFromProps: gridTemplateColumnsFromProps,
+          gridTemplateRowsFromProps: gridTemplateRowsFromProps,
+          gap: gap,
+          rowGap: rowGap,
+          columnGap: columnGap,
+          padding: padding,
+          rows: rows,
+          columns: columns,
+          cells: rows * columns,
+        }
+      }, elementPaths)
+    },
+    'useGridData',
+  )
+
+  return grids
+}
+
+interface GridRowColumnResizingControlsProps {
+  target: ElementPath
+}
+
+export const GridRowColumnResizingControls =
+  controlForStrategyMemoized<GridRowColumnResizingControlsProps>(({ target }) => {
+    const grids = useGridData([target])
+
+    return (
+      <CanvasOffsetWrapper>
+        {grids.flatMap((grid) => {
+          return (
+            <GridResizing
+              key={`grid-resizing-column-${EP.toString(grid.elementPath)}`}
+              axisValues={grid.gridTemplateColumns}
+              fromPropsAxisValues={grid.gridTemplateColumnsFromProps}
+              containingFrame={grid.frame}
+              axis={'column'}
+              gap={grid.gap}
+              padding={grid.padding}
+            />
+          )
+        })}
+        {grids.flatMap((grid) => {
+          return (
+            <GridResizing
+              key={`grid-resizing-row-${EP.toString(grid.elementPath)}`}
+              axisValues={grid.gridTemplateRows}
+              fromPropsAxisValues={grid.gridTemplateRowsFromProps}
+              containingFrame={grid.frame}
+              axis={'row'}
+              gap={grid.gap}
+              padding={grid.padding}
+            />
+          )
+        })}
+      </CanvasOffsetWrapper>
+    )
+  })
+
 export const GridControls = controlForStrategyMemoized(() => {
   const dispatch = useDispatch()
   const controls = useAnimationControls()
@@ -430,78 +541,19 @@ export const GridControls = controlForStrategyMemoized(() => {
     [interactionLatestMetadata, editorMetadata],
   )
 
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'GridControls selectedViews',
+  )
+
   const hoveredGrids = useEditorState(
     Substores.canvas,
     (store) => stripNulls([store.editor.canvas.controls.gridControls]),
     'FlexReparentTargetIndicator lines',
   )
 
-  const grids = useEditorState(
-    Substores.metadata,
-    (store) => {
-      return mapDropNulls(
-        (view) => {
-          const element = MetadataUtils.findElementByElementPath(jsxMetadata, view)
-          const parent = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(view))
-
-          const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element)
-            ? element
-            : MetadataUtils.isGridLayoutedContainer(parent)
-            ? parent
-            : null
-
-          if (
-            targetGridContainer == null ||
-            targetGridContainer.globalFrame == null ||
-            !isFiniteRectangle(targetGridContainer.globalFrame)
-          ) {
-            return null
-          }
-
-          const gap = targetGridContainer.specialSizeMeasurements.gap
-          const rowGap = targetGridContainer.specialSizeMeasurements.rowGap
-          const columnGap = targetGridContainer.specialSizeMeasurements.columnGap
-          const padding = targetGridContainer.specialSizeMeasurements.padding
-
-          const gridTemplateColumns =
-            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
-          const gridTemplateRows =
-            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows
-          const gridTemplateColumnsFromProps =
-            targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
-              .gridTemplateColumns
-          const gridTemplateRowsFromProps =
-            targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
-              .gridTemplateRows
-
-          const columns = getCellsCount(
-            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
-          )
-          const rows = getCellsCount(
-            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
-          )
-
-          return {
-            elementPath: targetGridContainer.elementPath,
-            frame: targetGridContainer.globalFrame,
-            gridTemplateColumns: gridTemplateColumns,
-            gridTemplateRows: gridTemplateRows,
-            gridTemplateColumnsFromProps: gridTemplateColumnsFromProps,
-            gridTemplateRowsFromProps: gridTemplateRowsFromProps,
-            gap: gap,
-            rowGap: rowGap,
-            columnGap: columnGap,
-            padding: padding,
-            rows: rows,
-            columns: columns,
-            cells: rows * columns,
-          }
-        },
-        [...store.editor.selectedViews, ...hoveredGrids],
-      )
-    },
-    'GridControls grids',
-  )
+  const grids = useGridData([...selectedViews, ...hoveredGrids])
 
   const cells = React.useMemo(() => {
     return grids.flatMap((grid) => {
@@ -873,32 +925,6 @@ export const GridControls = controlForStrategyMemoized(() => {
             }}
           />
         ) : null}
-        {grids.flatMap((grid) => {
-          return (
-            <GridResizing
-              key={`grid-resizing-column-${EP.toString(grid.elementPath)}`}
-              axisValues={grid.gridTemplateColumns}
-              fromPropsAxisValues={grid.gridTemplateColumnsFromProps}
-              containingFrame={grid.frame}
-              axis={'column'}
-              gap={grid.gap}
-              padding={grid.padding}
-            />
-          )
-        })}
-        {grids.flatMap((grid) => {
-          return (
-            <GridResizing
-              key={`grid-resizing-row-${EP.toString(grid.elementPath)}`}
-              axisValues={grid.gridTemplateRows}
-              fromPropsAxisValues={grid.gridTemplateRowsFromProps}
-              containingFrame={grid.frame}
-              axis={'row'}
-              gap={grid.gap}
-              padding={grid.padding}
-            />
-          )
-        })}
       </CanvasOffsetWrapper>
     </React.Fragment>
   )
