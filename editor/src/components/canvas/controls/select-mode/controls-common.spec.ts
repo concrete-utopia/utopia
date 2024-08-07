@@ -6,17 +6,17 @@ describe('empty css value', () => {
     {
       title: 'should fallback to rendered px in case of an empty value',
       cssNumber: emptyCssNumber(),
-      expected: { value: { value: 16, unit: 'px' }, renderedValuePx: renderedValuePx },
+      expected: { value: 16, unit: 'px' },
     },
     {
       title: 'shouldnt fallback to rendered px in case of a non-empty value',
       cssNumber: cssNumber(1, 'em'),
-      expected: { value: { value: 1, unit: 'em' }, renderedValuePx: renderedValuePx },
+      expected: { value: 1, unit: 'em' },
     },
     {
       title: 'shouldnt fallback to rendered px in case of a zero value',
       cssNumber: cssNumber(0),
-      expected: { value: { value: 0, unit: null }, renderedValuePx: renderedValuePx },
+      expected: { value: 0, unit: null },
     },
   ]
 

@@ -297,7 +297,7 @@ export function shouldShowControls(
 }
 
 export function fallbackEmptyValue(numberWithRenderedValue: CSSNumberWithRenderedValue): CSSNumber {
-  return numberWithRenderedValue.value.emptyValue
+  return numberWithRenderedValue.value.emptyValue == true
     ? cssNumber(numberWithRenderedValue.renderedValuePx, 'px')
     : numberWithRenderedValue.value
 }
