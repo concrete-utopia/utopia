@@ -2560,6 +2560,19 @@ export function elementInstanceMetadata(
   }
 }
 
+export function metadataHasPositionAbsoluteOrNull(
+  metadata: ElementInstanceMetadata | null | undefined,
+): boolean {
+  if (metadata == null) {
+    return false
+  } else {
+    return (
+      metadata.specialSizeMeasurements.position === 'absolute' ||
+      metadata.specialSizeMeasurements.position === null
+    )
+  }
+}
+
 export type SettableLayoutSystem = 'flex' | 'flow' | 'grid' | LayoutSystem
 
 export interface GridPositionValue {
@@ -2859,7 +2872,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   false,
   'initial',
-  'static',
+  null,
   sides(undefined, undefined, undefined, undefined),
   sides(undefined, undefined, undefined, undefined),
   null,
