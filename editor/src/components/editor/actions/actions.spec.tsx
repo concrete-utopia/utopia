@@ -115,7 +115,7 @@ import {
 } from './action-creators'
 import { UPDATE_FNS, replaceFilePath } from './actions'
 import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
-import { getAllUniqueUids } from '../../../core/model/get-uid-mappings'
+import { getUidMappings } from '../../../core/model/get-uid-mappings'
 import { simpleDefaultProject } from '../../../sample-projects/sample-project-utils'
 import { InjectedCSSFilePrefix } from '../../../core/webpack-loaders/css-loader'
 import { renderTestEditorWithModel } from '../../../components/canvas/ui-jsx.test-utils'
@@ -1225,7 +1225,7 @@ describe('UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION', () => {
       action,
       startingEditorState,
     )
-    const uniqueUIDsResult = getAllUniqueUids(updatedEditorState.projectContents)
+    const uniqueUIDsResult = getUidMappings(updatedEditorState.projectContents)
     expect(uniqueUIDsResult.duplicateIDs).toEqual({})
   })
 })

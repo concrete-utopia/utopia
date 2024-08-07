@@ -91,7 +91,7 @@ import {
 } from '../../shared/dom-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { contentsToTree } from '../../../components/assets'
-import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../model/get-uid-mappings'
+import { getUidMappings, getAllUniqueUidsFromLookup } from '../../model/get-uid-mappings'
 import {
   filtered,
   fromField,
@@ -6174,7 +6174,7 @@ export var whatever2 = (props) => <View data-uid='aaa'>
                 null,
                 0,
               )
-              const singleFileUniqueIDsResult = getAllUniqueUids(
+              const singleFileUniqueIDsResult = getUidMappings(
                 contentsToTree({ '/index.js': fileValue }),
               )
 
@@ -6204,7 +6204,7 @@ export var whatever2 = (props) => <View data-uid='aaa'>
         }
 
         // Check that this parse has not surfaced any duplicates within itself.
-        const uniqueIDsResult = getAllUniqueUids(contentsToTree(projectContents))
+        const uniqueIDsResult = getUidMappings(contentsToTree(projectContents))
         const anyDuplicates = Object.keys(uniqueIDsResult.duplicateIDs).length > 0
         if (anyDuplicates) {
           throw new Error(`Found duplicate UIDs: ${uniqueIDsResult.duplicateIDs}`)

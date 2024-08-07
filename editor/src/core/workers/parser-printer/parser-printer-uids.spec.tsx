@@ -36,7 +36,7 @@ import { emptySet } from '../../shared/set-utils'
 import { createCodeFile } from '../../../components/custom-code/code-file.test-utils'
 import { renderTestEditorWithProjectContent } from '../../../components/canvas/ui-jsx.test-utils'
 import { updateFile } from '../../../components/editor/actions/action-creators'
-import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../model/get-uid-mappings'
+import { getUidMappings, getAllUniqueUidsFromLookup } from '../../model/get-uid-mappings'
 
 function addCodeFileToProjectContents(
   projectContents: ProjectContentTreeRoot,
@@ -80,7 +80,7 @@ describe('parseCode', () => {
             0,
           ),
         )
-        const result = getAllUniqueUids(projectContents)
+        const result = getUidMappings(projectContents)
         expect(getAllUniqueUidsFromLookup(result.filePathToUids)).toHaveLength(493)
         expect(result.duplicateIDs).toEqual({})
       },
@@ -113,7 +113,7 @@ describe('parseCode', () => {
       alreadyExistingUIDs_MUTABLE,
     )
 
-    const result = getAllUniqueUids(projectContents)
+    const result = getUidMappings(projectContents)
     expect(getAllUniqueUidsFromLookup(result.filePathToUids)).toHaveLength(7)
     expect(result.duplicateIDs).toEqual({})
   })
@@ -156,7 +156,7 @@ describe('parseCode', () => {
       alreadyExistingUIDs_MUTABLE,
     )
 
-    const result = getAllUniqueUids(projectContents)
+    const result = getUidMappings(projectContents)
     expect(getAllUniqueUidsFromLookup(result.filePathToUids)).toHaveLength(14)
     expect(result.duplicateIDs).toEqual({})
   })
@@ -230,7 +230,7 @@ describe('parseCode', () => {
       'dont-await-first-dom-report',
     )
 
-    const result = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
+    const result = getUidMappings(renderResult.getEditorState().editor.projectContents)
     expect(getAllUniqueUidsFromLookup(result.filePathToUids)).toHaveLength(26)
     expect(result.duplicateIDs).toEqual({})
   })
@@ -289,7 +289,7 @@ describe('parseCode', () => {
       'dont-await-first-dom-report',
     )
 
-    const resultBefore = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
+    const resultBefore = getUidMappings(renderResult.getEditorState().editor.projectContents)
     expect(getAllUniqueUidsFromLookup(resultBefore.filePathToUids)).toHaveLength(17)
     expect(resultBefore.duplicateIDs).toEqual({})
 
@@ -318,7 +318,7 @@ describe('parseCode', () => {
       false,
     )
 
-    const resultAfter = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
+    const resultAfter = getUidMappings(renderResult.getEditorState().editor.projectContents)
     expect(getAllUniqueUidsFromLookup(resultAfter.filePathToUids)).toHaveLength(25)
     expect(resultAfter.duplicateIDs).toEqual({})
   })

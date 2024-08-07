@@ -52,7 +52,7 @@ import {
 } from './uid-fix'
 import { foldEither } from '../../../core/shared/either'
 import {
-  getAllUniqueUids,
+  getUidMappings,
   getAllUniqueUIdsFromElementChild,
   getAllUniqueUidsFromLookup,
 } from '../../model/get-uid-mappings'
@@ -142,7 +142,7 @@ function lintAndParseAndValidateResult(
       0,
     ),
   })
-  const duplicateUIDs = getAllUniqueUids(projectContents).duplicateIDs
+  const duplicateUIDs = getUidMappings(projectContents).duplicateIDs
   if (Object.keys(duplicateUIDs).length > 0) {
     throw new Error(`Duplicate UIDs identified ${JSON.stringify(duplicateUIDs)}`)
   }
@@ -653,7 +653,7 @@ describe('fixParseSuccessUIDs', () => {
         0,
       ),
     })
-    const duplicateUIDs = getAllUniqueUids(projectContents).duplicateIDs
+    const duplicateUIDs = getUidMappings(projectContents).duplicateIDs
     expect(Object.keys(duplicateUIDs)).toHaveLength(0)
   })
 })

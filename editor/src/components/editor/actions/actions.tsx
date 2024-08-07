@@ -580,7 +580,7 @@ import {
   getFilesToUpdate,
   processWorkerUpdates,
 } from '../../../core/shared/parser-projectcontents-utils'
-import { getAllUniqueUids, getAllUniqueUidsFromLookup } from '../../../core/model/get-uid-mappings'
+import { getUidMappings, getAllUniqueUidsFromLookup } from '../../../core/model/get-uid-mappings'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { resultForFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
 import { reparentToUnwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/reparent-to-unwrap-as-absolute-strategy'
@@ -4127,7 +4127,7 @@ export const UPDATE_FNS = {
 
     // 2. Parse the file upfront.
     const existingUIDs = new Set(
-      getAllUniqueUidsFromLookup(getAllUniqueUids(editor.projectContents).filePathToUids),
+      getAllUniqueUidsFromLookup(getUidMappings(editor.projectContents).filePathToUids),
     )
     const parsedResult = getParseFileResult(
       newFileName,
@@ -5373,7 +5373,7 @@ export const UPDATE_FNS = {
       }
 
       const existingUids = new Set(
-        getAllUniqueUidsFromLookup(getAllUniqueUids(editor.projectContents).filePathToUids),
+        getAllUniqueUidsFromLookup(getUidMappings(editor.projectContents).filePathToUids),
       )
 
       const newUID = generateConsistentUID('new', existingUids)
@@ -5905,7 +5905,7 @@ export const UPDATE_FNS = {
             return parsed
           } else {
             const alreadyExistingUIDs = getAllUniqueUidsFromLookup(
-              getAllUniqueUids(removeFromProjectContents(editor.projectContents, action.fullPath))
+              getUidMappings(removeFromProjectContents(editor.projectContents, action.fullPath))
                 .filePathToUids,
             )
             const fixUIDsState: FixUIDsState = {

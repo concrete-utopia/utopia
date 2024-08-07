@@ -246,7 +246,7 @@ export function getUniqueUidsMappingInner(
   return collectUidsForEachFile(projectContents)
 }
 
-export const getAllUniqueUids = memoize(getUniqueUidsMappingInner)
+export const getUidMappings = memoize(getUniqueUidsMappingInner)
 
 export function getAllUniqueUIdsFromElementChild(expression: JSXElementChild): {
   allUids: Set<string>

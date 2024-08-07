@@ -3,7 +3,7 @@ import type { ParseSuccess } from 'utopia-shared/src/types'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { modifyParseSuccessAtPath } from '../../components/editor/store/editor-state'
 import { parseProjectContents } from '../../sample-projects/sample-project-utils.test-utils'
-import { getAllUniqueUids, getFilePathForUid } from './get-uid-mappings'
+import { getUidMappings, getFilePathForUid } from './get-uid-mappings'
 import { LargeHydrogenProject } from './test-large-persistent-model.test-utils'
 
 export async function benchmarkGetUniqueUids(): Promise<void> {
@@ -14,7 +14,7 @@ export async function benchmarkGetUniqueUids(): Promise<void> {
 
       return function benchmark() {
         parsedProjectContents = changeOneFileInProjectContents(parsedProjectContents)
-        const mapping = getAllUniqueUids(parsedProjectContents).filePathToUids
+        const mapping = getUidMappings(parsedProjectContents).filePathToUids
         const result = getFilePathForUid(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')
       }
     }),
@@ -29,10 +29,10 @@ export async function benchmarkGetUniqueUids(): Promise<void> {
 
       return function benchmark() {
         const changedProjectContents = changeOneFileInProjectContents(parsedProjectContents)
-        const newMapping = getAllUniqueUids(changedProjectContents).filePathToUids
+        const newMapping = getUidMappings(changedProjectContents).filePathToUids
         const newResult = getFilePathForUid(newMapping, '8d4c5e9960f004aebf00a97dabe7cd80')
 
-        const oldMapping = getAllUniqueUids(parsedProjectContents).filePathToUids
+        const oldMapping = getUidMappings(parsedProjectContents).filePathToUids
         const oldResult = getFilePathForUid(oldMapping, '8d4c5e9960f004aebf00a97dabe7cd80')
       }
     }),
@@ -44,7 +44,7 @@ export async function benchmarkGetUniqueUids(): Promise<void> {
     'lookup of only the file based on UID',
     Benny.add('OLD getUniqueUids', async function setup() {
       let parsedProjectContents = parseProjectContents(LargeHydrogenProject.projectContents)
-      const mapping = getAllUniqueUids(parsedProjectContents).filePathToUids
+      const mapping = getUidMappings(parsedProjectContents).filePathToUids
 
       return function benchmark() {
         const result = getFilePathForUid(mapping, '8d4c5e9960f004aebf00a97dabe7cd80')

@@ -143,7 +143,7 @@ import { checkAnyWorkerUpdates, simpleStringifyActions } from '../editor/actions
 import { modify } from '../../core/shared/optics/optic-utilities'
 import { fromField } from '../../core/shared/optics/optic-creators'
 import type { DuplicateUIDsResult } from '../../core/model/get-uid-mappings'
-import { getAllUniqueUids } from '../../core/model/get-uid-mappings'
+import { getUidMappings } from '../../core/model/get-uid-mappings'
 import { carryDispatchResultFields } from './editor-dispatch-flow'
 import type { FeatureName } from '../../utils/feature-switches'
 import { setFeatureEnabled } from '../../utils/feature-switches'
@@ -356,7 +356,7 @@ export async function renderTestEditorWithModel(
       innerStrategiesToUse,
     )
 
-    const duplicateUIDs = getAllUniqueUids(result.patchedEditor.projectContents).duplicateIDs
+    const duplicateUIDs = getUidMappings(result.patchedEditor.projectContents).duplicateIDs
     if (Object.keys(duplicateUIDs).length > 0) {
       actionsCausingDuplicateUIDs.push({
         actions: actions,
