@@ -53,30 +53,29 @@ export function activate(context: vscode.ExtensionContext) {
   // meaning no new UtopiaReady message will have been sent
   sendMessageToUtopia(vsCodeReady())
 
-  // watchForFileDeletions()
+  watchForFileDeletions()
 }
 
-// FIXME Do we still want this? It seems wrong...
-// function watchForFileDeletions() {
-//   let fileWatcherChain: Promise<void> = Promise.resolve()
-//   const fileWatcher = vscode.workspace.createFileSystemWatcher('**/*')
-//   fileWatcher.onDidDelete(async (deletedFile) => {
-//     for (const textDocument of vscode.workspace.textDocuments) {
-//       if (textDocument.uri.fsPath === deletedFile.fsPath) {
-//         fileWatcherChain = fileWatcherChain.then(async () => {
-//           await vscode.window.showTextDocument(textDocument)
-//           return Promise.resolve()
-//         })
-//         if (textDocument.isDirty) {
-//           await clearDirtyFlags(textDocument.uri)
-//         }
-//         fileWatcherChain = fileWatcherChain.then(async () => {
-//           return vscode.commands.executeCommand('workbench.action.closeActiveEditor')
-//         })
-//       }
-//     }
-//   })
-// }
+function watchForFileDeletions() {
+  let fileWatcherChain: Promise<void> = Promise.resolve()
+  const fileWatcher = vscode.workspace.createFileSystemWatcher('**/*')
+  fileWatcher.onDidDelete(async (deletedFile) => {
+    for (const textDocument of vscode.workspace.textDocuments) {
+      if (textDocument.uri.fsPath === deletedFile.fsPath) {
+        fileWatcherChain = fileWatcherChain.then(async () => {
+          await vscode.window.showTextDocument(textDocument)
+          return Promise.resolve()
+        })
+        if (textDocument.isDirty) {
+          await clearDirtyFlags(textDocument.uri)
+        }
+        fileWatcherChain = fileWatcherChain.then(async () => {
+          return vscode.commands.executeCommand('workbench.action.closeActiveEditor')
+        })
+      }
+    }
+  })
+}
 
 async function wait(timeoutms: number): Promise<void> {
   return new Promise<void>((resolve) => setTimeout(() => resolve(), timeoutms))
