@@ -844,7 +844,8 @@ export function shouldRunDOMWalker(
     patchedEditorBefore.projectContents !== patchedEditorAfter.projectContents ||
     patchedEditorBefore.nodeModules !== patchedEditorAfter.nodeModules ||
     patchedEditorBefore.selectedViews !== patchedEditorAfter.selectedViews ||
-    patchedEditorBefore.focusedElementPath !== patchedEditorAfter.focusedElementPath
+    patchedEditorBefore.focusedElementPath !== patchedEditorAfter.focusedElementPath ||
+    patchedEditorBefore.canvas !== patchedEditorAfter.canvas
 
   const patchedDerivedBefore = storeBefore.patchedDerived
   const patchedDerivedAfter = storeAfter.patchedDerived
