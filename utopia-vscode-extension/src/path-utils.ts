@@ -29,7 +29,7 @@ export function getParentPath(path: string): string | null {
   const withoutLeadingOrTrailingSlash = stripLeadingSlash(stripTrailingSlash(path))
   const pathElems = withoutLeadingOrTrailingSlash.split('/')
   if (pathElems.length <= 1) {
-    return null
+    return path === '/' || path === '' ? null : ''
   } else {
     return `/${pathElems.slice(0, -1).join('/')}`
   }
