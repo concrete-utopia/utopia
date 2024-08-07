@@ -22,7 +22,7 @@ import type {
   EditorAction,
   EditorDispatch,
 } from '../components/editor/action-types'
-import { isLoggedIn } from '../components/editor/action-types'
+import { actionActionsOptic, isLoggedIn } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'
@@ -128,6 +128,12 @@ import { InitialOnlineState, startOnlineStatusPolling } from '../components/edit
 import { useAnimate } from 'framer-motion'
 import { AnimationContext } from '../components/canvas/ui-jsx-canvas-renderer/animation-context'
 import { anyCodeAhead } from '../components/assets'
+import { anyBy, toArrayOf } from '../core/shared/optics/optic-utilities'
+import {
+  fromField,
+  traverseArray,
+  traverseReadOnlyArray,
+} from '../core/shared/optics/optic-creators'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -451,13 +457,10 @@ export class Editor {
 
       const reactRouterErrorPreviouslyLogged = hasReactRouterErrorBeenLogged()
 
-      const runDomWalker = shouldRunDOMWalker(dispatchedActions, dispatchResult)
-
-      const somethingChanged = !dispatchResult.nothingChanged
+      const runDomWalker = shouldRunDOMWalker(dispatchedActions, oldEditorState, this.storedState)
 
       const shouldRerender =
-        (somethingChanged || runDomWalker) &&
-        !anyCodeAhead(dispatchResult.unpatchedEditor.projectContents)
+        runDomWalker && !anyCodeAhead(dispatchResult.unpatchedEditor.projectContents)
 
       const updateId = canvasUpdateId++
       if (shouldRerender) {
@@ -830,17 +833,30 @@ async function renderProjectNotFound(projectId: string): Promise<void> {
   window.location.href = `/project/${projectId}`
 }
 
-function shouldRunDOMWalker(
-  dispatchedActions: readonly EditorAction[],
-  dispatchResult: DispatchResult,
+export function shouldRunDOMWalker(
+  dispatchedActions: ReadonlyArray<EditorAction>,
+  storeBefore: EditorStoreFull,
+  storeAfter: EditorStoreFull,
 ): boolean {
-  // if the only thing that changed was the scroll position - we don't need to run the DOMWalker
-  // TODO: make it a more robust check on the contents of the result - or even better - add a specific flag for 'domContentsChanged'
-  const canSkipDomWalker = dispatchedActions.every((a) => a.action === 'SCROLL_CANVAS')
-  if (canSkipDomWalker) {
-    return false
-  }
-  return (
-    !dispatchResult.nothingChanged || dispatchedActions.some((a) => a.action === 'RUN_DOM_WALKER')
+  const patchedEditorBefore = storeBefore.patchedEditor
+  const patchedEditorAfter = storeAfter.patchedEditor
+  const patchedEditorChanged =
+    patchedEditorBefore.projectContents !== patchedEditorAfter.projectContents ||
+    patchedEditorBefore.nodeModules !== patchedEditorAfter.nodeModules ||
+    patchedEditorBefore.selectedViews !== patchedEditorAfter.selectedViews ||
+    patchedEditorBefore.focusedElementPath !== patchedEditorAfter.focusedElementPath
+
+  const patchedDerivedBefore = storeBefore.patchedDerived
+  const patchedDerivedAfter = storeAfter.patchedDerived
+  const patchedDerivedChanged =
+    patchedDerivedBefore.autoFocusedPaths !== patchedDerivedAfter.autoFocusedPaths ||
+    patchedDerivedBefore.remixData !== patchedDerivedAfter.remixData
+
+  const storeChanged = patchedEditorChanged || patchedDerivedChanged
+  const actionsIndicateDOMWalkerShouldRun = anyBy(
+    traverseReadOnlyArray<EditorAction>().compose(actionActionsOptic),
+    (action) => action.action === 'RUN_DOM_WALKER',
+    dispatchedActions,
   )
+  return storeChanged || actionsIndicateDOMWalkerShouldRun
 }
