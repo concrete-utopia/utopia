@@ -666,8 +666,8 @@ function checkUIDValues([first, second]: [JSXElementChild, JSXElementChild]): bo
   // - second has no internal duplicates.
   // - first doesn't have a uid which is within the second value.
   return (
-    isEmptyObject(firstUIDsResult.duplicateIDs) &&
-    isEmptyObject(secondUIDsResult.duplicateIDs) &&
+    firstUIDsResult.duplicateIDs.size === 0 &&
+    secondUIDsResult.duplicateIDs.size === 0 &&
     intersection([firstUIDsResult.allUids, secondUIDsResult.allUids]).size === 0
   )
 }

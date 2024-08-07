@@ -82,7 +82,7 @@ describe('parseCode', () => {
         )
         const result = getUidMappings(projectContents)
         expect(getAllUniqueUidsFromMapping(result.filePathToUids)).toHaveLength(493)
-        expect(result.duplicateIDs).toEqual({})
+        expect(result.duplicateIDs.size).toEqual(0)
       },
       (_) => {
         throw new Error('Is unparsed.')
@@ -115,7 +115,7 @@ describe('parseCode', () => {
 
     const result = getUidMappings(projectContents)
     expect(getAllUniqueUidsFromMapping(result.filePathToUids)).toHaveLength(7)
-    expect(result.duplicateIDs).toEqual({})
+    expect(result.duplicateIDs.size).toEqual(0)
   })
 
   it('fixes duplicated UIDs for multifile projects', () => {
@@ -158,7 +158,7 @@ describe('parseCode', () => {
 
     const result = getUidMappings(projectContents)
     expect(getAllUniqueUidsFromMapping(result.filePathToUids)).toHaveLength(14)
-    expect(result.duplicateIDs).toEqual({})
+    expect(result.duplicateIDs.size).toEqual(0)
   })
 
   it('can successfully load a multifile project with duplicated UIDs', async () => {
@@ -232,7 +232,7 @@ describe('parseCode', () => {
 
     const result = getUidMappings(renderResult.getEditorState().editor.projectContents)
     expect(getAllUniqueUidsFromMapping(result.filePathToUids)).toHaveLength(26)
-    expect(result.duplicateIDs).toEqual({})
+    expect(result.duplicateIDs.size).toEqual(0)
   })
 
   it('can successfully handle a multifile project with duplicated UIDs added later', async () => {
@@ -291,7 +291,7 @@ describe('parseCode', () => {
 
     const resultBefore = getUidMappings(renderResult.getEditorState().editor.projectContents)
     expect(getAllUniqueUidsFromMapping(resultBefore.filePathToUids)).toHaveLength(17)
-    expect(resultBefore.duplicateIDs).toEqual({})
+    expect(resultBefore.duplicateIDs.size).toEqual(0)
 
     await renderResult.dispatch(
       [
@@ -320,7 +320,7 @@ describe('parseCode', () => {
 
     const resultAfter = getUidMappings(renderResult.getEditorState().editor.projectContents)
     expect(getAllUniqueUidsFromMapping(resultAfter.filePathToUids)).toHaveLength(25)
-    expect(resultAfter.duplicateIDs).toEqual({})
+    expect(resultAfter.duplicateIDs.size).toEqual(0)
   })
 })
 

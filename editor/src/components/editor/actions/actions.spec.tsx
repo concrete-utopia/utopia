@@ -1226,7 +1226,7 @@ describe('UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION', () => {
       startingEditorState,
     )
     const uniqueUIDsResult = getUidMappings(updatedEditorState.projectContents)
-    expect(uniqueUIDsResult.duplicateIDs).toEqual({})
+    expect(uniqueUIDsResult.duplicateIDs.size).toEqual(0)
   })
 })
 
