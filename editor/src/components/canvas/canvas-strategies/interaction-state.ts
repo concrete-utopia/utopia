@@ -135,6 +135,21 @@ export function interactionSession(
   }
 }
 
+export function interactionSessionIsActive(session: InteractionSession | null): boolean {
+  if (session == null) {
+    return false
+  } else {
+    switch (session.interactionData.type) {
+      case 'DRAG':
+        return session.interactionData.drag != null
+      case 'HOVER':
+        return true
+      case 'KEYBOARD':
+        return true
+    }
+  }
+}
+
 export type InteractionSessionWithoutMetadata = Omit<
   InteractionSession,
   'latestMetadata' | 'latestAllElementProps' | 'latestElementPathTree' | 'latestVariablesInScope'
