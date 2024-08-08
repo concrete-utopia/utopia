@@ -23,6 +23,7 @@ import { CanvasLabel, fallbackEmptyValue, PillHandle, useHoverWithDelay } from '
 import { CSSCursor } from '../../../../uuiui-deps'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { isZeroSizedElement } from '../outline-utils'
+import { createArrayWithLength } from '../../../../core/shared/array-utils'
 
 interface GridGapControlProps {
   selectedElement: ElementPath
@@ -140,7 +141,7 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
         style={{ pointerEvents: 'none', position: 'absolute' }}
         ref={controlRef}
       >
-        {controlBounds.map(({ gap, bounds, axis, gapId }) => {
+        {controlBounds.gaps.map(({ gap, bounds, axis, gapId }) => {
           const gapControlProps = {
             mouseDownHandler: axisMouseDownHandler,
             gapId: gapId,
@@ -151,6 +152,7 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
             axis: axis,
             gapValue: gap,
             elementHovered: elementHovered,
+            handles: axis === 'row' ? controlBounds.columns : controlBounds.rows,
           }
           if (axis === 'row') {
             return (
@@ -217,6 +219,7 @@ interface GridGapControlSegmentProps {
   scale: number
   isDragging: boolean
   backgroundShown: boolean
+  handles: number
 }
 
 const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
@@ -230,6 +233,7 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
     gapId,
     backgroundShown,
     axis,
+    handles,
   } = props
 
   const [indicatorShown, setIndicatorShown] = React.useState<number | null>(null)
@@ -284,7 +288,7 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
           flexDirection: axis,
         }}
       >
-        {[1, 2, 3].map((i) => (
+        {createArrayWithLength(handles, (i) => (
           <GridGapHandler
             key={i}
             index={i}
