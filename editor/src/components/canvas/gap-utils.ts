@@ -219,8 +219,8 @@ export function gridGapControlBoundsFromMetadata(
   // row gaps array
   const rowGaps = createArrayWithLength(gridRows - 1, (i) => {
     // cell i represents the gap between child [i * gridColumns] and child [(i+1) * gridColumns]
-    const firstChildBounds = cell(i, 1).getBoundingClientRect()
-    const secondChildBounds = cell(i + 1, 1).getBoundingClientRect()
+    const firstChildBounds = cell(i, 0).getBoundingClientRect()
+    const secondChildBounds = cell(i + 1, 0).getBoundingClientRect()
     return {
       gapId: `${EP.toString(parentPath)}-row-gap-${i}`,
       bounds: canvasRectangle({
