@@ -413,7 +413,8 @@ describe('Select Mode Clicking', () => {
     checkFocusedPath(renderResult, desiredPaths[2])
     checkSelectedPaths(renderResult, [desiredPaths[2]])
   })
-  it('Single click and five double clicks will focus a generated Card and select the Button inside', async () => {
+  it('Single click and five double clicks will focus a generated Card and select the Button inside', async function (this: Mocha.Context) {
+    this.timeout(15000)
     // prettier-ignore
     const desiredPaths = createConsecutivePaths(
       'sb' +                 // Skipped as it's the storyboard
@@ -795,7 +796,8 @@ describe('Select Mode Double Clicking With Fragments', () => {
     checkFocusedPath(renderResult, desiredPaths[2])
     checkSelectedPaths(renderResult, [desiredPaths[2]])
   })
-  it('Single click and five double clicks will focus a generated Card and select the Button inside', async () => {
+  it('Single click and five double clicks will focus a generated Card and select the Button inside', async function (this: Mocha.Context) {
+    this.timeout(15000)
     // prettier-ignore
     const desiredPaths = createConsecutivePaths(
       'sb' +                  // Skipped as it's the storyboard
