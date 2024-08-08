@@ -163,7 +163,7 @@ const popup: React.CSSProperties = {
   background: colorTheme.neutralBackground.value,
   boxShadow: shadowStyles.high.boxShadow,
   padding: '4px 0',
-  borderRadius: 10,
+  borderRadius: 4,
 }
 
 const checkerboardBackground: Pick<
