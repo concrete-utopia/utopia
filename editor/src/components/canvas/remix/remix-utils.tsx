@@ -37,7 +37,7 @@ import { findPathToJSXElementChild } from '../../../core/model/element-template-
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { type ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getUidMappings, getFilePathForUid } from '../../../core/model/get-uid-mappings'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/remix/client-routes'
 import path from 'path'
@@ -441,8 +441,8 @@ export function getRouteComponentNameForOutlet(
     return null
   }
 
-  const uidsToFilePath = getAllUniqueUids(projectContents).uidsToFilePaths
-  const filePath = uidsToFilePath[EP.toUid(outletChild)]
+  const uidsToFilePath = getUidMappings(projectContents).filePathToUids
+  const filePath = getFilePathForUid(uidsToFilePath, EP.toUid(outletChild))
   if (filePath == null) {
     return null
   }

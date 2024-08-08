@@ -36,7 +36,7 @@ import { useRefEditorState } from './store/store-hook'
 import { useDispatch } from './store/dispatch-context'
 import { applyCommandsAction } from './actions/action-creators'
 import { generateConsistentUID } from '../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { getUidMappings, getAllUniqueUidsFromMapping } from '../../core/model/get-uid-mappings'
 import { updateSelectedViews } from '../canvas/commands/update-selected-views-command'
 import type { IndexPosition } from '../../utils/utils'
 import { absolute } from '../../utils/utils'
@@ -97,7 +97,9 @@ function wrapInDivCommands(
     return left('Cannot determine the bounding box of selected elements')
   }
 
-  const allIds = new Set(getAllUniqueUids(projectContents).allIDs)
+  const allIds = new Set(
+    getAllUniqueUidsFromMapping(getUidMappings(projectContents).filePathToUids),
+  )
 
   const wrapperUid = generateConsistentUID('wrapper', allIds)
   allIds.add(wrapperUid)
