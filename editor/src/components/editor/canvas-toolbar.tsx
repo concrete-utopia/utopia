@@ -632,7 +632,7 @@ const ToolbarButton = React.memo((props: ToolbarButtonProps) => {
       highlight
       onClick={props.onClick}
       disabled={disabled || (canvasInLiveMode && !keepActiveInLiveMode)}
-      overriddenBackground={secondary ? 'transparent' : undefined}
+      overriddenBackground={props.primary ? undefined : 'transparent'}
       onMouseEnter={setIsHoveredTrue}
       onMouseLeave={setIsHoveredFalse}
     >
