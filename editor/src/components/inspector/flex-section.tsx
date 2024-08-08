@@ -44,6 +44,7 @@ import {
   cssKeyword,
   cssNumber,
   cssNumberToString,
+  gridAutoFlowIcon,
   gridCSSKeyword,
   gridCSSNumber,
   isCSSKeyword,
@@ -828,6 +829,7 @@ const AutoFlowPopupId = 'auto-flow-control'
 const selectOption = (value: GridAutoFlow | 'unset'): SelectOption => ({
   label: value,
   value: value,
+  icon: value === 'unset' ? undefined : gridAutoFlowIcon(value),
 })
 
 const GRID_AUTO_FLOW_DROPDOWN_OPTIONS: Array<SelectOption> = GridAutoFlowValues.map(selectOption)
