@@ -110,14 +110,14 @@ export function firstAncestorOrItselfWithValidElementPath(
   point: CanvasPoint,
   lockedElements: LockedElements,
   focusedPaths: Array<ElementPath>,
-): { path: ElementPath; locked: boolean } | null {
+): { path: ElementPath; originalIsUnselectable: boolean } | null {
   const staticAndDynamicTargetElementPaths = getStaticAndDynamicElementPathsForDomElement(target)
 
   if (staticAndDynamicTargetElementPaths.length === 0) {
     return null
   }
 
-  const isLocked = staticAndDynamicTargetElementPaths.every((p) => {
+  const originalIsUnselectable = staticAndDynamicTargetElementPaths.every((p) => {
     if (EP.containsPath(p.dynamic, lockedElements.simpleLock)) {
       return true
     }
@@ -233,7 +233,9 @@ export function firstAncestorOrItselfWithValidElementPath(
     }
   }
 
-  return resultPath == null ? null : { path: resultPath, locked: isLocked }
+  return resultPath == null
+    ? null
+    : { path: resultPath, originalIsUnselectable: originalIsUnselectable }
 }
 
 export function getValidTargetAtPoint(
@@ -331,7 +333,7 @@ function findFirstValidParentForSingleElementUncached(
     )
     if (p != null) {
       foundValidElementPath = p.path
-      if (!p.locked) {
+      if (!p.originalIsUnselectable) {
         break
       }
     }
@@ -474,7 +476,7 @@ function getSelectionOrFirstTargetAtPoint(
     )
     if (foundValidElementPath != null) {
       elementFromDOM = foundValidElementPath.path
-      if (!foundValidElementPath.locked) {
+      if (!foundValidElementPath.originalIsUnselectable) {
         break
       }
     }
