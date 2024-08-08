@@ -154,8 +154,24 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
     [getData, dispatch, isDisabled, isHidden],
   )
 
+  const stopPropagation = React.useCallback(
+    (event: React.MouseEvent<HTMLElement>) => event.stopPropagation(),
+    [],
+  )
+
   return (
-    <Menu key={id} id={id} animation={false} onVisibilityChange={onVisibilityChange}>
+    <Menu
+      key={id}
+      id={id}
+      animation={false}
+      onVisibilityChange={onVisibilityChange}
+      onWheel={stopPropagation}
+      style={{
+        maxHeight: 'calc(100vh - 80px)',
+        overflow: 'visible scroll',
+        scrollbarWidth: 'none',
+      }}
+    >
       {splitItems.map((item, index) => {
         if (item?.type === 'submenu') {
           return (
