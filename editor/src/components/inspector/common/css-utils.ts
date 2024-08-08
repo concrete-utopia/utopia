@@ -983,7 +983,7 @@ export function parseGridPosition(
   }
 }
 
-export const GridAutoFlowValues = ['dense', 'column', 'column dense', 'row', 'row dense'] as const
+export const GridAutoFlowValues = ['column', 'column dense', 'row', 'row dense', 'dense'] as const
 export type GridAutoFlow = (typeof GridAutoFlowValues)[number]
 
 export function gridAutoFlowIcon(value: GridAutoFlow): IcnProps {
