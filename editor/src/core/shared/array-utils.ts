@@ -68,7 +68,7 @@ export function mapAndFilter<T, U>(
 }
 
 export function mapFirstApplicable<T, U>(
-  array: ReadonlyArray<T>,
+  array: Iterable<T>,
   mapFn: (t: T, i: number) => U | null,
 ): U | null {
   for (const value of array) {

@@ -83,7 +83,7 @@ import {
 } from '../../components/editor/store/insertion-path'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import { isNullJSXAttributeValue } from '../shared/element-template'
-import { getAllUniqueUids } from './get-unique-ids'
+import { getUidMappings, getAllUniqueUidsFromMapping } from './get-uid-mappings'
 import type { ElementPathTrees } from '../shared/element-path-tree'
 import { MetadataUtils, getSimpleAttributeAtPath } from './element-metadata-utils'
 import { mapValues } from '../shared/object-utils'
@@ -95,7 +95,7 @@ import { foldEither, right } from '../shared/either'
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
-    const existingUIDS = getAllUniqueUids(projectContents).allIDs
+    const existingUIDS = getAllUniqueUidsFromMapping(getUidMappings(projectContents).filePathToUids)
     return generateUID(new Set(existingUIDS))
   } else {
     return mockUID
@@ -108,7 +108,9 @@ export function generateUidWithExistingComponentsAndExtraUids(
 ): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
-    const existingUIDSFromProject = getAllUniqueUids(projectContents).allIDs
+    const existingUIDSFromProject = getAllUniqueUidsFromMapping(
+      getUidMappings(projectContents).filePathToUids,
+    )
     return generateUID(new Set([...existingUIDSFromProject, ...additionalUids]))
   } else {
     return mockUID
