@@ -724,6 +724,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
             border: `1px solid ${
               activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
             }`,
+            pointerEvents: 'none',
             padding:
               grid.padding == null
                 ? 0
@@ -780,6 +781,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                           ? `1px solid ${borderColor}`
                           : undefined,
                       position: 'relative',
+                      pointerEvents: 'initial',
                     }}
                     data-grid-row={countedRow}
                     data-grid-column={countedColumn}
