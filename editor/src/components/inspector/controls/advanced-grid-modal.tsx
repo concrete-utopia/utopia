@@ -33,16 +33,17 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
         ...UtopiaStyles.popup,
         zIndex: 3,
         minWidth: 230,
-        maxHeight: 200,
-        overflowY: 'scroll',
       }}
     >
       <FlexColumn>
         <UIGridRow padded variant='<--------auto-------->||22px|'>
-          Grid Settings
+          <span>Grid Settings</span>
           <SquareButton highlight onMouseDown={props.closePopup}>
             ×
           </SquareButton>
+        </UIGridRow>
+        <UIGridRow padded variant='<-------------1fr------------->'>
+          <span style={{ fontWeight: 600 }}>Items</span>
         </UIGridRow>
         <UIGridRow padded variant='|--67px--|<--------1fr-------->'>
           <span>Align</span>
@@ -50,8 +51,14 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
         <UIGridRow padded variant='|--67px--|<--------1fr-------->'>
           <span>Justify</span>
         </UIGridRow>
+        <UIGridRow padded variant='<-------------1fr------------->'>
+          <span style={{ fontWeight: 600 }}>Entire Grid</span>
+        </UIGridRow>
         <UIGridRow padded variant='|--67px--|<--------1fr-------->'>
-          <span>Auto Flow</span>
+          <span>Align</span>
+        </UIGridRow>
+        <UIGridRow padded variant='|--67px--|<--------1fr-------->'>
+          <span>Justify</span>
         </UIGridRow>
       </FlexColumn>
     </InspectorModal>
