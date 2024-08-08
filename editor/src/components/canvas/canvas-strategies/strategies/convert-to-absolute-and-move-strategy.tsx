@@ -300,19 +300,17 @@ function getFitness(
   if (
     interactionSession != null &&
     interactionSession.interactionData.type === 'DRAG' &&
-    !(
-      interactionSession.interactionData.modifiers.ctrl ||
-      interactionSession.interactionData.spacePressed
-    )
+    interactionSession.activeControl.type === 'BOUNDING_AREA'
   ) {
-    return 0
-  }
-  const baseFitness = (() => {
     if (
-      interactionSession != null &&
-      interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'BOUNDING_AREA'
+      !(
+        interactionSession.interactionData.modifiers.ctrl ||
+        interactionSession.interactionData.spacePressed
+      )
     ) {
+      return 0
+    }
+    const baseFitness = (() => {
       if (interactionSession.interactionData.spacePressed) {
         // If space is pressed, this should happening!
         return VeryHighWeight
@@ -341,10 +339,13 @@ function getFitness(
         rectContainsPoint(autoLayoutSiblingsBounds, pointOnCanvas)
 
       return isInsideBoundingBoxOfSiblings || isPositionRelative ? BaseWeight : DragConversionWeight
-    }
+    })()
+    return setHuggingParentToFixed === 'set-hugging-parent-to-fixed'
+      ? baseFitness + 0.1
+      : baseFitness // by default we set the parent to fixed size
+  } else {
     return 0
-  })()
-  return setHuggingParentToFixed === 'set-hugging-parent-to-fixed' ? baseFitness + 0.1 : baseFitness // by default we set the parent to fixed size
+  }
 }
 
 const getAutoLayoutSiblingsBounds = memoize(getAutoLayoutSiblingsBoundsInner, { maxSize: 1 })

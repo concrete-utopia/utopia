@@ -52,9 +52,10 @@ import {
 } from './uid-fix'
 import { foldEither } from '../../../core/shared/either'
 import {
-  getAllUniqueUids,
+  getUidMappings,
   getAllUniqueUIdsFromElementChild,
-} from '../../../core/model/get-unique-ids'
+  getAllUniqueUidsFromMapping,
+} from '../../model/get-uid-mappings'
 import { contentsToTree } from '../../../components/assets'
 import {
   filtered,
@@ -141,7 +142,7 @@ function lintAndParseAndValidateResult(
       0,
     ),
   })
-  const duplicateUIDs = getAllUniqueUids(projectContents).duplicateIDs
+  const duplicateUIDs = getUidMappings(projectContents).duplicateIDs
   if (Object.keys(duplicateUIDs).length > 0) {
     throw new Error(`Duplicate UIDs identified ${JSON.stringify(duplicateUIDs)}`)
   }
@@ -652,7 +653,7 @@ describe('fixParseSuccessUIDs', () => {
         0,
       ),
     })
-    const duplicateUIDs = getAllUniqueUids(projectContents).duplicateIDs
+    const duplicateUIDs = getUidMappings(projectContents).duplicateIDs
     expect(Object.keys(duplicateUIDs)).toHaveLength(0)
   })
 })
@@ -665,9 +666,9 @@ function checkUIDValues([first, second]: [JSXElementChild, JSXElementChild]): bo
   // - second has no internal duplicates.
   // - first doesn't have a uid which is within the second value.
   return (
-    isEmptyObject(firstUIDsResult.duplicateIDs) &&
-    isEmptyObject(secondUIDsResult.duplicateIDs) &&
-    intersection([new Set(firstUIDsResult.allIDs), new Set(secondUIDsResult.allIDs)]).size === 0
+    firstUIDsResult.duplicateIDs.size === 0 &&
+    secondUIDsResult.duplicateIDs.size === 0 &&
+    intersection([firstUIDsResult.allUids, secondUIDsResult.allUids]).size === 0
   )
 }
 

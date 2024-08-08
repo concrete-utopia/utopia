@@ -23,7 +23,7 @@ import type { BuiltInDependencies } from '../../core/es-modules/package-manager/
 import { resolveModulePath } from '../../core/es-modules/package-manager/module-resolution'
 import type { EvaluationCache } from '../../core/es-modules/package-manager/package-manager'
 import { getCurriedEditorRequireFn } from '../../core/es-modules/package-manager/package-manager'
-import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { getUidMappings, getFilePathForUid } from '../../core/model/get-uid-mappings'
 import type { Either } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import type {
@@ -483,8 +483,8 @@ export function normalisePathToUnderlyingTarget(
   const staticPath = EP.dynamicPathToStaticPath(elementPath)
   const lastPartOfPath = EP.takeLastPartOfPath(elementPath)
 
-  const allUidsWithFiles = getAllUniqueUids(projectContents)
-  const filePathFromUID = allUidsWithFiles.uidsToFilePaths[EP.toUid(staticPath)]
+  const allUidsWithFiles = getUidMappings(projectContents)
+  const filePathFromUID = getFilePathForUid(allUidsWithFiles.filePathToUids, EP.toUid(staticPath))
   const fileFromUID =
     filePathFromUID == null ? null : getProjectFileByFilePath(projectContents, filePathFromUID)
 

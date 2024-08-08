@@ -388,7 +388,9 @@ function runSelectiveDomWalker(
             } else {
               const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
                 const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
-                return globalProps.validPaths.some((vp) => EP.pathsEqual(vp, staticPath))
+                return globalProps.validPaths.some((vp) =>
+                  EP.isDescendantOfOrEqualTo(staticPath, vp),
+                )
               })
               globalProps.pathsCollectedMutable.push(
                 ...foundValidPaths.map((pathWithString) => pathWithString.path),

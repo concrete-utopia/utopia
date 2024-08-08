@@ -67,6 +67,31 @@ export function roundSixPointFrameToNearestWhole(
   }
 }
 
+export type FrameWithFourPoints = {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+export function rectangleToFourFramePoints(rectangle: SimpleRectangle): FrameWithFourPoints {
+  return {
+    left: rectangle.x,
+    top: rectangle.y,
+    width: rectangle.width,
+    height: rectangle.height,
+  }
+}
+
+export type FrameWithFourToSixPoints = {
+  left: number
+  top: number
+  right?: number
+  bottom?: number
+  width: number
+  height: number
+}
+
 export function transformConstrainedLocalFullFrameUsingBoundingBox(
   groupOriginalBoundingBox: CanvasRectangle,
   groupNewBoundingBox: CanvasRectangle,

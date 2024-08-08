@@ -7,7 +7,7 @@ import type { Modifiers } from '../../../../utils/modifiers'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import { colorTheme } from '../../../../uuiui'
 import type { CSSNumber, CSSNumberUnit } from '../../../inspector/common/css-utils'
-import { printCSSNumber } from '../../../inspector/common/css-utils'
+import { cssNumber, printCSSNumber } from '../../../inspector/common/css-utils'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
@@ -19,7 +19,7 @@ import type { PropertyControlsInfo } from '../../../custom-code/code-file'
 export const Emdash: string = '\u2014'
 
 export interface CSSNumberWithRenderedValue {
-  value: CSSNumber
+  value: CSSNumber | null
   renderedValuePx: number
 }
 
@@ -27,11 +27,11 @@ export const unitlessCSSNumberWithRenderedValue = (
   renderedValuePx: number,
 ): CSSNumberWithRenderedValue => ({
   value: { value: renderedValuePx, unit: null },
-  renderedValuePx,
+  renderedValuePx: renderedValuePx,
 })
 
 export const cssNumberWithRenderedValue = (
-  value: CSSNumber,
+  value: CSSNumber | null,
   renderedValuePx: number,
 ): CSSNumberWithRenderedValue => ({ value, renderedValuePx })
 
@@ -69,6 +69,8 @@ export function measurementBasedOnOtherMeasurement(
     precision,
   )
 
+  const baseValue = fallbackEmptyValue(base)
+
   if (base.renderedValuePx === 0) {
     return {
       renderedValuePx: desiredRenderedValueWithPrecision,
@@ -76,9 +78,9 @@ export function measurementBasedOnOtherMeasurement(
     }
   }
 
-  const pixelsPerUnit = base.value.value / base.renderedValuePx
+  const pixelsPerUnit = baseValue.value / base.renderedValuePx
   const desiredValueInUnits = valueWithUnitAppropriatePrecision(
-    base.value.unit,
+    baseValue.unit,
     desiredRenderedValue * pixelsPerUnit,
     precision,
   )
@@ -86,7 +88,7 @@ export function measurementBasedOnOtherMeasurement(
   return {
     renderedValuePx: desiredRenderedValueWithPrecision,
     value: {
-      unit: base.value.unit,
+      unit: baseValue.unit,
       value: desiredValueInUnits,
     },
   }
@@ -186,7 +188,8 @@ export function indicatorMessage(
   value: CSSNumberWithRenderedValue,
 ): string | number {
   if (isOverThreshold) {
-    return printCSSNumber(value.value, value.value.unit)
+    const valueOrRendered = fallbackEmptyValue(value)
+    return printCSSNumber(valueOrRendered, valueOrRendered.unit)
   }
 
   return Emdash // emdash
@@ -292,4 +295,10 @@ export function shouldShowControls(
   }
 
   return true
+}
+
+export function fallbackEmptyValue(numberWithRenderedValue: CSSNumberWithRenderedValue): CSSNumber {
+  return numberWithRenderedValue.value == null
+    ? cssNumber(numberWithRenderedValue.renderedValuePx, 'px')
+    : numberWithRenderedValue.value
 }

@@ -37,7 +37,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
     'Key %s with modifiers %o works with a TL pinned absolute element',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, deltaW: number, deltaH: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 
@@ -87,7 +87,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
     'Key %s with modifiers %o works with a TL pinned absolute element with px values',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, deltaW: number, deltaH: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 
@@ -140,7 +140,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
     'Key %s with modifiers %o works with a RB pinned absolute element',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, deltaW: number, deltaH: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 
@@ -189,7 +189,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
     'Key %s with modifiers %o works with a TLRB pinned absolute element',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, deltaW: number, deltaH: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 
@@ -240,7 +240,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
     'Key %s with modifiers %o replaces expressions and fires a toast',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, deltaW: number, deltaH: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 

@@ -35,7 +35,7 @@ import {
   getTargetParentForOneShotInsertion,
 } from '../canvas/canvas-strategies/strategies/reparent-utils'
 import { fixUtopiaElement, generateConsistentUID } from '../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { getUidMappings, getAllUniqueUidsFromMapping } from '../../core/model/get-uid-mappings'
 import { assertNever } from '../../core/shared/utils'
 import type { ComponentElementToInsert } from '../custom-code/code-file'
 import { notice } from '../common/notice'
@@ -184,7 +184,9 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
         return
       }
 
-      const allElementUids = new Set(getAllUniqueUids(projectContentsRef.current).uniqueIDs)
+      const allElementUids = new Set(
+        getAllUniqueUidsFromMapping(getUidMappings(projectContentsRef.current).filePathToUids),
+      )
 
       const wrappedUid = generateConsistentUID('wrapper', allElementUids)
 
