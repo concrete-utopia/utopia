@@ -1,7 +1,6 @@
 import React from 'react'
 import { useColorTheme } from '../../../../uuiui'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { paddingPropForEdge, simplePaddingFromMetadata } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { PathWithBounds } from '../../gap-utils'
@@ -10,19 +9,8 @@ import {
   maybeFlexGapData,
   recurseIntoChildrenOfMapOrFragment,
 } from '../../gap-utils'
-import { FlexDirection } from '../../../../components/inspector/common/css-utils'
-import {
-  boundingRectangleArray,
-  isFiniteRectangle,
-  Size,
-  zeroSize,
-} from '../../../../core/shared/math-utils'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
 import type { ElementPath } from 'utopia-shared/src/types'
-import type {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-} from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 
 export interface SubduedFlexGapControlProps {
   hoveredOrFocused: 'hovered' | 'focused'
@@ -61,50 +49,12 @@ export const SubduedFlexGapControl = React.memo<SubduedFlexGapControlProps>((pro
     flexGap.direction,
   )
 
-  //   const contentArea = React.useMemo((): Size => {
-  //     function valueForDimension(
-  //       directions: FlexDirection[],
-  //       direction: FlexDirection,
-  //       directionSize: number,
-  //       gapSize: number,
-  //     ) {
-  //       return directions.includes(direction) ? directionSize : gapSize
-  //     }
-
-  //     const bounds = boundingRectangleArray(
-  //       mapDropNulls(
-  //         (c) => (c.localFrame != null && isFiniteRectangle(c.localFrame) ? c.localFrame : null),
-  //         children,
-  //       ),
-  //     )
-
-  //     if (bounds == null) {
-  //       return zeroSize
-  //     } else {
-  //       return {
-  //         width: valueForDimension(
-  //           ['column', 'column-reverse'],
-  //           flexGap.direction,
-  //           bounds.width,
-  //           flexGapValue.renderedValuePx,
-  //         ),
-  //         height: valueForDimension(
-  //           ['row', 'row-reverse'],
-  //           flexGap.direction,
-  //           bounds.height,
-  //           flexGapValue.renderedValuePx,
-  //         ),
-  //       }
-  //     }
-  //   }, [children, flexGap.direction, flexGapValue.renderedValuePx])
-
   return (
     <>
       {controlBounds.map((controlBound, i) => (
         <FlexGapControl
           key={i}
           targets={targets}
-          metadata={metadata.current}
           selectedElement={selectedElement}
           hoveredOrFocused={hoveredOrFocused}
           controlBound={controlBound}
@@ -117,21 +67,21 @@ export const SubduedFlexGapControl = React.memo<SubduedFlexGapControlProps>((pro
 
 function FlexGapControl({
   targets,
-  metadata,
   selectedElement,
   hoveredOrFocused,
   controlBound,
   flexChildren,
 }: {
   targets: Array<ElementPath>
-  metadata: ElementInstanceMetadataMap
   selectedElement: ElementPath
   hoveredOrFocused: 'hovered' | 'focused'
   controlBound: PathWithBounds
   flexChildren: Array<ElementInstanceMetadata>
 }) {
+  const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
+
   const sideRef = useBoundingBox([controlBound.path], (ref) => {
-    const flexGap = maybeFlexGapData(metadata, selectedElement)
+    const flexGap = maybeFlexGapData(metadata.current, selectedElement)
     if (flexGap == null) {
       return
     }
@@ -139,7 +89,7 @@ function FlexGapControl({
     const flexGapValue = flexGap.value
 
     const controlBounds = gapControlBoundsFromMetadata(
-      metadata,
+      metadata.current,
       selectedElement,
       flexChildren.map((c) => c.elementPath),
       flexGapValue.renderedValuePx,
