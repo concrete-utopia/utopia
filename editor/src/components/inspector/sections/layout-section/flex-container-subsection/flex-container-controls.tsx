@@ -27,13 +27,10 @@ import type { FlexDirection } from '../../../common/css-utils'
 import { when } from '../../../../../utils/react-conditionals'
 import { Substores, useEditorState } from '../../../../editor/store/store-hook'
 import { flexDirectionSelector } from '../../../inpector-selectors'
-import { FlexGapControlTestId } from '../../../../../components/canvas/controls/select-mode/flex-gap-control'
-import { useOnControlHover } from '../../../../../components/canvas/controls/select-mode/controls-common'
 import type { CanvasControlWithProps } from '../../../../../components/inspector/common/inspector-atoms'
 import type { SubduedFlexGapControlProps } from '../../../../../components/canvas/controls/select-mode/subdued-flex-gap-controls'
 import { SubduedFlexGapControl } from '../../../../../components/canvas/controls/select-mode/subdued-flex-gap-controls'
 import { useSetHoveredControlsHandlers } from '../../../../../components/canvas/controls/select-mode/select-mode-hooks'
-import { EdgePieces } from '../../../../../components/canvas/padding-utils'
 
 type uglyLabel =
   | 'left'
@@ -273,15 +270,15 @@ export const FlexGapControl = React.memo(() => {
 
   const flexGapControlsForHover: Array<CanvasControlWithProps<SubduedFlexGapControlProps>> =
     React.useMemo(
-      () =>
-        EdgePieces.map((side) => ({
+      () => [
+        {
           control: SubduedFlexGapControl,
           props: {
-            side: side,
             hoveredOrFocused: 'hovered',
           },
-          key: `subdued-padding-control-hovered-${side}`,
-        })),
+          key: `subdued-flex-gap-control-hovered`,
+        },
+      ],
       [],
     )
 
@@ -291,15 +288,11 @@ export const FlexGapControl = React.memo(() => {
     [onMouseEnter, flexGapControlsForHover],
   )
 
-  const [hoverStart, hoverEnd] = useOnControlHover(FlexGapControlTestId)
-
   return (
     <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
       <UIGridRow
         padded={false}
         variant='<-------------1fr------------->'
-        // onMouseEnter={hoverStart}
-        // onMouseLeave={hoverEnd}
         onMouseEnter={onMouseEnterWithFlexGapControls}
         onMouseLeave={onMouseLeave}
       >

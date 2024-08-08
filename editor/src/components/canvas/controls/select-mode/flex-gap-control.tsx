@@ -30,13 +30,7 @@ import {
 } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { CSSNumberWithRenderedValue } from './controls-common'
-import {
-  CanvasLabel,
-  PillHandle,
-  useHoverWithDelay,
-  fallbackEmptyValue,
-  useIsControlHovered,
-} from './controls-common'
+import { CanvasLabel, fallbackEmptyValue, PillHandle, useHoverWithDelay } from './controls-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import {
@@ -76,8 +70,6 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
   const [backgroundShown, setBackgroundShown] = React.useState<boolean>(false)
   const [controlHoverStart, controlHoverEnd] = useHoverWithDelay(0, setBackgroundShown)
-
-  const isGapHoveredInTheInspector = useIsControlHovered(selectedElement, FlexGapControlTestId)
 
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
   React.useEffect(() => {
@@ -223,7 +215,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               flexDirection={flexGap.direction}
               accentColor={accentColor}
               scale={scale}
-              backgroundShown={backgroundShown || isGapHoveredInTheInspector}
+              backgroundShown={backgroundShown}
               isDragging={isDragging}
               gapValue={valueToShow}
               justifyContent={justifyContent}
