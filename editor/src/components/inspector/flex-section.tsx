@@ -34,6 +34,7 @@ import {
 import type {
   CSSKeyword,
   CSSNumber,
+  GridAutoFlow,
   UnknownOrEmptyInput,
   ValidGridDimensionKeyword,
 } from './common/css-utils'
@@ -74,7 +75,7 @@ import {
 } from '../../core/shared/element-template'
 import { setGridPropsCommands } from '../canvas/canvas-strategies/strategies/grid-helpers'
 import { type CanvasCommand } from '../canvas/commands/commands'
-import type { DropdownMenuItem, RadixSelectOption } from '../../uuiui/radix-components'
+import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import {
   DropdownMenu,
   RadixSelect,
@@ -823,6 +824,26 @@ GapRowColumnControl.displayName = 'GapRowColumnControl'
 
 const AutoFlowPopupId = 'auto-flow-control'
 
+function selectOption(value: GridAutoFlow) {
+  return regularRadixSelectOption({
+    label: value,
+    value: value,
+    icon: gridAutoFlowIcon(value),
+  })
+}
+
+const unsetSelectOption = regularRadixSelectOption({
+  label: 'unset',
+  value: 'unset',
+  placeholder: true,
+})
+
+const autoflowOptions = [
+  unsetSelectOption,
+  separatorRadixSelectOption(),
+  ...GridAutoFlowValues.map(selectOption),
+]
+
 const AutoFlowControl = React.memo(() => {
   const dispatch = useDispatch()
   const selectededViewsRef = useRefEditorState((store) => store.editor.selectedViews)
@@ -849,16 +870,8 @@ const AutoFlowControl = React.memo(() => {
   const currentValue = React.useMemo(
     () =>
       controlStatus === 'detected'
-        ? regularRadixSelectOption({ label: 'unset', value: 'unset', placeholder: true })
-        : optionalMap(
-            (v) =>
-              regularRadixSelectOption({
-                label: v,
-                value: v,
-                icon: gridAutoFlowIcon(v),
-              }),
-            gridAutoFlowValue,
-          ) ?? undefined,
+        ? unsetSelectOption
+        : optionalMap(selectOption, gridAutoFlowValue) ?? undefined,
     [controlStatus, gridAutoFlowValue],
   )
 
@@ -882,32 +895,14 @@ const AutoFlowControl = React.memo(() => {
     [dispatch, selectededViewsRef],
   )
 
-  const options = React.useMemo((): RadixSelectOption[] => {
-    return [
-      regularRadixSelectOption({
-        label: 'unset',
-        value: 'unset',
-        placeholder: true,
-      }),
-      separatorRadixSelectOption(),
-      ...GridAutoFlowValues.map((value) => {
-        return regularRadixSelectOption({
-          label: value,
-          value: value,
-          icon: gridAutoFlowIcon(value),
-        })
-      }),
-    ]
-  }, [])
-
   return (
     <FlexRow style={{ gap: 6 }}>
       <div style={{ fontWeight: 600 }}>Auto Flow</div>
       <RadixSelect
         id={AutoFlowPopupId}
-        value={currentValue ?? null}
         style={{ flex: 1 }}
-        options={options}
+        value={currentValue ?? null}
+        options={autoflowOptions}
         onValueChange={onSubmit}
       />
     </FlexRow>
