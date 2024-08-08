@@ -312,9 +312,7 @@ export function useOnControlHover(controlId: string) {
   const setGapHovered = React.useCallback(
     (isHovered: boolean) => {
       setHoveredInspectorControl(
-        isHovered && selectedElement != null
-          ? `${EP.toString(selectedElement)}-${controlId}`
-          : null,
+        isHovered && selectedElement != null ? elementControlId(selectedElement, controlId) : null,
       )
     },
     [controlId, selectedElement, setHoveredInspectorControl],
@@ -328,11 +326,15 @@ export function useIsControlHovered(selectedElement: ElementPath, controlId: str
   const [hoveredInspectorControlAtom] = useAtom(HoveredInspectorControlAtom)
 
   const isHoveredInInspector = React.useMemo(
-    () => hoveredInspectorControlAtom === `${EP.toString(selectedElement)}-${controlId}`,
+    () => hoveredInspectorControlAtom === elementControlId(selectedElement, controlId),
     [controlId, hoveredInspectorControlAtom, selectedElement],
   )
 
   return isHoveredInInspector
+}
+
+function elementControlId(selectedElement: ElementPath, controlId: string): string {
+  return `${EP.toString(selectedElement)}-${controlId}`
 }
 
 export function fallbackEmptyValue(numberWithRenderedValue: CSSNumberWithRenderedValue): CSSNumber {
