@@ -1,4 +1,5 @@
 /** @jsxRuntime classic */
+/** @jsxFrag React.Fragment */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
@@ -20,14 +21,26 @@ import { strictEvery } from '../../core/shared/array-utils'
 import { useDispatch } from '../editor/store/dispatch-context'
 import type { DetectedLayoutSystem } from 'utopia-shared/src/types'
 import { NO_OP } from '../../core/shared/utils'
-import { Icons, NumberInput, SquareButton, Subdued } from '../../uuiui'
+import { assertNever } from '../../core/shared/utils'
+import {
+  PopupList,
+  FlexRow,
+  Icons,
+  InspectorSectionIcons,
+  NumberInput,
+  SquareButton,
+  Subdued,
+  Tooltip,
+} from '../../uuiui'
 import type {
   CSSKeyword,
   CSSNumber,
+  GridAutoFlow,
   UnknownOrEmptyInput,
   ValidGridDimensionKeyword,
 } from './common/css-utils'
 import {
+  GridAutoFlowValues,
   cssKeyword,
   cssNumber,
   cssNumberToString,
@@ -41,7 +54,11 @@ import {
   isValidGridDimensionKeyword,
   type GridDimension,
 } from './common/css-utils'
-import { applyCommandsAction } from '../editor/actions/action-creators'
+import {
+  applyCommandsAction,
+  setProp_UNSAFE,
+  transientActions,
+} from '../editor/actions/action-creators'
 import type { PropertyToUpdate } from '../canvas/commands/set-property-command'
 import {
   propertyToDelete,
@@ -56,7 +73,9 @@ import type {
   GridPosition,
 } from '../../core/shared/element-template'
 import {
+  emptyComments,
   gridPositionValue,
+  jsExpressionValue,
   type ElementInstanceMetadata,
   type GridElementProperties,
 } from '../../core/shared/element-template'
@@ -64,8 +83,12 @@ import { setGridPropsCommands } from '../canvas/canvas-strategies/strategies/gri
 import { type CanvasCommand } from '../canvas/commands/commands'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import { DropdownMenu, regularDropdownMenuItem } from '../../uuiui/radix-components'
-import { useInspectorLayoutInfo } from './common/property-path-hooks'
+import { useInspectorLayoutInfo, useInspectorStyleInfo } from './common/property-path-hooks'
 import { NumberOrKeywordControl } from '../../uuiui/inputs/number-or-keyword-control'
+import type { SelectOption } from './controls/select-control'
+import { optionalMap } from '../../core/shared/optional-utils'
+import { cssNumberEqual } from '../canvas/controls/select-mode/controls-common'
+import type { EditorAction } from '../editor/action-types'
 
 const axisDropdownMenuButton = 'axisDropdownMenuButton'
 
@@ -156,6 +179,7 @@ export const FlexSection = React.memo(() => {
               {grid != null ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <GapRowColumnControl />
+                  <AutoFlowControl />
                   <TemplateDimensionControl
                     axis={'column'}
                     grid={grid}
@@ -275,7 +299,7 @@ const TemplateDimensionControl = React.memo(
 
           function needsAdjusting(pos: GridPosition | null, bound: number) {
             return pos != null &&
-              pos !== 'auto' &&
+              !isCSSKeyword(pos) &&
               pos.numericalPosition != null &&
               pos.numericalPosition >= bound
               ? pos.numericalPosition
@@ -587,6 +611,12 @@ function sanitizeAreaName(areaName: string): string {
   return areaName.replace(reAlphanumericDashUnderscore, '-')
 }
 
+function serializeValue(v: CSSNumber) {
+  return v.unit == null || v.unit === 'px' ? v.value : cssNumberToString(v)
+}
+
+type GridGapControlSplitState = 'unified' | 'split'
+
 const GapRowColumnControl = React.memo(() => {
   const dispatch = useDispatch()
 
@@ -612,15 +642,28 @@ const GapRowColumnControl = React.memo(() => {
   const columnGap = useInspectorLayoutInfo('columnGap')
   const rowGap = useInspectorLayoutInfo('rowGap')
 
-  const onSubmit = React.useCallback(
+  const [controlSplitState, setControlSplitState] = React.useState<GridGapControlSplitState>(
+    cssNumberEqual(columnGap.value, rowGap.value) ? 'unified' : 'split',
+  )
+
+  const cycleControlSplitState = React.useCallback(() => {
+    setControlSplitState((state) => {
+      switch (state) {
+        case 'split':
+          return 'unified'
+        case 'unified':
+          return 'split'
+        default:
+          assertNever(state)
+      }
+    })
+  }, [])
+
+  const onSubmitSplitValue = React.useCallback(
     (target: 'columnGap' | 'rowGap') =>
       (value: UnknownOrEmptyInput<CSSNumber>, transient?: boolean) => {
         if (grid == null) {
           return
-        }
-
-        function serializeValue(v: CSSNumber) {
-          return v.unit == null || v.unit === 'px' ? v.value : cssNumberToString(v)
         }
 
         if (isCSSNumber(value)) {
@@ -665,44 +708,197 @@ const GapRowColumnControl = React.memo(() => {
     [dispatch, grid, gap, rowGap, columnGap],
   )
 
+  const onSubmitUnifiedValue = React.useCallback(
+    (value: UnknownOrEmptyInput<CSSNumber>, transient?: boolean) => {
+      if (grid == null || !isCSSNumber(value)) {
+        return
+      }
+
+      const transientWrapper = (actions: EditorAction[]) =>
+        transient ? [transientActions(actions)] : actions
+
+      dispatch(
+        transientWrapper([
+          applyCommandsAction([
+            updateBulkProperties('always', grid.elementPath, [
+              propertyToDelete(PP.create('style', 'columnGap')),
+              propertyToDelete(PP.create('style', 'rowGap')),
+              propertyToDelete(PP.create('style', 'gap')),
+              propertyToSet(PP.create('style', 'gridGap'), serializeValue(value)),
+            ]),
+          ]),
+        ]),
+      )
+    },
+    [dispatch, grid],
+  )
+
+  const tooltipTitle =
+    controlSplitState === 'unified'
+      ? 'Longhand gap'
+      : controlSplitState === 'split'
+      ? 'Shorthand gap'
+      : assertNever(controlSplitState)
+
+  const modeIcon = React.useMemo(() => {
+    switch (controlSplitState) {
+      case 'split':
+        return <InspectorSectionIcons.SplitFull />
+      case 'unified':
+        return <InspectorSectionIcons.SplitHalf />
+      default:
+        assertNever(controlSplitState)
+    }
+  }, [controlSplitState])
+
   if (grid == null) {
     return null
   }
 
   return (
-    <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
-      <NumberInput
-        value={columnGap.value}
-        numberType={'Length'}
-        onSubmitValue={onSubmit('columnGap')}
-        onTransientSubmitValue={onSubmit('columnGap')}
-        onForcedSubmitValue={onSubmit('columnGap')}
-        defaultUnitToHide={'px'}
-        testId={'grid-column-gap'}
-        labelInner={{
-          category: 'inspector-element',
-          type: 'gapHorizontal',
-          color: 'subdued',
-        }}
-      />
-      <NumberInput
-        value={rowGap.value}
-        numberType={'Length'}
-        onSubmitValue={onSubmit('rowGap')}
-        onTransientSubmitValue={onSubmit('rowGap')}
-        onForcedSubmitValue={onSubmit('rowGap')}
-        defaultUnitToHide={'px'}
-        testId={'grid-row-gap'}
-        labelInner={{
-          category: 'inspector-element',
-          type: 'gapVertical',
-          color: 'subdued',
-        }}
-      />
-    </UIGridRow>
+    <FlexRow style={{ justifyContent: 'space-between' }}>
+      {when(
+        controlSplitState === 'unified',
+        <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
+          <NumberInput
+            value={columnGap.value}
+            numberType={'Length'}
+            onSubmitValue={onSubmitUnifiedValue}
+            onTransientSubmitValue={onSubmitUnifiedValue}
+            onForcedSubmitValue={onSubmitUnifiedValue}
+            defaultUnitToHide={'px'}
+            testId={'grid-column-gap'}
+            labelInner={{
+              category: 'inspector-element',
+              type: 'gapHorizontal',
+              color: 'subdued',
+            }}
+          />
+        </UIGridRow>,
+      )}
+      {when(
+        controlSplitState === 'split',
+        <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
+          <NumberInput
+            value={columnGap.value}
+            numberType={'Length'}
+            onSubmitValue={onSubmitSplitValue('columnGap')}
+            onTransientSubmitValue={onSubmitSplitValue('columnGap')}
+            onForcedSubmitValue={onSubmitSplitValue('columnGap')}
+            defaultUnitToHide={'px'}
+            testId={'grid-column-gap'}
+            labelInner={{
+              category: 'inspector-element',
+              type: 'gapHorizontal',
+              color: 'subdued',
+            }}
+          />
+          <NumberInput
+            value={rowGap.value}
+            numberType={'Length'}
+            onSubmitValue={onSubmitSplitValue('rowGap')}
+            onTransientSubmitValue={onSubmitSplitValue('rowGap')}
+            onForcedSubmitValue={onSubmitSplitValue('rowGap')}
+            defaultUnitToHide={'px'}
+            testId={'grid-row-gap'}
+            labelInner={{
+              category: 'inspector-element',
+              type: 'gapVertical',
+              color: 'subdued',
+            }}
+          />
+        </UIGridRow>,
+      )}
+      <Tooltip title={tooltipTitle}>
+        <SquareButton
+          data-testid={`grid-gap-cycle-mode`}
+          onClick={cycleControlSplitState}
+          style={{ width: 16 }}
+        >
+          {modeIcon}
+        </SquareButton>
+      </Tooltip>
+    </FlexRow>
   )
 })
 GapRowColumnControl.displayName = 'GapRowColumnControl'
+
+const AutoFlowPopupId = 'auto-flow-control'
+
+const selectOption = (value: GridAutoFlow | 'unset'): SelectOption => ({
+  label: value,
+  value: value,
+})
+
+const GRID_AUTO_FLOW_DROPDOWN_OPTIONS: Array<SelectOption> = GridAutoFlowValues.map(selectOption)
+
+const AutoFlowControl = React.memo(() => {
+  const dispatch = useDispatch()
+  const selectededViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+
+  const gridAutoFlowValue = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const gridAutoFlowValues = store.editor.selectedViews.map(
+        (view) =>
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view)
+            ?.specialSizeMeasurements.containerGridProperties.gridAutoFlow ?? null,
+      )
+      const allValuesMatch = strictEvery(gridAutoFlowValues, (v) => v === gridAutoFlowValues.at(0))
+      if (allValuesMatch) {
+        return gridAutoFlowValues.at(0) ?? null
+      }
+      return null
+    },
+    'AutoFlowControl gridAutoFlowValue',
+  )
+
+  const { controlStyles, controlStatus } = useInspectorStyleInfo('gridAutoFlow')
+
+  const currentValue = React.useMemo(
+    () =>
+      controlStatus === 'detected'
+        ? selectOption('unset')
+        : optionalMap((v) => selectOption(v), gridAutoFlowValue) ?? undefined,
+    [controlStatus, gridAutoFlowValue],
+  )
+
+  const onSubmit = React.useCallback(
+    (option: SelectOption) => {
+      if (selectededViewsRef.current.length === 0) {
+        return
+      }
+      dispatch(
+        selectededViewsRef.current.map((target) =>
+          setProp_UNSAFE(
+            target,
+            PP.create('style', 'gridAutoFlow'),
+            jsExpressionValue(option.value, emptyComments),
+          ),
+        ),
+      )
+    },
+    [dispatch, selectededViewsRef],
+  )
+
+  return (
+    <FlexRow style={{ gap: 6 }}>
+      <div style={{ fontWeight: 600 }}>Auto Flow</div>
+      <PopupList
+        id={AutoFlowPopupId}
+        value={currentValue}
+        options={GRID_AUTO_FLOW_DROPDOWN_OPTIONS}
+        onSubmitValue={onSubmit}
+        controlStyles={controlStyles}
+        style={{
+          background: 'transparent',
+          opacity: controlStatus !== 'detected' ? undefined : 0.5,
+        }}
+      />
+    </FlexRow>
+  )
+})
+AutoFlowControl.displayName = 'AutoFlowControl'
 
 function mergeGridTemplateValues({
   calculated,

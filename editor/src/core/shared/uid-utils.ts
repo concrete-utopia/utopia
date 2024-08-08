@@ -1,7 +1,7 @@
 import { v4 as UUID } from 'uuid'
 import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
 import { mapDropNulls } from './array-utils'
-import { deepFindUtopiaCommentFlag, isUtopiaCommentFlagUid } from './comment-flags'
+import { deepFindUtopiaCommentFlag, isUtopiaPropOrCommentFlagUid } from './comment-flags'
 import { getDOMAttribute } from './dom-utils'
 import type { Either } from './either'
 import { flatMapEither, foldEither, isLeft, isRight, left, right } from './either'
@@ -160,7 +160,7 @@ export function generateUID(existingIDs: Set<string>): string {
 
 export function parseUIDFromComments(comments: ParsedComments): Either<string, string> {
   const commentFlag = deepFindUtopiaCommentFlag(comments ?? null, 'uid')
-  if (commentFlag != null && isUtopiaCommentFlagUid(commentFlag)) {
+  if (commentFlag != null && isUtopiaPropOrCommentFlagUid(commentFlag)) {
     const { value } = commentFlag
     return right(value)
   } else {

@@ -58,7 +58,10 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { useSetAtom } from 'jotai'
 import type { CanvasControlWithProps } from '../../../inspector/common/inspector-atoms'
-import { InspectorHoveredCanvasControls } from '../../../inspector/common/inspector-atoms'
+import {
+  InspectorFocusedCanvasControls,
+  InspectorHoveredCanvasControls,
+} from '../../../inspector/common/inspector-atoms'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { getAllLockedElementPaths } from '../../../../core/shared/element-locking'
 import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
@@ -926,6 +929,24 @@ export function useSetHoveredControlsHandlers<T>(): {
   )
 
   return { onMouseEnter, onMouseLeave }
+}
+
+export function useSetFocusedControlsHandlers<T>(): {
+  onFocus: (controls: Array<CanvasControlWithProps<T>>) => void
+  onBlur: () => void
+} {
+  const setFocusedCanvasControls = useSetAtom(InspectorFocusedCanvasControls)
+
+  const onFocus = React.useCallback(
+    (controls: Array<CanvasControlWithProps<T>>) => {
+      setFocusedCanvasControls(controls)
+    },
+    [setFocusedCanvasControls],
+  )
+
+  const onBlur = React.useCallback(() => setFocusedCanvasControls([]), [setFocusedCanvasControls])
+
+  return { onFocus, onBlur }
 }
 
 function isMouseInteractionSession(interactionSession: InteractionSession): boolean {
