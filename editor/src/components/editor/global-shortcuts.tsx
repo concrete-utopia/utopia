@@ -106,8 +106,13 @@ import {
   COMMENT_SHORTCUT,
   CONVERT_TO_GRID_CONTAINER,
 } from './shortcut-definitions'
-import type { EditorState, LockedElements, NavigatorEntry } from './store/editor-state'
-import { getOpenFile, RightMenuTab } from './store/editor-state'
+import type {
+  DerivedState,
+  EditorState,
+  LockedElements,
+  NavigatorEntry,
+} from './store/editor-state'
+import { getAllFocusedPaths, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
 import {
@@ -354,6 +359,7 @@ export function handleKeyDown(
   event: KeyboardEvent,
   editor: EditorState,
   loginState: LoginState,
+  derived: DerivedState,
   projectServerState: ProjectServerState,
   metadataRef: { current: ElementInstanceMetadataMap },
   navigatorTargetsRef: { current: Array<NavigatorEntry> },
@@ -534,6 +540,7 @@ export function handleKeyDown(
             editor.canvas.realCanvasOffset,
             editor.jsxMetadata,
             editor.lockedElements,
+            getAllFocusedPaths(editor.focusedElementPath, derived.autoFocusedPaths),
           )
           const nextTarget = Canvas.getNextTarget(
             editor.jsxMetadata,
