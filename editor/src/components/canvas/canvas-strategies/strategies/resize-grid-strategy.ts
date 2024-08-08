@@ -52,6 +52,9 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
     return null
   }
 
+  const targetForResizeControl = isGrid ? selectedElement : EP.parentPath(selectedElement)
+  const targetForGridControls = isGrid ? selectedElement : EP.parentPath(selectedElement)
+
   return {
     id: 'resize-grid-strategy',
     name: 'Resize Grid',
@@ -63,13 +66,13 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
     controlsToRender: [
       {
         control: GridRowColumnResizingControls,
-        props: { target: selectedElement },
+        props: { target: targetForResizeControl },
         key: `grid-row-col-resize-controls-${EP.toString(selectedElement)}`,
         show: 'always-visible',
       },
       {
         control: GridControls,
-        props: { targets: [EP.parentPath(selectedElement)] },
+        props: { targets: [targetForGridControls] },
         key: `grid-controls-${EP.toString(selectedElement)}`,
         show: 'always-visible',
       },
