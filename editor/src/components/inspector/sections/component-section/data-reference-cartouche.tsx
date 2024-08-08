@@ -202,6 +202,7 @@ interface DataCartoucheInnerProps {
   datatype: CartoucheDataType
   highlight?: CartoucheHighlight | null
   badge?: React.ReactNode
+  openEditModal?: () => void
 }
 
 export const DataCartoucheInner = React.forwardRef(
@@ -217,6 +218,7 @@ export const DataCartoucheInner = React.forwardRef(
       contentsToDisplay,
       contentIsComingFromServer,
       datatype,
+      openEditModal,
     } = props
 
     const dispatch = useDispatch()
@@ -252,25 +254,28 @@ export const DataCartoucheInner = React.forwardRef(
         data={{
           openDataPicker: onDoubleClick,
           deleteCartouche: onDeleteCallback,
+          openEditModal: openEditModal,
           hideContextMenu: hideContextMenu,
         }}
       >
-        <CartoucheUI
-          onDelete={onDelete}
-          onClick={onClick}
-          onDoubleClick={onDoubleClick}
-          datatype={datatype}
-          selected={selected}
-          highlight={highlight}
-          testId={testId}
-          tooltip={contentsToDisplay.label ?? contentsToDisplay.shortLabel ?? 'DATA'}
-          role='selection'
-          source={source}
-          ref={ref}
-          badge={props.badge}
-        >
-          {contentsToDisplay.shortLabel ?? contentsToDisplay.label ?? 'DATA'}
-        </CartoucheUI>
+        {
+          <CartoucheUI
+            onDelete={onDelete}
+            onClick={onClick}
+            onDoubleClick={onDoubleClick}
+            datatype={datatype}
+            selected={selected}
+            highlight={highlight}
+            testId={testId}
+            tooltip={contentsToDisplay.label ?? contentsToDisplay.shortLabel ?? 'DATA'}
+            role='selection'
+            source={source}
+            ref={ref}
+            badge={props.badge}
+          >
+            {contentsToDisplay.shortLabel ?? contentsToDisplay.label ?? 'DATA'}
+          </CartoucheUI>
+        }
       </ContextMenuWrapper>
     )
   },
@@ -279,6 +284,7 @@ export const DataCartoucheInner = React.forwardRef(
 type ContextMenuItemsData = {
   openDataPicker?: () => void
   deleteCartouche?: () => void
+  openEditModal?: () => void
   hideContextMenu: () => void
 }
 
@@ -309,13 +315,23 @@ const contextMenuItems: Array<ContextMenuItem<ContextMenuItemsData>> = [
   Separator,
   {
     name: 'Edit value',
-    enabled: false,
-    action: (data) => {},
+    enabled: (data) => data.openEditModal != null,
+    action: (data) => {
+      data.openEditModal?.()
+      data.hideContextMenu()
+    },
   },
   {
     name: 'Open in external CMS',
-    enabled: false,
-    action: (data) => {},
+    enabled: true,
+    action: (data) => {
+      window
+        .open(
+          'https://admin.shopify.com/store/438c73-58/content/metaobjects/entries/reviews/87105306797',
+          '_blank',
+        )
+        ?.focus()
+    },
   },
   Separator,
   {
