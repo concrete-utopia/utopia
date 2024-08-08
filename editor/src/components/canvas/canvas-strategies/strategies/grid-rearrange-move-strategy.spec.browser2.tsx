@@ -178,8 +178,6 @@ export var storyboard = (
         ),
       )
 
-      await wait(10000)
-
       const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
         editor.renderedDOM.getByTestId(testId).style
 
