@@ -130,7 +130,7 @@ export function firstAncestorOrItselfWithValidElementPath(
     }
     const containingComponent = EP.getContainingComponent(p.dynamic)
     if (
-      containingComponent != null &&
+      !EP.isEmptyPath(containingComponent) &&
       !focusedPaths.some((c) => EP.pathsEqual(c, containingComponent))
     ) {
       return true
