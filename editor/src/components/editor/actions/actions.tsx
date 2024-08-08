@@ -586,7 +586,7 @@ import {
   getFilesToUpdate,
   processWorkerUpdates,
 } from '../../../core/shared/parser-projectcontents-utils'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getUidMappings, getAllUniqueUidsFromMapping } from '../../../core/model/get-uid-mappings'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { resultForFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
 import { reparentToUnwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/reparent-to-unwrap-as-absolute-strategy'
@@ -4128,7 +4128,9 @@ export const UPDATE_FNS = {
     )
 
     // 2. Parse the file upfront.
-    const existingUIDs = new Set(getAllUniqueUids(editor.projectContents).uniqueIDs)
+    const existingUIDs = new Set(
+      getAllUniqueUidsFromMapping(getUidMappings(editor.projectContents).filePathToUids),
+    )
     const parsedResult = getParseFileResult(
       newFileName,
       getFilePathMappings(editor.projectContents),
@@ -5372,7 +5374,9 @@ export const UPDATE_FNS = {
         newSelectedViews.push(newPath)
       }
 
-      const existingUids = new Set(getAllUniqueUids(editor.projectContents).uniqueIDs)
+      const existingUids = new Set(
+        getAllUniqueUidsFromMapping(getUidMappings(editor.projectContents).filePathToUids),
+      )
 
       const newUID = generateConsistentUID('new', existingUids)
 
@@ -5902,9 +5906,10 @@ export const UPDATE_FNS = {
           if (newTopLevelElementsDeepEquals.areEqual) {
             return parsed
           } else {
-            const alreadyExistingUIDs = getAllUniqueUids(
-              removeFromProjectContents(editor.projectContents, action.fullPath),
-            ).uniqueIDs
+            const alreadyExistingUIDs = getAllUniqueUidsFromMapping(
+              getUidMappings(removeFromProjectContents(editor.projectContents, action.fullPath))
+                .filePathToUids,
+            )
             const fixUIDsState: FixUIDsState = {
               mutableAllNewUIDs: new Set(alreadyExistingUIDs),
               uidsExpectedToBeSeen: new Set(),

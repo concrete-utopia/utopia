@@ -205,12 +205,15 @@ export function mergeObjects<T, U>(
   return result
 }
 
+// this type filters out Map and Set and other iterable object-like types
+export type SimpleObject<T> = { [key: string]: T } & { [Symbol.iterator]?: never }
+
 export function objectValues<T>(object: { [key: string]: T }): Array<T> {
   const objectKeys = Object.keys(object)
   return objectKeys.map((key) => object[key])
 }
 
-export function isEmptyObject(obj: { [key: string]: any }): boolean {
+export function isEmptyObject(obj: SimpleObject<any>): boolean {
   return Object.keys(obj).length === 0
 }
 
