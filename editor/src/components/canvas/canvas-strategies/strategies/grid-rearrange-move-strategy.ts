@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { GridControls } from '../../controls/grid-controls'
+import { GridControls, GridControlsKey } from '../../controls/grid-controls'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
@@ -34,6 +34,8 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
     return null
   }
 
+  const parentGridPath = EP.parentPath(selectedElement)
+
   return {
     id: 'rearrange-grid-move-strategy',
     name: 'Rearrange Grid (Move)',
@@ -45,8 +47,8 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
     controlsToRender: [
       {
         control: GridControls,
-        props: { targets: [EP.parentPath(selectedElement)] },
-        key: `grid-controls-${EP.toString(selectedElement)}`,
+        props: { targets: [parentGridPath] },
+        key: GridControlsKey(parentGridPath),
         show: 'always-visible',
       },
     ],

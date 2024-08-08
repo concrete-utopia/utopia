@@ -465,6 +465,8 @@ export const GridRowColumnResizingControls =
     )
   })
 
+export const GridControlsKey = (gridPath: ElementPath) => `grid-controls-${EP.toString(gridPath)}`
+
 export interface GridControlsProps {
   targets: ElementPath[]
 }

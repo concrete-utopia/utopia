@@ -8,7 +8,11 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import * as PP from '../../../../core/shared/property-path'
 import { setProperty } from '../../commands/set-property-command'
-import { GridControls, GridRowColumnResizingControls } from '../../controls/grid-controls'
+import {
+  GridControls,
+  GridControlsKey,
+  GridRowColumnResizingControls,
+} from '../../controls/grid-controls'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -20,7 +24,6 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import type { GridDimension } from '../../../../components/inspector/common/css-utils'
 import {
-  isCSSNumber,
   isGridCSSNumber,
   printArrayGridDimension,
 } from '../../../../components/inspector/common/css-utils'
@@ -52,8 +55,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const targetForResizeControl = isGrid ? selectedElement : EP.parentPath(selectedElement)
-  const targetForGridControls = isGrid ? selectedElement : EP.parentPath(selectedElement)
+  const gridPath = isGrid ? selectedElement : EP.parentPath(selectedElement)
 
   return {
     id: 'resize-grid-strategy',
@@ -66,14 +68,14 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
     controlsToRender: [
       {
         control: GridRowColumnResizingControls,
-        props: { target: targetForResizeControl },
-        key: `grid-row-col-resize-controls-${EP.toString(selectedElement)}`,
+        props: { target: gridPath },
+        key: `grid-row-col-resize-controls-${EP.toString(gridPath)}`,
         show: 'always-visible',
       },
       {
         control: GridControls,
-        props: { targets: [targetForGridControls] },
-        key: `grid-controls-${EP.toString(selectedElement)}`,
+        props: { targets: [gridPath] },
+        key: GridControlsKey(gridPath),
         show: 'always-visible',
       },
     ],
@@ -93,8 +95,6 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       const control = interactionSession.activeControl
       const drag = interactionSession.interactionData.drag
       const dragAmount = control.axis === 'column' ? drag.x : drag.y
-
-      const gridPath = isGrid ? selectedElement : EP.parentPath(selectedElement)
 
       const gridSpecialSizeMeasurements =
         canvasState.startingMetadata[EP.toString(gridPath)].specialSizeMeasurements
