@@ -15,13 +15,8 @@ import { treatElementAsGroupLikeFromMetadata } from '../../canvas-strategies/str
 import { assertNever } from '../../../../core/shared/utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import type { PropertyControlsInfo } from '../../../custom-code/code-file'
-import { atom, useAtom, useSetAtom } from 'jotai'
-import { Substores, useEditorState } from '../../../../components/editor/store/store-hook'
-import * as EP from '../../../../core/shared/element-path'
 
 export const Emdash: string = '\u2014'
-
-export const HoveredInspectorControlAtom = atom<string | null>(null)
 
 export interface CSSNumberWithRenderedValue {
   value: CSSNumber | null
@@ -300,41 +295,6 @@ export function shouldShowControls(
   }
 
   return true
-}
-
-export function useOnControlHover(controlId: string) {
-  const selectedElement = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.selectedViews?.[0],
-    'selectedElement',
-  )
-  const setHoveredInspectorControl = useSetAtom(HoveredInspectorControlAtom)
-  const setGapHovered = React.useCallback(
-    (isHovered: boolean) => {
-      setHoveredInspectorControl(
-        isHovered && selectedElement != null ? elementControlId(selectedElement, controlId) : null,
-      )
-    },
-    [controlId, selectedElement, setHoveredInspectorControl],
-  )
-  const [hoverStart, hoverEnd] = useHoverWithDelay(0, setGapHovered)
-
-  return [hoverStart, hoverEnd] as const
-}
-
-export function useIsControlHovered(selectedElement: ElementPath, controlId: string) {
-  const [hoveredInspectorControlAtom] = useAtom(HoveredInspectorControlAtom)
-
-  const isHoveredInInspector = React.useMemo(
-    () => hoveredInspectorControlAtom === elementControlId(selectedElement, controlId),
-    [controlId, hoveredInspectorControlAtom, selectedElement],
-  )
-
-  return isHoveredInInspector
-}
-
-function elementControlId(selectedElement: ElementPath, controlId: string): string {
-  return `${EP.toString(selectedElement)}-${controlId}`
 }
 
 export function fallbackEmptyValue(numberWithRenderedValue: CSSNumberWithRenderedValue): CSSNumber {
