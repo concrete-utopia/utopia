@@ -313,10 +313,13 @@ export function useFindValidTarget(): (
       hiddenInstances: store.editor.hiddenInstances,
       canvasScale: store.editor.canvas.scale,
       canvasOffset: store.editor.canvas.realCanvasOffset,
-      focusedElementPath: store.editor.focusedElementPath,
       elementPathTree: store.editor.elementPathTree,
       allElementProps: store.editor.allElementProps,
       lockedElements: store.editor.lockedElements,
+      focusedPaths:
+        store.editor.focusedElementPath != null
+          ? [store.editor.focusedElementPath, ...store.derived.autoFocusedPaths]
+          : store.derived.autoFocusedPaths,
     }
   })
 
@@ -335,6 +338,7 @@ export function useFindValidTarget(): (
         elementPathTree,
         allElementProps,
         lockedElements,
+        focusedPaths,
       } = storeRef.current
       const validElementMouseOver: ElementPath | null = (() => {
         if (preferAlreadySelected === 'prefer-selected') {
@@ -349,6 +353,7 @@ export function useFindValidTarget(): (
             elementPathTree,
             allElementProps,
             lockedElements,
+            focusedPaths,
           )
         }
         const newSelection = getValidTargetAtPoint(
@@ -358,6 +363,7 @@ export function useFindValidTarget(): (
           canvasOffset,
           componentMetadata,
           lockedElements,
+          focusedPaths,
         )
         if (newSelection != null) {
           return newSelection
@@ -373,6 +379,7 @@ export function useFindValidTarget(): (
           elementPathTree,
           allElementProps,
           lockedElements,
+          focusedPaths,
         )
       })()
 

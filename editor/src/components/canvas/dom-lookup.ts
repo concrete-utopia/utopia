@@ -109,6 +109,7 @@ export function firstAncestorOrItselfWithValidElementPath(
   metadata: ElementInstanceMetadataMap,
   point: CanvasPoint,
   lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): { path: ElementPath; locked: boolean } | null {
   const staticAndDynamicTargetElementPaths = getStaticAndDynamicElementPathsForDomElement(target)
 
@@ -124,6 +125,13 @@ export function firstAncestorOrItselfWithValidElementPath(
       lockedElements.hierarchyLock.some((hierarchyLock) =>
         EP.isDescendantOfOrEqualTo(p.dynamic, hierarchyLock),
       )
+    ) {
+      return true
+    }
+    const containingComponent = EP.getContainingComponent(p.dynamic)
+    if (
+      containingComponent != null &&
+      !focusedPaths.some((c) => EP.pathsEqual(c, containingComponent))
     ) {
       return true
     }
@@ -233,6 +241,7 @@ export function getValidTargetAtPoint(
   canvasOffset: CanvasVector,
   metadata: ElementInstanceMetadataMap,
   lockedElements: LockedElements,
+  autofocusedPaths: Array<ElementPath>,
 ): ElementPath | null {
   if (point == null) {
     return null
@@ -251,6 +260,7 @@ export function getValidTargetAtPoint(
     metadata,
     pointOnCanvas,
     lockedElements,
+    autofocusedPaths,
   )
 }
 
@@ -261,6 +271,7 @@ export function getAllTargetsAtPoint(
   canvasOffset: CanvasVector,
   metadata: ElementInstanceMetadataMap,
   lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): Array<ElementPath> {
   if (point == null) {
     return []
@@ -280,6 +291,7 @@ export function getAllTargetsAtPoint(
     metadata,
     pointOnCanvas,
     lockedElements,
+    focusedPaths,
   )
 }
 
@@ -294,6 +306,7 @@ function findFirstValidParentForSingleElementUncached(
   metadata: ElementInstanceMetadataMap,
   point: CanvasPoint,
   lockedElements: LockedElements,
+  autofocusedPaths: Array<ElementPath>,
 ) {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -312,6 +325,7 @@ function findFirstValidParentForSingleElementUncached(
       metadata,
       point,
       lockedElements,
+      autofocusedPaths,
     )
     if (p != null) {
       foundValidElementPath = p.path
@@ -335,6 +349,7 @@ function findFirstValidParentsForAllElementsUncached(
   metadata: ElementInstanceMetadataMap,
   point: CanvasPoint,
   lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): Array<ElementPath> {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -351,6 +366,7 @@ function findFirstValidParentsForAllElementsUncached(
         metadata,
         point,
         lockedElements,
+        focusedPaths,
       )?.path
       if (foundValidElementPath != null) {
         return foundValidElementPath
@@ -373,6 +389,7 @@ export function getSelectionOrValidTargetAtPoint(
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): ElementPath | null {
   if (point == null) {
     return null
@@ -388,6 +405,7 @@ export function getSelectionOrValidTargetAtPoint(
     elementPathTree,
     allElementProps,
     lockedElements,
+    focusedPaths,
   )
   if (target === 'selection') {
     return selectedViews[0] ?? null
@@ -407,6 +425,7 @@ function getSelectionOrFirstTargetAtPoint(
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): 'selection' | ElementPath | null {
   if (point == null) {
     return null
@@ -449,6 +468,7 @@ function getSelectionOrFirstTargetAtPoint(
       componentMetadata,
       pointOnCanvas,
       lockedElements,
+      focusedPaths,
     )
     if (foundValidElementPath != null) {
       elementFromDOM = foundValidElementPath.path
