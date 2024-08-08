@@ -47,6 +47,7 @@ import type {
   PersistentModel,
   ElementsToRerender,
   GithubRepoWithBranch,
+  EditorState,
 } from '../components/editor/store/editor-state'
 import {
   createEditorState,
@@ -134,6 +135,7 @@ import {
   traverseArray,
   traverseReadOnlyArray,
 } from '../core/shared/optics/optic-creators'
+import { keysEqualityExhaustive } from '../core/shared/equality-utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -846,7 +848,32 @@ export function shouldRunDOMWalker(
     patchedEditorBefore.nodeModules !== patchedEditorAfter.nodeModules ||
     patchedEditorBefore.selectedViews !== patchedEditorAfter.selectedViews ||
     patchedEditorBefore.focusedElementPath !== patchedEditorAfter.focusedElementPath ||
-    patchedEditorBefore.canvas !== patchedEditorAfter.canvas
+    !keysEqualityExhaustive<EditorState['canvas']>()({
+      include: [
+        'base64Blobs',
+        'canvasContentInvalidateCount',
+        'domWalkerAdditionalElementsToUpdate',
+        'domWalkerInvalidateCount',
+        'elementsToRerender',
+        'mountCount',
+        'scale',
+        'transientProperties',
+      ],
+      exclude: [
+        'controls',
+        'cursor',
+        'duplicationState',
+        'interactionSession',
+        'openFile',
+        'realCanvasOffset',
+        'resizeOptions',
+        'roundedCanvasOffset',
+        'scrollAnimation',
+        'selectionControlsVisible',
+        'snappingThreshold',
+        'textEditor',
+      ],
+    })(patchedEditorBefore.canvas, patchedEditorAfter.canvas)
 
   const patchedDerivedBefore = storeBefore.patchedDerived
   const patchedDerivedAfter = storeAfter.patchedDerived
