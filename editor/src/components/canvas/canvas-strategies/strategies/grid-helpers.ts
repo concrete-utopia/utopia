@@ -134,12 +134,15 @@ export function runGridRearrangeMove(
     canvasOffset,
   )
 
-  const newTargetCell = getTargetCell(
+  const targetCellUnderMouse = getTargetCell(
     customState.targetCell,
     canvasScale,
     duplicating,
     mouseWindowPoint,
   )?.gridCellCoordinates
+
+  // if there's no cell target under the mouse, try using the last known cell
+  const newTargetCell = targetCellUnderMouse ?? customState.targetCell ?? null
 
   if (newTargetCell == null) {
     return {
