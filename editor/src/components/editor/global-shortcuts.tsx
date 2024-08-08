@@ -112,7 +112,7 @@ import type {
   LockedElements,
   NavigatorEntry,
 } from './store/editor-state'
-import { getOpenFile, RightMenuTab } from './store/editor-state'
+import { getAllFocusedPaths, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
 import {
@@ -540,9 +540,7 @@ export function handleKeyDown(
             editor.canvas.realCanvasOffset,
             editor.jsxMetadata,
             editor.lockedElements,
-            editor.focusedElementPath != null
-              ? [editor.focusedElementPath, ...derived.autoFocusedPaths]
-              : derived.autoFocusedPaths,
+            getAllFocusedPaths(editor.focusedElementPath, derived.autoFocusedPaths),
           )
           const nextTarget = Canvas.getNextTarget(
             editor.jsxMetadata,

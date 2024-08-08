@@ -128,6 +128,8 @@ export function firstAncestorOrItselfWithValidElementPath(
     ) {
       return true
     }
+
+    // when the containing component is not focused, we should consider the internals locked
     const containingComponent = EP.getContainingComponent(p.dynamic)
     if (
       !EP.isEmptyPath(containingComponent) &&
