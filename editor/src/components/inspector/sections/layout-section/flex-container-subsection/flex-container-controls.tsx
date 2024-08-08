@@ -254,6 +254,30 @@ export const FlexJustifyContentControl = React.memo((props: FlexJustifyContentCo
   )
 })
 
+const flexGapControlsForHoverAndFocused: {
+  hovered: Array<CanvasControlWithProps<SubduedFlexGapControlProps>>
+  focused: Array<CanvasControlWithProps<SubduedFlexGapControlProps>>
+} = {
+  hovered: [
+    {
+      control: SubduedFlexGapControl,
+      props: {
+        hoveredOrFocused: 'hovered',
+      },
+      key: `subdued-flex-gap-control-hovered`,
+    },
+  ],
+  focused: [
+    {
+      control: SubduedFlexGapControl,
+      props: {
+        hoveredOrFocused: 'focused',
+      },
+      key: `subdued-flex-gap-control-focused`,
+    },
+  ],
+}
+
 export const FlexGapControl = React.memo(() => {
   const { value, onSubmitValue, onUnsetValues, onTransientSubmitValue, controlStatus } =
     useInspectorLayoutInfo('gap')
@@ -271,43 +295,16 @@ export const FlexGapControl = React.memo(() => {
     'FlexGapControl flexDirection',
   )
 
-  const flexGapControlsForHoverAndFocused: {
-    hovered: Array<CanvasControlWithProps<SubduedFlexGapControlProps>>
-    focused: Array<CanvasControlWithProps<SubduedFlexGapControlProps>>
-  } = React.useMemo(
-    () => ({
-      hovered: [
-        {
-          control: SubduedFlexGapControl,
-          props: {
-            hoveredOrFocused: 'hovered',
-          },
-          key: `subdued-flex-gap-control-hovered`,
-        },
-      ],
-      focused: [
-        {
-          control: SubduedFlexGapControl,
-          props: {
-            hoveredOrFocused: 'focused',
-          },
-          key: `subdued-flex-gap-control-focused`,
-        },
-      ],
-    }),
-    [],
-  )
-
   const { onMouseEnter, onMouseLeave } = useSetHoveredControlsHandlers<SubduedFlexGapControlProps>()
   const onMouseEnterWithFlexGapControls = React.useCallback(
     () => onMouseEnter(flexGapControlsForHoverAndFocused.hovered),
-    [onMouseEnter, flexGapControlsForHoverAndFocused.hovered],
+    [onMouseEnter],
   )
 
   const { onFocus, onBlur } = useSetFocusedControlsHandlers<SubduedFlexGapControlProps>()
   const onFocusWithFlexGapControls = React.useCallback(
     () => onFocus(flexGapControlsForHoverAndFocused.focused),
-    [onFocus, flexGapControlsForHoverAndFocused.focused],
+    [onFocus],
   )
 
   const inputProps = React.useMemo(
