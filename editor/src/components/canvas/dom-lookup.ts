@@ -243,7 +243,7 @@ export function getValidTargetAtPoint(
   canvasOffset: CanvasVector,
   metadata: ElementInstanceMetadataMap,
   lockedElements: LockedElements,
-  autofocusedPaths: Array<ElementPath>,
+  focusedPaths: Array<ElementPath>,
 ): ElementPath | null {
   if (point == null) {
     return null
@@ -262,7 +262,7 @@ export function getValidTargetAtPoint(
     metadata,
     pointOnCanvas,
     lockedElements,
-    autofocusedPaths,
+    focusedPaths,
   )
 }
 
