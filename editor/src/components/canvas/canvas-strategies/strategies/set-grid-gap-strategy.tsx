@@ -15,6 +15,7 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
 import {
+  fallbackEmptyValue,
   indicatorMessage,
   offsetMeasurementByDelta,
   precisionFromModifiers,
@@ -172,7 +173,7 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
           'always',
           selectedElement,
           axisStyleProp,
-          printCSSNumber(gridGapMeasurement.value, null),
+          printCSSNumber(fallbackEmptyValue(gridGapMeasurement), null),
         ),
         setCursorCommand(cursorFromAxis(axis)),
         setElementsToRerenderCommand([...selectedElements, ...children.map((c) => c.elementPath)]),

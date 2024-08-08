@@ -258,8 +258,8 @@ export function maybeGridGapData(
   )
 
   return {
-    row: { renderedValuePx: rowGap, value: rowGapFromProps ?? cssNumber(0) },
-    column: { renderedValuePx: columnGap, value: columnGapFromProps ?? cssNumber(0) },
+    row: { renderedValuePx: rowGap, value: rowGapFromProps ?? null },
+    column: { renderedValuePx: columnGap, value: columnGapFromProps ?? null },
   }
 }
 

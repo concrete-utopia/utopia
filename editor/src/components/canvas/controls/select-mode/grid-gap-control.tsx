@@ -30,7 +30,7 @@ import {
 } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { CSSNumberWithRenderedValue } from './controls-common'
-import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
+import { CanvasLabel, fallbackEmptyValue, PillHandle, useHoverWithDelay } from './controls-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import {
@@ -193,7 +193,7 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
   const controlBounds = gridGapControlBoundsFromMetadata(
     metadata,
     selectedElement,
-    { row: gridGapRow.value, column: gridGapColumn.value },
+    { row: fallbackEmptyValue(gridGapRow), column: fallbackEmptyValue(gridGapColumn) },
     gapControlSizes,
   )
 
