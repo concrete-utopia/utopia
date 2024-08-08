@@ -459,13 +459,13 @@ export class Editor {
 
       const reactRouterErrorPreviouslyLogged = hasReactRouterErrorBeenLogged()
 
-      const shouldRerender =
+      const shouldUpdateCanvasStore =
         !dispatchResult.nothingChanged &&
         !anyCodeAhead(dispatchResult.unpatchedEditor.projectContents)
 
       const updateId = canvasUpdateId++
-      if (shouldRerender) {
-        // TODO: not running this if nothing has changed in the result might give another performance benefit
+      if (shouldUpdateCanvasStore) {
+        // this will re-render the canvas root and potentially the canvas contents itself
         Measure.taskTime(`update canvas ${updateId}`, () => {
           const currentElementsToRender = fixElementsToRerender(
             this.storedState.patchedEditor.canvas.elementsToRerender,
