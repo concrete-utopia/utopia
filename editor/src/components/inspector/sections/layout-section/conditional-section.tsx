@@ -9,7 +9,7 @@ import { mapDropNulls } from '../../../../core/shared/array-utils'
 import {
   findUtopiaCommentFlag,
   isUtopiaPropOrCommentFlagConditional,
-} from '../../../../core/shared/comment-flags'
+} from '../../../../core/shared/utopia-flags'
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import type {
