@@ -620,7 +620,7 @@ export function useGetApplicableStrategyControls(): Array<ControlWithProps<unkno
       applicableControls = addAllUniquelyBy(
         applicableControls,
         strategyControls,
-        (l, r) => l.control === r.control,
+        (l, r) => l.control === r.control && l.key === r.key,
       )
     }
     // Special case controls.
