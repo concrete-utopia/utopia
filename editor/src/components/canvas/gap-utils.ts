@@ -203,8 +203,8 @@ export function gridGapControlBoundsFromMetadata(
   const parentGridBounds = parentGrid?.getBoundingClientRect()
   const gridRows = parseInt(parentGrid?.getAttribute('data-grid-rows') ?? '1')
   const gridColumns = parseInt(parentGrid?.getAttribute('data-grid-columns') ?? '1')
-  const gridTemplateRows = parentGrid?.getAttribute('data-grid-template-rows') || '1fr'
-  const gridTemplateColumns = parentGrid?.getAttribute('data-grid-template-columns') || '1fr'
+  const gridTemplateRows = parentGrid?.getAttribute('data-grid-template-rows') ?? '1fr'
+  const gridTemplateColumns = parentGrid?.getAttribute('data-grid-template-columns') ?? '1fr'
   const cell = matrixGetter(Array.from(parentGrid?.children ?? []), gridColumns)
   // the actual rectangle that surrounds the cell placeholders
   const cellBounds = canvasRectangle({
