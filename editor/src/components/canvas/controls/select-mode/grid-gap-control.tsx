@@ -151,6 +151,11 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
             isDragging: isDragging,
             axis: axis,
             gapValue: gap,
+            internalGrid: {
+              gridTemplateRows: controlBounds.gridTemplateRows,
+              gridTemplateColumns: controlBounds.gridTemplateColumns,
+              gap: axis === 'row' ? controlBounds.gapValues.column : controlBounds.gapValues.row,
+            },
             elementHovered: elementHovered,
             handles: axis === 'row' ? controlBounds.columns : controlBounds.rows,
           }
@@ -220,6 +225,11 @@ interface GridGapControlSegmentProps {
   isDragging: boolean
   backgroundShown: boolean
   handles: number
+  internalGrid: {
+    gridTemplateRows: string
+    gridTemplateColumns: string
+    gap: CSSNumber
+  }
 }
 
 const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
@@ -234,6 +244,7 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
     backgroundShown,
     axis,
     handles,
+    internalGrid,
   } = props
 
   const [indicatorShown, setIndicatorShown] = React.useState<number | null>(null)
@@ -282,10 +293,13 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
         style={{
           width: bounds.width,
           height: bounds.height,
-          display: 'flex',
+          display: 'grid',
           alignItems: 'center',
-          justifyContent: 'space-evenly',
-          flexDirection: axis,
+          justifyContent: 'center',
+          placeItems: 'center',
+          gap: internalGrid.gap.value,
+          gridTemplateColumns: axis === 'row' ? internalGrid.gridTemplateColumns : '1fr',
+          gridTemplateRows: axis === 'column' ? internalGrid.gridTemplateRows : '1fr',
         }}
       >
         {createArrayWithLength(handles, (i) => (

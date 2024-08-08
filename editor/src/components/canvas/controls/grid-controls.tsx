@@ -710,6 +710,10 @@ export const GridControls = controlForStrategyMemoized(() => {
               id={`grid-${EP.toString(grid.elementPath)}`}
               data-grid-rows={grid.rows}
               data-grid-columns={grid.columns}
+              data-grid-template-columns={getNullableAutoOrTemplateBaseString(
+                grid.gridTemplateColumns,
+              )}
+              data-grid-template-rows={getNullableAutoOrTemplateBaseString(grid.gridTemplateRows)}
               style={style}
             >
               {placeholders.map((cell) => {

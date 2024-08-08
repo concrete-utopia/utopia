@@ -172,7 +172,7 @@ export function gapControlBoundsFromMetadata(
 export function gridGapControlBoundsFromMetadata(
   elementMetadata: ElementInstanceMetadataMap,
   parentPath: ElementPath,
-  gaps: { row: CSSNumber; column: CSSNumber },
+  gapValues: { row: CSSNumber; column: CSSNumber },
 ): {
   gaps: Array<{
     bounds: CanvasRectangle
@@ -183,6 +183,9 @@ export function gridGapControlBoundsFromMetadata(
   rows: number
   columns: number
   cellBounds: CanvasRectangle
+  gapValues: { row: CSSNumber; column: CSSNumber }
+  gridTemplateRows: string
+  gridTemplateColumns: string
 } {
   const parentGridPlaceholderId = `grid-${EP.toString(parentPath)}`
   const parentGrid = document.getElementById(parentGridPlaceholderId)
@@ -192,11 +195,16 @@ export function gridGapControlBoundsFromMetadata(
       columns: 0,
       gaps: [],
       cellBounds: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
+      gapValues: gapValues,
+      gridTemplateRows: '1fr',
+      gridTemplateColumns: '1fr',
     }
   }
   const parentGridBounds = parentGrid?.getBoundingClientRect()
   const gridRows = parseInt(parentGrid?.getAttribute('data-grid-rows') ?? '1')
   const gridColumns = parseInt(parentGrid?.getAttribute('data-grid-columns') ?? '1')
+  const gridTemplateRows = parentGrid?.getAttribute('data-grid-template-rows') || '1fr'
+  const gridTemplateColumns = parentGrid?.getAttribute('data-grid-template-columns') || '1fr'
   const cell = matrixGetter(Array.from(parentGrid?.children ?? []), gridColumns)
   // the actual rectangle that surrounds the cell placeholders
   const cellBounds = canvasRectangle({
@@ -221,7 +229,7 @@ export function gridGapControlBoundsFromMetadata(
         width: cellBounds.width,
         height: secondChildBounds.top - firstChildBounds.bottom,
       }),
-      gap: gaps.row,
+      gap: gapValues.row,
       axis: 'row' as Axis,
     }
   })
@@ -239,7 +247,7 @@ export function gridGapControlBoundsFromMetadata(
         width: secondChildBounds.left - firstChildBounds.right,
         height: cellBounds.height,
       }),
-      gap: gaps.column,
+      gap: gapValues.column,
       axis: 'column' as Axis,
     }
   })
@@ -248,7 +256,10 @@ export function gridGapControlBoundsFromMetadata(
     gaps: rowGaps.concat(columnGaps),
     rows: gridRows,
     columns: gridColumns,
+    gridTemplateRows: gridTemplateRows ?? '',
+    gridTemplateColumns: gridTemplateColumns ?? '',
     cellBounds: cellBounds,
+    gapValues: gapValues,
   }
 }
 
