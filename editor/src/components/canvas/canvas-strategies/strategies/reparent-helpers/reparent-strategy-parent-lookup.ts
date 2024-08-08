@@ -350,9 +350,14 @@ function findParentByPaddedInsertionZone(
   // with current parent under cursor filter ancestors from reparent targets
   const currentParentUnderCursor =
     reparentSubjects.type === 'EXISTING_ELEMENTS'
-      ? validTargetparentsUnderPoint.find((targetParent) =>
-          EP.isParentOf(targetParent, reparentSubjects.elements[0]),
-        ) ?? null
+      ? validTargetparentsUnderPoint.find((targetParent) => {
+          const firstReparentSubjectElement = reparentSubjects.elements.at(0)
+          if (firstReparentSubjectElement == null) {
+            return false
+          } else {
+            return EP.isParentOf(targetParent, firstReparentSubjectElement)
+          }
+        }) ?? null
       : null
   const validTargetparentsUnderPointFiltered =
     currentParentUnderCursor != null
