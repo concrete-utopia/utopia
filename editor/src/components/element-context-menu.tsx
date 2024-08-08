@@ -50,7 +50,6 @@ import { pointsEqual } from '../core/shared/math-utils'
 import { useDispatch } from './editor/store/dispatch-context'
 import { useCreateCallbackToShowComponentPicker } from './navigator/navigator-item/component-picker-context-menu'
 import { navigatorTargetsSelector, useGetNavigatorTargets } from './navigator/navigator-utils'
-import { auto } from '@twind/core'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
