@@ -112,6 +112,20 @@ export function traverseArray<A>(): Optic<Array<A>, A> {
   )
 }
 
+// Produces a traversal over a readonly array, presenting each value of the array.
+export function traverseReadOnlyArray<A>(): Optic<ReadonlyArray<A>, A> {
+  return makeOptic(
+    (s, f) => {
+      for (const a of s) {
+        f(a)
+      }
+    },
+    (s, modify) => {
+      return s.map(modify)
+    },
+  )
+}
+
 // Produces a traversal over the values of an object.
 export function objectValues<A>(): Optic<{ [key: string]: A }, A> {
   return makeOptic(
