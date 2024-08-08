@@ -147,7 +147,7 @@ index 27ae53fe16b..83637043bdc 100644
 +}
 \ No newline at end of file
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 66d30c3aca3..7855e0d09dc 100644
+index 66d30c3aca3..25f12f879e4 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
 @@ -495,8 +495,11 @@ export function getClientArea(element: HTMLElement, fallback?: HTMLElement): Dim
@@ -159,8 +159,8 @@ index 66d30c3aca3..7855e0d09dc 100644
 + 	// this Error would prevent VSCode from loading inside Utopia if the browser tab is not in the foreground
 + 	// throw new Error('Unable to figure out browser width and height');
 + 
-+ 	// Instead, we just return 0 x 0, it seems to be fine
-+ 	return new Dimension(0, 0);
++ 	// Instead, we just return 1 x 1, as a non-zero value is required for laying out the editor correctly
++ 	return new Dimension(1, 1);
  }
  
  class SizeUtils {
@@ -778,6 +778,19 @@ index f8875029a8a..3bdfd1bfa64 100644
 -	});
 +	create(mainWindow.document.body, config)
  })();
+diff --git a/src/vs/editor/common/config/editorOptions.ts b/src/vs/editor/common/config/editorOptions.ts
+index 294e7030695..46730d6d518 100644
+--- a/src/vs/editor/common/config/editorOptions.ts
++++ b/src/vs/editor/common/config/editorOptions.ts
+@@ -3093,7 +3093,7 @@ class EditorMinimap extends BaseEditorOption<EditorOption.minimap, IEditorMinima
+ 
+ 	constructor() {
+ 		const defaults: EditorMinimapOptions = {
+-			enabled: true,
++			enabled: false,
+ 			size: 'proportional',
+ 			side: 'right',
+ 			showSlider: 'mouseover',
 diff --git a/src/vs/platform/environment/test/node/nativeModules.integrationTest.ts b/src/vs/platform/environment/test/node/nativeModules.integrationTest.ts
 index 81db8b47267..f1ae397d77c 100644
 --- a/src/vs/platform/environment/test/node/nativeModules.integrationTest.ts
@@ -841,6 +854,114 @@ index 1d17e4c709e..00109563f5c 100644
 -	const keyboardLayoutInfo = nativeKeymapMod.getCurrentKeyboardLayout();
 -	return { keyboardMapping, keyboardLayoutInfo };
 -}
+diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
+index b8232cb8490..0ce6a8e7002 100644
+--- a/src/vs/workbench/browser/layout.ts
++++ b/src/vs/workbench/browser/layout.ts
+@@ -1203,40 +1203,40 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 
+ 		if (this.initialized) {
+ 			switch (part) {
+-				case Parts.TITLEBAR_PART:
+-					return this.workbenchGrid.isViewVisible(this.titleBarPartView);
+-				case Parts.SIDEBAR_PART:
+-					return !this.stateModel.getRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN);
+-				case Parts.PANEL_PART:
+-					return !this.stateModel.getRuntimeValue(LayoutStateKeys.PANEL_HIDDEN);
+-				case Parts.AUXILIARYBAR_PART:
+-					return !this.stateModel.getRuntimeValue(LayoutStateKeys.AUXILIARYBAR_HIDDEN);
+-				case Parts.STATUSBAR_PART:
+-					return !this.stateModel.getRuntimeValue(LayoutStateKeys.STATUSBAR_HIDDEN);
+-				case Parts.ACTIVITYBAR_PART:
+-					return !this.stateModel.getRuntimeValue(LayoutStateKeys.ACTIVITYBAR_HIDDEN);
++				// case Parts.TITLEBAR_PART:
++				// 	return this.workbenchGrid.isViewVisible(this.titleBarPartView);
++				// case Parts.SIDEBAR_PART:
++				// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN);
++				// case Parts.PANEL_PART:
++				// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.PANEL_HIDDEN);
++				// case Parts.AUXILIARYBAR_PART:
++				// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.AUXILIARYBAR_HIDDEN);
++				// case Parts.STATUSBAR_PART:
++				// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.STATUSBAR_HIDDEN);
++				// case Parts.ACTIVITYBAR_PART:
++				// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.ACTIVITYBAR_HIDDEN);
+ 				case Parts.EDITOR_PART:
+ 					return !this.stateModel.getRuntimeValue(LayoutStateKeys.EDITOR_HIDDEN);
+-				case Parts.BANNER_PART:
+-					return this.workbenchGrid.isViewVisible(this.bannerPartView);
++				// case Parts.BANNER_PART:
++				// 	return this.workbenchGrid.isViewVisible(this.bannerPartView);
+ 				default:
+ 					return false; // any other part cannot be hidden
+ 			}
+ 		}
+ 
+ 		switch (part) {
+-			case Parts.TITLEBAR_PART:
+-				return shouldShowCustomTitleBar(this.configurationService, mainWindow, this.state.runtime.menuBar.toggled, this.isZenModeActive());
+-			case Parts.SIDEBAR_PART:
+-				return !this.stateModel.getRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN);
+-			case Parts.PANEL_PART:
+-				return !this.stateModel.getRuntimeValue(LayoutStateKeys.PANEL_HIDDEN);
+-			case Parts.AUXILIARYBAR_PART:
+-				return !this.stateModel.getRuntimeValue(LayoutStateKeys.AUXILIARYBAR_HIDDEN);
+-			case Parts.STATUSBAR_PART:
+-				return !this.stateModel.getRuntimeValue(LayoutStateKeys.STATUSBAR_HIDDEN);
+-			case Parts.ACTIVITYBAR_PART:
+-				return !this.stateModel.getRuntimeValue(LayoutStateKeys.ACTIVITYBAR_HIDDEN);
++			// case Parts.TITLEBAR_PART:
++			// 	return shouldShowCustomTitleBar(this.configurationService, mainWindow, this.state.runtime.menuBar.toggled, this.isZenModeActive());
++			// case Parts.SIDEBAR_PART:
++			// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN);
++			// case Parts.PANEL_PART:
++			// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.PANEL_HIDDEN);
++			// case Parts.AUXILIARYBAR_PART:
++			// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.AUXILIARYBAR_HIDDEN);
++			// case Parts.STATUSBAR_PART:
++			// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.STATUSBAR_HIDDEN);
++			// case Parts.ACTIVITYBAR_PART:
++			// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.ACTIVITYBAR_HIDDEN);
+ 			case Parts.EDITOR_PART:
+ 				return !this.stateModel.getRuntimeValue(LayoutStateKeys.EDITOR_HIDDEN);
+ 			default:
+@@ -1293,7 +1293,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 	}
+ 
+ 	private isZenModeActive(): boolean {
+-		return this.stateModel.getRuntimeValue(LayoutStateKeys.ZEN_MODE_ACTIVE);
++		return true; // Always true to remove all of the other UI
+ 	}
+ 
+ 	private setZenModeActive(active: boolean) {
+diff --git a/src/vs/workbench/browser/workbench.contribution.ts b/src/vs/workbench/browser/workbench.contribution.ts
+index ae4d22c9eaa..e342fb223d8 100644
+--- a/src/vs/workbench/browser/workbench.contribution.ts
++++ b/src/vs/workbench/browser/workbench.contribution.ts
+@@ -784,12 +784,12 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
+ 		'properties': {
+ 			'zenMode.fullScreen': {
+ 				'type': 'boolean',
+-				'default': true,
++				'default': false,
+ 				'description': localize('zenMode.fullScreen', "Controls whether turning on Zen Mode also puts the workbench into full screen mode.")
+ 			},
+ 			'zenMode.centerLayout': {
+ 				'type': 'boolean',
+-				'default': true,
++				'default': false,
+ 				'description': localize('zenMode.centerLayout', "Controls whether turning on Zen Mode also centers the layout.")
+ 			},
+ 			'zenMode.showTabs': {
+@@ -815,7 +815,7 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
+ 			},
+ 			'zenMode.hideLineNumbers': {
+ 				'type': 'boolean',
+-				'default': true,
++				'default': false,
+ 				'description': localize('zenMode.hideLineNumbers', "Controls whether turning on Zen Mode also hides the editor line numbers.")
+ 			},
+ 			'zenMode.restore': {
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
 index b0688133537..4353093fd5b 100644
 --- a/src/vs/workbench/browser/workbench.ts
