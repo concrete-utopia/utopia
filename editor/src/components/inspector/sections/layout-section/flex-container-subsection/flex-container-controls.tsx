@@ -30,7 +30,10 @@ import { flexDirectionSelector } from '../../../inpector-selectors'
 import type { CanvasControlWithProps } from '../../../../../components/inspector/common/inspector-atoms'
 import type { SubduedFlexGapControlProps } from '../../../../../components/canvas/controls/select-mode/subdued-flex-gap-controls'
 import { SubduedFlexGapControl } from '../../../../../components/canvas/controls/select-mode/subdued-flex-gap-controls'
-import { useSetHoveredControlsHandlers } from '../../../../../components/canvas/controls/select-mode/select-mode-hooks'
+import {
+  useSetFocusedControlsHandlers,
+  useSetHoveredControlsHandlers,
+} from '../../../../../components/canvas/controls/select-mode/select-mode-hooks'
 
 type uglyLabel =
   | 'left'
@@ -268,9 +271,12 @@ export const FlexGapControl = React.memo(() => {
     'FlexGapControl flexDirection',
   )
 
-  const flexGapControlsForHover: Array<CanvasControlWithProps<SubduedFlexGapControlProps>> =
-    React.useMemo(
-      () => [
+  const flexGapControlsForHoverAndFocused: {
+    hovered: Array<CanvasControlWithProps<SubduedFlexGapControlProps>>
+    focused: Array<CanvasControlWithProps<SubduedFlexGapControlProps>>
+  } = React.useMemo(
+    () => ({
+      hovered: [
         {
           control: SubduedFlexGapControl,
           props: {
@@ -279,13 +285,37 @@ export const FlexGapControl = React.memo(() => {
           key: `subdued-flex-gap-control-hovered`,
         },
       ],
-      [],
-    )
+      focused: [
+        {
+          control: SubduedFlexGapControl,
+          props: {
+            hoveredOrFocused: 'focused',
+          },
+          key: `subdued-flex-gap-control-focused`,
+        },
+      ],
+    }),
+    [],
+  )
 
   const { onMouseEnter, onMouseLeave } = useSetHoveredControlsHandlers<SubduedFlexGapControlProps>()
   const onMouseEnterWithFlexGapControls = React.useCallback(
-    () => onMouseEnter(flexGapControlsForHover),
-    [onMouseEnter, flexGapControlsForHover],
+    () => onMouseEnter(flexGapControlsForHoverAndFocused.hovered),
+    [onMouseEnter, flexGapControlsForHoverAndFocused.hovered],
+  )
+
+  const { onFocus, onBlur } = useSetFocusedControlsHandlers<SubduedFlexGapControlProps>()
+  const onFocusWithFlexGapControls = React.useCallback(
+    () => onFocus(flexGapControlsForHoverAndFocused.focused),
+    [onFocus, flexGapControlsForHoverAndFocused.focused],
+  )
+
+  const inputProps = React.useMemo(
+    () => ({
+      onFocus: onFocusWithFlexGapControls,
+      onBlur: onBlur,
+    }),
+    [onFocusWithFlexGapControls, onBlur],
   )
 
   return (
@@ -311,6 +341,7 @@ export const FlexGapControl = React.memo(() => {
             flexDirection.startsWith('row') ? <Icons.GapHorizontal /> : <Icons.GapVertical />
           }
           incrementControls={false}
+          inputProps={inputProps}
         />
       </UIGridRow>
     </InspectorContextMenuWrapper>
