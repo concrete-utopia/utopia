@@ -411,7 +411,98 @@ export const GridControls = controlForStrategyMemoized(() => {
     'GridControls interactionData',
   )
 
-  const { grids, jsxMetadata } = useActiveGridsData()
+  const interactionLatestMetadata = useEditorState(
+    Substores.canvas,
+    (store) =>
+      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG'
+        ? store.editor.canvas.interactionSession.latestMetadata
+        : null,
+    'GridControls interactionLatestMetadata',
+  )
+
+  const editorMetadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'GridControls editorMetadata',
+  )
+
+  const jsxMetadata = React.useMemo(
+    () => interactionLatestMetadata ?? editorMetadata,
+    [interactionLatestMetadata, editorMetadata],
+  )
+
+  const hoveredGrids = useEditorState(
+    Substores.canvas,
+    (store) => stripNulls([store.editor.canvas.controls.gridControls]),
+    'FlexReparentTargetIndicator lines',
+  )
+
+  const grids = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return mapDropNulls(
+        (view) => {
+          const element = MetadataUtils.findElementByElementPath(jsxMetadata, view)
+          const parent = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(view))
+
+          const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element)
+            ? element
+            : MetadataUtils.isGridLayoutedContainer(parent)
+            ? parent
+            : null
+
+          if (
+            targetGridContainer == null ||
+            targetGridContainer.globalFrame == null ||
+            !isFiniteRectangle(targetGridContainer.globalFrame)
+          ) {
+            return null
+          }
+
+          const gap = targetGridContainer.specialSizeMeasurements.gap
+          const rowGap = targetGridContainer.specialSizeMeasurements.rowGap
+          const columnGap = targetGridContainer.specialSizeMeasurements.columnGap
+          const padding = targetGridContainer.specialSizeMeasurements.padding
+
+          const gridTemplateColumns =
+            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
+          const gridTemplateRows =
+            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows
+          const gridTemplateColumnsFromProps =
+            targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
+              .gridTemplateColumns
+          const gridTemplateRowsFromProps =
+            targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
+              .gridTemplateRows
+
+          const columns = getCellsCount(
+            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
+          )
+          const rows = getCellsCount(
+            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
+          )
+
+          return {
+            elementPath: targetGridContainer.elementPath,
+            frame: targetGridContainer.globalFrame,
+            gridTemplateColumns: gridTemplateColumns,
+            gridTemplateRows: gridTemplateRows,
+            gridTemplateColumnsFromProps: gridTemplateColumnsFromProps,
+            gridTemplateRowsFromProps: gridTemplateRowsFromProps,
+            gap: gap,
+            rowGap: rowGap,
+            columnGap: columnGap,
+            padding: padding,
+            rows: rows,
+            columns: columns,
+            cells: rows * columns,
+          }
+        },
+        [...store.editor.selectedViews, ...hoveredGrids],
+      )
+    },
+    'GridControls grids',
+  )
 
   const cells = React.useMemo(() => {
     return grids.flatMap((grid) => {
@@ -1195,100 +1286,4 @@ function gridEdgeToWidthHeight(props: GridResizeEdgeProperties, scale: number): 
     right: props.isEnd ? 0 : undefined,
     bottom: props.isEnd ? 0 : undefined,
   }
-}
-
-export function useActiveGridsData() {
-  const interactionLatestMetadata = useEditorState(
-    Substores.canvas,
-    (store) =>
-      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG'
-        ? store.editor.canvas.interactionSession.latestMetadata
-        : null,
-    'GridControls interactionLatestMetadata',
-  )
-
-  const editorMetadata = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.jsxMetadata,
-    'GridControls editorMetadata',
-  )
-
-  const jsxMetadata = React.useMemo(
-    () => interactionLatestMetadata ?? editorMetadata,
-    [interactionLatestMetadata, editorMetadata],
-  )
-
-  const hoveredGrids = useEditorState(
-    Substores.canvas,
-    (store) => stripNulls([store.editor.canvas.controls.gridControls]),
-    'FlexReparentTargetIndicator lines',
-  )
-
-  const grids = useEditorState(
-    Substores.metadata,
-    (store) => {
-      return mapDropNulls(
-        (view) => {
-          const element = MetadataUtils.findElementByElementPath(jsxMetadata, view)
-          const parent = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(view))
-
-          const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element)
-            ? element
-            : MetadataUtils.isGridLayoutedContainer(parent)
-            ? parent
-            : null
-
-          if (
-            targetGridContainer == null ||
-            targetGridContainer.globalFrame == null ||
-            !isFiniteRectangle(targetGridContainer.globalFrame)
-          ) {
-            return null
-          }
-
-          const gap = targetGridContainer.specialSizeMeasurements.gap
-          const rowGap = targetGridContainer.specialSizeMeasurements.rowGap
-          const columnGap = targetGridContainer.specialSizeMeasurements.columnGap
-          const padding = targetGridContainer.specialSizeMeasurements.padding
-
-          const gridTemplateColumns =
-            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
-          const gridTemplateRows =
-            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows
-          const gridTemplateColumnsFromProps =
-            targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
-              .gridTemplateColumns
-          const gridTemplateRowsFromProps =
-            targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
-              .gridTemplateRows
-
-          const columns = getCellsCount(
-            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
-          )
-          const rows = getCellsCount(
-            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
-          )
-
-          return {
-            elementPath: targetGridContainer.elementPath,
-            frame: targetGridContainer.globalFrame,
-            gridTemplateColumns: gridTemplateColumns,
-            gridTemplateRows: gridTemplateRows,
-            gridTemplateColumnsFromProps: gridTemplateColumnsFromProps,
-            gridTemplateRowsFromProps: gridTemplateRowsFromProps,
-            gap: gap,
-            rowGap: rowGap,
-            columnGap: columnGap,
-            padding: padding,
-            rows: rows,
-            columns: columns,
-            cells: rows * columns,
-          }
-        },
-        [...store.editor.selectedViews, ...hoveredGrids],
-      )
-    },
-    'GridControls grids',
-  )
-  return { grids, jsxMetadata }
 }
