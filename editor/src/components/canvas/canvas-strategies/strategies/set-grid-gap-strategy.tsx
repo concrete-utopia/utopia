@@ -87,13 +87,13 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
   const drag = dragFromInteractionSession(interactionSession) ?? canvasVector({ x: 0, y: 0 })
 
   const dragDelta = {
-    x: Math.max(-gridGap.row.renderedValuePx, drag.x),
-    y: Math.max(-gridGap.column.renderedValuePx, drag.y),
+    x: Math.max(-gridGap.column.renderedValuePx, drag.x),
+    y: Math.max(-gridGap.row.renderedValuePx, drag.y),
   }
 
   const shouldTearOffGap = {
-    x: isDragOverThreshold({ gapPx: gridGap.row.renderedValuePx, deltaPx: dragDelta.x }),
-    y: isDragOverThreshold({ gapPx: gridGap.column.renderedValuePx, deltaPx: dragDelta.y }),
+    x: isDragOverThreshold({ gapPx: gridGap.column.renderedValuePx, deltaPx: dragDelta.x }),
+    y: isDragOverThreshold({ gapPx: gridGap.row.renderedValuePx, deltaPx: dragDelta.y }),
   }
 
   const adjustPrecision =

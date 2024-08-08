@@ -1,13 +1,6 @@
 import React, { useState } from 'react'
-import * as EP from '../../../../core/shared/element-path'
 import type { CanvasRectangle, CanvasVector, Size } from '../../../../core/shared/math-utils'
-import {
-  boundingRectangleArray,
-  isFiniteRectangle,
-  size,
-  windowPoint,
-  zeroSize,
-} from '../../../../core/shared/math-utils'
+import { size, windowPoint } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
@@ -23,22 +16,10 @@ import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strat
 import { createInteractionViaMouse, gridGapHandle } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import type { Axis } from '../../gap-utils'
-import {
-  recurseIntoChildrenOfMapOrFragment,
-  maybeGridGapData,
-  gridGapControlBoundsFromMetadata,
-} from '../../gap-utils'
+import { maybeGridGapData, gridGapControlBoundsFromMetadata } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { CSSNumberWithRenderedValue } from './controls-common'
 import { CanvasLabel, fallbackEmptyValue, PillHandle, useHoverWithDelay } from './controls-common'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
-import {
-  getFlexJustifyContent,
-  type FlexAlignment,
-  type FlexJustifyContent,
-  getFlexAlignment,
-} from '../../../inspector/inspector-common'
 import { CSSCursor } from '../../../../uuiui-deps'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { isZeroSizedElement } from '../outline-utils'
@@ -100,18 +81,6 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
     'GridGapControl metadata',
   )
 
-  const elementPathTrees = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.elementPathTree,
-    'GridGapControl metadata',
-  )
-
-  const allElementProps = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.allElementProps,
-    'GridGapControl metadata',
-  )
-
   const isDragging = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.interactionSession?.activeControl.type === 'GRID_GAP_HANDLE',
@@ -136,12 +105,6 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
     [axisMouseDownHandler],
   )
 
-  const children = recurseIntoChildrenOfMapOrFragment(
-    metadata,
-    allElementProps,
-    elementPathTrees,
-    selectedElement,
-  )
   const gridGap = maybeGridGapData(metadata, selectedElement)
   if (gridGap == null) {
     return null
@@ -165,51 +128,10 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
   const gridGapRow = updatedGapValueRow ?? gridGap.row
   const gridGapColumn = updatedGapValueColumn ?? gridGap.column
 
-  const gapControlSizes = React.useMemo((): { row: Size; column: Size } => {
-    const bounds = boundingRectangleArray(
-      mapDropNulls(
-        (c) => (c.localFrame != null && isFiniteRectangle(c.localFrame) ? c.localFrame : null),
-        children,
-      ),
-    )
-    if (bounds == null) {
-      return { row: zeroSize, column: zeroSize }
-    } else {
-      const rowSize = {
-        width: bounds.width,
-        height: gridGapRow.renderedValuePx,
-      }
-      const columnSize = {
-        width: gridGapColumn.renderedValuePx,
-        height: bounds.height,
-      }
-      return {
-        row: rowSize,
-        column: columnSize,
-      }
-    }
-  }, [children, gridGapRow.renderedValuePx, gridGapColumn.renderedValuePx])
-
-  const controlBounds = gridGapControlBoundsFromMetadata(
-    metadata,
-    selectedElement,
-    { row: fallbackEmptyValue(gridGapRow), column: fallbackEmptyValue(gridGapColumn) },
-    gapControlSizes,
-  )
-
-  const justifyContent = React.useMemo(() => {
-    return (
-      MetadataUtils.findElementByElementPath(metadata, selectedElement)?.specialSizeMeasurements
-        .justifyContent ?? null
-    )
-  }, [metadata, selectedElement])
-
-  const alignItems = React.useMemo(() => {
-    return (
-      MetadataUtils.findElementByElementPath(metadata, selectedElement)?.specialSizeMeasurements
-        .alignItems ?? null
-    )
-  }, [metadata, selectedElement])
+  const controlBounds = gridGapControlBoundsFromMetadata(metadata, selectedElement, {
+    row: fallbackEmptyValue(gridGapRow),
+    column: fallbackEmptyValue(gridGapColumn),
+  })
 
   return (
     <CanvasOffsetWrapper>
@@ -218,19 +140,16 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
         style={{ pointerEvents: 'none', position: 'absolute' }}
         ref={controlRef}
       >
-        {controlBounds.map(({ gap, bounds, axis, gapId, size: contentArea }) => {
+        {controlBounds.map(({ gap, bounds, axis, gapId }) => {
           const gapControlProps = {
             mouseDownHandler: axisMouseDownHandler,
             gapId: gapId,
             bounds: bounds,
-            contentArea: contentArea,
             accentColor: accentColor,
             scale: scale,
             isDragging: isDragging,
             axis: axis,
             gapValue: gap,
-            justifyContent: justifyContent,
-            alignItems: alignItems,
             elementHovered: elementHovered,
           }
           if (axis === 'row') {
@@ -290,7 +209,6 @@ interface GridGapControlSegmentProps {
   hoverStart: React.MouseEventHandler
   hoverEnd: React.MouseEventHandler
   bounds: CanvasRectangle
-  contentArea: Size
   axis: Axis
   gapValue: CSSNumber
   elementHovered: boolean
@@ -299,8 +217,6 @@ interface GridGapControlSegmentProps {
   scale: number
   isDragging: boolean
   backgroundShown: boolean
-  justifyContent: FlexJustifyContent | null
-  alignItems: FlexAlignment | null
 }
 
 const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
@@ -308,14 +224,11 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
     hoverStart,
     hoverEnd,
     bounds,
-    contentArea,
     isDragging,
     accentColor: accentColor,
     scale,
     gapId,
     backgroundShown,
-    justifyContent,
-    alignItems,
     axis,
   } = props
 
@@ -340,11 +253,6 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
   // Invert the direction for the handle.
   const segmentFlexDirection = axis === 'row' ? 'column' : 'row'
 
-  // Effectively flip the properties for the main and cross axis, but only permitting
-  // values which we know can be applied to that axis.
-  const segmentJustifyContent = getFlexJustifyContent(alignItems) ?? undefined
-  const segmentAlignItems = getFlexAlignment(justifyContent) ?? undefined
-
   return (
     <div
       key={gapId}
@@ -360,8 +268,6 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
         height: bounds.height,
         display: 'flex',
         flexDirection: segmentFlexDirection,
-        justifyContent: segmentJustifyContent,
-        alignItems: segmentAlignItems,
         border: isDragging ? `${dragBorderWidth}px solid ${accentColor}` : undefined,
         ...(shouldShowBackground
           ? UtopiaStyles.backgrounds.stripedBackground(accentColor, scale)
@@ -370,8 +276,8 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
     >
       <div
         style={{
-          width: contentArea.width,
-          height: contentArea.height,
+          width: bounds.width,
+          height: bounds.height,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-evenly',

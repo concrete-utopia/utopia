@@ -168,13 +168,11 @@ export function gridGapControlBoundsFromMetadata(
   elementMetadata: ElementInstanceMetadataMap,
   parentPath: ElementPath,
   gaps: { row: CSSNumber; column: CSSNumber },
-  contentArea: { row: Size; column: Size },
 ): Array<{
   bounds: CanvasRectangle
   gapId: string
   gap: CSSNumber
   axis: Axis
-  size: Size
 }> {
   const parentGridPlaceholderId = `grid-${EP.toString(parentPath)}`
   const parentGrid = document.getElementById(parentGridPlaceholderId)
@@ -200,7 +198,6 @@ export function gridGapControlBoundsFromMetadata(
       }),
       gap: gaps.row,
       axis: 'row' as Axis,
-      size: contentArea.row,
     }
   })
   // create an empty array with gridColumns - 1 cells
@@ -218,7 +215,6 @@ export function gridGapControlBoundsFromMetadata(
       }),
       gap: gaps.column,
       axis: 'column' as Axis,
-      size: contentArea.column,
     }
   })
 
