@@ -276,7 +276,7 @@
     "string-hash": "1.1.3",
     "strip-ansi": "6.0.0",
     "tippy.js": "6.2.6",
-    "typescript": "5.2.2",
+    "typescript": "5.5.4",
     "typescript-for-the-editor": "npm:typescript@4.6.4",
     "url-join": "4.0.1",
     "use-context-selector": "1.3.9",
