@@ -457,10 +457,9 @@ export class Editor {
 
       const reactRouterErrorPreviouslyLogged = hasReactRouterErrorBeenLogged()
 
-      const runDomWalker = shouldRunDOMWalker(dispatchedActions, oldEditorState, this.storedState)
-
       const shouldRerender =
-        runDomWalker && !anyCodeAhead(dispatchResult.unpatchedEditor.projectContents)
+        !dispatchResult.nothingChanged &&
+        !anyCodeAhead(dispatchResult.unpatchedEditor.projectContents)
 
       const updateId = canvasUpdateId++
       if (shouldRerender) {
@@ -479,8 +478,10 @@ export class Editor {
         })
       }
 
+      const runDomWalker = shouldRunDOMWalker(dispatchedActions, oldEditorState, this.storedState)
+
       // run the dom-walker
-      if (shouldRerender || runDomWalker) {
+      if (runDomWalker) {
         const domWalkerDispatchResult = runDomWalkerAndSaveResults(
           this.boundDispatch,
           this.domWalkerMutableState,
