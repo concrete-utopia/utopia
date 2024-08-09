@@ -323,7 +323,7 @@ export function useFindValidTarget(): (
       lockedElements: store.editor.lockedElements,
       focusedPaths: getAllFocusedPaths(
         store.editor.focusedElementPath,
-        store.derived.autoFocusedPaths,
+        getAutofocusedPathsSelector(store),
       ),
     }
   })

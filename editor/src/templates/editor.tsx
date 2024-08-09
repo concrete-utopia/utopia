@@ -877,9 +877,8 @@ export function shouldRunDOMWalker(
 
   const patchedDerivedBefore = storeBefore.patchedDerived
   const patchedDerivedAfter = storeAfter.patchedDerived
-  const patchedDerivedChanged =
-    patchedDerivedBefore.autoFocusedPaths !== patchedDerivedAfter.autoFocusedPaths ||
-    patchedDerivedBefore.remixData !== patchedDerivedAfter.remixData
+  // TODO before merge figure out how does the dom-walker get access to the auto-focused paths then?
+  const patchedDerivedChanged = patchedDerivedBefore.remixData !== patchedDerivedAfter.remixData
 
   const storeChanged = patchedEditorChanged || patchedDerivedChanged
   const actionsIndicateDOMWalkerShouldRun = anyBy(

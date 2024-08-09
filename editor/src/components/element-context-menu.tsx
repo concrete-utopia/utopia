@@ -205,7 +205,6 @@ function useCanvasContextMenuGetData(
       autoFocusedPaths: getAutofocusedPathsSelector(store),
       propertyControlsInfo: store.editor.propertyControlsInfo,
       lockedElements: store.editor.lockedElements,
-      autofocusedPaths: store.derived.autoFocusedPaths,
     }
   })
   const navigatorTargetsRef = useRefEditorState(navigatorTargetsSelector)
