@@ -11,7 +11,7 @@ const VSCodeIframeContainer = React.memo((props: { vsCodeSessionID: string }) =>
   const baseIframeSrc = createIframeUrl(window.location.origin, 'vscode-editor-iframe/')
   const url = new URL(baseIframeSrc)
   url.searchParams.append('vs_code_session_id', vsCodeSessionID)
-  url.searchParams.append('vscode-coi', '')
+  url.searchParams.append('vscode-coi', '') // Required to enable intellisense
 
   setBranchNameFromURL(url.searchParams)
 

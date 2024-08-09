@@ -226,7 +226,7 @@ function runPendingSubscriptionChanges() {
 
   pendingWork = []
 
-  // FIXME should we still do it like this, or instead follow the pattern used by queueEvents?
+  // TODO should we still do it like this, or instead follow the pattern used by queueEvents?
   setTimeout(runPendingSubscriptionChanges, SUBSCRIPTION_POLLING_TIMEOUT)
 }
 
@@ -241,11 +241,8 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
     vscode.workspace.onDidChangeTextDocument((event) => {
       if (isUtopiaDocument(event.document)) {
         const resource = event.document.uri
-        if (resource.scheme === projectID) {
-          // Don't act on changes to other documents
-          const path = resource.path
-          pendingWork.push(didChangeTextChange(path, event))
-        }
+        const path = resource.path
+        pendingWork.push(didChangeTextChange(path, event))
       }
     }),
     vscode.workspace.onWillSaveTextDocument((event) => {
@@ -355,7 +352,6 @@ function initMessaging(
             }
             break
           case 'DELETE_PATH':
-            // FIXME Maybe we still need the watchForFileDeletions here to close the file
             utopiaFS.silentDelete(message.fullPath, { recursive: message.recursive })
             break
           case 'ENSURE_DIRECTORY_EXISTS':

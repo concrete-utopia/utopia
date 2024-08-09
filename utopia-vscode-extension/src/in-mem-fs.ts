@@ -248,15 +248,10 @@ function filenameOfPath(path: string): string {
   return lastSlashIndex >= 0 ? path.slice(lastSlashIndex + 1) : path
 }
 
-export function childPathsWithAllPaths(path: string, allPaths: Array<string>): Array<string> {
-  const allDescendents = getDescendentPathsWithAllPaths(path, allPaths)
-  const pathAsDir = stripTrailingSlash(path)
-  return allDescendents.filter((k) => getParentPath(k) === pathAsDir)
-}
-
 export function childPaths(path: string): Array<string> {
   const allDescendents = getDescendentPaths(path)
-  return childPathsWithAllPaths(path, allDescendents)
+  const pathAsDir = stripTrailingSlash(path)
+  return allDescendents.filter((k) => getParentPath(k) === pathAsDir)
 }
 
 function getDirectory(path: string): FSDirectory {
@@ -289,8 +284,7 @@ export function readDirectory(path: string): Array<string> {
 }
 
 export function createDirectory(path: string) {
-  const pathExists = getItem(path)
-  if (pathExists != null) {
+  if (exists(path)) {
     throw existingFileError(path)
   }
 
