@@ -17,6 +17,7 @@ import type { Either } from '../../shared/either'
 import {
   applicative3Either,
   applicative4Either,
+  applicative5Either,
   foldEither,
   isLeft,
   isRight,
@@ -217,18 +218,20 @@ interface PartialPackageJsonDefinition {
   main?: string
   module?: string
   browser?: string | MapLike<string | false>
+  exports?: MapLike<string | MapLike<string>>
 }
 
 export function parsePartialPackageJsonDefinition(
   value: unknown,
 ): ParseResult<PartialPackageJsonDefinition> {
-  return applicative4Either(
-    (name, main, module, browser) => {
+  return applicative5Either(
+    (name, main, module, browser, exports) => {
       let result: PartialPackageJsonDefinition = {}
       setOptionalProp(result, 'name', name)
       setOptionalProp(result, 'main', main)
       setOptionalProp(result, 'module', module)
       setOptionalProp(result, 'browser', browser)
+      setOptionalProp(result, 'exports', exports)
       return result
     },
     optionalObjectKeyParser(parseString, 'name')(value),
@@ -249,12 +252,22 @@ export function parsePartialPackageJsonDefinition(
       ),
       'browser',
     )(value),
+    optionalObjectKeyParser(
+      parseObject(
+        parseAlternative<string | MapLike<string>>(
+          [parseString, parseObject(parseString)],
+          'package.exports field must either an object with type {[key: string]: string | { [key: string]: string }}',
+        ),
+      ),
+      'exports',
+    )(value),
   )
 }
 
 function processPackageJson(
   potentiallyJsonCode: string,
   containerFolder: string[],
+  localPath?: string,
 ): ResolveResult<Array<string>> {
   let possiblePackageJson: ParseResult<PartialPackageJsonDefinition>
   try {
@@ -269,8 +282,15 @@ function processPackageJson(
       const browserEntry: string | MapLike<string | false> | null = packageJson.browser ?? null
       const mainEntry: string | null = packageJson.main ?? null
       const moduleEntry: string | null = packageJson.module ?? null
+      const exportsEntry: MapLike<string | MapLike<string>> | null = packageJson.exports ?? null
 
-      if (browserEntry != null && typeof browserEntry === 'string') {
+      const resolvedExportEntry =
+        localPath != null && exportsEntry != null ? exportsEntry[localPath] : null
+      if (typeof resolvedExportEntry === 'string') {
+        return resolveSuccess(
+          normalizePath([...containerFolder, ...getPartsFromPath(resolvedExportEntry)]),
+        )
+      } else if (browserEntry != null && typeof browserEntry === 'string') {
         return resolveSuccess(
           normalizePath([...containerFolder, ...getPartsFromPath(browserEntry)]),
         )
@@ -293,6 +313,7 @@ function processPackageJson(
 function resolvePackageJson(
   fileLookupFn: FileLookupFn,
   packageJsonFolder: string[],
+  localPath?: string,
 ): FileLookupResult {
   const normalizedFolderPath = normalizePath(packageJsonFolder)
   const folderPackageJson = fileLookupFn([...normalizedFolderPath, 'package.json'], true)
@@ -300,6 +321,7 @@ function resolvePackageJson(
     const mainEntryPath = processPackageJson(
       folderPackageJson.success.file.fileContents,
       normalizedFolderPath,
+      localPath,
     )
     if (isResolveSuccess(mainEntryPath)) {
       // try loading the entry path as a file
@@ -339,29 +361,61 @@ function resolveNonRelativeModule(
   importOrigin: string[],
   toImport: string[],
 ): FileLookupResult {
-  const pathElements = [...importOrigin, 'node_modules', ...toImport]
-  // 1. look for ./node_modules/<package_name>.js
-  const packageNameResult = fileLookupFn(pathElements, false)
-  if (isResolveSuccess(packageNameResult)) {
-    return packageNameResult
-  } else {
-    // 2. look for ./node_modules/<package_name>/package.json
-    const packageJsonResult = resolvePackageJson(fileLookupFn, pathElements)
-    if (isResolveSuccess(packageJsonResult)) {
-      return packageJsonResult
+  if (toImport[0] != null && toImport[0].startsWith('@')) {
+    const moduleSpecifier = `${toImport[0]}/${toImport[1]}`
+    const pathElements = [...importOrigin, 'node_modules', toImport[0], toImport[1]]
+    const localPath = ['.', ...toImport.slice(2)].join('/')
+    // 1. look for ./node_modules/<package_name>.js
+    const packageNameResult = fileLookupFn(pathElements, false)
+    if (isResolveSuccess(packageNameResult)) {
+      return packageNameResult
     } else {
-      // 3. look for ./node_modules/<package_name>/index.js
-      const indexJsPath = [...pathElements, 'index']
-      const indexJSResult = fileLookupFn(indexJsPath, false)
-      if (isResolveSuccess(indexJSResult)) {
-        return indexJSResult
+      // 2. look for ./node_modules/<package_name>/package.json
+      const packageJsonResult = resolvePackageJson(fileLookupFn, pathElements, localPath)
+      if (isResolveSuccess(packageJsonResult)) {
+        return packageJsonResult
       } else {
-        // 4. repeat in the parent folder
-        if (importOrigin.length === 0) {
-          // we exhausted all folders without success
-          return resolveNotPresent
+        // 3. look for ./node_modules/<package_name>/index.js
+        const indexJsPath = [...pathElements, 'index']
+        const indexJSResult = fileLookupFn(indexJsPath, false)
+        if (isResolveSuccess(indexJSResult)) {
+          return indexJSResult
         } else {
-          return resolveNonRelativeModule(fileLookupFn, importOrigin.slice(0, -1), toImport)
+          // 4. repeat in the parent folder
+          if (importOrigin.length === 0) {
+            // we exhausted all folders without success
+            return resolveNotPresent
+          } else {
+            return resolveNonRelativeModule(fileLookupFn, importOrigin.slice(0, -1), toImport)
+          }
+        }
+      }
+    }
+  } else {
+    const pathElements = [...importOrigin, 'node_modules', ...toImport]
+    // 1. look for ./node_modules/<package_name>.js
+    const packageNameResult = fileLookupFn(pathElements, false)
+    if (isResolveSuccess(packageNameResult)) {
+      return packageNameResult
+    } else {
+      // 2. look for ./node_modules/<package_name>/package.json
+      const packageJsonResult = resolvePackageJson(fileLookupFn, pathElements)
+      if (isResolveSuccess(packageJsonResult)) {
+        return packageJsonResult
+      } else {
+        // 3. look for ./node_modules/<package_name>/index.js
+        const indexJsPath = [...pathElements, 'index']
+        const indexJSResult = fileLookupFn(indexJsPath, false)
+        if (isResolveSuccess(indexJSResult)) {
+          return indexJSResult
+        } else {
+          // 4. repeat in the parent folder
+          if (importOrigin.length === 0) {
+            // we exhausted all folders without success
+            return resolveNotPresent
+          } else {
+            return resolveNonRelativeModule(fileLookupFn, importOrigin.slice(0, -1), toImport)
+          }
         }
       }
     }
