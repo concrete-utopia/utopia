@@ -82,6 +82,8 @@ import type { CommentFilterMode } from '../inspector/sections/comment-section'
 import type { Collaborator } from '../../core/shared/multiplayer'
 import type { PageTemplate } from '../canvas/remix/remix-utils'
 import type { Bounds } from 'utopia-vscode-common'
+import type { Optic } from '../../core/shared/optics/optics'
+import { makeOptic } from '../../core/shared/optics/optics'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -1372,6 +1374,53 @@ export type EditorAction =
   | SetSharingDialogOpen
   | ResetOnlineState
   | IncreaseOnlineStateFailureCount
+
+function actionForEach(action: EditorAction, fn: (action: EditorAction) => void): void {
+  fn(action)
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      action.transientActions.forEach((a) => actionForEach(a, fn))
+      break
+    case 'ATOMIC':
+      action.actions.forEach((a) => actionForEach(a, fn))
+      break
+    case 'MERGE_WITH_PREV_UNDO':
+      action.actions.forEach((a) => actionForEach(a, fn))
+      break
+    default:
+      break
+  }
+}
+
+function actionUpdate(
+  action: EditorAction,
+  updater: (action: EditorAction) => EditorAction,
+): EditorAction {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return updater({
+        ...action,
+        transientActions: action.transientActions.map((a) => actionUpdate(a, updater)),
+      })
+    case 'ATOMIC':
+      return updater({
+        ...action,
+        actions: action.actions.map((a) => actionUpdate(a, updater)),
+      })
+    case 'MERGE_WITH_PREV_UNDO':
+      return updater({
+        ...action,
+        actions: action.actions.map((a) => actionUpdate(a, updater)),
+      })
+    default:
+      return updater(action)
+  }
+}
+
+export const actionActionsOptic: Optic<EditorAction, EditorAction> = makeOptic(
+  actionForEach,
+  actionUpdate,
+)
 
 export type DispatchPriority =
   | 'everyone'

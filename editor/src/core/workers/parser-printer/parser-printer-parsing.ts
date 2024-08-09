@@ -151,7 +151,7 @@ import {
 import { isEmptyString } from '../../shared/string-utils'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { emptySet } from '../../../core/shared/set-utils'
-import { getAllUniqueUidsFromAttributes } from '../../../core/model/get-unique-ids'
+import { getAllUniqueUidsFromAttributes } from '../../model/get-uid-mappings'
 import type { SteganographyMode } from './parser-printer'
 import { hashObject } from '../../shared/hash'
 
@@ -3106,8 +3106,8 @@ function forciblyUpdateDataUID(
   )
   // Remove any UIDs that have been eliminated as a result of the update.
   if (props != null && updatedProps != null) {
-    const attributeUniqueUIDsBefore = new Set(getAllUniqueUidsFromAttributes(props).uniqueIDs)
-    const attributeUniqueUIDsAfter = new Set(getAllUniqueUidsFromAttributes(updatedProps).uniqueIDs)
+    const attributeUniqueUIDsBefore = getAllUniqueUidsFromAttributes(props).allUids
+    const attributeUniqueUIDsAfter = getAllUniqueUidsFromAttributes(updatedProps).allUids
     const uidsToRemove = difference(attributeUniqueUIDsBefore, attributeUniqueUIDsAfter)
     uidsToRemove.forEach((uidToRemove) => {
       delete highlightBoundsResult[uidToRemove]

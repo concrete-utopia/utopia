@@ -68,7 +68,7 @@ import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-s
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 import { arrayOfPathsEqual, removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { notice } from '../../../components/common/notice'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getUidMappings, getAllUniqueUidsFromMapping } from '../../../core/model/get-uid-mappings'
 import { updateSimpleLocks } from '../../../core/shared/element-locking'
 import {
   getFilesToUpdate,
@@ -788,7 +788,9 @@ function maybeCullElementPathCache(
 }
 
 export function cullElementPathCache(): void {
-  const allExistingUids = getAllUniqueUids(lastProjectContents).allIDs
+  const allExistingUids = getAllUniqueUidsFromMapping(
+    getUidMappings(lastProjectContents).filePathToUids,
+  )
   removePathsWithDeadUIDs(new Set(allExistingUids))
 }
 
@@ -937,7 +939,7 @@ function editorDispatchInner(
     const actionNames = simpleStringifyActions(dispatchedActions)
 
     // Check for duplicate UIDs that have originated from actions being applied.
-    const uniqueIDsResult = getAllUniqueUids(result.unpatchedEditor.projectContents)
+    const uniqueIDsResult = getUidMappings(result.unpatchedEditor.projectContents)
     if (Object.keys(uniqueIDsResult.duplicateIDs).length > 0) {
       const errorMessage = `Running ${actionNames} resulted in duplicate UIDs ${JSON.stringify(
         uniqueIDsResult.duplicateIDs,

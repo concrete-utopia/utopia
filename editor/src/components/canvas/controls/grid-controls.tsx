@@ -6,10 +6,14 @@ import { motion, useAnimationControls } from 'framer-motion'
 import type { CSSProperties } from 'react'
 import React from 'react'
 import type { ElementPath } from 'utopia-shared/src/types'
-import type { GridCSSNumber } from '../../../components/inspector/common/css-utils'
-import { printGridAutoOrTemplateBase } from '../../../components/inspector/common/css-utils'
+import type { GridDimension } from '../../../components/inspector/common/css-utils'
+import {
+  isCSSKeyword,
+  printGridAutoOrTemplateBase,
+  printGridCSSNumber,
+} from '../../../components/inspector/common/css-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../../core/shared/array-utils'
+import { mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import { defaultEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -111,19 +115,19 @@ function getNullableAutoOrTemplateBaseString(
   }
 }
 
-function getFromPropsOptic(index: number): Optic<GridAutoOrTemplateBase | null, GridCSSNumber> {
+function getFromPropsOptic(index: number): Optic<GridAutoOrTemplateBase | null, GridDimension> {
   return notNull<GridAutoOrTemplateBase>()
     .compose(fromTypeGuard(isGridAutoOrTemplateDimensions))
     .compose(fromField('dimensions'))
     .compose(fromArrayIndex(index))
 }
 
-function gridCSSNumberToLabel(gridCSSNumber: GridCSSNumber): string {
-  return `${gridCSSNumber.value}${gridCSSNumber.unit ?? ''}`
+function gridCSSNumberToLabel(gridCSSNumber: GridDimension): string {
+  return printGridCSSNumber(gridCSSNumber)
 }
 
 function getLabelForAxis(
-  fromDOM: GridCSSNumber,
+  fromDOM: GridDimension,
   index: number,
   fromProps: GridAutoOrTemplateBase | null,
 ): string {
@@ -136,7 +140,7 @@ const GRID_RESIZE_HANDLE_CONTAINER_SIZE = 30 // px
 const GRID_RESIZE_HANDLE_SIZE = 15 // px
 
 export interface GridResizingControlProps {
-  dimension: GridCSSNumber
+  dimension: GridDimension
   dimensionIndex: number
   axis: 'row' | 'column'
   containingFrame: CanvasRectangle
@@ -314,11 +318,11 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
             display: 'grid',
             gridTemplateColumns:
               props.axis === 'column'
-                ? props.axisValues.dimensions.map((dim) => `${dim.value}${dim.unit}`).join(' ')
+                ? props.axisValues.dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
                 : undefined,
             gridTemplateRows:
               props.axis === 'row'
-                ? props.axisValues.dimensions.map((dim) => `${dim.value}${dim.unit}`).join(' ')
+                ? props.axisValues.dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
                 : undefined,
             gap: props.gap ?? 0,
             paddingLeft:
@@ -371,7 +375,9 @@ export const GridControls = controlForStrategyMemoized(() => {
     Substores.canvas,
     (store) =>
       store.editor.canvas.interactionSession != null &&
-      store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE'
+      store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE' &&
+      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
+      store.editor.canvas.interactionSession?.interactionData.drag != null
         ? store.editor.canvas.interactionSession.activeControl.id
         : null,
     'GridControls activelyDraggingOrResizingCell',
@@ -424,65 +430,75 @@ export const GridControls = controlForStrategyMemoized(() => {
     [interactionLatestMetadata, editorMetadata],
   )
 
+  const hoveredGrids = useEditorState(
+    Substores.canvas,
+    (store) => stripNulls([store.editor.canvas.controls.gridControls]),
+    'FlexReparentTargetIndicator lines',
+  )
+
   const grids = useEditorState(
-    Substores.metadataAndPropertyControlsInfo,
+    Substores.metadata,
     (store) => {
-      return mapDropNulls((view) => {
-        const element = MetadataUtils.findElementByElementPath(jsxMetadata, view)
-        const parent = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(view))
+      return mapDropNulls(
+        (view) => {
+          const element = MetadataUtils.findElementByElementPath(jsxMetadata, view)
+          const parent = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(view))
 
-        const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element)
-          ? element
-          : MetadataUtils.isGridLayoutedContainer(parent)
-          ? parent
-          : null
+          const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element)
+            ? element
+            : MetadataUtils.isGridLayoutedContainer(parent)
+            ? parent
+            : null
 
-        if (
-          targetGridContainer == null ||
-          targetGridContainer.globalFrame == null ||
-          !isFiniteRectangle(targetGridContainer.globalFrame)
-        ) {
-          return null
-        }
+          if (
+            targetGridContainer == null ||
+            targetGridContainer.globalFrame == null ||
+            !isFiniteRectangle(targetGridContainer.globalFrame)
+          ) {
+            return null
+          }
 
-        const gap = targetGridContainer.specialSizeMeasurements.gap
-        const rowGap = targetGridContainer.specialSizeMeasurements.rowGap
-        const columnGap = targetGridContainer.specialSizeMeasurements.columnGap
-        const padding = targetGridContainer.specialSizeMeasurements.padding
-        const gridTemplateColumns =
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
-        const gridTemplateRows =
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows
-        const gridTemplateColumnsFromProps =
-          targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
-            .gridTemplateColumns
-        const gridTemplateRowsFromProps =
-          targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
-            .gridTemplateRows
+          const gap = targetGridContainer.specialSizeMeasurements.gap
+          const rowGap = targetGridContainer.specialSizeMeasurements.rowGap
+          const columnGap = targetGridContainer.specialSizeMeasurements.columnGap
+          const padding = targetGridContainer.specialSizeMeasurements.padding
 
-        const columns = getCellsCount(
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
-        )
-        const rows = getCellsCount(
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
-        )
+          const gridTemplateColumns =
+            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
+          const gridTemplateRows =
+            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows
+          const gridTemplateColumnsFromProps =
+            targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
+              .gridTemplateColumns
+          const gridTemplateRowsFromProps =
+            targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
+              .gridTemplateRows
 
-        return {
-          elementPath: targetGridContainer.elementPath,
-          frame: targetGridContainer.globalFrame,
-          gridTemplateColumns: gridTemplateColumns,
-          gridTemplateRows: gridTemplateRows,
-          gridTemplateColumnsFromProps: gridTemplateColumnsFromProps,
-          gridTemplateRowsFromProps: gridTemplateRowsFromProps,
-          gap: gap,
-          rowGap: rowGap,
-          columnGap: columnGap,
-          padding: padding,
-          rows: rows,
-          columns: columns,
-          cells: rows * columns,
-        }
-      }, store.editor.selectedViews)
+          const columns = getCellsCount(
+            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
+          )
+          const rows = getCellsCount(
+            targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
+          )
+
+          return {
+            elementPath: targetGridContainer.elementPath,
+            frame: targetGridContainer.globalFrame,
+            gridTemplateColumns: gridTemplateColumns,
+            gridTemplateRows: gridTemplateRows,
+            gridTemplateColumnsFromProps: gridTemplateColumnsFromProps,
+            gridTemplateRowsFromProps: gridTemplateRowsFromProps,
+            gap: gap,
+            rowGap: rowGap,
+            columnGap: columnGap,
+            padding: padding,
+            rows: rows,
+            columns: columns,
+            cells: rows * columns,
+          }
+        },
+        [...store.editor.selectedViews, ...hoveredGrids],
+      )
     },
     'GridControls grids',
   )
@@ -506,13 +522,13 @@ export const GridControls = controlForStrategyMemoized(() => {
           column:
             columnFromProps == null
               ? countedColumn
-              : columnFromProps === 'auto'
+              : isCSSKeyword(columnFromProps)
               ? countedColumn
               : columnFromProps.numericalPosition ?? countedColumn,
           row:
             rowFromProps == null
               ? countedRow
-              : rowFromProps === 'auto'
+              : isCSSKeyword(rowFromProps)
               ? countedRow
               : rowFromProps.numericalPosition ?? countedRow,
           index: index,
@@ -648,35 +664,47 @@ export const GridControls = controlForStrategyMemoized(() => {
         {/* grid lines */}
         {grids.map((grid) => {
           const placeholders = Array.from(Array(grid.cells).keys())
+          let style: CSSProperties = {
+            position: 'absolute',
+            top: grid.frame.y - 1, // account for border!
+            left: grid.frame.x - 1, // account for border!
+            width: grid.frame.width,
+            height: grid.frame.height,
+            display: 'grid',
+            gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
+            gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
+            backgroundColor:
+              activelyDraggingOrResizingCell != null
+                ? features.Grid.activeGridBackground
+                : 'transparent',
+            border: `1px solid ${
+              activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
+            }`,
+            padding:
+              grid.padding == null
+                ? 0
+                : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
+          }
+
+          // Gap needs to be set only if the other two are not present or we'll have rendering issues
+          // due to how measurements are calculated.
+          if (grid.rowGap != null && grid.columnGap != null) {
+            style.rowGap = grid.rowGap
+            style.columnGap = grid.columnGap
+          } else {
+            if (grid.gap != null) {
+              style.gap = grid.gap
+            }
+            if (grid.rowGap != null) {
+              style.rowGap = grid.rowGap
+            }
+            if (grid.columnGap != null) {
+              style.columnGap = grid.columnGap
+            }
+          }
 
           return (
-            <div
-              key={`grid-${EP.toString(grid.elementPath)}`}
-              style={{
-                position: 'absolute',
-                top: grid.frame.y,
-                left: grid.frame.x,
-                width: grid.frame.width,
-                height: grid.frame.height,
-                display: 'grid',
-                gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
-                gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
-                backgroundColor:
-                  activelyDraggingOrResizingCell != null
-                    ? colorTheme.primary10.value
-                    : 'transparent',
-                border: `1px solid ${
-                  activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
-                }`,
-                gap: grid.gap ?? 0,
-                rowGap: grid.rowGap ?? 0,
-                columnGap: grid.columnGap ?? 0,
-                padding:
-                  grid.padding == null
-                    ? 0
-                    : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
-              }}
-            >
+            <div key={`grid-${EP.toString(grid.elementPath)}`} style={style}>
               {placeholders.map((cell) => {
                 const countedRow = Math.floor(cell / grid.columns) + 1
                 const countedColumn = Math.floor(cell % grid.columns) + 1
@@ -696,7 +724,17 @@ export const GridControls = controlForStrategyMemoized(() => {
                     id={id}
                     data-testid={id}
                     style={{
-                      border: `1px solid ${borderColor}`,
+                      borderTop: `1px solid ${borderColor}`,
+                      borderLeft: `1px solid ${borderColor}`,
+                      borderBottom:
+                        countedRow >= grid.rows || (grid.rowGap != null && grid.rowGap > 0)
+                          ? `1px solid ${borderColor}`
+                          : undefined,
+                      borderRight:
+                        countedColumn >= grid.columns ||
+                        (grid.columnGap != null && grid.columnGap > 0)
+                          ? `1px solid ${borderColor}`
+                          : undefined,
                       position: 'relative',
                     }}
                     data-grid-row={countedRow}

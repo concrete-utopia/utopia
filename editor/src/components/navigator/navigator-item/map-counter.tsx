@@ -6,8 +6,8 @@ import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import {
   findUtopiaCommentFlag,
-  isUtopiaCommentFlagMapCount,
-} from '../../../core/shared/comment-flags'
+  isUtopiaPropOrCommentFlagMapCount,
+} from '../../../core/shared/utopia-flags'
 import { isRight } from '../../../core/shared/either'
 import { isJSXMapExpression } from '../../../core/shared/element-template'
 import { assertNever } from '../../../core/shared/utils'
@@ -53,7 +53,9 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
       }
 
       const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
-      const mapCountOverride = isUtopiaCommentFlagMapCount(commentFlag) ? commentFlag.value : null
+      const mapCountOverride = isUtopiaPropOrCommentFlagMapCount(commentFlag)
+        ? commentFlag.value
+        : null
       return {
         nrChildren: MetadataUtils.getChildrenOrdered(
           store.editor.jsxMetadata,

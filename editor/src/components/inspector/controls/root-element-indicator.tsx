@@ -8,6 +8,7 @@ export const RootElementIndicator = () => {
         justifyContent: 'center',
         alignItems: 'center',
         background: colorTheme.inspectorBackground.value,
+        height: 34,
       }}
     >
       <div

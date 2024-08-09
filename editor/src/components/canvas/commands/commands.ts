@@ -47,8 +47,8 @@ import type { DeleteProperties } from './delete-properties-command'
 import { runDeleteProperties } from './delete-properties-command'
 import type { AddImportsToFile } from './add-imports-to-file-command'
 import { runAddImportsToFile } from './add-imports-to-file-command'
-import type { SetProperty } from './set-property-command'
-import { runSetProperty } from './set-property-command'
+import type { UpdateBulkProperties, SetProperty } from './set-property-command'
+import { runBulkUpdateProperties, runSetProperty } from './set-property-command'
 import type { AddToReparentedToPaths } from './add-to-reparented-to-paths-command'
 import { runAddToReparentedToPaths } from './add-to-reparented-to-paths-command'
 import type { InsertElementInsertionSubject } from './insert-element-insertion-subject'
@@ -86,6 +86,10 @@ import { runPushIntendedBoundsAndUpdateGroups } from './push-intended-bounds-and
 import type { PushIntendedBoundsAndUpdateHuggingElements } from './push-intended-bounds-and-update-hugging-elements-command'
 import { runPushIntendedBoundsAndUpdateHuggingElements } from './push-intended-bounds-and-update-hugging-elements-command'
 import { runSetActiveFrames, type SetActiveFrames } from './set-active-frames-command'
+import {
+  runShowGridControlsCommand,
+  type ShowGridControlsCommand,
+} from './show-grid-controls-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -139,6 +143,8 @@ export type CanvasCommand =
   | WrapInContainerCommand
   | QueueTrueUpElement
   | SetActiveFrames
+  | UpdateBulkProperties
+  | ShowGridControlsCommand
 
 export function runCanvasCommand(
   editorState: EditorState,
@@ -191,6 +197,8 @@ export function runCanvasCommand(
       return runDeleteProperties(editorState, command)
     case 'SET_PROPERTY':
       return runSetProperty(editorState, command)
+    case 'UPDATE_BULK_PROPERTIES':
+      return runBulkUpdateProperties(editorState, command)
     case 'UPDATE_PROP_IF_EXISTS':
       return runUpdatePropIfExists(editorState, command)
     case 'ADD_IMPORTS_TO_FILE':
@@ -223,6 +231,8 @@ export function runCanvasCommand(
       return runQueueTrueUpElement(editorState, command)
     case 'SET_ACTIVE_FRAMES':
       return runSetActiveFrames(editorState, command)
+    case 'SHOW_GRID_CONTROLS':
+      return runShowGridControlsCommand(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

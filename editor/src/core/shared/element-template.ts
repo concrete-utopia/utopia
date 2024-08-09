@@ -22,10 +22,11 @@ import { assertNever, fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { objectMap } from './object-utils'
 import type {
-  CSSNumber,
+  CSSKeyword,
   CSSPosition,
   FlexDirection,
-  GridCSSNumber,
+  GridAutoFlow,
+  GridDimension,
 } from '../../components/inspector/common/css-utils'
 import type { ModifiableAttribute } from './jsx-attributes'
 import * as EP from './element-path'
@@ -34,7 +35,7 @@ import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
 import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
-import { allComments } from './comment-flags'
+import { allComments } from './utopia-flags'
 import type { Optic } from './optics/optics'
 import { fromField } from './optics/optic-creators'
 import { jsxSimpleAttributeToValue } from './jsx-attribute-utils'
@@ -2559,6 +2560,19 @@ export function elementInstanceMetadata(
   }
 }
 
+export function metadataHasPositionAbsoluteOrNull(
+  metadata: ElementInstanceMetadata | null | undefined,
+): boolean {
+  if (metadata == null) {
+    return false
+  } else {
+    return (
+      metadata.specialSizeMeasurements.position === 'absolute' ||
+      metadata.specialSizeMeasurements.position === null
+    )
+  }
+}
+
 export type SettableLayoutSystem = 'flex' | 'flow' | 'grid' | LayoutSystem
 
 export interface GridPositionValue {
@@ -2571,7 +2585,23 @@ export function gridPositionValue(numericalPosition: number | null): GridPositio
   }
 }
 
-export type GridPosition = GridPositionValue | 'auto'
+export const validGridPositionKeywords = ['auto']
+
+export type ValidGridPositionKeyword = string // using <string> because valid keywords are also area names we cannot know in advance
+
+export type GridPosition = GridPositionValue | CSSKeyword<ValidGridPositionKeyword>
+
+export const isValidGridPositionKeyword =
+  (labels: string[]) =>
+  (u: unknown): u is ValidGridPositionKeyword => {
+    if (u == null || typeof u !== 'string') {
+      return false
+    }
+    if (validGridPositionKeywords.includes(u)) {
+      return true
+    }
+    return labels.includes(u)
+  }
 
 export interface GridRange {
   start: GridPosition
@@ -2604,11 +2634,11 @@ export function gridAutoOrTemplateFallback(value: string): GridAutoOrTemplateFal
 
 export interface GridAutoOrTemplateDimensions {
   type: 'DIMENSIONS'
-  dimensions: Array<GridCSSNumber>
+  dimensions: Array<GridDimension>
 }
 
 export function gridAutoOrTemplateDimensions(
-  dimensions: Array<GridCSSNumber>,
+  dimensions: Array<GridDimension>,
 ): GridAutoOrTemplateDimensions {
   return {
     type: 'DIMENSIONS',
@@ -2637,6 +2667,7 @@ export interface GridContainerProperties {
   gridTemplateRows: GridTemplateRows | null
   gridAutoColumns: GridAutoColumns | null
   gridAutoRows: GridAutoRows | null
+  gridAutoFlow: GridAutoFlow | null
 }
 
 export function gridContainerProperties(
@@ -2644,12 +2675,14 @@ export function gridContainerProperties(
   gridTemplateRows: GridTemplateRows | null,
   gridAutoColumns: GridAutoColumns | null,
   gridAutoRows: GridAutoRows | null,
+  gridAutoFlow: GridAutoFlow | null,
 ): GridContainerProperties {
   return {
     gridTemplateColumns: gridTemplateColumns,
     gridTemplateRows: gridTemplateRows,
     gridAutoColumns: gridAutoColumns,
     gridAutoRows: gridAutoRows,
+    gridAutoFlow: gridAutoFlow,
   }
 }
 
@@ -2839,7 +2872,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   false,
   'initial',
-  'static',
+  null,
   sides(undefined, undefined, undefined, undefined),
   sides(undefined, undefined, undefined, undefined),
   null,
@@ -2874,6 +2907,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     gridTemplateRows: null,
     gridAutoColumns: null,
     gridAutoRows: null,
+    gridAutoFlow: null,
   },
   {
     gridColumnStart: null,
@@ -2886,6 +2920,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     gridTemplateRows: null,
     gridAutoColumns: null,
     gridAutoRows: null,
+    gridAutoFlow: null,
   },
   {
     gridColumnStart: null,

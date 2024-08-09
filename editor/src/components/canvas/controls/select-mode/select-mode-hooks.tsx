@@ -27,10 +27,11 @@ import {
   clearHoveredViews,
 } from '../../../editor/actions/action-creators'
 import { cancelInsertModeActions } from '../../../editor/actions/meta-actions'
-import type {
-  EditorState,
-  EditorStorePatched,
-  LockedElements,
+import {
+  getAllFocusedPaths,
+  type EditorState,
+  type EditorStorePatched,
+  type LockedElements,
 } from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
@@ -58,14 +59,15 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { useSetAtom } from 'jotai'
 import type { CanvasControlWithProps } from '../../../inspector/common/inspector-atoms'
-import { InspectorHoveredCanvasControls } from '../../../inspector/common/inspector-atoms'
+import {
+  InspectorFocusedCanvasControls,
+  InspectorHoveredCanvasControls,
+} from '../../../inspector/common/inspector-atoms'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { getAllLockedElementPaths } from '../../../../core/shared/element-locking'
 import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
 import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks'
 import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
-
-const DRAG_START_THRESHOLD = 2
 
 export function isDragInteractionActive(editorState: EditorState): boolean {
   return editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
@@ -303,7 +305,7 @@ function getCandidateSelectableViews(
 export function useFindValidTarget(): (
   selectableViews: Array<ElementPath>,
   mousePoint: WindowPoint | null,
-  preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
+  preferAlreadySelected: 'prefer-selected' | 'prefer-more-specific-selection',
 ) => {
   elementPath: ElementPath
   isSelected: boolean
@@ -315,9 +317,13 @@ export function useFindValidTarget(): (
       hiddenInstances: store.editor.hiddenInstances,
       canvasScale: store.editor.canvas.scale,
       canvasOffset: store.editor.canvas.realCanvasOffset,
-      focusedElementPath: store.editor.focusedElementPath,
       elementPathTree: store.editor.elementPathTree,
       allElementProps: store.editor.allElementProps,
+      lockedElements: store.editor.lockedElements,
+      focusedPaths: getAllFocusedPaths(
+        store.editor.focusedElementPath,
+        store.derived.autoFocusedPaths,
+      ),
     }
   })
 
@@ -325,7 +331,7 @@ export function useFindValidTarget(): (
     (
       selectableViews: Array<ElementPath>,
       mousePoint: WindowPoint | null,
-      preferAlreadySelected: 'prefer-selected' | 'dont-prefer-selected',
+      preferAlreadySelected: 'prefer-selected' | 'prefer-more-specific-selection',
     ) => {
       const {
         selectedViews,
@@ -335,27 +341,52 @@ export function useFindValidTarget(): (
         canvasOffset,
         elementPathTree,
         allElementProps,
+        lockedElements,
+        focusedPaths,
       } = storeRef.current
-      const validElementMouseOver: ElementPath | null =
-        preferAlreadySelected === 'prefer-selected'
-          ? getSelectionOrValidTargetAtPoint(
-              componentMetadata,
-              selectedViews,
-              hiddenInstances,
-              selectableViews,
-              mousePoint,
-              canvasScale,
-              canvasOffset,
-              elementPathTree,
-              allElementProps,
-            )
-          : getValidTargetAtPoint(
-              selectableViews,
-              mousePoint,
-              canvasScale,
-              canvasOffset,
-              componentMetadata,
-            )
+      const validElementMouseOver: ElementPath | null = (() => {
+        if (preferAlreadySelected === 'prefer-selected') {
+          return getSelectionOrValidTargetAtPoint(
+            componentMetadata,
+            selectedViews,
+            hiddenInstances,
+            selectableViews,
+            mousePoint,
+            canvasScale,
+            canvasOffset,
+            elementPathTree,
+            allElementProps,
+            lockedElements,
+            focusedPaths,
+          )
+        }
+        const newSelection = getValidTargetAtPoint(
+          selectableViews,
+          mousePoint,
+          canvasScale,
+          canvasOffset,
+          componentMetadata,
+          lockedElements,
+          focusedPaths,
+        )
+        if (newSelection != null) {
+          return newSelection
+        }
+        return getSelectionOrValidTargetAtPoint(
+          componentMetadata,
+          selectedViews,
+          hiddenInstances,
+          selectableViews,
+          mousePoint,
+          canvasScale,
+          canvasOffset,
+          elementPathTree,
+          allElementProps,
+          lockedElements,
+          focusedPaths,
+        )
+      })()
+
       const validElementPath: ElementPath | null =
         validElementMouseOver != null ? validElementMouseOver : null
       if (validElementPath != null) {
@@ -452,7 +483,11 @@ export function useCalculateHighlightedViews(
   return React.useCallback(
     (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
       const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
-      const validElementPath = findValidTarget(selectableViews, targetPoint, 'dont-prefer-selected')
+      const validElementPath = findValidTarget(
+        selectableViews,
+        targetPoint,
+        'prefer-more-specific-selection',
+      )
       const validElementPathForHover = findValidTarget(
         selectableViews,
         targetPoint,
@@ -528,14 +563,15 @@ export function useHighlightCallbacks(
 function getPreferredSelectionForEvent(
   eventType: 'mousedown' | 'mouseup' | string,
   isDoubleClick: boolean,
-): 'prefer-selected' | 'dont-prefer-selected' {
+  cmdModifier: boolean,
+): 'prefer-selected' | 'prefer-more-specific-selection' {
   // mousedown keeps selection on a single click to allow dragging overlapping elements and selection happens on mouseup
   // with continuous clicking mousedown should select
   switch (eventType) {
     case 'mousedown':
-      return isDoubleClick ? 'dont-prefer-selected' : 'prefer-selected'
+      return isDoubleClick || cmdModifier ? 'prefer-more-specific-selection' : 'prefer-selected'
     case 'mouseup':
-      return isDoubleClick ? 'prefer-selected' : 'dont-prefer-selected'
+      return isDoubleClick ? 'prefer-selected' : 'prefer-more-specific-selection'
     default:
       return 'prefer-selected'
   }
@@ -561,6 +597,7 @@ function useSelectOrLiveModeSelectAndHover(
   )
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
   const interactionSessionHappened = React.useRef(false)
+  const draggedOverThreshold = React.useRef(false)
   const didWeHandleMouseDown = React.useRef(false) //  this is here to avoid selecting when closing text editing
 
   const { onMouseMove: innerOnMouseMove } = useHighlightCallbacks(
@@ -582,6 +619,14 @@ function useSelectOrLiveModeSelectAndHover(
           editorStoreRef.current.editor.canvas.interactionSession,
           editorStoreRef.current.editor.keysPressed['space'],
         ) || event.buttons === 4
+
+      const draggingOverThreshold =
+        editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.type === 'DRAG'
+          ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.drag != null
+          : false
+
+      draggedOverThreshold.current = draggedOverThreshold.current || draggingOverThreshold
+
       if (isDragIntention) {
         return
       }
@@ -601,20 +646,23 @@ function useSelectOrLiveModeSelectAndHover(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const isLeftClick = event.button === 0
       const isRightClick = event.type === 'contextmenu' && event.detail === 0
-      const isDragIntention =
+      const isCanvasPanIntention =
         editorStoreRef.current.editor.keysPressed['space'] || event.button === 1
-      const hasInteractionSessionWithMouseMoved =
+
+      const draggingOverThreshold =
         editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.type === 'DRAG'
           ? editorStoreRef.current.editor.canvas.interactionSession?.interactionData?.drag != null
           : false
+
       const hasInteractionSession = editorStoreRef.current.editor.canvas.interactionSession != null
       const hadInteractionSessionThatWasCancelled =
         interactionSessionHappened.current && !hasInteractionSession
 
       const activeControl = editorStoreRef.current.editor.canvas.interactionSession?.activeControl
+
       const mouseUpSelectionAllowed =
         didWeHandleMouseDown.current &&
-        !hadInteractionSessionThatWasCancelled &&
+        (!hadInteractionSessionThatWasCancelled || !draggedOverThreshold.current) &&
         (activeControl == null || activeControl.type === 'BOUNDING_AREA')
 
       if (event.type === 'mousedown') {
@@ -625,6 +673,7 @@ function useSelectOrLiveModeSelectAndHover(
         interactionSessionHappened.current = false
         // didWeHandleMouseDown is used to avoid selecting when closing text editing
         didWeHandleMouseDown.current = false
+        draggedOverThreshold.current = false
 
         if (!mouseUpSelectionAllowed) {
           // We should skip this mouseup
@@ -633,8 +682,8 @@ function useSelectOrLiveModeSelectAndHover(
       }
 
       if (
-        isDragIntention ||
-        hasInteractionSessionWithMouseMoved ||
+        isCanvasPanIntention ||
+        draggingOverThreshold ||
         !active ||
         !(isLeftClick || isRightClick)
       ) {
@@ -643,8 +692,13 @@ function useSelectOrLiveModeSelectAndHover(
       }
 
       const doubleClick = event.type === 'mousedown' && event.detail > 0 && event.detail % 2 === 0
+      const cmdMouseDown = event.type === 'mousedown' && event.metaKey
       const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
-      const preferAlreadySelected = getPreferredSelectionForEvent(event.type, doubleClick)
+      const preferAlreadySelected = getPreferredSelectionForEvent(
+        event.type,
+        doubleClick,
+        event.metaKey,
+      )
       const foundTarget = findValidTarget(
         selectableViews,
         windowPoint(point(event.clientX, event.clientY)),
@@ -658,7 +712,7 @@ function useSelectOrLiveModeSelectAndHover(
       if (foundTarget != null || isDeselect) {
         if (
           event.button !== 2 &&
-          event.type !== 'mouseup' &&
+          (event.type !== 'mouseup' || cmdMouseDown) &&
           foundTarget != null &&
           draggingAllowed &&
           // grid has its own drag handling
@@ -883,6 +937,24 @@ export function useSetHoveredControlsHandlers<T>(): {
   )
 
   return { onMouseEnter, onMouseLeave }
+}
+
+export function useSetFocusedControlsHandlers<T>(): {
+  onFocus: (controls: Array<CanvasControlWithProps<T>>) => void
+  onBlur: () => void
+} {
+  const setFocusedCanvasControls = useSetAtom(InspectorFocusedCanvasControls)
+
+  const onFocus = React.useCallback(
+    (controls: Array<CanvasControlWithProps<T>>) => {
+      setFocusedCanvasControls(controls)
+    },
+    [setFocusedCanvasControls],
+  )
+
+  const onBlur = React.useCallback(() => setFocusedCanvasControls([]), [setFocusedCanvasControls])
+
+  return { onFocus, onBlur }
 }
 
 function isMouseInteractionSession(interactionSession: InteractionSession): boolean {

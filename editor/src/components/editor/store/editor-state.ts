@@ -821,6 +821,7 @@ export interface EditorStateCanvasControls {
   reparentedToPaths: Array<ElementPath>
   dragToMoveIndicatorFlags: DragToMoveIndicatorFlags
   parentOutlineHighlight: ElementPath | null
+  gridControls: ElementPath | null
 }
 
 export function editorStateCanvasControls(
@@ -832,6 +833,7 @@ export function editorStateCanvasControls(
   reparentedToPaths: Array<ElementPath>,
   dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags,
   parentOutlineHighlight: ElementPath | null,
+  gridControls: ElementPath | null,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
@@ -842,6 +844,7 @@ export function editorStateCanvasControls(
     reparentedToPaths: reparentedToPaths,
     dragToMoveIndicatorFlags: dragToMoveIndicatorFlagsValue,
     parentOutlineHighlight: parentOutlineHighlight,
+    gridControls: gridControls,
   }
 }
 
@@ -2626,6 +2629,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
+        gridControls: null,
       },
     },
     inspector: {
@@ -3000,6 +3004,7 @@ export function editorModelFromPersistentModel(
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
+        gridControls: null,
       },
     },
     inspector: {
@@ -3496,12 +3501,12 @@ export function getElementPathsInBounds(
   }
 }
 
-export function modifyParseSuccessAtPath(
+export function modifyParseSuccessAtPath<E extends { projectContents: ProjectContentTreeRoot }>(
   filePath: string,
-  editor: EditorState,
+  editor: E,
   modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess,
   throwForErrors: boolean = true,
-): EditorState {
+): E {
   const projectFile = getProjectFileByFilePath(editor.projectContents, filePath)
   if (projectFile != null && isTextFile(projectFile)) {
     const parsedFileContents = projectFile.fileContents.parsed
@@ -3838,4 +3843,11 @@ export function getNewSceneName(editor: EditorState): string {
 
   // Fallback.
   return 'New Scene'
+}
+
+export function getAllFocusedPaths(
+  focusedElementPath: ElementPath | null,
+  autoFocusedPaths: Array<ElementPath>,
+): Array<ElementPath> {
+  return focusedElementPath != null ? [focusedElementPath, ...autoFocusedPaths] : autoFocusedPaths
 }

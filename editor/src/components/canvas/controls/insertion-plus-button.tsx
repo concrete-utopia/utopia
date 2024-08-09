@@ -17,6 +17,7 @@ import {
   siblingAndPseudoPositions,
 } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
+import { interactionSessionIsActive } from '../canvas-strategies/interaction-state'
 
 export const InsertionButtonOffset = 10
 
@@ -36,8 +37,8 @@ export const InsertionControls: React.FunctionComponent = React.memo(
   (): React.ReactElement | null => {
     const isInteractionActive = useEditorState(
       Substores.canvas,
-      (store) => store.editor.canvas.interactionSession != null,
-      'DistanceGuidelineControl isInteractionActive',
+      (store) => interactionSessionIsActive(store.editor.canvas.interactionSession),
+      'InsertionControls isInteractionActive',
     )
     const selectedViews = useEditorState(
       Substores.selectedViews,

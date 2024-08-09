@@ -17,6 +17,7 @@ interface Connection {
 
 function connectDevToolsExtension(): Connection | null {
   if (
+    typeof window !== 'undefined' &&
     window != null &&
     (window as any).__REDUX_DEVTOOLS_EXTENSION__ != null &&
     (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect != null

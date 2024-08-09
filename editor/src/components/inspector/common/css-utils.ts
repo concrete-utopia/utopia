@@ -88,6 +88,7 @@ import type { ParseError } from '../../../utils/value-parser-utils'
 import { descriptionParseError } from '../../../utils/value-parser-utils'
 import * as csstree from 'css-tree'
 import { expandCssTreeNodeValue, parseCssTreeNodeValue } from './css-tree-utils'
+import type { IcnProps } from '../../../uuiui'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -586,22 +587,54 @@ export interface CSSNumber {
 export type GridCSSNumberUnit = LengthUnit | ResolutionUnit | PercentUnit | 'fr'
 const GridCSSNumberUnits: Array<GridCSSNumberUnit> = [...LengthUnits, ...ResolutionUnits, '%', 'fr']
 
-export interface GridCSSNumber {
-  value: number
-  unit: GridCSSNumberUnit | null
+type BaseGridDimension = {
   areaName: string | null
 }
 
-export function gridCSSNumber(
-  value: number,
-  unit: GridCSSNumberUnit | null,
+export type GridCSSNumber = BaseGridDimension & {
+  type: 'NUMBER'
+  value: CSSNumber
+}
+
+export type GridCSSKeyword = BaseGridDimension & {
+  type: 'KEYWORD'
+  value: CSSKeyword<ValidGridDimensionKeyword>
+}
+
+export function isGridCSSKeyword(dim: GridDimension): dim is GridCSSKeyword {
+  return dim.type === 'KEYWORD'
+}
+
+export function gridCSSKeyword(
+  value: CSSKeyword<ValidGridDimensionKeyword>,
   areaName: string | null,
-): GridCSSNumber {
+): GridCSSKeyword {
   return {
+    type: 'KEYWORD',
     value: value,
-    unit: unit,
     areaName: areaName,
   }
+}
+
+export function isGridCSSNumber(dim: GridDimension): dim is GridCSSNumber {
+  return dim.type === 'NUMBER'
+}
+
+export function gridCSSNumber(value: CSSNumber, areaName: string | null): GridCSSNumber {
+  return {
+    type: 'NUMBER',
+    value: value,
+    areaName: areaName,
+  }
+}
+
+export type GridDimension = GridCSSNumber | GridCSSKeyword
+
+export function printGridCSSNumber(dim: GridDimension): string {
+  if (isGridCSSNumber(dim)) {
+    return `${dim.value.value}${dim.value.unit ?? ''}`
+  }
+  return dim.value.value
 }
 
 export function cssNumber(value: number, unit: CSSNumberUnit | null = null): CSSNumber {
@@ -739,7 +772,7 @@ function parseCSSNumericTypeString(
     return flatMapEither((value) => {
       const maybeUnit = matches[2]
       if (maybeUnit == null || maybeUnit === '') {
-        return right({ value, unit: defaultUnit })
+        return right({ value: value, unit: defaultUnit })
       } else {
         const parsedUnit = parseUnit(maybeUnit)
         return mapEither((unit) => cssNumber(value, unit), parsedUnit)
@@ -764,10 +797,13 @@ export function printCSSNumber(
   }
 }
 
-export function printArrayCSSNumber(array: Array<GridCSSNumber>): string {
+export function printArrayGridDimension(array: Array<GridDimension>): string {
   return array
     .map((dimension) => {
-      const printed = printCSSNumber(dimension, null)
+      if (isGridCSSKeyword(dimension)) {
+        return dimension.value.value
+      }
+      const printed = printCSSNumber(dimension.value, null)
       const areaName = dimension.areaName != null ? `[${dimension.areaName}] ` : ''
       return `${areaName}${printed}`
     })
@@ -777,7 +813,7 @@ export function printArrayCSSNumber(array: Array<GridCSSNumber>): string {
 export function printGridAutoOrTemplateBase(input: GridAutoOrTemplateBase): string {
   switch (input.type) {
     case 'DIMENSIONS':
-      return printArrayCSSNumber(input.dimensions)
+      return printArrayGridDimension(input.dimensions)
     case 'FALLBACK':
       return input.value
     default:
@@ -831,7 +867,16 @@ export const parseCSSTimePercent = (input: unknown) => parseCSSNumber(input, 'Ti
 export const parseCSSUnitless = (input: unknown) => parseCSSNumber(input, 'Unitless')
 export const parseCSSUnitlessPercent = (input: unknown) => parseCSSNumber(input, 'UnitlessPercent')
 export const parseCSSAnyValidNumber = (input: unknown) => parseCSSNumber(input, 'AnyValid')
-export const parseCSSGrid = (input: unknown) => parseCSSNumber(input, 'Grid')
+export const parseCSSGrid = (input: unknown): Either<string, GridDimension> => {
+  const maybeNumber = parseCSSNumber(input, 'Grid')
+  if (isRight(maybeNumber)) {
+    return right(gridCSSNumber(maybeNumber.value, null))
+  }
+  if (isValidGridDimensionKeyword(input)) {
+    return right(gridCSSKeyword(cssKeyword(input), null))
+  }
+  return left('invalid css grid dimension')
+}
 export const parseCSSUnitlessAsNumber = (input: unknown): Either<string, number> => {
   const parsed = parseCSSNumber(input, 'Unitless')
   if (isRight(parsed)) {
@@ -841,9 +886,29 @@ export const parseCSSUnitlessAsNumber = (input: unknown): Either<string, number>
   }
 }
 
+const validGridDimensionKeywords = [
+  'auto',
+  'min-content',
+  'max-content',
+  'none',
+  'inherit',
+  'initial',
+  'unset',
+  'subgrid',
+  'auto-fit',
+  'auto-fill',
+  // NOTE: function keywords are omitted as they are treated separately
+] as const
+
+export type ValidGridDimensionKeyword = (typeof validGridDimensionKeywords)[number]
+
+export function isValidGridDimensionKeyword(value: unknown): value is ValidGridDimensionKeyword {
+  return validGridDimensionKeywords.includes(value as ValidGridDimensionKeyword)
+}
+
 const gridCSSTemplateNumberRegex = /^\[(.+)\]\s*(.+)$/
 
-export function parseToCSSGridNumber(input: unknown): Either<string, GridCSSNumber> {
+export function parseToCSSGridDimension(input: unknown): Either<string, GridDimension> {
   function getParts() {
     if (typeof input === 'string') {
       const match = input.match(gridCSSTemplateNumberRegex)
@@ -860,8 +925,7 @@ export function parseToCSSGridNumber(input: unknown): Either<string, GridCSSNumb
 
   return mapEither((value) => {
     return {
-      value: value.value,
-      unit: value.unit as GridCSSNumberUnit | null,
+      ...value,
       areaName: areaName,
     }
   }, parseCSSGrid(inputToParse))
@@ -890,7 +954,7 @@ export function parseGridPosition(
   input: unknown,
 ): Either<string, GridPosition> {
   if (input === 'auto') {
-    return right('auto')
+    return right(cssKeyword('auto'))
   } else if (typeof input === 'string') {
     const referenceTemplate =
       axis === 'row' ? container.gridTemplateRows : container.gridTemplateColumns
@@ -901,7 +965,7 @@ export function parseGridPosition(
         if (
           edge === 'end' &&
           shorthand != null &&
-          shorthand !== 'auto' &&
+          !isCSSKeyword(shorthand) &&
           shorthand.numericalPosition === value.numericalPosition
         ) {
           value.numericalPosition = (value.numericalPosition ?? 0) + 1
@@ -919,6 +983,43 @@ export function parseGridPosition(
   }
 }
 
+export const GridAutoFlowValues = ['column', 'column dense', 'row', 'row dense', 'dense'] as const
+export type GridAutoFlow = (typeof GridAutoFlowValues)[number]
+
+export function gridAutoFlowIcon(value: GridAutoFlow): IcnProps {
+  switch (value) {
+    case 'column':
+    case 'column dense':
+      return {
+        category: 'inspector-element',
+        type: 'arrowDown',
+        color: 'black',
+        width: 16,
+        height: 16,
+      }
+    case 'dense':
+    case 'row':
+    case 'row dense':
+      return {
+        category: 'inspector-element',
+        type: 'arrowRight',
+        color: 'black',
+        width: 16,
+        height: 16,
+      }
+    default:
+      assertNever(value)
+  }
+}
+
+export function parseGridAutoFlow(rawValue: string): GridAutoFlow | null {
+  if (GridAutoFlowValues.some((v) => v === rawValue)) {
+    return rawValue as GridAutoFlow
+  }
+
+  return null
+}
+
 export function parseGridRange(
   container: GridContainerProperties,
   axis: 'row' | 'column',
@@ -934,7 +1035,7 @@ export function parseGridRange(
       const startParsed = parseGridPosition(container, axis, 'start', null, input)
       return mapEither((start) => {
         const end =
-          start !== 'auto' && start.numericalPosition != null
+          !isCSSKeyword(start) && start.numericalPosition != null
             ? gridPositionValue(start.numericalPosition + 1)
             : null
         return gridRange(start, end)
@@ -987,12 +1088,12 @@ export function tokenizeGridTemplate(template: string): string[] {
 export function parseGridAutoOrTemplateBase(
   input: unknown,
 ): Either<string, GridAutoOrTemplateBase> {
-  function numberParse(inputToParse: unknown): Either<ParseError, GridCSSNumber> {
-    const result = parseToCSSGridNumber(inputToParse)
-    return leftMapEither<string, ParseError, GridCSSNumber>(descriptionParseError, result)
+  function numberOrKeywordParse(inputToParse: unknown): Either<ParseError, GridDimension> {
+    const result = parseToCSSGridDimension(inputToParse)
+    return leftMapEither<string, ParseError, GridDimension>(descriptionParseError, result)
   }
   if (typeof input === 'string') {
-    const parsedCSSArray = parseCSSArray([numberParse])(tokenizeGridTemplate(input))
+    const parsedCSSArray = parseCSSArray([numberOrKeywordParse])(tokenizeGridTemplate(input))
     return bimapEither(
       (error) => {
         if (error.type === 'DESCRIPTION_PARSE_ERROR') {
@@ -4412,6 +4513,9 @@ export interface ParsedCSSProperties {
   flexBasis: CSSNumber | undefined
   gap: CSSNumber
   zIndex: CSSNumber | undefined
+  rowGap: CSSNumber
+  columnGap: CSSNumber
+  gridAutoFlow: GridAutoFlow | null
 }
 
 export type ParsedCSSPropertiesKeys = keyof ParsedCSSProperties
@@ -4618,6 +4722,15 @@ export const cssEmptyValues: ParsedCSSProperties = {
     unit: null,
   },
   zIndex: undefined,
+  rowGap: {
+    value: 0,
+    unit: null,
+  },
+  columnGap: {
+    value: 0,
+    unit: null,
+  },
+  gridAutoFlow: null,
 }
 
 type CSSParsers = {
@@ -4690,6 +4803,9 @@ export const cssParsers: CSSParsers = {
   height: parseCSSLengthPercent,
   flexBasis: parseCSSLengthPercent,
   zIndex: parseCSSUnitless,
+  rowGap: parseCSSLengthPercent,
+  columnGap: parseCSSLengthPercent,
+  gridAutoFlow: parseGridAutoFlowValue,
 }
 
 type CSSPrinters = {
@@ -4764,6 +4880,9 @@ const cssPrinters: CSSPrinters = {
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
   gap: printCSSNumberAsAttributeValue('px'),
   zIndex: printCSSNumberUnitlessOrUndefinedAsAttributeValue,
+  rowGap: printCSSNumberAsAttributeValue('px'),
+  columnGap: printCSSNumberAsAttributeValue('px'),
+  gridAutoFlow: jsxAttributeValueWithNoComments,
 }
 
 export interface UtopianElementProperties {
@@ -5199,6 +5318,14 @@ export function parseAnyParseableValue<K extends keyof ParsedProperties>(
   }
 }
 
+function parseGridAutoFlowValue(value: unknown): Either<string, GridAutoFlow> {
+  const maybeParsedValue = typeof value !== 'string' ? null : parseGridAutoFlow(value)
+  if (maybeParsedValue == null) {
+    return left(`${value} is not a valid grid-auto-flow value`)
+  }
+  return right(maybeParsedValue)
+}
+
 // hmmmm
 type PrintedValue = JSExpression
 
@@ -5478,6 +5605,15 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
     unit: 'px',
   },
   zIndex: undefined,
+  rowGap: {
+    value: 0,
+    unit: 'px',
+  },
+  columnGap: {
+    value: 0,
+    unit: 'px',
+  },
+  gridAutoFlow: null,
 }
 
 export function isTrivialDefaultValue(

@@ -18,6 +18,7 @@ import type {
 } from './controls/select-mode/controls-common'
 import {
   cssNumberWithRenderedValue,
+  fallbackEmptyValue,
   offsetMeasurementByDelta,
   unitlessCSSNumberWithRenderedValue,
 } from './controls/select-mode/controls-common'
@@ -201,10 +202,10 @@ export function offsetPaddingByEdge(
 
 export function paddingToPaddingString(padding: CSSPaddingMeasurements): string {
   return [
-    printCssNumberWithDefaultUnit(padding.paddingTop.value, 'px'),
-    printCssNumberWithDefaultUnit(padding.paddingRight.value, 'px'),
-    printCssNumberWithDefaultUnit(padding.paddingBottom.value, 'px'),
-    printCssNumberWithDefaultUnit(padding.paddingLeft.value, 'px'),
+    printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingTop), 'px'),
+    printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingRight), 'px'),
+    printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingBottom), 'px'),
+    printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingLeft), 'px'),
   ].join(' ')
 }
 
