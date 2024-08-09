@@ -432,11 +432,11 @@ const TemplateDimensionControl = React.memo(
       (isOpen: boolean) => (
         <SquareButton
           data-testid={'openDropdown'}
-          highlight
           onClick={NO_OP}
-          style={{ width: 12, height: 22 }}
+          spotlight={isOpen ? true : false}
+          highlight={false}
         >
-          <Icons.Threedots color={isOpen ? 'subdued' : undefined} />
+          <Icons.Threedots color={isOpen ? 'main' : 'subdued'} />
         </SquareButton>
       ),
       [],
