@@ -500,12 +500,11 @@ function AxisDimensionControl({
     <div
       key={`col-${value}-${index}`}
       style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-      className={isOpen ? 'openMenu' : ''}
       css={{
         [`& > .${axisDropdownMenuButton}`]: {
-          visibility: 'hidden',
+          visibility: isOpen ? 'visible' : 'hidden',
         },
-        ':hover, &.openMenu': {
+        ':hover': {
           [`& > .${axisDropdownMenuButton}`]: {
             visibility: 'visible',
           },
