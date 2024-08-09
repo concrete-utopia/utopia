@@ -429,14 +429,14 @@ const TemplateDimensionControl = React.memo(
     )
 
     const openDropdown = React.useCallback(
-      () => (
+      (isOpen: boolean) => (
         <SquareButton
           data-testid={'openDropdown'}
           highlight
           onClick={NO_OP}
           style={{ width: 12, height: 22 }}
         >
-          <Icons.Threedots />
+          <Icons.Threedots color={isOpen ? 'subdued' : undefined} />
         </SquareButton>
       ),
       [],
@@ -456,58 +456,90 @@ const TemplateDimensionControl = React.memo(
             <Icons.Plus width={12} height={12} onClick={onAdd} />
           </SquareButton>
         </div>
-        {values.map((value, index) => {
-          const testId = `grid-dimension-${axis}-${index}`
-          return (
-            <div
-              key={`col-${value}-${index}`}
-              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-              css={{
-                [`& > .${axisDropdownMenuButton}`]: {
-                  visibility: 'hidden',
-                },
-                ':hover': {
-                  [`& > .${axisDropdownMenuButton}`]: {
-                    visibility: 'visible',
-                  },
-                },
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
-                <Subdued
-                  style={{
-                    width: 40,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                  title={value.areaName ?? undefined}
-                >
-                  {value.areaName ?? index + 1}
-                </Subdued>
-                <NumberOrKeywordControl
-                  style={{ flex: 1 }}
-                  testId={testId}
-                  value={value.value}
-                  keywords={gridDimensionDropdownKeywords}
-                  keywordTypeCheck={isValidGridDimensionKeyword}
-                  onSubmitValue={onUpdate(index)}
-                  controlStatus={
-                    isGridCSSKeyword(value) && value.value.value === 'auto' ? 'off' : undefined
-                  }
-                />
-              </div>
-              <SquareButton className={axisDropdownMenuButton}>
-                <DropdownMenu align='end' items={dropdownMenuItems(index)} opener={openDropdown} />
-              </SquareButton>
-            </div>
-          )
-        })}
+        {values.map((value, index) => (
+          <AxisDimensionControl
+            key={index}
+            value={value}
+            index={index}
+            axis={axis}
+            onUpdate={onUpdate}
+            items={dropdownMenuItems(index)}
+            opener={openDropdown}
+          />
+        ))}
       </div>
     )
   },
 )
 TemplateDimensionControl.displayName = 'TemplateDimensionControl'
+
+function AxisDimensionControl({
+  value,
+  index,
+  items,
+  axis,
+  onUpdate,
+  opener,
+}: {
+  value: GridDimension
+  index: number
+  items: DropdownMenuItem[]
+  axis: 'column' | 'row'
+  onUpdate: (
+    index: number,
+  ) => (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<ValidGridDimensionKeyword>>) => void
+  opener: (isOpen: boolean) => React.ReactElement
+}) {
+  const testId = `grid-dimension-${axis}-${index}`
+  const [isOpen, setIsOpen] = React.useState(false)
+  const onOpenChange = React.useCallback((isDropdownOpen: boolean) => {
+    setIsOpen(isDropdownOpen)
+  }, [])
+  return (
+    <div
+      key={`col-${value}-${index}`}
+      style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+      css={{
+        [`& > .${axisDropdownMenuButton}`]: {
+          visibility: isOpen ? 'visible' : 'hidden',
+        },
+        ':hover': {
+          [`& > .${axisDropdownMenuButton}`]: {
+            visibility: 'visible',
+          },
+        },
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+        <Subdued
+          style={{
+            width: 40,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+          title={value.areaName ?? undefined}
+        >
+          {value.areaName ?? index + 1}
+        </Subdued>
+        <NumberOrKeywordControl
+          style={{ flex: 1 }}
+          testId={testId}
+          value={value.value}
+          keywords={gridDimensionDropdownKeywords}
+          keywordTypeCheck={isValidGridDimensionKeyword}
+          onSubmitValue={onUpdate(index)}
+          controlStatus={
+            isGridCSSKeyword(value) && value.value.value === 'auto' ? 'off' : undefined
+          }
+        />
+      </div>
+      <SquareButton className={axisDropdownMenuButton}>
+        <DropdownMenu align='end' items={items} opener={opener} onOpenChange={onOpenChange} />
+      </SquareButton>
+    </div>
+  )
+}
 
 function removeTemplateValueAtIndex(
   original: GridContainerProperties,
