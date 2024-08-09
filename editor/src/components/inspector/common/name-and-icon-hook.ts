@@ -20,6 +20,7 @@ import { objectValues } from '../../../core/shared/object-utils'
 import { eitherToMaybe } from '../../../core/shared/either'
 import type {
   CanvasSubstate,
+  MetadataAndPropertyControlsInfoSubstate,
   MetadataSubstate,
   ProjectContentSubstate,
 } from '../../editor/store/store-hook-substore-types'
@@ -27,6 +28,7 @@ import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { FilePathMappings } from '../../../core/model/project-file-utils'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../../assets'
+import { getAutofocusedPathsSelector } from '../../editor/store/editor-state-helpers'
 
 export interface NameAndIconResult {
   path: ElementPath
@@ -43,7 +45,7 @@ const namesAndIconsAllPathsResultSelector = createSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (store: MetadataSubstate) => store.editor.allElementProps,
   (store: MetadataSubstate) => store.editor.elementPathTree,
-  (store: EditorStorePatched) => store.derived.autoFocusedPaths,
+  (store: MetadataAndPropertyControlsInfoSubstate) => getAutofocusedPathsSelector(store),
   (store: EditorStorePatched) => store.derived.filePathMappings,
   (store: EditorStorePatched) => store.editor.propertyControlsInfo,
   (store: ProjectContentSubstate) => store.editor.projectContents,

@@ -68,6 +68,7 @@ import { getAllLockedElementPaths } from '../../../../core/shared/element-lockin
 import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
 import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks'
 import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
+import { getAutofocusedPathsSelector } from '../../../editor/store/editor-state-helpers'
 
 export function isDragInteractionActive(editorState: EditorState): boolean {
   return editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
@@ -322,7 +323,7 @@ export function useFindValidTarget(): (
       lockedElements: store.editor.lockedElements,
       focusedPaths: getAllFocusedPaths(
         store.editor.focusedElementPath,
-        store.derived.autoFocusedPaths,
+        getAutofocusedPathsSelector(store),
       ),
     }
   })
@@ -746,10 +747,11 @@ function useSelectOrLiveModeSelectAndHover(
         const foundTargetIsSelected = foundTarget?.isSelected ?? false
 
         if (foundTarget != null && foundTargetIsSelected && doubleClick) {
+          const autoFocusedPaths = getAutofocusedPathsSelector(editorStoreRef.current)
           const isFocusableComponent = MetadataUtils.isManuallyFocusableComponent(
             foundTarget.elementPath,
             editorStoreRef.current.editor.jsxMetadata,
-            editorStoreRef.current.derived.autoFocusedPaths,
+            autoFocusedPaths,
             editorStoreRef.current.derived.filePathMappings,
             editorStoreRef.current.editor.propertyControlsInfo,
             editorStoreRef.current.editor.projectContents,

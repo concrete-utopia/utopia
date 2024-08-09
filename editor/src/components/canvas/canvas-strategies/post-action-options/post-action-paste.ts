@@ -44,6 +44,7 @@ import type {
   PasteToReplacePostActionMenuData,
 } from '../../../editor/store/editor-state'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
+import { getAutofocusedPathsSelector } from '../../../editor/store/editor-state-helpers'
 import {
   childInsertionPath,
   getFragmentUidFromInsertionPath,
@@ -619,7 +620,9 @@ function getTargetParentForPasteHere(
     ...EP.getAncestors(target.value.parentPath.intendedParentPath),
   ]
   const sceneComponentRoot = allPaths.find((path) =>
-    derived.autoFocusedPaths.some((autofocused) => EP.pathsEqual(autofocused, EP.parentPath(path))),
+    getAutofocusedPathsSelector({ editor: editor }).some((autofocused) =>
+      EP.pathsEqual(autofocused, EP.parentPath(path)),
+    ),
   )
   const storyboardChild = allPaths.find((path) =>
     EP.pathsEqual(storyboardPath, EP.parentPath(path)),

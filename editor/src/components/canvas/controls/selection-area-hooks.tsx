@@ -22,6 +22,7 @@ import {
   isValidMouseEventForSelectionArea,
 } from './selection-area-helpers'
 import { getAllFocusedPaths } from '../../editor/store/editor-state'
+import { getAutofocusedPathsSelector } from '../../editor/store/editor-state-helpers'
 
 export function useSelectionArea(
   ref: React.MutableRefObject<HTMLDivElement | null>,
@@ -48,7 +49,7 @@ export function useSelectionArea(
       lockedElements: store.editor.lockedElements,
       focusedPaths: getAllFocusedPaths(
         store.editor.focusedElementPath,
-        store.derived.autoFocusedPaths,
+        getAutofocusedPathsSelector(store),
       ),
     }
   })

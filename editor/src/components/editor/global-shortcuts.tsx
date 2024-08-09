@@ -150,6 +150,7 @@ import { type ProjectServerState } from './store/project-server-state'
 import { allowedToEditProject } from './store/collaborative-editing'
 import { hasCommentPermission } from './store/permissions'
 import { type ShowComponentPickerContextMenuCallback } from '../navigator/navigator-item/component-picker-context-menu'
+import { getAutofocusedPathsSelector } from './store/editor-state-helpers'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -540,7 +541,10 @@ export function handleKeyDown(
             editor.canvas.realCanvasOffset,
             editor.jsxMetadata,
             editor.lockedElements,
-            getAllFocusedPaths(editor.focusedElementPath, derived.autoFocusedPaths),
+            getAllFocusedPaths(
+              editor.focusedElementPath,
+              getAutofocusedPathsSelector({ editor: editor } as const),
+            ),
           )
           const nextTarget = Canvas.getNextTarget(
             editor.jsxMetadata,

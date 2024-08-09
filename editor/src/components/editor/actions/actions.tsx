@@ -622,6 +622,7 @@ import { getRemixRootDir } from '../store/remix-derived-data'
 import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-item/component-picker-context-menu'
 import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
+import { getAutofocusedPathsSelector } from '../store/editor-state-helpers'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1055,9 +1056,6 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
   const poppedDerived = history.current.derived
 
   return {
-    autoFocusedPaths: poppedDerived.autoFocusedPaths,
-    controls: [],
-    elementWarnings: poppedDerived.elementWarnings,
     projectContentsChecksums: poppedDerived.projectContentsChecksums,
     branchOriginContentsChecksums: poppedDerived.branchOriginContentsChecksums,
     remixData: poppedDerived.remixData,
@@ -5065,7 +5063,7 @@ export const UPDATE_FNS = {
       MetadataUtils.isManuallyFocusableComponent(
         action.focusedElementPath,
         editor.jsxMetadata,
-        derived.autoFocusedPaths,
+        getAutofocusedPathsSelector({ editor: editor }),
         derived.filePathMappings,
         editor.propertyControlsInfo,
         editor.projectContents,

@@ -452,7 +452,6 @@ export type CanvasAction =
   | SetUsersPreferredStrategy
 
 export interface CanvasModel {
-  controls: Array<HigherOrderControl>
   keysPressed: KeysPressed
   mouseButtonsPressed: MouseButtonsPressed
   mode: Mode

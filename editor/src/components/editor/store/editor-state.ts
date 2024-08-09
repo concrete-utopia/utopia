@@ -191,6 +191,8 @@ import type { CommentFilterMode } from '../../inspector/sections/comment-section
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { OnlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
+import { createSelector } from 'reselect'
+import createCachedSelector from 're-reselect'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2424,9 +2426,6 @@ export function isSlotNavigatorEntry(entry: NavigatorEntry): entry is SlotNaviga
 }
 
 export interface DerivedState {
-  autoFocusedPaths: Array<ElementPath>
-  controls: Array<HigherOrderControl>
-  elementWarnings: { [key: string]: ElementWarnings }
   projectContentsChecksums: FileChecksumsWithFile
   branchOriginContentsChecksums: FileChecksumsWithFile | null
   remixData: RemixDerivedData | null
@@ -2435,9 +2434,6 @@ export interface DerivedState {
 
 function emptyDerivedState(editor: EditorState): DerivedState {
   return {
-    autoFocusedPaths: [],
-    controls: [],
-    elementWarnings: {},
     projectContentsChecksums: {},
     branchOriginContentsChecksums: {},
     remixData: null,
@@ -2789,49 +2785,7 @@ function getElementWarningsInner(
   return result
 }
 
-const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
-
-type CacheableDerivedState = {
-  elementWarnings: { [key: string]: ElementWarnings }
-  autoFocusedPaths: Array<ElementPath>
-}
-
-function deriveCacheableStateInner(
-  projectContents: ProjectContentTreeRoot,
-  jsxMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTrees,
-  allElementProps: AllElementProps,
-  collapsedViews: ElementPath[],
-  hiddenInNavigator: ElementPath[],
-  propertyControlsInfo: PropertyControlsInfo,
-): CacheableDerivedState {
-  const warnings = getElementWarnings(
-    projectContents,
-    jsxMetadata,
-    allElementProps,
-    elementPathTree,
-  )
-
-  const autoFocusedPaths = MetadataUtils.getAllPaths(jsxMetadata, elementPathTree).filter(
-    (path) => {
-      return MetadataUtils.isAutofocusable(
-        jsxMetadata,
-        elementPathTree,
-        path,
-        propertyControlsInfo,
-        projectContents,
-      )
-    },
-  )
-
-  return {
-    elementWarnings: warnings,
-    autoFocusedPaths: autoFocusedPaths,
-  }
-}
-
-const patchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
-const unpatchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
+export const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 
 export function deriveState(
   editor: EditorState,
@@ -2840,19 +2794,6 @@ export function deriveState(
   createRemixDerivedDataMemo: RemixDerivedDataFactory,
 ): DerivedState {
   const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
-
-  const deriveCacheableState =
-    cacheKey === 'patched' ? patchedDeriveCacheableState : unpatchedDeriveCacheableState
-
-  const { elementWarnings: warnings, autoFocusedPaths } = deriveCacheableState(
-    editor.projectContents,
-    editor.jsxMetadata,
-    editor.elementPathTree,
-    editor.allElementProps,
-    editor.navigator.collapsedViews,
-    editor.navigator.hiddenInNavigator,
-    editor.propertyControlsInfo,
-  )
 
   const remixDerivedData = createRemixDerivedDataMemo(
     editor.projectContents,
@@ -2863,9 +2804,6 @@ export function deriveState(
   const filePathMappings = getFilePathMappings(editor.projectContents)
 
   const derived: DerivedState = {
-    autoFocusedPaths: autoFocusedPaths,
-    controls: derivedState.controls,
-    elementWarnings: warnings,
     projectContentsChecksums: getProjectContentsChecksums(
       editor.projectContents,
       oldDerivedState?.projectContentsChecksums ?? {},
@@ -2886,12 +2824,8 @@ export function deriveState(
   return sanitizedDerivedState
 }
 
-export function createCanvasModelKILLME(
-  editor: EditorState,
-  derivedState: DerivedState,
-): CanvasModel {
+export function createCanvasModelKILLME(editor: EditorState): CanvasModel {
   return {
-    controls: derivedState.controls,
     keysPressed: editor.keysPressed,
     mouseButtonsPressed: editor.mouseButtonsPressed,
     mode: editor.mode,

@@ -50,6 +50,7 @@ import { pointsEqual } from '../core/shared/math-utils'
 import { useDispatch } from './editor/store/dispatch-context'
 import { useCreateCallbackToShowComponentPicker } from './navigator/navigator-item/component-picker-context-menu'
 import { navigatorTargetsSelector, useGetNavigatorTargets } from './navigator/navigator-utils'
+import { getAutofocusedPathsSelector } from './editor/store/editor-state-helpers'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -201,10 +202,9 @@ function useCanvasContextMenuGetData(
       pathTrees: store.editor.elementPathTree,
       openFile: store.editor.canvas.openFile?.filename ?? null,
       internalClipboard: store.editor.internalClipboard,
-      autoFocusedPaths: store.derived.autoFocusedPaths,
+      autoFocusedPaths: getAutofocusedPathsSelector(store),
       propertyControlsInfo: store.editor.propertyControlsInfo,
       lockedElements: store.editor.lockedElements,
-      autofocusedPaths: store.derived.autoFocusedPaths,
     }
   })
   const navigatorTargetsRef = useRefEditorState(navigatorTargetsSelector)
