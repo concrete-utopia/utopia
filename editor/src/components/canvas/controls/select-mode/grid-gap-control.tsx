@@ -300,6 +300,7 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
           gap: internalGrid.gap.value,
           gridTemplateColumns: axis === 'row' ? internalGrid.gridTemplateColumns : '1fr',
           gridTemplateRows: axis === 'column' ? internalGrid.gridTemplateRows : '1fr',
+          position: 'relative',
         }}
       >
         {createArrayWithLength(handles, (i) => (
@@ -353,6 +354,16 @@ function GridGapHandler({
     handleHoverStartInner(index)
   }, [handleHoverStartInner, index])
 
+  const rowGapStyles =
+    axis === 'row'
+      ? ({
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          position: 'absolute',
+          gridArea: `1/${index + 1}/2/${index + 2}`,
+        } as const)
+      : {}
   return (
     <div
       data-testid={`${GridGapControlHandleTestId}-${gapId}`}
@@ -360,6 +371,7 @@ function GridGapHandler({
         visibility: shouldShowHandle ? 'visible' : 'hidden',
         padding: hitAreaPadding,
         cursor: axis === 'row' ? CSSCursor.GapNS : CSSCursor.GapEW,
+        ...rowGapStyles,
       }}
       onMouseDown={onMouseDown}
       onMouseEnter={handleHoverStart}
