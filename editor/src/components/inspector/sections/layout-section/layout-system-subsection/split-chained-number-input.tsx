@@ -129,6 +129,7 @@ export interface SplitChainedNumberInputProps<T> {
   values: SplitChainedNumberInputValues
   numberType: CSSNumberType
   eventHandler: SplitChainedNumberInputEventHandler
+  fourSidesOrder?: Array<SplitFourValueSide>
 }
 
 export type SplitChainedNumberInputEventHandler = (
@@ -160,6 +161,8 @@ export function getInitialMode(
 
 type CSSNumberOrNull = CSSNumber | null
 
+export type SplitFourValueSide = 'T' | 'R' | 'B' | 'L'
+
 export type FourValue =
   | { type: 'T'; value: CSSNumberOrNull }
   | { type: 'R'; value: CSSNumberOrNull }
@@ -174,7 +177,7 @@ export type SplitChainedEvent =
   | { type: 'four-value'; value: FourValue }
 
 export function splitChainedEventValueForProp(
-  prop: 'T' | 'R' | 'B' | 'L',
+  prop: SplitFourValueSide,
   e: SplitChainedEvent,
 ): CSSNumber | null {
   switch (e.type) {
@@ -456,7 +459,15 @@ const whenCSSNumber = (fn: (v: CSSNumber | null) => any) => (v: UnknownOrEmptyIn
 }
 
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
-  const { name, canvasControls, numberType, eventHandler, labels, values } = props
+  const {
+    name,
+    canvasControls,
+    numberType,
+    eventHandler,
+    labels,
+    values,
+    fourSidesOrder = ['T', 'R', 'L', 'B'],
+  } = props
 
   const setHoveredCanvasControls = useSetAtom(InspectorHoveredCanvasControls)
   const setFocusedCanvasControls = useSetAtom(InspectorFocusedCanvasControls)
@@ -600,8 +611,8 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             },
           ]
         case 'per-side':
-          return [
-            {
+          const sides: Record<SplitFourValueSide, Omit<NumberInputProps, 'chained' | 'id'>> = {
+            T: {
               style: { width: '48%' },
               value: values.fourValue.top?.value,
               DEPRECATED_labelBelow: labels?.top ?? 'T',
@@ -619,7 +630,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               },
               testId: `${name}-T`,
             },
-            {
+            R: {
               style: { width: '48%' },
               value: values.fourValue.right?.value,
               DEPRECATED_labelBelow: labels?.right ?? 'R',
@@ -637,7 +648,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               },
               testId: `${name}-R`,
             },
-            {
+            L: {
               style: { width: '48%' },
               value: values.fourValue.left?.value,
               DEPRECATED_labelBelow: labels?.left ?? 'L',
@@ -655,7 +666,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               },
               testId: `${name}-L`,
             },
-            {
+            B: {
               style: { width: '48%' },
               value: values.fourValue.bottom?.value,
               DEPRECATED_labelBelow: labels?.bottom ?? 'B',
@@ -673,7 +684,8 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               },
               testId: `${name}-B`,
             },
-          ]
+          }
+          return fourSidesOrder.map((side) => sides[side])
         case null:
           return []
         default:
@@ -689,6 +701,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       eventHandler,
       props.mode,
       values,
+      fourSidesOrder,
     ])
 
   const tooltipTitle = React.useMemo(() => {
