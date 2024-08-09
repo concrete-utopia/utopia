@@ -90,7 +90,7 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
   const addLayoutSystemOpenerButton = React.useCallback(
     () => (
       <SquareButton highlight onClick={NO_OP}>
-        {layoutSystem == null ? <Icons.Plus /> : <Icons.Threedots />}
+        {layoutSystem == null ? <Icons.SmallPlus /> : <Icons.Threedots />}
       </SquareButton>
     ),
     [layoutSystem],

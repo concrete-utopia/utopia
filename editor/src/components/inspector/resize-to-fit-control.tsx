@@ -140,7 +140,7 @@ export const ResizeToFitControl = React.memo(() => {
         data-testid={ResizeToFitControlTestId}
         onClick={onResizeToFit}
         highlight
-        style={{ ...disabledStyles(isHugApplicable) }}
+        disabled={!isHugApplicable}
       >
         <Icn type='fitToChildren' color='main' category='layout/commands' width={16} height={16} />
       </SquareButton>
