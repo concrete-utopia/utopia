@@ -1,4 +1,4 @@
-import { createSelector } from 'reselect'
+import { createSelector, createSelectorCreator } from 'reselect'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getElementWarnings } from './editor-state'
 import type {
@@ -6,6 +6,7 @@ import type {
   MetadataSubstate,
   ProjectContentAndMetadataSubstate,
 } from './store-hook-substore-types'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 
 export const getElementWarningsSelector = createSelector(
   (store: ProjectContentAndMetadataSubstate) => store.editor.projectContents,
@@ -33,4 +34,5 @@ export const getAutofocusedPathsSelector = createSelector(
       )
     })
   },
+  { memoizeOptions: { resultEqualityCheck: shallowEqual } },
 )
