@@ -3,7 +3,7 @@ import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { isRight } from '../core/shared/either'
 import type { JSXElementChild } from '../core/shared/element-template'
 import { type ElementInstanceMetadataMap } from '../core/shared/element-template'
-import { getFromPropOrFlagComment } from '../core/shared/comment-flags'
+import { getFromPropOrFlagComment } from '../core/shared/utopia-flags'
 
 export function dataCanCondenseFromMetadata(
   metadata: ElementInstanceMetadataMap,
