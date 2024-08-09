@@ -157,6 +157,7 @@ const gridDrawToInsertStrategyInner =
           props: { targets: [targetParent] },
           key: `draw-into-grid-strategy-controls`,
           show: 'always-visible',
+          priority: 'bottom',
         },
       ],
       fitness: 5,

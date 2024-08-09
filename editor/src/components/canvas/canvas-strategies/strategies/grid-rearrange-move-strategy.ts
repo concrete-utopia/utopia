@@ -68,6 +68,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         props: { targets: [parentGridPath] },
         key: GridControlsKey(parentGridPath),
         show: 'always-visible',
+        priority: 'bottom',
       },
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 2),

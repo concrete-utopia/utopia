@@ -55,6 +55,7 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
         props: { targets: [EP.parentPath(selectedElement)] },
         key: GridControlsKey(EP.parentPath(selectedElement)),
         show: 'always-visible',
+        priority: 'bottom',
       },
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 3),
