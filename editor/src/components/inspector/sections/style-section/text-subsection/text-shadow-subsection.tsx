@@ -175,7 +175,7 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
     <PropertyRow
       key={props.index}
       style={{
-        gridTemplateColumns: '12px 28px repeat(3, 1fr) 12px',
+        gridTemplateColumns: '12px 28px repeat(3, 1fr) 22px',
         gridColumnGap: 8,
       }}
     >
@@ -250,7 +250,7 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
         stepSize={0.1}
         incrementControls={false}
       />
-      <SquareButton highlight onMouseDown={removeShadow} style={{ marginTop: 1, width: 12 }}>
+      <SquareButton highlight onMouseDown={removeShadow}>
         <Icons.Minus width={12} height={12} />
       </SquareButton>
     </PropertyRow>
@@ -315,14 +315,14 @@ export const TextShadowSubsection = React.memo(() => {
             <span>Text Shadow</span>
           </FlexRow>
           {propertyStatus.overwritable ? (
-            <FlexRow style={{ gap: 4 }}>
+            <FlexRow>
               <RemovePropertyButton
                 testId='inspector-text-shadow-remove-all'
                 onUnsetValues={onUnsetValues}
                 propertySet={propertyStatus.set}
               />
-              <SquareButton highlight onMouseDown={insertShadow} style={{ width: 12 }}>
-                <Icn category='semantic' type='plus' width={12} height={12} />
+              <SquareButton highlight onMouseDown={insertShadow}>
+                <Icons.SmallPlus />
               </SquareButton>
             </FlexRow>
           ) : null}

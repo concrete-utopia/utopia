@@ -118,14 +118,15 @@ export const GridPlacementSubsection = React.memo(() => {
         </FlexRow>
         {when(
           isAllDefaults,
-          <SquareButton highlight style={{ width: 12 }}>
-            <Icons.Plus width={12} height={12} onClick={writeDefaults} />
+          <SquareButton highlight onClick={writeDefaults}>
+            <Icons.SmallPlus />
           </SquareButton>,
         )}
       </InspectorSubsectionHeader>
       {unless(
         isAllDefaults,
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 27px', gridTemplateRows: '1fr' }}>
+          {/* fix row padding and alignment */}
           <div>
             {when(
               adjustMode === 'dimensions',
@@ -144,7 +145,7 @@ export const GridPlacementSubsection = React.memo(() => {
               alignItems: 'center',
             }}
           >
-            <SquareButton style={{ padding: 0 }}>
+            <SquareButton highlight>
               {adjustMode === 'dimensions' ? (
                 <InspectorSectionIcons.SplitFull onClick={toggleMoveMode} />
               ) : (

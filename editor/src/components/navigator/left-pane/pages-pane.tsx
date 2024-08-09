@@ -14,6 +14,7 @@ import {
   FlexRow,
   FunctionIcons,
   Icn,
+  Icons,
   InspectorSectionHeader,
   SquareButton,
   StringInput,
@@ -190,8 +191,8 @@ export const PagesPane = React.memo((props) => {
 
   const addPageOpenButton = React.useCallback(
     () => (
-      <SquareButton onClick={NO_OP}>
-        <FunctionIcons.Add />
+      <SquareButton highlight onClick={NO_OP}>
+        <Icons.SmallPlus />
       </SquareButton>
     ),
     [],
