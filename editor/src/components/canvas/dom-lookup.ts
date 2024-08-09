@@ -109,14 +109,15 @@ export function firstAncestorOrItselfWithValidElementPath(
   metadata: ElementInstanceMetadataMap,
   point: CanvasPoint,
   lockedElements: LockedElements,
-): { path: ElementPath; locked: boolean } | null {
+  focusedPaths: Array<ElementPath>,
+): { path: ElementPath; originalIsUnselectable: boolean } | null {
   const staticAndDynamicTargetElementPaths = getStaticAndDynamicElementPathsForDomElement(target)
 
   if (staticAndDynamicTargetElementPaths.length === 0) {
     return null
   }
 
-  const isLocked = staticAndDynamicTargetElementPaths.every((p) => {
+  const originalIsUnselectable = staticAndDynamicTargetElementPaths.every((p) => {
     if (EP.containsPath(p.dynamic, lockedElements.simpleLock)) {
       return true
     }
@@ -124,6 +125,15 @@ export function firstAncestorOrItselfWithValidElementPath(
       lockedElements.hierarchyLock.some((hierarchyLock) =>
         EP.isDescendantOfOrEqualTo(p.dynamic, hierarchyLock),
       )
+    ) {
+      return true
+    }
+
+    // when the containing component is not focused, we should consider the internals locked
+    const containingComponent = EP.getContainingComponent(p.dynamic)
+    if (
+      !EP.isEmptyPath(containingComponent) &&
+      !focusedPaths.some((c) => EP.pathsEqual(c, containingComponent))
     ) {
       return true
     }
@@ -223,7 +233,9 @@ export function firstAncestorOrItselfWithValidElementPath(
     }
   }
 
-  return resultPath == null ? null : { path: resultPath, locked: isLocked }
+  return resultPath == null
+    ? null
+    : { path: resultPath, originalIsUnselectable: originalIsUnselectable }
 }
 
 export function getValidTargetAtPoint(
@@ -233,6 +245,7 @@ export function getValidTargetAtPoint(
   canvasOffset: CanvasVector,
   metadata: ElementInstanceMetadataMap,
   lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): ElementPath | null {
   if (point == null) {
     return null
@@ -251,6 +264,7 @@ export function getValidTargetAtPoint(
     metadata,
     pointOnCanvas,
     lockedElements,
+    focusedPaths,
   )
 }
 
@@ -261,6 +275,7 @@ export function getAllTargetsAtPoint(
   canvasOffset: CanvasVector,
   metadata: ElementInstanceMetadataMap,
   lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): Array<ElementPath> {
   if (point == null) {
     return []
@@ -280,6 +295,7 @@ export function getAllTargetsAtPoint(
     metadata,
     pointOnCanvas,
     lockedElements,
+    focusedPaths,
   )
 }
 
@@ -294,6 +310,7 @@ function findFirstValidParentForSingleElementUncached(
   metadata: ElementInstanceMetadataMap,
   point: CanvasPoint,
   lockedElements: LockedElements,
+  autofocusedPaths: Array<ElementPath>,
 ) {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -312,10 +329,11 @@ function findFirstValidParentForSingleElementUncached(
       metadata,
       point,
       lockedElements,
+      autofocusedPaths,
     )
     if (p != null) {
       foundValidElementPath = p.path
-      if (!p.locked) {
+      if (!p.originalIsUnselectable) {
         break
       }
     }
@@ -335,6 +353,7 @@ function findFirstValidParentsForAllElementsUncached(
   metadata: ElementInstanceMetadataMap,
   point: CanvasPoint,
   lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): Array<ElementPath> {
   const validPathsSet =
     validElementPathsForLookup == 'no-filter'
@@ -351,6 +370,7 @@ function findFirstValidParentsForAllElementsUncached(
         metadata,
         point,
         lockedElements,
+        focusedPaths,
       )?.path
       if (foundValidElementPath != null) {
         return foundValidElementPath
@@ -373,6 +393,7 @@ export function getSelectionOrValidTargetAtPoint(
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): ElementPath | null {
   if (point == null) {
     return null
@@ -388,6 +409,7 @@ export function getSelectionOrValidTargetAtPoint(
     elementPathTree,
     allElementProps,
     lockedElements,
+    focusedPaths,
   )
   if (target === 'selection') {
     return selectedViews[0] ?? null
@@ -407,6 +429,7 @@ function getSelectionOrFirstTargetAtPoint(
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): 'selection' | ElementPath | null {
   if (point == null) {
     return null
@@ -449,10 +472,11 @@ function getSelectionOrFirstTargetAtPoint(
       componentMetadata,
       pointOnCanvas,
       lockedElements,
+      focusedPaths,
     )
     if (foundValidElementPath != null) {
       elementFromDOM = foundValidElementPath.path
-      if (!foundValidElementPath.locked) {
+      if (!foundValidElementPath.originalIsUnselectable) {
         break
       }
     }
