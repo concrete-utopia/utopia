@@ -7,7 +7,7 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
-import { GridControls } from '../../controls/grid-controls'
+import { GridControls, GridControlsKey } from '../../controls/grid-controls'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
@@ -52,9 +52,10 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
     controlsToRender: [
       {
         control: GridControls,
-        props: {},
-        key: `grid-controls-${EP.toString(selectedElement)}`,
+        props: { targets: [EP.parentPath(selectedElement)] },
+        key: GridControlsKey(EP.parentPath(selectedElement)),
         show: 'always-visible',
+        priority: 'bottom',
       },
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 3),

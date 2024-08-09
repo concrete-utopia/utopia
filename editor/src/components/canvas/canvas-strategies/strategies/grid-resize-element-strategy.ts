@@ -4,7 +4,7 @@ import type { GridElementProperties, GridPosition } from '../../../../core/share
 import { offsetPoint } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { isCSSKeyword } from '../../../inspector/common/css-utils'
-import { GridControls, GridResizeControls } from '../../controls/grid-controls'
+import { GridControls, GridControlsKey, GridResizeControls } from '../../controls/grid-controls'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
@@ -36,6 +36,8 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
     return null
   }
 
+  const parentGridPath = EP.parentPath(selectedElement)
+
   return {
     id: 'GRID-CELL-RESIZE-STRATEGY',
     name: 'Resize Grid Cell',
@@ -53,9 +55,10 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
       },
       {
         control: GridControls,
-        props: {},
-        key: `grid-controls-${EP.toString(selectedElement)}`,
+        props: { targets: [parentGridPath] },
+        key: GridControlsKey(parentGridPath),
         show: 'always-visible',
+        priority: 'bottom',
       },
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_RESIZE_HANDLE', 1),
