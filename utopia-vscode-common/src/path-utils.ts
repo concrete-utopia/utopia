@@ -1,5 +1,3 @@
-export const RootDir = `/utopia`
-
 export function stripTrailingSlash(path: string): string {
   return path.endsWith('/') ? path.slice(0, -1) : path
 }
@@ -14,12 +12,8 @@ export function appendToPath(path: string, elem: string): string {
   return `${left}/${right}`
 }
 
-export function stripRootPrefix(path: string): string {
-  return path.startsWith(RootDir) ? path.slice(RootDir.length + 1) : path
-}
-
 export function toUtopiaPath(projectID: string, path: string): string {
-  const result = appendToPath(`${projectID}:/`, stripRootPrefix(path))
+  const result = appendToPath(`${projectID}:/`, path)
   return result
 }
 
