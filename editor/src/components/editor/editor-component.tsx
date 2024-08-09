@@ -301,6 +301,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           event,
           editorStoreRef.current.editor,
           editorStoreRef.current.userState.loginState,
+          editorStoreRef.current.derived,
           editorStoreRef.current.projectServerState,
           metadataRef,
           navigatorTargetsRef,

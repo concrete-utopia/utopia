@@ -1827,7 +1827,7 @@ const Foo = (props) => {
     ['Foo_root_div', 'Foo_internal_child', 'Foo_internal_grandchild'],
   ])
 
-  it('In not locked case overlapping internal child is selected instead of the props child', async () => {
+  it('In a focused component, not locked overlapping internal child is selected instead of the props child', async () => {
     const renderResult = await renderTestEditorWithCode(
       LockingTestProjectWithComponent,
       'await-first-dom-report',
@@ -1844,7 +1844,7 @@ const Foo = (props) => {
     // can't select props child because it is covered by the internal child and grandchild
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([InternalGrandChild])
   })
-  it('In not locked the unfocused component with overlapping internals is selected instead of the props child', async () => {
+  it('In an unfocused component, the internals always behave as locked (and the props child is selected not the overlapping internals)', async () => {
     const renderResult = await renderTestEditorWithCode(
       LockingTestProjectWithComponent,
       'await-first-dom-report',
@@ -1856,8 +1856,8 @@ const Foo = (props) => {
 
     await mouseClickAtPoint(canvasControlsLayer, propsChildCenter, { modifiers: cmdModifier })
 
-    // can't select props child because it is covered by the unlocked internals of the component
-    expect(renderResult.getEditorState().editor.selectedViews).toEqual([FooPath])
+    // can select props child even though it is covered by the unlocked internals of the component
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([PropsChildPath])
   })
 
   it('When the internal grandchild is locked, its internal parent is selected instead of the props child, because it is unlocked and covers props child', async () => {

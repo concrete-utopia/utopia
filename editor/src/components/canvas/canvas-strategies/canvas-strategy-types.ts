@@ -98,6 +98,7 @@ export interface ControlWithProps<P> {
   props: P
   key: string
   show: WhenToShowControl
+  priority?: 'top' | 'bottom'
 }
 
 export function controlWithProps<P>(value: ControlWithProps<P>): ControlWithProps<P> {
