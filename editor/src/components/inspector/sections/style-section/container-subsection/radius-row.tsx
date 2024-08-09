@@ -239,7 +239,7 @@ export const BorderRadiusControl = React.memo(() => {
         bottom: <Icons.BorderRadiusBottomRight color='on-highlight-secondary' />,
         left: <Icons.BorderRadiusBottomLeft color='on-highlight-secondary' />,
         right: <Icons.BorderRadiusTopRight color='on-highlight-secondary' />,
-        oneValue: <Icons.BorderRadius color='on-highlight-secondary' />,
+        oneValue: <Icons.BorderRadiusTopLeft color='on-highlight-secondary' />,
       }}
       tooltips={{
         oneValue: 'Radius',
@@ -252,7 +252,6 @@ export const BorderRadiusControl = React.memo(() => {
       values={values}
       canvasControls={canvasControlsForSides}
       eventHandler={eventHandler}
-      cycleModePosition='back'
     />
   )
 })

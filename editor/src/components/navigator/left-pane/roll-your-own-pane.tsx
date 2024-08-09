@@ -1,10 +1,11 @@
 import React from 'react'
-import { Button, FlexColumn, FlexRow, Section } from '../../../uuiui'
+import { Button, colorTheme, FlexColumn, FlexRow, Section } from '../../../uuiui'
 import { when } from '../../../utils/react-conditionals'
 import { atom, useAtom, useSetAtom } from 'jotai'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { atomWithStorage } from 'jotai/utils'
 import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
+import { Ellipsis } from './github-pane/github-file-changes-list'
 
 const sections = ['Grid'] as const
 type Section = (typeof sections)[number]
@@ -22,6 +23,7 @@ type GridFeatures = {
   dotgridColor: string
   inactiveGridColor: string
   opacityBaseline: number
+  activeGridBackground: string
 }
 
 type RollYourOwnFeaturesTypes = {
@@ -43,6 +45,7 @@ const defaultRollYourOwnFeatures: RollYourOwnFeatures = {
     shadow: true,
     adaptiveOpacity: true,
     activeGridColor: '#0099ff77',
+    activeGridBackground: colorTheme.primary10.value,
     dotgridColor: '#0099ffaa',
     inactiveGridColor: '#00000033',
     opacityBaseline: 0.25,
@@ -173,7 +176,7 @@ const GridSection = React.memo(() => {
         const value = features.Grid[feat] ?? defaultRollYourOwnFeatures.Grid[feat]
         return (
           <UIGridRow padded variant='<----------1fr---------><-auto->' key={`feat-${feat}`}>
-            <div>{feat}</div>
+            <Ellipsis title={feat}>{feat}</Ellipsis>
             {typeof value === 'boolean' ? (
               <input type='checkbox' checked={value} onChange={onChange(feat)} />
             ) : typeof value === 'string' ? (

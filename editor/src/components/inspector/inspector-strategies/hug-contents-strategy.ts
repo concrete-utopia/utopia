@@ -12,7 +12,7 @@ import {
 } from '../../canvas/commands/set-css-length-command'
 import { showToastCommand } from '../../canvas/commands/show-toast-command'
 import type { FlexDirection } from '../common/css-utils'
-import { cssKeyword } from '../common/css-utils'
+import { cssKeyword, isGridCSSNumber } from '../common/css-utils'
 import type { Axis } from '../inspector-common'
 import {
   detectFillHugFixedState,
@@ -66,7 +66,7 @@ function hugContentsSingleElement(
     ),
   ]
 
-  const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath)
+  const children = MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath)
   const transformChildrenToFixedCommands = children.flatMap((child) => {
     const state = detectFillHugFixedState(axis, metadata, child).fixedHugFill
     if (
@@ -94,7 +94,7 @@ function gridTemplateUsesFr(template: GridTemplate | null) {
   return (
     template != null &&
     template.type === 'DIMENSIONS' &&
-    template.dimensions.some((d) => d.unit === 'fr')
+    template.dimensions.some((d) => isGridCSSNumber(d) && d.value.unit === 'fr')
   )
 }
 

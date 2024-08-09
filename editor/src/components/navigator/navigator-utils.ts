@@ -41,7 +41,10 @@ import { getCanvasRoots, getSubTree } from '../../core/shared/element-path-tree'
 import { assertNever } from '../../core/shared/utils'
 import type { ConditionalCase } from '../../core/model/conditionals'
 import { getConditionalClausePath } from '../../core/model/conditionals'
-import { findUtopiaCommentFlag, isUtopiaCommentFlagMapCount } from '../../core/shared/comment-flags'
+import {
+  findUtopiaCommentFlag,
+  isUtopiaPropOrCommentFlagMapCount,
+} from '../../core/shared/utopia-flags'
 import { getPropertyControlsForTarget } from '../../core/property-controls/property-controls-utils'
 import type { PropertyControlsInfo } from '../custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../assets'
@@ -60,7 +63,6 @@ import { dropNulls, mapDropNulls } from '../../core/shared/array-utils'
 import { getUtopiaID } from '../../core/shared/uid-utils'
 import { emptySet } from '../../core/shared/set-utils'
 import { objectMap } from '../../core/shared/object-utils'
-import { dataCanCondenseFromMetadata } from '../../utils/can-condense'
 import { createSelector } from 'reselect'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import type {
@@ -70,6 +72,7 @@ import type {
   ProjectContentSubstate,
   PropertyControlsInfoSubstate,
 } from '../editor/store/store-hook-substore-types'
+import { dataCanCondenseFromMetadata } from '../../utils/can-condense'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -509,7 +512,7 @@ function walkMapExpression(
 ): NavigatorTree {
   const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
 
-  const mapCountOverride = isUtopiaCommentFlagMapCount(commentFlag) ? commentFlag.value : null
+  const mapCountOverride = isUtopiaPropOrCommentFlagMapCount(commentFlag) ? commentFlag.value : null
   const mappedChildren = Object.values(subTree.children).map((child) =>
     createNavigatorSubtree(
       metadata,

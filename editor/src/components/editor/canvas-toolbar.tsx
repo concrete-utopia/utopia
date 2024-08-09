@@ -64,7 +64,7 @@ import { ActiveRemixSceneAtom } from '../canvas/remix/utopia-remix-root-componen
 import * as EP from '../../core/shared/element-path'
 import { NO_OP } from '../../core/shared/utils'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
-import { DropdownMenu } from '../../uuiui/radix-components'
+import { DropdownMenu, regularDropdownMenuItem } from '../../uuiui/radix-components'
 import {
   TOGGLE_INSPECTOR,
   TOGGLE_CODE_EDITOR_SHORTCUT,
@@ -74,6 +74,7 @@ import {
 } from './shortcut-definitions'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
+export const InsertOrEditTextButtonTestId = 'insert-or-edit-text-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
 export const CommentModeButtonTestId = (status: string) => `canvas-toolbar-comment-mode-${status}`
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
@@ -222,6 +223,7 @@ export const CanvasToolbar = React.memo(() => {
   // Back to select mode, close the "floating" menu and turn off the forced insert mode.
   const dispatchSwitchToSelectModeCloseMenus = React.useCallback(() => {
     switchToSelectModeCloseMenus(dispatch)
+    dispatch([CanvasActions.clearInteractionSession(false)])
   }, [dispatch])
 
   const zoomLevel = useEditorState(
@@ -248,23 +250,23 @@ export const CanvasToolbar = React.memo(() => {
   const isLiveMode = editorMode === 'live'
   const toggleLiveMode = React.useCallback(() => {
     if (isLiveMode) {
-      dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+      dispatchSwitchToSelectModeCloseMenus()
     } else {
       dispatch([switchEditorMode(EditorModes.liveMode())])
     }
-  }, [dispatch, isLiveMode])
+  }, [dispatch, isLiveMode, dispatchSwitchToSelectModeCloseMenus])
 
   const isCommentMode = editorMode === 'comment'
   const toggleCommentMode = React.useCallback(() => {
     if (isCommentMode) {
-      dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+      dispatchSwitchToSelectModeCloseMenus()
     } else {
       dispatch([
         switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
         setRightMenuTab(RightMenuTab.Comments),
       ])
     }
-  }, [dispatch, isCommentMode])
+  }, [dispatch, isCommentMode, dispatchSwitchToSelectModeCloseMenus])
 
   const resetCanvasCallback = React.useCallback(() => {
     dispatch([resetCanvas()])
@@ -358,44 +360,29 @@ export const CanvasToolbar = React.memo(() => {
 
   const panelPopupItems: DropdownMenuItem[] = React.useMemo(
     () => [
-      {
+      regularDropdownMenuItem({
         id: 'navigator',
         label: 'Navigator',
         checked: navigatorVisible,
-        icon: (
-          <div style={{ transform: 'scale(0.8)' }}>
-            <LargerIcons.Navigator color='white' />
-          </div>
-        ),
         shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_NAVIGATOR].shortcutKeys[0]),
         onSelect: () => dispatch([togglePanel('leftmenu')]),
-      },
-      {
+      }),
+      regularDropdownMenuItem({
         id: 'rightmenu',
         label: 'Inspector',
-        icon: (
-          <div style={{ transform: 'scale(0.8)' }}>
-            <LargerIcons.Inspector color='white' />
-          </div>
-        ),
         checked: inspectorVisible,
         shortcut: keyToString(shortcutDetailsWithDefaults[TOGGLE_INSPECTOR].shortcutKeys[0]),
         onSelect: () => dispatch([togglePanel('rightmenu')]),
-      },
-      {
+      }),
+      regularDropdownMenuItem({
         id: 'code-editor',
         label: 'Code Editor',
-        icon: (
-          <div style={{ transform: 'scale(0.8)' }}>
-            <LargerIcons.Code color='white' />
-          </div>
-        ),
         checked: codeEditorVisible,
         shortcut: keyToString(
           shortcutDetailsWithDefaults[TOGGLE_CODE_EDITOR_SHORTCUT].shortcutKeys[0],
         ),
         onSelect: () => dispatch([togglePanel('codeEditor')]),
-      },
+      }),
     ],
     [codeEditorVisible, dispatch, inspectorVisible, navigatorVisible],
   )
@@ -452,6 +439,7 @@ export const CanvasToolbar = React.memo(() => {
           <>
             <Tooltip title='Insert or Edit Text' placement='bottom'>
               <InsertModeButton
+                testid={InsertOrEditTextButtonTestId}
                 iconType='text'
                 iconCategory='tools'
                 primary={canvasToolbarMode.primary === 'text'}

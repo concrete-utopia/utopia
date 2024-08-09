@@ -44,7 +44,7 @@ import {
 } from './component-picker'
 import type { PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
 import { fixUtopiaElement, generateConsistentUID } from '../../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getUidMappings, getAllUniqueUidsFromMapping } from '../../../core/model/get-uid-mappings'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 import { ContextMenuWrapper_DEPRECATED } from '../../context-menu-wrapper'
 import { BodyMenuOpenClass, assertNever } from '../../../core/shared/utils'
@@ -511,7 +511,9 @@ export function insertComponentPickerItem(
   dispatch: EditorDispatch,
   insertionTarget: InsertionTarget,
 ) {
-  const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
+  const uniqueIds = new Set(
+    getAllUniqueUidsFromMapping(getUidMappings(projectContents).filePathToUids),
+  )
   const elementWithoutUID = toInsert.element()
   // TODO: for most of the operations we still only support one target
   const firstTarget = targets[0]
@@ -720,7 +722,9 @@ function insertPreferredChild(
   dispatch: EditorDispatch,
   insertionTarget: InsertionTarget,
 ) {
-  const uniqueIds = new Set(getAllUniqueUids(projectContents).uniqueIDs)
+  const uniqueIds = new Set(
+    getAllUniqueUidsFromMapping(getUidMappings(projectContents).filePathToUids),
+  )
   const uid = generateConsistentUID('prop', uniqueIds)
   const toInsert = elementToInsertToInsertableComponent(
     preferredChildToInsert,

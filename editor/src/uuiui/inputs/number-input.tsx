@@ -50,7 +50,6 @@ import {
   InspectorInput,
 } from './base-input'
 import { usePropControlledStateV2 } from '../../components/inspector/common/inspector-utils'
-import { useIsMyProject } from '../../components/editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../utilities/disable-subtree'
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
@@ -137,6 +136,7 @@ export interface NumberInputOptions {
   numberType: CSSNumberType
   defaultUnitToHide: CSSNumberUnit | null
   pasteHandler?: boolean
+  descriptionLabel?: string
 }
 
 export interface AbstractNumberInputProps<T extends CSSNumber | number>
@@ -190,6 +190,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     onMouseLeave,
     invalid,
     pasteHandler,
+    descriptionLabel,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const colorTheme = useColorTheme()
@@ -666,6 +667,14 @@ export const NumberInput = React.memo<NumberInputProps>(
           }
         : undefined
 
+    const labelInnerIsIcon =
+      labelInner != null && typeof labelInner === 'object' && 'type' in labelInner
+
+    const labelInnerIsIconOrNull = labelInner == null || labelInnerIsIcon
+
+    const showDescriptionLabel =
+      labelInnerIsIconOrNull && !isFocused && descriptionLabel != null && value != null
+
     return (
       <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={style}>
         <div
@@ -677,6 +686,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             borderRadius: 2,
             display: 'flex',
             flexDirection: 'row',
+            gap: 5,
             alignItems: 'center',
             boxShadow: 'inset 0px 0px 0px 1px transparent',
             ...chainedStyles,
@@ -721,11 +731,7 @@ export const NumberInput = React.memo<NumberInputProps>(
                 }}
                 onMouseDown={onLabelMouseDown}
               >
-                {typeof labelInner === 'object' && 'type' in labelInner ? (
-                  <Icn {...labelInner} />
-                ) : (
-                  labelInner
-                )}
+                {labelInnerIsIcon ? <Icn {...labelInner} /> : labelInner}
               </div>
             </div>
           ) : null}
@@ -807,31 +813,22 @@ export const NumberInput = React.memo<NumberInputProps>(
             </div>
           ) : null}
           {DEPRECATED_labelBelow == null && controlStatus != 'off' ? null : (
-            <React.Fragment>
-              {isFauxcused ? (
-                <div
-                  style={{
-                    background: 'transparent',
-                    zIndex: 1,
-                  }}
-                ></div>
-              ) : null}
-              <div
-                data-testid={`${testId}-mouse-down-handler`}
-                onMouseDown={onLabelMouseDown}
-                style={{
-                  paddingLeft: 4,
-                  cursor: CSSCursor.ResizeEW,
-                  fontSize: 9,
-                  textAlign: 'center',
-                  display: 'block',
-                  color: controlStyles.secondaryColor,
-                  ...labelBelowStyle,
-                }}
-              >
-                {DEPRECATED_labelBelow}
-              </div>
-            </React.Fragment>
+            <div
+              data-testid={`${testId}-mouse-down-handler`}
+              onMouseDown={onLabelMouseDown}
+              style={{
+                paddingLeft: 4,
+                cursor: CSSCursor.ResizeEW,
+                fontSize: 9,
+                textAlign: 'center',
+                display: 'block',
+                color: controlStyles.secondaryColor,
+                width: 20,
+                ...labelBelowStyle,
+              }}
+            >
+              {DEPRECATED_labelBelow}
+            </div>
           )}
           <InspectorInput
             {...inputProps}
@@ -848,7 +845,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             value={displayValue}
             ref={ref}
             style={{
-              color: colorTheme.fg1.value,
+              color: showDescriptionLabel ? 'transparent' : colorTheme.fg1.value,
             }}
             css={{
               '::placeholder': { color: invalid ? colorTheme.error.value : undefined },
@@ -864,6 +861,29 @@ export const NumberInput = React.memo<NumberInputProps>(
             onChange={onChange}
             autoComplete='off'
           />
+          {showDescriptionLabel ? (
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                left: labelInnerIsIconOrNull ? 22 : 0,
+                pointerEvents: 'none',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <div
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}
+              >
+                <span>
+                  {value.value}
+                  {value.unit ?? ''}
+                </span>
+                <span style={{ fontSize: 10 }}>{descriptionLabel}</span>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
     )
@@ -977,13 +997,14 @@ interface ChainedNumberControlProps {
   idPrefix: string
   style?: React.CSSProperties
   setGlobalCursor?: (cursor: CSSCursor | null) => void
+  wrap?: boolean
 }
 
 export const ChainedNumberInput: React.FunctionComponent<
   React.PropsWithChildren<ChainedNumberControlProps>
-> = React.memo(({ propsArray, idPrefix, style, setGlobalCursor }) => {
+> = React.memo(({ propsArray, idPrefix, style, setGlobalCursor, wrap }) => {
   return (
-    <FlexRow style={style}>
+    <FlexRow style={{ flexWrap: wrap ? 'wrap' : 'nowrap', ...style }}>
       {propsArray.map((props, i) => {
         switch (i) {
           case 0: {

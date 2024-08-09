@@ -85,6 +85,7 @@ export const REMOVE_ABSOLUTE_POSITIONING = 'remove-absolute-positioning'
 export const RESIZE_TO_FIT = 'resize-to-fit'
 export const OPEN_INSERT_MENU = 'open-insert-menu'
 export const WRAP_IN_DIV = 'wrap-in-div'
+export const CONVERT_TO_GRID_CONTAINER = 'convert-to-grid-container'
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
@@ -231,6 +232,10 @@ export const shortcutDetailsWithDefaults: ShortcutDetails = {
   [CONVERT_TO_FLEX_CONTAINER]: shortcut(
     'Convert selected elements to flex containers',
     key('a', ['shift']),
+  ),
+  [CONVERT_TO_GRID_CONTAINER]: shortcut(
+    'Convert selected elements to grid containers',
+    key('a', ['shift', 'alt']),
   ),
   [REMOVE_ABSOLUTE_POSITIONING]: shortcut(`Strip absolute sizing props props`, key('x', [])),
   [COPY_STYLE_PROPERTIES]: shortcut('Copy style properties', key('c', ['alt', 'cmd'])),

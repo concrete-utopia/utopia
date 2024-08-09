@@ -236,6 +236,15 @@ export function filterKeepFlexContainers(
   )
 }
 
+export function filterKeepGridContainers(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+): ElementPath[] {
+  return elementPaths.filter((e: ElementPath | null) =>
+    MetadataUtils.isGridLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, e)),
+  )
+}
+
 export function numberOfFlexContainers(
   metadata: ElementInstanceMetadataMap,
   elementPaths: ElementPath[],
@@ -252,6 +261,15 @@ export function detectAreElementsFlexContainers(
   )
 }
 
+export function detectAreElementsGridContainers(
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: Array<ElementPath>,
+): boolean {
+  return strictEvery(elementPaths, (path) =>
+    MetadataUtils.isGridLayoutedContainer(MetadataUtils.findElementByElementPath(metadata, path)),
+  )
+}
+
 export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
   flexDirection.startsWith('column')
 
@@ -263,7 +281,7 @@ export const basicHugContentsApplicableForContainer = (
   const isNonFixStickOrAbsolute =
     mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
-      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
+      MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath),
     ).filter(
       (element) =>
         !(
@@ -407,6 +425,27 @@ export const flexContainerProps = [
   styleP('display'),
   styleP('alignItems'),
   styleP('justifyContent'),
+]
+
+export const gridContainerProps = [
+  styleP('gap'),
+  styleP('gridGap'),
+  styleP('display'),
+  styleP('gridTemplateRows'),
+  styleP('gridTemplateColumns'),
+  styleP('gridAutoColumns'),
+  styleP('gridAutoRows'),
+  styleP('rowGap'),
+  styleP('columnGap'),
+]
+
+export const gridElementProps = [
+  styleP('gridColumn'),
+  styleP('gridColumnStart'),
+  styleP('gridColumnEnd'),
+  styleP('gridRow'),
+  styleP('gridRowStart'),
+  styleP('gridRowEnd'),
 ]
 
 export const flexChildProps = [

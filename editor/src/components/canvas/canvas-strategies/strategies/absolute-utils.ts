@@ -1,3 +1,4 @@
+import type { HonoursPosition } from '../../../../core/model/element-template-utils'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { uniqBy } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
@@ -28,7 +29,7 @@ export function honoursPropsSize(
 export function honoursPropsPosition(
   canvasState: InteractionCanvasState,
   element: ElementPath,
-): boolean {
+): HonoursPosition {
   return MetadataUtils.targetHonoursPropsPosition(
     canvasState.projectContents,
     MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),

@@ -1534,7 +1534,6 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
         padded={false}
         variant='<----------1fr---------><-auto->'
         style={{
-          borderTop: `1px solid ${colorTheme.seperator.value}`,
           padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
           alignItems: 'center',
           gap: 8,
