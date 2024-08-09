@@ -230,6 +230,10 @@ export const RadixSelect = React.memo(
     style?: CSSProperties
     onValueChange?: (value: string) => void
   }) => {
+    const stopPropagation = React.useCallback((e: React.KeyboardEvent) => {
+      e.stopPropagation()
+    }, [])
+
     return (
       <Select.Root value={props.value?.value} onValueChange={props.onValueChange}>
         <Select.Trigger
@@ -260,6 +264,7 @@ export const RadixSelect = React.memo(
         </Select.Trigger>
         <Select.Portal>
           <Select.Content
+            onKeyDown={stopPropagation}
             style={{
               background: colorTheme.black.value,
               padding: 4,
