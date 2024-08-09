@@ -598,6 +598,17 @@ export function interactionInProgress(interactionSession: InteractionSession | n
   }
 }
 
+function controlPriorityToNumber(prio: ControlWithProps<any>['priority']): number {
+  switch (prio) {
+    case 'bottom':
+      return 0
+    case undefined:
+      return 1
+    case 'top':
+      return 2
+  }
+}
+
 export function useGetApplicableStrategyControls(): Array<ControlWithProps<unknown>> {
   const applicableStrategies = useGetApplicableStrategies()
   const currentStrategy = useDelayedCurrentStrategy()
@@ -627,6 +638,11 @@ export function useGetApplicableStrategyControls(): Array<ControlWithProps<unkno
     if (!isResizable && !currentlyInProgress) {
       applicableControls.push(notResizableControls)
     }
+
+    applicableControls = applicableControls.sort(
+      (a, b) => controlPriorityToNumber(a.priority) - controlPriorityToNumber(b.priority),
+    )
+
     return applicableControls
   }, [applicableStrategies, currentStrategy, currentlyInProgress])
 }

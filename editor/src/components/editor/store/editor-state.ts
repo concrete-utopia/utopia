@@ -3844,3 +3844,10 @@ export function getNewSceneName(editor: EditorState): string {
   // Fallback.
   return 'New Scene'
 }
+
+export function getAllFocusedPaths(
+  focusedElementPath: ElementPath | null,
+  autoFocusedPaths: Array<ElementPath>,
+): Array<ElementPath> {
+  return focusedElementPath != null ? [focusedElementPath, ...autoFocusedPaths] : autoFocusedPaths
+}

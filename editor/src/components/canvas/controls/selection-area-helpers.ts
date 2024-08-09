@@ -61,6 +61,7 @@ export const filterUnderSelectionArea = (
   area: CanvasRectangle | null,
   selectedViews: ElementPath[],
   lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): ElementPath[] => {
   if (area == null) {
     return []
@@ -127,6 +128,7 @@ export const filterUnderSelectionArea = (
           element.frame,
           element.selected,
           lockedElements,
+          focusedPaths,
         )
       }
       return true
@@ -172,6 +174,7 @@ function isElementIntersactionActuallyUnderAreaAndVisible(
   frame: CanvasRectangle | null,
   isSelected: boolean,
   lockedElements: LockedElements,
+  focusedPaths: Array<ElementPath>,
 ): boolean {
   if (area != null && frame != null && isFiniteRectangle(frame)) {
     const intersect = rectangleIntersection(area, frame)
@@ -196,6 +199,7 @@ function isElementIntersactionActuallyUnderAreaAndVisible(
       canvasOffset,
       jsxMetadata,
       lockedElements,
+      focusedPaths,
     ).some((other) => EP.pathsEqual(path, other))
     if (!pathActuallyUnderArea) {
       return false

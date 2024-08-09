@@ -144,6 +144,7 @@ function useCanvasContextMenuItems(
                 data.canvasOffset,
                 data.jsxMetadata,
                 data.lockedElements,
+                data.autoFocusedPaths,
               )
               lastMousePosition = WindowMousePositionRaw
             }
@@ -203,6 +204,7 @@ function useCanvasContextMenuGetData(
       autoFocusedPaths: store.derived.autoFocusedPaths,
       propertyControlsInfo: store.editor.propertyControlsInfo,
       lockedElements: store.editor.lockedElements,
+      autofocusedPaths: store.derived.autoFocusedPaths,
     }
   })
   const navigatorTargetsRef = useRefEditorState(navigatorTargetsSelector)
@@ -232,6 +234,7 @@ function useCanvasContextMenuGetData(
       propertyControlsInfo: currentEditor.propertyControlsInfo,
       showComponentPicker: showComponentPicker,
       lockedElements: currentEditor.lockedElements,
+      autofocusedPaths: currentEditor.autoFocusedPaths,
     }
   }, [editorSliceRef, navigatorTargetsRef, contextMenuInstance, showComponentPicker])
 }

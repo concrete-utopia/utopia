@@ -23,7 +23,6 @@ import type { DetectedLayoutSystem } from 'utopia-shared/src/types'
 import { NO_OP } from '../../core/shared/utils'
 import { assertNever } from '../../core/shared/utils'
 import {
-  PopupList,
   FlexRow,
   Icons,
   InspectorSectionIcons,
@@ -44,6 +43,7 @@ import {
   cssKeyword,
   cssNumber,
   cssNumberToString,
+  gridAutoFlowIcon,
   gridCSSKeyword,
   gridCSSNumber,
   isCSSKeyword,
@@ -54,11 +54,7 @@ import {
   isValidGridDimensionKeyword,
   type GridDimension,
 } from './common/css-utils'
-import {
-  applyCommandsAction,
-  setProp_UNSAFE,
-  transientActions,
-} from '../editor/actions/action-creators'
+import { applyCommandsAction, transientActions } from '../editor/actions/action-creators'
 import type { PropertyToUpdate } from '../canvas/commands/set-property-command'
 import {
   propertyToDelete,
@@ -73,19 +69,22 @@ import type {
   GridPosition,
 } from '../../core/shared/element-template'
 import {
-  emptyComments,
   gridPositionValue,
-  jsExpressionValue,
   type ElementInstanceMetadata,
   type GridElementProperties,
 } from '../../core/shared/element-template'
 import { setGridPropsCommands } from '../canvas/canvas-strategies/strategies/grid-helpers'
 import { type CanvasCommand } from '../canvas/commands/commands'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
-import { DropdownMenu, regularDropdownMenuItem } from '../../uuiui/radix-components'
+import {
+  DropdownMenu,
+  RadixSelect,
+  regularDropdownMenuItem,
+  regularRadixSelectOption,
+  separatorRadixSelectOption,
+} from '../../uuiui/radix-components'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from './common/property-path-hooks'
 import { NumberOrKeywordControl } from '../../uuiui/inputs/number-or-keyword-control'
-import type { SelectOption } from './controls/select-control'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { cssNumberEqual } from '../canvas/controls/select-mode/controls-common'
 import type { EditorAction } from '../editor/action-types'
@@ -825,12 +824,25 @@ GapRowColumnControl.displayName = 'GapRowColumnControl'
 
 const AutoFlowPopupId = 'auto-flow-control'
 
-const selectOption = (value: GridAutoFlow | 'unset'): SelectOption => ({
-  label: value,
-  value: value,
+function selectOption(value: GridAutoFlow) {
+  return regularRadixSelectOption({
+    label: value,
+    value: value,
+    icon: gridAutoFlowIcon(value),
+  })
+}
+
+const unsetSelectOption = regularRadixSelectOption({
+  label: 'unset',
+  value: 'unset',
+  placeholder: true,
 })
 
-const GRID_AUTO_FLOW_DROPDOWN_OPTIONS: Array<SelectOption> = GridAutoFlowValues.map(selectOption)
+const autoflowOptions = [
+  unsetSelectOption,
+  separatorRadixSelectOption(),
+  ...GridAutoFlowValues.map(selectOption),
+]
 
 const AutoFlowControl = React.memo(() => {
   const dispatch = useDispatch()
@@ -853,28 +865,30 @@ const AutoFlowControl = React.memo(() => {
     'AutoFlowControl gridAutoFlowValue',
   )
 
-  const { controlStyles, controlStatus } = useInspectorStyleInfo('gridAutoFlow')
+  const { controlStatus } = useInspectorStyleInfo('gridAutoFlow')
 
   const currentValue = React.useMemo(
     () =>
       controlStatus === 'detected'
-        ? selectOption('unset')
-        : optionalMap((v) => selectOption(v), gridAutoFlowValue) ?? undefined,
+        ? unsetSelectOption
+        : optionalMap(selectOption, gridAutoFlowValue) ?? undefined,
     [controlStatus, gridAutoFlowValue],
   )
 
   const onSubmit = React.useCallback(
-    (option: SelectOption) => {
+    (value: string) => {
       if (selectededViewsRef.current.length === 0) {
         return
       }
       dispatch(
-        selectededViewsRef.current.map((target) =>
-          setProp_UNSAFE(
-            target,
-            PP.create('style', 'gridAutoFlow'),
-            jsExpressionValue(option.value, emptyComments),
-          ),
+        selectededViewsRef.current.map((path) =>
+          applyCommandsAction([
+            updateBulkProperties('always', path, [
+              value === 'unset'
+                ? propertyToDelete(PP.create('style', 'gridAutoFlow'))
+                : propertyToSet(PP.create('style', 'gridAutoFlow'), value),
+            ]),
+          ]),
         ),
       )
     },
@@ -884,16 +898,12 @@ const AutoFlowControl = React.memo(() => {
   return (
     <FlexRow style={{ gap: 6 }}>
       <div style={{ fontWeight: 600 }}>Auto Flow</div>
-      <PopupList
+      <RadixSelect
         id={AutoFlowPopupId}
-        value={currentValue}
-        options={GRID_AUTO_FLOW_DROPDOWN_OPTIONS}
-        onSubmitValue={onSubmit}
-        controlStyles={controlStyles}
-        style={{
-          background: 'transparent',
-          opacity: controlStatus !== 'detected' ? undefined : 0.5,
-        }}
+        style={{ flex: 1 }}
+        value={currentValue ?? null}
+        options={autoflowOptions}
+        onValueChange={onSubmit}
       />
     </FlexRow>
   )
