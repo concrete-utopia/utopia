@@ -431,12 +431,7 @@ const TemplateDimensionControl = React.memo(
 
     const openDropdown = React.useCallback(
       () => (
-        <SquareButton
-          data-testid={'openDropdown'}
-          highlight
-          onClick={NO_OP}
-          style={{ width: 12, height: 22 }}
-        >
+        <SquareButton data-testid={'openDropdown'} onClick={NO_OP}>
           <Icons.Threedots />
         </SquareButton>
       ),
@@ -453,8 +448,8 @@ const TemplateDimensionControl = React.memo(
       >
         <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center' }}>
           <div style={{ flex: 1 }}>{title}</div>
-          <SquareButton>
-            <Icons.Plus width={12} height={12} onClick={onAdd} />
+          <SquareButton highlight>
+            <Icons.SmallPlus onClick={onAdd} />
           </SquareButton>
         </div>
         {values.map((value, index) => {
@@ -813,7 +808,7 @@ const GapRowColumnControl = React.memo(() => {
         <SquareButton
           data-testid={`grid-gap-cycle-mode`}
           onClick={cycleControlSplitState}
-          style={{ width: 16 }}
+          highlight
         >
           {modeIcon}
         </SquareButton>

@@ -47,7 +47,6 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => {
 
   return {
     label: 'button',
-    // cursor: 'pointer',
     display: props.hidden ? 'none' : 'flex',
     flexGrow: 0,
     flexShrink: 0,
@@ -57,7 +56,7 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => {
     alignItems: 'center',
     justifyContent: 'center',
     outline: 'none',
-    borderRadius: 1,
+    borderRadius: 3,
     padding: 0,
     height: UtopiaTheme.layout.inputHeight.default,
     opacity: props.disabled ? 0.5 : 1,
