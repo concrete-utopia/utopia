@@ -462,7 +462,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     (store) => {
       return MetadataUtils.isDescendantOfHierarchyLockedElement(
         navigatorEntry.elementPath,
-        store.editor.lockedElements,
+        store.editor.lockedElements.hierarchyLock,
       )
     },
     'NavigatorItemActionSheet descendant of locked',

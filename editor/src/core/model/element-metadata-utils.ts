@@ -2201,8 +2201,11 @@ export const MetadataUtils = {
         : null
     return localFrame
   },
-  isDescendantOfHierarchyLockedElement(path: ElementPath, lockedElements: LockedElements): boolean {
-    return lockedElements.hierarchyLock.some((lockedPath) => EP.isDescendantOf(path, lockedPath))
+  isDescendantOfHierarchyLockedElement(
+    path: ElementPath,
+    lockedElements: Array<ElementPath>,
+  ): boolean {
+    return lockedElements.some((lockedPath) => EP.isDescendantOf(path, lockedPath))
   },
   collectParentsAndSiblings(
     componentMetadata: ElementInstanceMetadataMap,
