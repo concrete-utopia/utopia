@@ -26,6 +26,7 @@ import type {
 } from './canvas-strategy-types'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
 import type { VariablesInScope } from '../ui-jsx-canvas'
+import type { Axis } from '../gap-utils'
 
 export type ZeroDragPermitted = 'zero-drag-permitted' | 'zero-drag-not-permitted'
 
@@ -576,15 +577,27 @@ export function flexGapHandle(): FlexGapHandle {
 
 export interface GridAxisHandle {
   type: 'GRID_AXIS_HANDLE'
-  axis: 'column' | 'row'
+  axis: Axis
   columnOrRow: number
 }
 
-export function gridAxisHandle(axis: 'column' | 'row', columnOrRow: number): GridAxisHandle {
+export function gridAxisHandle(axis: Axis, columnOrRow: number): GridAxisHandle {
   return {
     type: 'GRID_AXIS_HANDLE',
     axis: axis,
     columnOrRow: columnOrRow,
+  }
+}
+
+export interface GridGapHandle {
+  type: 'GRID_GAP_HANDLE'
+  axis: Axis
+}
+
+export function gridGapHandle(axis: Axis): GridGapHandle {
+  return {
+    type: 'GRID_GAP_HANDLE',
+    axis: axis,
   }
 }
 
@@ -680,6 +693,7 @@ export type CanvasControlType =
   | BoundingArea
   | ResizeHandle
   | FlexGapHandle
+  | GridGapHandle
   | PaddingResizeHandle
   | KeyboardCatcherControl
   | ReorderSlider

@@ -79,6 +79,7 @@ import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasLabel } from './select-mode/controls-common'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import type { Sides } from 'utopia-api/core'
+import type { Axis } from '../gap-utils'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -142,7 +143,7 @@ const GRID_RESIZE_HANDLE_SIZE = 15 // px
 export interface GridResizingControlProps {
   dimension: GridDimension
   dimensionIndex: number
-  axis: 'row' | 'column'
+  axis: Axis
   containingFrame: CanvasRectangle
   fromPropsAxisValues: GridAutoOrTemplateBase | null
   padding: number | null
@@ -290,7 +291,7 @@ export interface GridResizingProps {
   axisValues: GridAutoOrTemplateBase | null
   fromPropsAxisValues: GridAutoOrTemplateBase | null
   containingFrame: CanvasRectangle
-  axis: 'row' | 'column'
+  axis: Axis
   gap: number | null
   padding: Sides | null
 }
@@ -704,7 +705,17 @@ export const GridControls = controlForStrategyMemoized(() => {
           }
 
           return (
-            <div key={`grid-${EP.toString(grid.elementPath)}`} style={style}>
+            <div
+              key={`grid-${EP.toString(grid.elementPath)}`}
+              id={`grid-${EP.toString(grid.elementPath)}`}
+              data-grid-rows={grid.rows}
+              data-grid-columns={grid.columns}
+              data-grid-template-columns={getNullableAutoOrTemplateBaseString(
+                grid.gridTemplateColumns,
+              )}
+              data-grid-template-rows={getNullableAutoOrTemplateBaseString(grid.gridTemplateRows)}
+              style={style}
+            >
               {placeholders.map((cell) => {
                 const countedRow = Math.floor(cell / grid.columns) + 1
                 const countedColumn = Math.floor(cell % grid.columns) + 1
