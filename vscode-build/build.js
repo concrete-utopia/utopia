@@ -35,13 +35,13 @@ child_process.execSync(`git apply ../vscode.patch`, {
 child_process.execSync('yarn', { stdio: 'inherit' })
 
 // Compile
-child_process.execSync('yarn gulp vscode-web', { stdio: 'inherit' })
+child_process.execSync('yarn gulp vscode-web-min', { stdio: 'inherit' })
 
-// // Remove maps
-// const mapFiles = glob.sync('out-vscode-min/**/*.js.map', {})
-// mapFiles.forEach((mapFile) => {
-//   fs.unlinkSync(mapFile)
-// })
+// Remove maps
+const mapFiles = glob.sync('out-vscode-min/**/*.js.map', {})
+mapFiles.forEach((mapFile) => {
+  fs.unlinkSync(mapFile)
+})
 
 // Extract compiled files
 if (fs.existsSync('../dist')) {
