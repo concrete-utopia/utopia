@@ -290,6 +290,14 @@ function processPackageJson(
         return resolveSuccess(
           normalizePath([...containerFolder, ...getPartsFromPath(resolvedExportEntry)]),
         )
+      } else if (
+        resolvedExportEntry != null &&
+        typeof resolvedExportEntry === 'object' &&
+        resolvedExportEntry['require'] != null
+      ) {
+        return resolveSuccess(
+          normalizePath([...containerFolder, ...getPartsFromPath(resolvedExportEntry['require'])]),
+        )
       } else if (browserEntry != null && typeof browserEntry === 'string') {
         return resolveSuccess(
           normalizePath([...containerFolder, ...getPartsFromPath(browserEntry)]),
