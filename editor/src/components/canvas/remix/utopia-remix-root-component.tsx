@@ -23,6 +23,7 @@ import {
   useCanvasState,
   useRefCanvasState,
 } from '../ui-jsx-canvas-renderer/canvas-state-hooks'
+import { defaultEither, isLeft } from '../../../core/shared/either'
 
 type RouteModule = RouteModules[keyof RouteModules]
 type RouterType = ReturnType<typeof createMemoryRouter>
@@ -77,7 +78,9 @@ export function useRemixNavigationContext(
 }
 
 function useGetRouteModules(basePath: ElementPath) {
-  const remixDerivedDataRef = useRefCanvasState((store) => store.derived.remixData)
+  const remixDerivedDataRef = useRefCanvasState((store) =>
+    defaultEither(null, store.derived.remixData),
+  )
   const projectContentsRef = useRefCanvasState((store) => store.editor.projectContents)
   const fileBlobsRef = useRefCanvasState((store) => store.editor.canvas.base64Blobs)
   const hiddenInstancesRef = useRefCanvasState((store) => store.editor.hiddenInstances)
@@ -92,7 +95,8 @@ function useGetRouteModules(basePath: ElementPath) {
     Substores.derived,
     useAllowRerenderOnlyOnAllElements(),
     (store) => {
-      const routeModuleCreators = store.derived.remixData?.routeModuleCreators ?? {}
+      const routeModuleCreators =
+        defaultEither(null, store.derived.remixData)?.routeModuleCreators ?? {}
       return Object.values(routeModuleCreators).map(
         (rmc) => getDefaultExportNameAndUidFromFile(projectContentsRef.current, rmc.filePath)?.name,
       )
@@ -175,11 +179,13 @@ function useGetRoutes(
   const routes = useCanvasState(
     Substores.derived,
     useAllowRerenderOnlyOnAllElements(),
-    (store) => store.derived.remixData?.routes ?? [],
+    (store) => defaultEither(null, store.derived.remixData)?.routes ?? [],
     'UtopiaRemixRootComponent routes',
   )
 
-  const remixDerivedDataRef = useRefCanvasState((store) => store.derived.remixData)
+  const remixDerivedDataRef = useRefCanvasState((store) =>
+    defaultEither(null, store.derived.remixData),
+  )
   const projectContentsRef = useRefCanvasState((store) => store.editor.projectContents)
   const fileBlobsRef = useRefCanvasState((store) => store.editor.canvas.base64Blobs)
   const hiddenInstancesRef = useRefCanvasState((store) => store.editor.hiddenInstances)
@@ -398,11 +404,15 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
     return
   }, [router, updateNavigationData])
 
-  if (remixDerivedDataRef.current == null || router == null || routeModules == null) {
+  if (router == null || routeModules == null) {
     return null
   }
 
-  const { assetsManifest, futureConfig } = remixDerivedDataRef.current
+  if (isLeft(remixDerivedDataRef.current) || remixDerivedDataRef.current.value == null) {
+    return null
+  }
+
+  const { assetsManifest, futureConfig } = remixDerivedDataRef.current.value
 
   return (
     <RemixContext.Provider

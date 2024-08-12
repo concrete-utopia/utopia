@@ -33,7 +33,7 @@ import {
   getFeaturedRoutesFromPackageJSON,
   getPageTemplatesFromPackageJSON,
 } from '../../../printer-parsers/html/external-resources-parser'
-import { defaultEither } from '../../../core/shared/either'
+import { defaultEither, foldEither } from '../../../core/shared/either'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import {
@@ -116,7 +116,14 @@ export const PagesPane = React.memo((props) => {
         }
         return result
       }
-      const routes = processRoutes(store.derived.remixData?.routes ?? [], '')
+      const routes = processRoutes(
+        foldEither(
+          () => [],
+          (remixData) => remixData?.routes ?? [],
+          store.derived.remixData,
+        ),
+        '',
+      )
       return routes
     },
     'PagesPane remixRoutes',

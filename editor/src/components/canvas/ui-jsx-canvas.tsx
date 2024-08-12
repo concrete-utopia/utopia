@@ -20,6 +20,7 @@ import {
   flatMapEither,
   foldEither,
   forEachRight,
+  isLeft,
   isRight,
   left,
   right,
@@ -505,18 +506,26 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
-  const getRemixPathValidationContext = (path: ElementPath): RemixValidPathsGenerationContext =>
-    remixDerivedDataRef.current == null
-      ? { type: 'inactive' }
-      : {
+  const getRemixPathValidationContext = (path: ElementPath): RemixValidPathsGenerationContext => {
+    if (isLeft(remixDerivedDataRef.current)) {
+      return { type: 'inactive' }
+    } else {
+      const remixData = remixDerivedDataRef.current.value
+      if (remixData == null) {
+        return { type: 'inactive' }
+      } else {
+        return {
           type: 'active',
-          routeModulesToRelativePaths: remixDerivedDataRef.current.routeModulesToRelativePaths,
+          routeModulesToRelativePaths: remixData.routeModulesToRelativePaths,
           currentlyRenderedRouteModules:
             matchRoutes(
-              remixDerivedDataRef.current.routes,
+              remixData.routes,
               remixNavigationState[EP.toString(path)]?.location ?? '/',
             )?.map((p) => p.route) ?? [],
         }
+      }
+    }
+  }
 
   const {
     StoryboardRootComponent,

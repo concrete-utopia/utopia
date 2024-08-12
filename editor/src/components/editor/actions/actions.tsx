@@ -182,7 +182,7 @@ import {
 } from '../../canvas/canvas-utils'
 import type { SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-side-effect'
-import type { CodeResultCache } from '../../custom-code/code-file'
+import type { CodeResultCache, CurriedUtopiaRequireFn } from '../../custom-code/code-file'
 import {
   codeCacheToBuildResult,
   generateCodeResultCache,
@@ -618,7 +618,7 @@ import {
 import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
 import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 import { nextSelectedTab } from '../../navigator/left-pane/left-pane-utils'
-import { getRemixRootDir } from '../store/remix-derived-data'
+import { getDefaultedRemixRootDir, getRemixRootDir } from '../store/remix-derived-data'
 import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-item/component-picker-context-menu'
 import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
@@ -1328,6 +1328,7 @@ export function replaceFilePath(
   oldPath: string,
   newPath: string,
   projectContentsTree: ProjectContentTreeRoot,
+  curriedRequireFn: CurriedUtopiaRequireFn,
 ): ReplaceFilePathResult {
   // FIXME: Reimplement this in a way that doesn't require converting to and from `ProjectContents`.
   const projectContents = treeToContents(projectContentsTree)
@@ -1338,7 +1339,7 @@ export function replaceFilePath(
   }
   let updatedFiles: Array<{ oldPath: string; newPath: string }> = []
 
-  const remixRootDir = getRemixRootDir(projectContentsTree)
+  const remixRootDir = getDefaultedRemixRootDir(projectContentsTree, curriedRequireFn)
 
   let renamedOptionalPrefix = false
   Utils.fastForEach(Object.keys(projectContents), (filename) => {
@@ -6488,6 +6489,7 @@ function updateFilePath(
     params.oldPath,
     params.newPath,
     editor.projectContents,
+    editor.codeResultCache.curriedRequireFn,
   )
   if (replaceFilePathResults.type === 'FAILURE') {
     const toastAction = showToast(notice(replaceFilePathResults.errorMessage, 'ERROR', true))

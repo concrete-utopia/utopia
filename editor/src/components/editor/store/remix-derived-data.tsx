@@ -27,7 +27,19 @@ import {
 import type { CurriedUtopiaRequireFn, CurriedResolveFn } from '../../custom-code/code-file'
 import { memoize } from '../../../core/shared/memoize'
 import { shallowEqual } from '../../../core/shared/equality-utils'
-import { evaluator } from '../../../core/es-modules/evaluator/evaluator'
+import type { Either } from '../../../core/shared/either'
+import { defaultEither, foldEither, left, mapEither, right } from '../../../core/shared/either'
+import type { ArbitraryJSBlock } from '../../../core/shared/element-template'
+import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
+import { buildBaseExecutionScope } from '../../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
+import type { ProjectFile } from '../../../core/shared/project-file-types'
+import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
+import type { Optic } from '../../../core/shared/optics/optics'
+import { fromField, fromTypeGuard, notNull } from '../../../core/shared/optics/optic-creators'
+import { toFirst } from '../../../core/shared/optics/optic-utilities'
+import { applyBlockReturnFunctions } from '../../../core/shared/dom-utils'
+import type { FancyError } from '../../../core/shared/code-exec-utils'
+import { processErrorWithSourceMap } from '../../../core/shared/code-exec-utils'
 
 export interface RemixRoutingTable {
   [rootElementUid: string]: string /* file path */
@@ -53,26 +65,54 @@ export const CreateRemixDerivedDataRefsGLOBAL: {
 }
 export const REMIX_CONFIG_JS_PATH = '/remix.config.js'
 
-export function getRemixRootDir(projectContents: ProjectContentTreeRoot): string {
-  const defaultRootDirName = 'app'
-  const makeRootDirPath = (dir: string = defaultRootDirName) => `/${dir}`
+const defaultRootDirName = 'app'
 
-  const remixConfigFile = getProjectFileByFilePath(projectContents, REMIX_CONFIG_JS_PATH)
-  if (remixConfigFile == null || remixConfigFile.type !== 'TEXT_FILE') {
-    return makeRootDirPath()
+const remixConfigBlockOptic: Optic<ProjectFile | null, ArbitraryJSBlock> = notNull<ProjectFile>()
+  .compose(fromTypeGuard(isTextFile))
+  .compose(fromField('fileContents'))
+  .compose(fromField('parsed'))
+  .compose(fromTypeGuard(isParseSuccess))
+  .compose(fromField('combinedTopLevelArbitraryBlock'))
+  .compose(notNull())
+
+export function getRemixRootDir(
+  projectContents: ProjectContentTreeRoot,
+  curriedRequireFn: CurriedUtopiaRequireFn,
+): Either<FancyError, string> {
+  try {
+    const possibleConfigFile = getProjectFileByFilePath(projectContents, REMIX_CONFIG_JS_PATH)
+    const possibleConfigBlock = toFirst(remixConfigBlockOptic, possibleConfigFile)
+    return foldEither(
+      () => {
+        return right(`/${defaultRootDirName}`)
+      },
+      (codeBlock) => {
+        const requireFn = curriedRequireFn(projectContents)
+        const customRequire = (importOrigin: string, toImport: string) =>
+          requireFn(importOrigin, toImport, true)
+        const executionScope = buildBaseExecutionScope(REMIX_CONFIG_JS_PATH, customRequire, {})
+        applyBlockReturnFunctions(executionScope)
+        const requireResult: any = {}
+        resolveParamsAndRunJsCode(REMIX_CONFIG_JS_PATH, codeBlock, requireResult, executionScope)
+        const dir = executionScope?.['module']?.['exports']?.['appDirectory'] ?? defaultRootDirName
+        return right(`/${dir}`)
+      },
+      possibleConfigBlock,
+    )
+  } catch (error) {
+    if (error instanceof Error) {
+      return left(processErrorWithSourceMap(null, REMIX_CONFIG_JS_PATH, error, true))
+    } else {
+      throw new Error(`Unexpected error type: ${error}`)
+    }
   }
+}
 
-  const m = evaluator(
-    REMIX_CONFIG_JS_PATH,
-    remixConfigFile.fileContents.code,
-    {
-      exports: {},
-    },
-    () => null,
-  )
-
-  const dir = m?.['exports']?.['appDirectory'] ?? defaultRootDirName
-  return makeRootDirPath(dir)
+export function getDefaultedRemixRootDir(
+  projectContents: ProjectContentTreeRoot,
+  curriedRequireFn: CurriedUtopiaRequireFn,
+): string {
+  return defaultEither(`/${defaultRootDirName}`, getRemixRootDir(projectContents, curriedRequireFn))
 }
 
 // Important Note: When updating the params here, you must evaluate whether the change should
@@ -81,48 +121,50 @@ export function createRemixDerivedData(
   projectContents: ProjectContentTreeRoot,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
-): RemixDerivedData | null {
-  const rootDir = getRemixRootDir(projectContents)
-  const rootJsFile = getRemixRootFile(rootDir, projectContents)
-  if (rootJsFile == null) {
-    return null
-  }
+): Either<FancyError, RemixDerivedData | null> {
+  const possibleRootDir = getRemixRootDir(projectContents, curriedRequireFn)
+  return mapEither((rootDir) => {
+    const rootJsFile = getRemixRootFile(rootDir, projectContents)
+    if (rootJsFile == null) {
+      return null
+    }
 
-  const routeManifest = createRouteManifestFromProjectContents(
-    { rootFilePath: rootJsFile.path, rootDir: rootDir },
-    projectContents,
-  )
-  if (routeManifest == null) {
-    return null
-  }
+    const routeManifest = createRouteManifestFromProjectContents(
+      { rootFilePath: rootJsFile.path, rootDir: rootDir },
+      projectContents,
+    )
+    if (routeManifest == null) {
+      return null
+    }
 
-  const assetsManifest = createAssetsManifest(routeManifest)
+    const assetsManifest = createAssetsManifest(routeManifest)
 
-  const routesAndModulesFromManifestResult = getRoutesAndModulesFromManifest(
-    rootJsFile.file,
-    routeManifest,
-    DefaultFutureConfig,
-    curriedRequireFn,
-    curriedResolveFn,
-    projectContents,
-    CreateRemixDerivedDataRefsGLOBAL.routeModulesCache.current,
-  )
+    const routesAndModulesFromManifestResult = getRoutesAndModulesFromManifest(
+      rootJsFile.file,
+      routeManifest,
+      DefaultFutureConfig,
+      curriedRequireFn,
+      curriedResolveFn,
+      projectContents,
+      CreateRemixDerivedDataRefsGLOBAL.routeModulesCache.current,
+    )
 
-  if (routesAndModulesFromManifestResult == null) {
-    return null
-  }
+    if (routesAndModulesFromManifestResult == null) {
+      return null
+    }
 
-  const { routeModuleCreators, routes, routeModulesToRelativePaths, routingTable } =
-    routesAndModulesFromManifestResult
+    const { routeModuleCreators, routes, routeModulesToRelativePaths, routingTable } =
+      routesAndModulesFromManifestResult
 
-  return {
-    futureConfig: DefaultFutureConfig,
-    routes: routes,
-    assetsManifest: assetsManifest,
-    routeModuleCreators: routeModuleCreators,
-    routeModulesToRelativePaths: routeModulesToRelativePaths,
-    routingTable: routingTable,
-  }
+    return {
+      futureConfig: DefaultFutureConfig,
+      routes: routes,
+      assetsManifest: assetsManifest,
+      routeModuleCreators: routeModuleCreators,
+      routeModulesToRelativePaths: routeModulesToRelativePaths,
+      routingTable: routingTable,
+    }
+  }, possibleRootDir)
 }
 
 function isProjectContentTreeRoot(v: unknown): v is ProjectContentTreeRoot {
