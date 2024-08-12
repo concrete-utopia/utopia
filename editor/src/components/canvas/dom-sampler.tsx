@@ -28,45 +28,36 @@ function collectMetadataForElementPath(
   ) as HTMLElement | null
 
   if (foundElement != null) {
-    const collectForElement = (
-      element: Node,
-    ): { metadata: DomElementMetadata; computedStyle: ComputedStyleMetadata | null } | null => {
-      // TODO handle measuring SVGs
-      if (element instanceof HTMLElement) {
-        const pathsWithStrings = getPathWithStringsOnDomElement(element)
-        if (pathsWithStrings.length == 0) {
-          throw new Error('No path found on element')
-        } else {
-          const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
-            const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
-            return validPaths.some((vp) => EP.pathsEqual(vp, staticPath)) // this is from the old implementation, no descendants are included
-          })
+    // TODO handle measuring SVGs
+    if (foundElement instanceof HTMLElement) {
+      const pathsWithStrings = getPathWithStringsOnDomElement(foundElement)
+      if (pathsWithStrings.length == 0) {
+        throw new Error('No path found on element')
+      } else {
+        const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
+          const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
+          return validPaths.some((vp) => EP.pathsEqual(vp, staticPath)) // this is from the old implementation, no descendants are included
+        })
 
-          const metadata = createElementInstanceMetadataForElementCached.get(
-            element,
-            scale,
-            containerRect.x, // passing this as two values so it can be used as cache key
-            containerRect.y,
-          )
-          const computedStyle = getComputedStyleOptionallyForElement(
-            element,
-            pluck(foundValidPaths, 'path'),
-            selectedViews,
-          )
+        const metadata = createElementInstanceMetadataForElementCached.get(
+          foundElement,
+          scale,
+          containerRect.x, // passing this as two values so it can be used as cache key
+          containerRect.y,
+        )
+        const computedStyle = getComputedStyleOptionallyForElement(
+          foundElement,
+          pluck(foundValidPaths, 'path'),
+          selectedViews,
+        )
 
-          return { metadata: metadata, computedStyle: computedStyle }
-        }
+        return { metadata: metadata, computedStyle: computedStyle }
       }
-      // throw new Error(`Element is not HTMLElement: ${EP.humanReadableDebugPath(path)}`)
-      return null
     }
-
-    return collectForElement(foundElement)
+    return null
   }
 
   return null
-
-  // throw new Error(`Element not found for ${EP.humanReadableDebugPath(path)}`)
 }
 
 function getValidPathsFromCanvasContainer(canvasRootContainer: HTMLElement): Array<ElementPath> {
@@ -94,7 +85,10 @@ function collectMetadataForPaths(
     metadataToUpdate: { [path: string]: DomElementMetadata }
     computedStylesToUpdate: { [path: string]: ComputedStyleMetadata }
   },
-) {
+): {
+  metadata: { [path: string]: DomElementMetadata }
+  computedStyle: { [path: string]: ComputedStyleMetadata }
+} {
   const containerRect = getCanvasRectangleFromElement(
     canvasRootContainer,
     options.scale,
@@ -120,6 +114,11 @@ function collectMetadataForPaths(
       }
     }
   })
+
+  return {
+    metadata: updatedMetadataMap,
+    computedStyle: updatedComputedStyleMap,
+  }
 }
 
 export function collectMetadata(
@@ -141,10 +140,14 @@ export function collectMetadata(
 
   const validPaths = getValidPathsFromCanvasContainer(canvasRootContainer)
 
+  let result: {
+    metadata: { [path: string]: DomElementMetadata }
+    computedStyle: { [path: string]: ComputedStyleMetadata }
+  }
   if (elementsToFocusOn == 'rerender-all-elements') {
-    collectMetadataForPaths(canvasRootContainer, validPaths, validPaths, options)
+    result = collectMetadataForPaths(canvasRootContainer, validPaths, validPaths, options)
   } else {
-    collectMetadataForPaths(canvasRootContainer, elementsToFocusOn, validPaths, options)
+    result = collectMetadataForPaths(canvasRootContainer, elementsToFocusOn, validPaths, options)
   }
 }
 
