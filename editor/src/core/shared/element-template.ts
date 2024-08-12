@@ -2522,6 +2522,17 @@ export interface ElementInstanceMetadata {
   assignedToProp: string | null
 }
 
+export interface DomElementMetadata {
+  element: Either<string, JSXElementChild>
+  globalFrame: MaybeInfinityCanvasRectangle | null
+  localFrame: MaybeInfinityLocalRectangle | null
+  nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null
+  specialSizeMeasurements: SpecialSizeMeasurements
+  computedStyle: ComputedStyle | null
+  attributeMetadatada: StyleAttributeMetadata | null
+  textContent: string | null
+}
+
 export function elementInstanceMetadata(
   elementPath: ElementPath,
   element: Either<string, JSXElementChild>,
@@ -2557,6 +2568,28 @@ export function elementInstanceMetadata(
     textContent: textContent,
     earlyReturn: earlyReturn,
     assignedToProp: assignedToProp,
+  }
+}
+
+export function domElementMetadata(
+  element: Either<string, JSXElementChild>,
+  globalFrame: MaybeInfinityCanvasRectangle | null,
+  localFrame: MaybeInfinityLocalRectangle | null,
+  nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null,
+  sizeMeasurements: SpecialSizeMeasurements,
+  computedStyle: ComputedStyle | null,
+  attributeMetadatada: StyleAttributeMetadata | null,
+  textContent: string | null,
+): DomElementMetadata {
+  return {
+    element: element,
+    globalFrame: globalFrame,
+    localFrame: localFrame,
+    nonRoundedGlobalFrame: nonRoundedGlobalFrame,
+    specialSizeMeasurements: sizeMeasurements,
+    computedStyle: computedStyle,
+    attributeMetadatada: attributeMetadatada,
+    textContent: textContent,
   }
 }
 

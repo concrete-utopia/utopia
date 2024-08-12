@@ -11,6 +11,7 @@ import type {
   ElementInstanceMetadataMap,
   GridContainerProperties,
   GridElementProperties,
+  DomElementMetadata,
 } from '../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -21,6 +22,7 @@ import {
   gridContainerProperties,
   gridElementProperties,
   gridAutoOrTemplateFallback,
+  domElementMetadata,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import {
@@ -215,7 +217,7 @@ function findParentScene(target: Element): string | null {
   return null
 }
 
-function lazyValue<T>(getter: () => T) {
+export function lazyValue<T>(getter: () => T) {
   let alreadyResolved = false
   let resolvedValue: T
   return () => {
@@ -997,6 +999,52 @@ function collectAndCreateMetadataForElement(
     cachedPaths: [],
     collectedPaths: pathsForElement,
   }
+}
+
+export function createElementInstanceMetadataForElement(
+  element: HTMLElement,
+  parentPoint: CanvasPoint,
+  closestOffsetParentPath: ElementPath,
+  pathsForElement: ElementPath[],
+  globalProps: {
+    scale: number
+    containerRectLazy: () => CanvasRectangle // TODO probably no need to be lazy anymore
+    invalidatedPathsForStylesheetCache: Set<string>
+    selectedViews: Array<ElementPath>
+  },
+): DomElementMetadata {
+  const {
+    tagName,
+    globalFrame,
+    localFrame,
+    nonRoundedGlobalFrame,
+    specialSizeMeasurementsObject,
+    textContentsMaybe,
+  } = collectMetadataForElement(
+    element,
+    parentPoint,
+    closestOffsetParentPath,
+    globalProps.scale,
+    globalProps.containerRectLazy,
+  )
+
+  const { computedStyle, attributeMetadata } = getComputedStyle(
+    element,
+    pathsForElement,
+    globalProps.invalidatedPathsForStylesheetCache,
+    globalProps.selectedViews,
+  )
+
+  return domElementMetadata(
+    left(tagName),
+    globalFrame,
+    localFrame,
+    nonRoundedGlobalFrame,
+    specialSizeMeasurementsObject,
+    computedStyle,
+    attributeMetadata,
+    textContentsMaybe,
+  )
 }
 
 function getComputedStyle(
