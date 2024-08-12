@@ -239,7 +239,7 @@ export const RadixSelect = React.memo(
       <Select.Root value={props.value?.value} onValueChange={props.onValueChange}>
         <Select.Trigger
           style={{
-            background: 'white',
+            background: 'transparent',
             display: 'flex',
             alignItems: 'center',
             gap: 8,
