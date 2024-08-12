@@ -136,17 +136,14 @@ export const ResizeToFitControl = React.memo(() => {
 
   return (
     <Tooltip title={'Resize to Fit'}>
-      <div data-testid={ResizeToFitControlTestId}>
-        <SquareButton onClick={onResizeToFit} highlight disabled={!isHugApplicable}>
-          <Icn
-            type='fitToChildren'
-            color='main'
-            category='layout/commands'
-            width={16}
-            height={16}
-          />
-        </SquareButton>
-      </div>
+      <SquareButton
+        highlight
+        disabled={!isHugApplicable}
+        data-testid={ResizeToFitControlTestId}
+        onClick={onResizeToFit}
+      >
+        <Icn type='fitToChildren' color='main' category='layout/commands' width={16} height={16} />
+      </SquareButton>
     </Tooltip>
   )
 })
