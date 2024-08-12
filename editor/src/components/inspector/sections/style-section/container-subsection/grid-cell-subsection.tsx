@@ -125,8 +125,7 @@ export const GridPlacementSubsection = React.memo(() => {
       </InspectorSubsectionHeader>
       {unless(
         isAllDefaults,
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 27px', gridTemplateRows: '1fr' }}>
-          {/* fix row padding and alignment */}
+        <UIGridRow variant='<--------auto-------->||22px|' padded style={{ minHeight: 68 }}>
           <div>
             {when(
               adjustMode === 'dimensions',
@@ -153,7 +152,7 @@ export const GridPlacementSubsection = React.memo(() => {
               )}
             </SquareButton>
           </div>
-        </div>,
+        </UIGridRow>,
       )}
     </>
   )
@@ -270,7 +269,7 @@ const DimensionsControls = React.memo(
 
     return (
       <>
-        <UIGridRow padded variant='|--50px--|<--------1fr-------->'>
+        <UIGridRow padded={false} variant='|--50px--|<--------1fr-------->'>
           <div>Position</div>
           <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
             <NumberOrKeywordControl
@@ -301,9 +300,9 @@ const DimensionsControls = React.memo(
             />
           </UIGridRow>
         </UIGridRow>
-        <UIGridRow padded variant='|--50px--|<--------1fr-------->'>
+        <UIGridRow padded={false} variant='|--50px--|<--------1fr-------->'>
           <div>Size</div>
-          <FlexRow style={{ gap: 4 }}>
+          <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
             <NumberInput
               value={cssNumber(width)}
               numberType='Unitless'
@@ -334,7 +333,7 @@ const DimensionsControls = React.memo(
               descriptionLabel={height === 1 ? 'Row' : 'Rows'}
               incrementControls={false}
             />
-          </FlexRow>
+          </UIGridRow>
         </UIGridRow>
       </>
     )
@@ -416,9 +415,9 @@ const BoundariesControls = React.memo(
 
     return (
       <>
-        <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
+        <UIGridRow padded={false} variant='|--50px--|<--------1fr-------->'>
           <div>Start</div>
-          <FlexRow style={{ gap: 4 }}>
+          <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
             <NumberOrKeywordControl
               value={columnStartValue.value}
               valueAlias={columnStartValue.alias}
@@ -445,11 +444,11 @@ const BoundariesControls = React.memo(
               keywords={keywordsForPosition(rowLabels.map((l) => l.areaName))}
               keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.areaName))}
             />
-          </FlexRow>
+          </UIGridRow>
         </UIGridRow>
-        <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
+        <UIGridRow padded={false} variant='|--50px--|<--------1fr-------->'>
           <div>End</div>
-          <FlexRow style={{ gap: 4 }}>
+          <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
             <NumberOrKeywordControl
               value={columnEndValue.value}
               valueAlias={columnEndValue.alias}
@@ -476,7 +475,7 @@ const BoundariesControls = React.memo(
               keywords={keywordsForPosition(rowLabels.map((l) => l.areaName))}
               keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.areaName))}
             />
-          </FlexRow>
+          </UIGridRow>
         </UIGridRow>
       </>
     )
