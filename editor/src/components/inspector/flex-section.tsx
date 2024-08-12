@@ -802,7 +802,7 @@ const GapRowColumnControl = React.memo(() => {
             labelInner={{
               category: 'inspector-element',
               type: 'gapHorizontal',
-              color: 'subdued',
+              color: 'on-highlight-secondary',
             }}
           />
         </UIGridRow>,
@@ -821,7 +821,7 @@ const GapRowColumnControl = React.memo(() => {
             labelInner={{
               category: 'inspector-element',
               type: 'gapHorizontal',
-              color: 'subdued',
+              color: 'on-highlight-secondary',
             }}
           />
           <NumberInput
@@ -835,7 +835,7 @@ const GapRowColumnControl = React.memo(() => {
             labelInner={{
               category: 'inspector-element',
               type: 'gapVertical',
-              color: 'subdued',
+              color: 'on-highlight-secondary',
             }}
           />
         </UIGridRow>,
@@ -928,16 +928,15 @@ const AutoFlowControl = React.memo(() => {
   )
 
   return (
-    <FlexRow style={{ gap: 6 }}>
-      <div style={{ fontWeight: 600 }}>Auto Flow</div>
+    <UIGridRow variant='|--60px--|<--1fr-->|22px|' padded={false}>
+      <div>Auto Flow</div>
       <RadixSelect
         id={AutoFlowPopupId}
-        style={{ flex: 1 }}
         value={currentValue ?? null}
         options={autoflowOptions}
         onValueChange={onSubmit}
       />
-    </FlexRow>
+    </UIGridRow>
   )
 })
 AutoFlowControl.displayName = 'AutoFlowControl'

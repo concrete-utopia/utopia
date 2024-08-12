@@ -282,7 +282,7 @@ const DimensionsControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridColumn',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
             />
             <NumberOrKeywordControl
@@ -295,7 +295,7 @@ const DimensionsControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridRow',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
             />
           </UIGridRow>
@@ -313,7 +313,7 @@ const DimensionsControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'rowSpan',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
               descriptionLabel={width === 1 ? 'Col' : 'Cols'}
               incrementControls={false}
@@ -328,7 +328,7 @@ const DimensionsControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'columnSpan',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
               descriptionLabel={height === 1 ? 'Row' : 'Rows'}
               incrementControls={false}
@@ -426,7 +426,7 @@ const BoundariesControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridColumn-start',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
               keywords={keywordsForPosition(columnLabels.map((l) => l.areaName))}
               keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.areaName))}
@@ -439,7 +439,7 @@ const BoundariesControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridRow-start',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
               keywords={keywordsForPosition(rowLabels.map((l) => l.areaName))}
               keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.areaName))}
@@ -457,7 +457,7 @@ const BoundariesControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridColumn-end',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
               keywords={keywordsForPosition(columnLabels.map((l) => l.areaName))}
               keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.areaName))}
@@ -470,7 +470,7 @@ const BoundariesControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridRow-end',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
               keywords={keywordsForPosition(rowLabels.map((l) => l.areaName))}
               keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.areaName))}
