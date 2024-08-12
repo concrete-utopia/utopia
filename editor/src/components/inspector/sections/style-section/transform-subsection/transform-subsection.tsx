@@ -362,7 +362,7 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
         incrementControls={false}
       />
       <SquareButton highlight onMouseDown={removeTransformItem}>
-        <Icons.Minus width={12} height={12} />
+        <Icons.SmallMinus />
       </SquareButton>
     </PropertyRow>
   )
@@ -514,7 +514,7 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         incrementControls={false}
       />
       <SquareButton highlight onMouseDown={removeTransformItem}>
-        <Icons.Minus width={12} height={12} />
+        <Icons.SmallMinus />
       </SquareButton>
     </PropertyRow>
   )

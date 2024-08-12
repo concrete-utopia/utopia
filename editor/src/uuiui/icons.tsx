@@ -276,6 +276,7 @@ export const Icons = {
   PinRightOutline: makeIcon({ type: 'pinrightoutline', color: 'main' }),
   Pipette: makeIcon({ type: 'pipette', color: 'main' }),
   Minus: makeIcon({ type: 'minus', color: 'main' }),
+  SmallMinus: makeIcon({ type: 'minus', color: 'main', width: 12, height: 12 }),
   Plus: makeIcon({ type: 'plus', color: 'main' }),
   SmallPlus: makeIcon({ type: 'plus', color: 'main', width: 12, height: 12 }),
   Play: makeIcon({ type: 'play', color: 'main' }),

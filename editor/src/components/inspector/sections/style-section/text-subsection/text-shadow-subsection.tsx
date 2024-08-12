@@ -251,7 +251,7 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
         incrementControls={false}
       />
       <SquareButton highlight onMouseDown={removeShadow}>
-        <Icons.Minus width={12} height={12} />
+        <Icons.SmallMinus />
       </SquareButton>
     </PropertyRow>
   )
