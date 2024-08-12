@@ -1,6 +1,14 @@
 import React from 'react'
 import { when } from '../../../../../utils/react-conditionals'
-import { FlexColumn, FlexRow, InspectorSubsectionHeader, Tooltip } from '../../../../../uuiui'
+import {
+  FlexColumn,
+  FlexRow,
+  InspectorSubsectionHeader,
+  Tooltip,
+  UtopiaTheme,
+  border,
+  borderRadius,
+} from '../../../../../uuiui'
 import { Link } from '../../../../../uuiui/link'
 import { useConvertWrapperToFrame } from '../../../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { Substores, useEditorState } from '../../../../editor/store/store-hook'
@@ -29,18 +37,18 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
 
   return (
     <FlexColumn>
-      <InspectorSubsectionHeader style={{ border: 'none' }}>
-        <FlexRow
-          style={{
-            flexGrow: 1,
-            gap: 8,
-            height: 42,
-          }}
-        >
-          <EditorContractDropdown />
-          <ResizeToFitControl />
-        </FlexRow>
-      </InspectorSubsectionHeader>
+      <FlexRow
+        style={{
+          flexGrow: 1,
+          gap: 8,
+          height: UtopiaTheme.layout.rowHeight.large,
+          padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px 0 4px`,
+          fontWeight: 600,
+        }}
+      >
+        <EditorContractDropdown />
+        <ResizeToFitControl />
+      </FlexRow>
       {when(showWrapperSectionWarning, <WrapperElementDisclosureBox />)}
       <FlexColumn style={{ gap: 8, paddingLeft: 8, paddingRight: 8 }}>
         {when(

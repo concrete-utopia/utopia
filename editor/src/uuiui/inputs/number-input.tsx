@@ -683,7 +683,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             color: controlStyles.mainColor,
             zIndex: isFocused ? 3 : undefined,
             position: 'relative',
-            borderRadius: 2,
+            borderRadius: UtopiaTheme.inputBorderRadius,
             display: 'flex',
             flexDirection: 'row',
             gap: 5,

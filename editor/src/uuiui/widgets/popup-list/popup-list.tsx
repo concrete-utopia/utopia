@@ -711,7 +711,7 @@ export const PopupList = React.memo<PopupListProps>(
               paddingLeft: '4px',
               fontWeight: 400,
               userSelect: 'none',
-              borderRadius: 2,
+              borderRadius: UtopiaTheme.inputBorderRadius,
               fontSize: 11,
               opacity: optionProps.isDisabled === true ? 0.5 : 1,
               backgroundColor:
