@@ -38,6 +38,7 @@ import {
   FlexRow,
   Icons,
   Icn,
+  UtopiaTheme,
 } from '../../../../../uuiui'
 
 function getIndexedToggleTextShadowEnabled(index: number) {
@@ -175,7 +176,7 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
     <PropertyRow
       key={props.index}
       style={{
-        gridTemplateColumns: '12px 28px repeat(3, 1fr) 22px',
+        gridTemplateColumns: `12px 28px repeat(3, 1fr) ${UtopiaTheme.layout.inputHeight.default}`,
         gridColumnGap: 8,
       }}
     >
