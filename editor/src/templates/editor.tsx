@@ -136,6 +136,7 @@ import {
   traverseReadOnlyArray,
 } from '../core/shared/optics/optic-creators'
 import { keysEqualityExhaustive } from '../core/shared/equality-utils'
+import { collectMetadata } from '../components/canvas/dom-sampler'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -499,6 +500,13 @@ export class Editor {
             domWalkerDispatchResult.entireUpdateFinished,
           ])
         }
+
+        collectMetadata(ElementsToRerenderGLOBAL.current, {
+          scale: this.storedState.patchedEditor.canvas.scale,
+          selectedViews: this.storedState.patchedEditor.selectedViews,
+          metadataToUpdate: {},
+          computedStylesToUpdate: {},
+        })
       }
 
       // true up groups if needed

@@ -229,7 +229,7 @@ export function lazyValue<T>(getter: () => T) {
   }
 }
 
-function getAttributesComingFromStyleSheets(element: HTMLElement): Set<string> {
+export function getAttributesComingFromStyleSheets(element: HTMLElement): Set<string> {
   let appliedAttributes = new Set<string>()
   const sheets = document.styleSheets
   try {
@@ -859,6 +859,55 @@ function collectMetadataForElement(
   }
 }
 
+function collectMetadataForElementNEW_MOVE_ME(
+  element: HTMLElement,
+  parentPoint: CanvasPoint,
+  scale: number,
+  containerRect: CanvasPoint,
+): {
+  tagName: string
+  globalFrame: CanvasRectangle
+  localFrame: LocalRectangle
+  nonRoundedGlobalFrame: CanvasRectangle
+  specialSizeMeasurementsObject: SpecialSizeMeasurements
+  textContentsMaybe: string | null
+} {
+  const tagName: string = element.tagName.toLowerCase()
+  const globalFrame = globalFrameForElement(
+    element,
+    scale,
+    containerRect,
+    'without-text-content',
+    'nearest-half',
+  )
+  const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
+  const nonRoundedGlobalFrame = globalFrameForElement(
+    element,
+    scale,
+    containerRect,
+    'without-text-content',
+    'no-rounding',
+  )
+
+  const textContentsMaybe = element.children.length === 0 ? element.textContent : null
+
+  const specialSizeMeasurementsObject = getSpecialMeasurements(
+    element,
+    null as any, // TODO FIXME closestOffsetParentPath,
+    scale,
+    containerRect,
+  )
+
+  return {
+    tagName: tagName,
+    globalFrame: globalFrame,
+    localFrame: localFrame,
+    nonRoundedGlobalFrame: nonRoundedGlobalFrame,
+    specialSizeMeasurementsObject: specialSizeMeasurementsObject,
+    textContentsMaybe: textContentsMaybe,
+  }
+}
+
 function isAnyPathInvalidated(
   stringPathsForElement: Array<string>,
   invalidatedPaths: ReadonlySet<string>,
@@ -1003,15 +1052,9 @@ function collectAndCreateMetadataForElement(
 
 export function createElementInstanceMetadataForElement(
   element: HTMLElement,
-  parentPoint: CanvasPoint,
-  closestOffsetParentPath: ElementPath,
-  pathsForElement: ElementPath[],
-  globalProps: {
-    scale: number
-    containerRectLazy: () => CanvasRectangle // TODO probably no need to be lazy anymore
-    invalidatedPathsForStylesheetCache: Set<string>
-    selectedViews: Array<ElementPath>
-  },
+  scale: number,
+  containerRectX: number,
+  containerRectY: number,
 ): DomElementMetadata {
   const {
     tagName,
@@ -1020,19 +1063,11 @@ export function createElementInstanceMetadataForElement(
     nonRoundedGlobalFrame,
     specialSizeMeasurementsObject,
     textContentsMaybe,
-  } = collectMetadataForElement(
+  } = collectMetadataForElementNEW_MOVE_ME(
     element,
-    parentPoint,
-    closestOffsetParentPath,
-    globalProps.scale,
-    globalProps.containerRectLazy,
-  )
-
-  const { computedStyle, attributeMetadata } = getComputedStyle(
-    element,
-    pathsForElement,
-    globalProps.invalidatedPathsForStylesheetCache,
-    globalProps.selectedViews,
+    canvasPoint({ x: 0, y: 0 }), // TODO this is wrong, we should pass or calculate the parent point
+    scale,
+    canvasPoint({ x: containerRectX, y: containerRectY }),
   )
 
   return domElementMetadata(
@@ -1041,8 +1076,6 @@ export function createElementInstanceMetadataForElement(
     localFrame,
     nonRoundedGlobalFrame,
     specialSizeMeasurementsObject,
-    computedStyle,
-    attributeMetadata,
     textContentsMaybe,
   )
 }
@@ -1207,7 +1240,7 @@ function getSpecialMeasurements(
   element: HTMLElement,
   closestOffsetParentPath: ElementPath,
   scale: number,
-  containerRectLazy: () => CanvasRectangle,
+  containerRectLazy: CanvasPoint | (() => CanvasPoint),
 ): SpecialSizeMeasurements {
   const elementStyle = window.getComputedStyle(element)
   const layoutSystemForChildren = elementLayoutSystem(elementStyle)
@@ -1498,13 +1531,16 @@ function maybeValueFromComputedStyle(property: string): number {
 function globalFrameForElement(
   element: HTMLElement,
   scale: number,
-  containerRectLazy: () => CanvasRectangle,
+  containerRectLazy: CanvasPoint | (() => CanvasPoint),
   withContent: 'without-text-content' | 'with-text-content',
   rounding: 'nearest-half' | 'no-rounding',
 ) {
   const elementRect = getCanvasRectangleFromElement(element, scale, withContent, rounding)
 
-  return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))
+  return Utils.offsetRect(
+    elementRect,
+    Utils.negate(typeof containerRectLazy === 'function' ? containerRectLazy() : containerRectLazy),
+  )
 }
 
 function walkCanvasRootFragment(

@@ -2528,9 +2528,12 @@ export interface DomElementMetadata {
   localFrame: MaybeInfinityLocalRectangle | null
   nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null
   specialSizeMeasurements: SpecialSizeMeasurements
-  computedStyle: ComputedStyle | null
-  attributeMetadatada: StyleAttributeMetadata | null
   textContent: string | null
+}
+
+export interface ComputedStyleMetadata {
+  computedStyle: ComputedStyle
+  attributeMetadata: StyleAttributeMetadata
 }
 
 export function elementInstanceMetadata(
@@ -2577,8 +2580,6 @@ export function domElementMetadata(
   localFrame: MaybeInfinityLocalRectangle | null,
   nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null,
   sizeMeasurements: SpecialSizeMeasurements,
-  computedStyle: ComputedStyle | null,
-  attributeMetadatada: StyleAttributeMetadata | null,
   textContent: string | null,
 ): DomElementMetadata {
   return {
@@ -2587,9 +2588,17 @@ export function domElementMetadata(
     localFrame: localFrame,
     nonRoundedGlobalFrame: nonRoundedGlobalFrame,
     specialSizeMeasurements: sizeMeasurements,
-    computedStyle: computedStyle,
-    attributeMetadatada: attributeMetadatada,
     textContent: textContent,
+  }
+}
+
+export function computedStyleMetadata(
+  computedStyle: ComputedStyle,
+  attributeMetadata: StyleAttributeMetadata,
+): ComputedStyleMetadata {
+  return {
+    computedStyle: computedStyle,
+    attributeMetadata: attributeMetadata,
   }
 }
 

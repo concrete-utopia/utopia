@@ -1203,3 +1203,22 @@ export function isIndexedElement(path: ElementPath): boolean {
 export function getFirstPath(pathArray: Array<ElementPath>): ElementPath {
   return forceNotNull('Element path array is empty.', pathArray.at(0))
 }
+
+export function humanReadableDebugPath(path: ElementPath): string {
+  const stringifiedPath = path.parts
+    .map(elementPathPartToHumanReadableDebugString)
+    .join(SceneSeparator)
+  return stringifiedPath
+}
+
+function elementPathPartToHumanReadableDebugString(path: ElementPathPart): string {
+  let result: string = ''
+  const elementsLength = path.length
+  fastForEach(path, (elem, index) => {
+    result += elem.slice(0, 4)
+    if (index < elementsLength - 1) {
+      result += ElementSeparator
+    }
+  })
+  return result
+}
