@@ -2126,7 +2126,7 @@ describe('inspector tests with real metadata', () => {
     // )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"0px"`)
-    matchInlineSnapshotBrowser(paddingHorizontalControl.value, `""`)
+    matchInlineSnapshotBrowser(paddingHorizontalControl.value, `"–"`)
     matchInlineSnapshotBrowser(
       paddingHorizontalControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
