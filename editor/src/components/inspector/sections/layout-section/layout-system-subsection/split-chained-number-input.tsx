@@ -737,11 +737,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
   const cycleModeControl = React.useMemo(() => {
     return (
       <Tooltip title={tooltipTitle}>
-        <SquareButton
-          data-testid={`${name}-cycle-mode`}
-          onClick={props.onCycleMode}
-          style={{ width: 16 }}
-        >
+        <SquareButton data-testid={`${name}-cycle-mode`} onClick={props.onCycleMode} highlight>
           {modeIcon}
         </SquareButton>
       </Tooltip>

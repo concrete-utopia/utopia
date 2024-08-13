@@ -2,7 +2,7 @@ import createCachedSelector from 're-reselect'
 import type { CSSProperties } from 'react'
 import React from 'react'
 import { safeIndex } from '../../core/shared/array-utils'
-import { FlexRow, Icn, Tooltip } from '../../uuiui'
+import { FlexRow, Icn, SquareButton, Tooltip } from '../../uuiui'
 import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
@@ -136,13 +136,14 @@ export const ResizeToFitControl = React.memo(() => {
 
   return (
     <Tooltip title={'Resize to Fit'}>
-      <div
+      <SquareButton
+        highlight
+        disabled={!isHugApplicable}
         data-testid={ResizeToFitControlTestId}
         onClick={onResizeToFit}
-        style={{ cursor: 'pointer', ...disabledStyles(isHugApplicable) }}
       >
         <Icn type='fitToChildren' color='main' category='layout/commands' width={16} height={16} />
-      </div>
+      </SquareButton>
     </Tooltip>
   )
 })
