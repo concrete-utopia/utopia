@@ -51,7 +51,7 @@ import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
-import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
+import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button, SquareButton } from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
 import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { unless, when } from '../../utils/react-conditionals'
@@ -122,7 +122,7 @@ interface AlignDistributeButtonProps {
 const AlignDistributeButton = React.memo<AlignDistributeButtonProps>(
   (props: AlignDistributeButtonProps) => {
     return (
-      <Button disabled={props.disabled} onMouseUp={props.onMouseUp}>
+      <SquareButton highlight disabled={props.disabled} onMouseUp={props.onMouseUp}>
         <Icn
           tooltipText={props.toolTip}
           category='layout/commands'
@@ -130,7 +130,7 @@ const AlignDistributeButton = React.memo<AlignDistributeButtonProps>(
           width={16}
           height={16}
         />
-      </Button>
+      </SquareButton>
     )
   },
 )
@@ -177,7 +177,6 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
         justifyContent: 'space-around',
         alignItems: 'center',
         height: UtopiaTheme.layout.rowHeight.normal,
-        background: colorTheme.inspectorBackground.value,
         padding: '8px 0px',
         flexShrink: 0,
       }}
