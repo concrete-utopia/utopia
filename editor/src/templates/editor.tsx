@@ -135,7 +135,7 @@ import {
   traverseArray,
   traverseReadOnlyArray,
 } from '../core/shared/optics/optic-creators'
-import { keysEqualityExhaustive } from '../core/shared/equality-utils'
+import { keysEqualityExhaustive, shallowEqual } from '../core/shared/equality-utils'
 import { collectMetadata } from '../components/canvas/dom-sampler'
 
 if (PROBABLY_ELECTRON) {
@@ -515,6 +515,18 @@ export class Editor {
           ).filter((keyInOldMetadata) => !(keyInOldMetadata in this.storedState.elementMetadata))
           if (missingFromNewMetadata.length > 0) {
             console.error('Missing from new metadata:', missingFromNewMetadata)
+          }
+
+          const globalFramesDontMatch = Object.keys(this.storedState.elementMetadata).filter(
+            (elementPath) => {
+              const newFrame = this.storedState.elementMetadata[elementPath].globalFrame
+              const oldFrame =
+                domWalkerDispatchResult.patchedEditor.jsxMetadata[elementPath]?.globalFrame
+              return !shallowEqual(newFrame, oldFrame)
+            },
+          )
+          if (globalFramesDontMatch.length > 0) {
+            console.error('Global frames dont match:', globalFramesDontMatch)
           }
         }
       }
