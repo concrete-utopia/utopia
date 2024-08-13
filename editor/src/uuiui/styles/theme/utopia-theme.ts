@@ -48,7 +48,7 @@ export const UtopiaTheme = {
     canvasMenuWidth,
     inspectorModalBaseOffset: inspectorXPadding + canvasMenuWidth,
   },
-  inputBorderRadius: 3,
+  inputBorderRadius: 2,
   styles: {
     inspectorSetSelectedOpacity: 1,
     inspectorUnsetSelectedOpacity: 0.3,
