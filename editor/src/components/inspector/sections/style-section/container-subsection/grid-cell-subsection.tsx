@@ -118,14 +118,14 @@ export const GridPlacementSubsection = React.memo(() => {
         </FlexRow>
         {when(
           isAllDefaults,
-          <SquareButton highlight style={{ width: 12 }}>
-            <Icons.Plus width={12} height={12} onClick={writeDefaults} />
+          <SquareButton highlight onClick={writeDefaults}>
+            <Icons.SmallPlus />
           </SquareButton>,
         )}
       </InspectorSubsectionHeader>
       {unless(
         isAllDefaults,
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 27px', gridTemplateRows: '1fr' }}>
+        <UIGridRow variant='<--------auto-------->||22px|' padded style={{ minHeight: 68 }}>
           <div>
             {when(
               adjustMode === 'dimensions',
@@ -144,7 +144,7 @@ export const GridPlacementSubsection = React.memo(() => {
               alignItems: 'center',
             }}
           >
-            <SquareButton style={{ padding: 0 }}>
+            <SquareButton highlight>
               {adjustMode === 'dimensions' ? (
                 <InspectorSectionIcons.SplitFull onClick={toggleMoveMode} />
               ) : (
@@ -152,7 +152,7 @@ export const GridPlacementSubsection = React.memo(() => {
               )}
             </SquareButton>
           </div>
-        </div>,
+        </UIGridRow>,
       )}
     </>
   )
@@ -269,7 +269,7 @@ const DimensionsControls = React.memo(
 
     return (
       <>
-        <UIGridRow padded variant='|--50px--|<--------1fr-------->'>
+        <UIGridRow padded={false} variant='|--50px--|<--------1fr-------->'>
           <div>Position</div>
           <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
             <NumberOrKeywordControl
@@ -282,7 +282,7 @@ const DimensionsControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridColumn',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
             />
             <NumberOrKeywordControl
@@ -295,14 +295,14 @@ const DimensionsControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridRow',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
             />
           </UIGridRow>
         </UIGridRow>
-        <UIGridRow padded variant='|--50px--|<--------1fr-------->'>
+        <UIGridRow padded={false} variant='|--50px--|<--------1fr-------->'>
           <div>Size</div>
-          <FlexRow style={{ gap: 4 }}>
+          <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
             <NumberInput
               value={cssNumber(width)}
               numberType='Unitless'
@@ -313,7 +313,7 @@ const DimensionsControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'rowSpan',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
               descriptionLabel={width === 1 ? 'Col' : 'Cols'}
               incrementControls={false}
@@ -328,12 +328,12 @@ const DimensionsControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'columnSpan',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
               descriptionLabel={height === 1 ? 'Row' : 'Rows'}
               incrementControls={false}
             />
-          </FlexRow>
+          </UIGridRow>
         </UIGridRow>
       </>
     )
@@ -415,9 +415,9 @@ const BoundariesControls = React.memo(
 
     return (
       <>
-        <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
+        <UIGridRow padded={false} variant='|--50px--|<--------1fr-------->'>
           <div>Start</div>
-          <FlexRow style={{ gap: 4 }}>
+          <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
             <NumberOrKeywordControl
               value={columnStartValue.value}
               valueAlias={columnStartValue.alias}
@@ -426,7 +426,7 @@ const BoundariesControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridColumn-start',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
               keywords={keywordsForPosition(columnLabels.map((l) => l.areaName))}
               keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.areaName))}
@@ -439,16 +439,16 @@ const BoundariesControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridRow-start',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
               keywords={keywordsForPosition(rowLabels.map((l) => l.areaName))}
               keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.areaName))}
             />
-          </FlexRow>
+          </UIGridRow>
         </UIGridRow>
-        <UIGridRow padded variant='|--80px--|<--------1fr-------->'>
+        <UIGridRow padded={false} variant='|--50px--|<--------1fr-------->'>
           <div>End</div>
-          <FlexRow style={{ gap: 4 }}>
+          <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
             <NumberOrKeywordControl
               value={columnEndValue.value}
               valueAlias={columnEndValue.alias}
@@ -457,7 +457,7 @@ const BoundariesControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridColumn-end',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
               keywords={keywordsForPosition(columnLabels.map((l) => l.areaName))}
               keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.areaName))}
@@ -470,12 +470,12 @@ const BoundariesControls = React.memo(
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridRow-end',
-                color: 'subdued',
+                color: 'on-highlight-secondary',
               }}
               keywords={keywordsForPosition(rowLabels.map((l) => l.areaName))}
               keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.areaName))}
             />
-          </FlexRow>
+          </UIGridRow>
         </UIGridRow>
       </>
     )

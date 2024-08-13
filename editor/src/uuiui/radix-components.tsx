@@ -2,12 +2,15 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as RadixDropdownMenu from '@radix-ui/react-dropdown-menu'
+import * as Select from '@radix-ui/react-select'
 import { styled } from '@stitches/react'
 import type { CSSProperties } from 'react'
 import React from 'react'
 import { colorTheme, UtopiaStyles } from './styles/theme'
-import { Icons } from './icons'
+import { Icons, SmallerIcons } from './icons'
 import { when } from '../utils/react-conditionals'
+import { Icn, type IcnProps } from './icn'
+import { borderRadius } from './styles/utopitrons'
 
 const RadixItemContainer = styled(RadixDropdownMenu.Item, {
   minWidth: 128,
@@ -190,3 +193,151 @@ const Separator = React.memo(() => {
   )
 })
 Separator.displayName = 'Separator'
+
+type RegularRadixSelectOption = {
+  type: 'REGULAR'
+  value: string
+  label: string
+  icon?: IcnProps
+  placeholder?: boolean
+}
+
+export function regularRadixSelectOption(
+  params: Omit<RegularRadixSelectOption, 'type'>,
+): RegularRadixSelectOption {
+  return {
+    type: 'REGULAR',
+    ...params,
+  }
+}
+
+type Separator = {
+  type: 'SEPARATOR'
+}
+
+export function separatorRadixSelectOption(): Separator {
+  return {
+    type: 'SEPARATOR',
+  }
+}
+
+export type RadixSelectOption = RegularRadixSelectOption | Separator
+
+export const RadixSelect = React.memo(
+  (props: {
+    id: string
+    value: RegularRadixSelectOption | null
+    options: RadixSelectOption[]
+    style?: CSSProperties
+    onValueChange?: (value: string) => void
+  }) => {
+    const stopPropagation = React.useCallback((e: React.KeyboardEvent) => {
+      e.stopPropagation()
+    }, [])
+
+    return (
+      <Select.Root value={props.value?.value} onValueChange={props.onValueChange}>
+        <Select.Trigger
+          style={{
+            background: 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            fontSize: 11,
+            height: 22,
+            color: props.value?.placeholder ? colorTheme.fg6.value : undefined,
+            fontFamily: 'utopian-inter',
+            border: 'none',
+            borderRadius: 3,
+            ...props.style,
+          }}
+          css={{
+            boxShadow: 'none',
+            ':hover': {
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
+              justifyContent: 'space-between',
+            },
+          }}
+        >
+          <Select.Value placeholder={props.value?.label} />
+          <Select.Icon style={{ width: 12, height: 12 }}>
+            <SmallerIcons.ExpansionArrowDown />
+          </Select.Icon>
+        </Select.Trigger>
+        <Select.Portal>
+          <Select.Content
+            onKeyDown={stopPropagation}
+            style={{
+              background: colorTheme.black.value,
+              padding: 4,
+              margin: '0 4px',
+              borderRadius: 6,
+              color: 'white',
+              boxShadow: UtopiaStyles.shadowStyles.high.boxShadow,
+            }}
+          >
+            <Select.ScrollUpButton>
+              <Icons.ExpansionArrow color='on-highlight-main' />
+            </Select.ScrollUpButton>
+            <Select.Viewport
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+              }}
+            >
+              {props.options.map((option, index) => {
+                if (option.type === 'SEPARATOR') {
+                  return (
+                    <Select.Separator
+                      key={`select-option-${props.id}-${index}`}
+                      style={{
+                        borderTop: `1px solid ${colorTheme.fg4.value}`,
+                        width: '100%',
+                      }}
+                    />
+                  )
+                }
+
+                const label = `${option.label.charAt(0).toUpperCase()}${option.label.slice(1)}`
+                return (
+                  <Select.Item
+                    key={`select-option-${props.id}-${index}`}
+                    value={option.value}
+                    style={{
+                      padding: '3px 4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      fontSize: 11,
+                    }}
+                    css={{
+                      ':hover': {
+                        backgroundColor: colorTheme.primary.value,
+                        borderRadius: 4,
+                      },
+                    }}
+                  >
+                    {props.value?.value === option.value ? (
+                      <Icons.Checkmark color='white' />
+                    ) : (
+                      <div style={{ width: 16, height: 16 }} />
+                    )}
+                    {option.icon != null ? (
+                      <Icn {...option.icon} width={16} height={16} color='white' />
+                    ) : null}
+                    <Select.ItemText>{label}</Select.ItemText>
+                  </Select.Item>
+                )
+              })}
+            </Select.Viewport>
+            <Select.ScrollDownButton>
+              <Icons.ExpansionArrowDown color='white' />
+            </Select.ScrollDownButton>
+          </Select.Content>
+        </Select.Portal>
+      </Select.Root>
+    )
+  },
+)
+RadixSelect.displayName = 'RadixSelect'

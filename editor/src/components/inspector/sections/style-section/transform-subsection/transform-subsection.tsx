@@ -315,7 +315,7 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
     <PropertyRow
       key={props.index}
       style={{
-        gridTemplateColumns: '12px 1fr 46px 12px',
+        gridTemplateColumns: '12px 1fr 46px 22px',
         gridColumnGap: 8,
       }}
     >
@@ -361,8 +361,8 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
         incrementControls={false}
       />
-      <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1, width: 12 }}>
-        <Icons.Minus width={12} height={12} />
+      <SquareButton highlight onMouseDown={removeTransformItem}>
+        <Icons.SmallMinus />
       </SquareButton>
     </PropertyRow>
   )
@@ -444,7 +444,7 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
     <PropertyRow
       key={props.index}
       style={{
-        gridTemplateColumns: '12px 1fr 46px 46px 12px',
+        gridTemplateColumns: '12px 1fr 46px 46px 22px',
         gridColumnGap: 8,
       }}
     >
@@ -513,8 +513,8 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
         incrementControls={false}
       />
-      <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1, width: 12 }}>
-        <Icons.Minus width={12} height={12} />
+      <SquareButton highlight onMouseDown={removeTransformItem}>
+        <Icons.SmallMinus />
       </SquareButton>
     </PropertyRow>
   )
@@ -574,18 +574,14 @@ export const TransformSubsection = React.memo(() => {
             <span>Transforms</span>
           </FlexRow>
           {propertyStatus.overwritable ? (
-            <FlexRow style={{ gap: 4 }}>
+            <FlexRow>
               <RemovePropertyButton
                 testId='inspector-transform-remove-all'
                 onUnsetValues={removeAllTransformProperties}
                 propertySet={propertyStatus.set}
               />
-              <SquareButton
-                highlight
-                onMouseDown={insertCSSTransformMouseDown}
-                style={{ width: 12 }}
-              >
-                <Icn category='semantic' type='plus' width={12} height={12} />
+              <SquareButton highlight onMouseDown={insertCSSTransformMouseDown}>
+                <Icons.SmallPlus />
               </SquareButton>
             </FlexRow>
           ) : null}

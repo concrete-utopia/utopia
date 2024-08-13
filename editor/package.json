@@ -154,6 +154,7 @@
     "@liveblocks/yjs": "1.10.0",
     "@popperjs/core": "2.4.4",
     "@radix-ui/react-dropdown-menu": "2.1.1",
+    "@radix-ui/react-select": "2.1.1",
     "@remix-run/react": "2.0.1",
     "@remix-run/server-runtime": "2.3.1",
     "@root/encoding": "1.0.1",

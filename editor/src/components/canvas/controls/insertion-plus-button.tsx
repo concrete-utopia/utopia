@@ -8,7 +8,7 @@ import { isInfinityRectangle } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { IndexPosition } from '../../../utils/utils'
 import { useColorTheme } from '../../../uuiui/styles/theme'
-import { insertAsChildTarget } from '../../editor/actions/action-creators'
+import { insertAsChildTarget, setHighlightedView } from '../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { useCreateCallbackToShowComponentPicker } from '../../navigator/navigator-item/component-picker-context-menu'
 import type { SiblingPosition } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
@@ -18,6 +18,7 @@ import {
 } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { interactionSessionIsActive } from '../canvas-strategies/interaction-state'
+import { useDispatch } from '../../../components/editor/store/dispatch-context'
 
 export const InsertionButtonOffset = 10
 
@@ -90,9 +91,13 @@ export const InsertionControls: React.FunctionComponent = React.memo(
 )
 
 const InsertionButtonContainer = React.memo((props: ButtonControlProps) => {
+  const dispatch = useDispatch()
   const [plusVisible, setPlusVisible] = React.useState(false)
 
-  const onMouseEnter = () => setPlusVisible(true)
+  const onMouseEnter = React.useCallback(() => {
+    setPlusVisible(true)
+    dispatch([setHighlightedView(props.parentPath)])
+  }, [setPlusVisible, props.parentPath, dispatch])
   const onMouseLeave = () => setPlusVisible(false)
 
   return (
@@ -156,7 +161,7 @@ const BlueDot = React.memo((props: ButtonControlProps) => {
 const PlusButton = React.memo((props: ButtonControlProps) => {
   const colorTheme = useColorTheme()
   const { parentPath, indexPosition } = props
-  const onMouseUpDown: React.MouseEventHandler<HTMLDivElement> = React.useCallback((event) => {
+  const onMouseBlockEvents: React.MouseEventHandler<HTMLDivElement> = React.useCallback((event) => {
     event.stopPropagation()
     event.preventDefault()
   }, [])
@@ -184,8 +189,10 @@ const PlusButton = React.memo((props: ButtonControlProps) => {
       }}
       data-testid={`insertion-plus-button-${props.identifier}`}
       onClick={onClick}
-      onMouseDown={onMouseUpDown}
-      onMouseUp={onMouseUpDown}
+      onMouseDown={onMouseBlockEvents}
+      onMouseUp={onMouseBlockEvents}
+      onMouseEnter={onMouseBlockEvents}
+      onMouseMove={onMouseBlockEvents}
     >
       <div
         style={{

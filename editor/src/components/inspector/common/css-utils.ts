@@ -88,6 +88,7 @@ import type { ParseError } from '../../../utils/value-parser-utils'
 import { descriptionParseError } from '../../../utils/value-parser-utils'
 import * as csstree from 'css-tree'
 import { expandCssTreeNodeValue, parseCssTreeNodeValue } from './css-tree-utils'
+import type { IcnProps } from '../../../uuiui'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -982,8 +983,34 @@ export function parseGridPosition(
   }
 }
 
-export const GridAutoFlowValues = ['row', 'column', 'dense', 'row dense', 'column dense'] as const
+export const GridAutoFlowValues = ['column', 'column dense', 'row', 'row dense', 'dense'] as const
 export type GridAutoFlow = (typeof GridAutoFlowValues)[number]
+
+export function gridAutoFlowIcon(value: GridAutoFlow): IcnProps {
+  switch (value) {
+    case 'column':
+    case 'column dense':
+      return {
+        category: 'inspector-element',
+        type: 'arrowDown',
+        color: 'black',
+        width: 16,
+        height: 16,
+      }
+    case 'dense':
+    case 'row':
+    case 'row dense':
+      return {
+        category: 'inspector-element',
+        type: 'arrowRight',
+        color: 'black',
+        width: 16,
+        height: 16,
+      }
+    default:
+      assertNever(value)
+  }
+}
 
 export function parseGridAutoFlow(rawValue: string): GridAutoFlow | null {
   if (GridAutoFlowValues.some((v) => v === rawValue)) {

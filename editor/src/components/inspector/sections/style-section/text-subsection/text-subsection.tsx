@@ -287,7 +287,9 @@ export const TextSubsection = React.memo(() => {
             onUnsetValues={onUnsetSubsectionValues}
             propertySet={anyTextRelatedPropSet}
           />
-          <Icons.Threedots color={expanded ? 'secondary' : 'subdued'} onClick={toggleExpanded} />
+          <SquareButton highlight onClick={toggleExpanded} spotlight={expanded ? true : false}>
+            <Icons.Threedots />
+          </SquareButton>
         </InspectorSubsectionHeader>
       </InspectorContextMenuWrapper>
       <FontFamilySelect />

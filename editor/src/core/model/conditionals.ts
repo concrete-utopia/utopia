@@ -16,10 +16,7 @@ import type { ElementPathTree, ElementPathTrees } from '../shared/element-path-t
 import { getUtopiaID } from '../shared/uid-utils'
 import type { Optic } from '../shared/optics/optics'
 import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
-import {
-  findUtopiaCommentFlag,
-  isUtopiaPropOrCommentFlagConditional,
-} from '../shared/comment-flags'
+import { findUtopiaCommentFlag, isUtopiaPropOrCommentFlagConditional } from '../shared/utopia-flags'
 import { isLeft, isRight } from '../shared/either'
 import { MetadataUtils } from './element-metadata-utils'
 import { forceNotNull } from '../shared/optional-utils'
