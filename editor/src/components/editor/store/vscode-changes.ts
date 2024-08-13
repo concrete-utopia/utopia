@@ -21,8 +21,10 @@ import {
 import type {
   UpdateDecorationsMessage,
   SelectedElementChanged,
-  FromUtopiaToVSCodeMessage,
+  AccumulatedToVSCodeMessage,
+  ToVSCodeMessageNoAccumulated,
 } from 'utopia-vscode-common'
+import { accumulatedToVSCodeMessage, toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import type { EditorState } from './editor-state'
 import { getHighlightBoundsForElementPaths } from './editor-state'
 import { shallowEqual } from '../../../core/shared/equality-utils'
@@ -300,15 +302,15 @@ export const emptyProjectChanges: ProjectChanges = {
   selectedChanged: null,
 }
 
-function projectChangesToVSCodeMessages(local: ProjectChanges): Array<FromUtopiaToVSCodeMessage> {
-  let messages: Array<FromUtopiaToVSCodeMessage> = []
+export function projectChangesToVSCodeMessages(local: ProjectChanges): AccumulatedToVSCodeMessage {
+  let messages: Array<ToVSCodeMessageNoAccumulated> = []
   if (local.updateDecorations != null) {
     messages.push(local.updateDecorations)
   }
   if (local.selectedChanged != null) {
     messages.push(local.selectedChanged)
   }
-  return messages
+  return accumulatedToVSCodeMessage(messages)
 }
 
 export function getProjectChanges(
@@ -332,5 +334,7 @@ export function getProjectChanges(
 export function sendVSCodeChanges(changes: ProjectChanges) {
   applyProjectChanges(changes.fileChanges.changesForVSCode)
   const toVSCodeAccumulated = projectChangesToVSCodeMessages(changes)
-  toVSCodeAccumulated.forEach((message) => sendMessage(message))
+  if (toVSCodeAccumulated.messages.length > 0) {
+    sendMessage(toVSCodeExtensionMessage(toVSCodeAccumulated))
+  }
 }

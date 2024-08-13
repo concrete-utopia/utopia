@@ -36,7 +36,7 @@ for (const extension of extensionsContent) {
     extensions.push({
       packageJSON,
       extensionPath: extension,
-      ...(packageNLS == null ? {} : { packageNLS }),
+      packageNLS,
     })
   }
 }

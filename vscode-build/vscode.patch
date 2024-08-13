@@ -1,31 +1,35 @@
-diff --git a/build/gulpfile.compile.js b/build/gulpfile.compile.js
-index c4947e76cbf..c2dd4189229 100644
---- a/build/gulpfile.compile.js
-+++ b/build/gulpfile.compile.js
-@@ -22,7 +22,9 @@ function makeCompileBuildTask(disableMangle) {
- }
+diff --git a/build/gulpfile.vscode.js b/build/gulpfile.vscode.js
+index 13c20bed989..2a8452a08ab 100644
+--- a/build/gulpfile.vscode.js
++++ b/build/gulpfile.vscode.js
+@@ -35,13 +35,14 @@ const { compileExtensionsBuildTask } = require('./gulpfile.extensions');
  
- // Full compile, including nls and inline sources in sourcemaps, mangling, minification, for build
--const compileBuildTask = task.define('compile-build', makeCompileBuildTask(false));
-+// The `true` here is to disable mangling. Minification still happens.
-+// For some reason the mangling was causing the build to completely hang on my machine.
-+const compileBuildTask = task.define('compile-build', makeCompileBuildTask(true));
- gulp.task(compileBuildTask);
- exports.compileBuildTask = compileBuildTask;
+ // Build
+ const vscodeEntryPoints = _.flatten([
+-	buildfile.entrypoint('vs/workbench/workbench.desktop.main'),
++	buildfile.entrypoint('vs/workbench/workbench.web.api'),
+ 	buildfile.base,
+ 	buildfile.workerExtensionHost,
+ 	buildfile.workerNotebook,
+ 	buildfile.workerLanguageDetection,
+ 	buildfile.workerLocalFileSearch,
+-	buildfile.workbenchDesktop,
++	buildfile.workbenchWeb,
++	buildfile.keyboardMaps,
+ 	buildfile.code
+ ]);
  
-diff --git a/build/gulpfile.vscode.web.js b/build/gulpfile.vscode.web.js
-index 50c7e6fb631..629a119108b 100644
---- a/build/gulpfile.vscode.web.js
-+++ b/build/gulpfile.vscode.web.js
-@@ -186,7 +186,7 @@ function packageTask(sourceFolderName, destinationFolderName) {
- 		const json = require('gulp-json-editor');
+@@ -157,8 +158,8 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
  
- 		const src = gulp.src(sourceFolderName + '/**', { base: '.' })
--			.pipe(rename(function (path) { path.dirname = path.dirname.replace(new RegExp('^' + sourceFolderName), 'out'); }));
-+			.pipe(rename(function (path) { path.dirname = path.dirname.replace(new RegExp('^' + sourceFolderName), 'vscode'); }));
- 
- 		const extensions = gulp.src('.build/web/extensions/**', { base: '.build/web', dot: true });
- 
+ 		const checksums = computeChecksums(out, [
+ 			'vs/base/parts/sandbox/electron-browser/preload.js',
+-			'vs/workbench/workbench.desktop.main.js',
+-			'vs/workbench/workbench.desktop.main.css',
++			'vs/workbench/workbench.web.api.js',
++			'vs/workbench/workbench.web.api.css',
+ 			'vs/workbench/services/extensions/node/extensionHostProcess.js',
+ 			'vs/code/electron-browser/workbench/workbench.html',
+ 			'vs/code/electron-browser/workbench/workbench.js'
 diff --git a/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json b/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json
 deleted file mode 100644
 index 9e26dfeeb6e..00000000000
@@ -34,27 +38,59 @@ index 9e26dfeeb6e..00000000000
 @@ -1 +0,0 @@
 -{}
 \ No newline at end of file
+diff --git a/extensions/simple-browser/src/simpleBrowserView.ts b/extensions/simple-browser/src/simpleBrowserView.ts
+index 2d7da1aecf8..052f52383f0 100644
+--- a/extensions/simple-browser/src/simpleBrowserView.ts
++++ b/extensions/simple-browser/src/simpleBrowserView.ts
+@@ -139,7 +139,7 @@ export class SimpleBrowserView extends Disposable {
+ 				</header>
+ 				<div class="content">
+ 					<div class="iframe-focused-alert">${localize('view.iframe-focused', "Focus Lock")}</div>
+-					<iframe sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
++					<iframe sandbox="allow-scripts allow-forms allow-same-origin allow-popups"></iframe>
+ 				</div>
+ 
+ 				<script src="${mainJs}" nonce="${nonce}"></script>
 diff --git a/package.json b/package.json
-index 2103fe1fe1a..92954953615 100644
+index 2bca5115cac..53884a9bb17 100644
 --- a/package.json
 +++ b/package.json
-@@ -96,10 +96,10 @@
-     "kerberos": "^2.0.1",
-     "minimist": "^1.2.6",
-     "native-is-elevated": "0.7.0",
--    "native-keymap": "^3.3.5",
-     "native-watchdog": "^1.4.1",
-     "node-pty": "1.1.0-beta11",
-     "tas-client-umd": "0.2.0",
+@@ -44,15 +44,15 @@
+     "valid-layers-check": "node build/lib/layersChecker.js",
+     "update-distro": "node build/npm/update-distro.js",
+     "web": "node resources/web/code-web.js",
+-    "compile-web": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js compile-web",
+-    "watch-web": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js watch-web",
++    "compile-web": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js compile-web",
++    "watch-web": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js watch-web",
+     "eslint": "node build/eslint",
+     "playwright-install": "node build/azure-pipelines/common/installPlaywright.js",
+-    "compile-build": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js compile-build",
+-    "compile-extensions-build": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js compile-extensions-build",
+-    "minify-vscode": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode",
+-    "minify-vscode-reh": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode-reh",
+-    "minify-vscode-reh-web": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js minify-vscode-reh-web",
++    "compile-build": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js compile-build",
++    "compile-extensions-build": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js compile-extensions-build",
++    "minify-vscode": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js minify-vscode",
++    "minify-vscode-reh": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js minify-vscode-reh",
++    "minify-vscode-reh-web": "node --max_old_space_size=4095 $NODE_OPENSSL_OPTION ./node_modules/gulp/bin/gulp.js minify-vscode-reh-web",
+     "hygiene": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js hygiene",
+     "core-ci": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js core-ci",
+     "extensions-ci": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js extensions-ci"
+@@ -77,6 +77,7 @@
+     "spdlog": "^0.13.0",
+     "sudo-prompt": "9.2.1",
+     "tas-client-umd": "0.1.4",
 +    "utopia-vscode-common": "file:../../utopia-vscode-common",
-     "v8-inspect-profiler": "^0.1.1",
-     "vscode-oniguruma": "1.7.0",
-     "vscode-regexpp": "^3.1.0",
+     "v8-inspect-profiler": "^0.0.22",
+     "vscode-nsfw": "2.1.8",
+     "vscode-oniguruma": "1.5.1",
 diff --git a/product.json b/product.json
-index 27ae53fe16b..83637043bdc 100644
+index 7b60eac641d..b37ebcd9f73 100644
 --- a/product.json
 +++ b/product.json
-@@ -1,84 +1,9 @@
+@@ -1,96 +1,9 @@
  {
 -	"nameShort": "Code - OSS",
 -	"nameLong": "Code - OSS",
@@ -63,36 +99,50 @@ index 27ae53fe16b..83637043bdc 100644
 -	"win32MutexName": "vscodeoss",
 -	"licenseName": "MIT",
 -	"licenseUrl": "https://github.com/microsoft/vscode/blob/main/LICENSE.txt",
--	"serverLicenseUrl": "https://github.com/microsoft/vscode/blob/main/LICENSE.txt",
--	"serverGreeting": [],
--	"serverLicense": [],
--	"serverLicensePrompt": "",
--	"serverApplicationName": "code-server-oss",
--	"serverDataFolderName": ".vscode-server-oss",
--	"tunnelApplicationName": "code-tunnel-oss",
 -	"win32DirName": "Microsoft Code OSS",
 -	"win32NameVersion": "Microsoft Code OSS",
 -	"win32RegValueName": "CodeOSS",
+-	"win32AppId": "{{E34003BB-9E10-4501-8C11-BE3FAA83F23F}",
 -	"win32x64AppId": "{{D77B7E06-80BA-4137-BCF4-654B95CCEBC5}",
 -	"win32arm64AppId": "{{D1ACE434-89C5-48D1-88D3-E2991DF85475}",
+-	"win32UserAppId": "{{C6065F05-9603-4FC4-8101-B9781A25D88E}",
 -	"win32x64UserAppId": "{{CC6B787D-37A0-49E8-AE24-8559A032BE0C}",
 -	"win32arm64UserAppId": "{{3AEBF0C8-F733-4AD4-BADE-FDB816D53D7B}",
 -	"win32AppUserModelId": "Microsoft.CodeOSS",
 -	"win32ShellNameShort": "C&ode - OSS",
--	"win32TunnelServiceMutex": "vscodeoss-tunnelservice",
--	"win32TunnelMutex": "vscodeoss-tunnel",
 -	"darwinBundleIdentifier": "com.visualstudio.code.oss",
--	"linuxIconName": "code-oss",
+-	"linuxIconName": "com.visualstudio.code.oss",
 -	"licenseFileName": "LICENSE.txt",
 -	"reportIssueUrl": "https://github.com/microsoft/vscode/issues/new",
--	"nodejsRepository": "https://nodejs.org",
 -	"urlProtocol": "code-oss",
--	"webviewContentExternalBaseUrlTemplate": "https://{{uuid}}.vscode-cdn.net/insider/ef65ac1ba57f57f2a3961bfe94aa20481caca4c6/out/vs/workbench/contrib/webview/browser/pre/",
+-	"webviewContentExternalBaseUrlTemplate": "https://{{uuid}}.vscode-webview.net/{{quality}}/{{commit}}/out/vs/workbench/contrib/webview/browser/pre/",
+-	"extensionAllowedProposedApi": [
+-		"ms-vscode.vscode-js-profile-flame",
+-		"ms-vscode.vscode-js-profile-table",
+-		"ms-vscode.remotehub",
+-		"ms-vscode.remotehub-insiders",
+-		"GitHub.remotehub",
+-		"GitHub.remotehub-insiders"
+-	],
 -	"builtInExtensions": [
 -		{
+-			"name": "ms-vscode.references-view",
+-			"version": "0.0.81",
+-			"repo": "https://github.com/microsoft/vscode-references-view",
+-			"metadata": {
+-				"id": "dc489f46-520d-4556-ae85-1f9eab3c412d",
+-				"publisherId": {
+-					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
+-					"publisherName": "ms-vscode",
+-					"displayName": "Microsoft",
+-					"flags": "verified"
+-				},
+-				"publisherDisplayName": "Microsoft"
+-			}
+-		},
+-		{
 -			"name": "ms-vscode.js-debug-companion",
--			"version": "1.1.2",
--			"sha256": "e034b8b41beb4e97e02c70f7175bd88abe66048374c2bd629f54bb33354bc2aa",
+-			"version": "1.0.15",
 -			"repo": "https://github.com/microsoft/vscode-js-debug-companion",
 -			"metadata": {
 -				"id": "99cb0b7f-7354-4278-b8da-6cc79972169d",
@@ -107,8 +157,7 @@ index 27ae53fe16b..83637043bdc 100644
 -		},
 -		{
 -			"name": "ms-vscode.js-debug",
--			"version": "1.91.0",
--			"sha256": "53b99146c7fa280f00c74414e09721530c622bf3e5eac2c967ddfb9906b51c80",
+-			"version": "1.61.0",
 -			"repo": "https://github.com/microsoft/vscode-js-debug",
 -			"metadata": {
 -				"id": "25629058-ddac-4e17-abba-74678e126c5d",
@@ -123,8 +172,7 @@ index 27ae53fe16b..83637043bdc 100644
 -		},
 -		{
 -			"name": "ms-vscode.vscode-js-profile-table",
--			"version": "1.0.9",
--			"sha256": "3b62ee4276a2bbea3fe230f94b1d5edd915b05966090ea56f882e1e0ab53e1a6",
+-			"version": "0.0.18",
 -			"repo": "https://github.com/microsoft/vscode-js-profile-visualizer",
 -			"metadata": {
 -				"id": "7e52b41b-71ad-457b-ab7e-0620f1fc4feb",
@@ -138,241 +186,90 @@ index 27ae53fe16b..83637043bdc 100644
 -			}
 -		}
 -	]
--}
 +	"productConfiguration": {
 +		"nameShort": "Code Web",
 +		"nameLong": "Code Web",
 +		"applicationName": "code-web",
 +		"dataFolderName": ".vscode-web",
-+		"version": "1.91.1"
++		"version": "1.62.0"
 +	}
-+}
-\ No newline at end of file
+ }
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 66d30c3aca3..25f12f879e4 100644
+index 6148eb30092..6948ededa4a 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -495,8 +495,11 @@ export function getClientArea(element: HTMLElement, fallback?: HTMLElement): Dim
- 	if (fallback) {
- 		return getClientArea(fallback);
+@@ -365,7 +365,11 @@ export function getClientArea(element: HTMLElement): Dimension {
+ 		return new Dimension(document.documentElement.clientWidth, document.documentElement.clientHeight);
  	}
--
+ 
 -	throw new Error('Unable to figure out browser width and height');
 + 	// this Error would prevent VSCode from loading inside Utopia if the browser tab is not in the foreground
 + 	// throw new Error('Unable to figure out browser width and height');
 + 
-+ 	// Instead, we just return 1 x 1, as a non-zero value is required for laying out the editor correctly
-+ 	return new Dimension(1, 1);
++ 	// Instead, we just return 0 x 0, it seems to be fine
++ 	return new Dimension(0, 0);
  }
  
  class SizeUtils {
 diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
-index f8875029a8a..3bdfd1bfa64 100644
+index 534fe232636..b41446430f0 100644
 --- a/src/vs/code/browser/workbench/workbench.ts
 +++ b/src/vs/code/browser/workbench/workbench.ts
-@@ -3,586 +3,41 @@
-  *  Licensed under the MIT License. See License.txt in the project root for license information.
-  *--------------------------------------------------------------------------------------------*/
- 
+@@ -1,536 +1,101 @@
+-/*---------------------------------------------------------------------------------------------
+- *  Copyright (c) Microsoft Corporation. All rights reserved.
+- *  Licensed under the MIT License. See License.txt in the project root for license information.
+- *--------------------------------------------------------------------------------------------*/
+-
 -import { isStandalone } from 'vs/base/browser/browser';
- import { mainWindow } from 'vs/base/browser/window';
--import { VSBuffer, decodeBase64, encodeBase64 } from 'vs/base/common/buffer';
--import { Emitter } from 'vs/base/common/event';
--import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
--import { parse } from 'vs/base/common/marshalling';
+-import { streamToBuffer } from 'vs/base/common/buffer';
+-import { CancellationToken } from 'vs/base/common/cancellation';
+-import { Emitter, Event } from 'vs/base/common/event';
+-import { Disposable } from 'vs/base/common/lifecycle';
 -import { Schemas } from 'vs/base/common/network';
--import { posix } from 'vs/base/common/path';
 -import { isEqual } from 'vs/base/common/resources';
--import { ltrim } from 'vs/base/common/strings';
 -import { URI, UriComponents } from 'vs/base/common/uri';
+-import { generateUuid } from 'vs/base/common/uuid';
+-import { request } from 'vs/base/parts/request/browser/request';
+-import { localize } from 'vs/nls';
+-import { parseLogLevel } from 'vs/platform/log/common/log';
 -import product from 'vs/platform/product/common/product';
--import { ISecretStorageProvider } from 'vs/platform/secrets/common/secrets';
--import { isFolderToOpen, isWorkspaceToOpen } from 'vs/platform/window/common/window';
-+import { URI } from 'vs/base/common/uri';
- import type { IWorkbenchConstructionOptions, IWorkspace, IWorkspaceProvider } from 'vs/workbench/browser/web.api';
--import { AuthenticationSessionInfo } from 'vs/workbench/services/authentication/browser/authenticationService';
--import type { IURLCallbackProvider } from 'vs/workbench/services/url/browser/urlService';
- import { create } from 'vs/workbench/workbench.web.main';
- 
--interface ISecretStorageCrypto {
--	seal(data: string): Promise<string>;
--	unseal(data: string): Promise<string>;
--}
-+(async function () {
-+	// create workbench
-+	const result = await fetch('/vscode/product.json')
-+	const loadedConfig: IWorkbenchConstructionOptions = await result.json()
- 
--class TransparentCrypto implements ISecretStorageCrypto {
--	async seal(data: string): Promise<string> {
--		return data;
--	}
+-import { isFolderToOpen, isWorkspaceToOpen } from 'vs/platform/windows/common/windows';
+-import { create, ICredentialsProvider, IHomeIndicator, IProductQualityChangeHandler, ISettingsSyncOptions, IURLCallbackProvider, IWelcomeBanner, IWindowIndicator, IWorkbenchConstructionOptions, IWorkspace, IWorkspaceProvider } from 'vs/workbench/workbench.web.api';
 -
--	async unseal(data: string): Promise<string> {
--		return data;
--	}
--}
+-function doCreateUri(path: string, queryValues: Map<string, string>): URI {
+-	let query: string | undefined = undefined;
 -
--const enum AESConstants {
--	ALGORITHM = 'AES-GCM',
--	KEY_LENGTH = 256,
--	IV_LENGTH = 12,
--}
--
--class ServerKeyedAESCrypto implements ISecretStorageCrypto {
--	private _serverKey: Uint8Array | undefined;
--
--	/** Gets whether the algorithm is supported; requires a secure context */
--	public static supported() {
--		return !!crypto.subtle;
--	}
--
--	constructor(private readonly authEndpoint: string) { }
--
--	async seal(data: string): Promise<string> {
--		// Get a new key and IV on every change, to avoid the risk of reusing the same key and IV pair with AES-GCM
--		// (see also: https://developer.mozilla.org/en-US/docs/Web/API/AesGcmParams#properties)
--		const iv = mainWindow.crypto.getRandomValues(new Uint8Array(AESConstants.IV_LENGTH));
--		// crypto.getRandomValues isn't a good-enough PRNG to generate crypto keys, so we need to use crypto.subtle.generateKey and export the key instead
--		const clientKeyObj = await mainWindow.crypto.subtle.generateKey(
--			{ name: AESConstants.ALGORITHM as const, length: AESConstants.KEY_LENGTH as const },
--			true,
--			['encrypt', 'decrypt']
--		);
--
--		const clientKey = new Uint8Array(await mainWindow.crypto.subtle.exportKey('raw', clientKeyObj));
--		const key = await this.getKey(clientKey);
--		const dataUint8Array = new TextEncoder().encode(data);
--		const cipherText: ArrayBuffer = await mainWindow.crypto.subtle.encrypt(
--			{ name: AESConstants.ALGORITHM as const, iv },
--			key,
--			dataUint8Array
--		);
--
--		// Base64 encode the result and store the ciphertext, the key, and the IV in localStorage
--		// Note that the clientKey and IV don't need to be secret
--		const result = new Uint8Array([...clientKey, ...iv, ...new Uint8Array(cipherText)]);
--		return encodeBase64(VSBuffer.wrap(result));
--	}
--
--	async unseal(data: string): Promise<string> {
--		// encrypted should contain, in order: the key (32-byte), the IV for AES-GCM (12-byte) and the ciphertext (which has the GCM auth tag at the end)
--		// Minimum length must be 44 (key+IV length) + 16 bytes (1 block encrypted with AES - regardless of key size)
--		const dataUint8Array = decodeBase64(data);
--
--		if (dataUint8Array.byteLength < 60) {
--			throw Error('Invalid length for the value for credentials.crypto');
--		}
--
--		const keyLength = AESConstants.KEY_LENGTH / 8;
--		const clientKey = dataUint8Array.slice(0, keyLength);
--		const iv = dataUint8Array.slice(keyLength, keyLength + AESConstants.IV_LENGTH);
--		const cipherText = dataUint8Array.slice(keyLength + AESConstants.IV_LENGTH);
--
--		// Do the decryption and parse the result as JSON
--		const key = await this.getKey(clientKey.buffer);
--		const decrypted = await mainWindow.crypto.subtle.decrypt(
--			{ name: AESConstants.ALGORITHM as const, iv: iv.buffer },
--			key,
--			cipherText.buffer
--		);
--
--		return new TextDecoder().decode(new Uint8Array(decrypted));
--	}
--
--	/**
--	 * Given a clientKey, returns the CryptoKey object that is used to encrypt/decrypt the data.
--	 * The actual key is (clientKey XOR serverKey)
--	 */
--	private async getKey(clientKey: Uint8Array): Promise<CryptoKey> {
--		if (!clientKey || clientKey.byteLength !== AESConstants.KEY_LENGTH / 8) {
--			throw Error('Invalid length for clientKey');
--		}
--
--		const serverKey = await this.getServerKeyPart();
--		const keyData = new Uint8Array(AESConstants.KEY_LENGTH / 8);
--
--		for (let i = 0; i < keyData.byteLength; i++) {
--			keyData[i] = clientKey[i]! ^ serverKey[i]!;
--		}
--
--		return mainWindow.crypto.subtle.importKey(
--			'raw',
--			keyData,
--			{
--				name: AESConstants.ALGORITHM as const,
--				length: AESConstants.KEY_LENGTH as const,
--			},
--			true,
--			['encrypt', 'decrypt']
--		);
--	}
--
--	private async getServerKeyPart(): Promise<Uint8Array> {
--		if (this._serverKey) {
--			return this._serverKey;
--		}
--
--		let attempt = 0;
--		let lastError: unknown | undefined;
--
--		while (attempt <= 3) {
--			try {
--				const res = await fetch(this.authEndpoint, { credentials: 'include', method: 'POST' });
--				if (!res.ok) {
--					throw new Error(res.statusText);
--				}
--				const serverKey = new Uint8Array(await await res.arrayBuffer());
--				if (serverKey.byteLength !== AESConstants.KEY_LENGTH / 8) {
--					throw Error(`The key retrieved by the server is not ${AESConstants.KEY_LENGTH} bit long.`);
--				}
--				this._serverKey = serverKey;
--				return this._serverKey;
--			} catch (e) {
--				lastError = e;
--				attempt++;
--
--				// exponential backoff
--				await new Promise(resolve => setTimeout(resolve, attempt * attempt * 100));
+-	if (queryValues) {
+-		let index = 0;
+-		queryValues.forEach((value, key) => {
+-			if (!query) {
+-				query = '';
 -			}
--		}
 -
--		throw lastError;
+-			const prefix = (index++ === 0) ? '' : '&';
+-			query += `${prefix}${key}=${encodeURIComponent(value)}`;
+-		});
 -	}
+-
+-	return URI.parse(window.location.href).with({ path, query });
 -}
 -
--export class LocalStorageSecretStorageProvider implements ISecretStorageProvider {
--	private readonly _storageKey = 'secrets.provider';
+-interface ICredential {
+-	service: string;
+-	account: string;
+-	password: string;
+-}
 -
--	private _secretsPromise: Promise<Record<string, string>> = this.load();
+-class LocalStorageCredentialsProvider implements ICredentialsProvider {
 -
--	type: 'in-memory' | 'persisted' | 'unknown' = 'persisted';
+-	static readonly CREDENTIALS_OPENED_KEY = 'credentials.provider';
 -
--	constructor(
--		private readonly crypto: ISecretStorageCrypto,
--	) { }
+-	private readonly authService: string | undefined;
 -
--	private async load(): Promise<Record<string, string>> {
--		const record = this.loadAuthSessionFromElement();
--		// Get the secrets from localStorage
--		const encrypted = localStorage.getItem(this._storageKey);
--		if (encrypted) {
--			try {
--				const decrypted = JSON.parse(await this.crypto.unseal(encrypted));
--				return { ...record, ...decrypted };
--			} catch (err) {
--				// TODO: send telemetry
--				console.error('Failed to decrypt secrets from localStorage', err);
--				localStorage.removeItem(this._storageKey);
--			}
--		}
--
--		return record;
--	}
--
--	private loadAuthSessionFromElement(): Record<string, string> {
--		let authSessionInfo: (AuthenticationSessionInfo & { scopes: string[][] }) | undefined;
--		const authSessionElement = mainWindow.document.getElementById('vscode-workbench-auth-session');
+-	constructor() {
+-		let authSessionInfo: { readonly id: string, readonly accessToken: string, readonly providerId: string, readonly canSignOut?: boolean, readonly scopes: string[][] } | undefined;
+-		const authSessionElement = document.getElementById('vscode-workbench-auth-session');
 -		const authSessionElementAttribute = authSessionElement ? authSessionElement.getAttribute('data-settings') : undefined;
 -		if (authSessionElementAttribute) {
 -			try {
@@ -380,287 +277,258 @@ index f8875029a8a..3bdfd1bfa64 100644
 -			} catch (error) { /* Invalid session is passed. Ignore. */ }
 -		}
 -
--		if (!authSessionInfo) {
--			return {};
+-		if (authSessionInfo) {
+-			// Settings Sync Entry
+-			this.setPassword(`${product.urlProtocol}.login`, 'account', JSON.stringify(authSessionInfo));
+-
+-			// Auth extension Entry
+-			this.authService = `${product.urlProtocol}-${authSessionInfo.providerId}.login`;
+-			this.setPassword(this.authService, 'account', JSON.stringify(authSessionInfo.scopes.map(scopes => ({
+-				id: authSessionInfo!.id,
+-				scopes,
+-				accessToken: authSessionInfo!.accessToken
+-			}))));
+-		}
+-	}
+-
+-	private _credentials: ICredential[] | undefined;
+-	private get credentials(): ICredential[] {
+-		if (!this._credentials) {
+-			try {
+-				const serializedCredentials = window.localStorage.getItem(LocalStorageCredentialsProvider.CREDENTIALS_OPENED_KEY);
+-				if (serializedCredentials) {
+-					this._credentials = JSON.parse(serializedCredentials);
+-				}
+-			} catch (error) {
+-				// ignore
+-			}
+-
+-			if (!Array.isArray(this._credentials)) {
+-				this._credentials = [];
+-			}
 -		}
 -
--		const record: Record<string, string> = {};
+-		return this._credentials;
+-	}
 -
--		// Settings Sync Entry
--		record[`${product.urlProtocol}.loginAccount`] = JSON.stringify(authSessionInfo);
+-	private save(): void {
+-		window.localStorage.setItem(LocalStorageCredentialsProvider.CREDENTIALS_OPENED_KEY, JSON.stringify(this.credentials));
+-	}
 -
--		// Auth extension Entry
--		if (authSessionInfo.providerId !== 'github') {
--			console.error(`Unexpected auth provider: ${authSessionInfo.providerId}. Expected 'github'.`);
--			return record;
+-	async getPassword(service: string, account: string): Promise<string | null> {
+-		return this.doGetPassword(service, account);
+-	}
+-
+-	private async doGetPassword(service: string, account?: string): Promise<string | null> {
+-		for (const credential of this.credentials) {
+-			if (credential.service === service) {
+-				if (typeof account !== 'string' || account === credential.account) {
+-					return credential.password;
+-				}
+-			}
 -		}
 -
--		const authAccount = JSON.stringify({ extensionId: 'vscode.github-authentication', key: 'github.auth' });
--		record[authAccount] = JSON.stringify(authSessionInfo.scopes.map(scopes => ({
--			id: authSessionInfo.id,
--			scopes,
--			accessToken: authSessionInfo.accessToken
--		})));
--
--		return record;
+-		return null;
 -	}
 -
--	async get(key: string): Promise<string | undefined> {
--		const secrets = await this._secretsPromise;
--		return secrets[key];
--	}
--	async set(key: string, value: string): Promise<void> {
--		const secrets = await this._secretsPromise;
--		secrets[key] = value;
--		this._secretsPromise = Promise.resolve(secrets);
+-	async setPassword(service: string, account: string, password: string): Promise<void> {
+-		this.doDeletePassword(service, account);
+-
+-		this.credentials.push({ service, account, password });
+-
 -		this.save();
--	}
--	async delete(key: string): Promise<void> {
--		const secrets = await this._secretsPromise;
--		delete secrets[key];
--		this._secretsPromise = Promise.resolve(secrets);
--		this.save();
--	}
 -
--	private async save(): Promise<void> {
 -		try {
--			const encrypted = await this.crypto.seal(JSON.stringify(await this._secretsPromise));
--			localStorage.setItem(this._storageKey, encrypted);
--		} catch (err) {
--			console.error(err);
+-			if (password && service === this.authService) {
+-				const value = JSON.parse(password);
+-				if (Array.isArray(value) && value.length === 0) {
+-					await this.logout(service);
+-				}
+-			}
+-		} catch (error) {
+-			console.log(error);
 -		}
+-	}
+-
+-	async deletePassword(service: string, account: string): Promise<boolean> {
+-		const result = await this.doDeletePassword(service, account);
+-
+-		if (result && service === this.authService) {
+-			try {
+-				await this.logout(service);
+-			} catch (error) {
+-				console.log(error);
+-			}
+-		}
+-
+-		return result;
+-	}
+-
+-	private async doDeletePassword(service: string, account: string): Promise<boolean> {
+-		let found = false;
+-
+-		this._credentials = this.credentials.filter(credential => {
+-			if (credential.service === service && credential.account === account) {
+-				found = true;
+-
+-				return false;
+-			}
+-
+-			return true;
+-		});
+-
+-		if (found) {
+-			this.save();
+-		}
+-
+-		return found;
+-	}
+-
+-	async findPassword(service: string): Promise<string | null> {
+-		return this.doGetPassword(service);
+-	}
+-
+-	async findCredentials(service: string): Promise<Array<{ account: string, password: string }>> {
+-		return this.credentials
+-			.filter(credential => credential.service === service)
+-			.map(({ account, password }) => ({ account, password }));
+-	}
+-
+-	private async logout(service: string): Promise<void> {
+-		const queryValues: Map<string, string> = new Map();
+-		queryValues.set('logout', String(true));
+-		queryValues.set('service', service);
+-
+-		await request({
+-			url: doCreateUri('/auth/logout', queryValues).toString(true)
+-		}, CancellationToken.None);
+-	}
+-
+-	async clear(): Promise<void> {
+-		window.localStorage.removeItem(LocalStorageCredentialsProvider.CREDENTIALS_OPENED_KEY);
 -	}
 -}
 -
+-class PollingURLCallbackProvider extends Disposable implements IURLCallbackProvider {
 -
--class LocalStorageURLCallbackProvider extends Disposable implements IURLCallbackProvider {
+-	static readonly FETCH_INTERVAL = 500; 			// fetch every 500ms
+-	static readonly FETCH_TIMEOUT = 5 * 60 * 1000; 	// ...but stop after 5min
 -
--	private static REQUEST_ID = 0;
--
--	private static QUERY_KEYS: ('scheme' | 'authority' | 'path' | 'query' | 'fragment')[] = [
--		'scheme',
--		'authority',
--		'path',
--		'query',
--		'fragment'
--	];
+-	static readonly QUERY_KEYS = {
+-		REQUEST_ID: 'vscode-requestId',
+-		SCHEME: 'vscode-scheme',
+-		AUTHORITY: 'vscode-authority',
+-		PATH: 'vscode-path',
+-		QUERY: 'vscode-query',
+-		FRAGMENT: 'vscode-fragment'
+-	};
 -
 -	private readonly _onCallback = this._register(new Emitter<URI>());
 -	readonly onCallback = this._onCallback.event;
 -
--	private pendingCallbacks = new Set<number>();
--	private lastTimeChecked = Date.now();
--	private checkCallbacksTimeout: unknown | undefined = undefined;
--	private onDidChangeLocalStorageDisposable: IDisposable | undefined;
+-	create(options?: Partial<UriComponents>): URI {
+-		const queryValues: Map<string, string> = new Map();
 -
--	constructor(private readonly _callbackRoute: string) {
--		super();
+-		const requestId = generateUuid();
+-		queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.REQUEST_ID, requestId);
+-
+-		const { scheme, authority, path, query, fragment } = options ? options : { scheme: undefined, authority: undefined, path: undefined, query: undefined, fragment: undefined };
+-
+-		if (scheme) {
+-			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.SCHEME, scheme);
+-		}
+-
+-		if (authority) {
+-			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.AUTHORITY, authority);
+-		}
+-
+-		if (path) {
+-			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.PATH, path);
+-		}
+-
+-		if (query) {
+-			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.QUERY, query);
+-		}
+-
+-		if (fragment) {
+-			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.FRAGMENT, fragment);
+-		}
+-
+-		// Start to poll on the callback being fired
+-		this.periodicFetchCallback(requestId, Date.now());
+-
+-		return doCreateUri('/callback', queryValues);
 -	}
 -
--	create(options: Partial<UriComponents> = {}): URI {
--		const id = ++LocalStorageURLCallbackProvider.REQUEST_ID;
--		const queryParams: string[] = [`vscode-reqid=${id}`];
+-	private async periodicFetchCallback(requestId: string, startTime: number): Promise<void> {
 -
--		for (const key of LocalStorageURLCallbackProvider.QUERY_KEYS) {
--			const value = options[key];
+-		// Ask server for callback results
+-		const queryValues: Map<string, string> = new Map();
+-		queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.REQUEST_ID, requestId);
 -
--			if (value) {
--				queryParams.push(`vscode-${key}=${encodeURIComponent(value)}`);
+-		const result = await request({
+-			url: doCreateUri('/fetch-callback', queryValues).toString(true)
+-		}, CancellationToken.None);
+-
+-		// Check for callback results
+-		const content = await streamToBuffer(result.stream);
+-		if (content.byteLength > 0) {
+-			try {
+-				this._onCallback.fire(URI.revive(JSON.parse(content.toString())));
+-			} catch (error) {
+-				console.error(error);
 -			}
+-
+-			return; // done
 -		}
 -
--		// TODO@joao remove eventually
--		// https://github.com/microsoft/vscode-dev/issues/62
--		// https://github.com/microsoft/vscode/blob/159479eb5ae451a66b5dac3c12d564f32f454796/extensions/github-authentication/src/githubServer.ts#L50-L50
--		if (!(options.authority === 'vscode.github-authentication' && options.path === '/dummy')) {
--			const key = `vscode-web.url-callbacks[${id}]`;
--			localStorage.removeItem(key);
--
--			this.pendingCallbacks.add(id);
--			this.startListening();
+-		// Continue fetching unless we hit the timeout
+-		if (Date.now() - startTime < PollingURLCallbackProvider.FETCH_TIMEOUT) {
+-			setTimeout(() => this.periodicFetchCallback(requestId, startTime), PollingURLCallbackProvider.FETCH_INTERVAL);
 -		}
--
--		return URI.parse(mainWindow.location.href).with({ path: this._callbackRoute, query: queryParams.join('&') });
--	}
--
--	private startListening(): void {
--		if (this.onDidChangeLocalStorageDisposable) {
--			return;
--		}
--
--		const fn = () => this.onDidChangeLocalStorage();
--		mainWindow.addEventListener('storage', fn);
--		this.onDidChangeLocalStorageDisposable = { dispose: () => mainWindow.removeEventListener('storage', fn) };
--	}
--
--	private stopListening(): void {
--		this.onDidChangeLocalStorageDisposable?.dispose();
--		this.onDidChangeLocalStorageDisposable = undefined;
--	}
--
--	// this fires every time local storage changes, but we
--	// don't want to check more often than once a second
--	private async onDidChangeLocalStorage(): Promise<void> {
--		const ellapsed = Date.now() - this.lastTimeChecked;
--
--		if (ellapsed > 1000) {
--			this.checkCallbacks();
--		} else if (this.checkCallbacksTimeout === undefined) {
--			this.checkCallbacksTimeout = setTimeout(() => {
--				this.checkCallbacksTimeout = undefined;
--				this.checkCallbacks();
--			}, 1000 - ellapsed);
--		}
--	}
--
--	private checkCallbacks(): void {
--		let pendingCallbacks: Set<number> | undefined;
--
--		for (const id of this.pendingCallbacks) {
--			const key = `vscode-web.url-callbacks[${id}]`;
--			const result = localStorage.getItem(key);
--
--			if (result !== null) {
--				try {
--					this._onCallback.fire(URI.revive(JSON.parse(result)));
--				} catch (error) {
--					console.error(error);
--				}
--
--				pendingCallbacks = pendingCallbacks ?? new Set(this.pendingCallbacks);
--				pendingCallbacks.delete(id);
--				localStorage.removeItem(key);
--			}
--		}
--
--		if (pendingCallbacks) {
--			this.pendingCallbacks = pendingCallbacks;
--
--			if (this.pendingCallbacks.size === 0) {
--				this.stopListening();
--			}
--		}
--
--		this.lastTimeChecked = Date.now();
 -	}
 -}
 -
 -class WorkspaceProvider implements IWorkspaceProvider {
 -
--	private static QUERY_PARAM_EMPTY_WINDOW = 'ew';
--	private static QUERY_PARAM_FOLDER = 'folder';
--	private static QUERY_PARAM_WORKSPACE = 'workspace';
+-	static QUERY_PARAM_EMPTY_WINDOW = 'ew';
+-	static QUERY_PARAM_FOLDER = 'folder';
+-	static QUERY_PARAM_WORKSPACE = 'workspace';
 -
--	private static QUERY_PARAM_PAYLOAD = 'payload';
--
--	static create(config: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents }) {
--		let foundWorkspace = false;
--		let workspace: IWorkspace;
--		let payload = Object.create(null);
--
--		const query = new URL(document.location.href).searchParams;
--		query.forEach((value, key) => {
--			switch (key) {
--
--				// Folder
--				case WorkspaceProvider.QUERY_PARAM_FOLDER:
--					if (config.remoteAuthority && value.startsWith(posix.sep)) {
--						// when connected to a remote and having a value
--						// that is a path (begins with a `/`), assume this
--						// is a vscode-remote resource as simplified URL.
--						workspace = { folderUri: URI.from({ scheme: Schemas.vscodeRemote, path: value, authority: config.remoteAuthority }) };
--					} else {
--						workspace = { folderUri: URI.parse(value) };
--					}
--					foundWorkspace = true;
--					break;
--
--				// Workspace
--				case WorkspaceProvider.QUERY_PARAM_WORKSPACE:
--					if (config.remoteAuthority && value.startsWith(posix.sep)) {
--						// when connected to a remote and having a value
--						// that is a path (begins with a `/`), assume this
--						// is a vscode-remote resource as simplified URL.
--						workspace = { workspaceUri: URI.from({ scheme: Schemas.vscodeRemote, path: value, authority: config.remoteAuthority }) };
--					} else {
--						workspace = { workspaceUri: URI.parse(value) };
--					}
--					foundWorkspace = true;
--					break;
--
--				// Empty
--				case WorkspaceProvider.QUERY_PARAM_EMPTY_WINDOW:
--					workspace = undefined;
--					foundWorkspace = true;
--					break;
--
--				// Payload
--				case WorkspaceProvider.QUERY_PARAM_PAYLOAD:
--					try {
--						payload = parse(value); // use marshalling#parse() to revive potential URIs
--					} catch (error) {
--						console.error(error); // possible invalid JSON
--					}
--					break;
--			}
--		});
--
--		// If no workspace is provided through the URL, check for config
--		// attribute from server
--		if (!foundWorkspace) {
--			if (config.folderUri) {
--				workspace = { folderUri: URI.revive(config.folderUri) };
--			} else if (config.workspaceUri) {
--				workspace = { workspaceUri: URI.revive(config.workspaceUri) };
--			}
--		}
--
--		return new WorkspaceProvider(workspace, payload, config);
--	}
+-	static QUERY_PARAM_PAYLOAD = 'payload';
 -
 -	readonly trusted = true;
-+	// Inject project specific utopia config into the product.json
-+	const urlParams = new URLSearchParams(window.location.search)
-+	const vsCodeSessionID = urlParams.get('vs_code_session_id')!
- 
--	private constructor(
--		readonly workspace: IWorkspace,
--		readonly payload: object,
--		private readonly config: IWorkbenchConstructionOptions
--	) {
--	}
 -
--	async open(workspace: IWorkspace, options?: { reuse?: boolean; payload?: object }): Promise<boolean> {
+-	constructor(
+-		readonly workspace: IWorkspace,
+-		readonly payload: object
+-	) { }
+-
+-	async open(workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }): Promise<boolean> {
 -		if (options?.reuse && !options.payload && this.isSame(this.workspace, workspace)) {
 -			return true; // return early if workspace and environment is not changing and we are reusing window
 -		}
-+	// Use this instance as the webview provider rather than hitting MS servers
-+	const webviewEndpoint = `${window.location.origin}/vscode/vscode/vs/workbench/contrib/webview/browser/pre`
- 
+-
 -		const targetHref = this.createTargetUrl(workspace, options);
 -		if (targetHref) {
 -			if (options?.reuse) {
--				mainWindow.location.href = targetHref;
+-				window.location.href = targetHref;
 -				return true;
 -			} else {
 -				let result;
--				if (isStandalone()) {
--					result = mainWindow.open(targetHref, '_blank', 'toolbar=no'); // ensures to open another 'standalone' window!
+-				if (isStandalone) {
+-					result = window.open(targetHref, '_blank', 'toolbar=no'); // ensures to open another 'standalone' window!
 -				} else {
--					result = mainWindow.open(targetHref);
+-					result = window.open(targetHref);
 -				}
 -
 -				return !!result;
 -			}
 -		}
 -		return false;
-+	let config = {
-+		...loadedConfig,
-+		webviewEndpoint: webviewEndpoint,
-+		editSessionId: vsCodeSessionID
- 	}
- 
--	private createTargetUrl(workspace: IWorkspace, options?: { reuse?: boolean; payload?: object }): string | undefined {
+-	}
+-
+-	private createTargetUrl(workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }): string | undefined {
 -
 -		// Empty
 -		let targetHref: string | undefined = undefined;
@@ -670,14 +538,12 @@ index f8875029a8a..3bdfd1bfa64 100644
 -
 -		// Folder
 -		else if (isFolderToOpen(workspace)) {
--			const queryParamFolder = this.encodeWorkspacePath(workspace.folderUri);
--			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_FOLDER}=${queryParamFolder}`;
+-			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_FOLDER}=${encodeURIComponent(workspace.folderUri.toString())}`;
 -		}
 -
 -		// Workspace
 -		else if (isWorkspaceToOpen(workspace)) {
--			const queryParamWorkspace = this.encodeWorkspacePath(workspace.workspaceUri);
--			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_WORKSPACE}=${queryParamWorkspace}`;
+-			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_WORKSPACE}=${encodeURIComponent(workspace.workspaceUri.toString())}`;
 -		}
 -
 -		// Append payload if any
@@ -686,29 +552,6 @@ index f8875029a8a..3bdfd1bfa64 100644
 -		}
 -
 -		return targetHref;
-+	const workspace = {
-+		folderUri: URI.parse(`${vsCodeSessionID}:/`)
- 	}
- 
--	private encodeWorkspacePath(uri: URI): string {
--		if (this.config.remoteAuthority && uri.scheme === Schemas.vscodeRemote) {
--
--			// when connected to a remote and having a folder
--			// or workspace for that remote, only use the path
--			// as query value to form shorter, nicer URLs.
--			// however, we still need to `encodeURIComponent`
--			// to ensure to preserve special characters, such
--			// as `+` in the path.
--
--			return encodeURIComponent(`${posix.sep}${ltrim(uri.path, posix.sep)}`).replaceAll('%2F', '/');
-+	if (workspace) {
-+		const workspaceProvider: IWorkspaceProvider = { 
-+			workspace,
-+			open: async (_workspace: IWorkspace, _options?: { reuse?: boolean, payload?: object }) => true,
-+			trusted: true 
- 		}
--
--		return encodeURIComponent(uri.toString(true));
 -	}
 -
 -	private isSame(workspaceA: IWorkspace, workspaceB: IWorkspace): boolean {
@@ -742,49 +585,280 @@ index f8875029a8a..3bdfd1bfa64 100644
 -	}
 -}
 -
--function readCookie(name: string): string | undefined {
--	const cookies = document.cookie.split('; ');
--	for (const cookie of cookies) {
--		if (cookie.startsWith(name + '=')) {
--			return cookie.substring(name.length + 1);
+-class WindowIndicator implements IWindowIndicator {
+-
+-	readonly onDidChange = Event.None;
+-
+-	readonly label: string;
+-	readonly tooltip: string;
+-	readonly command: string | undefined;
+-
+-	constructor(workspace: IWorkspace) {
+-		let repositoryOwner: string | undefined = undefined;
+-		let repositoryName: string | undefined = undefined;
+-
+-		if (workspace) {
+-			let uri: URI | undefined = undefined;
+-			if (isFolderToOpen(workspace)) {
+-				uri = workspace.folderUri;
+-			} else if (isWorkspaceToOpen(workspace)) {
+-				uri = workspace.workspaceUri;
+-			}
+-
+-			if (uri?.scheme === 'github' || uri?.scheme === 'codespace') {
+-				[repositoryOwner, repositoryName] = uri.authority.split('+');
+-			}
+-		}
+-
+-		// Repo
+-		if (repositoryName && repositoryOwner) {
+-			this.label = localize('playgroundLabelRepository', "$(remote) Visual Studio Code Playground: {0}/{1}", repositoryOwner, repositoryName);
+-			this.tooltip = localize('playgroundRepositoryTooltip', "Visual Studio Code Playground: {0}/{1}", repositoryOwner, repositoryName);
+-		}
+-
+-		// No Repo
+-		else {
+-			this.label = localize('playgroundLabel', "$(remote) Visual Studio Code Playground");
+-			this.tooltip = localize('playgroundTooltip', "Visual Studio Code Playground");
 -		}
 -	}
--
--	return undefined;
 -}
 -
 -(function () {
 -
 -	// Find config by checking for DOM
--	const configElement = mainWindow.document.getElementById('vscode-workbench-web-configuration');
+-	const configElement = document.getElementById('vscode-workbench-web-configuration');
 -	const configElementAttribute = configElement ? configElement.getAttribute('data-settings') : undefined;
 -	if (!configElement || !configElementAttribute) {
 -		throw new Error('Missing web configuration element');
-+		config = { ...config, workspaceProvider }
- 	}
--	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = JSON.parse(configElementAttribute);
--	const secretStorageKeyPath = readCookie('vscode-secret-key-path');
--	const secretStorageCrypto = secretStorageKeyPath && ServerKeyedAESCrypto.supported()
--		? new ServerKeyedAESCrypto(secretStorageKeyPath) : new TransparentCrypto();
- 
--	// Create workbench
--	create(mainWindow.document.body, {
--		...config,
--		windowIndicator: config.windowIndicator ?? { label: '$(remote)', tooltip: `${product.nameShort} Web` },
--		settingsSyncOptions: config.settingsSyncOptions ? { enabled: config.settingsSyncOptions.enabled, } : undefined,
--		workspaceProvider: WorkspaceProvider.create(config),
--		urlCallbackProvider: new LocalStorageURLCallbackProvider(config.callbackRoute),
--		secretStorageProvider: config.remoteAuthority && !secretStorageKeyPath
--			? undefined /* with a remote without embedder-preferred storage, store on the remote */
--			: new LocalStorageSecretStorageProvider(secretStorageCrypto),
+-	}
+-
+-	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents, workspaceUri?: UriComponents } = JSON.parse(configElementAttribute);
+-
+-	// Find workspace to open and payload
+-	let foundWorkspace = false;
+-	let workspace: IWorkspace;
+-	let payload = Object.create(null);
+-	let logLevel: string | undefined = undefined;
+-
+-	const query = new URL(document.location.href).searchParams;
+-	query.forEach((value, key) => {
+-		switch (key) {
+-
+-			// Folder
+-			case WorkspaceProvider.QUERY_PARAM_FOLDER:
+-				workspace = { folderUri: URI.parse(value) };
+-				foundWorkspace = true;
+-				break;
+-
+-			// Workspace
+-			case WorkspaceProvider.QUERY_PARAM_WORKSPACE:
+-				workspace = { workspaceUri: URI.parse(value) };
+-				foundWorkspace = true;
+-				break;
+-
+-			// Empty
+-			case WorkspaceProvider.QUERY_PARAM_EMPTY_WINDOW:
+-				workspace = undefined;
+-				foundWorkspace = true;
+-				break;
+-
+-			// Payload
+-			case WorkspaceProvider.QUERY_PARAM_PAYLOAD:
+-				try {
+-					payload = JSON.parse(value);
+-				} catch (error) {
+-					console.error(error); // possible invalid JSON
+-				}
+-				break;
+-
+-			// Log level
+-			case 'logLevel':
+-				logLevel = value;
+-				break;
+-		}
 -	});
-+	create(mainWindow.document.body, config)
- })();
+-
+-	// If no workspace is provided through the URL, check for config attribute from server
+-	if (!foundWorkspace) {
+-		if (config.folderUri) {
+-			workspace = { folderUri: URI.revive(config.folderUri) };
+-		} else if (config.workspaceUri) {
+-			workspace = { workspaceUri: URI.revive(config.workspaceUri) };
+-		} else {
+-			workspace = undefined;
+-		}
+-	}
+-
+-	// Workspace Provider
+-	const workspaceProvider = new WorkspaceProvider(workspace, payload);
+-
+-	// Home Indicator
+-	const homeIndicator: IHomeIndicator = {
+-		href: 'https://github.com/microsoft/vscode',
+-		icon: 'code',
+-		title: localize('home', "Home")
+-	};
+-
+-	// Welcome Banner
+-	const welcomeBanner: IWelcomeBanner = {
+-		message: localize('welcomeBannerMessage', "{0} Web. Browser based playground for testing.", product.nameShort),
+-		actions: [{
+-			href: 'https://github.com/microsoft/vscode',
+-			label: localize('learnMore', "Learn More")
+-		}]
+-	};
+-
+-	// Window indicator (unless connected to a remote)
+-	let windowIndicator: WindowIndicator | undefined = undefined;
+-	if (!workspaceProvider.hasRemote()) {
+-		windowIndicator = new WindowIndicator(workspace);
+-	}
+-
+-	// Product Quality Change Handler
+-	const productQualityChangeHandler: IProductQualityChangeHandler = (quality) => {
+-		let queryString = `quality=${quality}`;
+-
+-		// Save all other query params we might have
+-		const query = new URL(document.location.href).searchParams;
+-		query.forEach((value, key) => {
+-			if (key !== 'quality') {
+-				queryString += `&${key}=${value}`;
+-			}
+-		});
+-
+-		window.location.href = `${window.location.origin}?${queryString}`;
+-	};
+-
+-	// settings sync options
+-	const settingsSyncOptions: ISettingsSyncOptions | undefined = config.settingsSyncOptions ? {
+-		enabled: config.settingsSyncOptions.enabled,
+-	} : undefined;
+-
+-	// Finally create workbench
+-	create(document.body, {
+-		...config,
+-		developmentOptions: {
+-			logLevel: logLevel ? parseLogLevel(logLevel) : undefined,
+-			...config.developmentOptions
+-		},
+-		settingsSyncOptions,
+-		homeIndicator,
+-		windowIndicator,
+-		welcomeBanner,
+-		productQualityChangeHandler,
+-		workspaceProvider,
+-		urlCallbackProvider: new PollingURLCallbackProvider(),
+-		credentialsProvider: new LocalStorageCredentialsProvider()
+-	});
+-})();
++import {
++  create,
++	IWorkspace,
++  IWorkbenchConstructionOptions,
++  IWorkspaceProvider,
++} from 'vs/workbench/workbench.web.api'
++import { URI } from 'vs/base/common/uri'
++import { setupVSCodeEventListenersForProject } from 'utopia-vscode-common'
++
++// TODO revisit these dummy parts so that they can return something rather than nothing
++// import {
++//   getSingletonServiceDescriptors,
++//   registerSingleton,
++// } from 'vs/platform/instantiation/common/extensions'
++// import { BrandedService, ServiceIdentifier } from 'vs/platform/instantiation/common/instantiation'
++// import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
++
++// const _registry = getSingletonServiceDescriptors()
++
++// function replaceRegisteredSingleton<T, Services extends BrandedService[]>(
++//   id: ServiceIdentifier<T>,
++//   ctor: new (...services: Services) => T,
++//   supportsDelayedInstantiation?: boolean,
++// ): void {
++//   const index = _registry.findIndex((tuple) => tuple[0] === id)
++//   if (index > 0) {
++//     _registry[index] = [
++//       id,
++//       new SyncDescriptor<T>(ctor as new (...args: any[]) => T, [], supportsDelayedInstantiation),
++//     ]
++//   } else {
++//     registerSingleton(id, ctor)
++//   }
++// }
++
++// // Replace services for the parts we don't want to use -
++// // We have to import the original part first to ensure it isn't registered later
++// import 'vs/workbench/browser/parts/panel/panelPart'
++// import { PanelPart } from 'vs/workbench/browser/parts/dummies/panelPart'
++// import { IPanelService } from 'vs/workbench/services/panel/common/panelService'
++// replaceRegisteredSingleton(IPanelService, PanelPart)
++
++// import 'vs/workbench/browser/parts/sidebar/sidebarPart'
++// import { SidebarPart } from 'vs/workbench/browser/parts/dummies/sidebarPart'
++// import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet'
++// replaceRegisteredSingleton(IViewletService, SidebarPart)
++
++// import 'vs/workbench/browser/parts/activitybar/activitybarPart'
++// import { ActivitybarPart } from 'vs/workbench/browser/parts/dummies/activitybarPart'
++// import { IActivityBarService } from 'vs/workbench/services/activityBar/browser/activityBarService'
++// replaceRegisteredSingleton(IActivityBarService, ActivitybarPart)
++
++// import 'vs/workbench/browser/parts/titlebar/titlebarPart'
++// import { TitlebarPart } from 'vs/workbench/browser/parts/dummies/titlebarPart'
++// import { ITitleService } from 'vs/workbench/services/title/common/titleService'
++// replaceRegisteredSingleton(ITitleService, TitlebarPart)
++
++// import 'vs/workbench/browser/parts/statusbar/statusbarPart'
++// import { StatusbarPart } from 'vs/workbench/browser/parts/dummies/statusbarPart'
++// import { IStatusbarService } from 'vs/workbench/services/statusbar/common/statusbar'
++// replaceRegisteredSingleton(IStatusbarService, StatusbarPart)
++
++;(async function () {
++  // create workbench
++  const result = await fetch('/vscode/product.json')
++  const loadedConfig: IWorkbenchConstructionOptions = await result.json()
++
++  // Inject project specific utopia config into the product.json
++  const urlParams = new URLSearchParams(window.location.search)
++  const vsCodeSessionID = urlParams.get('vs_code_session_id')!
++
++  // Use this instance as the webview provider rather than hitting MS servers
++  const webviewEndpoint = `${window.location.origin}/vscode/vscode/vs/workbench/contrib/webview/browser/pre`
++
++  let config = {
++    ...loadedConfig,
++    folderUri: {
++      scheme: vsCodeSessionID,
++      authority: '',
++      path: `/`,
++      query: '',
++      fragment: '',
++    },
++    webviewEndpoint: webviewEndpoint,
++  }
++
++  const workspace = { folderUri: URI.revive(config.folderUri) }
++
++  if (workspace) {
++    const workspaceProvider: IWorkspaceProvider = { 
++			workspace,
++			open: async (workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }) => true,
++			trusted: true 
++		}
++    config = { ...config, workspaceProvider }
++  }
++
++  setupVSCodeEventListenersForProject(vsCodeSessionID)
++
++  create(document.body, config)
++})()
+\ No newline at end of file
 diff --git a/src/vs/editor/common/config/editorOptions.ts b/src/vs/editor/common/config/editorOptions.ts
-index 294e7030695..46730d6d518 100644
+index 7d8189c50be..125b6c89d0b 100644
 --- a/src/vs/editor/common/config/editorOptions.ts
 +++ b/src/vs/editor/common/config/editorOptions.ts
-@@ -3093,7 +3093,7 @@ class EditorMinimap extends BaseEditorOption<EditorOption.minimap, IEditorMinima
+@@ -2560,7 +2560,7 @@ class EditorMinimap extends BaseEditorOption<EditorOption.minimap, EditorMinimap
  
  	constructor() {
  		const defaults: EditorMinimapOptions = {
@@ -793,245 +867,228 @@ index 294e7030695..46730d6d518 100644
  			size: 'proportional',
  			side: 'right',
  			showSlider: 'mouseover',
-diff --git a/src/vs/platform/environment/test/node/nativeModules.integrationTest.ts b/src/vs/platform/environment/test/node/nativeModules.integrationTest.ts
-index 81db8b47267..fc76d98a5d3 100644
---- a/src/vs/platform/environment/test/node/nativeModules.integrationTest.ts
-+++ b/src/vs/platform/environment/test/node/nativeModules.integrationTest.ts
-@@ -26,13 +26,7 @@ flakySuite('Native Modules (all platforms)', () => {
- 		assert.ok(typeof result === 'boolean', testErrorMessage('native-is-elevated'));
- 	});
- 
--	test('native-keymap', async () => {
--		const keyMap = await import('native-keymap');
--		assert.ok(typeof keyMap.getCurrentKeyboardLayout === 'function', testErrorMessage('native-keymap'));
--
--		const result = keyMap.getCurrentKeyboardLayout();
--		assert.ok(result, testErrorMessage('native-keymap'));
--	});
-+	// I removed everything involving native-keymap as that was causing issues with the build involving Electron (which we obviously don't care about)
- 
- 	test('native-watchdog', async () => {
- 		const watchDog = await import('native-watchdog');
-diff --git a/src/vs/platform/keyboardLayout/electron-main/keyboardLayoutMainService.ts b/src/vs/platform/keyboardLayout/electron-main/keyboardLayoutMainService.ts
-index 1d17e4c709e..00109563f5c 100644
---- a/src/vs/platform/keyboardLayout/electron-main/keyboardLayoutMainService.ts
-+++ b/src/vs/platform/keyboardLayout/electron-main/keyboardLayoutMainService.ts
-@@ -3,8 +3,6 @@
-  *  Licensed under the MIT License. See License.txt in the project root for license information.
-  *--------------------------------------------------------------------------------------------*/
- 
--import type * as nativeKeymap from 'native-keymap';
--import * as platform from 'vs/base/common/platform';
- import { Emitter } from 'vs/base/common/event';
- import { Disposable } from 'vs/base/common/lifecycle';
- import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-@@ -45,29 +43,10 @@ export class KeyboardLayoutMainService extends Disposable implements INativeKeyb
- 		return this._initPromise;
- 	}
- 
--	private async _doInitialize(): Promise<void> {
--		const nativeKeymapMod = await import('native-keymap');
--
--		this._keyboardLayoutData = readKeyboardLayoutData(nativeKeymapMod);
--		if (!platform.isCI) {
--			// See https://github.com/microsoft/vscode/issues/152840
--			// Do not register the keyboard layout change listener in CI because it doesn't work
--			// on the build machines and it just adds noise to the build logs.
--			nativeKeymapMod.onDidChangeKeyboardLayout(() => {
--				this._keyboardLayoutData = readKeyboardLayoutData(nativeKeymapMod);
--				this._onDidChangeKeyboardLayout.fire(this._keyboardLayoutData);
--			});
--		}
--	}
-+	private async _doInitialize(): Promise<void> {}
- 
- 	public async getKeyboardLayoutData(): Promise<IKeyboardLayoutData> {
- 		await this._initialize();
- 		return this._keyboardLayoutData!;
- 	}
- }
--
--function readKeyboardLayoutData(nativeKeymapMod: typeof nativeKeymap): IKeyboardLayoutData {
--	const keyboardMapping = nativeKeymapMod.getKeyMap();
--	const keyboardLayoutInfo = nativeKeymapMod.getCurrentKeyboardLayout();
--	return { keyboardMapping, keyboardLayoutInfo };
--}
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index b8232cb8490..0ce6a8e7002 100644
+index 6b59c1e9faa..a9192e938ef 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
-@@ -1203,40 +1203,40 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -54,6 +54,7 @@ import { AuxiliaryBarPart } from 'vs/workbench/browser/parts/auxiliarybar/auxili
+ export enum Settings {
+ 	ACTIVITYBAR_VISIBLE = 'workbench.activityBar.visible',
+ 	STATUSBAR_VISIBLE = 'workbench.statusBar.visible',
++	SIDEBAR_VISIBLE = 'workbench.sideBar.visible',
  
- 		if (this.initialized) {
- 			switch (part) {
--				case Parts.TITLEBAR_PART:
--					return this.workbenchGrid.isViewVisible(this.titleBarPartView);
--				case Parts.SIDEBAR_PART:
--					return !this.stateModel.getRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN);
--				case Parts.PANEL_PART:
--					return !this.stateModel.getRuntimeValue(LayoutStateKeys.PANEL_HIDDEN);
--				case Parts.AUXILIARYBAR_PART:
--					return !this.stateModel.getRuntimeValue(LayoutStateKeys.AUXILIARYBAR_HIDDEN);
--				case Parts.STATUSBAR_PART:
--					return !this.stateModel.getRuntimeValue(LayoutStateKeys.STATUSBAR_HIDDEN);
--				case Parts.ACTIVITYBAR_PART:
--					return !this.stateModel.getRuntimeValue(LayoutStateKeys.ACTIVITYBAR_HIDDEN);
-+				// case Parts.TITLEBAR_PART:
-+				// 	return this.workbenchGrid.isViewVisible(this.titleBarPartView);
-+				// case Parts.SIDEBAR_PART:
-+				// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN);
-+				// case Parts.PANEL_PART:
-+				// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.PANEL_HIDDEN);
-+				// case Parts.AUXILIARYBAR_PART:
-+				// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.AUXILIARYBAR_HIDDEN);
-+				// case Parts.STATUSBAR_PART:
-+				// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.STATUSBAR_HIDDEN);
-+				// case Parts.ACTIVITYBAR_PART:
-+				// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.ACTIVITYBAR_HIDDEN);
- 				case Parts.EDITOR_PART:
- 					return !this.stateModel.getRuntimeValue(LayoutStateKeys.EDITOR_HIDDEN);
--				case Parts.BANNER_PART:
--					return this.workbenchGrid.isViewVisible(this.bannerPartView);
-+				// case Parts.BANNER_PART:
-+				// 	return this.workbenchGrid.isViewVisible(this.bannerPartView);
- 				default:
- 					return false; // any other part cannot be hidden
- 			}
+ 	SIDEBAR_POSITION = 'workbench.sideBar.location',
+ 	PANEL_POSITION = 'workbench.panel.defaultLocation',
+@@ -190,16 +191,16 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		windowBorder: false,
+ 
+ 		menuBar: {
+-			visibility: 'classic' as MenuBarVisibility,
++			visibility: 'hidden' as MenuBarVisibility,
+ 			toggled: false
+ 		},
+ 
+ 		activityBar: {
+-			hidden: false
++			hidden: true
+ 		},
+ 
+ 		sideBar: {
+-			hidden: false,
++			hidden: true,
+ 			position: Position.LEFT,
+ 			width: 300,
+ 			viewletToRestore: undefined as string | undefined
+@@ -214,7 +215,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		},
+ 
+ 		panel: {
+-			hidden: false,
++			hidden: true,
+ 			position: Position.BOTTOM,
+ 			lastNonMaximizedWidth: 300,
+ 			lastNonMaximizedHeight: 300,
+@@ -228,7 +229,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		},
+ 
+ 		statusBar: {
+-			hidden: false
++			hidden: true
+ 		},
+ 
+ 		views: {
+@@ -513,13 +514,13 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		this.state.fullscreen = isFullscreen();
+ 
+ 		// Menubar visibility
+-		this.state.menuBar.visibility = getMenuBarVisibility(this.configurationService);
++		this.state.menuBar.visibility = 'hidden';
+ 
+ 		// Activity bar visibility
+-		this.state.activityBar.hidden = !this.configurationService.getValue<string>(Settings.ACTIVITYBAR_VISIBLE);
++		this.state.activityBar.hidden = true;
+ 
+ 		// Sidebar visibility
+-		this.state.sideBar.hidden = this.storageService.getBoolean(Storage.SIDEBAR_HIDDEN, StorageScope.WORKSPACE, this.contextService.getWorkbenchState() === WorkbenchState.EMPTY);
++		this.state.sideBar.hidden = true;
+ 
+ 		// Sidebar position
+ 		this.state.sideBar.position = (this.configurationService.getValue<string>(Settings.SIDEBAR_POSITION) === 'right') ? Position.RIGHT : Position.LEFT;
+@@ -552,7 +553,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		this.state.editor.editorsToOpen = this.resolveEditorsToOpen(fileService, this.contextService);
+ 
+ 		// Panel visibility
+-		this.state.panel.hidden = this.storageService.getBoolean(Storage.PANEL_HIDDEN, StorageScope.WORKSPACE, true);
++		this.state.panel.hidden = true;
+ 
+ 		// Whether or not the panel was last maximized
+ 		this.state.panel.wasLastMaximized = this.storageService.getBoolean(Storage.PANEL_LAST_IS_MAXIMIZED, StorageScope.WORKSPACE, false);
+@@ -590,7 +591,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		this.state.panel.lastNonMaximizedWidth = this.storageService.getNumber(Storage.PANEL_LAST_NON_MAXIMIZED_WIDTH, StorageScope.GLOBAL, 300);
+ 
+ 		// Statusbar visibility
+-		this.state.statusBar.hidden = !this.configurationService.getValue<string>(Settings.STATUSBAR_VISIBLE);
++		this.state.statusBar.hidden = true;
+ 
+ 		// Zen mode enablement
+ 		this.state.zenMode.restore = this.storageService.getBoolean(Storage.ZEN_MODE_ENABLED, StorageScope.WORKSPACE, false) && this.configurationService.getValue(Settings.ZEN_MODE_RESTORE);
+@@ -1227,7 +1228,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		}
- 
- 		switch (part) {
--			case Parts.TITLEBAR_PART:
--				return shouldShowCustomTitleBar(this.configurationService, mainWindow, this.state.runtime.menuBar.toggled, this.isZenModeActive());
--			case Parts.SIDEBAR_PART:
--				return !this.stateModel.getRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN);
--			case Parts.PANEL_PART:
--				return !this.stateModel.getRuntimeValue(LayoutStateKeys.PANEL_HIDDEN);
--			case Parts.AUXILIARYBAR_PART:
--				return !this.stateModel.getRuntimeValue(LayoutStateKeys.AUXILIARYBAR_HIDDEN);
--			case Parts.STATUSBAR_PART:
--				return !this.stateModel.getRuntimeValue(LayoutStateKeys.STATUSBAR_HIDDEN);
--			case Parts.ACTIVITYBAR_PART:
--				return !this.stateModel.getRuntimeValue(LayoutStateKeys.ACTIVITYBAR_HIDDEN);
-+			// case Parts.TITLEBAR_PART:
-+			// 	return shouldShowCustomTitleBar(this.configurationService, mainWindow, this.state.runtime.menuBar.toggled, this.isZenModeActive());
-+			// case Parts.SIDEBAR_PART:
-+			// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN);
-+			// case Parts.PANEL_PART:
-+			// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.PANEL_HIDDEN);
-+			// case Parts.AUXILIARYBAR_PART:
-+			// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.AUXILIARYBAR_HIDDEN);
-+			// case Parts.STATUSBAR_PART:
-+			// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.STATUSBAR_HIDDEN);
-+			// case Parts.ACTIVITYBAR_PART:
-+			// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.ACTIVITYBAR_HIDDEN);
- 			case Parts.EDITOR_PART:
- 				return !this.stateModel.getRuntimeValue(LayoutStateKeys.EDITOR_HIDDEN);
- 			default:
-@@ -1293,7 +1293,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  	}
  
- 	private isZenModeActive(): boolean {
--		return this.stateModel.getRuntimeValue(LayoutStateKeys.ZEN_MODE_ACTIVE);
-+		return true; // Always true to remove all of the other UI
+-	private setStatusBarHidden(hidden: boolean, skipLayout?: boolean): void {
++	private setStatusBarHidden(_hidden: boolean, skipLayout?: boolean): void {
++		const hidden = true;
+ 		this.state.statusBar.hidden = hidden;
+ 
+ 		// Adjust CSS
+@@ -1453,7 +1455,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		}
  	}
  
- 	private setZenModeActive(active: boolean) {
+-	private setActivityBarHidden(hidden: boolean, skipLayout?: boolean): void {
++	private setActivityBarHidden(_hidden: boolean, skipLayout?: boolean): void {
++		const hidden = true;
+ 		this.state.activityBar.hidden = hidden;
+ 
+ 		// Propagate to grid
+@@ -1500,7 +1503,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		]);
+ 	}
+ 
+-	private setSideBarHidden(hidden: boolean, skipLayout?: boolean): void {
++	private setSideBarHidden(_hidden: boolean, skipLayout?: boolean): void {
++		const hidden = true
+ 		this.state.sideBar.hidden = hidden;
+ 
+ 		// Adjust CSS
+@@ -1560,7 +1564,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		return viewContainerModel.activeViewDescriptors.length >= 1;
+ 	}
+ 
+-	private setPanelHidden(hidden: boolean, skipLayout?: boolean): void {
++	private setPanelHidden(_hidden: boolean, skipLayout?: boolean): void {
++		const hidden = true;
+ 		const wasHidden = this.state.panel.hidden;
+ 		this.state.panel.hidden = hidden;
+ 
+@@ -1771,7 +1776,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		return this.state.sideBar.position;
+ 	}
+ 
+-	setMenubarVisibility(visibility: MenuBarVisibility, skipLayout: boolean): void {
++	setMenubarVisibility(_visibility: MenuBarVisibility, skipLayout: boolean): void {
++		const visibility = 'hidden';
+ 		if (this.state.menuBar.visibility !== visibility) {
+ 			this.state.menuBar.visibility = visibility;
+ 
 diff --git a/src/vs/workbench/browser/workbench.contribution.ts b/src/vs/workbench/browser/workbench.contribution.ts
-index ae4d22c9eaa..e342fb223d8 100644
+index 000fd151ee2..d21a981e220 100644
 --- a/src/vs/workbench/browser/workbench.contribution.ts
 +++ b/src/vs/workbench/browser/workbench.contribution.ts
-@@ -784,12 +784,12 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
- 		'properties': {
- 			'zenMode.fullScreen': {
+@@ -7,7 +7,7 @@ import product from 'vs/platform/product/common/product';
+ import { Registry } from 'vs/platform/registry/common/platform';
+ import { localize } from 'vs/nls';
+ import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope } from 'vs/platform/configuration/common/configurationRegistry';
+-import { isMacintosh, isWindows, isLinux, isWeb, isNative } from 'vs/base/common/platform';
++import { isMacintosh, isWeb, isNative } from 'vs/base/common/platform';
+ import { workbenchConfigurationNodeBase } from 'vs/workbench/common/configuration';
+ import { isStandalone } from 'vs/base/browser/browser';
+ 
+@@ -278,6 +278,12 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
+ 				'default': 'left',
+ 				'description': localize('sideBarLocation', "Controls the location of the sidebar and activity bar. They can either show on the left or right of the workbench.")
+ 			},
++			'workbench.sideBar.visible': {
++				'type': 'boolean',
++				'default': false,
++				'description': localize('sideBarVisibility', "Controls the visibility of the side bar at the side of the workbench."),
++				'included': false
++			},
+ 			'workbench.panel.defaultLocation': {
+ 				'type': 'string',
+ 				'enum': ['left', 'bottom', 'right'],
+@@ -297,13 +303,15 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
+ 			},
+ 			'workbench.statusBar.visible': {
+ 				'type': 'boolean',
+-				'default': true,
+-				'description': localize('statusBarVisibility', "Controls the visibility of the status bar at the bottom of the workbench.")
++				'default': false,
++				'description': localize('statusBarVisibility', "Controls the visibility of the status bar at the bottom of the workbench."),
++				'included': false
+ 			},
+ 			'workbench.activityBar.visible': {
+ 				'type': 'boolean',
+-				'default': true,
+-				'description': localize('activityBarVisibility', "Controls the visibility of the activity bar in the workbench.")
++				'default': false,
++				'description': localize('activityBarVisibility', "Controls the visibility of the activity bar in the workbench."),
++				'included': false
+ 			},
+ 			'workbench.activityBar.iconClickBehavior': {
+ 				'type': 'string',
+@@ -420,26 +428,26 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
+ 					localize('window.menuBarVisibility.hidden', "Menu is always hidden."),
+ 					localize('window.menuBarVisibility.compact', "Menu is displayed as a compact button in the sidebar. This value is ignored when `#window.titleBarStyle#` is `native`.")
+ 				],
+-				'default': isWeb ? 'compact' : 'classic',
++				'default': 'hidden',
+ 				'scope': ConfigurationScope.APPLICATION,
+ 				'markdownDescription': isMacintosh ?
+ 					localize('menuBarVisibility.mac', "Control the visibility of the menu bar. A setting of 'toggle' means that the menu bar is hidden and executing `Focus Application Menu` will show it. A setting of 'compact' will move the menu into the sidebar.") :
+ 					localize('menuBarVisibility', "Control the visibility of the menu bar. A setting of 'toggle' means that the menu bar is hidden and a single press of the Alt key will show it. A setting of 'compact' will move the menu into the sidebar."),
+-				'included': isWindows || isLinux || isWeb
++				'included': false
+ 			},
+ 			'window.enableMenuBarMnemonics': {
  				'type': 'boolean',
 -				'default': true,
 +				'default': false,
- 				'description': localize('zenMode.fullScreen', "Controls whether turning on Zen Mode also puts the workbench into full screen mode.")
+ 				'scope': ConfigurationScope.APPLICATION,
+ 				'description': localize('enableMenuBarMnemonics', "Controls whether the main menus can be opened via Alt-key shortcuts. Disabling mnemonics allows to bind these Alt-key shortcuts to editor commands instead."),
+-				'included': isWindows || isLinux
++				'included': false
  			},
- 			'zenMode.centerLayout': {
+ 			'window.customMenuBarAltFocus': {
  				'type': 'boolean',
 -				'default': true,
 +				'default': false,
- 				'description': localize('zenMode.centerLayout', "Controls whether turning on Zen Mode also centers the layout.")
+ 				'scope': ConfigurationScope.APPLICATION,
+ 				'markdownDescription': localize('customMenuBarAltFocus', "Controls whether the menu bar will be focused by pressing the Alt-key. This setting has no effect on toggling the menu bar with the Alt-key."),
+-				'included': isWindows || isLinux
++				'included': false
  			},
- 			'zenMode.showTabs': {
-@@ -815,7 +815,7 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
- 			},
- 			'zenMode.hideLineNumbers': {
- 				'type': 'boolean',
--				'default': true,
-+				'default': false,
- 				'description': localize('zenMode.hideLineNumbers', "Controls whether turning on Zen Mode also hides the editor line numbers.")
- 			},
- 			'zenMode.restore': {
-diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index b0688133537..4353093fd5b 100644
---- a/src/vs/workbench/browser/workbench.ts
-+++ b/src/vs/workbench/browser/workbench.ts
-@@ -50,6 +50,8 @@ import { AccessibilityProgressSignalScheduler } from 'vs/platform/accessibilityS
- import { setProgressAcccessibilitySignalScheduler } from 'vs/base/browser/ui/progressbar/progressAccessibilitySignal';
- import { AccessibleViewRegistry } from 'vs/platform/accessibility/browser/accessibleViewRegistry';
- import { NotificationAccessibleView } from 'vs/workbench/browser/parts/notifications/notificationAccessibleView';
-+import { ICommandService } from '../../platform/commands/common/commands';
-+import { isFromUtopiaToVSCodeMessage, messageListenersReady } from 'utopia-vscode-common';
- 
- export interface IWorkbenchOptions {
- 
-@@ -193,6 +195,37 @@ export class Workbench extends Layout {
- 				this.restore(lifecycleService);
- 			});
- 
-+			// Chain off of the previous one to ensure the ordering of changes is maintained.
-+			// FIXME Do we still need this?
-+			let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
-+
-+			let intervalID: number | null = null
-+
-+			mainWindow.addEventListener('message', (messageEvent: MessageEvent) => {
-+				const { data } = messageEvent;
-+				if (isFromUtopiaToVSCodeMessage(data)) {
-+					const commandService = this.serviceCollection.get(ICommandService);
-+					if (commandService == null) {
-+						console.error(`There is no command service`);
-+					} else {
-+						if (intervalID != null) {
-+							window.clearInterval(intervalID)
-+						}
-+						applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
-+							(commandService as ICommandService).executeCommand('utopia.toVSCodeMessage', data);
-+						})
-+					}
-+				}
-+			});
-+
-+			intervalID = window.setInterval(() => {
-+				try {
-+					window.top?.postMessage(messageListenersReady(), '*')
-+				} catch (error) {
-+					console.error('Error posting messageListenersReady', error)
-+				}
-+			}, 500)
-+
- 			return instantiationService;
- 		} catch (error) {
- 			onUnexpectedError(error);
+ 			'window.openFilesInNewWindow': {
+ 				'type': 'string',
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-index 81bf68c3e0b..1075398b4b8 100644
+index b9beba774a5..40627803528 100644
 --- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-@@ -53,6 +53,7 @@ import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs';
- import { RemoveRootFolderAction } from 'vs/workbench/browser/actions/workspaceActions';
- import { OpenEditorsView } from 'vs/workbench/contrib/files/browser/views/openEditorsView';
- import { ExplorerView } from 'vs/workbench/contrib/files/browser/views/explorerView';
-+import { mainWindow } from '../../../../base/browser/window';
- 
- export const openWindowCommand = (accessor: ServicesAccessor, toOpen: IWindowOpenable[], options?: IOpenWindowOptions) => {
- 	if (Array.isArray(toOpen)) {
-@@ -734,3 +735,43 @@ CommandsRegistry.registerCommand({
- 		});
+@@ -567,6 +567,38 @@ CommandsRegistry.registerCommand({
  	}
  });
-+
+ 
 +CommandsRegistry.registerCommand({
 +	id: 'workbench.action.files.revertResource',
 +	handler: async (accessor, resource: URI) => {
@@ -1064,76 +1121,148 @@ index 81bf68c3e0b..1075398b4b8 100644
 +	}
 +});
 +
-+
-+CommandsRegistry.registerCommand({
-+	id: 'utopia.toUtopiaMessage',
-+	handler: async (_accessor, message: any) => {
-+		mainWindow.top?.postMessage(message);
-+	}
-+});
-\ No newline at end of file
+ CommandsRegistry.registerCommand({
+ 	id: REMOVE_ROOT_FOLDER_COMMAND_ID,
+ 	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index d525ba5860c..56ae5cfbc70 100644
+index 114f1357403..bec56e38917 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-@@ -267,7 +267,7 @@ configurationRegistry.registerConfiguration({
- 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onFocusChange' }, "An editor with changes is automatically saved when the editor loses focus."),
- 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onWindowChange' }, "An editor with changes is automatically saved when the window loses focus.")
+@@ -234,12 +234,12 @@ configurationRegistry.registerConfiguration({
+ 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onFocusChange' }, "A dirty editor is automatically saved when the editor loses focus."),
+ 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onWindowChange' }, "A dirty editor is automatically saved when the window loses focus.")
  			],
 -			'default': isWeb ? AutoSaveConfiguration.AFTER_DELAY : AutoSaveConfiguration.OFF,
 +			'default': AutoSaveConfiguration.OFF,
- 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSave' }, "Controls [auto save](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save) of editors that have unsaved changes.", AutoSaveConfiguration.OFF, AutoSaveConfiguration.AFTER_DELAY, AutoSaveConfiguration.ON_FOCUS_CHANGE, AutoSaveConfiguration.ON_WINDOW_CHANGE, AutoSaveConfiguration.AFTER_DELAY),
- 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE
+ 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSave' }, "Controls auto save of dirty editors. Read more about autosave [here](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save).", AutoSaveConfiguration.OFF, AutoSaveConfiguration.AFTER_DELAY, AutoSaveConfiguration.ON_FOCUS_CHANGE, AutoSaveConfiguration.ON_WINDOW_CHANGE, AutoSaveConfiguration.AFTER_DELAY)
  		},
-diff --git a/src/vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService.ts b/src/vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService.ts
-index e1913359976..3834f2dde41 100644
---- a/src/vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService.ts
-+++ b/src/vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService.ts
-@@ -51,10 +51,11 @@ export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScanne
- 			if (builtinExtensionsServiceUrl) {
- 				let bundledExtensions: IBundledExtension[] = [];
+ 		'files.autoSaveDelay': {
+ 			'type': 'number',
+-			'default': 1000,
++			'default': 100,
+ 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSaveDelay' }, "Controls the delay in ms after which a dirty editor is saved automatically. Only applies when `#files.autoSave#` is set to `{0}`.", AutoSaveConfiguration.AFTER_DELAY)
+ 		},
+ 		'files.watcherExclude': {
+diff --git a/src/vs/workbench/contrib/search/browser/search.contribution.ts b/src/vs/workbench/contrib/search/browser/search.contribution.ts
+index 79e5defa112..318ab13d6fd 100644
+--- a/src/vs/workbench/contrib/search/browser/search.contribution.ts
++++ b/src/vs/workbench/contrib/search/browser/search.contribution.ts
+@@ -889,7 +889,7 @@ configurationRegistry.registerConfiguration({
+ 		'search.quickOpen.includeHistory': {
+ 			type: 'boolean',
+ 			description: nls.localize('search.quickOpen.includeHistory', "Whether to include results from recently opened files in the file results for Quick Open."),
+-			default: true
++			default: false // FIXME We should be filtering history based on project rather than disabling it
+ 		},
+ 		'search.quickOpen.history.filterSortOrder': {
+ 			'type': 'string',
+diff --git a/src/vs/workbench/contrib/url/browser/trustedDomains.ts b/src/vs/workbench/contrib/url/browser/trustedDomains.ts
+index 265a5dc43e3..8f1db546879 100644
+--- a/src/vs/workbench/contrib/url/browser/trustedDomains.ts
++++ b/src/vs/workbench/contrib/url/browser/trustedDomains.ts
+@@ -217,7 +217,11 @@ export function readStaticTrustedDomains(accessor: ServicesAccessor): IStaticTru
  
--				if (environmentService.isBuilt) {
--					// Built time configuration (do NOT modify)
--					bundledExtensions = [/*BUILD->INSERT_BUILTIN_EXTENSIONS*/];
--				} else {
-+				// This code prevents us from slipping our extension into the list of built in extensions
-+				// if (environmentService.isBuilt) {
-+				// 	// Built time configuration (do NOT modify)
-+				// 	bundledExtensions = [/*BUILD->INSERT_BUILTIN_EXTENSIONS*/];
-+				// } else {
- 					// Find builtin extensions by checking for DOM
- 					const builtinExtensionsElement = mainWindow.document.getElementById('vscode-workbench-builtin-extensions');
- 					const builtinExtensionsElementAttribute = builtinExtensionsElement ? builtinExtensionsElement.getAttribute('data-settings') : undefined;
-@@ -63,7 +64,7 @@ export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScanne
- 							bundledExtensions = JSON.parse(builtinExtensionsElementAttribute);
- 						} catch (error) { /* ignore error*/ }
- 					}
--				}
-+				// }
+ 	const defaultTrustedDomains = [
+ 		...productService.linkProtectionTrustedDomains ?? [],
+-		...environmentService.options?.additionalTrustedDomains ?? []
++		...environmentService.options?.additionalTrustedDomains ?? [],
++		"https://utopia.app",
++		"https://utopia.fm",
++		"https://utopia.pizza",
++		"https://utopia95.com"
+ 	];
  
- 				this.builtinExtensionsPromises = bundledExtensions.map(async e => {
- 					const id = getGalleryExtensionId(e.packageJSON.publisher, e.packageJSON.name);
+ 	let trustedDomains: string[] = [];
+diff --git a/src/vs/workbench/contrib/webview/browser/pre/main.js b/src/vs/workbench/contrib/webview/browser/pre/main.js
+index 618837df8e2..29b5ba8d333 100644
+--- a/src/vs/workbench/contrib/webview/browser/pre/main.js
++++ b/src/vs/workbench/contrib/webview/browser/pre/main.js
+@@ -810,6 +810,7 @@ onDomReady(() => {
+ 		if (options.allowScripts) {
+ 			sandboxRules.add('allow-scripts');
+ 			sandboxRules.add('allow-downloads');
++			sandboxRules.add('allow-popups');
+ 		}
+ 		if (options.allowForms) {
+ 			sandboxRules.add('allow-forms');
+diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+index b23847b8bf1..9c2a6875fe0 100644
+--- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
++++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+@@ -370,7 +370,7 @@ export class IFrameWebview extends Disposable implements Webview {
+ 		const element = document.createElement('iframe');
+ 		element.name = this.id;
+ 		element.className = `webview ${options.customClasses || ''}`;
+-		element.sandbox.add('allow-scripts', 'allow-same-origin', 'allow-forms', 'allow-pointer-lock', 'allow-downloads');
++		element.sandbox.add('allow-scripts', 'allow-same-origin', 'allow-forms', 'allow-pointer-lock', 'allow-downloads', 'allow-popups');
+ 		if (!isFirefox) {
+ 			element.setAttribute('allow', 'clipboard-read; clipboard-write;');
+ 		}
+diff --git a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
+index 674eade0db1..f0b7198440f 100644
+--- a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
++++ b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
+@@ -26,7 +26,7 @@ Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
+ 					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.newUntitledFile' }, "Open a new untitled file (only applies when opening an empty window)."),
+ 					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.welcomePageInEmptyWorkbench' }, "Open the Welcome page when opening an empty workbench."),
+ 				],
+-				'default': 'welcomePage',
++				'default': 'none',
+ 				'description': localize('workbench.startupEditor', "Controls which editor is shown at startup, if none are restored from the previous session.")
+ 			},
+ 		}
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index 731a48bf5b0..b77097ce7c2 100644
+index aedda47bd66..1e685812b0e 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-@@ -121,7 +121,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+@@ -190,7 +190,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+ 
  		// help the file service to activate providers by activating extensions by file system event
  		this._register(this._fileService.onWillActivateFileSystemProvider(e => {
- 			if (e.scheme !== Schemas.vscodeRemote) {
--				e.join(this.activateByEvent(`onFileSystem:${e.scheme}`));
-+				e.join(this.activateByEvent(`onFileSystem:utopia`));
- 			}
+-			e.join(this.activateByEvent(`onFileSystem:${e.scheme}`));
++			e.join(this.activateByEvent(`onFileSystem:utopia`));
  		}));
  
+ 		this._registry = new ExtensionDescriptionRegistry([]);
+diff --git a/src/vs/workbench/services/workspaces/browser/workspaces.ts b/src/vs/workbench/services/workspaces/browser/workspaces.ts
+index 3b90080dc3d..cf9ac44fca9 100644
+--- a/src/vs/workbench/services/workspaces/browser/workspaces.ts
++++ b/src/vs/workbench/services/workspaces/browser/workspaces.ts
+@@ -5,7 +5,6 @@
+ 
+ import { ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from 'vs/platform/workspaces/common/workspaces';
+ import { URI } from 'vs/base/common/uri';
+-import { hash } from 'vs/base/common/hash';
+ 
+ // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ // NOTE: DO NOT CHANGE. IDENTIFIERS HAVE TO REMAIN STABLE
+@@ -30,5 +29,6 @@ export function getSingleFolderWorkspaceIdentifier(folderPath: URI): ISingleFold
+ }
+ 
+ function getWorkspaceId(uri: URI): string {
+-	return hash(uri.toString()).toString(16);
++	const urlParams = new URLSearchParams(window.location.search);
++	return urlParams.get('vs_code_session_id')!;
+ }
 diff --git a/yarn.lock b/yarn.lock
-index 71aef4295fa..3cfe4dade65 100644
+index 2f4f87570dd..cdeffa74f26 100644
 --- a/yarn.lock
 +++ b/yarn.lock
-@@ -6508,6 +6508,13 @@ levn@^0.4.1:
-     prelude-ls "^1.2.1"
-     type-check "~0.4.0"
+@@ -5248,6 +5248,11 @@ ignore@^5.1.4:
+   resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.1.8.tgz#f150a8b50a34289b33e22f5889abd4d8016f0e57"
+   integrity sha512-BMpfD7PpiETpBl/A6S498BaIJ6Y/ABT93ETbby2fP00v4EbvPBXWEoaR1UBPKs3iR53pJY7EtZk5KACI57i1Uw==
+ 
++immediate@~3.0.5:
++  version "3.0.6"
++  resolved "https://registry.yarnpkg.com/immediate/-/immediate-3.0.6.tgz#9db1dbd0faf8de6fbe0f5dd5e56bb606280de69b"
++  integrity sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==
++
+ import-cwd@^2.0.0:
+   version "2.1.0"
+   resolved "https://registry.yarnpkg.com/import-cwd/-/import-cwd-2.1.0.tgz#aa6cf36e722761285cb371ec6519f53e2435b0a9"
+@@ -6138,6 +6143,13 @@ levn@^0.3.0, levn@~0.3.0:
+     prelude-ls "~1.1.2"
+     type-check "~0.3.2"
  
 +lie@3.1.1:
 +  version "3.1.1"
@@ -1142,10 +1271,10 @@ index 71aef4295fa..3cfe4dade65 100644
 +  dependencies:
 +    immediate "~3.0.5"
 +
- lie@~3.3.0:
-   version "3.3.0"
-   resolved "https://registry.yarnpkg.com/lie/-/lie-3.3.0.tgz#dcf82dee545f46074daf200c7c1c5a08e0f40f6a"
-@@ -6576,6 +6583,13 @@ loader-utils@^2.0.0:
+ liftoff@^3.1.0:
+   version "3.1.0"
+   resolved "https://registry.yarnpkg.com/liftoff/-/liftoff-3.1.0.tgz#c9ba6081f908670607ee79062d700df062c52ed3"
+@@ -6201,6 +6213,13 @@ loader-utils@^2.0.0:
      emojis-list "^3.0.0"
      json5 "^2.1.2"
  
@@ -1159,21 +1288,9 @@ index 71aef4295fa..3cfe4dade65 100644
  locate-path@^3.0.0:
    version "3.0.0"
    resolved "https://registry.yarnpkg.com/locate-path/-/locate-path-3.0.0.tgz#dbec3b3ab759758071b58fe59fc41871af21400e"
-@@ -7200,11 +7214,6 @@ native-is-elevated@0.7.0:
-   resolved "https://registry.yarnpkg.com/native-is-elevated/-/native-is-elevated-0.7.0.tgz#77499639e232edad1886403969e2bf236294e7af"
-   integrity sha512-tp8hUqK7vexBiyIWKMvmRxdG6kqUtO+3eay9iB0i16NYgvCqE5wMe1Y0guHilpkmRgvVXEWNW4et1+qqcwpLBA==
- 
--native-keymap@^3.3.5:
--  version "3.3.5"
--  resolved "https://registry.yarnpkg.com/native-keymap/-/native-keymap-3.3.5.tgz#b1da65d32e42bf65e3ff9db05bed319927dc2b01"
--  integrity sha512-7XDOLPNX1FnUFC/cX3cioBz2M+dO212ai9DuwpfKFzkPu3xTmEzOm5xewOMLXE4V9YoRhNPxvq1H2YpPWDgSsg==
--
- native-watchdog@^1.4.1:
-   version "1.4.2"
-   resolved "https://registry.yarnpkg.com/native-watchdog/-/native-watchdog-1.4.2.tgz#cf9f913157ee992723aa372b6137293c663be9b7"
-@@ -8287,6 +8296,11 @@ prelude-ls@~1.1.2:
-   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.1.2.tgz#21932a549f5e52ffd9a827f570e04be62a97da54"
-   integrity sha1-IZMqVJ9eUv/ZqCf1cOBL5iqX2lQ=
+@@ -8079,6 +8098,11 @@ prepend-http@^2.0.0:
+   resolved "https://registry.yarnpkg.com/prepend-http/-/prepend-http-2.0.0.tgz#e92434bfa5ea8c19f41cdfd401d741a3c819d897"
+   integrity sha1-6SQ0v6XqjBn0HN/UAddBo8gZ2Jc=
  
 +prettier@2.8.8:
 +  version "2.8.8"
@@ -1183,16 +1300,16 @@ index 71aef4295fa..3cfe4dade65 100644
  pretty-hrtime@^1.0.0:
    version "1.0.3"
    resolved "https://registry.yarnpkg.com/pretty-hrtime/-/pretty-hrtime-1.0.3.tgz#b7e3ea42435a4c9b2759d99e0f201eb195802ee1"
-@@ -10235,6 +10249,12 @@ util@^0.12.4:
-     is-typed-array "^1.1.3"
+@@ -10213,6 +10237,12 @@ util@^0.12.4:
+     safe-buffer "^5.1.2"
      which-typed-array "^1.1.2"
  
 +"utopia-vscode-common@file:../../utopia-vscode-common":
-+  version "0.1.6"
++  version "0.1.4"
 +  dependencies:
 +    localforage "1.9.0"
 +    prettier "2.8.8"
 +
- uuid@^8.3.0:
-   version "8.3.2"
-   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
+ uuid@^3.0.0:
+   version "3.1.0"
+   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.1.0.tgz#3dd3d3e790abc24d7b0d3a034ffababe28ebbc04"
