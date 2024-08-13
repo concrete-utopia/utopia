@@ -56,6 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
   watchForFileDeletions()
 }
 
+// FIXME This isn't actually closing the document
 function watchForFileDeletions() {
   let fileWatcherChain: Promise<void> = Promise.resolve()
   const fileWatcher = vscode.workspace.createFileSystemWatcher('**/*')
@@ -307,6 +308,10 @@ function getFullConfig(): UtopiaVSCodeConfig {
 let currentDecorations: Array<DecorationRange> = []
 let currentSelection: BoundsInFile | null = null
 
+// This part is the crux of the communication system. We have this extension and VS Code register
+// a pair of new commands `utopia.toUtopiaMessage` and `utopia.toVSCodeMessage` for passing messages
+// between themselves, with the VS Code side then forwarding those messages straight onto Utopia via
+// a window.postMessage (since that isn't possible from the extension)
 function sendMessageToUtopia(message: FromVSCodeToUtopiaMessage): void {
   vscode.commands.executeCommand('utopia.toUtopiaMessage', message)
 }

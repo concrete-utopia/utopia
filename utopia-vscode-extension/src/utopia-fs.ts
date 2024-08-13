@@ -73,6 +73,7 @@ export class UtopiaFSExtension
 {
   private disposable: Disposable
 
+  // This is the event queue for notifying VS Code of file changes
   private fileChangeEventQueue = newEventQueue<FileChangeEvent>()
 
   private allFilePaths: string[] | null = null
@@ -298,6 +299,7 @@ export class UtopiaFSExtension
     commands.executeCommand('utopia.toUtopiaMessage', vsCodeFileDelete(uri.path))
   }
 
+  // "silent" because it doesn't send the message to Utopia. It still emits the event.
   silentDelete(path: string, options: { recursive: boolean }) {
     deletePath(path, options.recursive)
     this.notifyFileDeleted(path)

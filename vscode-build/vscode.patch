@@ -1,12 +1,14 @@
 diff --git a/build/gulpfile.compile.js b/build/gulpfile.compile.js
-index c4947e76cbf..e46583b9073 100644
+index c4947e76cbf..c2dd4189229 100644
 --- a/build/gulpfile.compile.js
 +++ b/build/gulpfile.compile.js
-@@ -22,7 +22,7 @@ function makeCompileBuildTask(disableMangle) {
+@@ -22,7 +22,9 @@ function makeCompileBuildTask(disableMangle) {
  }
  
  // Full compile, including nls and inline sources in sourcemaps, mangling, minification, for build
 -const compileBuildTask = task.define('compile-build', makeCompileBuildTask(false));
++// The `true` here is to disable mangling. Minification still happens.
++// For some reason the mangling was causing the build to completely hang on my machine.
 +const compileBuildTask = task.define('compile-build', makeCompileBuildTask(true));
  gulp.task(compileBuildTask);
  exports.compileBuildTask = compileBuildTask;
@@ -792,10 +794,10 @@ index 294e7030695..46730d6d518 100644
  			side: 'right',
  			showSlider: 'mouseover',
 diff --git a/src/vs/platform/environment/test/node/nativeModules.integrationTest.ts b/src/vs/platform/environment/test/node/nativeModules.integrationTest.ts
-index 81db8b47267..f1ae397d77c 100644
+index 81db8b47267..fc76d98a5d3 100644
 --- a/src/vs/platform/environment/test/node/nativeModules.integrationTest.ts
 +++ b/src/vs/platform/environment/test/node/nativeModules.integrationTest.ts
-@@ -26,14 +26,6 @@ flakySuite('Native Modules (all platforms)', () => {
+@@ -26,13 +26,7 @@ flakySuite('Native Modules (all platforms)', () => {
  		assert.ok(typeof result === 'boolean', testErrorMessage('native-is-elevated'));
  	});
  
@@ -806,10 +808,10 @@ index 81db8b47267..f1ae397d77c 100644
 -		const result = keyMap.getCurrentKeyboardLayout();
 -		assert.ok(result, testErrorMessage('native-keymap'));
 -	});
--
++	// I removed everything involving native-keymap as that was causing issues with the build involving Electron (which we obviously don't care about)
+ 
  	test('native-watchdog', async () => {
  		const watchDog = await import('native-watchdog');
- 		assert.ok(typeof watchDog.start === 'function', testErrorMessage('native-watchdog'));
 diff --git a/src/vs/platform/keyboardLayout/electron-main/keyboardLayoutMainService.ts b/src/vs/platform/keyboardLayout/electron-main/keyboardLayoutMainService.ts
 index 1d17e4c709e..00109563f5c 100644
 --- a/src/vs/platform/keyboardLayout/electron-main/keyboardLayoutMainService.ts
@@ -1084,10 +1086,10 @@ index d525ba5860c..56ae5cfbc70 100644
  			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE
  		},
 diff --git a/src/vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService.ts b/src/vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService.ts
-index e1913359976..6c6e80eeabc 100644
+index e1913359976..3834f2dde41 100644
 --- a/src/vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService.ts
 +++ b/src/vs/workbench/services/extensionManagement/browser/builtinExtensionsScannerService.ts
-@@ -51,10 +51,10 @@ export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScanne
+@@ -51,10 +51,11 @@ export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScanne
  			if (builtinExtensionsServiceUrl) {
  				let bundledExtensions: IBundledExtension[] = [];
  
@@ -1095,6 +1097,7 @@ index e1913359976..6c6e80eeabc 100644
 -					// Built time configuration (do NOT modify)
 -					bundledExtensions = [/*BUILD->INSERT_BUILTIN_EXTENSIONS*/];
 -				} else {
++				// This code prevents us from slipping our extension into the list of built in extensions
 +				// if (environmentService.isBuilt) {
 +				// 	// Built time configuration (do NOT modify)
 +				// 	bundledExtensions = [/*BUILD->INSERT_BUILTIN_EXTENSIONS*/];
@@ -1102,7 +1105,7 @@ index e1913359976..6c6e80eeabc 100644
  					// Find builtin extensions by checking for DOM
  					const builtinExtensionsElement = mainWindow.document.getElementById('vscode-workbench-builtin-extensions');
  					const builtinExtensionsElementAttribute = builtinExtensionsElement ? builtinExtensionsElement.getAttribute('data-settings') : undefined;
-@@ -63,7 +63,7 @@ export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScanne
+@@ -63,7 +64,7 @@ export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScanne
  							bundledExtensions = JSON.parse(builtinExtensionsElementAttribute);
  						} catch (error) { /* ignore error*/ }
  					}
