@@ -502,11 +502,11 @@ export class Editor {
           ])
         }
 
-        collectMetadata(ElementsToRerenderGLOBAL.current, {
+        this.storedState.elementMetadata = collectMetadata(ElementsToRerenderGLOBAL.current, {
           scale: this.storedState.patchedEditor.canvas.scale,
           selectedViews: this.storedState.patchedEditor.selectedViews,
-          metadataToUpdate: {},
-          computedStylesToUpdate: {},
+          metadataToUpdate: this.storedState.elementMetadata,
+          spyCollector: this.spyCollector,
         })
       }
 

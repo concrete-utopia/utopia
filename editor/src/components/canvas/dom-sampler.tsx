@@ -2,8 +2,14 @@ import type { ComputedStyle, ElementPath, StyleAttributeMetadata } from 'utopia-
 import { UTOPIA_PATH_KEY } from '../../core/model/utopia-constants'
 import { pluck } from '../../core/shared/array-utils'
 import { getCanvasRectangleFromElement } from '../../core/shared/dom-utils'
+import { alternativeEither } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
-import type { ComputedStyleMetadata, DomElementMetadata } from '../../core/shared/element-template'
+import type {
+  ComputedStyleMetadata,
+  DomElementMetadata,
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../core/shared/element-template'
 import type { CanvasPoint } from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
@@ -15,6 +21,8 @@ import {
   createElementInstanceMetadataForElement,
   getAttributesComingFromStyleSheets,
 } from './dom-walker'
+import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
+import { fillMissingDataFromAncestors } from '../../core/model/element-metadata-utils'
 
 function collectMetadataForElementPath(
   path: ElementPath,
@@ -80,6 +88,8 @@ function getValidPathsFromCanvasContainer(canvasRootContainer: HTMLElement): Arr
   return validPaths
 }
 
+function mergeSpyMetadata(path: ElementPath, domMetadata_MUTATE: DomElementMetadata) {}
+
 function collectMetadataForPaths(
   canvasRootContainer: HTMLElement,
   pathsToCollect: Array<ElementPath>,
@@ -87,11 +97,11 @@ function collectMetadataForPaths(
   options: {
     scale: number
     selectedViews: Array<ElementPath>
-    metadataToUpdate: { [path: string]: DomElementMetadata }
-    computedStylesToUpdate: { [path: string]: ComputedStyleMetadata }
+    metadataToUpdate: ElementInstanceMetadataMap
+    spyCollector: UiJsxCanvasContextData
   },
 ): {
-  metadata: { [path: string]: DomElementMetadata }
+  metadata: ElementInstanceMetadataMap
 } {
   const containerRect = getCanvasRectangleFromElement(
     canvasRootContainer,
@@ -103,19 +113,37 @@ function collectMetadataForPaths(
   let updatedMetadataMap = { ...options.metadataToUpdate }
 
   pathsToCollect.forEach((path) => {
-    const metadata = collectMetadataForElementPath(
+    const domMetadata = collectMetadataForElementPath(
       path,
       validPaths,
       options.selectedViews,
       options.scale,
       containerRect,
     )
-    if (metadata != null) {
-      updatedMetadataMap[EP.toString(path)] = metadata
+    if (domMetadata != null) {
+      const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(path)]
+
+      let jsxElement = alternativeEither(spyElem.element, domMetadata.element)
+
+      // TODO avoid temporary object creation
+      const elementInstanceMetadata: ElementInstanceMetadata = {
+        ...domMetadata,
+        element: jsxElement,
+        elementPath: spyElem.elementPath,
+        attributeMetadatada: spyElem.attributeMetadatada,
+        componentInstance: spyElem.componentInstance,
+        isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
+        label: spyElem.label,
+        importInfo: spyElem.importInfo,
+        assignedToProp: spyElem.assignedToProp,
+        conditionValue: spyElem.conditionValue,
+        earlyReturn: spyElem.earlyReturn,
+      }
+      updatedMetadataMap[EP.toString(path)] = elementInstanceMetadata
     }
   })
 
-  return { metadata: updatedMetadataMap }
+  return { metadata: fillMissingDataFromAncestors(updatedMetadataMap) }
 }
 
 export function collectMetadata(
@@ -123,30 +151,26 @@ export function collectMetadata(
   options: {
     scale: number
     selectedViews: Array<ElementPath>
-    metadataToUpdate: { [path: string]: DomElementMetadata }
-    computedStylesToUpdate: { [path: string]: ComputedStyleMetadata }
+    metadataToUpdate: ElementInstanceMetadataMap
+    spyCollector: UiJsxCanvasContextData
   },
-) {
+): ElementInstanceMetadataMap {
   getComputedStylesCache.updateObservers()
   createElementInstanceMetadataForElementCached.updateObservers()
 
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (canvasRootContainer == null) {
-    return
+    return options.metadataToUpdate
   }
 
   const validPaths = getValidPathsFromCanvasContainer(canvasRootContainer)
 
-  let result: {
-    metadata: { [path: string]: DomElementMetadata }
-  }
   if (elementsToFocusOn == 'rerender-all-elements') {
-    result = collectMetadataForPaths(canvasRootContainer, validPaths, validPaths, options)
+    return collectMetadataForPaths(canvasRootContainer, validPaths, validPaths, options).metadata
   } else {
-    result = collectMetadataForPaths(canvasRootContainer, elementsToFocusOn, validPaths, options)
+    return collectMetadataForPaths(canvasRootContainer, elementsToFocusOn, validPaths, options)
+      .metadata
   }
-
-  return result
 }
 
 const ObserversAvailable = window.MutationObserver != null && ResizeObserver != null

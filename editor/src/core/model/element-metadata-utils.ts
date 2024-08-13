@@ -2788,7 +2788,7 @@ function fillSpyOnlyMetadata(
   return workingElements
 }
 
-function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap) {
+export function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap) {
   return [
     fillGlobalContentBoxFromAncestors,
     fillConditionalGlobalFrameFromAncestors,
