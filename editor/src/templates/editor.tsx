@@ -514,7 +514,13 @@ export class Editor {
             domWalkerDispatchResult.patchedEditor.jsxMetadata,
           ).filter((keyInOldMetadata) => !(keyInOldMetadata in this.storedState.elementMetadata))
           if (missingFromNewMetadata.length > 0) {
-            console.error('Missing from new metadata:', missingFromNewMetadata)
+            console.error(
+              'Missing from new metadata:',
+              missingFromNewMetadata.map((path) => ({
+                path: path,
+                old: domWalkerDispatchResult.patchedEditor.jsxMetadata[path].globalFrame,
+              })),
+            )
           }
 
           const globalFramesDontMatch = Object.keys(this.storedState.elementMetadata).filter(
@@ -526,7 +532,33 @@ export class Editor {
             },
           )
           if (globalFramesDontMatch.length > 0) {
-            console.error('Global frames dont match:', globalFramesDontMatch)
+            console.error(
+              'Global frames dont match:',
+              globalFramesDontMatch.map((path) => ({
+                path: path,
+                new: this.storedState.elementMetadata[path]?.globalFrame,
+                old: domWalkerDispatchResult.patchedEditor.jsxMetadata[path]?.globalFrame,
+              })),
+            )
+          }
+
+          const localFramesDontMatch = Object.keys(this.storedState.elementMetadata).filter(
+            (elementPath) => {
+              const newFrame = this.storedState.elementMetadata[elementPath].localFrame
+              const oldFrame =
+                domWalkerDispatchResult.patchedEditor.jsxMetadata[elementPath]?.localFrame
+              return !shallowEqual(newFrame, oldFrame)
+            },
+          )
+          if (localFramesDontMatch.length > 0) {
+            console.error(
+              'Local frames dont match:',
+              localFramesDontMatch.map((path) => ({
+                path: path,
+                new: this.storedState.elementMetadata[path]?.localFrame,
+                old: domWalkerDispatchResult.patchedEditor.jsxMetadata[path]?.localFrame,
+              })),
+            )
           }
         }
       }
