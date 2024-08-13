@@ -463,6 +463,7 @@ export function emptyCollaborativeEditingSupport(): CollaborativeEditingSupport 
 }
 
 export type EditorStoreShared = {
+  elementMetadata: ElementInstanceMetadataMap
   postActionInteractionSession: PostActionMenuSession | null
   strategyState: StrategyState
   history: StateHistory

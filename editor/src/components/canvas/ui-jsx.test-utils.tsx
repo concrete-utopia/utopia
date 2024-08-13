@@ -577,6 +577,7 @@ export async function renderTestEditorWithModel(
     persistence: DummyPersistenceMachine,
     saveCountThisSession: 0,
     builtInDependencies: builtInDependencies,
+    elementMetadata: {},
     postActionInteractionSession: null,
     projectServerState: {
       ...emptyProjectServerState(),

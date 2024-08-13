@@ -135,7 +135,7 @@ export function collectMetadata(
 
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (canvasRootContainer == null) {
-    throw new Error('Canvas root container not found')
+    return
   }
 
   const validPaths = getValidPathsFromCanvasContainer(canvasRootContainer)
@@ -149,6 +149,8 @@ export function collectMetadata(
   } else {
     result = collectMetadataForPaths(canvasRootContainer, elementsToFocusOn, validPaths, options)
   }
+
+  return result
 }
 
 const ObserversAvailable = window.MutationObserver != null && ResizeObserver != null

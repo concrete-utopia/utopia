@@ -283,6 +283,7 @@ function processAction(
         unpatchedEditor: withPossiblyClearedPseudoInsert,
         unpatchedDerived: working.unpatchedDerived,
         strategyState: working.strategyState, // this means the actions cannot update strategyState – this piece of state lives outside our "redux" state
+        elementMetadata: working.elementMetadata,
         postActionInteractionSession: working.postActionInteractionSession,
         history: newStateHistory,
         userState: working.userState,
@@ -642,6 +643,7 @@ export function editorDispatchClosingOut(
     patchedDerived: patchedDerivedState,
     strategyState: optionalDeepFreeze(newStrategyState),
     history: newHistory,
+    elementMetadata: result.elementMetadata,
     postActionInteractionSession: result.postActionInteractionSession,
     userState: result.userState,
     workers: storedState.workers,
@@ -1013,6 +1015,7 @@ function editorDispatchInner(
       unpatchedDerived: frozenDerivedState,
       patchedDerived: patchedDerivedState,
       strategyState: newStrategyState,
+      elementMetadata: result.elementMetadata, // TODO do we want to do anything here?
       postActionInteractionSession: updatePostActionState(
         result.postActionInteractionSession,
         dispatchedActions,

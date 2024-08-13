@@ -265,6 +265,7 @@ export class Editor {
       unpatchedDerived: derivedState,
       patchedDerived: derivedState,
       strategyState: strategyState,
+      elementMetadata: {},
       postActionInteractionSession: null,
       history: history,
       userState: defaultUserState,
