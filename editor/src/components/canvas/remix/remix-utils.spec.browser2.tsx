@@ -336,6 +336,7 @@ describe('Routes', () => {
       renderResult.getEditorState().editor.codeResultCache.curriedResolveFn,
       renderResult.getEditorState().editor.projectContents,
       routeModuleCache.current,
+      renderResult.getEditorState().editor.editorRemixConfig,
     )?.routes
     expect(remixRoutes).toBeDefined()
 
@@ -458,6 +459,7 @@ describe('Routes', () => {
       renderResult.getEditorState().editor.codeResultCache.curriedResolveFn,
       renderResult.getEditorState().editor.projectContents,
       routeModuleCache.current,
+      renderResult.getEditorState().editor.editorRemixConfig,
     )?.routes
     expect(remixRoutes).toBeDefined()
 

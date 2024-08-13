@@ -175,4 +175,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   forking: false,
   collaborators: [],
   sharingDialogOpen: false,
+  editorRemixConfig: {
+    errorBoundaryHandling: 'ignore-error-boundaries',
+  },
 }

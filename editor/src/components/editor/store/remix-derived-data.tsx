@@ -28,6 +28,7 @@ import type { CurriedUtopiaRequireFn, CurriedResolveFn } from '../../custom-code
 import { memoize } from '../../../core/shared/memoize'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { evaluator } from '../../../core/es-modules/evaluator/evaluator'
+import type { EditorRemixConfig } from './editor-state'
 
 export interface RemixRoutingTable {
   [rootElementUid: string]: string /* file path */
@@ -78,6 +79,7 @@ export function getRemixRootDir(projectContents: ProjectContentTreeRoot): string
 // Important Note: When updating the params here, you must evaluate whether the change should
 // have an effect on the memoization, and if so update paramsEqualityFn below
 export function createRemixDerivedData(
+  remixConfig: EditorRemixConfig,
   projectContents: ProjectContentTreeRoot,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
@@ -106,6 +108,7 @@ export function createRemixDerivedData(
     curriedResolveFn,
     projectContents,
     CreateRemixDerivedDataRefsGLOBAL.routeModulesCache.current,
+    remixConfig,
   )
 
   if (routesAndModulesFromManifestResult == null) {
