@@ -472,7 +472,7 @@ const SingleValue = (props: SingleValueProps<SelectOption>) => {
       )}
       <span
         data-testid={props.selectProps.id == null ? undefined : `${props.selectProps.id}-popuplist`}
-        style={{ paddingLeft: iconShown ? 22 : 4 }}
+        style={{ paddingLeft: iconShown ? 26 : 4 }}
       >
         {props.children}
       </span>
