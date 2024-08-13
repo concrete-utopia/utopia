@@ -22,7 +22,7 @@ function collectMetadataForElementPath(
   selectedViews: Array<ElementPath>,
   scale: number,
   containerRect: CanvasPoint,
-): { metadata: DomElementMetadata; computedStyle: ComputedStyleMetadata | null } | null {
+): DomElementMetadata | null {
   const foundElement = document.querySelector(
     `[${UTOPIA_PATH_KEY}^="${EP.toString(path)}"]`,
   ) as HTMLElement | null
@@ -51,7 +51,12 @@ function collectMetadataForElementPath(
           selectedViews,
         )
 
-        return { metadata: metadata, computedStyle: computedStyle }
+        if (computedStyle != null) {
+          metadata.computedStyle = computedStyle.computedStyle
+          metadata.attributeMetadata = computedStyle.attributeMetadata
+        }
+
+        return metadata
       }
     }
     return null
@@ -87,7 +92,6 @@ function collectMetadataForPaths(
   },
 ): {
   metadata: { [path: string]: DomElementMetadata }
-  computedStyle: { [path: string]: ComputedStyleMetadata }
 } {
   const containerRect = getCanvasRectangleFromElement(
     canvasRootContainer,
@@ -97,7 +101,6 @@ function collectMetadataForPaths(
   )
 
   let updatedMetadataMap = { ...options.metadataToUpdate }
-  let updatedComputedStyleMap = { ...options.computedStylesToUpdate }
 
   pathsToCollect.forEach((path) => {
     const metadata = collectMetadataForElementPath(
@@ -108,17 +111,11 @@ function collectMetadataForPaths(
       containerRect,
     )
     if (metadata != null) {
-      updatedMetadataMap[EP.toString(path)] = metadata.metadata
-      if (metadata.computedStyle != null) {
-        updatedComputedStyleMap[EP.toString(path)] = metadata.computedStyle
-      }
+      updatedMetadataMap[EP.toString(path)] = metadata
     }
   })
 
-  return {
-    metadata: updatedMetadataMap,
-    computedStyle: updatedComputedStyleMap,
-  }
+  return { metadata: updatedMetadataMap }
 }
 
 export function collectMetadata(
@@ -142,7 +139,6 @@ export function collectMetadata(
 
   let result: {
     metadata: { [path: string]: DomElementMetadata }
-    computedStyle: { [path: string]: ComputedStyleMetadata }
   }
   if (elementsToFocusOn == 'rerender-all-elements') {
     result = collectMetadataForPaths(canvasRootContainer, validPaths, validPaths, options)

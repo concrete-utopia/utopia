@@ -2529,6 +2529,9 @@ export interface DomElementMetadata {
   nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null
   specialSizeMeasurements: SpecialSizeMeasurements
   textContent: string | null
+
+  computedStyle: ComputedStyle | null
+  attributeMetadata: StyleAttributeMetadata | null
 }
 
 export interface ComputedStyleMetadata {
@@ -2589,6 +2592,9 @@ export function domElementMetadata(
     nonRoundedGlobalFrame: nonRoundedGlobalFrame,
     specialSizeMeasurements: sizeMeasurements,
     textContent: textContent,
+
+    computedStyle: null,
+    attributeMetadata: null,
   }
 }
 
