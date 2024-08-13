@@ -508,6 +508,15 @@ export class Editor {
           metadataToUpdate: this.storedState.elementMetadata,
           spyCollector: this.spyCollector,
         })
+
+        if (domWalkerDispatchResult != null) {
+          const missingFromNewMetadata = Object.keys(
+            domWalkerDispatchResult.patchedEditor.jsxMetadata,
+          ).filter((keyInOldMetadata) => !(keyInOldMetadata in this.storedState.elementMetadata))
+          if (missingFromNewMetadata.length > 0) {
+            console.error('Missing from new metadata:', missingFromNewMetadata)
+          }
+        }
       }
 
       // true up groups if needed

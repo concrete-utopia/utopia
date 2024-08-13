@@ -145,6 +145,14 @@ function collectMetadataForPaths(
         earlyReturn: spyElem.earlyReturn,
       }
       updatedMetadataMap[EP.toString(path)] = elementInstanceMetadata
+    } else {
+      // if the dom metadata is null, we should use the spy metadata
+      const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(path)]
+      if (spyElem != null) {
+        updatedMetadataMap[EP.toString(path)] = {
+          ...spyElem,
+        }
+      }
     }
   })
 
