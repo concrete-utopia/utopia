@@ -5,7 +5,7 @@ const fse = require('fs-extra')
 const glob = require('glob')
 const rmdir = require('rimraf')
 
-const vscodeVersion = '1.91.1'
+const vscodeVersion = '1.61.2'
 
 if (fs.existsSync('vscode')) {
   process.chdir('vscode')
@@ -35,7 +35,9 @@ child_process.execSync(`git apply ../vscode.patch`, {
 child_process.execSync('yarn', { stdio: 'inherit' })
 
 // Compile
-child_process.execSync('yarn gulp vscode-web-min', { stdio: 'inherit' })
+child_process.execSync('yarn gulp compile-build', { stdio: 'inherit' })
+child_process.execSync('yarn gulp minify-vscode', { stdio: 'inherit' })
+child_process.execSync('yarn compile-web', { stdio: 'inherit' })
 
 // Remove maps
 const mapFiles = glob.sync('out-vscode-min/**/*.js.map', {})
@@ -48,12 +50,13 @@ if (fs.existsSync('../dist')) {
   fs.rmdirSync('../dist', { recursive: true })
 }
 
-fse.moveSync('../vscode-web', '../dist')
+fs.mkdirSync('../dist')
 fs.mkdirSync('../dist/lib')
-fse.copySync('resources', '../dist/vscode/resources')
+fse.copySync('out-vscode-min', '../dist/vscode')
 fse.copySync('product.json', '../dist/product.json')
-fse.copySync('node_modules/vscode-oniguruma', '../dist/lib/vscode-oniguruma')
-fse.copySync('node_modules/vscode-textmate', '../dist/lib/vscode-textmate')
+fse.copySync('../node_modules/semver-umd', '../dist/lib/semver-umd')
+fse.copySync('../node_modules/vscode-oniguruma', '../dist/lib/vscode-oniguruma')
+fse.copySync('../node_modules/vscode-textmate', '../dist/lib/vscode-textmate')
 fse.copySync('../node_modules/utopia-vscode-common', '../dist/lib/utopia-vscode-common')
 
 const extensionNM = glob.sync('extensions/**/node_modules', {})

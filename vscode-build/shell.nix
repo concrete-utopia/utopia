@@ -1,7 +1,7 @@
 let
   release = (import ../release.nix {});
-  pkgs = release.recentPkgs;
-  node = pkgs.nodejs_20;
+  pkgs = release.pkgs;
+  node = pkgs.nodejs-16_x;
   stdenv = pkgs.stdenv;
   pnpm = node.pkgs.pnpm;
   yarn = pkgs.yarn.override { nodejs = node; };

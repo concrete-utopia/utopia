@@ -21,6 +21,7 @@ import {
   selectedElementChangedMessageFromHighlightBounds,
   sendMessage,
 } from '../../../core/vscode/vscode-bridge'
+import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import { isRegulaNavigatorRow, type NavigatorRow } from '../navigator-row'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { isRight } from '../../../core/shared/either'
@@ -99,7 +100,9 @@ export function useGetNavigatorClickActions(
         // when we click on an already selected item we should force vscode to navigate there
         if (selected && highlightBounds != null) {
           sendMessage(
-            selectedElementChangedMessageFromHighlightBounds(highlightBounds, 'force-navigation'),
+            toVSCodeExtensionMessage(
+              selectedElementChangedMessageFromHighlightBounds(highlightBounds, 'force-navigation'),
+            ),
           )
         }
         return actionsForSingleSelection(targetPath, row, conditionalOverrideUpdate)

@@ -76,17 +76,15 @@ type LogoutAPI = "logout" :> Get '[HTML] (SetSessionCookies H.Html)
 
 type GetUserAPI = "v1" :> "user" :> Get '[JSON] UserResponse
 
-type ProjectPageResponse = Headers '[Header "Cross-Origin-Resource-Policy" Text, Header "Cross-Origin-Opener-Policy" Text, Header "Cross-Origin-Embedder-Policy" Text] (H.Html)
+type EmptyProjectPageAPI = "p" :> BranchNameParam :> Get '[HTML] H.Html
 
-type EmptyProjectPageAPI = "p" :> BranchNameParam :> Get '[HTML] ProjectPageResponse
-
-type ProjectPageAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> BranchNameParam :> Get '[HTML] ProjectPageResponse
+type ProjectPageAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> BranchNameParam :> Get '[HTML] H.Html
 
 type LoadProjectFileAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> Header "If-None-Match" Text :> CaptureAll "file_path" Text :> RawM
 
-type EmptyPreviewPageAPI = "share" :> BranchNameParam :> Get '[HTML] ProjectPageResponse
+type EmptyPreviewPageAPI = "share" :> BranchNameParam :> Get '[HTML] H.Html
 
-type PreviewPageAPI = "share" :> Capture "project_id" ProjectIdWithSuffix :> BranchNameParam :> Get '[HTML] ProjectPageResponse
+type PreviewPageAPI = "share" :> Capture "project_id" ProjectIdWithSuffix :> BranchNameParam :> Get '[HTML] H.Html
 
 type DownloadProjectResponse = Headers '[Header "Access-Control-Allow-Origin" Text] Value
 
@@ -264,3 +262,5 @@ packagerLink :: Text -> Text -> Text
 packagerLink jsPackageName jsPackageVersion =
   let versionedName = jsPackageName <> "@" <> jsPackageVersion
    in toUrlPiece $ safeLink apiProxy packagerAPI versionedName
+
+
