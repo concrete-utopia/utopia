@@ -1,9 +1,14 @@
 import type { ComputedStyle, ElementPath, StyleAttributeMetadata } from 'utopia-shared/src/types'
+import {
+  fillMissingDataFromAncestors,
+  MetadataUtils,
+} from '../../core/model/element-metadata-utils'
 import { UTOPIA_PATH_KEY } from '../../core/model/utopia-constants'
 import { pluck } from '../../core/shared/array-utils'
 import { getCanvasRectangleFromElement } from '../../core/shared/dom-utils'
 import { alternativeEither } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import type {
   ComputedStyleMetadata,
   DomElementMetadata,
@@ -22,7 +27,6 @@ import {
   getAttributesComingFromStyleSheets,
 } from './dom-walker'
 import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
-import { fillMissingDataFromAncestors } from '../../core/model/element-metadata-utils'
 
 function collectMetadataForElementPath(
   path: ElementPath,
@@ -102,6 +106,7 @@ function collectMetadataForPaths(
   },
 ): {
   metadata: ElementInstanceMetadataMap
+  tree: ElementPathTrees
 } {
   const containerRect = getCanvasRectangleFromElement(
     canvasRootContainer,
@@ -143,7 +148,12 @@ function collectMetadataForPaths(
     }
   })
 
-  return { metadata: fillMissingDataFromAncestors(updatedMetadataMap) }
+  const finalMetadata = fillMissingDataFromAncestors(updatedMetadataMap)
+
+  return {
+    metadata: finalMetadata,
+    tree: MetadataUtils.createElementPathTreeFromMetadata(finalMetadata),
+  }
 }
 
 export function collectMetadata(
