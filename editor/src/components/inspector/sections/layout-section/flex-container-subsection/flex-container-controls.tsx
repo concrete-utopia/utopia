@@ -335,7 +335,11 @@ export const FlexGapControl = React.memo(() => {
           numberType='LengthPercent'
           defaultUnitToHide={'px'}
           DEPRECATED_labelBelow={
-            flexDirection.startsWith('row') ? <Icons.GapHorizontal /> : <Icons.GapVertical />
+            flexDirection.startsWith('row') ? (
+              <Icons.GapHorizontal color='on-highlight-secondary' />
+            ) : (
+              <Icons.GapVertical color='on-highlight-secondary' />
+            )
           }
           incrementControls={false}
           inputProps={inputProps}
