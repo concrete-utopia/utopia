@@ -497,10 +497,11 @@ export const TextSubsection = React.memo(() => {
               onSubmitValue={wrappedLetterSpacingOnSubmitValue}
               onTransientSubmitValue={wrappedLetterSpacingOnTransientSubmitValue}
               controlStatus={letterSpacingMetadata.controlStatus}
-              DEPRECATED_labelBelow={<Icons.LetterSpacing color='on-highlight-secondary' />}
+              scrubbable_innerlabel={<Icons.LetterSpacing color='on-highlight-secondary' />}
               stepSize={0.01}
               numberType='Length'
               defaultUnitToHide={'px'}
+              incrementControls={false}
             />
           </InspectorContextMenuWrapper>
           <InspectorContextMenuWrapper
@@ -520,10 +521,11 @@ export const TextSubsection = React.memo(() => {
               controlStatus={lineHeightMetadata.controlStatus}
               onSubmitValue={wrappedLineHeightOnSubmitValue}
               onTransientSubmitValue={wrappedLineHeightOnTransientSubmitValue}
-              DEPRECATED_labelBelow={<Icons.LineHeight color='on-highlight-secondary' />}
+              scrubbable_innerlabel={<Icons.LineHeight color='on-highlight-secondary' />}
               stepSize={0.01}
               numberType='Length'
               defaultUnitToHide={'em'}
+              incrementControls={false}
             />
           </InspectorContextMenuWrapper>
         </PropertyRow>

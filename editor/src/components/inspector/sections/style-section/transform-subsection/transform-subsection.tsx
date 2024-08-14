@@ -484,7 +484,7 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         minimum={controlMetadata.minimum}
         maximum={controlMetadata.maximum}
         numberType={controlMetadata.numberType}
-        DEPRECATED_labelBelow={firstLabel}
+        scrubbable_innerlabel={firstLabel}
         labelBelowStyle={firstLabel == null ? LabelBelowNumberTextStyles : undefined}
         onSubmitValue={doubleLengthZeroethItemSubmitValue}
         onTransientSubmitValue={doubleLengthZeroethItemTransientSubmitValue}
@@ -505,7 +505,7 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         minimum={controlMetadata.minimum}
         maximum={controlMetadata.maximum}
         numberType={controlMetadata.numberType}
-        DEPRECATED_labelBelow={secondLabel}
+        scrubbable_innerlabel={secondLabel}
         labelBelowStyle={secondLabel == null ? LabelBelowNumberTextStyles : undefined}
         onSubmitValue={doubleLengthFirstItemSubmitValue}
         onTransientSubmitValue={doubleLengthFirstItemTransientSubmitValue}
