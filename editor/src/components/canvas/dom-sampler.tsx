@@ -4,18 +4,26 @@ import {
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
 import { UTOPIA_PATH_KEY } from '../../core/model/utopia-constants'
-import { pluck } from '../../core/shared/array-utils'
+import { mapDropNulls, pluck } from '../../core/shared/array-utils'
 import { getCanvasRectangleFromElement } from '../../core/shared/dom-utils'
-import { alternativeEither } from '../../core/shared/either'
+import { alternativeEither, left } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
-import type {
-  ComputedStyleMetadata,
-  DomElementMetadata,
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
+import {
+  domElementMetadata,
+  emptySpecialSizeMeasurements,
+  type ComputedStyleMetadata,
+  type DomElementMetadata,
+  type ElementInstanceMetadata,
+  type ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
-import type { CanvasPoint } from '../../core/shared/math-utils'
+import {
+  boundingRectangleArray,
+  infinityCanvasRectangle,
+  infinityLocalRectangle,
+  nullIfInfinity,
+  type CanvasPoint,
+} from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import { getPathWithStringsOnDomElement } from '../../core/shared/uid-utils'
@@ -27,6 +35,15 @@ import {
   getAttributesComingFromStyleSheets,
 } from './dom-walker'
 import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
+import common from 'mocha/lib/interfaces/common'
+
+function commomPrefixOfTwoStrings(a: string, b: string): string {
+  let i = 0
+  while (i < a.length && i < b.length && a[i] === b[i]) {
+    i++
+  }
+  return a.slice(0, i)
+}
 
 function collectMetadataForElementPath(
   path: ElementPath,
@@ -35,11 +52,38 @@ function collectMetadataForElementPath(
   scale: number,
   containerRect: CanvasPoint,
 ): DomElementMetadata | null {
-  const foundElement = document.querySelector(
-    `[${UTOPIA_PATH_KEY}^="${EP.toString(path)}"]`,
-  ) as HTMLElement | null
+  if (EP.isStoryboardPath(path)) {
+    return createFakeMetadataForCanvasRoot(path)
+  }
 
-  if (foundElement != null) {
+  const foundElements = document.querySelectorAll(`[${UTOPIA_PATH_KEY}^="${EP.toString(path)}"]`)
+  let allFoundPathsForPath: Array<string | null> = []
+  foundElements.forEach((el) => {
+    allFoundPathsForPath.push(el.getAttribute(UTOPIA_PATH_KEY))
+  })
+
+  let foundElementPathDepth: number = 0
+  let closestMatches: Array<Element> = []
+
+  for (let index = 0; index < foundElements.length; index++) {
+    const el = foundElements[index]
+    const ep = EP.fromString(el.getAttribute(UTOPIA_PATH_KEY) ?? '')
+    if (index === 0) {
+      foundElementPathDepth = EP.fullDepth(ep)
+      closestMatches.push(el)
+    } else {
+      if (EP.fullDepth(ep) === foundElementPathDepth) {
+        closestMatches.push(el)
+      }
+    }
+  }
+
+  if (closestMatches.length == 0) {
+    return null
+  }
+
+  if (closestMatches.length == 1) {
+    const foundElement = foundElements[0]
     // TODO handle measuring SVGs
     if (foundElement instanceof HTMLElement) {
       const pathsWithStrings = getPathWithStringsOnDomElement(foundElement)
@@ -74,7 +118,46 @@ function collectMetadataForElementPath(
     return null
   }
 
+  // if there are multiple closestMatches that are the same depth, we want to return a fake metadata with a globalFrame that is the union of all the closestMatches
+  if (closestMatches.length > 1) {
+    const metadatas: Array<DomElementMetadata> = mapDropNulls((el) => {
+      if (!(el instanceof HTMLElement)) {
+        return null
+      }
+      return createElementInstanceMetadataForElementCached.get(
+        el,
+        scale,
+        containerRect.x,
+        containerRect.y,
+      )
+    }, closestMatches)
+
+    const mergedGlobalFrame = boundingRectangleArray(
+      mapDropNulls((m) => nullIfInfinity(m.globalFrame), metadatas),
+    )
+
+    return domElementMetadata(
+      left('unknown'),
+      mergedGlobalFrame,
+      null,
+      mergedGlobalFrame,
+      emptySpecialSizeMeasurements,
+      null,
+    )
+  }
+
   return null
+}
+
+function createFakeMetadataForCanvasRoot(canvasRootPath: ElementPath): DomElementMetadata {
+  return domElementMetadata(
+    left('Storyboard'),
+    infinityCanvasRectangle,
+    infinityLocalRectangle,
+    infinityCanvasRectangle,
+    emptySpecialSizeMeasurements,
+    null,
+  )
 }
 
 function getValidPathsFromCanvasContainer(canvasRootContainer: HTMLElement): Array<ElementPath> {
