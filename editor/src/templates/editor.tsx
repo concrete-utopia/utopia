@@ -486,6 +486,13 @@ export class Editor {
 
       // run the dom-walker
       if (runDomWalker) {
+        this.storedState.elementMetadata = collectMetadata(ElementsToRerenderGLOBAL.current, {
+          scale: this.storedState.patchedEditor.canvas.scale,
+          selectedViews: this.storedState.patchedEditor.selectedViews,
+          metadataToUpdate: this.storedState.elementMetadata,
+          spyCollector: this.spyCollector,
+        })
+
         const domWalkerDispatchResult = runDomWalkerAndSaveResults(
           this.boundDispatch,
           this.domWalkerMutableState,
@@ -501,13 +508,6 @@ export class Editor {
             domWalkerDispatchResult.entireUpdateFinished,
           ])
         }
-
-        this.storedState.elementMetadata = collectMetadata(ElementsToRerenderGLOBAL.current, {
-          scale: this.storedState.patchedEditor.canvas.scale,
-          selectedViews: this.storedState.patchedEditor.selectedViews,
-          metadataToUpdate: this.storedState.elementMetadata,
-          spyCollector: this.spyCollector,
-        })
 
         if (domWalkerDispatchResult != null) {
           const missingFromNewMetadata = Object.keys(
