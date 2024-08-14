@@ -6,7 +6,7 @@ import * as Select from '@radix-ui/react-select'
 import { styled } from '@stitches/react'
 import type { CSSProperties } from 'react'
 import React from 'react'
-import { colorTheme, UtopiaStyles } from './styles/theme'
+import { colorTheme, UtopiaStyles, UtopiaTheme } from './styles/theme'
 import { Icons, SmallerIcons } from './icons'
 import { when } from '../utils/react-conditionals'
 import { Icn, type IcnProps } from './icn'
@@ -248,7 +248,7 @@ export const RadixSelect = React.memo(
             color: props.value?.placeholder ? colorTheme.fg6.value : colorTheme.fg1.value,
             fontFamily: 'utopian-inter',
             border: 'none',
-            borderRadius: 3,
+            borderRadius: UtopiaTheme.inputBorderRadius,
             ...props.style,
           }}
           css={{
