@@ -10,8 +10,9 @@ import {
   NumberInput,
   PopupList,
   UtopiaStyles,
-  UIRow,
   Icons,
+  UtopiaTheme,
+  SquareButton,
 } from '../../../../../uuiui'
 import { pickColorWithEyeDropper } from '../../../../canvas/canvas-utils'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
@@ -75,6 +76,7 @@ import { PickerImagePreview } from './picker-image-preview'
 import { setProp_UNSAFE } from '../../../../editor/actions/action-creators'
 import { useIsMyProject } from '../../../../editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../../../../../uuiui/utilities/disable-subtree'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 
 const backgroundLayerOptionsByValue: {
   [key in CSSBackgroundLayerType]: CSSBackgroundLayerTypeSelectOption
@@ -574,45 +576,31 @@ export const BackgroundPicker: React.FunctionComponent<
         }}
         onMouseDown={stopPropagation}
       >
-        <UIRow
+        <UIGridRow
           padded={true}
-          style={{
-            borderBottom: `1px solid ${colorTheme.neutralBorder.value}`,
-          }}
+          variant='<-auto-><----------1fr--------->'
+          style={{ paddingBottom: 4 }}
         >
-          <div
-            style={{
-              flexGrow: 1,
-            }}
-          >
-            <PopupList
-              id='colorPicker-background-layer-type-selector'
-              value={backgroundLayerOptionsByValue[props.value.type]}
-              options={backgroundLayerTypeSelectOptions}
-              onSubmitValue={onSubmitBackgroundLayerType}
-              containerMode='noBorder'
-            />
-          </div>
-          {isCSSBackgroundImageLayer(props.value) ? <Icons.Gear onClick={toggleSettings} /> : null}
-          <FlexRow>
-            <Icn
-              type='pipette'
-              color='secondary'
-              width={18}
-              height={18}
-              onClick={dispatchEyeDropper}
-              style={{ marginLeft: 8 }}
-            />
-            <Icn
-              type='cross-large'
-              color='secondary'
-              width={16}
-              height={16}
-              onClick={props.closePopup}
-              style={{ marginLeft: 8 }}
-            />
+          <PopupList
+            id='colorPicker-background-layer-type-selector'
+            value={backgroundLayerOptionsByValue[props.value.type]}
+            options={backgroundLayerTypeSelectOptions}
+            onSubmitValue={onSubmitBackgroundLayerType}
+            containerMode='noBorder'
+            style={{ borderRadius: UtopiaTheme.inputBorderRadius, marginLeft: -4, width: 80 }}
+          />
+          <FlexRow style={{ justifyContent: 'flex-end', gap: 4 }}>
+            {isCSSBackgroundImageLayer(props.value) ? (
+              <Icons.Gear onClick={toggleSettings} />
+            ) : null}
+            <SquareButton highlight onClick={dispatchEyeDropper}>
+              <Icons.SmallPipette />
+            </SquareButton>
+            <SquareButton highlight onClick={props.closePopup}>
+              <Icons.SmallCross />
+            </SquareButton>
           </FlexRow>
-        </UIRow>
+        </UIGridRow>
         {isCSSImageURLBackgroundLayer(props.value) ? (
           <PickerImagePreview value={props.value} />
         ) : (

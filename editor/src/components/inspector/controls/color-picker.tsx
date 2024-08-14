@@ -696,14 +696,8 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={360}
               scrubbable_innerlabel='H'
-              labelInner={{
-                category: 'layout/systems',
-                type: 'transform-rotate',
-                color: 'secondary',
-                width: 10,
-                height: 10,
-              }}
               defaultUnitToHide={null}
+              incrementControls={false}
             />
             <SimplePercentInput
               value={Number(this.state.normalisedSaturationPosition.toFixed(2))}
@@ -718,6 +712,7 @@ export class ColorPickerInner extends React.Component<
               stepSize={0.01}
               scrubbable_innerlabel='S'
               defaultUnitToHide={null}
+              incrementControls={false}
             />
             <SimplePercentInput
               value={Number(this.state.normalisedValuePosition.toFixed(2))}
@@ -732,6 +727,7 @@ export class ColorPickerInner extends React.Component<
               stepSize={0.01}
               scrubbable_innerlabel='V'
               defaultUnitToHide={null}
+              incrementControls={false}
             />
             <SimplePercentInput
               value={this.state.normalisedAlphaPosition}
@@ -746,6 +742,7 @@ export class ColorPickerInner extends React.Component<
               stepSize={0.01}
               scrubbable_innerlabel='A'
               defaultUnitToHide={null}
+              incrementControls={false}
             />
           </div>
           <ColorPickerSwatches
