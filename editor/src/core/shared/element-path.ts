@@ -297,6 +297,7 @@ export function fromString(path: string): ElementPath {
   if (fromPathStringCache == null) {
     const result = fromStringUncached(path)
     globalPathStringToPathCache[path] = result
+    pathToStringCache.set(result, path) // we save the work of stringifying the path again
     return result
   } else {
     return fromPathStringCache
