@@ -18,9 +18,12 @@ import { StringControl } from './string-control'
 //TODO: switch to functional component and make use of 'useColorTheme':
 import {
   colorTheme,
+  FlexRow,
   Icn,
+  Icons,
   SimpleNumberInput,
   SimplePercentInput,
+  SquareButton,
   UtopiaStyles,
 } from '../../../uuiui'
 import { pickColorWithEyeDropper } from '../../canvas/canvas-utils'
@@ -75,14 +78,16 @@ export const ColorPicker: React.FunctionComponent<React.PropsWithChildren<ColorP
           ...UtopiaStyles.popup,
         }}
       >
-        <Icn
-          type='pipette'
-          color='secondary'
-          width={18}
-          height={18}
-          onClick={onClickEyeDropper}
-          style={{ marginLeft: 8 }}
-        />
+        <FlexRow
+          style={{ justifyContent: 'flex-end', gap: 2, height: 32, padding: '8px 8px 14px 8px' }}
+        >
+          <SquareButton highlight onClick={onClickEyeDropper}>
+            <Icons.SmallPipette />
+          </SquareButton>
+          <SquareButton highlight onClick={closePopup}>
+            <Icons.SmallCross />
+          </SquareButton>
+        </FlexRow>
         <ColorPickerInner {...props} />
       </div>
     </InspectorModal>

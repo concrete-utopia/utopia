@@ -589,7 +589,7 @@ export const BackgroundPicker: React.FunctionComponent<
             containerMode='noBorder'
             style={{ borderRadius: UtopiaTheme.inputBorderRadius, marginLeft: -4, width: 80 }}
           />
-          <FlexRow style={{ justifyContent: 'flex-end', gap: 4 }}>
+          <FlexRow style={{ justifyContent: 'flex-end', gap: 2 }}>
             {isCSSBackgroundImageLayer(props.value) ? (
               <Icons.Gear onClick={toggleSettings} />
             ) : null}
