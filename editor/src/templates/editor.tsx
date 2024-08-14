@@ -542,24 +542,24 @@ export class Editor {
             )
           }
 
-          const localFramesDontMatch = Object.keys(this.storedState.elementMetadata).filter(
-            (elementPath) => {
-              const newFrame = this.storedState.elementMetadata[elementPath].localFrame
-              const oldFrame =
-                domWalkerDispatchResult.patchedEditor.jsxMetadata[elementPath]?.localFrame
-              return !shallowEqual(newFrame, oldFrame)
-            },
-          )
-          if (localFramesDontMatch.length > 0) {
-            console.error(
-              'Local frames dont match:',
-              localFramesDontMatch.map((path) => ({
-                path: path,
-                new: this.storedState.elementMetadata[path]?.localFrame,
-                old: domWalkerDispatchResult.patchedEditor.jsxMetadata[path]?.localFrame,
-              })),
-            )
-          }
+          // const localFramesDontMatch = Object.keys(this.storedState.elementMetadata).filter(
+          //   (elementPath) => {
+          //     const newFrame = this.storedState.elementMetadata[elementPath].localFrame
+          //     const oldFrame =
+          //       domWalkerDispatchResult.patchedEditor.jsxMetadata[elementPath]?.localFrame
+          //     return !shallowEqual(newFrame, oldFrame)
+          //   },
+          // )
+          // if (localFramesDontMatch.length > 0) {
+          //   console.error(
+          //     'Local frames dont match:',
+          //     localFramesDontMatch.map((path) => ({
+          //       path: path,
+          //       new: this.storedState.elementMetadata[path]?.localFrame,
+          //       old: domWalkerDispatchResult.patchedEditor.jsxMetadata[path]?.localFrame,
+          //     })),
+          //   )
+          // }
         }
       }
 
