@@ -162,7 +162,7 @@ export const SolidBackgroundLayer = React.memo<SolidBackgroundLayerProps>((props
             onTransientSubmitValue={onAlphaTransientSubmitValue}
             onForcedSubmitValue={onAlphaSubmitValue}
             controlStatus={props.controlStatus}
-            DEPRECATED_labelBelow={<span style={{ fontSize: 12 }}>α</span>}
+            scrubbable_innerlabel={<span style={{ fontSize: 12 }}>α</span>}
             minimum={0}
             maximum={1}
             stepSize={0.01}

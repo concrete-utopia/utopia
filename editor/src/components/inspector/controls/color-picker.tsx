@@ -695,7 +695,7 @@ export class ColorPickerInner extends React.Component<
               onForcedSubmitValue={this.onSubmitValueHue}
               minimum={0}
               maximum={360}
-              DEPRECATED_labelBelow='H'
+              scrubbable_innerlabel='H'
               labelInner={{
                 category: 'layout/systems',
                 type: 'transform-rotate',
@@ -716,7 +716,7 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={1}
               stepSize={0.01}
-              DEPRECATED_labelBelow='S'
+              scrubbable_innerlabel='S'
               defaultUnitToHide={null}
             />
             <SimplePercentInput
@@ -730,7 +730,7 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={1}
               stepSize={0.01}
-              DEPRECATED_labelBelow='V'
+              scrubbable_innerlabel='V'
               defaultUnitToHide={null}
             />
             <SimplePercentInput
@@ -744,7 +744,7 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={1}
               stepSize={0.01}
-              DEPRECATED_labelBelow='A'
+              scrubbable_innerlabel='A'
               defaultUnitToHide={null}
             />
           </div>

@@ -169,7 +169,7 @@ const LinearGradientControls: React.FunctionComponent<
           width: 10,
           height: 10,
         }}
-        DEPRECATED_labelBelow='angle'
+        scrubbable_innerlabel='angle'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
         defaultUnitToHide={null}
@@ -253,7 +253,7 @@ const RadialGradientControls: React.FunctionComponent<
         onSubmitValue={gradientCenterXSubmitValue}
         onTransientSubmitValue={gradientCenterXTransientSubmitValue}
         controlStatus={props.controlStatus}
-        DEPRECATED_labelBelow='center x'
+        scrubbable_innerlabel='center x'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
@@ -268,7 +268,7 @@ const RadialGradientControls: React.FunctionComponent<
         onSubmitValue={gradientCenterYSubmitValue}
         onTransientSubmitValue={gradientCenterYTransientSubmitValue}
         controlStatus={props.controlStatus}
-        DEPRECATED_labelBelow='center y'
+        scrubbable_innerlabel='center y'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
@@ -283,7 +283,7 @@ const RadialGradientControls: React.FunctionComponent<
         onSubmitValue={gradientWidthSubmitValue}
         onTransientSubmitValue={gradientWidthTransientSubmitValue}
         controlStatus={props.controlStatus}
-        DEPRECATED_labelBelow='width'
+        scrubbable_innerlabel='width'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
@@ -298,7 +298,7 @@ const RadialGradientControls: React.FunctionComponent<
         onSubmitValue={gradientHeightSubmitValue}
         onTransientSubmitValue={gradientHeightTransientSubmitValue}
         controlStatus={props.controlStatus}
-        DEPRECATED_labelBelow='height'
+        scrubbable_innerlabel='height'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
@@ -356,7 +356,7 @@ const ConicGradientControls: React.FunctionComponent<
         onSubmitValue={gradientCenterXSubmitValue}
         onTransientSubmitValue={gradientCenterXTransientSubmitValue}
         controlStatus={props.controlStatus}
-        DEPRECATED_labelBelow='x'
+        scrubbable_innerlabel='x'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
@@ -369,7 +369,7 @@ const ConicGradientControls: React.FunctionComponent<
         onSubmitValue={gradientCenterYSubmitValue}
         onTransientSubmitValue={gradientCenterYTransientSubmitValue}
         controlStatus={props.controlStatus}
-        DEPRECATED_labelBelow='y'
+        scrubbable_innerlabel='y'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
@@ -382,7 +382,7 @@ const ConicGradientControls: React.FunctionComponent<
         onSubmitValue={gradientFromAngleSubmitValue}
         onTransientSubmitValue={gradientFromAngleTransientSubmitValue}
         controlStatus={props.controlStatus}
-        DEPRECATED_labelBelow='angle'
+        scrubbable_innerlabel='angle'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
         defaultUnitToHide={null}

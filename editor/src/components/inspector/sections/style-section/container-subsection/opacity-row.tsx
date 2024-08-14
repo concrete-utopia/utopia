@@ -55,7 +55,7 @@ export const OpacityRow = React.memo(() => {
         onTransientSubmitValue={wrappedOnTransientSubmitValue}
         onForcedSubmitValue={wrappedOnSubmitValue}
         controlStatus={opacityMetadata.controlStatus}
-        DEPRECATED_labelBelow={<span style={{ fontSize: 12 }}>α</span>}
+        scrubbable_innerlabel={<span style={{ fontSize: 12 }}>α</span>}
         minimum={0}
         maximum={1}
         stepSize={0.01}

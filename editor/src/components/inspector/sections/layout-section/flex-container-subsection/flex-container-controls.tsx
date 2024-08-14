@@ -334,7 +334,7 @@ export const FlexGapControl = React.memo(() => {
           controlStatus={controlStatus}
           numberType='LengthPercent'
           defaultUnitToHide={'px'}
-          DEPRECATED_labelBelow={
+          scrubbable_innerlabel={
             flexDirection.startsWith('row') ? (
               <Icons.GapHorizontal color='on-highlight-secondary' />
             ) : (

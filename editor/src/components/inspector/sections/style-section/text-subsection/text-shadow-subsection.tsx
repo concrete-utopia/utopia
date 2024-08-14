@@ -205,7 +205,7 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
       <NumberInput
         style={{ gridColumn: '3 / span 1' }}
         value={props.value.offsetX}
-        DEPRECATED_labelBelow='X'
+        scrubbable_innerlabel='X'
         labelBelowStyle={LabelBelowNumberTextStyles}
         id={`textShadow-offsetX-${props.index}`}
         testId={`textShadow-offsetX-${props.index}`}
@@ -221,7 +221,7 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
       <NumberInput
         style={{ gridColumn: '4 / span 1' }}
         value={props.value.offsetY}
-        DEPRECATED_labelBelow='Y'
+        scrubbable_innerlabel='Y'
         labelBelowStyle={LabelBelowNumberTextStyles}
         id={`textShadow-offsetY-${props.index}`}
         testId={`textShadow-offsetY-${props.index}`}
@@ -237,7 +237,7 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
       <NumberInput
         style={{ gridColumn: '5 / span 1' }}
         value={props.value.blurRadius == null ? zeroBlurRadius : props.value.blurRadius.value}
-        DEPRECATED_labelBelow='B'
+        scrubbable_innerlabel='B'
         labelBelowStyle={LabelBelowNumberTextStyles}
         id={`textShadow-blurRadius-${props.index}`}
         testId={`textShadow-blurRadius-${props.index}`}
