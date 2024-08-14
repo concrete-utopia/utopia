@@ -35,15 +35,6 @@ import {
   getAttributesComingFromStyleSheets,
 } from './dom-walker'
 import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
-import common from 'mocha/lib/interfaces/common'
-
-function commomPrefixOfTwoStrings(a: string, b: string): string {
-  let i = 0
-  while (i < a.length && i < b.length && a[i] === b[i]) {
-    i++
-  }
-  return a.slice(0, i)
-}
 
 function collectMetadataForElementPath(
   path: ElementPath,
