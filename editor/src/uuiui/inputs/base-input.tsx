@@ -137,7 +137,7 @@ export const InspectorInputEmotionStyle = ({
   paddingTop: 2,
   paddingBottom: 2,
   paddingRight: 6,
-  paddingLeft: hasLabel ? 22 : 6,
+  paddingLeft: hasLabel ? 26 : 6,
   background: 'transparent',
   fontStyle: controlStyles.fontStyle,
   fontWeight: controlStyles.fontWeight,

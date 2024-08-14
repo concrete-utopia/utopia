@@ -67,8 +67,12 @@ const gridTemplates = {
     gridTemplateColumns: '1fr 1fr',
   },
   '<--1fr--><--1fr-->|22px|': {
-    gridColumnGap: 4,
+    gridColumnGap: 8,
     gridTemplateColumns: '1fr 1fr 22px',
+  },
+  '<--auto--><--1fr-->|22px|': {
+    gridColumnGap: 8,
+    gridTemplateColumns: 'auto 1fr 22px',
   },
   '<--1fr--><--1fr-->|-18px-|': {
     gridColumnGap: 4,

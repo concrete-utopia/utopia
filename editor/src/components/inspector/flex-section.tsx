@@ -523,7 +523,6 @@ function AxisDimensionControl({
           {value.areaName ?? index + 1}
         </Subdued>
         <NumberOrKeywordControl
-          style={{ flex: 1 }}
           testId={testId}
           value={value.value}
           keywords={gridDimensionDropdownKeywords}
