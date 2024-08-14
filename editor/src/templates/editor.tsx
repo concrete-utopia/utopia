@@ -1,6 +1,8 @@
 // import feature switches so they are loaded before anything else can read them
 import '../utils/feature-switches'
 
+import { diff } from 'deep-object-diff'
+
 import React from 'react'
 import * as PubSub from 'pubsub-js'
 import { createRoot } from 'react-dom/client'
@@ -106,7 +108,7 @@ import * as EP from '../core/shared/element-path'
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import type { ElementPath } from '../core/shared/project-file-types'
-import { uniqBy } from '../core/shared/array-utils'
+import { mapDropNulls, uniqBy } from '../core/shared/array-utils'
 import { updateUserDetailsWhenAuthenticated } from '../core/shared/github/helpers'
 import { DispatchContext } from '../components/editor/store/dispatch-context'
 import {
@@ -137,6 +139,7 @@ import {
 } from '../core/shared/optics/optic-creators'
 import { keysEqualityExhaustive, shallowEqual } from '../core/shared/equality-utils'
 import { collectMetadata } from '../components/canvas/dom-sampler'
+import { omitWithPredicate } from '../core/shared/object-utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -535,11 +538,39 @@ export class Editor {
             console.error(
               'Global frames dont match:',
               globalFramesDontMatch.map((path) => ({
-                path: path,
+                path: EP.humanReadableDebugPath(EP.fromString(path)),
+                metadata: domWalkerDispatchResult.patchedEditor.jsxMetadata[path],
                 new: this.storedState.elementMetadata[path]?.globalFrame,
                 old: domWalkerDispatchResult.patchedEditor.jsxMetadata[path]?.globalFrame,
               })),
             )
+          }
+
+          const specialSizeMeasurementsDontMatch = mapDropNulls((elementPath) => {
+            const newFrame = omitWithPredicate(
+              this.storedState.elementMetadata[elementPath].specialSizeMeasurements,
+              (key) => key === 'closestOffsetParentPath',
+            )
+            const oldFrame = omitWithPredicate(
+              domWalkerDispatchResult.patchedEditor.jsxMetadata[elementPath]
+                ?.specialSizeMeasurements,
+              (key) => key === 'closestOffsetParentPath',
+            )
+            const diffResult = diff(oldFrame, newFrame)
+            if (Object.keys(diffResult).length === 0) {
+              return null
+            } else {
+              return {
+                path: EP.humanReadableDebugPath(EP.fromString(elementPath)),
+                diff: diffResult,
+                original: domWalkerDispatchResult.patchedEditor.jsxMetadata[elementPath],
+                new: this.storedState.elementMetadata[elementPath],
+              }
+            }
+          }, Object.keys(this.storedState.elementMetadata))
+
+          if (specialSizeMeasurementsDontMatch.length > 0) {
+            console.error('Special size measurements dont match:', specialSizeMeasurementsDontMatch)
           }
 
           // const localFramesDontMatch = Object.keys(this.storedState.elementMetadata).filter(

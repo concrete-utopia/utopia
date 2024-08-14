@@ -175,6 +175,7 @@ specifiers:
   css-loader: 0.28.4
   css-tree: 2.3.1
   csstype: 3.0.3
+  deep-object-diff: ^1.1.9
   dependency-cruiser: 13.1.5
   diff: 5.0.0
   enzyme: 3.3.0
@@ -404,6 +405,7 @@ dependencies:
   clipboard-polyfill: 2.4.6
   create-react-class: 15.6.3
   css-tree: 2.3.1
+  deep-object-diff: 1.1.9
   eslint-config-utopia: link:../eslint-config-utopia
   eslint-plugin-import: 2.25.3_xoh4mdbbxtgv4pgsofz5xwre24
   eslint-plugin-jsx-a11y: 6.5.1_5wlsrnjcorawie777qour2ptie_eslint@7.32.0
@@ -8663,6 +8665,10 @@ packages:
 
   /deep-is/0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
+
+  /deep-object-diff/1.1.9:
+    resolution: {integrity: sha512-Rn+RuwkmkDwCi2/oXOFS9Gsr5lJZu/yTGpK7wAaAIE75CC+LCGEZHpY6VQJa/RoJcrmaA/docWJZvYohlNkWPA==}
+    dev: false
 
   /deepmerge/4.2.2:
     resolution: {integrity: sha512-FJ3UgI4gIl+PHZm53knsuSFpE+nESMr7M4v9QcgB7S63Kj/6WqMiFQJpBBYz1Pt+66bZpP3Q7Lye0Oo9MPKEdg==}
