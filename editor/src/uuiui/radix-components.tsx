@@ -245,7 +245,7 @@ export const RadixSelect = React.memo(
             gap: 8,
             fontSize: 11,
             height: 22,
-            color: props.value?.placeholder ? colorTheme.fg6.value : undefined,
+            color: props.value?.placeholder ? colorTheme.fg6.value : colorTheme.fg1.value,
             fontFamily: 'utopian-inter',
             border: 'none',
             borderRadius: 3,
@@ -292,7 +292,7 @@ export const RadixSelect = React.memo(
                     <Select.Separator
                       key={`select-option-${props.id}-${index}`}
                       style={{
-                        borderTop: `1px solid ${colorTheme.fg4.value}`,
+                        borderTop: '1px solid #393d49',
                         width: '100%',
                       }}
                     />
