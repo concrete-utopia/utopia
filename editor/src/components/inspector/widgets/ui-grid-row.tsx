@@ -63,7 +63,7 @@ const gridTemplates = {
     gridTemplateColumns: '20px 1fr 1fr',
   },
   '<--1fr--><--1fr-->': {
-    gridColumnGap: 4,
+    gridColumnGap: 8,
     gridTemplateColumns: '1fr 1fr',
   },
   '<--1fr--><--1fr-->|22px|': {
