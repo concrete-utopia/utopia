@@ -156,7 +156,10 @@ function collectMetadataForPaths(
     }
   })
 
-  const finalMetadata = fillMissingDataFromAncestors(updatedMetadataMap)
+  const finalMetadata = [
+    pruneInvalidPathsFromMetadata_MUTATE(validPaths),
+    fillMissingDataFromAncestors,
+  ].reduce((metadata, fix) => fix(metadata), updatedMetadataMap)
 
   return {
     metadata: finalMetadata,
@@ -302,3 +305,16 @@ function getComputedStyleForElement(element: HTMLElement): ComputedStyleMetadata
     attributeMetadata: attributeMetadata,
   }
 }
+
+const pruneInvalidPathsFromMetadata_MUTATE =
+  (validPaths: Array<ElementPath>) =>
+  (metadata_MUTATE: ElementInstanceMetadataMap): ElementInstanceMetadataMap => {
+    const validPathsSet = new Set(validPaths.map(EP.toString))
+    const keys = Object.keys(metadata_MUTATE)
+    for (const key of keys) {
+      if (!validPathsSet.has(key)) {
+        delete metadata_MUTATE[key]
+      }
+    }
+    return metadata_MUTATE
+  }
