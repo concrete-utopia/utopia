@@ -520,8 +520,8 @@ export class Editor {
             console.error(
               'Missing from new metadata:',
               missingFromNewMetadata.map((path) => ({
-                path: path,
-                old: domWalkerDispatchResult.patchedEditor.jsxMetadata[path].globalFrame,
+                path: EP.humanReadableDebugPath(EP.fromString(path)),
+                old: domWalkerDispatchResult.patchedEditor.jsxMetadata[path].element,
               })),
             )
           }

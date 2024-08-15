@@ -54,20 +54,39 @@ function collectMetadataForElementPath(
   })
 
   let foundElementPathDepth: number = 0
+  let foundElementPathFullDepth: number = 0
   let closestMatches: Array<Element> = []
 
   for (let index = 0; index < foundElements.length; index++) {
     const el = foundElements[index]
     const ep = EP.fromString(el.getAttribute(UTOPIA_PATH_KEY) ?? '')
     if (index === 0) {
+      foundElementPathDepth = EP.depth(ep)
       foundElementPathDepth = EP.fullDepth(ep)
       closestMatches.push(el)
     } else {
-      if (EP.fullDepth(ep) === foundElementPathDepth) {
+      if (
+        EP.depth(ep) === foundElementPathDepth &&
+        EP.fullDepth(ep) === foundElementPathFullDepth
+      ) {
         closestMatches.push(el)
       }
     }
   }
+
+  // console.log(
+  //   'foundElements',
+  //   EP.humanReadableDebugPath(path),
+  //   Array.from(foundElements).map((el) => ({
+  //     path: EP.humanReadableDebugPath(EP.fromString(el.getAttribute(UTOPIA_PATH_KEY) ?? '')),
+  //     element: el,
+  //   })),
+  //   'closestMatches',
+  //   closestMatches.map((el) => ({
+  //     path: EP.humanReadableDebugPath(EP.fromString(el.getAttribute(UTOPIA_PATH_KEY) ?? '')),
+  //     element: el,
+  //   })),
+  // )
 
   if (closestMatches.length == 0) {
     return null
