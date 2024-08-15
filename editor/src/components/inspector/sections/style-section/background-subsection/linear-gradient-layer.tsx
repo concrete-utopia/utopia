@@ -31,6 +31,7 @@ import {
   FlexRow,
   PopupList,
   NumberInput,
+  Icons,
 } from '../../../../../uuiui'
 
 export function getIndexedUpdateCSSBackgroundLayerLinearGradientAngle(index: number) {
@@ -86,61 +87,54 @@ export const LinearGradientBackgroundLayer = React.memo<LinearGradientBackground
         items={[removeRow(onRemoveRowSubmit), ...props.unsetContextMenuItem]}
         data={null}
       >
-        <UIGridRow tall alignItems='start' padded={true} variant='<---1fr--->|------172px-------|'>
-          <UIGridRow
-            tall
-            alignItems='start'
-            padded={false}
-            variant='<-auto-><----------1fr--------->'
-          >
-            <CheckboxInput
-              onChange={onEnabledChange}
-              checked={enabled}
-              controlStatus={props.controlStatus}
-              onMouseDown={stopPropagation}
-            />
-            <BackgroundSolidOrGradientThumbnailControl
-              id={`background-layer-gradient-${props.index}`}
-              key={`background-layer-gradient-${props.index}`}
-              testId={`background-layer-gradient-${props.index}`}
+        <UIGridRow
+          tall
+          alignItems='start'
+          padded={true}
+          variant='<-auto-><-auto->|70px|<----1fr---->|'
+        >
+          <CheckboxInput
+            onChange={onEnabledChange}
+            checked={enabled}
+            controlStatus={props.controlStatus}
+            onMouseDown={stopPropagation}
+          />
+          <BackgroundSolidOrGradientThumbnailControl
+            id={`background-layer-gradient-${props.index}`}
+            key={`background-layer-gradient-${props.index}`}
+            testId={`background-layer-gradient-${props.index}`}
+            controlStyles={props.controlStyles}
+            controlStatus={props.controlStatus}
+            modalOffset={{ x: -45, y: 0 }}
+            value={props.value}
+            backgroundIndex={props.index}
+            useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
+            popupOpen={props.popupOpen}
+            setOpenPopup={props.setOpenPopup}
+          />
+          <FlexRow style={{ alignItems: 'start' }} onMouseDown={stopPropagation}>
+            <PopupList
+              value={linearGradientSelectOption}
+              options={backgroundLayerTypeSelectOptions}
+              onSubmitValue={backgroundLayerType}
               controlStyles={props.controlStyles}
-              controlStatus={props.controlStatus}
-              modalOffset={{ x: -45, y: 0 }}
-              value={props.value}
-              backgroundIndex={props.index}
-              useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
-              popupOpen={props.popupOpen}
-              setOpenPopup={props.setOpenPopup}
+              containerMode='default'
+              style={{ background: 'transparent' }}
             />
-          </UIGridRow>
-          <UIGridRow
-            tall
-            alignItems='start'
-            padded={false}
-            variant='<-------1fr------>|----80px----|'
-          >
-            <FlexRow style={{ alignItems: 'start' }} onMouseDown={stopPropagation}>
-              <PopupList
-                value={linearGradientSelectOption}
-                options={backgroundLayerTypeSelectOptions}
-                onSubmitValue={backgroundLayerType}
-                controlStyles={props.controlStyles}
-                containerMode='default'
-              />
-            </FlexRow>
-            <NumberInput
-              id={`background-layer-gradient-angle-${props.index}`}
-              testId={`background-layer-gradient-angle-${props.index}`}
-              value={props.value.angle.value}
-              onSubmitValue={gradientAngleSubmitValue}
-              onTransientSubmitValue={gradientAngleTransientSubmitValue}
-              controlStatus={props.controlStatus}
-              scrubbable_innerlabel='angle'
-              inputProps={{ onMouseDown: stopPropagation }}
-              numberType='AnglePercent'
-              defaultUnitToHide={null}
-            />
-          </UIGridRow>
+          </FlexRow>
+          <NumberInput
+            id={`background-layer-gradient-angle-${props.index}`}
+            testId={`background-layer-gradient-angle-${props.index}`}
+            value={props.value.angle.value}
+            onSubmitValue={gradientAngleSubmitValue}
+            onTransientSubmitValue={gradientAngleTransientSubmitValue}
+            controlStatus={props.controlStatus}
+            scrubbable_innerlabel={<Icons.Degree color='on-highlight-secondary' />}
+            inputProps={{ onMouseDown: stopPropagation }}
+            numberType='AnglePercent'
+            defaultUnitToHide={null}
+            incrementControls={false}
+          />
         </UIGridRow>
       </InspectorContextMenuWrapper>
     )

@@ -26,6 +26,10 @@ const gridTemplates = {
     gridColumnGap: 8,
     gridTemplateColumns: 'auto 20px 1fr',
   },
+  '<-auto-><-auto->|70px|<----1fr---->|': {
+    gridColumnGap: 4,
+    gridTemplateColumns: 'auto auto 70px 1fr',
+  },
   '<-------1fr------>|----80px----|': {
     gridTemplateColumns: '1fr 80px',
     gridColumnGap: 4,

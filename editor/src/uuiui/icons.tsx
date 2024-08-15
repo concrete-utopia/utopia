@@ -215,6 +215,7 @@ export const Icons = {
   Cube: makeIcon({ type: 'd', color: 'main' }),
   Checkmark: makeIcon({ type: 'checkmark', color: 'main' }),
   DragHandle: makeIcon({ type: 'draghandle', color: 'main' }),
+  Degree: makeIcon({ category: 'inspector-element', type: 'degree', color: 'main' }),
   Code: makeIcon({ type: 'codymccodeface-larger', color: 'main' }),
   EditPencil: makeIcon({ type: 'editpencil', color: 'main' }),
   ExpansionArrow: makeIcon({ type: 'expansionarrow-down', color: 'main' }),
