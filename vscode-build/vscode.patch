@@ -965,7 +965,7 @@ index ae4d22c9eaa..e342fb223d8 100644
  			},
  			'zenMode.restore': {
 diff --git a/src/vs/workbench/browser/workbench.ts b/src/vs/workbench/browser/workbench.ts
-index b0688133537..28862dfb4e8 100644
+index b0688133537..4353093fd5b 100644
 --- a/src/vs/workbench/browser/workbench.ts
 +++ b/src/vs/workbench/browser/workbench.ts
 @@ -50,6 +50,8 @@ import { AccessibilityProgressSignalScheduler } from 'vs/platform/accessibilityS
@@ -977,10 +977,16 @@ index b0688133537..28862dfb4e8 100644
  
  export interface IWorkbenchOptions {
  
-@@ -193,6 +195,19 @@ export class Workbench extends Layout {
+@@ -193,6 +195,37 @@ export class Workbench extends Layout {
  				this.restore(lifecycleService);
  			});
  
++			// Chain off of the previous one to ensure the ordering of changes is maintained.
++			// FIXME Do we still need this?
++			let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
++
++			let intervalID: number | null = null
++
 +			mainWindow.addEventListener('message', (messageEvent: MessageEvent) => {
 +				const { data } = messageEvent;
 +				if (isFromUtopiaToVSCodeMessage(data)) {
@@ -988,12 +994,24 @@ index b0688133537..28862dfb4e8 100644
 +					if (commandService == null) {
 +						console.error(`There is no command service`);
 +					} else {
-+						(commandService as ICommandService).executeCommand('utopia.toVSCodeMessage', data);
++						if (intervalID != null) {
++							window.clearInterval(intervalID)
++						}
++						applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
++							(commandService as ICommandService).executeCommand('utopia.toVSCodeMessage', data);
++						})
 +					}
 +				}
 +			});
 +
-+			window.top?.postMessage(messageListenersReady(), '*')
++			intervalID = window.setInterval(() => {
++				try {
++					window.top?.postMessage(messageListenersReady(), '*')
++				} catch (error) {
++					console.error('Error posting messageListenersReady', error)
++				}
++			}, 500)
++
  			return instantiationService;
  		} catch (error) {
  			onUnexpectedError(error);
