@@ -289,7 +289,7 @@ export function collectMetadata(
   }
 }
 
-const ObserversAvailable = window.MutationObserver != null && ResizeObserver != null
+const ObserversAvailable = window.MutationObserver != null && window.ResizeObserver != null
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 
