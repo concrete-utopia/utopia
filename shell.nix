@@ -785,7 +785,7 @@ let
 
   pythonAndPackages = pkgs.python3.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
 
-  basePackages = [ node pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ nodePackages ++ linuxOnlyPackages ++ macOSOnlyPackages;
+  basePackages = [ node pkgs.libsecret pkgs.libkrb5 pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ nodePackages ++ linuxOnlyPackages ++ macOSOnlyPackages;
   withServerBasePackages = basePackages ++ (lib.optionals includeServerBuildSupport baseServerPackages);
   withServerRunPackages = withServerBasePackages ++ (lib.optionals includeRunLocallySupport serverRunPackages);
   withReleasePackages = withServerRunPackages ++ (lib.optionals includeReleaseSupport releasePackages);
