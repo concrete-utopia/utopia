@@ -218,9 +218,13 @@ function collectMetadataForPaths(
       options.scale,
       containerRect,
     )
-    if (domMetadata != null) {
-      const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(path)]
+    const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(path)]
+    if (spyElem == null) {
+      // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
+      return
+    }
 
+    if (domMetadata != null && spyElem != null) {
       let jsxElement = alternativeEither(spyElem.element, domMetadata.element)
 
       // TODO avoid temporary object creation
@@ -240,11 +244,8 @@ function collectMetadataForPaths(
       updatedMetadataMap[EP.toString(path)] = elementInstanceMetadata
     } else {
       // if the dom metadata is null, we should use the spy metadata
-      const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(path)]
-      if (spyElem != null) {
-        updatedMetadataMap[EP.toString(path)] = {
-          ...spyElem,
-        }
+      updatedMetadataMap[EP.toString(path)] = {
+        ...spyElem,
       }
     }
   })
