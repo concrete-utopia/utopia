@@ -326,6 +326,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS(action, state)
     case 'SAVE_DOM_REPORT':
       return UPDATE_FNS.SAVE_DOM_REPORT(action, state, spyCollector)
+    case 'UPDATE_METADATA_IN_EDITOR_STATE':
+      return UPDATE_FNS.UPDATE_METADATA_IN_EDITOR_STATE(action, state, spyCollector)
     case 'TRUE_UP_ELEMENTS':
       return UPDATE_FNS.TRUE_UP_ELEMENTS(state)
     case 'SET_PROP':
