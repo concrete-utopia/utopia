@@ -570,6 +570,24 @@ export function backfillDomMetadata(
   }
 }
 
+export function resubscribeObservers(domWalkerMutableState: {
+  mutationObserver: MutationObserver
+  resizeObserver: ResizeObserver
+}) {
+  const canvasRootContainer = document.getElementById(CanvasContainerID)
+  if (
+    ObserversAvailable &&
+    canvasRootContainer != null &&
+    domWalkerMutableState.resizeObserver != null &&
+    domWalkerMutableState.mutationObserver != null
+  ) {
+    document.querySelectorAll(`#${CanvasContainerID} *`).forEach((elem) => {
+      domWalkerMutableState.resizeObserver.observe(elem)
+    })
+    domWalkerMutableState.mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
+  }
+}
+
 // Dom walker has 3 modes for performance reasons:
 // Fastest is the selective mode, this runs when elementsToFocusOn is not 'rerender-all-elements'. In this case it only collects the metadata of the elements in elementsToFocusOn
 // Middle speed is when initComplete is true, in this case it traverses the full dom but only collects the metadata for the not invalidated elements (stored in invalidatedPaths)
@@ -608,17 +626,7 @@ export function runDomWalker({
 
     const invalidatedPaths = Array.from(domWalkerMutableState.invalidatedPaths)
 
-    // Get some base values relating to the div this component creates.
-    if (
-      ObserversAvailable &&
-      domWalkerMutableState.resizeObserver != null &&
-      domWalkerMutableState.mutationObserver != null
-    ) {
-      document.querySelectorAll(`#${CanvasContainerID} *`).forEach((elem) => {
-        domWalkerMutableState.resizeObserver.observe(elem)
-      })
-      domWalkerMutableState.mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
-    }
+    resubscribeObservers(domWalkerMutableState)
 
     // getCanvasRectangleFromElement is costly, so I made it lazy. we only need the value inside globalFrameForElement
     const containerRect = lazyValue(() => {

@@ -101,6 +101,7 @@ import {
   DomWalkerMutableStateCtx,
   createDomWalkerMutableState,
   invalidateDomWalkerIfNecessary,
+  resubscribeObservers,
 } from '../components/canvas/dom-walker'
 import { isFeatureEnabled } from '../utils/feature-switches'
 import { shouldUpdateLowPriorityUI } from '../components/inspector/inspector'
@@ -513,6 +514,8 @@ export class Editor {
             metadataUpdateDispatchResult.entireUpdateFinished,
           ])
         }
+
+        resubscribeObservers(this.domWalkerMutableState)
 
         // const domWalkerDispatchResult = runDomWalkerAndSaveResults(
         //   this.boundDispatch,
