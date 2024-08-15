@@ -489,39 +489,49 @@ export class Editor {
 
       // run the dom-walker
       if (runDomWalker) {
-        this.storedState.elementMetadata = collectMetadata(ElementsToRerenderGLOBAL.current, {
+        const metadataResult = collectMetadata(ElementsToRerenderGLOBAL.current, {
           scale: this.storedState.patchedEditor.canvas.scale,
           selectedViews: this.storedState.patchedEditor.selectedViews,
           metadataToUpdate: this.storedState.elementMetadata,
           spyCollector: this.spyCollector,
         })
 
-        const domWalkerDispatchResult = runDomWalkerAndSaveResults(
+        this.storedState.elementMetadata = metadataResult.metadata
+
+        const metadataUpdateDispatchResult = editorDispatchActionRunner(
           this.boundDispatch,
-          this.domWalkerMutableState,
+          [EditorActions.updateMetadataInEditorState(metadataResult.metadata, metadataResult.tree)],
           this.storedState,
           this.spyCollector,
-          ElementsToRerenderGLOBAL.current,
+          {},
         )
 
-        if (domWalkerDispatchResult != null) {
-          this.storedState = domWalkerDispatchResult
+        if (metadataUpdateDispatchResult != null) {
+          this.storedState = metadataUpdateDispatchResult
           entireUpdateFinished = Promise.all([
             entireUpdateFinished,
-            domWalkerDispatchResult.entireUpdateFinished,
+            metadataUpdateDispatchResult.entireUpdateFinished,
           ])
         }
 
-        if (domWalkerDispatchResult != null) {
+        // const domWalkerDispatchResult = runDomWalkerAndSaveResults(
+        //   this.boundDispatch,
+        //   this.domWalkerMutableState,
+        //   this.storedState,
+        //   this.spyCollector,
+        //   ElementsToRerenderGLOBAL.current,
+        // )
+
+        if (metadataUpdateDispatchResult != null) {
           const missingFromNewMetadata = Object.keys(
-            domWalkerDispatchResult.patchedEditor.jsxMetadata,
+            metadataUpdateDispatchResult.patchedEditor.jsxMetadata,
           ).filter((keyInOldMetadata) => !(keyInOldMetadata in this.storedState.elementMetadata))
           if (missingFromNewMetadata.length > 0) {
             console.error(
               'Missing from new metadata:',
               missingFromNewMetadata.map((path) => ({
                 path: EP.humanReadableDebugPath(EP.fromString(path)),
-                old: domWalkerDispatchResult.patchedEditor.jsxMetadata[path].element,
+                old: metadataUpdateDispatchResult.patchedEditor.jsxMetadata[path].element,
               })),
             )
           }
@@ -530,7 +540,7 @@ export class Editor {
             (elementPath) => {
               const newFrame = this.storedState.elementMetadata[elementPath].globalFrame
               const oldFrame =
-                domWalkerDispatchResult.patchedEditor.jsxMetadata[elementPath]?.globalFrame
+                metadataUpdateDispatchResult.patchedEditor.jsxMetadata[elementPath]?.globalFrame
               return !shallowEqual(newFrame, oldFrame)
             },
           )
@@ -539,9 +549,9 @@ export class Editor {
               'Global frames dont match:',
               globalFramesDontMatch.map((path) => ({
                 path: EP.humanReadableDebugPath(EP.fromString(path)),
-                metadata: domWalkerDispatchResult.patchedEditor.jsxMetadata[path],
+                metadata: metadataUpdateDispatchResult.patchedEditor.jsxMetadata[path],
                 new: this.storedState.elementMetadata[path]?.globalFrame,
-                old: domWalkerDispatchResult.patchedEditor.jsxMetadata[path]?.globalFrame,
+                old: metadataUpdateDispatchResult.patchedEditor.jsxMetadata[path]?.globalFrame,
               })),
             )
           }
@@ -552,7 +562,7 @@ export class Editor {
               (key) => key === 'closestOffsetParentPath',
             )
             const oldFrame = omitWithPredicate(
-              domWalkerDispatchResult.patchedEditor.jsxMetadata[elementPath]
+              metadataUpdateDispatchResult.patchedEditor.jsxMetadata[elementPath]
                 ?.specialSizeMeasurements,
               (key) => key === 'closestOffsetParentPath',
             )
@@ -563,7 +573,7 @@ export class Editor {
               return {
                 path: EP.humanReadableDebugPath(EP.fromString(elementPath)),
                 diff: diffResult,
-                original: domWalkerDispatchResult.patchedEditor.jsxMetadata[elementPath],
+                original: metadataUpdateDispatchResult.patchedEditor.jsxMetadata[elementPath],
                 new: this.storedState.elementMetadata[elementPath],
               }
             }
@@ -638,19 +648,41 @@ export class Editor {
 
           // re-run the dom-walker
           Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
-            const domWalkerDispatchResult = runDomWalkerAndSaveResults(
+            const metadataResult = collectMetadata(ElementsToRerenderGLOBAL.current, {
+              scale: this.storedState.patchedEditor.canvas.scale,
+              selectedViews: this.storedState.patchedEditor.selectedViews,
+              metadataToUpdate: this.storedState.elementMetadata,
+              spyCollector: this.spyCollector,
+            })
+
+            this.storedState.elementMetadata = metadataResult.metadata
+
+            // const domWalkerDispatchResult = runDomWalkerAndSaveResults(
+            //   this.boundDispatch,
+            //   this.domWalkerMutableState,
+            //   this.storedState,
+            //   this.spyCollector,
+            //   ElementsToRerenderGLOBAL.current,
+            // )
+
+            const metadataUpdateDispatchResult = editorDispatchActionRunner(
               this.boundDispatch,
-              this.domWalkerMutableState,
+              [
+                EditorActions.updateMetadataInEditorState(
+                  metadataResult.metadata,
+                  metadataResult.tree,
+                ),
+              ],
               this.storedState,
               this.spyCollector,
-              ElementsToRerenderGLOBAL.current,
+              {},
             )
 
-            if (domWalkerDispatchResult != null) {
-              this.storedState = domWalkerDispatchResult
+            if (metadataUpdateDispatchResult != null) {
+              this.storedState = metadataUpdateDispatchResult
               entireUpdateFinished = Promise.all([
                 entireUpdateFinished,
-                domWalkerDispatchResult.entireUpdateFinished,
+                metadataUpdateDispatchResult.entireUpdateFinished,
               ])
             }
           })

@@ -879,14 +879,28 @@ function editorDispatchInner(
       storedState.unpatchedEditor.currentVariablesInScope !==
       result.unpatchedEditor.currentVariablesInScope
 
+    const updateMetadataInEditorStateAction = dispatchedActions.find(
+      (action) => action.action === 'UPDATE_METADATA_IN_EDITOR_STATE',
+    )
     const metadataChanged =
-      domMetadataChanged || spyMetadataChanged || allElementPropsChanged || variablesInScopeChanged
+      domMetadataChanged ||
+      spyMetadataChanged ||
+      allElementPropsChanged ||
+      variablesInScopeChanged ||
+      updateMetadataInEditorStateAction != null
 
     if (metadataChanged) {
-      const { metadata, elementPathTree } = reconstructJSXMetadata(
-        result.unpatchedEditor,
-        domReconstructedMetadata,
-      )
+      function getMetadataSomehow() {
+        if (updateMetadataInEditorStateAction != null) {
+          return {
+            metadata: updateMetadataInEditorStateAction.newFinalMetadata,
+            elementPathTree: updateMetadataInEditorStateAction.tree,
+          }
+        } else {
+          return reconstructJSXMetadata(result.unpatchedEditor, domReconstructedMetadata)
+        }
+      }
+      const { metadata, elementPathTree } = getMetadataSomehow()
       // Cater for the strategies wiping out the metadata on completion.
       const storedStateHasEmptyElementPathTree = isEmptyObject(
         storedState.unpatchedEditor.elementPathTree,

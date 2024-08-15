@@ -268,22 +268,24 @@ export function collectMetadata(
     metadataToUpdate: ElementInstanceMetadataMap
     spyCollector: UiJsxCanvasContextData
   },
-): ElementInstanceMetadataMap {
+): { metadata: ElementInstanceMetadataMap; tree: ElementPathTrees } {
   getComputedStylesCache.updateObservers()
   createElementInstanceMetadataForElementCached.updateObservers()
 
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (canvasRootContainer == null) {
-    return options.metadataToUpdate
+    return {
+      metadata: options.metadataToUpdate,
+      tree: MetadataUtils.createElementPathTreeFromMetadata(options.metadataToUpdate), // TODO this should return a cached tree
+    }
   }
 
   const validPaths = getValidPathsFromCanvasContainer(canvasRootContainer)
 
   if (elementsToFocusOn == 'rerender-all-elements') {
-    return collectMetadataForPaths(canvasRootContainer, validPaths, validPaths, options).metadata
+    return collectMetadataForPaths(canvasRootContainer, validPaths, validPaths, options)
   } else {
     return collectMetadataForPaths(canvasRootContainer, elementsToFocusOn, validPaths, options)
-      .metadata
   }
 }
 

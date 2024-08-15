@@ -1,3 +1,4 @@
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import type { EditorDispatch } from '../editor/action-types'
 import { saveDOMReport } from '../editor/actions/action-creators'
 import type { DispatchResult } from '../editor/store/dispatch'

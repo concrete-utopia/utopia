@@ -237,6 +237,7 @@ import type {
   ElementReplacementPath,
   ReplaceJSXElement,
   ToggleDataCanCondense,
+  UpdateMetadataInEditorState,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -266,6 +267,7 @@ import type { CommentFilterMode } from '../../inspector/sections/comment-section
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { PageTemplate } from '../../canvas/remix/remix-utils'
 import type { Bounds } from 'utopia-vscode-common'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1243,6 +1245,17 @@ export function saveDOMReport(
     elementMetadata: elementMetadata,
     cachedPaths: cachedPaths,
     invalidatedPaths: invalidatedPaths,
+  }
+}
+
+export function updateMetadataInEditorState(
+  newFinalMetadata: ElementInstanceMetadataMap,
+  tree: ElementPathTrees,
+): UpdateMetadataInEditorState {
+  return {
+    action: 'UPDATE_METADATA_IN_EDITOR_STATE',
+    newFinalMetadata: newFinalMetadata,
+    tree: tree,
   }
 }
 
