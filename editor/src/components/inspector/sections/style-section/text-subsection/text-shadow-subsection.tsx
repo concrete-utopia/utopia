@@ -176,8 +176,7 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
     <PropertyRow
       key={props.index}
       style={{
-        gridTemplateColumns: `12px 28px repeat(3, 1fr) ${UtopiaTheme.layout.inputHeight.default}`,
-        gridColumnGap: 8,
+        gridTemplateColumns: `12px 28px 1fr 1fr 1fr ${UtopiaTheme.layout.inputHeight.default}px`,
       }}
     >
       <BooleanControl

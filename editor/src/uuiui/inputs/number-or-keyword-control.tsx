@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import React from 'react'
-import { Icons } from '../icons'
+import { Icons, SmallerIcons } from '../icons'
 import {
   DropdownMenu,
   regularDropdownMenuItem,
@@ -53,11 +53,12 @@ export function NumberOrKeywordControl<T extends string>(props: NumberOrKeywordC
 
   const dropdownButton = React.useCallback(
     () => (
-      <Icons.ExpansionArrowDown
+      <SmallerIcons.ExpansionArrowDown
         testId={dropdownButtonId}
         style={{
           visibility: hover || dropdownOpen ? 'visible' : 'hidden',
           cursor: 'pointer',
+          marginRight: 5,
         }}
       />
     ),

@@ -7,6 +7,7 @@ import { useRefEditorState } from '../../../editor/store/store-hook'
 import type { MouseCallbacks } from '../select-mode/select-mode-hooks'
 import { useHighlightCallbacks } from '../select-mode/select-mode-hooks'
 import { property } from 'css-tree'
+import { defaultEither } from '../../../../core/shared/either'
 
 function useGetHighlightableViewsForInsertMode() {
   const storeRef = useRefEditorState((store) => {
@@ -18,7 +19,7 @@ function useGetHighlightableViewsForInsertMode() {
       openFile: store.editor.canvas.openFile?.filename ?? null,
       projectContents: store.editor.projectContents,
       nodeModules: store.editor.nodeModules.files,
-      remixRoutingTable: store.derived.remixData?.routingTable ?? null,
+      remixRoutingTable: defaultEither(null, store.derived.remixData)?.routingTable ?? null,
       resolve: resolveFn,
       propertyControlsInfo: store.editor.propertyControlsInfo,
     }

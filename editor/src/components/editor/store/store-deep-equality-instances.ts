@@ -967,7 +967,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     (state) => state.branchOriginContentsChecksums,
     nullableDeepEquality(FileChecksumsWithFileKeepDeepEquality),
     (state) => state.remixData,
-    createCallWithTripleEquals(),
+    EitherKeepDeepEquality(createCallWithTripleEquals(), createCallWithTripleEquals()),
     (state) => state.filePathMappings,
     createCallWithShallowEquals(),
     (
