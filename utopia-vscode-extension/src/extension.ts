@@ -141,8 +141,25 @@ function didClose(path: string): DidClose {
 
 type SubscriptionWork = UpdateDirtyContentChange | DidChangeTextChange | WillSaveText | DidClose
 let pendingWork: Array<SubscriptionWork> = []
+let pendingWorkHandle: number
 
-function minimisePendingWork(): void {
+function pushWorkToQueue(work: SubscriptionWork) {
+  pendingWork.push(work)
+
+  if (pendingWorkHandle != null) {
+    clearTimeout(pendingWorkHandle)
+  }
+
+  pendingWorkHandle = setTimeout(() => {
+    const minimisedWork = minimisePendingWork()
+    pendingWork = []
+    for (const innerWork of minimisedWork) {
+      doSubscriptionWork(innerWork)
+    }
+  }, 5)
+}
+
+function minimisePendingWork(): Array<SubscriptionWork> {
   let newPendingWork: Array<SubscriptionWork> = []
   for (const workItem of pendingWork) {
     const latestWorkItem = newPendingWork[newPendingWork.length - 1]
@@ -161,7 +178,7 @@ function minimisePendingWork(): void {
       newPendingWork.push(workItem)
     }
   }
-  pendingWork = newPendingWork
+  return newPendingWork
 }
 
 function doSubscriptionWork(work: SubscriptionWork) {
@@ -217,22 +234,6 @@ function doSubscriptionWork(work: SubscriptionWork) {
   }
 }
 
-const SUBSCRIPTION_POLLING_TIMEOUT = 100
-
-function runPendingSubscriptionChanges() {
-  minimisePendingWork()
-  for (const work of pendingWork) {
-    doSubscriptionWork(work)
-  }
-
-  pendingWork = []
-
-  // TODO should we still do it like this, or instead follow the pattern used by queueEvents?
-  setTimeout(runPendingSubscriptionChanges, SUBSCRIPTION_POLLING_TIMEOUT)
-}
-
-setTimeout(runPendingSubscriptionChanges, SUBSCRIPTION_POLLING_TIMEOUT)
-
 function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: string) {
   function isUtopiaDocument(document: vscode.TextDocument): boolean {
     return document.uri.scheme === projectID
@@ -243,13 +244,13 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
       if (isUtopiaDocument(event.document)) {
         const resource = event.document.uri
         const path = resource.path
-        pendingWork.push(didChangeTextChange(path, event))
+        pushWorkToQueue(didChangeTextChange(path, event))
       }
     }),
     vscode.workspace.onWillSaveTextDocument((event) => {
       if (isUtopiaDocument(event.document)) {
         const path = event.document.uri.path
-        pendingWork.push(willSaveText(path, event))
+        pushWorkToQueue(willSaveText(path, event))
         if (event.reason === vscode.TextDocumentSaveReason.Manual) {
           const formattedCode = applyPrettier(event.document.getText(), false).formatted
           event.waitUntil(Promise.resolve([new vscode.TextEdit(entireDocRange(), formattedCode)]))
@@ -259,13 +260,13 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
     vscode.workspace.onDidCloseTextDocument((document) => {
       if (isUtopiaDocument(document)) {
         const path = document.uri.path
-        pendingWork.push(didClose(path))
+        pushWorkToQueue(didClose(path))
       }
     }),
     vscode.workspace.onDidOpenTextDocument((document) => {
       if (isUtopiaDocument(document)) {
         const path = document.uri.path
-        pendingWork.push(updateDirtyContentChange(path, document.uri))
+        pushWorkToQueue(updateDirtyContentChange(path, document.uri))
       }
     }),
   )
@@ -316,6 +317,92 @@ function sendMessageToUtopia(message: FromVSCodeToUtopiaMessage): void {
   vscode.commands.executeCommand('utopia.toUtopiaMessage', message)
 }
 
+function handleFromUtopiaToVSCodeMessage(
+  message: FromUtopiaToVSCodeMessage,
+  workspaceRootUri: vscode.Uri,
+  utopiaFS: UtopiaFSExtension,
+) {
+  switch (message.type) {
+    case 'INIT_PROJECT':
+      const { projectContents, openFilePath } = message
+      for (const projectFile of projectContents) {
+        utopiaFS.writeProjectFile(projectFile)
+        if (projectFile.type === 'PROJECT_TEXT_FILE' && projectFile.unsavedContent != null) {
+          updateDirtyContent(vscode.Uri.joinPath(workspaceRootUri, projectFile.filePath))
+        }
+      }
+      if (openFilePath != null) {
+        openFile(vscode.Uri.joinPath(workspaceRootUri, openFilePath))
+      } else {
+        sendMessageToUtopia(clearLoadingScreen())
+      }
+
+      sendMessageToUtopia(vsCodeReady()) // FIXME do we need both?
+      sendFullConfigToUtopia()
+      sendMessageToUtopia(vsCodeBridgeReady())
+      break
+    case 'WRITE_PROJECT_FILE':
+      const { projectFile } = message
+      utopiaFS.writeProjectFile(projectFile)
+      if (projectFile.type === 'PROJECT_TEXT_FILE') {
+        const fileUri = vscode.Uri.joinPath(workspaceRootUri, projectFile.filePath)
+        if (projectFile.unsavedContent == null) {
+          clearDirtyFlags(fileUri)
+        } else {
+          updateDirtyContent(fileUri)
+        }
+      }
+      break
+    case 'DELETE_PATH':
+      utopiaFS.silentDelete(message.fullPath, { recursive: message.recursive })
+      break
+    case 'ENSURE_DIRECTORY_EXISTS':
+      utopiaFS.ensureDirectoryExists(message.fullPath)
+      break
+    case 'OPEN_FILE':
+      if (message.bounds != null) {
+        revealRangeIfPossible(workspaceRootUri, {
+          ...message.bounds,
+          filePath: message.filePath,
+        })
+      } else {
+        openFile(vscode.Uri.joinPath(workspaceRootUri, message.filePath))
+      }
+      break
+    case 'UPDATE_DECORATIONS':
+      currentDecorations = message.decorations
+      updateDecorations(currentDecorations)
+      break
+    case 'SELECTED_ELEMENT_CHANGED':
+      const followSelectionEnabled = getFollowSelectionEnabledConfig()
+      const shouldFollowSelection =
+        followSelectionEnabled &&
+        (shouldFollowSelectionWithActiveFile() || message.forceNavigation === 'force-navigation')
+      if (shouldFollowSelection) {
+        currentSelection = message.boundsInFile
+        revealRangeIfPossible(workspaceRootUri, message.boundsInFile)
+      }
+      break
+    case 'GET_UTOPIA_VSCODE_CONFIG':
+      sendFullConfigToUtopia()
+      break
+    case 'SET_FOLLOW_SELECTION_CONFIG':
+      vscode.workspace
+        .getConfiguration()
+        .update(FollowSelectionConfigKey, message.enabled, vscode.ConfigurationTarget.Workspace)
+      break
+    case 'SET_VSCODE_THEME':
+      vscode.workspace.getConfiguration().update('workbench.colorTheme', message.theme, true)
+      break
+    case 'UTOPIA_READY':
+      sendMessageToUtopia(vsCodeReady())
+      break
+    default:
+      const _exhaustiveCheck: never = message
+      console.error(`Unhandled message type ${JSON.stringify(message)}`)
+  }
+}
+
 function initMessaging(
   context: vscode.ExtensionContext,
   workspaceRootUri: vscode.Uri,
@@ -324,92 +411,8 @@ function initMessaging(
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'utopia.toVSCodeMessage',
-      (message: FromUtopiaToVSCodeMessage) => {
-        switch (message.type) {
-          case 'INIT_PROJECT':
-            const { projectContents, openFilePath } = message
-            for (const projectFile of projectContents) {
-              utopiaFS.writeProjectFile(projectFile)
-              if (projectFile.type === 'PROJECT_TEXT_FILE' && projectFile.unsavedContent != null) {
-                updateDirtyContent(vscode.Uri.joinPath(workspaceRootUri, projectFile.filePath))
-              }
-            }
-            if (openFilePath != null) {
-              openFile(vscode.Uri.joinPath(workspaceRootUri, openFilePath))
-            } else {
-              sendMessageToUtopia(clearLoadingScreen())
-            }
-
-            sendMessageToUtopia(vsCodeReady()) // FIXME do we need both?
-            sendFullConfigToUtopia()
-            sendMessageToUtopia(vsCodeBridgeReady())
-            break
-          case 'WRITE_PROJECT_FILE':
-            const { projectFile } = message
-            utopiaFS.writeProjectFile(projectFile)
-            if (projectFile.type === 'PROJECT_TEXT_FILE') {
-              const fileUri = vscode.Uri.joinPath(workspaceRootUri, projectFile.filePath)
-              if (projectFile.unsavedContent == null) {
-                clearDirtyFlags(fileUri)
-              } else {
-                updateDirtyContent(fileUri)
-              }
-            }
-            break
-          case 'DELETE_PATH':
-            utopiaFS.silentDelete(message.fullPath, { recursive: message.recursive })
-            break
-          case 'ENSURE_DIRECTORY_EXISTS':
-            utopiaFS.ensureDirectoryExists(message.fullPath)
-            break
-          case 'OPEN_FILE':
-            if (message.bounds != null) {
-              revealRangeIfPossible(workspaceRootUri, {
-                ...message.bounds,
-                filePath: message.filePath,
-              })
-            } else {
-              openFile(vscode.Uri.joinPath(workspaceRootUri, message.filePath))
-            }
-            break
-          case 'UPDATE_DECORATIONS':
-            currentDecorations = message.decorations
-            updateDecorations(currentDecorations)
-            break
-          case 'SELECTED_ELEMENT_CHANGED':
-            const followSelectionEnabled = getFollowSelectionEnabledConfig()
-            const shouldFollowSelection =
-              followSelectionEnabled &&
-              (shouldFollowSelectionWithActiveFile() ||
-                message.forceNavigation === 'force-navigation')
-            if (shouldFollowSelection) {
-              currentSelection = message.boundsInFile
-              revealRangeIfPossible(workspaceRootUri, message.boundsInFile)
-            }
-            break
-          case 'GET_UTOPIA_VSCODE_CONFIG':
-            sendFullConfigToUtopia()
-            break
-          case 'SET_FOLLOW_SELECTION_CONFIG':
-            vscode.workspace
-              .getConfiguration()
-              .update(
-                FollowSelectionConfigKey,
-                message.enabled,
-                vscode.ConfigurationTarget.Workspace,
-              )
-            break
-          case 'SET_VSCODE_THEME':
-            vscode.workspace.getConfiguration().update('workbench.colorTheme', message.theme, true)
-            break
-          case 'UTOPIA_READY':
-            sendMessageToUtopia(vsCodeReady())
-            break
-          default:
-            const _exhaustiveCheck: never = message
-            console.error(`Unhandled message type ${JSON.stringify(message)}`)
-        }
-      },
+      (message: FromUtopiaToVSCodeMessage) =>
+        handleFromUtopiaToVSCodeMessage(message, workspaceRootUri, utopiaFS),
     ),
   )
 
