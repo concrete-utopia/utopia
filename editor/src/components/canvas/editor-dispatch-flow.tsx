@@ -1,12 +1,12 @@
-import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import type { EditorDispatch } from '../editor/action-types'
-import { saveDOMReport } from '../editor/actions/action-creators'
+import { saveDOMReport, updateMetadataInEditorState } from '../editor/actions/action-creators'
 import type { DispatchResult } from '../editor/store/dispatch'
 import { editorDispatchActionRunner } from '../editor/store/dispatch'
 import type { EditorStoreFull, ElementsToRerender } from '../editor/store/editor-state'
+import { collectMetadata } from './dom-sampler'
 import type { DomWalkerMutableStateData } from './dom-walker'
-import { runDomWalker } from './dom-walker'
-import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
+import { resubscribeObservers, runDomWalker } from './dom-walker'
+import { ElementsToRerenderGLOBAL, type UiJsxCanvasContextData } from './ui-jsx-canvas'
 
 export function carryDispatchResultFields(
   firstDispatchResult: DispatchResult,
@@ -61,4 +61,38 @@ export function runDomWalkerAndSaveResults(
     domWalkerResult.reconstructedMetadata,
   )
   return dispatchResultWithMetadata
+}
+
+export function runDomCollector(
+  boundDispatch: EditorDispatch,
+  storedState: EditorStoreFull,
+  domWalkerMutableState: {
+    mutationObserver: MutationObserver
+    resizeObserver: ResizeObserver
+  },
+  spyCollector: UiJsxCanvasContextData,
+) {
+  const metadataResult = collectMetadata(ElementsToRerenderGLOBAL.current, {
+    scale: storedState.patchedEditor.canvas.scale,
+    selectedViews: storedState.patchedEditor.selectedViews,
+    metadataToUpdate: storedState.elementMetadata,
+    spyCollector: spyCollector,
+  })
+
+  const storedStateWithNewMetadata: EditorStoreFull = {
+    ...storedState,
+    elementMetadata: metadataResult.metadata,
+  }
+
+  const newFullStore = editorDispatchActionRunner(
+    boundDispatch,
+    [updateMetadataInEditorState(metadataResult.metadata, metadataResult.tree)],
+    storedStateWithNewMetadata,
+    spyCollector,
+    {},
+  )
+
+  resubscribeObservers(domWalkerMutableState)
+
+  return newFullStore
 }

@@ -117,7 +117,10 @@ import {
   resetSelectorTimings,
 } from '../components/editor/store/store-hook-performance-logging'
 import { createPerformanceMeasure } from '../components/editor/store/editor-dispatch-performance-logging'
-import { runDomWalkerAndSaveResults } from '../components/canvas/editor-dispatch-flow'
+import {
+  runDomCollector,
+  runDomWalkerAndSaveResults,
+} from '../components/canvas/editor-dispatch-flow'
 import { simpleStringifyActions } from '../components/editor/actions/action-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from '../components/editor/store/remix-derived-data'
 import { emptyProjectServerState } from '../components/editor/store/project-server-state'
@@ -490,121 +493,18 @@ export class Editor {
 
       // run the dom-walker
       if (runDomWalker) {
-        const metadataResult = collectMetadata(ElementsToRerenderGLOBAL.current, {
-          scale: this.storedState.patchedEditor.canvas.scale,
-          selectedViews: this.storedState.patchedEditor.selectedViews,
-          metadataToUpdate: this.storedState.elementMetadata,
-          spyCollector: this.spyCollector,
-        })
-
-        this.storedState.elementMetadata = metadataResult.metadata
-
-        const metadataUpdateDispatchResult = editorDispatchActionRunner(
+        const metadataUpdateDispatchResult = runDomCollector(
           this.boundDispatch,
-          [EditorActions.updateMetadataInEditorState(metadataResult.metadata, metadataResult.tree)],
           this.storedState,
+          this.domWalkerMutableState,
           this.spyCollector,
-          {},
         )
 
-        if (metadataUpdateDispatchResult != null) {
-          this.storedState = metadataUpdateDispatchResult
-          entireUpdateFinished = Promise.all([
-            entireUpdateFinished,
-            metadataUpdateDispatchResult.entireUpdateFinished,
-          ])
-        }
-
-        resubscribeObservers(this.domWalkerMutableState)
-
-        // const domWalkerDispatchResult = runDomWalkerAndSaveResults(
-        //   this.boundDispatch,
-        //   this.domWalkerMutableState,
-        //   this.storedState,
-        //   this.spyCollector,
-        //   ElementsToRerenderGLOBAL.current,
-        // )
-
-        // if (metadataUpdateDispatchResult != null) {
-        //   const missingFromNewMetadata = Object.keys(
-        //     metadataUpdateDispatchResult.patchedEditor.jsxMetadata,
-        //   ).filter((keyInOldMetadata) => !(keyInOldMetadata in this.storedState.elementMetadata))
-        //   if (missingFromNewMetadata.length > 0) {
-        //     console.error(
-        //       'Missing from new metadata:',
-        //       missingFromNewMetadata.map((path) => ({
-        //         path: EP.humanReadableDebugPath(EP.fromString(path)),
-        //         old: metadataUpdateDispatchResult.patchedEditor.jsxMetadata[path].element,
-        //       })),
-        //     )
-        //   }
-
-        //   const globalFramesDontMatch = Object.keys(this.storedState.elementMetadata).filter(
-        //     (elementPath) => {
-        //       const newFrame = this.storedState.elementMetadata[elementPath].globalFrame
-        //       const oldFrame =
-        //         metadataUpdateDispatchResult.patchedEditor.jsxMetadata[elementPath]?.globalFrame
-        //       return !shallowEqual(newFrame, oldFrame)
-        //     },
-        //   )
-        //   if (globalFramesDontMatch.length > 0) {
-        //     console.error(
-        //       'Global frames dont match:',
-        //       globalFramesDontMatch.map((path) => ({
-        //         path: EP.humanReadableDebugPath(EP.fromString(path)),
-        //         metadata: metadataUpdateDispatchResult.patchedEditor.jsxMetadata[path],
-        //         new: this.storedState.elementMetadata[path]?.globalFrame,
-        //         old: metadataUpdateDispatchResult.patchedEditor.jsxMetadata[path]?.globalFrame,
-        //       })),
-        //     )
-        //   }
-
-        //   const specialSizeMeasurementsDontMatch = mapDropNulls((elementPath) => {
-        //     const newFrame = omitWithPredicate(
-        //       this.storedState.elementMetadata[elementPath].specialSizeMeasurements,
-        //       (key) => key === 'closestOffsetParentPath',
-        //     )
-        //     const oldFrame = omitWithPredicate(
-        //       metadataUpdateDispatchResult.patchedEditor.jsxMetadata[elementPath]
-        //         ?.specialSizeMeasurements,
-        //       (key) => key === 'closestOffsetParentPath',
-        //     )
-        //     const diffResult = diff(oldFrame, newFrame)
-        //     if (Object.keys(diffResult).length === 0) {
-        //       return null
-        //     } else {
-        //       return {
-        //         path: EP.humanReadableDebugPath(EP.fromString(elementPath)),
-        //         diff: diffResult,
-        //         original: metadataUpdateDispatchResult.patchedEditor.jsxMetadata[elementPath],
-        //         new: this.storedState.elementMetadata[elementPath],
-        //       }
-        //     }
-        //   }, Object.keys(this.storedState.elementMetadata))
-
-        //   if (specialSizeMeasurementsDontMatch.length > 0) {
-        //     console.error('Special size measurements dont match:', specialSizeMeasurementsDontMatch)
-        //   }
-
-        //   // const localFramesDontMatch = Object.keys(this.storedState.elementMetadata).filter(
-        //   //   (elementPath) => {
-        //   //     const newFrame = this.storedState.elementMetadata[elementPath].localFrame
-        //   //     const oldFrame =
-        //   //       domWalkerDispatchResult.patchedEditor.jsxMetadata[elementPath]?.localFrame
-        //   //     return !shallowEqual(newFrame, oldFrame)
-        //   //   },
-        //   // )
-        //   // if (localFramesDontMatch.length > 0) {
-        //   //   console.error(
-        //   //     'Local frames dont match:',
-        //   //     localFramesDontMatch.map((path) => ({
-        //   //       path: path,
-        //   //       new: this.storedState.elementMetadata[path]?.localFrame,
-        //   //       old: domWalkerDispatchResult.patchedEditor.jsxMetadata[path]?.localFrame,
-        //   //     })),
-        //   //   )
-        //   // }
-        // }
+        this.storedState = metadataUpdateDispatchResult
+        entireUpdateFinished = Promise.all([
+          entireUpdateFinished,
+          metadataUpdateDispatchResult.entireUpdateFinished,
+        ])
       }
 
       // true up groups if needed
