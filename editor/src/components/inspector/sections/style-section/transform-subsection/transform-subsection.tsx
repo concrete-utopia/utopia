@@ -315,7 +315,7 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
     <PropertyRow
       key={props.index}
       style={{
-        gridTemplateColumns: '12px 1fr 46px 22px',
+        gridTemplateColumns: '12px 90px 1fr 22px',
         gridColumnGap: 8,
       }}
     >
@@ -340,6 +340,7 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
           onSubmitValue={onTransformTypeSubmitValue}
           controlStatus={props.controlStatus}
           controlStyles={props.controlStyles}
+          style={{ flex: 1 }}
         />
       </FlexRow>
       <NumberInput
@@ -444,7 +445,7 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
     <PropertyRow
       key={props.index}
       style={{
-        gridTemplateColumns: '12px 1fr 46px 46px 22px',
+        gridTemplateColumns: '12px 90px 1fr 1fr 22px',
         gridColumnGap: 8,
       }}
     >
@@ -469,6 +470,7 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
           onSubmitValue={onTransformTypeSubmitValue}
           controlStatus={props.controlStatus}
           controlStyles={props.controlStyles}
+          style={{ flex: 1 }}
         />
       </FlexRow>
       <NumberInput
