@@ -347,6 +347,7 @@ import type {
   ReplaceElementInScope,
   ReplaceJSXElement,
   ToggleDataCanCondense,
+  SetErrorBoundaryHandling,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -1040,6 +1041,7 @@ export function restoreEditorState(
     forking: currentEditor.forking,
     collaborators: currentEditor.collaborators,
     sharingDialogOpen: currentEditor.sharingDialogOpen,
+    editorRemixConfig: currentEditor.editorRemixConfig,
   }
 }
 
@@ -6106,6 +6108,18 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       sharingDialogOpen: action.open,
+    }
+  },
+  SET_ERROR_BOUNDARY_HANDLING: (
+    action: SetErrorBoundaryHandling,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      editorRemixConfig: {
+        ...editor.editorRemixConfig,
+        errorBoundaryHandling: action.errorBoundaryHandling,
+      },
     }
   },
 }

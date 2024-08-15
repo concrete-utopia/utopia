@@ -27,6 +27,8 @@ import {
 import type { CurriedUtopiaRequireFn, CurriedResolveFn } from '../../custom-code/code-file'
 import { memoize } from '../../../core/shared/memoize'
 import { shallowEqual } from '../../../core/shared/equality-utils'
+import { evaluator } from '../../../core/es-modules/evaluator/evaluator'
+import type { EditorRemixConfig } from './editor-state'
 import type { Either } from '../../../core/shared/either'
 import { defaultEither, foldEither, left, mapEither, right } from '../../../core/shared/either'
 import type { ArbitraryJSBlock } from '../../../core/shared/element-template'
@@ -118,6 +120,7 @@ export function getDefaultedRemixRootDir(
 // Important Note: When updating the params here, you must evaluate whether the change should
 // have an effect on the memoization, and if so update paramsEqualityFn below
 export function createRemixDerivedData(
+  remixConfig: EditorRemixConfig,
   projectContents: ProjectContentTreeRoot,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
@@ -147,6 +150,7 @@ export function createRemixDerivedData(
       curriedResolveFn,
       projectContents,
       CreateRemixDerivedDataRefsGLOBAL.routeModulesCache.current,
+      remixConfig,
     )
 
     if (routesAndModulesFromManifestResult == null) {

@@ -1383,6 +1383,12 @@ export type TrueUpTarget =
   | TrueUpChildrenOfGroupChanged
   | TrueUpHuggingElement
 
+export type ErrorBoundaryHandling = 'use-error-boundaries' | 'ignore-error-boundaries'
+
+export interface EditorRemixConfig {
+  errorBoundaryHandling: ErrorBoundaryHandling
+}
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -1466,6 +1472,7 @@ export interface EditorState {
   forking: boolean
   collaborators: Collaborator[]
   sharingDialogOpen: boolean
+  editorRemixConfig: EditorRemixConfig
 }
 
 export function editorState(
@@ -1550,6 +1557,7 @@ export function editorState(
   forking: boolean,
   collaborators: Collaborator[],
   sharingDialogOpen: boolean,
+  remixConfig: EditorRemixConfig,
 ): EditorState {
   return {
     id: id,
@@ -1633,6 +1641,7 @@ export function editorState(
     forking: forking,
     collaborators: collaborators,
     sharingDialogOpen: sharingDialogOpen,
+    editorRemixConfig: remixConfig,
   }
 }
 
@@ -2717,6 +2726,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     forking: false,
     collaborators: [],
     sharingDialogOpen: false,
+    editorRemixConfig: {
+      errorBoundaryHandling: 'ignore-error-boundaries',
+    },
   }
 }
 
@@ -2856,6 +2868,7 @@ export function deriveState(
   )
 
   const remixDerivedData = createRemixDerivedDataMemo(
+    editor.editorRemixConfig,
     editor.projectContents,
     editor.codeResultCache.curriedRequireFn,
     editor.codeResultCache.curriedResolveFn,
@@ -3084,6 +3097,9 @@ export function editorModelFromPersistentModel(
     forking: false,
     collaborators: [],
     sharingDialogOpen: false,
+    editorRemixConfig: {
+      errorBoundaryHandling: 'ignore-error-boundaries',
+    },
   }
   return editor
 }
