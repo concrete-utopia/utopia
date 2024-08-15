@@ -112,6 +112,7 @@ import {
   saveDOMReport,
   setPanelVisibility,
   switchEditorMode,
+  updateMetadataInEditorState,
   updateNodeModulesContents,
 } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
@@ -130,6 +131,7 @@ import type { DomWalkerMutableStateData } from './dom-walker'
 import {
   createDomWalkerMutableState,
   invalidateDomWalkerIfNecessary,
+  resubscribeObservers,
   runDomWalker,
 } from './dom-walker'
 import { flushSync } from 'react-dom'
@@ -154,6 +156,7 @@ import {
 } from '../editor/store/project-server-state'
 import { uniqBy } from '../../core/shared/array-utils'
 import { InitialOnlineState } from '../editor/online-status'
+import { collectMetadata } from './dom-sampler'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -419,24 +422,68 @@ export async function renderTestEditorWithModel(
 
     // run dom walker
 
-    {
-      const domWalkerResult = runDomWalker({
-        domWalkerMutableState: domWalkerMutableState,
-        selectedViews: workingEditorState.patchedEditor.selectedViews,
-        elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
-        scale: workingEditorState.patchedEditor.canvas.scale,
-        additionalElementsToUpdate:
-          workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-        rootMetadataInStateRef: {
-          current: workingEditorState.patchedEditor.domMetadata,
-        },
-      })
+    // {
+    //   console.log(
+    //     'calling run dom walker, the spy collector is:',
+    //     spyCollector.current.spyValues.variablesInScope,
+    //   )
+    //   const domWalkerResult = runDomWalker({
+    //     domWalkerMutableState: domWalkerMutableState,
+    //     selectedViews: workingEditorState.patchedEditor.selectedViews,
+    //     elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+    //     scale: workingEditorState.patchedEditor.canvas.scale,
+    //     additionalElementsToUpdate:
+    //       workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+    //     rootMetadataInStateRef: {
+    //       current: workingEditorState.patchedEditor.domMetadata,
+    //     },
+    //   })
 
-      if (domWalkerResult != null) {
-        const saveDomReportAction = saveDOMReport(
-          domWalkerResult.metadata,
-          domWalkerResult.cachedPaths,
-          domWalkerResult.invalidatedPaths,
+    //   if (domWalkerResult != null) {
+    //     const saveDomReportAction = saveDOMReport(
+    //       domWalkerResult.metadata,
+    //       domWalkerResult.cachedPaths,
+    //       domWalkerResult.invalidatedPaths,
+    //     )
+    //     recordedActions.push(saveDomReportAction)
+    //     console.log('my spy collector! my dune!', spyCollector.current.spyValues.variablesInScope)
+    //     const editorWithNewMetadata = editorDispatchActionRunner(
+    //       asyncTestDispatch,
+    //       [saveDomReportAction],
+    //       workingEditorState,
+    //       spyCollector,
+    //       domWalkerResult.reconstructedMetadata,
+    //     )
+    //     workingEditorState = carryDispatchResultFields(workingEditorState, editorWithNewMetadata)
+    //   }
+    // }
+
+    // run dom SAMPLER
+
+    {
+      resubscribeObservers(domWalkerMutableState)
+
+      const metadataResult = collectMetadata(
+        workingEditorState.patchedEditor.canvas.elementsToRerender,
+        {
+          scale: workingEditorState.patchedEditor.canvas.scale,
+          metadataToUpdate: workingEditorState.elementMetadata,
+          selectedViews: workingEditorState.patchedEditor.selectedViews,
+          spyCollector: spyCollector,
+        },
+      )
+
+      // console.log(
+      //   'collect metadata called, spyCollector.current.spyValues.variablesInScope:',
+      //   spyCollector.current.spyValues.variablesInScope,
+      // )
+
+      workingEditorState.elementMetadata = metadataResult.metadata
+
+      if (metadataResult != null) {
+        const saveDomReportAction = updateMetadataInEditorState(
+          metadataResult.metadata,
+          metadataResult.tree,
         )
         recordedActions.push(saveDomReportAction)
         const editorWithNewMetadata = editorDispatchActionRunner(
@@ -444,7 +491,7 @@ export async function renderTestEditorWithModel(
           [saveDomReportAction],
           workingEditorState,
           spyCollector,
-          domWalkerResult.reconstructedMetadata,
+          {}, // TODO delete before merge
         )
         workingEditorState = carryDispatchResultFields(workingEditorState, editorWithNewMetadata)
       }
@@ -486,24 +533,59 @@ export async function renderTestEditorWithModel(
         }
 
         // re-run the dom-walker
-        {
-          const domWalkerResult = runDomWalker({
-            domWalkerMutableState: domWalkerMutableState,
-            selectedViews: workingEditorState.patchedEditor.selectedViews,
-            elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
-            scale: workingEditorState.patchedEditor.canvas.scale,
-            additionalElementsToUpdate:
-              workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-            rootMetadataInStateRef: {
-              current: workingEditorState.patchedEditor.domMetadata,
-            },
-          })
+        // {
+        //   const domWalkerResult = runDomWalker({
+        //     domWalkerMutableState: domWalkerMutableState,
+        //     selectedViews: workingEditorState.patchedEditor.selectedViews,
+        //     elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+        //     scale: workingEditorState.patchedEditor.canvas.scale,
+        //     additionalElementsToUpdate:
+        //       workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+        //     rootMetadataInStateRef: {
+        //       current: workingEditorState.patchedEditor.domMetadata,
+        //     },
+        //   })
 
-          if (domWalkerResult != null) {
-            const saveDomReportAction = saveDOMReport(
-              domWalkerResult.metadata,
-              domWalkerResult.cachedPaths,
-              domWalkerResult.invalidatedPaths,
+        //   if (domWalkerResult != null) {
+        //     const saveDomReportAction = saveDOMReport(
+        //       domWalkerResult.metadata,
+        //       domWalkerResult.cachedPaths,
+        //       domWalkerResult.invalidatedPaths,
+        //     )
+        //     recordedActions.push(saveDomReportAction)
+        //     const editorWithNewMetadata = editorDispatchActionRunner(
+        //       asyncTestDispatch,
+        //       [saveDomReportAction],
+        //       workingEditorState,
+        //       spyCollector,
+        //       domWalkerResult.reconstructedMetadata,
+        //     )
+        //     workingEditorState = carryDispatchResultFields(
+        //       workingEditorState,
+        //       editorWithNewMetadata,
+        //     )
+        //   }
+        // }
+
+        // re-run the dom SAMPLER
+
+        {
+          resubscribeObservers(domWalkerMutableState)
+
+          const metadataResult = collectMetadata(
+            workingEditorState.patchedEditor.canvas.elementsToRerender,
+            {
+              scale: workingEditorState.patchedEditor.canvas.scale,
+              metadataToUpdate: workingEditorState.elementMetadata,
+              selectedViews: workingEditorState.patchedEditor.selectedViews,
+              spyCollector: spyCollector,
+            },
+          )
+
+          if (metadataResult != null) {
+            const saveDomReportAction = updateMetadataInEditorState(
+              metadataResult.metadata,
+              metadataResult.tree,
             )
             recordedActions.push(saveDomReportAction)
             const editorWithNewMetadata = editorDispatchActionRunner(
@@ -511,7 +593,7 @@ export async function renderTestEditorWithModel(
               [saveDomReportAction],
               workingEditorState,
               spyCollector,
-              domWalkerResult.reconstructedMetadata,
+              {},
             )
             workingEditorState = carryDispatchResultFields(
               workingEditorState,
