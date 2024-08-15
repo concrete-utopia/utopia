@@ -191,6 +191,7 @@ import type { CommentFilterMode } from '../../inspector/sections/comment-section
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { OnlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
+import type { FancyError } from 'src/core/shared/code-exec-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2429,7 +2430,7 @@ export interface DerivedState {
   elementWarnings: { [key: string]: ElementWarnings }
   projectContentsChecksums: FileChecksumsWithFile
   branchOriginContentsChecksums: FileChecksumsWithFile | null
-  remixData: RemixDerivedData | null
+  remixData: Either<FancyError, RemixDerivedData | null>
   filePathMappings: FilePathMappings
 }
 
@@ -2440,7 +2441,7 @@ function emptyDerivedState(editor: EditorState): DerivedState {
     elementWarnings: {},
     projectContentsChecksums: {},
     branchOriginContentsChecksums: {},
-    remixData: null,
+    remixData: right(null),
     filePathMappings: [],
   }
 }

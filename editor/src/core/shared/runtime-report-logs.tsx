@@ -21,6 +21,8 @@ import type { ErrorMessage } from './error-messages'
 import { fastForEach } from './utils'
 import type { EditorAction } from '../../components/editor/action-types'
 import * as EditorActions from '../../components/editor/actions/action-creators'
+import { REMIX_CONFIG_JS_PATH } from '../../components/editor/store/remix-derived-data'
+import { foldEither } from './either'
 
 const EmptyArray: Array<RuntimeErrorInfo> = []
 
@@ -36,7 +38,28 @@ export function useUpdateOnRuntimeErrors(
 }
 
 export function useReadOnlyRuntimeErrors(): Array<RuntimeErrorInfo> {
-  return usePubSubAtomReadOnly(runtimeErrorsAtom, AlwaysTrue)
+  const regularRuntimeErrors = usePubSubAtomReadOnly(runtimeErrorsAtom, AlwaysTrue)
+  const remixData = useEditorState(
+    Substores.derived,
+    (store) => store.derived.remixData,
+    'useReadOnlyRuntimeErrors remixData',
+  )
+  const remixConfigErrors = React.useMemo(() => {
+    return foldEither(
+      (remixError) => {
+        return [
+          {
+            editedFile: REMIX_CONFIG_JS_PATH,
+            error: remixError,
+            errorInfo: null,
+          },
+        ]
+      },
+      () => [],
+      remixData,
+    )
+  }, [remixData])
+  return [...regularRuntimeErrors, ...remixConfigErrors]
 }
 
 export function useWriteOnlyRuntimeErrors(): {
