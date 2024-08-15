@@ -108,7 +108,7 @@ export const SolidBackgroundLayer = React.memo<SolidBackgroundLayerProps>((props
         tall
         alignItems='start'
         padded={true}
-        variant='<-auto-><-auto->|70px|<----1fr---->|'
+        variant='<-auto-><-auto->|90px|<----1fr---->|'
       >
         <CheckboxInput
           onChange={toggleCheckbox}

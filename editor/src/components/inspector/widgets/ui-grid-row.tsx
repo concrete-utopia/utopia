@@ -30,6 +30,10 @@ const gridTemplates = {
     gridColumnGap: 4,
     gridTemplateColumns: 'auto auto 70px 1fr',
   },
+  '<-auto-><-auto->|90px|<----1fr---->|': {
+    gridColumnGap: 4,
+    gridTemplateColumns: 'auto auto 90px 1fr',
+  },
   '<-------1fr------>|----80px----|': {
     gridTemplateColumns: '1fr 80px',
     gridColumnGap: 4,
