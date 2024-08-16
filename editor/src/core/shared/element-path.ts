@@ -1206,16 +1206,27 @@ export function getFirstPath(pathArray: Array<ElementPath>): ElementPath {
 
 export function humanReadableDebugPath(path: ElementPath): string {
   const stringifiedPath = path.parts
-    .map(elementPathPartToHumanReadableDebugString)
+    .map((part, index) =>
+      elementPathPartToHumanReadableDebugString(part, index === path.parts.length - 1),
+    )
     .join(SceneSeparator)
   return stringifiedPath
 }
 
-function elementPathPartToHumanReadableDebugString(path: ElementPathPart): string {
+function elementPathPartToHumanReadableDebugString(
+  path: ElementPathPart,
+  lastPart: boolean,
+): string {
   let result: string = ''
   const elementsLength = path.length
   fastForEach(path, (elem, index) => {
-    result += elem.slice(0, 4)
+    const lastElem = index === elementsLength - 1
+    if (lastPart && lastElem) {
+      result += elem
+    } else {
+      result += elem.slice(0, 4)
+      result += extractIndexFromIndexedUid(elem) ?? ''
+    }
     if (index < elementsLength - 1) {
       result += ElementSeparator
     }
