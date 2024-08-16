@@ -43,7 +43,6 @@ export const rootLoader = loader
 export const headers: HeadersFunction = () => ({
   'cache-control': 'no-cache',
   'cross-origin-embedder-policy': 'require-corp',
-  'cross-origin-resource-policy': 'cross-origin',
 })
 
 export default function App() {
