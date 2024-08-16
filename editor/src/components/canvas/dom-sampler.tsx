@@ -119,7 +119,7 @@ function collectMetadataForElementPath(
 
         if (computedStyle != null) {
           metadata.computedStyle = computedStyle.computedStyle
-          metadata.attributeMetadata = computedStyle.attributeMetadata
+          metadata.attributeMetadatada = computedStyle.attributeMetadatada
         }
 
         return metadata
@@ -232,7 +232,6 @@ function collectMetadataForPaths(
         ...domMetadata,
         element: jsxElement,
         elementPath: spyElem.elementPath,
-        attributeMetadatada: spyElem.attributeMetadatada,
         componentInstance: spyElem.componentInstance,
         isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
         label: spyElem.label,
@@ -398,7 +397,7 @@ function getComputedStyleForElement(element: HTMLElement): ComputedStyleMetadata
 
   return {
     computedStyle: computedStyle,
-    attributeMetadata: attributeMetadata,
+    attributeMetadatada: attributeMetadata,
   }
 }
 

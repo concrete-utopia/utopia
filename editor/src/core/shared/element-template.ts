@@ -2531,12 +2531,12 @@ export interface DomElementMetadata {
   textContent: string | null
 
   computedStyle: ComputedStyle | null
-  attributeMetadata: StyleAttributeMetadata | null
+  attributeMetadatada: StyleAttributeMetadata | null // sic fix typo
 }
 
 export interface ComputedStyleMetadata {
   computedStyle: ComputedStyle
-  attributeMetadata: StyleAttributeMetadata
+  attributeMetadatada: StyleAttributeMetadata
 }
 
 export function elementInstanceMetadata(
@@ -2594,7 +2594,7 @@ export function domElementMetadata(
     textContent: textContent,
 
     computedStyle: null,
-    attributeMetadata: null,
+    attributeMetadatada: null,
   }
 }
 
@@ -2604,7 +2604,7 @@ export function computedStyleMetadata(
 ): ComputedStyleMetadata {
   return {
     computedStyle: computedStyle,
-    attributeMetadata: attributeMetadata,
+    attributeMetadatada: attributeMetadata,
   }
 }
 
