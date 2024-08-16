@@ -15,7 +15,7 @@ import {
 import { replaceAll } from './string-utils'
 import type { NonEmptyArray } from './array-utils'
 import { last, dropLastN, drop, dropLast } from './array-utils'
-import { forceNotNull } from './optional-utils'
+import { forceNotNull, optionalMap } from './optional-utils'
 import invariant from '../../third-party/remix/invariant'
 
 // KILLME, except in 28 places
@@ -1221,11 +1221,11 @@ function elementPathPartToHumanReadableDebugString(
   const elementsLength = path.length
   fastForEach(path, (elem, index) => {
     const lastElem = index === elementsLength - 1
-    if (lastPart && lastElem) {
+    if (elem.length < 30 || (lastPart && lastElem)) {
       result += elem
     } else {
       result += elem.slice(0, 4)
-      result += extractIndexFromIndexedUid(elem) ?? ''
+      result += optionalMap((s) => `~~~${s}`, extractIndexFromIndexedUid(elem)) ?? ''
     }
     if (index < elementsLength - 1) {
       result += ElementSeparator
