@@ -1,5 +1,5 @@
 import React from 'react'
-import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
+import { UTOPIA_PATH_KEY, UTOPIA_STATIC_PATH_KEY } from '../../../core/model/utopia-constants'
 import { OutletPathContext } from './remix-utils'
 import * as EP from '../../../core/shared/element-path'
 
@@ -18,6 +18,7 @@ function Wrapper<P>({ Wrapped, originalProps }: WrapperProps<P>): JSX.Element {
 
   const propsWithPath = {
     [UTOPIA_PATH_KEY]: EP.toString(outletContext),
+    [UTOPIA_STATIC_PATH_KEY]: EP.toString(EP.dynamicPathToStaticPath(outletContext)),
     ...originalProps,
   }
   return <Wrapped {...propsWithPath} />
