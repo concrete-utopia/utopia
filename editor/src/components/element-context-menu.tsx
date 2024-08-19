@@ -50,6 +50,7 @@ import { pointsEqual } from '../core/shared/math-utils'
 import { useDispatch } from './editor/store/dispatch-context'
 import { useCreateCallbackToShowComponentPicker } from './navigator/navigator-item/component-picker-context-menu'
 import { navigatorTargetsSelector, useGetNavigatorTargets } from './navigator/navigator-utils'
+import { foldEither } from '../core/shared/either'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -192,7 +193,11 @@ function useCanvasContextMenuGetData(
       projectContents: store.editor.projectContents,
       filePathMappings: store.derived.filePathMappings,
       nodeModules: store.editor.nodeModules.files,
-      remixRoutingTable: store.derived.remixData?.routingTable ?? null,
+      remixRoutingTable: foldEither(
+        () => null,
+        (remixData) => remixData?.routingTable,
+        store.derived.remixData,
+      ),
       resolve: resolveFn,
       hiddenInstances: store.editor.hiddenInstances,
       scale: store.editor.canvas.scale,

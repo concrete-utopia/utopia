@@ -185,7 +185,10 @@ app.use('/v1/javascript/packager', proxy)
 app.use('/vscode', proxy)
 
 // other middlewares
-app.use(corsMiddleware)
+app.use((_req, res, next) => {
+  res.setHeader('cross-origin-resource-policy', 'cross-origin')
+  next()
+}, corsMiddleware)
 
 // static files
 app.use('/build', express.static('public/build', { immutable: true, maxAge: '1y' }))
