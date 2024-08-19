@@ -60,7 +60,7 @@ function collectMetadataForElementPath(
     const ep = EP.fromString(el.getAttribute(UTOPIA_PATH_KEY) ?? '')
     if (index === 0) {
       foundElementPathDepth = EP.depth(ep)
-      foundElementPathDepth = EP.fullDepth(ep)
+      foundElementPathFullDepth = EP.fullDepth(ep)
       closestMatches.push(el)
     } else {
       if (
@@ -71,20 +71,6 @@ function collectMetadataForElementPath(
       }
     }
   }
-
-  // console.log(
-  //   'foundElements',
-  //   EP.humanReadableDebugPath(path),
-  //   Array.from(foundElements).map((el) => ({
-  //     path: EP.humanReadableDebugPath(EP.fromString(el.getAttribute(UTOPIA_PATH_KEY) ?? '')),
-  //     element: el,
-  //   })),
-  //   'closestMatches',
-  //   closestMatches.map((el) => ({
-  //     path: EP.humanReadableDebugPath(EP.fromString(el.getAttribute(UTOPIA_PATH_KEY) ?? '')),
-  //     element: el,
-  //   })),
-  // )
 
   if (closestMatches.length == 0) {
     return null
