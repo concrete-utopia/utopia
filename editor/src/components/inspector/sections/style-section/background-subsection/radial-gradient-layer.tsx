@@ -107,7 +107,7 @@ export const RadialGradientBackgroundLayer = React.memo<RadialGradientBackground
             propsArray={[
               {
                 value: props.value.center.x.value,
-                scrubbable_innerlabel: 'x',
+                scrubbableInnerLabel: 'x',
                 onSubmitValue: gradientCenterXSubmitValue,
                 onTransientSubmitValue: gradientCenterXTransientSubmitValue,
                 controlStatus: props.controlStatus,
@@ -117,7 +117,7 @@ export const RadialGradientBackgroundLayer = React.memo<RadialGradientBackground
               },
               {
                 value: props.value.center.y.value,
-                scrubbable_innerlabel: 'y',
+                scrubbableInnerLabel: 'y',
                 onSubmitValue: gradientCenterYSubmitValue,
                 onTransientSubmitValue: gradientCenterYTransientSubmitValue,
                 controlStatus: props.controlStatus,

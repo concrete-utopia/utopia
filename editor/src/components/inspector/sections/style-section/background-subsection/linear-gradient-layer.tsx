@@ -129,7 +129,7 @@ export const LinearGradientBackgroundLayer = React.memo<LinearGradientBackground
             onSubmitValue={gradientAngleSubmitValue}
             onTransientSubmitValue={gradientAngleTransientSubmitValue}
             controlStatus={props.controlStatus}
-            scrubbable_innerlabel={<Icons.Degree color='on-highlight-secondary' />}
+            scrubbableInnerLabel={<Icons.Degree color='on-highlight-secondary' />}
             inputProps={{ onMouseDown: stopPropagation }}
             numberType='AnglePercent'
             defaultUnitToHide={null}

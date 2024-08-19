@@ -533,7 +533,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             {
               style: { width: '50%' },
               value: values.oneValue?.value,
-              scrubbable_innerlabel: labels?.oneValue ?? '↔',
+              scrubbableInnerLabel: labels?.oneValue ?? '↔',
               minimum: 0,
               onSubmitValue: onSubmitValueOne(false),
               onTransientSubmitValue: onSubmitValueOne(true),
@@ -564,7 +564,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             {
               style: { width: '48%' },
               value: values.twoValue.vertical?.value,
-              scrubbable_innerlabel: labels?.vertical ?? 'V',
+              scrubbableInnerLabel: labels?.vertical ?? 'V',
               minimum: 0,
               onSubmitValue: onSubmitValueVertical(false),
               onTransientSubmitValue: onSubmitValueVertical(true),
@@ -588,7 +588,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             {
               style: { width: '48%' },
               value: values.twoValue.horizontal?.value,
-              scrubbable_innerlabel: labels?.horizontal ?? 'H',
+              scrubbableInnerLabel: labels?.horizontal ?? 'H',
               minimum: 0,
               onSubmitValue: onSubmitValueHorizontal(false),
               onTransientSubmitValue: onSubmitValueHorizontal(true),
@@ -615,7 +615,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             T: {
               style: { width: '48%' },
               value: values.fourValue.top?.value,
-              scrubbable_innerlabel: labels?.top ?? 'T',
+              scrubbableInnerLabel: labels?.top ?? 'T',
               minimum: 0,
               onSubmitValue: onSubmitValueTop(false),
               onTransientSubmitValue: onSubmitValueTop(true),
@@ -633,7 +633,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             R: {
               style: { width: '48%' },
               value: values.fourValue.right?.value,
-              scrubbable_innerlabel: labels?.right ?? 'R',
+              scrubbableInnerLabel: labels?.right ?? 'R',
               minimum: 0,
               onSubmitValue: onSubmitValueRight(false),
               onTransientSubmitValue: onSubmitValueRight(true),
@@ -651,7 +651,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             L: {
               style: { width: '48%' },
               value: values.fourValue.left?.value,
-              scrubbable_innerlabel: labels?.left ?? 'L',
+              scrubbableInnerLabel: labels?.left ?? 'L',
               minimum: 0,
               onSubmitValue: onSubmitValueLeft(false),
               onTransientSubmitValue: onSubmitValueLeft(true),
@@ -669,7 +669,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
             B: {
               style: { width: '48%' },
               value: values.fourValue.bottom?.value,
-              scrubbable_innerlabel: labels?.bottom ?? 'B',
+              scrubbableInnerLabel: labels?.bottom ?? 'B',
               minimum: 0,
               onSubmitValue: onSubmitValueBottom(false),
               onTransientSubmitValue: onSubmitValueBottom(true),

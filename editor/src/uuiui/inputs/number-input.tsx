@@ -144,7 +144,7 @@ export interface AbstractNumberInputProps<T extends CSSNumber | number>
     BaseInputProps,
     InspectorControlProps {
   value: T | null | undefined
-  scrubbable_innerlabel?: React.ReactChild
+  scrubbableInnerLabel?: React.ReactChild
   labelBelowStyle?: React.CSSProperties
   invalid?: boolean
 }
@@ -168,7 +168,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     inputProps = {},
     id,
     className,
-    scrubbable_innerlabel,
+    scrubbableInnerLabel,
     labelInner,
     minimum: unscaledMinimum = -Infinity,
     maximum: unscaledMaximum = Infinity,
@@ -811,7 +811,7 @@ export const NumberInput = React.memo<NumberInputProps>(
               </div>
             </div>
           ) : null}
-          {scrubbable_innerlabel == null && controlStatus != 'off' ? null : (
+          {scrubbableInnerLabel == null && controlStatus != 'off' ? null : (
             <div
               data-testid={`${testId}-mouse-down-handler`}
               onMouseDown={onLabelMouseDown}
@@ -825,7 +825,7 @@ export const NumberInput = React.memo<NumberInputProps>(
                 width: 20,
               }}
             >
-              {scrubbable_innerlabel}
+              {scrubbableInnerLabel}
             </div>
           )}
           <InspectorInput

@@ -434,7 +434,7 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
         numberType={'LengthPercent'}
         defaultUnitToHide={'px'}
         stepSize={1}
-        scrubbable_innerlabel={props.label}
+        scrubbableInnerLabel={props.label}
       />
     </InspectorContextMenuWrapper>
   )

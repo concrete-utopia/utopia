@@ -700,7 +700,7 @@ export class ColorPickerInner extends React.Component<
               onForcedSubmitValue={this.onSubmitValueHue}
               minimum={0}
               maximum={360}
-              scrubbable_innerlabel='H'
+              scrubbableInnerLabel='H'
               defaultUnitToHide={null}
               incrementControls={false}
             />
@@ -715,7 +715,7 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={1}
               stepSize={0.01}
-              scrubbable_innerlabel='S'
+              scrubbableInnerLabel='S'
               defaultUnitToHide={null}
               incrementControls={false}
             />
@@ -730,7 +730,7 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={1}
               stepSize={0.01}
-              scrubbable_innerlabel='V'
+              scrubbableInnerLabel='V'
               defaultUnitToHide={null}
               incrementControls={false}
             />
@@ -745,7 +745,7 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={1}
               stepSize={0.01}
-              scrubbable_innerlabel='A'
+              scrubbableInnerLabel='A'
               defaultUnitToHide={null}
               incrementControls={false}
             />

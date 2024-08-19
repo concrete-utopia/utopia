@@ -223,7 +223,7 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
           propsArray={[
             {
               value: props.value.offsetX,
-              scrubbable_innerlabel: 'X',
+              scrubbableInnerLabel: 'X',
               labelBelowStyle: LabelBelowNumberTextStyles,
               onSubmitValue: offsetXSubmitValue,
               onTransientSubmitValue: offsetXTransientSubmitValue,
@@ -236,7 +236,7 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
             },
             {
               value: props.value.offsetY,
-              scrubbable_innerlabel: 'Y',
+              scrubbableInnerLabel: 'Y',
               labelBelowStyle: LabelBelowNumberTextStyles,
               onSubmitValue: offsetYSubmitValue,
               onTransientSubmitValue: offsetYTransientSubmitValue,
@@ -249,7 +249,7 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
             },
             {
               value: props.value.blurRadius.value,
-              scrubbable_innerlabel: 'B',
+              scrubbableInnerLabel: 'B',
               labelBelowStyle: LabelBelowNumberTextStyles,
               onSubmitValue: blurRadiusSubmitValue,
               onTransientSubmitValue: blurRadiusTransientSubmitValue,
@@ -262,7 +262,7 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
             },
             {
               value: props.value.spreadRadius.value,
-              scrubbable_innerlabel: 'S',
+              scrubbableInnerLabel: 'S',
               labelBelowStyle: LabelBelowNumberTextStyles,
               onSubmitValue: spreadRadiusSubmitValue,
               onTransientSubmitValue: spreadRadiusTransientSubmitValue,

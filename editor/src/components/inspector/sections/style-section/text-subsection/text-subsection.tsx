@@ -497,7 +497,7 @@ export const TextSubsection = React.memo(() => {
               onSubmitValue={wrappedLetterSpacingOnSubmitValue}
               onTransientSubmitValue={wrappedLetterSpacingOnTransientSubmitValue}
               controlStatus={letterSpacingMetadata.controlStatus}
-              scrubbable_innerlabel={<Icons.LetterSpacing color='on-highlight-secondary' />}
+              scrubbableInnerLabel={<Icons.LetterSpacing color='on-highlight-secondary' />}
               stepSize={0.01}
               numberType='Length'
               defaultUnitToHide={'px'}
@@ -521,7 +521,7 @@ export const TextSubsection = React.memo(() => {
               controlStatus={lineHeightMetadata.controlStatus}
               onSubmitValue={wrappedLineHeightOnSubmitValue}
               onTransientSubmitValue={wrappedLineHeightOnTransientSubmitValue}
-              scrubbable_innerlabel={<Icons.LineHeight color='on-highlight-secondary' />}
+              scrubbableInnerLabel={<Icons.LineHeight color='on-highlight-secondary' />}
               stepSize={0.01}
               numberType='Length'
               defaultUnitToHide={'em'}

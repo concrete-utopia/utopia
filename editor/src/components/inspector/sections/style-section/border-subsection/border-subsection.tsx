@@ -140,7 +140,7 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
           id='border-width'
           testId='border-width'
           value={borderWidth}
-          scrubbable_innerlabel='W'
+          scrubbableInnerLabel='W'
           labelBelowStyle={LabelBelowNumberTextStyles}
           minimum={0}
           onSubmitValue={borderWidthSubmitValue}
