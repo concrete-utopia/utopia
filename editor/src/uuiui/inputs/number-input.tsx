@@ -245,6 +245,9 @@ export const NumberInput = React.memo<NumberInputProps>(
     const pointerOriginRef = React.useRef<HTMLDivElement>(null)
 
     const accumulatedMouseDeltaX = React.useRef(0)
+    // This is here to alleviate a circular reference issue that I stumbled into with the callbacks,
+    // it means that the cleanup callback isn't dependent on the event listeners, which result in
+    // a break in the circle.
     const scrubbingCleanupCallbacks = React.useRef<Array<() => void>>([])
 
     const [valueChangedSinceFocus, setValueChangedSinceFocus] = React.useState<boolean>(false)
@@ -720,7 +723,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             }}
             width={34}
             height={33}
-            src={getPossiblyHashedURL(`/editor/cursors/cursor-moving-magic@2x.png`)}
+            src={getPossiblyHashedURL(`/editor/cursors/cursor-ew-resize@2x.png`)}
           />
 
           {scrubThresholdPassed.current ? accumulatedMouseDeltaX.current : '-'}
