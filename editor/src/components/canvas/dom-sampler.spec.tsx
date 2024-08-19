@@ -75,17 +75,17 @@ export var Playground = ({ style }) => {
       Array [
         "sb",
         "sb/pg-sc",
-        "sb/pg-sc/pg",
-        "sb/pg-sc/pg:aaa/bbb/266",
-        "sb/pg-sc/pg:aaa/bbb/6cc",
         "sb/pg-sc/pg:aaa",
+        "sb/pg-sc/pg",
         "sb/pg-sc/pg:aaa/bbb",
+        "sb/pg-sc/pg:aaa/bbb/266",
         "sb/pg-sc/pg:aaa/bbb/266/ccc~~~1",
-        "sb/pg-sc/pg:aaa/bbb/266/ccc~~~1/ddd",
         "sb/pg-sc/pg:aaa/bbb/266/ccc~~~2",
-        "sb/pg-sc/pg:aaa/bbb/266/ccc~~~2/ddd",
         "sb/pg-sc/pg:aaa/bbb/266/ccc~~~3",
+        "sb/pg-sc/pg:aaa/bbb/266/ccc~~~1/ddd",
+        "sb/pg-sc/pg:aaa/bbb/266/ccc~~~2/ddd",
         "sb/pg-sc/pg:aaa/bbb/266/ccc~~~3/ddd",
+        "sb/pg-sc/pg:aaa/bbb/6cc",
       ]
     `)
   })

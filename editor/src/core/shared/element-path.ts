@@ -1017,6 +1017,33 @@ export function pathUpToElementPath(
   return foundIndex === -1 ? null : elementPath(fullElementPath.slice(0, foundIndex + 1))
 }
 
+function elementPathUpToIndex(
+  path: ElementPath,
+  partsLength: number,
+  lastPartLength: number,
+): ElementPath {
+  const fullElementPath = path.parts
+  if (fullElementPath.length < partsLength) {
+    return path
+  }
+
+  return elementPath([
+    ...fullElementPath.slice(0, partsLength - 1),
+    fullElementPath[partsLength - 1].slice(0, lastPartLength),
+  ])
+}
+
+export function pathShortenedToOtherPath(
+  fullPath: ElementPath,
+  upToPath: ElementPath,
+): ElementPath {
+  return elementPathUpToIndex(
+    fullPath,
+    upToPath.parts.length,
+    upToPath.parts[upToPath.parts.length - 1].length,
+  )
+}
+
 export interface DropFirstPathElementResultType {
   newPath: ElementPath | null
   droppedPathElements: ElementPathPart | null

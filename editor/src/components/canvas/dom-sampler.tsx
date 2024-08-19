@@ -35,6 +35,7 @@ import {
   getAttributesComingFromStyleSheets,
 } from './dom-walker'
 import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
+import { DefaultMap } from 'mnemonist'
 
 function collectMetadataForElementPath(
   path: ElementPath,
@@ -42,110 +43,127 @@ function collectMetadataForElementPath(
   selectedViews: Array<ElementPath>,
   scale: number,
   containerRect: CanvasPoint,
-): { metadata: DomElementMetadata; foundValidDynamicPaths: Array<ElementPath> } | null {
+): Array<{ metadata: DomElementMetadata; foundValidDynamicPaths: Array<ElementPath> }> {
   if (EP.isStoryboardPath(path)) {
-    return { metadata: createFakeMetadataForCanvasRoot(path), foundValidDynamicPaths: [path] }
+    return [{ metadata: createFakeMetadataForCanvasRoot(path), foundValidDynamicPaths: [path] }]
   }
 
   const foundElements = document.querySelectorAll(
     `[${UTOPIA_STATIC_PATH_KEY}^="${EP.toString(path)}"]`,
   )
 
-  let foundElementPathDepth: number = 0
-  let foundElementPathFullDepth: number = 0
-  let closestMatches: Array<Element> = []
+  const elementsToCollectFor = new DefaultMap<
+    string,
+    {
+      closestMatches: Array<HTMLElement>
+      foundElementPathDepth: number
+      foundElementPathFullDepth: number
+    }
+  >(() => ({ closestMatches: [], foundElementPathDepth: 0, foundElementPathFullDepth: 0 }))
 
   for (let index = 0; index < foundElements.length; index++) {
     const el = foundElements[index]
+    if (!(el instanceof HTMLElement)) {
+      continue
+    }
+
     const ep = EP.fromString(el.getAttribute(UTOPIA_PATH_KEY) ?? '')
-    if (index === 0) {
-      foundElementPathDepth = EP.depth(ep)
-      foundElementPathFullDepth = EP.fullDepth(ep)
-      closestMatches.push(el)
-    } else {
-      if (
-        EP.depth(ep) === foundElementPathDepth &&
-        EP.fullDepth(ep) === foundElementPathFullDepth
-      ) {
-        closestMatches.push(el)
+
+    const shortenedFoundPath = EP.pathShortenedToOtherPath(ep, path)
+
+    if (
+      EP.pathsEqual(
+        EP.dynamicPathToStaticPath(shortenedFoundPath),
+        EP.dynamicPathToStaticPath(path),
+      )
+    ) {
+      const { closestMatches, foundElementPathDepth, foundElementPathFullDepth } =
+        elementsToCollectFor.get(EP.toString(shortenedFoundPath))
+
+      if (closestMatches.length === 0) {
+        elementsToCollectFor.set(EP.toString(shortenedFoundPath), {
+          closestMatches: [el],
+          foundElementPathDepth: EP.depth(ep),
+          foundElementPathFullDepth: EP.fullDepth(ep),
+        })
+      } else {
+        if (
+          EP.depth(ep) === foundElementPathDepth &&
+          EP.fullDepth(ep) === foundElementPathFullDepth
+        ) {
+          closestMatches.push(el)
+        }
       }
     }
   }
 
-  if (closestMatches.length == 0) {
-    return null
-  }
+  return Array.from(elementsToCollectFor.entries()).map(
+    ([dynamicPathString, { closestMatches }]) => {
+      const dynamicPath = EP.fromString(dynamicPathString)
 
-  if (closestMatches.length == 1) {
-    const foundElement = foundElements[0]
-    // TODO handle measuring SVGs
-    if (foundElement instanceof HTMLElement) {
-      const pathsWithStrings = getPathWithStringsOnDomElement(foundElement)
-      if (pathsWithStrings.length == 0) {
-        throw new Error('No path found on element')
-      } else {
-        const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
-          const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
-          return validPaths.some((vp) => EP.pathsEqual(vp, staticPath)) // this is from the old implementation, no descendants are included
-        })
+      if (closestMatches.length == 1) {
+        const foundElement = closestMatches[0]
+        // TODO handle measuring SVGs
+        const pathsWithStrings = getPathWithStringsOnDomElement(foundElement)
+        if (pathsWithStrings.length == 0) {
+          throw new Error('No path found on element')
+        } else {
+          const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
+            const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
+            return validPaths.some((vp) => EP.pathsEqual(vp, staticPath)) // this is from the old implementation, no descendants are included
+          })
 
-        const metadata = createElementInstanceMetadataForElementCached.get(
-          foundElement,
+          const metadata = createElementInstanceMetadataForElementCached.get(
+            foundElement,
+            scale,
+            containerRect.x, // passing this as two values so it can be used as cache key
+            containerRect.y,
+          )
+          const computedStyle = getComputedStyleOptionallyForElement(
+            foundElement,
+            pluck(foundValidPaths, 'path'),
+            selectedViews,
+          )
+
+          if (computedStyle != null) {
+            metadata.computedStyle = computedStyle.computedStyle
+            metadata.attributeMetadatada = computedStyle.attributeMetadatada
+          }
+
+          return { metadata: metadata, foundValidDynamicPaths: pluck(foundValidPaths, 'path') }
+        }
+      }
+
+      // if there are multiple closestMatches that are the same depth, we want to return a fake metadata with a globalFrame that is the union of all the closestMatches
+      const metadatas: Array<DomElementMetadata> = mapDropNulls((el) => {
+        if (!(el instanceof HTMLElement)) {
+          return null
+        }
+        return createElementInstanceMetadataForElementCached.get(
+          el,
           scale,
-          containerRect.x, // passing this as two values so it can be used as cache key
+          containerRect.x,
           containerRect.y,
         )
-        const computedStyle = getComputedStyleOptionallyForElement(
-          foundElement,
-          pluck(foundValidPaths, 'path'),
-          selectedViews,
-        )
+      }, closestMatches)
 
-        if (computedStyle != null) {
-          metadata.computedStyle = computedStyle.computedStyle
-          metadata.attributeMetadatada = computedStyle.attributeMetadatada
-        }
-
-        return { metadata: metadata, foundValidDynamicPaths: pluck(foundValidPaths, 'path') }
-      }
-    }
-    return null
-  }
-
-  // if there are multiple closestMatches that are the same depth, we want to return a fake metadata with a globalFrame that is the union of all the closestMatches
-  if (closestMatches.length > 1) {
-    const metadatas: Array<DomElementMetadata> = mapDropNulls((el) => {
-      if (!(el instanceof HTMLElement)) {
-        return null
-      }
-      return createElementInstanceMetadataForElementCached.get(
-        el,
-        scale,
-        containerRect.x,
-        containerRect.y,
+      const mergedGlobalFrame = boundingRectangleArray(
+        mapDropNulls((m) => nullIfInfinity(m.globalFrame), metadatas),
       )
-    }, closestMatches)
 
-    const mergedGlobalFrame = boundingRectangleArray(
-      mapDropNulls((m) => nullIfInfinity(m.globalFrame), metadatas),
-    )
-
-    return {
-      metadata: domElementMetadata(
-        left('unknown'),
-        mergedGlobalFrame,
-        null,
-        mergedGlobalFrame,
-        emptySpecialSizeMeasurements,
-        null,
-      ),
-      foundValidDynamicPaths: [
-        path, // TODO this needs to be fixed by finding the dynamic paths related to path
-      ],
-    }
-  }
-
-  return null
+      return {
+        metadata: domElementMetadata(
+          left('unknown'),
+          mergedGlobalFrame,
+          null,
+          mergedGlobalFrame,
+          emptySpecialSizeMeasurements,
+          null,
+        ),
+        foundValidDynamicPaths: [dynamicPath],
+      }
+    },
+  )
 }
 
 function createFakeMetadataForCanvasRoot(canvasRootPath: ElementPath): DomElementMetadata {
@@ -207,7 +225,7 @@ function collectMetadataForPaths(
       options.scale,
       containerRect,
     )
-    if (domMetadata == null) {
+    if (domMetadata.length == 0) {
       // TODO find a dynamic spyElement for this path
       const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(path)]
       if (spyElem != null) {
@@ -218,29 +236,32 @@ function collectMetadataForPaths(
       return // we couldn't find a fallback spy element, so we bail out
     }
 
-    domMetadata.foundValidDynamicPaths.forEach((validDynamicPath) => {
-      const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(validDynamicPath)]
-      if (spyElem == null) {
-        // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
-        return
-      }
+    domMetadata.forEach(({ metadata, foundValidDynamicPaths }) => {
+      foundValidDynamicPaths.forEach((validDynamicPath) => {
+        const spyElem =
+          options.spyCollector.current.spyValues.metadata[EP.toString(validDynamicPath)]
+        if (spyElem == null) {
+          // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
+          return
+        }
 
-      let jsxElement = alternativeEither(spyElem.element, domMetadata.metadata.element)
+        let jsxElement = alternativeEither(spyElem.element, metadata.element)
 
-      // TODO avoid temporary object creation
-      const elementInstanceMetadata: ElementInstanceMetadata = {
-        ...domMetadata.metadata,
-        element: jsxElement,
-        elementPath: spyElem.elementPath,
-        componentInstance: spyElem.componentInstance,
-        isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
-        label: spyElem.label,
-        importInfo: spyElem.importInfo,
-        assignedToProp: spyElem.assignedToProp,
-        conditionValue: spyElem.conditionValue,
-        earlyReturn: spyElem.earlyReturn,
-      }
-      updatedMetadataMap[EP.toString(spyElem.elementPath)] = elementInstanceMetadata
+        // TODO avoid temporary object creation
+        const elementInstanceMetadata: ElementInstanceMetadata = {
+          ...metadata,
+          element: jsxElement,
+          elementPath: spyElem.elementPath,
+          componentInstance: spyElem.componentInstance,
+          isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
+          label: spyElem.label,
+          importInfo: spyElem.importInfo,
+          assignedToProp: spyElem.assignedToProp,
+          conditionValue: spyElem.conditionValue,
+          earlyReturn: spyElem.earlyReturn,
+        }
+        updatedMetadataMap[EP.toString(spyElem.elementPath)] = elementInstanceMetadata
+      })
     })
   })
 
