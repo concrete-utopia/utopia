@@ -94,6 +94,7 @@ function dragDeltaSign(delta: number): 1 | -1 {
 function calculateDragDirectionDelta(delta: number, scalingFactor: number): number {
   const sign = dragDeltaSign(delta)
   const rawAbsDelta = Math.abs(delta)
+  // Floor the value and then restore its sign so that it is rounded towards zero.
   const scaledAbsDelta = Math.floor(rawAbsDelta / scalingFactor)
   return sign * scaledAbsDelta
 }
