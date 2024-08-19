@@ -222,7 +222,7 @@ export const BGSizeMetadataControl: React.FunctionComponent<
   return (
     <div style={MetadataControlsStyle}>
       <PopupList
-        style={{ gridColumn: '1 / span 3' }}
+        style={{ gridColumn: '1 / span 3', background: 'transparent' }}
         options={BGSizeKeywordValueSelectOptions}
         value={bgSizeValueToSelectOption(bgSizeValue)}
         onSubmitValue={onSubmitPopupListValue}
@@ -239,7 +239,7 @@ export const BGSizeMetadataControl: React.FunctionComponent<
             onSubmitValue={onSubmitWidthValue}
             onTransientSubmitValue={onTransientSubmitWidthValue}
             controlStatus={props.controlStatus}
-            DEPRECATED_labelBelow='width'
+            labelInner='W'
           />
           <DEPRECATED_NumberOrKeywordControl
             style={{ gridColumn: '7 / span 1' }}
@@ -251,7 +251,7 @@ export const BGSizeMetadataControl: React.FunctionComponent<
             onSubmitValue={onSubmitHeightValue}
             onTransientSubmitValue={onTransientSubmitHeightValue}
             controlStatus={props.controlStatus}
-            DEPRECATED_labelBelow='height'
+            labelInner='H'
           />
         </>
       ) : null}
