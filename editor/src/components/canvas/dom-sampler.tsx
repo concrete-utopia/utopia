@@ -3,7 +3,7 @@ import {
   fillMissingDataFromAncestors,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
-import { UTOPIA_PATH_KEY } from '../../core/model/utopia-constants'
+import { UTOPIA_PATH_KEY, UTOPIA_STATIC_PATH_KEY } from '../../core/model/utopia-constants'
 import { mapDropNulls, pluck } from '../../core/shared/array-utils'
 import { getCanvasRectangleFromElement } from '../../core/shared/dom-utils'
 import { alternativeEither, left } from '../../core/shared/either'
@@ -42,16 +42,14 @@ function collectMetadataForElementPath(
   selectedViews: Array<ElementPath>,
   scale: number,
   containerRect: CanvasPoint,
-): DomElementMetadata | null {
+): { metadata: DomElementMetadata; foundValidDynamicPaths: Array<ElementPath> } | null {
   if (EP.isStoryboardPath(path)) {
-    return createFakeMetadataForCanvasRoot(path)
+    return { metadata: createFakeMetadataForCanvasRoot(path), foundValidDynamicPaths: [path] }
   }
 
-  const foundElements = document.querySelectorAll(`[${UTOPIA_PATH_KEY}^="${EP.toString(path)}"]`)
-  let allFoundPathsForPath: Array<string | null> = []
-  foundElements.forEach((el) => {
-    allFoundPathsForPath.push(el.getAttribute(UTOPIA_PATH_KEY))
-  })
+  const foundElements = document.querySelectorAll(
+    `[${UTOPIA_STATIC_PATH_KEY}^="${EP.toString(path)}"]`,
+  )
 
   let foundElementPathDepth: number = 0
   let foundElementPathFullDepth: number = 0
@@ -122,7 +120,7 @@ function collectMetadataForElementPath(
           metadata.attributeMetadatada = computedStyle.attributeMetadatada
         }
 
-        return metadata
+        return { metadata: metadata, foundValidDynamicPaths: pluck(foundValidPaths, 'path') }
       }
     }
     return null
@@ -146,14 +144,19 @@ function collectMetadataForElementPath(
       mapDropNulls((m) => nullIfInfinity(m.globalFrame), metadatas),
     )
 
-    return domElementMetadata(
-      left('unknown'),
-      mergedGlobalFrame,
-      null,
-      mergedGlobalFrame,
-      emptySpecialSizeMeasurements,
-      null,
-    )
+    return {
+      metadata: domElementMetadata(
+        left('unknown'),
+        mergedGlobalFrame,
+        null,
+        mergedGlobalFrame,
+        emptySpecialSizeMeasurements,
+        null,
+      ),
+      foundValidDynamicPaths: [
+        path, // TODO this needs to be fixed by finding the dynamic paths related to path
+      ],
+    }
   }
 
   return null
@@ -218,18 +221,29 @@ function collectMetadataForPaths(
       options.scale,
       containerRect,
     )
-    const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(path)]
-    if (spyElem == null) {
-      // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
-      return
+    if (domMetadata == null) {
+      // TODO find a dynamic spyElement for this path
+      const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(path)]
+      if (spyElem != null) {
+        updatedMetadataMap[EP.toString(path)] = {
+          ...spyElem,
+        }
+      }
+      return // we couldn't find a fallback spy element, so we bail out
     }
 
-    if (domMetadata != null && spyElem != null) {
-      let jsxElement = alternativeEither(spyElem.element, domMetadata.element)
+    domMetadata.foundValidDynamicPaths.forEach((validDynamicPath) => {
+      const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(validDynamicPath)]
+      if (spyElem == null) {
+        // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
+        return
+      }
+
+      let jsxElement = alternativeEither(spyElem.element, domMetadata.metadata.element)
 
       // TODO avoid temporary object creation
       const elementInstanceMetadata: ElementInstanceMetadata = {
-        ...domMetadata,
+        ...domMetadata.metadata,
         element: jsxElement,
         elementPath: spyElem.elementPath,
         componentInstance: spyElem.componentInstance,
@@ -240,13 +254,8 @@ function collectMetadataForPaths(
         conditionValue: spyElem.conditionValue,
         earlyReturn: spyElem.earlyReturn,
       }
-      updatedMetadataMap[EP.toString(path)] = elementInstanceMetadata
-    } else {
-      // if the dom metadata is null, we should use the spy metadata
-      updatedMetadataMap[EP.toString(path)] = {
-        ...spyElem,
-      }
-    }
+      updatedMetadataMap[EP.toString(spyElem.elementPath)] = elementInstanceMetadata
+    })
   })
 
   const finalMetadata = [
@@ -407,8 +416,9 @@ const pruneInvalidPathsFromMetadata_MUTATE =
     const validPathsSet = new Set(validPaths.map(EP.toString))
     const keys = Object.keys(metadata_MUTATE)
     for (const key of keys) {
-      if (!validPathsSet.has(key)) {
-        delete metadata_MUTATE[key]
+      const staticPath = EP.toString(EP.dynamicPathToStaticPath(EP.fromString(key)))
+      if (!validPathsSet.has(staticPath)) {
+        delete metadata_MUTATE[staticPath]
       }
     }
     return metadata_MUTATE
