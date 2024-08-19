@@ -35,7 +35,7 @@ import type {
 } from '../../components/inspector/controls/control'
 import type { Either } from '../../core/shared/either'
 import { isLeft, mapEither } from '../../core/shared/either'
-import { clampValue } from '../../core/shared/math-utils'
+import { clampValue, point } from '../../core/shared/math-utils'
 import { memoize } from '../../core/shared/memoize'
 import type { ControlStyles } from '../../uuiui-deps'
 import { getControlStyles, CSSCursor } from '../../uuiui-deps'
@@ -51,8 +51,7 @@ import {
 } from './base-input'
 import { usePropControlledStateV2 } from '../../components/inspector/common/inspector-utils'
 import { useControlsDisabledInSubtree } from '../utilities/disable-subtree'
-
-export type LabelDragDirection = 'horizontal' | 'vertical'
+import { getPossiblyHashedURL } from '../../utils/hashed-assets'
 
 function getDisplayValueNotMemoized(
   value: CSSNumber | null,
@@ -88,36 +87,19 @@ function parseDisplayValueNotMemoized(
 
 const parseDisplayValue = memoize(parseDisplayValueNotMemoized, { maxSize: 1000 })
 
-const dragDeltaSign = (start: number, end: number, directionAdjustment: 1 | -1): 1 | -1 => {
-  const raw = (start - end) * directionAdjustment
-  return raw >= 0 ? 1 : -1
+function dragDeltaSign(delta: number): 1 | -1 {
+  return delta >= 0 ? 1 : -1
 }
 
-const calculateDragDirectionDelta = (
-  start: number,
-  end: number,
-  scalingFactor: number,
-  directionAdjustment: 1 | -1,
-): number => {
-  const sign = dragDeltaSign(start, end, directionAdjustment)
-  const rawAbsDelta = Math.abs(start - end)
+function calculateDragDirectionDelta(delta: number, scalingFactor: number): number {
+  const sign = dragDeltaSign(delta)
+  const rawAbsDelta = Math.abs(delta)
   const scaledAbsDelta = Math.floor(rawAbsDelta / scalingFactor)
   return sign * scaledAbsDelta
 }
 
-const calculateDragDelta = (
-  dragOriginX: number,
-  dragOriginY: number,
-  dragScreenX: number,
-  dragScreenY: number,
-  labelDragDirection: LabelDragDirection,
-  scalingFactor: number = 2,
-) => {
-  if (labelDragDirection === 'horizontal') {
-    return calculateDragDirectionDelta(dragOriginX, dragScreenX, scalingFactor, 1)
-  } else {
-    return calculateDragDirectionDelta(dragOriginY, dragScreenY, scalingFactor, -1)
-  }
+function calculateDragDelta(delta: number, scalingFactor: number = 2): number {
+  return calculateDragDirectionDelta(delta, scalingFactor)
 }
 
 let incrementTimeout: number | undefined = undefined
@@ -230,11 +212,8 @@ export const NumberInput = React.memo<NumberInputProps>(
     const [isFauxcused, setIsFauxcused] = React.useState<boolean>(false)
     const isFocused = isActuallyFocused || isFauxcused
 
-    const [labelDragDirection, setLabelDragDirection] =
-      React.useState<LabelDragDirection>('horizontal')
-
     const [, setValueAtDragOriginState] = React.useState<number>(0)
-    const valueAtDragOrigin = React.useRef(0)
+    const valueAtDragOrigin = React.useRef<number | null>(null)
     const setValueAtDragOrigin = (n: number) => {
       valueAtDragOrigin.current = n
       setValueAtDragOriginState(n)
@@ -260,6 +239,12 @@ export const NumberInput = React.memo<NumberInputProps>(
       scrubThresholdPassed.current = b
       setScrubThresholdPassedState(b)
     }
+
+    const simulatedPointerRef = React.useRef(null)
+    const pointerOriginRef = React.useRef<HTMLDivElement>(null)
+
+    const accumulatedMouseDeltaX = React.useRef(0)
+    const scrubbingCleanupCallbacks = React.useRef<Array<() => void>>([])
 
     const [valueChangedSinceFocus, setValueChangedSinceFocus] = React.useState<boolean>(false)
 
@@ -331,53 +316,41 @@ export const NumberInput = React.memo<NumberInputProps>(
     )
 
     const setScrubValue = React.useCallback(
-      (
-        unit: CSSNumberUnit | null,
-        screenX: number,
-        screenY: number,
-        scrubDragOriginX: number,
-        scrubDragOriginY: number,
-        transient: boolean,
-      ) => {
-        const primaryAxisDelta = calculateDragDelta(
-          scrubDragOriginX,
-          scrubDragOriginY,
-          screenX,
-          screenY,
-          labelDragDirection,
-        )
-        const numericValue = clampValue(
-          valueAtDragOrigin.current - stepSize * primaryAxisDelta,
-          minimum,
-          maximum,
-        )
-        const newValue = cssNumber(numericValue, unit)
+      (transient: boolean) => {
+        const dragDelta = calculateDragDelta(accumulatedMouseDeltaX.current)
+        if (valueAtDragOrigin.current != null) {
+          const numericValue = clampValue(
+            valueAtDragOrigin.current + stepSize * dragDelta,
+            minimum,
+            maximum,
+          )
+          const newValue = cssNumber(numericValue, valueUnit)
 
-        if (transient) {
-          if (onTransientSubmitValue != null) {
-            onTransientSubmitValue(newValue)
-          } else if (onSubmitValue != null) {
-            onSubmitValue(newValue)
+          if (transient) {
+            if (onTransientSubmitValue != null) {
+              onTransientSubmitValue(newValue)
+            } else if (onSubmitValue != null) {
+              onSubmitValue(newValue)
+            }
+          } else {
+            if (onForcedSubmitValue != null) {
+              onForcedSubmitValue(newValue)
+            } else if (onSubmitValue != null) {
+              onSubmitValue(newValue)
+            }
           }
-        } else {
-          if (onForcedSubmitValue != null) {
-            onForcedSubmitValue(newValue)
-          } else if (onSubmitValue != null) {
-            onSubmitValue(newValue)
-          }
+          updateValue(newValue)
         }
-        updateValue(newValue)
-        return newValue
       },
       [
-        labelDragDirection,
-        maximum,
-        minimum,
         stepSize,
-        onForcedSubmitValue,
-        onSubmitValue,
-        onTransientSubmitValue,
+        minimum,
+        maximum,
+        valueUnit,
         updateValue,
+        onTransientSubmitValue,
+        onSubmitValue,
+        onForcedSubmitValue,
       ],
     )
 
@@ -389,53 +362,79 @@ export const NumberInput = React.memo<NumberInputProps>(
 
     const onThresholdPassed = (e: MouseEvent, fn: () => void) => {
       const thresholdPassed =
-        scrubThresholdPassed.current || Math.abs(e.screenX - dragOriginX.current) >= ScrubThreshold
+        scrubThresholdPassed.current || Math.abs(accumulatedMouseDeltaX.current) >= ScrubThreshold
       if (thresholdPassed) {
         fn()
       }
     }
 
-    const scrubOnMouseMove = React.useCallback(
-      (e: MouseEvent) => {
-        onThresholdPassed(e, () => {
-          if (!scrubThresholdPassed.current) {
-            setScrubThresholdPassed(true)
-          }
-          setScrubValue(
-            valueUnit,
-            e.screenX,
-            e.screenY,
-            dragOriginX.current,
-            dragOriginY.current,
-            true,
-          )
-        })
-      },
-      [setScrubValue, valueUnit],
-    )
-
-    const scrubOnMouseUp = React.useCallback(
-      (e: MouseEvent) => {
-        window.removeEventListener('mouseup', scrubOnMouseUp)
-        window.removeEventListener('mousemove', scrubOnMouseMove)
+    const cancelPointerLock = React.useCallback(
+      (revertChanges: 'revert-nothing' | 'revert-changes') => {
+        if (document.pointerLockElement === pointerOriginRef.current) {
+          document.exitPointerLock()
+        }
+        if (
+          revertChanges === 'revert-changes' &&
+          onSubmitValue != null &&
+          valueAtDragOrigin.current != null
+        ) {
+          const oldValue = cssNumber(valueAtDragOrigin.current, valueUnit)
+          onSubmitValue(oldValue, false)
+        }
 
         setIsFauxcused(false)
         ref.current?.focus()
 
-        onThresholdPassed(e, () => {
-          setScrubValue(
-            valueUnit,
-            e.screenX,
-            e.screenY,
-            dragOriginX.current,
-            dragOriginY.current,
-            false,
-          )
-        })
         setScrubThresholdPassed(false)
         setGlobalCursor?.(null)
       },
-      [scrubOnMouseMove, setScrubValue, valueUnit, ref, setGlobalCursor],
+      [onSubmitValue, setGlobalCursor, valueUnit],
+    )
+
+    const checkPointerLockChange = React.useCallback(() => {
+      if (document.pointerLockElement !== pointerOriginRef.current) {
+        cancelPointerLock('revert-changes')
+        scrubbingCleanupCallbacks.current.forEach((fn) => fn())
+      }
+    }, [cancelPointerLock])
+
+    const scrubOnMouseUp = React.useCallback(
+      (e: MouseEvent) => {
+        scrubbingCleanupCallbacks.current.forEach((fn) => fn())
+        onThresholdPassed(e, () => {
+          setScrubValue(false)
+        })
+        cancelPointerLock('revert-nothing')
+      },
+      [cancelPointerLock, setScrubValue],
+    )
+
+    const scrubOnMouseMove = React.useCallback(
+      (e: MouseEvent) => {
+        // Apply the movement to the accumulated delta, as the movement is
+        // relative to the last event.
+        accumulatedMouseDeltaX.current += e.movementX
+
+        onThresholdPassed(e, () => {
+          if (!scrubThresholdPassed.current) {
+            setScrubThresholdPassed(true)
+            if (pointerOriginRef.current != null) {
+              pointerOriginRef.current.requestPointerLock()
+              scrubbingCleanupCallbacks.current.push(() => {
+                window.removeEventListener('mouseup', scrubOnMouseUp)
+              })
+              scrubbingCleanupCallbacks.current.push(() => {
+                window.removeEventListener('mousemove', scrubOnMouseMove)
+              })
+              scrubbingCleanupCallbacks.current.push(() => {
+                document.removeEventListener('pointerlockchange', checkPointerLockChange, true)
+              })
+            }
+          }
+          setScrubValue(true)
+        })
+      },
+      [checkPointerLockChange, scrubOnMouseUp, setScrubValue],
     )
 
     const rc = roundCorners == null ? 'all' : roundCorners
@@ -465,7 +464,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           ref.current?.blur()
         }
       },
-      [incrementBy, stepSize, ref, updateValue],
+      [updateValue, incrementBy, stepSize],
     )
 
     const onKeyUp = React.useCallback(
@@ -638,14 +637,22 @@ export const NumberInput = React.memo<NumberInputProps>(
           setIsFauxcused(true)
           window.addEventListener('mousemove', scrubOnMouseMove)
           window.addEventListener('mouseup', scrubOnMouseUp)
-          setLabelDragDirection('horizontal')
+          document.addEventListener('pointerlockchange', checkPointerLockChange, true)
           setValueAtDragOrigin(value?.value ?? 0)
           setDragOriginX(e.screenX)
           setDragOriginY(e.screenY)
           setGlobalCursor?.(CSSCursor.ResizeEW)
+          accumulatedMouseDeltaX.current = 0
         }
       },
-      [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, value, disabled],
+      [
+        disabled,
+        checkPointerLockChange,
+        scrubOnMouseMove,
+        scrubOnMouseUp,
+        value?.value,
+        setGlobalCursor,
+      ],
     )
 
     const placeholder = getControlStylesAwarePlaceholder(controlStyles)
@@ -675,8 +682,48 @@ export const NumberInput = React.memo<NumberInputProps>(
     const showDescriptionLabel =
       labelInnerIsIconOrNull && !isFocused && descriptionLabel != null && value != null
 
+    let simulatedPointerTransformX: number | undefined = undefined
+    if (pointerOriginRef.current != null && scrubThresholdPassed.current) {
+      const pointerOriginRect = pointerOriginRef.current.getBoundingClientRect()
+      const intendedPointerX =
+        (pointerOriginRect.left + accumulatedMouseDeltaX.current) % window.screen.width
+      simulatedPointerTransformX = intendedPointerX - pointerOriginRect.left
+    }
+
     return (
-      <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={style}>
+      <div
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        ref={pointerOriginRef}
+        style={style}
+      >
+        <div
+          ref={simulatedPointerRef}
+          className='simulatedPosition'
+          style={{
+            width: 5,
+            height: 5,
+            transform:
+              simulatedPointerTransformX == null
+                ? undefined
+                : `translateX(${simulatedPointerTransformX}px)`,
+            position: 'fixed',
+            visibility: scrubThresholdPassed.current ? 'visible' : 'hidden',
+            zIndex: 999999,
+          }}
+        >
+          <img
+            style={{
+              userSelect: 'none',
+              display: 'block',
+            }}
+            width={34}
+            height={33}
+            src={getPossiblyHashedURL(`/editor/cursors/cursor-moving-magic@2x.png`)}
+          />
+
+          {scrubThresholdPassed.current ? accumulatedMouseDeltaX.current : '-'}
+        </div>
         <div
           className='number-input-container'
           css={{
@@ -718,6 +765,7 @@ export const NumberInput = React.memo<NumberInputProps>(
               }}
             >
               <div
+                data-testid={`${testId}-label-div`}
                 style={{
                   position: 'absolute',
                   left: 0,
