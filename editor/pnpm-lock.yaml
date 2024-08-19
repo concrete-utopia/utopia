@@ -175,7 +175,7 @@ specifiers:
   css-loader: 0.28.4
   css-tree: 2.3.1
   csstype: 3.0.3
-  deep-object-diff: ^1.1.9
+  deep-object-diff: 1.1.9
   dependency-cruiser: 13.1.5
   diff: 5.0.0
   enzyme: 3.3.0
