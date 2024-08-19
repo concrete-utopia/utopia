@@ -9,6 +9,7 @@ describe('Basic Dom Sampler tests', () => {
 export var Playground = ({ style }) => {
   return (
     <div
+      data-uid='aaa'
       style={{
         height: '100%',
         width: '100%',
@@ -17,6 +18,7 @@ export var Playground = ({ style }) => {
       }}
     >
       <div
+        data-uid='bbb'
         style={{
           height: 'max-content',
           position: 'absolute',
@@ -30,13 +32,32 @@ export var Playground = ({ style }) => {
       >
         {[1, 2, 3].map(() => {
           return (
-            <div>
+            <div data-uid='ccc'>
               <img
+                data-uid='ddd'
                 src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
                 alt='Utopia logo'
                 style={{ width: 118, height: 150 }}
               />
             </div>
+          )
+        })}
+        {[1, 2, 3].map(() => {
+          return (
+            <React.Fragment>
+              <img
+                data-uid='yyy'
+                src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
+                alt='Utopia logo'
+                style={{ width: 118, height: 150 }}
+              />
+              <img
+                data-uid='zzz'
+                src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
+                alt='Utopia logo'
+                style={{ width: 118, height: 150 }}
+              />
+            </React.Fragment>
           )
         })}
       </div>
@@ -55,15 +76,16 @@ export var Playground = ({ style }) => {
         "sb",
         "sb/pg-sc",
         "sb/pg-sc/pg",
-        "sb/pg-sc/pg:571/1c8/c7d",
-        "sb/pg-sc/pg:571",
-        "sb/pg-sc/pg:571/1c8",
-        "sb/pg-sc/pg:571/1c8/c7d/401~~~1",
-        "sb/pg-sc/pg:571/1c8/c7d/401~~~1/bec",
-        "sb/pg-sc/pg:571/1c8/c7d/401~~~2",
-        "sb/pg-sc/pg:571/1c8/c7d/401~~~2/bec",
-        "sb/pg-sc/pg:571/1c8/c7d/401~~~3",
-        "sb/pg-sc/pg:571/1c8/c7d/401~~~3/bec",
+        "sb/pg-sc/pg:aaa/bbb/266",
+        "sb/pg-sc/pg:aaa/bbb/6cc",
+        "sb/pg-sc/pg:aaa",
+        "sb/pg-sc/pg:aaa/bbb",
+        "sb/pg-sc/pg:aaa/bbb/266/ccc~~~1",
+        "sb/pg-sc/pg:aaa/bbb/266/ccc~~~1/ddd",
+        "sb/pg-sc/pg:aaa/bbb/266/ccc~~~2",
+        "sb/pg-sc/pg:aaa/bbb/266/ccc~~~2/ddd",
+        "sb/pg-sc/pg:aaa/bbb/266/ccc~~~3",
+        "sb/pg-sc/pg:aaa/bbb/266/ccc~~~3/ddd",
       ]
     `)
   })
