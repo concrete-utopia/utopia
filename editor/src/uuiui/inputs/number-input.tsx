@@ -145,7 +145,6 @@ export interface AbstractNumberInputProps<T extends CSSNumber | number>
     InspectorControlProps {
   value: T | null | undefined
   scrubbableInnerLabel?: React.ReactChild
-  labelBelowStyle?: React.CSSProperties
   invalid?: boolean
 }
 

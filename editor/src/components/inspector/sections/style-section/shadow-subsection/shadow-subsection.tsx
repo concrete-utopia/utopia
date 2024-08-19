@@ -17,7 +17,7 @@ import type { ContextMenuItem } from '../../../../context-menu-items'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues, removeRow } from '../../../common/context-menu-items'
 import type { ControlStatus } from '../../../common/control-status'
-import { LabelBelowNumberTextStyles, type ControlStyles } from '../../../common/control-styles'
+import { type ControlStyles } from '../../../common/control-styles'
 import type {
   CSSBoxShadow,
   CSSBoxShadows,
@@ -224,7 +224,6 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
             {
               value: props.value.offsetX,
               scrubbableInnerLabel: 'X',
-              labelBelowStyle: LabelBelowNumberTextStyles,
               onSubmitValue: offsetXSubmitValue,
               onTransientSubmitValue: offsetXTransientSubmitValue,
               controlStatus: props.controlStatus,
@@ -237,7 +236,6 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
             {
               value: props.value.offsetY,
               scrubbableInnerLabel: 'Y',
-              labelBelowStyle: LabelBelowNumberTextStyles,
               onSubmitValue: offsetYSubmitValue,
               onTransientSubmitValue: offsetYTransientSubmitValue,
               controlStatus: props.controlStatus,
@@ -250,7 +248,6 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
             {
               value: props.value.blurRadius.value,
               scrubbableInnerLabel: 'B',
-              labelBelowStyle: LabelBelowNumberTextStyles,
               onSubmitValue: blurRadiusSubmitValue,
               onTransientSubmitValue: blurRadiusTransientSubmitValue,
               controlStatus: props.controlStatus,
@@ -263,7 +260,6 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
             {
               value: props.value.spreadRadius.value,
               scrubbableInnerLabel: 'S',
-              labelBelowStyle: LabelBelowNumberTextStyles,
               onSubmitValue: spreadRadiusSubmitValue,
               onTransientSubmitValue: spreadRadiusTransientSubmitValue,
               controlStatus: props.controlStatus,

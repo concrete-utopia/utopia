@@ -53,7 +53,7 @@ interface NumberOrKeywordControlProps extends InspectorControlProps {
   onTransientSubmitValue: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
   numberInputOptions: NumberInputOptions
   keywordControlOptions: KeywordControlOptions
-  labelBelowStyle?: React.CSSProperties
+  labelInner: string
 }
 
 export const DEPRECATED_NumberOrKeywordControl = React.memo<NumberOrKeywordControlProps>(
@@ -68,8 +68,7 @@ export const DEPRECATED_NumberOrKeywordControl = React.memo<NumberOrKeywordContr
     testId,
     className,
     controlStatus,
-    DEPRECATED_labelBelow,
-    labelBelowStyle,
+    labelInner,
   }) => {
     const onSubmitValue: OnSubmitValue<UnknownOrEmptyInput<CSSNumber | CSSKeyword>> =
       React.useCallback(
@@ -93,8 +92,8 @@ export const DEPRECATED_NumberOrKeywordControl = React.memo<NumberOrKeywordContr
           onSubmitValue={onSubmitValue}
           onTransientSubmitValue={onTransientSubmitValue}
           controlStatus={controlStatus}
-          DEPRECATED_labelBelow={DEPRECATED_labelBelow}
-          labelBelowStyle={labelBelowStyle}
+          labelInner={labelInner}
+          incrementControls={false}
           {...numberInputOptions}
         />
       )
@@ -108,7 +107,6 @@ export const DEPRECATED_NumberOrKeywordControl = React.memo<NumberOrKeywordContr
           value={value}
           onSubmitValue={onSubmitValue}
           controlStatus={controlStatus}
-          DEPRECATED_labelBelow={DEPRECATED_labelBelow}
           {...keywordControlOptions}
         />
       )

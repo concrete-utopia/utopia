@@ -4,7 +4,7 @@ import { animated } from 'react-spring'
 import { BooleanControl } from '../../../controls/boolean-control'
 import { ColorControl } from '../../../controls/color-control'
 import type { ControlStatus } from '../../../common/control-status'
-import { LabelBelowNumberTextStyles, type ControlStyles } from '../../../common/control-styles'
+import { type ControlStyles } from '../../../common/control-styles'
 import { PropertyRow, PropertyRowHeightWithLabel } from '../../../widgets/property-row'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
 import type {
@@ -206,7 +206,6 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
         style={{ gridColumn: '3 / span 1' }}
         value={props.value.offsetX}
         scrubbableInnerLabel='X'
-        labelBelowStyle={LabelBelowNumberTextStyles}
         id={`textShadow-offsetX-${props.index}`}
         testId={`textShadow-offsetX-${props.index}`}
         onSubmitValue={offsetXSubmitValue}
@@ -222,7 +221,6 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
         style={{ gridColumn: '4 / span 1' }}
         value={props.value.offsetY}
         scrubbableInnerLabel='Y'
-        labelBelowStyle={LabelBelowNumberTextStyles}
         id={`textShadow-offsetY-${props.index}`}
         testId={`textShadow-offsetY-${props.index}`}
         onSubmitValue={offsetYSubmitValue}
@@ -238,7 +236,6 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
         style={{ gridColumn: '5 / span 1' }}
         value={props.value.blurRadius == null ? zeroBlurRadius : props.value.blurRadius.value}
         scrubbableInnerLabel='B'
-        labelBelowStyle={LabelBelowNumberTextStyles}
         id={`textShadow-blurRadius-${props.index}`}
         testId={`textShadow-blurRadius-${props.index}`}
         onSubmitValue={blurRadiusSubmitValue}

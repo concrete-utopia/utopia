@@ -18,7 +18,7 @@ import {
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import type { ControlStatus } from '../../../common/control-status'
-import { LabelBelowNumberTextStyles, type ControlStyles } from '../../../common/control-styles'
+import { type ControlStyles } from '../../../common/control-styles'
 import type {
   CSSDefault,
   CSSNumber,
@@ -487,7 +487,6 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         maximum={controlMetadata.maximum}
         numberType={controlMetadata.numberType}
         scrubbableInnerLabel={firstLabel}
-        labelBelowStyle={firstLabel == null ? LabelBelowNumberTextStyles : undefined}
         onSubmitValue={doubleLengthZeroethItemSubmitValue}
         onTransientSubmitValue={doubleLengthZeroethItemTransientSubmitValue}
         controlStatus={props.controlStatus}
@@ -508,7 +507,6 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         maximum={controlMetadata.maximum}
         numberType={controlMetadata.numberType}
         scrubbableInnerLabel={secondLabel}
-        labelBelowStyle={secondLabel == null ? LabelBelowNumberTextStyles : undefined}
         onSubmitValue={doubleLengthFirstItemSubmitValue}
         onTransientSubmitValue={doubleLengthFirstItemTransientSubmitValue}
         controlStatus={props.controlStatus}
