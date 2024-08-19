@@ -250,6 +250,7 @@ specifiers:
   mime-types: 2.1.24
   minimatch: 3.0.4
   minimist: 1.2.0
+  mnemonist: 0.39.8
   mocha: 8.4.0
   moize: 6.1.4
   murmurhash3js: 3.0.1
@@ -440,6 +441,7 @@ dependencies:
   matter-js: github.com/liabru/matter-js/e909b0466cea2051267bab92a38ccaa9bf7f154e
   mime-types: 2.1.24
   minimatch: 3.0.4
+  mnemonist: 0.39.8
   moize: 6.1.4
   murmurhash3js: 3.0.1
   node-diff3: 3.1.2
@@ -14145,6 +14147,12 @@ packages:
     hasBin: true
     dev: true
 
+  /mnemonist/0.39.8:
+    resolution: {integrity: sha512-vyWo2K3fjrUw8YeeZ1zF0fy6Mu59RHokURlld8ymdUPjMlD9EC9ov1/YPqTgqRvUN9nTr3Gqfz29LYAmu0PHPQ==}
+    dependencies:
+      obliterator: 2.0.4
+    dev: false
+
   /mocha/8.4.0:
     resolution: {integrity: sha512-hJaO0mwDXmZS4ghXsvPVriOhsxQ7ofcpQdm8dE+jISUOKopitvnXFQmpRR7jd2K6VBG6E26gU3IAbXXGIbu4sQ==}
     engines: {node: '>= 10.12.0'}
@@ -14611,6 +14619,10 @@ packages:
       call-bind: 1.0.2
       define-properties: 1.2.0
       es-abstract: 1.21.3
+    dev: false
+
+  /obliterator/2.0.4:
+    resolution: {integrity: sha512-lgHwxlxV1qIg1Eap7LgIeoBWIMFibOjbrYPIPJZcI1mmGAI2m3lNYpK12Y+GBdPQ0U1hRwSord7GIaawz962qQ==}
     dev: false
 
   /obuf/1.1.2:

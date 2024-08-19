@@ -221,6 +221,7 @@
     "matter-js": "git://github.com/liabru/matter-js.git#e909b0466cea2051267bab92a38ccaa9bf7f154e",
     "mime-types": "2.1.24",
     "minimatch": "3.0.4",
+    "mnemonist": "0.39.8",
     "moize": "6.1.4",
     "murmurhash3js": "3.0.1",
     "node-diff3": "3.1.2",
