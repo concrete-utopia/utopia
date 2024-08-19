@@ -9,7 +9,6 @@ import { FlexRow, UtopiaTheme, colorTheme, SmallerIcons } from '../../../../../u
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import { stylePropPathMappingFn, useInspectorInfo } from '../../../common/property-path-hooks'
-import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelectPopup } from './font-family-select-popup'
 
 export const FontFamilySelect = React.memo(() => {
@@ -50,7 +49,13 @@ export const FontFamilySelect = React.memo(() => {
   ])
 
   return (
-    <PropertyRow>
+    <FlexRow
+      style={{
+        padding: '0 8px 0 4px',
+        minHeight: UtopiaTheme.layout.rowHeight.normal,
+        alignItems: 'center',
+      }}
+    >
       <InspectorContextMenuWrapper
         id='fontFamily-context-menu'
         items={fontFamilyContextMenuItems}
@@ -77,20 +82,23 @@ export const FontFamilySelect = React.memo(() => {
             padding: '0 8px',
             height: 22,
             borderRadius: UtopiaTheme.inputBorderRadius,
+            gap: 5,
           }}
           css={{
             '&:hover': {
               boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
+              justifyContent: 'space-between',
             },
             '&:focus-within': {
               boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
+              justifyContent: 'space-between',
             },
           }}
         >
-          <div style={{ flexGrow: 1 }}>{value.fontFamily[0]}</div>
+          <div>{value.fontFamily[0]}</div>
           <SmallerIcons.ExpansionArrowDown />
         </FlexRow>
       </InspectorContextMenuWrapper>
-    </PropertyRow>
+    </FlexRow>
   )
 })

@@ -121,6 +121,10 @@ const gridTemplates = {
     gridColumnGap: 0,
     gridTemplateColumns: '1fr 145px 22px',
   },
+  '<--------1fr-------->|60px||28px|': {
+    gridColumnGap: 8,
+    gridTemplateColumns: '1fr 60px 28px',
+  },
 } as const
 
 export type GridRowVariant = keyof typeof gridTemplates

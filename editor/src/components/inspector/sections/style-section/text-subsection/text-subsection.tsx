@@ -17,7 +17,6 @@ import {
   Icons,
   NumberInput,
   SquareButton,
-  Icn,
   colorTheme,
 } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
@@ -42,17 +41,16 @@ import {
   useSelectedViews,
 } from '../../../common/property-path-hooks'
 import { ColorControl } from '../../../controls/color-control'
-import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
+import { OptionChainControl } from '../../../controls/option-chain-control'
 import { OptionControl } from '../../../controls/option-control'
 import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelect } from './font-family-select'
 import { FontVariantSelect } from './font-variant-select'
 import { FlexRow } from 'utopia-api'
-import { getControlStyles } from '../../../common/control-styles'
-import { Utils } from '../../../../../uuiui-deps'
 import { TextRelatedProperties } from '../../../../../core/properties/css-properties'
 import { useContextSelector } from 'use-context-selector'
 import { TextAutoSizingControl } from './text-auto-sizing-control'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 
 const ObjectPathImmutable: any = OPI
 
@@ -293,7 +291,11 @@ export const TextSubsection = React.memo(() => {
         </InspectorSubsectionHeader>
       </InspectorContextMenuWrapper>
       <FontFamilySelect />
-      <PropertyRow style={{ gridColumnGap: 8, gridTemplateColumns: '130px 55px 28px' }}>
+      <UIGridRow
+        padded={false}
+        variant='<--------1fr-------->|60px||28px|'
+        style={{ padding: '0 8px 0 4px' }}
+      >
         <FontVariantSelect />
         <InspectorContextMenuWrapper
           id='fontSize-context-menu'
@@ -332,7 +334,7 @@ export const TextSubsection = React.memo(() => {
             controlStyles={colorMetadata.controlStyles}
           />
         </InspectorContextMenuWrapper>
-      </PropertyRow>
+      </UIGridRow>
       <PropertyRow style={{ gridColumnGap: 8 }}>
         <TextAutoSizingControl />
         <InspectorContextMenuWrapper
