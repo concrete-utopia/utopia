@@ -125,7 +125,7 @@ let incrementAnimationFrame: number | undefined = undefined
 const repeatThreshold: number = 500
 
 export interface NumberInputOptions {
-  labelInner?: string | IcnProps
+  scrubbableInnerLabel?: React.ReactChild
   minimum?: number
   maximum?: number
   stepSize?: number
@@ -144,7 +144,6 @@ export interface AbstractNumberInputProps<T extends CSSNumber | number>
     BaseInputProps,
     InspectorControlProps {
   value: T | null | undefined
-  scrubbableInnerLabel?: React.ReactChild
   invalid?: boolean
 }
 
@@ -167,7 +166,6 @@ export const NumberInput = React.memo<NumberInputProps>(
     inputProps = {},
     id,
     scrubbableInnerLabel,
-    labelInner,
     minimum: unscaledMinimum = -Infinity,
     maximum: unscaledMaximum = Infinity,
     stepSize: unscaledStepSize,
@@ -187,7 +185,6 @@ export const NumberInput = React.memo<NumberInputProps>(
     onMouseLeave,
     invalid,
     pasteHandler,
-    descriptionLabel,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const colorTheme = useColorTheme()
@@ -664,14 +661,6 @@ export const NumberInput = React.memo<NumberInputProps>(
           }
         : undefined
 
-    const labelInnerIsIcon =
-      labelInner != null && typeof labelInner === 'object' && 'type' in labelInner
-
-    const labelInnerIsIconOrNull = labelInner == null || labelInnerIsIcon
-
-    const showDescriptionLabel =
-      labelInnerIsIconOrNull && !isFocused && descriptionLabel != null && value != null
-
     return (
       <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={style}>
         <div
@@ -701,37 +690,6 @@ export const NumberInput = React.memo<NumberInputProps>(
             },
           }}
         >
-          {labelInner != null ? (
-            <div
-              className='number-input-innerLabel'
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                userSelect: 'none',
-                width: 20,
-                height: 20,
-                display: 'block',
-              }}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 2,
-                  textAlign: 'center',
-                  fontWeight: 600,
-                  fontSize: '9px',
-                  width: '100%',
-                  height: '100%',
-                  color: colorTheme.fg7.value,
-                }}
-                onMouseDown={onLabelMouseDown}
-              >
-                {labelInnerIsIcon ? <Icn {...labelInner} /> : labelInner}
-              </div>
-            </div>
-          ) : null}
           {incrementControls && !disabled ? (
             <div
               className='number-input-increment-controls'
@@ -835,13 +793,13 @@ export const NumberInput = React.memo<NumberInputProps>(
             pasteHandler={pasteHandler}
             disabled={disabled}
             focused={isFocused}
-            hasLabel={labelInner != null}
+            hasLabel={scrubbableInnerLabel != null}
             roundCorners={roundCorners}
             mixed={mixed}
             value={displayValue}
             ref={ref}
             style={{
-              color: showDescriptionLabel ? 'transparent' : colorTheme.fg1.value,
+              color: colorTheme.fg1.value,
             }}
             css={{
               '::placeholder': { color: invalid ? colorTheme.error.value : undefined },
@@ -857,29 +815,6 @@ export const NumberInput = React.memo<NumberInputProps>(
             onChange={onChange}
             autoComplete='off'
           />
-          {showDescriptionLabel ? (
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                bottom: 0,
-                left: labelInnerIsIconOrNull ? 22 : 0,
-                pointerEvents: 'none',
-                display: 'flex',
-                alignItems: 'center',
-              }}
-            >
-              <div
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}
-              >
-                <span>
-                  {value.value}
-                  {value.unit ?? ''}
-                </span>
-                <span style={{ fontSize: 10 }}>{descriptionLabel}</span>
-              </div>
-            </div>
-          ) : null}
         </div>
       </div>
     )
