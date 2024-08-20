@@ -788,6 +788,20 @@ export const Icons = {
     width: 16,
     height: 16,
   }),
+  RowSpan: makeIcon({
+    category: 'inspector-element',
+    type: 'rowSpan',
+    width: 16,
+    height: 16,
+    color: 'main',
+  }),
+  ColumnSpan: makeIcon({
+    category: 'inspector-element',
+    type: 'columnSpan',
+    width: 16,
+    height: 16,
+    color: 'main',
+  }),
 } as const
 
 export const FunctionIcons = {

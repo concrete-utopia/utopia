@@ -405,7 +405,7 @@ export const NumberInputPropertyControl = React.memo(
           stepSize={controlDescription.step}
           minimum={controlDescription.min}
           maximum={controlDescription.max}
-          labelInner={controlDescription.unit}
+          scrubbableInnerLabel={controlDescription.unit}
           defaultUnitToHide={'px'}
           focusOnMount={props.focusOnMount}
         />
