@@ -12,7 +12,7 @@ if (fs.existsSync('vscode')) {
   child_process.execSync('git restore .', {
     stdio: 'inherit',
   })
-  child_process.execSync('git clean -f -d', {
+  child_process.execSync('git clean -f -d -x', {
     stdio: 'inherit',
   })
   child_process.execSync('git fetch', {
