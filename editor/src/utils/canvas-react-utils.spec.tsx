@@ -40,11 +40,11 @@ describe('Monkey Function', () => {
     class TestClass extends React.Component {
       render() {
         return (
-          <div data-uid='cica' data-path='cica'>
-            <div data-uid='kutya' data-path='kutya'>
+          <div data-uid='cica' data-path='cica' data-static-path='cica'>
+            <div data-uid='kutya' data-path='kutya' data-static-path='kutya'>
               Hello!
             </div>
-            <div data-uid='majom' data-path='majom'>
+            <div data-uid='majom' data-path='majom' data-static-path='majom'>
               Hello!
             </div>
           </div>
@@ -52,11 +52,14 @@ describe('Monkey Function', () => {
       }
     }
 
-    expect(renderToFormattedString(<TestClass data-uid={'test1'} data-path='test1' />))
-      .toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica\\" data-path=\\"cica\\">
-        <div data-uid=\\"kutya\\" data-path=\\"kutya\\">Hello!</div>
-        <div data-uid=\\"majom\\" data-path=\\"majom\\">Hello!</div>
+    expect(
+      renderToFormattedString(
+        <TestClass data-uid={'test1'} data-path='test1' data-static-path='test1' />,
+      ),
+    ).toMatchInlineSnapshot(`
+      "<div data-uid=\\"cica\\" data-path=\\"cica\\" data-static-path=\\"cica\\">
+        <div data-uid=\\"kutya\\" data-path=\\"kutya\\" data-static-path=\\"kutya\\">Hello!</div>
+        <div data-uid=\\"majom\\" data-path=\\"majom\\" data-static-path=\\"majom\\">Hello!</div>
       </div>
       "
     `)
@@ -68,7 +71,7 @@ describe('Monkey Function', () => {
       context: React.ContextType<typeof MyContext> = { value: '' }
       render() {
         return (
-          <div data-uid='inner-div' data-path='inner-div'>
+          <div data-uid='inner-div' data-path='inner-div' data-static-path='inner-div'>
             {this.context.value}
           </div>
         )
@@ -78,12 +81,19 @@ describe('Monkey Function', () => {
 
     expect(
       renderToFormattedString(
-        <MyContext.Provider value={{ value: 'hello!' }} data-uid='provider' data-path='provider'>
-          <TestClass data-uid={'test-class'} data-path='test-class' />
+        <MyContext.Provider
+          value={{ value: 'hello!' }}
+          data-uid='provider'
+          data-path='provider'
+          data-static-path='provider'
+        >
+          <TestClass data-uid={'test-class'} data-path='test-class' data-static-path='test-class' />
         </MyContext.Provider>,
       ),
     ).toMatchInlineSnapshot(`
-      "<div data-uid=\\"inner-div\\" data-path=\\"inner-div\\">hello!</div>
+      "<div data-uid=\\"inner-div\\" data-path=\\"inner-div\\" data-static-path=\\"inner-div\\">
+        hello!
+      </div>
       "
     `)
   })
@@ -94,7 +104,7 @@ describe('Monkey Function', () => {
       context: React.ContextType<typeof MyContext> = { value: '' }
       render() {
         return (
-          <div data-uid='inner-div' data-path='inner-div'>
+          <div data-uid='inner-div' data-path='inner-div' data-static-path='inner-div'>
             {this.context.value}
           </div>
         )
@@ -104,15 +114,25 @@ describe('Monkey Function', () => {
 
     const Renderer = () => {
       return (
-        <MyContext.Provider value={{ value: 'hello!' }} data-uid='provider' data-path='provider'>
-          <TestClass data-uid='test-class' data-path='test-class' />
+        <MyContext.Provider
+          value={{ value: 'hello!' }}
+          data-uid='provider'
+          data-path='provider'
+          data-static-path='provider'
+        >
+          <TestClass data-uid='test-class' data-path='test-class' data-static-path='test-class' />
         </MyContext.Provider>
       )
     }
 
-    expect(renderToFormattedString(<Renderer data-uid={'renderer'} data-path={'renderer'} />))
-      .toMatchInlineSnapshot(`
-      "<div data-uid=\\"inner-div\\" data-path=\\"inner-div\\">hello!</div>
+    expect(
+      renderToFormattedString(
+        <Renderer data-uid={'renderer'} data-path={'renderer'} data-static-path={'renderer'} />,
+      ),
+    ).toMatchInlineSnapshot(`
+      "<div data-uid=\\"inner-div\\" data-path=\\"inner-div\\" data-static-path=\\"inner-div\\">
+        hello!
+      </div>
       "
     `)
   })
