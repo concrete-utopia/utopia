@@ -166,7 +166,6 @@ export const NumberInput = React.memo<NumberInputProps>(
     testId,
     inputProps = {},
     id,
-    className,
     scrubbableInnerLabel,
     labelInner,
     minimum: unscaledMinimum = -Infinity,

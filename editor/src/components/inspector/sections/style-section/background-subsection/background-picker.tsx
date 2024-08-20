@@ -591,7 +591,7 @@ export const BackgroundPicker: React.FunctionComponent<
           />
           <FlexRow style={{ justifyContent: 'flex-end', gap: 2 }}>
             {isCSSBackgroundImageLayer(props.value) ? (
-              <SquareButton highlight onClick={toggleSettings}>
+              <SquareButton highlight spotlight={showSettings === true} onClick={toggleSettings}>
                 <Icons.Gear />
               </SquareButton>
             ) : null}
