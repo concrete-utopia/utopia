@@ -107,7 +107,7 @@ export const ConicGradientBackgroundLayer = React.memo<ConicGradientBackgroundLa
             propsArray={[
               {
                 value: props.value.center.x.value,
-                scrubbableInnerLabel: 'x',
+                scrubbableInnerLabel: 'X',
                 onSubmitValue: gradientCenterXSubmitValue,
                 onTransientSubmitValue: gradientCenterXTransientSubmitValue,
                 controlStatus: props.controlStatus,
@@ -117,7 +117,7 @@ export const ConicGradientBackgroundLayer = React.memo<ConicGradientBackgroundLa
               },
               {
                 value: props.value.center.y.value,
-                scrubbableInnerLabel: 'y',
+                scrubbableInnerLabel: 'Y',
                 onSubmitValue: gradientCenterYSubmitValue,
                 onTransientSubmitValue: gradientCenterYTransientSubmitValue,
                 controlStatus: props.controlStatus,

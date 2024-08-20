@@ -156,7 +156,7 @@ const LinearGradientControls: React.FunctionComponent<
       ),
     )
   return (
-    <div style={MetadataControlsStyle}>
+    <UIGridRow padded variant='<--1fr--><--1fr-->'>
       <NumberInput
         id='background-layer-gradient-angle'
         testId='background-layer-gradient-angle'
@@ -164,19 +164,13 @@ const LinearGradientControls: React.FunctionComponent<
         onSubmitValue={gradientAngleSubmitValue}
         onTransientSubmitValue={gradientAngleTransientSubmitValue}
         controlStatus={props.controlStatus}
-        labelInner={{
-          category: 'layout/systems',
-          type: 'transform-rotate',
-          color: 'secondary',
-          width: 10,
-          height: 10,
-        }}
-        scrubbableInnerLabel='angle'
+        scrubbableInnerLabel={<Icons.Degree color='on-highlight-secondary' />}
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
         defaultUnitToHide={null}
+        incrementControls={false}
       />
-    </div>
+    </UIGridRow>
   )
 }
 
@@ -244,68 +238,60 @@ const RadialGradientControls: React.FunctionComponent<
   const radialBackgroundLayerHeight = props.value.gradientSize.height.value
 
   return (
-    <div style={MetadataControlsStyle}>
+    <UIGridRow padded variant='<--1fr--><--1fr--><--1fr--><--1fr-->'>
       <NumberInput
-        style={{
-          gridColumn: '1 / span 1',
-        }}
         id='background-gradient-center-x'
         testId='background-gradient-center-x'
         value={props.value.center.x.value}
         onSubmitValue={gradientCenterXSubmitValue}
         onTransientSubmitValue={gradientCenterXTransientSubmitValue}
         controlStatus={props.controlStatus}
-        scrubbableInnerLabel='center x'
+        scrubbableInnerLabel='X'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
+        incrementControls={false}
       />
       <NumberInput
-        style={{
-          gridColumn: '3 / span 1',
-        }}
         id='background-gradient-center-y'
         testId='background-gradient-center-y'
         value={props.value.center.y.value}
         onSubmitValue={gradientCenterYSubmitValue}
         onTransientSubmitValue={gradientCenterYTransientSubmitValue}
         controlStatus={props.controlStatus}
-        scrubbableInnerLabel='center y'
+        scrubbableInnerLabel='Y'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
+        incrementControls={false}
       />
       <NumberInput
-        style={{
-          gridColumn: '5 / span 1',
-        }}
         id='background-gradient-width'
         testId='background-gradient-width'
         value={radialBackgroundLayerWidth}
         onSubmitValue={gradientWidthSubmitValue}
         onTransientSubmitValue={gradientWidthTransientSubmitValue}
         controlStatus={props.controlStatus}
-        scrubbableInnerLabel='width'
+        scrubbableInnerLabel='W'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
+        incrementControls={false}
       />
       <NumberInput
-        style={{
-          gridColumn: '7 / span 1',
-        }}
         id='background-gradient-height'
         testId='background-gradient-height'
         value={radialBackgroundLayerHeight}
         onSubmitValue={gradientHeightSubmitValue}
         onTransientSubmitValue={gradientHeightTransientSubmitValue}
         controlStatus={props.controlStatus}
-        scrubbableInnerLabel='height'
+        scrubbableInnerLabel='H'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
+        incrementControls={false}
       />
-    </div>
+    </UIGridRow>
   )
 }
 
@@ -349,47 +335,47 @@ const ConicGradientControls: React.FunctionComponent<
     )
 
   return (
-    <div style={MetadataControlsStyle}>
+    <UIGridRow padded variant='<--1fr--><--1fr--><--1fr-->'>
       <NumberInput
-        style={{ gridColumn: '1 / span 1' }}
         id='background-gradient-center-x'
         testId='background-gradient-center-x'
         value={props.value.center.x.value}
         onSubmitValue={gradientCenterXSubmitValue}
         onTransientSubmitValue={gradientCenterXTransientSubmitValue}
         controlStatus={props.controlStatus}
-        scrubbableInnerLabel='x'
+        scrubbableInnerLabel='X'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
+        incrementControls={false}
       />
       <NumberInput
-        style={{ gridColumn: '3 / span 1' }}
         id='background-gradient-center-y'
         testId='background-gradient-center-y'
         value={props.value.center.y.value}
         onSubmitValue={gradientCenterYSubmitValue}
         onTransientSubmitValue={gradientCenterYTransientSubmitValue}
         controlStatus={props.controlStatus}
-        scrubbableInnerLabel='y'
+        scrubbableInnerLabel='Y'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
+        incrementControls={false}
       />
       <NumberInput
-        style={{ gridColumn: '5 / span 1' }}
         id='background-gradient-from-angle'
         testId='background-gradient-from-angle'
         value={props.value.fromAngle.value}
         onSubmitValue={gradientFromAngleSubmitValue}
         onTransientSubmitValue={gradientFromAngleTransientSubmitValue}
         controlStatus={props.controlStatus}
-        scrubbableInnerLabel='angle'
+        scrubbableInnerLabel={<Icons.Degree color='on-highlight-secondary' />}
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
         defaultUnitToHide={null}
+        incrementControls={false}
       />
-    </div>
+    </UIGridRow>
   )
 }
 

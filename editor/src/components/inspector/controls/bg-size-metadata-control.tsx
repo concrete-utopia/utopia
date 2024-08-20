@@ -223,7 +223,7 @@ export const BGSizeMetadataControl: React.FunctionComponent<
   const isPercentageLength = bgSizeValueToSelectOption(bgSizeValue).value === 'percentage-length'
 
   return (
-    <UIGridRow padded variant='<--1fr--><--1fr-->'>
+    <UIGridRow padded variant='<--1fr--><--1fr-->' style={{ padding: '0 8px 0 4px' }}>
       <PopupList
         style={{ background: 'transparent', width: 130 }}
         options={BGSizeKeywordValueSelectOptions}
