@@ -157,6 +157,10 @@ import {
 import { uniqBy } from '../../core/shared/array-utils'
 import { InitialOnlineState } from '../editor/online-status'
 import { collectMetadata } from './dom-sampler'
+import {
+  ElementInstanceMetadataKeepDeepEquality,
+  ElementInstanceMetadataMapKeepDeepEquality,
+} from '../editor/store/store-deep-equality-instances'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -423,10 +427,10 @@ export async function renderTestEditorWithModel(
     // run dom walker
 
     // {
-    //   console.log(
-    //     'calling run dom walker, the spy collector is:',
-    //     spyCollector.current.spyValues.variablesInScope,
-    //   )
+    //   // console.log(
+    //   //   'calling run dom walker, the spy collector is:',
+    //   //   spyCollector.current.spyValues.variablesInScope,
+    //   // )
     //   const domWalkerResult = runDomWalker({
     //     domWalkerMutableState: domWalkerMutableState,
     //     selectedViews: workingEditorState.patchedEditor.selectedViews,
@@ -446,7 +450,7 @@ export async function renderTestEditorWithModel(
     //       domWalkerResult.invalidatedPaths,
     //     )
     //     recordedActions.push(saveDomReportAction)
-    //     console.log('my spy collector! my dune!', spyCollector.current.spyValues.variablesInScope)
+    //     // console.log('my spy collector! my dune!', spyCollector.current.spyValues.variablesInScope)
     //     const editorWithNewMetadata = editorDispatchActionRunner(
     //       asyncTestDispatch,
     //       [saveDomReportAction],
@@ -478,11 +482,16 @@ export async function renderTestEditorWithModel(
       //   spyCollector.current.spyValues.variablesInScope,
       // )
 
-      workingEditorState.elementMetadata = metadataResult.metadata
+      const deepequalityResult = ElementInstanceMetadataMapKeepDeepEquality(
+        workingEditorState.elementMetadata,
+        metadataResult.metadata,
+      )
 
-      if (metadataResult != null) {
+      workingEditorState.elementMetadata = deepequalityResult.value
+
+      if (!deepequalityResult.areEqual) {
         const saveDomReportAction = updateMetadataInEditorState(
-          metadataResult.metadata,
+          workingEditorState.elementMetadata,
           metadataResult.tree,
         )
         recordedActions.push(saveDomReportAction)
