@@ -11,6 +11,7 @@ export const UTOPIA_INSTANCE_PATH = 'data-utopia-instance-path'
 export const UtopiaKeys: Array<string> = [
   UTOPIA_UID_KEY,
   UTOPIA_PATH_KEY,
+  UTOPIA_STATIC_PATH_KEY,
   UTOPIA_LABEL_KEY,
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_SCENE_ID_KEY,
