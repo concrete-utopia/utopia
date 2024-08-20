@@ -54069,8 +54069,8 @@ exports[`UiJsxCanvas render renders a component using the spread operator 1`] = 
       <div
         style=\\"position: absolute; height: 99.9; width: 77.7\\"
         title=\\"Hi there!\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div

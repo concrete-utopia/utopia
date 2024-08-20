@@ -35,7 +35,11 @@ import {
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-element-renderer-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import { UTOPIA_INSTANCE_PATH, UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
+import {
+  UTOPIA_INSTANCE_PATH,
+  UTOPIA_PATH_KEY,
+  UTOPIA_STATIC_PATH_KEY,
+} from '../../../core/model/utopia-constants'
 import { getPathsFromString, getUtopiaID } from '../../../core/shared/uid-utils'
 import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elements'
 import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
@@ -91,6 +95,7 @@ export function createComponentRendererComponent(params: {
     const {
       [UTOPIA_INSTANCE_PATH]: instancePathAny, // TODO types?
       [UTOPIA_PATH_KEY]: pathsString, // TODO types?
+      [UTOPIA_STATIC_PATH_KEY]: staticPathsString, // TODO types?
       ...realPassedProps
     } = functionArguments[regularPropsArgumentIndex]
 
