@@ -359,7 +359,11 @@ export class ObserverCache<T, N extends Element = Element, A extends Array<any> 
     const cacheResult = this.cache.get(node)
 
     // if the cache is empty, or the parameters have changed, recompute the value
-    if (cacheResult == null || cacheResult.params.some((param, index) => param !== args[index])) {
+    if (
+      !ObserversAvailable ||
+      cacheResult == null ||
+      cacheResult.params.some((param, index) => param !== args[index])
+    ) {
       const value = this.getter(node, ...args)
       this.cache.set(node, { value: value, params: args })
       return value
