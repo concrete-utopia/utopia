@@ -62,6 +62,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
+  ErrorBoundaryHandling,
 } from './store/editor-state'
 import type { Notice } from '../common/notice'
 import type { LoginState } from '../../common/user'
@@ -1192,6 +1193,11 @@ export interface IncreaseOnlineStateFailureCount {
   action: 'INCREASE_ONLINE_STATE_FAILURE_COUNT'
 }
 
+export interface SetErrorBoundaryHandling {
+  action: 'SET_ERROR_BOUNDARY_HANDLING'
+  errorBoundaryHandling: ErrorBoundaryHandling
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1382,6 +1388,7 @@ export type EditorAction =
   | SetSharingDialogOpen
   | ResetOnlineState
   | IncreaseOnlineStateFailureCount
+  | SetErrorBoundaryHandling
 
 function actionForEach(action: EditorAction, fn: (action: EditorAction) => void): void {
   fn(action)

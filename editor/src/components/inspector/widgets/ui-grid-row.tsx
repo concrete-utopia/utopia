@@ -67,8 +67,12 @@ const gridTemplates = {
     gridTemplateColumns: '1fr 1fr',
   },
   '<--1fr--><--1fr-->|22px|': {
-    gridColumnGap: 4,
+    gridColumnGap: 8,
     gridTemplateColumns: '1fr 1fr 22px',
+  },
+  '<--auto--><--1fr-->|22px|': {
+    gridColumnGap: 8,
+    gridTemplateColumns: 'auto 1fr 22px',
   },
   '<--1fr--><--1fr-->|-18px-|': {
     gridColumnGap: 4,
@@ -100,6 +104,10 @@ const gridTemplates = {
   '|--50px--|<--------1fr-------->': {
     gridColumnGap: 10,
     gridTemplateColumns: '50px 1fr',
+  },
+  '|--60px--|<--1fr-->|22px|': {
+    gridColumnGap: 10,
+    gridTemplateColumns: '60px 1fr 22px',
   },
   '<--------1fr-------->|145px|': {
     gridColumnGap: 4,

@@ -71,13 +71,13 @@ import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
 
-export const FillContainerLabel = 'Fill container' as const
+export const FillContainerLabel = 'Fill' as const
 export const FixedLabel = 'Fixed' as const
 export const ScaledLabel = 'Scaled' as const
-export const HugContentsLabel = 'Hug contents' as const
+export const HugContentsLabel = 'Hug' as const
 export const SqueezeContentsLabel = 'Squeeze' as const
 export const CollapsedLabel = 'Collapsed' as const
-export const HugGroupContentsLabel = 'Hug contents' as const
+export const HugGroupContentsLabel = 'Hug' as const
 export const ComputedLabel = 'Computed' as const
 export const DetectedLabel = 'Detected' as const
 

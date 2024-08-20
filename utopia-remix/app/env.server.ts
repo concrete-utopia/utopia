@@ -49,7 +49,7 @@ export type BrowserEnvironmentType = {
 
 export const BrowserEnvironment: BrowserEnvironmentType = {
   EDITOR_URL: mustEnvOrLocalFallback('EDITOR_URL', 'http://localhost:8000'),
-  UTOPIA_CDN_URL: mustEnvOrLocalFallback('UTOPIA_CDN_URL', 'http://localhost:8000'),
+  UTOPIA_CDN_URL: mustEnvOrLocalFallback('UTOPIA_CDN_URL', 'http://cdn.localhost:8000'),
 }
 
 /**

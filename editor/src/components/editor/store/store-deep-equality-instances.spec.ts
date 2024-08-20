@@ -63,6 +63,7 @@ import {
   unparsed,
 } from '../../../core/shared/project-file-types'
 import { regularNavigatorRow } from '../../navigator/navigator-row'
+import { right } from '../../../core/shared/either'
 
 describe('DerivedStateKeepDeepEquality', () => {
   const oldValue: DerivedState = {
@@ -93,7 +94,7 @@ describe('DerivedStateKeepDeepEquality', () => {
         ),
       },
     },
-    remixData: null,
+    remixData: right(null),
     filePathMappings: [],
   }
   const newSameValue: DerivedState = {
@@ -124,7 +125,7 @@ describe('DerivedStateKeepDeepEquality', () => {
         ),
       },
     },
-    remixData: null,
+    remixData: right(null),
     filePathMappings: [],
   }
   const newDifferentValue: DerivedState = {
@@ -155,7 +156,7 @@ describe('DerivedStateKeepDeepEquality', () => {
         ),
       },
     },
-    remixData: null,
+    remixData: right(null),
     filePathMappings: [],
   }
   it('same reference returns the same reference', () => {
