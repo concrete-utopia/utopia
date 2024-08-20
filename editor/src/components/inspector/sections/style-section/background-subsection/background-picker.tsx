@@ -164,7 +164,7 @@ const LinearGradientControls: React.FunctionComponent<
         onSubmitValue={gradientAngleSubmitValue}
         onTransientSubmitValue={gradientAngleTransientSubmitValue}
         controlStatus={props.controlStatus}
-        scrubbableInnerLabel={<Icons.Degree color='on-highlight-secondary' />}
+        innerLabel={<Icons.Degree color='on-highlight-secondary' />}
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
         defaultUnitToHide={null}
@@ -245,7 +245,7 @@ const RadialGradientControls: React.FunctionComponent<
         onSubmitValue={gradientCenterXSubmitValue}
         onTransientSubmitValue={gradientCenterXTransientSubmitValue}
         controlStatus={props.controlStatus}
-        scrubbableInnerLabel='X'
+        innerLabel='X'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
@@ -257,7 +257,7 @@ const RadialGradientControls: React.FunctionComponent<
         onSubmitValue={gradientCenterYSubmitValue}
         onTransientSubmitValue={gradientCenterYTransientSubmitValue}
         controlStatus={props.controlStatus}
-        scrubbableInnerLabel='Y'
+        innerLabel='Y'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
@@ -269,7 +269,7 @@ const RadialGradientControls: React.FunctionComponent<
         onSubmitValue={gradientWidthSubmitValue}
         onTransientSubmitValue={gradientWidthTransientSubmitValue}
         controlStatus={props.controlStatus}
-        scrubbableInnerLabel='W'
+        innerLabel='W'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
@@ -281,7 +281,7 @@ const RadialGradientControls: React.FunctionComponent<
         onSubmitValue={gradientHeightSubmitValue}
         onTransientSubmitValue={gradientHeightTransientSubmitValue}
         controlStatus={props.controlStatus}
-        scrubbableInnerLabel='H'
+        innerLabel='H'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
@@ -338,7 +338,7 @@ const ConicGradientControls: React.FunctionComponent<
         onSubmitValue={gradientCenterXSubmitValue}
         onTransientSubmitValue={gradientCenterXTransientSubmitValue}
         controlStatus={props.controlStatus}
-        scrubbableInnerLabel='X'
+        innerLabel='X'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
@@ -350,7 +350,7 @@ const ConicGradientControls: React.FunctionComponent<
         onSubmitValue={gradientCenterYSubmitValue}
         onTransientSubmitValue={gradientCenterYTransientSubmitValue}
         controlStatus={props.controlStatus}
-        scrubbableInnerLabel='Y'
+        innerLabel='Y'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
@@ -362,7 +362,7 @@ const ConicGradientControls: React.FunctionComponent<
         onSubmitValue={gradientFromAngleSubmitValue}
         onTransientSubmitValue={gradientFromAngleTransientSubmitValue}
         controlStatus={props.controlStatus}
-        scrubbableInnerLabel={<Icons.Degree color='on-highlight-secondary' />}
+        innerLabel={<Icons.Degree color='on-highlight-secondary' />}
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
         defaultUnitToHide={null}

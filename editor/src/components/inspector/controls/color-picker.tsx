@@ -700,7 +700,7 @@ export class ColorPickerInner extends React.Component<
               onForcedSubmitValue={this.onSubmitValueHue}
               minimum={0}
               maximum={360}
-              scrubbableInnerLabel='H'
+              innerLabel='H'
               defaultUnitToHide={null}
             />
             <SimplePercentInput
@@ -714,7 +714,7 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={1}
               stepSize={0.01}
-              scrubbableInnerLabel='S'
+              innerLabel='S'
               defaultUnitToHide={null}
             />
             <SimplePercentInput
@@ -728,7 +728,7 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={1}
               stepSize={0.01}
-              scrubbableInnerLabel='V'
+              innerLabel='V'
               defaultUnitToHide={null}
             />
             <SimplePercentInput
@@ -742,7 +742,7 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={1}
               stepSize={0.01}
-              scrubbableInnerLabel='A'
+              innerLabel='A'
               defaultUnitToHide={null}
             />
           </div>

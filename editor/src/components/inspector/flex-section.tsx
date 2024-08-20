@@ -798,7 +798,7 @@ const GapRowColumnControl = React.memo(() => {
             onForcedSubmitValue={onSubmitUnifiedValue}
             defaultUnitToHide={'px'}
             testId={'grid-column-gap'}
-            scrubbableInnerLabel={<Icons.GapHorizontal color='on-highlight-secondary' />}
+            innerLabel={<Icons.GapHorizontal color='on-highlight-secondary' />}
           />
         </UIGridRow>,
       )}
@@ -813,7 +813,7 @@ const GapRowColumnControl = React.memo(() => {
             onForcedSubmitValue={onSubmitSplitValue('columnGap')}
             defaultUnitToHide={'px'}
             testId={'grid-column-gap'}
-            scrubbableInnerLabel={<Icons.GapHorizontal color='on-highlight-secondary' />}
+            innerLabel={<Icons.GapHorizontal color='on-highlight-secondary' />}
           />
           <NumberInput
             value={rowGap.value}
@@ -823,7 +823,7 @@ const GapRowColumnControl = React.memo(() => {
             onForcedSubmitValue={onSubmitSplitValue('rowGap')}
             defaultUnitToHide={'px'}
             testId={'grid-row-gap'}
-            scrubbableInnerLabel={<Icons.GapVertical color='on-highlight-secondary' />}
+            innerLabel={<Icons.GapVertical color='on-highlight-secondary' />}
           />
         </UIGridRow>,
       )}

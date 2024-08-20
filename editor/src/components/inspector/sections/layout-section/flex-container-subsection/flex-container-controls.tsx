@@ -334,7 +334,7 @@ export const FlexGapControl = React.memo(() => {
           controlStatus={controlStatus}
           numberType='LengthPercent'
           defaultUnitToHide={'px'}
-          scrubbableInnerLabel={
+          innerLabel={
             flexDirection.startsWith('row') ? (
               <Icons.GapHorizontal color='on-highlight-secondary' />
             ) : (

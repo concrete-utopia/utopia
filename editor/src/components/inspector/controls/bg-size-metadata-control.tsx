@@ -239,7 +239,7 @@ export const BGSizeMetadataControl: React.FunctionComponent<
             stepSize={1}
             minimum={0}
             numberType='LengthPercent'
-            scrubbableInnerLabel='W'
+            innerLabel='W'
             onSubmitValue={onSubmitWidthValue}
             onTransientSubmitValue={onTransientSubmitWidthValue}
             controlStatus={props.controlStatus}
@@ -252,7 +252,7 @@ export const BGSizeMetadataControl: React.FunctionComponent<
             stepSize={1}
             minimum={0}
             numberType='LengthPercent'
-            scrubbableInnerLabel='H'
+            innerLabel='H'
             onSubmitValue={onSubmitHeightValue}
             onTransientSubmitValue={onTransientSubmitHeightValue}
             controlStatus={props.controlStatus}

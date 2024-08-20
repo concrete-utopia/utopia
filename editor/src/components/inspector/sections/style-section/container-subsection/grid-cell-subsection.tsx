@@ -310,7 +310,7 @@ const DimensionsControls = React.memo(
               testId='grid-cell-row-width'
               onSubmitValue={onSubmitPosition('width')}
               inputProps={{ placeholder: 'auto' }}
-              scrubbableInnerLabel={<Icons.RowSpan color='on-highlight-secondary' />}
+              innerLabel={<Icons.RowSpan color='on-highlight-secondary' />}
               descriptionLabel={width === 1 ? 'Col' : 'Cols'}
             />
             <NumberInput
@@ -320,7 +320,7 @@ const DimensionsControls = React.memo(
               testId='grid-cell-row-height'
               onSubmitValue={onSubmitPosition('height')}
               inputProps={{ placeholder: 'auto' }}
-              scrubbableInnerLabel={<Icons.ColumnSpan color='on-highlight-secondary' />}
+              innerLabel={<Icons.ColumnSpan color='on-highlight-secondary' />}
               descriptionLabel={height === 1 ? 'Row' : 'Rows'}
             />
           </UIGridRow>

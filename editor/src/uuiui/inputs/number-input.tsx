@@ -125,7 +125,7 @@ let incrementAnimationFrame: number | undefined = undefined
 const repeatThreshold: number = 500
 
 export interface NumberInputOptions {
-  scrubbableInnerLabel?: React.ReactChild
+  innerLabel?: React.ReactChild
   minimum?: number
   maximum?: number
   stepSize?: number
@@ -166,7 +166,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     testId,
     inputProps = {},
     id,
-    scrubbableInnerLabel,
+    innerLabel,
     minimum: unscaledMinimum = -Infinity,
     maximum: unscaledMaximum = Infinity,
     stepSize: unscaledStepSize,
@@ -769,7 +769,7 @@ export const NumberInput = React.memo<NumberInputProps>(
               </div>
             </div>
           ) : null}
-          {scrubbableInnerLabel == null && controlStatus != 'off' ? null : (
+          {innerLabel == null && controlStatus != 'off' ? null : (
             <div
               data-testid={`${testId}-mouse-down-handler`}
               onMouseDown={onLabelMouseDown}
@@ -783,7 +783,7 @@ export const NumberInput = React.memo<NumberInputProps>(
                 width: 20,
               }}
             >
-              {scrubbableInnerLabel}
+              {innerLabel}
             </div>
           )}
           <InspectorInput
@@ -795,7 +795,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             pasteHandler={pasteHandler}
             disabled={disabled}
             focused={isFocused}
-            hasLabel={scrubbableInnerLabel != null}
+            hasLabel={innerLabel != null}
             roundCorners={roundCorners}
             mixed={mixed}
             value={displayValue}

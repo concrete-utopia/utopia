@@ -154,7 +154,7 @@ export const SolidBackgroundLayer = React.memo<SolidBackgroundLayerProps>((props
           onTransientSubmitValue={onAlphaTransientSubmitValue}
           onForcedSubmitValue={onAlphaSubmitValue}
           controlStatus={props.controlStatus}
-          scrubbableInnerLabel={<span style={{ fontSize: 12 }}>α</span>}
+          innerLabel={<span style={{ fontSize: 12 }}>α</span>}
           minimum={0}
           maximum={1}
           stepSize={0.01}
