@@ -312,6 +312,7 @@ export const TextSubsection = React.memo(() => {
             minimum={0}
             numberType='Length'
             defaultUnitToHide={'px'}
+            incrementControls
           />
         </InspectorContextMenuWrapper>
         <InspectorContextMenuWrapper
