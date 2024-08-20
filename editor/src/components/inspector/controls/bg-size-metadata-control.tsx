@@ -244,7 +244,6 @@ export const BGSizeMetadataControl: React.FunctionComponent<
             onTransientSubmitValue={onTransientSubmitWidthValue}
             controlStatus={props.controlStatus}
             defaultUnitToHide={'px'}
-            incrementControls={false}
           />
           <NumberInput
             id='bgSize-height-component'
@@ -258,7 +257,6 @@ export const BGSizeMetadataControl: React.FunctionComponent<
             onTransientSubmitValue={onTransientSubmitHeightValue}
             controlStatus={props.controlStatus}
             defaultUnitToHide={'px'}
-            incrementControls={false}
           />
         </UIGridRow>
       ) : null}

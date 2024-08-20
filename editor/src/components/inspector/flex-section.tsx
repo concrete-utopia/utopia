@@ -799,7 +799,6 @@ const GapRowColumnControl = React.memo(() => {
             defaultUnitToHide={'px'}
             testId={'grid-column-gap'}
             scrubbableInnerLabel={<Icons.GapHorizontal color='on-highlight-secondary' />}
-            incrementControls={false}
           />
         </UIGridRow>,
       )}
@@ -815,7 +814,6 @@ const GapRowColumnControl = React.memo(() => {
             defaultUnitToHide={'px'}
             testId={'grid-column-gap'}
             scrubbableInnerLabel={<Icons.GapHorizontal color='on-highlight-secondary' />}
-            incrementControls={false}
           />
           <NumberInput
             value={rowGap.value}
@@ -826,7 +824,6 @@ const GapRowColumnControl = React.memo(() => {
             defaultUnitToHide={'px'}
             testId={'grid-row-gap'}
             scrubbableInnerLabel={<Icons.GapVertical color='on-highlight-secondary' />}
-            incrementControls={false}
           />
         </UIGridRow>,
       )}

@@ -147,7 +147,6 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
           controlStatus={controlStatus}
           numberType='Length'
           defaultUnitToHide={'px'}
-          incrementControls={false}
         />
       </UIGridRow>
     )

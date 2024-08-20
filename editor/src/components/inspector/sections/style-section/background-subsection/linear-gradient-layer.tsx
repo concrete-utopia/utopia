@@ -133,7 +133,6 @@ export const LinearGradientBackgroundLayer = React.memo<LinearGradientBackground
             inputProps={{ onMouseDown: stopPropagation }}
             numberType='AnglePercent'
             defaultUnitToHide={null}
-            incrementControls={false}
           />
         </UIGridRow>
       </InspectorContextMenuWrapper>

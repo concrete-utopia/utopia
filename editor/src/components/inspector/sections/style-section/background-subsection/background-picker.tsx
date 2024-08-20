@@ -168,7 +168,6 @@ const LinearGradientControls: React.FunctionComponent<
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
         defaultUnitToHide={null}
-        incrementControls={false}
       />
     </UIGridRow>
   )
@@ -250,7 +249,6 @@ const RadialGradientControls: React.FunctionComponent<
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
-        incrementControls={false}
       />
       <NumberInput
         id='background-gradient-center-y'
@@ -263,7 +261,6 @@ const RadialGradientControls: React.FunctionComponent<
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
-        incrementControls={false}
       />
       <NumberInput
         id='background-gradient-width'
@@ -276,7 +273,6 @@ const RadialGradientControls: React.FunctionComponent<
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
-        incrementControls={false}
       />
       <NumberInput
         id='background-gradient-height'
@@ -289,7 +285,6 @@ const RadialGradientControls: React.FunctionComponent<
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
-        incrementControls={false}
       />
     </UIGridRow>
   )
@@ -347,7 +342,6 @@ const ConicGradientControls: React.FunctionComponent<
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
-        incrementControls={false}
       />
       <NumberInput
         id='background-gradient-center-y'
@@ -360,7 +354,6 @@ const ConicGradientControls: React.FunctionComponent<
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
         defaultUnitToHide={null}
-        incrementControls={false}
       />
       <NumberInput
         id='background-gradient-from-angle'
@@ -373,7 +366,6 @@ const ConicGradientControls: React.FunctionComponent<
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
         defaultUnitToHide={null}
-        incrementControls={false}
       />
     </UIGridRow>
   )

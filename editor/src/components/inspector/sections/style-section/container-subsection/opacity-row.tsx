@@ -61,7 +61,6 @@ export const OpacityRow = React.memo(() => {
         stepSize={0.01}
         inputProps={{ onMouseDown: handleMouseDown }}
         defaultUnitToHide={null}
-        incrementControls={false}
       />
     </InspectorContextMenuWrapper>
   )

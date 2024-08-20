@@ -160,7 +160,6 @@ export const SolidBackgroundLayer = React.memo<SolidBackgroundLayerProps>((props
           stepSize={0.01}
           inputProps={{ onMouseDown: stopPropagation }}
           defaultUnitToHide={null}
-          incrementControls={false}
         />
       </UIGridRow>
     </InspectorContextMenuWrapper>

@@ -312,7 +312,6 @@ const DimensionsControls = React.memo(
               inputProps={{ placeholder: 'auto' }}
               scrubbableInnerLabel={<Icons.RowSpan color='on-highlight-secondary' />}
               descriptionLabel={width === 1 ? 'Col' : 'Cols'}
-              incrementControls={false}
             />
             <NumberInput
               value={cssNumber(height)}
@@ -323,7 +322,6 @@ const DimensionsControls = React.memo(
               inputProps={{ placeholder: 'auto' }}
               scrubbableInnerLabel={<Icons.ColumnSpan color='on-highlight-secondary' />}
               descriptionLabel={height === 1 ? 'Row' : 'Rows'}
-              incrementControls={false}
             />
           </UIGridRow>
         </UIGridRow>

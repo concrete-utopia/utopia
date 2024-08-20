@@ -137,6 +137,7 @@ export interface NumberInputOptions {
   defaultUnitToHide: CSSNumberUnit | null
   pasteHandler?: boolean
   descriptionLabel?: string
+  disableScrubbing?: boolean
 }
 
 export interface AbstractNumberInputProps<T extends CSSNumber | number>
@@ -169,7 +170,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     minimum: unscaledMinimum = -Infinity,
     maximum: unscaledMaximum = Infinity,
     stepSize: unscaledStepSize,
-    incrementControls = true,
+    incrementControls = false,
     chained = 'not-chained',
     height = UtopiaTheme.layout.inputHeight.default,
     roundCorners = 'all',
@@ -185,6 +186,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     onMouseLeave,
     invalid,
     pasteHandler,
+    disableScrubbing = false,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const colorTheme = useColorTheme()
@@ -624,7 +626,7 @@ export const NumberInput = React.memo<NumberInputProps>(
 
     const onLabelMouseDown = React.useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
-        if (disabled) {
+        if (disabled || disableScrubbing) {
           return
         }
         if (e.button === 0) {
@@ -639,7 +641,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           setGlobalCursor?.(CSSCursor.ResizeEW)
         }
       },
-      [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, value, disabled],
+      [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, value, disabled, disableScrubbing],
     )
 
     const placeholder = getControlStylesAwarePlaceholder(controlStyles)
@@ -696,7 +698,7 @@ export const NumberInput = React.memo<NumberInputProps>(
               css={{
                 position: 'absolute',
                 top: 0,
-                right: 1,
+                right: 2,
                 flexDirection: 'column',
                 alignItems: 'stretch',
                 width: 11,
@@ -773,7 +775,7 @@ export const NumberInput = React.memo<NumberInputProps>(
               onMouseDown={onLabelMouseDown}
               style={{
                 paddingLeft: 4,
-                cursor: CSSCursor.ResizeEW,
+                cursor: disableScrubbing ? 'default' : CSSCursor.ResizeEW,
                 fontSize: 9,
                 textAlign: 'center',
                 display: 'block',
@@ -947,7 +949,6 @@ export const ChainedNumberInput: React.FunctionComponent<
                 chained='first'
                 roundCorners='left'
                 setGlobalCursor={setGlobalCursor}
-                incrementControls={false}
               />
             )
           }
@@ -960,7 +961,6 @@ export const ChainedNumberInput: React.FunctionComponent<
                 chained='last'
                 roundCorners='right'
                 setGlobalCursor={setGlobalCursor}
-                incrementControls={false}
               />
             )
           }
@@ -973,7 +973,6 @@ export const ChainedNumberInput: React.FunctionComponent<
                 chained='middle'
                 roundCorners='none'
                 setGlobalCursor={setGlobalCursor}
-                incrementControls={false}
               />
             )
           }

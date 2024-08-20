@@ -341,7 +341,6 @@ export const FlexGapControl = React.memo(() => {
               <Icons.GapVertical color='on-highlight-secondary' />
             )
           }
-          incrementControls={false}
           inputProps={inputProps}
         />
       </UIGridRow>

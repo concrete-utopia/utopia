@@ -501,7 +501,6 @@ export const TextSubsection = React.memo(() => {
               stepSize={0.01}
               numberType='Length'
               defaultUnitToHide={'px'}
-              incrementControls={false}
             />
           </InspectorContextMenuWrapper>
           <InspectorContextMenuWrapper
@@ -525,7 +524,6 @@ export const TextSubsection = React.memo(() => {
               stepSize={0.01}
               numberType='Length'
               defaultUnitToHide={'em'}
-              incrementControls={false}
             />
           </InspectorContextMenuWrapper>
         </PropertyRow>

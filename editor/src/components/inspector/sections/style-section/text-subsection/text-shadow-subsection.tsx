@@ -215,7 +215,6 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
         numberType='Length'
         defaultUnitToHide={'px'}
         stepSize={0.1}
-        incrementControls={false}
       />
       <NumberInput
         style={{ gridColumn: '4 / span 1' }}
@@ -230,7 +229,6 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
         numberType='Length'
         defaultUnitToHide={'px'}
         stepSize={0.1}
-        incrementControls={false}
       />
       <NumberInput
         style={{ gridColumn: '5 / span 1' }}
@@ -245,7 +243,6 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
         numberType='Length'
         defaultUnitToHide={'px'}
         stepSize={0.1}
-        incrementControls={false}
       />
       <SquareButton highlight onMouseDown={removeShadow}>
         <Icons.SmallMinus />
