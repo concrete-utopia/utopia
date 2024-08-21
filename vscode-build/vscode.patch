@@ -14,7 +14,7 @@ index c4947e76cbf..c2dd4189229 100644
  exports.compileBuildTask = compileBuildTask;
  
 diff --git a/build/gulpfile.vscode.web.js b/build/gulpfile.vscode.web.js
-index 50c7e6fb631..629a119108b 100644
+index 50c7e6fb631..06b6638c639 100644
 --- a/build/gulpfile.vscode.web.js
 +++ b/build/gulpfile.vscode.web.js
 @@ -186,7 +186,7 @@ function packageTask(sourceFolderName, destinationFolderName) {
@@ -26,6 +26,15 @@ index 50c7e6fb631..629a119108b 100644
  
  		const extensions = gulp.src('.build/web/extensions/**', { base: '.build/web', dot: true });
  
+@@ -233,7 +233,7 @@ function packageTask(sourceFolderName, destinationFolderName) {
+ 
+ const compileWebExtensionsBuildTask = task.define('compile-web-extensions-build', task.series(
+ 	task.define('clean-web-extensions-build', util.rimraf('.build/web/extensions')),
+-	task.define('bundle-web-extensions-build', () => extensions.packageLocalExtensionsStream(true, false).pipe(gulp.dest('.build/web'))),
++	task.define('bundle-web-extensions-build', () => extensions.packageLocalExtensionsStream(true, true).pipe(gulp.dest('.build/web'))),
+ 	task.define('bundle-marketplace-web-extensions-build', () => extensions.packageMarketplaceExtensionsStream(true).pipe(gulp.dest('.build/web'))),
+ 	task.define('bundle-web-extension-media-build', () => extensions.buildExtensionMedia(false, '.build/web/extensions')),
+ ));
 diff --git a/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json b/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json
 deleted file mode 100644
 index 9e26dfeeb6e..00000000000
