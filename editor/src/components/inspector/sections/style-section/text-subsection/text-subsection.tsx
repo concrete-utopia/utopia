@@ -18,6 +18,7 @@ import {
   NumberInput,
   SquareButton,
   colorTheme,
+  UtopiaTheme,
 } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { EditorAction } from '../../../../editor/action-types'
@@ -265,7 +266,7 @@ export const TextSubsection = React.memo(() => {
   const isStruckthrough = textDecorationLineMetadata.value.includes('line-through')
 
   return (
-    <>
+    <div style={{ paddingBottom: 10 }}>
       <InspectorContextMenuWrapper
         id='text-subsection-context-menu'
         items={subsectionContextMenuItems}
@@ -294,14 +295,13 @@ export const TextSubsection = React.memo(() => {
       <UIGridRow
         padded={false}
         variant='<--------1fr-------->|60px||28px|'
-        style={{ padding: '0 8px 0 4px' }}
+        style={{ padding: '0 8px 0 4px', alignItems: 'stretch' }}
       >
         <FontVariantSelect />
         <InspectorContextMenuWrapper
           id='fontSize-context-menu'
           items={fontSizeContextMenuItems}
           data={null}
-          style={{ gridColumn: '2' }}
         >
           <NumberInput
             id='fontSize'
@@ -321,7 +321,6 @@ export const TextSubsection = React.memo(() => {
           id='color-context-menu'
           items={colorContextMenuItems}
           data={null}
-          style={{ gridColumn: '3' }}
         >
           <ColorControl
             id='color-control'
@@ -336,13 +335,20 @@ export const TextSubsection = React.memo(() => {
           />
         </InspectorContextMenuWrapper>
       </UIGridRow>
-      <PropertyRow style={{ gridColumnGap: 8 }}>
+      <FlexRow
+        style={{
+          gridColumnGap: 8,
+          padding: '0 8px',
+          minHeight: UtopiaTheme.layout.rowHeight.normal,
+          alignItems: 'center',
+        }}
+        css={undefined}
+      >
         <TextAutoSizingControl />
         <InspectorContextMenuWrapper
           id='textAlign-context-menu'
           items={textAlignContextMenuItems}
           data={null}
-          style={{ gridColumn: '4 / span 3' }}
         >
           <OptionChainControl
             id='textAlign'
@@ -396,14 +402,17 @@ export const TextSubsection = React.memo(() => {
             ]}
           />
         </InspectorContextMenuWrapper>
-      </PropertyRow>
+      </FlexRow>
       {expanded ? (
-        <PropertyRow style={{ gridColumnGap: 8, gridTemplateColumns: '26px 26px 26px 62px 62px' }}>
-          <InspectorContextMenuWrapper
-            id='italic-context-menu'
-            items={italicContextMenuItems}
-            data={null}
-          >
+        <FlexRow
+          css={{
+            padding: '0 8px',
+            minHeight: UtopiaTheme.layout.rowHeight.normal,
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          <FlexRow css={{ gap: 4, flex: 1 }}>
             <OptionControl
               id='italic'
               key='italic'
@@ -424,12 +433,6 @@ export const TextSubsection = React.memo(() => {
               }}
               style={{ border: `1px solid ${colorTheme.bg2.value}`, borderRadius: 3 }}
             />
-          </InspectorContextMenuWrapper>
-          <InspectorContextMenuWrapper
-            id='textDecorationLine-context-menu'
-            items={underlineContextMenuItems}
-            data={null}
-          >
             <OptionControl
               id='underlined'
               key='underlined'
@@ -453,12 +456,6 @@ export const TextSubsection = React.memo(() => {
                 },
               }}
             />
-          </InspectorContextMenuWrapper>
-          <InspectorContextMenuWrapper
-            id='strikethrough-context-menu'
-            items={strikethroughContextMenuItems}
-            data={null}
-          >
             <OptionControl
               id='strikethrough'
               key='strikethrough'
@@ -482,56 +479,46 @@ export const TextSubsection = React.memo(() => {
                 },
               }}
             />
-          </InspectorContextMenuWrapper>
-          <InspectorContextMenuWrapper
-            id='letterSpacing-context-menu'
-            items={letterSpacingContextMenuItems}
-            data={null}
-          >
-            <NumberInput
-              key='letterSpacing'
-              id='letterSpacing'
-              testId='letterSpacing'
-              value={
-                letterSpacingMetadata.value === 'normal'
-                  ? normalLetterSpacingAsCSSNumber
-                  : letterSpacingMetadata.value
-              }
-              onSubmitValue={wrappedLetterSpacingOnSubmitValue}
-              onTransientSubmitValue={wrappedLetterSpacingOnTransientSubmitValue}
-              controlStatus={letterSpacingMetadata.controlStatus}
-              innerLabel={<Icons.LetterSpacing color='on-highlight-secondary' />}
-              stepSize={0.01}
-              numberType='Length'
-              defaultUnitToHide={'px'}
-            />
-          </InspectorContextMenuWrapper>
-          <InspectorContextMenuWrapper
-            id='lineHeight-context-menu'
-            items={lineHeightContextMenuItems}
-            data={null}
-          >
-            <NumberInput
-              key='lineHeight'
-              id='lineHeight'
-              testId='lineHeight'
-              value={
-                lineHeightMetadata.value === 'normal'
-                  ? normalLineHeightAsCSSNumber
-                  : lineHeightMetadata.value
-              }
-              controlStatus={lineHeightMetadata.controlStatus}
-              onSubmitValue={wrappedLineHeightOnSubmitValue}
-              onTransientSubmitValue={wrappedLineHeightOnTransientSubmitValue}
-              innerLabel={<Icons.LineHeight color='on-highlight-secondary' />}
-              stepSize={0.01}
-              numberType='Length'
-              defaultUnitToHide={'em'}
-            />
-          </InspectorContextMenuWrapper>
-        </PropertyRow>
+          </FlexRow>
+          <NumberInput
+            key='letterSpacing'
+            id='letterSpacing'
+            testId='letterSpacing'
+            value={
+              letterSpacingMetadata.value === 'normal'
+                ? normalLetterSpacingAsCSSNumber
+                : letterSpacingMetadata.value
+            }
+            onSubmitValue={wrappedLetterSpacingOnSubmitValue}
+            onTransientSubmitValue={wrappedLetterSpacingOnTransientSubmitValue}
+            controlStatus={letterSpacingMetadata.controlStatus}
+            innerLabel={<Icons.LetterSpacing color='on-highlight-secondary' />}
+            stepSize={0.01}
+            numberType='Length'
+            defaultUnitToHide={'px'}
+            style={{ flex: 1 }}
+          />
+          <NumberInput
+            key='lineHeight'
+            id='lineHeight'
+            testId='lineHeight'
+            value={
+              lineHeightMetadata.value === 'normal'
+                ? normalLineHeightAsCSSNumber
+                : lineHeightMetadata.value
+            }
+            controlStatus={lineHeightMetadata.controlStatus}
+            onSubmitValue={wrappedLineHeightOnSubmitValue}
+            onTransientSubmitValue={wrappedLineHeightOnTransientSubmitValue}
+            innerLabel={<Icons.LineHeight color='on-highlight-secondary' />}
+            stepSize={0.01}
+            numberType='Length'
+            defaultUnitToHide={'em'}
+            style={{ flex: 1 }}
+          />
+        </FlexRow>
       ) : null}
-    </>
+    </div>
   )
 })
 TextSubsection.displayName = 'TextSubsection'

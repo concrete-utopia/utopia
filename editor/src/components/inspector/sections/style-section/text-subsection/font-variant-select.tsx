@@ -141,7 +141,6 @@ export const FontVariantSelect = React.memo(() => {
       items={fontWeightAndStyleContextMenuItems}
       data={null}
       style={{
-        gridColumn: '1',
         minHeight: UtopiaTheme.layout.rowHeight.normal,
         alignItems: 'stretch',
       }}
