@@ -52,6 +52,7 @@ import { TextRelatedProperties } from '../../../../../core/properties/css-proper
 import { useContextSelector } from 'use-context-selector'
 import { TextAutoSizingControl } from './text-auto-sizing-control'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
+import { TextAlignControl } from './text-align-control'
 
 const ObjectPathImmutable: any = OPI
 
@@ -345,63 +346,7 @@ export const TextSubsection = React.memo(() => {
         css={undefined}
       >
         <TextAutoSizingControl />
-        <InspectorContextMenuWrapper
-          id='textAlign-context-menu'
-          items={textAlignContextMenuItems}
-          data={null}
-        >
-          <OptionChainControl
-            id='textAlign'
-            key='textAlign'
-            testId='textAlign'
-            value={textAlignMetadata.value}
-            onSubmitValue={textAlignMetadata.onSubmitValue}
-            controlStatus={textAlignMetadata.controlStatus}
-            controlStyles={textAlignMetadata.controlStyles}
-            options={[
-              {
-                value: 'left',
-                icon: {
-                  category: 'typography',
-                  type: 'leftAlign',
-                  color: 'secondary',
-                  width: 16,
-                  height: 16,
-                },
-              },
-              {
-                value: 'center',
-                icon: {
-                  category: 'typography',
-                  type: 'centerAlign',
-                  color: 'secondary',
-                  width: 16,
-                  height: 16,
-                },
-              },
-              {
-                value: 'right',
-                icon: {
-                  category: 'typography',
-                  type: 'rightAlign',
-                  color: 'secondary',
-                  width: 16,
-                  height: 16,
-                },
-              },
-              {
-                value: 'justify',
-                icon: {
-                  category: 'typography',
-                  type: 'justify',
-                  color: 'secondary',
-                  width: 16,
-                  height: 16,
-                },
-              },
-            ]}
-          />
-        </InspectorContextMenuWrapper>
+        <TextAlignControl />
       </FlexRow>
       {expanded ? (
         <FlexRow
