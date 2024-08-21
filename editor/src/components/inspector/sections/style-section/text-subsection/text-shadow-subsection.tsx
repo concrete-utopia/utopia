@@ -4,7 +4,7 @@ import { animated } from 'react-spring'
 import { BooleanControl } from '../../../controls/boolean-control'
 import { ColorControl } from '../../../controls/color-control'
 import type { ControlStatus } from '../../../common/control-status'
-import { LabelBelowNumberTextStyles, type ControlStyles } from '../../../common/control-styles'
+import { type ControlStyles } from '../../../common/control-styles'
 import { PropertyRow, PropertyRowHeightWithLabel } from '../../../widgets/property-row'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
 import type {
@@ -176,8 +176,7 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
     <PropertyRow
       key={props.index}
       style={{
-        gridTemplateColumns: `12px 28px repeat(3, 1fr) ${UtopiaTheme.layout.inputHeight.default}`,
-        gridColumnGap: 8,
+        gridTemplateColumns: `12px 28px 1fr 1fr 1fr ${UtopiaTheme.layout.inputHeight.default}px`,
       }}
     >
       <BooleanControl
@@ -206,8 +205,7 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
       <NumberInput
         style={{ gridColumn: '3 / span 1' }}
         value={props.value.offsetX}
-        DEPRECATED_labelBelow='X'
-        labelBelowStyle={LabelBelowNumberTextStyles}
+        innerLabel='X'
         id={`textShadow-offsetX-${props.index}`}
         testId={`textShadow-offsetX-${props.index}`}
         onSubmitValue={offsetXSubmitValue}
@@ -217,13 +215,11 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
         numberType='Length'
         defaultUnitToHide={'px'}
         stepSize={0.1}
-        incrementControls={false}
       />
       <NumberInput
         style={{ gridColumn: '4 / span 1' }}
         value={props.value.offsetY}
-        DEPRECATED_labelBelow='Y'
-        labelBelowStyle={LabelBelowNumberTextStyles}
+        innerLabel='Y'
         id={`textShadow-offsetY-${props.index}`}
         testId={`textShadow-offsetY-${props.index}`}
         onSubmitValue={offsetYSubmitValue}
@@ -233,13 +229,11 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
         numberType='Length'
         defaultUnitToHide={'px'}
         stepSize={0.1}
-        incrementControls={false}
       />
       <NumberInput
         style={{ gridColumn: '5 / span 1' }}
         value={props.value.blurRadius == null ? zeroBlurRadius : props.value.blurRadius.value}
-        DEPRECATED_labelBelow='B'
-        labelBelowStyle={LabelBelowNumberTextStyles}
+        innerLabel='B'
         id={`textShadow-blurRadius-${props.index}`}
         testId={`textShadow-blurRadius-${props.index}`}
         onSubmitValue={blurRadiusSubmitValue}
@@ -249,7 +243,6 @@ const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
         numberType='Length'
         defaultUnitToHide={'px'}
         stepSize={0.1}
-        incrementControls={false}
       />
       <SquareButton highlight onMouseDown={removeShadow}>
         <Icons.SmallMinus />

@@ -140,15 +140,13 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
           id='border-width'
           testId='border-width'
           value={borderWidth}
-          DEPRECATED_labelBelow='W'
-          labelBelowStyle={LabelBelowNumberTextStyles}
+          innerLabel='W'
           minimum={0}
           onSubmitValue={borderWidthSubmitValue}
           onTransientSubmitValue={borderWidthTransientSubmitValue}
           controlStatus={controlStatus}
           numberType='Length'
           defaultUnitToHide={'px'}
-          incrementControls={false}
         />
       </UIGridRow>
     )

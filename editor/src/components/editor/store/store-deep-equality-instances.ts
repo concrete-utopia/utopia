@@ -360,6 +360,8 @@ import type {
   GithubUser,
   PullRequest,
   RenderedAt,
+  EditorRemixConfig,
+  ErrorBoundaryHandling,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -965,7 +967,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     (state) => state.branchOriginContentsChecksums,
     nullableDeepEquality(FileChecksumsWithFileKeepDeepEquality),
     (state) => state.remixData,
-    createCallWithTripleEquals(),
+    EitherKeepDeepEquality(createCallWithTripleEquals(), createCallWithTripleEquals()),
     (state) => state.filePathMappings,
     createCallWithShallowEquals(),
     (
@@ -4981,6 +4983,17 @@ export const FrameOrPathKeepDeepEquality: KeepDeepEqualityCall<ActiveFrame> = co
   (target, action, source) => ({ target, action, source }),
 )
 
+export const RemixConfigKeepDeepEquality: KeepDeepEqualityCall<EditorRemixConfig> =
+  combine1EqualityCall(
+    (config) => config.errorBoundaryHandling,
+    createCallWithTripleEquals<ErrorBoundaryHandling>(),
+    (errorBoundaryHandling) => {
+      return {
+        errorBoundaryHandling: errorBoundaryHandling,
+      }
+    },
+  )
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -5282,6 +5295,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.sharingDialogOpen,
   )
 
+  const remixConfigResults = RemixConfigKeepDeepEquality(
+    oldValue.editorRemixConfig,
+    newValue.editorRemixConfig,
+  )
+
   const areEqual =
     idResult.areEqual &&
     forkedFromProjectIdResult.areEqual &&
@@ -5362,7 +5380,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     commentFilterModeResults.areEqual &&
     forkingResults.areEqual &&
     collaboratorsResults.areEqual &&
-    sharingDialogOpenResults.areEqual
+    sharingDialogOpenResults.areEqual &&
+    remixConfigResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -5449,6 +5468,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       forkingResults.value,
       collaboratorsResults.value,
       sharingDialogOpenResults.value,
+      remixConfigResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

@@ -26,6 +26,14 @@ const gridTemplates = {
     gridColumnGap: 8,
     gridTemplateColumns: 'auto 20px 1fr',
   },
+  '<-auto-><-auto->|70px|<----1fr---->|': {
+    gridColumnGap: 4,
+    gridTemplateColumns: 'auto auto 70px 1fr',
+  },
+  '<-auto-><-auto->|90px|<----1fr---->|': {
+    gridColumnGap: 4,
+    gridTemplateColumns: 'auto auto 90px 1fr',
+  },
   '<-------1fr------>|----80px----|': {
     gridTemplateColumns: '1fr 80px',
     gridColumnGap: 4,
@@ -58,17 +66,25 @@ const gridTemplates = {
     gridColumnGap: 4,
     gridTemplateColumns: '1fr 1fr 1fr',
   },
+  '<--1fr--><--1fr--><--1fr--><--1fr-->': {
+    gridColumnGap: 4,
+    gridTemplateColumns: '1fr 1fr 1fr 1fr',
+  },
   '|20px|<--1fr--><--1fr-->': {
     gridColumnGap: 4,
     gridTemplateColumns: '20px 1fr 1fr',
   },
   '<--1fr--><--1fr-->': {
-    gridColumnGap: 4,
+    gridColumnGap: 8,
     gridTemplateColumns: '1fr 1fr',
   },
   '<--1fr--><--1fr-->|22px|': {
-    gridColumnGap: 4,
+    gridColumnGap: 8,
     gridTemplateColumns: '1fr 1fr 22px',
+  },
+  '<--auto--><--1fr-->|22px|': {
+    gridColumnGap: 8,
+    gridTemplateColumns: 'auto 1fr 22px',
   },
   '<--1fr--><--1fr-->|-18px-|': {
     gridColumnGap: 4,

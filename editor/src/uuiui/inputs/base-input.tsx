@@ -130,14 +130,10 @@ type InspectorInputEmotionStyleProps = {
 export const InspectorInputEmotionStyle = ({
   chained = 'not-chained',
   controlStyles,
-  hasLabel,
   roundCorners = 'all',
 }: InspectorInputEmotionStyleProps): CSSObject => ({
   outline: 'none',
-  paddingTop: 2,
-  paddingBottom: 2,
-  paddingRight: 6,
-  paddingLeft: hasLabel ? 22 : 6,
+  padding: '2px 4px',
   background: 'transparent',
   fontStyle: controlStyles.fontStyle,
   fontWeight: controlStyles.fontWeight,

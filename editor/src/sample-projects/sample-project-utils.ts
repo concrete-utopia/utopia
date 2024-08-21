@@ -172,165 +172,52 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
   // using the link https://utopia.pizza/v1/project/<project-id>/contents.json and paste the contents of projectContents down below
 
   return {
-    src: {
-      directory: {
-        type: 'DIRECTORY',
-      },
-      type: 'PROJECT_CONTENT_DIRECTORY',
-      children: {
-        'index.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/src/index.js',
-          content: {
-            type: 'TEXT_FILE',
-            versionNumber: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: "import * as React from 'react'\nimport * as ReactDOM from 'react-dom'\nimport { App } from '../src/app'\n\nconst root = document.getElementById('root')\nif (root != null) {\n  ReactDOM.render(<App />, root)\n}\n",
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
-        'utils.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/src/utils.js',
-          content: {
-            type: 'TEXT_FILE',
-            versionNumber: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: "import * as React from 'react'\n\nexport function FlexRow({ children, style, ...props }) {\n  return (\n    <div\n      {...props}\n      style={{\n        position: 'relative',\n        display: 'flex',\n        flexDirection: 'row',\n        ...style,\n      }}\n    >\n      {children}\n    </div>\n  )\n}\n\nexport function FlexCol({ children, style, ...props }) {\n  return (\n    <div\n      {...props}\n      style={{\n        position: 'relative',\n        display: 'flex',\n        flexDirection: 'column',\n        ...style,\n      }}\n    >\n      {children}\n    </div>\n  )\n}\n\nexport function TwoColumnGrid({\n  children,\n  style,\n  ...props\n}) {\n  return (\n    <div\n      {...props}\n      style={{\n        position: 'relative',\n        display: 'grid',\n        gridTemplateColumns: 'repeat(2, 1fr)',\n        ...style,\n      }}\n    >\n      {children}\n    </div>\n  )\n}\n\nexport function ThreeColumnGrid({\n  children,\n  style,\n  ...props\n}) {\n  return (\n    <div\n      {...props}\n      style={{\n        position: 'relative',\n        display: 'grid',\n        gridTemplateColumns: '1fr 1fr 1fr',\n        width: '100%',\n        hieght: '100%',\n        ...style,\n      }}\n    >\n      {children}\n    </div>\n  )\n}\n",
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
-        'playground.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/src/playground.js',
-          content: {
-            type: 'TEXT_FILE',
-            versionNumber: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: "import * as React from 'react'\nimport { View } from 'utopia-api'\nimport '../public/globals.css'\n\nexport var Playground = ({ style }) => {\n  return (\n    <div\n      style={{\n        height: '100%',\n        width: '100%',\n        contain: 'layout',\n        ...style,\n      }}\n      data-uid='a7b'\n    >\n      <div\n        style={{\n          height: 'max-content',\n          position: 'absolute',\n          left: 163,\n          top: 305,\n          display: 'flex',\n          flexDirection: 'row',\n          width: 'max-content',\n          gap: 10,\n        }}\n        data-uid='b15'\n      >\n        <img\n          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'\n          alt='Utopia logo'\n          style={{ width: 118, height: 150 }}\n          data-uid='b0e'\n        />\n        <img\n          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'\n          alt='Utopia logo'\n          style={{ width: 118, height: 150 }}\n          data-uid='aaf'\n        />\n        <img\n          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'\n          alt='Utopia logo'\n          style={{ width: 118, height: 150 }}\n          data-uid='aam'\n        />\n      </div>\n    </div>\n  )\n}\n",
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
-        'app.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/src/app.js',
-          content: {
-            type: 'TEXT_FILE',
-            versionNumber: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: "import * as React from 'react'\nimport '../public/globals.css'\nimport { FlexCol } from './utils'\n\nexport var App = () => {\n  return (\n    <FlexCol\n      style={{\n        width: '100%',\n        height: '100%',\n        background: 'white',\n\n        justifyContent: 'center',\n        alignItems: 'center',\n      }}\n    >\n      <img\n        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'\n        alt='Utopia logo'\n        style={{\n          width: 357,\n          height: 453,\n        }}\n      ></img>\n    </FlexCol>\n  )\n}\n",
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
-      },
-      fullPath: '/src',
-    },
-    utopia: {
-      directory: {
-        type: 'DIRECTORY',
-      },
-      type: 'PROJECT_CONTENT_DIRECTORY',
-      children: {
-        'storyboard.js': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/utopia/storyboard.js',
-          content: {
-            type: 'TEXT_FILE',
-            versionNumber: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: "import * as React from 'react'\nimport { Scene, Storyboard } from 'utopia-api'\nimport { App } from '/src/app.js'\nimport { Playground } from '/src/playground.js'\n\nexport var storyboard = (\n  <Storyboard>\n    <Scene\n      id='playground-scene'\n      commentId='playground-scene'\n      style={{\n        width: 700,\n        height: 759,\n        position: 'absolute',\n        left: 212,\n        top: 128,\n      }}\n      data-label='Playground'\n    >\n      <Playground style={{}} />\n    </Scene>\n    <Scene\n      id='app-scene'\n      commentId='app-scene'\n      style={{\n        width: 744,\n        height: 1133,\n        position: 'absolute',\n        left: 1036,\n        top: 128,\n      }}\n      data-label='My App'\n    >\n      <App style={{}} />\n    </Scene>\n  </Storyboard>\n)\n",
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
-      },
-      fullPath: '/utopia',
-    },
     assets: {
+      children: {},
       directory: {
         type: 'DIRECTORY',
       },
-      type: 'PROJECT_CONTENT_DIRECTORY',
-      children: {},
       fullPath: '/assets',
+      type: 'PROJECT_CONTENT_DIRECTORY',
     },
-    'package.json': {
-      type: 'PROJECT_CONTENT_FILE',
-      fullPath: '/package.json',
+    'jsconfig.json': {
       content: {
-        type: 'TEXT_FILE',
-        versionNumber: 0,
-        lastParseSuccess: null,
-        lastSavedContents: null,
         fileContents: {
-          code: '{\n  "name": "Utopia Project",\n  "version": "0.1.0",\n  "utopia": {\n    "main-ui": "utopia/storyboard.js",\n    "html": "public/index.html",\n    "js": "src/index.js"\n  },\n  "dependencies": {\n    "react": "16.13.1",\n    "react-dom": "16.13.1",\n    "utopia-api": "0.4.1",\n    "react-spring": "8.0.27",\n    "@heroicons/react": "1.0.1",\n    "@emotion/react": "11.9.3"\n  }\n}',
+          code: '{\n  "compilerOptions": {\n    "checkJs": true,\n    "jsx": "react-jsx",\n    "target": "ES2022",\n    "module": "ES2022",\n    "moduleResolution": "Bundler",\n    "baseUrl": ".",\n  },\n  "include": ["./**/*.d.ts", "./**/*.js", "./**/*.jsx"]\n}\n',
           parsed: {
             type: 'UNPARSED',
           },
           revisionsState: 'CODE_AHEAD',
         },
+        lastParseSuccess: null,
+        lastSavedContents: null,
+        type: 'TEXT_FILE',
+        versionNumber: 0,
       },
+      fullPath: '/jsconfig.json',
+      type: 'PROJECT_CONTENT_FILE',
+    },
+    'package.json': {
+      content: {
+        fileContents: {
+          code: '{\n  "name": "utopia-project",\n  "version": "0.1.0",\n  "utopia": {\n    "main-ui": "utopia/storyboard.js",\n    "html": "public/index.html",\n    "js": "src/index.js"\n  },\n  "dependencies": {\n    "react": "16.13.1",\n    "react-dom": "16.13.1",\n    "utopia-api": "0.4.1",\n    "react-spring": "8.0.27",\n    "@heroicons/react": "1.0.1",\n    "@emotion/react": "11.9.3"\n  }\n}',
+          parsed: {
+            type: 'UNPARSED',
+          },
+          revisionsState: 'CODE_AHEAD',
+        },
+        lastParseSuccess: null,
+        lastSavedContents: null,
+        type: 'TEXT_FILE',
+        versionNumber: 0,
+      },
+      fullPath: '/package.json',
+      type: 'PROJECT_CONTENT_FILE',
     },
     public: {
-      directory: {
-        type: 'DIRECTORY',
-      },
-      type: 'PROJECT_CONTENT_DIRECTORY',
       children: {
-        'index.html': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/public/index.html',
-          content: {
-            type: 'TEXT_FILE',
-            versionNumber: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
-            fileContents: {
-              code: '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="utf-8">\n    <title>Utopia React App</title>\n    <!-- Begin Generated Utopia External Links -->\n    <link href="https://fonts.googleapis.com/css2?family=Alegreya+SC:ital,wght@0,700" rel="stylesheet">\n    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700" rel="stylesheet">\n    <!-- End Generated Utopia External Links -->\n  </head>\n  <body>\n    <div id="root"></div>\n  </body>\n</html>',
-              parsed: {
-                type: 'UNPARSED',
-              },
-              revisionsState: 'CODE_AHEAD',
-            },
-          },
-        },
         'globals.css': {
-          type: 'PROJECT_CONTENT_FILE',
-          fullPath: '/public/globals.css',
           content: {
-            type: 'TEXT_FILE',
-            versionNumber: 0,
-            lastParseSuccess: null,
-            lastSavedContents: null,
             fileContents: {
               code: 'body, #canvas-container * {\n    font-family: San Francisco, SF UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";\n}\n\n@font-face {\n    font-family: \'ITC Garamond \';\n    font-style: normal;\n    font-weight: 400;\n    font-display: swap;\n    src: local(ITC Garamond ) format(\'ttf\');\n  }\n\n\n.appheadercontainer, .listcardcontainer, .gridcardcontainer {\n    container-type: inline-size;\n}\n\n@container (min-width: 700px) {\n    .apptitle {\n        font-size: 3.5em;\n    }\n\n    .listcard {\n        height: 180px\n    }   \n    .gridcard {\n        height: 325px\n    }   \n}\n\n@container (max-width: 700px) {\n    .gridcard {\n        height: 215px\n    }   \n}',
               parsed: {
@@ -338,10 +225,140 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
               },
               revisionsState: 'CODE_AHEAD',
             },
+            lastParseSuccess: null,
+            lastSavedContents: null,
+            type: 'TEXT_FILE',
+            versionNumber: 0,
           },
+          fullPath: '/public/globals.css',
+          type: 'PROJECT_CONTENT_FILE',
+        },
+        'index.html': {
+          content: {
+            fileContents: {
+              code: '\u003C!DOCTYPE html\u003E\n\u003Chtml lang="en"\u003E\n  \u003Chead\u003E\n    \u003Cmeta charset="utf-8"\u003E\n    \u003Ctitle\u003EUtopia React App\u003C/title\u003E\n    \u003C!-- Begin Generated Utopia External Links --\u003E\n    \u003Clink href="https://fonts.googleapis.com/css2?family=Alegreya+SC:ital,wght@0,700" rel="stylesheet"\u003E\n    \u003Clink href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700" rel="stylesheet"\u003E\n    \u003C!-- End Generated Utopia External Links --\u003E\n  \u003C/head\u003E\n  \u003Cbody\u003E\n    \u003Cdiv id="root"\u003E\u003C/div\u003E\n  \u003C/body\u003E\n\u003C/html\u003E',
+              parsed: {
+                type: 'UNPARSED',
+              },
+              revisionsState: 'CODE_AHEAD',
+            },
+            lastParseSuccess: null,
+            lastSavedContents: null,
+            type: 'TEXT_FILE',
+            versionNumber: 0,
+          },
+          fullPath: '/public/index.html',
+          type: 'PROJECT_CONTENT_FILE',
         },
       },
+      directory: {
+        type: 'DIRECTORY',
+      },
       fullPath: '/public',
+      type: 'PROJECT_CONTENT_DIRECTORY',
+    },
+    src: {
+      children: {
+        'app.js': {
+          content: {
+            fileContents: {
+              code: "import * as React from 'react'\nimport '../public/globals.css'\nimport { FlexCol } from './utils'\n\nexport var App = () =\u003E {\n  return (\n    \u003CFlexCol\n      style={{\n        width: '100%',\n        height: '100%',\n        background: 'white',\n\n        justifyContent: 'center',\n        alignItems: 'center',\n      }}\n    \u003E\n      \u003Cimg\n        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'\n        alt='Utopia logo'\n        style={{\n          width: 357,\n          height: 453,\n        }}\n      \u003E\u003C/img\u003E\n    \u003C/FlexCol\u003E\n  )\n}\n",
+              parsed: {
+                type: 'UNPARSED',
+              },
+              revisionsState: 'CODE_AHEAD',
+            },
+            lastParseSuccess: null,
+            lastSavedContents: null,
+            type: 'TEXT_FILE',
+            versionNumber: 0,
+          },
+          fullPath: '/src/app.js',
+          type: 'PROJECT_CONTENT_FILE',
+        },
+        'index.js': {
+          content: {
+            fileContents: {
+              code: "import * as React from 'react'\nimport * as ReactDOM from 'react-dom'\nimport { App } from '../src/app'\n\nconst root = document.getElementById('root')\nif (root != null) {\n  ReactDOM.render(\u003CApp /\u003E, root)\n}\n",
+              parsed: {
+                type: 'UNPARSED',
+              },
+              revisionsState: 'CODE_AHEAD',
+            },
+            lastParseSuccess: null,
+            lastSavedContents: null,
+            type: 'TEXT_FILE',
+            versionNumber: 0,
+          },
+          fullPath: '/src/index.js',
+          type: 'PROJECT_CONTENT_FILE',
+        },
+        'playground.js': {
+          content: {
+            fileContents: {
+              code: "import * as React from 'react'\nimport { View } from 'utopia-api'\nimport '../public/globals.css'\n\nexport var Playground = ({ style }) =\u003E {\n  return (\n    \u003Cdiv\n      style={{\n        height: '100%',\n        width: '100%',\n        contain: 'layout',\n        ...style,\n      }}\n      data-uid='a7b'\n    \u003E\n      \u003Cdiv\n        style={{\n          height: 'max-content',\n          position: 'absolute',\n          left: 163,\n          top: 305,\n          display: 'flex',\n          flexDirection: 'row',\n          width: 'max-content',\n          gap: 10,\n        }}\n        data-uid='b15'\n      \u003E\n        \u003Cimg\n          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'\n          alt='Utopia logo'\n          style={{ width: 118, height: 150 }}\n          data-uid='b0e'\n        /\u003E\n        \u003Cimg\n          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'\n          alt='Utopia logo'\n          style={{ width: 118, height: 150 }}\n          data-uid='aaf'\n        /\u003E\n        \u003Cimg\n          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'\n          alt='Utopia logo'\n          style={{ width: 118, height: 150 }}\n          data-uid='aam'\n        /\u003E\n      \u003C/div\u003E\n    \u003C/div\u003E\n  )\n}\n",
+              parsed: {
+                type: 'UNPARSED',
+              },
+              revisionsState: 'CODE_AHEAD',
+            },
+            lastParseSuccess: null,
+            lastSavedContents: null,
+            type: 'TEXT_FILE',
+            versionNumber: 0,
+          },
+          fullPath: '/src/playground.js',
+          type: 'PROJECT_CONTENT_FILE',
+        },
+        'utils.js': {
+          content: {
+            fileContents: {
+              code: "import * as React from 'react'\n\nexport function FlexRow({ children, style, ...props }) {\n  return (\n    \u003Cdiv\n      {...props}\n      style={{\n        position: 'relative',\n        display: 'flex',\n        flexDirection: 'row',\n        ...style,\n      }}\n    \u003E\n      {children}\n    \u003C/div\u003E\n  )\n}\n\nexport function FlexCol({ children, style, ...props }) {\n  return (\n    \u003Cdiv\n      {...props}\n      style={{\n        position: 'relative',\n        display: 'flex',\n        flexDirection: 'column',\n        ...style,\n      }}\n    \u003E\n      {children}\n    \u003C/div\u003E\n  )\n}\n\nexport function TwoColumnGrid({\n  children,\n  style,\n  ...props\n}) {\n  return (\n    \u003Cdiv\n      {...props}\n      style={{\n        position: 'relative',\n        display: 'grid',\n        gridTemplateColumns: 'repeat(2, 1fr)',\n        ...style,\n      }}\n    \u003E\n      {children}\n    \u003C/div\u003E\n  )\n}\n\nexport function ThreeColumnGrid({\n  children,\n  style,\n  ...props\n}) {\n  return (\n    \u003Cdiv\n      {...props}\n      style={{\n        position: 'relative',\n        display: 'grid',\n        gridTemplateColumns: '1fr 1fr 1fr',\n        width: '100%',\n        hieght: '100%',\n        ...style,\n      }}\n    \u003E\n      {children}\n    \u003C/div\u003E\n  )\n}\n",
+              parsed: {
+                type: 'UNPARSED',
+              },
+              revisionsState: 'CODE_AHEAD',
+            },
+            lastParseSuccess: null,
+            lastSavedContents: null,
+            type: 'TEXT_FILE',
+            versionNumber: 0,
+          },
+          fullPath: '/src/utils.js',
+          type: 'PROJECT_CONTENT_FILE',
+        },
+      },
+      directory: {
+        type: 'DIRECTORY',
+      },
+      fullPath: '/src',
+      type: 'PROJECT_CONTENT_DIRECTORY',
+    },
+    utopia: {
+      children: {
+        'storyboard.js': {
+          content: {
+            fileContents: {
+              code: "import * as React from 'react'\nimport { Scene, Storyboard } from 'utopia-api'\nimport { App } from '../src/app'\nimport { Playground } from '../src/playground'\n\nexport var storyboard = (\n  \u003CStoryboard\u003E\n    \u003CScene\n      id='playground-scene'\n      commentId='playground-scene'\n      style={{\n        width: 700,\n        height: 759,\n        position: 'absolute',\n        left: 212,\n        top: 128,\n      }}\n      data-label='Playground'\n    \u003E\n      \u003CPlayground style={{}} /\u003E\n    \u003C/Scene\u003E\n    \u003CScene\n      id='app-scene'\n      commentId='app-scene'\n      style={{\n        width: 744,\n        height: 1133,\n        position: 'absolute',\n        left: 1036,\n        top: 128,\n      }}\n      data-label='My App'\n    \u003E\n      \u003CApp style={{}} /\u003E\n    \u003C/Scene\u003E\n  \u003C/Storyboard\u003E\n)\n",
+              parsed: {
+                type: 'UNPARSED',
+              },
+              revisionsState: 'CODE_AHEAD',
+            },
+            lastParseSuccess: null,
+            lastSavedContents: null,
+            type: 'TEXT_FILE',
+            versionNumber: 0,
+          },
+          fullPath: '/utopia/storyboard.js',
+          type: 'PROJECT_CONTENT_FILE',
+        },
+      },
+      directory: {
+        type: 'DIRECTORY',
+      },
+      fullPath: '/utopia',
+      type: 'PROJECT_CONTENT_DIRECTORY',
     },
   }
 }

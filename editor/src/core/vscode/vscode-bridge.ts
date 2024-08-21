@@ -14,19 +14,20 @@ import {
   deletePathChange,
   ensureDirectoryExistsChange,
   initProject,
-  isFromVSCodeExtensionMessage,
-  isIndexedDBFailure,
+  isClearLoadingScreen,
+  isEditorCursorPositionChanged,
   isMessageListenersReady,
+  isUtopiaVSCodeConfigValues,
   isVSCodeBridgeReady,
   isVSCodeFileChange,
   isVSCodeFileDelete,
+  isVSCodeReady,
   openFileMessage,
   projectDirectory,
   projectTextFile,
   selectedElementChanged,
   setFollowSelectionConfig,
   setVSCodeTheme,
-  toVSCodeExtensionMessage,
   updateDecorationsMessage,
   writeProjectFileChange,
 } from 'utopia-vscode-common'
@@ -131,27 +132,16 @@ export function initVSCodeBridge(
       // Store the source
       vscodeIFrame = messageEvent.source
       dispatch([markVSCodeBridgeReady(true)])
-    } else if (isFromVSCodeExtensionMessage(data)) {
-      const message = data.message
-      switch (message.type) {
-        case 'EDITOR_CURSOR_POSITION_CHANGED':
-          dispatch([selectFromFileAndPosition(message.filePath, message.line, message.column)])
-          break
-        case 'UTOPIA_VSCODE_CONFIG_VALUES':
-          dispatch([updateConfigFromVSCode(message.config)])
-          break
-        case 'VSCODE_READY':
-          dispatch([sendCodeEditorInitialisation()])
-          break
-        case 'CLEAR_LOADING_SCREEN':
-          if (!loadingScreenHidden) {
-            loadingScreenHidden = true
-            dispatch([hideVSCodeLoadingScreen()])
-          }
-          break
-        default:
-          const _exhaustiveCheck: never = message
-          throw new Error(`Unhandled message type${JSON.stringify(message)}`)
+    } else if (isEditorCursorPositionChanged(data)) {
+      dispatch([selectFromFileAndPosition(data.filePath, data.line, data.column)])
+    } else if (isUtopiaVSCodeConfigValues(data)) {
+      dispatch([updateConfigFromVSCode(data.config)])
+    } else if (isVSCodeReady(data)) {
+      dispatch([sendCodeEditorInitialisation()])
+    } else if (isClearLoadingScreen(data)) {
+      if (!loadingScreenHidden) {
+        loadingScreenHidden = true
+        dispatch([hideVSCodeLoadingScreen()])
       }
     } else if (isVSCodeFileChange(data)) {
       const { filePath, fileContent } = data
@@ -169,8 +159,6 @@ export function initVSCodeBridge(
       dispatch(actionsToDispatch)
     } else if (isVSCodeFileDelete(data)) {
       dispatch([deleteFileFromVSCode(data.filePath)])
-    } else if (isIndexedDBFailure(data)) {
-      dispatch([setIndexedDBFailed(true)])
     }
   }
 
@@ -182,11 +170,11 @@ export function sendMessage(message: FromUtopiaToVSCodeMessage) {
 }
 
 export function sendOpenFileMessage(filePath: string, bounds: Bounds | null) {
-  sendMessage(toVSCodeExtensionMessage(openFileMessage(filePath, bounds)))
+  sendMessage(openFileMessage(filePath, bounds))
 }
 
 export function sendSetFollowSelectionEnabledMessage(enabled: boolean) {
-  sendMessage(toVSCodeExtensionMessage(setFollowSelectionConfig(enabled)))
+  sendMessage(setFollowSelectionConfig(enabled))
 }
 
 export function applyProjectChanges(changes: Array<ProjectFileChange>) {
@@ -243,7 +231,7 @@ export function getCodeEditorDecorations(editorState: EditorState): UpdateDecora
 
 export function sendCodeEditorDecorations(editorState: EditorState) {
   const decorationsMessage = getCodeEditorDecorations(editorState)
-  sendMessage(toVSCodeExtensionMessage(decorationsMessage))
+  sendMessage(decorationsMessage)
 }
 
 export function getSelectedElementChangedMessage(
@@ -284,7 +272,7 @@ export function sendSelectedElement(newEditorState: EditorState) {
     'do-not-force-navigation',
   )
   if (selectedElementChangedMessage != null) {
-    sendMessage(toVSCodeExtensionMessage(selectedElementChangedMessage))
+    sendMessage(selectedElementChangedMessage)
   }
 }
 
@@ -302,5 +290,5 @@ function vsCodeThemeForTheme(theme: Theme): string {
 
 export function sendSetVSCodeTheme(theme: Theme) {
   const vsCodeTheme = vsCodeThemeForTheme(theme)
-  sendMessage(toVSCodeExtensionMessage(setVSCodeTheme(vsCodeTheme)))
+  sendMessage(setVSCodeTheme(vsCodeTheme))
 }
