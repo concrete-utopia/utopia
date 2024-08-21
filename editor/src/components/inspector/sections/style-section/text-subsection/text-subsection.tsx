@@ -358,6 +358,7 @@ export const TextSubsection = React.memo(() => {
               onSubmitValue={onItalicSubmitValue}
               controlStatus={fontStyleMetadata.controlStatus}
               controlStyles={fontStyleMetadata.controlStyles}
+              style={{ border: `1px solid ${colorTheme.bg2.value}`, borderRadius: 3 }}
               DEPRECATED_controlOptions={{
                 tooltip: 'Italic',
                 icon: {
@@ -368,7 +369,6 @@ export const TextSubsection = React.memo(() => {
                   height: 16,
                 },
               }}
-              style={{ border: `1px solid ${colorTheme.bg2.value}`, borderRadius: 3 }}
             />
             <OptionControl
               id='underlined'

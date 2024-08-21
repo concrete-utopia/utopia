@@ -208,6 +208,7 @@ export const OptionControl: React.FunctionComponent<
               <Icn
                 style={{ marginRight: controlOptions.labelInner == null ? 0 : 4 }}
                 {...controlOptions.icon}
+                color={isChecked ? 'main' : 'on-highlight-secondary'}
               />
             ) : (
               <div className='control-option-icon-component'>
