@@ -75,8 +75,8 @@ export var Playground = ({ style }) => {
       Array [
         "sb",
         "sb/pg-sc",
-        "sb/pg-sc/pg:aaa",
         "sb/pg-sc/pg",
+        "sb/pg-sc/pg:aaa",
         "sb/pg-sc/pg:aaa/bbb",
         "sb/pg-sc/pg:aaa/bbb/266",
         "sb/pg-sc/pg:aaa/bbb/266/ccc~~~1",
@@ -86,6 +86,47 @@ export var Playground = ({ style }) => {
         "sb/pg-sc/pg:aaa/bbb/266/ccc~~~2/ddd",
         "sb/pg-sc/pg:aaa/bbb/266/ccc~~~3/ddd",
         "sb/pg-sc/pg:aaa/bbb/6cc",
+      ]
+    `)
+  })
+
+  it('conditional expressions', async () => {
+    const editor = await renderTestEditorWithCode(
+      `import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        {
+          // @utopia/uid=cond1
+          true ? null : <>null</>
+        }
+        {
+          // @utopia/uid=cond2
+          true ? <span>hello</span> : null
+        }
+        {
+          // @utopia/uid=cond3
+          true ? null : <span>world</span>
+        }
+        {
+          // @utopia/uid=cond4
+          true ? 'hello' : <span>world</span>
+        }
+        </Storyboard>
+    )
+    `,
+      'await-first-dom-report',
+    )
+
+    expect(Object.keys(editor.getEditorState().editor.jsxMetadata)).toMatchInlineSnapshot(`
+      Array [
+        "sb",
+        "sb/cond1",
+        "sb/cond2",
+        "sb/cond2/d5e",
+        "sb/cond3",
+        "sb/cond4",
       ]
     `)
   })

@@ -130,7 +130,7 @@ function collectMetadataForElementPath(
             metadata.attributeMetadatada = computedStyle.attributeMetadatada
           }
 
-          return { metadata: metadata, foundValidDynamicPaths: pluck(foundValidPaths, 'path') }
+          return { metadata: metadata, foundValidDynamicPaths: [dynamicPath] }
         }
       }
 
