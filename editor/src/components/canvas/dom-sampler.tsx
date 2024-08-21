@@ -431,7 +431,7 @@ const pruneInvalidPathsFromMetadata_MUTATE =
     const validPathsSet = new Set(validPaths.map(EP.toString))
     const keys = Object.keys(metadata_MUTATE)
     for (const key of keys) {
-      const staticPath = EP.toString(EP.dynamicPathToStaticPath(EP.fromString(key)))
+      const staticPath = EP.toString(EP.makeLastPartOfPathStatic(EP.fromString(key)))
       if (!validPathsSet.has(staticPath)) {
         delete metadata_MUTATE[key]
       }
