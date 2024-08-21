@@ -140,10 +140,6 @@ export const FontVariantSelect = React.memo(() => {
       id='fontWeightAndStyle-context-menu'
       items={fontWeightAndStyleContextMenuItems}
       data={null}
-      style={{
-        minHeight: UtopiaTheme.layout.rowHeight.normal,
-        alignItems: 'stretch',
-      }}
     >
       <Tooltip title='Font Weight and Style' placement='top'>
         <PopupList

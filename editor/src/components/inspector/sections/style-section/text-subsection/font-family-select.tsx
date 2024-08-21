@@ -60,7 +60,6 @@ export const FontFamilySelect = React.memo(() => {
         id='fontFamily-context-menu'
         items={fontFamilyContextMenuItems}
         data={null}
-        style={{ marginBottom: 8, gridColumn: '1 / span 6' }}
       >
         {popupIsOpen ? (
           <FontFamilySelectPopup

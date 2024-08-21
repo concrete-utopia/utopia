@@ -296,45 +296,37 @@ export const TextSubsection = React.memo(() => {
       <UIGridRow
         padded={false}
         variant='<--------1fr-------->|60px||28px|'
-        style={{ padding: '0 8px 0 4px', alignItems: 'stretch' }}
+        style={{
+          padding: '0 8px 0 4px',
+          alignItems: 'center',
+          minHeight: UtopiaTheme.layout.rowHeight.normal,
+        }}
       >
         <FontVariantSelect />
-        <InspectorContextMenuWrapper
-          id='fontSize-context-menu'
-          items={fontSizeContextMenuItems}
-          data={null}
-        >
-          <NumberInput
-            id='fontSize'
-            testId='fontSize'
-            key='font-size-number-input'
-            value={fontSizeMetadata.value}
-            controlStatus={fontSizeMetadata.controlStatus}
-            onSubmitValue={wrappedFontSizeOnSubmitValue}
-            onTransientSubmitValue={wrappedFontSizeOnTransientSubmitValue}
-            minimum={0}
-            numberType='Length'
-            defaultUnitToHide={'px'}
-            incrementControls
-          />
-        </InspectorContextMenuWrapper>
-        <InspectorContextMenuWrapper
-          id='color-context-menu'
-          items={colorContextMenuItems}
-          data={null}
-        >
-          <ColorControl
-            id='color-control'
-            key='color-control'
-            testId='text-subsection-color-control'
-            value={colorMetadata.value}
-            onSubmitValue={colorMetadata.onSubmitValue}
-            onTransientSubmitValue={colorMetadata.onTransientSubmitValue}
-            pickerOffset={{ x: -223, y: 0 }}
-            controlStatus={colorMetadata.controlStatus}
-            controlStyles={colorMetadata.controlStyles}
-          />
-        </InspectorContextMenuWrapper>
+        <NumberInput
+          id='fontSize'
+          testId='fontSize'
+          key='font-size-number-input'
+          value={fontSizeMetadata.value}
+          controlStatus={fontSizeMetadata.controlStatus}
+          onSubmitValue={wrappedFontSizeOnSubmitValue}
+          onTransientSubmitValue={wrappedFontSizeOnTransientSubmitValue}
+          minimum={0}
+          numberType='Length'
+          defaultUnitToHide={'px'}
+          incrementControls
+        />
+        <ColorControl
+          id='color-control'
+          key='color-control'
+          testId='text-subsection-color-control'
+          value={colorMetadata.value}
+          onSubmitValue={colorMetadata.onSubmitValue}
+          onTransientSubmitValue={colorMetadata.onTransientSubmitValue}
+          pickerOffset={{ x: -223, y: 0 }}
+          controlStatus={colorMetadata.controlStatus}
+          controlStyles={colorMetadata.controlStyles}
+        />
       </UIGridRow>
       <FlexRow
         style={{
