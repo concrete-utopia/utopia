@@ -128,13 +128,14 @@ function getChildrenPaths(
   // Otherwise, return the children from the meta.
   const result =
     otherChildrenFromPaths.length > 0
-      ? otherChildrenFromPaths.concat(childrenFromElement)
-      : // .sort(
-        //   (a, b) =>
-        //     paths.findIndex((p) => EP.pathsEqual(p, a)) -
-        //     paths.findIndex((p) => EP.pathsEqual(p, b)),
-        // )
-        childrenFromElement
+      ? otherChildrenFromPaths
+          .concat(childrenFromElement)
+          .sort(
+            (a, b) =>
+              paths.findIndex((p) => EP.pathsEqual(p, a)) -
+              paths.findIndex((p) => EP.pathsEqual(p, b)),
+          )
+      : childrenFromElement
 
   return result
 }
