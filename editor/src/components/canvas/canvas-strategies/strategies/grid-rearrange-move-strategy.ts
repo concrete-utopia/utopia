@@ -1,6 +1,7 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
+import { GridControls, GridControlsKey } from '../../controls/grid-controls'
 import type {
   ElementInstanceMetadataMap,
   GridAutoOrTemplateBase,
@@ -13,7 +14,6 @@ import {
   propertyToSet,
   updateBulkProperties,
 } from '../../commands/set-property-command'
-import { GridControls } from '../../controls/grid-controls'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
@@ -47,9 +47,9 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const gridPath = EP.parentPath(selectedElement)
+  const parentGridPath = EP.parentPath(selectedElement)
 
-  const initialTemplates = getGridTemplates(canvasState.startingMetadata, gridPath)
+  const initialTemplates = getGridTemplates(canvasState.startingMetadata, parentGridPath)
   if (initialTemplates == null) {
     return null
   }
@@ -65,9 +65,10 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
     controlsToRender: [
       {
         control: GridControls,
-        props: {},
-        key: `grid-controls-${EP.toString(selectedElement)}`,
+        props: { targets: [parentGridPath] },
+        key: GridControlsKey(parentGridPath),
         show: 'always-visible',
+        priority: 'bottom',
       },
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 2),
@@ -105,7 +106,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
 
       const midInteractionCommands = [
         // during the interaction, freeze the template with the calculated values…
-        updateBulkProperties('mid-interaction', gridPath, [
+        updateBulkProperties('mid-interaction', parentGridPath, [
           propertyToSet(
             PP.create('style', 'gridTemplateColumns'),
             printGridAutoOrTemplateBase(initialTemplates.calculated.columns),
@@ -121,7 +122,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         // …eventually, restore the grid template on complete.
         updateBulkProperties(
           'on-complete',
-          gridPath,
+          parentGridPath,
           restoreGridTemplateFromProps(initialTemplates.fromProps),
         ),
       ]

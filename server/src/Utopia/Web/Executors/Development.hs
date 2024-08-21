@@ -133,7 +133,7 @@ localAuthCodeCheck "logmein" action = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
   portOfServer <- fmap _serverPort ask
-  let cdnRoot = "http://localhost:" <> show portOfServer
+  let cdnRoot = "http://cdn.localhost:" <> show portOfServer
   successfulAuthCheck metrics pool sessionStore action $ dummyUser cdnRoot
 localAuthCodeCheck _ action = do
   return $ action Nothing
@@ -172,7 +172,7 @@ innerServerExecutor (CheckAuthCode authCode action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
   portOfServer <- fmap _serverPort ask
-  let cdnRoot = "http://localhost:" <> show portOfServer
+  let cdnRoot = "http://cdn.localhost:" <> show portOfServer
   let codeCheck = maybe localAuthCodeCheck (auth0CodeCheck metrics pool sessionStore) auth0
   case authCode of
     "alice" -> successfulAuthCheck metrics pool sessionStore action (dummyUserAlice cdnRoot)
@@ -314,7 +314,7 @@ innerServerExecutor (GetSiteRoot action) = do
   return $ action siteRoot
 innerServerExecutor (GetCDNRoot action) = do
   portOfServer <- fmap _serverPort ask
-  let siteRoot = "http://localhost:" <> show portOfServer
+  let siteRoot = "http://cdn.localhost:" <> show portOfServer
   return $ action siteRoot
 innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action) = do
   possibleDownloads <- fmap _branchDownloads ask

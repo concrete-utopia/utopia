@@ -10,6 +10,7 @@ import { colorTheme, UtopiaStyles } from './styles/theme'
 import { Icons, SmallerIcons } from './icons'
 import { when } from '../utils/react-conditionals'
 import { Icn, type IcnProps } from './icn'
+import { borderRadius } from './styles/utopitrons'
 
 const RadixItemContainer = styled(RadixDropdownMenu.Item, {
   minWidth: 128,
@@ -238,7 +239,7 @@ export const RadixSelect = React.memo(
       <Select.Root value={props.value?.value} onValueChange={props.onValueChange}>
         <Select.Trigger
           style={{
-            background: 'white',
+            background: 'transparent',
             display: 'flex',
             alignItems: 'center',
             gap: 8,
@@ -247,6 +248,7 @@ export const RadixSelect = React.memo(
             color: props.value?.placeholder ? colorTheme.fg6.value : undefined,
             fontFamily: 'utopian-inter',
             border: 'none',
+            borderRadius: 3,
             ...props.style,
           }}
           css={{
@@ -275,7 +277,7 @@ export const RadixSelect = React.memo(
             }}
           >
             <Select.ScrollUpButton>
-              <Icons.ExpansionArrow />
+              <Icons.ExpansionArrow color='on-highlight-main' />
             </Select.ScrollUpButton>
             <Select.Viewport
               style={{

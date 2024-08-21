@@ -22,6 +22,7 @@ import { when } from '../../../utils/react-conditionals'
 import { PagesPane } from './pages-pane'
 import { getRemixRootFile } from '../../canvas/remix/remix-utils'
 import { getRemixRootDir } from '../../editor/store/remix-derived-data'
+import { foldEither } from '../../../core/shared/either'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -74,13 +75,22 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
 
   const isMyProject = useIsMyProject()
 
+  const curriedRequireFn = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.codeResultCache.curriedRequireFn,
+    'LeftPaneComponent curriedRequireFn',
+  )
+
   const isRemixProject = useEditorState(
     Substores.projectContents,
-    (store) =>
-      getRemixRootFile(
-        getRemixRootDir(store.editor.projectContents),
-        store.editor.projectContents,
-      ) != null,
+    (store) => {
+      const rootDir = getRemixRootDir(store.editor.projectContents, curriedRequireFn)
+      return foldEither(
+        () => false,
+        (dir) => getRemixRootFile(dir, store.editor.projectContents) != null,
+        rootDir,
+      )
+    },
     'LeftPaneComponent isRemixProject',
   )
   return (

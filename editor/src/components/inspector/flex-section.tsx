@@ -432,11 +432,11 @@ const TemplateDimensionControl = React.memo(
       (isOpen: boolean) => (
         <SquareButton
           data-testid={'openDropdown'}
-          highlight
           onClick={NO_OP}
-          style={{ width: 12, height: 22 }}
+          spotlight={isOpen ? true : false}
+          highlight={false}
         >
-          <Icons.Threedots color={isOpen ? 'subdued' : undefined} />
+          <Icons.Threedots color={isOpen ? 'main' : 'subdued'} />
         </SquareButton>
       ),
       [],
@@ -452,8 +452,8 @@ const TemplateDimensionControl = React.memo(
       >
         <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center' }}>
           <div style={{ flex: 1 }}>{title}</div>
-          <SquareButton>
-            <Icons.Plus width={12} height={12} onClick={onAdd} />
+          <SquareButton highlight>
+            <Icons.SmallPlus onClick={onAdd} />
           </SquareButton>
         </div>
         {values.map((value, index) => (
@@ -523,7 +523,6 @@ function AxisDimensionControl({
           {value.areaName ?? index + 1}
         </Subdued>
         <NumberOrKeywordControl
-          style={{ flex: 1 }}
           testId={testId}
           value={value.value}
           keywords={gridDimensionDropdownKeywords}
@@ -802,7 +801,7 @@ const GapRowColumnControl = React.memo(() => {
             labelInner={{
               category: 'inspector-element',
               type: 'gapHorizontal',
-              color: 'subdued',
+              color: 'on-highlight-secondary',
             }}
           />
         </UIGridRow>,
@@ -821,7 +820,7 @@ const GapRowColumnControl = React.memo(() => {
             labelInner={{
               category: 'inspector-element',
               type: 'gapHorizontal',
-              color: 'subdued',
+              color: 'on-highlight-secondary',
             }}
           />
           <NumberInput
@@ -835,7 +834,7 @@ const GapRowColumnControl = React.memo(() => {
             labelInner={{
               category: 'inspector-element',
               type: 'gapVertical',
-              color: 'subdued',
+              color: 'on-highlight-secondary',
             }}
           />
         </UIGridRow>,
@@ -844,7 +843,7 @@ const GapRowColumnControl = React.memo(() => {
         <SquareButton
           data-testid={`grid-gap-cycle-mode`}
           onClick={cycleControlSplitState}
-          style={{ width: 16 }}
+          highlight
         >
           {modeIcon}
         </SquareButton>
@@ -928,16 +927,15 @@ const AutoFlowControl = React.memo(() => {
   )
 
   return (
-    <FlexRow style={{ gap: 6 }}>
-      <div style={{ fontWeight: 600 }}>Auto Flow</div>
+    <UIGridRow variant='|--60px--|<--1fr-->|22px|' padded={false}>
+      <div>Auto Flow</div>
       <RadixSelect
         id={AutoFlowPopupId}
-        style={{ flex: 1 }}
         value={currentValue ?? null}
         options={autoflowOptions}
         onValueChange={onSubmit}
       />
-    </FlexRow>
+    </UIGridRow>
   )
 })
 AutoFlowControl.displayName = 'AutoFlowControl'

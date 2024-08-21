@@ -345,6 +345,7 @@ const PaddingControl = React.memo(() => {
       mode={modeToUse}
       onCycleMode={onCycleMode}
       values={values}
+      fourSidesOrder={['T', 'R', 'B', 'L']}
     />
   )
 })

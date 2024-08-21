@@ -14,7 +14,7 @@ import { create } from '../../../../core/shared/property-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { rearrangeChildren } from '../../commands/rearrange-children-command'
-import { GridControls } from '../../controls/grid-controls'
+import { GridControls, GridControlsKey } from '../../controls/grid-controls'
 import { recurseIntoChildrenOfMapOrFragment } from '../../gap-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
@@ -56,6 +56,8 @@ export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
     EP.parentPath(selectedElement),
   )
 
+  const parentGridPath = EP.parentPath(selectedElement)
+
   return {
     id: 'rearrange-grid-swap-strategy',
     name: 'Rearrange Grid (Swap)',
@@ -67,9 +69,10 @@ export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
     controlsToRender: [
       {
         control: GridControls,
-        props: {},
-        key: `grid-controls-${EP.toString(selectedElement)}`,
+        props: { targets: [parentGridPath] },
+        key: GridControlsKey(parentGridPath),
         show: 'always-visible',
+        priority: 'bottom',
       },
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 1),

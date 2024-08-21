@@ -1579,7 +1579,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
             <span onClick={openInstanceFile}>Component</span>
           )}
         </FlexRow>
-        <SquareButton highlight style={{ width: 12 }} onClick={toggleSection}>
+        <SquareButton highlight onClick={toggleSection}>
           <ExpandableIndicator
             testId='component-section-expand'
             visible

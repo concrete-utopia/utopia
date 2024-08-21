@@ -540,8 +540,8 @@ describe('Frame updating layout section', () => {
               </Group>
             </Group>
           </div>`,
-        expectedFixedHugDropdownWidthValue: 'Hug contents',
-        expectedFixedHugDropdownHeightValue: 'Hug contents',
+        expectedFixedHugDropdownWidthValue: 'Hug',
+        expectedFixedHugDropdownHeightValue: 'Hug',
       }),
     )
 
@@ -710,8 +710,8 @@ describe('Frame updating layout section', () => {
               </Group>
             </Group>
           </div>`,
-        expectedFixedHugDropdownWidthValue: 'Hug contents',
-        expectedFixedHugDropdownHeightValue: 'Hug contents',
+        expectedFixedHugDropdownWidthValue: 'Hug',
+        expectedFixedHugDropdownHeightValue: 'Hug',
       }),
     )
   })
@@ -1113,8 +1113,8 @@ describe('Frame updating layout section', () => {
               </Group>
             </Group>
           </div>`,
-        expectedFixedHugDropdownWidthValue: 'Hug contents',
-        expectedFixedHugDropdownHeightValue: 'Hug contents',
+        expectedFixedHugDropdownWidthValue: 'Hug',
+        expectedFixedHugDropdownHeightValue: 'Hug',
       }),
     )
 
@@ -1427,7 +1427,7 @@ describe('Frame updating layout section', () => {
             />
           </div>`,
         expectedFixedHugDropdownWidthValue: 'Scaled',
-        expectedFixedHugDropdownHeightValue: 'Fill container',
+        expectedFixedHugDropdownHeightValue: 'Fill',
       }),
     )
 
@@ -1693,8 +1693,8 @@ describe('Frame updating layout section', () => {
           </Group>
         </Group>
       </div>`,
-        expectedFixedHugDropdownWidthValue: 'Hug contents',
-        expectedFixedHugDropdownHeightValue: 'Hug contents',
+        expectedFixedHugDropdownWidthValue: 'Hug',
+        expectedFixedHugDropdownHeightValue: 'Hug',
       }),
     )
 
@@ -1863,8 +1863,8 @@ describe('Frame updating layout section', () => {
           </Group>
         </Group>
       </div>`,
-        expectedFixedHugDropdownWidthValue: 'Hug contents',
-        expectedFixedHugDropdownHeightValue: 'Hug contents',
+        expectedFixedHugDropdownWidthValue: 'Hug',
+        expectedFixedHugDropdownHeightValue: 'Hug',
       }),
     )
 
@@ -2033,8 +2033,8 @@ describe('Frame updating layout section', () => {
           </Group>
         </Group>
       </div>`,
-        expectedFixedHugDropdownWidthValue: 'Hug contents',
-        expectedFixedHugDropdownHeightValue: 'Hug contents',
+        expectedFixedHugDropdownWidthValue: 'Hug',
+        expectedFixedHugDropdownHeightValue: 'Hug',
       }),
     )
 
@@ -2203,8 +2203,8 @@ describe('Frame updating layout section', () => {
           </Group>
         </Group>
       </div>`,
-        expectedFixedHugDropdownWidthValue: 'Hug contents',
-        expectedFixedHugDropdownHeightValue: 'Hug contents',
+        expectedFixedHugDropdownWidthValue: 'Hug',
+        expectedFixedHugDropdownHeightValue: 'Hug',
       }),
     )
   })
@@ -2407,7 +2407,7 @@ describe('Frame updating layout section', () => {
               }}
             />
           </div>`,
-        expectedFixedHugDropdownWidthValue: 'Fill container',
+        expectedFixedHugDropdownWidthValue: 'Fill',
         expectedFixedHugDropdownHeightValue: 'Scaled',
       }),
     )
