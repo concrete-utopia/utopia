@@ -65,7 +65,7 @@ function getDisplayValueNotMemoized(
     const showUnit = unit !== defaultUnitToHide
     return cssNumberToString(value, showUnit)
   } else {
-    return ''
+    return '–'
   }
 }
 
