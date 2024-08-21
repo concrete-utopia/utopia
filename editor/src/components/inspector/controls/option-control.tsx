@@ -69,7 +69,7 @@ export const OptionControl: React.FunctionComponent<
     if (props.controlStatus === 'overridden' && props.value) {
       return colorTheme.brandNeonPink10.value
     } else if (props.value) {
-      return colorTheme.bg2.value
+      return colorTheme.bg4.value
     } else {
       return 'transparent'
     }

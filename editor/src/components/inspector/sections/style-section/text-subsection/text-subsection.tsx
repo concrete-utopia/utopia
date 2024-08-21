@@ -358,7 +358,7 @@ export const TextSubsection = React.memo(() => {
               onSubmitValue={onItalicSubmitValue}
               controlStatus={fontStyleMetadata.controlStatus}
               controlStyles={fontStyleMetadata.controlStyles}
-              style={{ border: `1px solid ${colorTheme.bg2.value}`, borderRadius: 3 }}
+              style={{ border: `1px solid ${colorTheme.bg2.value}` }}
               DEPRECATED_controlOptions={{
                 tooltip: 'Italic',
                 icon: {
@@ -378,10 +378,7 @@ export const TextSubsection = React.memo(() => {
               onSubmitValue={onUnderlinedSubmitValue}
               controlStatus={textDecorationLineMetadata.controlStatus}
               controlStyles={textDecorationLineMetadata.controlStyles}
-              style={{
-                border: `1px solid ${colorTheme.bg2.value}`,
-                borderRadius: 3,
-              }}
+              style={{ border: `1px solid ${colorTheme.bg2.value}` }}
               DEPRECATED_controlOptions={{
                 tooltip: 'Underline',
                 icon: {
@@ -401,10 +398,7 @@ export const TextSubsection = React.memo(() => {
               onSubmitValue={onStrikethroughSubmitValue}
               controlStatus={textDecorationLineMetadata.controlStatus}
               controlStyles={textDecorationLineMetadata.controlStyles}
-              style={{
-                border: `1px solid ${colorTheme.bg2.value}`,
-                borderRadius: 3,
-              }}
+              style={{ border: `1px solid ${colorTheme.bg2.value}` }}
               DEPRECATED_controlOptions={{
                 tooltip: 'Strikethrough',
                 icon: {
