@@ -310,13 +310,8 @@ const DimensionsControls = React.memo(
               testId='grid-cell-row-width'
               onSubmitValue={onSubmitPosition('width')}
               inputProps={{ placeholder: 'auto' }}
-              labelInner={{
-                category: 'inspector-element',
-                type: 'rowSpan',
-                color: 'on-highlight-secondary',
-              }}
+              innerLabel={<Icons.RowSpan color='on-highlight-secondary' />}
               descriptionLabel={width === 1 ? 'Col' : 'Cols'}
-              incrementControls={false}
             />
             <NumberInput
               value={cssNumber(height)}
@@ -325,13 +320,8 @@ const DimensionsControls = React.memo(
               testId='grid-cell-row-height'
               onSubmitValue={onSubmitPosition('height')}
               inputProps={{ placeholder: 'auto' }}
-              labelInner={{
-                category: 'inspector-element',
-                type: 'columnSpan',
-                color: 'on-highlight-secondary',
-              }}
+              innerLabel={<Icons.ColumnSpan color='on-highlight-secondary' />}
               descriptionLabel={height === 1 ? 'Row' : 'Rows'}
-              incrementControls={false}
             />
           </UIGridRow>
         </UIGridRow>
