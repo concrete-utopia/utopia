@@ -182,7 +182,7 @@ describe('Frame updating layout section', () => {
           ])
 
           const scrubLabel = await renderResult.renderedDOM.findByTestId(
-            `frame-left-number-input-label-div`,
+            `frame-left-number-input-mouse-down-handler`,
           )
           const scrubLabelBounds = scrubLabel.getBoundingClientRect()
           const scrubLabelCenter = getDomRectCenter(scrubLabelBounds)
