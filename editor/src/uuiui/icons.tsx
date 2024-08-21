@@ -215,6 +215,7 @@ export const Icons = {
   Cube: makeIcon({ type: 'd', color: 'main' }),
   Checkmark: makeIcon({ type: 'checkmark', color: 'main' }),
   DragHandle: makeIcon({ type: 'draghandle', color: 'main' }),
+  Degree: makeIcon({ category: 'inspector-element', type: 'degree', color: 'main' }),
   Code: makeIcon({ type: 'codymccodeface-larger', color: 'main' }),
   EditPencil: makeIcon({ type: 'editpencil', color: 'main' }),
   ExpansionArrow: makeIcon({ type: 'expansionarrow-down', color: 'main' }),
@@ -275,6 +276,13 @@ export const Icons = {
   PinLeftOutline: makeIcon({ type: 'pinleftoutline', color: 'main' }),
   PinRightOutline: makeIcon({ type: 'pinrightoutline', color: 'main' }),
   Pipette: makeIcon({ type: 'pipette', color: 'main' }),
+  SmallPipette: makeIcon({
+    type: 'pipette',
+    color: 'main',
+    category: 'inspector-element',
+    width: 16,
+    height: 16,
+  }),
   Minus: makeIcon({ type: 'minus', color: 'main' }),
   SmallMinus: makeIcon({ type: 'minus', color: 'main', width: 12, height: 12 }),
   Plus: makeIcon({ type: 'plus', color: 'main' }),
@@ -779,6 +787,20 @@ export const Icons = {
     color: 'main',
     width: 16,
     height: 16,
+  }),
+  RowSpan: makeIcon({
+    category: 'inspector-element',
+    type: 'rowSpan',
+    width: 16,
+    height: 16,
+    color: 'main',
+  }),
+  ColumnSpan: makeIcon({
+    category: 'inspector-element',
+    type: 'columnSpan',
+    width: 16,
+    height: 16,
+    color: 'main',
   }),
 } as const
 

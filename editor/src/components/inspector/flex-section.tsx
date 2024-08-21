@@ -786,7 +786,7 @@ const GapRowColumnControl = React.memo(() => {
   }
 
   return (
-    <FlexRow style={{ justifyContent: 'space-between' }}>
+    <FlexRow style={{ justifyContent: 'space-between', gap: 8 }}>
       {when(
         controlSplitState === 'unified',
         <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
@@ -798,11 +798,7 @@ const GapRowColumnControl = React.memo(() => {
             onForcedSubmitValue={onSubmitUnifiedValue}
             defaultUnitToHide={'px'}
             testId={'grid-column-gap'}
-            labelInner={{
-              category: 'inspector-element',
-              type: 'gapHorizontal',
-              color: 'on-highlight-secondary',
-            }}
+            innerLabel={<Icons.GapHorizontal color='on-highlight-secondary' />}
           />
         </UIGridRow>,
       )}
@@ -817,11 +813,7 @@ const GapRowColumnControl = React.memo(() => {
             onForcedSubmitValue={onSubmitSplitValue('columnGap')}
             defaultUnitToHide={'px'}
             testId={'grid-column-gap'}
-            labelInner={{
-              category: 'inspector-element',
-              type: 'gapHorizontal',
-              color: 'on-highlight-secondary',
-            }}
+            innerLabel={<Icons.GapHorizontal color='on-highlight-secondary' />}
           />
           <NumberInput
             value={rowGap.value}
@@ -831,11 +823,7 @@ const GapRowColumnControl = React.memo(() => {
             onForcedSubmitValue={onSubmitSplitValue('rowGap')}
             defaultUnitToHide={'px'}
             testId={'grid-row-gap'}
-            labelInner={{
-              category: 'inspector-element',
-              type: 'gapVertical',
-              color: 'on-highlight-secondary',
-            }}
+            innerLabel={<Icons.GapVertical color='on-highlight-secondary' />}
           />
         </UIGridRow>,
       )}

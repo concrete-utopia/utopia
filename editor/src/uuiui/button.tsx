@@ -56,7 +56,7 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => {
     alignItems: 'center',
     justifyContent: 'center',
     outline: 'none',
-    borderRadius: 3,
+    borderRadius: UtopiaTheme.inputBorderRadius,
     padding: 0,
     height: UtopiaTheme.layout.inputHeight.default,
     opacity: props.disabled ? 0.5 : 1,

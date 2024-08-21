@@ -427,7 +427,6 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
         invalid={invalid}
         id={`frame-${props.property}-number-input`}
         testId={`frame-${props.property}-number-input`}
-        labelInner={props.label}
         onSubmitValue={onSubmitValue}
         onTransientSubmitValue={onSubmitValue}
         incrementControls={singleCommonValue == null}
@@ -435,6 +434,7 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
         numberType={'LengthPercent'}
         defaultUnitToHide={'px'}
         stepSize={1}
+        innerLabel={props.label}
       />
     </InspectorContextMenuWrapper>
   )

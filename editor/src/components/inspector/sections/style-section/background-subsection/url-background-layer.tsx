@@ -80,56 +80,48 @@ export const URLBackgroundLayer = React.memo<URLBackgroundLayerProps>((props) =>
       items={[removeRow(onRemoveRowSubmit), ...props.unsetContextMenuItem]}
       data={null}
     >
-      <UIGridRow tall alignItems='start' padded={true} variant='<---1fr--->|------172px-------|'>
-        <UIGridRow
-          tall
-          alignItems='start'
-          padded={false}
-          variant='<-auto-><----------1fr--------->'
-        >
-          <CheckboxInput
-            onChange={toggleCheckbox}
-            checked={props.value.enabled}
-            controlStatus={props.controlStatus}
-            onMouseDown={stopPropagation}
-          />
-          <ImageThumbnailControl
-            id={`image-thumbnail-control-${props.index}`}
-            key={`image-thumbnail-control-${props.index}-${props.value.url}`}
-            testId={`image-thumbnail-control-${props.index}-${props.value.url}`}
-            value={props.value}
-            backgroundIndex={props.index}
-            controlStatus={props.controlStatus}
-            controlStyles={props.controlStyles}
-            setOpenPopup={props.setOpenPopup}
-            popupOpen={props.popupOpen}
-            useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
-            modalOffset={{ x: -45, y: 0 }}
-          />
-        </UIGridRow>
-        <UIGridRow
-          tall
-          alignItems='start'
-          padded={false}
-          variant='<-------1fr------>|----80px----|'
-        >
-          <PopupList
-            value={imageSelectOption}
-            options={backgroundLayerTypeSelectOptions}
-            onSubmitValue={backgroundLayerType}
-            controlStyles={props.controlStyles}
-            containerMode='default'
-          />
-          <StringControl
-            id={`background-layer-image-${props.index}`}
-            key={`background-layer-image-${props.index}`}
-            testId={`background-layer-image-${props.index}`}
-            value={props.value.url}
-            onSubmitValue={onURLSubmitValue}
-            controlStatus={props.controlStatus}
-            controlStyles={props.controlStyles}
-          />
-        </UIGridRow>
+      <UIGridRow
+        tall
+        alignItems='start'
+        padded={true}
+        variant='<-auto-><-auto->|70px|<----1fr---->|'
+      >
+        <CheckboxInput
+          onChange={toggleCheckbox}
+          checked={props.value.enabled}
+          controlStatus={props.controlStatus}
+          onMouseDown={stopPropagation}
+        />
+        <ImageThumbnailControl
+          id={`image-thumbnail-control-${props.index}`}
+          key={`image-thumbnail-control-${props.index}-${props.value.url}`}
+          testId={`image-thumbnail-control-${props.index}-${props.value.url}`}
+          value={props.value}
+          backgroundIndex={props.index}
+          controlStatus={props.controlStatus}
+          controlStyles={props.controlStyles}
+          setOpenPopup={props.setOpenPopup}
+          popupOpen={props.popupOpen}
+          useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
+          modalOffset={{ x: -45, y: 0 }}
+        />
+        <PopupList
+          value={imageSelectOption}
+          options={backgroundLayerTypeSelectOptions}
+          onSubmitValue={backgroundLayerType}
+          controlStyles={props.controlStyles}
+          containerMode='default'
+          style={{ background: 'transparent' }}
+        />
+        <StringControl
+          id={`background-layer-image-${props.index}`}
+          key={`background-layer-image-${props.index}`}
+          testId={`background-layer-image-${props.index}`}
+          value={props.value.url}
+          onSubmitValue={onURLSubmitValue}
+          controlStatus={props.controlStatus}
+          controlStyles={props.controlStyles}
+        />
       </UIGridRow>
     </InspectorContextMenuWrapper>
   )

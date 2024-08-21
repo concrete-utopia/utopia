@@ -17,7 +17,7 @@ import type { ContextMenuItem } from '../../../../context-menu-items'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues, removeRow } from '../../../common/context-menu-items'
 import type { ControlStatus } from '../../../common/control-status'
-import { LabelBelowNumberTextStyles, type ControlStyles } from '../../../common/control-styles'
+import { type ControlStyles } from '../../../common/control-styles'
 import type {
   CSSBoxShadow,
   CSSBoxShadows,
@@ -223,8 +223,7 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
           propsArray={[
             {
               value: props.value.offsetX,
-              DEPRECATED_labelBelow: 'X',
-              labelBelowStyle: LabelBelowNumberTextStyles,
+              innerLabel: 'X',
               onSubmitValue: offsetXSubmitValue,
               onTransientSubmitValue: offsetXTransientSubmitValue,
               controlStatus: props.controlStatus,
@@ -236,8 +235,7 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
             },
             {
               value: props.value.offsetY,
-              DEPRECATED_labelBelow: 'Y',
-              labelBelowStyle: LabelBelowNumberTextStyles,
+              innerLabel: 'Y',
               onSubmitValue: offsetYSubmitValue,
               onTransientSubmitValue: offsetYTransientSubmitValue,
               controlStatus: props.controlStatus,
@@ -249,8 +247,7 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
             },
             {
               value: props.value.blurRadius.value,
-              DEPRECATED_labelBelow: 'B',
-              labelBelowStyle: LabelBelowNumberTextStyles,
+              innerLabel: 'B',
               onSubmitValue: blurRadiusSubmitValue,
               onTransientSubmitValue: blurRadiusTransientSubmitValue,
               controlStatus: props.controlStatus,
@@ -262,8 +259,7 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
             },
             {
               value: props.value.spreadRadius.value,
-              DEPRECATED_labelBelow: 'S',
-              labelBelowStyle: LabelBelowNumberTextStyles,
+              innerLabel: 'S',
               onSubmitValue: spreadRadiusSubmitValue,
               onTransientSubmitValue: spreadRadiusTransientSubmitValue,
               controlStatus: props.controlStatus,

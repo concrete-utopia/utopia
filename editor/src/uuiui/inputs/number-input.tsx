@@ -125,7 +125,7 @@ let incrementAnimationFrame: number | undefined = undefined
 const repeatThreshold: number = 500
 
 export interface NumberInputOptions {
-  labelInner?: string | IcnProps
+  innerLabel?: React.ReactChild
   minimum?: number
   maximum?: number
   stepSize?: number
@@ -137,6 +137,7 @@ export interface NumberInputOptions {
   defaultUnitToHide: CSSNumberUnit | null
   pasteHandler?: boolean
   descriptionLabel?: string
+  disableScrubbing?: boolean
 }
 
 export interface AbstractNumberInputProps<T extends CSSNumber | number>
@@ -144,8 +145,6 @@ export interface AbstractNumberInputProps<T extends CSSNumber | number>
     BaseInputProps,
     InspectorControlProps {
   value: T | null | undefined
-  DEPRECATED_labelBelow?: React.ReactChild
-  labelBelowStyle?: React.CSSProperties
   invalid?: boolean
 }
 
@@ -167,14 +166,11 @@ export const NumberInput = React.memo<NumberInputProps>(
     testId,
     inputProps = {},
     id,
-    className,
-    DEPRECATED_labelBelow,
-    labelBelowStyle = {},
-    labelInner,
+    innerLabel,
     minimum: unscaledMinimum = -Infinity,
     maximum: unscaledMaximum = Infinity,
     stepSize: unscaledStepSize,
-    incrementControls = true,
+    incrementControls = false,
     chained = 'not-chained',
     height = UtopiaTheme.layout.inputHeight.default,
     roundCorners = 'all',
@@ -190,7 +186,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     onMouseLeave,
     invalid,
     pasteHandler,
-    descriptionLabel,
+    disableScrubbing = false,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const colorTheme = useColorTheme()
@@ -630,7 +626,7 @@ export const NumberInput = React.memo<NumberInputProps>(
 
     const onLabelMouseDown = React.useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
-        if (disabled) {
+        if (disabled || disableScrubbing) {
           return
         }
         if (e.button === 0) {
@@ -645,7 +641,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           setGlobalCursor?.(CSSCursor.ResizeEW)
         }
       },
-      [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, value, disabled],
+      [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, value, disabled, disableScrubbing],
     )
 
     const placeholder = getControlStylesAwarePlaceholder(controlStyles)
@@ -667,14 +663,6 @@ export const NumberInput = React.memo<NumberInputProps>(
           }
         : undefined
 
-    const labelInnerIsIcon =
-      labelInner != null && typeof labelInner === 'object' && 'type' in labelInner
-
-    const labelInnerIsIconOrNull = labelInner == null || labelInnerIsIcon
-
-    const showDescriptionLabel =
-      labelInnerIsIconOrNull && !isFocused && descriptionLabel != null && value != null
-
     return (
       <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={style}>
         <div
@@ -683,7 +671,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             color: controlStyles.mainColor,
             zIndex: isFocused ? 3 : undefined,
             position: 'relative',
-            borderRadius: 2,
+            borderRadius: UtopiaTheme.inputBorderRadius,
             display: 'flex',
             flexDirection: 'row',
             gap: 5,
@@ -704,44 +692,13 @@ export const NumberInput = React.memo<NumberInputProps>(
             },
           }}
         >
-          {labelInner != null ? (
-            <div
-              className='number-input-innerLabel'
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                userSelect: 'none',
-                width: 20,
-                height: 20,
-                display: 'block',
-              }}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 2,
-                  textAlign: 'center',
-                  fontWeight: 600,
-                  fontSize: '9px',
-                  width: '100%',
-                  height: '100%',
-                  color: colorTheme.fg7.value,
-                }}
-                onMouseDown={onLabelMouseDown}
-              >
-                {labelInnerIsIcon ? <Icn {...labelInner} /> : labelInner}
-              </div>
-            </div>
-          ) : null}
           {incrementControls && !disabled ? (
             <div
               className='number-input-increment-controls'
               css={{
                 position: 'absolute',
                 top: 0,
-                right: 1,
+                right: 2,
                 flexDirection: 'column',
                 alignItems: 'stretch',
                 width: 11,
@@ -812,22 +769,21 @@ export const NumberInput = React.memo<NumberInputProps>(
               </div>
             </div>
           ) : null}
-          {DEPRECATED_labelBelow == null && controlStatus != 'off' ? null : (
+          {innerLabel == null && controlStatus != 'off' ? null : (
             <div
               data-testid={`${testId}-mouse-down-handler`}
               onMouseDown={onLabelMouseDown}
               style={{
                 paddingLeft: 4,
-                cursor: CSSCursor.ResizeEW,
+                cursor: disableScrubbing ? 'default' : CSSCursor.ResizeEW,
                 fontSize: 9,
                 textAlign: 'center',
                 display: 'block',
                 color: controlStyles.secondaryColor,
                 width: 20,
-                ...labelBelowStyle,
               }}
             >
-              {DEPRECATED_labelBelow}
+              {innerLabel}
             </div>
           )}
           <InspectorInput
@@ -839,13 +795,13 @@ export const NumberInput = React.memo<NumberInputProps>(
             pasteHandler={pasteHandler}
             disabled={disabled}
             focused={isFocused}
-            hasLabel={labelInner != null}
+            hasLabel={innerLabel != null}
             roundCorners={roundCorners}
             mixed={mixed}
             value={displayValue}
             ref={ref}
             style={{
-              color: showDescriptionLabel ? 'transparent' : colorTheme.fg1.value,
+              color: colorTheme.fg1.value,
             }}
             css={{
               '::placeholder': { color: invalid ? colorTheme.error.value : undefined },
@@ -861,29 +817,6 @@ export const NumberInput = React.memo<NumberInputProps>(
             onChange={onChange}
             autoComplete='off'
           />
-          {showDescriptionLabel ? (
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                bottom: 0,
-                left: labelInnerIsIconOrNull ? 22 : 0,
-                pointerEvents: 'none',
-                display: 'flex',
-                alignItems: 'center',
-              }}
-            >
-              <div
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}
-              >
-                <span>
-                  {value.value}
-                  {value.unit ?? ''}
-                </span>
-                <span style={{ fontSize: 10 }}>{descriptionLabel}</span>
-              </div>
-            </div>
-          ) : null}
         </div>
       </div>
     )
@@ -1016,7 +949,6 @@ export const ChainedNumberInput: React.FunctionComponent<
                 chained='first'
                 roundCorners='left'
                 setGlobalCursor={setGlobalCursor}
-                incrementControls={false}
               />
             )
           }
@@ -1029,7 +961,6 @@ export const ChainedNumberInput: React.FunctionComponent<
                 chained='last'
                 roundCorners='right'
                 setGlobalCursor={setGlobalCursor}
-                incrementControls={false}
               />
             )
           }
@@ -1042,7 +973,6 @@ export const ChainedNumberInput: React.FunctionComponent<
                 chained='middle'
                 roundCorners='none'
                 setGlobalCursor={setGlobalCursor}
-                incrementControls={false}
               />
             )
           }
