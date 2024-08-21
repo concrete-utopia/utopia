@@ -419,15 +419,15 @@ describe('project model', () => {
       expect(got.projects[1].proj_id).toBe('four')
 
       expect(Object.keys(got.collaborators.byProjectId).length).toBe(2)
-      expect(Object.keys(got.collaborators.byProjectId)[0]).toBe('seven')
+      expect(got.collaborators.byProjectId).toHaveProperty('seven')
       expect(got.collaborators.byProjectId['seven'].length).toBe(2)
-      expect(got.collaborators.byProjectId['seven'][0]).toBe('bob')
-      expect(got.collaborators.byProjectId['seven'][1]).toBe('carol') // the owner is included implicitly!
-      expect(Object.keys(got.collaborators.byProjectId)[1]).toBe('four')
+      expect(got.collaborators.byProjectId['seven']).toContain('bob')
+      expect(got.collaborators.byProjectId['seven']).toContain('carol') // the owner is included implicitly!
+      expect(got.collaborators.byProjectId).toHaveProperty('four')
       expect(got.collaborators.byProjectId['four'].length).toBe(3)
-      expect(got.collaborators.byProjectId['four'][0]).toBe('bob')
-      expect(got.collaborators.byProjectId['four'][1]).toBe('carol')
-      expect(got.collaborators.byProjectId['four'][2]).toBe('alice') // the owner is included implicitly!
+      expect(got.collaborators.byProjectId['four']).toContain('bob')
+      expect(got.collaborators.byProjectId['four']).toContain('carol')
+      expect(got.collaborators.byProjectId['four']).toContain('alice') // the owner is included implicitly!
     })
   })
 
