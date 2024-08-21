@@ -54,6 +54,7 @@ import { createProjectsStore, ProjectsContext, useProjectsStore } from '../store
 import { UserAvatar } from '../components/userAvatar'
 import { UserContextMenu } from '../components/user-context-menu'
 import { mergeCollaborators } from '../util/collaborators.server'
+import { mapDropNulls } from '../util/common'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -632,8 +633,14 @@ const Projects = React.memo(
     const scrollStyle = isAllProjects ? { overflow: 'initial' } : {}
 
     const getCollaboratorUsers = React.useCallback(
-      (projectId: string) => {
-        return collaborators.byProjectId[projectId].map((userId) => collaborators.byUserId[userId])
+      (projectId: string): Collaborator[] => {
+        const collaboratorIds = collaborators.byProjectId[projectId] ?? []
+        return mapDropNulls((collaboratorId) => {
+          if (!collaborators.byUserId.hasOwnProperty(collaboratorId)) {
+            return null
+          }
+          return collaborators.byUserId[collaboratorId]
+        }, collaboratorIds)
       },
       [collaborators],
     )
