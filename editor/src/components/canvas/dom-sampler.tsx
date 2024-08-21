@@ -321,8 +321,12 @@ export class ObserverCache<T, N extends Element = Element, A extends Array<any> 
   private handleMutation = (mutations: Array<MutationRecord>) => {
     // delete the metadata for the element that has been mutated
     for (const mutation of mutations) {
-      const target = mutation.target
-      this.cache.delete(target as N)
+      // TODO this may be a little excessive, possibly tone it down
+      this.cache.delete(mutation.target as N)
+      mutation.addedNodes.forEach((n) => this.cache.delete(n as N))
+      mutation.removedNodes.forEach((n) => this.cache.delete(n as N))
+      // remove all children of the mutation target from the cache
+      mutation.target.childNodes.forEach((n) => this.cache.delete(n as N))
     }
   }
   private handleResize = (entries: Array<ResizeObserverEntry>) => {
@@ -330,6 +334,8 @@ export class ObserverCache<T, N extends Element = Element, A extends Array<any> 
     for (const entry of entries) {
       const target = entry.target
       this.cache.delete(target as N)
+      // invalidate all siblings as a resize of one element can affect the layout of its siblings
+      entry.target.parentElement?.childNodes.forEach((n) => this.cache.delete(n as N))
     }
   }
 
