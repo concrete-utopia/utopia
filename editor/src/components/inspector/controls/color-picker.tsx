@@ -18,9 +18,12 @@ import { StringControl } from './string-control'
 //TODO: switch to functional component and make use of 'useColorTheme':
 import {
   colorTheme,
+  FlexRow,
   Icn,
+  Icons,
   SimpleNumberInput,
   SimplePercentInput,
+  SquareButton,
   UtopiaStyles,
 } from '../../../uuiui'
 import { pickColorWithEyeDropper } from '../../canvas/canvas-utils'
@@ -75,14 +78,16 @@ export const ColorPicker: React.FunctionComponent<React.PropsWithChildren<ColorP
           ...UtopiaStyles.popup,
         }}
       >
-        <Icn
-          type='pipette'
-          color='secondary'
-          width={18}
-          height={18}
-          onClick={onClickEyeDropper}
-          style={{ marginLeft: 8 }}
-        />
+        <FlexRow
+          style={{ justifyContent: 'flex-end', gap: 2, height: 32, padding: '8px 8px 14px 8px' }}
+        >
+          <SquareButton highlight onClick={onClickEyeDropper}>
+            <Icons.SmallPipette />
+          </SquareButton>
+          <SquareButton highlight onClick={closePopup}>
+            <Icons.SmallCross />
+          </SquareButton>
+        </FlexRow>
         <ColorPickerInner {...props} />
       </div>
     </InspectorModal>
@@ -695,14 +700,7 @@ export class ColorPickerInner extends React.Component<
               onForcedSubmitValue={this.onSubmitValueHue}
               minimum={0}
               maximum={360}
-              DEPRECATED_labelBelow='H'
-              labelInner={{
-                category: 'layout/systems',
-                type: 'transform-rotate',
-                color: 'secondary',
-                width: 10,
-                height: 10,
-              }}
+              innerLabel='H'
               defaultUnitToHide={null}
             />
             <SimplePercentInput
@@ -716,7 +714,7 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={1}
               stepSize={0.01}
-              DEPRECATED_labelBelow='S'
+              innerLabel='S'
               defaultUnitToHide={null}
             />
             <SimplePercentInput
@@ -730,7 +728,7 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={1}
               stepSize={0.01}
-              DEPRECATED_labelBelow='V'
+              innerLabel='V'
               defaultUnitToHide={null}
             />
             <SimplePercentInput
@@ -744,7 +742,7 @@ export class ColorPickerInner extends React.Component<
               minimum={0}
               maximum={1}
               stepSize={0.01}
-              DEPRECATED_labelBelow='A'
+              innerLabel='A'
               defaultUnitToHide={null}
             />
           </div>

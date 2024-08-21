@@ -1372,7 +1372,7 @@ describe('inspector tests with real metadata', () => {
       `"controlled"`,
     )
   })
-  xit('CSS props using numbers', async () => {
+  it('CSS props using numbers', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippetStyledComponents(`
         <div
@@ -1798,7 +1798,7 @@ describe('inspector tests with real metadata', () => {
     expect(widthControl.value).toBe('2')
   })
 
-  xit('Style is using css className', async () => {
+  it('Style is using css className', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
         `
@@ -1914,7 +1914,7 @@ describe('inspector tests with real metadata', () => {
       `"detected-fromcss"`,
     )
   })
-  xit('Style is using css className, with default values', async () => {
+  it('Style is using css className, with default values', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
         `
@@ -2016,7 +2016,7 @@ describe('inspector tests with real metadata', () => {
     // )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"0px"`)
-    matchInlineSnapshotBrowser(paddingHorizontalControl.value, `""`)
+    matchInlineSnapshotBrowser(paddingHorizontalControl.value, `"–"`)
     matchInlineSnapshotBrowser(
       paddingHorizontalControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
@@ -2126,14 +2126,14 @@ describe('inspector tests with real metadata', () => {
     // )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"0px"`)
-    matchInlineSnapshotBrowser(paddingHorizontalControl.value, `""`)
+    matchInlineSnapshotBrowser(paddingHorizontalControl.value, `"–"`)
     matchInlineSnapshotBrowser(
       paddingHorizontalControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     ) // this will be `detected-fromcss` once we use the padding shorthand
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['borderRadius'], `"0px"`)
-    matchInlineSnapshotBrowser(radiusControl.value, `""`)
+    matchInlineSnapshotBrowser(radiusControl.value, `"–"`)
     matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
