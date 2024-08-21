@@ -100,7 +100,7 @@ let registeredHandlers: (messageEvent: MessageEvent) => void = NO_OP
 export function initVSCodeBridge(
   projectContents: ProjectContentTreeRoot,
   dispatch: (actions: Array<EditorAction>) => void,
-  openFilePath: string | null,
+  openFilePath: string,
 ) {
   let loadingScreenHidden = false
   let seenMessageListenersReadyMessage = false
@@ -123,11 +123,6 @@ export function initVSCodeBridge(
       messageEvent.source.postMessage(initProject(projectFiles, openFilePath), {
         targetOrigin: '*',
       })
-
-      if (openFilePath == null) {
-        loadingScreenHidden = true
-        dispatch([hideVSCodeLoadingScreen()])
-      }
     } else if (isVSCodeBridgeReady(data) && messageEvent.source != null) {
       // Store the source
       vscodeIFrame = messageEvent.source
