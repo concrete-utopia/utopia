@@ -636,10 +636,7 @@ const Projects = React.memo(
       (projectId: string): Collaborator[] => {
         const collaboratorIds = collaborators.byProjectId[projectId] ?? []
         return mapDropNulls((collaboratorId) => {
-          if (!collaborators.byUserId.hasOwnProperty(collaboratorId)) {
-            return null
-          }
-          return collaborators.byUserId[collaboratorId]
+          return collaborators.byUserId[collaboratorId] ?? null
         }, collaboratorIds)
       },
       [collaborators],
