@@ -35,6 +35,20 @@ index 50c7e6fb631..06b6638c639 100644
  	task.define('bundle-marketplace-web-extensions-build', () => extensions.packageMarketplaceExtensionsStream(true).pipe(gulp.dest('.build/web'))),
  	task.define('bundle-web-extension-media-build', () => extensions.buildExtensionMedia(false, '.build/web/extensions')),
  ));
+diff --git a/build/lib/extensions.ts b/build/lib/extensions.ts
+index 0582e0cb11e..67136167697 100644
+--- a/build/lib/extensions.ts
++++ b/build/lib/extensions.ts
+@@ -138,7 +138,8 @@ function fromLocalWebpack(extensionPath: string, webpackConfigFileName: string,
+ 			return (Array.isArray(exportedConfig) ? exportedConfig : [exportedConfig]).map(config => {
+ 				const webpackConfig = {
+ 					...config,
+-					...{ mode: 'production' }
++					...{ mode: 'production' },
++					stats: 'verbose'
+ 				};
+ 				if (disableMangle) {
+ 					if (Array.isArray(config.module.rules)) {
 diff --git a/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json b/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json
 deleted file mode 100644
 index 9e26dfeeb6e..00000000000
