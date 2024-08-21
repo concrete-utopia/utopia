@@ -198,10 +198,10 @@ function collectMetadataForPaths(
   canvasRootContainer: HTMLElement,
   pathsToCollect: Array<ElementPath>,
   validPaths: Array<ElementPath>,
+  metadataToUpdate_MUTATE: ElementInstanceMetadataMap,
   options: {
     scale: number
     selectedViews: Array<ElementPath>
-    metadataToUpdate: ElementInstanceMetadataMap
     spyCollector: UiJsxCanvasContextData
   },
 ): {
@@ -215,8 +215,6 @@ function collectMetadataForPaths(
     'nearest-half',
   )
 
-  let updatedMetadataMap = { ...options.metadataToUpdate }
-
   pathsToCollect.forEach((path) => {
     const domMetadata = collectMetadataForElementPath(
       path,
@@ -229,7 +227,7 @@ function collectMetadataForPaths(
       // TODO find a dynamic spyElement for this path
       const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(path)]
       if (spyElem != null) {
-        updatedMetadataMap[EP.toString(path)] = {
+        metadataToUpdate_MUTATE[EP.toString(path)] = {
           ...spyElem,
         }
       }
@@ -260,7 +258,7 @@ function collectMetadataForPaths(
           conditionValue: spyElem.conditionValue,
           earlyReturn: spyElem.earlyReturn,
         }
-        updatedMetadataMap[EP.toString(spyElem.elementPath)] = elementInstanceMetadata
+        metadataToUpdate_MUTATE[EP.toString(spyElem.elementPath)] = elementInstanceMetadata
       })
     })
   })
@@ -268,7 +266,7 @@ function collectMetadataForPaths(
   const finalMetadata = [
     pruneInvalidPathsFromMetadata_MUTATE(validPaths),
     fillMissingDataFromAncestors,
-  ].reduce((metadata, fix) => fix(metadata), updatedMetadataMap)
+  ].reduce((metadata, fix) => fix(metadata), metadataToUpdate_MUTATE)
 
   return {
     metadata: finalMetadata,
@@ -299,9 +297,15 @@ export function collectMetadata(
   const validPaths = getValidPathsFromCanvasContainer(canvasRootContainer)
 
   if (elementsToFocusOn == 'rerender-all-elements') {
-    return collectMetadataForPaths(canvasRootContainer, validPaths, validPaths, options)
+    return collectMetadataForPaths(canvasRootContainer, validPaths, validPaths, {}, options)
   } else {
-    return collectMetadataForPaths(canvasRootContainer, elementsToFocusOn, validPaths, options)
+    return collectMetadataForPaths(
+      canvasRootContainer,
+      elementsToFocusOn,
+      validPaths,
+      { ...options.metadataToUpdate },
+      options,
+    )
   }
 }
 
