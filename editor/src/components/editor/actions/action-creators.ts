@@ -237,6 +237,7 @@ import type {
   ElementReplacementPath,
   ReplaceJSXElement,
   ToggleDataCanCondense,
+  SetErrorBoundaryHandling,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -256,6 +257,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
+  ErrorBoundaryHandling,
 } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
 import type { TextProp } from '../../text-editor/text-editor'
@@ -1884,5 +1886,14 @@ export function resetOnlineState(): ResetOnlineState {
 export function increaseOnlineStateFailureCount(): IncreaseOnlineStateFailureCount {
   return {
     action: 'INCREASE_ONLINE_STATE_FAILURE_COUNT',
+  }
+}
+
+export function setErrorBoundaryHandling(
+  errorBoundaryHandling: ErrorBoundaryHandling,
+): SetErrorBoundaryHandling {
+  return {
+    action: 'SET_ERROR_BOUNDARY_HANDLING',
+    errorBoundaryHandling: errorBoundaryHandling,
   }
 }

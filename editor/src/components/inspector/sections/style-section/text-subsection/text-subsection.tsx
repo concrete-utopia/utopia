@@ -287,7 +287,9 @@ export const TextSubsection = React.memo(() => {
             onUnsetValues={onUnsetSubsectionValues}
             propertySet={anyTextRelatedPropSet}
           />
-          <Icons.Threedots color={expanded ? 'secondary' : 'subdued'} onClick={toggleExpanded} />
+          <SquareButton highlight onClick={toggleExpanded} spotlight={expanded ? true : false}>
+            <Icons.Threedots />
+          </SquareButton>
         </InspectorSubsectionHeader>
       </InspectorContextMenuWrapper>
       <FontFamilySelect />
@@ -310,6 +312,7 @@ export const TextSubsection = React.memo(() => {
             minimum={0}
             numberType='Length'
             defaultUnitToHide={'px'}
+            incrementControls
           />
         </InspectorContextMenuWrapper>
         <InspectorContextMenuWrapper
@@ -495,7 +498,7 @@ export const TextSubsection = React.memo(() => {
               onSubmitValue={wrappedLetterSpacingOnSubmitValue}
               onTransientSubmitValue={wrappedLetterSpacingOnTransientSubmitValue}
               controlStatus={letterSpacingMetadata.controlStatus}
-              DEPRECATED_labelBelow={<Icons.LetterSpacing color='on-highlight-secondary' />}
+              innerLabel={<Icons.LetterSpacing color='on-highlight-secondary' />}
               stepSize={0.01}
               numberType='Length'
               defaultUnitToHide={'px'}
@@ -518,7 +521,7 @@ export const TextSubsection = React.memo(() => {
               controlStatus={lineHeightMetadata.controlStatus}
               onSubmitValue={wrappedLineHeightOnSubmitValue}
               onTransientSubmitValue={wrappedLineHeightOnTransientSubmitValue}
-              DEPRECATED_labelBelow={<Icons.LineHeight color='on-highlight-secondary' />}
+              innerLabel={<Icons.LineHeight color='on-highlight-secondary' />}
               stepSize={0.01}
               numberType='Length'
               defaultUnitToHide={'em'}

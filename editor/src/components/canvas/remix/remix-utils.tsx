@@ -32,7 +32,11 @@ import {
 } from '../../../core/model/project-file-utils'
 import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left } from '../../../core/shared/either'
-import type { CanvasBase64Blobs } from '../../editor/store/editor-state'
+import type {
+  CanvasBase64Blobs,
+  ErrorBoundaryHandling,
+  EditorRemixConfig,
+} from '../../editor/store/editor-state'
 import { findPathToJSXElementChild } from '../../../core/model/element-template-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { type ElementInstanceMetadataMap } from '../../../core/shared/element-template'
@@ -334,10 +338,19 @@ function safeGetClientRoutes(
   routeManifest: RouteManifestWithContents,
   routeModulesCache: RouteModules,
   futureConfig: FutureConfig,
+  errorBoundaryHandling: ErrorBoundaryHandling,
 ): DataRouteObject[] | null {
   const routesByParentId = groupRoutesByParentId(routeManifest)
   try {
-    return createClientRoutes(routeManifest, routeModulesCache, futureConfig, '', routesByParentId)
+    return createClientRoutes(
+      routeManifest,
+      routeModulesCache,
+      futureConfig,
+      '',
+      routesByParentId,
+      null,
+      errorBoundaryHandling,
+    )
   } catch (e) {
     console.error(e)
     return null
@@ -371,6 +384,7 @@ export function getRoutesAndModulesFromManifest(
   curriedResolveFn: CurriedResolveFn,
   projectContents: ProjectContentTreeRoot,
   routeModulesCache: RouteModules,
+  remixConfig: EditorRemixConfig,
 ): GetRoutesAndModulesFromManifestResult | null {
   const routeModuleCreators: RouteIdsToModuleCreators = {}
   const routingTable: RemixRoutingTable = {}
@@ -380,7 +394,12 @@ export function getRoutesAndModulesFromManifest(
     return null
   }
 
-  const routes = safeGetClientRoutes(routeManifest, routeModulesCache, futureConfig)
+  const routes = safeGetClientRoutes(
+    routeManifest,
+    routeModulesCache,
+    futureConfig,
+    remixConfig.errorBoundaryHandling,
+  )
   if (routes == null) {
     return null
   }

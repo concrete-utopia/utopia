@@ -273,11 +273,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
 
   return (
     <>
-      <UIGridRow
-        padded={false}
-        variant='<--1fr--><--1fr-->'
-        style={{ minHeight: undefined, gap: 4 }}
-      >
+      <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
         <FrameUpdatingLayoutControl
           property='left'
           label='L'
@@ -293,11 +289,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           invalid={invalidPins.top || invalidPins.bottom} // currently showing red for BOTH directions
         />
       </UIGridRow>
-      <UIGridRow
-        padded={false}
-        variant='<--1fr--><--1fr-->'
-        style={{ minHeight: undefined, gap: 4 }}
-      >
+      <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
         <FrameUpdatingLayoutControl
           property='width'
           label='W'
@@ -435,7 +427,6 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
         invalid={invalid}
         id={`frame-${props.property}-number-input`}
         testId={`frame-${props.property}-number-input`}
-        labelInner={props.label}
         onSubmitValue={onSubmitValue}
         onTransientSubmitValue={onSubmitValue}
         incrementControls={singleCommonValue == null}
@@ -443,6 +434,7 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
         numberType={'LengthPercent'}
         defaultUnitToHide={'px'}
         stepSize={1}
+        innerLabel={props.label}
       />
     </InspectorContextMenuWrapper>
   )

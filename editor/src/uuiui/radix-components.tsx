@@ -6,10 +6,11 @@ import * as Select from '@radix-ui/react-select'
 import { styled } from '@stitches/react'
 import type { CSSProperties } from 'react'
 import React from 'react'
-import { colorTheme, UtopiaStyles } from './styles/theme'
+import { colorTheme, UtopiaStyles, UtopiaTheme } from './styles/theme'
 import { Icons, SmallerIcons } from './icons'
 import { when } from '../utils/react-conditionals'
 import { Icn, type IcnProps } from './icn'
+import { borderRadius } from './styles/utopitrons'
 
 const RadixItemContainer = styled(RadixDropdownMenu.Item, {
   minWidth: 128,
@@ -238,15 +239,16 @@ export const RadixSelect = React.memo(
       <Select.Root value={props.value?.value} onValueChange={props.onValueChange}>
         <Select.Trigger
           style={{
-            background: 'white',
+            background: 'transparent',
             display: 'flex',
             alignItems: 'center',
             gap: 8,
             fontSize: 11,
             height: 22,
-            color: props.value?.placeholder ? colorTheme.fg6.value : undefined,
+            color: props.value?.placeholder ? colorTheme.fg6.value : colorTheme.fg1.value,
             fontFamily: 'utopian-inter',
             border: 'none',
+            borderRadius: UtopiaTheme.inputBorderRadius,
             ...props.style,
           }}
           css={{
@@ -275,7 +277,7 @@ export const RadixSelect = React.memo(
             }}
           >
             <Select.ScrollUpButton>
-              <Icons.ExpansionArrow />
+              <Icons.ExpansionArrow color='on-highlight-main' />
             </Select.ScrollUpButton>
             <Select.Viewport
               style={{
@@ -290,7 +292,7 @@ export const RadixSelect = React.memo(
                     <Select.Separator
                       key={`select-option-${props.id}-${index}`}
                       style={{
-                        borderTop: `1px solid ${colorTheme.fg4.value}`,
+                        borderTop: '1px solid #393d49',
                         width: '100%',
                       }}
                     />

@@ -11,7 +11,6 @@ import {
   Icons,
   LargerIcons,
   SimpleFlexRow,
-  SquareButton,
   UNSAFE_getIconURL,
   useColorTheme,
   UtopiaTheme,

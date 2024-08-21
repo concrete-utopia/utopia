@@ -230,8 +230,8 @@ function lazyValue<T>(getter: () => T) {
 function getAttributesComingFromStyleSheets(element: HTMLElement): Set<string> {
   let appliedAttributes = new Set<string>()
   const sheets = document.styleSheets
-  try {
-    for (const i in sheets) {
+  for (const i in sheets) {
+    try {
       const sheet = sheets[i]
       const rules = sheet.rules ?? sheet.cssRules
       for (const r in rules) {
@@ -246,9 +246,11 @@ function getAttributesComingFromStyleSheets(element: HTMLElement): Set<string> {
           }
         }
       }
+    } catch (e) {
+      // ignore error, either JSDOM unit test related or we're trying to read one
+      // of the editor stylesheets from a CDN URL in a way that is blocked by our
+      // cross-origin policies
     }
-  } catch (e) {
-    // ignore error, probably JSDOM unit test related
   }
   return appliedAttributes
 }

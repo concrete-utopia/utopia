@@ -51,7 +51,7 @@ const BaseDomain = isProd
   ? 'https://cdn.utopia.pizza'
   : isBranches
   ? 'https://cdn.utopia.fish'
-  : ''
+  : 'http://cdn.localhost:8000'
 const VSCodeBaseDomain = BaseDomain === '' ? '${window.location.origin}' : BaseDomain
 
 const htmlTemplateParameters = {
