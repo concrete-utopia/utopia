@@ -805,7 +805,7 @@ function renderJSXElement(
     ...elementPropsWithSceneID,
     [UTOPIA_PATH_KEY]: optionalMap(EP.toString, elementPath),
     [UTOPIA_STATIC_PATH_KEY]:
-      elementPath == null ? null : EP.toString(EP.dynamicPathToStaticPath(elementPath)),
+      elementPath == null ? null : EP.toString(EP.dynamicPathToStaticPath(elementPath)), // TODO should this be makeLastPartOfPathStatic
   }
 
   const looksLikeReactIntrinsicButNotHTML = elementIsIntrinsic && !elementIsBaseHTML
