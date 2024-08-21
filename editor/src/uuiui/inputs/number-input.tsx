@@ -220,19 +220,8 @@ export const NumberInput = React.memo<NumberInputProps>(
       setValueAtDragOriginState(n)
     }
 
-    const [, setDragOriginXState] = React.useState<number>(-Infinity)
-    const dragOriginX = React.useRef(-Infinity)
-    const setDragOriginX = (n: number) => {
-      dragOriginX.current = n
-      setDragOriginXState(n)
-    }
-
-    const [, setDragOriginYState] = React.useState<number>(-Infinity)
-    const dragOriginY = React.useRef(-Infinity)
-    const setDragOriginY = (n: number) => {
-      dragOriginY.current = n
-      setDragOriginYState(n)
-    }
+    const [dragOriginX, setDragOriginX] = React.useState<number | null>(null)
+    const [dragOriginY, setDragOriginY] = React.useState<number | null>(null)
 
     const [, setScrubThresholdPassedState] = React.useState<boolean>(false)
     const scrubThresholdPassed = React.useRef(false)
@@ -643,8 +632,8 @@ export const NumberInput = React.memo<NumberInputProps>(
           window.addEventListener('mouseup', scrubOnMouseUp)
           document.addEventListener('pointerlockchange', checkPointerLockChange, true)
           setValueAtDragOrigin(value?.value ?? 0)
-          setDragOriginX(e.screenX)
-          setDragOriginY(e.screenY)
+          setDragOriginX(e.pageX)
+          setDragOriginY(e.pageY)
           setGlobalCursor?.(CSSCursor.ResizeEW)
           accumulatedMouseDeltaX.current = 0
         }
@@ -687,7 +676,7 @@ export const NumberInput = React.memo<NumberInputProps>(
       labelInnerIsIconOrNull && !isFocused && descriptionLabel != null && value != null
 
     let simulatedPointerTransformX: number | undefined = undefined
-    if (pointerOriginRef.current != null && scrubThresholdPassed.current) {
+    if (pointerOriginRef.current != null && scrubThresholdPassed.current && dragOriginX != null) {
       const pointerOriginRect = pointerOriginRef.current.getBoundingClientRect()
       const intendedPointerX =
         (pointerOriginRect.left + accumulatedMouseDeltaX.current) % window.screen.width
@@ -703,10 +692,10 @@ export const NumberInput = React.memo<NumberInputProps>(
       >
         <div
           ref={simulatedPointerRef}
-          className='simulatedPosition'
           style={{
             width: 5,
             height: 5,
+            top: dragOriginY == null ? undefined : dragOriginY,
             transform:
               simulatedPointerTransformX == null
                 ? undefined
@@ -718,6 +707,7 @@ export const NumberInput = React.memo<NumberInputProps>(
         >
           <img
             style={{
+              position: 'relative',
               userSelect: 'none',
               display: 'block',
             }}
@@ -725,8 +715,6 @@ export const NumberInput = React.memo<NumberInputProps>(
             height={33}
             src={getPossiblyHashedURL(`/editor/cursors/cursor-ew-resize@2x.png`)}
           />
-
-          {scrubThresholdPassed.current ? accumulatedMouseDeltaX.current : '-'}
         </div>
         <div
           className='number-input-container'
