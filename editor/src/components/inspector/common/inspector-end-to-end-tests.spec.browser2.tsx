@@ -1372,7 +1372,7 @@ describe('inspector tests with real metadata', () => {
       `"controlled"`,
     )
   })
-  xit('CSS props using numbers', async () => {
+  it('CSS props using numbers', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippetStyledComponents(`
         <div
@@ -1798,7 +1798,7 @@ describe('inspector tests with real metadata', () => {
     expect(widthControl.value).toBe('2')
   })
 
-  xit('Style is using css className', async () => {
+  it('Style is using css className', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
         `
@@ -1914,7 +1914,7 @@ describe('inspector tests with real metadata', () => {
       `"detected-fromcss"`,
     )
   })
-  xit('Style is using css className, with default values', async () => {
+  it('Style is using css className, with default values', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
         `
