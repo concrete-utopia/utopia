@@ -126,15 +126,17 @@ function getChildrenPaths(
 
   // If there are children outside the element metadata, need to merge the two and sort them.
   // Otherwise, return the children from the meta.
-  return otherChildrenFromPaths.length > 0
-    ? childrenFromElement
-        .concat(otherChildrenFromPaths)
-        .sort(
-          (a, b) =>
-            paths.findIndex((p) => EP.pathsEqual(p, a)) -
-            paths.findIndex((p) => EP.pathsEqual(p, b)),
-        )
-    : childrenFromElement
+  const result =
+    otherChildrenFromPaths.length > 0
+      ? otherChildrenFromPaths.concat(childrenFromElement)
+      : // .sort(
+        //   (a, b) =>
+        //     paths.findIndex((p) => EP.pathsEqual(p, a)) -
+        //     paths.findIndex((p) => EP.pathsEqual(p, b)),
+        // )
+        childrenFromElement
+
+  return result
 }
 
 function getMissingParentPaths(
