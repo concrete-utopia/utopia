@@ -57,6 +57,33 @@ index 9e26dfeeb6e..00000000000
 @@ -1 +0,0 @@
 -{}
 \ No newline at end of file
+diff --git a/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts b/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts
+index 7c40993d6df..53e614142ea 100644
+--- a/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts
++++ b/extensions/typescript-language-features/web/src/typingsInstaller/typingsInstaller.ts
+@@ -62,7 +62,8 @@ export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
+ 	 * TypingsInstaller internals.
+ 	 */
+ 	private async handleResponse(response: InstallerResponse): Promise<void> {
+-		switch (response.kind) {
++		const responseKind = response.kind
++		switch (responseKind) {
+ 			case 'action::packageInstalled':
+ 			case 'action::invalidate':
+ 			case 'action::set':
+@@ -70,10 +71,11 @@ export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
+ 				break;
+ 			case 'event::beginInstallTypes':
+ 			case 'event::endInstallTypes':
++				case 'action::watchTypingLocations':
+ 				// Don't care.
+ 				break;
+ 			default:
+-				throw new Error(`unexpected response: ${response}`);
++				throw new Error(`unexpected response: ${responseKind}`);
+ 		}
+ 	}
+ 
 diff --git a/package.json b/package.json
 index 2103fe1fe1a..92954953615 100644
 --- a/package.json
