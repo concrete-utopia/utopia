@@ -1,10 +1,16 @@
-import type { ComputedStyle, ElementPath, StyleAttributeMetadata } from 'utopia-shared/src/types'
+import { DefaultMap } from 'mnemonist'
+import type {
+  ComputedStyle,
+  DetectedLayoutSystem,
+  ElementPath,
+  StyleAttributeMetadata,
+} from 'utopia-shared/src/types'
 import {
   fillMissingDataFromAncestors,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
 import { UTOPIA_PATH_KEY, UTOPIA_STATIC_PATH_KEY } from '../../core/model/utopia-constants'
-import { mapDropNulls, pluck } from '../../core/shared/array-utils'
+import { allElemsEqual, mapDropNulls, pluck } from '../../core/shared/array-utils'
 import { getCanvasRectangleFromElement } from '../../core/shared/dom-utils'
 import { alternativeEither, left } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
@@ -17,6 +23,7 @@ import {
   type ElementInstanceMetadata,
   type ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
+import type { CanvasRectangle } from '../../core/shared/math-utils'
 import {
   boundingRectangleArray,
   infinityCanvasRectangle,
@@ -28,6 +35,7 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import { getPathWithStringsOnDomElement } from '../../core/shared/uid-utils'
 import type { ElementsToRerender } from '../editor/store/editor-state'
+import type { CSSPosition, FlexDirection } from '../inspector/common/css-utils'
 import { computedStyleKeys } from '../inspector/common/css-utils'
 import { CanvasContainerID } from './canvas-types'
 import {
@@ -35,7 +43,6 @@ import {
   getAttributesComingFromStyleSheets,
 } from './dom-walker'
 import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
-import { DefaultMap } from 'mnemonist'
 
 function collectMetadataForElementPath(
   path: ElementPath,
@@ -151,13 +158,39 @@ function collectMetadataForElementPath(
         mapDropNulls((m) => nullIfInfinity(m.globalFrame), metadatas),
       )
 
+      // TODO instead of these expensive little plucks, we should create the values in a single loop
+      const parentLayoutSystemFromChildren: Array<DetectedLayoutSystem> = metadatas.map(
+        (c) => c.specialSizeMeasurements.parentLayoutSystem,
+      )
+      const parentFlexDirectionFromChildren: Array<FlexDirection | null> = metadatas.map(
+        (c) => c.specialSizeMeasurements.parentFlexDirection,
+      )
+      const immediateParentBoundsFromChildren: Array<CanvasRectangle | null> = metadatas.map(
+        (c) => c.specialSizeMeasurements.immediateParentBounds,
+      )
+      const positionForChildren: Array<CSSPosition | null> = metadatas.map(
+        (c) => c.specialSizeMeasurements.position,
+      )
+
       return {
         metadata: domElementMetadata(
           left('unknown'),
           mergedGlobalFrame,
           null,
           mergedGlobalFrame,
-          emptySpecialSizeMeasurements,
+          {
+            ...emptySpecialSizeMeasurements,
+            parentLayoutSystem: allElemsEqual(parentLayoutSystemFromChildren)
+              ? parentLayoutSystemFromChildren[0]
+              : 'none',
+            parentFlexDirection: allElemsEqual(parentFlexDirectionFromChildren)
+              ? parentFlexDirectionFromChildren[0]
+              : null,
+            immediateParentBounds: allElemsEqual(immediateParentBoundsFromChildren)
+              ? immediateParentBoundsFromChildren[0]
+              : null,
+            position: allElemsEqual(positionForChildren) ? positionForChildren[0] : null,
+          },
           null,
         ),
         foundValidDynamicPaths: [dynamicPath],
