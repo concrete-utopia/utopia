@@ -327,9 +327,7 @@ export function staticReparentAndUpdatePosition(
         )
 
         function getAbsolutePositioningCommands(targetPath: ElementPath): Array<CanvasCommand> {
-          if (strategy === 'REPARENT_AS_STATIC') {
-            return []
-          } else if (isGrid) {
+          if (isGrid) {
             return [
               updateBulkProperties('always', targetPath, [
                 propertyToDelete(PP.create('style', 'position')),
@@ -339,7 +337,7 @@ export function staticReparentAndUpdatePosition(
                 propertyToDelete(PP.create('style', 'right')),
               ]),
             ]
-          } else {
+          } else if (strategy === 'REPARENT_AS_ABSOLUTE') {
             return positionElementToCoordinatesCommands(
               { oldPath: elementToInsert.elementPath, newPath: targetPath },
               pasteContext.originalAllElementProps,
@@ -353,6 +351,8 @@ export function staticReparentAndUpdatePosition(
               elementToInsert.intendedCoordinates,
               oldPathToNewPathMapping,
             )
+          } else {
+            return []
           }
         }
         const absolutePositioningCommands = getAbsolutePositioningCommands(newPath)
