@@ -5504,7 +5504,7 @@ describe('Navigator row order', () => {
       'regular-sb/sc/app:app-root/card:card-root/30d',
       'regular-sb/sc/app:app-root/card:card-root/card-span',
       'regular-sb/sc/app:app-root/card/card-child',
-      'regular-sb/sc/app:app-root/52e',
+      'regular-sb/sc/app:app-root/children-code-block',
       'regular-sb/sc/app:app-root/frag',
       'regular-sb/sc/app:app-root/frag/frag-child',
       'regular-sb/sc/app:app-root/frag/cond-1',
