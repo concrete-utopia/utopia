@@ -64,7 +64,7 @@ export const OptionChainControl: React.FunctionComponent<
         style={{
           display: 'flex',
           flexDirection: 'row',
-          border: `1px solid ${colorTheme.bg2.value}`,
+          border: `1px solid ${colorTheme.bg4.value}`,
           borderRadius: UtopiaTheme.inputBorderRadius,
           padding: '1px',
         }}

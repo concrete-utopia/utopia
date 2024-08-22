@@ -34,7 +34,6 @@ export const TextAlignControl = () => {
             icon: {
               category: 'typography',
               type: 'leftAlign',
-              color: textAlignMetadata.value === 'left' ? 'main' : 'secondary',
               width: 16,
               height: 16,
             },
@@ -44,7 +43,6 @@ export const TextAlignControl = () => {
             icon: {
               category: 'typography',
               type: 'centerAlign',
-              color: textAlignMetadata.value === 'center' ? 'main' : 'secondary',
               width: 16,
               height: 16,
             },
@@ -54,7 +52,6 @@ export const TextAlignControl = () => {
             icon: {
               category: 'typography',
               type: 'rightAlign',
-              color: textAlignMetadata.value === 'right' ? 'main' : 'secondary',
               width: 16,
               height: 16,
             },
@@ -64,7 +61,6 @@ export const TextAlignControl = () => {
             icon: {
               category: 'typography',
               type: 'justify',
-              color: textAlignMetadata.value === 'justify' ? 'main' : 'secondary',
               width: 16,
               height: 16,
             },

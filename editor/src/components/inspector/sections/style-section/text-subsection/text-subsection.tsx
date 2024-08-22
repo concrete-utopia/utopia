@@ -358,13 +358,16 @@ export const TextSubsection = React.memo(() => {
               onSubmitValue={onItalicSubmitValue}
               controlStatus={fontStyleMetadata.controlStatus}
               controlStyles={fontStyleMetadata.controlStyles}
-              style={{ border: `1px solid ${colorTheme.bg2.value}` }}
+              style={{
+                border: `1px solid ${colorTheme.bg4.value}`,
+                borderRadius: UtopiaTheme.inputBorderRadius,
+              }}
               DEPRECATED_controlOptions={{
                 tooltip: 'Italic',
+                width: 24,
                 icon: {
                   category: 'typography',
                   type: 'italic',
-                  color: 'secondary',
                   width: 16,
                   height: 16,
                 },
@@ -378,13 +381,16 @@ export const TextSubsection = React.memo(() => {
               onSubmitValue={onUnderlinedSubmitValue}
               controlStatus={textDecorationLineMetadata.controlStatus}
               controlStyles={textDecorationLineMetadata.controlStyles}
-              style={{ border: `1px solid ${colorTheme.bg2.value}` }}
+              style={{
+                border: `1px solid ${colorTheme.bg4.value}`,
+                borderRadius: UtopiaTheme.inputBorderRadius,
+              }}
               DEPRECATED_controlOptions={{
                 tooltip: 'Underline',
+                width: 24,
                 icon: {
                   category: 'typography',
                   type: 'underline',
-                  color: 'secondary',
                   width: 16,
                   height: 16,
                 },
@@ -398,13 +404,16 @@ export const TextSubsection = React.memo(() => {
               onSubmitValue={onStrikethroughSubmitValue}
               controlStatus={textDecorationLineMetadata.controlStatus}
               controlStyles={textDecorationLineMetadata.controlStyles}
-              style={{ border: `1px solid ${colorTheme.bg2.value}` }}
+              style={{
+                border: `1px solid ${colorTheme.bg4.value}`,
+                borderRadius: UtopiaTheme.inputBorderRadius,
+              }}
               DEPRECATED_controlOptions={{
                 tooltip: 'Strikethrough',
+                width: 24,
                 icon: {
                   category: 'inspector-element',
                   type: 'strikethrough',
-                  color: 'secondary',
                   width: 16,
                   height: 16,
                 },
