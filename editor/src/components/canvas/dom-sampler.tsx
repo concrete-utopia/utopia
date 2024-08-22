@@ -227,7 +227,6 @@ function collectMetadataForPaths(
       // TODO find a dynamic spyElement for this path
       const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(path)]
       if (spyElem != null) {
-        delete metadataToUpdate_MUTATE[EP.toString(path)]
         metadataToUpdate_MUTATE[EP.toString(path)] = {
           ...spyElem,
         }
@@ -259,8 +258,6 @@ function collectMetadataForPaths(
           conditionValue: spyElem.conditionValue,
           earlyReturn: spyElem.earlyReturn,
         }
-        // to keep compatibility with the old dom-walker, we make sure that the updated element is inserted as the last element in the metadata object
-        delete metadataToUpdate_MUTATE[EP.toString(spyElem.elementPath)]
         metadataToUpdate_MUTATE[EP.toString(spyElem.elementPath)] = elementInstanceMetadata
       })
     })
@@ -304,7 +301,7 @@ export function collectMetadata(
   } else {
     return collectMetadataForPaths(
       canvasRootContainer,
-      validPaths.filter((p) => elementsToFocusOn.some((e) => EP.pathsEqual(e, p))),
+      elementsToFocusOn,
       validPaths,
       { ...options.metadataToUpdate },
       options,
