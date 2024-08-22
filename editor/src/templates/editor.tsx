@@ -476,6 +476,7 @@ export class Editor {
       if (shouldUpdateCanvasStore) {
         // this will re-render the canvas root and potentially the canvas contents itself
         Measure.taskTime(`update canvas ${updateId}`, () => {
+          this.spyCollector.current.spyValues.invalidatedElementsInFrame = []
           const currentElementsToRender = fixElementsToRerender(
             this.storedState.patchedEditor.canvas.elementsToRerender,
             dispatchedActions,
@@ -535,6 +536,7 @@ export class Editor {
 
           // re-render the canvas
           Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
+            this.spyCollector.current.spyValues.invalidatedElementsInFrame = []
             ElementsToRerenderGLOBAL.current = fixElementsToRerender(
               this.storedState.patchedEditor.canvas.elementsToRerender,
               dispatchedActions,

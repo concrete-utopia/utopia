@@ -50,6 +50,7 @@ function collectMetadataForElementPath(
   selectedViews: Array<ElementPath>,
   scale: number,
   containerRect: CanvasPoint,
+  spyCollector: UiJsxCanvasContextData,
 ): Array<{ metadata: DomElementMetadata; foundValidDynamicPaths: Array<ElementPath> }> {
   if (EP.isStoryboardPath(path)) {
     return [{ metadata: createFakeMetadataForCanvasRoot(path), foundValidDynamicPaths: [path] }]
@@ -120,13 +121,20 @@ function collectMetadataForElementPath(
             return validPaths.some((vp) => EP.pathsEqual(vp, staticPath)) // this is from the old implementation, no descendants are included
           })
 
+          const invalidatedPathForceRecalculation =
+            spyCollector.current.spyValues.invalidatedElementsInFrame.some((i) =>
+              EP.pathsEqual(i, dynamicPath),
+            )
+
           const metadata = createElementInstanceMetadataForElementCached.get(
+            invalidatedPathForceRecalculation,
             foundElement,
             scale,
             containerRect.x, // passing this as two values so it can be used as cache key
             containerRect.y,
           )
           const computedStyle = getComputedStyleOptionallyForElement(
+            invalidatedPathForceRecalculation,
             foundElement,
             pluck(foundValidPaths, 'path'),
             selectedViews,
@@ -146,7 +154,13 @@ function collectMetadataForElementPath(
         if (!(el instanceof HTMLElement)) {
           return null
         }
+        const invalidatedPathForceCacheReset =
+          spyCollector.current.spyValues.invalidatedElementsInFrame.some((i) =>
+            EP.pathsEqual(i, dynamicPath),
+          )
+
         return createElementInstanceMetadataForElementCached.get(
+          invalidatedPathForceCacheReset,
           el,
           scale,
           containerRect.x,
@@ -255,6 +269,7 @@ function collectMetadataForPaths(
       options.selectedViews,
       options.scale,
       containerRect,
+      options.spyCollector,
     )
     if (domMetadata.length == 0) {
       // TODO find a dynamic spyElement for this path
@@ -329,10 +344,11 @@ export function collectMetadata(
 
   const validPaths = getValidPathsFromCanvasContainer(canvasRootContainer)
 
+  let result
   if (elementsToFocusOn == 'rerender-all-elements') {
-    return collectMetadataForPaths(canvasRootContainer, validPaths, validPaths, {}, options)
+    result = collectMetadataForPaths(canvasRootContainer, validPaths, validPaths, {}, options)
   } else {
-    return collectMetadataForPaths(
+    result = collectMetadataForPaths(
       canvasRootContainer,
       elementsToFocusOn,
       validPaths,
@@ -340,6 +356,8 @@ export function collectMetadata(
       options,
     )
   }
+
+  return result
 }
 
 const ObserversAvailable = window.MutationObserver != null && window.ResizeObserver != null
@@ -398,11 +416,12 @@ export class ObserverCache<T, N extends Element = Element, A extends Array<any> 
   }
 
   // first parameter is the Node we are weakMap caching on
-  public get(node: N, ...args: A): T {
+  public get(force: boolean, node: N, ...args: A): T {
     const cacheResult = this.cache.get(node)
 
     // if the cache is empty, or the parameters have changed, recompute the value
     if (
+      force ||
       !ObserversAvailable ||
       cacheResult == null ||
       cacheResult.params.some((param, index) => param !== args[index])
@@ -422,6 +441,7 @@ const createElementInstanceMetadataForElementCached = new ObserverCache(
 )
 
 function getComputedStyleOptionallyForElement(
+  force: boolean,
   element: HTMLElement,
   paths: Array<ElementPath>,
   selectedViews: Array<ElementPath>,
@@ -434,7 +454,7 @@ function getComputedStyleOptionallyForElement(
     return null
   }
 
-  return getComputedStylesCache.get(element)
+  return getComputedStylesCache.get(force, element)
 }
 
 function getComputedStyleForElement(element: HTMLElement): ComputedStyleMetadata {

@@ -165,7 +165,14 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
       current: MapLike<MapLike<ComponentRendererComponent>>
     } = { current: {} }
     const emptyMetadataContext: UiJsxCanvasContextData = {
-      current: { spyValues: { allElementProps: {}, metadata: {}, variablesInScope: {} } },
+      current: {
+        spyValues: {
+          allElementProps: {},
+          metadata: {},
+          variablesInScope: {},
+          invalidatedElementsInFrame: [],
+        },
+      },
     }
 
     let resolvedFiles: MapLike<MapLike<any>> = {}

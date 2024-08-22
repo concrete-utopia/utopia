@@ -149,6 +149,7 @@ export type SpyValues = {
   metadata: ElementInstanceMetadataMap
   allElementProps: AllElementProps
   variablesInScope: VariablesInScope
+  invalidatedElementsInFrame: Array<ElementPath>
 }
 
 export interface UiJsxCanvasContextData {
@@ -164,6 +165,7 @@ export function emptyUiJsxCanvasContextData(): UiJsxCanvasContextData {
         metadata: {},
         allElementProps: {},
         variablesInScope: {},
+        invalidatedElementsInFrame: [],
       },
     },
   }
