@@ -86,9 +86,14 @@ export function keyboardReorderStrategy(
         const result = unpatchedIndex + keyboardResult
         const newIndex = Math.min(Math.max(0, result), siblings.length - 1)
 
+        const siblingsAndParent = siblings.concat(EP.parentPath(target))
+
         if (newIndex === unpatchedIndex) {
           return strategyApplicationResult(
-            [updateHighlightedViews('mid-interaction', []), setElementsToRerenderCommand(siblings)],
+            [
+              updateHighlightedViews('mid-interaction', []),
+              setElementsToRerenderCommand(siblingsAndParent),
+            ],
             {
               lastReorderIdx: newIndex,
             },
@@ -97,7 +102,7 @@ export function keyboardReorderStrategy(
           return strategyApplicationResult(
             [
               reorderElement('always', target, absolute(newIndex)),
-              setElementsToRerenderCommand(siblings),
+              setElementsToRerenderCommand(siblingsAndParent),
               updateHighlightedViews('mid-interaction', []),
             ],
             {
