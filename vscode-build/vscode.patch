@@ -14,7 +14,7 @@ index c4947e76cbf..c2dd4189229 100644
  exports.compileBuildTask = compileBuildTask;
  
 diff --git a/build/gulpfile.vscode.web.js b/build/gulpfile.vscode.web.js
-index 50c7e6fb631..629a119108b 100644
+index 50c7e6fb631..06b6638c639 100644
 --- a/build/gulpfile.vscode.web.js
 +++ b/build/gulpfile.vscode.web.js
 @@ -186,7 +186,7 @@ function packageTask(sourceFolderName, destinationFolderName) {
@@ -26,6 +26,29 @@ index 50c7e6fb631..629a119108b 100644
  
  		const extensions = gulp.src('.build/web/extensions/**', { base: '.build/web', dot: true });
  
+@@ -233,7 +233,7 @@ function packageTask(sourceFolderName, destinationFolderName) {
+ 
+ const compileWebExtensionsBuildTask = task.define('compile-web-extensions-build', task.series(
+ 	task.define('clean-web-extensions-build', util.rimraf('.build/web/extensions')),
+-	task.define('bundle-web-extensions-build', () => extensions.packageLocalExtensionsStream(true, false).pipe(gulp.dest('.build/web'))),
++	task.define('bundle-web-extensions-build', () => extensions.packageLocalExtensionsStream(true, true).pipe(gulp.dest('.build/web'))),
+ 	task.define('bundle-marketplace-web-extensions-build', () => extensions.packageMarketplaceExtensionsStream(true).pipe(gulp.dest('.build/web'))),
+ 	task.define('bundle-web-extension-media-build', () => extensions.buildExtensionMedia(false, '.build/web/extensions')),
+ ));
+diff --git a/build/lib/extensions.ts b/build/lib/extensions.ts
+index 0582e0cb11e..67136167697 100644
+--- a/build/lib/extensions.ts
++++ b/build/lib/extensions.ts
+@@ -138,7 +138,8 @@ function fromLocalWebpack(extensionPath: string, webpackConfigFileName: string,
+ 			return (Array.isArray(exportedConfig) ? exportedConfig : [exportedConfig]).map(config => {
+ 				const webpackConfig = {
+ 					...config,
+-					...{ mode: 'production' }
++					...{ mode: 'production' },
++					stats: 'verbose'
+ 				};
+ 				if (disableMangle) {
+ 					if (Array.isArray(config.module.rules)) {
 diff --git a/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json b/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json
 deleted file mode 100644
 index 9e26dfeeb6e..00000000000
@@ -857,17 +880,28 @@ index 1d17e4c709e..00109563f5c 100644
 -	return { keyboardMapping, keyboardLayoutInfo };
 -}
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index b8232cb8490..0ce6a8e7002 100644
+index b8232cb8490..7663af49919 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
+@@ -600,7 +600,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 	}
+ 
+ 	private initLayoutState(lifecycleService: ILifecycleService, fileService: IFileService): void {
+-		this.stateModel = new LayoutStateModel(this.storageService, this.configurationService, this.contextService, this.parent);
++		this.stateModel = new LayoutStateModel(this.storageService, this.configurationService, this.parent);
+ 		this.stateModel.load();
+ 
+ 		// Both editor and panel should not be hidden on startup
 @@ -1203,40 +1203,40 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  
  		if (this.initialized) {
  			switch (part) {
 -				case Parts.TITLEBAR_PART:
 -					return this.workbenchGrid.isViewVisible(this.titleBarPartView);
--				case Parts.SIDEBAR_PART:
--					return !this.stateModel.getRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN);
++				// case Parts.TITLEBAR_PART:
++				// 	return this.workbenchGrid.isViewVisible(this.titleBarPartView);
+ 				case Parts.SIDEBAR_PART:
+ 					return !this.stateModel.getRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN);
 -				case Parts.PANEL_PART:
 -					return !this.stateModel.getRuntimeValue(LayoutStateKeys.PANEL_HIDDEN);
 -				case Parts.AUXILIARYBAR_PART:
@@ -876,10 +910,6 @@ index b8232cb8490..0ce6a8e7002 100644
 -					return !this.stateModel.getRuntimeValue(LayoutStateKeys.STATUSBAR_HIDDEN);
 -				case Parts.ACTIVITYBAR_PART:
 -					return !this.stateModel.getRuntimeValue(LayoutStateKeys.ACTIVITYBAR_HIDDEN);
-+				// case Parts.TITLEBAR_PART:
-+				// 	return this.workbenchGrid.isViewVisible(this.titleBarPartView);
-+				// case Parts.SIDEBAR_PART:
-+				// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN);
 +				// case Parts.PANEL_PART:
 +				// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.PANEL_HIDDEN);
 +				// case Parts.AUXILIARYBAR_PART:
@@ -902,8 +932,10 @@ index b8232cb8490..0ce6a8e7002 100644
  		switch (part) {
 -			case Parts.TITLEBAR_PART:
 -				return shouldShowCustomTitleBar(this.configurationService, mainWindow, this.state.runtime.menuBar.toggled, this.isZenModeActive());
--			case Parts.SIDEBAR_PART:
--				return !this.stateModel.getRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN);
++			// case Parts.TITLEBAR_PART:
++			// 	return shouldShowCustomTitleBar(this.configurationService, mainWindow, this.state.runtime.menuBar.toggled, this.isZenModeActive());
+ 			case Parts.SIDEBAR_PART:
+ 				return !this.stateModel.getRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN);
 -			case Parts.PANEL_PART:
 -				return !this.stateModel.getRuntimeValue(LayoutStateKeys.PANEL_HIDDEN);
 -			case Parts.AUXILIARYBAR_PART:
@@ -912,10 +944,6 @@ index b8232cb8490..0ce6a8e7002 100644
 -				return !this.stateModel.getRuntimeValue(LayoutStateKeys.STATUSBAR_HIDDEN);
 -			case Parts.ACTIVITYBAR_PART:
 -				return !this.stateModel.getRuntimeValue(LayoutStateKeys.ACTIVITYBAR_HIDDEN);
-+			// case Parts.TITLEBAR_PART:
-+			// 	return shouldShowCustomTitleBar(this.configurationService, mainWindow, this.state.runtime.menuBar.toggled, this.isZenModeActive());
-+			// case Parts.SIDEBAR_PART:
-+			// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.SIDEBAR_HIDDEN);
 +			// case Parts.PANEL_PART:
 +			// 	return !this.stateModel.getRuntimeValue(LayoutStateKeys.PANEL_HIDDEN);
 +			// case Parts.AUXILIARYBAR_PART:
@@ -936,6 +964,32 @@ index b8232cb8490..0ce6a8e7002 100644
  	}
  
  	private setZenModeActive(active: boolean) {
+@@ -2527,7 +2527,7 @@ const LayoutStateKeys = {
+ 
+ 	// Part Visibility
+ 	ACTIVITYBAR_HIDDEN: new RuntimeStateKey<boolean>('activityBar.hidden', StorageScope.WORKSPACE, StorageTarget.MACHINE, false, true),
+-	SIDEBAR_HIDDEN: new RuntimeStateKey<boolean>('sideBar.hidden', StorageScope.WORKSPACE, StorageTarget.MACHINE, false),
++	SIDEBAR_HIDDEN: new RuntimeStateKey<boolean>('sideBar.hidden', StorageScope.WORKSPACE, StorageTarget.MACHINE, true),
+ 	EDITOR_HIDDEN: new RuntimeStateKey<boolean>('editor.hidden', StorageScope.WORKSPACE, StorageTarget.MACHINE, false),
+ 	PANEL_HIDDEN: new RuntimeStateKey<boolean>('panel.hidden', StorageScope.WORKSPACE, StorageTarget.MACHINE, true),
+ 	AUXILIARYBAR_HIDDEN: new RuntimeStateKey<boolean>('auxiliaryBar.hidden', StorageScope.WORKSPACE, StorageTarget.MACHINE, true),
+@@ -2564,7 +2564,6 @@ class LayoutStateModel extends Disposable {
+ 	constructor(
+ 		private readonly storageService: IStorageService,
+ 		private readonly configurationService: IConfigurationService,
+-		private readonly contextService: IWorkspaceContextService,
+ 		private readonly container: HTMLElement
+ 	) {
+ 		super();
+@@ -2626,7 +2625,7 @@ class LayoutStateModel extends Disposable {
+ 		LayoutStateKeys.SIDEBAR_SIZE.defaultValue = Math.min(300, workbenchDimensions.width / 4);
+ 		LayoutStateKeys.AUXILIARYBAR_SIZE.defaultValue = Math.min(300, workbenchDimensions.width / 4);
+ 		LayoutStateKeys.PANEL_SIZE.defaultValue = (this.stateCache.get(LayoutStateKeys.PANEL_POSITION.name) ?? LayoutStateKeys.PANEL_POSITION.defaultValue) === Position.BOTTOM ? workbenchDimensions.height / 3 : workbenchDimensions.width / 4;
+-		LayoutStateKeys.SIDEBAR_HIDDEN.defaultValue = this.contextService.getWorkbenchState() === WorkbenchState.EMPTY;
++		LayoutStateKeys.SIDEBAR_HIDDEN.defaultValue = true;
+ 
+ 		// Apply all defaults
+ 		for (key in LayoutStateKeys) {
 diff --git a/src/vs/workbench/browser/workbench.contribution.ts b/src/vs/workbench/browser/workbench.contribution.ts
 index ae4d22c9eaa..e342fb223d8 100644
 --- a/src/vs/workbench/browser/workbench.contribution.ts

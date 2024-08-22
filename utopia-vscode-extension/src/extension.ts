@@ -646,7 +646,8 @@ function shouldFollowSelectionWithActiveFile() {
     filePath.endsWith('.js') ||
     filePath.endsWith('.jsx') ||
     filePath.endsWith('.cjs') ||
-    filePath.endsWith('.mjs')
+    filePath.endsWith('.mjs') ||
+    filePath.endsWith('.ts')
   const isComponentDescriptor = filePath.startsWith('/utopia/') && filePath.endsWith('.utopia.js')
   return isJs && !isComponentDescriptor
 }

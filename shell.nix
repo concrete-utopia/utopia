@@ -289,6 +289,18 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
       nix-shell --run pull-extension-inner
     '')
+    (pkgs.writeScriptBin "check-github-token" ''
+      #!/usr/bin/env bash
+      set -e
+      GITHUB_TOKEN_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --request GET --url "https://api.github.com/octocat" --header "Authorization: Bearer $GITHUB_TOKEN" --header "X-GitHub-Api-Version: 2022-11-28")
+      if [ "$GITHUB_TOKEN_STATUS" = "200" ]
+      then
+        echo "A valid GITHUB_TOKEN was found"
+      else
+        printf "A valid GITHUB_TOKEN is required when running the full Utopia build.\nYou may be missing one, or it may have expired.\nPlease see the readme for instructions.\n"
+        exit 1
+      fi
+    '')
     (pkgs.writeScriptBin "check-tool-versions" ''
       #! /usr/bin/env nix-shell
       #! nix-shell -p "haskellPackages.ghcWithPackages (pkgs: with pkgs; [async process])" -i runhaskell
@@ -658,16 +670,11 @@ let
       #!/usr/bin/env bash
       stop-dev
       set -e
-      if [ -z $GITHUB_TOKEN ]
-      then
-        echo "A GITHUB_TOKEN is required when running the full Utopia build. Please see the readme for instructions."
-        exit 1
-      else
-        check-tool-versions
-        build-vscode-with-extension
-        build-vscode-common
-        start-minimal
-      fi
+      check-github-token
+      check-tool-versions
+      build-vscode-with-extension
+      build-vscode-common
+      start-minimal
     '')
     (pkgs.writeScriptBin "start-minimal-webpack" ''
       #!/usr/bin/env bash

@@ -18,7 +18,13 @@ import * as EP from '../../../../../core/shared/element-path'
 import { selectComponentsForTest } from '../../../../../utils/utils.test-utils'
 import { RegisteredCanvasStrategies } from '../../../../canvas/canvas-strategies/canvas-strategies'
 import { act, fireEvent } from '@testing-library/react'
-import { mouseClickAtPoint } from '../../../../canvas/event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDownAtPoint,
+  mouseDragFromPointToPoint,
+  mouseMoveToPoint,
+  pressKey,
+} from '../../../../canvas/event-helpers.test-utils'
 import { getDomRectCenter } from '../../../../../core/shared/dom-utils'
 import { getFixedHugDropdownId } from '../../../fill-hug-fixed-control'
 
@@ -144,6 +150,77 @@ describe('Frame updating layout section', () => {
   }
 
   describe('Left control', () => {
+    it(
+      'scrubbing the left control label',
+      makeTestCase({
+        baseProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid={'root-div'}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: 200,
+                height: 300,
+              }}
+              data-uid={'rectangle-1'}
+            />
+          </div>`,
+        actionChange: async (renderResult) => {
+          // Select the rectangle.
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`,
+            ),
+          ])
+
+          const scrubLabel = await renderResult.renderedDOM.findByTestId(
+            `frame-left-number-input-mouse-down-handler`,
+          )
+          const scrubLabelBounds = scrubLabel.getBoundingClientRect()
+          const scrubLabelCenter = getDomRectCenter(scrubLabelBounds)
+          const scrubLabelEndPoint = { x: scrubLabelCenter.x + 100, y: scrubLabelCenter.y }
+          await mouseDragFromPointToPoint(scrubLabel, scrubLabelCenter, scrubLabelEndPoint)
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+            localRectangle({
+              x: 140,
+              y: 100,
+              width: 200,
+              height: 300,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 140,
+                top: 100,
+                width: 200,
+                height: 300,
+              }}
+            />
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Fixed',
+        expectedFixedHugDropdownHeightValue: 'Fixed',
+      }),
+    )
+
     it(
       'with a single element selected when setting value directly',
       makeTestCase({

@@ -62,7 +62,7 @@ export function NumberOrKeywordInput<T extends string>(props: NumberOrKeywordInp
       <div
         style={{
           position: 'absolute',
-          left: 0,
+          left: 3,
           top: 0,
           bottom: 0,
           display: 'flex',
@@ -77,7 +77,7 @@ export function NumberOrKeywordInput<T extends string>(props: NumberOrKeywordInp
         )}
       </div>
       <StringInput
-        innerStyle={{ paddingLeft: props.labelInner != null ? 15 : 0 }}
+        innerStyle={{ paddingLeft: props.labelInner != null ? 18 : 0 }}
         style={props.style}
         showBorder={props.showBorder}
         className={props.className}
