@@ -35,7 +35,7 @@ import { button } from '../styles/button.css'
 import { projectCards, projectRows, projectTemplate } from '../styles/projects.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import type { Collaborator, CollaboratorsByProject, Operation, ProjectListing } from '../types'
+import type { Collaborator, Collaborators, Operation, ProjectListing } from '../types'
 import { AccessLevel, asAccessLevel, getOperationDescription } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
@@ -53,6 +53,8 @@ import type { OperationWithKey } from '../stores/projectsStore'
 import { createProjectsStore, ProjectsContext, useProjectsStore } from '../stores/projectsStore'
 import { UserAvatar } from '../components/userAvatar'
 import { UserContextMenu } from '../components/user-context-menu'
+import { mergeCollaborators } from '../util/collaborators.server'
+import { mapDropNulls } from '../util/common'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -116,7 +118,7 @@ export async function loader(args: LoaderFunctionArgs) {
     listSharedWithMeProjectsAndCollaborators({ userId: user.user_id }),
   ])
   const collaborators = await getCollaborators({
-    ids: [...projects, ...deletedProjects].map((p) => p.proj_id),
+    projectIds: [...projects, ...deletedProjects].map((p) => p.proj_id),
     userId: user.user_id,
   })
 
@@ -126,7 +128,7 @@ export async function loader(args: LoaderFunctionArgs) {
       projects: projects,
       deletedProjects: deletedProjects,
       projectsSharedWithMe: sharedWithMe.projects,
-      collaborators: { ...collaborators, ...sharedWithMe.collaborators },
+      collaborators: mergeCollaborators([collaborators, sharedWithMe.collaborators]),
     },
     { headers: { 'cache-control': 'no-cache' } },
   )
@@ -137,7 +139,7 @@ type LoaderData = {
   projects: ProjectListing[]
   deletedProjects: ProjectListing[]
   projectsSharedWithMe: ProjectListing[]
-  collaborators: CollaboratorsByProject
+  collaborators: Collaborators
 }
 
 const ProjectsPage = React.memo(() => {
@@ -613,13 +615,7 @@ const CategoryArchiveActions = React.memo(({ projects }: { projects: ProjectList
 CategoryArchiveActions.displayName = 'CategoryArchiveActions'
 
 const Projects = React.memo(
-  ({
-    projects,
-    collaborators,
-  }: {
-    projects: ProjectListing[]
-    collaborators: CollaboratorsByProject
-  }) => {
+  ({ projects, collaborators }: { projects: ProjectListing[]; collaborators: Collaborators }) => {
     const myUser = useProjectsStore((store) => store.myUser)
     const gridView = useProjectsStore((store) => store.gridView)
 
@@ -636,6 +632,16 @@ const Projects = React.memo(
     const isAllProjects = selectedCategory === 'allProjects'
     const scrollStyle = isAllProjects ? { overflow: 'initial' } : {}
 
+    const getCollaboratorUsers = React.useCallback(
+      (projectId: string): Collaborator[] => {
+        const collaboratorIds = collaborators.byProjectId[projectId] ?? []
+        return mapDropNulls((collaboratorId) => {
+          return collaborators.byUserId[collaboratorId] ?? null
+        }, collaboratorIds)
+      },
+      [collaborators],
+    )
+
     return (
       <>
         {when(
@@ -649,7 +655,7 @@ const Projects = React.memo(
                 selected={project.proj_id === selectedProjectId}
                 /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
-                collaborators={collaborators[project.proj_id]}
+                collaborators={getCollaboratorUsers(project.proj_id)}
               />
             ))}
           </div>,
@@ -665,7 +671,7 @@ const Projects = React.memo(
                 selected={project.proj_id === selectedProjectId}
                 /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
-                collaborators={collaborators[project.proj_id]}
+                collaborators={getCollaboratorUsers(project.proj_id)}
               />
             ))}
           </div>,

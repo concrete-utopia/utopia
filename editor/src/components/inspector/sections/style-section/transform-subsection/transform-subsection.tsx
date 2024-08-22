@@ -18,7 +18,7 @@ import {
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import type { ControlStatus } from '../../../common/control-status'
-import { LabelBelowNumberTextStyles, type ControlStyles } from '../../../common/control-styles'
+import { type ControlStyles } from '../../../common/control-styles'
 import type {
   CSSDefault,
   CSSNumber,
@@ -315,7 +315,7 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
     <PropertyRow
       key={props.index}
       style={{
-        gridTemplateColumns: '12px 1fr 46px 22px',
+        gridTemplateColumns: '12px 90px 1fr 22px',
         gridColumnGap: 8,
       }}
     >
@@ -340,6 +340,7 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
           onSubmitValue={onTransformTypeSubmitValue}
           controlStatus={props.controlStatus}
           controlStyles={props.controlStyles}
+          style={{ flex: 1 }}
         />
       </FlexRow>
       <NumberInput
@@ -359,7 +360,6 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
         onTransientSubmitValue={singleLengthItemTransientSubmitValue}
         controlStatus={props.controlStatus}
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
-        incrementControls={false}
       />
       <SquareButton highlight onMouseDown={removeTransformItem}>
         <Icons.SmallMinus />
@@ -444,7 +444,7 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
     <PropertyRow
       key={props.index}
       style={{
-        gridTemplateColumns: '12px 1fr 46px 46px 22px',
+        gridTemplateColumns: '12px 90px 1fr 1fr 22px',
         gridColumnGap: 8,
       }}
     >
@@ -469,6 +469,7 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
           onSubmitValue={onTransformTypeSubmitValue}
           controlStatus={props.controlStatus}
           controlStyles={props.controlStyles}
+          style={{ flex: 1 }}
         />
       </FlexRow>
       <NumberInput
@@ -484,13 +485,11 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         minimum={controlMetadata.minimum}
         maximum={controlMetadata.maximum}
         numberType={controlMetadata.numberType}
-        DEPRECATED_labelBelow={firstLabel}
-        labelBelowStyle={firstLabel == null ? LabelBelowNumberTextStyles : undefined}
+        innerLabel={firstLabel}
         onSubmitValue={doubleLengthZeroethItemSubmitValue}
         onTransientSubmitValue={doubleLengthZeroethItemTransientSubmitValue}
         controlStatus={props.controlStatus}
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
-        incrementControls={false}
       />
       <NumberInput
         style={{
@@ -505,13 +504,11 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         minimum={controlMetadata.minimum}
         maximum={controlMetadata.maximum}
         numberType={controlMetadata.numberType}
-        DEPRECATED_labelBelow={secondLabel}
-        labelBelowStyle={secondLabel == null ? LabelBelowNumberTextStyles : undefined}
+        innerLabel={secondLabel}
         onSubmitValue={doubleLengthFirstItemSubmitValue}
         onTransientSubmitValue={doubleLengthFirstItemTransientSubmitValue}
         controlStatus={props.controlStatus}
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
-        incrementControls={false}
       />
       <SquareButton highlight onMouseDown={removeTransformItem}>
         <Icons.SmallMinus />

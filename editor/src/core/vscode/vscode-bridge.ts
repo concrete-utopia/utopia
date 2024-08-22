@@ -95,12 +95,13 @@ function convertProjectContents(projectContents: ProjectContentTreeRoot): Array<
 }
 
 let vscodeIFrame: MessageEventSource | null = null
+let queuedMessagesToVSCode: Array<FromUtopiaToVSCodeMessage> = []
 let registeredHandlers: (messageEvent: MessageEvent) => void = NO_OP
 
 export function initVSCodeBridge(
   projectContents: ProjectContentTreeRoot,
   dispatch: (actions: Array<EditorAction>) => void,
-  openFilePath: string | null,
+  openFilePath: string,
 ) {
   let loadingScreenHidden = false
   let seenMessageListenersReadyMessage = false
@@ -123,14 +124,15 @@ export function initVSCodeBridge(
       messageEvent.source.postMessage(initProject(projectFiles, openFilePath), {
         targetOrigin: '*',
       })
-
-      if (openFilePath == null) {
-        loadingScreenHidden = true
-        dispatch([hideVSCodeLoadingScreen()])
-      }
     } else if (isVSCodeBridgeReady(data) && messageEvent.source != null) {
       // Store the source
       vscodeIFrame = messageEvent.source
+
+      if (queuedMessagesToVSCode.length > 0) {
+        queuedMessagesToVSCode.forEach(sendMessageToVSCode)
+        queuedMessagesToVSCode = []
+      }
+
       dispatch([markVSCodeBridgeReady(true)])
     } else if (isEditorCursorPositionChanged(data)) {
       dispatch([selectFromFileAndPosition(data.filePath, data.line, data.column)])
@@ -166,7 +168,15 @@ export function initVSCodeBridge(
 }
 
 export function sendMessage(message: FromUtopiaToVSCodeMessage) {
-  vscodeIFrame?.postMessage(message, { targetOrigin: '*' })
+  if (vscodeIFrame == null) {
+    queuedMessagesToVSCode.push(message)
+  } else {
+    sendMessageToVSCode(message)
+  }
+}
+
+function sendMessageToVSCode(message: FromUtopiaToVSCodeMessage) {
+  vscodeIFrame!.postMessage(message, { targetOrigin: '*' })
 }
 
 export function sendOpenFileMessage(filePath: string, bounds: Bounds | null) {
