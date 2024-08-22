@@ -71,7 +71,6 @@ export const OptionControl: React.FunctionComponent<
       } option-control-container segment`}
       style={{
         flex: '1',
-        // outline: `1px solid ${colorTheme.bg4.value}`,
         ...props.style,
       }}
     >
