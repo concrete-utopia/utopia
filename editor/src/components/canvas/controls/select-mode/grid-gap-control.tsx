@@ -24,6 +24,7 @@ import { CSSCursor } from '../../../../uuiui-deps'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { isZeroSizedElement } from '../outline-utils'
 import { createArrayWithLength } from '../../../../core/shared/array-utils'
+import { useGridData } from '../grid-controls'
 
 interface GridGapControlProps {
   selectedElement: ElementPath
@@ -129,10 +130,17 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
   const gridGapRow = updatedGapValueRow ?? gridGap.row
   const gridGapColumn = updatedGapValueColumn ?? gridGap.column
 
-  const controlBounds = gridGapControlBoundsFromMetadata(metadata, selectedElement, {
-    row: fallbackEmptyValue(gridGapRow),
-    column: fallbackEmptyValue(gridGapColumn),
-  })
+  const gridRowColumnInfo = useGridData([selectedElement])
+
+  const controlBounds = gridGapControlBoundsFromMetadata(
+    metadata,
+    selectedElement,
+    gridRowColumnInfo[0],
+    {
+      row: fallbackEmptyValue(gridGapRow),
+      column: fallbackEmptyValue(gridGapColumn),
+    },
+  )
 
   return (
     <CanvasOffsetWrapper>

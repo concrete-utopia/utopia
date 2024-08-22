@@ -106,7 +106,7 @@ function getCellsCount(template: GridAutoOrTemplateBase | null): number {
   }
 }
 
-function getNullableAutoOrTemplateBaseString(
+export function getNullableAutoOrTemplateBaseString(
   template: GridAutoOrTemplateBase | null,
 ): string | undefined {
   if (template == null) {
@@ -363,7 +363,22 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
 })
 GridResizing.displayName = 'GridResizing'
 
-function useGridData(elementPaths: ElementPath[]) {
+export type GridData = {
+  elementPath: ElementPath
+  frame: CanvasRectangle
+  gridTemplateColumns: GridAutoOrTemplateBase | null
+  gridTemplateRows: GridAutoOrTemplateBase | null
+  gridTemplateColumnsFromProps: GridAutoOrTemplateBase | null
+  gridTemplateRowsFromProps: GridAutoOrTemplateBase | null
+  gap: number | null
+  rowGap: number | null
+  columnGap: number | null
+  padding: Sides
+  rows: number
+  columns: number
+  cells: number
+}
+export function useGridData(elementPaths: ElementPath[]): GridData[] {
   const grids = useEditorState(
     Substores.metadata,
     (store) => {
@@ -753,12 +768,6 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
             <div
               key={`grid-${EP.toString(grid.elementPath)}`}
               id={`grid-${EP.toString(grid.elementPath)}`}
-              data-grid-rows={grid.rows}
-              data-grid-columns={grid.columns}
-              data-grid-template-columns={getNullableAutoOrTemplateBaseString(
-                grid.gridTemplateColumns,
-              )}
-              data-grid-template-rows={getNullableAutoOrTemplateBaseString(grid.gridTemplateRows)}
               style={style}
             >
               {placeholders.map((cell) => {
