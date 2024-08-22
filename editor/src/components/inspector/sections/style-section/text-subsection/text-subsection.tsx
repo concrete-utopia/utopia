@@ -323,7 +323,7 @@ export const TextSubsection = React.memo(() => {
           value={colorMetadata.value}
           onSubmitValue={colorMetadata.onSubmitValue}
           onTransientSubmitValue={colorMetadata.onTransientSubmitValue}
-          pickerOffset={{ x: -223, y: 0 }}
+          pickerOffset={{ x: -230, y: 0 }}
           controlStatus={colorMetadata.controlStatus}
           controlStyles={colorMetadata.controlStyles}
         />
