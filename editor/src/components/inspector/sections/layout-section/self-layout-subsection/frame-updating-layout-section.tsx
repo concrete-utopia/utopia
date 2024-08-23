@@ -211,8 +211,6 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
             executeFirstApplicableStrategy(dispatch, [
               moveInspectorStrategy(
                 metadataRef.current,
-                allElementsPropsRef.current,
-                pathTreesRef.current,
                 selectedViewsRef.current,
                 projectContentsRef.current,
                 frameUpdate.edgeMovement,
@@ -240,8 +238,6 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
             executeFirstApplicableStrategy(dispatch, [
               directMoveInspectorStrategy(
                 metadataRef.current,
-                allElementsPropsRef.current,
-                pathTreesRef.current,
                 selectedViewsRef.current,
                 projectContentsRef.current,
                 leftOrTop,
@@ -266,15 +262,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           assertNever(frameUpdate)
       }
     },
-    [
-      allElementsPropsRef,
-      dispatch,
-      metadataRef,
-      originalGlobalFrame,
-      pathTreesRef,
-      projectContentsRef,
-      selectedViewsRef,
-    ],
+    [dispatch, metadataRef, originalGlobalFrame, projectContentsRef, selectedViewsRef],
   )
 
   return (

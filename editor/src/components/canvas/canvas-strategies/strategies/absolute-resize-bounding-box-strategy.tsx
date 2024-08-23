@@ -333,7 +333,6 @@ function applyConstraintsAdjustmentsToFrame(
 
   const { constrainedSizes, lockedWidth, lockedHeight } = getConstrainedSizes(
     jsxMetadata,
-    allElementProps,
     pathTrees,
     target,
     originalFrame,
@@ -440,7 +439,6 @@ type NullableSize = {
 function getConstrainedSizes(
   jsxMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
-  pathTrees: ElementPathTrees,
   path: ElementPath,
   originalFrame: CanvasRectangle,
 ): { constrainedSizes: Array<NullableSize>; lockedWidth: boolean; lockedHeight: boolean } {

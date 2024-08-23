@@ -182,9 +182,8 @@ export const removeFlexLayoutStrategies = (
   metadata: ElementInstanceMetadataMap,
   elementPaths: ElementPath[],
   pathTrees: ElementPathTrees,
-  allElementProps: AllElementProps,
 ): Array<InspectorStrategy> => [
-  removeFlexConvertToAbsolute(metadata, elementPaths, pathTrees, allElementProps),
+  removeFlexConvertToAbsolute(metadata, elementPaths, pathTrees),
   {
     name: 'Remove flex layout',
     strategy: () => {
@@ -223,23 +222,13 @@ export const removeGridLayoutStrategies = (
 
 export const setPropFillStrategies = (
   metadata: ElementInstanceMetadataMap,
-  pathTrees: ElementPathTrees,
-  allElementProps: AllElementProps,
   elementPaths: ElementPath[],
   axis: Axis,
   value: 'default' | number,
   otherAxisSetToFill: boolean,
 ): Array<InspectorStrategy> => [
-  fillContainerStrategyFlexParent(metadata, allElementProps, pathTrees, elementPaths, axis, value),
-  fillContainerStrategyFlow(
-    metadata,
-    allElementProps,
-    pathTrees,
-    elementPaths,
-    axis,
-    value,
-    otherAxisSetToFill,
-  ),
+  fillContainerStrategyFlexParent(metadata, elementPaths, axis, value),
+  fillContainerStrategyFlow(metadata, elementPaths, axis, value, otherAxisSetToFill),
 ]
 
 export const setPropFixedSizeStrategies = (

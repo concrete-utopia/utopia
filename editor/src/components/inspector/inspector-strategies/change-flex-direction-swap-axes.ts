@@ -18,8 +18,6 @@ import type { AllElementProps } from '../../../components/editor/store/editor-st
 
 function swapAxesCommands(
   metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  pathTrees: ElementPathTrees,
   selectedElement: ElementPath,
   currentFlexDirection: FlexDirection | null,
   flexDirectionToBeApplied: FlexDirection,
@@ -44,17 +42,9 @@ function swapAxesCommands(
         'horizontal',
         verticalSizing.value,
       ).strategy() ?? []),
-      ...(fillContainerStrategyFlexParent(
-        metadata,
-        allElementProps,
-        pathTrees,
-        [selectedElement],
-        'vertical',
-        'default',
-        {
-          forceFlexDirectionForParent: flexDirectionToBeApplied,
-        },
-      ).strategy() ?? []),
+      ...(fillContainerStrategyFlexParent(metadata, [selectedElement], 'vertical', 'default', {
+        forceFlexDirectionForParent: flexDirectionToBeApplied,
+      }).strategy() ?? []),
     ]
   }
 
@@ -72,17 +62,9 @@ function swapAxesCommands(
         'vertical',
         horizontalSizing.value,
       ).strategy() ?? []),
-      ...(fillContainerStrategyFlexParent(
-        metadata,
-        allElementProps,
-        pathTrees,
-        [selectedElement],
-        'horizontal',
-        'default',
-        {
-          forceFlexDirectionForParent: flexDirectionToBeApplied,
-        },
-      ).strategy() ?? []),
+      ...(fillContainerStrategyFlexParent(metadata, [selectedElement], 'horizontal', 'default', {
+        forceFlexDirectionForParent: flexDirectionToBeApplied,
+      }).strategy() ?? []),
     ]
   }
 
@@ -107,15 +89,7 @@ function setFlexDirectionSwapAxesSingleElement(
   const currentFlexDirection = detectFlexDirectionOne(metadata, selectedElement)
 
   const commands = MetadataUtils.getChildrenPathsOrdered(elementPathTree, selectedElement).flatMap(
-    (child) =>
-      swapAxesCommands(
-        metadata,
-        allElementProps,
-        elementPathTree,
-        child,
-        currentFlexDirection,
-        direction,
-      ),
+    (child) => swapAxesCommands(metadata, child, currentFlexDirection, direction),
   )
 
   if (commands.length === 0) {

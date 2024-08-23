@@ -169,24 +169,12 @@ export const ResizeToFitFillFixedControl = React.memo<ResizeToFitControlProps>((
 
   const onResizeToFill = React.useCallback(() => {
     if (isFillApplicable) {
-      const commands = resizeToFillCommands(
-        metadataRef.current,
-        allElementPropsRef.current,
-        elementPathTreeRef.current,
-        selectedViewsRef.current,
-      )
+      const commands = resizeToFillCommands(metadataRef.current, selectedViewsRef.current)
       if (commands.length > 0) {
         dispatch([applyCommandsAction(commands)])
       }
     }
-  }, [
-    isFillApplicable,
-    metadataRef,
-    allElementPropsRef,
-    elementPathTreeRef,
-    selectedViewsRef,
-    dispatch,
-  ])
+  }, [isFillApplicable, metadataRef, selectedViewsRef, dispatch])
 
   const onSetToFixedSize = React.useCallback(() => {
     const commands = setToFixedSizeCommands(

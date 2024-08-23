@@ -396,15 +396,7 @@ function strategyForChangingFillFixedHugType(
 ): Array<InspectorStrategy> {
   switch (mode) {
     case 'fill':
-      return setPropFillStrategies(
-        metadata,
-        elementPathTree,
-        allElementProps,
-        selectedElements,
-        axis,
-        'default',
-        otherAxisSetToFill,
-      )
+      return setPropFillStrategies(metadata, selectedElements, axis, 'default', otherAxisSetToFill)
     case 'hug':
     case 'squeeze':
     case 'collapsed':
