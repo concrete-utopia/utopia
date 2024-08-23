@@ -178,7 +178,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
         height: [],
       }
       for (const selectedView of store.editor.selectedViews) {
-        const maybeInfinityLocalFrame = MetadataUtils.getFrame(
+        const maybeInfinityLocalFrame = MetadataUtils.getLocalFrame(
           selectedView,
           store.editor.jsxMetadata,
         )

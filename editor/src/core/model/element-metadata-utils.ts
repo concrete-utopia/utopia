@@ -1297,7 +1297,7 @@ export const MetadataUtils = {
     Utils.fastForEach(targets, (target) => {
       const instance = MetadataUtils.findElementByElementPath(metadata, target)
       if (instance != null && this.isImg(instance)) {
-        const componentFrame = MetadataUtils.getFrame(target, metadata)
+        const componentFrame = MetadataUtils.getLocalFrame(target, metadata)
         if (componentFrame != null && isFiniteRectangle(componentFrame)) {
           const imageSize = getImageSize(allElementProps, instance)
           const widthMultiplier = imageSize.width / componentFrame.width
@@ -1487,7 +1487,7 @@ export const MetadataUtils = {
     }
     return currentPath
   },
-  getFrame(
+  getLocalFrame(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
   ): MaybeInfinityLocalRectangle | null {
@@ -1574,7 +1574,7 @@ export const MetadataUtils = {
     return aabb
   },
   getFrameOrZeroRect(path: ElementPath, metadata: ElementInstanceMetadataMap): LocalRectangle {
-    const frame = MetadataUtils.getFrame(path, metadata)
+    const frame = MetadataUtils.getLocalFrame(path, metadata)
     return zeroRectIfNullOrInfinity(frame)
   },
   getFrameRelativeTo(
@@ -1587,7 +1587,7 @@ export const MetadataUtils = {
     } else {
       const paths = EP.allPathsForLastPart(parent)
       const parentFrames: Array<MaybeInfinityLocalRectangle> = Utils.stripNulls(
-        paths.map((path) => this.getFrame(path, metadata)),
+        paths.map((path) => this.getLocalFrame(path, metadata)),
       )
       return parentFrames.reduce<LocalRectangle>((working, next) => {
         if (isInfinityRectangle(next)) {

@@ -1083,7 +1083,7 @@ export function setParentToFixedIfHugCommands(
     return []
   }
 
-  const globalFrame = MetadataUtils.getFrame(parentPath, metadata)
+  const globalFrame = MetadataUtils.getLocalFrame(parentPath, metadata)
   if (globalFrame == null || isInfinityRectangle(globalFrame)) {
     return []
   }
@@ -1280,7 +1280,7 @@ export function getConvertIndividualElementToAbsoluteCommandsFromMetadata(
   jsxMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
 ): Array<CanvasCommand> {
-  const localFrame = MetadataUtils.getFrame(target, jsxMetadata)
+  const localFrame = MetadataUtils.getLocalFrame(target, jsxMetadata)
   if (localFrame == null || isInfinityRectangle(localFrame)) {
     return []
   }

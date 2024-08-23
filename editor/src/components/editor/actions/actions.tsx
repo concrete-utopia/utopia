@@ -1129,7 +1129,7 @@ function deleteElements(
         if (metadata == null || isLeft(metadata.element)) {
           return null
         }
-        const frame = MetadataUtils.getFrame(path, editor.jsxMetadata)
+        const frame = MetadataUtils.getLocalFrame(path, editor.jsxMetadata)
         if (frame == null || !isFiniteRectangle(frame)) {
           return null
         }
@@ -3332,7 +3332,7 @@ export const UPDATE_FNS = {
   },
   RESET_PINS: (action: ResetPins, editor: EditorModel): EditorModel => {
     const target = action.target
-    const frame = MetadataUtils.getFrame(target, editor.jsxMetadata)
+    const frame = MetadataUtils.getLocalFrame(target, editor.jsxMetadata)
 
     if (frame == null || isInfinityRectangle(frame)) {
       return editor
@@ -3360,7 +3360,7 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_FRAME_DIMENSIONS: (action: UpdateFrameDimensions, editor: EditorModel): EditorModel => {
-    const initialFrame = MetadataUtils.getFrame(action.element, editor.jsxMetadata)
+    const initialFrame = MetadataUtils.getLocalFrame(action.element, editor.jsxMetadata)
 
     if (initialFrame == null || isInfinityRectangle(initialFrame)) {
       return editor
@@ -5519,7 +5519,7 @@ export const UPDATE_FNS = {
           editor.jsxMetadata,
           action.insertionPath.intendedParentPath,
         )
-        const localFrame = MetadataUtils.getFrame(
+        const localFrame = MetadataUtils.getLocalFrame(
           action.insertionPath.intendedParentPath,
           editor.jsxMetadata,
         )

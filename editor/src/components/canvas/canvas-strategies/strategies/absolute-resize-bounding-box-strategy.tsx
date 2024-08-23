@@ -476,7 +476,7 @@ function getConstrainedSizes(
       constraints.right ||
       constraints.width
 
-    const localFrame = MetadataUtils.getFrame(element.elementPath, jsxMetadata)
+    const localFrame = MetadataUtils.getLocalFrame(element.elementPath, jsxMetadata)
     if (
       isConstrained &&
       localFrame != null &&

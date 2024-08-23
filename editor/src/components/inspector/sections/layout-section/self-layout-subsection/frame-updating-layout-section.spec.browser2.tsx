@@ -139,7 +139,10 @@ describe('Frame updating layout section', () => {
         const metadataForElement = metadataMap[path]
         expect(metadataForElement).not.toBeNull()
         expect(metadataForElement).not.toBeUndefined()
-        const actualLocalFrame = MetadataUtils.getFrame(metadataForElement.elementPath, metadataMap)
+        const actualLocalFrame = MetadataUtils.getLocalFrame(
+          metadataForElement.elementPath,
+          metadataMap,
+        )
         expect(actualLocalFrame).toEqual(expectedFrame)
       }
 

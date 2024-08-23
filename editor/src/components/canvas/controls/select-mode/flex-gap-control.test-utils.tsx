@@ -35,7 +35,10 @@ export async function checkFlexGapHandlesPositionedCorrectly(
       'Should be able to get metadata for selected element.',
       MetadataUtils.findElementByElementPath(editorState.jsxMetadata, targetPath),
     )
-    const localFrame = MetadataUtils.getFrame(selectedElement.elementPath, editorState.jsxMetadata)
+    const localFrame = MetadataUtils.getLocalFrame(
+      selectedElement.elementPath,
+      editorState.jsxMetadata,
+    )
     const selectedElementFrame = zeroRectIfNullOrInfinity(localFrame)
     // If this is a flex element and it has a gap specified.
     if (

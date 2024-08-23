@@ -280,7 +280,7 @@ export function getLocalRectangleWithFixedWidthHandlingText(
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): MaybeInfinityLocalRectangle | null {
-  const localFrame = MetadataUtils.getFrame(elementPath, metadata)
+  const localFrame = MetadataUtils.getLocalFrame(elementPath, metadata)
 
   if (
     localFrame == null ||

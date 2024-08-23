@@ -345,7 +345,7 @@ export function updateFramesOfScenesAndComponents(
             const targetPropertyPath = stylePropPathMappingFn(frameAndTarget.targetProperty, [
               'style',
             ])
-            const localFrame = MetadataUtils.getFrame(
+            const localFrame = MetadataUtils.getLocalFrame(
               frameAndTarget.target,
               workingEditorState.jsxMetadata,
             )
@@ -431,7 +431,7 @@ export function updateFramesOfScenesAndComponents(
               frameAndTarget.frame,
             )
             const currentLocalFrame = nullIfInfinity(
-              MetadataUtils.getFrame(target, workingEditorState.jsxMetadata),
+              MetadataUtils.getLocalFrame(target, workingEditorState.jsxMetadata),
             )
             const currentFullFrame = optionalMap(Frame.getFullFrame, currentLocalFrame)
             const fullFrame = Frame.getFullFrame(newLocalFrame)
@@ -927,7 +927,7 @@ export function collectGuidelines(
       }
 
       const instance = MetadataUtils.findElementByElementPath(metadata, selectedView)
-      const localFrame = MetadataUtils.getFrame(selectedView, metadata)
+      const localFrame = MetadataUtils.getLocalFrame(selectedView, metadata)
       if (
         instance != null &&
         MetadataUtils.isImg(instance) &&
