@@ -74,7 +74,6 @@ function swapAxesCommands(
 function setFlexDirectionSwapAxesSingleElement(
   direction: FlexDirection,
   metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
   elementPathTree: ElementPathTrees,
   selectedElement: ElementPath,
 ): Array<CanvasCommand> {
@@ -104,7 +103,6 @@ function setFlexDirectionSwapAxesSingleElement(
 
 export const setFlexDirectionSwapAxes = (
   metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
   elementPathTree: ElementPathTrees,
   selectedElementPaths: ElementPath[],
   direction: FlexDirection,
@@ -113,13 +111,7 @@ export const setFlexDirectionSwapAxes = (
   strategy: () =>
     nullOrNonEmpty(
       selectedElementPaths.flatMap((path) =>
-        setFlexDirectionSwapAxesSingleElement(
-          direction,
-          metadata,
-          allElementProps,
-          elementPathTree,
-          path,
-        ),
+        setFlexDirectionSwapAxesSingleElement(direction, metadata, elementPathTree, path),
       ),
     ),
 })

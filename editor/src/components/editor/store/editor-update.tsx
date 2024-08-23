@@ -30,7 +30,6 @@ import type { Optic } from '../../../core/shared/optics/optics'
 import { fromField } from '../../../core/shared/optics/optic-creators'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { ProjectServerStateKeepDeepEquality } from './store-deep-equality-instances'
-import { getContentsTreeFileFromElements } from '../../../components/assets'
 
 export function runLocalEditorAction(
   state: EditorState,

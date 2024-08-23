@@ -125,11 +125,10 @@ export const removeFlexDirectionStrategies = (
 export const updateFlexDirectionStrategies = (
   metadata: ElementInstanceMetadataMap,
   elementPaths: ElementPath[],
-  allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   flexDirection: FlexDirection,
 ): Array<InspectorStrategy> => [
-  setFlexDirectionSwapAxes(metadata, allElementProps, pathTrees, elementPaths, flexDirection),
+  setFlexDirectionSwapAxes(metadata, pathTrees, elementPaths, flexDirection),
   {
     name: 'Set flex direction',
     strategy: () => {

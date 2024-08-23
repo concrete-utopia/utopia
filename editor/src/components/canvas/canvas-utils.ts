@@ -909,7 +909,6 @@ export function collectGuidelines(
   draggedPoint: CanvasPoint | null,
   resizingFromPosition: EdgePosition | null,
   allElementProps: AllElementProps,
-  pathTrees: ElementPathTrees,
 ): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
   if (draggedPoint == null) {
     return []
@@ -1187,7 +1186,6 @@ function innerSnapPoint(
   point: CanvasPoint,
   resizingFromPosition: EdgePosition | null,
   allElementProps: AllElementProps,
-  pathTrees: ElementPathTrees,
 ): {
   point: CanvasPoint
   snappedGuideline: GuidelineWithSnappingVectorAndPointsOfRelevance | null
@@ -1202,7 +1200,6 @@ function innerSnapPoint(
       point,
       resizingFromPosition,
       allElementProps,
-      pathTrees,
     ),
   )
   let snappedPoint = point
@@ -1268,7 +1265,6 @@ export function snapPoint(
       pointToSnap,
       resizingFromPosition,
       allElementProps,
-      pathTrees,
     )
     return {
       snappedPointOnCanvas: point,
@@ -1285,7 +1281,6 @@ export function snapPoint(
     closestPointOnLine,
     resizingFromPosition,
     allElementProps,
-    pathTrees,
   )
 
   const snappedPoint = optionalMap(
