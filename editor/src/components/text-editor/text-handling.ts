@@ -1,5 +1,5 @@
 import type { ElementPath } from '../../core/shared/project-file-types'
-import type { EditorState } from '../editor/store/editor-state'
+import type { AllElementProps, EditorState } from '../editor/store/editor-state'
 import {
   getElementFromProjectContents,
   modifyUnderlyingTargetElement,
@@ -280,8 +280,7 @@ export function getLocalRectangleWithFixedWidthHandlingText(
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): MaybeInfinityLocalRectangle | null {
-  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  let localFrame = elementMetadata?.localFrame ?? null
+  const localFrame = MetadataUtils.getFrame(elementPath, metadata)
 
   if (
     localFrame == null ||

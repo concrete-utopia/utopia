@@ -27,6 +27,7 @@ import {
 } from '../../../../canvas/event-helpers.test-utils'
 import { getDomRectCenter } from '../../../../../core/shared/dom-utils'
 import { getFixedHugDropdownId } from '../../../fill-hug-fixed-control'
+import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 
 async function updateInputValue(
   renderResult: EditorRenderResult,
@@ -138,7 +139,7 @@ describe('Frame updating layout section', () => {
         const metadataForElement = metadataMap[path]
         expect(metadataForElement).not.toBeNull()
         expect(metadataForElement).not.toBeUndefined()
-        const actualLocalFrame = metadataForElement.localFrame
+        const actualLocalFrame = MetadataUtils.getFrame(metadataForElement.elementPath, metadataMap)
         expect(actualLocalFrame).toEqual(expectedFrame)
       }
 

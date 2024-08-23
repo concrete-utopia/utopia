@@ -232,6 +232,7 @@ function maybeSetFlexDirection(
       : updateFlexDirectionStrategies(
           metadata,
           selectedViews,
+          allElementProps,
           elementPathTree,
           desiredFlexDirection,
         )

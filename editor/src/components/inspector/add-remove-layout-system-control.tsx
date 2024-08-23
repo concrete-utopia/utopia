@@ -75,6 +75,7 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
           elementMetadataRef.current,
           selectedViewsRef.current,
           elementPathTreeRef.current,
+          allElementPropsRef.current,
         ),
         ...removeGridLayoutStrategies(
           elementMetadataRef.current,
@@ -82,7 +83,7 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
           elementPathTreeRef.current,
         ),
       ]),
-    [dispatch, elementMetadataRef, elementPathTreeRef, selectedViewsRef],
+    [allElementPropsRef, dispatch, elementMetadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
   const colorTheme = useColorTheme()

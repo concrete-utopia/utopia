@@ -954,14 +954,32 @@ export function resizeToFitCommands(
 
 export function resizeToFillCommands(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   selectedViews: Array<ElementPath>,
 ): Array<CanvasCommand> {
   const commands = [
     ...(commandsForFirstApplicableStrategy(
-      setPropFillStrategies(metadata, selectedViews, 'horizontal', 'default', false),
+      setPropFillStrategies(
+        metadata,
+        pathTrees,
+        allElementProps,
+        selectedViews,
+        'horizontal',
+        'default',
+        false,
+      ),
     ) ?? []),
     ...(commandsForFirstApplicableStrategy(
-      setPropFillStrategies(metadata, selectedViews, 'vertical', 'default', false),
+      setPropFillStrategies(
+        metadata,
+        pathTrees,
+        allElementProps,
+        selectedViews,
+        'vertical',
+        'default',
+        false,
+      ),
     ) ?? []),
   ]
   return commands

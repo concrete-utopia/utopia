@@ -125,10 +125,11 @@ export const removeFlexDirectionStrategies = (
 export const updateFlexDirectionStrategies = (
   metadata: ElementInstanceMetadataMap,
   elementPaths: ElementPath[],
+  allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   flexDirection: FlexDirection,
 ): Array<InspectorStrategy> => [
-  setFlexDirectionSwapAxes(metadata, pathTrees, elementPaths, flexDirection),
+  setFlexDirectionSwapAxes(metadata, allElementProps, pathTrees, elementPaths, flexDirection),
   {
     name: 'Set flex direction',
     strategy: () => {
@@ -181,8 +182,9 @@ export const removeFlexLayoutStrategies = (
   metadata: ElementInstanceMetadataMap,
   elementPaths: ElementPath[],
   pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
 ): Array<InspectorStrategy> => [
-  removeFlexConvertToAbsolute(metadata, elementPaths, pathTrees),
+  removeFlexConvertToAbsolute(metadata, elementPaths, pathTrees, allElementProps),
   {
     name: 'Remove flex layout',
     strategy: () => {
@@ -221,13 +223,23 @@ export const removeGridLayoutStrategies = (
 
 export const setPropFillStrategies = (
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
   elementPaths: ElementPath[],
   axis: Axis,
   value: 'default' | number,
   otherAxisSetToFill: boolean,
 ): Array<InspectorStrategy> => [
-  fillContainerStrategyFlexParent(metadata, elementPaths, axis, value),
-  fillContainerStrategyFlow(metadata, elementPaths, axis, value, otherAxisSetToFill),
+  fillContainerStrategyFlexParent(metadata, allElementProps, pathTrees, elementPaths, axis, value),
+  fillContainerStrategyFlow(
+    metadata,
+    allElementProps,
+    pathTrees,
+    elementPaths,
+    axis,
+    value,
+    otherAxisSetToFill,
+  ),
 ]
 
 export const setPropFixedSizeStrategies = (

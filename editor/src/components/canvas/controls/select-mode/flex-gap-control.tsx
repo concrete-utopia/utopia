@@ -156,10 +156,10 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     }
 
     const bounds = boundingRectangleArray(
-      mapDropNulls(
-        (c) => (c.localFrame != null && isFiniteRectangle(c.localFrame) ? c.localFrame : null),
-        children,
-      ),
+      mapDropNulls((c) => {
+        const localFrame = MetadataUtils.getFrame(c.elementPath, metadata)
+        return localFrame != null && isFiniteRectangle(localFrame) ? localFrame : null
+      }, children),
     )
 
     if (bounds == null) {
@@ -180,7 +180,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
         ),
       }
     }
-  }, [children, flexGap.direction, flexGapValue.renderedValuePx])
+  }, [children, flexGap.direction, flexGapValue.renderedValuePx, metadata])
 
   const justifyContent = React.useMemo(() => {
     return (

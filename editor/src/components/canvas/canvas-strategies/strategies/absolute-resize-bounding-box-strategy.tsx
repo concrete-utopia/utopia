@@ -334,6 +334,7 @@ function applyConstraintsAdjustmentsToFrame(
   const { constrainedSizes, lockedWidth, lockedHeight } = getConstrainedSizes(
     jsxMetadata,
     allElementProps,
+    pathTrees,
     target,
     originalFrame,
   )
@@ -439,6 +440,7 @@ type NullableSize = {
 function getConstrainedSizes(
   jsxMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   path: ElementPath,
   originalFrame: CanvasRectangle,
 ): { constrainedSizes: Array<NullableSize>; lockedWidth: boolean; lockedHeight: boolean } {
@@ -476,10 +478,11 @@ function getConstrainedSizes(
       constraints.right ||
       constraints.width
 
+    const localFrame = MetadataUtils.getFrame(element.elementPath, jsxMetadata)
     if (
       isConstrained &&
-      element.localFrame != null &&
-      isFiniteRectangle(element.localFrame) &&
+      localFrame != null &&
+      isFiniteRectangle(localFrame) &&
       element.globalFrame != null &&
       isFiniteRectangle(element.globalFrame)
     ) {
@@ -502,16 +505,16 @@ function getConstrainedSizes(
           constraints.right,
           constraints.width,
           originalFrame.width,
-          element.localFrame.x,
-          element.localFrame.width + offsetDiffX,
+          localFrame.x,
+          localFrame.width + offsetDiffX,
         ),
         height: getBoundDimension(
           constraints.top,
           constraints.bottom,
           constraints.height,
           originalFrame.height,
-          element.localFrame.y,
-          element.localFrame.height + offsetDiffY,
+          localFrame.y,
+          localFrame.height + offsetDiffY,
         ),
       })
     }

@@ -179,6 +179,7 @@ const PaddingControl = React.memo(() => {
 
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const pathTreesRef = useRefEditorState((store) => store.editor.elementPathTree)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
   const startingFrame = MetadataUtils.getFrameOrZeroRect(
     selectedViewsRef.current[0],
     metadataRef.current,

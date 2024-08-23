@@ -909,6 +909,7 @@ export function handleKeyDown(
                 editor.jsxMetadata,
                 elementsConsideredForFlexConversion,
                 editor.elementPathTree,
+                editor.allElementProps,
               )
             : addFlexLayoutStrategies(
                 editor.jsxMetadata,

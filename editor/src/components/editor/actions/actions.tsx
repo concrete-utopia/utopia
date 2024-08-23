@@ -1129,7 +1129,7 @@ function deleteElements(
         if (metadata == null || isLeft(metadata.element)) {
           return null
         }
-        const frame = metadata.localFrame
+        const frame = MetadataUtils.getFrame(path, editor.jsxMetadata)
         if (frame == null || !isFiniteRectangle(frame)) {
           return null
         }
@@ -5519,7 +5519,11 @@ export const UPDATE_FNS = {
           editor.jsxMetadata,
           action.insertionPath.intendedParentPath,
         )
-        if (group != null) {
+        const localFrame = MetadataUtils.getFrame(
+          action.insertionPath.intendedParentPath,
+          editor.jsxMetadata,
+        )
+        if (group != null && localFrame != null) {
           switch (element.type) {
             case 'JSX_ELEMENT':
               groupCommands.push(
@@ -5527,7 +5531,7 @@ export const UPDATE_FNS = {
                   newPath,
                   right(element.props),
                   zeroRectIfNullOrInfinity(group.globalFrame),
-                  zeroRectIfNullOrInfinity(group.localFrame),
+                  zeroRectIfNullOrInfinity(localFrame),
                 ),
               )
               break

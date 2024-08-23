@@ -26,9 +26,13 @@ import {
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { AllElementProps } from '../../../components/editor/store/editor-state'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export const fillContainerStrategyFlow = (
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   elementPaths: ElementPath[],
   axis: Axis,
   value: 'default' | number,
@@ -82,6 +86,8 @@ export interface FillContainerStrategyFlexParentOverrides {
 
 export const fillContainerStrategyFlexParent = (
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   elementPaths: ElementPath[],
   axis: Axis,
   value: 'default' | number,

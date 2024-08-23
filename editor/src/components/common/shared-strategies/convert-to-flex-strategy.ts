@@ -171,7 +171,12 @@ function convertThreeElementGroupRow(
     const childrenMetadata = mapDropNulls(
       (childPath) => MetadataUtils.findElementByElementPath(metadata, childPath),
       childrenPaths,
-    )
+    ).map((element) => {
+      return {
+        ...element,
+        localFrame: MetadataUtils.getFrame(element.elementPath, metadata),
+      }
+    })
     if (childrenMetadata.length === 3) {
       // This should make the logic independent of the ordering within the code,
       // as their logical order does not necessarily relate to their visual position.
