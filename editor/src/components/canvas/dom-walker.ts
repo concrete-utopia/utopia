@@ -217,6 +217,18 @@ function findParentScene(target: Element): string | null {
   return null
 }
 
+function findNearestElementWithPath(element: Element | null): ElementPath | null {
+  if (element == null) {
+    return null
+  }
+  const path = getDeepestPathOnDomElement(element)
+  if (path != null) {
+    return path
+  }
+  const parent = element.parentElement
+  return findNearestElementWithPath(parent)
+}
+
 export function lazyValue<T>(getter: () => T) {
   let alreadyResolved = false
   let resolvedValue: T
@@ -882,6 +894,10 @@ function collectMetadataForElementNEW_MOVE_ME(
   specialSizeMeasurementsObject: SpecialSizeMeasurements
   textContentsMaybe: string | null
 } {
+  const closestOffsetParentPath: ElementPath | null = findNearestElementWithPath(
+    element.offsetParent,
+  )
+
   const tagName: string = element.tagName.toLowerCase()
   const globalFrame = globalFrameForElement(
     element,
@@ -903,7 +919,7 @@ function collectMetadataForElementNEW_MOVE_ME(
 
   const specialSizeMeasurementsObject = getSpecialMeasurements(
     element,
-    null as any, // TODO FIXME closestOffsetParentPath,
+    closestOffsetParentPath,
     scale,
     containerRect,
   )
@@ -1248,7 +1264,7 @@ function getGridElementProperties(
 
 function getSpecialMeasurements(
   element: HTMLElement,
-  closestOffsetParentPath: ElementPath,
+  closestOffsetParentPath: ElementPath | null,
   scale: number,
   containerRectLazy: CanvasPoint | (() => CanvasPoint),
 ): SpecialSizeMeasurements {
