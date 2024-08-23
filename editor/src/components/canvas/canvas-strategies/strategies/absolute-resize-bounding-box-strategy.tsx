@@ -333,7 +333,7 @@ function applyConstraintsAdjustmentsToFrame(
 
   const { constrainedSizes, lockedWidth, lockedHeight } = getConstrainedSizes(
     jsxMetadata,
-    pathTrees,
+    allElementProps,
     target,
     originalFrame,
   )
