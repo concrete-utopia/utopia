@@ -94,6 +94,42 @@ export var Playground = ({ style }) => {
     `)
   })
 
+  it('with a dynamic non-dom element', async () => {
+    const editor = await renderTestEditorWithCode(
+      `import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <div data-uid='div'>
+          {
+            // @utopia/uid=map1
+            [0, 1, 2].map((i) => (
+              <div data-uid='el'>first {i}</div>
+            ))
+          }
+        </div>
+        </Storyboard>
+    )
+    `,
+      'await-first-dom-report',
+    )
+
+    expect(Object.keys(editor.getEditorState().editor.jsxMetadata)).toMatchInlineSnapshot(`
+      Array [
+        "sb",
+        "sb/div",
+        "sb/div/map1",
+        "sb/div/map1/el~~~1",
+        "sb/div/map1/el~~~2",
+        "sb/div/map1/el~~~3",
+        "sb/div/map1/el~~~1/b1f",
+        "sb/div/map1/el~~~2/b1f",
+        "sb/div/map1/el~~~3/b1f",
+      ]
+    `)
+  })
+
   it('conditional expressions', async () => {
     const editor = await renderTestEditorWithCode(
       `import * as React from 'react'
