@@ -32,6 +32,7 @@ import { slightlyOffsetPointBecauseVeryWeirdIssue, wait } from '../../utils/util
 import { mouseClickAtPoint, mouseDownAtPoint, mouseMoveToPoint } from './event-helpers.test-utils'
 import { EditorModes } from '../editor/editor-modes'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 disableStoredStateforTests()
 
@@ -483,7 +484,10 @@ describe('Capturing closest offset parent', () => {
       renderResult.getEditorState().editor.jsxMetadata['sb/scene/app/child']
     const expectedClosestOffsetParent = 'sb/scene/app:app-root/inner-div'
     expect(
-      EP.toString(metadataOfInnerElement.specialSizeMeasurements.closestOffsetParentPath),
+      optionalMap(
+        EP.toString,
+        metadataOfInnerElement.specialSizeMeasurements.closestOffsetParentPath,
+      ),
     ).toBe(expectedClosestOffsetParent)
   })
 })

@@ -2762,7 +2762,7 @@ export interface SpecialSizeMeasurements {
   globalFrameWithTextContent: MaybeInfinityCanvasRectangle | null
   textBounds: CanvasRectangle | null
   immediateParentProvidesLayout: boolean
-  closestOffsetParentPath: ElementPath
+  closestOffsetParentPath: ElementPath | null
   usesParentBounds: boolean
   parentLayoutSystem: DetectedLayoutSystem // TODO make a specific boolean prop that tells us the parent is flex or not
   layoutSystemForChildren: DetectedLayoutSystem | null
@@ -2811,7 +2811,7 @@ export function specialSizeMeasurements(
   immediateParentBounds: CanvasRectangle | null,
   globalFrameWithTextContent: MaybeInfinityCanvasRectangle | null,
   immediateParentProvidesLayout: boolean,
-  closestOffsetParentPath: ElementPath,
+  closestOffsetParentPath: ElementPath | null,
   usesParentBounds: boolean,
   parentLayoutSystem: DetectedLayoutSystem,
   layoutSystemForChildren: DetectedLayoutSystem | null,
