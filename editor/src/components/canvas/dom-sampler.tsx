@@ -271,14 +271,20 @@ function collectMetadataForPaths(
       containerRect,
       options.spyCollector,
     )
+
     if (domMetadata.length == 0) {
-      // TODO find a dynamic spyElement for this path
-      const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(path)]
-      if (spyElem != null) {
-        metadataToUpdate_MUTATE[EP.toString(path)] = {
-          ...spyElem,
+      // if we couldn't find any dom elements for the path, we must scan through all the spy elements to find a fallback with a potentially dynamic path
+      Object.entries(options.spyCollector.current.spyValues.metadata).forEach(([key, spyElem]) => {
+        // TODO BEFORE MERGE review performance choices here
+        if (!EP.pathsEqual(path, EP.makeLastPartOfPathStatic(EP.fromString(key)))) {
+          return // continue to the next element
         }
-      }
+        if (spyElem != null) {
+          metadataToUpdate_MUTATE[key] = {
+            ...spyElem,
+          }
+        }
+      })
       return // we couldn't find a fallback spy element, so we bail out
     }
 
