@@ -92,8 +92,8 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
   }
 
   const shouldTearOffGap = {
-    x: isDragOverThreshold({ gapPx: gridGap.column.renderedValuePx, deltaPx: dragDelta.x }),
-    y: isDragOverThreshold({ gapPx: gridGap.row.renderedValuePx, deltaPx: dragDelta.y }),
+    x: isDragOverThreshold({ gapPx: gridGap.column.renderedValuePx, deltaPx: drag.x }),
+    y: isDragOverThreshold({ gapPx: gridGap.row.renderedValuePx, deltaPx: drag.y }),
   }
 
   const adjustPrecision =
