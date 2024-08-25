@@ -176,6 +176,7 @@ export function gridGapControlBoundsFromMetadata(
   parentPath: ElementPath,
   gridRowColumnInfo: GridData,
   gapValues: { row: CSSNumber; column: CSSNumber },
+  scale: number,
 ): {
   gaps: Array<{
     bounds: CanvasRectangle
@@ -228,12 +229,15 @@ export function gridGapControlBoundsFromMetadata(
     const secondChildBounds = cell(i + 1, 0).getBoundingClientRect()
     return {
       gapId: `${EP.toString(parentPath)}-row-gap-${i}`,
-      bounds: canvasRectangle({
-        x: cellBounds.x,
-        y: firstChildBounds.bottom - parentGridBounds.y,
-        width: cellBounds.width,
-        height: secondChildBounds.top - firstChildBounds.bottom,
-      }),
+      bounds: adjustToScale(
+        canvasRectangle({
+          x: cellBounds.x,
+          y: firstChildBounds.bottom - parentGridBounds.y,
+          width: cellBounds.width,
+          height: secondChildBounds.top - firstChildBounds.bottom,
+        }),
+        scale,
+      ),
       gap: gapValues.row,
       axis: 'row' as Axis,
     }
@@ -246,12 +250,15 @@ export function gridGapControlBoundsFromMetadata(
     const secondChildBounds = cell(0, i + 1).getBoundingClientRect()
     return {
       gapId: `${EP.toString(parentPath)}-column-gap-${i}`,
-      bounds: canvasRectangle({
-        x: firstChildBounds.right - parentGridBounds.x,
-        y: cellBounds.y,
-        width: secondChildBounds.left - firstChildBounds.right,
-        height: cellBounds.height,
-      }),
+      bounds: adjustToScale(
+        canvasRectangle({
+          x: firstChildBounds.right - parentGridBounds.x,
+          y: cellBounds.y,
+          width: secondChildBounds.left - firstChildBounds.right,
+          height: cellBounds.height,
+        }),
+        scale,
+      ),
       gap: gapValues.column,
       axis: 'column' as Axis,
     }
@@ -266,6 +273,15 @@ export function gridGapControlBoundsFromMetadata(
     cellBounds: cellBounds,
     gapValues: gapValues,
   }
+}
+
+function adjustToScale(rectangle: CanvasRectangle, scale: number): CanvasRectangle {
+  return canvasRectangle({
+    x: rectangle.x / scale,
+    y: rectangle.y / scale,
+    width: rectangle.width / scale,
+    height: rectangle.height / scale,
+  })
 }
 
 export interface GridGapData {

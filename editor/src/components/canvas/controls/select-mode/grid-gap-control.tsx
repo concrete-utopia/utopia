@@ -140,6 +140,7 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
       row: fallbackEmptyValue(gridGapRow),
       column: fallbackEmptyValue(gridGapColumn),
     },
+    scale,
   )
 
   return (
