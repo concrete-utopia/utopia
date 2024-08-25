@@ -214,9 +214,9 @@ vsCodePathsToPreload = [
         ("extensions.js", VSCodeJS),
         ("vscode/vs/code/browser/workbench/workbench.js", VSCodeJS),
         ("vscode/vs/loader.js", VSCodeJS),
-        ("vscode/vs/workbench/workbench.web.api.css", VSCodeCSS),
-        ("vscode/vs/workbench/workbench.web.api.js", VSCodeJS),
-        ("vscode/vs/workbench/workbench.web.api.nls.js", VSCodeJS)
+        ("vscode/vs/workbench/workbench.web.main.css", VSCodeCSS),
+        ("vscode/vs/workbench/workbench.web.main.js", VSCodeJS),
+        ("vscode/vs/workbench/workbench.web.main.nls.js", VSCodeJS)
         ]
 
 vscodePreloadTypeToPreloadAs :: VSCodePreloadType -> Text
