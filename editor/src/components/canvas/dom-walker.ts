@@ -880,7 +880,6 @@ function collectMetadataForElementNEW_MOVE_ME(
 ): {
   tagName: string
   globalFrame: CanvasRectangle
-  localFrame: LocalRectangle
   nonRoundedGlobalFrame: CanvasRectangle
   specialSizeMeasurementsObject: SpecialSizeMeasurements
   textContentsMaybe: string | null
@@ -897,7 +896,6 @@ function collectMetadataForElementNEW_MOVE_ME(
     'without-text-content',
     'nearest-half',
   )
-  const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
   const nonRoundedGlobalFrame = globalFrameForElement(
     element,
     scale,
@@ -918,7 +916,6 @@ function collectMetadataForElementNEW_MOVE_ME(
   return {
     tagName: tagName,
     globalFrame: globalFrame,
-    localFrame: localFrame,
     nonRoundedGlobalFrame: nonRoundedGlobalFrame,
     specialSizeMeasurementsObject: specialSizeMeasurementsObject,
     textContentsMaybe: textContentsMaybe,
@@ -1074,7 +1071,6 @@ export function createElementInstanceMetadataForElement(
   const {
     tagName,
     globalFrame,
-    localFrame,
     nonRoundedGlobalFrame,
     specialSizeMeasurementsObject,
     textContentsMaybe,
@@ -1088,7 +1084,6 @@ export function createElementInstanceMetadataForElement(
   return domElementMetadata(
     left(tagName),
     globalFrame,
-    localFrame,
     nonRoundedGlobalFrame,
     specialSizeMeasurementsObject,
     textContentsMaybe,

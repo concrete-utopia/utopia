@@ -2524,7 +2524,6 @@ export interface ElementInstanceMetadata {
 export interface DomElementMetadata {
   element: Either<string, JSXElementChild>
   globalFrame: MaybeInfinityCanvasRectangle | null
-  localFrame: MaybeInfinityLocalRectangle | null
   nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null
   specialSizeMeasurements: SpecialSizeMeasurements
   textContent: string | null
@@ -2577,7 +2576,6 @@ export function elementInstanceMetadata(
 export function domElementMetadata(
   element: Either<string, JSXElementChild>,
   globalFrame: MaybeInfinityCanvasRectangle | null,
-  localFrame: MaybeInfinityLocalRectangle | null,
   nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null,
   sizeMeasurements: SpecialSizeMeasurements,
   textContent: string | null,
@@ -2585,7 +2583,6 @@ export function domElementMetadata(
   return {
     element: element,
     globalFrame: globalFrame,
-    localFrame: localFrame,
     nonRoundedGlobalFrame: nonRoundedGlobalFrame,
     specialSizeMeasurements: sizeMeasurements,
     textContent: textContent,

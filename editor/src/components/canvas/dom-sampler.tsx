@@ -190,7 +190,6 @@ function collectMetadataForElementPath(
         metadata: domElementMetadata(
           left('unknown'),
           mergedGlobalFrame,
-          null,
           mergedGlobalFrame,
           {
             ...emptySpecialSizeMeasurements,
@@ -216,8 +215,7 @@ function collectMetadataForElementPath(
 function createFakeMetadataForCanvasRoot(canvasRootPath: ElementPath): DomElementMetadata {
   return domElementMetadata(
     left('Storyboard'),
-    infinityCanvasRectangle,
-    infinityLocalRectangle,
+    infinityCanvasRectangle, // TODO the canvas is not actually sized infinity, in the future we should remove the InfinityRectangle and use the actual size
     infinityCanvasRectangle,
     emptySpecialSizeMeasurements,
     null,
