@@ -36,6 +36,12 @@ import { flattenSelection } from './shared-move-strategies-helpers'
 import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { showGridControls } from '../../commands/show-grid-controls-command'
 import { GridControls } from '../../controls/grid-controls'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { AllElementProps } from '../../../editor/store/editor-state'
+import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { NodeModules, ProjectContentTreeRoot } from 'utopia-shared/src/types'
+import type { InsertionPath } from '../../../editor/store/insertion-path'
 
 export function gridReparentStrategy(
   reparentTarget: ReparentTarget,
@@ -52,6 +58,14 @@ export function gridReparentStrategy(
       interactionSession == null ||
       interactionSession.interactionData.type !== 'DRAG'
     ) {
+      return null
+    }
+
+    const gridFrame = MetadataUtils.findElementByElementPath(
+      canvasState.startingMetadata,
+      reparentTarget.newParent.intendedParentPath,
+    )?.globalFrame
+    if (gridFrame == null || isInfinityRectangle(gridFrame)) {
       return null
     }
 
@@ -135,56 +149,20 @@ export function gridReparentStrategy(
             if (!(reparentTarget.shouldReparent && allowedToReparent)) {
               return emptyStrategyApplicationResult
             }
-            const outcomes = mapDropNulls((selectedElement) => {
-              const reparentResult = getReparentOutcome(
-                canvasState.startingMetadata,
-                canvasState.startingElementPathTree,
-                canvasState.startingAllElementProps,
-                canvasState.builtInDependencies,
-                projectContents,
-                nodeModules,
-                pathToReparent(selectedElement),
-                newParent,
-                'always',
-                null,
-              )
-
-              if (reparentResult == null) {
-                return null
-              }
-
-              const { commands: reparentCommands, newPath } = reparentResult
-
-              const gridFrame = MetadataUtils.findElementByElementPath(
-                canvasState.startingMetadata,
-                reparentTarget.newParent.intendedParentPath,
-              )?.globalFrame
-              if (gridFrame == null || isInfinityRectangle(gridFrame)) {
-                return null
-              }
-
-              const gridContainerCommands = updateBulkProperties(
-                'mid-interaction',
-                reparentTarget.newParent.intendedParentPath,
-                [
-                  propertyToSet(PP.create('style', 'width'), gridFrame.width),
-                  propertyToSet(PP.create('style', 'height'), gridFrame.height),
-                ],
-              )
-              const gridCellCommands = updateBulkProperties('always', newPath, [
-                propertyToDelete(PP.create('style', 'position')),
-                propertyToDelete(PP.create('style', 'top')),
-                propertyToDelete(PP.create('style', 'left')),
-                propertyToDelete(PP.create('style', 'bottom')),
-                propertyToDelete(PP.create('style', 'right')),
-              ])
-
-              return {
-                commands: [...reparentCommands, gridContainerCommands, gridCellCommands],
-                newPath: newPath,
-                oldPath: selectedElement,
-              }
-            }, selectedElements)
+            const outcomes = mapDropNulls(
+              (selectedElement) =>
+                gridReparentCommands(
+                  canvasState.startingMetadata,
+                  canvasState.startingElementPathTree,
+                  canvasState.startingAllElementProps,
+                  canvasState.builtInDependencies,
+                  projectContents,
+                  nodeModules,
+                  selectedElement,
+                  newParent,
+                ),
+              selectedElements,
+            )
 
             let newPaths: Array<ElementPath> = []
             let updatedTargetPaths: UpdatedPathMap = {}
@@ -194,15 +172,26 @@ export function gridReparentStrategy(
               updatedTargetPaths[EP.toString(c.oldPath)] = c.newPath
             })
 
+            const gridContainerCommands = updateBulkProperties(
+              'mid-interaction',
+              reparentTarget.newParent.intendedParentPath,
+              [
+                propertyToSet(PP.create('style', 'width'), gridFrame.width),
+                propertyToSet(PP.create('style', 'height'), gridFrame.height),
+              ],
+            )
+
             const elementsToRerender = EP.uniqueElementPaths([
               ...customStrategyState.elementsToRerender,
               ...newPaths,
               ...newPaths.map(EP.parentPath),
               ...filteredSelectedElements.map(EP.parentPath),
             ])
+
             return strategyApplicationResult(
               [
                 ...outcomes.flatMap((c) => c.commands),
+                gridContainerCommands,
                 updateSelectedViews('always', newPaths),
                 setCursorCommand(CSSCursor.Reparent),
                 showGridControls('mid-interaction', reparentTarget.newParent.intendedParentPath),
@@ -215,5 +204,49 @@ export function gridReparentStrategy(
         )
       },
     }
+  }
+}
+
+function gridReparentCommands(
+  jsxMetadata: ElementInstanceMetadataMap,
+  tree: ElementPathTrees,
+  allElementProps: AllElementProps,
+  builtinDependencies: BuiltInDependencies,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  target: ElementPath,
+  newParent: InsertionPath,
+) {
+  const reparentResult = getReparentOutcome(
+    jsxMetadata,
+    tree,
+    allElementProps,
+    builtinDependencies,
+    projectContents,
+    nodeModules,
+    pathToReparent(target),
+    newParent,
+    'always',
+    null,
+  )
+
+  if (reparentResult == null) {
+    return null
+  }
+
+  const { commands: reparentCommands, newPath } = reparentResult
+
+  const gridCellCommands = updateBulkProperties('always', newPath, [
+    propertyToDelete(PP.create('style', 'position')),
+    propertyToDelete(PP.create('style', 'top')),
+    propertyToDelete(PP.create('style', 'left')),
+    propertyToDelete(PP.create('style', 'bottom')),
+    propertyToDelete(PP.create('style', 'right')),
+  ])
+
+  return {
+    commands: [...reparentCommands, gridCellCommands],
+    newPath: newPath,
+    oldPath: target,
   }
 }
