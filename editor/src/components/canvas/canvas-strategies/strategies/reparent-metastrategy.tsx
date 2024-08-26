@@ -32,14 +32,15 @@ import { flattenSelection } from './shared-move-strategies-helpers'
 import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 import { treatElementAsGroupLike } from './group-helpers'
-import { PropertyControlsInfo } from '../../../custom-code/code-file'
 import { gridReparentStrategy } from './grid-reparent-strategy'
+
+export type ParentDisplayType = 'flex' | 'flow' | 'grid'
 
 interface ReparentFactoryAndDetails {
   targetParent: InsertionPath
   targetIndex: number | null
   strategyType: ReparentStrategy // FIXME horrible name
-  targetParentDisplayType: 'flex' | 'flow' | 'grid' // should this be here?
+  targetParentDisplayType: ParentDisplayType // should this be here?
   fitness: number
   dragType: 'absolute' | 'static'
   factory: CanvasStrategyFactory
