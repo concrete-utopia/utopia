@@ -28,7 +28,10 @@ import * as EP from '../../core/shared/element-path'
 import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragment-like-helpers'
 import type { AllElementProps } from '../editor/store/editor-state'
 import type { GridData } from './controls/grid-controls'
-import { getNullableAutoOrTemplateBaseString } from './controls/grid-controls'
+import {
+  getGridPlaceholderDomElement,
+  getNullableAutoOrTemplateBaseString,
+} from './controls/grid-controls'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -191,8 +194,7 @@ export function gridGapControlBoundsFromMetadata(
   gridTemplateRows: string
   gridTemplateColumns: string
 } {
-  const parentGridPlaceholderId = `grid-${EP.toString(parentPath)}`
-  const parentGrid = document.getElementById(parentGridPlaceholderId)
+  const parentGrid = getGridPlaceholderDomElement(parentPath)
   if (parentGrid == null) {
     return {
       rows: 0,

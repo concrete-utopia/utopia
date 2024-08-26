@@ -766,8 +766,8 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
 
           return (
             <div
-              key={`grid-${EP.toString(grid.elementPath)}`}
-              id={`grid-${EP.toString(grid.elementPath)}`}
+              key={gridKeyFromPath(grid.elementPath)}
+              id={gridKeyFromPath(grid.elementPath)}
               style={style}
             >
               {placeholders.map((cell) => {
@@ -1319,4 +1319,12 @@ function gridEdgeToWidthHeight(props: GridResizeEdgeProperties, scale: number): 
     right: props.isEnd ? 0 : undefined,
     bottom: props.isEnd ? 0 : undefined,
   }
+}
+
+function gridKeyFromPath(path: ElementPath): string {
+  return `grid-${EP.toString(path)}`
+}
+
+export function getGridPlaceholderDomElement(elementPath: ElementPath): HTMLElement | null {
+  return document.getElementById(gridKeyFromPath(elementPath))
 }
