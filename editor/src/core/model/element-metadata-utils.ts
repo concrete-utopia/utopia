@@ -124,7 +124,7 @@ import {
   type FilePathMappings,
 } from './project-file-utils'
 import { assertNever, fastForEach } from '../shared/utils'
-import { mapValues, objectValues, omit } from '../shared/object-utils'
+import { mapValues, objectMap, objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import type {
   AllElementProps,
@@ -170,6 +170,7 @@ import type { RemixRoutingTable } from '../../components/editor/store/remix-deri
 import { exists, toFirst } from '../shared/optics/optic-utilities'
 import { eitherRight, fromField, fromTypeGuard, notNull } from '../shared/optics/optic-creators'
 import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
+import { treatElementAsFragmentLike } from '../../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1296,7 +1297,7 @@ export const MetadataUtils = {
     Utils.fastForEach(targets, (target) => {
       const instance = MetadataUtils.findElementByElementPath(metadata, target)
       if (instance != null && this.isImg(instance)) {
-        const componentFrame = instance.localFrame
+        const componentFrame = MetadataUtils.getLocalFrame(target, metadata)
         if (componentFrame != null && isFiniteRectangle(componentFrame)) {
           const imageSize = getImageSize(allElementProps, instance)
           const widthMultiplier = imageSize.width / componentFrame.width
@@ -1471,6 +1472,59 @@ export const MetadataUtils = {
       }
     }
   },
+  getClosestNonFragmentParent(
+    metadata: ElementInstanceMetadataMap,
+    allElementProps: AllElementProps,
+    pathTrees: ElementPathTrees,
+    path: ElementPath,
+  ): ElementPath {
+    let currentPath = path
+    while (!EP.isStoryboardPath(currentPath)) {
+      if (!treatElementAsFragmentLike(metadata, allElementProps, pathTrees, currentPath)) {
+        return currentPath
+      }
+      currentPath = EP.parentPath(currentPath)
+    }
+    return currentPath
+  },
+  getLocalFrame(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): MaybeInfinityLocalRectangle | null {
+    function getNonRootParent(parentOf: ElementPath): ElementPath {
+      // If the target is the root element of an instance (`a/b/c:root`), then we want to instead
+      // find `a/b` as the component instance at `a/b/c` will have an identical globalFrame property.
+      // So in that case go up to the grandparent and start checking from there again.
+      if (EP.isRootElementOfInstance(parentOf)) {
+        const grandParent = EP.parentPath(EP.parentPath(parentOf))
+        if (EP.isRootElementOfInstance(grandParent)) {
+          return getNonRootParent(grandParent)
+        } else {
+          return grandParent
+        }
+      } else {
+        return EP.parentPath(parentOf)
+      }
+    }
+
+    const targetGlobalFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
+    const parentPath = getNonRootParent(path)
+    const parentGlobalFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, metadata)
+    if (targetGlobalFrame == null || parentGlobalFrame == null) {
+      return null
+    } else if (isInfinityRectangle(targetGlobalFrame)) {
+      return infinityLocalRectangle
+    } else if (isInfinityRectangle(parentGlobalFrame)) {
+      return localRectangle({
+        x: targetGlobalFrame.x,
+        y: targetGlobalFrame.y,
+        width: targetGlobalFrame.width,
+        height: targetGlobalFrame.height,
+      })
+    } else {
+      return canvasRectangleToLocalRectangle(targetGlobalFrame, parentGlobalFrame)
+    }
+  },
   getFrameInCanvasCoords(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
@@ -1519,19 +1573,11 @@ export const MetadataUtils = {
     )
     return aabb
   },
-  getFrame(
-    path: ElementPath,
-    metadata: ElementInstanceMetadataMap,
-  ): MaybeInfinityLocalRectangle | null {
-    const element = MetadataUtils.findElementByElementPath(metadata, path)
-    return Utils.optionalMap((e) => e.localFrame, element)
-  },
   getFrameOrZeroRect(path: ElementPath, metadata: ElementInstanceMetadataMap): LocalRectangle {
-    const element = MetadataUtils.findElementByElementPath(metadata, path)
-    const frame = Utils.optionalMap((e) => e.localFrame, element)
+    const frame = MetadataUtils.getLocalFrame(path, metadata)
     return zeroRectIfNullOrInfinity(frame)
   },
-  getFrameRelativeTo: function (
+  getFrameRelativeTo(
     parent: ElementPath | null,
     metadata: ElementInstanceMetadataMap,
     frame: CanvasRectangle,
@@ -1541,7 +1587,7 @@ export const MetadataUtils = {
     } else {
       const paths = EP.allPathsForLastPart(parent)
       const parentFrames: Array<MaybeInfinityLocalRectangle> = Utils.stripNulls(
-        paths.map((path) => this.getFrame(path, metadata)),
+        paths.map((path) => this.getLocalFrame(path, metadata)),
       )
       return parentFrames.reduce<LocalRectangle>((working, next) => {
         if (isInfinityRectangle(next)) {
@@ -2704,10 +2750,6 @@ function fillSpyOnlyMetadata(
       mapDropNulls((c) => c.globalFrame, childrenFromWorking),
     )
 
-    const childrenBoundingLocalFrame = getBoundingFrameFromChildren(
-      mapDropNulls((c) => c.localFrame, childrenFromWorking),
-    )
-
     const childrenBoundingGlobalFrameWithTextContent = getBoundingFrameFromChildren(
       mapDropNulls(
         (c) => c.specialSizeMeasurements.globalFrameWithTextContent,
@@ -2725,7 +2767,6 @@ function fillSpyOnlyMetadata(
     workingElements[pathStr] = {
       ...spyElem,
       globalFrame: childrenBoundingGlobalFrame,
-      localFrame: childrenBoundingLocalFrame,
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
         globalContentBoxForChildren: globalContentBoxForChildrenFromDomOrParent,
@@ -2941,32 +2982,14 @@ function fillConditionalGlobalFrameFromAncestors(
     const elem = workingElements[pathStr]
 
     const condParentPathStr = EP.toString(EP.parentPath(elem.elementPath))
-
     const condParentGlobalFrame = workingElements[condParentPathStr]?.globalFrame
-    const condParentGlobalContentBoxForChildren =
-      workingElements[condParentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren
-    const localFrameFromCondParent = (() => {
-      if (condParentGlobalFrame == null || condParentGlobalContentBoxForChildren == null) {
-        return null
-      }
-      if (
-        isInfinityRectangle(condParentGlobalFrame) ||
-        isInfinityRectangle(condParentGlobalContentBoxForChildren)
-      ) {
-        return infinityLocalRectangle
-      }
-      return canvasRectangleToLocalRectangle(
-        condParentGlobalFrame,
-        condParentGlobalContentBoxForChildren,
-      )
-    })()
+
     const condParentglobalFrameWithTextContent =
       workingElements[condParentPathStr]?.specialSizeMeasurements.globalFrameWithTextContent
 
     workingElements[pathStr] = {
       ...elem,
       globalFrame: condParentGlobalFrame,
-      localFrame: localFrameFromCondParent,
       specialSizeMeasurements: {
         ...elem.specialSizeMeasurements,
         globalFrameWithTextContent: condParentglobalFrameWithTextContent,
@@ -3076,11 +3099,6 @@ export function createFakeMetadataForElement(
   const isFlex = parentElement != null && MetadataUtils.isFlexLayoutedContainer(parentElement)
   const parentBounds = parentElement != null ? parentElement.globalFrame : null
 
-  const localFrame =
-    parentBounds == null || isInfinityRectangle(parentBounds)
-      ? localRectangle(frame)
-      : getLocalRectangleInNewParentContext(parentBounds, frame)
-
   const specialSizeMeasurements = { ...emptySpecialSizeMeasurements }
   specialSizeMeasurements.position = isFlex ? 'relative' : 'absolute'
   specialSizeMeasurements.parentLayoutSystem = isFlex ? 'flex' : 'none'
@@ -3097,7 +3115,6 @@ export function createFakeMetadataForElement(
     path,
     right(element),
     frame,
-    localFrame,
     frame,
     false,
     false,

@@ -274,7 +274,7 @@ export function getMoveCommandsForSelectedElement(
     MetadataUtils.getFrameInCanvasCoords(selectedElement, startingMetadata),
   )
 
-  const localFrame = nullIfInfinity(MetadataUtils.getFrame(selectedElement, startingMetadata))
+  const localFrame = nullIfInfinity(MetadataUtils.getLocalFrame(selectedElement, startingMetadata))
 
   if (element == null) {
     return { commands: [], intendedBounds: [] }

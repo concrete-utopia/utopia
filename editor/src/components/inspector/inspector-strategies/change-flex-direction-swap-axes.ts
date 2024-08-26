@@ -14,6 +14,7 @@ import { fillContainerStrategyFlexParent } from './fill-container-basic-strategy
 import { fixedSizeBasicStrategy } from './fixed-size-basic-strategy'
 import type { InspectorStrategy } from './inspector-strategy'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { AllElementProps } from '../../../components/editor/store/editor-state'
 
 function swapAxesCommands(
   metadata: ElementInstanceMetadataMap,
