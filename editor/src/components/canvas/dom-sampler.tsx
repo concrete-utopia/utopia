@@ -121,24 +121,46 @@ function collectMetadataForElementPath(
             return validPaths.some((vp) => EP.pathsEqual(vp, staticPath)) // this is from the old implementation, no descendants are included
           })
 
+          const foundValidPathsMatchOriginalPath = foundValidPaths.some((vp) =>
+            EP.pathsEqual(vp.path, path),
+          )
+
+          const foundElementIsNotRealDomElement = !foundValidPathsMatchOriginalPath
+
           const invalidatedPathForceRecalculation =
             spyCollector.current.spyValues.invalidatedElementsInFrame.some((i) =>
               EP.pathsEqual(i, dynamicPath),
             )
 
-          const metadata = createElementInstanceMetadataForElementCached.get(
+          const metadataResult = createElementInstanceMetadataForElementCached.get(
             invalidatedPathForceRecalculation,
             foundElement,
             scale,
             containerRect.x, // passing this as two values so it can be used as cache key
             containerRect.y,
           )
+
+          const metadata: DomElementMetadata = {
+            // TODO instead of shallow cloning the metadata and then modifying it, we should pass in to this function the fact that we are collecting for a non-dom element
+            ...metadataResult,
+            specialSizeMeasurements: {
+              ...metadataResult.specialSizeMeasurements,
+            },
+          }
           const computedStyle = getComputedStyleOptionallyForElement(
             invalidatedPathForceRecalculation,
             foundElement,
             pluck(foundValidPaths, 'path'),
             selectedViews,
           )
+
+          if (foundElementIsNotRealDomElement) {
+            // TODO this should not be in the metadata to begin with
+            // TODO express with types refactoring that this only applies to non-dom elements
+            // if the element is not a real dom element, we need to clear out the layout system for children
+            metadata.specialSizeMeasurements.layoutSystemForChildren = null
+            metadata.specialSizeMeasurements.globalContentBoxForChildren = null
+          }
 
           if (computedStyle != null) {
             metadata.computedStyle = computedStyle.computedStyle
@@ -236,8 +258,6 @@ function getValidPathsFromCanvasContainer(canvasRootContainer: HTMLElement): Arr
 
   return validPaths
 }
-
-function mergeSpyMetadata(path: ElementPath, domMetadata_MUTATE: DomElementMetadata) {}
 
 function collectMetadataForPaths(
   canvasRootContainer: HTMLElement,
