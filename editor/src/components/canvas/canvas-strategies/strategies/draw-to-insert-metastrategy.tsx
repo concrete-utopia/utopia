@@ -9,7 +9,6 @@ import { isImg } from '../../../../core/model/project-file-utils'
 import { mapDropNulls, stripNulls } from '../../../../core/shared/array-utils'
 import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { elementPath } from '../../../../core/shared/element-path'
 import type {
   ElementInstanceMetadataMap,
   JSXAttributes,
@@ -68,6 +67,7 @@ import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 import { gridDrawToInsertStrategy } from './grid-draw-to-insert-strategy'
+import { assertNever } from '../../../../core/shared/utils'
 
 /**
  *
@@ -141,7 +141,7 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
 
 export function getDrawToInsertStrategyName(
   strategyType: ReparentStrategy,
-  parentDisplayType: 'flex' | 'flow',
+  parentDisplayType: 'flex' | 'flow' | 'grid',
 ): string {
   switch (strategyType) {
     case 'REPARENT_AS_ABSOLUTE':
@@ -149,9 +149,15 @@ export function getDrawToInsertStrategyName(
     case 'REPARENT_AS_STATIC':
       if (parentDisplayType === 'flex') {
         return 'Draw to Insert (Flex)'
+      } else if (parentDisplayType === 'grid') {
+        return 'Draw to Insert (Grid)'
       } else {
         return 'Draw to Insert (Flow)'
       }
+    case 'REPARENT_INTO_GRID':
+      return 'Draw to Insert (Grid)'
+    default:
+      assertNever(strategyType)
   }
 }
 

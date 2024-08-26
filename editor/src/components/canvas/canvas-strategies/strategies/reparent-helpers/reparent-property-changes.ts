@@ -39,7 +39,11 @@ import type { CanvasCommand } from '../../../commands/commands'
 import type { ConvertCssPercentToPx } from '../../../commands/convert-css-percent-to-px-command'
 import { convertCssPercentToPx } from '../../../commands/convert-css-percent-to-px-command'
 import { deleteProperties } from '../../../commands/delete-properties-command'
-import { setProperty } from '../../../commands/set-property-command'
+import {
+  propertyToDelete,
+  setProperty,
+  updateBulkProperties,
+} from '../../../commands/set-property-command'
 import {
   getOptionalCommandToConvertDisplayInlineBlock,
   singleAxisAutoLayoutContainerDirections,
@@ -404,6 +408,16 @@ export function getReparentPropertyChanges(
 
       return [...basicCommads, ...strategyCommands]
     }
+    case 'REPARENT_INTO_GRID':
+      return [
+        updateBulkProperties('always', target, [
+          propertyToDelete(PP.create('style', 'position')),
+          propertyToDelete(PP.create('style', 'top')),
+          propertyToDelete(PP.create('style', 'left')),
+          propertyToDelete(PP.create('style', 'bottom')),
+          propertyToDelete(PP.create('style', 'right')),
+        ]),
+      ]
     default:
       assertNever(reparentStrategy)
   }
