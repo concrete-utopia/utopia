@@ -4516,6 +4516,8 @@ export interface ParsedCSSProperties {
   rowGap: CSSNumber
   columnGap: CSSNumber
   gridAutoFlow: GridAutoFlow | null
+  gridTemplateRows: string | null
+  gridTemplateColumns: string | null
 }
 
 export type ParsedCSSPropertiesKeys = keyof ParsedCSSProperties
@@ -4731,6 +4733,8 @@ export const cssEmptyValues: ParsedCSSProperties = {
     unit: null,
   },
   gridAutoFlow: null,
+  gridTemplateRows: null,
+  gridTemplateColumns: null,
 }
 
 type CSSParsers = {
@@ -4806,6 +4810,8 @@ export const cssParsers: CSSParsers = {
   rowGap: parseCSSLengthPercent,
   columnGap: parseCSSLengthPercent,
   gridAutoFlow: parseGridAutoFlowValue,
+  gridTemplateColumns: parseString,
+  gridTemplateRows: parseString,
 }
 
 type CSSPrinters = {
@@ -4883,6 +4889,8 @@ const cssPrinters: CSSPrinters = {
   rowGap: printCSSNumberAsAttributeValue('px'),
   columnGap: printCSSNumberAsAttributeValue('px'),
   gridAutoFlow: jsxAttributeValueWithNoComments,
+  gridTemplateColumns: jsxAttributeValueWithNoComments,
+  gridTemplateRows: jsxAttributeValueWithNoComments,
 }
 
 export interface UtopianElementProperties {
@@ -5326,6 +5334,13 @@ function parseGridAutoFlowValue(value: unknown): Either<string, GridAutoFlow> {
   return right(maybeParsedValue)
 }
 
+function parseStringOrNull(value: unknown): Either<string, string | null> {
+  if (typeof value !== 'string') {
+    return left('Value is not a string')
+  }
+  return right(value)
+}
+
 // hmmmm
 type PrintedValue = JSExpression
 
@@ -5614,6 +5629,8 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
     unit: 'px',
   },
   gridAutoFlow: null,
+  gridTemplateColumns: null,
+  gridTemplateRows: null,
 }
 
 export function isTrivialDefaultValue(

@@ -88,6 +88,7 @@ import { NumberOrKeywordControl } from '../../uuiui/inputs/number-or-keyword-con
 import { optionalMap } from '../../core/shared/optional-utils'
 import { cssNumberEqual } from '../canvas/controls/select-mode/controls-common'
 import type { EditorAction } from '../editor/action-types'
+import { useSetGridProperty } from './common/inspector-atoms'
 
 const axisDropdownMenuButton = 'axisDropdownMenuButton'
 
@@ -442,6 +443,16 @@ const TemplateDimensionControl = React.memo(
       [],
     )
 
+    const prop: keyof React.CSSProperties =
+      axis === 'column'
+        ? 'gridTemplateColumns'
+        : axis === 'row'
+        ? 'gridTemplateRows'
+        : assertNever(axis)
+
+    const { propertyStatus } = useInspectorLayoutInfo(prop)
+    useSetGridProperty(prop, propertyStatus.set)
+
     return (
       <div
         style={{
@@ -672,6 +683,10 @@ const GapRowColumnControl = React.memo(() => {
   const columnGap = useInspectorLayoutInfo('columnGap')
   const rowGap = useInspectorLayoutInfo('rowGap')
 
+  useSetGridProperty('gap', gap.propertyStatus.set)
+  useSetGridProperty('columnGap', columnGap.propertyStatus.set)
+  useSetGridProperty('rowGap', rowGap.propertyStatus.set)
+
   const [controlSplitState, setControlSplitState] = React.useState<GridGapControlSplitState>(
     cssNumberEqual(columnGap.value, rowGap.value) ? 'unified' : 'split',
   )
@@ -892,7 +907,9 @@ const AutoFlowControl = React.memo(() => {
     'AutoFlowControl gridAutoFlowValue',
   )
 
-  const { controlStatus } = useInspectorStyleInfo('gridAutoFlow')
+  const { controlStatus, propertyStatus } = useInspectorStyleInfo('gridAutoFlow')
+
+  useSetGridProperty('gridAutoFlow', propertyStatus.set)
 
   const currentValue = React.useMemo(
     () =>

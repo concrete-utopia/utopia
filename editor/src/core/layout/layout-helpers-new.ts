@@ -108,6 +108,8 @@ export type StyleLayoutProp =
   | 'zIndex'
   | 'rowGap'
   | 'columnGap'
+  | 'gridTemplateRows'
+  | 'gridTemplateColumns'
 
 export function framePointForPinnedProp(pinnedProp: LayoutPinnedProp): FramePoint {
   switch (pinnedProp) {

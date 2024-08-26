@@ -19,6 +19,8 @@ import { DropdownMenu, regularDropdownMenuItem } from '../../uuiui/radix-compone
 import { stripNulls } from '../../core/shared/array-utils'
 import { layoutSystemSelector } from './flex-section'
 import { optionalMap } from '../../core/shared/optional-utils'
+import { useGridPropertiesSet } from './common/inspector-atoms'
+import { when } from '../../utils/react-conditionals'
 
 export const AddRemoveLayoutSystemControlTestId = (): string => 'AddRemoveLayoutSystemControlTestId'
 export const AddFlexLayoutOptionId = 'add-flex-layout'
@@ -136,6 +138,8 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
     }
   }
 
+  const numberOfGridPropsSet = useGridPropertiesSet().length
+
   return (
     <InspectorSectionHeader
       css={{
@@ -146,6 +150,7 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
           color: colorTheme.fg1.value,
           '--buttonContentOpacity': 1,
         },
+        alignItems: 'center',
       }}
     >
       <FlexRow
@@ -157,13 +162,27 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
       >
         <span style={{ textTransform: 'capitalize', fontSize: '11px' }}>{label()}</span>
       </FlexRow>
-      <div data-testid={AddRemoveLayoutSystemControlTestId()}>
-        <DropdownMenu
-          align='end'
-          items={addLayoutSystemMenuDropdownItems}
-          opener={addLayoutSystemOpenerButton}
-        />
-      </div>
+      <FlexRow>
+        {when(
+          numberOfGridPropsSet > 0,
+          <span
+            style={{
+              padding: 2,
+              backgroundColor: colorTheme.emphasizedBackground.value,
+              color: colorTheme.dynamicBlue.value,
+            }}
+          >
+            {`+${numberOfGridPropsSet}`}
+          </span>,
+        )}
+        <div data-testid={AddRemoveLayoutSystemControlTestId()}>
+          <DropdownMenu
+            align='end'
+            items={addLayoutSystemMenuDropdownItems}
+            opener={addLayoutSystemOpenerButton}
+          />
+        </div>
+      </FlexRow>
     </InspectorSectionHeader>
   )
 })
