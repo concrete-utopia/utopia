@@ -42,6 +42,8 @@ import type { AllElementProps } from '../../../editor/store/editor-state'
 import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import type { NodeModules, ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import type { InsertionPath } from '../../../editor/store/insertion-path'
+import type { WhenToRun } from '../../commands/commands'
+import { removeAbsolutePositioningProps } from './reparent-helpers/reparent-property-changes'
 
 export function gridReparentStrategy(
   reparentTarget: ReparentTarget,
@@ -236,13 +238,7 @@ function gridReparentCommands(
 
   const { commands: reparentCommands, newPath } = reparentResult
 
-  const gridCellCommands = updateBulkProperties('always', newPath, [
-    propertyToDelete(PP.create('style', 'position')),
-    propertyToDelete(PP.create('style', 'top')),
-    propertyToDelete(PP.create('style', 'left')),
-    propertyToDelete(PP.create('style', 'bottom')),
-    propertyToDelete(PP.create('style', 'right')),
-  ])
+  const gridCellCommands = removeAbsolutePositioningProps('always', newPath)
 
   return {
     commands: [...reparentCommands, gridCellCommands],

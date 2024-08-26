@@ -35,7 +35,7 @@ import {
   adjustCssLengthProperties,
   lengthPropertyToAdjust,
 } from '../../../commands/adjust-css-length-command'
-import type { CanvasCommand } from '../../../commands/commands'
+import type { CanvasCommand, WhenToRun } from '../../../commands/commands'
 import type { ConvertCssPercentToPx } from '../../../commands/convert-css-percent-to-px-command'
 import { convertCssPercentToPx } from '../../../commands/convert-css-percent-to-px-command'
 import { deleteProperties } from '../../../commands/delete-properties-command'
@@ -409,16 +409,18 @@ export function getReparentPropertyChanges(
       return [...basicCommads, ...strategyCommands]
     }
     case 'REPARENT_INTO_GRID':
-      return [
-        updateBulkProperties('always', target, [
-          propertyToDelete(PP.create('style', 'position')),
-          propertyToDelete(PP.create('style', 'top')),
-          propertyToDelete(PP.create('style', 'left')),
-          propertyToDelete(PP.create('style', 'bottom')),
-          propertyToDelete(PP.create('style', 'right')),
-        ]),
-      ]
+      return [removeAbsolutePositioningProps('always', target)]
     default:
       assertNever(reparentStrategy)
   }
+}
+
+export function removeAbsolutePositioningProps(whenToRun: WhenToRun, path: ElementPath) {
+  return updateBulkProperties(whenToRun, path, [
+    propertyToDelete(PP.create('style', 'position')),
+    propertyToDelete(PP.create('style', 'top')),
+    propertyToDelete(PP.create('style', 'left')),
+    propertyToDelete(PP.create('style', 'bottom')),
+    propertyToDelete(PP.create('style', 'right')),
+  ])
 }
