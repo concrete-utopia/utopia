@@ -191,7 +191,7 @@ import type { CommentFilterMode } from '../../inspector/sections/comment-section
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { OnlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
-import type { FancyError } from 'src/core/shared/code-exec-utils'
+import type { FancyError } from '../../../core/shared/code-exec-utils'
 
 const ObjectPathImmutable: any = OPI
 

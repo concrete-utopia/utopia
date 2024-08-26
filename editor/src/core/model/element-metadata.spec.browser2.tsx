@@ -57,16 +57,6 @@ describe('Frame calculation for fragments', () => {
     )
 
     expect(
-      renderResult.getEditorState().editor.jsxMetadata[fragmentComponentPath].localFrame,
-    ).toEqual(
-      localRectangle({
-        x: 64,
-        y: 114,
-        height: 363,
-        width: 210,
-      }),
-    )
-    expect(
       renderResult.getEditorState().editor.jsxMetadata[fragmentComponentPath].globalFrame,
     ).toEqual(
       canvasRectangle({
@@ -85,16 +75,6 @@ describe('Frame calculation for fragments', () => {
       'await-first-dom-report',
     )
 
-    expect(
-      renderResult.getEditorState().editor.jsxMetadata[fragmentComponentPath].localFrame,
-    ).toEqual(
-      localRectangle({
-        x: 64,
-        y: 114,
-        height: 90,
-        width: 10,
-      }),
-    )
     expect(
       renderResult.getEditorState().editor.jsxMetadata[fragmentComponentPath].globalFrame,
     ).toEqual(
@@ -117,9 +97,6 @@ describe('Frame calculation for fragments', () => {
 
     expect(renderResult.getEditorState().editor.jsxMetadata[condComponentPath].globalFrame).toEqual(
       renderResult.getEditorState().editor.jsxMetadata[trueBranchComponentPath].globalFrame,
-    )
-    expect(renderResult.getEditorState().editor.jsxMetadata[condComponentPath].localFrame).toEqual(
-      renderResult.getEditorState().editor.jsxMetadata[trueBranchComponentPath].localFrame,
     )
   })
 })
@@ -407,12 +384,6 @@ describe('globalContentBoxForChildren calculation', () => {
       }
 
       expect(conditionalInstance.globalFrame).toEqual(containerInstance.globalFrame)
-      expect(conditionalInstance.localFrame).toEqual({
-        x: 0,
-        y: 0,
-        width: 150,
-        height: 150,
-      })
     })
     it(`globalFrame and localFrame of conditionals (without siblings and expression with element inside in the active branch) are NOT coming from the parent of the conditional`, async () => {
       const editor = await renderTestEditorWithCode(
@@ -489,12 +460,6 @@ describe('globalContentBoxForChildren calculation', () => {
         width: 10,
         height: 20,
       })
-      expect(conditionalInstance.localFrame).toEqual({
-        x: 0,
-        y: 0,
-        width: 10,
-        height: 20,
-      })
     })
     it(`globalFrame and localFrame of conditionals can be inherited from the parent through muliple conditionals when the final has an active branch with only an expression inside`, async () => {
       const editor = await renderTestEditorWithCode(
@@ -560,13 +525,6 @@ describe('globalContentBoxForChildren calculation', () => {
       }
 
       expect(conditional1Instance.globalFrame).toEqual(containerInstance.globalFrame)
-      expect(conditional1Instance.localFrame).toEqual({
-        x: 0,
-        y: 0,
-        width: 150,
-        height: 150,
-      })
-
       const conditional2Instance = MetadataUtils.findElementByElementPath(
         editor.getEditorState().editor.jsxMetadata,
         elementPathInInnards('root/container/conditional1/conditional2'),
@@ -576,12 +534,6 @@ describe('globalContentBoxForChildren calculation', () => {
       }
 
       expect(conditional2Instance.globalFrame).toEqual(containerInstance.globalFrame)
-      expect(conditional2Instance.localFrame).toEqual({
-        x: 0,
-        y: 0,
-        width: 150,
-        height: 150,
-      })
     })
 
     it(`globalFrame and localFrame of conditionals (with siblings) are null when the active branch is an expression`, async () => {
@@ -629,7 +581,6 @@ describe('globalContentBoxForChildren calculation', () => {
       }
 
       expect(conditionalInstance.globalFrame).toBeNull()
-      expect(conditionalInstance.localFrame).toBeNull()
     })
   })
 

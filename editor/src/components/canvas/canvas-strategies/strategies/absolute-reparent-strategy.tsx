@@ -276,7 +276,7 @@ function maybeAddContainLayout(
   pathTrees: ElementPathTrees,
   path: ElementPath,
 ): CanvasCommand[] {
-  const closestNonFragmentParent = getClosestNonFragmentParent(
+  const closestNonFragmentParent = MetadataUtils.getClosestNonFragmentParent(
     metadata,
     allElementProps,
     pathTrees,
@@ -294,20 +294,4 @@ function maybeAddContainLayout(
   return parentProvidesBoundsForAbsoluteChildren
     ? []
     : [setProperty('always', path, PP.create('style', 'contain'), 'layout')]
-}
-
-function getClosestNonFragmentParent(
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  pathTrees: ElementPathTrees,
-  path: ElementPath,
-): ElementPath {
-  let currentPath = path
-  while (!EP.isStoryboardPath(currentPath)) {
-    if (!treatElementAsFragmentLike(metadata, allElementProps, pathTrees, currentPath)) {
-      return currentPath
-    }
-    currentPath = EP.parentPath(currentPath)
-  }
-  return currentPath
 }

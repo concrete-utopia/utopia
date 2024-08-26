@@ -52,7 +52,6 @@ describe('Keyboard Absolute Move Strategy', () => {
     `,
         [targetElement],
       )
-
       const finalEditor = pressKeys(initialEditor, keyboardAbsoluteMoveStrategy, keys, modifiers)
 
       expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
