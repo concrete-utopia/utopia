@@ -1,10 +1,19 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "FastCheck.assert", "matchInlineSnapshotBrowser"] }] */
+import { matchInlineSnapshotBrowser } from '../../../test/karma-snapshots'
+import { wait } from '../../core/model/performance-scripts'
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
+import { objectMap } from '../../core/shared/object-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
 import { runDOMWalker, setFocusedElement } from '../editor/actions/action-creators'
 import { navigatorEntryToKey } from '../editor/store/editor-state'
 import { getNavigatorTargetsFromEditorState } from '../navigator/navigator-utils'
 import { NavigatorTestProjectWithSyntheticElements } from '../navigator/navigator.test-utils'
-import { formatTestProjectCode, renderTestEditorWithCode } from './ui-jsx.test-utils'
+import {
+  formatTestProjectCode,
+  makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
+} from './ui-jsx.test-utils'
 
 describe('Basic Dom Sampler tests', () => {
   it('a with mapped content', async () => {
@@ -75,7 +84,9 @@ export var Playground = ({ style }) => {
 
     await editor.dispatch([runDOMWalker()], true)
 
-    expect(Object.keys(editor.getEditorState().editor.jsxMetadata)).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      Object.keys(editor.getEditorState().editor.jsxMetadata),
+      `
       Array [
         "sb",
         "sb/pg-sc",
@@ -91,7 +102,8 @@ export var Playground = ({ style }) => {
         "sb/pg-sc/pg:aaa/bbb/266/ccc~~~3/ddd",
         "sb/pg-sc/pg:aaa/bbb/6cc",
       ]
-    `)
+    `,
+    )
   })
 
   it('with a dynamic non-dom element', async () => {
@@ -115,7 +127,9 @@ export var Playground = ({ style }) => {
       'await-first-dom-report',
     )
 
-    expect(Object.keys(editor.getEditorState().editor.jsxMetadata)).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      Object.keys(editor.getEditorState().editor.jsxMetadata),
+      `
       Array [
         "sb",
         "sb/div",
@@ -127,7 +141,8 @@ export var Playground = ({ style }) => {
         "sb/div/map1/el~~~2/b1f",
         "sb/div/map1/el~~~3/b1f",
       ]
-    `)
+    `,
+    )
   })
 
   it('conditional expressions', async () => {
@@ -159,7 +174,9 @@ export var Playground = ({ style }) => {
       'await-first-dom-report',
     )
 
-    expect(Object.keys(editor.getEditorState().editor.jsxMetadata)).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      Object.keys(editor.getEditorState().editor.jsxMetadata),
+      `
       Array [
         "sb",
         "sb/cond1",
@@ -168,7 +185,8 @@ export var Playground = ({ style }) => {
         "sb/cond3",
         "sb/cond4",
       ]
-    `)
+    `,
+    )
   })
 
   it('The ElementPathTree and thus the navigator tree are correct for a test project with synthetic elements', async () => {
@@ -210,6 +228,48 @@ export var Playground = ({ style }) => {
       'synthetic-sb/sc/app:app-root/frag/cond-1/019-attribute',
       'regular-sb/sc/app/app-child',
     ])
+  })
+
+  it('a conditional', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div data-uid='root'>
+            <div data-uid='bbb' style={{backgroundColor: 'lavender', outline: '1px solid black'}}>
+              <span data-uid='ccc'>Hello!</span>
+            </div>
+            {
+              //@utopia/uid=cond
+              false
+              ? null
+              : (
+                <div data-uid='ddd' style={{position: 'absolute', width: 50, height: 40, top: 100, left: 100}}>
+                  <div data-uid='eee'>Hi!</div>
+                </div>
+              )
+            }
+          </div>`),
+      'await-first-dom-report',
+    )
+
+    matchInlineSnapshotBrowser(
+      objectMap(
+        (m, path) =>
+          optionalMap(EP.humanReadableDebugPath, m.specialSizeMeasurements.closestOffsetParentPath),
+        editor.getEditorState().editor.jsxMetadata,
+      ),
+      `
+      Object {
+        "utopia-storyboard-uid": "",
+        "utopia-storyboard-uid/scene-aaa": null,
+        "utopia-storyboard-uid/scene-aaa/app-entity": "utopia-storyboard-uid/scene-aaa",
+        "utopia-storyboard-uid/scene-aaa/app-entity:root": "utopia-storyboard-uid/scene-aaa",
+        "utopia-storyboard-uid/scene-aaa/app-entity:root/bbb": "utopia-storyboard-uid/scene-aaa",
+        "utopia-storyboard-uid/scene-aaa/app-entity:root/bbb/ccc": "utopia-storyboard-uid/scene-aaa",
+        "utopia-storyboard-uid/scene-aaa/app-entity:root/cond": "utopia-storyboard-uid/scene-aaa",
+        "utopia-storyboard-uid/scene-aaa/app-entity:root/cond/ddd": "utopia-storyboard-uid/scene-aaa",
+        "utopia-storyboard-uid/scene-aaa/app-entity:root/cond/ddd/eee": "utopia-storyboard-uid/scene-aaa/app-entity:root/cond/ddd",
+      }
+    `,
+    )
   })
 })
 
