@@ -466,7 +466,16 @@ function findParentUnderPointByArea(
 
   const targetParentUnderPoint: ReparentTarget = (() => {
     const insertionPath = getInsertionPathForReparentTarget(targetParentPath, metadata)
-    if (shouldReparentAsAbsoluteOrStatic === 'REPARENT_AS_ABSOLUTE') {
+    if (shouldReparentAsAbsoluteOrStatic === 'REPARENT_INTO_GRID') {
+      return {
+        shouldReparent: true,
+        newParent: insertionPath,
+        shouldShowPositionIndicator: false,
+        newIndex: -1,
+        shouldConvertToInline: 'do-not-convert',
+        defaultReparentType: 'REPARENT_INTO_GRID',
+      }
+    } else if (shouldReparentAsAbsoluteOrStatic === 'REPARENT_AS_ABSOLUTE') {
       // TODO we now assume this is "absolute", but this is too vauge
       return {
         shouldReparent: true,
@@ -567,10 +576,12 @@ export function autoLayoutParentAbsoluteOrStatic(
     return 'REPARENT_AS_ABSOLUTE'
   }
 
-  const parentIsFlexLayout =
-    MetadataUtils.findLayoutSystemForChildren(metadata, pathTrees, parent) === 'flex'
-  if (parentIsFlexLayout) {
+  const parentLayout = MetadataUtils.findLayoutSystemForChildren(metadata, pathTrees, parent)
+
+  if (parentLayout === 'flex') {
     return 'REPARENT_AS_STATIC'
+  } else if (parentLayout === 'grid') {
+    return 'REPARENT_INTO_GRID'
   }
 
   const isTextFromMetadata = MetadataUtils.isTextFromMetadata(

@@ -35,10 +35,7 @@ import {
 import type { InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { honoursPropsPosition, shouldKeepMovingDraggedGroupChildren } from './absolute-utils'
-import {
-  replaceFragmentLikePathsWithTheirChildrenRecursive,
-  treatElementAsFragmentLike,
-} from './fragment-like-helpers'
+import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import type { ForcePins } from './reparent-helpers/reparent-property-changes'
 import { getAbsoluteReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'

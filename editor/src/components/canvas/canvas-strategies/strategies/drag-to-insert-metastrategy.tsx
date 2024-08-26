@@ -116,9 +116,11 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
 
 function getDragToInsertStrategyName(
   strategyType: ReparentStrategy,
-  parentDisplayType: 'flex' | 'flow',
+  parentDisplayType: 'flex' | 'flow' | 'grid',
 ): string {
   switch (strategyType) {
+    case 'REPARENT_INTO_GRID':
+      return 'Drag to Insert (Grid)'
     case 'REPARENT_AS_ABSOLUTE':
       return 'Drag to Insert (Abs)'
     case 'REPARENT_AS_STATIC':
