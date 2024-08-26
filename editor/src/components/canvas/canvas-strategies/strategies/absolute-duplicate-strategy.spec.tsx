@@ -49,7 +49,6 @@ const defaultMetadata: ElementInstanceMetadataMap = {
       coordinateSystemBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     } as SpecialSizeMeasurements,
     globalFrame: canvasRectangle({ x: 50, y: 50, width: 250, height: 300 }),
-    localFrame: localRectangle({ x: 50, y: 50, width: 250, height: 300 }),
   } as ElementInstanceMetadata,
 }
 

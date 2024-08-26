@@ -89,7 +89,13 @@ import Utils, {
   before,
   shiftIndexPositionForRemovedElement,
 } from '../../utils/utils'
-import type { CanvasPoint, CanvasRectangle, CanvasVector, Size } from '../../core/shared/math-utils'
+import type {
+  CanvasPoint,
+  CanvasRectangle,
+  CanvasVector,
+  MaybeInfinityLocalRectangle,
+  Size,
+} from '../../core/shared/math-utils'
 import {
   canvasPoint,
   isInfinityRectangle,
@@ -339,10 +345,15 @@ export function updateFramesOfScenesAndComponents(
             const targetPropertyPath = stylePropPathMappingFn(frameAndTarget.targetProperty, [
               'style',
             ])
+            const localFrame = MetadataUtils.getLocalFrame(
+              frameAndTarget.target,
+              workingEditorState.jsxMetadata,
+            )
             const valueFromDOM = getObservableValueForLayoutProp(
               elementMetadata,
               frameAndTarget.targetProperty,
               elementProps,
+              localFrame,
             )
             const valueFromAttributes = eitherToMaybe(
               getSimpleAttributeAtPath(right(elementAttributes), targetPropertyPath),
@@ -420,7 +431,7 @@ export function updateFramesOfScenesAndComponents(
               frameAndTarget.frame,
             )
             const currentLocalFrame = nullIfInfinity(
-              MetadataUtils.getFrame(target, workingEditorState.jsxMetadata),
+              MetadataUtils.getLocalFrame(target, workingEditorState.jsxMetadata),
             )
             const currentFullFrame = optionalMap(Frame.getFullFrame, currentLocalFrame)
             const fullFrame = Frame.getFullFrame(newLocalFrame)
@@ -916,20 +927,20 @@ export function collectGuidelines(
       }
 
       const instance = MetadataUtils.findElementByElementPath(metadata, selectedView)
+      const localFrame = MetadataUtils.getLocalFrame(selectedView, metadata)
       if (
         instance != null &&
         MetadataUtils.isImg(instance) &&
-        instance.localFrame != null &&
-        isFiniteRectangle(instance.localFrame)
+        localFrame != null &&
+        isFiniteRectangle(localFrame)
       ) {
-        const frame = instance.localFrame
         const imageSize = getImageSizeFromMetadata(allElementProps, instance)
         Utils.fastForEach(MultipliersForImages, (multiplier) => {
           const imageDimension = scaleImageDimensions(imageSize, multiplier)
           // Calculate the guidelines around the corner/edge given.
           const point: CanvasPoint = {
-            x: frame.x + frame.width * resizingFromPosition.x,
-            y: frame.y + frame.width * resizingFromPosition.y,
+            x: localFrame.x + localFrame.width * resizingFromPosition.x,
+            y: localFrame.y + localFrame.width * resizingFromPosition.y,
           } as CanvasPoint
           const lowHalfWidth = Utils.roundTo(imageDimension.width / 2, 0)
           const highHalfWidth = imageDimension.width - lowHalfWidth
@@ -2028,21 +2039,22 @@ function getObservableValueForLayoutProp(
   elementMetadata: ElementInstanceMetadata | null,
   layoutProp: LayoutTargetableProp,
   elementProps: ElementProps,
+  localFrame: MaybeInfinityLocalRectangle | null,
 ): unknown {
   if (elementMetadata == null) {
     return null
   } else {
-    const localFrame = nullIfInfinity(elementMetadata.localFrame)
+    const notInfiniteLocalFrame = nullIfInfinity(localFrame)
 
     switch (layoutProp) {
       case 'width':
       case 'minWidth':
       case 'maxWidth':
-        return localFrame?.width
+        return notInfiniteLocalFrame?.width
       case 'height':
       case 'minHeight':
       case 'maxHeight':
-        return localFrame?.height
+        return notInfiniteLocalFrame?.height
       case 'flexBasis':
       case 'flexGrow':
       case 'flexShrink':
@@ -2057,21 +2069,21 @@ function getObservableValueForLayoutProp(
       case 'marginRight':
         return elementMetadata.specialSizeMeasurements.margin.right
       case 'left':
-        return localFrame?.x
+        return notInfiniteLocalFrame?.x
       case 'top':
-        return localFrame?.y
+        return notInfiniteLocalFrame?.y
       case 'right':
-        return localFrame == null ||
+        return notInfiniteLocalFrame == null ||
           elementMetadata.specialSizeMeasurements.coordinateSystemBounds == null
           ? null
           : elementMetadata.specialSizeMeasurements.coordinateSystemBounds.width -
-              (localFrame.width + localFrame.x)
+              (notInfiniteLocalFrame.width + notInfiniteLocalFrame.x)
       case 'bottom':
-        return localFrame == null ||
+        return notInfiniteLocalFrame == null ||
           elementMetadata.specialSizeMeasurements.coordinateSystemBounds == null
           ? null
           : elementMetadata.specialSizeMeasurements.coordinateSystemBounds.height -
-              (localFrame.height + localFrame.y)
+              (notInfiniteLocalFrame.height + notInfiniteLocalFrame.y)
       default:
         const _exhaustiveCheck: never = layoutProp
         throw new Error(`Unhandled prop ${JSON.stringify(layoutProp)}`)

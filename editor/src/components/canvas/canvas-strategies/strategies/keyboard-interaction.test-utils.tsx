@@ -39,6 +39,7 @@ export function pressKeys(
   modifiers: Modifiers,
 ): EditorState {
   const metadata: ElementInstanceMetadataMap = {
+    ...editorState.jsxMetadata,
     'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb': elementInstanceMetadata(
       elementPath([
         ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
@@ -46,7 +47,6 @@ export function pressKeys(
       ]),
       right(jsxElement(jsxElementName('View', []), 'bbb', [], [])),
       canvasRectangle({ x: 50, y: 50, width: 250, height: 300 }),
-      localRectangle({ x: 50, y: 50, width: 250, height: 300 }),
       canvasRectangle({ x: 50, y: 50, width: 250, height: 300 }),
       false,
       false,

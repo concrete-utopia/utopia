@@ -161,7 +161,6 @@ Object {
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
-    "localFrame": null,
     "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
@@ -308,7 +307,6 @@ Object {
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
-    "localFrame": null,
     "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
