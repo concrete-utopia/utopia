@@ -857,10 +857,18 @@ const unsetSelectOption = regularRadixSelectOption({
   placeholder: true,
 })
 
+// `row dense` is omitted from here, because it turns out that the when it's
+// written to the DOM, it's turned into `dense`. This surfaced as a bug, because
+// even though `row dense` was set in the style prop, the DOM walker put `dense`
+// into the specialSizeMeasurements entry for `grid-auto-flow`. We suspect that
+// `row` is implicit in `dense`, and the browser omits the `row` to keep things
+// simple
+const RESTRICTED_GRID_AUTO_FLOW_VALUES: GridAutoFlow[] = ['dense', 'row', 'column', 'column dense']
+
 const autoflowOptions = [
   unsetSelectOption,
   separatorRadixSelectOption(),
-  ...GridAutoFlowValues.map(selectOption),
+  ...RESTRICTED_GRID_AUTO_FLOW_VALUES.map(selectOption),
 ]
 
 const AutoFlowControl = React.memo(() => {
