@@ -270,6 +270,66 @@ export var Playground = ({ style }) => {
       }
     `,
     )
+
+    matchInlineSnapshotBrowser(
+      objectMap(
+        (m, path) => m.specialSizeMeasurements.globalContentBoxForChildren,
+        editor.getEditorState().editor.jsxMetadata,
+      ),
+      `Object {
+  \"utopia-storyboard-uid\": Object {
+    \"type\": \"INFINITY_RECTANGLE\",
+  },
+  \"utopia-storyboard-uid/scene-aaa\": Object {
+    \"height\": 400,
+    \"width\": 400,
+    \"x\": 0,
+    \"y\": 0,
+  },
+  \"utopia-storyboard-uid/scene-aaa/app-entity\": Object {
+    \"height\": 400,
+    \"width\": 400,
+    \"x\": 0,
+    \"y\": 0,
+  },
+  \"utopia-storyboard-uid/scene-aaa/app-entity:root\": Object {
+    \"height\": 400,
+    \"width\": 400,
+    \"x\": 0,
+    \"y\": 0,
+  },
+  \"utopia-storyboard-uid/scene-aaa/app-entity:root/bbb\": Object {
+    \"height\": 400,
+    \"width\": 400,
+    \"x\": 0,
+    \"y\": 0,
+  },
+  \"utopia-storyboard-uid/scene-aaa/app-entity:root/bbb/ccc\": Object {
+    \"height\": 400,
+    \"width\": 400,
+    \"x\": 0,
+    \"y\": 0,
+  },
+  \"utopia-storyboard-uid/scene-aaa/app-entity:root/cond\": Object {
+    \"height\": 400,
+    \"width\": 400,
+    \"x\": 0,
+    \"y\": 0,
+  },
+  \"utopia-storyboard-uid/scene-aaa/app-entity:root/cond/ddd\": Object {
+    \"height\": 40,
+    \"width\": 50,
+    \"x\": 100,
+    \"y\": 100,
+  },
+  \"utopia-storyboard-uid/scene-aaa/app-entity:root/cond/ddd/eee\": Object {
+    \"height\": 40,
+    \"width\": 50,
+    \"x\": 100,
+    \"y\": 100,
+  },
+}`,
+    )
   })
 })
 
