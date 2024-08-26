@@ -526,20 +526,11 @@ export function valueOrArrayToArray<T>(ts: T | T[]): T[] {
   return Array.isArray(ts) ? ts : [ts]
 }
 
-export function createArrayWithLength<T>(length: number, value: T | ((index: number) => T)): T[] {
+export function createArrayWithLength<T>(length: number, value: (index: number) => T): T[] {
   return Array.from({ length }, (_, index) => {
     // see issue https://github.com/microsoft/TypeScript/issues/37750
     return value instanceof Function ? value(index) : value
   })
-}
-
-export function matrixFrom<T>(iterable: Iterable<T>, width: number): T[][] {
-  const result: T[][] = []
-  const array = Array.from(iterable)
-  while (array.length > 0) {
-    result.push(array.splice(0, width))
-  }
-  return result
 }
 
 export function matrixGetter<T>(array: T[], width: number): (row: number, column: number) => T {

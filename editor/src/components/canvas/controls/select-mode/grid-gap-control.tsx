@@ -133,7 +133,6 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
   const gridRowColumnInfo = useGridData([selectedElement])
 
   const controlBounds = gridGapControlBoundsFromMetadata(
-    metadata,
     selectedElement,
     gridRowColumnInfo[0],
     {

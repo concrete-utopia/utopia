@@ -175,7 +175,6 @@ export function gapControlBoundsFromMetadata(
 }
 
 export function gridGapControlBoundsFromMetadata(
-  elementMetadata: ElementInstanceMetadataMap,
   parentPath: ElementPath,
   gridRowColumnInfo: GridData,
   gapValues: { row: CSSNumber; column: CSSNumber },
