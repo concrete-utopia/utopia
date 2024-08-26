@@ -163,7 +163,6 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
 
       if (shouldTearOffGapByAxis) {
         return strategyApplicationResult([
-          deleteProperties('always', selectedElement, [StyleGapProp]),
           deleteProperties('always', selectedElement, [axisStyleProp]),
         ])
       }
