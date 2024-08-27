@@ -882,7 +882,7 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
   },
 )
 
-const InnerComponentPicker = React.memo<ComponentPickerContextMenuProps>(
+const ComponentPickerWrapper = React.memo<ComponentPickerContextMenuProps>(
   ({ targets, insertionTarget }) => {
     // for insertion we currently only support one target
     const firstTarget = targets.at(0)
@@ -893,14 +893,14 @@ const InnerComponentPicker = React.memo<ComponentPickerContextMenuProps>(
           ? []
           : MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, firstTarget)
       },
-      'usePreferredChildrenForTarget targetChildren',
+      'ComponentPickerWrapper targetChildren',
     )
 
     const areAllJsxElements = useEditorState(
       Substores.metadata,
       (store) =>
         targets.every((target) => MetadataUtils.isJSXElement(target, store.editor.jsxMetadata)),
-      'areAllJsxElements targetElement',
+      'ComponentPickerWrapper areAllJsxElements',
     )
 
     const dispatch = useDispatch()
@@ -1022,7 +1022,7 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
         onVisibilityChange={onVisibilityChange}
       >
         {pickerIsVisible ? (
-          <InnerComponentPicker targets={targets} insertionTarget={insertionTarget} />
+          <ComponentPickerWrapper targets={targets} insertionTarget={insertionTarget} />
         ) : null}
       </Menu>
     )
