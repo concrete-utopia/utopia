@@ -212,14 +212,21 @@ function getCommandsAndPatchForReparent(
   if (interactionData.drag == null) {
     return { commands: [], patch: {} }
   }
-  const frame = MetadataUtils.getFrameOrZeroRect(targetElement, canvasState.startingMetadata)
 
-  const top = frame.y + interactionData.drag.y
-  const left = frame.x + interactionData.drag.x
-
-  const reparent =
-    strategy.strategy === 'REPARENT_INTO_GRID'
-      ? applyGridReparent(
+  function applyReparent() {
+    switch (strategy.strategy) {
+      case 'REPARENT_AS_ABSOLUTE':
+        return applyAbsoluteReparent(
+          canvasState,
+          interactionSession,
+          customState,
+          strategy.target,
+          [targetElement],
+        )(strategyLifecycle)
+      case 'REPARENT_AS_STATIC':
+        return applyStaticReparent(canvasState, interactionSession, customState, strategy.target)
+      case 'REPARENT_INTO_GRID':
+        return applyGridReparent(
           canvasState,
           interactionData,
           customState,
@@ -227,26 +234,29 @@ function getCommandsAndPatchForReparent(
           [targetElement],
           gridFrame,
         )()
-      : strategy.strategy === 'REPARENT_AS_ABSOLUTE'
-      ? applyAbsoluteReparent(canvasState, interactionSession, customState, strategy.target, [
-          targetElement,
-        ])(strategyLifecycle)
-      : applyStaticReparent(canvasState, interactionSession, customState, strategy.target)
+      default:
+        assertNever(strategy.strategy)
+    }
+  }
+  const result = applyReparent()
+
+  let commands = [...result.commands]
+  if (strategy.strategy === 'REPARENT_AS_ABSOLUTE') {
+    const frame = MetadataUtils.getFrameOrZeroRect(targetElement, canvasState.startingMetadata)
+    const top = frame.y + interactionData.drag.y
+    const left = frame.x + interactionData.drag.x
+    commands.push(
+      updateBulkProperties('always', targetElement, [
+        propertyToSet(PP.create('style', 'position'), 'absolute'),
+        propertyToSet(PP.create('style', 'top'), top),
+        propertyToSet(PP.create('style', 'left'), left),
+      ]),
+    )
+  }
 
   return {
-    commands: [
-      ...(strategy.strategy === 'REPARENT_AS_ABSOLUTE'
-        ? [
-            updateBulkProperties('always', targetElement, [
-              propertyToSet(PP.create('style', 'position'), 'absolute'),
-              propertyToSet(PP.create('style', 'top'), top),
-              propertyToSet(PP.create('style', 'left'), left),
-            ]),
-          ]
-        : []),
-      ...reparent.commands,
-    ],
-    patch: reparent.customStatePatch,
+    commands: commands,
+    patch: result.customStatePatch,
   }
 }
 
