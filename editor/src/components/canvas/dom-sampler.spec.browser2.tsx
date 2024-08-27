@@ -106,6 +106,90 @@ export var Playground = ({ style }) => {
     )
   })
 
+  it('nested Fragments', async () => {
+    const editor = await renderTestEditorWithCode(
+      `
+import * as React from 'react'
+import { Storyboard, Scene } from 'utopia-api'
+
+const MyComponent = () => {
+  return (
+    <React.Fragment>
+      <React.Fragment>
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 400,
+            top: 125,
+            width: 150,
+            height: 159,
+          }}
+          data-uid='a316f87ba6496ae558ad185cc2d97e48'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 220,
+            top: 300,
+            width: 200,
+            height: 200,
+          }}
+          data-uid='4caed5fc09f8dd5e71825e38080c86be'
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 128,
+              top: 146,
+              width: 130,
+              height: 90,
+            }}
+            data-uid='e0fefd5b8d935b5e595cec81414a5003'
+          />
+        </div>
+      </React.Fragment>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 50,
+          top: 50,
+          width: 100,
+          height: 150,
+        }}
+        data-uid='d7664a7591ab5ac8808f2ca9b0bb0596'
+      />
+    </React.Fragment>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      style={{ width: 600, height: 560 }}
+    >
+      <MyComponent data-uid='comp' />
+    </Scene>
+  </Storyboard>
+)
+    `,
+      'await-first-dom-report',
+    )
+
+    const metadata = editor.getEditorState().editor.jsxMetadata
+
+    expect(metadata['sb/scene/comp'].globalFrame).toEqual({
+      x: 50,
+      y: 50,
+      width: 500,
+      height: 450,
+    })
+  })
+
   it('with a dynamic non-dom element', async () => {
     const editor = await renderTestEditorWithCode(
       `import * as React from 'react'
