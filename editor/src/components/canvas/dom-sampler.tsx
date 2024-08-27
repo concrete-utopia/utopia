@@ -64,10 +64,9 @@ function collectMetadataForElementPath(
     string,
     {
       closestMatches: Array<HTMLElement>
-      foundElementPathDepth: number
-      foundElementPathFullDepth: number
+      foundElementDepth: number
     }
-  >(() => ({ closestMatches: [], foundElementPathDepth: 0, foundElementPathFullDepth: 0 }))
+  >(() => ({ closestMatches: [], foundElementDepth: Infinity }))
 
   for (let index = 0; index < foundElements.length; index++) {
     const el = foundElements[index]
@@ -85,22 +84,18 @@ function collectMetadataForElementPath(
         EP.dynamicPathToStaticPath(path),
       )
     ) {
-      const { closestMatches, foundElementPathDepth, foundElementPathFullDepth } =
-        elementsToCollectFor.get(EP.toString(shortenedFoundPath))
+      const { closestMatches, foundElementDepth } = elementsToCollectFor.get(
+        EP.toString(shortenedFoundPath),
+      )
 
-      if (closestMatches.length === 0) {
+      if (closestMatches.length === 0 || getDomElementDepth(el) < foundElementDepth) {
         elementsToCollectFor.set(EP.toString(shortenedFoundPath), {
           closestMatches: [el],
-          foundElementPathDepth: EP.depth(ep),
-          foundElementPathFullDepth: EP.fullDepth(ep),
+          foundElementDepth: getDomElementDepth(el),
         })
-      } else {
-        if (
-          EP.depth(ep) === foundElementPathDepth &&
-          EP.fullDepth(ep) === foundElementPathFullDepth
-        ) {
-          closestMatches.push(el)
-        }
+      }
+      if (getDomElementDepth(el) === foundElementDepth) {
+        closestMatches.push(el)
       }
     }
   }
@@ -521,3 +516,13 @@ const pruneInvalidPathsFromMetadata_MUTATE =
     }
     return metadata_MUTATE
   }
+
+function getDomElementDepth(element: HTMLElement): number {
+  let depth = 0
+  let currentElement = element
+  while (currentElement.parentElement != null) {
+    depth += 1
+    currentElement = currentElement.parentElement
+  }
+  return depth
+}
