@@ -101,7 +101,7 @@ export var Playground = ({ style }) => {
         "sb/pg-sc/pg:aaa/bbb/266/ccc~~~2/ddd",
         "sb/pg-sc/pg:aaa/bbb/266/ccc~~~3/ddd",
         "sb/pg-sc/pg:aaa/bbb/6cc",
-      ] 
+      ]
     `, // TODO before merge isn't the fragment children missing from here?
     )
   })
