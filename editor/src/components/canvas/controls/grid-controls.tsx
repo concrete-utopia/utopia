@@ -237,9 +237,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           borderRadius: '100%',
           border: `1px solid ${colorTheme.border0.value}`,
           boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
-              ${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px ${
-            1 / scale
-          }px ${2 / scale}px ${1 / scale}px`,
+              1px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px 1px 2px 2px`,
           background: colorTheme.white.value,
           display: 'flex',
           alignItems: 'center',
