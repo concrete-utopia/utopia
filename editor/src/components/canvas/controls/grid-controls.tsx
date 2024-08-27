@@ -486,7 +486,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
       store.editor.canvas.interactionSession != null &&
       store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE' &&
       store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
-      !store.editor.canvas.interactionSession?.interactionData.modifiers.cmd &&
+      store.editor.canvas.interactionSession?.interactionData.modifiers.cmd !== true &&
       store.editor.canvas.interactionSession?.interactionData.drag != null
         ? store.editor.canvas.interactionSession.activeControl.id
         : null,
