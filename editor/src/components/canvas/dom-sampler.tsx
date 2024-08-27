@@ -124,7 +124,7 @@ function collectMetadataForElementPath(
 
           const invalidatedPathForceRecalculation =
             spyCollector.current.spyValues.invalidatedElementsInFrame.some((i) =>
-              EP.pathsEqual(i, dynamicPath),
+              EP.isDescendantOfOrEqualTo(dynamicPath, i),
             )
 
           const metadataResult = createElementInstanceMetadataForElementCached.get(
@@ -369,7 +369,9 @@ export function collectMetadata(
   } else {
     result = collectMetadataForPaths(
       canvasRootContainer,
-      elementsToFocusOn,
+      validPaths.filter((vp) =>
+        elementsToFocusOn.some((e) => EP.pathsEqual(e, vp) || EP.isParentOf(e, vp)),
+      ),
       validPaths,
       { ...options.metadataToUpdate },
       options,
