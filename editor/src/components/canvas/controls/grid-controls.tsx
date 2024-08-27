@@ -79,6 +79,7 @@ import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasLabel } from './select-mode/controls-common'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import type { Sides } from 'utopia-api/core'
+import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -195,6 +196,16 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
     [canvasOffset, dispatch, props.axis, props.dimensionIndex, scale],
   )
 
+  const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+
+  const onMouseMove = React.useCallback(
+    (e: React.MouseEvent) => {
+      maybeClearHighlightsOnHoverEnd()
+      e.stopPropagation()
+    },
+    [maybeClearHighlightsOnHoverEnd],
+  )
+
   const labelId = `grid-${props.axis}-handle-${props.dimensionIndex}`
   const containerId = `${labelId}-container`
 
@@ -235,7 +246,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           justifyContent: 'center',
           cursor: gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start'),
           fontSize: 8,
-          position: 'relative',
+          pointerEvents: 'initial',
         }}
         css={{
           opacity: resizing ? 1 : 0.5,
@@ -244,6 +255,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           },
         }}
         onMouseDown={mouseDownHandler}
+        onMouseMove={onMouseMove}
       >
         {props.axis === 'row' ? '↕' : '↔'}
         {when(
