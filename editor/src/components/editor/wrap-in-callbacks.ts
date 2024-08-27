@@ -229,6 +229,8 @@ function getWrapperStyle(
         top: desiredFrame.y,
         left: desiredFrame.x,
       }
+    case 'REPARENT_INTO_GRID':
+      return style
     default:
       assertNever(parentType)
   }

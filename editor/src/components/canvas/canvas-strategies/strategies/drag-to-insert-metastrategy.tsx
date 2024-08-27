@@ -47,6 +47,7 @@ import {
   targetPaths,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
+import type { ParentDisplayType } from './reparent-metastrategy'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 import type { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
@@ -116,9 +117,11 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
 
 function getDragToInsertStrategyName(
   strategyType: ReparentStrategy,
-  parentDisplayType: 'flex' | 'flow',
+  parentDisplayType: ParentDisplayType,
 ): string {
   switch (strategyType) {
+    case 'REPARENT_INTO_GRID':
+      return 'Drag to Insert (Grid)'
     case 'REPARENT_AS_ABSOLUTE':
       return 'Drag to Insert (Abs)'
     case 'REPARENT_AS_STATIC':
