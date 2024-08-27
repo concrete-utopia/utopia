@@ -14,7 +14,6 @@ import { stripNulls, zip } from '../../../../core/shared/array-utils'
 import type { Either } from '../../../../core/shared/either'
 import { isLeft, left, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import * as PP from '../../../../core/shared/property-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
@@ -54,7 +53,6 @@ import type { CanvasCommand } from '../../commands/commands'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { deleteElement } from '../../commands/delete-element-command'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
-import { propertyToDelete, updateBulkProperties } from '../../commands/set-property-command'
 import { showToastCommand } from '../../commands/show-toast-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
@@ -289,13 +287,6 @@ export function staticReparentAndUpdatePosition(
           target.parentPath.intendedParentPath,
         )
 
-  const isGrid = MetadataUtils.isGridLayoutedContainer(
-    MetadataUtils.findElementByElementPath(
-      editorStateContext.startingMetadata,
-      target.parentPath.intendedParentPath,
-    ),
-  )
-
   const commands = elementsToInsert.flatMap((elementToInsert) => {
     return [
       updateFunctionCommand('always', (editor, commandLifecycle) => {
@@ -327,17 +318,7 @@ export function staticReparentAndUpdatePosition(
         )
 
         function getAbsolutePositioningCommands(targetPath: ElementPath): Array<CanvasCommand> {
-          if (isGrid) {
-            return [
-              updateBulkProperties('always', targetPath, [
-                propertyToDelete(PP.create('style', 'position')),
-                propertyToDelete(PP.create('style', 'top')),
-                propertyToDelete(PP.create('style', 'left')),
-                propertyToDelete(PP.create('style', 'bottom')),
-                propertyToDelete(PP.create('style', 'right')),
-              ]),
-            ]
-          } else if (strategy === 'REPARENT_AS_ABSOLUTE') {
+          if (strategy === 'REPARENT_AS_ABSOLUTE') {
             return positionElementToCoordinatesCommands(
               { oldPath: elementToInsert.elementPath, newPath: targetPath },
               pasteContext.originalAllElementProps,
