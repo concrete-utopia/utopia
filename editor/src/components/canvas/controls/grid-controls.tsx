@@ -212,13 +212,9 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         display: 'flex',
         alignItems: props.axis === 'column' ? 'flex-start' : 'center',
         justifyContent: props.axis === 'column' ? 'center' : 'flex-start',
-        border: `1px solid ${resizing ? colorTheme.brandNeonPink.value : 'transparent'}`,
         height: props.axis === 'column' && resizing ? shadowSize : '100%',
         width: props.axis === 'row' && resizing ? shadowSize : '100%',
         position: 'relative',
-        ...(resizing
-          ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink60.value, scale)
-          : {}),
       }}
     >
       <div
@@ -267,6 +263,10 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            border: `1px solid ${resizing ? colorTheme.brandNeonPink.value : 'transparent'}`,
+            ...(resizing
+              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink60.value, scale)
+              : {}),
           }}
         >
           <CanvasLabel
