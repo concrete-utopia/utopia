@@ -869,7 +869,7 @@ export var storyboard = (
         style={{
           position: 'absolute',
           width: 150,
-          height: 92,
+          height: 93,
           left: 21,
           top: 36,
         }}
