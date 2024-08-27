@@ -315,7 +315,7 @@ type StrategyToApply =
       name: string
     }
   | {
-      type: 'GRID_REARRANGE' | 'REPARENT'
+      type: 'REPARENT'
       controlsToRender: ControlWithProps<any>[]
       name: string
       strategy: FindReparentStrategyResult
