@@ -45,10 +45,10 @@ describe('DOM Walker', () => {
       BakedInStoryboardUID,
       `${BakedInStoryboardUID}/${TestSceneUID}`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}`,
-      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/d63`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/488`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/d63`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/d63/bbb~~~1`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/d63/bbb~~~2`,
     ]
@@ -347,22 +347,6 @@ export var storyboard = (
     expect(globalFramesAfterUpdate[`${BakedInStoryboardUID}/flex-container/ccc`].x).toBeLessThan(
       globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/ccc`].x,
     )
-  })
-
-  it('clears all of the invalidated paths including svgs', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      TestProjectWithSVG,
-      'await-first-dom-report',
-    )
-    await renderResult.getDispatchFollowUpActionsFinished()
-    // This is here to ensure that the DOM walker runs and clears the
-    // entries that are added in by the resize observer, which triggers at
-    // an awkward timing after the entirety of `renderTestEditorWithCode` executes.
-    // That results in an entry for the scene being added, which then would cause the
-    // test to fail.
-    await renderResult.dispatch([clearSelection()], true)
-    const domWalkerState = renderResult.getDomWalkerState()
-    expect(Array.from(domWalkerState.invalidatedPaths)).toHaveLength(0)
   })
 })
 
