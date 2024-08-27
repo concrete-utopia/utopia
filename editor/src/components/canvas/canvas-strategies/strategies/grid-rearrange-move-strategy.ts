@@ -240,19 +240,18 @@ function getCommandsAndPatchForReparent(
   }
   const result = applyReparent()
 
-  let commands = [...result.commands]
+  let commands: CanvasCommand[] = []
   if (strategy.strategy === 'REPARENT_AS_ABSOLUTE') {
     const frame = MetadataUtils.getFrameOrZeroRect(targetElement, canvasState.startingMetadata)
-    const top = frame.y + interactionData.drag.y
-    const left = frame.x + interactionData.drag.x
     commands.push(
       updateBulkProperties('always', targetElement, [
         propertyToSet(PP.create('style', 'position'), 'absolute'),
-        propertyToSet(PP.create('style', 'top'), top),
-        propertyToSet(PP.create('style', 'left'), left),
+        propertyToSet(PP.create('style', 'top'), frame.y + interactionData.drag.y),
+        propertyToSet(PP.create('style', 'left'), frame.x + interactionData.drag.x),
       ]),
     )
   }
+  commands.push(...result.commands)
 
   return {
     commands: commands,
