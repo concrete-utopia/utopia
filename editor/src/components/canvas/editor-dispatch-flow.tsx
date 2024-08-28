@@ -63,7 +63,7 @@ export function runDomWalkerAndSaveResults(
   return dispatchResultWithMetadata
 }
 
-export function runDomCollector(
+export function runDomCollectorAndSaveResults(
   boundDispatch: EditorDispatch,
   storedState: EditorStoreFull,
   domWalkerMutableState: {

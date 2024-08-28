@@ -118,7 +118,7 @@ import {
 } from '../components/editor/store/store-hook-performance-logging'
 import { createPerformanceMeasure } from '../components/editor/store/editor-dispatch-performance-logging'
 import {
-  runDomCollector,
+  runDomCollectorAndSaveResults,
   runDomWalkerAndSaveResults,
 } from '../components/canvas/editor-dispatch-flow'
 import { simpleStringifyActions } from '../components/editor/actions/action-utils'
@@ -494,7 +494,7 @@ export class Editor {
 
       // run the dom-walker
       if (runDomWalker) {
-        const metadataUpdateDispatchResult = runDomCollector(
+        const metadataUpdateDispatchResult = runDomCollectorAndSaveResults(
           this.boundDispatch,
           this.storedState,
           this.domWalkerMutableState,
