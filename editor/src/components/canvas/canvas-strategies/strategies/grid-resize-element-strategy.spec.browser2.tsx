@@ -45,7 +45,7 @@ async function runCellResizeTest(
   )
 }
 
-describe('grid rearrange move strategy', () => {
+describe('grid resize element strategy', () => {
   describe('column-end', () => {
     it('can enlarge element', async () => {
       const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
