@@ -241,22 +241,43 @@ function getCommandsAndPatchForReparent(
   const result = applyReparent()
 
   let commands: CanvasCommand[] = []
+
+  const frame = MetadataUtils.getFrameOrZeroRect(targetElement, canvasState.startingMetadata)
+
   if (strategy.strategy === 'REPARENT_AS_ABSOLUTE') {
-    const frame = MetadataUtils.getFrameOrZeroRect(targetElement, canvasState.startingMetadata)
+    // for absolute reparents, set positioning and size props
     commands.push(
       updateBulkProperties('always', targetElement, [
         propertyToSet(PP.create('style', 'position'), 'absolute'),
         propertyToSet(PP.create('style', 'top'), frame.y + interactionData.drag.y),
         propertyToSet(PP.create('style', 'left'), frame.x + interactionData.drag.x),
+        propertyToSet(PP.create('style', 'width'), frame.width),
+        propertyToSet(PP.create('style', 'height'), frame.height),
+      ]),
+    )
+  } else if (strategy.strategy === 'REPARENT_AS_STATIC') {
+    // for static reparents, set size props
+    commands.push(
+      updateBulkProperties('always', targetElement, [
+        propertyToSet(PP.create('style', 'width'), frame.width),
+        propertyToSet(PP.create('style', 'height'), frame.height),
       ]),
     )
   }
-  commands.push(
-    updateBulkProperties('always', targetElement, [
-      propertyToDelete(PP.create('style', 'gridRow')),
-      propertyToDelete(PP.create('style', 'gridColumn')),
-    ]),
-  )
+
+  // for absolute, static, or non-same-grid reparents, remove cell placement props
+  if (
+    strategy.strategy !== 'REPARENT_INTO_GRID' ||
+    !EP.pathsEqual(strategy.target.newParent.intendedParentPath, EP.parentPath(targetElement))
+  ) {
+    commands.push(
+      updateBulkProperties('on-complete', targetElement, [
+        propertyToDelete(PP.create('style', 'gridRow')),
+        propertyToDelete(PP.create('style', 'gridColumn')),
+      ]),
+    )
+  }
+
   commands.push(...result.commands)
 
   return {

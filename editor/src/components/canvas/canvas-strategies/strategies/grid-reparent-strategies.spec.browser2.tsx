@@ -687,6 +687,49 @@ describe('grid reparent strategies', () => {
         ),
       )
     })
+    it('when the cell has no explicit size', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCode({
+          insideGrid: `
+				<div
+					style={{
+						backgroundColor: '#f0f',
+						gridRow: 2,
+						gridColumn: 2,
+					}}
+					data-uid='dragme'
+					data-testid='dragme'
+				/>
+			`,
+        }),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/grid/dragme')])
+
+      await dragOut(editor, 'grid', EP.fromString('sb/grid/dragme'), { x: 2000, y: 1000 })
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(
+          makeTestProjectCode({
+            extraCode: `
+				<div
+					style={{
+						backgroundColor: '#f0f',
+						position: 'absolute',
+						top: 391,
+						left: 492,
+						width: 86.5,
+						height: 135,
+					}}
+					data-uid='dragme'
+					data-testid='dragme'
+				/>
+			`,
+          }),
+        ),
+      )
+    })
   })
 })
 
