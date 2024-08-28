@@ -56,7 +56,9 @@ function collectMetadataForElementPath(
     return [{ metadata: createFakeMetadataForCanvasRoot(path), foundValidDynamicPaths: [path] }]
   }
 
-  const foundElements = document.querySelectorAll(`[${UTOPIA_PATH_KEY}^="${EP.toString(path)}"]`)
+  const foundElements = document.querySelectorAll(
+    `[${UTOPIA_STATIC_PATH_KEY}^="${EP.toString(path)}"]`,
+  )
 
   const elementsToCollectFor = new DefaultMap<
     string,
@@ -261,7 +263,6 @@ function collectMetadataForPaths(
     scale: number
     selectedViews: Array<ElementPath>
     spyCollector: UiJsxCanvasContextData
-    spyPaths: Array<string>
   },
 ): {
   metadata: ElementInstanceMetadataMap
@@ -274,15 +275,7 @@ function collectMetadataForPaths(
     'nearest-half',
   )
 
-  const dynamicPathsToCollect: Array<ElementPath> = pathsToCollect
-    .flatMap((staticPath) => {
-      return options.spyPaths.filter((spyPath) =>
-        EP.pathsEqual(EP.makeLastPartOfPathStatic(EP.fromString(spyPath)), staticPath),
-      )
-    })
-    .map(EP.fromString)
-
-  dynamicPathsToCollect.forEach((path) => {
+  pathsToCollect.forEach((path) => {
     const domMetadata = collectMetadataForElementPath(
       path,
       validPaths,
@@ -294,12 +287,17 @@ function collectMetadataForPaths(
 
     if (domMetadata.length == 0) {
       // if we couldn't find any dom elements for the path, we must scan through all the spy elements to find a fallback with a potentially dynamic path
-      const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(path)]
-      if (spyElem != null) {
-        metadataToUpdate_MUTATE[EP.toString(path)] = {
-          ...spyElem,
+      Object.entries(options.spyCollector.current.spyValues.metadata).forEach(([key, spyElem]) => {
+        // TODO BEFORE MERGE review performance choices here
+        if (!EP.pathsEqual(path, EP.makeLastPartOfPathStatic(EP.fromString(key)))) {
+          return // continue to the next element
         }
-      }
+        if (spyElem != null) {
+          metadataToUpdate_MUTATE[key] = {
+            ...spyElem,
+          }
+        }
+      })
       return // we couldn't find a fallback spy element, so we bail out
     }
 
@@ -378,13 +376,7 @@ export function collectMetadata(
 
   let result
   if (elementsToFocusOn == 'rerender-all-elements') {
-    result = collectMetadataForPaths(
-      canvasRootContainer,
-      validPaths,
-      validPaths,
-      {},
-      { ...options, spyPaths: spyPaths },
-    )
+    result = collectMetadataForPaths(canvasRootContainer, validPaths, validPaths, {}, options)
   } else {
     result = collectMetadataForPaths(
       canvasRootContainer,
@@ -393,7 +385,7 @@ export function collectMetadata(
       ),
       validPaths,
       { ...options.metadataToUpdate },
-      { ...options, spyPaths: spyPaths },
+      options,
     )
   }
 
