@@ -26,19 +26,19 @@ describe('grid reparent strategies', () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCode({
           extraCode: `
-			<div
-				style={{
-					backgroundColor: '#f0f',
-					position: 'absolute',
-					left: 500,
-					top: 500,
-					width: 79,
-					height: 86,
-				}}
-				data-uid='dragme'
-				data-testid='dragme'
-			/>
-		`,
+      <div
+        style={{
+          backgroundColor: '#f0f',
+          position: 'absolute',
+          left: 500,
+          top: 500,
+          width: 79,
+          height: 86,
+        }}
+        data-uid='dragme'
+        data-testid='dragme'
+      />
+    `,
         }),
         'await-first-dom-report',
       )
@@ -51,16 +51,16 @@ describe('grid reparent strategies', () => {
         formatTestProjectCode(
           makeTestProjectCode({
             insideGrid: `
-				<div
-					style={{
-						backgroundColor: '#f0f',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='dragme'
-					data-testid='dragme'
-				/>
-			`,
+        <div
+          style={{
+            backgroundColor: '#f0f',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='dragme'
+          data-testid='dragme'
+        />
+      `,
           }),
         ),
       )
@@ -69,47 +69,47 @@ describe('grid reparent strategies', () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCode({
           extraCode: `
-			<div
-				style={{
-					backgroundColor: '#aaaaaa33',
-					position: 'absolute',
-					left: 500,
-					top: 500,
-					width: 386,
-					height: 202,
-					display: 'flex',
-					gap: 10,
-				}}
-				data-uid='flex'
-				data-testid='flex'
-			>
-				<div
-					style={{
-						backgroundColor: '#f0f',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='dragme'
-					data-testid='dragme'
-				/>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='foo'
-				/>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='bar'
-				/>
-			</div>
-		`,
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 500,
+          top: 500,
+          width: 386,
+          height: 202,
+          display: 'flex',
+          gap: 10,
+        }}
+        data-uid='flex'
+        data-testid='flex'
+      >
+        <div
+          style={{
+            backgroundColor: '#f0f',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='dragme'
+          data-testid='dragme'
+        />
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='foo'
+        />
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='bar'
+        />
+      </div>
+    `,
         }),
         'await-first-dom-report',
       )
@@ -122,49 +122,49 @@ describe('grid reparent strategies', () => {
         formatTestProjectCode(
           makeTestProjectCode({
             extraCode: `
-			<div
-				style={{
-					backgroundColor: '#aaaaaa33',
-					position: 'absolute',
-					left: 500,
-					top: 500,
-					width: 386,
-					height: 202,
-					display: 'flex',
-					gap: 10,
-				}}
-				data-uid='flex'
-				data-testid='flex'
-			>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='foo'
-				/>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='bar'
-				/>
-			</div>
-			`,
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 500,
+          top: 500,
+          width: 386,
+          height: 202,
+          display: 'flex',
+          gap: 10,
+        }}
+        data-uid='flex'
+        data-testid='flex'
+      >
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='foo'
+        />
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='bar'
+        />
+      </div>
+      `,
             insideGrid: `
-				<div
-					style={{
-						backgroundColor: '#f0f',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='dragme'
-					data-testid='dragme'
-				/>
-			`,
+        <div
+          style={{
+            backgroundColor: '#f0f',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='dragme'
+          data-testid='dragme'
+        />
+      `,
           }),
         ),
       )
@@ -173,44 +173,44 @@ describe('grid reparent strategies', () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCode({
           extraCode: `
-			<div
-				style={{
-					backgroundColor: '#aaaaaa33',
-					position: 'absolute',
-					left: 500,
-					top: 500,
-					padding: 10,
-				}}
-				data-uid='flow'
-				data-testid='flow'
-			>
-				<div
-					style={{
-						backgroundColor: '#f0f',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='dragme'
-					data-testid='dragme'
-				/>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='foo'
-				/>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='bar'
-				/>
-			</div>
-		`,
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 500,
+          top: 500,
+          padding: 10,
+        }}
+        data-uid='flow'
+        data-testid='flow'
+      >
+        <div
+          style={{
+            backgroundColor: '#f0f',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='dragme'
+          data-testid='dragme'
+        />
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='foo'
+        />
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='bar'
+        />
+      </div>
+    `,
         }),
         'await-first-dom-report',
       )
@@ -223,46 +223,46 @@ describe('grid reparent strategies', () => {
         formatTestProjectCode(
           makeTestProjectCode({
             extraCode: `
-			<div
-				style={{
-					backgroundColor: '#aaaaaa33',
-					position: 'absolute',
-					left: 500,
-					top: 500,
-					padding: 10,
-				}}
-				data-uid='flow'
-				data-testid='flow'
-			>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='foo'
-				/>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='bar'
-				/>
-			</div>
-			`,
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 500,
+          top: 500,
+          padding: 10,
+        }}
+        data-uid='flow'
+        data-testid='flow'
+      >
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='foo'
+        />
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='bar'
+        />
+      </div>
+      `,
             insideGrid: `
-				<div
-					style={{
-						backgroundColor: '#f0f',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='dragme'
-					data-testid='dragme'
-				/>
-			`,
+        <div
+          style={{
+            backgroundColor: '#f0f',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='dragme'
+          data-testid='dragme'
+        />
+      `,
           }),
         ),
       )
@@ -273,18 +273,18 @@ describe('grid reparent strategies', () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCode({
           insideGrid: `
-				<div
-					style={{
-						backgroundColor: '#f0f',
-						width: 79,
-						height: 86,
-						gridRow: 2,
-						gridColumn: 2,
-					}}
-					data-uid='dragme'
-					data-testid='dragme'
-				/>
-			`,
+        <div
+          style={{
+            backgroundColor: '#f0f',
+            width: 79,
+            height: 86,
+            gridRow: 2,
+            gridColumn: 2,
+          }}
+          data-uid='dragme'
+          data-testid='dragme'
+        />
+      `,
         }),
         'await-first-dom-report',
       )
@@ -297,19 +297,19 @@ describe('grid reparent strategies', () => {
         formatTestProjectCode(
           makeTestProjectCode({
             extraCode: `
-				<div
-					style={{
-						backgroundColor: '#f0f',
-						width: 79,
-						height: 86,
-						position: 'absolute',
-						top: 391,
-						left: 492,
-					}}
-					data-uid='dragme'
-					data-testid='dragme'
-				/>
-			`,
+        <div
+          style={{
+            backgroundColor: '#f0f',
+            width: 79,
+            height: 86,
+            position: 'absolute',
+            top: 391,
+            left: 492,
+          }}
+          data-uid='dragme'
+          data-testid='dragme'
+        />
+      `,
           }),
         ),
       )
@@ -318,58 +318,58 @@ describe('grid reparent strategies', () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCode({
           insideGrid: `
-				<div
-					style={{
-						backgroundColor: '#f0f',
-						width: 79,
-						height: 86,
-						gridRow: 2,
-						gridColumn: 2,
-					}}
-					data-uid='dragme'
-					data-testid='dragme'
-				/>
-			`,
+        <div
+          style={{
+            backgroundColor: '#f0f',
+            width: 79,
+            height: 86,
+            gridRow: 2,
+            gridColumn: 2,
+          }}
+          data-uid='dragme'
+          data-testid='dragme'
+        />
+      `,
           extraCode: `
-			<div
-				style={{
-					backgroundColor: '#aaaaaa33',
-					position: 'absolute',
-					left: 500,
-					top: 500,
-					display: 'flex',
-					gap: 30,
-					padding: 30,
-				}}
-				data-uid='flex'
-				data-testid='flex'
-			>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='foo'
-				/>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='bar'
-				/>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='baz'
-				/>
-			</div>
-		`,
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 500,
+          top: 500,
+          display: 'flex',
+          gap: 30,
+          padding: 30,
+        }}
+        data-uid='flex'
+        data-testid='flex'
+      >
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='foo'
+        />
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='bar'
+        />
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='baz'
+        />
+      </div>
+    `,
         }),
         'await-first-dom-report',
       )
@@ -382,54 +382,54 @@ describe('grid reparent strategies', () => {
         formatTestProjectCode(
           makeTestProjectCode({
             extraCode: `
-				<div
-					style={{
-						backgroundColor: '#aaaaaa33',
-						position: 'absolute',
-						left: 500,
-						top: 500,
-						display: 'flex',
-						gap: 30,
-						padding: 30,
-					}}
-					data-uid='flex'
-					data-testid='flex'
-				>
-					<div
-						style={{
-							backgroundColor: '#0ff',
-							width: 79,
-							height: 86,
-						}}
-						data-uid='foo'
-					/>
-					<div
-						style={{
-							backgroundColor: '#f0f',
-							width: 79,
-							height: 86,
-						}}
-						data-uid='dragme'
-						data-testid='dragme'
-					/>
-					<div
-						style={{
-							backgroundColor: '#0ff',
-							width: 79,
-							height: 86,
-						}}
-						data-uid='bar'
-					/>
-					<div
-						style={{
-							backgroundColor: '#0ff',
-							width: 79,
-							height: 86,
-						}}
-						data-uid='baz'
-					/>
-				</div>
-			`,
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 500,
+            top: 500,
+            display: 'flex',
+            gap: 30,
+            padding: 30,
+          }}
+          data-uid='flex'
+          data-testid='flex'
+        >
+          <div
+            style={{
+              backgroundColor: '#0ff',
+              width: 79,
+              height: 86,
+            }}
+            data-uid='foo'
+          />
+          <div
+            style={{
+              backgroundColor: '#f0f',
+              width: 79,
+              height: 86,
+            }}
+            data-uid='dragme'
+            data-testid='dragme'
+          />
+          <div
+            style={{
+              backgroundColor: '#0ff',
+              width: 79,
+              height: 86,
+            }}
+            data-uid='bar'
+          />
+          <div
+            style={{
+              backgroundColor: '#0ff',
+              width: 79,
+              height: 86,
+            }}
+            data-uid='baz'
+          />
+        </div>
+      `,
           }),
         ),
       )
@@ -438,56 +438,56 @@ describe('grid reparent strategies', () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCode({
           insideGrid: `
-				<div
-					style={{
-						backgroundColor: '#f0f',
-						width: 79,
-						height: 86,
-						gridRow: 2,
-						gridColumn: 2,
-					}}
-					data-uid='dragme'
-					data-testid='dragme'
-				/>
-			`,
+        <div
+          style={{
+            backgroundColor: '#f0f',
+            width: 79,
+            height: 86,
+            gridRow: 2,
+            gridColumn: 2,
+          }}
+          data-uid='dragme'
+          data-testid='dragme'
+        />
+      `,
           extraCode: `
-			<div
-				style={{
-					backgroundColor: '#aaaaaa33',
-					position: 'absolute',
-					left: 500,
-					top: 500,
-					padding: 10,
-				}}
-				data-uid='flow'
-				data-testid='flow'
-			>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='foo'
-				/>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='bar'
-				/>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-					}}
-					data-uid='baz'
-				/>
-			</div>
-		`,
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 500,
+          top: 500,
+          padding: 10,
+        }}
+        data-uid='flow'
+        data-testid='flow'
+      >
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='foo'
+        />
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='bar'
+        />
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+          }}
+          data-uid='baz'
+        />
+      </div>
+    `,
         }),
         'await-first-dom-report',
       )
@@ -500,53 +500,53 @@ describe('grid reparent strategies', () => {
         formatTestProjectCode(
           makeTestProjectCode({
             extraCode: `
-				<div
-					style={{
-						backgroundColor: '#aaaaaa33',
-						position: 'absolute',
-						left: 500,
-						top: 500,
-						padding: 10,
-					}}
-					data-uid='flow'
-					data-testid='flow'
-				>
-					<div
-						style={{
-							backgroundColor: '#0ff',
-							width: 79,
-							height: 86,
-						}}
-						data-uid='foo'
-					>
-						<div
-							style={{
-								backgroundColor: '#f0f',
-								width: 79,
-								height: 86,
-							}}
-							data-uid='dragme'
-							data-testid='dragme'
-						/>
-					</div>
-					<div
-						style={{
-							backgroundColor: '#0ff',
-							width: 79,
-							height: 86,
-						}}
-						data-uid='bar'
-					/>
-					<div
-						style={{
-							backgroundColor: '#0ff',
-							width: 79,
-							height: 86,
-						}}
-						data-uid='baz'
-					/>
-				</div>
-			`,
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 500,
+            top: 500,
+            padding: 10,
+          }}
+          data-uid='flow'
+          data-testid='flow'
+        >
+          <div
+            style={{
+              backgroundColor: '#0ff',
+              width: 79,
+              height: 86,
+            }}
+            data-uid='foo'
+          >
+            <div
+              style={{
+                backgroundColor: '#f0f',
+                width: 79,
+                height: 86,
+              }}
+              data-uid='dragme'
+              data-testid='dragme'
+            />
+          </div>
+          <div
+            style={{
+              backgroundColor: '#0ff',
+              width: 79,
+              height: 86,
+            }}
+            data-uid='bar'
+          />
+          <div
+            style={{
+              backgroundColor: '#0ff',
+              width: 79,
+              height: 86,
+            }}
+            data-uid='baz'
+          />
+        </div>
+      `,
           }),
         ),
       )
@@ -555,66 +555,66 @@ describe('grid reparent strategies', () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCode({
           insideGrid: `
-				<div
-					style={{
-						backgroundColor: '#f0f',
-						width: 79,
-						height: 86,
-						gridRow: 2,
-						gridColumn: 2,
-					}}
-					data-uid='dragme'
-					data-testid='dragme'
-				/>
-			`,
+        <div
+          style={{
+            backgroundColor: '#f0f',
+            width: 79,
+            height: 86,
+            gridRow: 2,
+            gridColumn: 2,
+          }}
+          data-uid='dragme'
+          data-testid='dragme'
+        />
+      `,
           extraCode: `
-			<div
-				style={{
-					backgroundColor: '#aaaaaa33',
-					position: 'absolute',
-					left: 500,
-					top: 500,
-					padding: 10,
-					display: 'grid',
-					gap: 10,
-					gridTemplateRows: '1fr 1fr',
-					gridTemplateColumns: '1fr 1fr 1fr 1fr',
-				}}
-				data-uid='another-grid'
-				data-testid='another-grid'
-			>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-						gridRow: 1,
-						gridColumn: 1,
-					}}
-					data-uid='foo'
-				/>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-						gridRow: 2,
-						gridColumn: 3,
-					}}
-					data-uid='bar'
-				/>
-				<div
-					style={{
-						backgroundColor: '#0ff',
-						width: 79,
-						height: 86,
-						gridColumn: 2,
-						gridColumn: 2,
-					}}
-					data-uid='baz'
-				/>
-			</div>
-		`,
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 500,
+          top: 500,
+          padding: 10,
+          display: 'grid',
+          gap: 10,
+          gridTemplateRows: '1fr 1fr',
+          gridTemplateColumns: '1fr 1fr 1fr 1fr',
+        }}
+        data-uid='another-grid'
+        data-testid='another-grid'
+      >
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+            gridRow: 1,
+            gridColumn: 1,
+          }}
+          data-uid='foo'
+        />
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+            gridRow: 2,
+            gridColumn: 3,
+          }}
+          data-uid='bar'
+        />
+        <div
+          style={{
+            backgroundColor: '#0ff',
+            width: 79,
+            height: 86,
+            gridColumn: 2,
+            gridColumn: 2,
+          }}
+          data-uid='baz'
+        />
+      </div>
+    `,
         }),
         'await-first-dom-report',
       )
@@ -627,62 +627,62 @@ describe('grid reparent strategies', () => {
         formatTestProjectCode(
           makeTestProjectCode({
             extraCode: `
-				<div
-					style={{
-						backgroundColor: '#aaaaaa33',
-						position: 'absolute',
-						left: 500,
-						top: 500,
-						padding: 10,
-						display: 'grid',
-						gap: 10,
-						gridTemplateRows: '1fr 1fr',
-						gridTemplateColumns: '1fr 1fr 1fr 1fr',
-					}}
-					data-uid='another-grid'
-					data-testid='another-grid'
-				>
-					<div
-						style={{
-							backgroundColor: '#0ff',
-							width: 79,
-							height: 86,
-							gridRow: 1,
-							gridColumn: 1,
-						}}
-						data-uid='foo'
-					/>
-					<div
-						style={{
-							backgroundColor: '#0ff',
-							width: 79,
-							height: 86,
-							gridRow: 2,
-							gridColumn: 3,
-						}}
-						data-uid='bar'
-					/>
-					<div
-						style={{
-							backgroundColor: '#0ff',
-							width: 79,
-							height: 86,
-							gridColumn: 2,
-							gridColumn: 2,
-						}}
-						data-uid='baz'
-					/>
-					<div
-						style={{
-							backgroundColor: '#f0f',
-							width: 79,
-							height: 86,
-						}}
-						data-uid='dragme'
-						data-testid='dragme'
-					/>
-				</div>
-			`,
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 500,
+            top: 500,
+            padding: 10,
+            display: 'grid',
+            gap: 10,
+            gridTemplateRows: '1fr 1fr',
+            gridTemplateColumns: '1fr 1fr 1fr 1fr',
+          }}
+          data-uid='another-grid'
+          data-testid='another-grid'
+        >
+          <div
+            style={{
+              backgroundColor: '#0ff',
+              width: 79,
+              height: 86,
+              gridRow: 1,
+              gridColumn: 1,
+            }}
+            data-uid='foo'
+          />
+          <div
+            style={{
+              backgroundColor: '#0ff',
+              width: 79,
+              height: 86,
+              gridRow: 2,
+              gridColumn: 3,
+            }}
+            data-uid='bar'
+          />
+          <div
+            style={{
+              backgroundColor: '#0ff',
+              width: 79,
+              height: 86,
+              gridColumn: 2,
+              gridColumn: 2,
+            }}
+            data-uid='baz'
+          />
+          <div
+            style={{
+              backgroundColor: '#f0f',
+              width: 79,
+              height: 86,
+            }}
+            data-uid='dragme'
+            data-testid='dragme'
+          />
+        </div>
+      `,
           }),
         ),
       )
@@ -691,16 +691,16 @@ describe('grid reparent strategies', () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCode({
           insideGrid: `
-				<div
-					style={{
-						backgroundColor: '#f0f',
-						gridRow: 2,
-						gridColumn: 2,
-					}}
-					data-uid='dragme'
-					data-testid='dragme'
-				/>
-			`,
+        <div
+          style={{
+            backgroundColor: '#f0f',
+            gridRow: 2,
+            gridColumn: 2,
+          }}
+          data-uid='dragme'
+          data-testid='dragme'
+        />
+      `,
         }),
         'await-first-dom-report',
       )
@@ -713,19 +713,19 @@ describe('grid reparent strategies', () => {
         formatTestProjectCode(
           makeTestProjectCode({
             extraCode: `
-				<div
-					style={{
-						backgroundColor: '#f0f',
-						position: 'absolute',
-						top: 391,
-						left: 492,
-						width: 86.5,
-						height: 135,
-					}}
-					data-uid='dragme'
-					data-testid='dragme'
-				/>
-			`,
+        <div
+          style={{
+            backgroundColor: '#f0f',
+            position: 'absolute',
+            top: 391,
+            left: 492,
+            width: 86.5,
+            height: 135,
+          }}
+          data-uid='dragme'
+          data-testid='dragme'
+        />
+      `,
           }),
         ),
       )
@@ -757,7 +757,7 @@ export var storyboard = (
         padding: 10,
       }}
       data-uid='grid'
-	  data-testid='grid'
+      data-testid='grid'
     ${insideGrid == null ? '/>' : `>${insideGrid}</div>`}
     ${extraCode ?? ''}
   </Storyboard>
