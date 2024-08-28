@@ -127,7 +127,7 @@ export function absoluteDuplicateStrategy(
           [
             ...duplicateCommands,
             ...maybeAddContainLayoutCommand(commonParentPath),
-            setElementsToRerenderCommand([...selectedElements, ...newPaths]),
+            setElementsToRerenderCommand([commonParentPath, ...selectedElements, ...newPaths]),
             updateSelectedViews('always', selectedElements),
             updateFunctionCommand('always', (editorState, commandLifecycle) =>
               runMoveStrategy(

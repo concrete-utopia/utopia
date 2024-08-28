@@ -58,6 +58,8 @@ export function applyReorderCommon(
       target,
     ).map((element) => element.elementPath)
 
+    const siblingsAndParent = siblings.concat(EP.parentPath(target))
+
     if (!isReorderAllowed(siblings)) {
       return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)], {}, 'failure')
     }
@@ -99,7 +101,7 @@ export function applyReorderCommon(
             { action: 'reorder', target: activeFrameTargetRect(targetFrame), source: sourceFrame },
           ]),
           updateHighlightedViews('mid-interaction', []),
-          setElementsToRerenderCommand(siblings),
+          setElementsToRerenderCommand(siblingsAndParent),
           setCursorCommand(CSSCursor.Move),
         ],
         {
@@ -113,7 +115,7 @@ export function applyReorderCommon(
             { action: 'reorder', target: activeFrameTargetRect(targetFrame), source: sourceFrame },
           ]),
           reorderElement('always', target, absolute(newResultOrLastIndex)),
-          setElementsToRerenderCommand(siblings),
+          setElementsToRerenderCommand(siblingsAndParent),
           updateHighlightedViews('mid-interaction', []),
           setCursorCommand(CSSCursor.Move),
         ],
