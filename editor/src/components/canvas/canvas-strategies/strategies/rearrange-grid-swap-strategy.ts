@@ -38,7 +38,8 @@ export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
     interactionSession.interactionData.type !== 'DRAG' ||
     interactionSession.interactionData.drag == null ||
     interactionSession.activeControl.type !== 'GRID_CELL_HANDLE' ||
-    interactionSession.interactionData.modifiers.alt
+    interactionSession.interactionData.modifiers.alt ||
+    interactionSession.interactionData.modifiers.cmd
   ) {
     return null
   }

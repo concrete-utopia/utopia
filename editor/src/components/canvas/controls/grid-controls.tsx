@@ -80,6 +80,7 @@ import { CanvasLabel } from './select-mode/controls-common'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import type { Sides } from 'utopia-api/core'
 import type { Axis } from '../gap-utils'
+import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -196,6 +197,16 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
     [canvasOffset, dispatch, props.axis, props.dimensionIndex, scale],
   )
 
+  const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+
+  const onMouseMove = React.useCallback(
+    (e: React.MouseEvent) => {
+      maybeClearHighlightsOnHoverEnd()
+      e.stopPropagation()
+    },
+    [maybeClearHighlightsOnHoverEnd],
+  )
+
   const labelId = `grid-${props.axis}-handle-${props.dimensionIndex}`
   const containerId = `${labelId}-container`
 
@@ -213,13 +224,9 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         display: 'flex',
         alignItems: props.axis === 'column' ? 'flex-start' : 'center',
         justifyContent: props.axis === 'column' ? 'center' : 'flex-start',
-        border: `1px solid ${resizing ? colorTheme.brandNeonPink.value : 'transparent'}`,
         height: props.axis === 'column' && resizing ? shadowSize : '100%',
         width: props.axis === 'row' && resizing ? shadowSize : '100%',
         position: 'relative',
-        ...(resizing
-          ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink60.value, scale)
-          : {}),
       }}
     >
       <div
@@ -231,16 +238,14 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           borderRadius: '100%',
           border: `1px solid ${colorTheme.border0.value}`,
           boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
-              ${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px ${
-            1 / scale
-          }px ${2 / scale}px ${1 / scale}px`,
+              1px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px 1px 2px 2px`,
           background: colorTheme.white.value,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start'),
           fontSize: 8,
-          position: 'relative',
+          pointerEvents: 'initial',
         }}
         css={{
           opacity: resizing ? 1 : 0.5,
@@ -249,6 +254,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           },
         }}
         onMouseDown={mouseDownHandler}
+        onMouseMove={onMouseMove}
       >
         {props.axis === 'row' ? '↕' : '↔'}
         {when(
@@ -268,6 +274,10 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            border: `1px solid ${resizing ? colorTheme.brandNeonPink.value : 'transparent'}`,
+            ...(resizing
+              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink60.value, scale)
+              : {}),
           }}
         >
           <CanvasLabel
@@ -502,6 +512,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
       store.editor.canvas.interactionSession != null &&
       store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE' &&
       store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
+      store.editor.canvas.interactionSession?.interactionData.modifiers.cmd !== true &&
       store.editor.canvas.interactionSession?.interactionData.drag != null
         ? store.editor.canvas.interactionSession.activeControl.id
         : null,
