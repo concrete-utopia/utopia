@@ -363,6 +363,17 @@ export function collectMetadata(
 
   const validPaths = getValidPathsFromCanvasContainer(canvasRootContainer)
 
+  const spyPaths = Object.keys(options.spyCollector.current.spyValues.metadata)
+  if (spyPaths.length === 0 && validPaths.length > 0) {
+    // if there are no spy elements, but we have valid paths, we probably encountered a transient case during a canvas runtime error
+    // the intended behavior of the editor during a runtime error is to preserve the existing metadata to avoid flickering
+    // so we return the existing metadata in that case
+    return {
+      metadata: options.metadataToUpdate,
+      tree: MetadataUtils.createElementPathTreeFromMetadata(options.metadataToUpdate), // TODO this should return a cached tree
+    }
+  }
+
   let result
   if (elementsToFocusOn == 'rerender-all-elements') {
     result = collectMetadataForPaths(canvasRootContainer, validPaths, validPaths, {}, options)
