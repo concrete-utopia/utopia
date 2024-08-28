@@ -1,4 +1,5 @@
 import type {
+  ElementPath,
   JSExpressionNestedObject,
   JSExpressionValue,
   JSXAttributesEntry,
@@ -14,14 +15,14 @@ import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import type { GridResizeEdge } from '../interaction-state'
 import { gridCellTargetId } from './grid-helpers'
+import { wait } from '../../../../core/model/performance-scripts'
 
 async function runCellResizeTest(
   editor: EditorRenderResult,
   edge: GridResizeEdge,
   dragToCellTestId: string,
+  elementPathToDrag: ElementPath = EP.fromString('sb/scene/grid/ddd'),
 ) {
-  const elementPathToDrag = EP.fromString('sb/scene/grid/ddd')
-
   await selectComponentsForTest(editor, [elementPathToDrag])
 
   const resizeControl = editor.renderedDOM.getByTestId(GridResizeEdgeTestId(edge))
@@ -234,6 +235,98 @@ describe('grid rearrange move strategy', () => {
       ['gridColumnEnd', 11],
       ['gridRow', 2],
     ])
+  })
+
+  describe('grids inside grids', () => {
+    it("can move a grid element that's also a grid", async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-uid='grid'
+      data-testid='grid'
+      style={{
+        position: 'absolute',
+        left: -94,
+        top: 698,
+        display: 'grid',
+        gap: 10,
+        width: 600,
+        height: 'max-content',
+        gridTemplateColumns: '2.4fr 1fr 1fr',
+        gridTemplateRows: '99px 109px 90px',
+      }}
+    >
+      <div
+        data-uid='grid-inside-grid'
+        data-testid='grid-inside-grid'
+        style={{
+          backgroundColor: 'green',
+          contain: 'layout',
+          display: 'grid',
+          gap: 5,
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gridTemplateRows: '1fr',
+          gridColumn: 1,
+          gridRow: 2,
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 66,
+            height: 67,
+            contain: 'layout',
+          }}
+          data-uid='ad3e425d-a224-44a9-a303-465f80e0'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 66,
+            height: 67,
+            contain: 'layout',
+          }}
+          data-uid='d805fd1f-fdcd-422f-a785-f023409c'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 66,
+            height: 67,
+            contain: 'layout',
+          }}
+          data-uid='b2124463-bd84-414f-960b-29689a92'
+        />
+      </div>
+    </div>
+  </Storyboard>
+)
+`,
+        'await-first-dom-report',
+      )
+
+      await runCellResizeTest(
+        editor,
+        'column-end',
+        gridCellTargetId(EP.fromString('sb/grid'), 2, 3),
+        EP.fromString('sb/grid/grid-inside-grid'),
+      )
+
+      {
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('grid-inside-grid').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: '4',
+          gridColumnStart: '1',
+          gridRowEnd: 'auto',
+          gridRowStart: '2',
+        })
+      }
+    })
   })
 })
 

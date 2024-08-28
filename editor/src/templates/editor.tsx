@@ -47,6 +47,7 @@ import type {
   PersistentModel,
   ElementsToRerender,
   GithubRepoWithBranch,
+  EditorState,
 } from '../components/editor/store/editor-state'
 import {
   createEditorState,
@@ -134,6 +135,7 @@ import {
   traverseArray,
   traverseReadOnlyArray,
 } from '../core/shared/optics/optic-creators'
+import { keysEqualityExhaustive } from '../core/shared/equality-utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -457,14 +459,13 @@ export class Editor {
 
       const reactRouterErrorPreviouslyLogged = hasReactRouterErrorBeenLogged()
 
-      const runDomWalker = shouldRunDOMWalker(dispatchedActions, oldEditorState, this.storedState)
-
-      const shouldRerender =
-        runDomWalker && !anyCodeAhead(dispatchResult.unpatchedEditor.projectContents)
+      const shouldUpdateCanvasStore =
+        !dispatchResult.nothingChanged &&
+        !anyCodeAhead(dispatchResult.unpatchedEditor.projectContents)
 
       const updateId = canvasUpdateId++
-      if (shouldRerender) {
-        // TODO: not running this if nothing has changed in the result might give another performance benefit
+      if (shouldUpdateCanvasStore) {
+        // this will re-render the canvas root and potentially the canvas contents itself
         Measure.taskTime(`update canvas ${updateId}`, () => {
           const currentElementsToRender = fixElementsToRerender(
             this.storedState.patchedEditor.canvas.elementsToRerender,
@@ -479,8 +480,10 @@ export class Editor {
         })
       }
 
+      const runDomWalker = shouldRunDOMWalker(dispatchedActions, oldEditorState, this.storedState)
+
       // run the dom-walker
-      if (shouldRerender || runDomWalker) {
+      if (runDomWalker) {
         const domWalkerDispatchResult = runDomWalkerAndSaveResults(
           this.boundDispatch,
           this.domWalkerMutableState,
@@ -845,7 +848,32 @@ export function shouldRunDOMWalker(
     patchedEditorBefore.nodeModules !== patchedEditorAfter.nodeModules ||
     patchedEditorBefore.selectedViews !== patchedEditorAfter.selectedViews ||
     patchedEditorBefore.focusedElementPath !== patchedEditorAfter.focusedElementPath ||
-    patchedEditorBefore.canvas !== patchedEditorAfter.canvas
+    !keysEqualityExhaustive<EditorState['canvas']>()({
+      include: [
+        'base64Blobs',
+        'canvasContentInvalidateCount',
+        'domWalkerAdditionalElementsToUpdate',
+        'domWalkerInvalidateCount',
+        'elementsToRerender',
+        'mountCount',
+        'scale',
+        'transientProperties',
+      ],
+      exclude: [
+        'controls',
+        'cursor',
+        'duplicationState',
+        'interactionSession',
+        'openFile',
+        'realCanvasOffset',
+        'resizeOptions',
+        'roundedCanvasOffset',
+        'scrollAnimation',
+        'selectionControlsVisible',
+        'snappingThreshold',
+        'textEditor',
+      ],
+    })(patchedEditorBefore.canvas, patchedEditorAfter.canvas)
 
   const patchedDerivedBefore = storeBefore.patchedDerived
   const patchedDerivedAfter = storeAfter.patchedDerived

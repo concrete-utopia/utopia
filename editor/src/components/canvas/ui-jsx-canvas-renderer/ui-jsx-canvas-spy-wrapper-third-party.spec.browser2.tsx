@@ -240,39 +240,6 @@ xdescribe('Spy Wrapper Tests For React Three Fiber', () => {
       }
     `,
     )
-    const domMetadata = getEditorState().editor.domMetadata
-    const sanitizedDomMetadata = simplifiedMetadataMap(domMetadata)
-    matchInlineSnapshotBrowser(
-      sanitizedDomMetadata,
-      `
-      Object {
-        "storyboard": Object {
-          "name": "Storyboard",
-        },
-        "storyboard/scene-1": Object {
-          "name": "div",
-        },
-        "storyboard/scene-1/canvas-app": Object {
-          "name": "div",
-        },
-        "storyboard/scene-1/canvas-app:canvas-app-div": Object {
-          "name": "div",
-        },
-        "storyboard/scene-2": Object {
-          "name": "div",
-        },
-        "storyboard/scene-2/app": Object {
-          "name": "div",
-        },
-        "storyboard/scene-2/app:app-root": Object {
-          "name": "div",
-        },
-        "storyboard/scene-2/app:app-root/app-inner-div": Object {
-          "name": "div",
-        },
-      }
-    `,
-    )
     const jsxMetadata = getEditorState().editor.jsxMetadata
     const sanitizedJsxMetadata = simplifiedMetadataMap(jsxMetadata)
     matchInlineSnapshotBrowser(

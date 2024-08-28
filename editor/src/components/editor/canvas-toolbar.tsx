@@ -4,7 +4,7 @@
 import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
-import { Icons, LargerIcons, SmallerIcons, Tile, UtopiaStyles, opacity } from '../../uuiui'
+import { Button, Icons, LargerIcons, SmallerIcons, Tile, UtopiaStyles, opacity } from '../../uuiui'
 import { UtopiaTheme } from '../../uuiui'
 import {
   colorTheme,
@@ -74,6 +74,7 @@ import {
 } from './shortcut-definitions'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
+export const InsertOrEditTextButtonTestId = 'insert-or-edit-text-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
 export const CommentModeButtonTestId = (status: string) => `canvas-toolbar-comment-mode-${status}`
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
@@ -222,6 +223,7 @@ export const CanvasToolbar = React.memo(() => {
   // Back to select mode, close the "floating" menu and turn off the forced insert mode.
   const dispatchSwitchToSelectModeCloseMenus = React.useCallback(() => {
     switchToSelectModeCloseMenus(dispatch)
+    dispatch([CanvasActions.clearInteractionSession(false)])
   }, [dispatch])
 
   const zoomLevel = useEditorState(
@@ -248,23 +250,23 @@ export const CanvasToolbar = React.memo(() => {
   const isLiveMode = editorMode === 'live'
   const toggleLiveMode = React.useCallback(() => {
     if (isLiveMode) {
-      dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+      dispatchSwitchToSelectModeCloseMenus()
     } else {
       dispatch([switchEditorMode(EditorModes.liveMode())])
     }
-  }, [dispatch, isLiveMode])
+  }, [dispatch, isLiveMode, dispatchSwitchToSelectModeCloseMenus])
 
   const isCommentMode = editorMode === 'comment'
   const toggleCommentMode = React.useCallback(() => {
     if (isCommentMode) {
-      dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+      dispatchSwitchToSelectModeCloseMenus()
     } else {
       dispatch([
         switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
         setRightMenuTab(RightMenuTab.Comments),
       ])
     }
-  }, [dispatch, isCommentMode])
+  }, [dispatch, isCommentMode, dispatchSwitchToSelectModeCloseMenus])
 
   const resetCanvasCallback = React.useCallback(() => {
     dispatch([resetCanvas()])
@@ -387,7 +389,7 @@ export const CanvasToolbar = React.memo(() => {
 
   const panelSelectorOpenButton = React.useCallback(
     (open: boolean) => (
-      <InsertModeButton
+      <ToolbarButton
         testid={commentButtonTestId}
         iconType={'panels'}
         iconCategory='tools'
@@ -423,7 +425,7 @@ export const CanvasToolbar = React.memo(() => {
         }}
       >
         <Tooltip title='Edit' placement='bottom'>
-          <InsertModeButton
+          <ToolbarButton
             iconType={editButtonIcon.type}
             iconCategory={editButtonIcon.category}
             primary={canvasToolbarMode.primary === 'edit'}
@@ -436,7 +438,8 @@ export const CanvasToolbar = React.memo(() => {
           allowedToEdit,
           <>
             <Tooltip title='Insert or Edit Text' placement='bottom'>
-              <InsertModeButton
+              <ToolbarButton
+                testid={InsertOrEditTextButtonTestId}
                 iconType='text'
                 iconCategory='tools'
                 primary={canvasToolbarMode.primary === 'text'}
@@ -445,7 +448,7 @@ export const CanvasToolbar = React.memo(() => {
               />
             </Tooltip>
             <Tooltip title='Insert' placement='bottom'>
-              <InsertModeButton
+              <ToolbarButton
                 testid={InsertMenuButtonTestId}
                 iconType='insert'
                 iconCategory='tools'
@@ -457,7 +460,7 @@ export const CanvasToolbar = React.memo(() => {
           </>,
         )}
         <Tooltip title='Live Mode' placement='bottom'>
-          <InsertModeButton
+          <ToolbarButton
             testid={PlayModeButtonTestId}
             iconType={'play'}
             iconCategory='tools'
@@ -470,7 +473,7 @@ export const CanvasToolbar = React.memo(() => {
           canComment,
           <div style={{ display: 'flex', width: 26 }}>
             <Tooltip title={commentButtonTooltip} placement='bottom'>
-              <InsertModeButton
+              <ToolbarButton
                 testid={commentButtonTestId}
                 iconType={'comment'}
                 iconCategory='tools'
@@ -503,7 +506,7 @@ export const CanvasToolbar = React.memo(() => {
           </SquareButton>
         </Tooltip>
         <Tooltip title='Reset Canvas' placement='bottom'>
-          <InsertModeButton
+          <ToolbarButton
             iconType='refresh'
             iconCategory='semantic'
             onClick={resetCanvasCallback}
@@ -530,7 +533,7 @@ export const CanvasToolbar = React.memo(() => {
             <FlexColumn style={{ padding: '3px 8px 0 8px', flexGrow: 1 }}>
               <FlexRow>
                 <Tooltip title='Back' placement='bottom'>
-                  <InsertModeButton
+                  <ToolbarButton
                     iconCategory='semantic'
                     iconType='icon-semantic-back'
                     onClick={dispatchSwitchToSelectModeCloseMenus}
@@ -538,28 +541,28 @@ export const CanvasToolbar = React.memo(() => {
                   />
                 </Tooltip>
                 <Tooltip title='Insert div' placement='bottom'>
-                  <InsertModeButton
+                  <ToolbarButton
                     iconType='view'
                     secondary={canvasToolbarMode.secondary.divInsertionActive}
                     onClick={insertDivCallback}
                   />
                 </Tooltip>
                 <Tooltip title='Insert image' placement='bottom'>
-                  <InsertModeButton
+                  <ToolbarButton
                     iconType='image'
                     secondary={canvasToolbarMode.secondary.imageInsertionActive}
                     onClick={insertImgCallback}
                   />
                 </Tooltip>
                 <Tooltip title='Insert button' placement='bottom'>
-                  <InsertModeButton
+                  <ToolbarButton
                     iconType='clickable'
                     secondary={canvasToolbarMode.secondary.buttonInsertionActive}
                     onClick={insertButtonCallback}
                   />
                 </Tooltip>
                 <Tooltip title='Insert conditional' placement='bottom'>
-                  <InsertModeButton
+                  <ToolbarButton
                     testid={InsertConditionalButtonTestId}
                     iconType='conditional'
                     secondary={canvasToolbarMode.secondary.conditionalInsertionActive}
@@ -581,7 +584,7 @@ export const CanvasToolbar = React.memo(() => {
   )
 })
 
-interface InsertModeButtonProps {
+interface ToolbarButtonProps {
   iconType: string
   iconCategory?: string
   primary?: boolean
@@ -593,7 +596,7 @@ interface InsertModeButtonProps {
   size?: number
   disabled?: boolean
 }
-const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
+const ToolbarButton = React.memo((props: ToolbarButtonProps) => {
   const [isHovered, setIsHovered] = useState(false)
   const keepActiveInLiveMode = props.keepActiveInLiveMode ?? false
   const primary = props.primary ?? false
@@ -621,7 +624,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   }, [])
 
   return (
-    <SquareButton
+    <Button
       data-testid={props.testid}
       style={{ height: 26, width: 26, borderRadius: 3, ...props.style }}
       primary={primary}
@@ -629,7 +632,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
       highlight
       onClick={props.onClick}
       disabled={disabled || (canvasInLiveMode && !keepActiveInLiveMode)}
-      overriddenBackground={secondary ? 'transparent' : undefined}
+      overriddenBackground={props.primary ? undefined : 'transparent'}
       onMouseEnter={setIsHoveredTrue}
       onMouseLeave={setIsHoveredFalse}
     >
@@ -647,7 +650,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
             : 'main'
         }
       />
-    </SquareButton>
+    </Button>
   )
 })
 

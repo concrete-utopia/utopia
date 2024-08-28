@@ -1,5 +1,10 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { reverse, stripNulls } from '../../core/shared/array-utils'
+import {
+  createArrayWithLength,
+  matrixGetter,
+  reverse,
+  stripNulls,
+} from '../../core/shared/array-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { defaultEither, isLeft, mapEither, right } from '../../core/shared/either'
 import type {
@@ -7,7 +12,7 @@ import type {
   ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
 import { isJSXElement } from '../../core/shared/element-template'
-import type { CanvasRectangle, CanvasVector } from '../../core/shared/math-utils'
+import type { CanvasRectangle, CanvasVector, Size } from '../../core/shared/math-utils'
 import { canvasRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
@@ -22,6 +27,11 @@ import { isReversedFlexDirection } from '../../core/model/flex-utils'
 import * as EP from '../../core/shared/element-path'
 import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragment-like-helpers'
 import type { AllElementProps } from '../editor/store/editor-state'
+import type { GridData } from './controls/grid-controls'
+import {
+  getGridPlaceholderDomElement,
+  getNullableAutoOrTemplateBaseString,
+} from './controls/grid-controls'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -53,6 +63,17 @@ export function cursorFromFlexDirection(direction: FlexDirection): CSSCursor {
       return CSSCursor.GapEW
     default:
       assertNever(direction)
+  }
+}
+
+export function cursorFromAxis(axis: Axis): CSSCursor {
+  switch (axis) {
+    case 'column':
+      return CSSCursor.GapEW
+    case 'row':
+      return CSSCursor.GapNS
+    default:
+      assertNever(axis)
   }
 }
 
@@ -153,6 +174,155 @@ export function gapControlBoundsFromMetadata(
   )
 }
 
+export function gridGapControlBoundsFromMetadata(
+  parentPath: ElementPath,
+  gridRowColumnInfo: GridData,
+  gapValues: { row: CSSNumber; column: CSSNumber },
+  scale: number,
+): {
+  gaps: Array<{
+    bounds: CanvasRectangle
+    gapId: string
+    gap: CSSNumber
+    axis: Axis
+  }>
+  rows: number
+  columns: number
+  cellBounds: CanvasRectangle
+  gapValues: { row: CSSNumber; column: CSSNumber }
+  gridTemplateRows: string
+  gridTemplateColumns: string
+} {
+  const parentGrid = getGridPlaceholderDomElement(parentPath)
+  if (parentGrid == null) {
+    return {
+      rows: 0,
+      columns: 0,
+      gaps: [],
+      cellBounds: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
+      gapValues: gapValues,
+      gridTemplateRows: '1fr',
+      gridTemplateColumns: '1fr',
+    }
+  }
+  const parentGridBounds = parentGrid?.getBoundingClientRect()
+  const gridRows = gridRowColumnInfo.rows
+  const gridColumns = gridRowColumnInfo.columns
+  const gridTemplateRows = getNullableAutoOrTemplateBaseString(gridRowColumnInfo.gridTemplateRows)
+  const gridTemplateColumns = getNullableAutoOrTemplateBaseString(
+    gridRowColumnInfo.gridTemplateColumns,
+  )
+  const cell = matrixGetter(Array.from(parentGrid?.children ?? []), gridColumns)
+  // the actual rectangle that surrounds the cell placeholders
+  const cellBounds = canvasRectangle({
+    x: cell(0, 0).getBoundingClientRect().x - parentGridBounds.x,
+    y: cell(0, 0).getBoundingClientRect().y - parentGridBounds.y,
+    width:
+      cell(0, gridColumns - 1).getBoundingClientRect().right - cell(0, 0).getBoundingClientRect().x,
+    height:
+      cell(gridRows - 1, 0).getBoundingClientRect().bottom - cell(0, 0).getBoundingClientRect().y,
+  })
+
+  // row gaps array
+  const rowGaps = createArrayWithLength(gridRows - 1, (i) => {
+    // cell i represents the gap between child [i * gridColumns] and child [(i+1) * gridColumns]
+    const firstChildBounds = cell(i, 0).getBoundingClientRect()
+    const secondChildBounds = cell(i + 1, 0).getBoundingClientRect()
+    return {
+      gapId: `${EP.toString(parentPath)}-row-gap-${i}`,
+      bounds: adjustToScale(
+        canvasRectangle({
+          x: cellBounds.x,
+          y: firstChildBounds.bottom - parentGridBounds.y,
+          width: cellBounds.width,
+          height: secondChildBounds.top - firstChildBounds.bottom,
+        }),
+        scale,
+      ),
+      gap: gapValues.row,
+      axis: 'row' as Axis,
+    }
+  })
+
+  // column gaps array
+  const columnGaps = createArrayWithLength(gridColumns - 1, (i) => {
+    // cell i represents the gap between child [i] and child [i + 1]
+    const firstChildBounds = cell(0, i).getBoundingClientRect()
+    const secondChildBounds = cell(0, i + 1).getBoundingClientRect()
+    return {
+      gapId: `${EP.toString(parentPath)}-column-gap-${i}`,
+      bounds: adjustToScale(
+        canvasRectangle({
+          x: firstChildBounds.right - parentGridBounds.x,
+          y: cellBounds.y,
+          width: secondChildBounds.left - firstChildBounds.right,
+          height: cellBounds.height,
+        }),
+        scale,
+      ),
+      gap: gapValues.column,
+      axis: 'column' as Axis,
+    }
+  })
+
+  return {
+    gaps: rowGaps.concat(columnGaps),
+    rows: gridRows,
+    columns: gridColumns,
+    gridTemplateRows: gridTemplateRows ?? '',
+    gridTemplateColumns: gridTemplateColumns ?? '',
+    cellBounds: cellBounds,
+    gapValues: gapValues,
+  }
+}
+
+function adjustToScale(rectangle: CanvasRectangle, scale: number): CanvasRectangle {
+  return canvasRectangle({
+    x: rectangle.x / scale,
+    y: rectangle.y / scale,
+    width: rectangle.width / scale,
+    height: rectangle.height / scale,
+  })
+}
+
+export interface GridGapData {
+  row: CSSNumberWithRenderedValue
+  column: CSSNumberWithRenderedValue
+}
+
+export function maybeGridGapData(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): GridGapData | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (
+    element == null ||
+    element.specialSizeMeasurements.display !== 'grid' ||
+    isLeft(element.element) ||
+    !isJSXElement(element.element.value)
+  ) {
+    return null
+  }
+
+  const rowGap = element.specialSizeMeasurements.rowGap ?? element.specialSizeMeasurements.gap ?? 0
+  const rowGapFromProps: CSSNumber | undefined = defaultEither(
+    undefined,
+    getLayoutProperty('rowGap', right(element.element.value.props), styleStringInArray),
+  )
+
+  const columnGap =
+    element.specialSizeMeasurements.columnGap ?? element.specialSizeMeasurements.gap ?? 0
+  const columnGapFromProps: CSSNumber | undefined = defaultEither(
+    undefined,
+    getLayoutProperty('columnGap', right(element.element.value.props), styleStringInArray),
+  )
+
+  return {
+    row: { renderedValuePx: rowGap, value: rowGapFromProps ?? null },
+    column: { renderedValuePx: columnGap, value: columnGapFromProps ?? null },
+  }
+}
+
 export interface FlexGapData {
   value: CSSNumberWithRenderedValue
   direction: FlexDirection
@@ -231,3 +401,5 @@ export function recurseIntoChildrenOfMapOrFragment(
     return [instance]
   })
 }
+
+export type Axis = 'row' | 'column'

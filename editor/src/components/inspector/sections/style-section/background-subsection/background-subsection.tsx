@@ -343,18 +343,14 @@ export const BackgroundSubsection = React.memo(() => {
           <span>Background</span>
         </FlexRow>
         {propertyStatus.overwritable ? (
-          <FlexRow style={{ gap: 4 }}>
+          <FlexRow>
             <RemovePropertyButton
               testId='inspector-background-remove-all'
               onUnsetValues={onUnsetSubsectionValues}
               propertySet={propertyStatus.set}
             />
-            <SquareButton
-              highlight
-              onMouseDown={insertBackgroundLayerMouseDown}
-              style={{ width: 12 }}
-            >
-              <Icn category='semantic' type='plus' width={12} height={12} />
+            <SquareButton highlight onMouseDown={insertBackgroundLayerMouseDown}>
+              <Icons.SmallPlus />
             </SquareButton>
           </FlexRow>
         ) : null}

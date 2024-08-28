@@ -317,22 +317,26 @@ export function staticReparentAndUpdatePosition(
           oldPathToNewPathMapping,
         )
 
-        const absolutePositioningCommands =
-          strategy === 'REPARENT_AS_STATIC'
-            ? []
-            : positionElementToCoordinatesCommands(
-                { oldPath: elementToInsert.elementPath, newPath: newPath },
-                pasteContext.originalAllElementProps,
-                {
-                  originalTargetMetadata:
-                    pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
-                  originalPathTrees: pasteContext.targetOriginalPathTrees,
-                  currentMetadata: editor.jsxMetadata,
-                  currentPathTrees: editor.elementPathTree,
-                },
-                elementToInsert.intendedCoordinates,
-                oldPathToNewPathMapping,
-              )
+        function getAbsolutePositioningCommands(targetPath: ElementPath): Array<CanvasCommand> {
+          if (strategy === 'REPARENT_AS_ABSOLUTE') {
+            return positionElementToCoordinatesCommands(
+              { oldPath: elementToInsert.elementPath, newPath: targetPath },
+              pasteContext.originalAllElementProps,
+              {
+                originalTargetMetadata:
+                  pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+                originalPathTrees: pasteContext.targetOriginalPathTrees,
+                currentMetadata: editor.jsxMetadata,
+                currentPathTrees: editor.elementPathTree,
+              },
+              elementToInsert.intendedCoordinates,
+              oldPathToNewPathMapping,
+            )
+          } else {
+            return []
+          }
+        }
+        const absolutePositioningCommands = getAbsolutePositioningCommands(newPath)
 
         const propertyCommands = [...propertyChangeCommands, ...absolutePositioningCommands]
 

@@ -3,7 +3,7 @@
 import type { Interpolation } from '@emotion/react'
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { colorTheme } from '../../../uuiui'
+import { UtopiaTheme, colorTheme } from '../../../uuiui'
 import type { IcnProps } from '../../../uuiui'
 import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { OptionControl } from './option-control'
@@ -64,8 +64,8 @@ export const OptionChainControl: React.FunctionComponent<
         style={{
           display: 'flex',
           flexDirection: 'row',
-          border: `1px solid ${colorTheme.bg2.value}`,
-          borderRadius: 3,
+          border: `1px solid ${colorTheme.bg4.value}`,
+          borderRadius: UtopiaTheme.inputBorderRadius,
           padding: '1px',
         }}
         className={`option-chain-control-container ${Utils.pathOr(

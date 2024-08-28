@@ -2,7 +2,7 @@ import React from 'react'
 import type { EqualityChecker, Mutate, StoreApi, UseBoundStore } from 'zustand'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { shallowEqual } from '../../../core/shared/equality-utils'
+import { keysEquality, shallowEqual } from '../../../core/shared/equality-utils'
 import { objectMap } from '../../../core/shared/object-utils'
 import {
   MultiplayerSubstateKeepDeepEquality,
@@ -367,11 +367,4 @@ function tailoredEqualFunctions<K extends keyof Substates>(
   key: K,
 ) {
   return SubstateEqualityFns[key](oldEditorStore, editorStore)
-}
-
-function keyEquality<T>(key: keyof T, a: T, b: T): boolean {
-  return a[key] === b[key]
-}
-function keysEquality<T>(keys: ReadonlyArray<keyof T>, a: T, b: T): boolean {
-  return keys.every((key) => keyEquality(key, a, b))
 }

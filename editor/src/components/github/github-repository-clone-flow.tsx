@@ -7,10 +7,19 @@ import invariant from '../../third-party/remix/invariant'
 import { useOnClickAuthenticateWithGithub } from '../../utils/github-auth-hooks'
 import { Dialog, FormButton } from '../../uuiui'
 import { isLoggedIn, type EditorDispatch } from '../editor/action-types'
-import { setGithubState, showToast, updateGithubData } from '../editor/actions/action-creators'
+import {
+  openCodeEditorFile,
+  setGithubState,
+  showToast,
+  updateGithubData,
+} from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import type { GithubUser } from '../editor/store/editor-state'
-import { type EditorStorePatched, type GithubRepoWithBranch } from '../editor/store/editor-state'
+import {
+  StoryboardFilePath,
+  type EditorStorePatched,
+  type GithubRepoWithBranch,
+} from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { onClickSignIn } from '../titlebar/title-bar'
 import { CloneParamKey } from '../editor/persistence/persistence-backend'
@@ -136,6 +145,7 @@ async function cloneGithubRepo(
   dispatch([
     setGithubState({ gitRepoToLoad: null }),
     updateGithubData({ publicRepositories: [repositoryEntry] }),
+    openCodeEditorFile(StoryboardFilePath, false),
   ])
 }
 

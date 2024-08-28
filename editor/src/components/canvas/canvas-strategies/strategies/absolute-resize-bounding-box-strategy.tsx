@@ -476,10 +476,11 @@ function getConstrainedSizes(
       constraints.right ||
       constraints.width
 
+    const localFrame = MetadataUtils.getLocalFrame(element.elementPath, jsxMetadata)
     if (
       isConstrained &&
-      element.localFrame != null &&
-      isFiniteRectangle(element.localFrame) &&
+      localFrame != null &&
+      isFiniteRectangle(localFrame) &&
       element.globalFrame != null &&
       isFiniteRectangle(element.globalFrame)
     ) {
@@ -502,16 +503,16 @@ function getConstrainedSizes(
           constraints.right,
           constraints.width,
           originalFrame.width,
-          element.localFrame.x,
-          element.localFrame.width + offsetDiffX,
+          localFrame.x,
+          localFrame.width + offsetDiffX,
         ),
         height: getBoundDimension(
           constraints.top,
           constraints.bottom,
           constraints.height,
           originalFrame.height,
-          element.localFrame.y,
-          element.localFrame.height + offsetDiffY,
+          localFrame.y,
+          localFrame.height + offsetDiffY,
         ),
       })
     }

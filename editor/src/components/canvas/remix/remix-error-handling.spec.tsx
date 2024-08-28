@@ -16,14 +16,35 @@ describe('Remix error handling', () => {
   it('Supports a user-defined error boundary', async () => {
     const { customBoundary, canvasOverlay } = await runTestReturningErrorBoundaries(
       'with-custom-boundary',
+      'use-error-boundaries',
     )
-    expect(customBoundary).not.toBeNull()
+
     expect(canvasOverlay).toBeNull()
   })
 
   it('Bubbles errors to the canvas if no error boundary exists', async () => {
     const { customBoundary, canvasOverlay } = await runTestReturningErrorBoundaries(
       'without-custom-boundary',
+      'use-error-boundaries',
+    )
+
+    expect(customBoundary).toBeNull()
+    expect(canvasOverlay).not.toBeNull()
+  })
+  it('Supports a user-defined error boundary, ignoring it', async () => {
+    const { customBoundary, canvasOverlay } = await runTestReturningErrorBoundaries(
+      'with-custom-boundary',
+      'ignore-error-boundaries',
+    )
+
+    expect(customBoundary).toBeNull()
+    expect(canvasOverlay).not.toBeNull()
+  })
+
+  it('Bubbles errors to the canvas if no error boundary exists, ignoring any error boundaries', async () => {
+    const { customBoundary, canvasOverlay } = await runTestReturningErrorBoundaries(
+      'without-custom-boundary',
+      'ignore-error-boundaries',
     )
 
     expect(customBoundary).toBeNull()

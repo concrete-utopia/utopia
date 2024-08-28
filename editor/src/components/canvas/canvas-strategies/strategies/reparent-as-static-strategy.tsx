@@ -66,38 +66,7 @@ export function baseReparentAsStaticStrategy(
 
     return {
       ...getDescriptivePropertiesOfReparentToStaticStrategy(targetLayout),
-      controlsToRender: [
-        controlWithProps({
-          control: ParentOutlines,
-          props: { targetParent: reparentTarget.newParent.intendedParentPath },
-          key: 'parent-outlines-control',
-          show: 'visible-only-while-active',
-        }),
-        controlWithProps({
-          control: ParentBounds,
-          props: { targetParent: reparentTarget.newParent.intendedParentPath },
-          key: 'parent-bounds-control',
-          show: 'visible-only-while-active',
-        }),
-        controlWithProps({
-          control: FlexReparentTargetIndicator,
-          props: {},
-          key: 'flex-reparent-target-indicator',
-          show: 'visible-only-while-active',
-        }),
-        controlWithProps({
-          control: ZeroSizedElementControls,
-          props: { showAllPossibleElements: true },
-          key: 'zero-size-control',
-          show: 'visible-only-while-active',
-        }),
-        controlWithProps({
-          control: StaticReparentTargetOutlineIndicator,
-          props: {},
-          key: 'parent-outline-highlight',
-          show: 'visible-only-while-active',
-        }),
-      ],
+      controlsToRender: controlsForStaticReparent(reparentTarget),
       fitness: shouldKeepMovingDraggedGroupChildren(
         canvasState.startingMetadata,
         selectedElements,
@@ -115,6 +84,41 @@ export function baseReparentAsStaticStrategy(
       },
     }
   }
+}
+
+export function controlsForStaticReparent(reparentTarget: ReparentTarget) {
+  return [
+    controlWithProps({
+      control: ParentOutlines,
+      props: { targetParent: reparentTarget.newParent.intendedParentPath },
+      key: 'parent-outlines-control',
+      show: 'visible-only-while-active',
+    }),
+    controlWithProps({
+      control: ParentBounds,
+      props: { targetParent: reparentTarget.newParent.intendedParentPath },
+      key: 'parent-bounds-control',
+      show: 'visible-only-while-active',
+    }),
+    controlWithProps({
+      control: FlexReparentTargetIndicator,
+      props: {},
+      key: 'flex-reparent-target-indicator',
+      show: 'visible-only-while-active',
+    }),
+    controlWithProps({
+      control: ZeroSizedElementControls,
+      props: { showAllPossibleElements: true },
+      key: 'zero-size-control',
+      show: 'visible-only-while-active',
+    }),
+    controlWithProps({
+      control: StaticReparentTargetOutlineIndicator,
+      props: {},
+      key: 'parent-outline-highlight',
+      show: 'visible-only-while-active',
+    }),
+  ]
 }
 
 function getDescriptivePropertiesOfReparentToStaticStrategy(
@@ -146,7 +150,7 @@ function getDescriptivePropertiesOfReparentToStaticStrategy(
   }
 }
 
-function applyStaticReparent(
+export function applyStaticReparent(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
   customStrategyState: CustomStrategyState,

@@ -105,7 +105,6 @@ export const TargetSelectorPanel = React.memo((props: TargetSelectorPanelProps) 
         position: 'relative',
         userSelect: 'none',
         WebkitUserSelect: 'none',
-        borderTop: `1px solid ${colorTheme.seperator.value}`,
       }}
     >
       <TargetListHeader
@@ -380,7 +379,6 @@ interface TargetListHeaderProps {
 }
 
 const TargetListHeader = React.memo((props: TargetListHeaderProps) => {
-  const colorTheme = useColorTheme()
   const { isOpen, setIsOpen, setAddingIndex, selectedTargetPath, isAdding, targetIndex } = props
 
   const startAdding = React.useCallback(() => {
@@ -396,7 +394,7 @@ const TargetListHeader = React.memo((props: TargetListHeaderProps) => {
         paddingLeft: 8,
         paddingRight: 8,
         cursor: 'pointer',
-        height: 42,
+        height: 38,
       }}
     >
       <H1
@@ -409,11 +407,11 @@ const TargetListHeader = React.memo((props: TargetListHeaderProps) => {
       >
         Target
       </H1>
-      <SectionActionSheet className='actionsheet' style={{ gap: 4 }}>
-        <SquareButton highlight disabled={isAdding} onClick={startAdding} style={{ width: 12 }}>
+      <SectionActionSheet className='actionsheet'>
+        <SquareButton highlight disabled={isAdding} onClick={startAdding}>
           <Icn category='semantic' type='cross' width={12} height={12} />
         </SquareButton>
-        <SquareButton highlight onClick={togglePathPanel} style={{ width: 12 }}>
+        <SquareButton highlight onClick={togglePathPanel}>
           <ExpandableIndicator
             testId='target-selector'
             visible
