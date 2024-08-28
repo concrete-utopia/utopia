@@ -79,6 +79,7 @@ import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasLabel } from './select-mode/controls-common'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import type { Sides } from 'utopia-api/core'
+import type { Axis } from '../gap-utils'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
@@ -106,7 +107,7 @@ function getCellsCount(template: GridAutoOrTemplateBase | null): number {
   }
 }
 
-function getNullableAutoOrTemplateBaseString(
+export function getNullableAutoOrTemplateBaseString(
   template: GridAutoOrTemplateBase | null,
 ): string | undefined {
   if (template == null) {
@@ -143,7 +144,7 @@ const GRID_RESIZE_HANDLE_SIZE = 15 // px
 export interface GridResizingControlProps {
   dimension: GridDimension
   dimensionIndex: number
-  axis: 'row' | 'column'
+  axis: Axis
   containingFrame: CanvasRectangle
   fromPropsAxisValues: GridAutoOrTemplateBase | null
   padding: number | null
@@ -300,7 +301,7 @@ export interface GridResizingProps {
   axisValues: GridAutoOrTemplateBase | null
   fromPropsAxisValues: GridAutoOrTemplateBase | null
   containingFrame: CanvasRectangle
-  axis: 'row' | 'column'
+  axis: Axis
   gap: number | null
   padding: Sides | null
 }
@@ -372,7 +373,22 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
 })
 GridResizing.displayName = 'GridResizing'
 
-function useGridData(elementPaths: ElementPath[]) {
+export type GridData = {
+  elementPath: ElementPath
+  frame: CanvasRectangle
+  gridTemplateColumns: GridAutoOrTemplateBase | null
+  gridTemplateRows: GridAutoOrTemplateBase | null
+  gridTemplateColumnsFromProps: GridAutoOrTemplateBase | null
+  gridTemplateRowsFromProps: GridAutoOrTemplateBase | null
+  gap: number | null
+  rowGap: number | null
+  columnGap: number | null
+  padding: Sides
+  rows: number
+  columns: number
+  cells: number
+}
+export function useGridData(elementPaths: ElementPath[]): GridData[] {
   const grids = useEditorState(
     Substores.metadata,
     (store) => {
@@ -760,7 +776,11 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
           }
 
           return (
-            <div key={`grid-${EP.toString(grid.elementPath)}`} style={style}>
+            <div
+              key={gridKeyFromPath(grid.elementPath)}
+              id={gridKeyFromPath(grid.elementPath)}
+              style={style}
+            >
               {placeholders.map((cell) => {
                 const countedRow = Math.floor(cell / grid.columns) + 1
                 const countedColumn = Math.floor(cell % grid.columns) + 1
@@ -1310,4 +1330,12 @@ function gridEdgeToWidthHeight(props: GridResizeEdgeProperties, scale: number): 
     right: props.isEnd ? 0 : undefined,
     bottom: props.isEnd ? 0 : undefined,
   }
+}
+
+function gridKeyFromPath(path: ElementPath): string {
+  return `grid-${EP.toString(path)}`
+}
+
+export function getGridPlaceholderDomElement(elementPath: ElementPath): HTMLElement | null {
+  return document.getElementById(gridKeyFromPath(elementPath))
 }

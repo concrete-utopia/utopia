@@ -72,6 +72,7 @@ import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
 import { gridRearrangeMoveDuplicateStrategy } from './strategies/grid-rearrange-move-duplicate-strategy'
+import { setGridGapStrategy } from './strategies/set-grid-gap-strategy'
 import type { CanvasCommand } from '../commands/commands'
 import { foldAndApplyCommandsInner } from '../commands/commands'
 import { updateFunctionCommand } from '../commands/update-function-command'
@@ -139,7 +140,7 @@ const propertyControlStrategies: MetaCanvasStrategy = (
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
     (factory) => factory(canvasState, interactionSession, customStrategyState),
-    [setPaddingStrategy, setFlexGapStrategy, setBorderRadiusStrategy],
+    [setPaddingStrategy, setFlexGapStrategy, setGridGapStrategy, setBorderRadiusStrategy],
   )
 }
 
