@@ -17,7 +17,7 @@ import { matchPath, matchRoutes } from 'react-router'
 import { useDispatch } from './store/dispatch-context'
 import { showToast } from './actions/action-creators'
 import { notice } from '../common/notice'
-import { defaultEither } from '../../core/shared/either'
+import { defaultEither, foldEither } from '../../core/shared/either'
 import { getFeaturedRoutesFromPackageJSON } from '../../printer-parsers/html/external-resources-parser'
 
 export const RemixNavigationBarPathTestId = 'remix-navigation-bar-path'
@@ -41,7 +41,12 @@ export const RemixNavigationBar = React.memo(() => {
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
   const routes = useEditorState(
     Substores.derived,
-    (store) => store.derived.remixData?.routes ?? [],
+    (store) =>
+      foldEither(
+        () => [],
+        (remixData) => remixData?.routes ?? [],
+        store.derived.remixData,
+      ),
     'RemixNavigationBar routes',
   )
   const featuredRoutes = useEditorState(

@@ -230,8 +230,8 @@ function lazyValue<T>(getter: () => T) {
 function getAttributesComingFromStyleSheets(element: HTMLElement): Set<string> {
   let appliedAttributes = new Set<string>()
   const sheets = document.styleSheets
-  try {
-    for (const i in sheets) {
+  for (const i in sheets) {
+    try {
       const sheet = sheets[i]
       const rules = sheet.rules ?? sheet.cssRules
       for (const r in rules) {
@@ -246,9 +246,11 @@ function getAttributesComingFromStyleSheets(element: HTMLElement): Set<string> {
           }
         }
       }
+    } catch (e) {
+      // ignore error, either JSDOM unit test related or we're trying to read one
+      // of the editor stylesheets from a CDN URL in a way that is blocked by our
+      // cross-origin policies
     }
-  } catch (e) {
-    // ignore error, probably JSDOM unit test related
   }
   return appliedAttributes
 }
@@ -507,10 +509,6 @@ export function backfillDomMetadata(
       mapDropNulls((c) => c.globalFrame, children),
     )
 
-    const childrenBoundingLocalFrame = getBoundingFrameFromChildren(
-      mapDropNulls((c) => c.localFrame, children),
-    )
-
     const childrenBoundingGlobalFrameWithTextContent = getBoundingFrameFromChildren(
       mapDropNulls((c) => c.specialSizeMeasurements.globalFrameWithTextContent, children),
     )
@@ -520,7 +518,6 @@ export function backfillDomMetadata(
       updatedMetadata[pathToFill] = elementInstanceMetadata(
         pathToFillPath,
         left('unknown'),
-        null,
         null,
         null,
         false,
@@ -542,7 +539,6 @@ export function backfillDomMetadata(
     updatedMetadata[pathToFill] = {
       ...currentMetadata,
       globalFrame: childrenBoundingGlobalFrame,
-      localFrame: childrenBoundingLocalFrame,
       nonRoundedGlobalFrame: childrenBoundingGlobalFrame,
       specialSizeMeasurements: {
         ...currentMetadata.specialSizeMeasurements,
@@ -816,7 +812,6 @@ function collectMetadataForElement(
 ): {
   tagName: string
   globalFrame: CanvasRectangle
-  localFrame: LocalRectangle
   nonRoundedGlobalFrame: CanvasRectangle
   specialSizeMeasurementsObject: SpecialSizeMeasurements
   textContentsMaybe: string | null
@@ -829,7 +824,6 @@ function collectMetadataForElement(
     'without-text-content',
     'nearest-half',
   )
-  const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
   const nonRoundedGlobalFrame = globalFrameForElement(
     element,
     scale,
@@ -850,7 +844,6 @@ function collectMetadataForElement(
   return {
     tagName: tagName,
     globalFrame: globalFrame,
-    localFrame: localFrame,
     nonRoundedGlobalFrame: nonRoundedGlobalFrame,
     specialSizeMeasurementsObject: specialSizeMeasurementsObject,
     textContentsMaybe: textContentsMaybe,
@@ -948,7 +941,6 @@ function collectAndCreateMetadataForElement(
   const {
     tagName,
     globalFrame,
-    localFrame,
     nonRoundedGlobalFrame,
     specialSizeMeasurementsObject,
     textContentsMaybe,
@@ -976,7 +968,6 @@ function collectAndCreateMetadataForElement(
       path,
       left(tagName),
       globalFrame,
-      localFrame,
       nonRoundedGlobalFrame,
       false,
       false,
@@ -1499,7 +1490,6 @@ function walkCanvasRootFragment(
       canvasRootPath,
       left('Storyboard'),
       infinityCanvasRectangle,
-      infinityLocalRectangle,
       infinityCanvasRectangle,
       false,
       false,

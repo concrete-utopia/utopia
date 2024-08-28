@@ -8,7 +8,7 @@ import type { ControlStatus } from '../../components/inspector/common/control-st
 import type { ControlStyles } from '../../components/inspector/common/control-styles'
 import { getControlStyles } from '../../components/inspector/common/control-styles'
 import { preventDefault, stopPropagation } from '../../components/inspector/common/inspector-utils'
-import { useColorTheme } from '../styles/theme'
+import { UtopiaTheme, useColorTheme } from '../styles/theme'
 import { InspectorInputEmotionStyle, getControlStylesAwarePlaceholder } from './base-input'
 import { useControlsDisabledInSubtree } from '../utilities/disable-subtree'
 import { dataPasteHandler } from '../../utils/paste-handler'
@@ -99,7 +99,7 @@ export const StringInput = React.memo(
             className='string-input-container'
             style={innerStyle}
             css={{
-              borderRadius: 2,
+              borderRadius: UtopiaTheme.inputBorderRadius,
               color: controlStyles.mainColor,
               position: 'relative',
               background: 'transparent',

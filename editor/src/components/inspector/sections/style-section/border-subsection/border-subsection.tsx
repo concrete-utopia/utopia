@@ -140,15 +140,13 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
           id='border-width'
           testId='border-width'
           value={borderWidth}
-          DEPRECATED_labelBelow='W'
-          labelBelowStyle={LabelBelowNumberTextStyles}
+          innerLabel='W'
           minimum={0}
           onSubmitValue={borderWidthSubmitValue}
           onTransientSubmitValue={borderWidthTransientSubmitValue}
           controlStatus={controlStatus}
           numberType='Length'
           defaultUnitToHide={'px'}
-          incrementControls={false}
         />
       </UIGridRow>
     )
@@ -176,19 +174,14 @@ export const BorderSubsection: React.FunctionComponent<React.PropsWithChildren<u
             <span>Border</span>
           </FlexRow>
           {propertyStatus.overwritable ? (
-            <FlexRow style={{ gap: 4 }}>
+            <FlexRow>
               <RemovePropertyButton
                 testId='inspector-border-remove-all'
                 onUnsetValues={onUnsetValues}
                 propertySet={propertyStatus.set}
               />
-              <SquareButton
-                highlight
-                onMouseDown={onInsertMouseDown}
-                disabled={borderSet}
-                style={{ width: 12 }}
-              >
-                <Icn category='semantic' type='plus' width={12} height={12} />
+              <SquareButton highlight onMouseDown={onInsertMouseDown} disabled={borderSet}>
+                <Icons.SmallPlus />
               </SquareButton>
             </FlexRow>
           ) : null}

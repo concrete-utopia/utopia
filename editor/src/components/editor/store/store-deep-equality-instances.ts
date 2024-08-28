@@ -266,6 +266,7 @@ import {
   unionDeepEquality,
   combine11EqualityCalls,
   combine16EqualityCalls,
+  combine15EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -360,6 +361,8 @@ import type {
   GithubUser,
   PullRequest,
   RenderedAt,
+  EditorRemixConfig,
+  ErrorBoundaryHandling,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -448,6 +451,7 @@ import type {
   GridAxisHandle,
   GridResizeHandle,
   GridResizeEdge,
+  GridGapHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
   boundingArea,
@@ -459,6 +463,7 @@ import {
   gridCellHandle,
   gridAxisHandle,
   gridResizeHandle,
+  gridGapHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import type { Modifiers } from '../../../utils/modifiers'
 import type {
@@ -636,6 +641,7 @@ import type {
   ComponentDescriptorBounds,
   ComponentDescriptorPropertiesBounds,
 } from '../../../core/property-controls/component-descriptor-parser'
+import type { Axis } from '../../../components/canvas/gap-utils'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -965,7 +971,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     (state) => state.branchOriginContentsChecksums,
     nullableDeepEquality(FileChecksumsWithFileKeepDeepEquality),
     (state) => state.remixData,
-    createCallWithTripleEquals(),
+    EitherKeepDeepEquality(createCallWithTripleEquals(), createCallWithTripleEquals()),
     (state) => state.filePathMappings,
     createCallWithShallowEquals(),
     (
@@ -2356,15 +2362,13 @@ export const EarlyReturnKeepDeepEquality: KeepDeepEqualityCall<
 }
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine16EqualityCalls(
+  combine15EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
     EitherKeepDeepEquality(createCallWithTripleEquals(), JSXElementChildKeepDeepEquality()),
     (metadata) => metadata.globalFrame,
     nullableDeepEquality(MaybeInfinityCanvasRectangleKeepDeepEquality),
-    (metadata) => metadata.localFrame,
-    nullableDeepEquality(MaybeInfinityLocalRectangleKeepDeepEquality),
     (metadata) => metadata.nonRoundedGlobalFrame,
     nullableDeepEquality(MaybeInfinityCanvasRectangleKeepDeepEquality),
     (metadata) => metadata.componentInstance,
@@ -2906,6 +2910,9 @@ export const GridResizeHandleKeepDeepEquality: KeepDeepEqualityCall<GridResizeHa
     gridResizeHandle,
   )
 
+export const GridGapHandleKeepDeepEquality: KeepDeepEqualityCall<GridGapHandle> =
+  combine1EqualityCall((handle) => handle.axis, createCallWithTripleEquals<Axis>(), gridGapHandle)
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -2959,6 +2966,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'GRID_RESIZE_HANDLE':
       if (newValue.type === oldValue.type) {
         return GridResizeHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'GRID_GAP_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return GridGapHandleKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
@@ -4981,6 +4993,17 @@ export const FrameOrPathKeepDeepEquality: KeepDeepEqualityCall<ActiveFrame> = co
   (target, action, source) => ({ target, action, source }),
 )
 
+export const RemixConfigKeepDeepEquality: KeepDeepEqualityCall<EditorRemixConfig> =
+  combine1EqualityCall(
+    (config) => config.errorBoundaryHandling,
+    createCallWithTripleEquals<ErrorBoundaryHandling>(),
+    (errorBoundaryHandling) => {
+      return {
+        errorBoundaryHandling: errorBoundaryHandling,
+      }
+    },
+  )
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -5282,6 +5305,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.sharingDialogOpen,
   )
 
+  const remixConfigResults = RemixConfigKeepDeepEquality(
+    oldValue.editorRemixConfig,
+    newValue.editorRemixConfig,
+  )
+
   const areEqual =
     idResult.areEqual &&
     forkedFromProjectIdResult.areEqual &&
@@ -5362,7 +5390,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     commentFilterModeResults.areEqual &&
     forkingResults.areEqual &&
     collaboratorsResults.areEqual &&
-    sharingDialogOpenResults.areEqual
+    sharingDialogOpenResults.areEqual &&
+    remixConfigResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -5449,6 +5478,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       forkingResults.value,
       collaboratorsResults.value,
       sharingDialogOpenResults.value,
+      remixConfigResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

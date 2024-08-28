@@ -90,6 +90,8 @@ interface LTWHPixelValues {
 export const FrameUpdatingLayoutSection = React.memo(() => {
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
+  const allElementsPropsRef = useRefEditorState((store) => store.editor.allElementProps)
+  const pathTreesRef = useRefEditorState((store) => store.editor.elementPathTree)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const originalGlobalFrame: CanvasRectangle = useEditorState(
@@ -176,28 +178,20 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
         height: [],
       }
       for (const selectedView of store.editor.selectedViews) {
-        const metadata = MetadataUtils.findElementByElementPath(
-          store.editor.jsxMetadata,
+        const maybeInfinityLocalFrame = MetadataUtils.getLocalFrame(
           selectedView,
+          store.editor.jsxMetadata,
         )
-        if (metadata == null) {
+        if (maybeInfinityLocalFrame == null || isInfinityRectangle(maybeInfinityLocalFrame)) {
           result.left.push(0)
           result.top.push(0)
           result.width.push(0)
           result.height.push(0)
         } else {
-          const maybeInfinityLocalFrame = metadata.localFrame
-          if (maybeInfinityLocalFrame == null || isInfinityRectangle(maybeInfinityLocalFrame)) {
-            result.left.push(0)
-            result.top.push(0)
-            result.width.push(0)
-            result.height.push(0)
-          } else {
-            result.left.push(maybeInfinityLocalFrame.x)
-            result.top.push(maybeInfinityLocalFrame.y)
-            result.width.push(maybeInfinityLocalFrame.width)
-            result.height.push(maybeInfinityLocalFrame.height)
-          }
+          result.left.push(maybeInfinityLocalFrame.x)
+          result.top.push(maybeInfinityLocalFrame.y)
+          result.width.push(maybeInfinityLocalFrame.width)
+          result.height.push(maybeInfinityLocalFrame.height)
         }
       }
       return result
@@ -273,11 +267,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
 
   return (
     <>
-      <UIGridRow
-        padded={false}
-        variant='<--1fr--><--1fr-->'
-        style={{ minHeight: undefined, gap: 4 }}
-      >
+      <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
         <FrameUpdatingLayoutControl
           property='left'
           label='L'
@@ -293,11 +283,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           invalid={invalidPins.top || invalidPins.bottom} // currently showing red for BOTH directions
         />
       </UIGridRow>
-      <UIGridRow
-        padded={false}
-        variant='<--1fr--><--1fr-->'
-        style={{ minHeight: undefined, gap: 4 }}
-      >
+      <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
         <FrameUpdatingLayoutControl
           property='width'
           label='W'
@@ -435,7 +421,6 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
         invalid={invalid}
         id={`frame-${props.property}-number-input`}
         testId={`frame-${props.property}-number-input`}
-        labelInner={props.label}
         onSubmitValue={onSubmitValue}
         onTransientSubmitValue={onSubmitValue}
         incrementControls={singleCommonValue == null}
@@ -443,6 +428,7 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
         numberType={'LengthPercent'}
         defaultUnitToHide={'px'}
         stepSize={1}
+        innerLabel={props.label}
       />
     </InspectorContextMenuWrapper>
   )

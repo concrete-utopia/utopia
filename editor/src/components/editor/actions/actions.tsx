@@ -182,7 +182,7 @@ import {
 } from '../../canvas/canvas-utils'
 import type { SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-side-effect'
-import type { CodeResultCache } from '../../custom-code/code-file'
+import type { CodeResultCache, CurriedUtopiaRequireFn } from '../../custom-code/code-file'
 import {
   codeCacheToBuildResult,
   generateCodeResultCache,
@@ -347,6 +347,7 @@ import type {
   ReplaceElementInScope,
   ReplaceJSXElement,
   ToggleDataCanCondense,
+  SetErrorBoundaryHandling,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -528,7 +529,7 @@ import {
   makeUtopiaFlagComment,
   removePropOrFlagComment,
   saveToPropOrFlagComment,
-} from '../../../core/shared/comment-flags'
+} from '../../../core/shared/utopia-flags'
 import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
 import type { ConditionalClauseInsertBehavior, InsertionPath } from '../store/insertion-path'
@@ -618,7 +619,7 @@ import {
 import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
 import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 import { nextSelectedTab } from '../../navigator/left-pane/left-pane-utils'
-import { getRemixRootDir } from '../store/remix-derived-data'
+import { getDefaultedRemixRootDir, getRemixRootDir } from '../store/remix-derived-data'
 import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-item/component-picker-context-menu'
 import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
@@ -1040,6 +1041,7 @@ export function restoreEditorState(
     forking: currentEditor.forking,
     collaborators: currentEditor.collaborators,
     sharingDialogOpen: currentEditor.sharingDialogOpen,
+    editorRemixConfig: currentEditor.editorRemixConfig,
   }
 }
 
@@ -1127,7 +1129,7 @@ function deleteElements(
         if (metadata == null || isLeft(metadata.element)) {
           return null
         }
-        const frame = metadata.localFrame
+        const frame = MetadataUtils.getLocalFrame(path, editor.jsxMetadata)
         if (frame == null || !isFiniteRectangle(frame)) {
           return null
         }
@@ -1328,6 +1330,7 @@ export function replaceFilePath(
   oldPath: string,
   newPath: string,
   projectContentsTree: ProjectContentTreeRoot,
+  curriedRequireFn: CurriedUtopiaRequireFn,
 ): ReplaceFilePathResult {
   // FIXME: Reimplement this in a way that doesn't require converting to and from `ProjectContents`.
   const projectContents = treeToContents(projectContentsTree)
@@ -1338,7 +1341,7 @@ export function replaceFilePath(
   }
   let updatedFiles: Array<{ oldPath: string; newPath: string }> = []
 
-  const remixRootDir = getRemixRootDir(projectContentsTree)
+  const remixRootDir = getDefaultedRemixRootDir(projectContentsTree, curriedRequireFn)
 
   let renamedOptionalPrefix = false
   Utils.fastForEach(Object.keys(projectContents), (filename) => {
@@ -3329,7 +3332,7 @@ export const UPDATE_FNS = {
   },
   RESET_PINS: (action: ResetPins, editor: EditorModel): EditorModel => {
     const target = action.target
-    const frame = MetadataUtils.getFrame(target, editor.jsxMetadata)
+    const frame = MetadataUtils.getLocalFrame(target, editor.jsxMetadata)
 
     if (frame == null || isInfinityRectangle(frame)) {
       return editor
@@ -3357,7 +3360,7 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_FRAME_DIMENSIONS: (action: UpdateFrameDimensions, editor: EditorModel): EditorModel => {
-    const initialFrame = MetadataUtils.getFrame(action.element, editor.jsxMetadata)
+    const initialFrame = MetadataUtils.getLocalFrame(action.element, editor.jsxMetadata)
 
     if (initialFrame == null || isInfinityRectangle(initialFrame)) {
       return editor
@@ -5516,7 +5519,11 @@ export const UPDATE_FNS = {
           editor.jsxMetadata,
           action.insertionPath.intendedParentPath,
         )
-        if (group != null) {
+        const localFrame = MetadataUtils.getLocalFrame(
+          action.insertionPath.intendedParentPath,
+          editor.jsxMetadata,
+        )
+        if (group != null && localFrame != null) {
           switch (element.type) {
             case 'JSX_ELEMENT':
               groupCommands.push(
@@ -5524,7 +5531,7 @@ export const UPDATE_FNS = {
                   newPath,
                   right(element.props),
                   zeroRectIfNullOrInfinity(group.globalFrame),
-                  zeroRectIfNullOrInfinity(group.localFrame),
+                  zeroRectIfNullOrInfinity(localFrame),
                 ),
               )
               break
@@ -6107,6 +6114,18 @@ export const UPDATE_FNS = {
       sharingDialogOpen: action.open,
     }
   },
+  SET_ERROR_BOUNDARY_HANDLING: (
+    action: SetErrorBoundaryHandling,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      editorRemixConfig: {
+        ...editor.editorRemixConfig,
+        errorBoundaryHandling: action.errorBoundaryHandling,
+      },
+    }
+  },
 }
 
 function copySelectionToClipboardMutating(
@@ -6488,6 +6507,7 @@ function updateFilePath(
     params.oldPath,
     params.newPath,
     editor.projectContents,
+    editor.codeResultCache.curriedRequireFn,
   )
   if (replaceFilePathResults.type === 'FAILURE') {
     const toastAction = showToast(notice(replaceFilePathResults.errorMessage, 'ERROR', true))

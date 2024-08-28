@@ -44,7 +44,7 @@ import { getConditionalClausePath } from '../../core/model/conditionals'
 import {
   findUtopiaCommentFlag,
   isUtopiaPropOrCommentFlagMapCount,
-} from '../../core/shared/comment-flags'
+} from '../../core/shared/utopia-flags'
 import { getPropertyControlsForTarget } from '../../core/property-controls/property-controls-utils'
 import type { PropertyControlsInfo } from '../custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../assets'

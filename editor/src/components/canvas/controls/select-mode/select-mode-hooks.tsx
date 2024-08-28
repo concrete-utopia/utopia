@@ -27,10 +27,11 @@ import {
   clearHoveredViews,
 } from '../../../editor/actions/action-creators'
 import { cancelInsertModeActions } from '../../../editor/actions/meta-actions'
-import type {
-  EditorState,
-  EditorStorePatched,
-  LockedElements,
+import {
+  getAllFocusedPaths,
+  type EditorState,
+  type EditorStorePatched,
+  type LockedElements,
 } from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
@@ -58,7 +59,10 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { useSetAtom } from 'jotai'
 import type { CanvasControlWithProps } from '../../../inspector/common/inspector-atoms'
-import { InspectorHoveredCanvasControls } from '../../../inspector/common/inspector-atoms'
+import {
+  InspectorFocusedCanvasControls,
+  InspectorHoveredCanvasControls,
+} from '../../../inspector/common/inspector-atoms'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { getAllLockedElementPaths } from '../../../../core/shared/element-locking'
 import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
@@ -313,10 +317,13 @@ export function useFindValidTarget(): (
       hiddenInstances: store.editor.hiddenInstances,
       canvasScale: store.editor.canvas.scale,
       canvasOffset: store.editor.canvas.realCanvasOffset,
-      focusedElementPath: store.editor.focusedElementPath,
       elementPathTree: store.editor.elementPathTree,
       allElementProps: store.editor.allElementProps,
       lockedElements: store.editor.lockedElements,
+      focusedPaths: getAllFocusedPaths(
+        store.editor.focusedElementPath,
+        store.derived.autoFocusedPaths,
+      ),
     }
   })
 
@@ -335,6 +342,7 @@ export function useFindValidTarget(): (
         elementPathTree,
         allElementProps,
         lockedElements,
+        focusedPaths,
       } = storeRef.current
       const validElementMouseOver: ElementPath | null = (() => {
         if (preferAlreadySelected === 'prefer-selected') {
@@ -349,6 +357,7 @@ export function useFindValidTarget(): (
             elementPathTree,
             allElementProps,
             lockedElements,
+            focusedPaths,
           )
         }
         const newSelection = getValidTargetAtPoint(
@@ -358,6 +367,7 @@ export function useFindValidTarget(): (
           canvasOffset,
           componentMetadata,
           lockedElements,
+          focusedPaths,
         )
         if (newSelection != null) {
           return newSelection
@@ -373,6 +383,7 @@ export function useFindValidTarget(): (
           elementPathTree,
           allElementProps,
           lockedElements,
+          focusedPaths,
         )
       })()
 
@@ -926,6 +937,24 @@ export function useSetHoveredControlsHandlers<T>(): {
   )
 
   return { onMouseEnter, onMouseLeave }
+}
+
+export function useSetFocusedControlsHandlers<T>(): {
+  onFocus: (controls: Array<CanvasControlWithProps<T>>) => void
+  onBlur: () => void
+} {
+  const setFocusedCanvasControls = useSetAtom(InspectorFocusedCanvasControls)
+
+  const onFocus = React.useCallback(
+    (controls: Array<CanvasControlWithProps<T>>) => {
+      setFocusedCanvasControls(controls)
+    },
+    [setFocusedCanvasControls],
+  )
+
+  const onBlur = React.useCallback(() => setFocusedCanvasControls([]), [setFocusedCanvasControls])
+
+  return { onFocus, onBlur }
 }
 
 function isMouseInteractionSession(interactionSession: InteractionSession): boolean {

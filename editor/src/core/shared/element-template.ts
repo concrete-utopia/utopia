@@ -35,7 +35,7 @@ import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
 import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
-import { allComments } from './comment-flags'
+import { allComments } from './utopia-flags'
 import type { Optic } from './optics/optics'
 import { fromField } from './optics/optic-creators'
 import { jsxSimpleAttributeToValue } from './jsx-attribute-utils'
@@ -2507,7 +2507,6 @@ export interface ElementInstanceMetadata {
   elementPath: ElementPath
   element: Either<string, JSXElementChild>
   globalFrame: MaybeInfinityCanvasRectangle | null
-  localFrame: MaybeInfinityLocalRectangle | null
   nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null
   componentInstance: boolean
   isEmotionOrStyledComponent: boolean
@@ -2526,7 +2525,6 @@ export function elementInstanceMetadata(
   elementPath: ElementPath,
   element: Either<string, JSXElementChild>,
   globalFrame: MaybeInfinityCanvasRectangle | null,
-  localFrame: MaybeInfinityLocalRectangle | null,
   nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null,
   componentInstance: boolean,
   isEmotionOrStyledComponent: boolean,
@@ -2544,7 +2542,6 @@ export function elementInstanceMetadata(
     elementPath: elementPath,
     element: element,
     globalFrame: globalFrame,
-    localFrame: localFrame,
     nonRoundedGlobalFrame: nonRoundedGlobalFrame,
     componentInstance: componentInstance,
     isEmotionOrStyledComponent: isEmotionOrStyledComponent,

@@ -16,6 +16,7 @@ import {
 } from '../inspector-common'
 import type { InspectorStrategy } from './inspector-strategy'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
+import type { AllElementProps } from '../../editor/store/editor-state'
 
 function removeFlexConvertToAbsoluteOne(
   metadata: ElementInstanceMetadataMap,

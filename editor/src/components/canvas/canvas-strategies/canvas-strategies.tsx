@@ -72,6 +72,7 @@ import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
 import { gridRearrangeMoveDuplicateStrategy } from './strategies/grid-rearrange-move-duplicate-strategy'
+import { setGridGapStrategy } from './strategies/set-grid-gap-strategy'
 import type { CanvasCommand } from '../commands/commands'
 import { foldAndApplyCommandsInner } from '../commands/commands'
 import { updateFunctionCommand } from '../commands/update-function-command'
@@ -139,7 +140,7 @@ const propertyControlStrategies: MetaCanvasStrategy = (
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
     (factory) => factory(canvasState, interactionSession, customStrategyState),
-    [setPaddingStrategy, setFlexGapStrategy, setBorderRadiusStrategy],
+    [setPaddingStrategy, setFlexGapStrategy, setGridGapStrategy, setBorderRadiusStrategy],
   )
 }
 
@@ -597,6 +598,17 @@ export function interactionInProgress(interactionSession: InteractionSession | n
   }
 }
 
+function controlPriorityToNumber(prio: ControlWithProps<any>['priority']): number {
+  switch (prio) {
+    case 'bottom':
+      return 0
+    case undefined:
+      return 1
+    case 'top':
+      return 2
+  }
+}
+
 export function useGetApplicableStrategyControls(): Array<ControlWithProps<unknown>> {
   const applicableStrategies = useGetApplicableStrategies()
   const currentStrategy = useDelayedCurrentStrategy()
@@ -619,13 +631,18 @@ export function useGetApplicableStrategyControls(): Array<ControlWithProps<unkno
       applicableControls = addAllUniquelyBy(
         applicableControls,
         strategyControls,
-        (l, r) => l.control === r.control,
+        (l, r) => l.control === r.control && l.key === r.key,
       )
     }
     // Special case controls.
     if (!isResizable && !currentlyInProgress) {
       applicableControls.push(notResizableControls)
     }
+
+    applicableControls = applicableControls.sort(
+      (a, b) => controlPriorityToNumber(a.priority) - controlPriorityToNumber(b.priority),
+    )
+
     return applicableControls
   }, [applicableStrategies, currentStrategy, currentlyInProgress])
 }

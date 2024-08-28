@@ -995,7 +995,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
   it('prevents focusing a non-focusable element', () => {
     const project = complexDefaultProjectPreParsed()
     let editorState = editorModelFromPersistentModel(project, NO_OP)
-    const derivedState = deriveState(editorState, null, 'unpatched', () => null)
+    const derivedState = deriveState(editorState, null, 'unpatched', () => right(null))
     const pathToFocus = EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div')
     const underlyingElement = forceNotNull(
       'Should be able to find this.',
@@ -1005,7 +1005,6 @@ describe('SET_FOCUSED_ELEMENT', () => {
       pathToFocus,
       right(underlyingElement),
       zeroRectangle as CanvasRectangle,
-      zeroRectangle as LocalRectangle,
       zeroRectangle as CanvasRectangle,
       false,
       false,
@@ -1044,7 +1043,6 @@ describe('SET_FOCUSED_ELEMENT', () => {
       pathToFocus,
       right(underlyingElement),
       zeroRectangle as CanvasRectangle,
-      zeroRectangle as LocalRectangle,
       zeroRectangle as CanvasRectangle,
       false,
       false,
@@ -1238,6 +1236,7 @@ describe('replaceFilePath', () => {
       '/src/app.js',
       '/src/app2.js',
       editorState.projectContents,
+      editorState.codeResultCache.curriedRequireFn,
     )
     if (replaceResults.type === 'SUCCESS') {
       expect(replaceResults.updatedFiles).toMatchInlineSnapshot(`

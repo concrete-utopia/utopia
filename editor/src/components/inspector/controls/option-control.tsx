@@ -13,17 +13,6 @@ export interface DEPRECATEDOptionControlOptions extends DEPRECATEDGenericControl
   iconComponent?: React.ReactNode
   labelInner?: string
   tooltip?: string
-  roundCorners?:
-    | 'right'
-    | 'left'
-    | 'top'
-    | 'bottom'
-    | 'topLeft'
-    | 'topRight'
-    | 'bottomRight'
-    | 'bottomLeft'
-    | 'none'
-    | 'all'
   width?: number
   height?: number
 }
@@ -69,13 +58,11 @@ export const OptionControl: React.FunctionComponent<
     if (props.controlStatus === 'overridden' && props.value) {
       return colorTheme.brandNeonPink10.value
     } else if (props.value) {
-      return colorTheme.bg2.value
+      return colorTheme.bg4.value
     } else {
       return 'transparent'
     }
   })()
-
-  const rc = controlOptions.roundCorners
 
   return (
     <div
@@ -105,7 +92,7 @@ export const OptionControl: React.FunctionComponent<
             justifyContent: 'center',
             alignItems: 'center',
             flex: 1,
-            padding: '0 2px',
+            padding: '0 4px',
             textAlign: 'center',
             minWidth: controlOptions.width,
             height: controlOptions.height,
@@ -114,69 +101,29 @@ export const OptionControl: React.FunctionComponent<
               isChecked && props.controlStatus === 'overridden'
                 ? colorTheme.brandNeonPink.value
                 : colorTheme.fg1.value,
-            // If just an option control:
-            borderRadius: rc != null ? 0 : UtopiaTheme.inputBorderRadius,
+            filter: props.controlStatus == 'disabled' ? 'grayscale(0)' : undefined,
+            opacity: props.controlStatus == 'disabled' ? undefined : isChecked ? 1 : 0.4,
             // If part of a option chain control:
             '.option-chain-control-container &': {
-              borderRadius: isChecked ? '3px' : 0,
               boxShadow: 'none !important',
-              opacity: 1,
-              borderColor: colorTheme.border0.value,
-              backgroundColor: isChecked
-                ? props.controlStatus === 'overridden'
-                  ? colorTheme.brandNeonPink10.value
-                  : colorTheme.bg4.value
-                : 'transparent',
-              color: isChecked
-                ? props.controlStatus === 'overridden'
-                  ? colorTheme.brandNeonPink.value
-                  : colorTheme.fg1.value
-                : colorTheme.verySubduedForeground.value,
+              borderRadius: 2,
+              opacity: isChecked ? 1 : 0.4,
               '&:hover': {
                 opacity: props.controlStatus == 'disabled' ? undefined : 1,
-                color: colorTheme.fg1.value,
-                cursor: 'pointer',
+                color:
+                  isChecked && props.controlStatus === 'overridden'
+                    ? colorTheme.brandNeonPink.value
+                    : colorTheme.fg1.value,
               },
             },
-            '.option-chain-control-container .segment:first-of-type  &': {
-              borderTopLeftRadius: UtopiaTheme.inputBorderRadius,
-              borderBottomLeftRadius: UtopiaTheme.inputBorderRadius,
-            },
-            '.option-chain-control-container .segment:last-child &': {
-              borderTopRightRadius: UtopiaTheme.inputBorderRadius,
-              borderBottomRightRadius: UtopiaTheme.inputBorderRadius,
-            },
-            borderTopRightRadius:
-              rc === 'all' || rc === 'right' || rc === 'topRight' || rc === 'top'
-                ? UtopiaTheme.inputBorderRadius
-                : undefined,
-            borderBottomRightRadius:
-              rc === 'all' || rc === 'right' || rc === 'bottomRight' || rc === 'bottom'
-                ? UtopiaTheme.inputBorderRadius
-                : undefined,
-            borderTopLeftRadius:
-              rc === 'all' || rc === 'left' || rc === 'topLeft' || rc === 'top'
-                ? UtopiaTheme.inputBorderRadius
-                : undefined,
-            borderBottomLeftRadius:
-              rc === 'all' || rc === 'left' || rc === 'bottomLeft' || rc === 'bottom'
-                ? UtopiaTheme.inputBorderRadius
-                : undefined,
-
-            filter: isChecked && props.controlStatus !== 'disabled' ? undefined : 'grayscale(1)',
             '&:hover': {
-              opacity: props.controlStatus == 'disabled' ? undefined : controlOpacity + 0.2,
-              filter: props.controlStatus == 'disabled' ? undefined : 'grayscale(0)',
+              opacity: props.controlStatus == 'disabled' ? undefined : 1,
             },
-
             '.control-option-icon-component': {
-              opacity: 0.5,
+              opacity: 0.4,
             },
             '&:hover .control-option-icon-component': {
               opacity: 1,
-            },
-            '&:active': {
-              opacity: props.controlStatus == 'disabled' ? undefined : 1,
             },
           }}
         >
@@ -201,7 +148,6 @@ export const OptionControl: React.FunctionComponent<
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: 4,
             }}
           >
             {controlOptions.icon != null ? (

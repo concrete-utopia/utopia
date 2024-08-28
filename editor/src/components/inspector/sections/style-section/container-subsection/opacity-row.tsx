@@ -55,13 +55,12 @@ export const OpacityRow = React.memo(() => {
         onTransientSubmitValue={wrappedOnTransientSubmitValue}
         onForcedSubmitValue={wrappedOnSubmitValue}
         controlStatus={opacityMetadata.controlStatus}
-        DEPRECATED_labelBelow={<span style={{ fontSize: 12 }}>α</span>}
+        innerLabel={<span style={{ fontSize: 12 }}>α</span>}
         minimum={0}
         maximum={1}
         stepSize={0.01}
         inputProps={{ onMouseDown: handleMouseDown }}
         defaultUnitToHide={null}
-        incrementControls={false}
       />
     </InspectorContextMenuWrapper>
   )
