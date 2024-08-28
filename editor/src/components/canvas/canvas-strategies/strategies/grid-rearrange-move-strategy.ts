@@ -251,6 +251,12 @@ function getCommandsAndPatchForReparent(
       ]),
     )
   }
+  commands.push(
+    updateBulkProperties('always', targetElement, [
+      propertyToDelete(PP.create('style', 'gridRow')),
+      propertyToDelete(PP.create('style', 'gridColumn')),
+    ]),
+  )
   commands.push(...result.commands)
 
   return {
