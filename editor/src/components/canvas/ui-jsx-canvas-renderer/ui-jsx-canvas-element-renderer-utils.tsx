@@ -5,7 +5,6 @@ import {
   UTOPIA_SCENE_ID_KEY,
   UTOPIA_INSTANCE_PATH,
   UTOPIA_UID_KEY,
-  UTOPIA_STATIC_PATH_KEY,
 } from '../../../core/model/utopia-constants'
 import { forEachRight } from '../../../core/shared/either'
 import type {
@@ -804,8 +803,6 @@ function renderJSXElement(
   const propsIncludingElementPath = {
     ...elementPropsWithSceneID,
     [UTOPIA_PATH_KEY]: optionalMap(EP.toString, elementPath),
-    [UTOPIA_STATIC_PATH_KEY]:
-      elementPath == null ? null : EP.toString(EP.dynamicPathToStaticPath(elementPath)), // TODO should this be makeLastPartOfPathStatic
   }
 
   const looksLikeReactIntrinsicButNotHTML = elementIsIntrinsic && !elementIsBaseHTML

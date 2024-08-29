@@ -3,12 +3,7 @@ import { omitWithPredicate } from '../core/shared/object-utils'
 import type { MapLike } from 'typescript'
 import { firstLetterIsLowerCase } from '../core/shared/string-utils'
 import { isIntrinsicHTMLElementString } from '../core/shared/element-template'
-import {
-  UtopiaKeys,
-  UTOPIA_UID_KEY,
-  UTOPIA_PATH_KEY,
-  UTOPIA_STATIC_PATH_KEY,
-} from '../core/model/utopia-constants'
+import { UtopiaKeys, UTOPIA_UID_KEY, UTOPIA_PATH_KEY } from '../core/model/utopia-constants'
 import { v4 } from 'uuid'
 import { isFeatureEnabled } from './feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../common/env-vars'
@@ -92,27 +87,22 @@ function attachDataUidToRoot(
   originalResponse: React.ReactElement | null | undefined,
   dataUid: string | null,
   path: string | null,
-  staticPath: string | null,
 ): React.ReactElement | null
 function attachDataUidToRoot(
   originalResponse: Array<React.ReactElement | null>,
   dataUid: string | null,
   path: string | null,
-  staticPath: string | null,
 ): Array<React.ReactElement | null>
 function attachDataUidToRoot(
   originalResponse: React.ReactElement | Array<React.ReactElement | null> | null | undefined,
   dataUid: string | null,
   path: string | null,
-  staticPath: string | null,
 ): React.ReactElement | Array<React.ReactElement | null> | null {
   if (originalResponse == null || dataUid == null) {
     return originalResponse as any
   } else if (Array.isArray(originalResponse)) {
     // the response was an array of elements
-    return originalResponse.map((element) =>
-      attachDataUidToRoot(element, dataUid, path, staticPath),
-    )
+    return originalResponse.map((element) => attachDataUidToRoot(element, dataUid, path))
   } else if (!React.isValidElement(originalResponse as any)) {
     return originalResponse
   } else {
@@ -120,7 +110,6 @@ function attachDataUidToRoot(
       return React.cloneElement(originalResponse, {
         [UTOPIA_UID_KEY]: originalResponse.props[UTOPIA_UID_KEY] ?? dataUid,
         [UTOPIA_PATH_KEY]: originalResponse.props[UTOPIA_PATH_KEY] ?? path,
-        [UTOPIA_STATIC_PATH_KEY]: originalResponse.props[UTOPIA_STATIC_PATH_KEY] ?? staticPath,
       })
     } else {
       return originalResponse
@@ -147,7 +136,6 @@ const mangleFunctionType = memoize(
           originalTypeResponse,
           (p as any)?.[UTOPIA_UID_KEY],
           (p as any)?.[UTOPIA_PATH_KEY],
-          (p as any)?.[UTOPIA_STATIC_PATH_KEY],
         )
         if (MeasureRenderTimes) {
           performance.mark(`render_end_${uuid}`)
@@ -187,7 +175,6 @@ const mangleClassType = memoize(
         originalTypeResponse,
         (this.props as any)?.[UTOPIA_UID_KEY],
         (this.props as any)?.[UTOPIA_PATH_KEY],
-        (this.props as any)?.[UTOPIA_STATIC_PATH_KEY],
       )
       if (MeasureRenderTimes) {
         performance.mark(`render_end_${uuid}`)
@@ -216,7 +203,6 @@ const mangleExoticType = memoize(
       child: React.ReactElement | null,
       dataUid: string | null,
       path: string | null,
-      staticPath: string | null,
       fragmentParentProps: any,
     ) {
       if (child == null || !shouldIncludeDataUID(child.type)) {
@@ -224,10 +210,8 @@ const mangleExoticType = memoize(
       }
       const existingChildUID = child.props?.[UTOPIA_UID_KEY]
       const existingChildPath = child.props?.[UTOPIA_PATH_KEY]
-      const existingChildStaticPath = child.props?.[UTOPIA_STATIC_PATH_KEY]
       const childUID = existingChildUID ?? dataUid
       const mangledChildPath = existingChildPath ?? path
-      const mangledChildStaticPath = existingChildStaticPath ?? staticPath
       if ((!React.isValidElement(child) as boolean) || child == null) {
         return child
       } else {
@@ -250,7 +234,6 @@ const mangleExoticType = memoize(
         if (childUID != null) {
           additionalProps[UTOPIA_UID_KEY] = childUID
           additionalProps[UTOPIA_PATH_KEY] = mangledChildPath
-          additionalProps[UTOPIA_STATIC_PATH_KEY] = mangledChildStaticPath
           shouldClone = true
         }
 
@@ -283,7 +266,6 @@ const mangleExoticType = memoize(
       }
       const uid = p?.[UTOPIA_UID_KEY]
       const path = p?.[UTOPIA_PATH_KEY]
-      const staticPath = p?.[UTOPIA_STATIC_PATH_KEY]
       if (uid == null && !isFragmentWithNonFragmentProps) {
         // early return for the cases where there's no data-uid
         return realCreateElement(type, p)
@@ -296,19 +278,18 @@ const mangleExoticType = memoize(
           const originalFunction = p.children
           children = function (...params: any[]) {
             const originalResponse = originalFunction(...params)
-            return attachDataUidToRoot(originalResponse, uid, path, staticPath)
+            return attachDataUidToRoot(originalResponse, uid, path)
           }
         } else {
           const uidToPass = uid
           const pathToPass = path
-          const staticPathToPass = staticPath
 
           if (Array.isArray(p?.children)) {
             children = React.Children.map(p?.children, (child) =>
-              updateChild(child, uidToPass, pathToPass, staticPathToPass, p),
+              updateChild(child, uidToPass, pathToPass, p),
             )
           } else {
-            children = updateChild(p.children, uidToPass, pathToPass, staticPathToPass, p)
+            children = updateChild(p.children, uidToPass, pathToPass, p)
           }
         }
         let mangledProps = {
@@ -330,7 +311,6 @@ const mangleExoticType = memoize(
         } else {
           delete mangledProps[UTOPIA_UID_KEY]
           delete mangledProps[UTOPIA_PATH_KEY]
-          delete mangledProps[UTOPIA_STATIC_PATH_KEY]
         }
         return realCreateElement(type as any, mangledProps)
       }
