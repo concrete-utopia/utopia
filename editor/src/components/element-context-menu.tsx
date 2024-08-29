@@ -57,7 +57,6 @@ import type { ElementPathTrees } from '../core/shared/element-path-tree'
 import type { FilePathMappings } from '../core/model/project-file-utils'
 import type { PropertyControlsInfo } from './custom-code/code-file'
 import type { ProjectContentTreeRoot } from './assets'
-import { use } from 'chai'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
