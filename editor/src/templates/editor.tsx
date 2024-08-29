@@ -1,8 +1,6 @@
 // import feature switches so they are loaded before anything else can read them
 import '../utils/feature-switches'
 
-import { diff } from 'deep-object-diff'
-
 import React from 'react'
 import * as PubSub from 'pubsub-js'
 import { createRoot } from 'react-dom/client'

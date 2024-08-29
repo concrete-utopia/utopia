@@ -175,7 +175,6 @@ specifiers:
   css-loader: 0.28.4
   css-tree: 2.3.1
   csstype: 3.0.3
-  deep-object-diff: 1.1.9
   dependency-cruiser: 13.1.5
   diff: 5.0.0
   enzyme: 3.3.0
@@ -250,7 +249,6 @@ specifiers:
   mime-types: 2.1.24
   minimatch: 3.0.4
   minimist: 1.2.0
-  mnemonist: 0.39.8
   mocha: 8.4.0
   moize: 6.1.4
   murmurhash3js: 3.0.1
@@ -406,7 +404,6 @@ dependencies:
   clipboard-polyfill: 2.4.6
   create-react-class: 15.6.3
   css-tree: 2.3.1
-  deep-object-diff: 1.1.9
   eslint-config-utopia: link:../eslint-config-utopia
   eslint-plugin-import: 2.25.3_xoh4mdbbxtgv4pgsofz5xwre24
   eslint-plugin-jsx-a11y: 6.5.1_5wlsrnjcorawie777qour2ptie_eslint@7.32.0
@@ -441,7 +438,6 @@ dependencies:
   matter-js: github.com/liabru/matter-js/e909b0466cea2051267bab92a38ccaa9bf7f154e
   mime-types: 2.1.24
   minimatch: 3.0.4
-  mnemonist: 0.39.8
   moize: 6.1.4
   murmurhash3js: 3.0.1
   node-diff3: 3.1.2
@@ -8668,10 +8664,6 @@ packages:
   /deep-is/0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
 
-  /deep-object-diff/1.1.9:
-    resolution: {integrity: sha512-Rn+RuwkmkDwCi2/oXOFS9Gsr5lJZu/yTGpK7wAaAIE75CC+LCGEZHpY6VQJa/RoJcrmaA/docWJZvYohlNkWPA==}
-    dev: false
-
   /deepmerge/4.2.2:
     resolution: {integrity: sha512-FJ3UgI4gIl+PHZm53knsuSFpE+nESMr7M4v9QcgB7S63Kj/6WqMiFQJpBBYz1Pt+66bZpP3Q7Lye0Oo9MPKEdg==}
     engines: {node: '>=0.10.0'}
@@ -14147,12 +14139,6 @@ packages:
     hasBin: true
     dev: true
 
-  /mnemonist/0.39.8:
-    resolution: {integrity: sha512-vyWo2K3fjrUw8YeeZ1zF0fy6Mu59RHokURlld8ymdUPjMlD9EC9ov1/YPqTgqRvUN9nTr3Gqfz29LYAmu0PHPQ==}
-    dependencies:
-      obliterator: 2.0.4
-    dev: false
-
   /mocha/8.4.0:
     resolution: {integrity: sha512-hJaO0mwDXmZS4ghXsvPVriOhsxQ7ofcpQdm8dE+jISUOKopitvnXFQmpRR7jd2K6VBG6E26gU3IAbXXGIbu4sQ==}
     engines: {node: '>= 10.12.0'}
@@ -14619,10 +14605,6 @@ packages:
       call-bind: 1.0.2
       define-properties: 1.2.0
       es-abstract: 1.21.3
-    dev: false
-
-  /obliterator/2.0.4:
-    resolution: {integrity: sha512-lgHwxlxV1qIg1Eap7LgIeoBWIMFibOjbrYPIPJZcI1mmGAI2m3lNYpK12Y+GBdPQ0U1hRwSord7GIaawz962qQ==}
     dev: false
 
   /obuf/1.1.2:

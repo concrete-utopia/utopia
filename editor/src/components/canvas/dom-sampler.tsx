@@ -1,4 +1,3 @@
-import { DefaultMap } from 'mnemonist'
 import type {
   ComputedStyle,
   DetectedLayoutSystem,
