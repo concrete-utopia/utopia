@@ -12,7 +12,6 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
     <div
       data-utopia-scene-id=\\"sb/scene\\"
       data-path=\\"sb/scene\\"
-      data-static-path=\\"sb/scene\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -34,11 +33,7 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
       \\"
       data-uid=\\"scene\\"
     >
-      <div
-        data-uid=\\"comment-root\\"
-        data-path=\\"sb/scene/app:comment-root\\"
-        data-static-path=\\"sb/scene/app:comment-root\\"
-      >
+      <div data-uid=\\"comment-root\\" data-path=\\"sb/scene/app:comment-root\\">
         hat
       </div>
     </div>

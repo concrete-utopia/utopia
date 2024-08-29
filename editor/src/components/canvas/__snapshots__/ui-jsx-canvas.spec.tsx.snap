@@ -12,7 +12,6 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -38,25 +37,21 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
         style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0\\"
         data-uid=\\"aaa\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
       >
         <div
           data-uid=\\"bbb~~~1\\"
           data-label=\\"Plane\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~1\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb\\"
         ></div>
         <div
           data-uid=\\"bbb~~~2\\"
           data-label=\\"Plane\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~2\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb\\"
         ></div>
         <div
           data-uid=\\"bbb~~~3\\"
           data-label=\\"Plane\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~3\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb\\"
         ></div>
       </div>
     </div>
@@ -1755,7 +1750,6 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -1782,7 +1776,6 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
         data-uid=\\"aaa\\"
         data-label=\\"Hat\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
       ></div>
     </div>
   </div>
@@ -2474,7 +2467,6 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -2500,7 +2492,6 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
         data-uid=\\"e30\\"
         style=\\"top: 10px\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:e30\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:e30\\"
       />
     </div>
   </div>
@@ -3066,7 +3057,6 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -3091,26 +3081,22 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       <div
         data-uid=\\"zzz\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz\\"
       >
         <div
           data-uid=\\"aaa~~~1\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~1\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa\\"
         >
           1
         </div>
         <div
           data-uid=\\"aaa~~~2\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~2\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa\\"
         >
           2
         </div>
         <div
           data-uid=\\"aaa~~~3\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~3\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa\\"
         >
           3
         </div>
@@ -5328,7 +5314,6 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -5353,31 +5338,26 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       <div
         data-uid=\\"zzz\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz\\"
       >
         <div
           data-uid=\\"aaa~~~1\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~1\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa/b39/bbb\\"
           >
             4
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~2\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa/b39/bbb\\"
           >
             5
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~3\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa/b39/bbb\\"
           >
             6
           </div>
@@ -5385,26 +5365,22 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
         <div
           data-uid=\\"aaa~~~2\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~1\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa/b39/bbb\\"
           >
             8
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~2\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa/b39/bbb\\"
           >
             10
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~3\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa/b39/bbb\\"
           >
             12
           </div>
@@ -5412,26 +5388,22 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
         <div
           data-uid=\\"aaa~~~3\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~1\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa/b39/bbb\\"
           >
             12
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~2\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa/b39/bbb\\"
           >
             15
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~3\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa/b39/bbb\\"
           >
             18
           </div>
@@ -12928,7 +12900,6 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -12953,19 +12924,16 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
       <div
         data-uid=\\"zzz\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz\\"
       >
         <div
           data-uid=\\"ccc-unparsed-no-template-path\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
         >
           Thing
         </div>
         <div
           data-uid=\\"ccc-unparsed-no-template-path\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
         >
           Thing
         </div>
@@ -13895,7 +13863,6 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -13921,7 +13888,6 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
         style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0\\"
         data-uid=\\"aaa\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
       ></div>
     </div>
   </div>
@@ -14600,7 +14566,6 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -14624,27 +14589,23 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
     >
       <div
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~1:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~2:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~3:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb:xxx\\"
         >
           n3
         </div>
@@ -16466,7 +16427,6 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -16490,27 +16450,23 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
     >
       <div
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~1:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~2:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~3:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb:xxx\\"
         >
           n3
         </div>
@@ -18332,7 +18288,6 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -18357,19 +18312,16 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
       <div
         data-uid=\\"zzz\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz\\"
       >
         <div
           data-uid=\\"ccc\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa:ccc\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa:ccc\\"
         >
           Thing
         </div>
         <div
           data-uid=\\"ccc\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb:ccc\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb:ccc\\"
         >
           Thing
         </div>
@@ -19299,7 +19251,6 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -19324,19 +19275,16 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
       <div
         data-uid=\\"zzz\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz\\"
       >
         <div
           data-uid=\\"ccc\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa~~~1:ccc\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa:ccc\\"
         >
           Thing
         </div>
         <div
           data-uid=\\"ccc\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa~~~2:ccc\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa:ccc\\"
         >
           Thing
         </div>
@@ -20654,7 +20602,6 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -20684,14 +20631,12 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
           background-color: #ffffff;
         \\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
           style=\\"position: absolute; background-color: #000000\\"
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx\\"
         >
           Hi there!
         </div>
@@ -21886,7 +21831,6 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -21916,13 +21860,11 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
           background-color: #ffffff;
         \\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx\\"
         >
           Hi there!
         </div>
@@ -23117,7 +23059,6 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -23147,14 +23088,12 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
           background-color: #ffffff;
         \\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
           style=\\"position: absolute; background-color: #000000\\"
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx\\"
         >
           Hi there! - and hello!
         </div>
@@ -24451,7 +24390,6 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -24481,14 +24419,12 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
           background-color: #ffffff;
         \\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
           style=\\"position: absolute; background-color: #000000\\"
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx\\"
         >
           Hi there! - and hello! - Now begone!
         </div>
@@ -25785,7 +25721,6 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -25809,7 +25744,6 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
     >
       <div
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:bbb:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:bbb:aaa\\"
         data-uid=\\"aaa\\"
       ></div>
     </div>
@@ -26376,7 +26310,6 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -26413,7 +26346,6 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           background-color: #171111;
         \\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
@@ -26424,13 +26356,11 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           \\"
           data-uid=\\"eb1\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a:eb1\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a:eb1\\"
         >
           <div
             data-uid=\\"834~~~1\\"
             data-label=\\"Copy\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~1\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834\\"
           >
             Copy
           </div>
@@ -26438,29 +26368,24 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
             data-uid=\\"999~~~2\\"
             data-label=\\"⌘,⎇,C\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999\\"
           >
             <span
               data-uid=\\"6a8\\"
               data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000:6a8\\"
-              data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000:6a8/205/726~~~1\\"
-                data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999/000:6a8/205/726\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000:6a8/205/726~~~2\\"
-                data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999/000:6a8/205/726\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000:6a8/205/726~~~3\\"
-                data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999/000:6a8/205/726\\"
                 >C</span
               ></span
             >
@@ -26469,7 +26394,6 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
             data-uid=\\"834~~~3\\"
             data-label=\\"Paste\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~3\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834\\"
           >
             Paste
           </div>
@@ -26477,29 +26401,24 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
             data-uid=\\"999~~~4\\"
             data-label=\\"⌘⎇V\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999\\"
           >
             <span
               data-uid=\\"6a8\\"
               data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000:6a8\\"
-              data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000:6a8/205/726~~~1\\"
-                data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999/000:6a8/205/726\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000:6a8/205/726~~~2\\"
-                data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999/000:6a8/205/726\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000:6a8/205/726~~~3\\"
-                data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999/000:6a8/205/726\\"
                 >V</span
               ></span
             >
@@ -26508,7 +26427,6 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
             data-uid=\\"834~~~5\\"
             data-label=\\"Cut\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~5\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834\\"
           >
             Cut
           </div>
@@ -26516,29 +26434,24 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
             data-uid=\\"999~~~6\\"
             data-label=\\"⌘⎇C\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999\\"
           >
             <span
               data-uid=\\"6a8\\"
               data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000:6a8\\"
-              data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000:6a8/205/726~~~1\\"
-                data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999/000:6a8/205/726\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000:6a8/205/726~~~2\\"
-                data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999/000:6a8/205/726\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
                 data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000:6a8/205/726~~~3\\"
-                data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999/000:6a8/205/726\\"
                 >C</span
               ></span
             >
@@ -37869,7 +37782,6 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -37894,19 +37806,16 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
       <div
         data-uid=\\"zzz\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz\\"
       >
         <div
           data-uid=\\"ccc\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa:ccc\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa:ccc\\"
         >
           Hello World!!
         </div>
         <div
           data-uid=\\"ddd\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb:ddd\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb:ddd\\"
         >
           Hello Dolly!!
         </div>
@@ -38904,7 +38813,6 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -38929,7 +38837,6 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
       <div
         data-uid=\\"ccc-unparsed-no-template-path\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
       >
         Thing
       </div>
@@ -39564,7 +39471,6 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -39590,7 +39496,6 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
         style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0\\"
         data-uid=\\"aaa\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
       ></div>
     </div>
   </div>
@@ -40327,7 +40232,6 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -40352,7 +40256,6 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
       <div
         style=\\"position: absolute; background-color: lightgrey\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
@@ -40364,7 +40267,6 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
             background-color: #dddddd;
           \\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59:6be\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59:6be\\"
           data-uid=\\"6be\\"
         >
           <div
@@ -40376,7 +40278,6 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
               height: 30px;
             \\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59:6be/d03\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59:6be/d03\\"
             data-uid=\\"d03\\"
           ></div>
           <div
@@ -40388,7 +40289,6 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
               height: 244px;
             \\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/dd5\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/dd5\\"
             data-uid=\\"dd5\\"
           ></div>
           <div
@@ -40400,7 +40300,6 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
               height: 30px;
             \\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59:6be/41e\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59:6be/41e\\"
             data-uid=\\"41e\\"
           ></div>
         </div>
@@ -41498,7 +41397,6 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -41528,13 +41426,11 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
           background-color: #ffffff;
         \\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
           style=\\"position: absolute\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
           data-uid=\\"bbb\\"
         >
           hi
@@ -42515,7 +42411,6 @@ exports[`UiJsxCanvas render renders a canvas reliant on another file that uses m
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -42545,13 +42440,11 @@ exports[`UiJsxCanvas render renders a canvas reliant on another file that uses m
           background-color: #ffffff;
         \\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
           style=\\"position: absolute\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
           data-uid=\\"bbb\\"
         >
           hi
@@ -43687,7 +43580,6 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -43712,138 +43604,118 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
       <div
         data-uid=\\"74b\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b\\"
       >
         <div
           data-uid=\\"0dc\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/0dc\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/0dc\\"
         >
           Originally Unassigned
         </div>
         <div
           data-uid=\\"e07\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/ec8:e07\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/ec8:e07\\"
         >
           Originally Assigned
         </div>
         <div
           data-uid=\\"e0c\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/a35:e0c\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/a35:e0c\\"
         >
           Named Function
         </div>
         <div
           data-uid=\\"61e\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/61e\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/61e\\"
         >
           Named Class
         </div>
         <div
           data-uid=\\"d51\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/4b6:d51\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/4b6:d51\\"
         >
           Named Export
         </div>
         <div
           data-uid=\\"cf1\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/540:cf1\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/540:cf1\\"
         >
           Renamed Export
         </div>
         <div
           data-uid=\\"bb2\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/bb2\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/bb2\\"
         >
           First In Structure
         </div>
         <div
           data-uid=\\"002\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/002\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/002\\"
         >
           Second In Structure
         </div>
         <div
           data-uid=\\"3e0\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0\\"
         >
           The Number Is 4
         </div>
         <div
           data-uid=\\"db3\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/2e4:db3\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/2e4:db3\\"
         >
           Default Function
         </div>
         <div
           data-uid=\\"843\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/843\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/843\\"
         >
           Export Default Class
         </div>
         <div
           data-uid=\\"a35\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/3bc:a35\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/3bc:a35\\"
         >
           Default Named Function
         </div>
         <div
           data-uid=\\"22d\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/5f7:22d\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/5f7:22d\\"
         >
           Defined Then Default Exported
         </div>
         <div
           data-uid=\\"6a0\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/c19:6a0\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/c19:6a0\\"
         >
           Named As Default
         </div>
         <div
           data-uid=\\"e07\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/447:e07\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/447:e07\\"
         >
           Originally Assigned
         </div>
         <div
           data-uid=\\"e07\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/1a2:e07\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/1a2:e07\\"
         >
           Originally Assigned
         </div>
         <div
           data-uid=\\"e07\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/aeb:e07\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/aeb:e07\\"
         >
           Originally Assigned
         </div>
         <div
           data-uid=\\"e07\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/24d:e07\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/24d:e07\\"
         >
           Originally Assigned
         </div>
         <div
           data-uid=\\"db3\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/0f9:db3\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:74b/0f9:db3\\"
         >
           Default Function
         </div>
@@ -48174,7 +48046,6 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -48198,27 +48069,23 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     >
       <div
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~1:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~2:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~3:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb:xxx\\"
         >
           n3
         </div>
@@ -50040,7 +49907,6 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -50064,27 +49930,23 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     >
       <div
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~1:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~2:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~3:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb:xxx\\"
         >
           n3
         </div>
@@ -51904,7 +51766,6 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -51928,27 +51789,23 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
     >
       <div
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~1:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~2:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~3:xxx\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb:xxx\\"
         >
           n3
         </div>
@@ -53856,7 +53713,6 @@ exports[`UiJsxCanvas render renders a component using the spread operator 1`] = 
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -53881,14 +53737,12 @@ exports[`UiJsxCanvas render renders a component using the spread operator 1`] = 
       <div
         style=\\"position: absolute; height: 99.9; width: 77.7\\"
         title=\\"Hi there!\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
           style=\\"position: absolute\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
           data-uid=\\"bbb\\"
         >
           hi
@@ -54778,7 +54632,6 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -54804,14 +54657,12 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
       <div
         data-uid=\\"aaa\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:fff/aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:fff/aaa\\"
       >
         hello
       </div>
       <div
         data-uid=\\"bbb\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:fff/bbb\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:fff/bbb\\"
       >
         bello
       </div>
@@ -55707,7 +55558,6 @@ exports[`UiJsxCanvas render renders correctly when a component is passed in via 
     <div
       data-utopia-scene-id=\\"eee/fff\\"
       data-path=\\"eee/fff\\"
-      data-static-path=\\"eee/fff\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -55733,7 +55583,6 @@ exports[`UiJsxCanvas render renders correctly when a component is passed in via 
         data-uid=\\"aaa\\"
         style=\\"width: 100%; height: 100%; background-color: #ffffff\\"
         data-path=\\"eee/fff/app-entity:aaa\\"
-        data-static-path=\\"eee/fff/app-entity:aaa\\"
       >
         Test
 
@@ -55741,13 +55590,8 @@ exports[`UiJsxCanvas render renders correctly when a component is passed in via 
           data-uid=\\"ddd\\"
           style=\\"background-color: pink; width: 100%; height: 20px\\"
           data-path=\\"eee/fff/app-entity:aaa/bbb:ddd\\"
-          data-static-path=\\"eee/fff/app-entity:aaa/bbb:ddd\\"
         >
-          <div
-            data-uid=\\"ccc\\"
-            data-path=\\"eee/fff/app-entity:aaa/bbb/ccc\\"
-            data-static-path=\\"eee/fff/app-entity:aaa/bbb/ccc\\"
-          >
+          <div data-uid=\\"ccc\\" data-path=\\"eee/fff/app-entity:aaa/bbb/ccc\\">
             test
           </div>
         </div>
@@ -56724,7 +56568,6 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
     <div
       data-utopia-scene-id=\\"ccc/ddd\\"
       data-path=\\"ccc/ddd\\"
-      data-static-path=\\"ccc/ddd\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -56750,7 +56593,6 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
         data-uid=\\"bbb\\"
         style=\\"width: 100%; height: 100%; background-color: #eb1010\\"
         data-path=\\"ccc/ddd/app-entity:aaa/bbb\\"
-        data-static-path=\\"ccc/ddd/app-entity:aaa/bbb\\"
       ></div>
     </div>
   </div>
@@ -57554,7 +57396,6 @@ exports[`UiJsxCanvas render renders correctly with a nested context in another c
     <div
       data-utopia-scene-id=\\"ccc/ddd\\"
       data-path=\\"ccc/ddd\\"
-      data-static-path=\\"ccc/ddd\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -57580,7 +57421,6 @@ exports[`UiJsxCanvas render renders correctly with a nested context in another c
         data-uid=\\"bbb\\"
         style=\\"width: 100%; height: 100%; background-color: #eb1010\\"
         data-path=\\"ccc/ddd/app-entity:card:aaa/inner/bbb\\"
-        data-static-path=\\"ccc/ddd/app-entity:card:aaa/inner/bbb\\"
       ></div>
     </div>
   </div>
@@ -58100,7 +57940,6 @@ exports[`UiJsxCanvas render renders fine with a valid registerModule call 1`] = 
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -58125,13 +57964,11 @@ exports[`UiJsxCanvas render renders fine with a valid registerModule call 1`] = 
       <div
         style=\\"position: absolute; height: 99.9; width: 77.7\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
           style=\\"position: absolute\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
           data-uid=\\"bbb\\"
         >
           hi
@@ -58909,7 +58746,6 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene\\"
       data-path=\\"utopia-storyboard-uid/scene\\"
-      data-static-path=\\"utopia-storyboard-uid/scene\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -58935,7 +58771,6 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
         data-uid=\\"aaa\\"
         style=\\"width: 100%; height: 100%; background-color: #ffffff\\"
         data-path=\\"utopia-storyboard-uid/scene/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene/app-entity:aaa\\"
       >
         0 - 0
       </div>
@@ -60012,7 +59847,6 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene\\"
       data-path=\\"utopia-storyboard-uid/scene\\"
-      data-static-path=\\"utopia-storyboard-uid/scene\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -60037,7 +59871,6 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
       <div
         data-uid=\\"aaa-root-true~~~1\\"
         data-path=\\"utopia-storyboard-uid/scene/app-entity:BBB:bbb-root/bbb-root-false~~~1:aaa-root/aaa-root-false~~~1:bbb-root/bbb-root-false~~~1:aaa-root/aaa-root-false~~~1:bbb-root/bbb-root-false~~~1:aaa-root/aaa-root-true~~~1\\"
-        data-static-path=\\"utopia-storyboard-uid/scene/app-entity:BBB:bbb-root/bbb-root-false:aaa-root/aaa-root-false:bbb-root/bbb-root-false:aaa-root/aaa-root-false:bbb-root/bbb-root-false:aaa-root/aaa-root-true\\"
       >
         great
       </div>
@@ -60576,7 +60409,6 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
     <div
       data-utopia-scene-id=\\"eee/fff\\"
       data-path=\\"eee/fff\\"
-      data-static-path=\\"eee/fff\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -60608,7 +60440,6 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
           background-color: #ffffff;
         \\"
         data-path=\\"eee/fff/app:aaa\\"
-        data-static-path=\\"eee/fff/app:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
@@ -60616,7 +60447,6 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
           style=\\"width: 100px; height: 100px\\"
           data-uid=\\"bbb\\"
           data-path=\\"eee/fff/app:aaa/ggg/bbb\\"
-          data-static-path=\\"eee/fff/app:aaa/ggg/bbb\\"
         >
           Hello
           <div
@@ -60624,16 +60454,9 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
             style=\\"width: 100px; height: 100px\\"
             data-uid=\\"ccc\\"
             data-path=\\"eee/fff/app:aaa/ggg/bbb/01c/ccc\\"
-            data-static-path=\\"eee/fff/app:aaa/ggg/bbb/01c/ccc\\"
           ></div>
         </div>
-        <div
-          data-uid=\\"ddd\\"
-          data-path=\\"eee/fff/app:aaa/ddd\\"
-          data-static-path=\\"eee/fff/app:aaa/ddd\\"
-        >
-          World
-        </div>
+        <div data-uid=\\"ddd\\" data-path=\\"eee/fff/app:aaa/ddd\\">World</div>
       </div>
     </div>
   </div>
@@ -62632,7 +62455,6 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -62656,14 +62478,12 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
     >
       <div
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <img
           data-uid=\\"bbb\\"
           src=\\"data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
         />
       </div>
     </div>
@@ -63446,7 +63266,6 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       data-factory-function-works=\\"true\\"
       style=\\"
         overflow: hidden;
@@ -63472,7 +63291,6 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
       <div
         data-uid=\\"651\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:651\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:651\\"
         data-factory-function-works=\\"true\\"
       >
         Utopia
@@ -64041,7 +63859,6 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -64065,18 +63882,15 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
     >
       <div
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
         data-uid=\\"aaa\\"
       >
         <div
           data-uid=\\"bbb~~~1\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~1\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb\\"
         >
           <div
             data-uid=\\"ccc\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~1/ccc\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb/ccc\\"
           >
             1
           </div>
@@ -64084,12 +63898,10 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
         <div
           data-uid=\\"bbb~~~2\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~2\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb\\"
         >
           <div
             data-uid=\\"ccc\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~2/ccc\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb/ccc\\"
           >
             2
           </div>
@@ -64097,12 +63909,10 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
         <div
           data-uid=\\"bbb~~~3\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~3\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb\\"
         >
           <div
             data-uid=\\"ccc\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~3/ccc\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb/ccc\\"
           >
             3
           </div>
@@ -67121,7 +66931,6 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -67146,7 +66955,6 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
       <div
         data-uid=\\"d33\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:d33\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:d33\\"
         class=\\"css-16au7uv\\"
       >
         Utopia
@@ -67715,7 +67523,6 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
     <div
       data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-      data-static-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
         position: absolute;
@@ -67740,17 +67547,14 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
       <div
         data-uid=\\"zzz\\"
         data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz\\"
-        data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz\\"
       >
         <div
           data-uid=\\"cloner-root\\"
           data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner:cloner-root\\"
-          data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner:cloner-root\\"
         >
           <div
             data-uid=\\"cloned\\"
             data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner/cloned\\"
-            data-static-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner/cloned\\"
             style=\\"color: red; font-weight: 800\\"
           >
             ha

@@ -412,7 +412,6 @@ describe('scoped variables', () => {
               "type": "elementpath",
             },
             "spiedValue": Object {
-              "data-static-path": "storyboard-entity/scene-1-entity/app-entity",
               "data-uid": "app-entity",
             },
           },
@@ -433,7 +432,6 @@ describe('scoped variables', () => {
               "type": "elementpath",
             },
             "spiedValue": Object {
-              "data-static-path": "storyboard-entity/scene-1-entity/app-entity",
               "data-uid": "app-entity",
             },
           },
@@ -473,7 +471,6 @@ describe('scoped variables', () => {
               "type": "elementpath",
             },
             "spiedValue": Object {
-              "data-static-path": "storyboard-entity/scene-1-entity/app-entity",
               "data-uid": "app-entity",
             },
           },
@@ -528,7 +525,6 @@ describe('scoped variables', () => {
               "type": "elementpath",
             },
             "spiedValue": Object {
-              "data-static-path": "storyboard-entity/scene-1-entity/app-entity",
               "data-uid": "app-entity",
             },
           },
@@ -549,7 +545,6 @@ describe('scoped variables', () => {
               "type": "elementpath",
             },
             "spiedValue": Object {
-              "data-static-path": "storyboard-entity/scene-1-entity/app-entity",
               "data-uid": "app-entity",
             },
           },
@@ -570,7 +565,6 @@ describe('scoped variables', () => {
               "type": "elementpath",
             },
             "spiedValue": Object {
-              "data-static-path": "storyboard-entity/scene-1-entity/app-entity",
               "data-uid": "app-entity",
             },
           },
@@ -593,7 +587,6 @@ describe('scoped variables', () => {
             },
             "spiedValue": <div
               data-path="storyboard-entity/scene-1-entity/app-entity:af0/fakeawaitelement:fakeawait/elephant~~~1"
-              data-static-path="storyboard-entity/scene-1-entity/app-entity:af0/fakeawaitelement:fakeawait/elephant"
               data-uid="elephant~~~1"
             >
               <UtopiaSpiedExoticType(Symbol(react.fragment))>
