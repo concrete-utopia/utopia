@@ -12,6 +12,7 @@ import { when } from '../utils/react-conditionals'
 import { Icn, type IcnProps } from './icn'
 import { forceNotNull } from '../core/shared/optional-utils'
 
+// Keep this in sync with the radix-components-portal div in index.html.
 export const RadixComponentsPortalId = 'radix-components-portal'
 
 const RadixItemContainer = styled(RadixDropdownMenu.Item, {

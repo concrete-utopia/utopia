@@ -2,9 +2,12 @@ export function capitalize(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
+const aCharCode = 'a'.charCodeAt(0)
+const zCharCode = 'z'.charCodeAt(0)
+
 export function firstLetterIsLowerCase(value: string): boolean {
   const charCode = value.charCodeAt(0)
-  return !isNaN(charCode) && charCode >= 97 && charCode <= 122
+  return !isNaN(charCode) && charCode >= aCharCode && charCode <= zCharCode
 }
 
 export function isLowerCase(value: string): boolean {

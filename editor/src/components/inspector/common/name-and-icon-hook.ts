@@ -17,7 +17,6 @@ import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { FilePathMappings } from '../../../core/model/project-file-utils'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../../assets'
-import * as EP from '../../../core/shared/element-path'
 
 export interface NameAndIconResult {
   path: ElementPath

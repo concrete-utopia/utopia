@@ -615,7 +615,7 @@ export async function renderTestEditorWithModel(
   // will not find it as it is not yet in the DOM.
   const renderTargetDiv = document.createElement('div')
   document.body.appendChild(renderTargetDiv)
-  const firstRender = render(
+  render(
     <React.Profiler onRender={NO_OP} id='editor-root'>
       <div id='utopia-editor-root'>
         <div id={CanvasContextMenuPortalTargetID}></div>
