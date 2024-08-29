@@ -3,7 +3,8 @@ export function capitalize(value: string): string {
 }
 
 export function firstLetterIsLowerCase(value: string): boolean {
-  return value.length > 0 && isLowerCase(value[0])
+  const charCode = value.charCodeAt(0)
+  return !isNaN(charCode) && charCode >= 97 && charCode <= 122
 }
 
 export function isLowerCase(value: string): boolean {

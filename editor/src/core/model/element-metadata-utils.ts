@@ -452,17 +452,25 @@ export const MetadataUtils = {
     )
   },
   isButtonFromMetadata(element: ElementInstanceMetadata | null): boolean {
-    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
-    if (
-      elementName != null &&
-      PP.depth(elementName.propertyPath) === 0 &&
-      elementName.baseVariable === 'button'
-    ) {
-      return true
-    }
-    let buttonRoleFound: boolean = false
-    if (element != null) {
-      forEachRight(element.element, (elem) => {
+    if (element == null) {
+      return false
+    } else {
+      if (element.specialSizeMeasurements.htmlElementName.toLowerCase() === 'button') {
+        return true
+      }
+
+      if (isRight(element.element)) {
+        const elem = element.element.value
+        const elementName = MetadataUtils.getJSXElementName(elem)
+        if (
+          elementName != null &&
+          PP.depth(elementName.propertyPath) === 0 &&
+          elementName.baseVariable === 'button'
+        ) {
+          return true
+        }
+
+        let buttonRoleFound: boolean = false
         if (isJSXElement(elem)) {
           const attrResult = getSimpleAttributeAtPath(right(elem.props), PP.create('role'))
           forEachRight(attrResult, (value) => {
@@ -471,12 +479,11 @@ export const MetadataUtils = {
             }
           })
         }
-      })
-    }
-    if (buttonRoleFound) {
-      return true
-    } else {
-      return element?.specialSizeMeasurements.htmlElementName.toLowerCase() === 'button'
+        if (buttonRoleFound) {
+          return true
+        }
+      }
+      return false
     }
   },
   isButton(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
