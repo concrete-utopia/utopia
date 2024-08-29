@@ -368,7 +368,10 @@ export function collectMetadata(
     result = collectMetadataForPaths(
       canvasRootContainer,
       validPaths.filter((vp) =>
-        elementsToFocusOn.some((e) => EP.pathsEqual(e, vp) || EP.isParentOf(e, vp)),
+        elementsToFocusOn.some((e) => {
+          const staticElement = EP.makeLastPartOfPathStatic(e)
+          return EP.pathsEqual(staticElement, vp) || EP.isParentOf(staticElement, vp)
+        }),
       ),
       validPaths,
       { ...options.metadataToUpdate },
