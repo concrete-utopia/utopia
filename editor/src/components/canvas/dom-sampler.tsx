@@ -51,9 +51,9 @@ function collectMetadataForElementPath(
   scale: number,
   containerRect: CanvasPoint,
   spyCollector: UiJsxCanvasContextData,
-): Array<{ metadata: DomElementMetadata; foundValidDynamicPaths: Array<ElementPath> }> {
+): Array<{ metadata: DomElementMetadata }> {
   if (EP.isStoryboardPath(path)) {
-    return [{ metadata: createFakeMetadataForCanvasRoot(path), foundValidDynamicPaths: [path] }]
+    return [{ metadata: createFakeMetadataForCanvasRoot(path) }]
   }
 
   const foundElements = document.querySelectorAll(`[${UTOPIA_PATH_KEY}^="${EP.toString(path)}"]`)
@@ -140,7 +140,7 @@ function collectMetadataForElementPath(
           metadata.attributeMetadatada = computedStyle.attributeMetadatada
         }
 
-        return { metadata: metadata, foundValidDynamicPaths: [dynamicPath] }
+        return { metadata: metadata }
       }
     }
 
@@ -201,7 +201,6 @@ function collectMetadataForElementPath(
         },
         null,
       ),
-      foundValidDynamicPaths: [dynamicPath],
     }
   })
 }
@@ -282,32 +281,30 @@ function collectMetadataForPaths(
       return // we couldn't find a fallback spy element, so we bail out
     }
 
-    domMetadata.forEach(({ metadata, foundValidDynamicPaths }) => {
-      foundValidDynamicPaths.forEach((validDynamicPath) => {
-        const spyElem =
-          options.spyCollector.current.spyValues.metadata[EP.toString(validDynamicPath)]
-        if (spyElem == null) {
-          // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
-          return
-        }
+    domMetadata.forEach(({ metadata }) => {
+      const validDynamicPath = path
+      const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(validDynamicPath)]
+      if (spyElem == null) {
+        // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
+        return
+      }
 
-        let jsxElement = alternativeEither(spyElem.element, metadata.element)
+      let jsxElement = alternativeEither(spyElem.element, metadata.element)
 
-        // TODO avoid temporary object creation
-        const elementInstanceMetadata: ElementInstanceMetadata = {
-          ...metadata,
-          element: jsxElement,
-          elementPath: spyElem.elementPath,
-          componentInstance: spyElem.componentInstance,
-          isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
-          label: spyElem.label,
-          importInfo: spyElem.importInfo,
-          assignedToProp: spyElem.assignedToProp,
-          conditionValue: spyElem.conditionValue,
-          earlyReturn: spyElem.earlyReturn,
-        }
-        metadataToUpdate_MUTATE[EP.toString(spyElem.elementPath)] = elementInstanceMetadata
-      })
+      // TODO avoid temporary object creation
+      const elementInstanceMetadata: ElementInstanceMetadata = {
+        ...metadata,
+        element: jsxElement,
+        elementPath: spyElem.elementPath,
+        componentInstance: spyElem.componentInstance,
+        isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
+        label: spyElem.label,
+        importInfo: spyElem.importInfo,
+        assignedToProp: spyElem.assignedToProp,
+        conditionValue: spyElem.conditionValue,
+        earlyReturn: spyElem.earlyReturn,
+      }
+      metadataToUpdate_MUTATE[EP.toString(spyElem.elementPath)] = elementInstanceMetadata
     })
   })
 
