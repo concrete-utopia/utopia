@@ -872,7 +872,7 @@ function collectMetadataForElement(
   }
 }
 
-function collectMetadataForElementNEW_MOVE_ME(
+function collectMetadataForElementForDomSampler(
   element: HTMLElement,
   scale: number,
   containerRect: CanvasPoint,
@@ -1073,7 +1073,7 @@ export function createElementInstanceMetadataForElement(
     nonRoundedGlobalFrame,
     specialSizeMeasurementsObject,
     textContentsMaybe,
-  } = collectMetadataForElementNEW_MOVE_ME(
+  } = collectMetadataForElementForDomSampler(
     element,
     scale,
     canvasPoint({ x: containerRectX, y: containerRectY }),
