@@ -115,7 +115,7 @@ function collectMetadataForElementPath(
           })
 
           const foundValidPathsMatchOriginalPath = foundValidPaths.some((vp) =>
-            EP.pathsEqual(EP.makeLastPartOfPathStatic(vp.path), path),
+            EP.pathsEqual(EP.makeLastPartOfPathStatic(vp.path), EP.makeLastPartOfPathStatic(path)),
           )
 
           const foundElementIsNotRealDomElement = !foundValidPathsMatchOriginalPath
