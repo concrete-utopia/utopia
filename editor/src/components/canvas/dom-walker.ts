@@ -874,7 +874,6 @@ function collectMetadataForElement(
 
 function collectMetadataForElementNEW_MOVE_ME(
   element: HTMLElement,
-  parentPoint: CanvasPoint,
   scale: number,
   containerRect: CanvasPoint,
 ): {
@@ -1076,7 +1075,6 @@ export function createElementInstanceMetadataForElement(
     textContentsMaybe,
   } = collectMetadataForElementNEW_MOVE_ME(
     element,
-    canvasPoint({ x: 0, y: 0 }), // TODO this is wrong, we should pass or calculate the parent point
     scale,
     canvasPoint({ x: containerRectX, y: containerRectY }),
   )
