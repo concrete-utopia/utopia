@@ -1033,17 +1033,6 @@ function elementPathUpToIndex(
   ])
 }
 
-export function pathShortenedToOtherPath(
-  fullPath: ElementPath,
-  upToPath: ElementPath,
-): ElementPath {
-  return elementPathUpToIndex(
-    fullPath,
-    upToPath.parts.length,
-    upToPath.parts[upToPath.parts.length - 1].length,
-  )
-}
-
 export interface DropFirstPathElementResultType {
   newPath: ElementPath | null
   droppedPathElements: ElementPathPart | null
