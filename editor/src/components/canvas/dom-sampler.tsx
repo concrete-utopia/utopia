@@ -51,9 +51,9 @@ function collectMetadataForElementPath(
   scale: number,
   containerRect: CanvasPoint,
   spyCollector: UiJsxCanvasContextData,
-): Array<{ metadata: DomElementMetadata }> {
+): DomElementMetadata | null {
   if (EP.isStoryboardPath(path)) {
-    return [{ metadata: createFakeMetadataForCanvasRoot(path) }]
+    return createFakeMetadataForCanvasRoot(path)
   }
 
   const foundElements = document.querySelectorAll(`[${UTOPIA_PATH_KEY}^="${EP.toString(path)}"]`)
@@ -76,133 +76,129 @@ function collectMetadataForElementPath(
   }
 
   if (closestMatches.length == 0) {
-    return []
+    return null
   }
 
-  return [1].map(() => {
-    const dynamicPath = path
+  const dynamicPath = path
 
-    if (closestMatches.length == 1) {
-      const foundElement = closestMatches[0]
-      // TODO handle measuring SVGs
-      const pathsWithStrings = getPathWithStringsOnDomElement(foundElement)
-      if (pathsWithStrings.length == 0) {
-        throw new Error('No path found on element')
-      } else {
-        const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
-          const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
-          return validPaths.some((vp) => EP.pathsEqual(vp, staticPath)) // this is from the old implementation, no descendants are included
-        })
+  if (closestMatches.length == 1) {
+    const foundElement = closestMatches[0]
+    // TODO handle measuring SVGs
+    const pathsWithStrings = getPathWithStringsOnDomElement(foundElement)
+    if (pathsWithStrings.length == 0) {
+      throw new Error('No path found on element')
+    } else {
+      const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
+        const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
+        return validPaths.some((vp) => EP.pathsEqual(vp, staticPath)) // this is from the old implementation, no descendants are included
+      })
 
-        const foundValidPathsMatchOriginalPath = foundValidPaths.some((vp) =>
-          EP.pathsEqual(EP.makeLastPartOfPathStatic(vp.path), EP.makeLastPartOfPathStatic(path)),
-        )
+      const foundValidPathsMatchOriginalPath = foundValidPaths.some((vp) =>
+        EP.pathsEqual(EP.makeLastPartOfPathStatic(vp.path), EP.makeLastPartOfPathStatic(path)),
+      )
 
-        const foundElementIsNotRealDomElement = !foundValidPathsMatchOriginalPath
+      const foundElementIsNotRealDomElement = !foundValidPathsMatchOriginalPath
 
-        const invalidatedPathForceRecalculation =
-          spyCollector.current.spyValues.invalidatedElementsInFrame.some((i) =>
-            EP.isDescendantOfOrEqualTo(dynamicPath, i),
-          )
-
-        const metadataResult = createElementInstanceMetadataForElementCached.get(
-          invalidatedPathForceRecalculation,
-          foundElement,
-          scale,
-          containerRect.x, // passing this as two values so it can be used as cache key
-          containerRect.y,
-        )
-
-        const metadata: DomElementMetadata = {
-          // TODO instead of shallow cloning the metadata and then modifying it, we should pass in to this function the fact that we are collecting for a non-dom element
-          ...metadataResult,
-          specialSizeMeasurements: {
-            ...metadataResult.specialSizeMeasurements,
-          },
-        }
-        const computedStyle = getComputedStyleOptionallyForElement(
-          invalidatedPathForceRecalculation,
-          foundElement,
-          pluck(foundValidPaths, 'path'),
-          selectedViews,
-        )
-
-        if (foundElementIsNotRealDomElement) {
-          // TODO this should not be in the metadata to begin with
-          // TODO express with types refactoring that this only applies to non-dom elements
-          // if the element is not a real dom element, we need to clear out the layout system for children
-          metadata.specialSizeMeasurements.layoutSystemForChildren = null
-          metadata.specialSizeMeasurements.globalContentBoxForChildren = null
-        }
-
-        if (computedStyle != null) {
-          metadata.computedStyle = computedStyle.computedStyle
-          metadata.attributeMetadatada = computedStyle.attributeMetadatada
-        }
-
-        return { metadata: metadata }
-      }
-    }
-
-    // if there are multiple closestMatches that are the same depth, we want to return a fake metadata with a globalFrame that is the union of all the closestMatches
-    const metadatas: Array<DomElementMetadata> = mapDropNulls((el) => {
-      if (!(el instanceof HTMLElement)) {
-        return null
-      }
-      const invalidatedPathForceCacheReset =
+      const invalidatedPathForceRecalculation =
         spyCollector.current.spyValues.invalidatedElementsInFrame.some((i) =>
-          EP.pathsEqual(i, dynamicPath),
+          EP.isDescendantOfOrEqualTo(dynamicPath, i),
         )
 
-      return createElementInstanceMetadataForElementCached.get(
-        invalidatedPathForceCacheReset,
-        el,
+      const metadataResult = createElementInstanceMetadataForElementCached.get(
+        invalidatedPathForceRecalculation,
+        foundElement,
         scale,
-        containerRect.x,
+        containerRect.x, // passing this as two values so it can be used as cache key
         containerRect.y,
       )
-    }, closestMatches)
 
-    const mergedGlobalFrame = boundingRectangleArray(
-      mapDropNulls((m) => nullIfInfinity(m.globalFrame), metadatas),
-    )
-
-    // TODO instead of these expensive little plucks, we should create the values in a single loop
-    const parentLayoutSystemFromChildren: Array<DetectedLayoutSystem> = metadatas.map(
-      (c) => c.specialSizeMeasurements.parentLayoutSystem,
-    )
-    const parentFlexDirectionFromChildren: Array<FlexDirection | null> = metadatas.map(
-      (c) => c.specialSizeMeasurements.parentFlexDirection,
-    )
-    const immediateParentBoundsFromChildren: Array<CanvasRectangle | null> = metadatas.map(
-      (c) => c.specialSizeMeasurements.immediateParentBounds,
-    )
-    const positionForChildren: Array<CSSPosition | null> = metadatas.map(
-      (c) => c.specialSizeMeasurements.position,
-    )
-
-    return {
-      metadata: domElementMetadata(
-        left('unknown'),
-        mergedGlobalFrame,
-        mergedGlobalFrame,
-        {
-          ...emptySpecialSizeMeasurements,
-          parentLayoutSystem: allElemsEqual(parentLayoutSystemFromChildren)
-            ? parentLayoutSystemFromChildren[0]
-            : 'none',
-          parentFlexDirection: allElemsEqual(parentFlexDirectionFromChildren)
-            ? parentFlexDirectionFromChildren[0]
-            : null,
-          immediateParentBounds: allElemsEqual(immediateParentBoundsFromChildren)
-            ? immediateParentBoundsFromChildren[0]
-            : null,
-          position: allElemsEqual(positionForChildren) ? positionForChildren[0] : null,
+      const metadata: DomElementMetadata = {
+        // TODO instead of shallow cloning the metadata and then modifying it, we should pass in to this function the fact that we are collecting for a non-dom element
+        ...metadataResult,
+        specialSizeMeasurements: {
+          ...metadataResult.specialSizeMeasurements,
         },
-        null,
-      ),
+      }
+      const computedStyle = getComputedStyleOptionallyForElement(
+        invalidatedPathForceRecalculation,
+        foundElement,
+        pluck(foundValidPaths, 'path'),
+        selectedViews,
+      )
+
+      if (foundElementIsNotRealDomElement) {
+        // TODO this should not be in the metadata to begin with
+        // TODO express with types refactoring that this only applies to non-dom elements
+        // if the element is not a real dom element, we need to clear out the layout system for children
+        metadata.specialSizeMeasurements.layoutSystemForChildren = null
+        metadata.specialSizeMeasurements.globalContentBoxForChildren = null
+      }
+
+      if (computedStyle != null) {
+        metadata.computedStyle = computedStyle.computedStyle
+        metadata.attributeMetadatada = computedStyle.attributeMetadatada
+      }
+
+      return metadata
     }
-  })
+  }
+
+  // if there are multiple closestMatches that are the same depth, we want to return a fake metadata with a globalFrame that is the union of all the closestMatches
+  const metadatas: Array<DomElementMetadata> = mapDropNulls((el) => {
+    if (!(el instanceof HTMLElement)) {
+      return null
+    }
+    const invalidatedPathForceCacheReset =
+      spyCollector.current.spyValues.invalidatedElementsInFrame.some((i) =>
+        EP.pathsEqual(i, dynamicPath),
+      )
+
+    return createElementInstanceMetadataForElementCached.get(
+      invalidatedPathForceCacheReset,
+      el,
+      scale,
+      containerRect.x,
+      containerRect.y,
+    )
+  }, closestMatches)
+
+  const mergedGlobalFrame = boundingRectangleArray(
+    mapDropNulls((m) => nullIfInfinity(m.globalFrame), metadatas),
+  )
+
+  // TODO instead of these expensive little plucks, we should create the values in a single loop
+  const parentLayoutSystemFromChildren: Array<DetectedLayoutSystem> = metadatas.map(
+    (c) => c.specialSizeMeasurements.parentLayoutSystem,
+  )
+  const parentFlexDirectionFromChildren: Array<FlexDirection | null> = metadatas.map(
+    (c) => c.specialSizeMeasurements.parentFlexDirection,
+  )
+  const immediateParentBoundsFromChildren: Array<CanvasRectangle | null> = metadatas.map(
+    (c) => c.specialSizeMeasurements.immediateParentBounds,
+  )
+  const positionForChildren: Array<CSSPosition | null> = metadatas.map(
+    (c) => c.specialSizeMeasurements.position,
+  )
+
+  return domElementMetadata(
+    left('unknown'),
+    mergedGlobalFrame,
+    mergedGlobalFrame,
+    {
+      ...emptySpecialSizeMeasurements,
+      parentLayoutSystem: allElemsEqual(parentLayoutSystemFromChildren)
+        ? parentLayoutSystemFromChildren[0]
+        : 'none',
+      parentFlexDirection: allElemsEqual(parentFlexDirectionFromChildren)
+        ? parentFlexDirectionFromChildren[0]
+        : null,
+      immediateParentBounds: allElemsEqual(immediateParentBoundsFromChildren)
+        ? immediateParentBoundsFromChildren[0]
+        : null,
+      position: allElemsEqual(positionForChildren) ? positionForChildren[0] : null,
+    },
+    null,
+  )
 }
 
 function createFakeMetadataForCanvasRoot(canvasRootPath: ElementPath): DomElementMetadata {
@@ -270,7 +266,7 @@ function collectMetadataForPaths(
       options.spyCollector,
     )
 
-    if (domMetadata.length == 0) {
+    if (domMetadata == null) {
       // if we couldn't find any dom elements for the path, we must scan through all the spy elements to find a fallback with a potentially dynamic path
       const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(path)]
       if (spyElem != null) {
@@ -281,31 +277,30 @@ function collectMetadataForPaths(
       return // we couldn't find a fallback spy element, so we bail out
     }
 
-    domMetadata.forEach(({ metadata }) => {
-      const validDynamicPath = path
-      const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(validDynamicPath)]
-      if (spyElem == null) {
-        // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
-        return
-      }
+    const metadata = domMetadata
+    const validDynamicPath = path
+    const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(validDynamicPath)]
+    if (spyElem == null) {
+      // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
+      return
+    }
 
-      let jsxElement = alternativeEither(spyElem.element, metadata.element)
+    let jsxElement = alternativeEither(spyElem.element, metadata.element)
 
-      // TODO avoid temporary object creation
-      const elementInstanceMetadata: ElementInstanceMetadata = {
-        ...metadata,
-        element: jsxElement,
-        elementPath: spyElem.elementPath,
-        componentInstance: spyElem.componentInstance,
-        isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
-        label: spyElem.label,
-        importInfo: spyElem.importInfo,
-        assignedToProp: spyElem.assignedToProp,
-        conditionValue: spyElem.conditionValue,
-        earlyReturn: spyElem.earlyReturn,
-      }
-      metadataToUpdate_MUTATE[EP.toString(spyElem.elementPath)] = elementInstanceMetadata
-    })
+    // TODO avoid temporary object creation
+    const elementInstanceMetadata: ElementInstanceMetadata = {
+      ...metadata,
+      element: jsxElement,
+      elementPath: spyElem.elementPath,
+      componentInstance: spyElem.componentInstance,
+      isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
+      label: spyElem.label,
+      importInfo: spyElem.importInfo,
+      assignedToProp: spyElem.assignedToProp,
+      conditionValue: spyElem.conditionValue,
+      earlyReturn: spyElem.earlyReturn,
+    }
+    metadataToUpdate_MUTATE[EP.toString(spyElem.elementPath)] = elementInstanceMetadata
   })
 
   const finalMetadata = [
