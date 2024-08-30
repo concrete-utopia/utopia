@@ -420,9 +420,6 @@ export async function renderTestEditorWithModel(
     }
     const reactRouterErrorPreviouslyLogged = hasReactRouterErrorBeenLogged()
 
-    // clearing spyCollector invalidated elements before canvas rerender
-    spyCollector.current.spyValues.invalidatedElementsInFrame = []
-
     flushSync(() => {
       canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
     })
@@ -501,7 +498,6 @@ export async function renderTestEditorWithModel(
         {
           // TODO run fixElementsToRerender and set ElementsToRerenderGLOBAL
 
-          spyCollector.current.spyValues.invalidatedElementsInFrame = []
           flushSync(() => {
             canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
           })

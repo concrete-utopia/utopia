@@ -170,7 +170,6 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
           allElementProps: {},
           metadata: {},
           variablesInScope: {},
-          invalidatedElementsInFrame: [],
         },
       },
     }

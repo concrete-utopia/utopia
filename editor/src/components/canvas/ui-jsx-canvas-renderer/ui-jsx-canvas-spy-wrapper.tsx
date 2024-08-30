@@ -164,7 +164,6 @@ export function buildSpyWrappedElement(
       metadataContext.current.spyValues.allElementProps[elementPathString] =
         makeCanvasElementPropsSafe(realReportedProps)
       metadataContext.current.spyValues.variablesInScope[elementPathString] = variablesInScope
-      metadataContext.current.spyValues.invalidatedElementsInFrame.push(elementPath)
     }
   }
   const spyWrapperProps: SpyWrapperProps = {
