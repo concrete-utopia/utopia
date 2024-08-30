@@ -644,6 +644,7 @@ export function findAmongAncestorsOfPath<T>(
 export function isDescendantOf(target: ElementPath, maybeAncestor: ElementPath): boolean {
   const targetString = toString(target)
   const maybeAncestorString = toString(maybeAncestor)
+  // TODO FIX OMG this will return true for aaa/bbb vs aaa/bbb-1, which is a problem for user-written UIDs, especially common in tests
   return targetString !== maybeAncestorString && targetString.startsWith(maybeAncestorString)
 }
 
