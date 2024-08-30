@@ -439,19 +439,14 @@ export async function renderTestEditorWithModel(
         },
       )
 
-      // console.log(
-      //   'collect metadata called, spyCollector.current.spyValues.variablesInScope:',
-      //   spyCollector.current.spyValues.variablesInScope,
-      // )
-
-      const deepequalityResult = ElementInstanceMetadataMapKeepDeepEquality(
+      const deepEqualityResult = ElementInstanceMetadataMapKeepDeepEquality(
         workingEditorState.elementMetadata,
         metadataResult.metadata,
       )
 
-      workingEditorState.elementMetadata = deepequalityResult.value
+      workingEditorState.elementMetadata = deepEqualityResult.value
 
-      if (!deepequalityResult.areEqual) {
+      if (!deepEqualityResult.areEqual) {
         const saveDomReportAction = updateMetadataInEditorState(
           workingEditorState.elementMetadata,
           metadataResult.tree,
