@@ -43,6 +43,73 @@ import {
 } from './dom-walker'
 import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
 
+function collectMetadataForElement(
+  foundElement: HTMLElement,
+  path: ElementPath,
+  validPaths: Array<ElementPath>,
+  selectedViews: Array<ElementPath>,
+  scale: number,
+  containerRect: CanvasPoint,
+  spyCollector: UiJsxCanvasContextData,
+) {
+  const pathsWithStrings = getPathWithStringsOnDomElement(foundElement)
+  if (pathsWithStrings.length == 0) {
+    throw new Error('No path found on element')
+  }
+  const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
+    const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
+    return validPaths.some((vp) => EP.pathsEqual(vp, staticPath)) // this is from the old implementation, no descendants are included
+  })
+
+  const foundValidPathsMatchOriginalPath = foundValidPaths.some((vp) =>
+    EP.pathsEqual(EP.makeLastPartOfPathStatic(vp.path), EP.makeLastPartOfPathStatic(path)),
+  )
+
+  const foundElementIsNotRealDomElement = !foundValidPathsMatchOriginalPath
+
+  const invalidatedPathForceRecalculation =
+    spyCollector.current.spyValues.invalidatedElementsInFrame.some((i) =>
+      EP.isDescendantOfOrEqualTo(path, i),
+    )
+
+  const metadataResult = createElementInstanceMetadataForElementCached.get(
+    invalidatedPathForceRecalculation,
+    foundElement,
+    scale,
+    containerRect.x, // passing this as two values so it can be used as cache key
+    containerRect.y,
+  )
+
+  const metadata: DomElementMetadata = {
+    // TODO instead of shallow cloning the metadata and then modifying it, we should pass in to this function the fact that we are collecting for a non-dom element
+    ...metadataResult,
+    specialSizeMeasurements: {
+      ...metadataResult.specialSizeMeasurements,
+    },
+  }
+  const computedStyle = getComputedStyleOptionallyForElement(
+    invalidatedPathForceRecalculation,
+    foundElement,
+    pluck(foundValidPaths, 'path'),
+    selectedViews,
+  )
+
+  if (foundElementIsNotRealDomElement) {
+    // TODO this should not be in the metadata to begin with
+    // TODO express with types refactoring that this only applies to non-dom elements
+    // if the element is not a real dom element, we need to clear out the layout system for children
+    metadata.specialSizeMeasurements.layoutSystemForChildren = null
+    metadata.specialSizeMeasurements.globalContentBoxForChildren = null
+  }
+
+  if (computedStyle != null) {
+    metadata.computedStyle = computedStyle.computedStyle
+    metadata.attributeMetadatada = computedStyle.attributeMetadatada
+  }
+
+  return metadata
+}
+
 function collectMetadataForElementPath(
   path: ElementPath,
   validPaths: Array<ElementPath>,
@@ -78,68 +145,16 @@ function collectMetadataForElementPath(
     return null
   }
 
-  const dynamicPath = path
-
   if (closestMatches.length == 1) {
-    const foundElement = closestMatches[0]
-    // TODO handle measuring SVGs
-    const pathsWithStrings = getPathWithStringsOnDomElement(foundElement)
-    if (pathsWithStrings.length == 0) {
-      throw new Error('No path found on element')
-    } else {
-      const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
-        const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
-        return validPaths.some((vp) => EP.pathsEqual(vp, staticPath)) // this is from the old implementation, no descendants are included
-      })
-
-      const foundValidPathsMatchOriginalPath = foundValidPaths.some((vp) =>
-        EP.pathsEqual(EP.makeLastPartOfPathStatic(vp.path), EP.makeLastPartOfPathStatic(path)),
-      )
-
-      const foundElementIsNotRealDomElement = !foundValidPathsMatchOriginalPath
-
-      const invalidatedPathForceRecalculation =
-        spyCollector.current.spyValues.invalidatedElementsInFrame.some((i) =>
-          EP.isDescendantOfOrEqualTo(dynamicPath, i),
-        )
-
-      const metadataResult = createElementInstanceMetadataForElementCached.get(
-        invalidatedPathForceRecalculation,
-        foundElement,
-        scale,
-        containerRect.x, // passing this as two values so it can be used as cache key
-        containerRect.y,
-      )
-
-      const metadata: DomElementMetadata = {
-        // TODO instead of shallow cloning the metadata and then modifying it, we should pass in to this function the fact that we are collecting for a non-dom element
-        ...metadataResult,
-        specialSizeMeasurements: {
-          ...metadataResult.specialSizeMeasurements,
-        },
-      }
-      const computedStyle = getComputedStyleOptionallyForElement(
-        invalidatedPathForceRecalculation,
-        foundElement,
-        pluck(foundValidPaths, 'path'),
-        selectedViews,
-      )
-
-      if (foundElementIsNotRealDomElement) {
-        // TODO this should not be in the metadata to begin with
-        // TODO express with types refactoring that this only applies to non-dom elements
-        // if the element is not a real dom element, we need to clear out the layout system for children
-        metadata.specialSizeMeasurements.layoutSystemForChildren = null
-        metadata.specialSizeMeasurements.globalContentBoxForChildren = null
-      }
-
-      if (computedStyle != null) {
-        metadata.computedStyle = computedStyle.computedStyle
-        metadata.attributeMetadatada = computedStyle.attributeMetadatada
-      }
-
-      return metadata
-    }
+    return collectMetadataForElement(
+      closestMatches[0],
+      path,
+      validPaths,
+      selectedViews,
+      scale,
+      containerRect,
+      spyCollector,
+    )
   }
 
   // if there are multiple closestMatches that are the same depth, we want to return a fake metadata with a globalFrame that is the union of all the closestMatches
@@ -148,9 +163,7 @@ function collectMetadataForElementPath(
       return null
     }
     const invalidatedPathForceCacheReset =
-      spyCollector.current.spyValues.invalidatedElementsInFrame.some((i) =>
-        EP.pathsEqual(i, dynamicPath),
-      )
+      spyCollector.current.spyValues.invalidatedElementsInFrame.some((i) => EP.pathsEqual(i, path))
 
     return createElementInstanceMetadataForElementCached.get(
       invalidatedPathForceCacheReset,
