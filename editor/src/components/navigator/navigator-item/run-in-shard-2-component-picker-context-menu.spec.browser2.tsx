@@ -1387,7 +1387,9 @@ export var storyboard = (
       { x: 2, y: 2 },
     )
 
-    await mouseClickAtPoint(editor.renderedDOM.getByText('Column'), { x: 2, y: 2 })
+    const column = await waitFor(() => editor.renderedDOM.getByText('Column'))
+
+    await mouseClickAtPoint(column, { x: 2, y: 2 })
 
     // the element inside the map has been changed to a `div`
     expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState()))
