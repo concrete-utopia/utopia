@@ -51,7 +51,7 @@ function collectMetadataForElement(
   scale: number,
   containerRect: CanvasPoint,
   spyCollector: UiJsxCanvasContextData,
-) {
+): DomElementMetadata {
   const pathsWithStrings = getPathWithStringsOnDomElement(foundElement)
   if (pathsWithStrings.length == 0) {
     throw new Error('No path found on element')
@@ -116,7 +116,7 @@ function createSyntheticDomElementMetadataForMultipleClosestMatches(
   scale: number,
   containerRect: CanvasPoint,
   spyCollector: UiJsxCanvasContextData,
-) {
+): DomElementMetadata {
   const metadatas: Array<DomElementMetadata> = mapDropNulls((el) => {
     if (!(el instanceof HTMLElement)) {
       return null
