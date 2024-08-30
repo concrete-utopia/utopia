@@ -2455,7 +2455,9 @@ export var storyboard = (
         expect(span.clientWidth).toEqual(88)
         expect(isBetween(span.clientHeight, 37, 39)).toBe(true)
       })
-      it('does not resize text elements past their intrinsic size when zoomed in', async () => {
+
+      // Disabled because of the zoom problems introduced by the Chrome 128 release
+      xit('does not resize text elements past their intrinsic size when zoomed in', async () => {
         const renderResult = await renderTestEditorWithCode(
           formatTestProjectCode(`
           import * as React from 'react'
