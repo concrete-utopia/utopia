@@ -303,30 +303,30 @@ function collectMetadataForPaths(
       return // we couldn't find a fallback spy element, so we bail out
     }
 
-    const metadata = domMetadata
     const validDynamicPath = path
-    const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(validDynamicPath)]
-    if (spyElem == null) {
+    const spyMetadata =
+      options.spyCollector.current.spyValues.metadata[EP.toString(validDynamicPath)]
+    if (spyMetadata == null) {
       // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
       return
     }
 
-    let jsxElement = alternativeEither(spyElem.element, metadata.element)
+    let jsxElement = alternativeEither(spyMetadata.element, domMetadata.element)
 
     // TODO avoid temporary object creation
     const elementInstanceMetadata: ElementInstanceMetadata = {
-      ...metadata,
+      ...domMetadata,
       element: jsxElement,
-      elementPath: spyElem.elementPath,
-      componentInstance: spyElem.componentInstance,
-      isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
-      label: spyElem.label,
-      importInfo: spyElem.importInfo,
-      assignedToProp: spyElem.assignedToProp,
-      conditionValue: spyElem.conditionValue,
-      earlyReturn: spyElem.earlyReturn,
+      elementPath: spyMetadata.elementPath,
+      componentInstance: spyMetadata.componentInstance,
+      isEmotionOrStyledComponent: spyMetadata.isEmotionOrStyledComponent,
+      label: spyMetadata.label,
+      importInfo: spyMetadata.importInfo,
+      assignedToProp: spyMetadata.assignedToProp,
+      conditionValue: spyMetadata.conditionValue,
+      earlyReturn: spyMetadata.earlyReturn,
     }
-    metadataToUpdate_MUTATE[EP.toString(spyElem.elementPath)] = elementInstanceMetadata
+    metadataToUpdate_MUTATE[EP.toString(spyMetadata.elementPath)] = elementInstanceMetadata
   })
 
   const finalMetadata = [
