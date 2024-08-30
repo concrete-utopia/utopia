@@ -74,56 +74,69 @@ export function runDomSampler(
 
   let result: { metadata: ElementInstanceMetadataMap; tree: ElementPathTrees }
   if (elementsToFocusOn == 'rerender-all-elements') {
-    result = collectMetadataForPaths(
-      canvasRootContainer,
-      validPaths,
-      validPaths,
-      {},
-      { ...options, spyPaths: spyPaths },
-    )
+    result = collectMetadataForPaths({
+      metadataToUpdate_MUTATE: {},
+      canvasRootContainer: canvasRootContainer,
+      pathsToCollect: validPaths,
+      validPaths: validPaths,
+      scale: options.scale,
+      selectedViews: options.selectedViews,
+      spyCollector: options.spyCollector,
+      spyPaths: spyPaths,
+    })
   } else {
-    result = collectMetadataForPaths(
-      canvasRootContainer,
-      validPaths.filter((vp) =>
+    result = collectMetadataForPaths({
+      metadataToUpdate_MUTATE: { ...options.metadataToUpdate }, // shallow cloning this object so we can mutate it
+      canvasRootContainer: canvasRootContainer,
+      pathsToCollect: validPaths.filter((vp) =>
         elementsToFocusOn.some((e) => {
           const staticElement = EP.makeLastPartOfPathStatic(e)
           return EP.pathsEqual(staticElement, vp) || EP.isParentOf(staticElement, vp)
         }),
       ),
-      validPaths,
-      { ...options.metadataToUpdate },
-      { ...options, spyPaths: spyPaths },
-    )
+      validPaths: validPaths,
+      scale: options.scale,
+      selectedViews: options.selectedViews,
+      spyCollector: options.spyCollector,
+      spyPaths: spyPaths,
+    })
   }
 
   return result
 }
 
-function collectMetadataForPaths(
-  canvasRootContainer: HTMLElement,
-  pathsToCollect: Array<ElementPath>,
-  validPaths: Array<ElementPath>,
-  metadataToUpdate_MUTATE: ElementInstanceMetadataMap,
-  options: {
-    scale: number
-    selectedViews: Array<ElementPath>
-    spyCollector: UiJsxCanvasContextData
-    spyPaths: Array<string>
-  },
-): {
+function collectMetadataForPaths({
+  canvasRootContainer,
+  pathsToCollect,
+  validPaths,
+  metadataToUpdate_MUTATE,
+  scale,
+  selectedViews,
+  spyCollector,
+  spyPaths,
+}: {
+  canvasRootContainer: HTMLElement
+  pathsToCollect: Array<ElementPath>
+  validPaths: Array<ElementPath>
+  metadataToUpdate_MUTATE: ElementInstanceMetadataMap
+  scale: number
+  selectedViews: Array<ElementPath>
+  spyCollector: UiJsxCanvasContextData
+  spyPaths: Array<string>
+}): {
   metadata: ElementInstanceMetadataMap
   tree: ElementPathTrees
 } {
   const containerRect = getCanvasRectangleFromElement(
     canvasRootContainer,
-    options.scale,
+    scale,
     'without-text-content',
     'nearest-half',
   )
 
   const dynamicPathsToCollect: Array<ElementPath> = pathsToCollect
     .flatMap((staticPath) => {
-      return options.spyPaths.filter((spyPath) =>
+      return spyPaths.filter((spyPath) =>
         EP.pathsEqual(EP.makeLastPartOfPathStatic(EP.fromString(spyPath)), staticPath),
       )
     })
@@ -133,15 +146,15 @@ function collectMetadataForPaths(
     const domMetadata = collectMetadataForElementPath(
       path,
       validPaths,
-      options.selectedViews,
-      options.scale,
+      selectedViews,
+      scale,
       containerRect,
-      options.spyCollector,
+      spyCollector,
     )
 
     if (domMetadata == null) {
       // if we couldn't find any dom elements for the path, we must scan through all the spy elements to find a fallback with a potentially dynamic path
-      const spyElem = options.spyCollector.current.spyValues.metadata[EP.toString(path)]
+      const spyElem = spyCollector.current.spyValues.metadata[EP.toString(path)]
       if (spyElem != null) {
         metadataToUpdate_MUTATE[EP.toString(path)] = {
           ...spyElem,
@@ -151,8 +164,7 @@ function collectMetadataForPaths(
     }
 
     const validDynamicPath = path
-    const spyMetadata =
-      options.spyCollector.current.spyValues.metadata[EP.toString(validDynamicPath)]
+    const spyMetadata = spyCollector.current.spyValues.metadata[EP.toString(validDynamicPath)]
     if (spyMetadata == null) {
       // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
       return
