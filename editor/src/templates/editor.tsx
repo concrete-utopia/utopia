@@ -115,10 +115,7 @@ import {
   resetSelectorTimings,
 } from '../components/editor/store/store-hook-performance-logging'
 import { createPerformanceMeasure } from '../components/editor/store/editor-dispatch-performance-logging'
-import {
-  runDomSamplerAndSaveResults,
-  runDomWalkerAndSaveResults,
-} from '../components/canvas/editor-dispatch-flow'
+import { runDomSamplerAndSaveResults } from '../components/canvas/editor-dispatch-flow'
 import { simpleStringifyActions } from '../components/editor/actions/action-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from '../components/editor/store/remix-derived-data'
 import { emptyProjectServerState } from '../components/editor/store/project-server-state'
@@ -559,14 +556,6 @@ export class Editor {
             })
 
             this.storedState.elementMetadata = metadataResult.metadata
-
-            // const domWalkerDispatchResult = runDomWalkerAndSaveResults(
-            //   this.boundDispatch,
-            //   this.domWalkerMutableState,
-            //   this.storedState,
-            //   this.spyCollector,
-            //   ElementsToRerenderGLOBAL.current,
-            // )
 
             const metadataUpdateDispatchResult = editorDispatchActionRunner(
               this.boundDispatch,
