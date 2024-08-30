@@ -452,8 +452,7 @@ describe('Snapping guidelines for absolutely moved element', () => {
     ])
   })
 
-  // Disabled because of the zoom problems introduced by the Chrome 128 release
-  xit('should line up appropriately with a scale of 4', async () => {
+  it('should line up appropriately with a scale of 4', async () => {
     const renderResult = await getGuidelineRenderResult(4)
 
     expect(await getGuidelineDimensions(renderResult, 'guideline-0')).toEqual({

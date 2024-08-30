@@ -60,8 +60,7 @@ describe('grid rearrange move strategy', () => {
     })
   })
 
-  // Disabled because of the zoom problems introduced by the Chrome 128 release
-  xit('can rearrange elements on a grid (zoom in)', async () => {
+  it('can rearrange elements on a grid (zoom in)', async () => {
     const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
     const testId = 'aaa'
