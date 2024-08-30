@@ -2455,6 +2455,7 @@ export var storyboard = (
         expect(span.clientWidth).toEqual(88)
         expect(isBetween(span.clientHeight, 37, 39)).toBe(true)
       })
+
       it('does not resize text elements past their intrinsic size when zoomed in', async () => {
         const renderResult = await renderTestEditorWithCode(
           formatTestProjectCode(`
