@@ -82,7 +82,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
       )
 
       let targetCell = customState.grid.targetCell
-      const cellUnderMouse = getGridCellUnderMouse(mouseWindowPoint, canvasState.scale)
+      const cellUnderMouse = getGridCellUnderMouse(mouseWindowPoint)
       if (cellUnderMouse != null) {
         targetCell = cellUnderMouse.coordinates
       }

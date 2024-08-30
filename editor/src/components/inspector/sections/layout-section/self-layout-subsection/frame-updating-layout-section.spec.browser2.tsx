@@ -154,7 +154,8 @@ describe('Frame updating layout section', () => {
   }
 
   describe('Left control', () => {
-    it(
+    // Disabled due to (at least) issues with gaining pointer lock without a user interaction on MacOS.
+    xit(
       'scrubbing the left control label',
       makeTestCase({
         baseProject: `<div
