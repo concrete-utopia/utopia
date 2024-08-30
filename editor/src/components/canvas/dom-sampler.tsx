@@ -285,9 +285,8 @@ function collectDomElementMetadataForSingleElement(
   )
 
   if (foundElementIsNotRealDomElement) {
-    // TODO this should not be in the metadata to begin with
-    // TODO express with types refactoring that this only applies to non-dom elements
     // if the element is not a real dom element, we need to clear out the layout system for children
+    // TODO express with types refactoring that this only applies to non-dom elements
     metadata.specialSizeMeasurements.layoutSystemForChildren = null
     metadata.specialSizeMeasurements.globalContentBoxForChildren = null
   }
