@@ -26,7 +26,6 @@ import type { CanvasRectangle } from '../../core/shared/math-utils'
 import {
   boundingRectangleArray,
   infinityCanvasRectangle,
-  infinityLocalRectangle,
   nullIfInfinity,
   type CanvasPoint,
 } from '../../core/shared/math-utils'
@@ -67,13 +66,7 @@ function collectMetadataForElement(
 
   const foundElementIsNotRealDomElement = !foundValidPathsMatchOriginalPath
 
-  const invalidatedPathForceRecalculation =
-    spyCollector.current.spyValues.invalidatedElementsInFrame.some((i) =>
-      EP.isDescendantOfOrEqualTo(path, i),
-    )
-
-  const metadataResult = createElementInstanceMetadataForElementCached.get(
-    invalidatedPathForceRecalculation,
+  const metadataResult = collectDomElementMetadataForElement(
     foundElement,
     scale,
     containerRect.x, // passing this as two values so it can be used as cache key
@@ -88,7 +81,6 @@ function collectMetadataForElement(
     },
   }
   const computedStyle = getComputedStyleOptionallyForElement(
-    invalidatedPathForceRecalculation,
     foundElement,
     pluck(foundValidPaths, 'path'),
     selectedViews,
@@ -121,16 +113,8 @@ function createSyntheticDomElementMetadataForMultipleClosestMatches(
     if (!(el instanceof HTMLElement)) {
       return null
     }
-    const invalidatedPathForceCacheReset =
-      spyCollector.current.spyValues.invalidatedElementsInFrame.some((i) => EP.pathsEqual(i, path))
 
-    return createElementInstanceMetadataForElementCached.get(
-      invalidatedPathForceCacheReset,
-      el,
-      scale,
-      containerRect.x,
-      containerRect.y,
-    )
+    return collectDomElementMetadataForElement(el, scale, containerRect.x, containerRect.y)
   }, closestMatches)
 
   const mergedGlobalFrame = boundingRectangleArray(
@@ -349,9 +333,6 @@ export function collectMetadata(
     spyCollector: UiJsxCanvasContextData
   },
 ): { metadata: ElementInstanceMetadataMap; tree: ElementPathTrees } {
-  getComputedStylesCache.updateObservers()
-  createElementInstanceMetadataForElementCached.updateObservers()
-
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (canvasRootContainer == null) {
     return {
@@ -400,88 +381,7 @@ export function collectMetadata(
   return result
 }
 
-const ObserversAvailable = window.MutationObserver != null && window.ResizeObserver != null
-
-const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
-
-export class ObserverCache<T, N extends Element = Element, A extends Array<any> = Array<any>> {
-  private cache = new WeakMap<N, { value: T; params: A }>()
-
-  private getter: (node: N, ...args: A) => T
-
-  private handleMutation = (mutations: Array<MutationRecord>) => {
-    // delete the metadata for the element that has been mutated
-    for (const mutation of mutations) {
-      // TODO this may be a little excessive, possibly tone it down
-      this.cache.delete(mutation.target as N)
-      mutation.addedNodes.forEach((n) => this.cache.delete(n as N))
-      mutation.removedNodes.forEach((n) => this.cache.delete(n as N))
-      // remove all children of the mutation target from the cache
-      mutation.target.childNodes.forEach((n) => this.cache.delete(n as N))
-    }
-  }
-  private handleResize = (entries: Array<ResizeObserverEntry>) => {
-    // delete the metadata for the element that has been resized
-    for (const entry of entries) {
-      const target = entry.target
-      this.cache.delete(target as N)
-      // invalidate all siblings as a resize of one element can affect the layout of its siblings
-      entry.target.parentElement?.childNodes.forEach((n) => this.cache.delete(n as N))
-    }
-  }
-
-  private mutationObserver: MutationObserver | null = null
-  private resizeObserver: ResizeObserver | null = null
-
-  constructor(getter: (node: N, ...args: A) => T) {
-    this.getter = getter
-    if (ObserversAvailable) {
-      this.mutationObserver = new MutationObserver(this.handleMutation)
-      this.resizeObserver = new ResizeObserver(this.handleResize)
-    }
-  }
-
-  public updateObservers() {
-    const canvasRootContainer = document.getElementById(CanvasContainerID)
-    if (
-      canvasRootContainer != null &&
-      this.resizeObserver != null &&
-      this.mutationObserver != null
-    ) {
-      document.querySelectorAll(`#${CanvasContainerID} *`).forEach((elem) => {
-        this.resizeObserver!.observe(elem)
-      })
-      this.mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
-    }
-  }
-
-  // first parameter is the Node we are weakMap caching on
-  public get(force: boolean, node: N, ...args: A): T {
-    const cacheResult = this.cache.get(node)
-
-    // if the cache is empty, or the parameters have changed, recompute the value
-    if (
-      force ||
-      !ObserversAvailable ||
-      cacheResult == null ||
-      cacheResult.params.some((param, index) => param !== args[index])
-    ) {
-      const value = this.getter(node, ...args)
-      this.cache.set(node, { value: value, params: args })
-      return value
-    }
-    return cacheResult.value
-  }
-}
-
-const getComputedStylesCache = new ObserverCache(getComputedStyleForElement)
-
-const createElementInstanceMetadataForElementCached = new ObserverCache(
-  collectDomElementMetadataForElement,
-)
-
 function getComputedStyleOptionallyForElement(
-  force: boolean,
   element: HTMLElement,
   paths: Array<ElementPath>,
   selectedViews: Array<ElementPath>,
@@ -494,7 +394,7 @@ function getComputedStyleOptionallyForElement(
     return null
   }
 
-  return getComputedStylesCache.get(force, element)
+  return getComputedStyleForElement(element)
 }
 
 function getComputedStyleForElement(element: HTMLElement): ComputedStyleMetadata {
