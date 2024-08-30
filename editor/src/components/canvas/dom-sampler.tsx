@@ -44,12 +44,18 @@ import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
 
 export function runDomSampler(options: {
   elementsToFocusOn: ElementsToRerender
+  domWalkerAdditionalElementsToFocusOn: Array<ElementPath>
   scale: number
   selectedViews: Array<ElementPath>
   metadataToUpdate: ElementInstanceMetadataMap
   spyCollector: UiJsxCanvasContextData
 }): { metadata: ElementInstanceMetadataMap; tree: ElementPathTrees } {
-  const elementsToFocusOn = options.elementsToFocusOn
+  // we inject domWalkerAdditionalElementsToUpdate into ElementsToRerenderGLOBAL so that we can collect metadata for elements affected by Group resizing
+  const elementsToCollect =
+    options.elementsToFocusOn === 'rerender-all-elements'
+      ? 'rerender-all-elements'
+      : [...options.elementsToFocusOn, ...options.domWalkerAdditionalElementsToFocusOn]
+
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (canvasRootContainer == null) {
     return {
@@ -72,7 +78,7 @@ export function runDomSampler(options: {
   }
 
   let result: { metadata: ElementInstanceMetadataMap; tree: ElementPathTrees }
-  if (elementsToFocusOn == 'rerender-all-elements') {
+  if (elementsToCollect == 'rerender-all-elements') {
     result = collectMetadataForPaths({
       metadataToUpdate_MUTATE: {},
       canvasRootContainer: canvasRootContainer,
@@ -88,7 +94,7 @@ export function runDomSampler(options: {
       metadataToUpdate_MUTATE: { ...options.metadataToUpdate }, // shallow cloning this object so we can mutate it
       canvasRootContainer: canvasRootContainer,
       pathsToCollect: validPaths.filter((vp) =>
-        elementsToFocusOn.some((e) => {
+        elementsToCollect.some((e) => {
           const staticElement = EP.makeLastPartOfPathStatic(e)
           return EP.pathsEqual(staticElement, vp) || EP.isParentOf(staticElement, vp)
         }),

@@ -430,7 +430,9 @@ export async function renderTestEditorWithModel(
       resubscribeObservers(domWalkerMutableState)
 
       const metadataResult = runDomSampler({
-        elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender, // TODO include additionalElementsToFocusOn
+        elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+        domWalkerAdditionalElementsToFocusOn:
+          workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
         scale: workingEditorState.patchedEditor.canvas.scale,
         metadataToUpdate: workingEditorState.elementMetadata,
         selectedViews: workingEditorState.patchedEditor.selectedViews,
@@ -503,6 +505,8 @@ export async function renderTestEditorWithModel(
 
           const metadataResult = runDomSampler({
             elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+            domWalkerAdditionalElementsToFocusOn:
+              workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
             scale: workingEditorState.patchedEditor.canvas.scale,
             metadataToUpdate: workingEditorState.elementMetadata,
             selectedViews: workingEditorState.patchedEditor.selectedViews,

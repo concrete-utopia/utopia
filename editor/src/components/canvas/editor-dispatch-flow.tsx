@@ -72,17 +72,10 @@ export function runDomSamplerAndSaveResults(
   },
   spyCollector: UiJsxCanvasContextData,
 ) {
-  // we inject domWalkerAdditionalElementsToUpdate into ElementsToRerenderGLOBAL so that we can collect metadata for elements affected by Group resizing
-  const elementsToCollect =
-    ElementsToRerenderGLOBAL.current === 'rerender-all-elements'
-      ? 'rerender-all-elements'
-      : [
-          ...ElementsToRerenderGLOBAL.current,
-          ...storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-        ]
-
   const metadataResult = runDomSampler({
-    elementsToFocusOn: elementsToCollect,
+    elementsToFocusOn: ElementsToRerenderGLOBAL.current,
+    domWalkerAdditionalElementsToFocusOn:
+      storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
     scale: storedState.patchedEditor.canvas.scale,
     selectedViews: storedState.patchedEditor.selectedViews,
     metadataToUpdate: storedState.elementMetadata,
