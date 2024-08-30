@@ -233,10 +233,8 @@ function collectMetadataForElementPath(
     // if there are multiple closestMatches that are the same depth, we want to return a synthetic metadata with a globalFrame that is the union of all the closestMatches
     return createSyntheticDomElementMetadataForMultipleClosestMatches(
       closestMatches,
-      path,
       scale,
       containerRect,
-      spyCollector,
     )
   }
 }
@@ -301,10 +299,8 @@ function collectDomElementMetadataForSingleElement(
 
 function createSyntheticDomElementMetadataForMultipleClosestMatches(
   closestMatches: Array<HTMLElement>,
-  path: ElementPath,
   scale: number,
   containerRect: CanvasPoint,
-  spyCollector: UiJsxCanvasContextData,
 ): DomElementMetadata {
   const metadatas: Array<DomElementMetadata> = mapDropNulls((el) => {
     if (!(el instanceof HTMLElement)) {
