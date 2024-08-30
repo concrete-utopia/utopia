@@ -546,7 +546,8 @@ export class Editor {
 
           // re-run the dom-sampler
           Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
-            const metadataResult = runDomSampler(ElementsToRerenderGLOBAL.current, {
+            const metadataResult = runDomSampler({
+              elementsToFocusOn: ElementsToRerenderGLOBAL.current, // TODO include additionalElementsToFocusOn!
               scale: this.storedState.patchedEditor.canvas.scale,
               selectedViews: this.storedState.patchedEditor.selectedViews,
               metadataToUpdate: this.storedState.elementMetadata,

@@ -42,15 +42,14 @@ import {
 } from './dom-walker'
 import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
 
-export function runDomSampler(
-  elementsToFocusOn: ElementsToRerender,
-  options: {
-    scale: number
-    selectedViews: Array<ElementPath>
-    metadataToUpdate: ElementInstanceMetadataMap
-    spyCollector: UiJsxCanvasContextData
-  },
-): { metadata: ElementInstanceMetadataMap; tree: ElementPathTrees } {
+export function runDomSampler(options: {
+  elementsToFocusOn: ElementsToRerender
+  scale: number
+  selectedViews: Array<ElementPath>
+  metadataToUpdate: ElementInstanceMetadataMap
+  spyCollector: UiJsxCanvasContextData
+}): { metadata: ElementInstanceMetadataMap; tree: ElementPathTrees } {
+  const elementsToFocusOn = options.elementsToFocusOn
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (canvasRootContainer == null) {
     return {

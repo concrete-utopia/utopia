@@ -81,7 +81,8 @@ export function runDomSamplerAndSaveResults(
           ...storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
         ]
 
-  const metadataResult = runDomSampler(elementsToCollect, {
+  const metadataResult = runDomSampler({
+    elementsToFocusOn: elementsToCollect,
     scale: storedState.patchedEditor.canvas.scale,
     selectedViews: storedState.patchedEditor.selectedViews,
     metadataToUpdate: storedState.elementMetadata,

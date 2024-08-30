@@ -429,15 +429,13 @@ export async function renderTestEditorWithModel(
     {
       resubscribeObservers(domWalkerMutableState)
 
-      const metadataResult = runDomSampler(
-        workingEditorState.patchedEditor.canvas.elementsToRerender,
-        {
-          scale: workingEditorState.patchedEditor.canvas.scale,
-          metadataToUpdate: workingEditorState.elementMetadata,
-          selectedViews: workingEditorState.patchedEditor.selectedViews,
-          spyCollector: spyCollector,
-        },
-      )
+      const metadataResult = runDomSampler({
+        elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender, // TODO include additionalElementsToFocusOn
+        scale: workingEditorState.patchedEditor.canvas.scale,
+        metadataToUpdate: workingEditorState.elementMetadata,
+        selectedViews: workingEditorState.patchedEditor.selectedViews,
+        spyCollector: spyCollector,
+      })
 
       const deepEqualityResult = ElementInstanceMetadataMapKeepDeepEquality(
         workingEditorState.elementMetadata,
@@ -503,15 +501,13 @@ export async function renderTestEditorWithModel(
         {
           resubscribeObservers(domWalkerMutableState)
 
-          const metadataResult = runDomSampler(
-            workingEditorState.patchedEditor.canvas.elementsToRerender,
-            {
-              scale: workingEditorState.patchedEditor.canvas.scale,
-              metadataToUpdate: workingEditorState.elementMetadata,
-              selectedViews: workingEditorState.patchedEditor.selectedViews,
-              spyCollector: spyCollector,
-            },
-          )
+          const metadataResult = runDomSampler({
+            elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+            scale: workingEditorState.patchedEditor.canvas.scale,
+            metadataToUpdate: workingEditorState.elementMetadata,
+            selectedViews: workingEditorState.patchedEditor.selectedViews,
+            spyCollector: spyCollector,
+          })
 
           if (metadataResult != null) {
             const saveDomReportAction = updateMetadataInEditorState(
