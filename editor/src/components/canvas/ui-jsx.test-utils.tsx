@@ -427,44 +427,6 @@ export async function renderTestEditorWithModel(
       canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
     })
 
-    // run dom walker
-
-    // {
-    //   // console.log(
-    //   //   'calling run dom walker, the spy collector is:',
-    //   //   spyCollector.current.spyValues.variablesInScope,
-    //   // )
-    //   const domWalkerResult = runDomWalker({
-    //     domWalkerMutableState: domWalkerMutableState,
-    //     selectedViews: workingEditorState.patchedEditor.selectedViews,
-    //     elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
-    //     scale: workingEditorState.patchedEditor.canvas.scale,
-    //     additionalElementsToUpdate:
-    //       workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-    //     rootMetadataInStateRef: {
-    //       current: workingEditorState.patchedEditor.domMetadata,
-    //     },
-    //   })
-
-    //   if (domWalkerResult != null) {
-    //     const saveDomReportAction = saveDOMReport(
-    //       domWalkerResult.metadata,
-    //       domWalkerResult.cachedPaths,
-    //       domWalkerResult.invalidatedPaths,
-    //     )
-    //     recordedActions.push(saveDomReportAction)
-    //     // console.log('my spy collector! my dune!', spyCollector.current.spyValues.variablesInScope)
-    //     const editorWithNewMetadata = editorDispatchActionRunner(
-    //       asyncTestDispatch,
-    //       [saveDomReportAction],
-    //       workingEditorState,
-    //       spyCollector,
-    //       domWalkerResult.reconstructedMetadata,
-    //     )
-    //     workingEditorState = carryDispatchResultFields(workingEditorState, editorWithNewMetadata)
-    //   }
-    // }
-
     // run dom SAMPLER
 
     {
@@ -544,41 +506,6 @@ export async function renderTestEditorWithModel(
             canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
           })
         }
-
-        // re-run the dom-walker
-        // {
-        //   const domWalkerResult = runDomWalker({
-        //     domWalkerMutableState: domWalkerMutableState,
-        //     selectedViews: workingEditorState.patchedEditor.selectedViews,
-        //     elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
-        //     scale: workingEditorState.patchedEditor.canvas.scale,
-        //     additionalElementsToUpdate:
-        //       workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-        //     rootMetadataInStateRef: {
-        //       current: workingEditorState.patchedEditor.domMetadata,
-        //     },
-        //   })
-
-        //   if (domWalkerResult != null) {
-        //     const saveDomReportAction = saveDOMReport(
-        //       domWalkerResult.metadata,
-        //       domWalkerResult.cachedPaths,
-        //       domWalkerResult.invalidatedPaths,
-        //     )
-        //     recordedActions.push(saveDomReportAction)
-        //     const editorWithNewMetadata = editorDispatchActionRunner(
-        //       asyncTestDispatch,
-        //       [saveDomReportAction],
-        //       workingEditorState,
-        //       spyCollector,
-        //       domWalkerResult.reconstructedMetadata,
-        //     )
-        //     workingEditorState = carryDispatchResultFields(
-        //       workingEditorState,
-        //       editorWithNewMetadata,
-        //     )
-        //   }
-        // }
 
         // re-run the dom SAMPLER
 
