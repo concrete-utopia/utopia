@@ -283,7 +283,7 @@ export function getCanvasRectangleFromElement(
   withContent: 'without-text-content' | 'with-text-content' | 'only-text-content',
   rounding: 'nearest-half' | 'no-rounding',
 ): CanvasRectangle {
-  const scale = canvasScale < 1 ? 1 / canvasScale : 1
+  const scale = 1 / canvasScale
 
   const roundingFn = getRoundingFn(rounding)
 
