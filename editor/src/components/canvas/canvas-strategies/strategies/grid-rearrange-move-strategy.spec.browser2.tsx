@@ -60,8 +60,7 @@ describe('grid rearrange move strategy', () => {
     })
   })
 
-  // Disabled because of the zoom problems introduced by the Chrome 128 release
-  xit('can rearrange elements on a grid (zoom in)', async () => {
+  it('can rearrange elements on a grid (zoom in)', async () => {
     const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
     const testId = 'aaa'
@@ -213,13 +212,13 @@ async function runMoveTest(
   await mouseDragFromPointToPoint(
     sourceGridCell,
     {
-      x: sourceRect.x * (props.scale > 1 ? props.scale : 1) + 10,
-      y: sourceRect.y * (props.scale > 1 ? props.scale : 1) + 10,
+      x: sourceRect.x + 10,
+      y: sourceRect.y + 10,
     },
     getRectCenter(
       localRectangle({
-        x: targetRect.x * (props.scale > 1 ? props.scale : 1),
-        y: targetRect.y * (props.scale > 1 ? props.scale : 1),
+        x: targetRect.x,
+        y: targetRect.y,
         width: targetRect.width,
         height: targetRect.height,
       }),
