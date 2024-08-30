@@ -38,7 +38,7 @@ import type { CSSPosition, FlexDirection } from '../inspector/common/css-utils'
 import { computedStyleKeys } from '../inspector/common/css-utils'
 import { CanvasContainerID } from './canvas-types'
 import {
-  createElementInstanceMetadataForElement,
+  collectDomElementMetadataForElement,
   getAttributesComingFromStyleSheets,
 } from './dom-walker'
 import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
@@ -450,7 +450,7 @@ export class ObserverCache<T, N extends Element = Element, A extends Array<any> 
 const getComputedStylesCache = new ObserverCache(getComputedStyleForElement)
 
 const createElementInstanceMetadataForElementCached = new ObserverCache(
-  createElementInstanceMetadataForElement,
+  collectDomElementMetadataForElement,
 )
 
 function getComputedStyleOptionallyForElement(

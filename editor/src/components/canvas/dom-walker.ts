@@ -827,10 +827,9 @@ export function useDomWalkerInvalidateCallbacks(): [UpdateMutableCallback<Set<st
 
 function collectMetadataForElement(
   element: HTMLElement,
-  parentPoint: CanvasPoint,
-  closestOffsetParentPath: ElementPath,
+  closestOffsetParentPath: ElementPath | null,
   scale: number,
-  containerRectLazy: () => CanvasRectangle,
+  containerRectLazy: CanvasPoint | (() => CanvasPoint),
 ): {
   tagName: string
   globalFrame: CanvasRectangle
@@ -861,55 +860,6 @@ function collectMetadataForElement(
     closestOffsetParentPath,
     scale,
     containerRectLazy,
-  )
-
-  return {
-    tagName: tagName,
-    globalFrame: globalFrame,
-    nonRoundedGlobalFrame: nonRoundedGlobalFrame,
-    specialSizeMeasurementsObject: specialSizeMeasurementsObject,
-    textContentsMaybe: textContentsMaybe,
-  }
-}
-
-function collectMetadataForElementForDomSampler(
-  element: HTMLElement,
-  scale: number,
-  containerRect: CanvasPoint,
-): {
-  tagName: string
-  globalFrame: CanvasRectangle
-  nonRoundedGlobalFrame: CanvasRectangle
-  specialSizeMeasurementsObject: SpecialSizeMeasurements
-  textContentsMaybe: string | null
-} {
-  const closestOffsetParentPath: ElementPath | null = findNearestElementWithPath(
-    element.offsetParent,
-  )
-
-  const tagName: string = element.tagName.toLowerCase()
-  const globalFrame = globalFrameForElement(
-    element,
-    scale,
-    containerRect,
-    'without-text-content',
-    'nearest-half',
-  )
-  const nonRoundedGlobalFrame = globalFrameForElement(
-    element,
-    scale,
-    containerRect,
-    'without-text-content',
-    'no-rounding',
-  )
-
-  const textContentsMaybe = element.children.length === 0 ? element.textContent : null
-
-  const specialSizeMeasurementsObject = getSpecialMeasurements(
-    element,
-    closestOffsetParentPath,
-    scale,
-    containerRect,
   )
 
   return {
@@ -1017,7 +967,6 @@ function collectAndCreateMetadataForElement(
     textContentsMaybe,
   } = collectMetadataForElement(
     element,
-    parentPoint,
     closestOffsetParentPath,
     globalProps.scale,
     globalProps.containerRectLazy,
@@ -1061,20 +1010,25 @@ function collectAndCreateMetadataForElement(
   }
 }
 
-export function createElementInstanceMetadataForElement(
+export function collectDomElementMetadataForElement(
   element: HTMLElement,
   scale: number,
   containerRectX: number,
   containerRectY: number,
 ): DomElementMetadata {
+  const closestOffsetParentPath: ElementPath | null = findNearestElementWithPath(
+    element.offsetParent,
+  )
+
   const {
     tagName,
     globalFrame,
     nonRoundedGlobalFrame,
     specialSizeMeasurementsObject,
     textContentsMaybe,
-  } = collectMetadataForElementForDomSampler(
+  } = collectMetadataForElement(
     element,
+    closestOffsetParentPath,
     scale,
     canvasPoint({ x: containerRectX, y: containerRectY }),
   )
