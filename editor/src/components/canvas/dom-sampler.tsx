@@ -172,6 +172,16 @@ function createSyntheticDomElementMetadataForMultipleClosestMatches(
   )
 }
 
+function createFakeMetadataForCanvasRoot(canvasRootPath: ElementPath): DomElementMetadata {
+  return domElementMetadata(
+    left('Storyboard'),
+    infinityCanvasRectangle, // TODO the canvas is not actually sized infinity, in the future we should remove the InfinityRectangle and use the actual size
+    infinityCanvasRectangle,
+    emptySpecialSizeMeasurements,
+    null,
+  )
+}
+
 function collectMetadataForElementPath(
   path: ElementPath,
   validPaths: Array<ElementPath>,
@@ -225,16 +235,6 @@ function collectMetadataForElementPath(
       spyCollector,
     )
   }
-}
-
-function createFakeMetadataForCanvasRoot(canvasRootPath: ElementPath): DomElementMetadata {
-  return domElementMetadata(
-    left('Storyboard'),
-    infinityCanvasRectangle, // TODO the canvas is not actually sized infinity, in the future we should remove the InfinityRectangle and use the actual size
-    infinityCanvasRectangle,
-    emptySpecialSizeMeasurements,
-    null,
-  )
 }
 
 function getValidPathsFromCanvasContainer(canvasRootContainer: HTMLElement): Array<ElementPath> {
