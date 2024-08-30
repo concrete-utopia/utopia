@@ -110,54 +110,13 @@ function collectMetadataForElement(
   return metadata
 }
 
-function collectMetadataForElementPath(
+function createSyntheticDomElementMetadataForMultipleClosestMatches(
+  closestMatches: Array<HTMLElement>,
   path: ElementPath,
-  validPaths: Array<ElementPath>,
-  selectedViews: Array<ElementPath>,
   scale: number,
   containerRect: CanvasPoint,
   spyCollector: UiJsxCanvasContextData,
-): DomElementMetadata | null {
-  if (EP.isStoryboardPath(path)) {
-    return createFakeMetadataForCanvasRoot(path)
-  }
-
-  const foundElements = document.querySelectorAll(`[${UTOPIA_PATH_KEY}^="${EP.toString(path)}"]`)
-
-  let closestMatches: Array<HTMLElement> = []
-  let foundElementDepth: number = Infinity
-
-  for (let index = 0; index < foundElements.length; index++) {
-    const el = foundElements[index]
-    if (!(el instanceof HTMLElement)) {
-      continue
-    }
-
-    if (closestMatches.length === 0 || getDomElementDepth(el) < foundElementDepth) {
-      closestMatches = [el]
-      foundElementDepth = getDomElementDepth(el)
-    } else if (getDomElementDepth(el) === foundElementDepth) {
-      closestMatches.push(el)
-    }
-  }
-
-  if (closestMatches.length == 0) {
-    return null
-  }
-
-  if (closestMatches.length == 1) {
-    return collectMetadataForElement(
-      closestMatches[0],
-      path,
-      validPaths,
-      selectedViews,
-      scale,
-      containerRect,
-      spyCollector,
-    )
-  }
-
-  // if there are multiple closestMatches that are the same depth, we want to return a fake metadata with a globalFrame that is the union of all the closestMatches
+) {
   const metadatas: Array<DomElementMetadata> = mapDropNulls((el) => {
     if (!(el instanceof HTMLElement)) {
       return null
@@ -211,6 +170,61 @@ function collectMetadataForElementPath(
     },
     null,
   )
+}
+
+function collectMetadataForElementPath(
+  path: ElementPath,
+  validPaths: Array<ElementPath>,
+  selectedViews: Array<ElementPath>,
+  scale: number,
+  containerRect: CanvasPoint,
+  spyCollector: UiJsxCanvasContextData,
+): DomElementMetadata | null {
+  if (EP.isStoryboardPath(path)) {
+    return createFakeMetadataForCanvasRoot(path)
+  }
+
+  const foundElements = document.querySelectorAll(`[${UTOPIA_PATH_KEY}^="${EP.toString(path)}"]`)
+
+  let closestMatches: Array<HTMLElement> = []
+  let foundElementDepth: number = Infinity
+
+  for (let index = 0; index < foundElements.length; index++) {
+    const el = foundElements[index]
+    if (!(el instanceof HTMLElement)) {
+      continue
+    }
+
+    if (closestMatches.length === 0 || getDomElementDepth(el) < foundElementDepth) {
+      closestMatches = [el]
+      foundElementDepth = getDomElementDepth(el)
+    } else if (getDomElementDepth(el) === foundElementDepth) {
+      closestMatches.push(el)
+    }
+  }
+
+  if (closestMatches.length == 0) {
+    return null
+  } else if (closestMatches.length == 1) {
+    return collectMetadataForElement(
+      closestMatches[0],
+      path,
+      validPaths,
+      selectedViews,
+      scale,
+      containerRect,
+      spyCollector,
+    )
+  } else {
+    // if there are multiple closestMatches that are the same depth, we want to return a synthetic metadata with a globalFrame that is the union of all the closestMatches
+    return createSyntheticDomElementMetadataForMultipleClosestMatches(
+      closestMatches,
+      path,
+      scale,
+      containerRect,
+      spyCollector,
+    )
+  }
 }
 
 function createFakeMetadataForCanvasRoot(canvasRootPath: ElementPath): DomElementMetadata {
