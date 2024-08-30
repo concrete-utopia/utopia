@@ -72,7 +72,7 @@ export function runDomSampler(
     }
   }
 
-  let result
+  let result: { metadata: ElementInstanceMetadataMap; tree: ElementPathTrees }
   if (elementsToFocusOn == 'rerender-all-elements') {
     result = collectMetadataForPaths(
       canvasRootContainer,
