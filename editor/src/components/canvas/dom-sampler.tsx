@@ -214,6 +214,12 @@ function collectMetadataForElementPath(
       closestMatches = [el]
       foundElementDepth = getDomElementDepth(el)
     } else if (getDomElementDepth(el) === foundElementDepth) {
+      // this check is needed for user-written data-uids where one element may be aaa/bbb and a sibling may be aaa/bbb-1, so a simple string prefix check is insufficient
+      const elementPath = EP.fromString(el.getAttribute(UTOPIA_PATH_KEY) ?? '')
+      if (!EP.isDescendantOfOrEqualTo(elementPath, path)) {
+        continue
+      }
+
       closestMatches.push(el)
     }
   }
