@@ -314,18 +314,25 @@ function createSyntheticDomElementMetadataForMultipleClosestMatches(
     mapDropNulls((m) => nullIfInfinity(m.globalFrame), metadatas),
   )
 
-  // TODO instead of these expensive little plucks, we should create the values in a single loop
-  const parentLayoutSystemFromChildren: Array<DetectedLayoutSystem> = metadatas.map(
-    (c) => c.specialSizeMeasurements.parentLayoutSystem,
-  )
-  const parentFlexDirectionFromChildren: Array<FlexDirection | null> = metadatas.map(
-    (c) => c.specialSizeMeasurements.parentFlexDirection,
-  )
-  const immediateParentBoundsFromChildren: Array<CanvasRectangle | null> = metadatas.map(
-    (c) => c.specialSizeMeasurements.immediateParentBounds,
-  )
-  const positionForChildren: Array<CSSPosition | null> = metadatas.map(
-    (c) => c.specialSizeMeasurements.position,
+  const {
+    parentLayoutSystemFromChildren,
+    parentFlexDirectionFromChildren,
+    immediateParentBoundsFromChildren,
+    positionForChildren,
+  } = metadatas.reduce(
+    (acc, c) => {
+      acc.parentLayoutSystemFromChildren.push(c.specialSizeMeasurements.parentLayoutSystem)
+      acc.parentFlexDirectionFromChildren.push(c.specialSizeMeasurements.parentFlexDirection)
+      acc.immediateParentBoundsFromChildren.push(c.specialSizeMeasurements.immediateParentBounds)
+      acc.positionForChildren.push(c.specialSizeMeasurements.position)
+      return acc
+    },
+    {
+      parentLayoutSystemFromChildren: [] as Array<DetectedLayoutSystem>,
+      parentFlexDirectionFromChildren: [] as Array<FlexDirection | null>,
+      immediateParentBoundsFromChildren: [] as Array<CanvasRectangle | null>,
+      positionForChildren: [] as Array<CSSPosition | null>,
+    },
   )
 
   return domElementMetadata(
