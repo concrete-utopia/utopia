@@ -156,7 +156,7 @@ import {
 } from '../editor/store/project-server-state'
 import { uniqBy } from '../../core/shared/array-utils'
 import { InitialOnlineState } from '../editor/online-status'
-import { collectMetadata } from './dom-sampler'
+import { runDomSampler } from './dom-sampler'
 import {
   ElementInstanceMetadataKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
@@ -470,7 +470,7 @@ export async function renderTestEditorWithModel(
     {
       resubscribeObservers(domWalkerMutableState)
 
-      const metadataResult = collectMetadata(
+      const metadataResult = runDomSampler(
         workingEditorState.patchedEditor.canvas.elementsToRerender,
         {
           scale: workingEditorState.patchedEditor.canvas.scale,
@@ -585,7 +585,7 @@ export async function renderTestEditorWithModel(
         {
           resubscribeObservers(domWalkerMutableState)
 
-          const metadataResult = collectMetadata(
+          const metadataResult = runDomSampler(
             workingEditorState.patchedEditor.canvas.elementsToRerender,
             {
               scale: workingEditorState.patchedEditor.canvas.scale,

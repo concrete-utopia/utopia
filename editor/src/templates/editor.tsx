@@ -116,7 +116,7 @@ import {
 } from '../components/editor/store/store-hook-performance-logging'
 import { createPerformanceMeasure } from '../components/editor/store/editor-dispatch-performance-logging'
 import {
-  runDomCollectorAndSaveResults,
+  runDomSamplerAndSaveResults,
   runDomWalkerAndSaveResults,
 } from '../components/canvas/editor-dispatch-flow'
 import { simpleStringifyActions } from '../components/editor/actions/action-utils'
@@ -140,7 +140,7 @@ import {
   traverseReadOnlyArray,
 } from '../core/shared/optics/optic-creators'
 import { keysEqualityExhaustive, shallowEqual } from '../core/shared/equality-utils'
-import { collectMetadata } from '../components/canvas/dom-sampler'
+import { runDomSampler } from '../components/canvas/dom-sampler'
 import { omitWithPredicate } from '../core/shared/object-utils'
 
 if (PROBABLY_ELECTRON) {
@@ -492,7 +492,7 @@ export class Editor {
 
       // run the dom-walker
       if (runDomWalker) {
-        const metadataUpdateDispatchResult = runDomCollectorAndSaveResults(
+        const metadataUpdateDispatchResult = runDomSamplerAndSaveResults(
           this.boundDispatch,
           this.storedState,
           this.domWalkerMutableState,
@@ -549,9 +549,9 @@ export class Editor {
             })
           })
 
-          // re-run the dom-walker
+          // re-run the dom-sampler
           Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
-            const metadataResult = collectMetadata(ElementsToRerenderGLOBAL.current, {
+            const metadataResult = runDomSampler(ElementsToRerenderGLOBAL.current, {
               scale: this.storedState.patchedEditor.canvas.scale,
               selectedViews: this.storedState.patchedEditor.selectedViews,
               metadataToUpdate: this.storedState.elementMetadata,

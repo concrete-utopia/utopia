@@ -3,7 +3,7 @@ import { saveDOMReport, updateMetadataInEditorState } from '../editor/actions/ac
 import type { DispatchResult } from '../editor/store/dispatch'
 import { editorDispatchActionRunner } from '../editor/store/dispatch'
 import type { EditorStoreFull, ElementsToRerender } from '../editor/store/editor-state'
-import { collectMetadata } from './dom-sampler'
+import { runDomSampler } from './dom-sampler'
 import type { DomWalkerMutableStateData } from './dom-walker'
 import { resubscribeObservers, runDomWalker } from './dom-walker'
 import { ElementsToRerenderGLOBAL, type UiJsxCanvasContextData } from './ui-jsx-canvas'
@@ -63,7 +63,7 @@ export function runDomWalkerAndSaveResults(
   return dispatchResultWithMetadata
 }
 
-export function runDomCollectorAndSaveResults(
+export function runDomSamplerAndSaveResults(
   boundDispatch: EditorDispatch,
   storedState: EditorStoreFull,
   domWalkerMutableState: {
@@ -72,7 +72,7 @@ export function runDomCollectorAndSaveResults(
   },
   spyCollector: UiJsxCanvasContextData,
 ) {
-  const metadataResult = collectMetadata(ElementsToRerenderGLOBAL.current, {
+  const metadataResult = runDomSampler(ElementsToRerenderGLOBAL.current, {
     scale: storedState.patchedEditor.canvas.scale,
     selectedViews: storedState.patchedEditor.selectedViews,
     metadataToUpdate: storedState.elementMetadata,

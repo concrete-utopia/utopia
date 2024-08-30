@@ -324,7 +324,7 @@ function collectMetadataForPaths(
   }
 }
 
-export function collectMetadata(
+export function runDomSampler(
   elementsToFocusOn: ElementsToRerender,
   options: {
     scale: number
