@@ -34,6 +34,7 @@ interface GridGapControlProps {
 
 export const GridGapControlTestId = 'grid-gap-control'
 export const GridGapControlHandleTestId = 'grid-gap-control-handle'
+const GridGapHandlersBackgroundHoverDelay = 350
 
 export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((props) => {
   const { selectedElement, updatedGapValueRow, updatedGapValueColumn } = props
@@ -51,9 +52,12 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
   const [rowBackgroundShown, setRowBackgroundShown] = React.useState<boolean>(false)
   const [columnBackgroundShown, setColumnBackgroundShown] = React.useState<boolean>(false)
 
-  const [rowControlHoverStart, rowControlHoverEnd] = useHoverWithDelay(0, setRowBackgroundShown)
+  const [rowControlHoverStart, rowControlHoverEnd] = useHoverWithDelay(
+    GridGapHandlersBackgroundHoverDelay,
+    setRowBackgroundShown,
+  )
   const [columnControlHoverStart, columnControlHoverEnd] = useHoverWithDelay(
-    0,
+    GridGapHandlersBackgroundHoverDelay,
     setColumnBackgroundShown,
   )
 
