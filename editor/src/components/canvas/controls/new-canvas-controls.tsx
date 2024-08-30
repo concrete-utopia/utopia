@@ -228,7 +228,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
             transform: 'translate3d(0, 0, 0)',
             width: `100%`,
             height: `100%`,
-            zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
+            // zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
             cursor: props.cursor,
             visibility: canvasControlProps.canvasScrollAnimation ? 'hidden' : 'initial',
           }}

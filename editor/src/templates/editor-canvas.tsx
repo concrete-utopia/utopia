@@ -680,9 +680,8 @@ function createNodeConnectorsDiv(offset: CanvasPoint, scale: number) {
       position: 'absolute',
       left: 0,
       top: 0,
-      zoom: scale >= 1 ? `${scale * 100}%` : 1,
-      transform:
-        (scale < 1 ? `scale(${scale})` : '') + ` translate3d(${offset.x}px, ${offset.y}px, 0)`,
+      // zoom: scale >= 1 ? `${scale * 100}%` : 1,
+      transform: `scale(${scale})` + ` translate3d(${offset.x}px, ${offset.y}px, 0)`,
     },
   })
 }

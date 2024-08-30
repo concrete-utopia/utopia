@@ -43,10 +43,10 @@ export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObje
           (setScaleToo && scaleRef.current < 1 ? `scale(${scaleRef.current})` : '') +
             ` translate3d(${roundedCanvasOffset.x}px, ${roundedCanvasOffset.y}px, 0)`,
         )
-        elementRef.current.style.setProperty(
-          'zoom',
-          setScaleToo && scaleRef.current >= 1 ? `${scaleRef.current * 100}%` : '1',
-        )
+        // elementRef.current.style.setProperty(
+        //   'zoom',
+        //   setScaleToo && scaleRef.current >= 1 ? `${scaleRef.current * 100}%` : '1',
+        // )
 
         if (!isScrollAnimationActiveRef.current) {
           elementRef.current.style.setProperty(
