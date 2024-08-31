@@ -236,9 +236,9 @@ export var storyboard = (
         gridColumn: '2',
         gridRow: '1',
         height: '100px',
-        left: '33px',
+        left: '83px',
         position: 'absolute',
-        top: '50px',
+        top: '100px',
         width: '100px',
       })
     })
