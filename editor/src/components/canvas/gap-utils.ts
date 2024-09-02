@@ -193,17 +193,18 @@ export function gridGapControlBoundsFromMetadata(
   gridTemplateRows: string
   gridTemplateColumns: string
 } {
+  const emptyResult = {
+    rows: 0,
+    columns: 0,
+    gaps: [],
+    cellBounds: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
+    gapValues: gapValues,
+    gridTemplateRows: '1fr',
+    gridTemplateColumns: '1fr',
+  }
   const parentGrid = getGridPlaceholderDomElement(parentPath)
   if (parentGrid == null) {
-    return {
-      rows: 0,
-      columns: 0,
-      gaps: [],
-      cellBounds: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
-      gapValues: gapValues,
-      gridTemplateRows: '1fr',
-      gridTemplateColumns: '1fr',
-    }
+    return emptyResult
   }
   const parentGridBounds = parentGrid?.getBoundingClientRect()
   const gridRows = gridRowColumnInfo.rows
@@ -212,7 +213,11 @@ export function gridGapControlBoundsFromMetadata(
   const gridTemplateColumns = getNullableAutoOrTemplateBaseString(
     gridRowColumnInfo.gridTemplateColumns,
   )
-  const cell = matrixGetter(Array.from(parentGrid?.children ?? []), gridColumns)
+  const childrenArray = Array.from(parentGrid?.children ?? [])
+  if (childrenArray.length !== gridRows * gridColumns) {
+    return emptyResult
+  }
+  const cell = matrixGetter(childrenArray, gridColumns)
   // the actual rectangle that surrounds the cell placeholders
   const cellBounds = canvasRectangle({
     x: cell(0, 0).getBoundingClientRect().x - parentGridBounds.x,
