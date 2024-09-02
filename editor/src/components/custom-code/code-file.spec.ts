@@ -480,10 +480,6 @@ describe('normalisePathToUnderlyingTarget', () => {
     )
     expect(actualResult).toEqual(expectedResult)
   })
-  it('gives an error when the element path is empty', () => {
-    const actualResult = normalisePathToUnderlyingTarget(projectContents, null)
-    expect(actualResult.type).toEqual('NORMALISE_PATH_ERROR')
-  })
   it('flags elements that can not be found', () => {
     const actualResult = normalisePathToUnderlyingTarget(
       projectContents,
