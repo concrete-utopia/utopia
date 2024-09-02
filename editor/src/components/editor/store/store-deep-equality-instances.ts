@@ -2106,7 +2106,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     )(oldSize.globalFrameWithTextContent, newSize.globalFrameWithTextContent)
     const immediateParentProvidesLayoutResult =
       oldSize.immediateParentProvidesLayout === newSize.immediateParentProvidesLayout
-    const closestOffsetParentPathResult = ElementPathKeepDeepEquality(
+    const closestOffsetParentPathResult = nullableDeepEquality(ElementPathKeepDeepEquality)(
       oldSize.closestOffsetParentPath,
       newSize.closestOffsetParentPath,
     ).areEqual

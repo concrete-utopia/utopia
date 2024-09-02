@@ -55,6 +55,7 @@ import { back, front } from '../../utils/utils'
 import { createNavigatorReparentPostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
 import { getNavigatorTargetsFromEditorState } from './navigator-utils'
+import { NavigatorTestProjectWithSyntheticElements } from './navigator.test-utils'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -5481,118 +5482,11 @@ describe('Navigator', () => {
 })
 
 describe('Navigator row order', () => {
-  const TestCode = `
-    import * as React from 'react'
-    import { Scene, Storyboard } from 'utopia-api'
-
-    export var Card = (props) => {
-      return (
-        <div
-          style={{
-            height: 100,
-            width: 100,
-            backgroundColor: 'white',
-          }}
-          data-uid='card-root'
-        >
-          <span data-uid='card-span'>Top of Card</span>
-          {
-            // @utopia/uid=30d
-            props.children
-          }
-        </div>
-      )
-    }
-
-    export var App = (props) => {
-      return (
-        <div
-          style={{
-            height: '100%',
-            width: '100%',
-            contain: 'layout',
-          }}
-          data-uid='app-root'
-        >
-          <Card data-uid='card'>
-            <span data-uid='card-child'>Child of Card</span>
-          </Card>
-          <React.Fragment data-uid='frag'>
-            <div data-uid='frag-child'>Before Conditional</div>
-            {
-              // @utopia/uid=cond-1
-              true ? (
-                <div
-                  style={{
-                    backgroundColor: '#aaaaaa33',
-                    width: 300,
-                    height: 300,
-                  }}
-                  data-uid='cond-1-true'
-                >
-                  <div
-                    style={{
-                      backgroundColor: '#aaaaaa33',
-                      width: 100,
-                      height: 100,
-                    }}
-                    data-uid='cond-1-true-child'
-                  >
-                    Top
-                  </div>
-                  {
-                    // @utopia/uid=cond-2
-                    true ? (
-                      <div
-                        style={{
-                          backgroundColor: '#aaaaaa33',
-                          width: 100,
-                          height: 100,
-                        }}
-                        data-uid='cond-2-child'
-                      >
-                        Bottom
-                      </div>
-                    ) : null
-                  }
-                </div>
-              ) : null
-            }
-          </React.Fragment>
-          {
-            // @utopia/uid=52e
-            props.children
-          }
-        </div>
-      )
-    }
-
-    export var storyboard = (
-      <Storyboard data-uid='sb'>
-        <Scene
-          style={{
-            width: 700,
-            height: 759,
-            position: 'absolute',
-            left: 10,
-            top: 10,
-          }}
-          data-uid='sc'
-        >
-          <App data-uid='app'>
-            <span data-uid='app-child'>Child of App</span>
-          </App>
-        </Scene>
-        {
-          // @utopia/uid=1e7
-          null
-        }
-      </Storyboard>
-    )
-  `
-
   it('Is correct for a test project with synthetic elements', async () => {
-    const renderResult = await renderTestEditorWithCode(TestCode, 'await-first-dom-report')
+    const renderResult = await renderTestEditorWithCode(
+      NavigatorTestProjectWithSyntheticElements,
+      'await-first-dom-report',
+    )
 
     await renderResult.dispatch([setFocusedElement(EP.fromString('sb/sc/app:app-root/card'))], true)
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -5610,7 +5504,7 @@ describe('Navigator row order', () => {
       'regular-sb/sc/app:app-root/card:card-root/30d',
       'regular-sb/sc/app:app-root/card:card-root/card-span',
       'regular-sb/sc/app:app-root/card/card-child',
-      'regular-sb/sc/app:app-root/52e',
+      'regular-sb/sc/app:app-root/children-code-block',
       'regular-sb/sc/app:app-root/frag',
       'regular-sb/sc/app:app-root/frag/frag-child',
       'regular-sb/sc/app:app-root/frag/cond-1',

@@ -2521,6 +2521,22 @@ export interface ElementInstanceMetadata {
   assignedToProp: string | null
 }
 
+export interface DomElementMetadata {
+  element: Either<string, JSXElementChild>
+  globalFrame: MaybeInfinityCanvasRectangle | null
+  nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null
+  specialSizeMeasurements: SpecialSizeMeasurements
+  textContent: string | null
+
+  computedStyle: ComputedStyle | null
+  attributeMetadatada: StyleAttributeMetadata | null // sic fix typo
+}
+
+export interface ComputedStyleMetadata {
+  computedStyle: ComputedStyle
+  attributeMetadatada: StyleAttributeMetadata
+}
+
 export function elementInstanceMetadata(
   elementPath: ElementPath,
   element: Either<string, JSXElementChild>,
@@ -2554,6 +2570,35 @@ export function elementInstanceMetadata(
     textContent: textContent,
     earlyReturn: earlyReturn,
     assignedToProp: assignedToProp,
+  }
+}
+
+export function domElementMetadata(
+  element: Either<string, JSXElementChild>,
+  globalFrame: MaybeInfinityCanvasRectangle | null,
+  nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null,
+  sizeMeasurements: SpecialSizeMeasurements,
+  textContent: string | null,
+): DomElementMetadata {
+  return {
+    element: element,
+    globalFrame: globalFrame,
+    nonRoundedGlobalFrame: nonRoundedGlobalFrame,
+    specialSizeMeasurements: sizeMeasurements,
+    textContent: textContent,
+
+    computedStyle: null,
+    attributeMetadatada: null,
+  }
+}
+
+export function computedStyleMetadata(
+  computedStyle: ComputedStyle,
+  attributeMetadata: StyleAttributeMetadata,
+): ComputedStyleMetadata {
+  return {
+    computedStyle: computedStyle,
+    attributeMetadatada: attributeMetadata,
   }
 }
 
@@ -2711,7 +2756,7 @@ export interface SpecialSizeMeasurements {
   globalFrameWithTextContent: MaybeInfinityCanvasRectangle | null
   textBounds: CanvasRectangle | null
   immediateParentProvidesLayout: boolean
-  closestOffsetParentPath: ElementPath
+  closestOffsetParentPath: ElementPath | null
   usesParentBounds: boolean
   parentLayoutSystem: DetectedLayoutSystem // TODO make a specific boolean prop that tells us the parent is flex or not
   layoutSystemForChildren: DetectedLayoutSystem | null
@@ -2760,7 +2805,7 @@ export function specialSizeMeasurements(
   immediateParentBounds: CanvasRectangle | null,
   globalFrameWithTextContent: MaybeInfinityCanvasRectangle | null,
   immediateParentProvidesLayout: boolean,
-  closestOffsetParentPath: ElementPath,
+  closestOffsetParentPath: ElementPath | null,
   usesParentBounds: boolean,
   parentLayoutSystem: DetectedLayoutSystem,
   layoutSystemForChildren: DetectedLayoutSystem | null,

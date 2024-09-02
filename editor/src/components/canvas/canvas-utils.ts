@@ -1843,6 +1843,48 @@ function getValidElementPathsFromElement(
     const isScene = isSceneElement(element, filePath, projectContents)
     const isSceneWithOneChild = isScene && element.children.length === 1
 
+    const name = isJSXElement(element) ? getJSXElementNameAsString(element.name) : 'Fragment'
+    const lastElementPathPart = EP.lastElementPathForPath(path)
+    const matchingFocusedPathPart =
+      focusedElementPath == null || lastElementPathPart == null
+        ? null
+        : EP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
+
+    const matchingAutofocusedPathParts: Array<ElementPath> = mapDropNulls((autofocusedPath) => {
+      return autofocusedPath == null || lastElementPathPart == null
+        ? null
+        : EP.pathUpToElementPath(autofocusedPath, lastElementPathPart, 'static-path')
+    }, autoFocusedPaths)
+
+    const isFocused = isOnlyChildOfScene || matchingFocusedPathPart != null
+    if (isFocused) {
+      const result = getValidElementPaths(
+        focusedElementPath,
+        name,
+        matchingFocusedPathPart ?? path,
+        projectContents,
+        autoFocusedPaths,
+        filePath,
+        resolve,
+        getRemixValidPathsGenerationContext,
+      )
+      paths.push(...result)
+    }
+    matchingAutofocusedPathParts.forEach((autofocusedPathPart) => {
+      const result = getValidElementPaths(
+        focusedElementPath,
+        name,
+        autofocusedPathPart,
+        projectContents,
+        autoFocusedPaths,
+        filePath,
+        resolve,
+        getRemixValidPathsGenerationContext,
+      )
+      paths.push(...result)
+    })
+
+    // finally, add children elements
     fastForEach(element.children, (c) =>
       paths.push(
         ...getValidElementPathsFromElement(
@@ -1887,47 +1929,6 @@ function getValidElementPathsFromElement(
         }
       })
     }
-
-    const name = isJSXElement(element) ? getJSXElementNameAsString(element.name) : 'Fragment'
-    const lastElementPathPart = EP.lastElementPathForPath(path)
-    const matchingFocusedPathPart =
-      focusedElementPath == null || lastElementPathPart == null
-        ? null
-        : EP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
-
-    const matchingAutofocusedPathParts: Array<ElementPath> = mapDropNulls((autofocusedPath) => {
-      return autofocusedPath == null || lastElementPathPart == null
-        ? null
-        : EP.pathUpToElementPath(autofocusedPath, lastElementPathPart, 'static-path')
-    }, autoFocusedPaths)
-
-    const isFocused = isOnlyChildOfScene || matchingFocusedPathPart != null
-    if (isFocused) {
-      const result = getValidElementPaths(
-        focusedElementPath,
-        name,
-        matchingFocusedPathPart ?? path,
-        projectContents,
-        autoFocusedPaths,
-        filePath,
-        resolve,
-        getRemixValidPathsGenerationContext,
-      )
-      paths.push(...result)
-    }
-    matchingAutofocusedPathParts.forEach((autofocusedPathPart) => {
-      const result = getValidElementPaths(
-        focusedElementPath,
-        name,
-        autofocusedPathPart,
-        projectContents,
-        autoFocusedPaths,
-        filePath,
-        resolve,
-        getRemixValidPathsGenerationContext,
-      )
-      paths.push(...result)
-    })
 
     return paths
   } else if (

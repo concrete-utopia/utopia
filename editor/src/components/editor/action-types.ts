@@ -85,6 +85,7 @@ import type { PageTemplate } from '../canvas/remix/remix-utils'
 import type { Bounds } from 'utopia-vscode-common'
 import type { Optic } from '../../core/shared/optics/optics'
 import { makeOptic } from '../../core/shared/optics/optics'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -787,6 +788,12 @@ export interface SaveDOMReport {
   invalidatedPaths: Array<string>
 }
 
+export interface UpdateMetadataInEditorState {
+  action: 'UPDATE_METADATA_IN_EDITOR_STATE'
+  newFinalMetadata: ElementInstanceMetadataMap
+  tree: ElementPathTrees
+}
+
 export interface RunDOMWalker {
   action: 'RUN_DOM_WALKER'
 }
@@ -1301,6 +1308,7 @@ export type EditorAction =
   | SetCodeEditorLintErrors
   | SetCodeEditorComponentDescriptorErrors
   | SaveDOMReport
+  | UpdateMetadataInEditorState
   | RunDOMWalker
   | TrueUpElements
   | SetProp

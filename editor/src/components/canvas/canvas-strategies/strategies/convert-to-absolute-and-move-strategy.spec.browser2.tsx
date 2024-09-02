@@ -176,7 +176,7 @@ const complexProject = () => {
             padding: 8,
             flexDirection: 'column',
           }}
-          data-uid='flex-column-2'
+          data-uid='flex-2-column'
         >
           <div
             style={{
@@ -304,21 +304,21 @@ const AbsoluteDivInRelative = EP.appendNewElementPath(TestScenePath, [
 
 const FlexChild1 = EP.appendNewElementPath(TestScenePath, [
   'app-inner',
-  'flex-column-2',
+  'flex-2-column',
   'purple-flex-row',
   'plum-static-div-1',
 ])
 
 const FragmentInFlex = EP.appendNewElementPath(TestScenePath, [
   'app-inner',
-  'flex-column-2',
+  'flex-2-column',
   'purple-flex-row',
   'fragment-1',
 ])
 
 const FragmentChild1 = EP.appendNewElementPath(TestScenePath, [
   'app-inner',
-  'flex-column-2',
+  'flex-2-column',
   'purple-flex-row',
   'fragment-1',
   'plum-static-div-fragment-child-1',
@@ -326,7 +326,7 @@ const FragmentChild1 = EP.appendNewElementPath(TestScenePath, [
 
 const FragmentChild2 = EP.appendNewElementPath(TestScenePath, [
   'app-inner',
-  'flex-column-2',
+  'flex-2-column',
   'purple-flex-row',
   'fragment-1',
   'plum-static-div-fragment-child-2',
