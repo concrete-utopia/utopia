@@ -30,6 +30,15 @@ export const drawToInsertTextMetaStrategy: MetaCanvasStrategy = (
   interactionSession: InteractionSession | null,
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
+  const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
+  if (insertionSubjects.length != 1) {
+    return []
+  }
+  const insertionSubject = insertionSubjects[0]
+  if (!insertionSubject.textEdit) {
+    return []
+  }
+
   const elementUnderCursor = findElementPathUnderInteractionPoint(canvasState, interactionSession)
   if (
     MetadataUtils.isGridLayoutedContainer(
@@ -50,17 +59,11 @@ export const drawToInsertTextMetaStrategy: MetaCanvasStrategy = (
   ) {
     return []
   }
-  const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
-  if (insertionSubjects.length != 1) {
-    return []
-  }
 
   const pointOnCanvas =
     interactionSession.interactionData.type === 'DRAG'
       ? interactionSession.interactionData.originalDragStart
       : interactionSession.interactionData.point
-
-  const insertionSubject = insertionSubjects[0]
 
   return [
     {
@@ -69,7 +72,7 @@ export const drawToInsertTextMetaStrategy: MetaCanvasStrategy = (
       descriptiveLabel: 'Drawing To Insert Text',
       icon: { category: 'tools', type: 'pointer' },
       controlsToRender: [],
-      fitness: insertionSubject.textEdit && drawToInsertFitness(interactionSession) ? 1 : 0,
+      fitness: drawToInsertFitness(interactionSession) ? 1 : 0,
       apply: (s) => {
         if (interactionSession.interactionData.type !== 'DRAG') {
           return emptyStrategyApplicationResult
