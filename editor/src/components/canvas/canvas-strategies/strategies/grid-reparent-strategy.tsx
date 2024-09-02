@@ -202,12 +202,14 @@ export function applyGridReparent(
           return emptyStrategyApplicationResult
         }
 
-        const targetCell = getTargetGridCellUnderCursor(
-          interactionData,
-          canvasState.scale,
-          canvasState.canvasOffset,
-          customStrategyState.grid,
-        )
+        const targetCell =
+          getTargetGridCellUnderCursor(
+            interactionData,
+            canvasState.scale,
+            canvasState.canvasOffset,
+            customStrategyState.grid,
+          ) ?? customStrategyState.grid.targetCell
+
         if (targetCell == null) {
           return emptyStrategyApplicationResult
         }
@@ -263,7 +265,7 @@ export function applyGridReparent(
             elementsToRerender: elementsToRerender,
             grid: {
               ...customStrategyState.grid,
-              targetCell: targetCell ?? customStrategyState.grid.targetCell,
+              targetCell: targetCell,
             },
           },
         )
