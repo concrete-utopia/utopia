@@ -32,6 +32,7 @@ import {
   pointsEqual,
   scaleRect,
   windowPoint,
+  zeroRectangle,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import {
@@ -505,6 +506,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
 
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const activelyDraggingOrResizingCell = useEditorState(
     Substores.canvas,
@@ -618,6 +620,20 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
 
   const gridPath = optionalMap(EP.parentPath, shadow?.elementPath)
 
+  const gridFrame = React.useMemo(() => {
+    if (gridPath == null) {
+      return zeroRectangle
+    }
+    const maybeGridFrame = MetadataUtils.findElementByElementPath(
+      metadataRef.current,
+      gridPath,
+    )?.globalFrame
+    if (maybeGridFrame == null || !isFiniteRectangle(maybeGridFrame)) {
+      return zeroRectangle
+    }
+    return maybeGridFrame
+  }, [gridPath, metadataRef])
+
   useSnapAnimation({
     targetRootCell: targetRootCell,
     controls: controls,
@@ -722,8 +738,34 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
       }
     }
 
-    return { x: getCoord('x', 'width'), y: getCoord('y', 'height') }
-  }, [features, initialShadowFrame, interactionData, shadow, hoveringStart, mouseCanvasPosition])
+    // make sure the shadow is displayed only inside the grid container bounds
+    function wrapCoord(c: number, min: number, max: number, shadowSize: number) {
+      return Math.min(Math.max(c, min), max - shadowSize)
+    }
+
+    return {
+      x: wrapCoord(
+        getCoord('x', 'width') ?? 0,
+        gridFrame.x,
+        gridFrame.x + gridFrame.width,
+        shadow.globalFrame.width,
+      ),
+      y: wrapCoord(
+        getCoord('y', 'height') ?? 0,
+        gridFrame.y,
+        gridFrame.y + gridFrame.height,
+        shadow.globalFrame.height,
+      ),
+    }
+  }, [
+    features,
+    initialShadowFrame,
+    interactionData,
+    shadow,
+    hoveringStart,
+    mouseCanvasPosition,
+    gridFrame,
+  ])
 
   if (grids.length === 0) {
     return null
