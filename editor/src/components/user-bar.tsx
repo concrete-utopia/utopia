@@ -11,7 +11,6 @@ import {
   getConnectionById,
   useCollaborators,
   useConnections,
-  useMyUserAndPresence,
 } from '../core/commenting/comment-hooks'
 import type { FollowTarget, MultiplayerColor } from '../core/shared/multiplayer'
 import {
@@ -93,6 +92,7 @@ const SinglePlayerUserBar = React.memo(() => {
     <FlexRow
       onClick={handleCopyToClipboard}
       css={{
+        position: 'relative',
         background: colorTheme.primary30.value,
         borderRadius: 24,
         height: 24,
