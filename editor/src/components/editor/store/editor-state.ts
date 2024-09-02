@@ -3569,7 +3569,7 @@ export function defaultModifyParseSuccess(success: ParseSuccess): ParseSuccess {
 }
 
 export function modifyUnderlyingTarget(
-  target: ElementPath | null,
+  target: ElementPath,
   editor: EditorState,
   modifyElement: (
     element: JSXElementChild,
@@ -3657,7 +3657,7 @@ export function modifyUnderlyingParseSuccessOnly(
 }
 
 export function modifyUnderlyingForOpenFile(
-  target: ElementPath | null,
+  target: ElementPath,
   editor: EditorState,
   modifyElement: (
     element: JSXElementChild,
