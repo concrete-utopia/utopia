@@ -3,10 +3,11 @@
 import React from 'react'
 import { jsx } from '@emotion/react'
 import type { CSSProperties } from 'react'
-import { useOthers, useStatus } from '../../liveblocks.config'
+import { useOthers, useSelf, useStatus } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
 import {
   getCollaborator,
+  getCollaboratorById,
   getConnectionById,
   useCollaborators,
   useConnections,
@@ -148,12 +149,16 @@ const MultiplayerUserBar = React.memo(() => {
 
   const connections = useConnections()
 
-  const { user: myUser, presence: myPresence } = useMyUserAndPresence()
+  const liveBlocksUserId = useSelf((self) => self.id)
+  const liveBlocksConnectionId = useSelf((self) => self.connectionId)
+  const myUser = React.useMemo(() => {
+    return getCollaboratorById(collabs, liveBlocksUserId)
+  }, [collabs, liveBlocksUserId])
   const sortAvatars = useSortMultiplayerUsers()
   const isBeingFollowed = useIsBeingFollowed()
 
   const others = useOthers((list) => {
-    return excludeMyConnection(myPresence.id, myPresence.connectionId, list).map((other) => {
+    return excludeMyConnection(liveBlocksUserId, liveBlocksConnectionId, list).map((other) => {
       return {
         ...getCollaborator(collabs, other),
         following: other.presence.following,
@@ -189,12 +194,12 @@ const MultiplayerUserBar = React.memo(() => {
   }, [sortedOthers])
 
   const offlineOthers = collabs.filter((collab) => {
-    return collab.id !== myUser.id && !sortedOthers.some((other) => other.id === collab.id)
+    return collab.id !== liveBlocksUserId && !sortedOthers.some((other) => other.id === collab.id)
   })
 
   const amIOwner = React.useMemo(() => {
-    return ownerId === myUser.id
-  }, [ownerId, myUser])
+    return ownerId === liveBlocksUserId
+  }, [ownerId, liveBlocksUserId])
 
   const hasPendingRequests = useEditorState(
     Substores.projectServerState,
@@ -206,7 +211,7 @@ const MultiplayerUserBar = React.memo(() => {
     (target: FollowTarget) => () => {
       let actions: EditorAction[] = []
       const canFollow = canFollowTarget(
-        followTarget(myUser.id, myPresence.connectionId),
+        followTarget(liveBlocksUserId, liveBlocksConnectionId),
         target,
         sortedOthers,
       )
@@ -232,10 +237,10 @@ const MultiplayerUserBar = React.memo(() => {
       }
       dispatch(actions)
     },
-    [dispatch, mode, sortedOthers, myUser, myPresence],
+    [liveBlocksUserId, liveBlocksConnectionId, sortedOthers, dispatch, mode],
   )
 
-  if (myUser.name == null) {
+  if (myUser == null) {
     // it may still be loading, so fallback until it sorts itself out
     return <SinglePlayerUserBar />
   }
@@ -266,7 +271,7 @@ const MultiplayerUserBar = React.memo(() => {
               picture={other.avatar}
               onClick={toggleFollowing(followTarget(other.id, other.connectionId))}
               isBeingFollowed={isBeingFollowed(other.id, other.connectionId)}
-              follower={other.following === myUser.id}
+              follower={other.following === liveBlocksUserId}
               isOwner={isOwner}
               size={AvatarSize}
             />
@@ -332,10 +337,10 @@ const MultiplayerUserBar = React.memo(() => {
           }}
         >
           <MultiplayerAvatar
-            name={multiplayerInitialsFromName(myUser.name)}
+            name={multiplayerInitialsFromName(myUser.name ?? '')}
             color={multiplayerColorFromIndex(
-              getConnectionById(connections, myUser.id, myPresence.connectionId)?.colorIndex ??
-                null,
+              getConnectionById(connections, liveBlocksUserId, liveBlocksConnectionId)
+                ?.colorIndex ?? null,
             )}
             picture={myUser.avatar}
             isOwner={true}
@@ -362,10 +367,10 @@ const MultiplayerUserBar = React.memo(() => {
       ) : (
         <FlexRow>
           <MultiplayerAvatar
-            name={multiplayerInitialsFromName(myUser.name)}
+            name={multiplayerInitialsFromName(myUser.name ?? '')}
             color={multiplayerColorFromIndex(
-              getConnectionById(connections, myUser.id, myPresence.connectionId)?.colorIndex ??
-                null,
+              getConnectionById(connections, liveBlocksUserId, liveBlocksConnectionId)
+                ?.colorIndex ?? null,
             )}
             picture={myUser.avatar}
             isOwner={false}
