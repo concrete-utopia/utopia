@@ -1281,6 +1281,9 @@ describe('The navigator component picker context menu', () => {
       { x: 2, y: 2 },
     )
 
+    // a temp fix for `hideAll` flakiness
+    await wait(50)
+
     await mouseClickAtPoint(
       editor.renderedDOM.getByTestId('replace-element-button-sb/scene/flexrow/map/img~~~1'),
       { x: 2, y: 2 },
@@ -1382,6 +1385,9 @@ export var storyboard = (
       ),
       { x: 2, y: 2 },
     )
+
+    // a temp fix for `hideAll` flakiness
+    await wait(50)
 
     await mouseClickAtPoint(
       editor.renderedDOM.getByTestId('replace-element-button-sb/scene/flexrow/conditional/img'),
