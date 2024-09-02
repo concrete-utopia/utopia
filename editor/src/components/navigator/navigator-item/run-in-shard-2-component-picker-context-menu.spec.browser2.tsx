@@ -1286,7 +1286,8 @@ describe('The navigator component picker context menu', () => {
       { x: 2, y: 2 },
     )
 
-    await mouseClickAtPoint(editor.renderedDOM.getByText('div'), { x: 2, y: 2 })
+    const menuButton = await waitFor(() => editor.renderedDOM.getByText('div'))
+    await mouseClickAtPoint(menuButton, { x: 2, y: 2 })
 
     // the element inside the map has been changed to a `div`
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
