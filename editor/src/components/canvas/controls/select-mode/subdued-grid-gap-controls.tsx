@@ -50,9 +50,9 @@ export const SubduedGridGapControl = React.memo<SubduedGridGapControlProps>((pro
     <>
       {controlBounds.gaps
         .filter((gap) => gap.axis === axis || axis === 'both')
-        .map((gap, i) => (
+        .map((gap) => (
           <GridGapControl
-            key={i}
+            key={gap.gapId}
             targets={targets}
             selectedElement={selectedElement}
             hoveredOrFocused={hoveredOrFocused}
