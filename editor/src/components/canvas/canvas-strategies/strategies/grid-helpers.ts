@@ -49,7 +49,7 @@ function isGridCellTargetId(id: string): boolean {
   return id.startsWith(gridCellTargetIdPrefix)
 }
 
-function getGridCellAtPoint(
+export function getGridCellAtPoint(
   windowPoint: WindowPoint,
   duplicating: boolean,
 ): { id: string; coordinates: GridCellCoordinates; cellWindowRectangle: WindowRectangle } | null {
@@ -87,6 +87,7 @@ function getGridCellAtPoint(
   const { element, cellWindowRectangle } = cellUnderMouse
   const row = element.getAttribute('data-grid-row')
   const column = element.getAttribute('data-grid-column')
+
   return {
     id: element.id,
     cellWindowRectangle: cellWindowRectangle,
@@ -328,7 +329,7 @@ export function getTargetCell(
   }
 }
 
-function getElementGridProperties(
+export function getElementGridProperties(
   element: ElementInstanceMetadata,
   cellUnderMouse: { row: number; column: number },
 ): {
