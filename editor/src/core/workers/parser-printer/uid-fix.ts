@@ -17,6 +17,7 @@ import type {
   JSXConditionalExpression,
   JSXElement,
   JSXElementChild,
+  JSXElementLike,
   JSXFragment,
   JSXMapExpression,
   JSXProperty,
@@ -24,7 +25,11 @@ import type {
   TopLevelElement,
   UtopiaJSXComponent,
 } from '../../shared/element-template'
-import { isArbitraryJSBlock, isUtopiaJSXComponent } from '../../shared/element-template'
+import {
+  isArbitraryJSBlock,
+  isJSXFragment,
+  isUtopiaJSXComponent,
+} from '../../shared/element-template'
 import {
   emptyComments,
   getJSXAttribute,
@@ -545,7 +550,7 @@ export function fixElementsWithin(
     if (oldElement == null) {
       oldElement = oldExpression[fallbackIdMatch[newWithinKey]]
     }
-    const fixedElement = fixJSXElementUIDs(oldElement, newElement, fixUIDsState)
+    const fixedElement = fixJSXElementLikeUIDs(oldElement, newElement, fixUIDsState)
     result[fixedElement.uid] = fixedElement
   }
 
@@ -743,6 +748,42 @@ export function fixJSXElementUIDs(
     ...elementWithUpdatedUID,
     props: fixedProps,
     children: fixedChildren,
+  }
+}
+
+export function fixJSXFragmentUIDs(
+  oldElement: JSXElementChild | null | undefined,
+  newElement: JSXFragment,
+  fixUIDsState: FixUIDsState,
+): JSXFragment {
+  // If this is a `JSXElement`, then work through the common fields.
+  // Do this _before_ potentially updating the `data-uid` prop, so that it does
+  // not cause any issues with the uid clashing.
+  let fixedChildren: Array<JSXElementChild>
+  if (oldElement != null && isJSXFragment(oldElement)) {
+    fixedChildren = fixJSXElementChildArray(oldElement.children, newElement.children, fixUIDsState)
+  } else {
+    fixedChildren = fixJSXElementChildArray(newElement.children, newElement.children, fixUIDsState)
+  }
+
+  return {
+    ...newElement,
+    children: fixedChildren,
+  }
+}
+
+export function fixJSXElementLikeUIDs(
+  oldElement: JSXElementChild | null | undefined,
+  newElement: JSXElementLike,
+  fixUIDsState: FixUIDsState,
+): JSXElementLike {
+  switch (newElement.type) {
+    case 'JSX_ELEMENT':
+      return fixJSXElementUIDs(oldElement, newElement, fixUIDsState)
+    case 'JSX_FRAGMENT':
+      return fixJSXFragmentUIDs(oldElement, newElement, fixUIDsState)
+    default:
+      assertNever(newElement)
   }
 }
 

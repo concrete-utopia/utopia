@@ -370,57 +370,59 @@ export var app = (props) => {
               if (isJSExpressionOtherJavaScript(firstChild)) {
                 const firstKey = Object.keys(firstChild.elementsWithin)[0]
                 const firstElementWithin = firstChild.elementsWithin[firstKey]
-                const updatedAttributes = jsxAttributesFromMap({
-                  style: jsExpressionValue(
-                    {
-                      backgroundColor: 'red',
-                      position: 'absolute',
-                      left: 0,
-                      top: 0,
-                      width: 100,
-                      height: 200,
-                    },
-                    emptyComments,
-                  ),
-                })
-                const updatedElementsWithin = {
-                  [firstKey]: jsxElement(
-                    firstElementWithin.name,
-                    firstKey,
-                    updatedAttributes,
-                    firstElementWithin.children,
-                  ),
+                if (isJSXElement(firstElementWithin)) {
+                  const updatedAttributes = jsxAttributesFromMap({
+                    style: jsExpressionValue(
+                      {
+                        backgroundColor: 'red',
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        width: 100,
+                        height: 200,
+                      },
+                      emptyComments,
+                    ),
+                  })
+                  const updatedElementsWithin = {
+                    [firstKey]: jsxElement(
+                      firstElementWithin.name,
+                      firstKey,
+                      updatedAttributes,
+                      firstElementWithin.children,
+                    ),
+                  }
+                  const updatedFirstChild = jsExpressionOtherJavaScript(
+                    isJSExpressionOtherJavaScript(firstChild) ? firstChild.params : [],
+                    firstChild.originalJavascript,
+                    firstChild.javascriptWithUIDs,
+                    firstChild.transpiledJavascript,
+                    firstChild.definedElsewhere,
+                    firstChild.sourceMap,
+                    updatedElementsWithin,
+                    firstChild.comments,
+                  )
+                  const updatedRootElement = jsxElement(
+                    rootElement.name,
+                    rootElement.uid,
+                    rootElement.props,
+                    [updatedFirstChild],
+                  )
+                  const updatedComponent = utopiaJSXComponent(
+                    tle.name,
+                    tle.isFunction,
+                    tle.declarationSyntax,
+                    tle.blockOrExpression,
+                    tle.functionWrapping,
+                    tle.params,
+                    tle.propsUsed,
+                    updatedRootElement,
+                    tle.arbitraryJSBlock,
+                    tle.usedInReactDOMRender,
+                    tle.returnStatementComments,
+                  )
+                  return updatedComponent
                 }
-                const updatedFirstChild = jsExpressionOtherJavaScript(
-                  isJSExpressionOtherJavaScript(firstChild) ? firstChild.params : [],
-                  firstChild.originalJavascript,
-                  firstChild.javascriptWithUIDs,
-                  firstChild.transpiledJavascript,
-                  firstChild.definedElsewhere,
-                  firstChild.sourceMap,
-                  updatedElementsWithin,
-                  firstChild.comments,
-                )
-                const updatedRootElement = jsxElement(
-                  rootElement.name,
-                  rootElement.uid,
-                  rootElement.props,
-                  [updatedFirstChild],
-                )
-                const updatedComponent = utopiaJSXComponent(
-                  tle.name,
-                  tle.isFunction,
-                  tle.declarationSyntax,
-                  tle.blockOrExpression,
-                  tle.functionWrapping,
-                  tle.params,
-                  tle.propsUsed,
-                  updatedRootElement,
-                  tle.arbitraryJSBlock,
-                  tle.usedInReactDOMRender,
-                  tle.returnStatementComments,
-                )
-                return updatedComponent
               }
             }
           }

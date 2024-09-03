@@ -29,6 +29,7 @@ import type {
   JSIdentifier,
   JSPropertyAccess,
   JSElementAccess,
+  JSXElementLike,
 } from './element-template'
 import {
   emptyComments,
@@ -253,6 +254,17 @@ export function fixUtopiaElement(
     })
   }
 
+  function fixJSXElementLike(element: JSXElementLike): JSXElementLike {
+    switch (element.type) {
+      case 'JSX_ELEMENT':
+        return fixJSXElement(element)
+      case 'JSX_FRAGMENT':
+        return fixJSXFragment(element)
+      default:
+        assertNever(element)
+    }
+  }
+
   function fixJSXElement(element: JSXElement): JSXElement {
     let fixedChildren = element.children.map((elem) => fixUtopiaElementInner(elem))
     if (shallowEqual(element.children, fixedChildren)) {
@@ -372,7 +384,7 @@ export function fixUtopiaElement(
     return {
       ...otherJavaScript,
       uid: fixedUID,
-      elementsWithin: objectMap(fixJSXElement, otherJavaScript.elementsWithin),
+      elementsWithin: objectMap(fixJSXElementLike, otherJavaScript.elementsWithin),
     }
   }
 
@@ -570,127 +582,6 @@ export function getPathStringsOnDomElement(element: Element): Array<string> {
 export function getDeepestPathOnDomElement(element: Element): ElementPath | null {
   const pathAttribute = getDOMAttribute(element, UTOPIA_PATH_KEY)
   return pathAttribute == null ? null : EP.fromString(pathAttribute)
-}
-
-export function findElementWithUID(
-  topLevelElement: TopLevelElement,
-  targetUID: string,
-): JSXElement | null {
-  function findForJSXElementChild(element: JSXElementChild): JSXElement | null {
-    switch (element.type) {
-      case 'JSX_ELEMENT':
-        return findForJSXElement(element)
-      case 'JSX_FRAGMENT':
-        for (const child of element.children) {
-          const childResult = findForJSXElementChild(child)
-          if (childResult != null) {
-            return childResult
-          }
-        }
-        return null
-      case 'JSX_TEXT_BLOCK':
-        return null
-      case 'JSX_MAP_EXPRESSION':
-        return (
-          findForJSXElementChild(element.valueToMap) ?? findForJSXElementChild(element.mapFunction)
-        )
-      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-        if (targetUID in element.elementsWithin) {
-          return element.elementsWithin[targetUID]
-        }
-        for (const elementWithin of Object.values(element.elementsWithin)) {
-          const elementWithinResult = findForJSXElement(elementWithin)
-          if (elementWithinResult != null) {
-            return elementWithinResult
-          }
-        }
-        return null
-      case 'JSX_CONDITIONAL_EXPRESSION':
-        const findResultWhenTrue = findForJSXElementChild(element.whenTrue)
-        if (findResultWhenTrue != null) {
-          return findResultWhenTrue
-        }
-        const findResultWhenFalse = findForJSXElementChild(element.whenFalse)
-        if (findResultWhenFalse != null) {
-          return findResultWhenFalse
-        }
-        return null
-      case 'ATTRIBUTE_VALUE':
-      case 'JS_IDENTIFIER':
-        return null
-      case 'JS_ELEMENT_ACCESS': {
-        const findResultOnValue = findForJSXElementChild(element.onValue)
-        if (findResultOnValue != null) {
-          return findResultOnValue
-        }
-        const findResultElement = findForJSXElementChild(element.element)
-        if (findResultElement != null) {
-          return findResultElement
-        }
-        return null
-      }
-      case 'JS_PROPERTY_ACCESS': {
-        const findResultOnValue = findForJSXElementChild(element.onValue)
-        if (findResultOnValue != null) {
-          return findResultOnValue
-        }
-        return null
-      }
-      case 'ATTRIBUTE_NESTED_ARRAY':
-        for (const contentElement of element.content) {
-          const elementWithinResult = findForJSXElementChild(contentElement.value)
-          if (elementWithinResult != null) {
-            return elementWithinResult
-          }
-        }
-        return null
-      case 'ATTRIBUTE_NESTED_OBJECT':
-        for (const contentElement of element.content) {
-          const elementWithinResult = findForJSXElementChild(contentElement.value)
-          if (elementWithinResult != null) {
-            return elementWithinResult
-          }
-        }
-        return null
-      case 'ATTRIBUTE_FUNCTION_CALL':
-        for (const parameter of element.parameters) {
-          const elementWithinResult = findForJSXElementChild(parameter)
-          if (elementWithinResult != null) {
-            return elementWithinResult
-          }
-        }
-        return null
-      default:
-        const _exhaustiveCheck: never = element
-        throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
-    }
-  }
-
-  function findForJSXElement(element: JSXElement): JSXElement | null {
-    const uid = getUtopiaIDFromJSXElement(element)
-    if (uid === targetUID) {
-      return element
-    } else {
-      for (const child of element.children) {
-        const childResult = findForJSXElementChild(child)
-        if (childResult != null) {
-          return childResult
-        }
-      }
-    }
-    return null
-  }
-
-  switch (topLevelElement.type) {
-    case 'UTOPIA_JSX_COMPONENT':
-      return findForJSXElementChild(topLevelElement.rootElement)
-    case 'ARBITRARY_JS_BLOCK':
-      return null
-    case 'UNPARSED_CODE':
-      return null
-    case 'IMPORT_STATEMENT':
-      return null
-  }
 }
 
 // THIS IS SUPER UGLY, DO NOT USE OUTSIDE OF FILE
