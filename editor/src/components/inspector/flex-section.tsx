@@ -94,6 +94,7 @@ import {
   useSetFocusedControlsHandlers,
   useSetHoveredControlsHandlers,
 } from '../canvas/controls/select-mode/select-mode-hooks'
+import type { Axis } from '../canvas/gap-utils'
 
 const axisDropdownMenuButton = 'axisDropdownMenuButton'
 
@@ -663,28 +664,20 @@ function serializeValue(v: CSSNumber) {
 
 type GridGapControlSplitState = 'unified' | 'split'
 
-const gridGapControlsForHoverAndFocused: {
-  hovered: Array<CanvasControlWithProps<SubduedGridGapControlProps>>
-  focused: Array<CanvasControlWithProps<SubduedGridGapControlProps>>
-} = {
-  hovered: [
+function getGridGapControlsForHoverAndFocused(
+  hoveredOrFocused: 'hovered' | 'focused',
+  axis: Axis | 'both',
+): Array<CanvasControlWithProps<SubduedGridGapControlProps>> {
+  return [
     {
       control: SubduedGridGapControl,
       props: {
-        hoveredOrFocused: 'hovered',
+        hoveredOrFocused: hoveredOrFocused,
+        axis: axis,
       },
-      key: `subdued-grid-gap-control-hovered`,
+      key: `subdued-grid-gap-${axis}-control-${hoveredOrFocused}`,
     },
-  ],
-  focused: [
-    {
-      control: SubduedGridGapControl,
-      props: {
-        hoveredOrFocused: 'focused',
-      },
-      key: `subdued-grid-gap-control-focused`,
-    },
-  ],
+  ]
 }
 
 const GapRowColumnControl = React.memo(() => {
@@ -713,23 +706,44 @@ const GapRowColumnControl = React.memo(() => {
   const rowGap = useInspectorLayoutInfo('rowGap')
 
   const { onMouseEnter, onMouseLeave } = useSetHoveredControlsHandlers<SubduedGridGapControlProps>()
-  const onMouseEnterWithGridGapControls = React.useCallback(
-    () => onMouseEnter(gridGapControlsForHoverAndFocused.hovered),
+
+  const onMouseEnterBothAxesWithGridGapControls = React.useCallback(
+    () => onMouseEnter(getGridGapControlsForHoverAndFocused('hovered', 'both')),
+    [onMouseEnter],
+  )
+  const onMouseEnterRowAxisWithGridGapControls = React.useCallback(
+    () => onMouseEnter(getGridGapControlsForHoverAndFocused('hovered', 'row')),
+    [onMouseEnter],
+  )
+  const onMouseEnterColumnAxisWithGridGapControls = React.useCallback(
+    () => onMouseEnter(getGridGapControlsForHoverAndFocused('hovered', 'column')),
     [onMouseEnter],
   )
 
   const { onFocus, onBlur } = useSetFocusedControlsHandlers<SubduedGridGapControlProps>()
-  const onFocusWithGridGapControls = React.useCallback(
-    () => onFocus(gridGapControlsForHoverAndFocused.focused),
-    [onFocus],
-  )
 
-  const inputProps = React.useMemo(
+  const bothAxesInputProps = React.useMemo(
     () => ({
-      onFocus: onFocusWithGridGapControls,
+      onFocus: () => onFocus(getGridGapControlsForHoverAndFocused('focused', 'both')),
       onBlur: onBlur,
     }),
-    [onFocusWithGridGapControls, onBlur],
+    [onFocus, onBlur],
+  )
+
+  const rowAxisInputProps = React.useMemo(
+    () => ({
+      onFocus: () => onFocus(getGridGapControlsForHoverAndFocused('focused', 'row')),
+      onBlur: onBlur,
+    }),
+    [onBlur, onFocus],
+  )
+
+  const columnAxisInputProps = React.useMemo(
+    () => ({
+      onFocus: () => onFocus(getGridGapControlsForHoverAndFocused('focused', 'column')),
+      onBlur: onBlur,
+    }),
+    [onBlur, onFocus],
   )
 
   const [controlSplitState, setControlSplitState] = React.useState<GridGapControlSplitState>(
@@ -852,7 +866,7 @@ const GapRowColumnControl = React.memo(() => {
         <UIGridRow
           padded={false}
           variant='<--1fr--><--1fr-->'
-          onMouseEnter={onMouseEnterWithGridGapControls}
+          onMouseEnter={onMouseEnterBothAxesWithGridGapControls}
           onMouseLeave={onMouseLeave}
         >
           <NumberInput
@@ -863,19 +877,14 @@ const GapRowColumnControl = React.memo(() => {
             onForcedSubmitValue={onSubmitUnifiedValue}
             defaultUnitToHide={'px'}
             testId={'grid-column-gap'}
-            {...inputProps}
+            inputProps={bothAxesInputProps}
             innerLabel={<Icons.GapHorizontal color='on-highlight-secondary' />}
           />
         </UIGridRow>,
       )}
       {when(
         controlSplitState === 'split',
-        <UIGridRow
-          padded={false}
-          variant='<--1fr--><--1fr-->'
-          onMouseEnter={onMouseEnterWithGridGapControls}
-          onMouseLeave={onMouseLeave}
-        >
+        <UIGridRow padded={false} variant='<--1fr--><--1fr-->' onMouseLeave={onMouseLeave}>
           <NumberInput
             value={columnGap.value}
             numberType={'Length'}
@@ -884,7 +893,9 @@ const GapRowColumnControl = React.memo(() => {
             onForcedSubmitValue={onSubmitSplitValue('columnGap')}
             defaultUnitToHide={'px'}
             testId={'grid-column-gap'}
-            {...inputProps}
+            inputProps={columnAxisInputProps}
+            onMouseEnter={onMouseEnterColumnAxisWithGridGapControls}
+            onMouseLeave={onMouseLeave}
             innerLabel={<Icons.GapHorizontal color='on-highlight-secondary' />}
           />
           <NumberInput
@@ -895,7 +906,9 @@ const GapRowColumnControl = React.memo(() => {
             onForcedSubmitValue={onSubmitSplitValue('rowGap')}
             defaultUnitToHide={'px'}
             testId={'grid-row-gap'}
-            {...inputProps}
+            inputProps={rowAxisInputProps}
+            onMouseEnter={onMouseEnterRowAxisWithGridGapControls}
+            onMouseLeave={onMouseLeave}
             innerLabel={<Icons.GapVertical color='on-highlight-secondary' />}
           />
         </UIGridRow>,

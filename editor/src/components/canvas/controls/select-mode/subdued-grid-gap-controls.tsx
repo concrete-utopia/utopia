@@ -13,10 +13,11 @@ import type { CSSNumber } from '../../../../components/inspector/common/css-util
 
 export interface SubduedGridGapControlProps {
   hoveredOrFocused: 'hovered' | 'focused'
+  axis: Axis | 'both'
 }
 
 export const SubduedGridGapControl = React.memo<SubduedGridGapControlProps>((props) => {
-  const { hoveredOrFocused } = props
+  const { hoveredOrFocused, axis } = props
   const targets = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews,
@@ -47,15 +48,17 @@ export const SubduedGridGapControl = React.memo<SubduedGridGapControlProps>((pro
 
   return (
     <>
-      {controlBounds.gaps.map((gap, i) => (
-        <GridGapControl
-          key={i}
-          targets={targets}
-          selectedElement={selectedElement}
-          hoveredOrFocused={hoveredOrFocused}
-          gap={gap}
-        />
-      ))}
+      {controlBounds.gaps
+        .filter((gap) => gap.axis === axis || axis === 'both')
+        .map((gap, i) => (
+          <GridGapControl
+            key={i}
+            targets={targets}
+            selectedElement={selectedElement}
+            hoveredOrFocused={hoveredOrFocused}
+            gap={gap}
+          />
+        ))}
     </>
   )
 })
