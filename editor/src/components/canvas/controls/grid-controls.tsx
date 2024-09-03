@@ -618,6 +618,17 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     shadow?.globalFrame ?? null,
   )
 
+  const anyTargetAbsolute = useEditorState(
+    Substores.metadata,
+    (store) =>
+      targets.some((t) =>
+        MetadataUtils.isPositionAbsolute(
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, t),
+        ),
+      ),
+    'GridControls anyTargetAbsolute',
+  )
+
   const gridPath = optionalMap(EP.parentPath, shadow?.elementPath)
 
   const gridFrame = React.useMemo(() => {
@@ -635,6 +646,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
   }, [gridPath, metadataRef])
 
   useSnapAnimation({
+    disabled: anyTargetAbsolute,
     targetRootCell: targetRootCell,
     controls: controls,
     shadowFrame: initialShadowFrame,
@@ -960,6 +972,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
         })}
         {/* shadow */}
         {features.Grid.shadow &&
+        !anyTargetAbsolute &&
         shadow != null &&
         initialShadowFrame != null &&
         interactionData?.dragStart != null &&
@@ -998,12 +1011,13 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
 })
 
 function useSnapAnimation(params: {
+  disabled: boolean // old man shaking fist at rules of hooks
   gridPath: ElementPath | null
   shadowFrame: CanvasRectangle | null
   targetRootCell: GridCellCoordinates | null
   controls: AnimationControls
 }) {
-  const { gridPath, targetRootCell, controls, shadowFrame } = params
+  const { gridPath, targetRootCell, controls, shadowFrame, disabled } = params
   const features = useRollYourOwnFeatures()
 
   const [lastTargetRootCellId, setLastTargetRootCellId] = React.useState(targetRootCell)
@@ -1052,6 +1066,10 @@ function useSnapAnimation(params: {
   }, [canvasScale, canvasOffset, gridPath, targetRootCell])
 
   React.useEffect(() => {
+    if (disabled) {
+      return
+    }
+
     if (targetRootCell != null && snapPoint != null && moveFromPoint != null) {
       const snapPointsDiffer = lastSnapPoint == null || !pointsEqual(snapPoint, lastSnapPoint)
       const hasMovedToANewCell = lastTargetRootCellId != null
@@ -1082,6 +1100,7 @@ function useSnapAnimation(params: {
     animate,
     moveFromPoint,
     lastTargetRootCellId,
+    disabled,
   ])
 }
 
