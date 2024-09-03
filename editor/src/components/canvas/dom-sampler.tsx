@@ -140,12 +140,12 @@ function collectMetadataForPaths({
   )
 
   pathsToCollect.forEach((staticPath) => {
-    spyPaths.forEach((spyPath) => {
-      const path = EP.fromString(spyPath)
-      if (!EP.pathsEqual(EP.makeLastPartOfPathStatic(path), staticPath)) {
-        return
-      }
+    const dynamicPaths = spyPaths.filter((spyPath) =>
+      EP.pathsEqual(EP.makeLastPartOfPathStatic(EP.fromString(spyPath)), staticPath),
+    )
 
+    dynamicPaths.forEach((pathString) => {
+      const path = EP.fromString(pathString)
       const domMetadata = collectMetadataForElementPath(
         path,
         validPaths,
