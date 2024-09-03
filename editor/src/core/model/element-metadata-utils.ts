@@ -1088,9 +1088,8 @@ export const MetadataUtils = {
       return 'supportsChildren'
     }
     const componentDescriptor = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
       target,
-      propertyControlsInfo,
-      projectContents,
     )
     if (componentDescriptor != null && !componentDescriptor.supportsChildren) {
       return 'doesNotSupportChildren'
@@ -2090,9 +2089,8 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
   ): boolean {
     const componentDescriptor = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
       path,
-      propertyControlsInfo,
-      projectContents,
     )
     return (
       componentDescriptor?.focus === 'always' ||
@@ -2129,9 +2127,8 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
   ): boolean {
     const componentDescriptor = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
       path,
-      propertyControlsInfo,
-      projectContents,
     )
     if (componentDescriptor != null && componentDescriptor.focus !== 'default') {
       return false
@@ -2168,9 +2165,8 @@ export const MetadataUtils = {
   ): Emphasis {
     // Look up the emphasis of the component from the property controls.
     const componentDescriptor = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
       path,
-      propertyControlsInfo,
-      projectContents,
     )
     if (componentDescriptor != null) {
       return componentDescriptor.emphasis
@@ -2223,9 +2219,8 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
   ): Icon | null {
     const componentDescriptor = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
       path,
-      propertyControlsInfo,
-      projectContents,
     )
     return componentDescriptor?.icon ?? null
   },

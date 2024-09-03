@@ -2387,7 +2387,7 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     SpecialSizeMeasurementsKeepDeepEquality(),
     (metadata) => metadata.computedStyle,
     nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
-    (metadata) => metadata.attributeMetadatada,
+    (metadata) => metadata.attributeMetadata,
     nullableDeepEquality(StyleAttributeMetadataKeepDeepEquality),
     (metadata) => metadata.label,
     nullableDeepEquality(createCallWithTripleEquals()),

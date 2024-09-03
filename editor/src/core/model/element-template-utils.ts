@@ -1523,9 +1523,8 @@ export function elementChildSupportsChildrenAlsoText(
   propertyControlsInfo: PropertyControlsInfo,
 ): ElementSupportsChildren | null {
   const componentDescriptor = getComponentDescriptorForTarget(
+    { propertyControlsInfo, projectContents },
     path,
-    propertyControlsInfo,
-    projectContents,
   )
   if (componentDescriptor != null && !componentDescriptor.supportsChildren) {
     return 'doesNotSupportChildren'

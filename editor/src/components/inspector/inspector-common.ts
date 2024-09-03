@@ -664,7 +664,7 @@ export function detectFillHugFixedState(
   const flexGrowStatus = getFallbackControlStatusForProperty(
     'flexGrow',
     element.element.value.props,
-    element.attributeMetadatada,
+    element.attributeMetadata,
   )
 
   if (flexGrow != null || flexGrowStatus !== 'detected') {
@@ -760,7 +760,7 @@ export function detectFillHugFixedState(
     const controlStatus = getFallbackControlStatusForProperty(
       property,
       element.element.value.props,
-      element.attributeMetadatada,
+      element.attributeMetadata,
     )
 
     const valueWithType: FixedHugFill = {

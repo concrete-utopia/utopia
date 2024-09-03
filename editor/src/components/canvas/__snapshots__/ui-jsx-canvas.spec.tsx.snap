@@ -64,7 +64,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -287,7 +287,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -456,7 +456,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -920,7 +920,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -1233,7 +1233,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~1": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -1401,7 +1401,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -1569,7 +1569,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/22b/bbb~~~3": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -1787,7 +1787,7 @@ exports[`UiJsxCanvas render Label carried through for normal elements 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -2010,7 +2010,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -2179,7 +2179,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -2503,7 +2503,7 @@ exports[`UiJsxCanvas render Renders input tag without errors 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -2726,7 +2726,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -2895,7 +2895,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:567": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -3111,7 +3111,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -3334,7 +3334,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -3503,7 +3503,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -3879,7 +3879,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -4221,7 +4221,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~1": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -4418,7 +4418,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~1/aae": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -4581,7 +4581,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -4778,7 +4778,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~2/aae": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -4941,7 +4941,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~3": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -5138,7 +5138,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/7ec/aaa~~~3/aae": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -5419,7 +5419,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -5642,7 +5642,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -5811,7 +5811,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -6408,7 +6408,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -6971,7 +6971,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -7374,7 +7374,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -7743,7 +7743,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~1": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -7960,7 +7960,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~1/208": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -8143,7 +8143,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -8360,7 +8360,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~2/208": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -8543,7 +8543,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~3": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -8760,7 +8760,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~1/b39/bbb~~~3/208": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -8943,7 +8943,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -9346,7 +9346,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -9715,7 +9715,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~1": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -9932,7 +9932,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~1/208": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -10115,7 +10115,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -10332,7 +10332,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~2/208": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -10515,7 +10515,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~3": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -10732,7 +10732,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~2/b39/bbb~~~3/208": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -10915,7 +10915,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -11318,7 +11318,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -11687,7 +11687,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~1": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -11904,7 +11904,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~1/208": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -12087,7 +12087,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -12304,7 +12304,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~2/208": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -12487,7 +12487,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~3": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -12704,7 +12704,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c73/aaa~~~3/b39/bbb~~~3/208": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -12948,7 +12948,7 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -13171,7 +13171,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -13340,7 +13340,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -13550,7 +13550,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -13700,7 +13700,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -13899,7 +13899,7 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -14122,7 +14122,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -14291,7 +14291,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -14620,7 +14620,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -14843,7 +14843,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -15012,7 +15012,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -15405,7 +15405,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -15763,7 +15763,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~1": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -15980,7 +15980,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -16197,7 +16197,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/9f4/bbb~~~3": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -16481,7 +16481,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -16704,7 +16704,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -16873,7 +16873,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -17266,7 +17266,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/174": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -17624,7 +17624,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~1": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -17841,7 +17841,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -18058,7 +18058,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/174/bbb~~~3": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -18336,7 +18336,7 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -18559,7 +18559,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -18728,7 +18728,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -18938,7 +18938,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -19088,7 +19088,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -19299,7 +19299,7 @@ exports[`UiJsxCanvas render function component works inside a map 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -19522,7 +19522,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -19691,7 +19691,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -20006,7 +20006,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -20287,7 +20287,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa~~~1": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -20438,7 +20438,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/0f5/aaa~~~2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -20651,7 +20651,7 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -20889,7 +20889,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -21073,7 +21073,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -21536,7 +21536,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -21879,7 +21879,7 @@ exports[`UiJsxCanvas render handles a component that renames its props object 2`
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -22117,7 +22117,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -22301,7 +22301,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -22764,7 +22764,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -23108,7 +23108,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -23346,7 +23346,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -23530,7 +23530,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -24044,7 +24044,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -24439,7 +24439,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -24677,7 +24677,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -24861,7 +24861,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -25375,7 +25375,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -25756,7 +25756,7 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -25979,7 +25979,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -26148,7 +26148,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -26468,7 +26468,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -26691,7 +26691,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -26860,7 +26860,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -28787,7 +28787,7 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -30260,7 +30260,7 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -31699,7 +31699,7 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~1": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -32320,7 +32320,7 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~1/3d0": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -32669,7 +32669,7 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~3": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -33290,7 +33290,7 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~3/3d0": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -33639,7 +33639,7 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~5": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -34260,7 +34260,7 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/834~~~5/3d0": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -34609,7 +34609,7 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -35268,7 +35268,7 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~2/000": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -35659,7 +35659,7 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -36318,7 +36318,7 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~4/000": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -36709,7 +36709,7 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -37368,7 +37368,7 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/6c9/999~~~6/000": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -37830,7 +37830,7 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -38053,7 +38053,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -38222,7 +38222,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -38466,7 +38466,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -38633,7 +38633,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -38850,7 +38850,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -39073,7 +39073,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -39242,7 +39242,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -39507,7 +39507,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -39730,7 +39730,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -39899,7 +39899,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -40314,7 +40314,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -40537,7 +40537,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -40706,7 +40706,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -40983,7 +40983,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -41209,7 +41209,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/dd5": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -41446,7 +41446,7 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -41684,7 +41684,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -41868,7 +41868,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -42222,7 +42222,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -42460,7 +42460,7 @@ exports[`UiJsxCanvas render renders a canvas reliant on another file that uses m
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -42851,7 +42851,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -43035,7 +43035,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -43391,7 +43391,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -43730,7 +43730,7 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -43951,7 +43951,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -44119,7 +44119,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -44912,7 +44912,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/002": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -45063,7 +45063,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/0dc": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -45214,7 +45214,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/0f9": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -45365,7 +45365,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/1a2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -45518,7 +45518,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/24d": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -45669,7 +45669,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/2e4": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -45820,7 +45820,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/3bc": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -45971,7 +45971,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -46190,7 +46190,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/3e0/44c": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -46370,7 +46370,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/447": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -46523,7 +46523,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/4b6": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -46674,7 +46674,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/540": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -46825,7 +46825,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/5f7": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -46976,7 +46976,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/61e": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -47127,7 +47127,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/843": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -47278,7 +47278,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/a35": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -47429,7 +47429,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/aeb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -47580,7 +47580,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/bb2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -47731,7 +47731,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/c19": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -47882,7 +47882,7 @@ export var App = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:74b/ec8": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -48100,7 +48100,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -48323,7 +48323,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -48492,7 +48492,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -48885,7 +48885,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -49243,7 +49243,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~1": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -49460,7 +49460,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -49677,7 +49677,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/df8/bbb~~~3": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -49961,7 +49961,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -50184,7 +50184,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -50353,7 +50353,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -50745,7 +50745,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -51102,7 +51102,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~1": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -51319,7 +51319,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -51536,7 +51536,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/fc8/bbb~~~3": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -51820,7 +51820,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -52043,7 +52043,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -52212,7 +52212,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -52648,7 +52648,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/032": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -53049,7 +53049,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~1": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -53266,7 +53266,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -53483,7 +53483,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/032/bbb~~~3": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -53758,7 +53758,7 @@ exports[`UiJsxCanvas render renders a component using the spread operator 2`] = 
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -53996,7 +53996,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -54180,7 +54180,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -54443,7 +54443,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -54676,7 +54676,7 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 2`] 
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -54893,7 +54893,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -55039,7 +55039,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:fff": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -55233,7 +55233,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:fff/aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -55389,7 +55389,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:fff/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -55606,7 +55606,7 @@ exports[`UiJsxCanvas render renders correctly when a component is passed in via 
 Object {
   "eee/fff": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -55806,7 +55806,7 @@ Object {
   },
   "eee/fff/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -55952,7 +55952,7 @@ Object {
   },
   "eee/fff/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -56204,7 +56204,7 @@ Object {
   },
   "eee/fff/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -56398,7 +56398,7 @@ Object {
   },
   "eee/fff/app-entity:aaa/bbb/ccc": Object {
     "assignedToProp": "thing",
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -56604,7 +56604,7 @@ exports[`UiJsxCanvas render renders correctly with a context 2`] = `
 Object {
   "ccc/ddd": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -56804,7 +56804,7 @@ Object {
   },
   "ccc/ddd/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -56950,7 +56950,7 @@ Object {
   },
   "ccc/ddd/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -57212,7 +57212,7 @@ export var storyboard = (
   },
   "ccc/ddd/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -57432,7 +57432,7 @@ exports[`UiJsxCanvas render renders correctly with a nested context in another c
 Object {
   "ccc/ddd": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -57632,7 +57632,7 @@ Object {
   },
   "ccc/ddd/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -57778,7 +57778,7 @@ Object {
   },
   "ccc/ddd/app-entity:card": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -57984,7 +57984,7 @@ exports[`UiJsxCanvas render renders fine with a valid registerModule call 2`] = 
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -58184,7 +58184,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -58330,7 +58330,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -58557,7 +58557,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -58784,7 +58784,7 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
 Object {
   "utopia-storyboard-uid/scene": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -58984,7 +58984,7 @@ Object {
   },
   "utopia-storyboard-uid/scene/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -59130,7 +59130,7 @@ Object {
   },
   "utopia-storyboard-uid/scene/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -59454,7 +59454,7 @@ export var storyboard = (
   },
   "utopia-storyboard-uid/scene/app-entity:aaa/bb9": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -59644,7 +59644,7 @@ export var storyboard = (
   },
   "utopia-storyboard-uid/scene/app-entity:aaa/c28": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -59884,7 +59884,7 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
 Object {
   "utopia-storyboard-uid/scene": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -60084,7 +60084,7 @@ Object {
   },
   "utopia-storyboard-uid/scene/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -60230,7 +60230,7 @@ Object {
   },
   "utopia-storyboard-uid/scene/app-entity:BBB": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -60468,7 +60468,7 @@ exports[`UiJsxCanvas render renders fragments correctly 2`] = `
 Object {
   "eee/fff": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -60691,7 +60691,7 @@ Object {
   },
   "eee/fff/app": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -60860,7 +60860,7 @@ Object {
   },
   "eee/fff/app:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -61366,7 +61366,7 @@ export var storyboard = (
   },
   "eee/fff/app:aaa/ddd": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -61522,7 +61522,7 @@ export var storyboard = (
   },
   "eee/fff/app:aaa/ggg": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -61792,7 +61792,7 @@ export var storyboard = (
   },
   "eee/fff/app:aaa/ggg/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -62060,7 +62060,7 @@ export var storyboard = (
   },
   "eee/fff/app:aaa/ggg/bbb/01c": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -62252,7 +62252,7 @@ export var storyboard = (
   },
   "eee/fff/app:aaa/ggg/bbb/01c/ccc": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -62496,7 +62496,7 @@ exports[`UiJsxCanvas render renders img tag 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -62719,7 +62719,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -62888,7 +62888,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -63086,7 +63086,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -63305,7 +63305,7 @@ exports[`UiJsxCanvas render respects a jsx pragma 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -63528,7 +63528,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -63697,7 +63697,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -63928,7 +63928,7 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -64151,7 +64151,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -64320,7 +64320,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -64738,7 +64738,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -65121,7 +65121,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~1": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -65352,7 +65352,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~1/ccc": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -65553,7 +65553,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~1/ccc/aae": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -65720,7 +65720,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~2": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -65951,7 +65951,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~2/ccc": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -66152,7 +66152,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~2/ccc/aae": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -66319,7 +66319,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~3": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -66550,7 +66550,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~3/ccc": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -66751,7 +66751,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b0d/bbb~~~3/ccc/aae": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -66969,7 +66969,7 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -67192,7 +67192,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -67361,7 +67361,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -67571,7 +67571,7 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -67794,7 +67794,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -67963,7 +67963,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -68180,7 +68180,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -68367,7 +68367,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner/cloned": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
