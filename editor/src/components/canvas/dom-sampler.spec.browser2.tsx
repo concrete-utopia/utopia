@@ -100,9 +100,18 @@ export var Playground = ({ style }) => {
         "sb/pg-sc/pg:aaa/bbb/266/ccc~~~1/ddd",
         "sb/pg-sc/pg:aaa/bbb/266/ccc~~~2/ddd",
         "sb/pg-sc/pg:aaa/bbb/266/ccc~~~3/ddd",
-        "sb/pg-sc/pg:aaa/bbb/6cc",
+        "sb/pg-sc/pg:aaa/bbb/7f0",
+        "sb/pg-sc/pg:aaa/bbb/7f0/486~~~1",
+        "sb/pg-sc/pg:aaa/bbb/7f0/486~~~2",
+        "sb/pg-sc/pg:aaa/bbb/7f0/486~~~3",
+        "sb/pg-sc/pg:aaa/bbb/7f0/486~~~1/yyy",
+        "sb/pg-sc/pg:aaa/bbb/7f0/486~~~2/yyy",
+        "sb/pg-sc/pg:aaa/bbb/7f0/486~~~3/yyy",
+        "sb/pg-sc/pg:aaa/bbb/7f0/486~~~1/zzz",
+        "sb/pg-sc/pg:aaa/bbb/7f0/486~~~2/zzz",
+        "sb/pg-sc/pg:aaa/bbb/7f0/486~~~3/zzz",
       ]
-    `, // TODO before merge isn't the fragment children missing from here?
+    `,
     )
   })
 
