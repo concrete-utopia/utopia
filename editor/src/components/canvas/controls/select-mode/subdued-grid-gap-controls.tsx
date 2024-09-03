@@ -4,13 +4,8 @@ import { Substores, useEditorState, useRefEditorState } from '../../../editor/st
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { Axis } from '../../gap-utils'
-import {
-  gridGapControlBoundsFromMetadata,
-  maybeGridGapData,
-  recurseIntoChildrenOfMapOrFragment,
-} from '../../gap-utils'
+import { gridGapControlBoundsFromMetadata, maybeGridGapData } from '../../gap-utils'
 import type { ElementPath } from 'utopia-shared/src/types'
-import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import { useGridData } from '../grid-controls'
 import { fallbackEmptyValue } from './controls-common'
 import type { CanvasRectangle } from '../../../../core/shared/math-utils'
@@ -28,16 +23,7 @@ export const SubduedGridGapControl = React.memo<SubduedGridGapControlProps>((pro
     'SubduedGridGapControl selectedViews',
   )
   const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
-  const elementPathTrees = useRefEditorState((store) => store.editor.elementPathTree)
-  const allElementProps = useRefEditorState((store) => store.editor.allElementProps)
   const selectedElement = targets[0]
-
-  const children = recurseIntoChildrenOfMapOrFragment(
-    metadata.current,
-    allElementProps.current,
-    elementPathTrees.current,
-    targets[0],
-  )
 
   const gridRowColumnInfo = useGridData([selectedElement])
 
@@ -68,7 +54,6 @@ export const SubduedGridGapControl = React.memo<SubduedGridGapControlProps>((pro
           selectedElement={selectedElement}
           hoveredOrFocused={hoveredOrFocused}
           gap={gap}
-          flexChildren={children}
         />
       ))}
     </>
