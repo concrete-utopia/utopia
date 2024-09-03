@@ -331,7 +331,7 @@ export function getTargetCell(
   }
 }
 
-export function getElementGridProperties(
+function getElementGridProperties(
   element: ElementInstanceMetadata,
   cellUnderMouse: { row: number; column: number },
 ): {
