@@ -2545,7 +2545,7 @@ export interface ElementInstanceMetadata {
   isEmotionOrStyledComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
-  attributeMetadatada: StyleAttributeMetadata | null
+  attributeMetadata: StyleAttributeMetadata | null
   label: string | null
   importInfo: ImportInfo | null
   conditionValue: ConditionValue
@@ -2562,12 +2562,12 @@ export interface DomElementMetadata {
   textContent: string | null
 
   computedStyle: ComputedStyle | null
-  attributeMetadatada: StyleAttributeMetadata | null // sic fix typo
+  attributeMetadata: StyleAttributeMetadata | null
 }
 
 export interface ComputedStyleMetadata {
   computedStyle: ComputedStyle
-  attributeMetadatada: StyleAttributeMetadata
+  attributeMetadata: StyleAttributeMetadata
 }
 
 export function elementInstanceMetadata(
@@ -2579,7 +2579,7 @@ export function elementInstanceMetadata(
   isEmotionOrStyledComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle | null,
-  attributeMetadatada: StyleAttributeMetadata | null,
+  attributeMetadata: StyleAttributeMetadata | null,
   label: string | null,
   importInfo: ImportInfo | null,
   conditionValue: ConditionValue,
@@ -2596,7 +2596,7 @@ export function elementInstanceMetadata(
     isEmotionOrStyledComponent: isEmotionOrStyledComponent,
     specialSizeMeasurements: sizeMeasurements,
     computedStyle: computedStyle,
-    attributeMetadatada: attributeMetadatada,
+    attributeMetadata: attributeMetadata,
     label: label,
     importInfo: importInfo,
     conditionValue: conditionValue,
@@ -2621,7 +2621,7 @@ export function domElementMetadata(
     textContent: textContent,
 
     computedStyle: null,
-    attributeMetadatada: null,
+    attributeMetadata: null,
   }
 }
 
@@ -2631,7 +2631,7 @@ export function computedStyleMetadata(
 ): ComputedStyleMetadata {
   return {
     computedStyle: computedStyle,
-    attributeMetadatada: attributeMetadata,
+    attributeMetadata: attributeMetadata,
   }
 }
 

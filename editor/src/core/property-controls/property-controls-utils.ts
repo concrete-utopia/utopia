@@ -24,6 +24,9 @@ import type { Styling } from 'utopia-api'
 import { StylingOptions } from 'utopia-api'
 import { intersection } from '../shared/set-utils'
 import { getFilePathMappings } from '../model/project-file-utils'
+import { valueDependentCache } from '../shared/memoize'
+import * as EP from '../shared/element-path'
+import { shallowEqual } from '../shared/equality-utils'
 
 export function propertyControlsForComponentInFile(
   componentName: string,
@@ -135,10 +138,25 @@ export function getPropertyControlsForTarget(
   )
 }
 
-export function getComponentDescriptorForTarget(
+export const getComponentDescriptorForTarget = valueDependentCache(
+  getComponentDescriptorForTargetInner,
+  EP.toString,
+  {
+    equality: (s1, s2) =>
+      s1.projectContents === s2.projectContents &&
+      s1.propertyControlsInfo === s2.propertyControlsInfo,
+  },
+)
+
+function getComponentDescriptorForTargetInner(
+  {
+    projectContents,
+    propertyControlsInfo,
+  }: {
+    propertyControlsInfo: PropertyControlsInfo
+    projectContents: ProjectContentTreeRoot
+  },
   target: ElementPath,
-  propertyControlsInfo: PropertyControlsInfo,
-  projectContents: ProjectContentTreeRoot,
 ): ComponentDescriptor | null {
   const filePathMappings = getFilePathMappings(projectContents)
   return withUnderlyingTarget(
@@ -236,7 +254,10 @@ export function getInspectorPreferencesForTargets(
   projectContents: ProjectContentTreeRoot,
 ): InspectorSectionPreference[] {
   const inspectorPreferences = targets.map((target) => {
-    const controls = getComponentDescriptorForTarget(target, propertyControlsInfo, projectContents)
+    const controls = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
+      target,
+    )
     if (controls == null || controls.inspector == null) {
       return { type: 'all' }
     }
