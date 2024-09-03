@@ -80,7 +80,6 @@ function GridGapControl({
   selectedElement,
   hoveredOrFocused,
   gap,
-  flexChildren,
 }: {
   targets: Array<ElementPath>
   selectedElement: ElementPath
@@ -91,12 +90,11 @@ function GridGapControl({
     gap: CSSNumber
     axis: Axis
   }
-  flexChildren: Array<ElementInstanceMetadata>
 }) {
   const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
   const gridRowColumnInfo = useGridData([selectedElement])
 
-  const sideRef = useBoundingBox([selectedElement], (ref) => {
+  const sideRef = useBoundingBox([selectedElement], (ref, parentBoundingBox) => {
     const gridGap = maybeGridGapData(metadata.current, selectedElement)
     if (gridGap == null) {
       return
@@ -118,8 +116,8 @@ function GridGapControl({
     }
 
     ref.current.style.display = 'block'
-    ref.current.style.left = `${bound.bounds.x}px`
-    ref.current.style.top = `${bound.bounds.y}px`
+    ref.current.style.left = `${bound.bounds.x + parentBoundingBox.x}px`
+    ref.current.style.top = `${bound.bounds.y + parentBoundingBox.y}px`
     ref.current.style.height = numberToPxValue(bound.bounds.height)
     ref.current.style.width = numberToPxValue(bound.bounds.width)
   })
