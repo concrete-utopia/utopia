@@ -4,18 +4,17 @@ import {
   gridPositionValue,
   type GridElementProperties,
 } from '../../../../core/shared/element-template'
-import { isInfinityRectangle, offsetPoint, windowPoint } from '../../../../core/shared/math-utils'
+import { assertNever } from '../../../../core/shared/utils'
 import { emptyModifiers, Modifier } from '../../../../utils/modifiers'
 import { GridControls, GridControlsKey } from '../../controls/grid-controls'
-import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import type { InteractionSession } from '../interaction-state'
-import { getGridCellAtPoint, setGridPropsCommands } from './grid-helpers'
+import type { InteractionSession, KeyState } from '../interaction-state'
+import { getGridCellBoundsFromCanvas, setGridPropsCommands } from './grid-helpers'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 
 export function gridRearrangeKeyboardStrategy(
@@ -48,42 +47,12 @@ export function gridRearrangeKeyboardStrategy(
   if (grid == null) {
     return null
   }
-
-  const cellFrame = cell.globalFrame
-  if (cellFrame == null || isInfinityRectangle(cellFrame)) {
-    return null
-  }
-  const canvasFrameWidth = cellFrame.width * canvasState.scale
-  const canvasFrameHeight = cellFrame.height * canvasState.scale
-
-  const cellOriginPoint = offsetPoint(
-    canvasPointToWindowPoint(cellFrame, canvasState.scale, canvasState.canvasOffset),
-    windowPoint({ x: 5, y: 5 }),
-  )
-  const cellOrigin = getGridCellAtPoint(cellOriginPoint, true)
-  if (cellOrigin == null) {
-    return null
-  }
-
-  const cellEndPoint = offsetPoint(
-    cellOriginPoint,
-    windowPoint({
-      x: canvasFrameWidth - 5,
-      y: canvasFrameHeight - 5,
-    }),
-  )
-  const cellEnd = getGridCellAtPoint(cellEndPoint, true)
-  if (cellEnd == null) {
-    return null
-  }
-
-  const cellOriginCoords = cellOrigin.coordinates
-  const cellEndCoords = cellEnd.coordinates
-
-  const cellWidth = cellEndCoords.column - cellOriginCoords.column + 1
-  const cellHeight = cellEndCoords.row - cellOriginCoords.row + 1
-
   const gridTemplate = grid.specialSizeMeasurements.containerGridProperties
+
+  const cellBounds = getGridCellBoundsFromCanvas(cell, canvasState.scale, canvasState.canvasOffset)
+  if (cellBounds == null) {
+    return null
+  }
 
   return {
     id: 'GRID_KEYBOARD_REARRANGE',
@@ -116,59 +85,28 @@ export function gridRearrangeKeyboardStrategy(
 
       const interactionData = interactionSession.interactionData
 
-      let colDelta = interactionData.keyStates.reduce((tot, cur) => {
-        let presses = 0
-        cur.keysPressed.forEach((key) => {
-          presses += key === 'left' ? -1 : key === 'right' ? 1 : 0
-        })
-        return tot + presses
-      }, 0)
-      let rowDelta = interactionData.keyStates.reduce((tot, cur) => {
-        let presses = 0
-        cur.keysPressed.forEach((key) => {
-          presses += key === 'up' ? -1 : key === 'down' ? 1 : 0
-        })
-        return tot + presses
-      }, 0)
+      const horizontalDelta = getKeysDelta(interactionData.keyStates, 'horizontal')
+      const verticalDelta = getKeysDelta(interactionData.keyStates, 'vertical')
 
       let gridProps: Partial<GridElementProperties> = {
         ...cell.specialSizeMeasurements.elementGridProperties,
       }
 
-      function getNewBounds(start: number, cellsCount: number, size: number) {
-        const lowerLimit = 1
-        const upperLimit = cellsCount + 1
-
-        let newFrom = start
-        let newTo = start + size
-
-        if (newTo > upperLimit) {
-          newTo = upperLimit
-          newFrom = newTo - size
-        }
-        if (newFrom < lowerLimit) {
-          newFrom = lowerLimit
-          newTo = newFrom + size
-        }
-
-        return { from: newFrom, to: newTo }
-      }
-
-      if (colDelta !== 0) {
+      if (horizontalDelta !== 0) {
         const { from, to } = getNewBounds(
-          cellOriginCoords.column + colDelta,
+          cellBounds.originCell.column + horizontalDelta,
           gridTemplate.gridTemplateColumns.dimensions.length,
-          cellWidth,
+          cellBounds.width,
         )
         gridProps.gridColumnStart = gridPositionValue(from)
         gridProps.gridColumnEnd = gridPositionValue(to)
       }
 
-      if (rowDelta !== 0) {
+      if (verticalDelta !== 0) {
         const { from, to } = getNewBounds(
-          cellOriginCoords.row + rowDelta,
+          cellBounds.originCell.row + verticalDelta,
           gridTemplate.gridTemplateRows.dimensions.length,
-          cellHeight,
+          cellBounds.height,
         )
         gridProps.gridRowStart = gridPositionValue(from)
         gridProps.gridRowEnd = gridPositionValue(to)
@@ -193,4 +131,49 @@ function fitness(interactionSession: InteractionSession | null): number {
   )
 
   return matches ? 1 : 0
+}
+
+function getKeysDelta(keyStates: KeyState[], direction: 'vertical' | 'horizontal'): number {
+  return keyStates.reduce((tot, cur) => {
+    let presses = 0
+    cur.keysPressed.forEach((key) => {
+      switch (direction) {
+        case 'horizontal':
+          presses += key === 'left' ? -1 : key === 'right' ? 1 : 0
+          break
+        case 'vertical':
+          presses += key === 'up' ? -1 : key === 'down' ? 1 : 0
+          break
+        default:
+          assertNever(direction)
+      }
+    })
+    return tot + presses
+  }, 0)
+}
+
+function getNewBounds(
+  start: number,
+  cellsCount: number,
+  size: number,
+): {
+  from: number
+  to: number
+} {
+  const lowerLimit = 1
+  const upperLimit = cellsCount + 1
+
+  let from = start
+  let to = start + size
+
+  if (to > upperLimit) {
+    to = upperLimit
+    from = to - size
+  }
+  if (from < lowerLimit) {
+    from = lowerLimit
+    to = from + size
+  }
+
+  return { from: from, to: to }
 }
