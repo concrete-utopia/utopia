@@ -314,7 +314,7 @@ function collectDomElementMetadataForSingleElement(
 
   if (computedStyle != null) {
     metadata.computedStyle = computedStyle.computedStyle
-    metadata.attributeMetadatada = computedStyle.attributeMetadatada
+    metadata.attributeMetadata = computedStyle.attributeMetadata
   }
 
   return metadata
@@ -443,7 +443,7 @@ function getComputedStyleForElement(element: HTMLElement): ComputedStyleMetadata
 
   return {
     computedStyle: computedStyle,
-    attributeMetadatada: attributeMetadata,
+    attributeMetadata: attributeMetadata,
   }
 }
 

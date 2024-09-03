@@ -773,7 +773,7 @@ export const InspectorContextProvider = React.memo<{
   Utils.fastForEach(selectedViews, (path) => {
     const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
     if (elementMetadata != null) {
-      if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadatada == null) {
+      if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadata == null) {
         /**
          * This early return will cause the inspector to render with empty fields.
          * Because the computedStyle is only used in some cases for some controls,
@@ -794,7 +794,7 @@ export const InspectorContextProvider = React.memo<{
       newEditedMultiSelectedProps.push(jsxAttributes)
       newSpiedProps.push(allElementProps[EP.toString(path)] ?? {})
       newComputedStyles.push(elementMetadata.computedStyle)
-      newAttributeMetadatas.push(elementMetadata.attributeMetadatada)
+      newAttributeMetadatas.push(elementMetadata.attributeMetadata)
     }
   })
 
