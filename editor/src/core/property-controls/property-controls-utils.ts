@@ -148,6 +148,8 @@ export const getComponentDescriptorForTarget = valueDependentCache(
   },
 )
 
+const FileExtRegExp = /\.(js|jsx|ts|tsx)$/
+
 function getComponentDescriptorForTargetInner(
   {
     projectContents,
@@ -184,7 +186,7 @@ function getComponentDescriptorForTargetInner(
 
         let filenameForLookup: string | null = null
         if (importedFrom == null) {
-          filenameForLookup = underlyingFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+          filenameForLookup = underlyingFilePath.replace(FileExtRegExp, '')
         } else {
           filenameForLookup = importedFrom.filePath
         }
@@ -216,7 +218,7 @@ function getComponentDescriptorForTargetInner(
           )
 
           const trimmedPath = absolutePath.includes('/')
-            ? absolutePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+            ? absolutePath.replace(FileExtRegExp, '')
             : absolutePath
 
           return propertyControlsInfo[trimmedPath]?.[nameAsString]
