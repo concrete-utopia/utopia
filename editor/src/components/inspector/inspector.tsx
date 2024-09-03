@@ -977,10 +977,10 @@ function useShouldExpandStyleSection(): boolean {
     Substores.propertyControlsInfo,
     (store) => {
       return store.editor.selectedViews.every((target) => {
+        const { propertyControlsInfo, projectContents } = store.editor
         const descriptor = getComponentDescriptorForTarget(
+          { propertyControlsInfo, projectContents },
           target,
-          store.editor.propertyControlsInfo,
-          store.editor.projectContents,
         )
 
         if (descriptor == null || descriptor.inspector == null) {
@@ -1010,10 +1010,10 @@ function useShouldHideInspectorSections(): boolean {
     Substores.propertyControlsInfo,
     (store) =>
       store.editor.selectedViews.some((target) => {
+        const { propertyControlsInfo, projectContents } = store.editor
         const descriptor = getComponentDescriptorForTarget(
+          { propertyControlsInfo, projectContents },
           target,
-          store.editor.propertyControlsInfo,
-          store.editor.projectContents,
         )
 
         if (descriptor?.inspector == null) {
