@@ -25,6 +25,7 @@ import {
   domElementMetadata,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementCanvasRectangleCache } from '../../core/shared/dom-utils'
 import {
   getCanvasRectangleFromElement,
   getDOMAttribute,
@@ -370,6 +371,7 @@ interface DomWalkerInternalGlobalProps {
   containerRectLazy: () => CanvasRectangle
   additionalElementsToUpdate: Array<ElementPath>
   pathsCollectedMutable: Array<ElementPath>
+  elementCanvasRectangleCache: ElementCanvasRectangleCache
 }
 
 function runSelectiveDomWalker(
@@ -613,6 +615,7 @@ export function runDomWalker({
   cachedPaths: ElementPath[]
   invalidatedPaths: string[]
 } | null {
+  const elementCanvasRectangleCache: ElementCanvasRectangleCache = new Map()
   const needsWalk =
     !domWalkerMutableState.initComplete || domWalkerMutableState.invalidatedPaths.size > 0
 
@@ -643,6 +646,7 @@ export function runDomWalker({
         scale,
         'without-text-content',
         'nearest-half',
+        elementCanvasRectangleCache,
       )
     })
 
@@ -668,6 +672,7 @@ export function runDomWalker({
       containerRectLazy: containerRect,
       additionalElementsToUpdate: [...additionalElementsToUpdate, ...selectedViews],
       pathsCollectedMutable: [],
+      elementCanvasRectangleCache: elementCanvasRectangleCache,
     }
 
     // This assumes that the canvas root is rendering a Storyboard fragment.
@@ -830,6 +835,7 @@ function collectMetadataForElement(
   closestOffsetParentPath: ElementPath | null,
   scale: number,
   containerRectLazy: CanvasPoint | (() => CanvasPoint),
+  elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): {
   tagName: string
   globalFrame: CanvasRectangle
@@ -844,6 +850,7 @@ function collectMetadataForElement(
     containerRectLazy,
     'without-text-content',
     'nearest-half',
+    elementCanvasRectangleCache,
   )
   const nonRoundedGlobalFrame = globalFrameForElement(
     element,
@@ -851,6 +858,7 @@ function collectMetadataForElement(
     containerRectLazy,
     'without-text-content',
     'no-rounding',
+    elementCanvasRectangleCache,
   )
 
   const textContentsMaybe = element.children.length === 0 ? element.textContent : null
@@ -860,6 +868,7 @@ function collectMetadataForElement(
     closestOffsetParentPath,
     scale,
     containerRectLazy,
+    elementCanvasRectangleCache,
   )
 
   return {
@@ -970,6 +979,7 @@ function collectAndCreateMetadataForElement(
     closestOffsetParentPath,
     globalProps.scale,
     globalProps.containerRectLazy,
+    globalProps.elementCanvasRectangleCache,
   )
 
   const { computedStyle, attributeMetadata } = getComputedStyle(
@@ -1015,6 +1025,7 @@ export function collectDomElementMetadataForElement(
   scale: number,
   containerRectX: number,
   containerRectY: number,
+  elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): DomElementMetadata {
   const closestOffsetParentPath: ElementPath | null = findNearestElementWithPath(
     element.offsetParent,
@@ -1031,6 +1042,7 @@ export function collectDomElementMetadataForElement(
     closestOffsetParentPath,
     scale,
     canvasPoint({ x: containerRectX, y: containerRectY }),
+    elementCanvasRectangleCache,
   )
 
   return domElementMetadata(
@@ -1203,6 +1215,7 @@ function getSpecialMeasurements(
   closestOffsetParentPath: ElementPath | null,
   scale: number,
   containerRectLazy: CanvasPoint | (() => CanvasPoint),
+  elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): SpecialSizeMeasurements {
   const elementStyle = window.getComputedStyle(element)
   const layoutSystemForChildren = elementLayoutSystem(elementStyle)
@@ -1221,6 +1234,7 @@ function getSpecialMeasurements(
           containerRectLazy,
           'without-text-content',
           'nearest-half',
+          elementCanvasRectangleCache,
         )
       : null
 
@@ -1232,6 +1246,7 @@ function getSpecialMeasurements(
           containerRectLazy,
           'without-text-content',
           'nearest-half',
+          elementCanvasRectangleCache,
         )
       : null
 
@@ -1317,6 +1332,7 @@ function getSpecialMeasurements(
     containerRectLazy,
     'without-text-content',
     'nearest-half',
+    elementCanvasRectangleCache,
   )
 
   const globalFrameWithTextContent = globalFrameForElement(
@@ -1325,6 +1341,7 @@ function getSpecialMeasurements(
     containerRectLazy,
     'with-text-content',
     'nearest-half',
+    elementCanvasRectangleCache,
   )
 
   const globalContentBoxForChildren = canvasRectangle({
@@ -1381,7 +1398,13 @@ function getSpecialMeasurements(
 
   const textBounds = elementContainsOnlyText(element)
     ? stretchRect(
-        getCanvasRectangleFromElement(element, scale, 'only-text-content', 'nearest-half'),
+        getCanvasRectangleFromElement(
+          element,
+          scale,
+          'only-text-content',
+          'nearest-half',
+          elementCanvasRectangleCache,
+        ),
         {
           w:
             maybeValueFromComputedStyle(elementStyle.paddingLeft) +
@@ -1496,8 +1519,15 @@ function globalFrameForElement(
   containerRectLazy: CanvasPoint | (() => CanvasPoint),
   withContent: 'without-text-content' | 'with-text-content',
   rounding: 'nearest-half' | 'no-rounding',
+  elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ) {
-  const elementRect = getCanvasRectangleFromElement(element, scale, withContent, rounding)
+  const elementRect = getCanvasRectangleFromElement(
+    element,
+    scale,
+    withContent,
+    rounding,
+    elementCanvasRectangleCache,
+  )
 
   return Utils.offsetRect(
     elementRect,
@@ -1636,6 +1666,7 @@ function walkSceneInner(
     globalProps.containerRectLazy,
     'without-text-content',
     'nearest-half',
+    globalProps.elementCanvasRectangleCache,
   )
 
   let childPaths: Array<ElementPath> = []
@@ -1715,6 +1746,7 @@ function walkElements(
       globalProps.containerRectLazy,
       'without-text-content',
       'nearest-half',
+      globalProps.elementCanvasRectangleCache,
     )
 
     // Check this is a path we're interested in, otherwise skip straight to the children
