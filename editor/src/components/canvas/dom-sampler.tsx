@@ -152,7 +152,6 @@ function collectMetadataForPaths({
         selectedViews,
         scale,
         containerRect,
-        spyCollector,
       )
 
       const spyMetadata = spyCollector.current.spyValues.metadata[EP.toString(path)]
@@ -204,7 +203,6 @@ function collectMetadataForElementPath(
   selectedViews: Array<ElementPath>,
   scale: number,
   containerRect: CanvasPoint,
-  spyCollector: UiJsxCanvasContextData,
 ): DomElementMetadata | null {
   if (EP.isStoryboardPath(path)) {
     return createFakeMetadataForCanvasRoot(path)
