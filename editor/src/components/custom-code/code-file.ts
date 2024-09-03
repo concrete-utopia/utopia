@@ -54,6 +54,7 @@ import type { EditorDispatch } from '../editor/action-types'
 import { StylingOptions } from 'utopia-api'
 import type { Emphasis, Focus, Icon, Styling } from 'utopia-api'
 import type { ComponentDescriptorBounds } from '../../core/property-controls/component-descriptor-parser'
+import { valueDependentCache } from '../../core/shared/memoize'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -472,11 +473,11 @@ export function normalisePathSuccessOrThrowError(
   }
 }
 
-export function normalisePathToUnderlyingTarget(
+export function normalisePathToUnderlyingTargetUncached(
   projectContents: ProjectContentTreeRoot,
-  elementPath: ElementPath | null,
+  elementPath: ElementPath,
 ): NormalisePathResult {
-  if (elementPath == null || EP.isEmptyPath(elementPath)) {
+  if (EP.isEmptyPath(elementPath)) {
     return normalisePathError('Empty element path')
   }
 
@@ -507,6 +508,11 @@ export function normalisePathToUnderlyingTarget(
     lastPartOfPath,
   )
 }
+
+export const normalisePathToUnderlyingTarget = valueDependentCache(
+  normalisePathToUnderlyingTargetUncached,
+  EP.toString,
+)
 
 export function findUnderlyingTargetComponentImplementationFromImportInfo(
   projectContents: ProjectContentTreeRoot,

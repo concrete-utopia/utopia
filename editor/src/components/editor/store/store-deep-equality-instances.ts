@@ -635,7 +635,7 @@ import type { OnlineState } from '../online-status'
 import { onlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
 import { condensedNavigatorRow, regularNavigatorRow } from '../../navigator/navigator-row'
-import type { SimpleFunctionWrap, FunctionWrap } from 'utopia-shared/src/types'
+import type { SimpleFunctionWrap, FunctionWrap, JSXElementLike } from 'utopia-shared/src/types'
 import { simpleFunctionWrap, isSimpleFunctionWrap } from 'utopia-shared/src/types'
 import type {
   ComponentDescriptorBounds,
@@ -1438,8 +1438,33 @@ export function JSXElementWithoutUIDKeepDeepEquality(): KeepDeepEqualityCall<JSX
   )
 }
 
+export const JSXFragmentKeepDeepEquality: KeepDeepEqualityCall<JSXFragment> = combine3EqualityCalls(
+  (fragment) => fragment.children,
+  JSXElementChildArrayKeepDeepEquality,
+  (fragment) => fragment.uid,
+  StringKeepDeepEquality,
+  (fragment) => fragment.longForm,
+  BooleanKeepDeepEquality,
+  (children, uid, longForm) => {
+    return {
+      type: 'JSX_FRAGMENT',
+      children: children,
+      uid: uid,
+      longForm: longForm,
+    }
+  },
+)
+
+export function JSXElementLikeKeepDeepEquality(): KeepDeepEqualityCall<JSXElementLike> {
+  return unionDeepEquality(
+    JSXElementKeepDeepEquality,
+    JSXFragmentKeepDeepEquality,
+    isJSXElement,
+    isJSXFragment,
+  )
+}
 export function ElementsWithinKeepDeepEqualityCall(): KeepDeepEqualityCall<ElementsWithin> {
-  return objectDeepEquality(JSXElementKeepDeepEquality)
+  return objectDeepEquality(JSXElementLikeKeepDeepEquality())
 }
 
 export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<ArbitraryJSBlock> {
@@ -1708,23 +1733,6 @@ export const JSXTextBlockKeepDeepEquality: KeepDeepEqualityCall<JSXTextBlock> =
       }
     },
   )
-
-export const JSXFragmentKeepDeepEquality: KeepDeepEqualityCall<JSXFragment> = combine3EqualityCalls(
-  (fragment) => fragment.children,
-  JSXElementChildArrayKeepDeepEquality,
-  (fragment) => fragment.uid,
-  StringKeepDeepEquality,
-  (fragment) => fragment.longForm,
-  BooleanKeepDeepEquality,
-  (children, uid, longForm) => {
-    return {
-      type: 'JSX_FRAGMENT',
-      children: children,
-      uid: uid,
-      longForm: longForm,
-    }
-  },
-)
 
 export const JSXConditionalExpressionKeepDeepEquality: KeepDeepEqualityCall<JSXConditionalExpression> =
   combine6EqualityCalls(
@@ -2106,7 +2114,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     )(oldSize.globalFrameWithTextContent, newSize.globalFrameWithTextContent)
     const immediateParentProvidesLayoutResult =
       oldSize.immediateParentProvidesLayout === newSize.immediateParentProvidesLayout
-    const closestOffsetParentPathResult = ElementPathKeepDeepEquality(
+    const closestOffsetParentPathResult = nullableDeepEquality(ElementPathKeepDeepEquality)(
       oldSize.closestOffsetParentPath,
       newSize.closestOffsetParentPath,
     ).areEqual

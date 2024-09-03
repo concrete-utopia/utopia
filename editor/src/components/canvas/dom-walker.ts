@@ -11,6 +11,7 @@ import type {
   ElementInstanceMetadataMap,
   GridContainerProperties,
   GridElementProperties,
+  DomElementMetadata,
 } from '../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -21,6 +22,7 @@ import {
   gridContainerProperties,
   gridElementProperties,
   gridAutoOrTemplateFallback,
+  domElementMetadata,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import {
@@ -215,7 +217,19 @@ function findParentScene(target: Element): string | null {
   return null
 }
 
-function lazyValue<T>(getter: () => T) {
+function findNearestElementWithPath(element: Element | null): ElementPath | null {
+  if (element == null) {
+    return null
+  }
+  const path = getDeepestPathOnDomElement(element)
+  if (path != null) {
+    return path
+  }
+  const parent = element.parentElement
+  return findNearestElementWithPath(parent)
+}
+
+export function lazyValue<T>(getter: () => T) {
   let alreadyResolved = false
   let resolvedValue: T
   return () => {
@@ -227,7 +241,7 @@ function lazyValue<T>(getter: () => T) {
   }
 }
 
-function getAttributesComingFromStyleSheets(element: HTMLElement): Set<string> {
+export function getAttributesComingFromStyleSheets(element: HTMLElement): Set<string> {
   let appliedAttributes = new Set<string>()
   const sheets = document.styleSheets
   for (const i in sheets) {
@@ -564,6 +578,24 @@ export function backfillDomMetadata(
   }
 }
 
+export function resubscribeObservers(domWalkerMutableState: {
+  mutationObserver: MutationObserver
+  resizeObserver: ResizeObserver
+}) {
+  const canvasRootContainer = document.getElementById(CanvasContainerID)
+  if (
+    ObserversAvailable &&
+    canvasRootContainer != null &&
+    domWalkerMutableState.resizeObserver != null &&
+    domWalkerMutableState.mutationObserver != null
+  ) {
+    document.querySelectorAll(`#${CanvasContainerID} *`).forEach((elem) => {
+      domWalkerMutableState.resizeObserver.observe(elem)
+    })
+    domWalkerMutableState.mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
+  }
+}
+
 // Dom walker has 3 modes for performance reasons:
 // Fastest is the selective mode, this runs when elementsToFocusOn is not 'rerender-all-elements'. In this case it only collects the metadata of the elements in elementsToFocusOn
 // Middle speed is when initComplete is true, in this case it traverses the full dom but only collects the metadata for the not invalidated elements (stored in invalidatedPaths)
@@ -602,17 +634,7 @@ export function runDomWalker({
 
     const invalidatedPaths = Array.from(domWalkerMutableState.invalidatedPaths)
 
-    // Get some base values relating to the div this component creates.
-    if (
-      ObserversAvailable &&
-      domWalkerMutableState.resizeObserver != null &&
-      domWalkerMutableState.mutationObserver != null
-    ) {
-      document.querySelectorAll(`#${CanvasContainerID} *`).forEach((elem) => {
-        domWalkerMutableState.resizeObserver.observe(elem)
-      })
-      domWalkerMutableState.mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
-    }
+    resubscribeObservers(domWalkerMutableState)
 
     // getCanvasRectangleFromElement is costly, so I made it lazy. we only need the value inside globalFrameForElement
     const containerRect = lazyValue(() => {
@@ -805,10 +827,9 @@ export function useDomWalkerInvalidateCallbacks(): [UpdateMutableCallback<Set<st
 
 function collectMetadataForElement(
   element: HTMLElement,
-  parentPoint: CanvasPoint,
-  closestOffsetParentPath: ElementPath,
+  closestOffsetParentPath: ElementPath | null,
   scale: number,
-  containerRectLazy: () => CanvasRectangle,
+  containerRectLazy: CanvasPoint | (() => CanvasPoint),
 ): {
   tagName: string
   globalFrame: CanvasRectangle
@@ -946,7 +967,6 @@ function collectAndCreateMetadataForElement(
     textContentsMaybe,
   } = collectMetadataForElement(
     element,
-    parentPoint,
     closestOffsetParentPath,
     globalProps.scale,
     globalProps.containerRectLazy,
@@ -988,6 +1008,38 @@ function collectAndCreateMetadataForElement(
     cachedPaths: [],
     collectedPaths: pathsForElement,
   }
+}
+
+export function collectDomElementMetadataForElement(
+  element: HTMLElement,
+  scale: number,
+  containerRectX: number,
+  containerRectY: number,
+): DomElementMetadata {
+  const closestOffsetParentPath: ElementPath | null = findNearestElementWithPath(
+    element.offsetParent,
+  )
+
+  const {
+    tagName,
+    globalFrame,
+    nonRoundedGlobalFrame,
+    specialSizeMeasurementsObject,
+    textContentsMaybe,
+  } = collectMetadataForElement(
+    element,
+    closestOffsetParentPath,
+    scale,
+    canvasPoint({ x: containerRectX, y: containerRectY }),
+  )
+
+  return domElementMetadata(
+    left(tagName),
+    globalFrame,
+    nonRoundedGlobalFrame,
+    specialSizeMeasurementsObject,
+    textContentsMaybe,
+  )
 }
 
 function getComputedStyle(
@@ -1148,9 +1200,9 @@ function getGridElementProperties(
 
 function getSpecialMeasurements(
   element: HTMLElement,
-  closestOffsetParentPath: ElementPath,
+  closestOffsetParentPath: ElementPath | null,
   scale: number,
-  containerRectLazy: () => CanvasRectangle,
+  containerRectLazy: CanvasPoint | (() => CanvasPoint),
 ): SpecialSizeMeasurements {
   const elementStyle = window.getComputedStyle(element)
   const layoutSystemForChildren = elementLayoutSystem(elementStyle)
@@ -1441,13 +1493,16 @@ function maybeValueFromComputedStyle(property: string): number {
 function globalFrameForElement(
   element: HTMLElement,
   scale: number,
-  containerRectLazy: () => CanvasRectangle,
+  containerRectLazy: CanvasPoint | (() => CanvasPoint),
   withContent: 'without-text-content' | 'with-text-content',
   rounding: 'nearest-half' | 'no-rounding',
 ) {
   const elementRect = getCanvasRectangleFromElement(element, scale, withContent, rounding)
 
-  return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))
+  return Utils.offsetRect(
+    elementRect,
+    Utils.negate(typeof containerRectLazy === 'function' ? containerRectLazy() : containerRectLazy),
+  )
 }
 
 function walkCanvasRootFragment(

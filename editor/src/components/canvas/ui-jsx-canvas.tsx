@@ -537,7 +537,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     props.focusedElementPath,
     topLevelElementsMap,
     executionScope,
-    projectContentsForRequireFn,
+    projectContents,
     autoFocusedPaths,
     uiFilePath,
     resolve,
