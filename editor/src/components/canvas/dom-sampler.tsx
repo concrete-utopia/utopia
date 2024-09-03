@@ -8,7 +8,7 @@ import {
   fillMissingDataFromAncestors,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
-import { UTOPIA_PATH_KEY } from '../../core/model/utopia-constants'
+import { UTOPIA_PATH_KEY, UTOPIA_VALID_PATHS } from '../../core/model/utopia-constants'
 import { allElemsEqual, mapDropNulls, pluck } from '../../core/shared/array-utils'
 import { getCanvasRectangleFromElement } from '../../core/shared/dom-utils'
 import { alternativeEither, left } from '../../core/shared/either'
@@ -387,7 +387,7 @@ function createFakeMetadataForCanvasRoot(canvasRootPath: ElementPath): DomElemen
 function getValidPathsFromCanvasContainer(canvasRootContainer: HTMLElement): Array<ElementPath> {
   const validPaths: Array<ElementPath> | null = optionalMap(
     (paths) => paths.split(' ').map(EP.fromString),
-    canvasRootContainer.getAttribute('data-utopia-valid-paths'),
+    canvasRootContainer.getAttribute(UTOPIA_VALID_PATHS),
   )
 
   if (validPaths == null) {
