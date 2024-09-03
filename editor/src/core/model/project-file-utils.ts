@@ -179,13 +179,10 @@ export function isRemixOutletAgainstImports(element: JSXElementChild, imports: I
     return false
   }
 
-  if (PP.depth(element.name.propertyPath) === 0) {
-    for (const fromWithin of remix.importedFromWithin) {
-      if (fromWithin.alias === element.name.baseVariable && fromWithin.name === 'Outlet') {
-        return true
-      }
+  for (const fromWithin of remix.importedFromWithin) {
+    if (fromWithin.alias === element.name.baseVariable && fromWithin.name === 'Outlet') {
+      return true
     }
-    return false
   }
 
   return (
@@ -900,10 +897,8 @@ export function fileExportsFunctionWithName(
     return false
   }
 
-  return (
-    file.fileContents.parsed.exportsDetail.find(
-      (v) => isExportFunction(v) && v.functionName === componentName,
-    ) != null
+  return file.fileContents.parsed.exportsDetail.some(
+    (v) => isExportFunction(v) && v.functionName === componentName,
   )
 }
 

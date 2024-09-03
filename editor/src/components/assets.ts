@@ -22,7 +22,7 @@ import { emptySet } from '../core/shared/set-utils'
 import { sha1 } from 'sha.js'
 import type { GithubFileChanges, TreeConflicts } from '../core/shared/github/helpers'
 import type { FileChecksumsWithFile } from './editor/store/editor-state'
-import { memoize } from '../core/shared/memoize'
+import { memoize, valueDependentCache } from '../core/shared/memoize'
 import { makeOptic, type Optic } from '../core/shared/optics/optics'
 import type {
   AssetFileWithFileName,
@@ -567,7 +567,12 @@ export function getContentsTreeFromElements(
   }
 }
 
-export function getProjectFileByFilePath(
+export const getProjectFileByFilePath = valueDependentCache(
+  getProjectFileByFilePathUncached,
+  (path) => path,
+)
+
+export function getProjectFileByFilePathUncached(
   tree: ProjectContentTreeRoot,
   path: string,
 ): ProjectFile | null {

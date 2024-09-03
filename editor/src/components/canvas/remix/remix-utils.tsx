@@ -47,6 +47,7 @@ import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/
 import path from 'path'
 import urljoin from 'url-join'
 import json5 from 'json5'
+import { Route } from '@remix-run/server-runtime/dist/routes'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -97,18 +98,15 @@ export function createRouteManifestFromProjectContents(
   },
   projectContents: ProjectContentTreeRoot,
 ): RouteManifest<EntryRoute> | null {
-  const routesFromRemix = (() => {
-    try {
-      return flatRoutes(rootDir, projectContentsToFileOps(projectContents))
-    } catch (e) {
+  try {
+    const routesFromRemix = flatRoutes(rootDir, projectContentsToFileOps(projectContents))
+    if (routesFromRemix == null) {
       return null
     }
-  })()
-
-  if (routesFromRemix == null) {
+    return patchRemixRoutes(rootFilePath, rootDir, routesFromRemix, projectContents)
+  } catch (e) {
     return null
   }
-  return patchRemixRoutes(rootFilePath, rootDir, routesFromRemix, projectContents)
 }
 
 function patchRemixRoutes(
@@ -116,17 +114,13 @@ function patchRemixRoutes(
   rootDir: string,
   routesFromRemix: RouteManifest<ConfigRoute> | null,
   projectContents: ProjectContentTreeRoot,
-) {
-  const routesFromRemixWithRoot: RouteManifest<ConfigRoute> = {
-    ...routesFromRemix,
-    root: { path: '', id: 'root', file: path.basename(rootFilePath), parentId: '' },
-  }
-
-  const resultRoutes = Object.values(routesFromRemixWithRoot).reduce((acc, route) => {
+): RouteManifest<EntryRoute> {
+  let resultRoutes: RouteManifest<EntryRoute> = {}
+  function addRoute(route: ConfigRoute): void {
     const filePath = `${rootDir}/${route.file}`
 
     // Maybe we should fill hasAction and hasLoader properly, but it is not used for anything
-    acc[route.id] = {
+    resultRoutes[route.id] = {
       ...route,
       parentId: route.parentId ?? 'root',
       module: filePath,
@@ -134,8 +128,13 @@ function patchRemixRoutes(
       hasLoader: false,
       hasErrorBoundary: fileExportsFunctionWithName(projectContents, filePath, 'ErrorBoundary'),
     }
-    return acc
-  }, {} as RouteManifest<EntryRoute>)
+  }
+  if (routesFromRemix != null) {
+    for (const route of Object.values(routesFromRemix)) {
+      addRoute(route)
+    }
+  }
+  addRoute({ path: '', id: 'root', file: path.basename(rootFilePath), parentId: '' })
 
   return resultRoutes
 }
@@ -214,9 +213,8 @@ function getRouteModulesWithPaths(
   const children = route.children ?? []
 
   for (const pathPartToOutlet of pathPartsToOutlets) {
+    const pathForChildren = EP.appendNewElementPath(pathSoFar, pathPartToOutlet)
     for (const child of children) {
-      const pathForChildren = EP.appendNewElementPath(pathSoFar, pathPartToOutlet)
-
       const paths = getRouteModulesWithPaths(projectContents, manifest, child, pathForChildren)
 
       for (const [routeId, value] of Object.entries(paths)) {
