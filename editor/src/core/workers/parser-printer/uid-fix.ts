@@ -756,9 +756,7 @@ export function fixJSXFragmentUIDs(
   newElement: JSXFragment,
   fixUIDsState: FixUIDsState,
 ): JSXFragment {
-  // If this is a `JSXElement`, then work through the common fields.
-  // Do this _before_ potentially updating the `data-uid` prop, so that it does
-  // not cause any issues with the uid clashing.
+  // since we don't process props for fragments, we don't have a data-uid prop to update
   let fixedChildren: Array<JSXElementChild>
   if (oldElement != null && isJSXFragment(oldElement)) {
     fixedChildren = fixJSXElementChildArray(oldElement.children, newElement.children, fixUIDsState)

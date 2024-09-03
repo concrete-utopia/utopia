@@ -27,8 +27,6 @@ import type {
 import {
   isJSXElement,
   jsExpressionValue,
-  getJSXElementNameAsString,
-  isJSExpressionMapOrOtherJavaScript,
   isUtopiaJSXComponent,
   emptyComments,
   jsxElementName,
@@ -39,7 +37,6 @@ import {
   isJSIdentifier,
   isJSPropertyAccess,
   isJSElementAccess,
-  isJSExpression,
   isJSExpressionOtherJavaScript,
   isJSXMapExpression,
   isJSXTextBlock,
