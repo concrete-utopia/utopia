@@ -3,13 +3,14 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import {
   gridPositionValue,
   type ElementInstanceMetadata,
-  type ElementInstanceMetadataMap,
   type GridContainerProperties,
   type GridElementProperties,
   type GridPosition,
 } from '../../../../core/shared/element-template'
-import type { CanvasVector, WindowRectangle } from '../../../../core/shared/math-utils'
+import type { WindowRectangle } from '../../../../core/shared/math-utils'
 import {
+  canvasPoint,
+  isInfinityRectangle,
   offsetPoint,
   rectContainsPoint,
   windowRectangle,
@@ -19,13 +20,18 @@ import * as PP from '../../../../core/shared/property-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { setProperty } from '../../commands/set-property-command'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
-import type { DragInteractionData } from '../interaction-state'
-import type { GridCustomStrategyState } from '../canvas-strategy-types'
+import type { DragInteractionData, InteractionSession } from '../interaction-state'
+import type {
+  CustomStrategyState,
+  InteractionCanvasState,
+  InteractionLifecycle,
+} from '../canvas-strategy-types'
 import type { GridCellCoordinates } from '../../controls/grid-controls'
 import { gridCellCoordinates } from '../../controls/grid-controls'
 import * as EP from '../../../../core/shared/element-path'
 import { deleteProperties } from '../../commands/delete-properties-command'
-import { isCSSKeyword } from '../../../inspector/common/css-utils'
+import { cssNumber, isCSSKeyword } from '../../../inspector/common/css-utils'
+import { setCssLengthProperty } from '../../commands/set-css-length-command'
 
 export function getGridCellUnderMouse(mousePoint: WindowPoint) {
   return getGridCellAtPoint(mousePoint, false)
@@ -100,11 +106,10 @@ function getGridCellAtPoint(
 export function runGridRearrangeMove(
   targetElement: ElementPath,
   selectedElement: ElementPath,
-  jsxMetadata: ElementInstanceMetadataMap,
-  interactionData: DragInteractionData,
-  canvasScale: number,
-  canvasOffset: CanvasVector,
-  customState: GridCustomStrategyState,
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession,
+  customStrategyState: CustomStrategyState,
+  strategyLifecycle: InteractionLifecycle,
   duplicating: boolean,
 ): {
   commands: CanvasCommand[]
@@ -113,7 +118,8 @@ export function runGridRearrangeMove(
   originalRootCell: GridCellCoordinates | null
   targetRootCell: GridCellCoordinates | null
 } {
-  if (interactionData.drag == null) {
+  const { interactionData } = interactionSession
+  if (interactionData.type !== 'DRAG' || interactionData.drag == null) {
     return {
       commands: [],
       targetCell: null,
@@ -125,18 +131,20 @@ export function runGridRearrangeMove(
 
   const mouseWindowPoint = canvasPointToWindowPoint(
     offsetPoint(interactionData.dragStart, interactionData.drag),
-    canvasScale,
-    canvasOffset,
+    canvasState.scale,
+    canvasState.canvasOffset,
   )
 
-  const targetCellUnderMouse = getTargetCell(
-    customState.targetCell,
+  const newTargetCellData = getTargetCell(
+    customStrategyState.grid.targetCell,
     duplicating,
     mouseWindowPoint,
-  )?.gridCellCoordinates
+  )
+
+  const targetCellUnderMouse = newTargetCellData?.gridCellCoordinates ?? null
 
   // if there's no cell target under the mouse, try using the last known cell
-  const newTargetCell = targetCellUnderMouse ?? customState.targetCell ?? null
+  const newTargetCell = targetCellUnderMouse ?? customStrategyState.grid.targetCell
 
   if (newTargetCell == null) {
     return {
@@ -148,8 +156,18 @@ export function runGridRearrangeMove(
     }
   }
 
+  const absoluteMoveCommands =
+    newTargetCellData == null
+      ? []
+      : gridChildAbsoluteMoveCommands(
+          MetadataUtils.findElementByElementPath(canvasState.startingMetadata, targetElement),
+          newTargetCellData.cellWindowRectangle,
+          interactionData,
+          canvasState,
+        )
+
   const originalElementMetadata = MetadataUtils.findElementByElementPath(
-    jsxMetadata,
+    canvasState.startingMetadata,
     selectedElement,
   )
   if (originalElementMetadata == null) {
@@ -163,7 +181,7 @@ export function runGridRearrangeMove(
   }
 
   const containerMetadata = MetadataUtils.findElementByElementPath(
-    jsxMetadata,
+    canvasState.startingMetadata,
     EP.parentPath(selectedElement),
   )
   if (containerMetadata == null) {
@@ -182,9 +200,9 @@ export function runGridRearrangeMove(
 
   // calculate the difference between the cell the mouse started the interaction from, and the "root"
   // cell of the element, meaning the top-left-most cell the element occupies.
-  const draggingFromCell = customState.draggingFromCell ?? newTargetCell
+  const draggingFromCell = customStrategyState.grid.draggingFromCell ?? newTargetCell
   const rootCell =
-    customState.originalRootCell ??
+    customStrategyState.grid.originalRootCell ??
     gridCellCoordinates(cellGridProperties.row, cellGridProperties.column)
   const coordsDiff = getCellCoordsDelta(draggingFromCell, rootCell)
 
@@ -200,7 +218,7 @@ export function runGridRearrangeMove(
 
   const targetRootCell = gridCellCoordinates(row.start, column.start)
 
-  const commands = setGridPropsCommands(targetElement, gridTemplate, {
+  const gridCellMoveCommands = setGridPropsCommands(targetElement, gridTemplate, {
     gridColumnStart: gridPositionValue(column.start),
     gridColumnEnd: gridPositionValue(column.end),
     gridRowEnd: gridPositionValue(row.end),
@@ -208,7 +226,7 @@ export function runGridRearrangeMove(
   })
 
   return {
-    commands: commands,
+    commands: [...gridCellMoveCommands, ...absoluteMoveCommands],
     targetCell: newTargetCell,
     originalRootCell: rootCell,
     draggingFromCell: draggingFromCell,
@@ -399,4 +417,58 @@ function asMaybeNamedAreaOrValue(
     return value === 0 ? 1 : value
   }
   return value
+}
+
+function gridChildAbsoluteMoveCommands(
+  targetMetadata: ElementInstanceMetadata | null,
+  targetCellWindowRect: WindowRectangle,
+  dragInteractionData: DragInteractionData,
+  canvasContext: Pick<InteractionCanvasState, 'scale' | 'canvasOffset'>,
+): CanvasCommand[] {
+  if (
+    targetMetadata == null ||
+    targetMetadata.globalFrame == null ||
+    isInfinityRectangle(targetMetadata.globalFrame) ||
+    !MetadataUtils.isPositionAbsolute(targetMetadata)
+  ) {
+    return []
+  }
+
+  const offsetInTarget = canvasPoint({
+    x: dragInteractionData.originalDragStart.x - targetMetadata.globalFrame.x,
+    y: dragInteractionData.originalDragStart.y - targetMetadata.globalFrame.y,
+  })
+
+  const dragCanvasOffset = offsetPoint(
+    dragInteractionData.originalDragStart,
+    dragInteractionData.drag ?? canvasPoint({ x: 0, y: 0 }),
+  )
+
+  const dragWindowOffset = canvasPointToWindowPoint(
+    dragCanvasOffset,
+    canvasContext.scale,
+    canvasContext.canvasOffset,
+  )
+
+  const offset = {
+    x: dragWindowOffset.x - targetCellWindowRect.x - offsetInTarget.x,
+    y: dragWindowOffset.y - targetCellWindowRect.y - offsetInTarget.y,
+  }
+
+  return [
+    setCssLengthProperty(
+      'always',
+      targetMetadata.elementPath,
+      PP.create('style', 'top'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(offset.y, null) },
+      null,
+    ),
+    setCssLengthProperty(
+      'always',
+      targetMetadata.elementPath,
+      PP.create('style', 'left'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(offset.x, null) },
+      null,
+    ),
+  ]
 }
