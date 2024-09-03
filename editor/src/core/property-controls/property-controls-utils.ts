@@ -170,6 +170,10 @@ function getComponentDescriptorForTargetInner(
       underlyingFilePath: string,
     ) => {
       if (isJSXElement(element)) {
+        if (isIntrinsicElement(element.name)) {
+          return null
+        }
+
         const importedFrom = importedFromWhere(
           filePathMappings,
           underlyingFilePath,
@@ -180,11 +184,7 @@ function getComponentDescriptorForTargetInner(
 
         let filenameForLookup: string | null = null
         if (importedFrom == null) {
-          if (isIntrinsicElement(element.name)) {
-            return null
-          } else {
-            filenameForLookup = underlyingFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
-          }
+          filenameForLookup = underlyingFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
         } else {
           filenameForLookup = importedFrom.filePath
         }
