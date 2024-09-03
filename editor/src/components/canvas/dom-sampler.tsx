@@ -157,21 +157,16 @@ function collectMetadataForPaths({
       spyCollector,
     )
 
-    if (domMetadata == null) {
-      // if we couldn't find any dom elements for the path, we must scan through all the spy elements to find a fallback with a potentially dynamic path
-      const spyElem = spyCollector.current.spyValues.metadata[EP.toString(path)]
-      if (spyElem != null) {
-        metadataToUpdate_MUTATE[EP.toString(path)] = {
-          ...spyElem,
-        }
-      }
-      return // we couldn't find a fallback spy element, so we bail out
-    }
-
-    const validDynamicPath = path
-    const spyMetadata = spyCollector.current.spyValues.metadata[EP.toString(validDynamicPath)]
+    const spyMetadata = spyCollector.current.spyValues.metadata[EP.toString(path)]
     if (spyMetadata == null) {
       // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
+      return
+    }
+
+    if (domMetadata == null) {
+      metadataToUpdate_MUTATE[EP.toString(path)] = {
+        ...spyMetadata,
+      }
       return
     }
 
