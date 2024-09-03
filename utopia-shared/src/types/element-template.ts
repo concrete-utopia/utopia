@@ -229,7 +229,7 @@ export type JSXFragmentWithoutUID = Omit<JSXFragment, 'uid'>
 
 export type JSXMapExpressionWithoutUID = Omit<JSXMapExpression, 'uid'>
 
-export type ElementsWithin = { [uid: string]: JSXElement }
+export type ElementsWithin = { [uid: string]: JSXElementLike }
 
 export interface WithElementsWithin {
   elementsWithin: ElementsWithin
