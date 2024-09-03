@@ -1,5 +1,6 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   gridPositionValue,
   type ElementInstanceMetadata,
@@ -7,7 +8,7 @@ import {
   type GridElementProperties,
   type GridPosition,
 } from '../../../../core/shared/element-template'
-import type { WindowRectangle } from '../../../../core/shared/math-utils'
+import type { CanvasVector, WindowRectangle } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
   isInfinityRectangle,
@@ -20,12 +21,8 @@ import * as PP from '../../../../core/shared/property-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { setProperty } from '../../commands/set-property-command'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
-import type { DragInteractionData, InteractionSession } from '../interaction-state'
-import type {
-  CustomStrategyState,
-  InteractionCanvasState,
-  InteractionLifecycle,
-} from '../canvas-strategy-types'
+import type { DragInteractionData } from '../interaction-state'
+import type { GridCustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
 import type { GridCellCoordinates } from '../../controls/grid-controls'
 import { gridCellCoordinates } from '../../controls/grid-controls'
 import * as EP from '../../../../core/shared/element-path'
@@ -106,10 +103,11 @@ function getGridCellAtPoint(
 export function runGridRearrangeMove(
   targetElement: ElementPath,
   selectedElement: ElementPath,
-  canvasState: InteractionCanvasState,
-  interactionSession: InteractionSession,
-  customStrategyState: CustomStrategyState,
-  strategyLifecycle: InteractionLifecycle,
+  jsxMetadata: ElementInstanceMetadataMap,
+  interactionData: DragInteractionData,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+  customState: GridCustomStrategyState,
   duplicating: boolean,
 ): {
   commands: CanvasCommand[]
@@ -118,8 +116,7 @@ export function runGridRearrangeMove(
   originalRootCell: GridCellCoordinates | null
   targetRootCell: GridCellCoordinates | null
 } {
-  const { interactionData } = interactionSession
-  if (interactionData.type !== 'DRAG' || interactionData.drag == null) {
+  if (interactionData.drag == null) {
     return {
       commands: [],
       targetCell: null,
@@ -131,20 +128,16 @@ export function runGridRearrangeMove(
 
   const mouseWindowPoint = canvasPointToWindowPoint(
     offsetPoint(interactionData.dragStart, interactionData.drag),
-    canvasState.scale,
-    canvasState.canvasOffset,
+    canvasScale,
+    canvasOffset,
   )
 
-  const newTargetCellData = getTargetCell(
-    customStrategyState.grid.targetCell,
-    duplicating,
-    mouseWindowPoint,
-  )
+  const newTargetCellData = getTargetCell(customState.targetCell, duplicating, mouseWindowPoint)
 
   const targetCellUnderMouse = newTargetCellData?.gridCellCoordinates ?? null
 
   // if there's no cell target under the mouse, try using the last known cell
-  const newTargetCell = targetCellUnderMouse ?? customStrategyState.grid.targetCell
+  const newTargetCell = targetCellUnderMouse ?? customState.targetCell ?? null
 
   if (newTargetCell == null) {
     return {
@@ -160,14 +153,14 @@ export function runGridRearrangeMove(
     newTargetCellData == null
       ? []
       : gridChildAbsoluteMoveCommands(
-          MetadataUtils.findElementByElementPath(canvasState.startingMetadata, targetElement),
+          MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
           newTargetCellData.cellWindowRectangle,
           interactionData,
-          canvasState,
+          { scale: canvasScale, canvasOffset: canvasOffset },
         )
 
   const originalElementMetadata = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
+    jsxMetadata,
     selectedElement,
   )
   if (originalElementMetadata == null) {
@@ -181,7 +174,7 @@ export function runGridRearrangeMove(
   }
 
   const containerMetadata = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
+    jsxMetadata,
     EP.parentPath(selectedElement),
   )
   if (containerMetadata == null) {
@@ -200,9 +193,9 @@ export function runGridRearrangeMove(
 
   // calculate the difference between the cell the mouse started the interaction from, and the "root"
   // cell of the element, meaning the top-left-most cell the element occupies.
-  const draggingFromCell = customStrategyState.grid.draggingFromCell ?? newTargetCell
+  const draggingFromCell = customState.draggingFromCell ?? newTargetCell
   const rootCell =
-    customStrategyState.grid.originalRootCell ??
+    customState.originalRootCell ??
     gridCellCoordinates(cellGridProperties.row, cellGridProperties.column)
   const coordsDiff = getCellCoordsDelta(draggingFromCell, rootCell)
 
