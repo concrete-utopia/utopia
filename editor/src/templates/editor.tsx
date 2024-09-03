@@ -99,7 +99,6 @@ import {
   DomWalkerMutableStateCtx,
   createDomWalkerMutableState,
   invalidateDomWalkerIfNecessary,
-  resubscribeObservers,
 } from '../components/canvas/dom-walker'
 import { isFeatureEnabled } from '../utils/feature-switches'
 import { shouldUpdateLowPriorityUI } from '../components/inspector/inspector'
@@ -449,7 +448,6 @@ export class Editor {
         dispatchedActions,
         oldEditorState,
         this.spyCollector,
-        {},
       )
 
       invalidateDomWalkerIfNecessary(
@@ -512,7 +510,6 @@ export class Editor {
             [{ action: 'TRUE_UP_ELEMENTS' }],
             this.storedState,
             this.spyCollector,
-            {},
           )
           this.storedState = dispatchResultWithTruedUpGroups
 
@@ -568,7 +565,6 @@ export class Editor {
               ],
               this.storedState,
               this.spyCollector,
-              {},
             )
 
             if (metadataUpdateDispatchResult != null) {

@@ -3400,50 +3400,6 @@ export function parseFailureAsErrorMessages(
   }
 }
 
-export function reconstructJSXMetadata(
-  editor: EditorState,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
-): {
-  metadata: ElementInstanceMetadataMap
-  elementPathTree: ElementPathTrees
-} {
-  const uiFile = getOpenUIJSFile(editor)
-  if (uiFile == null) {
-    return {
-      metadata: editor.jsxMetadata,
-      elementPathTree: editor.elementPathTree,
-    }
-  } else {
-    return foldParsedTextFile(
-      (_) => {
-        return {
-          metadata: editor.jsxMetadata,
-          elementPathTree: editor.elementPathTree,
-        }
-      },
-      (success) => {
-        const elementsByUID = getElementsByUIDFromTopLevelElements(success.topLevelElements)
-        const { mergedMetadata, elementPathTree } = MetadataUtils.mergeComponentMetadata(
-          elementsByUID,
-          editor.spyMetadata,
-          editor.domMetadata,
-          domReconstructedMetadata,
-        )
-        return {
-          metadata: ElementInstanceMetadataMapKeepDeepEquality(editor.jsxMetadata, mergedMetadata)
-            .value,
-          elementPathTree: elementPathTree,
-        }
-      },
-      (_) => ({
-        metadata: editor.jsxMetadata,
-        elementPathTree: editor.elementPathTree,
-      }),
-      uiFile.fileContents.parsed,
-    )
-  }
-}
-
 export function getStoryboardElementPathFromEditorState(
   editor: EditorState,
 ): StaticElementPath | null {
