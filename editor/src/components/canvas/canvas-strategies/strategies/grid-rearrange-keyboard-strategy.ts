@@ -134,7 +134,7 @@ function fitness(interactionSession: InteractionSession | null): number {
 }
 
 function getKeysDelta(keyStates: KeyState[], direction: 'vertical' | 'horizontal'): number {
-  return keyStates.reduce((tot, cur) => {
+  return keyStates.reduce((total, cur) => {
     let presses = 0
     cur.keysPressed.forEach((key) => {
       switch (direction) {
@@ -148,7 +148,7 @@ function getKeysDelta(keyStates: KeyState[], direction: 'vertical' | 'horizontal
           assertNever(direction)
       }
     })
-    return tot + presses
+    return total + presses
   }, 0)
 }
 
