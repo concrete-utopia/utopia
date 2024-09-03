@@ -6,7 +6,7 @@ import {
   UTOPIA_INSTANCE_PATH,
   UTOPIA_UID_KEY,
 } from '../../../core/model/utopia-constants'
-import { forEachRight } from '../../../core/shared/either'
+import { type Either, forEachRight, left } from '../../../core/shared/either'
 import type {
   JSXElementChild,
   JSXElement,
@@ -16,6 +16,7 @@ import type {
   JSIdentifier,
   JSPropertyAccess,
   JSElementAccess,
+  JSXAttributes,
 } from '../../../core/shared/element-template'
 import {
   isJSXElement,
@@ -108,30 +109,34 @@ export function createLookupRender(
   renderLimit: number | null,
   valuesInScopeFromParameters: Array<string>,
   assignedToProp: string | null,
-): (element: JSXElement, scope: MapLike<any>) => React.ReactChild | null {
+): (element: JSXElementLike, scope: MapLike<any>) => React.ReactChild | null {
   let index = 0
 
-  return (element: JSXElement, scope: MapLike<any>): React.ReactChild | null => {
+  return (element: JSXElementLike, scope: MapLike<any>): React.ReactChild | null => {
     index++
     if (renderLimit != null && index > renderLimit) {
       return null
     }
     const innerUID = getUtopiaID(element)
     const generatedUID = EP.createIndexedUid(innerUID, index)
-    const withGeneratedUID = setJSXValueAtPath(
-      element.props,
-      PP.create('data-uid'),
-      jsExpressionValue(generatedUID, emptyComments),
-    )
+    const withGeneratedUID: Either<string, JSXAttributes> = isJSXElement(element)
+      ? setJSXValueAtPath(
+          element.props,
+          PP.create('data-uid'),
+          jsExpressionValue(generatedUID, emptyComments),
+        )
+      : left('fragment')
 
     const innerPath = optionalMap((path) => EP.appendToPath(path, generatedUID), elementPath)
 
     let augmentedInnerElement = element
     forEachRight(withGeneratedUID, (attrs) => {
-      augmentedInnerElement = {
-        ...augmentedInnerElement,
-        props: attrs,
-      }
+      augmentedInnerElement = isJSXElement(augmentedInnerElement)
+        ? {
+            ...augmentedInnerElement,
+            props: attrs,
+          }
+        : augmentedInnerElement
     })
 
     let innerVariablesInScope: VariableData = {
@@ -170,9 +175,11 @@ function monkeyUidProp(uid: string | undefined, propsToUpdate: MapLike<any>): Ma
   return monkeyedProps
 }
 
-function NoOpLookupRender(element: JSXElement, scope: MapLike<any>): React.ReactChild {
+function NoOpLookupRender(element: JSXElementLike, scope: MapLike<any>): React.ReactChild {
   throw new Error(
-    `Utopia Error: createLookupRender was not used properly for element: ${element.name.baseVariable}`,
+    `Utopia Error: createLookupRender was not used properly for  ${
+      isJSXElement(element) ? `element: ${element.name.baseVariable}` : 'fragment'
+    }`,
   )
 }
 
@@ -946,7 +953,7 @@ function displayNoneElement(props: any): any {
 export function utopiaCanvasJSXLookup(
   elementsWithin: ElementsWithin,
   executionScope: MapLike<any>,
-  render: (element: JSXElement, inScope: MapLike<any>) => React.ReactChild | null,
+  render: (element: JSXElementLike, inScope: MapLike<any>) => React.ReactChild | null,
 ): (uid: string, inScope: MapLike<any>) => React.ReactChild | null {
   return (uid, inScope) => {
     const element = elementsWithin[uid]

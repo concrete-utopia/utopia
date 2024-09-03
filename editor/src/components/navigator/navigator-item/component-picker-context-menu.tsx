@@ -882,22 +882,38 @@ const ComponentPickerContextMenuSimple = React.memo<ComponentPickerContextMenuPr
   },
 )
 
-const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProps>(
+const ComponentPickerWrapper = React.memo<ComponentPickerContextMenuProps>(
   ({ targets, insertionTarget }) => {
     // for insertion we currently only support one target
-    const firstTarget = targets[0]
+    const firstTarget = targets.at(0)
     const targetChildren = useEditorState(
       Substores.metadata,
-      (store) => MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, firstTarget),
-      'usePreferredChildrenForTarget targetChildren',
+      (store) => {
+        return firstTarget == null
+          ? []
+          : MetadataUtils.getChildrenUnordered(store.editor.jsxMetadata, firstTarget)
+      },
+      'ComponentPickerWrapper targetChildren',
     )
 
     const areAllJsxElements = useEditorState(
       Substores.metadata,
       (store) =>
         targets.every((target) => MetadataUtils.isJSXElement(target, store.editor.jsxMetadata)),
-      'areAllJsxElements targetElement',
+      'ComponentPickerWrapper areAllJsxElements',
     )
+
+    const dispatch = useDispatch()
+
+    const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+    const allElementPropsRef = useRefEditorState((state) => state.editor.allElementProps)
+    const propertyControlsInfoRef = useRefEditorState((state) => state.editor.propertyControlsInfo)
+    const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
+    const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
+
+    const hideAllContextMenus = React.useCallback(() => {
+      contextMenu.hideAll()
+    }, [])
 
     const mode = insertionTarget.type === 'wrap-target' ? 'wrap' : 'insert'
 
@@ -936,18 +952,6 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       }
     })
 
-    const dispatch = useDispatch()
-
-    const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
-    const allElementPropsRef = useRefEditorState((state) => state.editor.allElementProps)
-    const propertyControlsInfoRef = useRefEditorState((state) => state.editor.propertyControlsInfo)
-    const metadataRef = useRefEditorState((state) => state.editor.jsxMetadata)
-    const elementPathTreesRef = useRefEditorState((state) => state.editor.elementPathTree)
-
-    const hideAllContextMenus = React.useCallback(() => {
-      contextMenu.hideAll()
-    }, [])
-
     const onItemClick = React.useCallback(
       (preferredChildToInsert: InsertableComponent) => (e: React.UIEvent) => {
         e.stopPropagation()
@@ -980,11 +984,28 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
       ],
     )
 
+    return (
+      <ComponentPicker
+        allComponents={allInsertableComponents}
+        onItemClick={onItemClick}
+        closePicker={hideAllContextMenus}
+        shownInToolbar={false}
+        insertionActive={false}
+      />
+    )
+  },
+)
+
+const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProps>(
+  ({ targets, insertionTarget }) => {
     const squashEvents = React.useCallback((e: React.UIEvent<unknown>) => {
       e.stopPropagation()
     }, [])
 
+    const [pickerIsVisible, setPickerIsVisible] = React.useState(false)
+
     const onVisibilityChange = React.useCallback((isVisible: boolean) => {
+      setPickerIsVisible(isVisible)
       if (isVisible) {
         document.body.classList.add(BodyMenuOpenClass)
       } else {
@@ -1000,13 +1021,9 @@ const ComponentPickerContextMenuFull = React.memo<ComponentPickerContextMenuProp
         onClick={squashEvents}
         onVisibilityChange={onVisibilityChange}
       >
-        <ComponentPicker
-          allComponents={allInsertableComponents}
-          onItemClick={onItemClick}
-          closePicker={hideAllContextMenus}
-          shownInToolbar={false}
-          insertionActive={false}
-        />
+        {pickerIsVisible ? (
+          <ComponentPickerWrapper targets={targets} insertionTarget={insertionTarget} />
+        ) : null}
       </Menu>
     )
   },

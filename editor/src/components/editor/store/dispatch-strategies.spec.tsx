@@ -112,6 +112,7 @@ function createEditorStore(
     persistence: DummyPersistenceMachine,
     saveCountThisSession: 0,
     builtInDependencies: createBuiltInDependenciesList(null),
+    elementMetadata: {},
     postActionInteractionSession: null,
     projectServerState: emptyProjectServerState(),
     collaborativeEditingSupport: emptyCollaborativeEditingSupport(),

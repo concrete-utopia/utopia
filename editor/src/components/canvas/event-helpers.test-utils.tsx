@@ -19,7 +19,7 @@ import { getDomRectCenter } from '../../core/shared/dom-utils'
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?
 
-interface Point {
+export interface Point {
   x: number
   y: number
 }

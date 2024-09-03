@@ -20,6 +20,8 @@ import { Substores, useEditorState, useRefEditorState } from '../editor/store/st
 import { printTree } from '../../core/shared/element-path-tree'
 import { useDispatch } from '../editor/store/dispatch-context'
 import type { EditorStorePatched } from '../editor/store/editor-state'
+import { objectMap } from '../../core/shared/object-utils'
+import { fromString, humanReadableDebugPath } from '../../core/shared/element-path'
 
 interface TileProps {
   size: 'smaller' | 'normal' | 'large' | 'max'
@@ -49,7 +51,15 @@ export const TestMenu = React.memo(() => {
   const printEditorState = React.useCallback(() => {
     window.entireState = entireStateRef.current
     console.info('Current Editor State: run `window.entireState` in console')
-    console.info('Latest metadata:', jsxMetadata.current)
+    console.info(
+      'Latest metadata:',
+      Object.fromEntries(
+        Object.entries(jsxMetadata.current).map(([key, value]) => [
+          humanReadableDebugPath(fromString(key)),
+          value,
+        ]),
+      ),
+    )
   }, [entireStateRef, jsxMetadata])
 
   const printElementPathTree = React.useCallback(() => {

@@ -78,6 +78,8 @@ export function reorderSliderStategy(
       ) {
         const siblingsOfTarget = siblings.map((element) => element.elementPath)
 
+        const siblingsAndParent = siblingsOfTarget.concat(EP.parentPath(target))
+
         if (!isReorderAllowed(siblingsOfTarget)) {
           return strategyApplicationResult(
             [setCursorCommand(CSSCursor.NotPermitted)],
@@ -101,7 +103,7 @@ export function reorderSliderStategy(
           return strategyApplicationResult(
             [
               reorderElement('always', target, absolute(newIndex)),
-              setElementsToRerenderCommand(siblingsOfTarget),
+              setElementsToRerenderCommand(siblingsAndParent),
               updateHighlightedViews('mid-interaction', []),
               setCursorCommand(CSSCursor.ResizeEW),
             ],
