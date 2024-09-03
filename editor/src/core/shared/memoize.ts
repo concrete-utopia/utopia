@@ -27,12 +27,16 @@ export function memoize<T extends Moizeable>(func: T, options?: Partial<Options<
 export function valueDependentCache<Value, Input, Result>(
   fallback: (value: Value, input: Input) => Result,
   inputToString: (input: Input) => string,
+  options?: {
+    equality?: (a: Value, b: Value) => boolean
+  },
 ): (value: Value, input: Input) => Result {
   let cache: { [key: string]: Result } = {}
   let lastSeenValue: Value | null = null
+  const eq = options?.equality ?? ((a, b) => a === b)
   return (value: Value, input: Input) => {
     const inputAsString = inputToString(input)
-    if (lastSeenValue == null || lastSeenValue !== value) {
+    if (lastSeenValue == null || !eq(lastSeenValue, value)) {
       // Either this is the first use of the function, or the value has changed.
       lastSeenValue = value
       const result = fallback(value, input)
