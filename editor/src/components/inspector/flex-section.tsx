@@ -39,7 +39,6 @@ import type {
   ValidGridDimensionKeyword,
 } from './common/css-utils'
 import {
-  GridAutoFlowValues,
   cssKeyword,
   cssNumber,
   cssNumberToString,
@@ -145,25 +144,35 @@ export const FlexSection = React.memo(() => {
   )
 
   const columns = React.useMemo(() => {
-    return mergeGridTemplateValues(
-      getGridTemplateAxisValues({
+    const autoCols: GridDimension[] =
+      grid?.specialSizeMeasurements.containerGridProperties.gridAutoColumns?.type === 'DIMENSIONS'
+        ? grid.specialSizeMeasurements.containerGridProperties.gridAutoColumns.dimensions
+        : []
+    return mergeGridTemplateValues({
+      autoValues: autoCols,
+      ...getGridTemplateAxisValues({
         calculated:
           grid?.specialSizeMeasurements.containerGridProperties.gridTemplateColumns ?? null,
         fromProps:
           grid?.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateColumns ??
           null,
       }),
-    )
+    })
   }, [grid])
 
   const rows = React.useMemo(() => {
-    return mergeGridTemplateValues(
-      getGridTemplateAxisValues({
+    const autoRows: GridDimension[] =
+      grid?.specialSizeMeasurements.containerGridProperties.gridAutoRows?.type === 'DIMENSIONS'
+        ? grid.specialSizeMeasurements.containerGridProperties.gridAutoRows.dimensions
+        : []
+    return mergeGridTemplateValues({
+      autoValues: autoRows,
+      ...getGridTemplateAxisValues({
         calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateRows ?? null,
         fromProps:
           grid?.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows ?? null,
       }),
-    )
+    })
   }, [grid])
 
   return (
@@ -936,20 +945,35 @@ const AutoFlowControl = React.memo(() => {
 })
 AutoFlowControl.displayName = 'AutoFlowControl'
 
-function mergeGridTemplateValues({
+export function mergeGridTemplateValues({
   calculated,
   fromProps,
+  autoValues,
 }: {
   calculated: GridDimension[]
   fromProps: GridDimension[]
+  autoValues: GridDimension[]
 }): GridDimension[] {
-  return calculated.map((c, index) => {
+  function getExplicitValue(dimension: GridDimension, index: number): GridDimension {
     if (fromProps.length === 0) {
-      return gridCSSKeyword(cssKeyword('auto'), c.areaName)
+      return gridCSSKeyword(cssKeyword('auto'), dimension.areaName)
+    } else if (fromProps[index] == null) {
+      return dimension
+    } else {
+      return fromProps[index]
     }
-    if (fromProps[index] == null) {
-      return c
+  }
+
+  return calculated.map((c, index) => {
+    const explicitValue = getExplicitValue(c, index)
+
+    const autoValueIndex = index % autoValues.length // wrap around
+    const autoValue = autoValues.at(autoValueIndex)
+
+    if (isGridCSSKeyword(explicitValue) && explicitValue.value.value === 'auto') {
+      return autoValue ?? explicitValue
     }
-    return fromProps[index]
+
+    return explicitValue
   })
 }
