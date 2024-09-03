@@ -1281,12 +1281,16 @@ describe('The navigator component picker context menu', () => {
       { x: 2, y: 2 },
     )
 
+    // a temp fix for `hideAll` flakiness
+    await wait(50)
+
     await mouseClickAtPoint(
       editor.renderedDOM.getByTestId('replace-element-button-sb/scene/flexrow/map/img~~~1'),
       { x: 2, y: 2 },
     )
 
-    await mouseClickAtPoint(editor.renderedDOM.getByText('div'), { x: 2, y: 2 })
+    const menuButton = await waitFor(() => editor.renderedDOM.getByText('div'))
+    await mouseClickAtPoint(menuButton, { x: 2, y: 2 })
 
     // the element inside the map has been changed to a `div`
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
@@ -1381,6 +1385,9 @@ export var storyboard = (
       ),
       { x: 2, y: 2 },
     )
+
+    // a temp fix for `hideAll` flakiness
+    await wait(50)
 
     await mouseClickAtPoint(
       editor.renderedDOM.getByTestId('replace-element-button-sb/scene/flexrow/conditional/img'),

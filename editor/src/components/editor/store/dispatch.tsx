@@ -283,6 +283,7 @@ function processAction(
         unpatchedEditor: withPossiblyClearedPseudoInsert,
         unpatchedDerived: working.unpatchedDerived,
         strategyState: working.strategyState, // this means the actions cannot update strategyState – this piece of state lives outside our "redux" state
+        elementMetadata: working.elementMetadata,
         postActionInteractionSession: working.postActionInteractionSession,
         history: newStateHistory,
         userState: working.userState,
@@ -642,6 +643,7 @@ export function editorDispatchClosingOut(
     patchedDerived: patchedDerivedState,
     strategyState: optionalDeepFreeze(newStrategyState),
     history: newHistory,
+    elementMetadata: result.elementMetadata,
     postActionInteractionSession: result.postActionInteractionSession,
     userState: result.userState,
     workers: storedState.workers,
@@ -877,14 +879,28 @@ function editorDispatchInner(
       storedState.unpatchedEditor.currentVariablesInScope !==
       result.unpatchedEditor.currentVariablesInScope
 
+    const updateMetadataInEditorStateAction = dispatchedActions.find(
+      (action) => action.action === 'UPDATE_METADATA_IN_EDITOR_STATE',
+    )
     const metadataChanged =
-      domMetadataChanged || spyMetadataChanged || allElementPropsChanged || variablesInScopeChanged
+      domMetadataChanged ||
+      spyMetadataChanged ||
+      allElementPropsChanged ||
+      variablesInScopeChanged ||
+      updateMetadataInEditorStateAction != null
 
     if (metadataChanged) {
-      const { metadata, elementPathTree } = reconstructJSXMetadata(
-        result.unpatchedEditor,
-        domReconstructedMetadata,
-      )
+      function getMetadataSomehow() {
+        if (updateMetadataInEditorStateAction != null) {
+          return {
+            metadata: updateMetadataInEditorStateAction.newFinalMetadata,
+            elementPathTree: updateMetadataInEditorStateAction.tree,
+          }
+        } else {
+          return reconstructJSXMetadata(result.unpatchedEditor, domReconstructedMetadata)
+        }
+      }
+      const { metadata, elementPathTree } = getMetadataSomehow()
       // Cater for the strategies wiping out the metadata on completion.
       const storedStateHasEmptyElementPathTree = isEmptyObject(
         storedState.unpatchedEditor.elementPathTree,
@@ -1013,6 +1029,7 @@ function editorDispatchInner(
       unpatchedDerived: frozenDerivedState,
       patchedDerived: patchedDerivedState,
       strategyState: newStrategyState,
+      elementMetadata: result.elementMetadata, // TODO do we want to do anything here?
       postActionInteractionSession: updatePostActionState(
         result.postActionInteractionSession,
         dispatchedActions,

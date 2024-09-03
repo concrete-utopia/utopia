@@ -32,6 +32,7 @@ import { slightlyOffsetPointBecauseVeryWeirdIssue, wait } from '../../utils/util
 import { mouseClickAtPoint, mouseDownAtPoint, mouseMoveToPoint } from './event-helpers.test-utils'
 import { EditorModes } from '../editor/editor-modes'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 disableStoredStateforTests()
 
@@ -44,10 +45,10 @@ describe('DOM Walker', () => {
       BakedInStoryboardUID,
       `${BakedInStoryboardUID}/${TestSceneUID}`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}`,
-      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/d63`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/488`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/d63`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/d63/bbb~~~1`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/d63/bbb~~~2`,
     ]
@@ -347,22 +348,6 @@ export var storyboard = (
       globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/ccc`].x,
     )
   })
-
-  it('clears all of the invalidated paths including svgs', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      TestProjectWithSVG,
-      'await-first-dom-report',
-    )
-    await renderResult.getDispatchFollowUpActionsFinished()
-    // This is here to ensure that the DOM walker runs and clears the
-    // entries that are added in by the resize observer, which triggers at
-    // an awkward timing after the entirety of `renderTestEditorWithCode` executes.
-    // That results in an entry for the scene being added, which then would cause the
-    // test to fail.
-    await renderResult.dispatch([clearSelection()], true)
-    const domWalkerState = renderResult.getDomWalkerState()
-    expect(Array.from(domWalkerState.invalidatedPaths)).toHaveLength(0)
-  })
 })
 
 describe('Capturing closest offset parent', () => {
@@ -419,7 +404,10 @@ describe('Capturing closest offset parent', () => {
       renderResult.getEditorState().editor.jsxMetadata['sb/scene/app/child']
     const expectedClosestOffsetParent = 'sb/scene/app:app-root/inner-div'
     expect(
-      EP.toString(metadataOfInnerElement.specialSizeMeasurements.closestOffsetParentPath),
+      optionalMap(
+        EP.toString,
+        metadataOfInnerElement.specialSizeMeasurements.closestOffsetParentPath,
+      ),
     ).toBe(expectedClosestOffsetParent)
   })
 })

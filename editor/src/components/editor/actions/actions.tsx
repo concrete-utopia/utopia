@@ -347,6 +347,7 @@ import type {
   ReplaceElementInScope,
   ReplaceJSXElement,
   ToggleDataCanCondense,
+  UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
@@ -4388,6 +4389,20 @@ export const UPDATE_FNS = {
         },
         currentVariablesInScope: { ...spyCollector.current.spyValues.variablesInScope },
       }
+    }
+  },
+  UPDATE_METADATA_IN_EDITOR_STATE: (
+    action: UpdateMetadataInEditorState,
+    editor: EditorModel,
+    spyCollector: UiJsxCanvasContextData,
+  ): EditorModel => {
+    return {
+      ...editor,
+      // TODO move the reconstructMetadata call here, and remove currentAllElementProps
+      currentAllElementProps: {
+        ...spyCollector.current.spyValues.allElementProps,
+      },
+      currentVariablesInScope: { ...spyCollector.current.spyValues.variablesInScope },
     }
   },
   TRUE_UP_ELEMENTS: (editor: EditorModel): EditorModel => {

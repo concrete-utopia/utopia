@@ -128,6 +128,7 @@ function getFramesInCanvasContextUncached(
   })
 }
 
+// eslint-disable-next-line object-shorthand
 const Canvas = {
   parentsAndSiblings: [
     TargetSearchType.SelectedElements,

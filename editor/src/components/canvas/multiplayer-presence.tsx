@@ -18,7 +18,6 @@ import {
   getCollaborator,
   getConnectionById,
   useCanComment,
-  useMyUserAndPresence,
   useConnections,
   useCollaborators,
   getCollaboratorById,
@@ -74,6 +73,7 @@ import { CommentIndicators } from './controls/comment-indicator'
 import { CommentPopup } from './controls/comment-popup'
 import { getIdOfScene, getSceneUnderPoint } from './controls/comment-mode/comment-mode-hooks'
 import { optionalMap } from '../../core/shared/optional-utils'
+import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 
 export const OtherUserPointer = (props: any) => {
   return (
@@ -93,6 +93,8 @@ export const MultiplayerPresence = React.memo(() => {
 
   const room = useRoom()
   const updateMyPresence = useUpdateMyPresence()
+  const liveBlocksUserId = useSelf((self) => self.id)
+  const liveBlocksConnectionId = useSelf((self) => self.connectionId)
 
   const loginState = useEditorState(
     Substores.userState,
@@ -169,21 +171,32 @@ export const MultiplayerPresence = React.memo(() => {
 
   return (
     <Fragment>
-      <FollowingOverlay />
+      <FollowingOverlay
+        liveBlocksUserId={liveBlocksUserId}
+        liveBlocksConnectionId={liveBlocksConnectionId}
+      />
       <MultiplayerShadows />
       {when(canComment, <CommentIndicators />)}
-      <MultiplayerCursors />
+      <MultiplayerCursors
+        liveBlocksUserId={liveBlocksUserId}
+        liveBlocksConnectionId={liveBlocksConnectionId}
+      />
       {when(canComment && isCommentMode(mode) && mode.comment != null, <CommentPopup />)}
     </Fragment>
   )
 })
 MultiplayerPresence.displayName = 'MultiplayerPresence'
 
-const MultiplayerCursors = React.memo(() => {
-  const me = useSelf()
+interface MultiplayerCursorsProps {
+  liveBlocksUserId: string
+  liveBlocksConnectionId: number
+}
+
+const MultiplayerCursors = React.memo((props: MultiplayerCursorsProps) => {
+  const { liveBlocksUserId, liveBlocksConnectionId } = props
   const collabs = useCollaborators()
   const others = useOthers((list) => {
-    const presences = excludeMyConnection(me.id, me.connectionId, list)
+    const presences = excludeMyConnection(liveBlocksUserId, liveBlocksConnectionId, list)
     return presences.map((p) => ({
       presenceInfo: p,
       userInfo: getCollaborator(collabs, p),
@@ -341,7 +354,13 @@ MultiplayerCursor.displayName = 'MultiplayerCursor'
 
 const remixRouteChangedToastId = 'follow-changed-scene'
 
-const FollowingOverlay = React.memo(() => {
+interface FollowingOverlayProps {
+  liveBlocksUserId: string
+  liveBlocksConnectionId: number
+}
+
+const FollowingOverlay = React.memo((props: FollowingOverlayProps) => {
+  const { liveBlocksUserId, liveBlocksConnectionId } = props
   const dispatch = useDispatch()
 
   const room = useRoom()
@@ -462,21 +481,24 @@ const FollowingOverlay = React.memo(() => {
     }
   }, [connections, followed])
 
-  const { user: myUser, presence: myPresence } = useMyUserAndPresence()
-  const others = useOthers((list) =>
-    list
-      .filter((entry) => entry.connectionId !== myPresence.connectionId)
-      .map((other) => {
-        return {
-          ...getCollaborator(collabs, other),
-          following: other.presence.following,
-          connectionId: other.connectionId,
-          connectedAt: connections?.[other.id]?.[other.connectionId]?.startedAt ?? 0,
-        }
-      }),
+  const others = useKeepReferenceEqualityIfPossible(
+    useOthers((list) =>
+      list
+        .filter((entry) => entry.connectionId !== liveBlocksConnectionId)
+        .map((other) => {
+          return {
+            ...getCollaborator(collabs, other),
+            following: other.presence.following,
+            connectionId: other.connectionId,
+            connectedAt: connections?.[other.id]?.[other.connectionId]?.startedAt ?? 0,
+          }
+        }),
+    ),
   )
 
-  const myFollowers = others.filter((other) => other.following === myUser.id)
+  const myFollowers = React.useMemo(() => {
+    return others.filter((other) => other.following === liveBlocksUserId)
+  }, [liveBlocksUserId, others])
   const followers = myFollowers.length
   const hasFollowers = followers > 0
 

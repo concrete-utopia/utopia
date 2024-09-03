@@ -1491,7 +1491,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     'ComponentInfoBox selectedViews',
   )
 
-  const target = safeIndex(selectedViews, 0) ?? null
+  const target = selectedViews.at(0) ?? EP.emptyElementPath
 
   const locationOfComponentInstance = useEditorState(
     Substores.projectContents,
