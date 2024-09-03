@@ -1,6 +1,13 @@
-import * as EP from '../../../../core/shared/element-path'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import * as EP from '../../../../core/shared/element-path'
+import {
+  gridPositionValue,
+  type GridElementProperties,
+} from '../../../../core/shared/element-template'
+import { isInfinityRectangle, offsetPoint, windowPoint } from '../../../../core/shared/math-utils'
 import { emptyModifiers, Modifier } from '../../../../utils/modifiers'
+import { GridControls, GridControlsKey } from '../../controls/grid-controls'
+import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
   emptyStrategyApplicationResult,
@@ -8,18 +15,8 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
+import { getGridCellAtPoint, setGridPropsCommands } from './grid-helpers'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
-import type { CanvasCommand } from '../../commands/commands'
-import { getElementGridProperties, getGridCellAtPoint, setGridPropsCommands } from './grid-helpers'
-import {
-  gridPositionValue,
-  type GridElementProperties,
-} from '../../../../core/shared/element-template'
-import { isInfinityRectangle, offsetPoint, windowPoint } from '../../../../core/shared/math-utils'
-import { canvasPointToWindowPoint } from '../../dom-lookup'
-import { GridControls, GridControlsKey } from '../../controls/grid-controls'
-
-type ArrowKey = 'left' | 'right' | 'up' | 'down'
 
 export function gridRearrangeKeyboardStrategy(
   canvasState: InteractionCanvasState,
@@ -139,17 +136,18 @@ export function gridRearrangeKeyboardStrategy(
       }
 
       function getNewBounds(start: number, cellsCount: number, size: number) {
-        const limit = cellsCount - size + 1
+        const lowerLimit = 1
+        const upperLimit = cellsCount + 1
 
         let newFrom = start
         let newTo = start + size
 
-        if (newFrom > limit) {
-          newTo = limit + 2 // +2, because +1 for the grid and +1 for its limit
+        if (newTo > upperLimit) {
+          newTo = upperLimit
           newFrom = newTo - size
         }
-        if (newFrom < 1) {
-          newFrom = 1
+        if (newFrom < lowerLimit) {
+          newFrom = lowerLimit
           newTo = newFrom + size
         }
 
