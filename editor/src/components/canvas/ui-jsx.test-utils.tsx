@@ -132,7 +132,6 @@ import {
   createDomWalkerMutableState,
   invalidateDomWalkerIfNecessary,
   resubscribeObservers,
-  runDomWalker,
 } from './dom-walker'
 import { flushSync } from 'react-dom'
 import { shouldUpdateLowPriorityUI } from '../inspector/inspector'
@@ -359,7 +358,6 @@ export async function renderTestEditorWithModel(
       actions,
       workingEditorState,
       spyCollector,
-      {},
       innerStrategiesToUse,
     )
 
@@ -457,7 +455,6 @@ export async function renderTestEditorWithModel(
           [saveDomReportAction],
           workingEditorState,
           spyCollector,
-          {}, // TODO delete before merge
         )
         workingEditorState = carryDispatchResultFields(workingEditorState, editorWithNewMetadata)
       }
@@ -473,7 +470,6 @@ export async function renderTestEditorWithModel(
           [{ action: 'TRUE_UP_ELEMENTS' }],
           workingEditorState,
           spyCollector,
-          {},
         )
         workingEditorState = carryDispatchResultFields(
           workingEditorState,
@@ -524,7 +520,6 @@ export async function renderTestEditorWithModel(
               [saveDomReportAction],
               workingEditorState,
               spyCollector,
-              {},
             )
             workingEditorState = carryDispatchResultFields(
               workingEditorState,
