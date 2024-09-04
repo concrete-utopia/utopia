@@ -59,7 +59,6 @@ import {
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
 import { UTOPIA_SCENE_ID_KEY } from '../../core/model/utopia-constants'
-
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
 import type { PathWithString } from '../../core/shared/uid-utils'

@@ -27,6 +27,7 @@ import Utils from '../../utils/utils'
 import { memoize } from '../../core/shared/memoize'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { UTOPIA_VALID_PATHS } from '../../core/model/utopia-constants'
 
 type FindParentSceneValidPathsCache = Map<Element, Array<ElementPath> | null>
 
@@ -36,7 +37,7 @@ export function findParentSceneValidPaths(
 ): Array<ElementPath> | null {
   const cacheResult = mutableCache.get(target)
   if (cacheResult === undefined) {
-    const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
+    const validPaths = getDOMAttribute(target, UTOPIA_VALID_PATHS)
     if (validPaths != null) {
       const result = validPaths.split(' ').map(EP.fromString)
       mutableCache.set(target, result)

@@ -6,6 +6,7 @@ export const UTOPIA_SCENE_ID_KEY = 'data-utopia-scene-id'
 export const UTOPIA_UID_PARENTS_KEY = 'data-utopia-parents'
 export const UTOPIA_UID_ORIGINAL_PARENTS_KEY = 'data-utopia-original-parents'
 export const UTOPIA_INSTANCE_PATH = 'data-utopia-instance-path'
+export const UTOPIA_VALID_PATHS = 'data-utopia-valid-paths'
 
 export const UtopiaKeys: Array<string> = [
   UTOPIA_UID_KEY,
