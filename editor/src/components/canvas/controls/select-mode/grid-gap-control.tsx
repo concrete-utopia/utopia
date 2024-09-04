@@ -35,9 +35,9 @@ interface GridGapControlProps {
 export const GridGapControlTestId = 'grid-gap-control'
 export const GridGapControlHandleTestId = 'grid-gap-control-handle'
 // background delay when hovering the gap
-const GridGapHandlesBackgroundHoverDelay = 1500
+const GridGapBackgroundHoverDelay = 1500
 // background delay when hovering the handle itself
-const GapHandleBackgroundDelay = 750
+const GapHandleBackgroundHoverDelay = 750
 // px threshold for showing the gap handles even without hovering the gap itself
 // (for narrow gaps)
 const GapHandleGapWidthThreshold = 10
@@ -61,21 +61,21 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
   const [columnBackgroundShown, setColumnBackgroundShown] = React.useState<boolean>(false)
 
   const [rowControlHoverStart, rowControlHoverEnd] = useHoverWithDelay(
-    GridGapHandlesBackgroundHoverDelay,
+    GridGapBackgroundHoverDelay,
     setRowBackgroundShown,
   )
   const [columnControlHoverStart, columnControlHoverEnd] = useHoverWithDelay(
-    GridGapHandlesBackgroundHoverDelay,
+    GridGapBackgroundHoverDelay,
     setColumnBackgroundShown,
   )
 
   const [rowAxisHandleHoverStart, rowAxisHandleHoverEnd] = useHoverWithDelay(
-    GapHandleBackgroundDelay,
+    GapHandleBackgroundHoverDelay,
     setRowAxisHandleHovered,
   )
 
   const [columnAxisHandleHoverStart, columnAxisHandleHoverEnd] = useHoverWithDelay(
-    GapHandleBackgroundDelay,
+    GapHandleBackgroundHoverDelay,
     setColumnAxisHandleHovered,
   )
 
