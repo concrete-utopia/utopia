@@ -27,6 +27,7 @@ import { getFilePathMappings } from '../model/project-file-utils'
 import { valueDependentCache } from '../shared/memoize'
 import * as EP from '../shared/element-path'
 import { shallowEqual } from '../shared/equality-utils'
+import { stripExtension } from '../../components/custom-code/custom-code-utils'
 
 export function propertyControlsForComponentInFile(
   componentName: string,
@@ -170,6 +171,10 @@ function getComponentDescriptorForTargetInner(
       underlyingFilePath: string,
     ) => {
       if (isJSXElement(element)) {
+        if (isIntrinsicElement(element.name)) {
+          return null
+        }
+
         const importedFrom = importedFromWhere(
           filePathMappings,
           underlyingFilePath,
@@ -180,11 +185,7 @@ function getComponentDescriptorForTargetInner(
 
         let filenameForLookup: string | null = null
         if (importedFrom == null) {
-          if (isIntrinsicElement(element.name)) {
-            return null
-          } else {
-            filenameForLookup = underlyingFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
-          }
+          filenameForLookup = stripExtension(underlyingFilePath)
         } else {
           filenameForLookup = importedFrom.filePath
         }
@@ -216,7 +217,7 @@ function getComponentDescriptorForTargetInner(
           )
 
           const trimmedPath = absolutePath.includes('/')
-            ? absolutePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+            ? stripExtension(absolutePath)
             : absolutePath
 
           return propertyControlsInfo[trimmedPath]?.[nameAsString]
