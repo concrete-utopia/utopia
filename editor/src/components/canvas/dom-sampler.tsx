@@ -8,7 +8,7 @@ import {
   fillMissingDataFromAncestors,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
-import { UTOPIA_PATH_KEY } from '../../core/model/utopia-constants'
+import { UTOPIA_PATH_KEY, UTOPIA_VALID_PATHS } from '../../core/model/utopia-constants'
 import { allElemsEqual, mapDropNulls, pluck } from '../../core/shared/array-utils'
 import { getCanvasRectangleFromElement } from '../../core/shared/dom-utils'
 import { alternativeEither, left } from '../../core/shared/either'
@@ -139,58 +139,51 @@ function collectMetadataForPaths({
     'nearest-half',
   )
 
-  const dynamicPathsToCollect: Array<ElementPath> = pathsToCollect
-    .flatMap((staticPath) => {
-      return spyPaths.filter((spyPath) =>
-        EP.pathsEqual(EP.makeLastPartOfPathStatic(EP.fromString(spyPath)), staticPath),
-      )
-    })
-    .map(EP.fromString)
-
-  dynamicPathsToCollect.forEach((path) => {
-    const domMetadata = collectMetadataForElementPath(
-      path,
-      validPaths,
-      selectedViews,
-      scale,
-      containerRect,
-      spyCollector,
+  pathsToCollect.forEach((staticPath) => {
+    const dynamicPaths = spyPaths.filter((spyPath) =>
+      EP.pathsEqual(EP.makeLastPartOfPathStatic(EP.fromString(spyPath)), staticPath),
     )
 
-    if (domMetadata == null) {
-      // if we couldn't find any dom elements for the path, we must scan through all the spy elements to find a fallback with a potentially dynamic path
-      const spyElem = spyCollector.current.spyValues.metadata[EP.toString(path)]
-      if (spyElem != null) {
-        metadataToUpdate_MUTATE[EP.toString(path)] = {
-          ...spyElem,
-        }
+    dynamicPaths.forEach((pathString) => {
+      const path = EP.fromString(pathString)
+      const domMetadata = collectMetadataForElementPath(
+        path,
+        validPaths,
+        selectedViews,
+        scale,
+        containerRect,
+      )
+
+      const spyMetadata = spyCollector.current.spyValues.metadata[EP.toString(path)]
+      if (spyMetadata == null) {
+        // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
+        return
       }
-      return // we couldn't find a fallback spy element, so we bail out
-    }
 
-    const validDynamicPath = path
-    const spyMetadata = spyCollector.current.spyValues.metadata[EP.toString(validDynamicPath)]
-    if (spyMetadata == null) {
-      // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
-      return
-    }
+      if (domMetadata == null) {
+        metadataToUpdate_MUTATE[EP.toString(path)] = {
+          ...spyMetadata,
+        }
+        return
+      }
 
-    let jsxElement = alternativeEither(spyMetadata.element, domMetadata.element)
+      let jsxElement = alternativeEither(spyMetadata.element, domMetadata.element)
 
-    // TODO avoid temporary object creation
-    const elementInstanceMetadata: ElementInstanceMetadata = {
-      ...domMetadata,
-      element: jsxElement,
-      elementPath: spyMetadata.elementPath,
-      componentInstance: spyMetadata.componentInstance,
-      isEmotionOrStyledComponent: spyMetadata.isEmotionOrStyledComponent,
-      label: spyMetadata.label,
-      importInfo: spyMetadata.importInfo,
-      assignedToProp: spyMetadata.assignedToProp,
-      conditionValue: spyMetadata.conditionValue,
-      earlyReturn: spyMetadata.earlyReturn,
-    }
-    metadataToUpdate_MUTATE[EP.toString(spyMetadata.elementPath)] = elementInstanceMetadata
+      // TODO avoid temporary object creation
+      const elementInstanceMetadata: ElementInstanceMetadata = {
+        ...domMetadata,
+        element: jsxElement,
+        elementPath: spyMetadata.elementPath,
+        componentInstance: spyMetadata.componentInstance,
+        isEmotionOrStyledComponent: spyMetadata.isEmotionOrStyledComponent,
+        label: spyMetadata.label,
+        importInfo: spyMetadata.importInfo,
+        assignedToProp: spyMetadata.assignedToProp,
+        conditionValue: spyMetadata.conditionValue,
+        earlyReturn: spyMetadata.earlyReturn,
+      }
+      metadataToUpdate_MUTATE[EP.toString(spyMetadata.elementPath)] = elementInstanceMetadata
+    })
   })
 
   const finalMetadata = [
@@ -210,7 +203,6 @@ function collectMetadataForElementPath(
   selectedViews: Array<ElementPath>,
   scale: number,
   containerRect: CanvasPoint,
-  spyCollector: UiJsxCanvasContextData,
 ): DomElementMetadata | null {
   if (EP.isStoryboardPath(path)) {
     return createFakeMetadataForCanvasRoot(path)
@@ -392,7 +384,7 @@ function createFakeMetadataForCanvasRoot(canvasRootPath: ElementPath): DomElemen
 function getValidPathsFromCanvasContainer(canvasRootContainer: HTMLElement): Array<ElementPath> {
   const validPaths: Array<ElementPath> | null = optionalMap(
     (paths) => paths.split(' ').map(EP.fromString),
-    canvasRootContainer.getAttribute('data-utopia-valid-paths'),
+    canvasRootContainer.getAttribute(UTOPIA_VALID_PATHS),
   )
 
   if (validPaths == null) {
