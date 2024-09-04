@@ -4236,7 +4236,7 @@ export const UPDATE_FNS = {
           }
           return removeErrorMessagesForFile(withUpdatedPropertyControls, action.filename)
         }
-        return nextEditor
+        return removeErrorMessagesForFile(nextEditor, action.filename)
       }
       case 'ASSET_FILE':
       case 'IMAGE_FILE': {
