@@ -80,6 +80,7 @@ import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_PATH_KEY,
   UTOPIA_SCENE_ID_KEY,
+  UTOPIA_VALID_PATHS,
 } from '../../core/model/utopia-constants'
 
 import { PERFORMANCE_MARKS_ALLOWED } from '../../common/env-vars'
@@ -648,7 +649,7 @@ export function runDomWalker({
 
     const validPaths: Array<ElementPath> | null = optionalMap(
       (paths) => paths.split(' ').map(EP.fromString),
-      canvasRootContainer.getAttribute('data-utopia-valid-paths'),
+      canvasRootContainer.getAttribute(UTOPIA_VALID_PATHS),
     )
 
     if (validPaths == null) {
