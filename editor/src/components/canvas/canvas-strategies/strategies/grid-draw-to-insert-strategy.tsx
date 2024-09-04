@@ -13,7 +13,9 @@ import {
   canvasVector,
   offsetPoint,
   roundRectangleToNearestWhole,
+  scaleVector,
   size,
+  windowPoint,
 } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { EditorModes, type InsertionSubject } from '../../../editor/editor-modes'
@@ -335,8 +337,13 @@ function getOffsetFromGridCell(
     canvasState.canvasOffset,
   )
 
-  return canvasPoint({
-    x: mouseWindowPoint.x - cellWindowRectangle.x,
-    y: mouseWindowPoint.y - cellWindowRectangle.y,
-  })
+  const { x, y } = scaleVector(
+    windowPoint({
+      x: mouseWindowPoint.x - cellWindowRectangle.x,
+      y: mouseWindowPoint.y - cellWindowRectangle.y,
+    }),
+    1 / canvasState.scale,
+  )
+
+  return canvasPoint({ x, y })
 }
