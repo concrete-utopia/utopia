@@ -14,8 +14,10 @@ import {
   isInfinityRectangle,
   offsetPoint,
   rectContainsPoint,
+  scaleVector,
   windowPoint,
   windowRectangle,
+  windowVector,
   type WindowPoint,
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
@@ -436,26 +438,45 @@ function gridChildAbsoluteMoveCommands(
     return []
   }
 
-  const offsetInTarget = canvasPoint({
-    x: dragInteractionData.originalDragStart.x - targetMetadata.globalFrame.x,
-    y: dragInteractionData.originalDragStart.y - targetMetadata.globalFrame.y,
-  })
-
-  const dragCanvasOffset = offsetPoint(
-    dragInteractionData.originalDragStart,
-    dragInteractionData.drag ?? canvasPoint({ x: 0, y: 0 }),
-  )
-
-  const dragWindowOffset = canvasPointToWindowPoint(
-    dragCanvasOffset,
+  const targetFrameWindow = canvasPointToWindowPoint(
+    canvasPoint({
+      x: targetMetadata.globalFrame.x,
+      y: targetMetadata.globalFrame.y,
+    }),
     canvasContext.scale,
     canvasContext.canvasOffset,
   )
 
-  const offset = {
-    x: dragWindowOffset.x - targetCellWindowRect.x - offsetInTarget.x,
-    y: dragWindowOffset.y - targetCellWindowRect.y - offsetInTarget.y,
-  }
+  const dragStartWindow = canvasPointToWindowPoint(
+    canvasPoint({
+      x: dragInteractionData.originalDragStart.x,
+      y: dragInteractionData.originalDragStart.y,
+    }),
+    canvasContext.scale,
+    canvasContext.canvasOffset,
+  )
+
+  const offsetInTarget = windowPoint({
+    x: dragStartWindow.x - targetFrameWindow.x,
+    y: dragStartWindow.y - targetFrameWindow.y,
+  })
+
+  const dragWindowOffset = canvasPointToWindowPoint(
+    offsetPoint(
+      dragInteractionData.originalDragStart,
+      dragInteractionData.drag ?? canvasPoint({ x: 0, y: 0 }),
+    ),
+    canvasContext.scale,
+    canvasContext.canvasOffset,
+  )
+
+  const offset = scaleVector(
+    windowVector({
+      x: dragWindowOffset.x - targetCellWindowRect.x - offsetInTarget.x,
+      y: dragWindowOffset.y - targetCellWindowRect.y - offsetInTarget.y,
+    }),
+    1 / canvasContext.scale,
+  )
 
   return [
     setCssLengthProperty(

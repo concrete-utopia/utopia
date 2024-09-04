@@ -5,7 +5,7 @@ import {
   offsetPoint,
   windowPoint,
 } from '../../../../core/shared/math-utils'
-import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import CanvasActions from '../../canvas-actions'
 import { GridCellTestId } from '../../controls/grid-controls'
 import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
@@ -286,6 +286,49 @@ export var storyboard = (
         })
       }
     })
+
+    it('can move absolute element inside a grid cell, zoomed in', async () => {
+      const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
+
+      await editor.dispatch([CanvasActions.zoom(2)], true)
+
+      const child = editor.renderedDOM.getByTestId('child')
+
+      {
+        const { top, left, gridColumn, gridRow } = child.style
+        expect({ top, left, gridColumn, gridRow }).toEqual({
+          gridColumn: '1',
+          gridRow: '1',
+          left: '12px',
+          top: '16px',
+        })
+      }
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/grid/child')])
+
+      const childBounds = child.getBoundingClientRect()
+      const childCenter = windowPoint({
+        x: Math.floor(childBounds.left + childBounds.width / 2),
+        y: Math.floor(childBounds.top + childBounds.height / 2),
+      })
+
+      await mouseDragFromPointToPoint(
+        editor.renderedDOM.getByTestId(GridCellTestId(EP.fromString('sb/scene/grid/child'))),
+        childCenter,
+        offsetPoint(childCenter, windowPoint({ x: 240, y: 240 })),
+      )
+
+      {
+        const { top, left, gridColumn, gridRow } = child.style
+        expect({ top, left, gridColumn, gridRow }).toEqual({
+          gridColumn: '1',
+          gridRow: '1',
+          left: '136.5px',
+          top: '140.5px',
+        })
+      }
+    })
+
     it('can move absolute element among grid cells', async () => {
       const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
