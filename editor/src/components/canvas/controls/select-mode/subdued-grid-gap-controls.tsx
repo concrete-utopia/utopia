@@ -24,41 +24,50 @@ export const SubduedGridGapControl = React.memo<SubduedGridGapControlProps>((pro
     'SubduedGridGapControl selectedViews',
   )
   const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
-  const selectedElement = targets[0]
+  const selectedElement = targets.at(0)
 
-  const gridRowColumnInfo = useGridData([selectedElement])
+  const gridRowColumnInfo = useGridData(targets)
+  const selectedGrid = gridRowColumnInfo.at(0)
 
-  const gridGap = maybeGridGapData(metadata.current, selectedElement)
-  if (gridGap == null) {
+  const filteredGaps = React.useMemo(() => {
+    if (selectedElement == null || selectedGrid == null) {
+      return []
+    }
+    const gridGap = maybeGridGapData(metadata.current, selectedElement)
+    if (gridGap == null) {
+      return []
+    }
+
+    const gridGapRow = gridGap.row
+    const gridGapColumn = gridGap.column
+
+    const controlBounds = gridGapControlBoundsFromMetadata(
+      selectedElement,
+      selectedGrid,
+      {
+        row: fallbackEmptyValue(gridGapRow),
+        column: fallbackEmptyValue(gridGapColumn),
+      },
+      1,
+    )
+    return controlBounds.gaps.filter((gap) => gap.axis === axis || axis === 'both')
+  }, [axis, metadata, selectedElement, selectedGrid])
+
+  if (filteredGaps.length === 0 || selectedElement == null) {
     return null
   }
 
-  const gridGapRow = gridGap.row
-  const gridGapColumn = gridGap.column
-
-  const controlBounds = gridGapControlBoundsFromMetadata(
-    selectedElement,
-    gridRowColumnInfo[0],
-    {
-      row: fallbackEmptyValue(gridGapRow),
-      column: fallbackEmptyValue(gridGapColumn),
-    },
-    1,
-  )
-
   return (
     <>
-      {controlBounds.gaps
-        .filter((gap) => gap.axis === axis || axis === 'both')
-        .map((gap) => (
-          <GridGapControl
-            key={gap.gapId}
-            targets={targets}
-            selectedElement={selectedElement}
-            hoveredOrFocused={hoveredOrFocused}
-            gap={gap}
-          />
-        ))}
+      {filteredGaps.map((gap) => (
+        <GridGapControl
+          key={gap.gapId}
+          targets={targets}
+          selectedElement={selectedElement}
+          hoveredOrFocused={hoveredOrFocused}
+          gap={gap}
+        />
+      ))}
     </>
   )
 })
@@ -84,13 +93,14 @@ function GridGapControl({
 
   const sideRef = useBoundingBox([selectedElement], (ref, parentBoundingBox) => {
     const gridGap = maybeGridGapData(metadata.current, selectedElement)
-    if (gridGap == null) {
+    const selectedGrid = gridRowColumnInfo.at(0)
+    if (gridGap == null || selectedGrid == null) {
       return
     }
 
     const controlBounds = gridGapControlBoundsFromMetadata(
       selectedElement,
-      gridRowColumnInfo[0],
+      selectedGrid,
       {
         row: fallbackEmptyValue(gridGap.row),
         column: fallbackEmptyValue(gridGap.column),
