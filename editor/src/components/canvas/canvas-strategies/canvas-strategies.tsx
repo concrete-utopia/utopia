@@ -81,6 +81,7 @@ import type { ElementPath } from 'utopia-shared/src/types'
 import { reparentSubjectsForInteractionTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
 import { gridRearrangeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
+import { gridResizeKeyboardStrategy } from './strategies/grid-resize-keyboard-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -131,6 +132,7 @@ const resizeStrategies: MetaCanvasStrategy = (
       basicResizeStrategy,
       resizeGridStrategy,
       gridResizeElementStrategy,
+      gridResizeKeyboardStrategy,
     ],
   )
 }

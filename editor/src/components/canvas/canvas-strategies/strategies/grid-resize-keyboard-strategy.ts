@@ -4,7 +4,7 @@ import {
   gridPositionValue,
   type GridElementProperties,
 } from '../../../../core/shared/element-template'
-import { emptyModifiers, Modifier } from '../../../../utils/modifiers'
+import { Modifier, shiftModifier } from '../../../../utils/modifiers'
 import { GridControls, GridControlsKey } from '../../controls/grid-controls'
 import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
@@ -21,7 +21,7 @@ import {
 } from './grid-helpers'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 
-export function gridRearrangeKeyboardStrategy(
+export function gridResizeKeyboardStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
@@ -59,9 +59,9 @@ export function gridRearrangeKeyboardStrategy(
   }
 
   return {
-    id: 'GRID_KEYBOARD_REARRANGE',
-    name: 'Grid rearrange',
-    descriptiveLabel: 'Grid rearrange',
+    id: 'GRID_KEYBOARD_RESIZE',
+    name: 'Grid resize',
+    descriptiveLabel: 'Grid resize',
     icon: {
       category: 'modalities',
       type: 'reorder-large',
@@ -77,11 +77,7 @@ export function gridRearrangeKeyboardStrategy(
     ],
     fitness: fitness(interactionSession),
     apply: () => {
-      if (
-        interactionSession == null ||
-        interactionSession.interactionData.type !== 'KEYBOARD' ||
-        interactionSession.interactionData.keyStates.some((s) => s.modifiers.shift)
-      ) {
+      if (interactionSession == null || interactionSession.interactionData.type !== 'KEYBOARD') {
         return emptyStrategyApplicationResult
       }
       if (
@@ -106,24 +102,27 @@ export function gridRearrangeKeyboardStrategy(
         ...cell.specialSizeMeasurements.elementGridProperties,
       }
 
+      const direction = Array.from(interactionData.keyStates[0].keysPressed).at(0)
+      if (direction == null) {
+        return emptyStrategyApplicationResult
+      }
+
       if (horizontalDelta !== 0) {
-        const { from, to } = getGridCellUpdatedResizeRearrangeBounds(
+        const { to } = getGridCellUpdatedResizeRearrangeBounds(
           cellBounds.originCell.column + horizontalDelta,
           gridTemplate.gridTemplateColumns.dimensions.length,
           cellBounds.width,
         )
-        gridProps.gridColumnStart = gridPositionValue(from)
-        gridProps.gridColumnEnd = gridPositionValue(to)
+        gridProps.gridColumnEnd = gridPositionValue(Math.max(cellBounds.originCell.column, to))
       }
 
       if (verticalDelta !== 0) {
-        const { from, to } = getGridCellUpdatedResizeRearrangeBounds(
+        const { to } = getGridCellUpdatedResizeRearrangeBounds(
           cellBounds.originCell.row + verticalDelta,
           gridTemplate.gridTemplateRows.dimensions.length,
           cellBounds.height,
         )
-        gridProps.gridRowStart = gridPositionValue(from)
-        gridProps.gridRowEnd = gridPositionValue(to)
+        gridProps.gridRowEnd = gridPositionValue(Math.max(cellBounds.originCell.row, to))
       }
 
       return strategyApplicationResult(setGridPropsCommands(target, gridTemplate, gridProps))
@@ -141,7 +140,7 @@ function fitness(interactionSession: InteractionSession | null): number {
     (accumulatedPress) =>
       Array.from(accumulatedPress.keysPressed).some(
         (key) => key === 'left' || key === 'right' || key === 'up' || key === 'down',
-      ) && Modifier.equal(accumulatedPress.modifiers, emptyModifiers),
+      ) && Modifier.equal(accumulatedPress.modifiers, shiftModifier),
   )
 
   return matches ? 1 : 0
