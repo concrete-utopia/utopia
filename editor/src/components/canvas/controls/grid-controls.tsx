@@ -621,9 +621,9 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
   const anyTargetAbsolute = useEditorState(
     Substores.metadata,
     (store) =>
-      targets.some((t) =>
+      store.editor.selectedViews.some((elementPath) =>
         MetadataUtils.isPositionAbsolute(
-          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, t),
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath),
         ),
       ),
     'GridControls anyTargetAbsolute',
