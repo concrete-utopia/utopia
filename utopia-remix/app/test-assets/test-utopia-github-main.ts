@@ -315,7 +315,7 @@ export const TestProjectUtopiaGithubMain: ProjectContentTreeRoot = {
         content: {
           type: 'TEXT_FILE',
           fileContents: {
-            code: "import * as React from 'react'\nimport { View } from 'utopia-api'\nimport '../public/globals.css'\n\nexport var Playground = () => {\n  return (\n    <div\n      style={{\n        height: '100%',\n        width: '100%',\n        contain: 'layout',\n      }}\n    >\n      <div\n        style={{\n          height: 150,\n          position: 'absolute',\n          left: 154,\n          top: 134,\n        }}\n      >\n        <img\n          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'\n          alt='Utopia logo'\n          style={{ height: '100%' }}\n        />\n      </div>\n    </div>\n  )\n}\n",
+            code: "import * as React from 'react'\nimport { View } from 'utopia-api'\nimport '../public/globals.css'\n\nexport var Playground = () => {\n  return (\n    <div\n      style={{\n        height: '100%',\n        width: '100%',\n        contain: 'layout',\n      }}\n    >\n      <div\n        style={{\n          height: 150,\n          position: 'absolute',\n          left: 154,\n          top: 134,\n        }}\n      >\n        <img\n          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'\n          alt='Utopia logo'\n          style={{ height: '100%' }}\n        />\n      </div>\n    </div>\n  )\n}\n",
             parsed: {
               type: 'UNPARSED',
             },
