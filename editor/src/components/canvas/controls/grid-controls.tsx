@@ -470,7 +470,7 @@ export const GridRowColumnResizingControls =
               fromPropsAxisValues={grid.gridTemplateColumnsFromProps}
               containingFrame={grid.frame}
               axis={'column'}
-              gap={grid.gap}
+              gap={grid.columnGap ?? grid.gap}
               padding={grid.padding}
             />
           )
@@ -483,7 +483,7 @@ export const GridRowColumnResizingControls =
               fromPropsAxisValues={grid.gridTemplateRowsFromProps}
               containingFrame={grid.frame}
               axis={'row'}
-              gap={grid.gap}
+              gap={grid.rowGap ?? grid.gap}
               padding={grid.padding}
             />
           )

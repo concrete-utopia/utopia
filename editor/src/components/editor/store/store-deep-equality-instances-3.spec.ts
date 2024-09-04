@@ -617,7 +617,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       a: 'a',
       b: 'b',
     },
-    attributeMetadatada: {
+    attributeMetadata: {
       a: {
         fromStyleSheet: false,
       },
@@ -767,7 +767,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       a: 'a',
       b: 'b',
     },
-    attributeMetadatada: {
+    attributeMetadata: {
       a: {
         fromStyleSheet: false,
       },
@@ -794,7 +794,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     expect(result.value.isEmotionOrStyledComponent).toBe(oldValue.isEmotionOrStyledComponent)
     expect(result.value.specialSizeMeasurements).toBe(oldValue.specialSizeMeasurements)
     expect(result.value.computedStyle).toBe(oldValue.computedStyle)
-    expect(result.value.attributeMetadatada).toBe(oldValue.attributeMetadatada)
+    expect(result.value.attributeMetadata).toBe(oldValue.attributeMetadata)
     expect(result.value.label).toBe(newDifferentValue.label)
     expect(result.value.importInfo).toBe(oldValue.importInfo)
     expect(result.value).toEqual(newDifferentValue)
@@ -942,7 +942,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         a: 'a',
         b: 'b',
       },
-      attributeMetadatada: {
+      attributeMetadata: {
         a: {
           fromStyleSheet: false,
         },
@@ -1094,7 +1094,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         a: 'a',
         b: 'b',
       },
-      attributeMetadatada: {
+      attributeMetadata: {
         a: {
           fromStyleSheet: false,
         },
@@ -1246,7 +1246,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         a: 'a',
         b: 'b',
       },
-      attributeMetadatada: {
+      attributeMetadata: {
         a: {
           fromStyleSheet: false,
         },
@@ -1281,7 +1281,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
     )
     expect(result.value.elem.specialSizeMeasurements).toBe(oldValue.elem.specialSizeMeasurements)
     expect(result.value.elem.computedStyle).toBe(oldValue.elem.computedStyle)
-    expect(result.value.elem.attributeMetadatada).toBe(oldValue.elem.attributeMetadatada)
+    expect(result.value.elem.attributeMetadata).toBe(oldValue.elem.attributeMetadata)
     expect(result.value.elem.label).toBe(newDifferentValue.elem.label)
     expect(result.value.elem.importInfo).toBe(oldValue.elem.importInfo)
     expect(result.value).toEqual(newDifferentValue)

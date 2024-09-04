@@ -27,8 +27,6 @@ import type {
 import {
   isJSXElement,
   jsExpressionValue,
-  getJSXElementNameAsString,
-  isJSExpressionMapOrOtherJavaScript,
   isUtopiaJSXComponent,
   emptyComments,
   jsxElementName,
@@ -39,10 +37,10 @@ import {
   isJSIdentifier,
   isJSPropertyAccess,
   isJSElementAccess,
-  isJSExpression,
   isJSExpressionOtherJavaScript,
   isJSXMapExpression,
   isJSXTextBlock,
+  getJSXElementLikeNameAsString,
 } from '../../core/shared/element-template'
 import {
   guaranteeUniqueUids,
@@ -1843,7 +1841,7 @@ function getValidElementPathsFromElement(
     const isScene = isSceneElement(element, filePath, projectContents)
     const isSceneWithOneChild = isScene && element.children.length === 1
 
-    const name = isJSXElement(element) ? getJSXElementNameAsString(element.name) : 'Fragment'
+    const name = getJSXElementLikeNameAsString(element)
     const lastElementPathPart = EP.lastElementPathForPath(path)
     const matchingFocusedPathPart =
       focusedElementPath == null || lastElementPathPart == null
