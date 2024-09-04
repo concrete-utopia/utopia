@@ -190,7 +190,7 @@ function getCommandsAndPatchForGridRearrange(
     commands: commands,
     patch: {
       grid: {
-        targetCell: targetGridCell,
+        targetCellData: targetGridCell,
         draggingFromCell: draggingFromCell,
         originalRootCell: originalRootCell,
         currentRootCell: targetRootCell,

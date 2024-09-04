@@ -111,7 +111,7 @@ export function runGridRearrangeMove(
   duplicating: boolean,
 ): {
   commands: CanvasCommand[]
-  targetCell: GridCellCoordinates | null
+  targetCell: TargetGridCellData | null
   draggingFromCell: GridCellCoordinates | null
   originalRootCell: GridCellCoordinates | null
   targetRootCell: GridCellCoordinates | null
@@ -132,12 +132,17 @@ export function runGridRearrangeMove(
     canvasOffset,
   )
 
-  const newTargetCellData = getTargetCell(customState.targetCell, duplicating, mouseWindowPoint)
+  const newTargetCellData = getTargetCell(
+    customState.targetCellData?.gridCellCoordinates ?? null,
+    duplicating,
+    mouseWindowPoint,
+  )
 
   const targetCellUnderMouse = newTargetCellData?.gridCellCoordinates ?? null
 
   // if there's no cell target under the mouse, try using the last known cell
-  const newTargetCell = targetCellUnderMouse ?? customState.targetCell ?? null
+  const newTargetCell =
+    targetCellUnderMouse ?? customState.targetCellData?.gridCellCoordinates ?? null
 
   if (newTargetCell == null) {
     return {
@@ -220,7 +225,7 @@ export function runGridRearrangeMove(
 
   return {
     commands: [...gridCellMoveCommands, ...absoluteMoveCommands],
-    targetCell: newTargetCell,
+    targetCell: newTargetCellData ?? customState.targetCellData,
     originalRootCell: rootCell,
     draggingFromCell: draggingFromCell,
     targetRootCell: targetRootCell,
@@ -317,11 +322,16 @@ export function setGridPropsCommands(
   return commands
 }
 
+export interface TargetGridCellData {
+  gridCellCoordinates: GridCellCoordinates
+  cellWindowRectangle: WindowRectangle
+}
+
 export function getTargetCell(
   previousTargetCell: GridCellCoordinates | null,
   duplicating: boolean,
   mouseWindowPoint: WindowPoint,
-): { gridCellCoordinates: GridCellCoordinates; cellWindowRectangle: WindowRectangle } | null {
+): TargetGridCellData | null {
   let cell = previousTargetCell ?? null
   const cellUnderMouse = duplicating
     ? getGridCellUnderMouseRecursive(mouseWindowPoint)
