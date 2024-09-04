@@ -1924,7 +1924,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           data-uid='container'
         >
           <img
-            src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+            src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
             alt='Utopia logo'
             style={{
               width: 46,
@@ -1984,7 +1984,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           data-uid='container'
         >
           <img
-            src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+            src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
             alt='Utopia logo'
             style={{
               width: 46,
@@ -2044,7 +2044,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             data-uid='container'
           >
             <img
-              src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+              src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
               alt='Utopia logo'
               style={{
                 width: 46,
