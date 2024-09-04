@@ -23,6 +23,11 @@ export const SubduedGridGapControl = React.memo<SubduedGridGapControlProps>((pro
     (store) => store.editor.selectedViews,
     'SubduedGridGapControl selectedViews',
   )
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'GridGapControl scale',
+  )
   const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
   const selectedElement = targets.at(0)
 
@@ -48,10 +53,10 @@ export const SubduedGridGapControl = React.memo<SubduedGridGapControlProps>((pro
         row: fallbackEmptyValue(gridGapRow),
         column: fallbackEmptyValue(gridGapColumn),
       },
-      1,
+      scale,
     )
     return controlBounds.gaps.filter((gap) => gap.axis === axis || axis === 'both')
-  }, [axis, metadata, selectedElement, selectedGrid])
+  }, [axis, metadata, scale, selectedElement, selectedGrid])
 
   if (filteredGaps.length === 0 || selectedElement == null) {
     return null
@@ -89,6 +94,11 @@ function GridGapControl({
   }
 }) {
   const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'GridGapControl scale',
+  )
   const gridRowColumnInfo = useGridData([selectedElement])
 
   const sideRef = useBoundingBox([selectedElement], (ref, parentBoundingBox) => {
@@ -105,7 +115,7 @@ function GridGapControl({
         row: fallbackEmptyValue(gridGap.row),
         column: fallbackEmptyValue(gridGap.column),
       },
-      1,
+      scale,
     )
 
     const bound = controlBounds.gaps.find((updatedGap) => updatedGap.gapId === gap.gapId)
