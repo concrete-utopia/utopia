@@ -368,13 +368,13 @@ export var storyboard = (
         .style
 
       expect({ gridRow, gridColumn, width, height, position, top, left }).toEqual({
-        gridColumn: '2',
+        gridColumn: '1',
         gridRow: '1',
-        height: '60px',
-        left: '83px',
+        height: '30px',
+        left: '125px',
         position: 'absolute',
-        top: '150px',
-        width: '40px',
+        top: '75px',
+        width: '20px',
       })
     })
   })
