@@ -404,6 +404,8 @@ function asMaybeNamedAreaOrValue(
   return value
 }
 
+const GRID_BOUNDS_TOLERANCE = 5 // px
+
 export function getGridCellBoundsFromCanvas(
   cell: ElementInstanceMetadata,
   canvasScale: number,
@@ -419,7 +421,7 @@ export function getGridCellBoundsFromCanvas(
 
   const cellOriginPoint = offsetPoint(
     canvasPointToWindowPoint(cellFrame, canvasScale, canvasOffset),
-    windowPoint({ x: 5, y: 5 }),
+    windowPoint({ x: GRID_BOUNDS_TOLERANCE, y: GRID_BOUNDS_TOLERANCE }),
   )
   const cellOrigin = getGridCellAtPoint(cellOriginPoint, true)
   if (cellOrigin == null) {
@@ -429,8 +431,8 @@ export function getGridCellBoundsFromCanvas(
   const cellEndPoint = offsetPoint(
     cellOriginPoint,
     windowPoint({
-      x: canvasFrameWidth - 5,
-      y: canvasFrameHeight - 5,
+      x: canvasFrameWidth - GRID_BOUNDS_TOLERANCE,
+      y: canvasFrameHeight - GRID_BOUNDS_TOLERANCE,
     }),
   )
   const cellEnd = getGridCellAtPoint(cellEndPoint, true)
