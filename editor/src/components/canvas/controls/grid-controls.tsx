@@ -529,6 +529,13 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     'GridControls targetRootCell',
   )
 
+  const currentHoveredCell = useEditorState(
+    Substores.restOfStore,
+    (store) =>
+      store.strategyState.customStrategyState.grid.targetCellData?.gridCellCoordinates ?? null,
+    'GridControls currentHoveredCell',
+  )
+
   const dragging = useEditorState(
     Substores.canvas,
     (store) =>
@@ -843,9 +850,11 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                   activelyDraggingOrResizingCell != null
                     ? features.Grid.dotgridColor
                     : 'transparent'
+
                 const borderColor =
-                  activelyDraggingOrResizingCell != null
-                    ? features.Grid.activeGridColor
+                  countedColumn === currentHoveredCell?.column &&
+                  countedRow === currentHoveredCell?.row
+                    ? colorTheme.brandNeonPink.value
                     : features.Grid.inactiveGridColor
 
                 return (
@@ -854,16 +863,16 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                     id={id}
                     data-testid={id}
                     style={{
-                      borderTop: `1px solid ${borderColor}`,
-                      borderLeft: `1px solid ${borderColor}`,
+                      borderTop: `3px solid ${borderColor}`,
+                      borderLeft: `3px solid ${borderColor}`,
                       borderBottom:
                         countedRow >= grid.rows || (grid.rowGap != null && grid.rowGap > 0)
-                          ? `1px solid ${borderColor}`
+                          ? `3px solid ${borderColor}`
                           : undefined,
                       borderRight:
                         countedColumn >= grid.columns ||
                         (grid.columnGap != null && grid.columnGap > 0)
-                          ? `1px solid ${borderColor}`
+                          ? `3px solid ${borderColor}`
                           : undefined,
                       position: 'relative',
                       pointerEvents: 'initial',
