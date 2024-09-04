@@ -34,7 +34,10 @@ interface GridGapControlProps {
 
 export const GridGapControlTestId = 'grid-gap-control'
 export const GridGapControlHandleTestId = 'grid-gap-control-handle'
+// background delay when hovering the gap
 const GridGapHandlersBackgroundHoverDelay = 1500
+// background delay when hovering the handler itself
+const GapHandlerBackgroundDelay = 750
 // px threshold for showing the gap handlers even without hovering the gap itself
 // (for narrow gaps)
 const GapHandlerGapWidthThreshold = 10
@@ -51,7 +54,8 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
   )
 
   const [elementHovered, setElementHovered] = useState<boolean>(false)
-  const [axisHandleHovered, setAxisHandleHovered] = useState<Axis | null>(null)
+  const [rowAxisHandleHovererd, setRowAxisHandleHovered] = useState<boolean>(false)
+  const [columnAxisHandleHovererd, setColumnAxisHandleHovered] = useState<boolean>(false)
 
   const [rowBackgroundShown, setRowBackgroundShown] = React.useState<boolean>(false)
   const [columnBackgroundShown, setColumnBackgroundShown] = React.useState<boolean>(false)
@@ -65,16 +69,15 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
     setColumnBackgroundShown,
   )
 
-  const handlerHoverStart = React.useCallback(
-    (axis: Axis) => {
-      setAxisHandleHovered(axis)
-    },
-    [setAxisHandleHovered],
+  const [rowAxisHandleHoverStart, rowAxisHandleHoverEnd] = useHoverWithDelay(
+    GapHandlerBackgroundDelay,
+    setRowAxisHandleHovered,
   )
 
-  const handlerHoverEnd = React.useCallback(() => {
-    setAxisHandleHovered(null)
-  }, [setAxisHandleHovered])
+  const [columnAxisHandleHoverStart, columnAxisHandleHoverEnd] = useHoverWithDelay(
+    GapHandlerBackgroundDelay,
+    setColumnAxisHandleHovered,
+  )
 
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
   React.useEffect(() => {
@@ -192,11 +195,11 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
                 {...gapControlProps}
                 key={gapId}
                 onMouseDown={rowMouseDownHandler}
-                hoverStart={rowControlHoverStart}
-                hoverEnd={rowControlHoverEnd}
-                handlerHoverStart={handlerHoverStart}
-                handlerHoverEnd={handlerHoverEnd}
-                backgroundShown={rowBackgroundShown || axisHandleHovered === 'row'}
+                gapHoverStart={rowControlHoverStart}
+                gapHoverEnd={rowControlHoverEnd}
+                handlerHoverStart={rowAxisHandleHoverStart}
+                handlerHoverEnd={rowAxisHandleHoverEnd}
+                backgroundShown={rowBackgroundShown || rowAxisHandleHovererd}
               />
             )
           }
@@ -205,11 +208,11 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
               {...gapControlProps}
               key={gapId}
               onMouseDown={columnMouseDownHandler}
-              hoverStart={columnControlHoverStart}
-              hoverEnd={columnControlHoverEnd}
-              handlerHoverStart={handlerHoverStart}
-              handlerHoverEnd={handlerHoverEnd}
-              backgroundShown={columnBackgroundShown || axisHandleHovered === 'column'}
+              gapHoverStart={columnControlHoverStart}
+              gapHoverEnd={columnControlHoverEnd}
+              handlerHoverStart={columnAxisHandleHoverStart}
+              handlerHoverEnd={columnAxisHandleHoverEnd}
+              backgroundShown={columnBackgroundShown || columnAxisHandleHovererd}
             />
           )
         })}
@@ -244,10 +247,10 @@ const gapControlSizeConstants = (
 
 interface GridGapControlSegmentProps {
   onMouseDown: React.MouseEventHandler
-  hoverStart: React.MouseEventHandler
-  hoverEnd: React.MouseEventHandler
-  handlerHoverStart: (axis: Axis) => void
-  handlerHoverEnd: (axis: Axis) => void
+  gapHoverStart: React.MouseEventHandler
+  gapHoverEnd: React.MouseEventHandler
+  handlerHoverStart: React.MouseEventHandler
+  handlerHoverEnd: React.MouseEventHandler
   bounds: CanvasRectangle
   axis: Axis
   gapValue: CSSNumber
@@ -267,8 +270,8 @@ interface GridGapControlSegmentProps {
 
 const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
   const {
-    hoverStart,
-    hoverEnd,
+    gapHoverStart,
+    gapHoverEnd,
     handlerHoverStart,
     handlerHoverEnd,
     bounds,
@@ -288,29 +291,29 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
   const { dragBorderWidth } = gapControlSizeConstants(DefaultGapControlSizeConstants, scale)
 
   const handlerHoverStartInner = React.useCallback(
-    (indicatorIndex: number) => {
+    (e: React.MouseEvent, indicatorIndex: number) => {
       setIndicatorShown(indicatorIndex)
-      handlerHoverStart(axis)
+      handlerHoverStart(e)
     },
-    [axis, handlerHoverStart],
+    [handlerHoverStart],
   )
 
   const onGapHover = React.useCallback(
     (e: React.MouseEvent) => {
       setGapIsHovered(true)
-      hoverStart(e)
+      gapHoverStart(e)
     },
-    [hoverStart],
+    [gapHoverStart],
   )
 
   const handlerHoverEndInner = React.useCallback(
     (e: React.MouseEvent) => {
       setGapIsHovered(false)
-      hoverEnd(e)
+      gapHoverEnd(e)
       setIndicatorShown(null)
-      handlerHoverEnd(axis)
+      handlerHoverEnd(e)
     },
-    [axis, handlerHoverEnd, hoverEnd],
+    [handlerHoverEnd, gapHoverEnd],
   )
 
   const shouldShowBackground = !isDragging && backgroundShown
@@ -377,7 +380,7 @@ type GridGapHandlerProps = {
   axis: Axis
   onMouseDown: React.MouseEventHandler
   isDragging: boolean
-  handlerHoverStartInner: (index: number) => void
+  handlerHoverStartInner: (e: React.MouseEvent, index: number) => void
   indicatorShown: number | null
   elementHovered: boolean
   gapIsHovered: boolean
@@ -411,9 +414,12 @@ function GridGapHandler({
   }
   const handleOpacity = gapIsHovered ? 1 : 0.3
 
-  const handlerHoverStart = React.useCallback(() => {
-    handlerHoverStartInner(index)
-  }, [handlerHoverStartInner, index])
+  const handlerHoverStart = React.useCallback(
+    (e: React.MouseEvent) => {
+      handlerHoverStartInner(e, index)
+    },
+    [handlerHoverStartInner, index],
+  )
 
   const rowGapStyles =
     axis === 'row'
