@@ -132,19 +132,14 @@ export function runGridRearrangeMove(
     canvasOffset,
   )
 
-  const newTargetCellData = getTargetCell(
-    customState.targetCellData?.gridCellCoordinates ?? null,
-    duplicating,
-    mouseWindowPoint,
-  )
+  const targetCellData =
+    getTargetCell(
+      customState.targetCellData?.gridCellCoordinates ?? null,
+      duplicating,
+      mouseWindowPoint,
+    ) ?? customState.targetCellData
 
-  const targetCellUnderMouse = newTargetCellData?.gridCellCoordinates ?? null
-
-  // if there's no cell target under the mouse, try using the last known cell
-  const newTargetCell =
-    targetCellUnderMouse ?? customState.targetCellData?.gridCellCoordinates ?? null
-
-  if (newTargetCell == null) {
+  if (targetCellData == null) {
     return {
       commands: [],
       targetCell: null,
@@ -154,12 +149,14 @@ export function runGridRearrangeMove(
     }
   }
 
+  const targetCellUnderMouse = targetCellData?.gridCellCoordinates ?? null
+
   const absoluteMoveCommands =
-    newTargetCellData == null
+    targetCellData == null
       ? []
       : gridChildAbsoluteMoveCommands(
           MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
-          newTargetCellData.cellWindowRectangle,
+          targetCellData.cellWindowRectangle,
           interactionData,
           { scale: canvasScale, canvasOffset: canvasOffset },
         )
@@ -194,21 +191,21 @@ export function runGridRearrangeMove(
 
   const gridTemplate = containerMetadata.specialSizeMeasurements.containerGridProperties
 
-  const cellGridProperties = getElementGridProperties(originalElementMetadata, newTargetCell)
+  const cellGridProperties = getElementGridProperties(originalElementMetadata, targetCellUnderMouse)
 
   // calculate the difference between the cell the mouse started the interaction from, and the "root"
   // cell of the element, meaning the top-left-most cell the element occupies.
-  const draggingFromCell = customState.draggingFromCell ?? newTargetCell
+  const draggingFromCell = customState.draggingFromCell ?? targetCellUnderMouse
   const rootCell =
     customState.originalRootCell ??
     gridCellCoordinates(cellGridProperties.row, cellGridProperties.column)
   const coordsDiff = getCellCoordsDelta(draggingFromCell, rootCell)
 
   // get the new adjusted row
-  const row = getCoordBounds(newTargetCell, 'row', cellGridProperties.width, coordsDiff.row)
+  const row = getCoordBounds(targetCellUnderMouse, 'row', cellGridProperties.width, coordsDiff.row)
   // get the new adjusted column
   const column = getCoordBounds(
-    newTargetCell,
+    targetCellUnderMouse,
     'column',
     cellGridProperties.height,
     coordsDiff.column,
@@ -225,7 +222,7 @@ export function runGridRearrangeMove(
 
   return {
     commands: [...gridCellMoveCommands, ...absoluteMoveCommands],
-    targetCell: newTargetCellData ?? customState.targetCellData,
+    targetCell: targetCellData ?? customState.targetCellData,
     originalRootCell: rootCell,
     draggingFromCell: draggingFromCell,
     targetRootCell: targetRootCell,
