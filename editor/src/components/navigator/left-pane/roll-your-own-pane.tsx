@@ -44,7 +44,7 @@ const defaultRollYourOwnFeatures: RollYourOwnFeatures = {
     activeGridBackground: colorTheme.primary10.value,
     dotgridColor: '#0099ffaa',
     inactiveGridColor: '#00000033',
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
   },
 }
 
