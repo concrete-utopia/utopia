@@ -134,64 +134,62 @@ function collectMetadataForPaths({
     elementCanvasRectangleCache,
   )
 
-  pathsToCollect.forEach((staticPath) => {
-    const dynamicPaths = [
-      ...spyPaths.filter((spyPath) =>
-        EP.pathsEqual(EP.makeLastPartOfPathStatic(EP.fromString(spyPath)), staticPath),
-      ),
-    ]
-    const pathsFromMetadataNotInSpyPaths = Object.keys(metadataToUpdate_MUTATE).filter(
-      (metadataPath) => !spyPaths.includes(metadataPath),
+  const dynamicPathsToCollect = pathsToCollect.flatMap((staticPath) => {
+    return spyPaths.filter((spyPath) =>
+      EP.pathsEqual(EP.makeLastPartOfPathStatic(EP.fromString(spyPath)), staticPath),
+    )
+  })
+
+  const allPathsToCheck = new Set([
+    ...Object.keys(metadataToUpdate_MUTATE),
+    ...dynamicPathsToCollect,
+  ])
+
+  allPathsToCheck.forEach((pathString) => {
+    const path = EP.fromString(pathString)
+    const domMetadata = collectMetadataForElementPath(
+      path,
+      validPaths,
+      selectedViews,
+      scale,
+      containerRect,
+      elementCanvasRectangleCache,
     )
 
-    const allPathsToCheck = [...dynamicPaths, ...pathsFromMetadataNotInSpyPaths]
+    const spyMetadata = spyCollector.current.spyValues.metadata[EP.toString(path)]
+    if (spyMetadata == null && domMetadata == null) {
+      delete metadataToUpdate_MUTATE[EP.toString(path)]
+      return
+    }
 
-    allPathsToCheck.forEach((pathString) => {
-      const path = EP.fromString(pathString)
-      const domMetadata = collectMetadataForElementPath(
-        path,
-        validPaths,
-        selectedViews,
-        scale,
-        containerRect,
-        elementCanvasRectangleCache,
-      )
+    if (spyMetadata == null) {
+      // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
+      return
+    }
 
-      const spyMetadata = spyCollector.current.spyValues.metadata[EP.toString(path)]
-      if (spyMetadata == null && domMetadata == null) {
-        delete metadataToUpdate_MUTATE[EP.toString(path)]
-        return
+    if (domMetadata == null) {
+      metadataToUpdate_MUTATE[EP.toString(path)] = {
+        ...spyMetadata,
       }
+      return
+    }
 
-      if (spyMetadata == null) {
-        // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
-        return
-      }
+    let jsxElement = alternativeEither(spyMetadata.element, domMetadata.element)
 
-      if (domMetadata == null) {
-        metadataToUpdate_MUTATE[EP.toString(path)] = {
-          ...spyMetadata,
-        }
-        return
-      }
-
-      let jsxElement = alternativeEither(spyMetadata.element, domMetadata.element)
-
-      // TODO avoid temporary object creation
-      const elementInstanceMetadata: ElementInstanceMetadata = {
-        ...domMetadata,
-        element: jsxElement,
-        elementPath: spyMetadata.elementPath,
-        componentInstance: spyMetadata.componentInstance,
-        isEmotionOrStyledComponent: spyMetadata.isEmotionOrStyledComponent,
-        label: spyMetadata.label,
-        importInfo: spyMetadata.importInfo,
-        assignedToProp: spyMetadata.assignedToProp,
-        conditionValue: spyMetadata.conditionValue,
-        earlyReturn: spyMetadata.earlyReturn,
-      }
-      metadataToUpdate_MUTATE[EP.toString(spyMetadata.elementPath)] = elementInstanceMetadata
-    })
+    // TODO avoid temporary object creation
+    const elementInstanceMetadata: ElementInstanceMetadata = {
+      ...domMetadata,
+      element: jsxElement,
+      elementPath: spyMetadata.elementPath,
+      componentInstance: spyMetadata.componentInstance,
+      isEmotionOrStyledComponent: spyMetadata.isEmotionOrStyledComponent,
+      label: spyMetadata.label,
+      importInfo: spyMetadata.importInfo,
+      assignedToProp: spyMetadata.assignedToProp,
+      conditionValue: spyMetadata.conditionValue,
+      earlyReturn: spyMetadata.earlyReturn,
+    }
+    metadataToUpdate_MUTATE[EP.toString(spyMetadata.elementPath)] = elementInstanceMetadata
   })
 
   const finalMetadata = [
