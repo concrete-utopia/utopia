@@ -479,6 +479,12 @@ function gridChildAbsoluteMoveCommands(
   )
 
   return [
+    deleteProperties('always', targetMetadata.elementPath, [
+      PP.create('style', 'top'),
+      PP.create('style', 'left'),
+      PP.create('style', 'right'),
+      PP.create('style', 'bottom'),
+    ]),
     setCssLengthProperty(
       'always',
       targetMetadata.elementPath,
