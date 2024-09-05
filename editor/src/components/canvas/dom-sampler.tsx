@@ -79,37 +79,25 @@ export function runDomSampler(options: {
     }
   }
 
-  let result: { metadata: ElementInstanceMetadataMap; tree: ElementPathTrees }
-  if (elementsToCollect == 'rerender-all-elements') {
-    result = collectMetadataForPaths({
-      metadataToUpdate_MUTATE: {},
-      canvasRootContainer: canvasRootContainer,
-      pathsToCollect: validPaths,
-      validPaths: validPaths,
-      scale: options.scale,
-      selectedViews: options.selectedViews,
-      spyCollector: options.spyCollector,
-      spyPaths: spyPaths,
-      elementCanvasRectangleCache: elementCanvasRectangleCache,
-    })
-  } else {
-    result = collectMetadataForPaths({
-      metadataToUpdate_MUTATE: { ...options.metadataToUpdate }, // shallow cloning this object so we can mutate it
-      canvasRootContainer: canvasRootContainer,
-      pathsToCollect: validPaths.filter((vp) =>
-        elementsToCollect.some((e) => {
-          const staticElement = EP.makeLastPartOfPathStatic(e)
-          return EP.pathsEqual(staticElement, vp) || EP.isParentOf(staticElement, vp)
-        }),
-      ),
-      validPaths: validPaths,
-      scale: options.scale,
-      selectedViews: options.selectedViews,
-      spyCollector: options.spyCollector,
-      spyPaths: spyPaths,
-      elementCanvasRectangleCache: elementCanvasRectangleCache,
-    })
-  }
+  const result = collectMetadataForPaths({
+    metadataToUpdate_MUTATE: { ...options.metadataToUpdate }, // shallow cloning this object so we can mutate it
+    canvasRootContainer: canvasRootContainer,
+    pathsToCollect: validPaths,
+    validPaths:
+      elementsToCollect == 'rerender-all-elements'
+        ? validPaths
+        : validPaths.filter((vp) =>
+            elementsToCollect.some((e) => {
+              const staticElement = EP.makeLastPartOfPathStatic(e)
+              return EP.pathsEqual(staticElement, vp) || EP.isParentOf(staticElement, vp)
+            }),
+          ),
+    scale: options.scale,
+    selectedViews: options.selectedViews,
+    spyCollector: options.spyCollector,
+    spyPaths: spyPaths,
+    elementCanvasRectangleCache: elementCanvasRectangleCache,
+  })
 
   return result
 }
