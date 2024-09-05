@@ -106,7 +106,7 @@ export function gridRearrangeResizeKeyboardStrategy(
       )
       let gridRowStart: GridPositionValue = gridPositionValue(initialCellBounds.row)
       let gridRowEnd: GridPositionValue = gridPositionValue(
-        initialCellBounds.row + initialCellBounds.width,
+        initialCellBounds.row + initialCellBounds.height,
       )
 
       const cols = gridTemplate.gridTemplateColumns.dimensions.length
