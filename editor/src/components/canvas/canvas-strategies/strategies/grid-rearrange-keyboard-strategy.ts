@@ -1,10 +1,7 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { GridPositionValue } from '../../../../core/shared/element-template'
-import {
-  gridPositionValue,
-  type GridElementProperties,
-} from '../../../../core/shared/element-template'
+import { gridPositionValue } from '../../../../core/shared/element-template'
 import { GridControls, GridControlsKey } from '../../controls/grid-controls'
 import type {
   CanvasStrategy,
@@ -115,38 +112,39 @@ export function gridRearrangeResizeKeyboardStrategy(
       const cols = gridTemplate.gridTemplateColumns.dimensions.length
       const rows = gridTemplate.gridTemplateRows.dimensions.length
 
-      for (const key of interactionData.keyStates) {
-        for (const press of key.keysPressed) {
-          const horizontal = press === 'left' ? -1 : press === 'right' ? 1 : null
-          if (horizontal != null) {
-            const colsResult = processPress(horizontal, key.modifiers.shift, cols, {
-              start: gridColumnStart,
-              end: gridColumnEnd,
-            })
-            gridColumnStart = colsResult.start
-            gridColumnEnd = colsResult.end
+      for (const keyState of interactionData.keyStates) {
+        const resize = keyState.modifiers.shift
+        for (const key of keyState.keysPressed) {
+          // column changes
+          const horizDelta = key === 'left' ? -1 : key === 'right' ? 1 : null
+          if (horizDelta != null) {
+            const bounds = { start: gridColumnStart, end: gridColumnEnd }
+            const { start, end } = processPress(horizDelta, resize, cols, bounds)
+
+            gridColumnStart = start
+            gridColumnEnd = end
           }
-          const vertical = press === 'up' ? -1 : press === 'down' ? 1 : null
-          if (vertical != null) {
-            const rowsResult = processPress(vertical, key.modifiers.shift, rows, {
-              start: gridRowStart,
-              end: gridRowEnd,
-            })
-            gridRowStart = rowsResult.start
-            gridRowEnd = rowsResult.end
+
+          // row changes
+          const vertDelta = key === 'up' ? -1 : key === 'down' ? 1 : null
+          if (vertDelta != null) {
+            const bounds = { start: gridRowStart, end: gridRowEnd }
+            const { start, end } = processPress(vertDelta, resize, rows, bounds)
+
+            gridRowStart = start
+            gridRowEnd = end
           }
         }
       }
 
-      let gridProps: Partial<GridElementProperties> = {
-        ...cell.specialSizeMeasurements.elementGridProperties,
-      }
-      gridProps.gridColumnStart = gridColumnStart
-      gridProps.gridColumnEnd = gridColumnEnd
-      gridProps.gridRowStart = gridRowStart
-      gridProps.gridRowEnd = gridRowEnd
-
-      return strategyApplicationResult(setGridPropsCommands(target, gridTemplate, gridProps))
+      return strategyApplicationResult(
+        setGridPropsCommands(target, gridTemplate, {
+          gridColumnStart,
+          gridColumnEnd,
+          gridRowStart,
+          gridRowEnd,
+        }),
+      )
     },
   }
 }
@@ -166,11 +164,12 @@ function fitness(interactionSession: InteractionSession | null): number {
   return matches ? 1 : 0
 }
 
+// process a keypress event and return the updated start/end grid cell bounds
 function processPress(
   amount: 1 | -1,
   resize: boolean,
   cellsCount: number,
-  initial: {
+  initialBounds: {
     start: GridPositionValue
     end: GridPositionValue
   },
@@ -178,21 +177,19 @@ function processPress(
   start: GridPositionValue
   end: GridPositionValue
 } {
-  let result = { ...initial }
+  let newBounds = { ...initialBounds }
+
+  const start = newBounds.start.numericalPosition ?? 1
+  const end = newBounds.end.numericalPosition ?? 1
 
   if (resize) {
-    const end = result.end.numericalPosition ?? 1
-    result.end = gridPositionValue(
-      Math.max((result.start.numericalPosition ?? 1) + 1, Math.min(cellsCount + 1, end + amount)),
-    )
+    newBounds.end = gridPositionValue(Math.max(start + 1, Math.min(cellsCount + 1, end + amount)))
   } else {
-    const start = result.start.numericalPosition ?? 1
-    const end = result.end.numericalPosition ?? 1
-    const width = end - start
-    const newStart = Math.min(cellsCount - width + 1, Math.max(1, start + amount))
-    result.start = gridPositionValue(newStart)
-    result.end = gridPositionValue(newStart + width)
+    const size = end - start
+    const newStart = Math.min(cellsCount - size + 1, Math.max(1, start + amount))
+    newBounds.start = gridPositionValue(newStart)
+    newBounds.end = gridPositionValue(newStart + size)
   }
 
-  return result
+  return newBounds
 }
