@@ -21,14 +21,13 @@ import * as PP from '../../../../core/shared/property-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { setProperty } from '../../commands/set-property-command'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
-import type { DragInteractionData, KeyState } from '../interaction-state'
+import type { DragInteractionData } from '../interaction-state'
 import type { GridCustomStrategyState } from '../canvas-strategy-types'
 import type { GridCellCoordinates } from '../../controls/grid-controls'
 import { gridCellCoordinates } from '../../controls/grid-controls'
 import * as EP from '../../../../core/shared/element-path'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { isCSSKeyword } from '../../../inspector/common/css-utils'
-import { assertNever } from '../../../../core/shared/utils'
 
 export function getGridCellUnderMouse(mousePoint: WindowPoint) {
   return getGridCellAtPoint(mousePoint, false)
@@ -448,60 +447,9 @@ export function getGridCellBoundsFromCanvas(
   const cellHeight = cellEndCoords.row - cellOriginCoords.row + 1
 
   return {
-    originCell: cellOriginCoords,
-    endCell: cellEndCoords,
+    column: cellOriginCoords.column,
+    row: cellOriginCoords.row,
     width: cellWidth,
     height: cellHeight,
   }
-}
-
-export function getGridCellUpdatedResizeRearrangeBounds(
-  start: number,
-  cellsCount: number,
-  size: number,
-): {
-  from: number
-  to: number
-} {
-  const lowerLimit = 1
-  const upperLimit = cellsCount + 1
-
-  let from = start
-  let to = start + size
-
-  if (to > upperLimit) {
-    to = upperLimit
-    from = to - size
-  }
-  if (from < lowerLimit) {
-    from = lowerLimit
-    to = from + size
-  }
-
-  return {
-    from: from,
-    to: to,
-  }
-}
-
-export function getGridCellRearrangeResizeKeypressDelta(
-  keyStates: KeyState[],
-  direction: 'vertical' | 'horizontal',
-): number {
-  return keyStates.reduce((total, cur) => {
-    let presses = 0
-    cur.keysPressed.forEach((key) => {
-      switch (direction) {
-        case 'horizontal':
-          presses += key === 'left' ? -1 : key === 'right' ? 1 : 0
-          break
-        case 'vertical':
-          presses += key === 'up' ? -1 : key === 'down' ? 1 : 0
-          break
-        default:
-          assertNever(direction)
-      }
-    })
-    return total + presses
-  }, 0)
 }

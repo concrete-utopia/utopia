@@ -1,30 +1,34 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
+import type { GridPositionValue } from '../../../../core/shared/element-template'
 import {
   gridPositionValue,
   type GridElementProperties,
 } from '../../../../core/shared/element-template'
 import { GridControls, GridControlsKey } from '../../controls/grid-controls'
-import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
+import type {
+  CanvasStrategy,
+  CustomStrategyState,
+  InteractionCanvasState,
+} from '../canvas-strategy-types'
 import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import {
-  getGridCellBoundsFromCanvas,
-  getGridCellRearrangeResizeKeypressDelta,
-  getGridCellUpdatedResizeRearrangeBounds,
-  setGridPropsCommands,
-} from './grid-helpers'
+import { getGridCellBoundsFromCanvas, setGridPropsCommands } from './grid-helpers'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 
-export function gridRearrangeKeyboardStrategy(
+export function gridRearrangeResizeKeyboardStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
+  customState: CustomStrategyState,
 ): CanvasStrategy | null {
-  if (interactionSession?.activeControl.type !== 'KEYBOARD_CATCHER_CONTROL') {
+  if (
+    interactionSession?.activeControl.type !== 'KEYBOARD_CATCHER_CONTROL' ||
+    interactionSession.interactionData.type !== 'KEYBOARD'
+  ) {
     return null
   }
 
@@ -52,15 +56,26 @@ export function gridRearrangeKeyboardStrategy(
   }
   const gridTemplate = grid.specialSizeMeasurements.containerGridProperties
 
-  const cellBounds = getGridCellBoundsFromCanvas(cell, canvasState.scale, canvasState.canvasOffset)
-  if (cellBounds == null) {
+  const initialCellBounds = getGridCellBoundsFromCanvas(
+    cell,
+    canvasState.scale,
+    canvasState.canvasOffset,
+  )
+  if (initialCellBounds == null) {
     return null
   }
 
+  const resizing =
+    Array.from(interactionSession.interactionData.keyStates).at(
+      interactionSession.interactionData.keyStates.length - 1,
+    )?.modifiers.shift ?? false
+
+  const label = resizing ? 'Grid resize' : 'Grid rearrange'
+
   return {
-    id: 'GRID_KEYBOARD_REARRANGE',
-    name: 'Grid rearrange',
-    descriptiveLabel: 'Grid rearrange',
+    id: 'GRID_KEYBOARD_REARRANGE_RESIZE',
+    name: label,
+    descriptiveLabel: label,
     icon: {
       category: 'modalities',
       type: 'reorder-large',
@@ -76,11 +91,7 @@ export function gridRearrangeKeyboardStrategy(
     ],
     fitness: fitness(interactionSession),
     apply: () => {
-      if (
-        interactionSession == null ||
-        interactionSession.interactionData.type !== 'KEYBOARD' ||
-        interactionSession.interactionData.keyStates.some((s) => s.modifiers.shift)
-      ) {
+      if (interactionSession == null || interactionSession.interactionData.type !== 'KEYBOARD') {
         return emptyStrategyApplicationResult
       }
       if (
@@ -92,38 +103,48 @@ export function gridRearrangeKeyboardStrategy(
 
       const interactionData = interactionSession.interactionData
 
-      const horizontalDelta = getGridCellRearrangeResizeKeypressDelta(
-        interactionData.keyStates,
-        'horizontal',
+      let gridColumnStart: GridPositionValue = gridPositionValue(initialCellBounds.column)
+      let gridColumnEnd: GridPositionValue = gridPositionValue(
+        initialCellBounds.column + initialCellBounds.width,
       )
-      const verticalDelta = getGridCellRearrangeResizeKeypressDelta(
-        interactionData.keyStates,
-        'vertical',
+      let gridRowStart: GridPositionValue = gridPositionValue(initialCellBounds.row)
+      let gridRowEnd: GridPositionValue = gridPositionValue(
+        initialCellBounds.row + initialCellBounds.width,
       )
+
+      const cols = gridTemplate.gridTemplateColumns.dimensions.length
+      const rows = gridTemplate.gridTemplateRows.dimensions.length
+
+      for (const key of interactionData.keyStates) {
+        for (const press of key.keysPressed) {
+          const horizontal = press === 'left' ? -1 : press === 'right' ? 1 : null
+          if (horizontal != null) {
+            const colsResult = processPress(horizontal, key.modifiers.shift, cols, {
+              start: gridColumnStart,
+              end: gridColumnEnd,
+            })
+            gridColumnStart = colsResult.start
+            gridColumnEnd = colsResult.end
+          }
+          const vertical = press === 'up' ? -1 : press === 'down' ? 1 : null
+          if (vertical != null) {
+            const rowsResult = processPress(vertical, key.modifiers.shift, rows, {
+              start: gridRowStart,
+              end: gridRowEnd,
+            })
+            gridRowStart = rowsResult.start
+            gridRowEnd = rowsResult.end
+          }
+        }
+      }
 
       let gridProps: Partial<GridElementProperties> = {
         ...cell.specialSizeMeasurements.elementGridProperties,
       }
-
-      if (horizontalDelta !== 0) {
-        const { from, to } = getGridCellUpdatedResizeRearrangeBounds(
-          cellBounds.originCell.column + horizontalDelta,
-          gridTemplate.gridTemplateColumns.dimensions.length,
-          cellBounds.width,
-        )
-        gridProps.gridColumnStart = gridPositionValue(from)
-        gridProps.gridColumnEnd = gridPositionValue(to)
-      }
-
-      if (verticalDelta !== 0) {
-        const { from, to } = getGridCellUpdatedResizeRearrangeBounds(
-          cellBounds.originCell.row + verticalDelta,
-          gridTemplate.gridTemplateRows.dimensions.length,
-          cellBounds.height,
-        )
-        gridProps.gridRowStart = gridPositionValue(from)
-        gridProps.gridRowEnd = gridPositionValue(to)
-      }
+      gridProps.gridColumnStart = gridColumnStart
+      gridProps.gridColumnEnd = gridColumnEnd
+      gridProps.gridRowStart = gridRowStart
+      gridProps.gridRowEnd = gridRowEnd
 
       return strategyApplicationResult(setGridPropsCommands(target, gridTemplate, gridProps))
     },
@@ -131,11 +152,7 @@ export function gridRearrangeKeyboardStrategy(
 }
 
 function fitness(interactionSession: InteractionSession | null): number {
-  if (
-    interactionSession == null ||
-    interactionSession.interactionData.type !== 'KEYBOARD' ||
-    interactionSession.interactionData.keyStates.some((s) => s.modifiers.shift)
-  ) {
+  if (interactionSession == null || interactionSession.interactionData.type !== 'KEYBOARD') {
     return 0
   }
 
@@ -147,4 +164,35 @@ function fitness(interactionSession: InteractionSession | null): number {
   )
 
   return matches ? 1 : 0
+}
+
+function processPress(
+  amount: 1 | -1,
+  resize: boolean,
+  cellsCount: number,
+  initial: {
+    start: GridPositionValue
+    end: GridPositionValue
+  },
+): {
+  start: GridPositionValue
+  end: GridPositionValue
+} {
+  let result = { ...initial }
+
+  if (resize) {
+    const end = result.end.numericalPosition ?? 1
+    result.end = gridPositionValue(
+      Math.max((result.start.numericalPosition ?? 1) + 1, Math.min(cellsCount + 1, end + amount)),
+    )
+  } else {
+    const start = result.start.numericalPosition ?? 1
+    const end = result.end.numericalPosition ?? 1
+    const width = end - start
+    const newStart = Math.min(cellsCount - width + 1, Math.max(1, start + amount))
+    result.start = gridPositionValue(newStart)
+    result.end = gridPositionValue(newStart + width)
+  }
+
+  return result
 }
