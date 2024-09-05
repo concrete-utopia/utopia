@@ -21,6 +21,7 @@ import {
   domElementMetadata,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementCanvasRectangleCache } from '../../core/shared/dom-utils'
 import {
   getCanvasRectangleFromElement,
   getDOMAttribute,
@@ -430,6 +431,7 @@ function collectMetadataForElement(
   closestOffsetParentPath: ElementPath | null,
   scale: number,
   containerRectLazy: CanvasPoint | (() => CanvasPoint),
+  elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): {
   tagName: string
   globalFrame: CanvasRectangle
@@ -444,6 +446,7 @@ function collectMetadataForElement(
     containerRectLazy,
     'without-text-content',
     'nearest-half',
+    elementCanvasRectangleCache,
   )
   const nonRoundedGlobalFrame = globalFrameForElement(
     element,
@@ -451,6 +454,7 @@ function collectMetadataForElement(
     containerRectLazy,
     'without-text-content',
     'no-rounding',
+    elementCanvasRectangleCache,
   )
 
   const textContentsMaybe = element.children.length === 0 ? element.textContent : null
@@ -460,6 +464,7 @@ function collectMetadataForElement(
     closestOffsetParentPath,
     scale,
     containerRectLazy,
+    elementCanvasRectangleCache,
   )
 
   return {
@@ -476,6 +481,7 @@ export function collectDomElementMetadataForElement(
   scale: number,
   containerRectX: number,
   containerRectY: number,
+  elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): DomElementMetadata {
   const closestOffsetParentPath: ElementPath | null = findNearestElementWithPath(
     element.offsetParent,
@@ -492,6 +498,7 @@ export function collectDomElementMetadataForElement(
     closestOffsetParentPath,
     scale,
     canvasPoint({ x: containerRectX, y: containerRectY }),
+    elementCanvasRectangleCache,
   )
 
   return domElementMetadata(
@@ -615,6 +622,7 @@ function getSpecialMeasurements(
   closestOffsetParentPath: ElementPath | null,
   scale: number,
   containerRectLazy: CanvasPoint | (() => CanvasPoint),
+  elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): SpecialSizeMeasurements {
   const elementStyle = window.getComputedStyle(element)
   const layoutSystemForChildren = elementLayoutSystem(elementStyle)
@@ -633,6 +641,7 @@ function getSpecialMeasurements(
           containerRectLazy,
           'without-text-content',
           'nearest-half',
+          elementCanvasRectangleCache,
         )
       : null
 
@@ -644,6 +653,7 @@ function getSpecialMeasurements(
           containerRectLazy,
           'without-text-content',
           'nearest-half',
+          elementCanvasRectangleCache,
         )
       : null
 
@@ -729,6 +739,7 @@ function getSpecialMeasurements(
     containerRectLazy,
     'without-text-content',
     'nearest-half',
+    elementCanvasRectangleCache,
   )
 
   const globalFrameWithTextContent = globalFrameForElement(
@@ -737,6 +748,7 @@ function getSpecialMeasurements(
     containerRectLazy,
     'with-text-content',
     'nearest-half',
+    elementCanvasRectangleCache,
   )
 
   const globalContentBoxForChildren = canvasRectangle({
@@ -793,7 +805,13 @@ function getSpecialMeasurements(
 
   const textBounds = elementContainsOnlyText(element)
     ? stretchRect(
-        getCanvasRectangleFromElement(element, scale, 'only-text-content', 'nearest-half'),
+        getCanvasRectangleFromElement(
+          element,
+          scale,
+          'only-text-content',
+          'nearest-half',
+          elementCanvasRectangleCache,
+        ),
         {
           w:
             maybeValueFromComputedStyle(elementStyle.paddingLeft) +
@@ -908,8 +926,15 @@ function globalFrameForElement(
   containerRectLazy: CanvasPoint | (() => CanvasPoint),
   withContent: 'without-text-content' | 'with-text-content',
   rounding: 'nearest-half' | 'no-rounding',
+  elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ) {
-  const elementRect = getCanvasRectangleFromElement(element, scale, withContent, rounding)
+  const elementRect = getCanvasRectangleFromElement(
+    element,
+    scale,
+    withContent,
+    rounding,
+    elementCanvasRectangleCache,
+  )
 
   return Utils.offsetRect(
     elementRect,

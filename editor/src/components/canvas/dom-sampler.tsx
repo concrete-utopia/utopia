@@ -10,6 +10,7 @@ import {
 } from '../../core/model/element-metadata-utils'
 import { UTOPIA_PATH_KEY, UTOPIA_VALID_PATHS } from '../../core/model/utopia-constants'
 import { allElemsEqual, mapDropNulls, pluck } from '../../core/shared/array-utils'
+import type { ElementCanvasRectangleCache } from '../../core/shared/dom-utils'
 import { getCanvasRectangleFromElement } from '../../core/shared/dom-utils'
 import { alternativeEither, left } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
@@ -50,6 +51,7 @@ export function runDomSampler(options: {
   metadataToUpdate: ElementInstanceMetadataMap
   spyCollector: UiJsxCanvasContextData
 }): { metadata: ElementInstanceMetadataMap; tree: ElementPathTrees } {
+  const elementCanvasRectangleCache: ElementCanvasRectangleCache = new Map()
   // we inject domWalkerAdditionalElementsToUpdate into ElementsToRerenderGLOBAL so that we can collect metadata for elements affected by Group resizing
   const elementsToCollect =
     options.elementsToFocusOn === 'rerender-all-elements'
@@ -88,6 +90,7 @@ export function runDomSampler(options: {
       selectedViews: options.selectedViews,
       spyCollector: options.spyCollector,
       spyPaths: spyPaths,
+      elementCanvasRectangleCache: elementCanvasRectangleCache,
     })
   } else {
     result = collectMetadataForPaths({
@@ -104,6 +107,7 @@ export function runDomSampler(options: {
       selectedViews: options.selectedViews,
       spyCollector: options.spyCollector,
       spyPaths: spyPaths,
+      elementCanvasRectangleCache: elementCanvasRectangleCache,
     })
   }
 
@@ -119,6 +123,7 @@ function collectMetadataForPaths({
   selectedViews,
   spyCollector,
   spyPaths,
+  elementCanvasRectangleCache,
 }: {
   canvasRootContainer: HTMLElement
   pathsToCollect: Array<ElementPath>
@@ -128,6 +133,7 @@ function collectMetadataForPaths({
   selectedViews: Array<ElementPath>
   spyCollector: UiJsxCanvasContextData
   spyPaths: Array<string>
+  elementCanvasRectangleCache: ElementCanvasRectangleCache
 }): {
   metadata: ElementInstanceMetadataMap
   tree: ElementPathTrees
@@ -137,6 +143,7 @@ function collectMetadataForPaths({
     scale,
     'without-text-content',
     'nearest-half',
+    elementCanvasRectangleCache,
   )
 
   pathsToCollect.forEach((staticPath) => {
@@ -152,6 +159,7 @@ function collectMetadataForPaths({
         selectedViews,
         scale,
         containerRect,
+        elementCanvasRectangleCache,
       )
 
       const spyMetadata = spyCollector.current.spyValues.metadata[EP.toString(path)]
@@ -203,6 +211,7 @@ function collectMetadataForElementPath(
   selectedViews: Array<ElementPath>,
   scale: number,
   containerRect: CanvasPoint,
+  elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): DomElementMetadata | null {
   if (EP.isStoryboardPath(path)) {
     return createFakeMetadataForCanvasRoot(path)
@@ -243,6 +252,7 @@ function collectMetadataForElementPath(
       selectedViews,
       scale,
       containerRect,
+      elementCanvasRectangleCache,
     )
   } else {
     // if there are multiple closestMatches that are the same depth, we want to return a synthetic metadata with a globalFrame that is the union of all the closestMatches
@@ -250,6 +260,7 @@ function collectMetadataForElementPath(
       closestMatches,
       scale,
       containerRect,
+      elementCanvasRectangleCache,
     )
   }
 }
@@ -261,6 +272,7 @@ function collectDomElementMetadataForSingleElement(
   selectedViews: Array<ElementPath>,
   scale: number,
   containerRect: CanvasPoint,
+  elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): DomElementMetadata {
   const pathsWithStrings = getPathWithStringsOnDomElement(foundElement)
   if (pathsWithStrings.length == 0) {
@@ -282,6 +294,7 @@ function collectDomElementMetadataForSingleElement(
     scale,
     containerRect.x, // passing this as two values so it can be used as cache key
     containerRect.y,
+    elementCanvasRectangleCache,
   )
 
   const metadata: DomElementMetadata = {
@@ -316,13 +329,20 @@ function createSyntheticDomElementMetadataForMultipleClosestMatches(
   closestMatches: Array<HTMLElement>,
   scale: number,
   containerRect: CanvasPoint,
+  elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): DomElementMetadata {
   const metadatas: Array<DomElementMetadata> = mapDropNulls((el) => {
     if (!(el instanceof HTMLElement)) {
       return null
     }
 
-    return collectDomElementMetadataForElement(el, scale, containerRect.x, containerRect.y)
+    return collectDomElementMetadataForElement(
+      el,
+      scale,
+      containerRect.x,
+      containerRect.y,
+      elementCanvasRectangleCache,
+    )
   }, closestMatches)
 
   const mergedGlobalFrame = boundingRectangleArray(

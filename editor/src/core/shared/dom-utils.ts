@@ -277,12 +277,33 @@ function getRoundingFn(rounding: 'nearest-half' | 'no-rounding') {
   }
 }
 
+export type ElementCanvasRectangleCache = Map<HTMLElement, { [key: string]: CanvasRectangle }>
+
 export function getCanvasRectangleFromElement(
   element: HTMLElement,
   canvasScale: number,
   withContent: 'without-text-content' | 'with-text-content' | 'only-text-content',
   rounding: 'nearest-half' | 'no-rounding',
+  elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): CanvasRectangle {
+  const cacheKey: string = `${canvasScale}-${withContent}-${rounding}`
+  const elementCacheValue = elementCanvasRectangleCache.get(element)
+  if (elementCacheValue != null) {
+    const cachedRectangle = elementCacheValue[cacheKey]
+    if (cachedRectangle != null) {
+      return cachedRectangle
+    }
+  }
+
+  function returnAddToCache(rect: CanvasRectangle): CanvasRectangle {
+    if (elementCacheValue == null) {
+      elementCanvasRectangleCache.set(element, { [cacheKey]: rect })
+    } else {
+      elementCacheValue[cacheKey] = rect
+    }
+    return rect
+  }
+
   const scale = 1 / canvasScale
 
   const roundingFn = getRoundingFn(rounding)
@@ -304,7 +325,7 @@ export function getCanvasRectangleFromElement(
     case 'without-text-content': {
       const boundingRect = element.getBoundingClientRect()
       const elementRect = domRectToScaledCanvasRectangle(boundingRect)
-      return elementRect
+      return returnAddToCache(elementRect)
     }
     case 'only-text-content':
     case 'with-text-content':
@@ -322,8 +343,8 @@ export function getCanvasRectangleFromElement(
       if (withContent === 'with-text-content') {
         rectangles.push(domRectToScaledCanvasRectangle(element.getBoundingClientRect()))
       }
-      return (
-        boundingRectangleArray(rectangles) ?? canvasRectangle({ x: 0, y: 0, width: 0, height: 0 })
+      return returnAddToCache(
+        boundingRectangleArray(rectangles) ?? canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
       )
     default:
       assertNever(withContent)
