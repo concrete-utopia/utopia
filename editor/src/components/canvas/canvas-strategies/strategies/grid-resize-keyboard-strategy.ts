@@ -16,7 +16,6 @@ import type { InteractionSession } from '../interaction-state'
 import {
   getGridCellBoundsFromCanvas,
   getGridCellRearrangeResizeKeypressDelta,
-  getGridCellUpdatedResizeRearrangeBounds,
   setGridPropsCommands,
 } from './grid-helpers'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
@@ -77,7 +76,11 @@ export function gridResizeKeyboardStrategy(
     ],
     fitness: fitness(interactionSession),
     apply: () => {
-      if (interactionSession == null || interactionSession.interactionData.type !== 'KEYBOARD') {
+      if (
+        interactionSession == null ||
+        interactionSession.interactionData.type !== 'KEYBOARD' ||
+        !interactionSession.interactionData.keyStates.some((k) => k.modifiers.shift)
+      ) {
         return emptyStrategyApplicationResult
       }
       if (
@@ -102,27 +105,16 @@ export function gridResizeKeyboardStrategy(
         ...cell.specialSizeMeasurements.elementGridProperties,
       }
 
-      const direction = Array.from(interactionData.keyStates[0].keysPressed).at(0)
-      if (direction == null) {
-        return emptyStrategyApplicationResult
-      }
-
       if (horizontalDelta !== 0) {
-        const { to } = getGridCellUpdatedResizeRearrangeBounds(
-          cellBounds.originCell.column + horizontalDelta,
-          gridTemplate.gridTemplateColumns.dimensions.length,
-          cellBounds.width,
+        const newWidth = cellBounds.endCell.column + horizontalDelta + 1
+        gridProps.gridColumnEnd = gridPositionValue(
+          Math.max(cellBounds.originCell.column, newWidth),
         )
-        gridProps.gridColumnEnd = gridPositionValue(Math.max(cellBounds.originCell.column, to))
       }
 
       if (verticalDelta !== 0) {
-        const { to } = getGridCellUpdatedResizeRearrangeBounds(
-          cellBounds.originCell.row + verticalDelta,
-          gridTemplate.gridTemplateRows.dimensions.length,
-          cellBounds.height,
-        )
-        gridProps.gridRowEnd = gridPositionValue(Math.max(cellBounds.originCell.row, to))
+        const newHeight = cellBounds.endCell.row + verticalDelta + 1
+        gridProps.gridRowEnd = gridPositionValue(Math.max(cellBounds.originCell.row, newHeight))
       }
 
       return strategyApplicationResult(setGridPropsCommands(target, gridTemplate, gridProps))
@@ -131,7 +123,11 @@ export function gridResizeKeyboardStrategy(
 }
 
 function fitness(interactionSession: InteractionSession | null): number {
-  if (interactionSession == null || interactionSession.interactionData.type !== 'KEYBOARD') {
+  if (
+    interactionSession == null ||
+    interactionSession.interactionData.type !== 'KEYBOARD' ||
+    !interactionSession.interactionData.keyStates.some((k) => k.modifiers.shift)
+  ) {
     return 0
   }
 

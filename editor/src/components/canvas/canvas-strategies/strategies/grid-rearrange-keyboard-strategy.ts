@@ -4,7 +4,6 @@ import {
   gridPositionValue,
   type GridElementProperties,
 } from '../../../../core/shared/element-template'
-import { emptyModifiers, Modifier } from '../../../../utils/modifiers'
 import { GridControls, GridControlsKey } from '../../controls/grid-controls'
 import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
@@ -132,16 +131,19 @@ export function gridRearrangeKeyboardStrategy(
 }
 
 function fitness(interactionSession: InteractionSession | null): number {
-  if (interactionSession == null || interactionSession.interactionData.type !== 'KEYBOARD') {
+  if (
+    interactionSession == null ||
+    interactionSession.interactionData.type !== 'KEYBOARD' ||
+    interactionSession.interactionData.keyStates.some((s) => s.modifiers.shift)
+  ) {
     return 0
   }
 
   const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
-  const matches = accumulatedPresses.some(
-    (accumulatedPress) =>
-      Array.from(accumulatedPress.keysPressed).some(
-        (key) => key === 'left' || key === 'right' || key === 'up' || key === 'down',
-      ) && Modifier.equal(accumulatedPress.modifiers, emptyModifiers),
+  const matches = accumulatedPresses.some((accumulatedPress) =>
+    Array.from(accumulatedPress.keysPressed).some(
+      (key) => key === 'left' || key === 'right' || key === 'up' || key === 'down',
+    ),
   )
 
   return matches ? 1 : 0
