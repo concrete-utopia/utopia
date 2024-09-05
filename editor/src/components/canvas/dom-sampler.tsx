@@ -135,11 +135,18 @@ function collectMetadataForPaths({
   )
 
   pathsToCollect.forEach((staticPath) => {
-    const dynamicPaths = spyPaths.filter((spyPath) =>
-      EP.pathsEqual(EP.makeLastPartOfPathStatic(EP.fromString(spyPath)), staticPath),
+    const dynamicPaths = [
+      ...spyPaths.filter((spyPath) =>
+        EP.pathsEqual(EP.makeLastPartOfPathStatic(EP.fromString(spyPath)), staticPath),
+      ),
+    ]
+    const pathsFromMetadataNotInSpyPaths = Object.keys(metadataToUpdate_MUTATE).filter(
+      (metadataPath) => !spyPaths.includes(metadataPath),
     )
 
-    dynamicPaths.forEach((pathString) => {
+    const allPathsToCheck = [...dynamicPaths, ...pathsFromMetadataNotInSpyPaths]
+
+    allPathsToCheck.forEach((pathString) => {
       const path = EP.fromString(pathString)
       const domMetadata = collectMetadataForElementPath(
         path,
@@ -151,6 +158,11 @@ function collectMetadataForPaths({
       )
 
       const spyMetadata = spyCollector.current.spyValues.metadata[EP.toString(path)]
+      if (spyMetadata == null && domMetadata == null) {
+        delete metadataToUpdate_MUTATE[EP.toString(path)]
+        return
+      }
+
       if (spyMetadata == null) {
         // if the element is missing from the spyMetadata, we bail out. this is the same behavior as the old reconstructJSXMetadata implementation
         return
