@@ -389,7 +389,13 @@ function rewriteBlockToCaptureEarlyReturns(source: string): () => {
           let identifiersToReturn: Array<string> = []
 
           function handleNodeAddingIdentifiers(nodeToProcess: BabelTypes.Node): void {
-            if (BabelTypes.isVariableDeclaration(nodeToProcess)) {
+            if (
+              BabelTypes.isExpressionStatement(nodeToProcess) &&
+              BabelTypes.isAssignmentExpression(nodeToProcess.expression) &&
+              BabelTypes.isIdentifier(nodeToProcess.expression.left)
+            ) {
+              identifiersToReturn.push(nodeToProcess.expression.left.name)
+            } else if (BabelTypes.isVariableDeclaration(nodeToProcess)) {
               for (const declaration of nodeToProcess.declarations) {
                 handleNodeAddingIdentifiers(declaration.id)
               }
