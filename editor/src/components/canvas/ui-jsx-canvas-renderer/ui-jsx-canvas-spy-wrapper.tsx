@@ -79,7 +79,7 @@ export function addFakeSpyEntry(
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
-      attributeMetadatada: emptyAttributeMetadata,
+      attributeMetadata: emptyAttributeMetadata,
       label: null,
       importInfo: foldEither(
         () => {
@@ -146,7 +146,7 @@ export function buildSpyWrappedElement(
       isEmotionOrStyledComponent: isEmotionComponent || isStyledComponent,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
       computedStyle: emptyComputedStyle,
-      attributeMetadatada: emptyAttributeMetadata,
+      attributeMetadata: emptyAttributeMetadata,
       label: null,
       importInfo: isJSXElement(jsx)
         ? importInfoFromImportDetails(jsx.name, imports, filePath)

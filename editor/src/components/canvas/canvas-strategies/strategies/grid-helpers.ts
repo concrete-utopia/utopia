@@ -10,8 +10,10 @@ import {
 } from '../../../../core/shared/element-template'
 import type { CanvasVector, WindowRectangle } from '../../../../core/shared/math-utils'
 import {
+  isInfinityRectangle,
   offsetPoint,
   rectContainsPoint,
+  windowPoint,
   windowRectangle,
   type WindowPoint,
 } from '../../../../core/shared/math-utils'
@@ -49,8 +51,8 @@ function isGridCellTargetId(id: string): boolean {
   return id.startsWith(gridCellTargetIdPrefix)
 }
 
-function getGridCellAtPoint(
-  windowPoint: WindowPoint,
+export function getGridCellAtPoint(
+  point: WindowPoint,
   duplicating: boolean,
 ): { id: string; coordinates: GridCellCoordinates; cellWindowRectangle: WindowRectangle } | null {
   function maybeRecursivelyFindCellAtPoint(
@@ -61,7 +63,7 @@ function getGridCellAtPoint(
       if (isGridCellTargetId(element.id)) {
         const domRect = element.getBoundingClientRect()
         const windowRect = windowRectangle(domRect)
-        if (rectContainsPoint(windowRect, windowPoint)) {
+        if (rectContainsPoint(windowRect, point)) {
           return { element: element, cellWindowRectangle: windowRect }
         }
       }
@@ -78,7 +80,7 @@ function getGridCellAtPoint(
   }
 
   const cellUnderMouse = maybeRecursivelyFindCellAtPoint(
-    document.elementsFromPoint(windowPoint.x, windowPoint.y),
+    document.elementsFromPoint(point.x, point.y),
   )
   if (cellUnderMouse == null) {
     return null
@@ -87,6 +89,7 @@ function getGridCellAtPoint(
   const { element, cellWindowRectangle } = cellUnderMouse
   const row = element.getAttribute('data-grid-row')
   const column = element.getAttribute('data-grid-column')
+
   return {
     id: element.id,
     cellWindowRectangle: cellWindowRectangle,
@@ -399,4 +402,54 @@ function asMaybeNamedAreaOrValue(
     return value === 0 ? 1 : value
   }
   return value
+}
+
+const GRID_BOUNDS_TOLERANCE = 5 // px
+
+export function getGridCellBoundsFromCanvas(
+  cell: ElementInstanceMetadata,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+) {
+  const cellFrame = cell.globalFrame
+  if (cellFrame == null || isInfinityRectangle(cellFrame)) {
+    return null
+  }
+
+  const canvasFrameWidth = cellFrame.width * canvasScale
+  const canvasFrameHeight = cellFrame.height * canvasScale
+
+  const cellOriginPoint = offsetPoint(
+    canvasPointToWindowPoint(cellFrame, canvasScale, canvasOffset),
+    windowPoint({ x: GRID_BOUNDS_TOLERANCE, y: GRID_BOUNDS_TOLERANCE }),
+  )
+  const cellOrigin = getGridCellAtPoint(cellOriginPoint, true)
+  if (cellOrigin == null) {
+    return null
+  }
+
+  const cellEndPoint = offsetPoint(
+    cellOriginPoint,
+    windowPoint({
+      x: canvasFrameWidth - GRID_BOUNDS_TOLERANCE,
+      y: canvasFrameHeight - GRID_BOUNDS_TOLERANCE,
+    }),
+  )
+  const cellEnd = getGridCellAtPoint(cellEndPoint, true)
+  if (cellEnd == null) {
+    return null
+  }
+
+  const cellOriginCoords = cellOrigin.coordinates
+  const cellEndCoords = cellEnd.coordinates
+
+  const cellWidth = cellEndCoords.column - cellOriginCoords.column + 1
+  const cellHeight = cellEndCoords.row - cellOriginCoords.row + 1
+
+  return {
+    originCell: cellOriginCoords,
+    endCell: cellEndCoords,
+    width: cellWidth,
+    height: cellHeight,
+  }
 }

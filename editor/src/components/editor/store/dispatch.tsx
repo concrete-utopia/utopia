@@ -7,7 +7,7 @@ import { optionalDeepFreeze } from '../../../utils/deep-freeze'
 import type { CanvasAction } from '../../canvas/canvas-types'
 import type { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
-import type { EditorAction, EditorDispatch } from '../action-types'
+import type { EditorAction, EditorDispatch, UpdateMetadataInEditorState } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import {
   isTransientAction,
@@ -30,7 +30,6 @@ import type {
 import {
   deriveState,
   persistentModelFromEditorModel,
-  reconstructJSXMetadata,
   storedEditorStateFromEditorState,
 } from './editor-state'
 import {
@@ -466,7 +465,6 @@ export function editorDispatchActionRunner(
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   spyCollector: UiJsxCanvasContextData,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies, // only override this for tests
 ): DispatchResult {
   const actionGroupsToProcess = dispatchedActions.reduce(reducerToSplitToActionGroups, [[]])
@@ -479,7 +477,6 @@ export function editorDispatchActionRunner(
         working,
         spyCollector,
         strategiesToUse,
-        domReconstructedMetadata,
       )
       return newStore
     },
@@ -837,7 +834,6 @@ function editorDispatchInner(
   storedState: DispatchResult,
   spyCollector: UiJsxCanvasContextData,
   strategiesToUse: Array<MetaCanvasStrategy>,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
 ): DispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions), dispatchedActions)
 
@@ -880,7 +876,8 @@ function editorDispatchInner(
       result.unpatchedEditor.currentVariablesInScope
 
     const updateMetadataInEditorStateAction = dispatchedActions.find(
-      (action) => action.action === 'UPDATE_METADATA_IN_EDITOR_STATE',
+      (action): action is UpdateMetadataInEditorState =>
+        action.action === 'UPDATE_METADATA_IN_EDITOR_STATE',
     )
     const metadataChanged =
       domMetadataChanged ||
@@ -897,7 +894,10 @@ function editorDispatchInner(
             elementPathTree: updateMetadataInEditorStateAction.tree,
           }
         } else {
-          return reconstructJSXMetadata(result.unpatchedEditor, domReconstructedMetadata)
+          return {
+            metadata: { ...result.unpatchedEditor.jsxMetadata },
+            elementPathTree: result.unpatchedEditor.elementPathTree,
+          }
         }
       }
       const { metadata, elementPathTree } = getMetadataSomehow()

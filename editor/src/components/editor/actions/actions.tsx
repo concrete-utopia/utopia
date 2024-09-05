@@ -4222,21 +4222,21 @@ export const UPDATE_FNS = {
         }, updatedEditor)
       }
       case 'TEXT_FILE': {
-        const nextEditor = {
+        let nextEditor = {
           ...editor,
           projectContents: updatedProjectContents,
         }
         if (isComponentDescriptorFile(action.filename)) {
-          const withUpdatedPropertyControls = {
+          // update property controls
+          nextEditor = {
             ...nextEditor,
             propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(
               editor.propertyControlsInfo,
               action.filename,
             ),
           }
-          return removeErrorMessagesForFile(withUpdatedPropertyControls, action.filename)
         }
-        return nextEditor
+        return removeErrorMessagesForFile(nextEditor, action.filename)
       }
       case 'ASSET_FILE':
       case 'IMAGE_FILE': {

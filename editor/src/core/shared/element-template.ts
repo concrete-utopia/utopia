@@ -652,7 +652,7 @@ export function clearJSXMapExpressionUniqueIDs(mapExpression: JSXMapExpression):
 export function clearJSExpressionOtherJavaScriptUniqueIDs(
   expression: JSExpressionOtherJavaScript,
 ): JSExpressionOtherJavaScript {
-  const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, expression.elementsWithin)
+  const updatedElementsWithin = objectMap(clearJSXElementLikeUniqueIDs, expression.elementsWithin)
   return {
     ...expression,
     uid: '',
@@ -1494,8 +1494,10 @@ export function getDefinedElsewhereFromElementChild(
   }
 }
 
-export function getDefinedElsewhereFromElement(element: JSXElement): Array<string> {
-  const fromAttributes = getDefinedElsewhereFromAttributes(element.props)
+export function getDefinedElsewhereFromElement(element: JSXElementLike): Array<string> {
+  const fromAttributes = isJSXElement(element)
+    ? getDefinedElsewhereFromAttributes(element.props)
+    : []
   return element.children.reduce(
     (working, child) => getDefinedElsewhereFromElementChild(working, child),
     fromAttributes,
@@ -1609,6 +1611,17 @@ export function getJSXElementNameAsString(name: JSXElementName): string {
     return name.baseVariable
   } else {
     return `${name.baseVariable}.${PP.toString(name.propertyPath)}`
+  }
+}
+
+export function getJSXElementLikeNameAsString(element: JSXElementLike): string {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      return getJSXElementNameAsString(element.name)
+    case 'JSX_FRAGMENT':
+      return 'Fragment'
+    default:
+      assertNever(element)
   }
 }
 
@@ -1843,6 +1856,26 @@ interface ElementWithUid {
 
 export function isElementWithUid(element: unknown): element is ElementWithUid {
   return (element as ElementWithUid).uid != null
+}
+
+export function clearJSXElementLikeUniqueIDs(element: JSXElementLike): JSXElementLike {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      return clearJSXElementUniqueIDs(element)
+    case 'JSX_FRAGMENT':
+      return clearJSXFragmentUniqueIDs(element)
+    default:
+      assertNever(element)
+  }
+}
+
+export function clearJSXFragmentUniqueIDs(element: JSXFragment): JSXFragment {
+  const updatedChildren: JSXElementChildren = element.children.map(clearJSXElementChildUniqueIDs)
+  return {
+    ...element,
+    children: updatedChildren,
+    uid: '',
+  }
 }
 
 export function clearJSXElementUniqueIDs(element: JSXElement): JSXElement {
@@ -2512,7 +2545,7 @@ export interface ElementInstanceMetadata {
   isEmotionOrStyledComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
-  attributeMetadatada: StyleAttributeMetadata | null
+  attributeMetadata: StyleAttributeMetadata | null
   label: string | null
   importInfo: ImportInfo | null
   conditionValue: ConditionValue
@@ -2529,12 +2562,12 @@ export interface DomElementMetadata {
   textContent: string | null
 
   computedStyle: ComputedStyle | null
-  attributeMetadatada: StyleAttributeMetadata | null // sic fix typo
+  attributeMetadata: StyleAttributeMetadata | null
 }
 
 export interface ComputedStyleMetadata {
   computedStyle: ComputedStyle
-  attributeMetadatada: StyleAttributeMetadata
+  attributeMetadata: StyleAttributeMetadata
 }
 
 export function elementInstanceMetadata(
@@ -2546,7 +2579,7 @@ export function elementInstanceMetadata(
   isEmotionOrStyledComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle | null,
-  attributeMetadatada: StyleAttributeMetadata | null,
+  attributeMetadata: StyleAttributeMetadata | null,
   label: string | null,
   importInfo: ImportInfo | null,
   conditionValue: ConditionValue,
@@ -2563,7 +2596,7 @@ export function elementInstanceMetadata(
     isEmotionOrStyledComponent: isEmotionOrStyledComponent,
     specialSizeMeasurements: sizeMeasurements,
     computedStyle: computedStyle,
-    attributeMetadatada: attributeMetadatada,
+    attributeMetadata: attributeMetadata,
     label: label,
     importInfo: importInfo,
     conditionValue: conditionValue,
@@ -2588,7 +2621,7 @@ export function domElementMetadata(
     textContent: textContent,
 
     computedStyle: null,
-    attributeMetadatada: null,
+    attributeMetadata: null,
   }
 }
 
@@ -2598,7 +2631,7 @@ export function computedStyleMetadata(
 ): ComputedStyleMetadata {
   return {
     computedStyle: computedStyle,
-    attributeMetadatada: attributeMetadata,
+    attributeMetadata: attributeMetadata,
   }
 }
 

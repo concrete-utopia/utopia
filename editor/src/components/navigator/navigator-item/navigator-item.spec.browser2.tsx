@@ -163,7 +163,7 @@ describe('Navigator item row icons', () => {
           data-uid='a9c'
         />
         <img
-          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
           alt='Utopia logo'
           style={{ height: 100, width: 100 }}
           data-uid='922'
