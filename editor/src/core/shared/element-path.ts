@@ -642,14 +642,37 @@ export function findAmongAncestorsOfPath<T>(
 }
 
 export function isDescendantOf(target: ElementPath, maybeAncestor: ElementPath): boolean {
-  const targetString = toString(target)
-  const maybeAncestorString = toString(maybeAncestor)
-  return (
-    targetString !== maybeAncestorString &&
-    targetString.startsWith(maybeAncestorString) &&
-    (targetString[maybeAncestorString.length] === SceneSeparator ||
-      targetString[maybeAncestorString.length] === ElementSeparator)
-  )
+  if (target.parts.length >= maybeAncestor.parts.length) {
+    for (let index = 0; index < maybeAncestor.parts.length - 1; index++) {
+      const maybeAncestorPart = maybeAncestor.parts[index]
+      const targetPart = target.parts[index]
+      if (!elementPathPartsEqual(maybeAncestorPart, targetPart)) {
+        return false
+      }
+    }
+    const lastTargetPart = target.parts[maybeAncestor.parts.length - 1]
+    const lastAncestorPart = maybeAncestor.parts[maybeAncestor.parts.length - 1]
+    if (lastTargetPart.length >= lastAncestorPart.length) {
+      for (let partIndex = 0; partIndex < lastAncestorPart.length; partIndex++) {
+        const part = lastAncestorPart[partIndex]
+        if (lastTargetPart[partIndex] !== part) {
+          return false
+        }
+      }
+      if (
+        target.parts.length === maybeAncestor.parts.length &&
+        lastTargetPart.length === lastAncestorPart.length
+      ) {
+        // This caters for the case where the paths are the same.
+        return false
+      }
+      return true
+    } else {
+      return false
+    }
+  } else {
+    return false
+  }
 }
 
 export function getAncestorsForLastPart(path: ElementPath): ElementPath[] {

@@ -1,18 +1,9 @@
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { MetadataUtils } from '../model/element-metadata-utils'
-import { isLeft, isRight } from './either'
+import { forEachRight, isLeft } from './either'
 import * as EP from './element-path'
-import type { ElementInstanceMetadataMap } from './element-template'
-import {
-  isJSElementAccess,
-  isJSExpressionMapOrOtherJavaScript,
-  isJSIdentifier,
-  isJSPropertyAccess,
-  isJSXConditionalExpression,
-  isJSXElement,
-  isJSXFragment,
-  isJSXTextBlock,
-} from './element-template'
+import type { ElementInstanceMetadataMap, JSXElementChild } from './element-template'
+import { isJSXConditionalExpression, isJSXElement, isJSXFragment } from './element-template'
 import type { ElementPath } from './project-file-types'
 import { fastForEach } from './utils'
 
@@ -51,90 +42,88 @@ export function buildTree(...metadatas: Array<ElementInstanceMetadataMap>): Elem
     const missingParents = getMissingParentPaths(elementPaths, metadata)
     const paths = getReorderedPaths(elementPaths, metadata, missingParents)
 
-    buildTreeRecursive_MUTATE(root, tree, paths, metadata)
+    buildTree_MUTATE(root, tree, paths, metadata)
   }
 
   return tree
 }
 
-function buildTreeRecursive_MUTATE(
+function buildTree_MUTATE(
   rootPath: ElementPath,
   trees: ElementPathTrees,
   originalPaths: ElementPath[],
   metadata: ElementInstanceMetadataMap,
-): ElementPathTree[] {
+): void {
   const rootPathString = EP.toString(rootPath)
   trees[rootPathString] = elementPathTree(rootPath, rootPathString, [])
 
-  const childrenPaths = getChildrenPaths(metadata, rootPath, originalPaths)
-
-  let children: ElementPathTree[] = []
-  for (const path of childrenPaths) {
+  function addPathToTree(path: ElementPath): void {
     const pathString = EP.toString(path)
-    const subTree = elementPathTree(
-      path,
-      pathString,
-      buildTreeRecursive_MUTATE(path, trees, originalPaths, metadata),
+    const alreadyAdded = pathString in trees
+    if (!alreadyAdded) {
+      const parentPath = EP.parentPath(path)
+      const subTree = elementPathTree(path, pathString, [])
+      trees[pathString] = subTree
+      trees[EP.toString(parentPath)].children.push(subTree)
+    }
+  }
+
+  let workingPaths = [...originalPaths]
+  workingPaths.sort((a, b) => {
+    return EP.fullDepth(a) - EP.fullDepth(b)
+  })
+  for (const workingPath of workingPaths) {
+    addPathToTree(workingPath)
+  }
+
+  for (const elementMetadata of Object.values(metadata)) {
+    forEachRight(elementMetadata.element, (element) => {
+      switch (element.type) {
+        case 'JSX_ELEMENT':
+        case 'JSX_FRAGMENT':
+          {
+            let elementChildren: Array<JSXElementChild>
+            if (isFeatureEnabled('Condensed Navigator Entries')) {
+              elementChildren = element.children
+            } else {
+              elementChildren = element.children.filter((child) => {
+                switch (child.type) {
+                  case 'JSX_TEXT_BLOCK':
+                  case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+                  case 'JSX_MAP_EXPRESSION':
+                  case 'JS_IDENTIFIER':
+                  case 'JS_PROPERTY_ACCESS':
+                  case 'JS_ELEMENT_ACCESS':
+                    return false
+                  default:
+                    return true
+                }
+              })
+            }
+            for (const child of elementChildren) {
+              const childPath = EP.appendToPath(elementMetadata.elementPath, child.uid)
+              addPathToTree(childPath)
+            }
+          }
+          break
+        default:
+          break
+      }
+    })
+  }
+
+  function walkTreeSortingChildren(tree: ElementPathTree): void {
+    tree.children.sort(
+      (a, b) =>
+        originalPaths.findIndex((p) => EP.pathsEqual(p, a.path)) -
+        originalPaths.findIndex((p) => EP.pathsEqual(p, b.path)),
     )
-    trees[rootPathString].children.push(subTree)
-    children.push(subTree)
+    for (const child of tree.children) {
+      walkTreeSortingChildren(child)
+    }
   }
 
-  return children
-}
-
-function getChildrenPaths(
-  metadata: ElementInstanceMetadataMap,
-  rootPath: ElementPath,
-  paths: ElementPath[],
-): ElementPath[] {
-  const element = metadata[EP.toString(rootPath)]
-
-  // Grab the child elements from the element metadata, if available.
-  let childrenFromElement: ElementPath[] = []
-  if (
-    element != null &&
-    isRight(element.element) &&
-    (isJSXElement(element.element.value) || isJSXFragment(element.element.value)) &&
-    element.element.value.children.length > 0
-  ) {
-    childrenFromElement = element.element.value.children
-      .filter((child) => {
-        if (isFeatureEnabled('Condensed Navigator Entries')) {
-          // if Data Entries are enabled, we should always show them in the Navigator
-          return true
-        } else {
-          return (
-            !isJSXTextBlock(child) &&
-            !isJSExpressionMapOrOtherJavaScript(child) &&
-            !isJSIdentifier(child) &&
-            !isJSPropertyAccess(child) &&
-            !isJSElementAccess(child)
-          )
-        }
-      })
-      .map((child) => EP.appendToPath(rootPath, child.uid))
-  }
-
-  // Then, grab any other child from the paths array, which is not included in the
-  // elements from the metadata.
-  const otherChildrenFromPaths = paths.filter(
-    (path) =>
-      EP.isChildOf(path, rootPath) &&
-      !childrenFromElement.some((other) => EP.pathsEqual(other, path)),
-  )
-
-  // If there are children outside the element metadata, need to merge the two and sort them.
-  // Otherwise, return the children from the meta.
-  return otherChildrenFromPaths.length > 0
-    ? childrenFromElement
-        .concat(otherChildrenFromPaths)
-        .sort(
-          (a, b) =>
-            paths.findIndex((p) => EP.pathsEqual(p, a)) -
-            paths.findIndex((p) => EP.pathsEqual(p, b)),
-        )
-    : childrenFromElement
+  walkTreeSortingChildren(trees[rootPathString])
 }
 
 function getMissingParentPaths(
@@ -160,18 +149,22 @@ function getReorderedPaths(
   missingParents: ElementPath[],
 ): ElementPath[] {
   const elementsToReorder = original.filter((path) => {
-    const element = MetadataUtils.findElementByElementPath(metadata, path)
-    if (element == null) {
+    const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+    if (elementMetadata == null || isLeft(elementMetadata.element)) {
       return false
     }
-    return (
-      MetadataUtils.isConditionalFromMetadata(element) ||
-      MetadataUtils.isExpressionOtherJavascriptFromMetadata(element) ||
-      MetadataUtils.isJSXMapExpressionFromMetadata(element) ||
-      MetadataUtils.isIdentifierFromMetadata(element) ||
-      MetadataUtils.isPropertyAccessFromMetadata(element) ||
-      MetadataUtils.isElementAccessFromMetadata(element)
-    )
+    const element = elementMetadata.element.value
+    switch (element.type) {
+      case 'JSX_CONDITIONAL_EXPRESSION':
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      case 'JSX_MAP_EXPRESSION':
+      case 'JS_IDENTIFIER':
+      case 'JS_ELEMENT_ACCESS':
+      case 'JS_PROPERTY_ACCESS':
+        return true
+      default:
+        return false
+    }
   })
   const pathsToBeReordered = original.filter(
     (path) =>
