@@ -1020,7 +1020,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
 })
 
 function useSnapAnimation(params: {
-  disabled: boolean // old man shaking fist at rules of hooks
+  disabled: boolean
   gridPath: ElementPath | null
   shadowFrame: CanvasRectangle | null
   targetRootCell: GridCellCoordinates | null
