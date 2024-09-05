@@ -863,16 +863,16 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                     id={id}
                     data-testid={id}
                     style={{
-                      borderTop: `3px solid ${borderColor}`,
-                      borderLeft: `3px solid ${borderColor}`,
+                      borderTop: gridPlaceholderBorder(borderColor),
+                      borderLeft: gridPlaceholderBorder(borderColor),
                       borderBottom:
                         countedRow >= grid.rows || (grid.rowGap != null && grid.rowGap > 0)
-                          ? `3px solid ${borderColor}`
+                          ? gridPlaceholderBorder(borderColor)
                           : undefined,
                       borderRight:
                         countedColumn >= grid.columns ||
                         (grid.columnGap != null && grid.columnGap > 0)
-                          ? `3px solid ${borderColor}`
+                          ? gridPlaceholderBorder(borderColor)
                           : undefined,
                       position: 'relative',
                       pointerEvents: 'initial',
@@ -1409,3 +1409,5 @@ function gridKeyFromPath(path: ElementPath): string {
 export function getGridPlaceholderDomElement(elementPath: ElementPath): HTMLElement | null {
   return document.getElementById(gridKeyFromPath(elementPath))
 }
+
+const gridPlaceholderBorder = (color: string) => `2px solid ${color}`
