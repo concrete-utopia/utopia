@@ -318,7 +318,11 @@ function getGridCellUnderCursor(
     canvasState.canvasOffset,
   )
 
-  return getTargetCell(customStrategyState.grid.targetCell, false, mouseWindowPoint)
+  return getTargetCell(
+    customStrategyState.grid.targetCellData?.gridCellCoordinates ?? null,
+    false,
+    mouseWindowPoint,
+  )
 }
 
 function getOffsetFromGridCell(

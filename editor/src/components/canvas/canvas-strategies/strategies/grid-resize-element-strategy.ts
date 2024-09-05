@@ -15,6 +15,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
+import type { TargetGridCellData } from './grid-helpers'
 import { getGridCellUnderMouse, setGridPropsCommands } from './grid-helpers'
 
 export const gridResizeElementStrategy: CanvasStrategyFactory = (
@@ -81,10 +82,11 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         canvasState.canvasOffset,
       )
 
-      let targetCell = customState.grid.targetCell
+      let targetCell: TargetGridCellData | null = customState.grid.targetCellData
       const cellUnderMouse = getGridCellUnderMouse(mouseWindowPoint)
       if (cellUnderMouse != null) {
-        targetCell = cellUnderMouse.coordinates
+        const { cellWindowRectangle, coordinates: gridCellCoordinates } = cellUnderMouse
+        targetCell = { cellWindowRectangle, gridCellCoordinates }
       }
 
       if (targetCell == null) {
@@ -114,25 +116,25 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         case 'column-start':
           gridProps = {
             ...gridProps,
-            gridColumnStart: { numericalPosition: targetCell.column },
+            gridColumnStart: { numericalPosition: targetCell.gridCellCoordinates.column },
           }
           break
         case 'column-end':
           gridProps = {
             ...gridProps,
-            gridColumnEnd: { numericalPosition: targetCell.column + 1 },
+            gridColumnEnd: { numericalPosition: targetCell.gridCellCoordinates.column + 1 },
           }
           break
         case 'row-end':
           gridProps = {
             ...gridProps,
-            gridRowEnd: { numericalPosition: targetCell.row + 1 },
+            gridRowEnd: { numericalPosition: targetCell.gridCellCoordinates.row + 1 },
           }
           break
         case 'row-start':
           gridProps = {
             ...gridProps,
-            gridRowStart: { numericalPosition: targetCell.row },
+            gridRowStart: { numericalPosition: targetCell.gridCellCoordinates.row },
           }
           break
         default:
@@ -142,7 +144,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
       return strategyApplicationResult(
         setGridPropsCommands(selectedElement, gridTemplate, gridPropsWithDragOver(gridProps)),
         {
-          grid: { ...customState.grid, targetCell },
+          grid: { ...customState.grid, targetCellData: targetCell },
         },
       )
     },

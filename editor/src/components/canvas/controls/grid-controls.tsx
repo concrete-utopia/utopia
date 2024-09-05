@@ -529,6 +529,13 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     'GridControls targetRootCell',
   )
 
+  const currentHoveredCell = useEditorState(
+    Substores.restOfStore,
+    (store) =>
+      store.strategyState.customStrategyState.grid.targetCellData?.gridCellCoordinates ?? null,
+    'GridControls currentHoveredCell',
+  )
+
   const dragging = useEditorState(
     Substores.canvas,
     (store) =>
@@ -618,6 +625,17 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     shadow?.globalFrame ?? null,
   )
 
+  const anyTargetAbsolute = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.some((elementPath) =>
+        MetadataUtils.isPositionAbsolute(
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath),
+        ),
+      ),
+    'GridControls anyTargetAbsolute',
+  )
+
   const gridPath = optionalMap(EP.parentPath, shadow?.elementPath)
 
   const gridFrame = React.useMemo(() => {
@@ -635,6 +653,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
   }, [gridPath, metadataRef])
 
   useSnapAnimation({
+    disabled: anyTargetAbsolute,
     targetRootCell: targetRootCell,
     controls: controls,
     shadowFrame: initialShadowFrame,
@@ -831,9 +850,11 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                   activelyDraggingOrResizingCell != null
                     ? features.Grid.dotgridColor
                     : 'transparent'
+
                 const borderColor =
-                  activelyDraggingOrResizingCell != null
-                    ? features.Grid.activeGridColor
+                  countedColumn === currentHoveredCell?.column &&
+                  countedRow === currentHoveredCell?.row
+                    ? colorTheme.brandNeonPink.value
                     : features.Grid.inactiveGridColor
 
                 return (
@@ -842,16 +863,16 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                     id={id}
                     data-testid={id}
                     style={{
-                      borderTop: `1px solid ${borderColor}`,
-                      borderLeft: `1px solid ${borderColor}`,
+                      borderTop: gridPlaceholderBorder(borderColor),
+                      borderLeft: gridPlaceholderBorder(borderColor),
                       borderBottom:
                         countedRow >= grid.rows || (grid.rowGap != null && grid.rowGap > 0)
-                          ? `1px solid ${borderColor}`
+                          ? gridPlaceholderBorder(borderColor)
                           : undefined,
                       borderRight:
                         countedColumn >= grid.columns ||
                         (grid.columnGap != null && grid.columnGap > 0)
-                          ? `1px solid ${borderColor}`
+                          ? gridPlaceholderBorder(borderColor)
                           : undefined,
                       position: 'relative',
                       pointerEvents: 'initial',
@@ -960,6 +981,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
         })}
         {/* shadow */}
         {features.Grid.shadow &&
+        !anyTargetAbsolute &&
         shadow != null &&
         initialShadowFrame != null &&
         interactionData?.dragStart != null &&
@@ -998,12 +1020,13 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
 })
 
 function useSnapAnimation(params: {
+  disabled: boolean
   gridPath: ElementPath | null
   shadowFrame: CanvasRectangle | null
   targetRootCell: GridCellCoordinates | null
   controls: AnimationControls
 }) {
-  const { gridPath, targetRootCell, controls, shadowFrame } = params
+  const { gridPath, targetRootCell, controls, shadowFrame, disabled } = params
   const features = useRollYourOwnFeatures()
 
   const [lastTargetRootCellId, setLastTargetRootCellId] = React.useState(targetRootCell)
@@ -1052,6 +1075,10 @@ function useSnapAnimation(params: {
   }, [canvasScale, canvasOffset, gridPath, targetRootCell])
 
   React.useEffect(() => {
+    if (disabled) {
+      return
+    }
+
     if (targetRootCell != null && snapPoint != null && moveFromPoint != null) {
       const snapPointsDiffer = lastSnapPoint == null || !pointsEqual(snapPoint, lastSnapPoint)
       const hasMovedToANewCell = lastTargetRootCellId != null
@@ -1082,6 +1109,7 @@ function useSnapAnimation(params: {
     animate,
     moveFromPoint,
     lastTargetRootCellId,
+    disabled,
   ])
 }
 
@@ -1381,3 +1409,5 @@ function gridKeyFromPath(path: ElementPath): string {
 export function getGridPlaceholderDomElement(elementPath: ElementPath): HTMLElement | null {
   return document.getElementById(gridKeyFromPath(elementPath))
 }
+
+const gridPlaceholderBorder = (color: string) => `2px solid ${color}`

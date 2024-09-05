@@ -47,6 +47,7 @@ import type { NodeModules, ProjectContentTreeRoot } from 'utopia-shared/src/type
 import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { removeAbsolutePositioningProps } from './reparent-helpers/reparent-property-changes'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
+import type { TargetGridCellData } from './grid-helpers'
 import { getTargetCell, setGridPropsCommands } from './grid-helpers'
 
 export function gridReparentStrategy(
@@ -151,15 +152,18 @@ function getTargetGridCellUnderCursor(
   canvasScale: number,
   canvasOffset: CanvasVector,
   customState: GridCustomStrategyState,
-): GridCellCoordinates | null {
+): TargetGridCellData | null {
   const mouseWindowPoint = canvasPointToWindowPoint(
     offsetPoint(interactionData.dragStart, interactionData.drag ?? canvasVector({ x: 0, y: 0 })),
     canvasScale,
     canvasOffset,
   )
 
-  const targetCellUnderMouse =
-    getTargetCell(customState.targetCell, false, mouseWindowPoint)?.gridCellCoordinates ?? null
+  const targetCellUnderMouse = getTargetCell(
+    customState.targetCellData?.gridCellCoordinates ?? null,
+    false,
+    mouseWindowPoint,
+  )
 
   return targetCellUnderMouse
 }
@@ -202,15 +206,15 @@ export function applyGridReparent(
           return emptyStrategyApplicationResult
         }
 
-        const targetCell =
+        const targetCellData =
           getTargetGridCellUnderCursor(
             interactionData,
             canvasState.scale,
             canvasState.canvasOffset,
             customStrategyState.grid,
-          ) ?? customStrategyState.grid.targetCell
+          ) ?? customStrategyState.grid.targetCellData
 
-        if (targetCell == null) {
+        if (targetCellData == null) {
           return emptyStrategyApplicationResult
         }
         const outcomes = mapDropNulls(
@@ -224,7 +228,7 @@ export function applyGridReparent(
               nodeModules,
               selectedElement,
               newParent,
-              targetCell,
+              targetCellData.gridCellCoordinates,
             ),
           selectedElements,
         )
@@ -265,7 +269,7 @@ export function applyGridReparent(
             elementsToRerender: elementsToRerender,
             grid: {
               ...customStrategyState.grid,
-              targetCell: targetCell,
+              targetCellData: targetCellData,
             },
           },
         )
