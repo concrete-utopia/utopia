@@ -80,7 +80,7 @@ import { wrapInContainerCommand } from '../commands/wrap-in-container-command'
 import type { ElementPath } from 'utopia-shared/src/types'
 import { reparentSubjectsForInteractionTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
-import { gridRearrangeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
+import { gridRearrangeResizeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -111,7 +111,7 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       gridRearrangeMoveStrategy,
       rearrangeGridSwapStrategy,
       gridRearrangeMoveDuplicateStrategy,
-      gridRearrangeKeyboardStrategy,
+      gridRearrangeResizeKeyboardStrategy,
     ],
   )
 }

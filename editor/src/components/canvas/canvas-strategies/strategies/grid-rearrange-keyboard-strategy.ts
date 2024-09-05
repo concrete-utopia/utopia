@@ -1,27 +1,31 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  gridPositionValue,
-  type GridElementProperties,
-} from '../../../../core/shared/element-template'
-import { assertNever } from '../../../../core/shared/utils'
-import { emptyModifiers, Modifier } from '../../../../utils/modifiers'
+import type { GridPositionValue } from '../../../../core/shared/element-template'
+import { gridPositionValue } from '../../../../core/shared/element-template'
 import { GridControls, GridControlsKey } from '../../controls/grid-controls'
-import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
+import type {
+  CanvasStrategy,
+  CustomStrategyState,
+  InteractionCanvasState,
+} from '../canvas-strategy-types'
 import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import type { InteractionSession, KeyState } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { getGridCellBoundsFromCanvas, setGridPropsCommands } from './grid-helpers'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 
-export function gridRearrangeKeyboardStrategy(
+export function gridRearrangeResizeKeyboardStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
+  customState: CustomStrategyState,
 ): CanvasStrategy | null {
-  if (interactionSession?.activeControl.type !== 'KEYBOARD_CATCHER_CONTROL') {
+  if (
+    interactionSession?.activeControl.type !== 'KEYBOARD_CATCHER_CONTROL' ||
+    interactionSession.interactionData.type !== 'KEYBOARD'
+  ) {
     return null
   }
 
@@ -49,15 +53,26 @@ export function gridRearrangeKeyboardStrategy(
   }
   const gridTemplate = grid.specialSizeMeasurements.containerGridProperties
 
-  const cellBounds = getGridCellBoundsFromCanvas(cell, canvasState.scale, canvasState.canvasOffset)
-  if (cellBounds == null) {
+  const initialCellBounds = getGridCellBoundsFromCanvas(
+    cell,
+    canvasState.scale,
+    canvasState.canvasOffset,
+  )
+  if (initialCellBounds == null) {
     return null
   }
 
+  const resizing =
+    Array.from(interactionSession.interactionData.keyStates).at(
+      interactionSession.interactionData.keyStates.length - 1,
+    )?.modifiers.shift ?? false
+
+  const label = resizing ? 'Grid resize' : 'Grid rearrange'
+
   return {
-    id: 'GRID_KEYBOARD_REARRANGE',
-    name: 'Grid rearrange',
-    descriptiveLabel: 'Grid rearrange',
+    id: 'GRID_KEYBOARD_REARRANGE_RESIZE',
+    name: label,
+    descriptiveLabel: label,
     icon: {
       category: 'modalities',
       type: 'reorder-large',
@@ -85,34 +100,51 @@ export function gridRearrangeKeyboardStrategy(
 
       const interactionData = interactionSession.interactionData
 
-      const horizontalDelta = getKeysDelta(interactionData.keyStates, 'horizontal')
-      const verticalDelta = getKeysDelta(interactionData.keyStates, 'vertical')
+      let gridColumnStart: GridPositionValue = gridPositionValue(initialCellBounds.column)
+      let gridColumnEnd: GridPositionValue = gridPositionValue(
+        initialCellBounds.column + initialCellBounds.width,
+      )
+      let gridRowStart: GridPositionValue = gridPositionValue(initialCellBounds.row)
+      let gridRowEnd: GridPositionValue = gridPositionValue(
+        initialCellBounds.row + initialCellBounds.height,
+      )
 
-      let gridProps: Partial<GridElementProperties> = {
-        ...cell.specialSizeMeasurements.elementGridProperties,
+      const cols = gridTemplate.gridTemplateColumns.dimensions.length
+      const rows = gridTemplate.gridTemplateRows.dimensions.length
+
+      for (const keyState of interactionData.keyStates) {
+        const resize = keyState.modifiers.shift
+        for (const key of keyState.keysPressed) {
+          // column changes
+          const horizDelta = key === 'left' ? -1 : key === 'right' ? 1 : null
+          if (horizDelta != null) {
+            const bounds = { start: gridColumnStart, end: gridColumnEnd }
+            const { start, end } = processPress(horizDelta, resize, cols, bounds)
+
+            gridColumnStart = start
+            gridColumnEnd = end
+          }
+
+          // row changes
+          const vertDelta = key === 'up' ? -1 : key === 'down' ? 1 : null
+          if (vertDelta != null) {
+            const bounds = { start: gridRowStart, end: gridRowEnd }
+            const { start, end } = processPress(vertDelta, resize, rows, bounds)
+
+            gridRowStart = start
+            gridRowEnd = end
+          }
+        }
       }
 
-      if (horizontalDelta !== 0) {
-        const { from, to } = getNewBounds(
-          cellBounds.originCell.column + horizontalDelta,
-          gridTemplate.gridTemplateColumns.dimensions.length,
-          cellBounds.width,
-        )
-        gridProps.gridColumnStart = gridPositionValue(from)
-        gridProps.gridColumnEnd = gridPositionValue(to)
-      }
-
-      if (verticalDelta !== 0) {
-        const { from, to } = getNewBounds(
-          cellBounds.originCell.row + verticalDelta,
-          gridTemplate.gridTemplateRows.dimensions.length,
-          cellBounds.height,
-        )
-        gridProps.gridRowStart = gridPositionValue(from)
-        gridProps.gridRowEnd = gridPositionValue(to)
-      }
-
-      return strategyApplicationResult(setGridPropsCommands(target, gridTemplate, gridProps))
+      return strategyApplicationResult(
+        setGridPropsCommands(target, gridTemplate, {
+          gridColumnStart,
+          gridColumnEnd,
+          gridRowStart,
+          gridRowEnd,
+        }),
+      )
     },
   }
 }
@@ -123,57 +155,41 @@ function fitness(interactionSession: InteractionSession | null): number {
   }
 
   const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
-  const matches = accumulatedPresses.some(
-    (accumulatedPress) =>
-      Array.from(accumulatedPress.keysPressed).some(
-        (key) => key === 'left' || key === 'right' || key === 'up' || key === 'down',
-      ) && Modifier.equal(accumulatedPress.modifiers, emptyModifiers),
+  const matches = accumulatedPresses.some((accumulatedPress) =>
+    Array.from(accumulatedPress.keysPressed).some(
+      (key) => key === 'left' || key === 'right' || key === 'up' || key === 'down',
+    ),
   )
 
   return matches ? 1 : 0
 }
 
-function getKeysDelta(keyStates: KeyState[], direction: 'vertical' | 'horizontal'): number {
-  return keyStates.reduce((total, cur) => {
-    let presses = 0
-    cur.keysPressed.forEach((key) => {
-      switch (direction) {
-        case 'horizontal':
-          presses += key === 'left' ? -1 : key === 'right' ? 1 : 0
-          break
-        case 'vertical':
-          presses += key === 'up' ? -1 : key === 'down' ? 1 : 0
-          break
-        default:
-          assertNever(direction)
-      }
-    })
-    return total + presses
-  }, 0)
-}
-
-function getNewBounds(
-  start: number,
+// process a keypress event and return the updated start/end grid cell bounds
+function processPress(
+  amount: 1 | -1,
+  resize: boolean,
   cellsCount: number,
-  size: number,
+  initialBounds: {
+    start: GridPositionValue
+    end: GridPositionValue
+  },
 ): {
-  from: number
-  to: number
+  start: GridPositionValue
+  end: GridPositionValue
 } {
-  const lowerLimit = 1
-  const upperLimit = cellsCount + 1
+  let newBounds = { ...initialBounds }
 
-  let from = start
-  let to = start + size
+  const start = newBounds.start.numericalPosition ?? 1
+  const end = newBounds.end.numericalPosition ?? 1
 
-  if (to > upperLimit) {
-    to = upperLimit
-    from = to - size
+  if (resize) {
+    newBounds.end = gridPositionValue(Math.max(start + 1, Math.min(cellsCount + 1, end + amount)))
+  } else {
+    const size = end - start
+    const newStart = Math.min(cellsCount - size + 1, Math.max(1, start + amount))
+    newBounds.start = gridPositionValue(newStart)
+    newBounds.end = gridPositionValue(newStart + size)
   }
-  if (from < lowerLimit) {
-    from = lowerLimit
-    to = from + size
-  }
 
-  return { from: from, to: to }
+  return newBounds
 }

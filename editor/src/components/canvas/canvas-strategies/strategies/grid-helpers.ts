@@ -545,8 +545,8 @@ export function getGridCellBoundsFromCanvas(
   const cellHeight = cellEndCoords.row - cellOriginCoords.row + 1
 
   return {
-    originCell: cellOriginCoords,
-    endCell: cellEndCoords,
+    column: cellOriginCoords.column,
+    row: cellOriginCoords.row,
     width: cellWidth,
     height: cellHeight,
   }
