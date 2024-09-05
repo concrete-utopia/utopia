@@ -93,6 +93,15 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
     return []
   }
 
+  const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
+  if (insertionSubjects.length != 1) {
+    return []
+  }
+  const insertionSubject = insertionSubjects[0]
+  if (insertionSubject.textEdit) {
+    return []
+  }
+
   const targetParent = findElementPathUnderInteractionPoint(canvasState, interactionSession)
 
   if (
@@ -103,11 +112,6 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
     return stripNulls([
       gridDrawToInsertStrategy(canvasState, interactionSession, customStrategyState),
     ])
-  }
-
-  const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
-  if (insertionSubjects.length != 1) {
-    return []
   }
 
   const pointOnCanvas =
@@ -211,7 +215,7 @@ export function drawToInsertStrategyFactory(
         show: 'visible-only-while-active',
       }),
     ], // Uses existing hooks in select-mode-hooks.tsx
-    fitness: !insertionSubject.textEdit && drawToInsertFitness(interactionSession) ? fitness : 0,
+    fitness: drawToInsertFitness(interactionSession) ? fitness : 0,
     apply: (strategyLifecycle) => {
       const rootPath = getRootPath(canvasState.startingMetadata)
       if (interactionSession != null) {

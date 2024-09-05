@@ -652,7 +652,7 @@ export function clearJSXMapExpressionUniqueIDs(mapExpression: JSXMapExpression):
 export function clearJSExpressionOtherJavaScriptUniqueIDs(
   expression: JSExpressionOtherJavaScript,
 ): JSExpressionOtherJavaScript {
-  const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, expression.elementsWithin)
+  const updatedElementsWithin = objectMap(clearJSXElementLikeUniqueIDs, expression.elementsWithin)
   return {
     ...expression,
     uid: '',
@@ -1494,8 +1494,10 @@ export function getDefinedElsewhereFromElementChild(
   }
 }
 
-export function getDefinedElsewhereFromElement(element: JSXElement): Array<string> {
-  const fromAttributes = getDefinedElsewhereFromAttributes(element.props)
+export function getDefinedElsewhereFromElement(element: JSXElementLike): Array<string> {
+  const fromAttributes = isJSXElement(element)
+    ? getDefinedElsewhereFromAttributes(element.props)
+    : []
   return element.children.reduce(
     (working, child) => getDefinedElsewhereFromElementChild(working, child),
     fromAttributes,
@@ -1609,6 +1611,17 @@ export function getJSXElementNameAsString(name: JSXElementName): string {
     return name.baseVariable
   } else {
     return `${name.baseVariable}.${PP.toString(name.propertyPath)}`
+  }
+}
+
+export function getJSXElementLikeNameAsString(element: JSXElementLike): string {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      return getJSXElementNameAsString(element.name)
+    case 'JSX_FRAGMENT':
+      return 'Fragment'
+    default:
+      assertNever(element)
   }
 }
 
@@ -1843,6 +1856,26 @@ interface ElementWithUid {
 
 export function isElementWithUid(element: unknown): element is ElementWithUid {
   return (element as ElementWithUid).uid != null
+}
+
+export function clearJSXElementLikeUniqueIDs(element: JSXElementLike): JSXElementLike {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      return clearJSXElementUniqueIDs(element)
+    case 'JSX_FRAGMENT':
+      return clearJSXFragmentUniqueIDs(element)
+    default:
+      assertNever(element)
+  }
+}
+
+export function clearJSXFragmentUniqueIDs(element: JSXFragment): JSXFragment {
+  const updatedChildren: JSXElementChildren = element.children.map(clearJSXElementChildUniqueIDs)
+  return {
+    ...element,
+    children: updatedChildren,
+    uid: '',
+  }
 }
 
 export function clearJSXElementUniqueIDs(element: JSXElement): JSXElement {
@@ -2512,13 +2545,29 @@ export interface ElementInstanceMetadata {
   isEmotionOrStyledComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
-  attributeMetadatada: StyleAttributeMetadata | null
+  attributeMetadata: StyleAttributeMetadata | null
   label: string | null
   importInfo: ImportInfo | null
   conditionValue: ConditionValue
   textContent: string | null
   earlyReturn: EarlyReturn | null
   assignedToProp: string | null
+}
+
+export interface DomElementMetadata {
+  element: Either<string, JSXElementChild>
+  globalFrame: MaybeInfinityCanvasRectangle | null
+  nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null
+  specialSizeMeasurements: SpecialSizeMeasurements
+  textContent: string | null
+
+  computedStyle: ComputedStyle | null
+  attributeMetadata: StyleAttributeMetadata | null
+}
+
+export interface ComputedStyleMetadata {
+  computedStyle: ComputedStyle
+  attributeMetadata: StyleAttributeMetadata
 }
 
 export function elementInstanceMetadata(
@@ -2530,7 +2579,7 @@ export function elementInstanceMetadata(
   isEmotionOrStyledComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle | null,
-  attributeMetadatada: StyleAttributeMetadata | null,
+  attributeMetadata: StyleAttributeMetadata | null,
   label: string | null,
   importInfo: ImportInfo | null,
   conditionValue: ConditionValue,
@@ -2547,13 +2596,42 @@ export function elementInstanceMetadata(
     isEmotionOrStyledComponent: isEmotionOrStyledComponent,
     specialSizeMeasurements: sizeMeasurements,
     computedStyle: computedStyle,
-    attributeMetadatada: attributeMetadatada,
+    attributeMetadata: attributeMetadata,
     label: label,
     importInfo: importInfo,
     conditionValue: conditionValue,
     textContent: textContent,
     earlyReturn: earlyReturn,
     assignedToProp: assignedToProp,
+  }
+}
+
+export function domElementMetadata(
+  element: Either<string, JSXElementChild>,
+  globalFrame: MaybeInfinityCanvasRectangle | null,
+  nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null,
+  sizeMeasurements: SpecialSizeMeasurements,
+  textContent: string | null,
+): DomElementMetadata {
+  return {
+    element: element,
+    globalFrame: globalFrame,
+    nonRoundedGlobalFrame: nonRoundedGlobalFrame,
+    specialSizeMeasurements: sizeMeasurements,
+    textContent: textContent,
+
+    computedStyle: null,
+    attributeMetadata: null,
+  }
+}
+
+export function computedStyleMetadata(
+  computedStyle: ComputedStyle,
+  attributeMetadata: StyleAttributeMetadata,
+): ComputedStyleMetadata {
+  return {
+    computedStyle: computedStyle,
+    attributeMetadata: attributeMetadata,
   }
 }
 
@@ -2711,7 +2789,7 @@ export interface SpecialSizeMeasurements {
   globalFrameWithTextContent: MaybeInfinityCanvasRectangle | null
   textBounds: CanvasRectangle | null
   immediateParentProvidesLayout: boolean
-  closestOffsetParentPath: ElementPath
+  closestOffsetParentPath: ElementPath | null
   usesParentBounds: boolean
   parentLayoutSystem: DetectedLayoutSystem // TODO make a specific boolean prop that tells us the parent is flex or not
   layoutSystemForChildren: DetectedLayoutSystem | null
@@ -2760,7 +2838,7 @@ export function specialSizeMeasurements(
   immediateParentBounds: CanvasRectangle | null,
   globalFrameWithTextContent: MaybeInfinityCanvasRectangle | null,
   immediateParentProvidesLayout: boolean,
-  closestOffsetParentPath: ElementPath,
+  closestOffsetParentPath: ElementPath | null,
   usesParentBounds: boolean,
   parentLayoutSystem: DetectedLayoutSystem,
   layoutSystemForChildren: DetectedLayoutSystem | null,

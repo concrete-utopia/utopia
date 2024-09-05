@@ -347,6 +347,7 @@ import type {
   ReplaceElementInScope,
   ReplaceJSXElement,
   ToggleDataCanCondense,
+  UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
@@ -4221,21 +4222,21 @@ export const UPDATE_FNS = {
         }, updatedEditor)
       }
       case 'TEXT_FILE': {
-        const nextEditor = {
+        let nextEditor = {
           ...editor,
           projectContents: updatedProjectContents,
         }
         if (isComponentDescriptorFile(action.filename)) {
-          const withUpdatedPropertyControls = {
+          // update property controls
+          nextEditor = {
             ...nextEditor,
             propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(
               editor.propertyControlsInfo,
               action.filename,
             ),
           }
-          return removeErrorMessagesForFile(withUpdatedPropertyControls, action.filename)
         }
-        return nextEditor
+        return removeErrorMessagesForFile(nextEditor, action.filename)
       }
       case 'ASSET_FILE':
       case 'IMAGE_FILE': {
@@ -4388,6 +4389,20 @@ export const UPDATE_FNS = {
         },
         currentVariablesInScope: { ...spyCollector.current.spyValues.variablesInScope },
       }
+    }
+  },
+  UPDATE_METADATA_IN_EDITOR_STATE: (
+    action: UpdateMetadataInEditorState,
+    editor: EditorModel,
+    spyCollector: UiJsxCanvasContextData,
+  ): EditorModel => {
+    return {
+      ...editor,
+      // TODO move the reconstructMetadata call here, and remove currentAllElementProps
+      currentAllElementProps: {
+        ...spyCollector.current.spyValues.allElementProps,
+      },
+      currentVariablesInScope: { ...spyCollector.current.spyValues.variablesInScope },
     }
   },
   TRUE_UP_ELEMENTS: (editor: EditorModel): EditorModel => {

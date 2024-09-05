@@ -7,7 +7,7 @@ import { optionalDeepFreeze } from '../../../utils/deep-freeze'
 import type { CanvasAction } from '../../canvas/canvas-types'
 import type { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
-import type { EditorAction, EditorDispatch } from '../action-types'
+import type { EditorAction, EditorDispatch, UpdateMetadataInEditorState } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import {
   isTransientAction,
@@ -30,7 +30,6 @@ import type {
 import {
   deriveState,
   persistentModelFromEditorModel,
-  reconstructJSXMetadata,
   storedEditorStateFromEditorState,
 } from './editor-state'
 import {
@@ -283,6 +282,7 @@ function processAction(
         unpatchedEditor: withPossiblyClearedPseudoInsert,
         unpatchedDerived: working.unpatchedDerived,
         strategyState: working.strategyState, // this means the actions cannot update strategyState – this piece of state lives outside our "redux" state
+        elementMetadata: working.elementMetadata,
         postActionInteractionSession: working.postActionInteractionSession,
         history: newStateHistory,
         userState: working.userState,
@@ -465,7 +465,6 @@ export function editorDispatchActionRunner(
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   spyCollector: UiJsxCanvasContextData,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies, // only override this for tests
 ): DispatchResult {
   const actionGroupsToProcess = dispatchedActions.reduce(reducerToSplitToActionGroups, [[]])
@@ -478,7 +477,6 @@ export function editorDispatchActionRunner(
         working,
         spyCollector,
         strategiesToUse,
-        domReconstructedMetadata,
       )
       return newStore
     },
@@ -642,6 +640,7 @@ export function editorDispatchClosingOut(
     patchedDerived: patchedDerivedState,
     strategyState: optionalDeepFreeze(newStrategyState),
     history: newHistory,
+    elementMetadata: result.elementMetadata,
     postActionInteractionSession: result.postActionInteractionSession,
     userState: result.userState,
     workers: storedState.workers,
@@ -835,7 +834,6 @@ function editorDispatchInner(
   storedState: DispatchResult,
   spyCollector: UiJsxCanvasContextData,
   strategiesToUse: Array<MetaCanvasStrategy>,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
 ): DispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions), dispatchedActions)
 
@@ -877,14 +875,32 @@ function editorDispatchInner(
       storedState.unpatchedEditor.currentVariablesInScope !==
       result.unpatchedEditor.currentVariablesInScope
 
+    const updateMetadataInEditorStateAction = dispatchedActions.find(
+      (action): action is UpdateMetadataInEditorState =>
+        action.action === 'UPDATE_METADATA_IN_EDITOR_STATE',
+    )
     const metadataChanged =
-      domMetadataChanged || spyMetadataChanged || allElementPropsChanged || variablesInScopeChanged
+      domMetadataChanged ||
+      spyMetadataChanged ||
+      allElementPropsChanged ||
+      variablesInScopeChanged ||
+      updateMetadataInEditorStateAction != null
 
     if (metadataChanged) {
-      const { metadata, elementPathTree } = reconstructJSXMetadata(
-        result.unpatchedEditor,
-        domReconstructedMetadata,
-      )
+      function getMetadataSomehow() {
+        if (updateMetadataInEditorStateAction != null) {
+          return {
+            metadata: updateMetadataInEditorStateAction.newFinalMetadata,
+            elementPathTree: updateMetadataInEditorStateAction.tree,
+          }
+        } else {
+          return {
+            metadata: { ...result.unpatchedEditor.jsxMetadata },
+            elementPathTree: result.unpatchedEditor.elementPathTree,
+          }
+        }
+      }
+      const { metadata, elementPathTree } = getMetadataSomehow()
       // Cater for the strategies wiping out the metadata on completion.
       const storedStateHasEmptyElementPathTree = isEmptyObject(
         storedState.unpatchedEditor.elementPathTree,
@@ -1013,6 +1029,7 @@ function editorDispatchInner(
       unpatchedDerived: frozenDerivedState,
       patchedDerived: patchedDerivedState,
       strategyState: newStrategyState,
+      elementMetadata: result.elementMetadata, // TODO do we want to do anything here?
       postActionInteractionSession: updatePostActionState(
         result.postActionInteractionSession,
         dispatchedActions,

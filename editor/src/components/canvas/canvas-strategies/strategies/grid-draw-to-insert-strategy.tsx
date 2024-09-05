@@ -13,7 +13,9 @@ import {
   canvasVector,
   offsetPoint,
   roundRectangleToNearestWhole,
+  scaleVector,
   size,
+  windowPoint,
 } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { EditorModes, type InsertionSubject } from '../../../editor/editor-modes'
@@ -257,17 +259,16 @@ function getFrameForInsertion(
   offset: CanvasPoint,
 ): CanvasRectangle {
   if (interactionData.type === 'DRAG') {
-    const frame =
-      interactionData.drag ?? canvasVector({ x: defaultSize.width, y: defaultSize.height })
+    const origin = interactionData.drag ?? { x: defaultSize.width / 2, y: defaultSize.height / 2 }
 
-    return roundRectangleToNearestWhole(
-      canvasRectangle({
-        x: offset.x - frame.x,
-        y: offset.y - frame.y,
-        width: frame.x,
-        height: frame.y,
-      }),
-    )
+    const { x, y } = { x: offset.x - origin.x, y: offset.y - origin.y }
+
+    const { width, height } =
+      interactionData.drag == null
+        ? defaultSize
+        : { width: interactionData.drag.x, height: interactionData.drag.y }
+
+    return roundRectangleToNearestWhole(canvasRectangle({ x, y, width, height }))
   }
 
   if (interactionData.type === 'HOVER') {
@@ -317,12 +318,7 @@ function getGridCellUnderCursor(
     canvasState.canvasOffset,
   )
 
-  return getTargetCell(
-    customStrategyState.grid.targetCell,
-    canvasState.scale,
-    false,
-    mouseWindowPoint,
-  )
+  return getTargetCell(customStrategyState.grid.targetCell, false, mouseWindowPoint)
 }
 
 function getOffsetFromGridCell(
@@ -341,8 +337,13 @@ function getOffsetFromGridCell(
     canvasState.canvasOffset,
   )
 
-  return canvasPoint({
-    x: mouseWindowPoint.x - cellWindowRectangle.x,
-    y: mouseWindowPoint.y - cellWindowRectangle.y,
-  })
+  const { x, y } = scaleVector(
+    windowPoint({
+      x: mouseWindowPoint.x - cellWindowRectangle.x,
+      y: mouseWindowPoint.y - cellWindowRectangle.y,
+    }),
+    1 / canvasState.scale,
+  )
+
+  return canvasPoint({ x, y })
 }

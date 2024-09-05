@@ -1122,7 +1122,7 @@ function parseOtherJavaScript<T extends { uid: string }>(
         // Be conservative with this for the moment.
         if (success.value.length === 1) {
           const firstChild = success.value[0]
-          if (isJSXElement(firstChild.value)) {
+          if (isJSXElementLike(firstChild.value)) {
             const uid = getUtopiaIDFromJSXElement(firstChild.value)
             parsedElementsWithin.push({
               uid: uid,

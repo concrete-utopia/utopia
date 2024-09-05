@@ -56,6 +56,8 @@ describe('grid reparent strategies', () => {
             backgroundColor: '#f0f',
             width: 79,
             height: 86,
+            gridColumn: 3,
+            gridRow: 2,
           }}
           data-uid='dragme'
           data-testid='dragme'
@@ -160,6 +162,8 @@ describe('grid reparent strategies', () => {
             backgroundColor: '#f0f',
             width: 79,
             height: 86,
+            gridColumn: 3,
+            gridRow: 2,
           }}
           data-uid='dragme'
           data-testid='dragme'
@@ -258,6 +262,8 @@ describe('grid reparent strategies', () => {
             backgroundColor: '#f0f',
             width: 79,
             height: 86,
+            gridColumn: 3,
+            gridRow: 2,
           }}
           data-uid='dragme'
           data-testid='dragme'
@@ -677,6 +683,8 @@ describe('grid reparent strategies', () => {
               backgroundColor: '#f0f',
               width: 79,
               height: 86,
+              gridColumn: 1,
+              gridRow: 2,
             }}
             data-uid='dragme'
             data-testid='dragme'

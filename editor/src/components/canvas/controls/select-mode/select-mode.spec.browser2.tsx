@@ -35,6 +35,8 @@ import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-t
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { wait } from '../../../../utils/utils.test-utils'
 
+const TimeoutForThisFile = 25000
+
 async function fireSingleClickEvents(
   target: HTMLElement,
   clientX: number,
@@ -364,7 +366,8 @@ describe('Select Mode Clicking', () => {
     checkSelectedPaths(renderResult, [desiredPaths[1]])
   })
 
-  it('Single click and three double clicks will focus a generated Card', async () => {
+  it('Single click and three double clicks will focus a generated Card', async function (this: Mocha.Context) {
+    this.timeout(TimeoutForThisFile)
     // prettier-ignore
     const desiredPaths = createConsecutivePaths(
     'sb' +                 // Skipped as it's the storyboard
@@ -414,7 +417,7 @@ describe('Select Mode Clicking', () => {
     checkSelectedPaths(renderResult, [desiredPaths[2]])
   })
   it('Single click and five double clicks will focus a generated Card and select the Button inside', async function (this: Mocha.Context) {
-    this.timeout(15000)
+    this.timeout(TimeoutForThisFile)
     // prettier-ignore
     const desiredPaths = createConsecutivePaths(
       'sb' +                 // Skipped as it's the storyboard
@@ -797,7 +800,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
     checkSelectedPaths(renderResult, [desiredPaths[2]])
   })
   it('Single click and five double clicks will focus a generated Card and select the Button inside', async function (this: Mocha.Context) {
-    this.timeout(15000)
+    this.timeout(TimeoutForThisFile)
     // prettier-ignore
     const desiredPaths = createConsecutivePaths(
       'sb' +                  // Skipped as it's the storyboard
@@ -922,7 +925,8 @@ describe('Select Mode Double Clicking With Fragments', () => {
 })
 
 describe('Select Mode Double Clicking With conditionals', () => {
-  it('Double click can dive into single conditional inside element with an expression in the active branch', async () => {
+  it('Double click can dive into single conditional inside element with an expression in the active branch', async function (this: Mocha.Context) {
+    this.timeout(TimeoutForThisFile)
     // prettier-ignore
     const desiredPaths = createConsecutivePaths(
       'sb' +                // Skipped as it's the storyboard
@@ -968,7 +972,8 @@ describe('Select Mode Double Clicking With conditionals', () => {
     checkSelectedPaths(renderResult, [desiredPaths[2]])
   })
 
-  it('Double click can not dive into conditional inside element when the conditional has siblings', async () => {
+  it('Double click can not dive into conditional inside element when the conditional has siblings', async function (this: Mocha.Context) {
+    this.timeout(TimeoutForThisFile)
     // prettier-ignore
     const desiredPaths = createConsecutivePaths(
       'sb' +                // Skipped as it's the storyboard
@@ -3740,7 +3745,7 @@ export var Playground = () => {
         data-uid='pg-div'
       >
         <img
-          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
           alt='Utopia logo'
           style={{ height: '100%' }}
           data-uid='pg-img'

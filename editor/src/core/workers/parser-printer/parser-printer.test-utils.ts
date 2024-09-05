@@ -37,6 +37,7 @@ import type {
   JSXConditionalExpression,
   JSXFragment,
   ElementsWithin,
+  JSXElementLike,
 } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
@@ -336,6 +337,25 @@ export function simplifyJSXElementAttributes(element: JSXElement): JSXElement {
   }
 }
 
+export function simplifyJSXFragmentAttributes(element: JSXFragment): JSXFragment {
+  const updatedChildren = element.children.map(simplifyJSXElementChildAttributes)
+  return {
+    ...element,
+    children: updatedChildren,
+  }
+}
+
+export function simplifyJSXElementLikeAttributes(element: JSXElementLike): JSXElementLike {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      return simplifyJSXElementAttributes(element)
+    case 'JSX_FRAGMENT':
+      return simplifyJSXFragmentAttributes(element)
+    default:
+      assertNever(element)
+  }
+}
+
 export function simplifyJSXElementChildAttributes(element: JSXElementChild): JSXElementChild {
   switch (element.type) {
     case 'JSX_ELEMENT':
@@ -374,7 +394,7 @@ export function simplifyJSXElementChildAttributes(element: JSXElementChild): JSX
 }
 
 export function simplifyElementsWithinAttributes(elementsWithin: ElementsWithin): ElementsWithin {
-  return objectMap((element) => simplifyJSXElementAttributes(element), elementsWithin)
+  return objectMap(simplifyJSXElementLikeAttributes, elementsWithin)
 }
 
 export function simplifyArbitraryJSBlockAttributes(block: ArbitraryJSBlock): ArbitraryJSBlock {

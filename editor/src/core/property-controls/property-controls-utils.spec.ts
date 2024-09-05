@@ -121,18 +121,16 @@ export const App = (props) => {
   it('works with the regular path', () => {
     const projectContents = getProjectContents('regular-path')
     const actualResult = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
       EP.fromString(`sample-storyboard/sample-scene/sample-app:div/component`),
-      propertyControlsInfo,
-      projectContents,
     )
     expect(actualResult).toEqual(componentDescriptor)
   })
   it('works with a mapped path', () => {
     const projectContents = getProjectContents('mapped-path')
     const actualResult = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
       EP.fromString(`sample-storyboard/sample-scene/sample-app:div/component`),
-      propertyControlsInfo,
-      projectContents,
     )
     expect(actualResult).toEqual(componentDescriptor)
   })

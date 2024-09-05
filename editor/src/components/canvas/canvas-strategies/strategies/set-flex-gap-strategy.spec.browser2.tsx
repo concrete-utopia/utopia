@@ -661,7 +661,7 @@ export var storyboard = (
       <div data-uid='my-component'>MyComponent</div>
       {[1, 2, 3].map(({ a, b, c }) => (
         <img
-          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
           alt='Utopia logo'
           style={{ width: 118, height: 150 }}
           data-uid='img'
@@ -669,7 +669,7 @@ export var storyboard = (
       ))}
       <React.Fragment>
         <View
-          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
           alt='Utopia logo'
           style={{
             backgroundColor: '#0074ff',
@@ -679,7 +679,7 @@ export var storyboard = (
           data-uid='view-1'
         />
         <View
-          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
           alt='Utopia logo'
           style={{
             backgroundColor: '#0074ff',
@@ -690,7 +690,7 @@ export var storyboard = (
         />
       </React.Fragment>
       <img
-        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
         alt='Utopia logo'
         style={{ width: 118, height: 150 }}
         data-uid='img-standalone'
