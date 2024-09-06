@@ -183,6 +183,9 @@ const gridDrawToInsertStrategyInner =
               ...customStrategyState,
               grid: {
                 ...customStrategyState.grid,
+                // this is added here during the hover interaction so that
+                // `GridControls` can render the hover highlight based on the
+                // coordinates in `targetCellData`
                 targetCellData: newTargetCell ?? customStrategyState.grid.targetCellData,
               },
             },
