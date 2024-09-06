@@ -164,21 +164,30 @@ const gridDrawToInsertStrategyInner =
       ],
       fitness: 5,
       apply: (strategyLifecycle) => {
-        if (strategyLifecycle === 'mid-interaction' && interactionData.type === 'HOVER') {
-          return strategyApplicationResult([
-            wildcardPatch('mid-interaction', {
-              selectedViews: { $set: [] },
-            }),
-            showGridControls('mid-interaction', targetParent),
-            updateHighlightedViews('mid-interaction', [targetParent]),
-          ])
-        }
-
         const newTargetCell = getGridCellUnderCursor(
           interactionData,
           canvasState,
           customStrategyState,
         )
+
+        if (strategyLifecycle === 'mid-interaction' && interactionData.type === 'HOVER') {
+          return strategyApplicationResult(
+            [
+              wildcardPatch('mid-interaction', {
+                selectedViews: { $set: [] },
+              }),
+              showGridControls('mid-interaction', targetParent),
+              updateHighlightedViews('mid-interaction', [targetParent]),
+            ],
+            {
+              ...customStrategyState,
+              grid: {
+                ...customStrategyState.grid,
+                targetCellData: newTargetCell ?? customStrategyState.grid.targetCellData,
+              },
+            },
+          )
+        }
 
         if (newTargetCell == null) {
           return emptyStrategyApplicationResult
