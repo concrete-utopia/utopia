@@ -82,7 +82,7 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
 
       const {
         commands: moveCommands,
-        targetCell: targetGridCell,
+        targetCell: targetGridCellData,
         draggingFromCell,
         originalRootCell,
         targetRootCell,
@@ -111,7 +111,7 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
         ],
         {
           grid: {
-            targetCell: targetGridCell,
+            targetCellData: targetGridCellData,
             draggingFromCell: draggingFromCell,
             originalRootCell: originalRootCell,
             currentRootCell: targetRootCell,

@@ -201,19 +201,9 @@ export function shouldIncludeSelectedElementChanges(
   oldEditorState: EditorState,
   newEditorState: EditorState,
 ): boolean {
-  const oldHighlightBounds = getHighlightBoundsForElementPaths(
-    oldEditorState.selectedViews,
-    oldEditorState,
-  )
-  const newHighlightBounds = getHighlightBoundsForElementPaths(
-    newEditorState.selectedViews,
-    newEditorState,
-  )
   return (
-    !(
-      EP.arrayOfPathsEqual(oldEditorState.selectedViews, newEditorState.selectedViews) &&
-      shallowEqual(oldHighlightBounds, newHighlightBounds)
-    ) && newEditorState.selectedViews.length > 0
+    !EP.arrayOfPathsEqual(oldEditorState.selectedViews, newEditorState.selectedViews) &&
+    newEditorState.selectedViews.length > 0
   )
 }
 

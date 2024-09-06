@@ -155,6 +155,7 @@ import {
 } from '../editor/store/project-server-state'
 import { uniqBy } from '../../core/shared/array-utils'
 import { InitialOnlineState } from '../editor/online-status'
+import { RadixComponentsPortalId } from '../../uuiui/radix-components'
 import { runDomSampler } from './dom-sampler'
 import {
   ElementInstanceMetadataKeepDeepEquality,
@@ -618,6 +619,20 @@ export async function renderTestEditorWithModel(
 
   let numberOfCommits = 0
 
+  // This results in the portal element existing before the subsequent render,
+  // which is necessary as any component that attempts to look for the portal as part of that render
+  // will not find it as it is not yet in the DOM.
+  const renderTargetDiv = document.createElement('div')
+  document.body.appendChild(renderTargetDiv)
+  render(
+    <React.Profiler onRender={NO_OP} id='editor-root'>
+      <div id='utopia-editor-root'>
+        <div id={CanvasContextMenuPortalTargetID}></div>
+        <div id={RadixComponentsPortalId}></div>
+      </div>
+    </React.Profiler>,
+    { container: renderTargetDiv },
+  )
   const result = render(
     <React.Profiler
       id='editor-root'
@@ -628,6 +643,7 @@ export async function renderTestEditorWithModel(
     >
       <div id='utopia-editor-root'>
         <div id={CanvasContextMenuPortalTargetID}></div>
+        <div id={RadixComponentsPortalId}></div>
         {failOnCanvasError ? <FailJestOnCanvasError /> : null}
         <style>{`
 div,
@@ -648,6 +664,7 @@ label {
         />
       </div>
     </React.Profiler>,
+    { container: renderTargetDiv },
   )
 
   // Capture how many times the project server state update has been triggered.

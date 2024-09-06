@@ -75,10 +75,6 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
     selectedElement,
   )
 
-  if (children.length < 2) {
-    return null
-  }
-
   const gridGap = maybeGridGapData(canvasState.startingMetadata, selectedElement)
   if (gridGap == null) {
     return null

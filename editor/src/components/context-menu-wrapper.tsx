@@ -2,13 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import {
-  contextMenu,
-  Item,
-  Menu,
-  Submenu as SubmenuComponent,
-  useContextMenu,
-} from 'react-contexify'
+import { Item, Menu, Submenu as SubmenuComponent, useContextMenu } from 'react-contexify'
 import { colorTheme, Icons, OnClickOutsideHOC, UtopiaStyles } from '../uuiui'
 import { getControlStyles } from '../uuiui-deps'
 import type { ContextMenuItem } from './context-menu-items'
@@ -51,16 +45,20 @@ export interface ContextMenuWrapperProps<T> {
   testId?: string
 }
 
+type ContextMenuItems<T> = Array<ContextMenuItem<T>>
 export interface ContextMenuProps<T> {
   dispatch?: EditorDispatch
   getData: () => T
   id: string
-  items: ContextMenuItem<T>[]
+  items: ContextMenuItems<T> | (() => ContextMenuItems<T>)
 }
 
 export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuProps<T>) => {
+  const [menuIsVisible, setMenuIsVisible] = React.useState(false)
+
   const onVisibilityChange = React.useCallback(
     (isVisible: boolean) => {
+      setMenuIsVisible(isVisible)
       if (isVisible) {
         addOpenMenuId(id)
       } else {
@@ -73,30 +71,33 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
   const splitItems = React.useMemo(() => {
     const tempItems: MenuItem<T>[] = []
 
-    for (const item of items) {
-      if (item?.submenuName != null) {
-        const alreadyAdded = tempItems.find(
-          (alreadySplit) =>
-            alreadySplit?.type === 'submenu' && alreadySplit.label === item.submenuName,
-        )
-        if (alreadyAdded != null && alreadyAdded.type === 'submenu') {
-          alreadyAdded.items.push(item)
+    if (menuIsVisible) {
+      const menuItems = typeof items === 'function' ? items() : items
+      for (const item of menuItems) {
+        if (item?.submenuName != null) {
+          const alreadyAdded = tempItems.find(
+            (alreadySplit) =>
+              alreadySplit?.type === 'submenu' && alreadySplit.label === item.submenuName,
+          )
+          if (alreadyAdded != null && alreadyAdded.type === 'submenu') {
+            alreadyAdded.items.push(item)
+          } else {
+            tempItems.push({
+              type: 'submenu',
+              label: item.submenuName,
+              items: [item],
+            })
+          }
         } else {
           tempItems.push({
-            type: 'submenu',
-            label: item.submenuName,
-            items: [item],
+            type: 'simple',
+            item: item,
           })
         }
-      } else {
-        tempItems.push({
-          type: 'simple',
-          item: item,
-        })
       }
     }
     return tempItems
-  }, [items])
+  }, [items, menuIsVisible])
 
   const isHidden = React.useCallback(
     (item: Item<T>): (() => boolean) => {

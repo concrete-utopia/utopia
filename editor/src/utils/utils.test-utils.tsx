@@ -624,6 +624,7 @@ export function boundingClientRectToCanvasRectangle(
     canvasScale,
     'without-text-content',
     'nearest-half',
+    new Map(),
   )
   const canvasBounds = offsetRect(canvasRectangle(elementBounds), negate(canvasRootRectangle))
 

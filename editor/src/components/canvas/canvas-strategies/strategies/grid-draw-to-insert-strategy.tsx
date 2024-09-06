@@ -164,21 +164,33 @@ const gridDrawToInsertStrategyInner =
       ],
       fitness: 5,
       apply: (strategyLifecycle) => {
-        if (strategyLifecycle === 'mid-interaction' && interactionData.type === 'HOVER') {
-          return strategyApplicationResult([
-            wildcardPatch('mid-interaction', {
-              selectedViews: { $set: [] },
-            }),
-            showGridControls('mid-interaction', targetParent),
-            updateHighlightedViews('mid-interaction', [targetParent]),
-          ])
-        }
-
         const newTargetCell = getGridCellUnderCursor(
           interactionData,
           canvasState,
           customStrategyState,
         )
+
+        if (strategyLifecycle === 'mid-interaction' && interactionData.type === 'HOVER') {
+          return strategyApplicationResult(
+            [
+              wildcardPatch('mid-interaction', {
+                selectedViews: { $set: [] },
+              }),
+              showGridControls('mid-interaction', targetParent),
+              updateHighlightedViews('mid-interaction', [targetParent]),
+            ],
+            {
+              ...customStrategyState,
+              grid: {
+                ...customStrategyState.grid,
+                // this is added here during the hover interaction so that
+                // `GridControls` can render the hover highlight based on the
+                // coordinates in `targetCellData`
+                targetCellData: newTargetCell ?? customStrategyState.grid.targetCellData,
+              },
+            },
+          )
+        }
 
         if (newTargetCell == null) {
           return emptyStrategyApplicationResult
@@ -318,7 +330,11 @@ function getGridCellUnderCursor(
     canvasState.canvasOffset,
   )
 
-  return getTargetCell(customStrategyState.grid.targetCell, false, mouseWindowPoint)
+  return getTargetCell(
+    customStrategyState.grid.targetCellData?.gridCellCoordinates ?? null,
+    false,
+    mouseWindowPoint,
+  )
 }
 
 function getOffsetFromGridCell(

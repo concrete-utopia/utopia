@@ -10,7 +10,10 @@ import { colorTheme, UtopiaStyles, UtopiaTheme } from './styles/theme'
 import { Icons, SmallerIcons } from './icons'
 import { when } from '../utils/react-conditionals'
 import { Icn, type IcnProps } from './icn'
-import { borderRadius } from './styles/utopitrons'
+import { forceNotNull } from '../core/shared/optional-utils'
+
+// Keep this in sync with the radix-components-portal div in index.html.
+export const RadixComponentsPortalId = 'radix-components-portal'
 
 const RadixItemContainer = styled(RadixDropdownMenu.Item, {
   minWidth: 128,
@@ -114,12 +117,17 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
     [props, setOpen],
   )
 
+  const radixPortalContainer = forceNotNull(
+    'Should be able to find the radix portal.',
+    document.getElementById(RadixComponentsPortalId),
+  )
+
   return (
     <RadixDropdownMenu.Root open={open} onOpenChange={onOpenChange}>
       <RadixDropdownMenu.Trigger style={{ background: 'none', border: 'none', padding: 0 }}>
         {props.opener(open)}
       </RadixDropdownMenu.Trigger>
-      <RadixDropdownMenu.Portal>
+      <RadixDropdownMenu.Portal container={radixPortalContainer}>
         <RadixDropdownContent
           onKeyDown={stopPropagation}
           onEscapeKeyDown={onEscapeKeyDown}
@@ -127,7 +135,11 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
           collisionPadding={{ top: -4 }}
           align={props.align ?? 'start'}
           alignOffset={props.alignOffset}
-          style={{ ...props.style, boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow }}
+          style={{
+            ...props.style,
+            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+            zIndex: 999999,
+          }}
         >
           {props.items.map((item) => {
             if (isSeparatorDropdownMenuItem(item)) {

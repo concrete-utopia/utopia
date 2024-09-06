@@ -23,12 +23,8 @@ import {
 import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
-  distance,
-  getRectCenter,
   isFiniteRectangle,
   isInfinityRectangle,
-  offsetPoint,
-  pointDifference,
   pointsEqual,
   scaleRect,
   windowPoint,
@@ -529,6 +525,13 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     'GridControls targetRootCell',
   )
 
+  const currentHoveredCell = useEditorState(
+    Substores.restOfStore,
+    (store) =>
+      store.strategyState.customStrategyState.grid.targetCellData?.gridCellCoordinates ?? null,
+    'GridControls currentHoveredCell',
+  )
+
   const dragging = useEditorState(
     Substores.canvas,
     (store) =>
@@ -618,6 +621,17 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     shadow?.globalFrame ?? null,
   )
 
+  const anyTargetAbsolute = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.some((elementPath) =>
+        MetadataUtils.isPositionAbsolute(
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath),
+        ),
+      ),
+    'GridControls anyTargetAbsolute',
+  )
+
   const gridPath = optionalMap(EP.parentPath, shadow?.elementPath)
 
   const gridFrame = React.useMemo(() => {
@@ -635,6 +649,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
   }, [gridPath, metadataRef])
 
   useSnapAnimation({
+    disabled: anyTargetAbsolute,
     targetRootCell: targetRootCell,
     controls: controls,
     shadowFrame: initialShadowFrame,
@@ -668,37 +683,6 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
 
   // NOTE: this stuff is meant to be temporary, until we settle on the set of interaction pieces we like.
   // After that, we should get rid of this.
-  const shadowOpacity = React.useMemo(() => {
-    if (shadow == null || initialShadowFrame == null || interactionData == null) {
-      return 0
-    } else if (!features.Grid.adaptiveOpacity) {
-      return features.Grid.opacityBaseline
-    } else if (features.Grid.dragLockedToCenter) {
-      return Math.min(
-        (0.2 * distance(getRectCenter(shadow.globalFrame), mouseCanvasPosition)) /
-          Math.min(shadow.globalFrame.height, shadow.globalFrame.width) +
-          0.05,
-        features.Grid.opacityBaseline,
-      )
-    } else {
-      return Math.min(
-        (0.2 *
-          distance(
-            offsetPoint(
-              interactionData.dragStart,
-              pointDifference(initialShadowFrame, shadow.globalFrame),
-            ),
-            mouseCanvasPosition,
-          )) /
-          Math.min(shadow.globalFrame.height, shadow.globalFrame.width) +
-          0.05,
-        features.Grid.opacityBaseline,
-      )
-    }
-  }, [features, shadow, initialShadowFrame, interactionData, mouseCanvasPosition])
-
-  // NOTE: this stuff is meant to be temporary, until we settle on the set of interaction pieces we like.
-  // After that, we should get rid of this.
   const shadowPosition = React.useMemo(() => {
     const drag = interactionData?.drag
     const dragStart = interactionData?.dragStart
@@ -716,13 +700,6 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     const getCoord = (axis: 'x' | 'y', dimension: 'width' | 'height') => {
       if (features.Grid.dragVerbatim) {
         return initialShadowFrame[axis] + drag[axis]
-      } else if (features.Grid.dragLockedToCenter) {
-        return (
-          shadow.globalFrame[axis] +
-          drag[axis] -
-          (shadow.globalFrame[axis] - dragStart[axis]) -
-          shadow.globalFrame[dimension] / 2
-        )
       } else if (features.Grid.dragMagnetic) {
         return shadow.globalFrame[axis] + (mouseCanvasPosition[axis] - hoveringStart.point[axis])
       } else if (features.Grid.dragRatio) {
@@ -831,9 +808,11 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                   activelyDraggingOrResizingCell != null
                     ? features.Grid.dotgridColor
                     : 'transparent'
+
                 const borderColor =
-                  activelyDraggingOrResizingCell != null
-                    ? features.Grid.activeGridColor
+                  countedColumn === currentHoveredCell?.column &&
+                  countedRow === currentHoveredCell?.row
+                    ? colorTheme.brandNeonPink.value
                     : features.Grid.inactiveGridColor
 
                 return (
@@ -842,16 +821,16 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                     id={id}
                     data-testid={id}
                     style={{
-                      borderTop: `1px solid ${borderColor}`,
-                      borderLeft: `1px solid ${borderColor}`,
+                      borderTop: gridPlaceholderBorder(borderColor),
+                      borderLeft: gridPlaceholderBorder(borderColor),
                       borderBottom:
                         countedRow >= grid.rows || (grid.rowGap != null && grid.rowGap > 0)
-                          ? `1px solid ${borderColor}`
+                          ? gridPlaceholderBorder(borderColor)
                           : undefined,
                       borderRight:
                         countedColumn >= grid.columns ||
                         (grid.columnGap != null && grid.columnGap > 0)
-                          ? `1px solid ${borderColor}`
+                          ? gridPlaceholderBorder(borderColor)
                           : undefined,
                       position: 'relative',
                       pointerEvents: 'initial',
@@ -960,6 +939,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
         })}
         {/* shadow */}
         {features.Grid.shadow &&
+        !anyTargetAbsolute &&
         shadow != null &&
         initialShadowFrame != null &&
         interactionData?.dragStart != null &&
@@ -985,7 +965,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                   ? `${shadow.borderRadius.top}px ${shadow.borderRadius.right}px ${shadow.borderRadius.bottom}px ${shadow.borderRadius.left}px`
                   : 0,
               backgroundColor: 'black',
-              opacity: shadowOpacity,
+              opacity: features.Grid.shadowOpacity,
               border: '1px solid white',
               top: shadowPosition?.y,
               left: shadowPosition?.x,
@@ -998,12 +978,13 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
 })
 
 function useSnapAnimation(params: {
+  disabled: boolean
   gridPath: ElementPath | null
   shadowFrame: CanvasRectangle | null
   targetRootCell: GridCellCoordinates | null
   controls: AnimationControls
 }) {
-  const { gridPath, targetRootCell, controls, shadowFrame } = params
+  const { gridPath, targetRootCell, controls, shadowFrame, disabled } = params
   const features = useRollYourOwnFeatures()
 
   const [lastTargetRootCellId, setLastTargetRootCellId] = React.useState(targetRootCell)
@@ -1052,6 +1033,10 @@ function useSnapAnimation(params: {
   }, [canvasScale, canvasOffset, gridPath, targetRootCell])
 
   React.useEffect(() => {
+    if (disabled) {
+      return
+    }
+
     if (targetRootCell != null && snapPoint != null && moveFromPoint != null) {
       const snapPointsDiffer = lastSnapPoint == null || !pointsEqual(snapPoint, lastSnapPoint)
       const hasMovedToANewCell = lastTargetRootCellId != null
@@ -1082,6 +1067,7 @@ function useSnapAnimation(params: {
     animate,
     moveFromPoint,
     lastTargetRootCellId,
+    disabled,
   ])
 }
 
@@ -1381,3 +1367,5 @@ function gridKeyFromPath(path: ElementPath): string {
 export function getGridPlaceholderDomElement(elementPath: ElementPath): HTMLElement | null {
   return document.getElementById(gridKeyFromPath(elementPath))
 }
+
+const gridPlaceholderBorder = (color: string) => `2px solid ${color}`
