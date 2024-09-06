@@ -157,15 +157,14 @@ function collectMetadataForPaths({
   })
 
   if (checkExistingMetadata === 'check-existing') {
-    const oldMetadataPathsNotInDynamicPathsToCollect = Object.keys(metadataToUpdate_MUTATE).filter(
-      (p) => !dynamicPathsToCollect.includes(p),
-    )
-
-    oldMetadataPathsNotInDynamicPathsToCollect.forEach((pathString) => {
-      const path = EP.fromString(pathString)
+    // delete all metadata which should be collected now and those which are not in the dom anymore
+    Object.keys(metadataToUpdate_MUTATE).forEach((p) => {
+      if (dynamicPathsToCollect.includes(p)) {
+        delete metadataToUpdate_MUTATE[p]
+      }
 
       const domMetadata = collectMetadataForElementPath(
-        path,
+        EP.fromString(p),
         validPaths,
         selectedViews,
         scale,
@@ -174,7 +173,7 @@ function collectMetadataForPaths({
       )
 
       if (domMetadata == null) {
-        delete metadataToUpdate_MUTATE[pathString]
+        delete metadataToUpdate_MUTATE[p]
       }
     })
   }
