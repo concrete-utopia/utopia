@@ -47,7 +47,7 @@ import {
   setPropHugAbsoluteStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import type { Size } from '../../core/shared/math-utils'
+import type { CanvasVector, Size } from '../../core/shared/math-utils'
 import {
   isFiniteRectangle,
   isInfinityRectangle,
@@ -76,6 +76,7 @@ import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
 import { hugPropertiesFromStyleMap } from '../../core/shared/dom-utils'
 import { setHugContentForAxis } from './inspector-strategies/hug-contents-strategy'
+import { getGridCellBoundsFromCanvas } from '../canvas/canvas-strategies/strategies/grid-cell-bounds'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -1216,6 +1217,7 @@ export function toggleAbsolutePositioningCommands(
   allElementProps: AllElementProps,
   elementPathTree: ElementPathTrees,
   selectedViews: Array<ElementPath>,
+  canvasContext: { scale: number; offset: CanvasVector },
 ): Array<CanvasCommand> {
   const commands = selectedViews.flatMap((elementPath) => {
     const maybeGroupConversionCommands = groupConversionCommands(
@@ -1227,6 +1229,16 @@ export function toggleAbsolutePositioningCommands(
 
     if (maybeGroupConversionCommands != null) {
       return maybeGroupConversionCommands
+    }
+
+    const maybeGridElementConversionCommands = gridChildAbsolutePositionConversionCommands(
+      jsxMetadata,
+      elementPathTree,
+      elementPath,
+      canvasContext,
+    )
+    if (maybeGridElementConversionCommands != null) {
+      return maybeGridElementConversionCommands
     }
 
     const element = MetadataUtils.findElementByElementPath(jsxMetadata, elementPath)
@@ -1400,4 +1412,69 @@ export function getConstraintsIncludingImplicitForElement(
 
 export function isHuggingParent(element: ElementInstanceMetadata, property: 'width' | 'height') {
   return element.specialSizeMeasurements.computedHugProperty[property] != null
+}
+
+function gridChildAbsolutePositionConversionCommands(
+  jsxMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+  elementPath: ElementPath,
+  canvasContext: { scale: number; offset: CanvasVector },
+): CanvasCommand[] | null {
+  if (!MetadataUtils.isGridCell(jsxMetadata, elementPath)) {
+    return null
+  }
+
+  const instance = MetadataUtils.findElementByElementPath(jsxMetadata, elementPath)
+  if (instance == null) {
+    return null
+  }
+
+  const initialCellBounds = getGridCellBoundsFromCanvas(
+    instance,
+    canvasContext.scale,
+    canvasContext.offset,
+  )
+  if (initialCellBounds == null) {
+    return null
+  }
+
+  if (MetadataUtils.isPositionAbsolute(instance)) {
+    return [
+      ...nukeAllAbsolutePositioningPropsCommands(elementPath),
+      deleteProperties('always', elementPath, gridElementProps),
+      setProperty('always', elementPath, PP.create('style', 'gridRow'), initialCellBounds.row),
+      setProperty(
+        'always',
+        elementPath,
+        PP.create('style', 'gridColumn'),
+        initialCellBounds.column,
+      ),
+      deleteProperties('always', elementPath, [
+        PP.create('style', 'width'),
+        PP.create('style', 'height'),
+      ]),
+    ]
+  }
+
+  return [
+    ...sizeToVisualDimensions(jsxMetadata, elementPathTree, elementPath),
+    deleteProperties('always', elementPath, gridElementProps),
+    setProperty('always', elementPath, PP.create('style', 'gridRow'), initialCellBounds.row),
+    setProperty('always', elementPath, PP.create('style', 'gridColumn'), initialCellBounds.column),
+    setProperty('always', elementPath, PP.create('style', 'position'), 'absolute'),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      PP.create('style', 'top'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(0) },
+      null,
+    ),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      PP.create('style', 'left'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(0) },
+      null,
+    ),
+  ]
 }

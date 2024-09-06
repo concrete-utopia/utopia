@@ -11,7 +11,7 @@ import { GridCellTestId } from '../../controls/grid-controls'
 import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
-import { gridCellTargetId } from './grid-helpers'
+import { gridCellTargetId } from './grid-cell-bounds'
 
 describe('grid rearrange move strategy', () => {
   it('can rearrange elements on a grid', async () => {
