@@ -175,7 +175,6 @@ const config = {
       'REACT_APP_ENVIRONMENT_CONFIG',
       'REACT_APP_AUTH0_CLIENT_ID',
       'REACT_APP_AUTH0_ENDPOINT',
-      'REACT_APP_COMMIT_HASH',
 
       // !! optional env vars should be added in the webpack.EnvironmentPlugin below providing a default value for them instead than here
     ]),
@@ -184,6 +183,7 @@ const config = {
       GOOGLE_WEB_FONTS_KEY: '', // providing an empty default for GOOGLE_WEB_FONTS_KEY for now
       REACT_APP_BROWSER_TEST_DEBUG: 'false',
       USE_BFF: 'false',
+      REACT_APP_COMMIT_HASH: undefined,
     }),
 
     new webpack.ProvidePlugin({ BrowserFS: 'browserfs' }), // weirdly, the browserfs/dist/shims/fs shim assumes a global BrowserFS being available

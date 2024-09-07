@@ -75,7 +75,7 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm install --silent
     '')
     (pkgs.writeScriptBin "install-website-editor-ci" ''
       #!/usr/bin/env bash
@@ -239,7 +239,7 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
-      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm install --silent
       ${pnpm}/bin/pnpm run build
     '')
     (pkgs.writeScriptBin "build-utopia-vscode-common-production" ''
