@@ -36,14 +36,14 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-api
-      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm install --silent
       ${pnpm}/bin/pnpm run build
     '')
     (pkgs.writeScriptBin "install-eslint-config-utopia" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/eslint-config-utopia
-      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm install --silent
     '')
     (pkgs.writeScriptBin "build-vscode-common" ''
       #!/usr/bin/env bash
@@ -69,7 +69,7 @@ let
       install-eslint-config-utopia
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm install --silent
     '')
     (pkgs.writeScriptBin "install-website" ''
       #!/usr/bin/env bash

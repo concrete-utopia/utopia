@@ -44,4 +44,4 @@ jobs:
           nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
       - name: Run the Karma tests
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
-        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-karma-ci-shard-${{ inputs.shard_number }}
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --quiet --run check-editor-karma-ci-shard-${{ inputs.shard_number }}
