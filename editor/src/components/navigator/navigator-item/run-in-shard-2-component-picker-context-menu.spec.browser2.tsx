@@ -32,7 +32,7 @@ import { fireEvent, waitFor } from '@testing-library/react'
 import { labelTestIdForComponentIcon } from './component-picker-context-menu'
 import { ReplaceElementButtonTestId, addChildButtonTestId } from './navigator-item-components'
 import { NavigatorContainerId } from '../navigator'
-import { act } from 'react-dom/test-utils'
+import { act } from '@testing-library/react'
 import { cmdModifier } from '../../../utils/modifiers'
 import { getNavigatorTargetsFromEditorState } from '../navigator-utils'
 

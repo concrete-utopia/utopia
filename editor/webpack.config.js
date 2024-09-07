@@ -348,7 +348,7 @@ const config = {
           }),
         ]
       : [],
-    moduleIds: 'hashed', // "Short hashes as ids for better long term caching."
+    moduleIds: 'deterministic', // "Short numeric ids which will not be changing between compilation. Good for long term caching."
     splitChunks: {
       chunks: 'all',
     },
