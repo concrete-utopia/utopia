@@ -23,6 +23,7 @@ import {
 import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
+  canvasRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
   pointsEqual,
@@ -962,10 +963,272 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
             }}
           />
         ) : null}
+        <AbsoluteDistanceIndicators targetRootCell={targetRootCell} />
       </CanvasOffsetWrapper>
     </React.Fragment>
   )
 })
+
+const AbsoluteDistanceIndicators = React.memo(
+  (props: { targetRootCell: GridCellCoordinates | null }) => {
+    const cellFrame = useEditorState(
+      Substores.metadata,
+      (store) => {
+        if (store.editor.selectedViews.length !== 1) {
+          return null
+        }
+        const meta = MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          store.editor.selectedViews[0],
+        )
+        if (
+          !MetadataUtils.isPositionAbsolute(meta) ||
+          meta?.globalFrame == null ||
+          !isFiniteRectangle(meta.globalFrame)
+        ) {
+          return null
+        }
+        return meta.globalFrame
+      },
+      'Distance cellFrame',
+    )
+    const canvasScale = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.scale,
+      'Distance canvasScale',
+    )
+
+    const canvasOffset = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.roundedCanvasOffset,
+      'Distance canvasOffset',
+    )
+
+    const targetCellBoundingBox = React.useMemo(() => {
+      if (props.targetRootCell == null) {
+        return null
+      }
+      const element = document.querySelector(
+        `[data-grid-row="${props.targetRootCell.row}"]` +
+          `[data-grid-column="${props.targetRootCell.column}"]`,
+      )
+      const boundingBox = element?.getBoundingClientRect()
+      if (boundingBox == null) {
+        return null
+      }
+
+      const canvasOrigin = windowToCanvasCoordinates(
+        canvasScale,
+        canvasOffset,
+        windowPoint({ x: boundingBox.left, y: boundingBox.top }),
+      ).canvasPositionRounded
+      const canvasRect = canvasRectangle({
+        x: canvasOrigin.x,
+        y: canvasOrigin.y,
+        width: boundingBox.width * canvasScale,
+        height: boundingBox.height * canvasScale,
+      })
+
+      return canvasRect
+    }, [props.targetRootCell, canvasScale, canvasOffset])
+
+    const topDist = React.useMemo(() => {
+      if (targetCellBoundingBox == null || cellFrame == null) {
+        return 0
+      }
+      return cellFrame.y - targetCellBoundingBox.y
+    }, [cellFrame, targetCellBoundingBox])
+    const leftDist = React.useMemo(() => {
+      if (targetCellBoundingBox == null || cellFrame == null) {
+        return 0
+      }
+      return cellFrame.x - targetCellBoundingBox.x
+    }, [cellFrame, targetCellBoundingBox])
+
+    const positioning = React.useMemo(() => {
+      if (cellFrame == null || targetCellBoundingBox == null) {
+        return null
+      }
+
+      const topIndicator = {
+        left:
+          cellFrame.x < targetCellBoundingBox.x || leftDist < 32 || topDist < 0
+            ? targetCellBoundingBox.x + targetCellBoundingBox.width / 2
+            : Math.max(targetCellBoundingBox.x, cellFrame.x),
+        top: topDist < 0 ? cellFrame.y : targetCellBoundingBox.y,
+        compensateNegative:
+          topDist < 0 && cellFrame.x > targetCellBoundingBox.x + targetCellBoundingBox.width / 2
+            ? {
+                width: Math.abs(
+                  targetCellBoundingBox.x + targetCellBoundingBox.width / 2 - cellFrame.x,
+                ),
+                height: 1,
+                top: cellFrame.y,
+                left: targetCellBoundingBox.x + targetCellBoundingBox.width / 2,
+              }
+            : null,
+        compensatePositive:
+          topDist > 0 && cellFrame.x > targetCellBoundingBox.x + targetCellBoundingBox.width
+            ? {
+                width: Math.abs(
+                  targetCellBoundingBox.x + targetCellBoundingBox.width / 2 - cellFrame.x,
+                ),
+                height: 1,
+                top: targetCellBoundingBox.y,
+                left: targetCellBoundingBox.x + targetCellBoundingBox.width / 2,
+              }
+            : null,
+      }
+
+      const leftIndicator = {
+        left: leftDist < 0 ? cellFrame.x : targetCellBoundingBox.x,
+        top:
+          cellFrame.y < targetCellBoundingBox.y || topDist < 32 || leftDist < 0
+            ? targetCellBoundingBox.y + targetCellBoundingBox.height / 2
+            : Math.max(targetCellBoundingBox.y, cellFrame.y),
+        compensateNegative:
+          leftDist < 0 && cellFrame.y > targetCellBoundingBox.y + targetCellBoundingBox.height / 2
+            ? {
+                height: Math.abs(
+                  targetCellBoundingBox.y + targetCellBoundingBox.height / 2 - cellFrame.y,
+                ),
+                width: 1,
+                left: cellFrame.x,
+                top: targetCellBoundingBox.y + targetCellBoundingBox.height / 2,
+              }
+            : null,
+        compensatePositive:
+          leftDist > 0 && cellFrame.y > targetCellBoundingBox.y + targetCellBoundingBox.height
+            ? {
+                height: Math.abs(
+                  targetCellBoundingBox.y + targetCellBoundingBox.height / 2 - cellFrame.y,
+                ),
+                width: 1,
+                left: targetCellBoundingBox.x,
+                top: targetCellBoundingBox.y + targetCellBoundingBox.height / 2,
+              }
+            : null,
+      }
+
+      return { topIndicator, leftIndicator }
+    }, [cellFrame, targetCellBoundingBox, leftDist, topDist])
+
+    if (targetCellBoundingBox == null || cellFrame == null || positioning == null) {
+      return null
+    }
+
+    return (
+      <React.Fragment>
+        {/* top */}
+        <React.Fragment>
+          <div
+            style={{
+              position: 'absolute',
+              left: positioning.topIndicator.left,
+              top: positioning.topIndicator.top,
+              height: Math.abs(topDist),
+              width: 1,
+              borderLeft: '1px dashed #f0f',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <span
+              style={{
+                backgroundColor: '#f0f',
+                padding: '0px 2px',
+                borderRadius: 2,
+                fontSize: 9,
+                color: '#fff',
+              }}
+            >
+              {topDist}
+            </span>
+          </div>
+          {/* compensate */}
+          {positioning.topIndicator.compensateNegative != null ? (
+            <div
+              style={{
+                position: 'absolute',
+                borderTop: `1px dashed #f0f`,
+                width: positioning.topIndicator.compensateNegative.width,
+                height: positioning.topIndicator.compensateNegative.height,
+                top: positioning.topIndicator.compensateNegative.top,
+                left: positioning.topIndicator.compensateNegative.left,
+              }}
+            />
+          ) : null}
+          {positioning.topIndicator.compensatePositive != null ? (
+            <div
+              style={{
+                position: 'absolute',
+                borderTop: `1px dashed #f0f`,
+                width: positioning.topIndicator.compensatePositive.width,
+                height: positioning.topIndicator.compensatePositive.height,
+                top: positioning.topIndicator.compensatePositive.top,
+                left: positioning.topIndicator.compensatePositive.left,
+              }}
+            />
+          ) : null}
+        </React.Fragment>
+        {/* left */}
+        <React.Fragment>
+          <div
+            style={{
+              position: 'absolute',
+              left: positioning.leftIndicator.left,
+              top: positioning.leftIndicator.top,
+              width: Math.abs(leftDist),
+              height: 1,
+              borderTop: '1px dashed #f0f',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <span
+              style={{
+                backgroundColor: '#f0f',
+                padding: '0px 2px',
+                borderRadius: 2,
+                fontSize: 9,
+                color: '#fff',
+              }}
+            >
+              {leftDist}
+            </span>
+          </div>
+          {/* compensate */}
+          {positioning.leftIndicator.compensateNegative != null ? (
+            <div
+              style={{
+                position: 'absolute',
+                borderLeft: `1px dashed #f0f`,
+                width: positioning.leftIndicator.compensateNegative.width,
+                height: positioning.leftIndicator.compensateNegative.height,
+                top: positioning.leftIndicator.compensateNegative.top,
+                left: positioning.leftIndicator.compensateNegative.left,
+              }}
+            />
+          ) : null}
+          {positioning.leftIndicator.compensatePositive != null ? (
+            <div
+              style={{
+                position: 'absolute',
+                borderLeft: `1px dashed #f0f`,
+                width: positioning.leftIndicator.compensatePositive.width,
+                height: positioning.leftIndicator.compensatePositive.height,
+                top: positioning.leftIndicator.compensatePositive.top,
+                left: positioning.leftIndicator.compensatePositive.left,
+              }}
+            />
+          ) : null}
+        </React.Fragment>
+      </React.Fragment>
+    )
+  },
+)
 
 function useCellAnimation(params: {
   disabled: boolean
