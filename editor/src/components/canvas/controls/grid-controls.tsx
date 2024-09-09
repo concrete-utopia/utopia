@@ -5,6 +5,7 @@ import type { AnimationControls } from 'framer-motion'
 import { motion, useAnimationControls } from 'framer-motion'
 import type { CSSProperties } from 'react'
 import React from 'react'
+import type { Sides } from 'utopia-api/core'
 import type { ElementPath } from 'utopia-shared/src/types'
 import type { GridDimension } from '../../../components/inspector/common/css-utils'
 import {
@@ -40,9 +41,11 @@ import {
 } from '../../../core/shared/optics/optic-creators'
 import { toFirst } from '../../../core/shared/optics/optic-utilities'
 import type { Optic } from '../../../core/shared/optics/optics'
+import { optionalMap } from '../../../core/shared/optional-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { Modifier } from '../../../utils/modifiers'
 import { when } from '../../../utils/react-conditionals'
+import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { useRollYourOwnFeatures } from '../../navigator/left-pane/roll-your-own-pane'
@@ -53,16 +56,13 @@ import type {
   GridResizeEdgeProperties,
 } from '../canvas-strategies/interaction-state'
 import {
-  GridResizeEdges,
   createInteractionViaMouse,
   gridAxisHandle,
   gridCellHandle,
   gridResizeEdgeProperties,
+  GridResizeEdges,
   gridResizeHandle,
 } from '../canvas-strategies/interaction-state'
-import { windowToCanvasCoordinates } from '../dom-lookup'
-import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { gridCellTargetId } from '../canvas-strategies/strategies/grid-helpers'
 import { resizeBoundingBoxFromSide } from '../canvas-strategies/strategies/resize-helpers'
 import type { EdgePosition } from '../canvas-types'
@@ -73,11 +73,11 @@ import {
   EdgePositionRight,
   EdgePositionTop,
 } from '../canvas-types'
-import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
-import { CanvasLabel } from './select-mode/controls-common'
-import { optionalMap } from '../../../core/shared/optional-utils'
-import type { Sides } from 'utopia-api/core'
+import { windowToCanvasCoordinates } from '../dom-lookup'
 import type { Axis } from '../gap-utils'
+import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
+import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
+import { CanvasLabel } from './select-mode/controls-common'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
@@ -971,6 +971,8 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
 
 const AbsoluteDistanceIndicators = React.memo(
   (props: { targetRootCell: GridCellCoordinates | null }) => {
+    const colorTheme = useColorTheme()
+
     const cellFrame = useEditorState(
       Substores.metadata,
       (store) => {
@@ -990,18 +992,18 @@ const AbsoluteDistanceIndicators = React.memo(
         }
         return meta.globalFrame
       },
-      'Distance cellFrame',
+      'AbsoluteDistanceIndicators cellFrame',
     )
     const canvasScale = useEditorState(
       Substores.canvasOffset,
       (store) => store.editor.canvas.scale,
-      'Distance canvasScale',
+      'AbsoluteDistanceIndicators canvasScale',
     )
 
     const canvasOffset = useEditorState(
       Substores.canvasOffset,
       (store) => store.editor.canvas.roundedCanvasOffset,
-      'Distance canvasOffset',
+      'AbsoluteDistanceIndicators canvasOffset',
     )
 
     const targetCellBoundingBox = React.useMemo(() => {
@@ -1050,64 +1052,110 @@ const AbsoluteDistanceIndicators = React.memo(
         return null
       }
 
+      function position(
+        wantedCoord: 'x' | 'y',
+        cell: CanvasRectangle,
+        root: CanvasRectangle,
+        dominantDistance: number,
+        otherDistance: number,
+      ): { left: number; top: number } {
+        const otherCoord = wantedCoord === 'x' ? 'y' : 'x'
+        const dimension = wantedCoord === 'x' ? 'width' : 'height'
+        const dominant =
+          cell[wantedCoord] < root[wantedCoord] || dominantDistance < 32 || otherDistance < 0
+            ? root[wantedCoord] + root[dimension] / 2
+            : Math.max(root[wantedCoord], cell[wantedCoord])
+        const other = otherDistance < 0 ? cell[otherCoord] : root[otherCoord]
+        if (wantedCoord === 'x') {
+          return {
+            left: dominant,
+            top: other,
+          }
+        } else {
+          return {
+            left: other,
+            top: dominant,
+          }
+        }
+      }
+
+      function compensationNegative(
+        wantedCoord: 'x' | 'y',
+        cell: CanvasRectangle,
+        root: CanvasRectangle,
+        dist: number,
+      ): { width: number; height: number; left: number; top: number } | null {
+        const otherCoord = wantedCoord === 'x' ? 'y' : 'x'
+        const dimension = wantedCoord === 'x' ? 'width' : 'height'
+
+        const shouldCompensate =
+          dist < 0 && cell[wantedCoord] > root[wantedCoord] + root[dimension] / 2
+        if (!shouldCompensate) {
+          return null
+        }
+
+        const size = Math.abs(root[wantedCoord] + root[dimension] / 2 - cell[wantedCoord])
+        const dominant = root[wantedCoord] + root[dimension] / 2
+        const other = cell[otherCoord]
+
+        return wantedCoord === 'x'
+          ? {
+              width: size,
+              height: 1,
+              top: other,
+              left: dominant,
+            }
+          : {
+              width: 1,
+              height: size,
+              top: dominant,
+              left: other,
+            }
+      }
+
+      function compensationPositive(
+        wantedCoord: 'x' | 'y',
+        cell: CanvasRectangle,
+        root: CanvasRectangle,
+        dist: number,
+      ): { width: number; height: number; left: number; top: number } | null {
+        const otherCoord = wantedCoord === 'x' ? 'y' : 'x'
+        const dimension = wantedCoord === 'x' ? 'width' : 'height'
+
+        const shouldCompensate = dist > 0 && cell[wantedCoord] > root[wantedCoord] + root[dimension]
+        if (!shouldCompensate) {
+          return null
+        }
+
+        const size = Math.abs(root[wantedCoord] + root[dimension] / 2 - cell[wantedCoord])
+        const other = root[otherCoord]
+        const dominant = root[wantedCoord] + root[dimension] / 2
+
+        return wantedCoord === 'x'
+          ? {
+              width: size,
+              height: 1,
+              top: other,
+              left: dominant,
+            }
+          : {
+              height: size,
+              width: 1,
+              left: other,
+              top: dominant,
+            }
+      }
+
       const topIndicator = {
-        left:
-          cellFrame.x < targetCellBoundingBox.x || leftDist < 32 || topDist < 0
-            ? targetCellBoundingBox.x + targetCellBoundingBox.width / 2
-            : Math.max(targetCellBoundingBox.x, cellFrame.x),
-        top: topDist < 0 ? cellFrame.y : targetCellBoundingBox.y,
-        compensateNegative:
-          topDist < 0 && cellFrame.x > targetCellBoundingBox.x + targetCellBoundingBox.width / 2
-            ? {
-                width: Math.abs(
-                  targetCellBoundingBox.x + targetCellBoundingBox.width / 2 - cellFrame.x,
-                ),
-                height: 1,
-                top: cellFrame.y,
-                left: targetCellBoundingBox.x + targetCellBoundingBox.width / 2,
-              }
-            : null,
-        compensatePositive:
-          topDist > 0 && cellFrame.x > targetCellBoundingBox.x + targetCellBoundingBox.width
-            ? {
-                width: Math.abs(
-                  targetCellBoundingBox.x + targetCellBoundingBox.width / 2 - cellFrame.x,
-                ),
-                height: 1,
-                top: targetCellBoundingBox.y,
-                left: targetCellBoundingBox.x + targetCellBoundingBox.width / 2,
-              }
-            : null,
+        ...position('x', cellFrame, targetCellBoundingBox, leftDist, topDist),
+        compensateNegative: compensationNegative('x', cellFrame, targetCellBoundingBox, topDist),
+        compensatePositive: compensationPositive('x', cellFrame, targetCellBoundingBox, topDist),
       }
 
       const leftIndicator = {
-        left: leftDist < 0 ? cellFrame.x : targetCellBoundingBox.x,
-        top:
-          cellFrame.y < targetCellBoundingBox.y || topDist < 32 || leftDist < 0
-            ? targetCellBoundingBox.y + targetCellBoundingBox.height / 2
-            : Math.max(targetCellBoundingBox.y, cellFrame.y),
-        compensateNegative:
-          leftDist < 0 && cellFrame.y > targetCellBoundingBox.y + targetCellBoundingBox.height / 2
-            ? {
-                height: Math.abs(
-                  targetCellBoundingBox.y + targetCellBoundingBox.height / 2 - cellFrame.y,
-                ),
-                width: 1,
-                left: cellFrame.x,
-                top: targetCellBoundingBox.y + targetCellBoundingBox.height / 2,
-              }
-            : null,
-        compensatePositive:
-          leftDist > 0 && cellFrame.y > targetCellBoundingBox.y + targetCellBoundingBox.height
-            ? {
-                height: Math.abs(
-                  targetCellBoundingBox.y + targetCellBoundingBox.height / 2 - cellFrame.y,
-                ),
-                width: 1,
-                left: targetCellBoundingBox.x,
-                top: targetCellBoundingBox.y + targetCellBoundingBox.height / 2,
-              }
-            : null,
+        ...position('y', cellFrame, targetCellBoundingBox, leftDist, leftDist),
+        compensateNegative: compensationNegative('y', cellFrame, targetCellBoundingBox, leftDist),
+        compensatePositive: compensationPositive('y', cellFrame, targetCellBoundingBox, leftDist),
       }
 
       return { topIndicator, leftIndicator }
@@ -1117,26 +1165,30 @@ const AbsoluteDistanceIndicators = React.memo(
       return null
     }
 
+    const backgroundColor = colorTheme.brandNeonPink.value
+    const dashedBorder = `1px dashed ${backgroundColor}`
+
     return (
       <React.Fragment>
-        {/* top */}
+        {/* top distance */}
         <React.Fragment>
           <div
             style={{
               position: 'absolute',
-              left: positioning.topIndicator.left,
-              top: positioning.topIndicator.top,
-              height: Math.abs(topDist),
-              width: 1,
-              borderLeft: '1px dashed #f0f',
+              borderLeft: dashedBorder,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+
+              left: positioning.topIndicator.left,
+              top: positioning.topIndicator.top,
+              width: 1,
+              height: Math.abs(topDist),
             }}
           >
             <span
               style={{
-                backgroundColor: '#f0f',
+                backgroundColor: backgroundColor,
                 padding: '0px 2px',
                 borderRadius: 2,
                 fontSize: 9,
@@ -1151,11 +1203,12 @@ const AbsoluteDistanceIndicators = React.memo(
             <div
               style={{
                 position: 'absolute',
-                borderTop: `1px dashed #f0f`,
+                borderTop: dashedBorder,
+
+                left: positioning.topIndicator.compensateNegative.left,
+                top: positioning.topIndicator.compensateNegative.top,
                 width: positioning.topIndicator.compensateNegative.width,
                 height: positioning.topIndicator.compensateNegative.height,
-                top: positioning.topIndicator.compensateNegative.top,
-                left: positioning.topIndicator.compensateNegative.left,
               }}
             />
           ) : null}
@@ -1163,33 +1216,36 @@ const AbsoluteDistanceIndicators = React.memo(
             <div
               style={{
                 position: 'absolute',
-                borderTop: `1px dashed #f0f`,
+                borderTop: dashedBorder,
+
+                left: positioning.topIndicator.compensatePositive.left,
+                top: positioning.topIndicator.compensatePositive.top,
                 width: positioning.topIndicator.compensatePositive.width,
                 height: positioning.topIndicator.compensatePositive.height,
-                top: positioning.topIndicator.compensatePositive.top,
-                left: positioning.topIndicator.compensatePositive.left,
               }}
             />
           ) : null}
         </React.Fragment>
-        {/* left */}
+
+        {/* left distance */}
         <React.Fragment>
           <div
             style={{
               position: 'absolute',
+              borderTop: dashedBorder,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+
               left: positioning.leftIndicator.left,
               top: positioning.leftIndicator.top,
               width: Math.abs(leftDist),
               height: 1,
-              borderTop: '1px dashed #f0f',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
             }}
           >
             <span
               style={{
-                backgroundColor: '#f0f',
+                backgroundColor: backgroundColor,
                 padding: '0px 2px',
                 borderRadius: 2,
                 fontSize: 9,
@@ -1204,11 +1260,12 @@ const AbsoluteDistanceIndicators = React.memo(
             <div
               style={{
                 position: 'absolute',
-                borderLeft: `1px dashed #f0f`,
+                borderLeft: dashedBorder,
+
+                left: positioning.leftIndicator.compensateNegative.left,
+                top: positioning.leftIndicator.compensateNegative.top,
                 width: positioning.leftIndicator.compensateNegative.width,
                 height: positioning.leftIndicator.compensateNegative.height,
-                top: positioning.leftIndicator.compensateNegative.top,
-                left: positioning.leftIndicator.compensateNegative.left,
               }}
             />
           ) : null}
@@ -1216,11 +1273,12 @@ const AbsoluteDistanceIndicators = React.memo(
             <div
               style={{
                 position: 'absolute',
-                borderLeft: `1px dashed #f0f`,
+                borderLeft: dashedBorder,
+
+                left: positioning.leftIndicator.compensatePositive.left,
+                top: positioning.leftIndicator.compensatePositive.top,
                 width: positioning.leftIndicator.compensatePositive.width,
                 height: positioning.leftIndicator.compensatePositive.height,
-                top: positioning.leftIndicator.compensatePositive.top,
-                left: positioning.leftIndicator.compensatePositive.left,
               }}
             />
           ) : null}
