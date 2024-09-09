@@ -13,7 +13,6 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   JSXAttributes,
-  JSXElement,
 } from '../../core/shared/element-template'
 import {
   isJSXElement,
@@ -1414,6 +1413,46 @@ export function isHuggingParent(element: ElementInstanceMetadata, property: 'wid
   return element.specialSizeMeasurements.computedHugProperty[property] != null
 }
 
+function getGridElementBounds(
+  cell: ElementInstanceMetadata,
+  canvasContext: { scale: number; offset: CanvasVector },
+):
+  | null
+  | { type: 'contained'; gridRow: number; gridColumn: number }
+  | {
+      type: 'span'
+      gridRowStart: number
+      gridRowEnd: number
+      gridColumnStart: number
+      gridColumnEnd: number
+    } {
+  const initialCellBounds = getGridCellBoundsFromCanvas(
+    cell,
+    canvasContext.scale,
+    canvasContext.offset,
+  )
+
+  if (initialCellBounds == null) {
+    return null
+  }
+
+  if (initialCellBounds.height > 1 || initialCellBounds.width > 1) {
+    return {
+      type: 'span',
+      gridRowStart: initialCellBounds.row,
+      gridRowEnd: initialCellBounds.row + initialCellBounds.height,
+      gridColumnStart: initialCellBounds.column,
+      gridColumnEnd: initialCellBounds.column + initialCellBounds.width,
+    }
+  }
+
+  return {
+    type: 'contained',
+    gridRow: initialCellBounds.row,
+    gridColumn: initialCellBounds.column,
+  }
+}
+
 function gridChildAbsolutePositionConversionCommands(
   jsxMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
@@ -1429,25 +1468,32 @@ function gridChildAbsolutePositionConversionCommands(
     return null
   }
 
-  const initialCellBounds = getGridCellBoundsFromCanvas(
-    instance,
-    canvasContext.scale,
-    canvasContext.offset,
-  )
-  if (initialCellBounds == null) {
+  const cellBounds = getGridElementBounds(instance, canvasContext)
+  if (cellBounds == null) {
     return null
   }
 
   if (MetadataUtils.isPositionAbsolute(instance)) {
+    const gridPositioningProps =
+      cellBounds.type === 'contained'
+        ? [
+            { prop: PP.create('style', 'gridRow'), value: cellBounds.gridRow },
+            { prop: PP.create('style', 'gridColumn'), value: cellBounds.gridColumn },
+          ]
+        : cellBounds.type === 'span'
+        ? [
+            { prop: PP.create('style', 'gridRowStart'), value: cellBounds.gridRowStart },
+            { prop: PP.create('style', 'gridRowEnd'), value: cellBounds.gridRowEnd },
+            { prop: PP.create('style', 'gridColumnStart'), value: cellBounds.gridColumnStart },
+            { prop: PP.create('style', 'gridColumnEnd'), value: cellBounds.gridColumnEnd },
+          ]
+        : assertNever(cellBounds)
+
     return [
       ...nukeAllAbsolutePositioningPropsCommands(elementPath),
       deleteProperties('always', elementPath, gridElementProps),
-      setProperty('always', elementPath, PP.create('style', 'gridRow'), initialCellBounds.row),
-      setProperty(
-        'always',
-        elementPath,
-        PP.create('style', 'gridColumn'),
-        initialCellBounds.column,
+      ...gridPositioningProps.map(({ prop, value }) =>
+        setProperty('always', elementPath, prop, value),
       ),
       deleteProperties('always', elementPath, [
         PP.create('style', 'width'),
@@ -1456,11 +1502,18 @@ function gridChildAbsolutePositionConversionCommands(
     ]
   }
 
+  const { row, column } =
+    cellBounds.type === 'contained'
+      ? { row: cellBounds.gridRow, column: cellBounds.gridColumn }
+      : cellBounds.type === 'span'
+      ? { row: cellBounds.gridRowStart, column: cellBounds.gridColumnStart }
+      : assertNever(cellBounds)
+
   return [
     ...sizeToVisualDimensions(jsxMetadata, elementPathTree, elementPath),
     deleteProperties('always', elementPath, gridElementProps),
-    setProperty('always', elementPath, PP.create('style', 'gridRow'), initialCellBounds.row),
-    setProperty('always', elementPath, PP.create('style', 'gridColumn'), initialCellBounds.column),
+    setProperty('always', elementPath, PP.create('style', 'gridRow'), row),
+    setProperty('always', elementPath, PP.create('style', 'gridColumn'), column),
     setProperty('always', elementPath, PP.create('style', 'position'), 'absolute'),
     setCssLengthProperty(
       'always',
