@@ -970,6 +970,8 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
   )
 })
 
+const MIN_INDICATORS_DISTANCE = 32 // px
+
 const AbsoluteDistanceIndicators = React.memo(
   (props: { targetRootCell: GridCellCoordinates | null }) => {
     const colorTheme = useColorTheme()
@@ -1054,7 +1056,9 @@ const AbsoluteDistanceIndicators = React.memo(
         const otherCoord = wantedCoord === 'x' ? 'y' : 'x'
         const dimension = wantedCoord === 'x' ? 'width' : 'height'
         const dominant =
-          cell[wantedCoord] < root[wantedCoord] || dominantDistance < 32 || otherDistance < 0
+          cell[wantedCoord] < root[wantedCoord] ||
+          dominantDistance < MIN_INDICATORS_DISTANCE ||
+          otherDistance < 0
             ? root[wantedCoord] + root[dimension] / 2
             : Math.max(root[wantedCoord], cell[wantedCoord])
         const other = otherDistance < 0 ? cell[otherCoord] : root[otherCoord]
