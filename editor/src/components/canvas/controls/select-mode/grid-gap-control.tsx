@@ -26,7 +26,7 @@ import { isZeroSizedElement } from '../outline-utils'
 import { createArrayWithLength } from '../../../../core/shared/array-utils'
 import { useGridData } from '../grid-controls'
 
-interface GridGapControlProps {
+export interface GridGapControlProps {
   selectedElement: ElementPath
   updatedGapValueRow: CSSNumberWithRenderedValue | null
   updatedGapValueColumn: CSSNumberWithRenderedValue | null
