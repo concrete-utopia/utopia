@@ -129,7 +129,6 @@ function getLabelForAxis(
   return gridCSSNumberToLabel(defaultEither(fromDOM, fromPropsAtIndex))
 }
 
-const SHADOW_SNAP_ANIMATION = 'shadow-snap'
 const GRID_RESIZE_HANDLE_CONTAINER_SIZE = 30 // px
 const GRID_RESIZE_HANDLE_SIZE = 15 // px
 
@@ -643,7 +642,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     return maybeGridFrame
   }, [gridPath, metadataRef])
 
-  useSnapAnimation({
+  useCellAnimation({
     disabled: anyTargetAbsolute,
     targetRootCell: targetRootCell,
     controls: controls,
@@ -941,15 +940,6 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
         interactionData?.drag != null &&
         hoveringStart != null ? (
           <motion.div
-            initial={'normal'}
-            variants={{
-              normal: { scale: 1 },
-              [SHADOW_SNAP_ANIMATION]: {
-                scale: [1, 1.4, 1],
-                transition: { duration: 0.15, type: 'tween' },
-              },
-            }}
-            animate={controls}
             style={{
               pointerEvents: 'none',
               position: 'absolute',
@@ -972,7 +962,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
   )
 })
 
-function useSnapAnimation(params: {
+function useCellAnimation(params: {
   disabled: boolean
   gridPath: ElementPath | null
   shadowFrame: CanvasRectangle | null
@@ -980,7 +970,6 @@ function useSnapAnimation(params: {
   controls: AnimationControls
 }) {
   const { gridPath, targetRootCell, controls, shadowFrame, disabled } = params
-  const features = useRollYourOwnFeatures()
 
   const [lastTargetRootCellId, setLastTargetRootCellId] = React.useState(targetRootCell)
   const [lastSnapPoint, setLastSnapPoint] = React.useState<CanvasPoint | null>(shadowFrame)
@@ -1043,12 +1032,12 @@ function useSnapAnimation(params: {
             x: [moveFromPoint.x - snapPoint.x, 0],
             y: [moveFromPoint.y - snapPoint.y, 0],
           },
-          { duration: CELL_ANIMATION_DURATION },
+          {
+            duration: CELL_ANIMATION_DURATION,
+            type: 'tween',
+            ease: 'easeInOut',
+          },
         )
-
-        if (features.Grid.animateShadowSnap) {
-          void controls.start(SHADOW_SNAP_ANIMATION)
-        }
       }
     }
     setLastSnapPoint(snapPoint)
@@ -1056,7 +1045,6 @@ function useSnapAnimation(params: {
   }, [
     targetRootCell,
     controls,
-    features.Grid.animateShadowSnap,
     lastSnapPoint,
     snapPoint,
     animate,

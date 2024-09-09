@@ -36,6 +36,7 @@ import type { ResolveFn } from '../../custom-code/code-file'
 import { useColorTheme } from '../../../uuiui'
 import {
   isDragInteractionActive,
+  isGridDragInteractionActive,
   pickSelectionEnabled,
   useMaybeHighlightElement,
   useSelectAndHover,
@@ -71,10 +72,8 @@ import { useSelectionArea } from './selection-area-hooks'
 import { RemixSceneLabelControl } from './select-mode/remix-scene-label'
 import { NO_OP } from '../../../core/shared/utils'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
-import { useStatus } from '../../../../liveblocks.config'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -170,7 +169,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
     canDrop: () => true,
   }
 
-  const [_, drop] = useDrop(dropSpec)
+  const [, drop] = useDrop(dropSpec)
 
   const forwardedRef = React.useCallback(
     (node: ConnectableElement) => {
@@ -295,6 +294,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     keysPressed,
     componentMetadata,
     dragInteractionActive,
+    gridDragInteractionActive,
     selectionEnabled,
     textEditor,
     editorMode,
@@ -313,6 +313,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         keysPressed: store.editor.keysPressed,
         componentMetadata: getMetadata(store.editor),
         dragInteractionActive: isDragInteractionActive(store.editor),
+        gridDragInteractionActive: isGridDragInteractionActive(store.editor),
         selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
         editorMode: store.editor.mode,
         textEditor: store.editor.canvas.textEditor,
@@ -555,7 +556,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           <>
             {renderHighlightControls()}
             {unless(dragInteractionActive, <LayoutParentControl />)}
-            <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
+            {unless(
+              gridDragInteractionActive,
+              <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
+            )}
             <ZeroSizedElementControls.control showAllPossibleElements={false} />
 
             {when(

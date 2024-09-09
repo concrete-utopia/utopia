@@ -1,21 +1,13 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { mapArrayToDictionary, mapDropNulls, uniqBy } from '../../../../core/shared/array-utils'
+import { uniqBy } from '../../../../core/shared/array-utils'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import type { WindowPoint } from '../../../../core/shared/math-utils'
-import {
-  boundingRectangleArray,
-  CanvasPoint,
-  distance,
-  isInfinityRectangle,
-  point,
-  windowPoint,
-} from '../../../../core/shared/math-utils'
+import { point, windowPoint } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
-import { NO_OP, assertNever, fastForEach } from '../../../../core/shared/utils'
+import { assertNever } from '../../../../core/shared/utils'
 import type { KeysPressed } from '../../../../utils/keyboard'
-import Keyboard, { isDigit } from '../../../../utils/keyboard'
 import Utils from '../../../../utils/utils'
 import {
   clearHighlightedViews,
@@ -49,14 +41,12 @@ import {
 import { Modifier } from '../../../../utils/modifiers'
 import { pathsEqual } from '../../../../core/shared/element-path'
 import type { EditorAction } from '../../../../components/editor/action-types'
-import { EditorDispatch } from '../../../../components/editor/action-types'
-import { EditorModes, isInsertMode, isSelectModeWithArea } from '../../../editor/editor-modes'
+import { isInsertMode, isSelectModeWithArea } from '../../../editor/editor-modes'
 import {
   scheduleTextEditForNextFrame,
   useTextEditModeSelectAndHover,
 } from '../text-edit-mode/text-edit-mode-hooks'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { useSetAtom } from 'jotai'
 import type { CanvasControlWithProps } from '../../../inspector/common/inspector-atoms'
 import {
@@ -71,6 +61,13 @@ import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
 
 export function isDragInteractionActive(editorState: EditorState): boolean {
   return editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
+}
+
+export function isGridDragInteractionActive(editorState: EditorState): boolean {
+  return (
+    editorState.canvas.interactionSession?.interactionData.type === 'DRAG' &&
+    editorState.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE'
+  )
 }
 
 export function pickSelectionEnabled(
