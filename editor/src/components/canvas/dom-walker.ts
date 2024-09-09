@@ -292,17 +292,25 @@ export function resubscribeObservers(domWalkerMutableState: {
   mutationObserver: MutationObserver
   resizeObserver: ResizeObserver
 }) {
-  const canvasWrapperComponent = document.getElementById(CanvasWrapperComponentId)
+  let rootElementId = CanvasContainerID
+  let rootElement = document.getElementById(rootElementId)
+
+  if (rootElement == null) {
+    // when there is a build error the canvas root container is not rendered, so we attach the observers to the canvas wrapper component
+    rootElementId = CanvasWrapperComponentId
+    rootElement = document.getElementById(rootElementId)
+  }
+
   if (
     ObserversAvailable &&
-    canvasWrapperComponent != null &&
+    rootElement != null &&
     domWalkerMutableState.resizeObserver != null &&
     domWalkerMutableState.mutationObserver != null
   ) {
-    document.querySelectorAll(`#${CanvasWrapperComponentId} *`).forEach((elem) => {
+    document.querySelectorAll(`#${rootElementId} *`).forEach((elem) => {
       domWalkerMutableState.resizeObserver.observe(elem)
     })
-    domWalkerMutableState.mutationObserver.observe(canvasWrapperComponent, MutationObserverConfig)
+    domWalkerMutableState.mutationObserver.observe(rootElement, MutationObserverConfig)
   }
 }
 
