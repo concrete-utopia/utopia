@@ -136,7 +136,7 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
     {
       control: GridControls,
       props: { targets: [selectedElement] },
-      key: `draw-into-grid-strategy-controls`,
+      key: `set-grid-gap-strategy-controls`,
       show: 'always-visible',
       priority: 'bottom',
     } as const,
