@@ -482,7 +482,12 @@ export class Editor {
         })
       }
 
-      const runDomWalker = shouldRunDOMWalker(dispatchedActions, oldEditorState, this.storedState)
+      const runDomWalker = shouldRunDOMWalker(
+        dispatchedActions,
+        oldEditorState,
+        this.storedState,
+        this.domWalkerMutableState,
+      )
 
       // run the dom-walker
       if (runDomWalker) {
@@ -854,7 +859,12 @@ export function shouldRunDOMWalker(
   dispatchedActions: ReadonlyArray<EditorAction>,
   storeBefore: EditorStoreFull,
   storeAfter: EditorStoreFull,
+  domWalkerMutableState: DomWalkerMutableStateData,
 ): boolean {
+  if (domWalkerMutableState.dirty) {
+    return true
+  }
+
   const patchedEditorBefore = storeBefore.patchedEditor
   const patchedEditorAfter = storeAfter.patchedEditor
   const patchedEditorChanged =

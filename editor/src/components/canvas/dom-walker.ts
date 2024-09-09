@@ -258,6 +258,9 @@ export interface DomWalkerMutableStateData {
   initComplete: boolean
   mutationObserver: MutationObserver
   resizeObserver: ResizeObserver
+  // dirty is set to true when after a dispatch resubscribeObservers could not run successfully. This happens whan the canvasRootContainer is null.
+  // It can happen in remix project that after this the project is rendered, but there are no observers to trigger the dom sampler.
+  dirty: boolean
 }
 
 export function createDomWalkerMutableState(
@@ -270,6 +273,7 @@ export function createDomWalkerMutableState(
     initComplete: true,
     mutationObserver: null as any,
     resizeObserver: null as any,
+    dirty: false,
   }
 
   const observers = initDomWalkerObservers(mutableData, editorStoreApi, dispatch)
@@ -290,6 +294,7 @@ function useDomWalkerMutableStateContext() {
 export function resubscribeObservers(domWalkerMutableState: {
   mutationObserver: MutationObserver
   resizeObserver: ResizeObserver
+  dirty: boolean
 }) {
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (
@@ -302,6 +307,9 @@ export function resubscribeObservers(domWalkerMutableState: {
       domWalkerMutableState.resizeObserver.observe(elem)
     })
     domWalkerMutableState.mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
+    domWalkerMutableState.dirty = false
+  } else {
+    domWalkerMutableState.dirty = true
   }
 }
 

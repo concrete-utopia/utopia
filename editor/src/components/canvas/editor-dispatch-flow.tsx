@@ -29,6 +29,7 @@ export function runDomSamplerAndSaveResults(
   domWalkerMutableState: {
     mutationObserver: MutationObserver
     resizeObserver: ResizeObserver
+    dirty: boolean
   },
   spyCollector: UiJsxCanvasContextData,
 ) {
