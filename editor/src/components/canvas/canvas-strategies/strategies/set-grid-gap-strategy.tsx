@@ -30,7 +30,7 @@ import {
 } from '../../gap-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
-import type { InteractionCanvasState } from '../canvas-strategy-types'
+import type { ControlWithProps, InteractionCanvasState } from '../canvas-strategy-types'
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
@@ -40,7 +40,9 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import { colorTheme } from '../../../../uuiui'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
+import type { GridGapControlProps } from '../../controls/select-mode/grid-gap-control'
 import { GridGapControl } from '../../controls/select-mode/grid-gap-control'
+import type { GridControlsProps } from '../../controls/grid-controls'
 import { GridControls } from '../../controls/grid-controls'
 
 const SetGridGapStrategyId = 'SET_GRID_GAP_STRATEGY'
@@ -102,7 +104,7 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
     column: offsetMeasurementByDelta(gridGap.column, dragDelta.x, adjustPrecision),
   }
 
-  const resizeControl = controlWithProps({
+  const gridGapControl = controlWithProps({
     control: GridGapControl,
     props: {
       selectedElement: selectedElement,
@@ -117,35 +119,39 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
 
   const maybeIndicatorProps = gridGapValueIndicatorProps(interactionSession, gridGap)
 
-  const controlsToRender = [
-    ...(optionalMap(
-      (props) => [
-        resizeControl,
-        controlWithProps({
-          control: FloatingIndicator,
-          props: {
-            ...props,
-            color: colorTheme.brandNeonPink.value,
-          },
-          key: 'padding-value-indicator-control',
-          show: 'visible-except-when-other-strategy-is-active',
-        }),
-      ],
-      maybeIndicatorProps,
-    ) ?? [resizeControl]),
-    // when the drag is ongoing, keep showing the grid cells
-    ...(isDragOngoing(interactionSession)
-      ? ([
-          {
-            control: GridControls,
-            props: { targets: [selectedElement] },
-            key: `set-grid-gap-strategy-controls`,
-            show: 'always-visible',
-            priority: 'bottom',
-          },
-        ] as const)
-      : []),
-  ]
+  const controlsToRender: Array<
+    | ControlWithProps<FloatingIndicatorProps>
+    | ControlWithProps<GridControlsProps>
+    | ControlWithProps<GridGapControlProps>
+  > = [gridGapControl]
+
+  // show indicator if needed
+  if (maybeIndicatorProps != null) {
+    controlsToRender.push(
+      controlWithProps({
+        control: FloatingIndicator,
+        props: {
+          ...maybeIndicatorProps,
+          color: colorTheme.brandNeonPink.value,
+        },
+        key: 'padding-value-indicator-control',
+        show: 'visible-except-when-other-strategy-is-active',
+      }),
+    )
+  }
+
+  // when the drag is ongoing, keep showing the grid cells
+  if (isDragOngoing(interactionSession)) {
+    controlsToRender.push(
+      controlWithProps({
+        control: GridControls,
+        props: { targets: [selectedElement] },
+        key: `set-grid-gap-strategy-controls`,
+        show: 'always-visible',
+        priority: 'bottom',
+      }),
+    )
+  }
 
   return {
     id: SetGridGapStrategyId,
