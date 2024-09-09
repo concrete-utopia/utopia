@@ -41,6 +41,7 @@ import type { InteractionSession } from '../interaction-state'
 import { colorTheme } from '../../../../uuiui'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
 import { GridGapControl } from '../../controls/select-mode/grid-gap-control'
+import { GridControls } from '../../controls/grid-controls'
 
 const SetGridGapStrategyId = 'SET_GRID_GAP_STRATEGY'
 
@@ -116,21 +117,30 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
 
   const maybeIndicatorProps = gridGapValueIndicatorProps(interactionSession, gridGap)
 
-  const controlsToRender = optionalMap(
-    (props) => [
-      resizeControl,
-      controlWithProps({
-        control: FloatingIndicator,
-        props: {
-          ...props,
-          color: colorTheme.brandNeonPink.value,
-        },
-        key: 'padding-value-indicator-control',
-        show: 'visible-except-when-other-strategy-is-active',
-      }),
-    ],
-    maybeIndicatorProps,
-  ) ?? [resizeControl]
+  const controlsToRender = [
+    ...(optionalMap(
+      (props) => [
+        resizeControl,
+        controlWithProps({
+          control: FloatingIndicator,
+          props: {
+            ...props,
+            color: colorTheme.brandNeonPink.value,
+          },
+          key: 'padding-value-indicator-control',
+          show: 'visible-except-when-other-strategy-is-active',
+        }),
+      ],
+      maybeIndicatorProps,
+    ) ?? [resizeControl]),
+    {
+      control: GridControls,
+      props: { targets: [selectedElement] },
+      key: `draw-into-grid-strategy-controls`,
+      show: 'always-visible',
+      priority: 'bottom',
+    } as const,
+  ]
 
   return {
     id: SetGridGapStrategyId,
