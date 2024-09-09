@@ -133,13 +133,18 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
       ],
       maybeIndicatorProps,
     ) ?? [resizeControl]),
-    {
-      control: GridControls,
-      props: { targets: [selectedElement] },
-      key: `set-grid-gap-strategy-controls`,
-      show: 'always-visible',
-      priority: 'bottom',
-    } as const,
+    // when the drag is ongoing, keep showing the grid cells
+    ...(isDragOngoing(interactionSession)
+      ? ([
+          {
+            control: GridControls,
+            props: { targets: [selectedElement] },
+            key: `set-grid-gap-strategy-controls`,
+            show: 'always-visible',
+            priority: 'bottom',
+          },
+        ] as const)
+      : []),
   ]
 
   return {
