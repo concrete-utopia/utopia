@@ -27,6 +27,7 @@ import {
   canvasRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
+  nullIfInfinity,
   pointsEqual,
   scaleRect,
   windowPoint,
@@ -979,18 +980,16 @@ const AbsoluteDistanceIndicators = React.memo(
         if (store.editor.selectedViews.length !== 1) {
           return null
         }
+
         const meta = MetadataUtils.findElementByElementPath(
           store.editor.jsxMetadata,
           store.editor.selectedViews[0],
         )
-        if (
-          !MetadataUtils.isPositionAbsolute(meta) ||
-          meta?.globalFrame == null ||
-          !isFiniteRectangle(meta.globalFrame)
-        ) {
+        if (!MetadataUtils.isPositionAbsolute(meta)) {
           return null
         }
-        return meta.globalFrame
+
+        return nullIfInfinity(meta?.globalFrame)
       },
       'AbsoluteDistanceIndicators cellFrame',
     )
@@ -1034,18 +1033,11 @@ const AbsoluteDistanceIndicators = React.memo(
       return canvasRect
     }, [props.targetRootCell, canvasScale, canvasOffset])
 
-    const topDist = React.useMemo(() => {
-      if (targetCellBoundingBox == null || cellFrame == null) {
-        return 0
-      }
-      return cellFrame.y - targetCellBoundingBox.y
-    }, [cellFrame, targetCellBoundingBox])
-    const leftDist = React.useMemo(() => {
-      if (targetCellBoundingBox == null || cellFrame == null) {
-        return 0
-      }
-      return cellFrame.x - targetCellBoundingBox.x
-    }, [cellFrame, targetCellBoundingBox])
+    const distanceTop =
+      targetCellBoundingBox == null || cellFrame == null ? 0 : cellFrame.y - targetCellBoundingBox.y
+
+    const distanceLeft =
+      targetCellBoundingBox == null || cellFrame == null ? 0 : cellFrame.x - targetCellBoundingBox.x
 
     const positioning = React.useMemo(() => {
       if (cellFrame == null || targetCellBoundingBox == null) {
@@ -1147,19 +1139,39 @@ const AbsoluteDistanceIndicators = React.memo(
       }
 
       const topIndicator = {
-        ...position('x', cellFrame, targetCellBoundingBox, leftDist, topDist),
-        compensateNegative: compensationNegative('x', cellFrame, targetCellBoundingBox, topDist),
-        compensatePositive: compensationPositive('x', cellFrame, targetCellBoundingBox, topDist),
+        ...position('x', cellFrame, targetCellBoundingBox, distanceLeft, distanceTop),
+        compensateNegative: compensationNegative(
+          'x',
+          cellFrame,
+          targetCellBoundingBox,
+          distanceTop,
+        ),
+        compensatePositive: compensationPositive(
+          'x',
+          cellFrame,
+          targetCellBoundingBox,
+          distanceTop,
+        ),
       }
 
       const leftIndicator = {
-        ...position('y', cellFrame, targetCellBoundingBox, leftDist, leftDist),
-        compensateNegative: compensationNegative('y', cellFrame, targetCellBoundingBox, leftDist),
-        compensatePositive: compensationPositive('y', cellFrame, targetCellBoundingBox, leftDist),
+        ...position('y', cellFrame, targetCellBoundingBox, distanceLeft, distanceLeft),
+        compensateNegative: compensationNegative(
+          'y',
+          cellFrame,
+          targetCellBoundingBox,
+          distanceLeft,
+        ),
+        compensatePositive: compensationPositive(
+          'y',
+          cellFrame,
+          targetCellBoundingBox,
+          distanceLeft,
+        ),
       }
 
       return { topIndicator, leftIndicator }
-    }, [cellFrame, targetCellBoundingBox, leftDist, topDist])
+    }, [cellFrame, targetCellBoundingBox, distanceLeft, distanceTop])
 
     if (targetCellBoundingBox == null || cellFrame == null || positioning == null) {
       return null
@@ -1183,7 +1195,7 @@ const AbsoluteDistanceIndicators = React.memo(
               left: positioning.topIndicator.left,
               top: positioning.topIndicator.top,
               width: 1,
-              height: Math.abs(topDist),
+              height: Math.abs(distanceTop),
             }}
           >
             <span
@@ -1195,7 +1207,7 @@ const AbsoluteDistanceIndicators = React.memo(
                 color: '#fff',
               }}
             >
-              {topDist}
+              {distanceTop}
             </span>
           </div>
           {/* compensate */}
@@ -1239,7 +1251,7 @@ const AbsoluteDistanceIndicators = React.memo(
 
               left: positioning.leftIndicator.left,
               top: positioning.leftIndicator.top,
-              width: Math.abs(leftDist),
+              width: Math.abs(distanceLeft),
               height: 1,
             }}
           >
@@ -1252,7 +1264,7 @@ const AbsoluteDistanceIndicators = React.memo(
                 color: '#fff',
               }}
             >
-              {leftDist}
+              {distanceLeft}
             </span>
           </div>
           {/* compensate */}
