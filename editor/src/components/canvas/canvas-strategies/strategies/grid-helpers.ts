@@ -155,16 +155,6 @@ export function runGridRearrangeMove(
 
   const targetCellUnderMouse = targetCellData?.gridCellCoordinates ?? null
 
-  const absoluteMoveCommands =
-    targetCellData == null
-      ? []
-      : gridChildAbsoluteMoveCommands(
-          MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
-          targetCellData.cellWindowRectangle,
-          interactionData,
-          { scale: canvasScale, canvasOffset: canvasOffset },
-        )
-
   const originalElementMetadata = MetadataUtils.findElementByElementPath(
     jsxMetadata,
     selectedElement,
@@ -216,6 +206,23 @@ export function runGridRearrangeMove(
   )
 
   const targetRootCell = gridCellCoordinates(row.start, column.start)
+
+  const element = document.querySelector(
+    `[data-grid-row="${targetRootCell.row}"]` + `[data-grid-column="${targetRootCell.column}"]`,
+  )
+
+  const domRect = element!.getBoundingClientRect()
+  const windowRect = windowRectangle(domRect)
+
+  const absoluteMoveCommands =
+    targetCellData == null
+      ? []
+      : gridChildAbsoluteMoveCommands(
+          MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
+          windowRect,
+          interactionData,
+          { scale: canvasScale, canvasOffset: canvasOffset },
+        )
 
   const gridCellMoveCommands = setGridPropsCommands(targetElement, gridTemplate, {
     gridColumnStart: gridPositionValue(column.start),
