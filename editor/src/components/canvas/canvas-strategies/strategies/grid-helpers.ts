@@ -27,7 +27,10 @@ import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { DragInteractionData } from '../interaction-state'
 import type { GridCustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
 import type { GridCellCoordinates } from '../../controls/grid-controls'
-import { gridCellCoordinates } from '../../controls/grid-controls'
+import {
+  getGridPlaceholderDomElementFromCoordinates,
+  gridCellCoordinates,
+} from '../../controls/grid-controls'
 import * as EP from '../../../../core/shared/element-path'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { cssNumber, isCSSKeyword } from '../../../inspector/common/css-utils'
@@ -207,15 +210,10 @@ export function runGridRearrangeMove(
 
   const targetRootCell = gridCellCoordinates(row.start, column.start)
 
-  const element = document.querySelector(
-    `[data-grid-row="${targetRootCell.row}"]` + `[data-grid-column="${targetRootCell.column}"]`,
-  )
-
-  const domRect = element!.getBoundingClientRect()
-  const windowRect = windowRectangle(domRect)
+  const windowRect = getCellWindowRect(targetRootCell)
 
   const absoluteMoveCommands =
-    targetCellData == null
+    windowRect == null
       ? []
       : gridChildAbsoluteMoveCommands(
           MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
@@ -557,4 +555,15 @@ export function getGridCellBoundsFromCanvas(
     width: cellWidth,
     height: cellHeight,
   }
+}
+
+function getCellWindowRect(coords: GridCellCoordinates): WindowRectangle | null {
+  const element = getGridPlaceholderDomElementFromCoordinates(coords)
+  if (element == null) {
+    return null
+  }
+
+  const domRect = element!.getBoundingClientRect()
+  const windowRect = windowRectangle(domRect)
+  return windowRect
 }
