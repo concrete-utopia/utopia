@@ -91,15 +91,34 @@ function dragDeltaSign(delta: number): 1 | -1 {
   return delta >= 0 ? 1 : -1
 }
 
-function calculateDragDirectionDelta(delta: number, scalingFactor: number): number {
+export function calculateDragDirectionDelta(
+  delta: number,
+  scalingFactor: number,
+): {
+  result: number
+  inverse: (value: number) => number
+} {
   const sign = dragDeltaSign(delta)
   const rawAbsDelta = Math.abs(delta)
   // Floor the value and then restore its sign so that it is rounded towards zero.
   const scaledAbsDelta = Math.floor(rawAbsDelta / scalingFactor)
-  return sign * scaledAbsDelta
+  // save the diff for inverse calculation
+  const diff = rawAbsDelta - scaledAbsDelta * scalingFactor
+  return {
+    result: sign * scaledAbsDelta,
+    inverse: (value: number) => {
+      return sign * (Math.abs(value) * scalingFactor + diff)
+    },
+  }
 }
 
-function calculateDragDelta(delta: number, scalingFactor: number = 2): number {
+function calculateDragDelta(
+  delta: number,
+  scalingFactor: number = 2,
+): {
+  result: number
+  inverse: (value: number) => number
+} {
   return calculateDragDirectionDelta(delta, scalingFactor)
 }
 
@@ -230,6 +249,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     const pointerOriginRef = React.useRef<HTMLDivElement>(null)
 
     const accumulatedMouseDeltaX = React.useRef(0)
+    const clampedAccumulatedDelta = React.useRef(0)
     // This is here to alleviate a circular reference issue that I stumbled into with the callbacks,
     // it means that the cleanup callback isn't dependent on the event listeners, which result in
     // a break in the circle.
@@ -306,14 +326,16 @@ export const NumberInput = React.memo<NumberInputProps>(
 
     const setScrubValue = React.useCallback(
       (transient: boolean) => {
-        const dragDelta = calculateDragDelta(accumulatedMouseDeltaX.current)
         if (valueAtDragOrigin.current != null) {
-          const numericValue = clampValue(
+          const { result: dragDelta, inverse } = calculateDragDelta(clampedAccumulatedDelta.current)
+          const totalClampedValue = clampValue(
             valueAtDragOrigin.current + stepSize * dragDelta,
             minimum,
             maximum,
           )
-          const newValue = cssNumber(numericValue, valueUnit)
+          const clampedDelta = (totalClampedValue - valueAtDragOrigin.current) / stepSize
+          clampedAccumulatedDelta.current = inverse(clampedDelta)
+          const newValue = cssNumber(totalClampedValue, valueUnit)
 
           if (transient) {
             if (onTransientSubmitValue != null) {
@@ -403,6 +425,7 @@ export const NumberInput = React.memo<NumberInputProps>(
         // Apply the movement to the accumulated delta, as the movement is
         // relative to the last event.
         accumulatedMouseDeltaX.current += e.movementX
+        clampedAccumulatedDelta.current += e.movementX
 
         onThresholdPassed(e, () => {
           if (!scrubThresholdPassed.current) {
@@ -632,6 +655,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           setDragOriginY(e.pageY)
           setGlobalCursor?.(CSSCursor.ResizeEW)
           accumulatedMouseDeltaX.current = 0
+          clampedAccumulatedDelta.current = 0
         }
       },
       [
