@@ -1011,10 +1011,7 @@ const AbsoluteDistanceIndicators = React.memo(
       if (props.targetRootCell == null) {
         return null
       }
-      const element = document.querySelector(
-        `[data-grid-row="${props.targetRootCell.row}"]` +
-          `[data-grid-column="${props.targetRootCell.column}"]`,
-      )
+      const element = getGridPlaceholderDomElementFromCoordinates(props.targetRootCell)
       const boundingBox = element?.getBoundingClientRect()
       if (boundingBox == null) {
         return null
@@ -1691,6 +1688,15 @@ function gridKeyFromPath(path: ElementPath): string {
 
 export function getGridPlaceholderDomElement(elementPath: ElementPath): HTMLElement | null {
   return document.getElementById(gridKeyFromPath(elementPath))
+}
+
+export function getGridPlaceholderDomElementFromCoordinates(params: {
+  row: number
+  column: number
+}): HTMLElement | null {
+  return document.querySelector(
+    `[data-grid-row="${params.row}"]` + `[data-grid-column="${params.column}"]`,
+  )
 }
 
 const gridPlaceholderBorder = (color: string) => `2px solid ${color}`
