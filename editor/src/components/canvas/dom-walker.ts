@@ -72,6 +72,7 @@ import { pick } from '../../core/shared/object-utils'
 import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
+import { CanvasWrapperComponentId } from './canvas-wrapper-component'
 
 export const ResizeObserver =
   window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -291,17 +292,17 @@ export function resubscribeObservers(domWalkerMutableState: {
   mutationObserver: MutationObserver
   resizeObserver: ResizeObserver
 }) {
-  const canvasRootContainer = document.getElementById(CanvasContainerID)
+  const canvasWrapperComponent = document.getElementById(CanvasWrapperComponentId)
   if (
     ObserversAvailable &&
-    canvasRootContainer != null &&
+    canvasWrapperComponent != null &&
     domWalkerMutableState.resizeObserver != null &&
     domWalkerMutableState.mutationObserver != null
   ) {
-    document.querySelectorAll(`#${CanvasContainerID} *`).forEach((elem) => {
+    document.querySelectorAll(`#${CanvasWrapperComponentId} *`).forEach((elem) => {
       domWalkerMutableState.resizeObserver.observe(elem)
     })
-    domWalkerMutableState.mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
+    domWalkerMutableState.mutationObserver.observe(canvasWrapperComponent, MutationObserverConfig)
   }
 }
 
