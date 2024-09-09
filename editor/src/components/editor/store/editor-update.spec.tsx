@@ -1030,7 +1030,7 @@ describe('updating package.json', () => {
           "parsed": Object {
             "type": "UNPARSED",
           },
-          "revisionsState": "CODE_AHEAD",
+          "revisionsState": "CODE_AHEAD_BUT_PLEASE_TELL_VSCODE_ABOUT_IT",
         }
       `)
     }
