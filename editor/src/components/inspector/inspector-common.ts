@@ -34,7 +34,12 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import type { CSSProperties } from 'react'
 import type { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
-import { setProperty } from '../canvas/commands/set-property-command'
+import {
+  propertyToDelete,
+  propertyToSet,
+  setProperty,
+  updateBulkProperties,
+} from '../canvas/commands/set-property-command'
 import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
 import {
   setCssLengthProperty,
@@ -1491,13 +1496,11 @@ function gridChildAbsolutePositionConversionCommands(
 
     return [
       ...nukeAllAbsolutePositioningPropsCommands(elementPath),
-      deleteProperties('always', elementPath, gridElementProps),
-      ...gridPositioningProps.map(({ prop, value }) =>
-        setProperty('always', elementPath, prop, value),
-      ),
-      deleteProperties('always', elementPath, [
-        PP.create('style', 'width'),
-        PP.create('style', 'height'),
+      updateBulkProperties('always', elementPath, [
+        propertyToDelete(PP.create('style', 'width')),
+        propertyToDelete(PP.create('style', 'height')),
+        ...gridElementProps.map(propertyToDelete),
+        ...gridPositioningProps.map(({ prop, value }) => propertyToSet(prop, value)),
       ]),
     ]
   }
@@ -1511,23 +1514,13 @@ function gridChildAbsolutePositionConversionCommands(
 
   return [
     ...sizeToVisualDimensions(jsxMetadata, elementPathTree, elementPath),
-    deleteProperties('always', elementPath, gridElementProps),
-    setProperty('always', elementPath, PP.create('style', 'gridRow'), row),
-    setProperty('always', elementPath, PP.create('style', 'gridColumn'), column),
-    setProperty('always', elementPath, PP.create('style', 'position'), 'absolute'),
-    setCssLengthProperty(
-      'always',
-      elementPath,
-      PP.create('style', 'top'),
-      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(0) },
-      null,
-    ),
-    setCssLengthProperty(
-      'always',
-      elementPath,
-      PP.create('style', 'left'),
-      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(0) },
-      null,
-    ),
+    updateBulkProperties('always', elementPath, [
+      ...gridElementProps.map(propertyToDelete),
+      propertyToSet(PP.create('style', 'gridRow'), row),
+      propertyToSet(PP.create('style', 'gridColumn'), column),
+      propertyToSet(PP.create('style', 'position'), 'absolute'),
+      propertyToSet(PP.create('style', 'top'), 0),
+      propertyToSet(PP.create('style', 'left'), 0),
+    ]),
   ]
 }
