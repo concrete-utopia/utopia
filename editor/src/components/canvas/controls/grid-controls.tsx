@@ -375,6 +375,8 @@ export type GridData = {
   gridTemplateColumnsFromProps: GridAutoOrTemplateBase | null
   gridTemplateRowsFromProps: GridAutoOrTemplateBase | null
   gap: number | null
+  justifyContent: string | null
+  alignContent: string | null
   rowGap: number | null
   columnGap: number | null
   padding: Sides
@@ -432,6 +434,8 @@ export function useGridData(elementPaths: ElementPath[]): GridData[] {
           gap: gap,
           rowGap: rowGap,
           columnGap: columnGap,
+          justifyContent: targetGridContainer.specialSizeMeasurements.justifyContent,
+          alignContent: targetGridContainer.specialSizeMeasurements.alignContent,
           padding: padding,
           rows: rows,
           columns: columns,
@@ -767,6 +771,8 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
             border: `1px solid ${
               activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
             }`,
+            justifyContent: grid.justifyContent ?? 'initial',
+            alignContent: grid.alignContent ?? 'initial',
             pointerEvents: 'none',
             padding:
               grid.padding == null

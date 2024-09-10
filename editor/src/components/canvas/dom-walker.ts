@@ -680,6 +680,7 @@ function getSpecialMeasurements(
   const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
   const justifyContent = getFlexJustifyContent(elementStyle.justifyContent)
+  const alignContent = getFlexAlignment(elementStyle.alignContent)
   const alignItems = getFlexAlignment(elementStyle.alignItems)
 
   const margin = applicative4Either(
@@ -876,6 +877,7 @@ function getSpecialMeasurements(
     gap,
     flexDirection,
     justifyContent,
+    alignContent,
     alignItems,
     element.localName,
     childrenCount,
