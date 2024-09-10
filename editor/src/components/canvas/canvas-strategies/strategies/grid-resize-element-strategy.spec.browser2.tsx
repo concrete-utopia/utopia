@@ -14,7 +14,7 @@ import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import type { GridResizeEdge } from '../interaction-state'
-import { gridCellTargetId } from './grid-helpers'
+import { gridCellTargetId } from './grid-cell-bounds'
 
 async function runCellResizeTest(
   editor: EditorRenderResult,

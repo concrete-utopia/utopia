@@ -13,7 +13,6 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   JSXAttributes,
-  JSXElement,
 } from '../../core/shared/element-template'
 import {
   isJSXElement,
@@ -35,7 +34,12 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import type { CSSProperties } from 'react'
 import type { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
-import { setProperty } from '../canvas/commands/set-property-command'
+import {
+  propertyToDelete,
+  propertyToSet,
+  setProperty,
+  updateBulkProperties,
+} from '../canvas/commands/set-property-command'
 import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
 import {
   setCssLengthProperty,
@@ -47,7 +51,7 @@ import {
   setPropHugAbsoluteStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import type { Size } from '../../core/shared/math-utils'
+import type { CanvasVector, Size } from '../../core/shared/math-utils'
 import {
   isFiniteRectangle,
   isInfinityRectangle,
@@ -76,6 +80,7 @@ import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
 import { hugPropertiesFromStyleMap } from '../../core/shared/dom-utils'
 import { setHugContentForAxis } from './inspector-strategies/hug-contents-strategy'
+import { getGridCellBoundsFromCanvas } from '../canvas/canvas-strategies/strategies/grid-cell-bounds'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -1216,6 +1221,7 @@ export function toggleAbsolutePositioningCommands(
   allElementProps: AllElementProps,
   elementPathTree: ElementPathTrees,
   selectedViews: Array<ElementPath>,
+  canvasContext: { scale: number; offset: CanvasVector },
 ): Array<CanvasCommand> {
   const commands = selectedViews.flatMap((elementPath) => {
     const maybeGroupConversionCommands = groupConversionCommands(
@@ -1227,6 +1233,16 @@ export function toggleAbsolutePositioningCommands(
 
     if (maybeGroupConversionCommands != null) {
       return maybeGroupConversionCommands
+    }
+
+    const maybeGridElementConversionCommands = gridChildAbsolutePositionConversionCommands(
+      jsxMetadata,
+      elementPathTree,
+      elementPath,
+      canvasContext,
+    )
+    if (maybeGridElementConversionCommands != null) {
+      return maybeGridElementConversionCommands
     }
 
     const element = MetadataUtils.findElementByElementPath(jsxMetadata, elementPath)
@@ -1400,4 +1416,118 @@ export function getConstraintsIncludingImplicitForElement(
 
 export function isHuggingParent(element: ElementInstanceMetadata, property: 'width' | 'height') {
   return element.specialSizeMeasurements.computedHugProperty[property] != null
+}
+
+interface ContainedGridPositioning {
+  type: 'contained'
+  gridRow: number
+  gridColumn: number
+}
+
+interface SpanningGridPositioning {
+  type: 'span'
+  gridRowStart: number
+  gridRowEnd: number
+  gridColumnStart: number
+  gridColumnEnd: number
+}
+
+type DetectedGridPositioning = ContainedGridPositioning | SpanningGridPositioning
+
+function getGridElementBounds(
+  cell: ElementInstanceMetadata,
+  canvasContext: { scale: number; offset: CanvasVector },
+): DetectedGridPositioning | null {
+  const initialCellBounds = getGridCellBoundsFromCanvas(
+    cell,
+    canvasContext.scale,
+    canvasContext.offset,
+  )
+
+  if (initialCellBounds == null) {
+    return null
+  }
+
+  if (initialCellBounds.height > 1 || initialCellBounds.width > 1) {
+    return {
+      type: 'span',
+      gridRowStart: initialCellBounds.row,
+      gridRowEnd: initialCellBounds.row + initialCellBounds.height,
+      gridColumnStart: initialCellBounds.column,
+      gridColumnEnd: initialCellBounds.column + initialCellBounds.width,
+    }
+  }
+
+  return {
+    type: 'contained',
+    gridRow: initialCellBounds.row,
+    gridColumn: initialCellBounds.column,
+  }
+}
+
+function gridChildAbsolutePositionConversionCommands(
+  jsxMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+  elementPath: ElementPath,
+  canvasContext: { scale: number; offset: CanvasVector },
+): CanvasCommand[] | null {
+  if (!MetadataUtils.isGridCell(jsxMetadata, elementPath)) {
+    return null
+  }
+
+  const instance = MetadataUtils.findElementByElementPath(jsxMetadata, elementPath)
+  if (instance == null) {
+    return null
+  }
+
+  const cellBounds = getGridElementBounds(instance, canvasContext)
+  if (cellBounds == null) {
+    return null
+  }
+
+  if (MetadataUtils.isPositionAbsolute(instance)) {
+    const gridPositioningProps =
+      cellBounds.type === 'contained'
+        ? [
+            { prop: PP.create('style', 'gridRow'), value: cellBounds.gridRow },
+            { prop: PP.create('style', 'gridColumn'), value: cellBounds.gridColumn },
+          ]
+        : cellBounds.type === 'span'
+        ? [
+            { prop: PP.create('style', 'gridRowStart'), value: cellBounds.gridRowStart },
+            { prop: PP.create('style', 'gridRowEnd'), value: cellBounds.gridRowEnd },
+            { prop: PP.create('style', 'gridColumnStart'), value: cellBounds.gridColumnStart },
+            { prop: PP.create('style', 'gridColumnEnd'), value: cellBounds.gridColumnEnd },
+          ]
+        : assertNever(cellBounds)
+
+    return [
+      ...nukeAllAbsolutePositioningPropsCommands(elementPath),
+      updateBulkProperties('always', elementPath, [
+        propertyToDelete(PP.create('style', 'width')),
+        propertyToDelete(PP.create('style', 'height')),
+        ...gridElementProps.map(propertyToDelete),
+        ...gridPositioningProps.map(({ prop, value }) => propertyToSet(prop, value)),
+      ]),
+    ]
+  }
+
+  const { row, column } =
+    cellBounds.type === 'contained'
+      ? { row: cellBounds.gridRow, column: cellBounds.gridColumn }
+      : cellBounds.type === 'span'
+      ? { row: cellBounds.gridRowStart, column: cellBounds.gridColumnStart }
+      : assertNever(cellBounds)
+
+  return [
+    ...sizeToVisualDimensions(jsxMetadata, elementPathTree, elementPath),
+    updateBulkProperties('always', elementPath, [
+      ...gridElementProps.map(propertyToDelete),
+      propertyToSet(PP.create('style', 'gridRow'), row),
+      propertyToSet(PP.create('style', 'gridColumn'), column),
+      propertyToSet(PP.create('style', 'position'), 'absolute'),
+      propertyToSet(PP.create('style', 'top'), 0),
+      propertyToSet(PP.create('style', 'left'), 0),
+    ]),
+  ]
 }

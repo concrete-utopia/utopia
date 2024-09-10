@@ -1,15 +1,29 @@
+import type { NodeModules, ProjectContentTreeRoot } from 'utopia-shared/src/types'
+import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
-import * as PP from '../../../../core/shared/property-path'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import {
+  gridPositionValue,
+  type ElementInstanceMetadataMap,
+} from '../../../../core/shared/element-template'
+import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import { canvasVector, isInfinityRectangle, offsetPoint } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
+import * as PP from '../../../../core/shared/property-path'
+import type { AllElementProps } from '../../../editor/store/editor-state'
+import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { CSSCursor } from '../../canvas-types'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { propertyToSet, updateBulkProperties } from '../../commands/set-property-command'
+import { showGridControls } from '../../commands/show-grid-controls-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
+import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import type {
   CanvasStrategy,
@@ -27,28 +41,14 @@ import {
 import type { DragInteractionData, InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { honoursPropsPosition, shouldKeepMovingDraggedGroupChildren } from './absolute-utils'
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
+import type { TargetGridCellData } from './grid-helpers'
+import { getTargetCell, setGridPropsCommands } from './grid-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
+import { removeAbsolutePositioningProps } from './reparent-helpers/reparent-property-changes'
 import type { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { flattenSelection } from './shared-move-strategies-helpers'
-import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
-import { canvasVector, isInfinityRectangle, offsetPoint } from '../../../../core/shared/math-utils'
-import { showGridControls } from '../../commands/show-grid-controls-command'
-import type { GridCellCoordinates } from '../../controls/grid-controls'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls'
-import {
-  gridPositionValue,
-  type ElementInstanceMetadataMap,
-} from '../../../../core/shared/element-template'
-import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import type { AllElementProps } from '../../../editor/store/editor-state'
-import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
-import type { NodeModules, ProjectContentTreeRoot } from 'utopia-shared/src/types'
-import type { InsertionPath } from '../../../editor/store/insertion-path'
-import { removeAbsolutePositioningProps } from './reparent-helpers/reparent-property-changes'
-import { canvasPointToWindowPoint } from '../../dom-lookup'
-import type { TargetGridCellData } from './grid-helpers'
-import { getTargetCell, setGridPropsCommands } from './grid-helpers'
+import type { GridCellCoordinates } from './grid-cell-bounds'
 
 export function gridReparentStrategy(
   reparentTarget: ReparentTarget,

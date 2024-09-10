@@ -14,7 +14,8 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { getGridCellBoundsFromCanvas, setGridPropsCommands } from './grid-helpers'
+import { setGridPropsCommands } from './grid-helpers'
+import { getGridCellBoundsFromCanvas } from './grid-cell-bounds'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 
 export function gridRearrangeResizeKeyboardStrategy(

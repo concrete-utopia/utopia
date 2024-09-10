@@ -65,7 +65,6 @@ import {
   GridResizeEdges,
   gridResizeHandle,
 } from '../canvas-strategies/interaction-state'
-import { gridCellTargetId } from '../canvas-strategies/strategies/grid-helpers'
 import { resizeBoundingBoxFromSide } from '../canvas-strategies/strategies/resize-helpers'
 import type { EdgePosition } from '../canvas-types'
 import {
@@ -81,16 +80,12 @@ import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { CanvasLabel } from './select-mode/controls-common'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
+import type { GridCellCoordinates } from '../canvas-strategies/strategies/grid-cell-bounds'
+import { gridCellTargetId } from '../canvas-strategies/strategies/grid-cell-bounds'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
-
-export type GridCellCoordinates = { row: number; column: number }
-
-export function gridCellCoordinates(row: number, column: number): GridCellCoordinates {
-  return { row: row, column: column }
-}
 
 function getCellsCount(template: GridAutoOrTemplateBase | null): number {
   if (template == null) {
