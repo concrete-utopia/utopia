@@ -80,7 +80,10 @@ import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { CanvasLabel } from './select-mode/controls-common'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import type { GridCellCoordinates } from '../canvas-strategies/strategies/grid-cell-bounds'
-import { gridCellTargetId } from '../canvas-strategies/strategies/grid-cell-bounds'
+import {
+  getGridPlaceholderDomElementFromCoordinates,
+  gridCellTargetId,
+} from '../canvas-strategies/strategies/grid-cell-bounds'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -1683,15 +1686,6 @@ function gridKeyFromPath(path: ElementPath): string {
 
 export function getGridPlaceholderDomElement(elementPath: ElementPath): HTMLElement | null {
   return document.getElementById(gridKeyFromPath(elementPath))
-}
-
-export function getGridPlaceholderDomElementFromCoordinates(params: {
-  row: number
-  column: number
-}): HTMLElement | null {
-  return document.querySelector(
-    `[data-grid-row="${params.row}"]` + `[data-grid-column="${params.column}"]`,
-  )
 }
 
 const gridPlaceholderBorder = (color: string) => `2px solid ${color}`
