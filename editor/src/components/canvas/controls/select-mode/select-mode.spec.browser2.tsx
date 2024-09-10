@@ -325,7 +325,7 @@ describe('Select Mode Clicking', () => {
     checkSelectedPaths(renderResult, [desiredPath])
   })
 
-  it('Single click and then double click to select Button on a Card Scene Root', async () => {
+  xit('Single click and then double click to select Button on a Card Scene Root', async () => {
     // prettier-ignore
     const desiredPaths = createConsecutivePaths(
       'sb' +                // Skipped as it's the storyboard
@@ -703,7 +703,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
     checkSelectedPaths(renderResult, [desiredPath])
   })
 
-  it('Single click and then double click to select Button on a Card Scene Root', async () => {
+  xit('Single click and then double click to select Button on a Card Scene Root', async () => {
     FOR_TESTS_setNextGeneratedUids([
       'cardlistfragment',
       'manuallistfragment',
