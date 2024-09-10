@@ -9,8 +9,7 @@ import * as EP from '../../../../core/shared/element-path'
 import * as PP from '../../../../core/shared/property-path'
 import { setProperty } from '../../commands/set-property-command'
 import {
-  GridControls,
-  GridControlsKey,
+  controlsForGridPlaceholders,
   GridRowColumnResizingControls,
 } from '../../controls/grid-controls'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
@@ -73,13 +72,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         show: 'always-visible',
         priority: 'top',
       },
-      {
-        control: GridControls,
-        props: { targets: [gridPath] },
-        key: GridControlsKey(gridPath),
-        show: 'always-visible',
-        priority: 'bottom',
-      },
+      controlsForGridPlaceholders(gridPath),
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_AXIS_HANDLE', 1),
     apply: () => {

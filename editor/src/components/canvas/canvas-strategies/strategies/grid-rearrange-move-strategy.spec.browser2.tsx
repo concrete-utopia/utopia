@@ -5,7 +5,7 @@ import {
   offsetPoint,
   windowPoint,
 } from '../../../../core/shared/math-utils'
-import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import CanvasActions from '../../canvas-actions'
 import { GridCellTestId } from '../../controls/grid-controls'
 import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
@@ -117,6 +117,8 @@ export var storyboard = (
           gridTemplateRows: '1fr',
           gridColumn: 1,
           gridRow: 2,
+		  width: '100%',
+		  height: '100%',
         }}
       >
         <div
