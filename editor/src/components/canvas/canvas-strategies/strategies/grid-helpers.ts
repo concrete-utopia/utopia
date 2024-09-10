@@ -30,6 +30,7 @@ import { cssNumber, isCSSKeyword } from '../../../inspector/common/css-utils'
 import { setCssLengthProperty } from '../../commands/set-css-length-command'
 import type { GridCellCoordinates } from './grid-cell-bounds'
 import {
+  getCellWindowRect,
   getGridCellUnderMouse,
   getGridCellUnderMouseRecursive,
   gridCellCoordinates,
@@ -86,16 +87,6 @@ export function runGridRearrangeMove(
 
   const targetCellUnderMouse = targetCellData?.gridCellCoordinates ?? null
 
-  const absoluteMoveCommands =
-    targetCellData == null
-      ? []
-      : gridChildAbsoluteMoveCommands(
-          MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
-          targetCellData.cellWindowRectangle,
-          interactionData,
-          { scale: canvasScale, canvasOffset: canvasOffset },
-        )
-
   const originalElementMetadata = MetadataUtils.findElementByElementPath(
     jsxMetadata,
     selectedElement,
@@ -147,6 +138,18 @@ export function runGridRearrangeMove(
   )
 
   const targetRootCell = gridCellCoordinates(row.start, column.start)
+
+  const windowRect = getCellWindowRect(targetRootCell)
+
+  const absoluteMoveCommands =
+    windowRect == null
+      ? []
+      : gridChildAbsoluteMoveCommands(
+          MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
+          windowRect,
+          interactionData,
+          { scale: canvasScale, canvasOffset: canvasOffset },
+        )
 
   const gridCellMoveCommands = setGridPropsCommands(targetElement, gridTemplate, {
     gridColumnStart: gridPositionValue(column.start),
