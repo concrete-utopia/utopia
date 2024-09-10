@@ -299,6 +299,8 @@ export function resubscribeObservers(domWalkerMutableState: {
     domWalkerMutableState.resizeObserver != null &&
     domWalkerMutableState.mutationObserver != null
   ) {
+    domWalkerMutableState.resizeObserver.disconnect()
+    domWalkerMutableState.mutationObserver.disconnect()
     document.querySelectorAll(`#${CanvasContainerOuterId} *`).forEach((elem) => {
       domWalkerMutableState.resizeObserver.observe(elem)
     })
