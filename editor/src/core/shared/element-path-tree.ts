@@ -3,7 +3,12 @@ import { MetadataUtils } from '../model/element-metadata-utils'
 import { forEachRight, isLeft } from './either'
 import * as EP from './element-path'
 import type { ElementInstanceMetadataMap, JSXElementChild } from './element-template'
-import { isJSXConditionalExpression, isJSXElement, isJSXFragment } from './element-template'
+import {
+  isJSXConditionalExpression,
+  isJSXElement,
+  isJSXElementLike,
+  isJSXFragment,
+} from './element-template'
 import type { ElementPath } from './project-file-types'
 
 export interface ElementPathTree {
@@ -110,36 +115,29 @@ function buildTree_MUTATE(
 
   for (const elementMetadata of Object.values(metadata)) {
     forEachRight(elementMetadata.element, (element) => {
-      switch (element.type) {
-        case 'JSX_ELEMENT':
-        case 'JSX_FRAGMENT':
-          {
-            let elementChildren: Array<JSXElementChild>
-            if (isFeatureEnabled('Condensed Navigator Entries')) {
-              elementChildren = element.children
-            } else {
-              elementChildren = element.children.filter((child) => {
-                switch (child.type) {
-                  case 'JSX_TEXT_BLOCK':
-                  case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-                  case 'JSX_MAP_EXPRESSION':
-                  case 'JS_IDENTIFIER':
-                  case 'JS_PROPERTY_ACCESS':
-                  case 'JS_ELEMENT_ACCESS':
-                    return false
-                  default:
-                    return true
-                }
-              })
+      if (isJSXElementLike(element)) {
+        let elementChildren: Array<JSXElementChild>
+        if (isFeatureEnabled('Condensed Navigator Entries')) {
+          elementChildren = element.children
+        } else {
+          elementChildren = element.children.filter((child) => {
+            switch (child.type) {
+              case 'JSX_TEXT_BLOCK':
+              case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+              case 'JSX_MAP_EXPRESSION':
+              case 'JS_IDENTIFIER':
+              case 'JS_PROPERTY_ACCESS':
+              case 'JS_ELEMENT_ACCESS':
+                return false
+              default:
+                return true
             }
-            for (const child of elementChildren) {
-              const childPath = EP.appendToPath(elementMetadata.elementPath, child.uid)
-              addPathToTree(childPath)
-            }
-          }
-          break
-        default:
-          break
+          })
+        }
+        for (const child of elementChildren) {
+          const childPath = EP.appendToPath(elementMetadata.elementPath, child.uid)
+          addPathToTree(childPath)
+        }
       }
     })
   }
@@ -153,7 +151,7 @@ function getMissingParentPaths(
   for (const path of paths) {
     let parent = EP.parentPath(path)
     while (parent.parts.length > 0) {
-      if (!(EP.toString(parent) in metadata)) {
+      if (metadata[EP.toString(parent)] == null) {
         missingParentPaths.add(parent)
       }
       parent = EP.parentPath(parent)
@@ -168,7 +166,7 @@ function getReorderedPaths(
   missingParents: ElementPath[],
 ): ElementPath[] {
   const pathsToBeReordered = original.filter((path) => {
-    // Omit elements that have a missing parent.
+    // Omit elements that have a missing ancestor.
     return !missingParents.some((parentPath) => EP.isDescendantOf(path, parentPath))
   })
 
