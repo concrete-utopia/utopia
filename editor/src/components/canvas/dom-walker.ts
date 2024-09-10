@@ -59,7 +59,7 @@ import {
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
-import { UTOPIA_SCENE_ID_KEY } from '../../core/model/utopia-constants'
+import { UTOPIA_SCENE_ID_KEY, UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
 import { emptySet } from '../../core/shared/set-utils'
 import type { PathWithString } from '../../core/shared/uid-utils'
 import { getDeepestPathOnDomElement, getPathStringsOnDomElement } from '../../core/shared/uid-utils'
@@ -299,9 +299,7 @@ export function resubscribeObservers(domWalkerMutableState: {
     domWalkerMutableState.resizeObserver != null &&
     domWalkerMutableState.mutationObserver != null
   ) {
-    domWalkerMutableState.resizeObserver.disconnect()
-    domWalkerMutableState.mutationObserver.disconnect()
-    document.querySelectorAll(`#${CanvasContainerOuterId} *`).forEach((elem) => {
+    document.querySelectorAll(`#${CanvasContainerOuterId} [${UTOPIA_UID_KEY}]`).forEach((elem) => {
       domWalkerMutableState.resizeObserver.observe(elem)
     })
     domWalkerMutableState.mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
