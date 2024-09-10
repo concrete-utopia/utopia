@@ -13,10 +13,8 @@ import {
   canvasPoint,
   isInfinityRectangle,
   offsetPoint,
-  rectContainsPoint,
   scaleVector,
   windowPoint,
-  windowRectangle,
   windowVector,
   type WindowPoint,
 } from '../../../../core/shared/math-utils'
@@ -26,86 +24,17 @@ import { setProperty } from '../../commands/set-property-command'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { DragInteractionData } from '../interaction-state'
 import type { GridCustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
-import type { GridCellCoordinates } from '../../controls/grid-controls'
-import {
-  getGridPlaceholderDomElementFromCoordinates,
-  gridCellCoordinates,
-} from '../../controls/grid-controls'
 import * as EP from '../../../../core/shared/element-path'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { cssNumber, isCSSKeyword } from '../../../inspector/common/css-utils'
 import { setCssLengthProperty } from '../../commands/set-css-length-command'
-
-export function getGridCellUnderMouse(mousePoint: WindowPoint) {
-  return getGridCellAtPoint(mousePoint, false)
-}
-
-function getGridCellUnderMouseRecursive(mousePoint: WindowPoint) {
-  return getGridCellAtPoint(mousePoint, true)
-}
-
-const gridCellTargetIdPrefix = 'grid-cell-target-'
-
-export function gridCellTargetId(
-  gridElementPath: ElementPath,
-  row: number,
-  column: number,
-): string {
-  return gridCellTargetIdPrefix + `${EP.toString(gridElementPath)}-${row}-${column}`
-}
-
-function isGridCellTargetId(id: string): boolean {
-  return id.startsWith(gridCellTargetIdPrefix)
-}
-
-export function getGridCellAtPoint(
-  point: WindowPoint,
-  duplicating: boolean,
-): { id: string; coordinates: GridCellCoordinates; cellWindowRectangle: WindowRectangle } | null {
-  function maybeRecursivelyFindCellAtPoint(
-    elements: Element[],
-  ): { element: Element; cellWindowRectangle: WindowRectangle } | null {
-    // If this used during duplication, the canvas controls will be in the way and we need to traverse the children too.
-    for (const element of elements) {
-      if (isGridCellTargetId(element.id)) {
-        const domRect = element.getBoundingClientRect()
-        const windowRect = windowRectangle(domRect)
-        if (rectContainsPoint(windowRect, point)) {
-          return { element: element, cellWindowRectangle: windowRect }
-        }
-      }
-
-      if (duplicating) {
-        const child = maybeRecursivelyFindCellAtPoint(Array.from(element.children))
-        if (child != null) {
-          return child
-        }
-      }
-    }
-
-    return null
-  }
-
-  const cellUnderMouse = maybeRecursivelyFindCellAtPoint(
-    document.elementsFromPoint(point.x, point.y),
-  )
-  if (cellUnderMouse == null) {
-    return null
-  }
-
-  const { element, cellWindowRectangle } = cellUnderMouse
-  const row = element.getAttribute('data-grid-row')
-  const column = element.getAttribute('data-grid-column')
-
-  return {
-    id: element.id,
-    cellWindowRectangle: cellWindowRectangle,
-    coordinates: gridCellCoordinates(
-      row == null ? 0 : parseInt(row),
-      column == null ? 0 : parseInt(column),
-    ),
-  }
-}
+import type { GridCellCoordinates } from './grid-cell-bounds'
+import {
+  getCellWindowRect,
+  getGridCellUnderMouse,
+  getGridCellUnderMouseRecursive,
+  gridCellCoordinates,
+} from './grid-cell-bounds'
 
 export function runGridRearrangeMove(
   targetElement: ElementPath,
@@ -505,65 +434,4 @@ function gridChildAbsoluteMoveCommands(
       null,
     ),
   ]
-}
-
-const GRID_BOUNDS_TOLERANCE = 5 // px
-
-export function getGridCellBoundsFromCanvas(
-  cell: ElementInstanceMetadata,
-  canvasScale: number,
-  canvasOffset: CanvasVector,
-) {
-  const cellFrame = cell.globalFrame
-  if (cellFrame == null || isInfinityRectangle(cellFrame)) {
-    return null
-  }
-
-  const canvasFrameWidth = cellFrame.width * canvasScale
-  const canvasFrameHeight = cellFrame.height * canvasScale
-
-  const cellOriginPoint = offsetPoint(
-    canvasPointToWindowPoint(cellFrame, canvasScale, canvasOffset),
-    windowPoint({ x: GRID_BOUNDS_TOLERANCE, y: GRID_BOUNDS_TOLERANCE }),
-  )
-  const cellOrigin = getGridCellAtPoint(cellOriginPoint, true)
-  if (cellOrigin == null) {
-    return null
-  }
-
-  const cellEndPoint = offsetPoint(
-    cellOriginPoint,
-    windowPoint({
-      x: canvasFrameWidth - GRID_BOUNDS_TOLERANCE,
-      y: canvasFrameHeight - GRID_BOUNDS_TOLERANCE,
-    }),
-  )
-  const cellEnd = getGridCellAtPoint(cellEndPoint, true)
-  if (cellEnd == null) {
-    return null
-  }
-
-  const cellOriginCoords = cellOrigin.coordinates
-  const cellEndCoords = cellEnd.coordinates
-
-  const cellWidth = cellEndCoords.column - cellOriginCoords.column + 1
-  const cellHeight = cellEndCoords.row - cellOriginCoords.row + 1
-
-  return {
-    column: cellOriginCoords.column,
-    row: cellOriginCoords.row,
-    width: cellWidth,
-    height: cellHeight,
-  }
-}
-
-function getCellWindowRect(coords: GridCellCoordinates): WindowRectangle | null {
-  const element = getGridPlaceholderDomElementFromCoordinates(coords)
-  if (element == null) {
-    return null
-  }
-
-  const domRect = element!.getBoundingClientRect()
-  const windowRect = windowRectangle(domRect)
-  return windowRect
 }

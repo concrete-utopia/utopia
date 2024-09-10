@@ -34,7 +34,6 @@ import { flattenSelection } from './shared-move-strategies-helpers'
 import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import { canvasVector, isInfinityRectangle, offsetPoint } from '../../../../core/shared/math-utils'
 import { showGridControls } from '../../commands/show-grid-controls-command'
-import type { GridCellCoordinates } from '../../controls/grid-controls'
 import { GridControls } from '../../controls/grid-controls'
 import {
   gridPositionValue,
@@ -49,6 +48,7 @@ import { removeAbsolutePositioningProps } from './reparent-helpers/reparent-prop
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { TargetGridCellData } from './grid-helpers'
 import { getTargetCell, setGridPropsCommands } from './grid-helpers'
+import type { GridCellCoordinates } from './grid-cell-bounds'
 
 export function gridReparentStrategy(
   reparentTarget: ReparentTarget,
