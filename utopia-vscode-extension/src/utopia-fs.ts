@@ -50,7 +50,7 @@ import {
   isNotDirectoryError,
   pathIsFile,
 } from './in-mem-fs'
-import { appendToPath, dirname, vsCodeFileDelete } from 'utopia-vscode-common'
+import { appendToPath, dirname, vsCodeFileChange, vsCodeFileDelete } from 'utopia-vscode-common'
 import type { ProjectFile } from 'utopia-vscode-common'
 import { addSchemeToPath, allPathsUpToPath } from './path-utils'
 
@@ -219,6 +219,7 @@ export class UtopiaFSExtension
     const path = uri.path
     createDirectory(path)
     this.notifyFileCreated(path)
+    // TODO Add a message for when a directory is created / renamed
   }
 
   readFile(uri: Uri): Uint8Array {
@@ -243,6 +244,9 @@ export class UtopiaFSExtension
     } else {
       this.notifyFileCreated(path)
     }
+
+    const updatedFile = readFileAsUTF8(path)
+    commands.executeCommand('utopia.toUtopiaMessage', vsCodeFileChange(path, updatedFile))
   }
 
   ensureDirectoryExists(pathToEnsure: string) {

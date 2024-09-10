@@ -5,6 +5,7 @@ import type { AnimationControls } from 'framer-motion'
 import { motion, useAnimationControls } from 'framer-motion'
 import type { CSSProperties } from 'react'
 import React from 'react'
+import type { Sides } from 'utopia-api/core'
 import type { ElementPath } from 'utopia-shared/src/types'
 import type { GridDimension } from '../../../components/inspector/common/css-utils'
 import {
@@ -23,8 +24,10 @@ import {
 import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
+  canvasRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
+  nullIfInfinity,
   pointsEqual,
   scaleRect,
   windowPoint,
@@ -39,9 +42,11 @@ import {
 } from '../../../core/shared/optics/optic-creators'
 import { toFirst } from '../../../core/shared/optics/optic-utilities'
 import type { Optic } from '../../../core/shared/optics/optics'
+import { optionalMap } from '../../../core/shared/optional-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { Modifier } from '../../../utils/modifiers'
 import { when } from '../../../utils/react-conditionals'
+import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { useRollYourOwnFeatures } from '../../navigator/left-pane/roll-your-own-pane'
@@ -52,16 +57,13 @@ import type {
   GridResizeEdgeProperties,
 } from '../canvas-strategies/interaction-state'
 import {
-  GridResizeEdges,
   createInteractionViaMouse,
   gridAxisHandle,
   gridCellHandle,
   gridResizeEdgeProperties,
+  GridResizeEdges,
   gridResizeHandle,
 } from '../canvas-strategies/interaction-state'
-import { windowToCanvasCoordinates } from '../dom-lookup'
-import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { resizeBoundingBoxFromSide } from '../canvas-strategies/strategies/resize-helpers'
 import type { EdgePosition } from '../canvas-types'
 import {
@@ -71,11 +73,11 @@ import {
   EdgePositionRight,
   EdgePositionTop,
 } from '../canvas-types'
-import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
-import { CanvasLabel } from './select-mode/controls-common'
-import { optionalMap } from '../../../core/shared/optional-utils'
-import type { Sides } from 'utopia-api/core'
+import { windowToCanvasCoordinates } from '../dom-lookup'
 import type { Axis } from '../gap-utils'
+import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
+import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
+import { CanvasLabel } from './select-mode/controls-common'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import type { GridCellCoordinates } from '../canvas-strategies/strategies/grid-cell-bounds'
 import { gridCellTargetId } from '../canvas-strategies/strategies/grid-cell-bounds'
@@ -957,10 +959,342 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
             }}
           />
         ) : null}
+        <AbsoluteDistanceIndicators targetRootCell={targetRootCell} />
       </CanvasOffsetWrapper>
     </React.Fragment>
   )
 })
+
+const MIN_INDICATORS_DISTANCE = 32 // px
+
+const AbsoluteDistanceIndicators = React.memo(
+  (props: { targetRootCell: GridCellCoordinates | null }) => {
+    const colorTheme = useColorTheme()
+
+    const cellFrame = useEditorState(
+      Substores.metadata,
+      (store) => {
+        if (store.editor.selectedViews.length !== 1) {
+          return null
+        }
+
+        const meta = MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          store.editor.selectedViews[0],
+        )
+        if (!MetadataUtils.isPositionAbsolute(meta)) {
+          return null
+        }
+
+        return nullIfInfinity(meta?.globalFrame)
+      },
+      'AbsoluteDistanceIndicators cellFrame',
+    )
+    const canvasScale = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.scale,
+      'AbsoluteDistanceIndicators canvasScale',
+    )
+
+    const canvasOffset = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.roundedCanvasOffset,
+      'AbsoluteDistanceIndicators canvasOffset',
+    )
+
+    const targetCellBoundingBox = React.useMemo(() => {
+      if (props.targetRootCell == null) {
+        return null
+      }
+      const element = getGridPlaceholderDomElementFromCoordinates(props.targetRootCell)
+      const boundingBox = element?.getBoundingClientRect()
+      if (boundingBox == null) {
+        return null
+      }
+
+      const canvasOrigin = windowToCanvasCoordinates(
+        canvasScale,
+        canvasOffset,
+        windowPoint({ x: boundingBox.left, y: boundingBox.top }),
+      ).canvasPositionRounded
+      const canvasRect = canvasRectangle({
+        x: canvasOrigin.x,
+        y: canvasOrigin.y,
+        width: boundingBox.width * canvasScale,
+        height: boundingBox.height * canvasScale,
+      })
+
+      return canvasRect
+    }, [props.targetRootCell, canvasScale, canvasOffset])
+
+    const distanceTop =
+      targetCellBoundingBox == null || cellFrame == null ? 0 : cellFrame.y - targetCellBoundingBox.y
+
+    const distanceLeft =
+      targetCellBoundingBox == null || cellFrame == null ? 0 : cellFrame.x - targetCellBoundingBox.x
+
+    const positioning = React.useMemo(() => {
+      if (cellFrame == null || targetCellBoundingBox == null) {
+        return null
+      }
+
+      function position(
+        wantedCoord: 'x' | 'y',
+        cell: CanvasRectangle,
+        root: CanvasRectangle,
+        dominantDistance: number,
+        otherDistance: number,
+      ): { left: number; top: number } {
+        const otherCoord = wantedCoord === 'x' ? 'y' : 'x'
+        const dimension = wantedCoord === 'x' ? 'width' : 'height'
+        const dominant =
+          cell[wantedCoord] < root[wantedCoord] ||
+          dominantDistance < MIN_INDICATORS_DISTANCE ||
+          otherDistance < 0
+            ? root[wantedCoord] + root[dimension] / 2
+            : Math.max(root[wantedCoord], cell[wantedCoord])
+        const other = otherDistance < 0 ? cell[otherCoord] : root[otherCoord]
+        if (wantedCoord === 'x') {
+          return {
+            left: dominant,
+            top: other,
+          }
+        } else {
+          return {
+            left: other,
+            top: dominant,
+          }
+        }
+      }
+
+      function compensationNegative(
+        wantedCoord: 'x' | 'y',
+        cell: CanvasRectangle,
+        root: CanvasRectangle,
+        dist: number,
+      ): { width: number; height: number; left: number; top: number } | null {
+        const otherCoord = wantedCoord === 'x' ? 'y' : 'x'
+        const dimension = wantedCoord === 'x' ? 'width' : 'height'
+
+        const shouldCompensate =
+          dist < 0 && cell[wantedCoord] > root[wantedCoord] + root[dimension] / 2
+        if (!shouldCompensate) {
+          return null
+        }
+
+        const size = Math.abs(root[wantedCoord] + root[dimension] / 2 - cell[wantedCoord])
+        const dominant = root[wantedCoord] + root[dimension] / 2
+        const other = cell[otherCoord]
+
+        return wantedCoord === 'x'
+          ? {
+              width: size,
+              height: 1,
+              top: other,
+              left: dominant,
+            }
+          : {
+              width: 1,
+              height: size,
+              top: dominant,
+              left: other,
+            }
+      }
+
+      function compensationPositive(
+        wantedCoord: 'x' | 'y',
+        cell: CanvasRectangle,
+        root: CanvasRectangle,
+        dist: number,
+      ): { width: number; height: number; left: number; top: number } | null {
+        const otherCoord = wantedCoord === 'x' ? 'y' : 'x'
+        const dimension = wantedCoord === 'x' ? 'width' : 'height'
+
+        const shouldCompensate = dist > 0 && cell[wantedCoord] > root[wantedCoord] + root[dimension]
+        if (!shouldCompensate) {
+          return null
+        }
+
+        const size = Math.abs(root[wantedCoord] + root[dimension] / 2 - cell[wantedCoord])
+        const other = root[otherCoord]
+        const dominant = root[wantedCoord] + root[dimension] / 2
+
+        return wantedCoord === 'x'
+          ? {
+              width: size,
+              height: 1,
+              top: other,
+              left: dominant,
+            }
+          : {
+              height: size,
+              width: 1,
+              left: other,
+              top: dominant,
+            }
+      }
+
+      const topIndicator = {
+        ...position('x', cellFrame, targetCellBoundingBox, distanceLeft, distanceTop),
+        compensateNegative: compensationNegative(
+          'x',
+          cellFrame,
+          targetCellBoundingBox,
+          distanceTop,
+        ),
+        compensatePositive: compensationPositive(
+          'x',
+          cellFrame,
+          targetCellBoundingBox,
+          distanceTop,
+        ),
+      }
+
+      const leftIndicator = {
+        ...position('y', cellFrame, targetCellBoundingBox, distanceLeft, distanceLeft),
+        compensateNegative: compensationNegative(
+          'y',
+          cellFrame,
+          targetCellBoundingBox,
+          distanceLeft,
+        ),
+        compensatePositive: compensationPositive(
+          'y',
+          cellFrame,
+          targetCellBoundingBox,
+          distanceLeft,
+        ),
+      }
+
+      return { topIndicator, leftIndicator }
+    }, [cellFrame, targetCellBoundingBox, distanceLeft, distanceTop])
+
+    if (targetCellBoundingBox == null || cellFrame == null || positioning == null) {
+      return null
+    }
+
+    const backgroundColor = colorTheme.brandNeonPink.value
+    const dashedBorder = `1px dashed ${backgroundColor}`
+
+    return (
+      <React.Fragment>
+        {/* top distance */}
+        <React.Fragment>
+          <div
+            style={{
+              position: 'absolute',
+              borderLeft: dashedBorder,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+
+              left: positioning.topIndicator.left,
+              top: positioning.topIndicator.top,
+              width: 1,
+              height: Math.abs(distanceTop),
+            }}
+          >
+            <span
+              style={{
+                backgroundColor: backgroundColor,
+                padding: '0px 2px',
+                borderRadius: 2,
+                fontSize: 9,
+                color: '#fff',
+              }}
+            >
+              {distanceTop}
+            </span>
+          </div>
+          {/* compensate */}
+          {positioning.topIndicator.compensateNegative != null ? (
+            <div
+              style={{
+                position: 'absolute',
+                borderTop: dashedBorder,
+
+                left: positioning.topIndicator.compensateNegative.left,
+                top: positioning.topIndicator.compensateNegative.top,
+                width: positioning.topIndicator.compensateNegative.width,
+                height: positioning.topIndicator.compensateNegative.height,
+              }}
+            />
+          ) : null}
+          {positioning.topIndicator.compensatePositive != null ? (
+            <div
+              style={{
+                position: 'absolute',
+                borderTop: dashedBorder,
+
+                left: positioning.topIndicator.compensatePositive.left,
+                top: positioning.topIndicator.compensatePositive.top,
+                width: positioning.topIndicator.compensatePositive.width,
+                height: positioning.topIndicator.compensatePositive.height,
+              }}
+            />
+          ) : null}
+        </React.Fragment>
+
+        {/* left distance */}
+        <React.Fragment>
+          <div
+            style={{
+              position: 'absolute',
+              borderTop: dashedBorder,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+
+              left: positioning.leftIndicator.left,
+              top: positioning.leftIndicator.top,
+              width: Math.abs(distanceLeft),
+              height: 1,
+            }}
+          >
+            <span
+              style={{
+                backgroundColor: backgroundColor,
+                padding: '0px 2px',
+                borderRadius: 2,
+                fontSize: 9,
+                color: '#fff',
+              }}
+            >
+              {distanceLeft}
+            </span>
+          </div>
+          {/* compensate */}
+          {positioning.leftIndicator.compensateNegative != null ? (
+            <div
+              style={{
+                position: 'absolute',
+                borderLeft: dashedBorder,
+
+                left: positioning.leftIndicator.compensateNegative.left,
+                top: positioning.leftIndicator.compensateNegative.top,
+                width: positioning.leftIndicator.compensateNegative.width,
+                height: positioning.leftIndicator.compensateNegative.height,
+              }}
+            />
+          ) : null}
+          {positioning.leftIndicator.compensatePositive != null ? (
+            <div
+              style={{
+                position: 'absolute',
+                borderLeft: dashedBorder,
+
+                left: positioning.leftIndicator.compensatePositive.left,
+                top: positioning.leftIndicator.compensatePositive.top,
+                width: positioning.leftIndicator.compensatePositive.width,
+                height: positioning.leftIndicator.compensatePositive.height,
+              }}
+            />
+          ) : null}
+        </React.Fragment>
+      </React.Fragment>
+    )
+  },
+)
 
 function useCellAnimation(params: {
   disabled: boolean
@@ -1349,6 +1683,15 @@ function gridKeyFromPath(path: ElementPath): string {
 
 export function getGridPlaceholderDomElement(elementPath: ElementPath): HTMLElement | null {
   return document.getElementById(gridKeyFromPath(elementPath))
+}
+
+export function getGridPlaceholderDomElementFromCoordinates(params: {
+  row: number
+  column: number
+}): HTMLElement | null {
+  return document.querySelector(
+    `[data-grid-row="${params.row}"]` + `[data-grid-column="${params.column}"]`,
+  )
 }
 
 const gridPlaceholderBorder = (color: string) => `2px solid ${color}`
