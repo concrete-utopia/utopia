@@ -14,7 +14,6 @@ type GridFeatures = {
   dragVerbatim: boolean
   dragMagnetic: boolean
   dragRatio: boolean
-  animateShadowSnap: boolean
   dotgrid: boolean
   shadow: boolean
   activeGridColor: string
@@ -37,7 +36,6 @@ const defaultRollYourOwnFeatures: RollYourOwnFeatures = {
     dragVerbatim: false,
     dragMagnetic: false,
     dragRatio: true,
-    animateShadowSnap: false,
     dotgrid: true,
     shadow: true,
     activeGridColor: '#0099ff77',
