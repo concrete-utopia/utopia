@@ -15,7 +15,6 @@ import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import type { GridResizeEdge } from '../interaction-state'
 import { gridCellTargetId } from './grid-helpers'
-import { wait } from '../../../../core/model/performance-scripts'
 
 async function runCellResizeTest(
   editor: EditorRenderResult,
@@ -46,6 +45,15 @@ async function runCellResizeTest(
 }
 
 describe('grid resize element strategy', () => {
+  it('cannot resize non-filling cells', async () => {
+    const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/grid/grid-child-not-filling')])
+
+    const resizeControl = editor.renderedDOM.queryByTestId(GridResizeEdgeTestId('column-end'))
+    expect(resizeControl).toBeNull()
+  })
+
   describe('column-end', () => {
     it('can enlarge element', async () => {
       const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
@@ -231,6 +239,8 @@ describe('grid resize element strategy', () => {
     expect(styleProp).toEqual([
       ['minHeight', 0],
       ['backgroundColor', '#db48f6'],
+      ['width', '100%'],
+      ['height', '100%'],
       ['gridColumnStart', 7],
       ['gridColumnEnd', 11],
       ['gridRow', 2],
@@ -272,6 +282,8 @@ export var storyboard = (
           gridTemplateRows: '1fr',
           gridColumn: 1,
           gridRow: 2,
+		  width: '100%',
+		  height: '100%',
         }}
       >
         <div
@@ -393,8 +405,11 @@ export var storyboard = (
             gridColumnStart: 1,
             gridRowStart: 3,
             backgroundColor: '#0074ff',
+			width: 25,
+			height: 30,
           }}
-          data-uid='ccc'
+          data-uid='grid-child-not-filling'
+		  data-testid='grid-child-not-filling'
         />
         <div
           style={{
@@ -404,6 +419,8 @@ export var storyboard = (
             gridColumnStart: 7,
             gridRowStart: 2,
             backgroundColor: '#db48f6',
+			width: '100%',
+			height: '100%',
           }}
           data-uid='ddd'
           data-testid='grid-child'
@@ -452,6 +469,8 @@ export var storyboard = (
             minHeight: 0,
             gridArea: '2 / 7 / 3 / 10',
             backgroundColor: '#db48f6',
+			width: '100%',
+			height: '100%',
           }}
           data-uid='ddd'
           data-testid='grid-child'
