@@ -295,11 +295,11 @@ export function resubscribeObservers(domWalkerMutableState: {
   let rootElementId = CanvasContainerID
   let rootElement = document.getElementById(rootElementId)
 
-  // if (rootElement == null) {
-  //   // when there is a build error the canvas root container is not rendered, so we attach the observers to the canvas wrapper component
-  //   rootElementId = CanvasWrapperComponentId
-  //   rootElement = document.getElementById(rootElementId)
-  // }
+  if (rootElement == null) {
+    // when there is a build error the canvas root container is not rendered, so we attach the observers to the canvas wrapper component
+    rootElementId = CanvasWrapperComponentId
+    rootElement = document.getElementById(rootElementId)
+  }
 
   if (
     ObserversAvailable &&
