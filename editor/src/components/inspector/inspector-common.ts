@@ -1418,19 +1418,26 @@ export function isHuggingParent(element: ElementInstanceMetadata, property: 'wid
   return element.specialSizeMeasurements.computedHugProperty[property] != null
 }
 
+interface ContainedGridPositioning {
+  type: 'contained'
+  gridRow: number
+  gridColumn: number
+}
+
+interface SpanningGridPositioning {
+  type: 'span'
+  gridRowStart: number
+  gridRowEnd: number
+  gridColumnStart: number
+  gridColumnEnd: number
+}
+
+type DetectedGridPositioning = ContainedGridPositioning | SpanningGridPositioning
+
 function getGridElementBounds(
   cell: ElementInstanceMetadata,
   canvasContext: { scale: number; offset: CanvasVector },
-):
-  | null
-  | { type: 'contained'; gridRow: number; gridColumn: number }
-  | {
-      type: 'span'
-      gridRowStart: number
-      gridRowEnd: number
-      gridColumnStart: number
-      gridColumnEnd: number
-    } {
+): DetectedGridPositioning | null {
   const initialCellBounds = getGridCellBoundsFromCanvas(
     cell,
     canvasContext.scale,
