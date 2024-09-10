@@ -19,8 +19,6 @@ import { Substores, useEditorState } from '../editor/store/store-hook'
 import { shouldShowErrorOverlay } from './canvas-utils'
 import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
 
-export const CanvasWrapperComponentId = 'canvas-wrapper-component'
-
 export const CanvasWrapperComponent = React.memo(() => {
   const dispatch = useDispatch()
   const { editorState, derivedState, userState } = useEditorState(
@@ -76,7 +74,6 @@ export const CanvasWrapperComponent = React.memo(() => {
 
   return (
     <FlexColumn
-      id={CanvasWrapperComponentId}
       className='CanvasWrapperComponent'
       style={{
         position: 'relative',
