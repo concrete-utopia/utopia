@@ -73,6 +73,7 @@ import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspecto
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
 import { CanvasWrapperComponentId } from './canvas-wrapper-component'
+import { CanvasContainerOuterId } from './canvas-component-entry'
 
 export const ResizeObserver =
   window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -292,25 +293,21 @@ export function resubscribeObservers(domWalkerMutableState: {
   mutationObserver: MutationObserver
   resizeObserver: ResizeObserver
 }) {
-  let rootElementId = CanvasContainerID
-  let rootElement = document.getElementById(rootElementId)
-
-  if (rootElement == null) {
-    // when there is a build error the canvas root container is not rendered, so we attach the observers to the canvas wrapper component
-    rootElementId = CanvasWrapperComponentId
-    rootElement = document.getElementById(rootElementId)
-  }
+  const canvasContainerOuterElement = document.getElementById(CanvasContainerOuterId)
 
   if (
     ObserversAvailable &&
-    rootElement != null &&
+    canvasContainerOuterElement != null &&
     domWalkerMutableState.resizeObserver != null &&
     domWalkerMutableState.mutationObserver != null
   ) {
-    document.querySelectorAll(`#${rootElementId} *`).forEach((elem) => {
+    document.querySelectorAll(`#${CanvasContainerOuterId} *`).forEach((elem) => {
       domWalkerMutableState.resizeObserver.observe(elem)
     })
-    domWalkerMutableState.mutationObserver.observe(rootElement, MutationObserverConfig)
+    domWalkerMutableState.mutationObserver.observe(
+      canvasContainerOuterElement,
+      MutationObserverConfig,
+    )
   }
 }
 
