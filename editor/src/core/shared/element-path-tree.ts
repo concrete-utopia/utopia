@@ -5,24 +5,38 @@ import * as EP from './element-path'
 import type { ElementInstanceMetadataMap, JSXElementChild } from './element-template'
 import { isJSXConditionalExpression, isJSXElement, isJSXFragment } from './element-template'
 import type { ElementPath } from './project-file-types'
-import { fastForEach } from './utils'
 
 export interface ElementPathTree {
   path: ElementPath
   pathString: string
-  children: Array<ElementPathTree>
+  innerChildren: Array<ElementPathTree>
+  propsChildren: Array<ElementPathTree>
 }
 
 export function elementPathTree(
   path: ElementPath,
   pathString: string,
-  children: Array<ElementPathTree>,
+  innerChildren: Array<ElementPathTree>,
+  propsChildren: Array<ElementPathTree>,
 ): ElementPathTree {
   return {
     path: path,
     pathString: pathString,
-    children: children,
+    innerChildren: innerChildren,
+    propsChildren: propsChildren,
   }
+}
+
+export function getElementPathTreeChildren(tree: ElementPathTree): Array<ElementPathTree> {
+  return [...tree.innerChildren, ...tree.propsChildren]
+}
+
+export function forEachElementPathTreeChild(
+  tree: ElementPathTree,
+  handler: (elementPathTree: ElementPathTree) => void,
+): void {
+  tree.innerChildren.forEach(handler)
+  tree.propsChildren.forEach(handler)
 }
 
 export type ElementPathTrees = { [key: string]: ElementPathTree }
@@ -54,7 +68,7 @@ export function buildTree(...metadatas: Array<ElementInstanceMetadataMap>): Elem
 function addRootToTree(rootPath: ElementPath, trees: ElementPathTrees): void {
   const rootPathString = EP.toString(rootPath)
   if (!(rootPathString in trees)) {
-    trees[rootPathString] = elementPathTree(rootPath, rootPathString, [])
+    trees[rootPathString] = elementPathTree(rootPath, rootPathString, [], [])
   }
 }
 
@@ -71,9 +85,14 @@ function buildTree_MUTATE(
     const alreadyAdded = pathString in trees
     if (!alreadyAdded) {
       const parentPath = EP.parentPath(path)
-      const subTree = elementPathTree(path, pathString, [])
+      const subTree = elementPathTree(path, pathString, [], [])
       trees[pathString] = subTree
-      trees[EP.toString(parentPath)].children.push(subTree)
+      const pathLastPart = EP.lastElementPathForPath(path)
+      if (pathLastPart?.length === 1) {
+        trees[EP.toString(parentPath)].innerChildren.push(subTree)
+      } else {
+        trees[EP.toString(parentPath)].propsChildren.push(subTree)
+      }
     }
   }
 
@@ -168,11 +187,6 @@ function getReorderedIndexInPaths(
   metadata: ElementInstanceMetadataMap,
   pathToReorder: ElementPath,
 ): number | 'do-not-reorder' {
-  const index = paths.findIndex((path) => EP.isDescendantOf(path, pathToReorder))
-  if (index >= 0) {
-    return index
-  }
-
   const parent = MetadataUtils.getParent(metadata, pathToReorder)
   if (parent == null || isLeft(parent.element)) {
     return 'do-not-reorder'
@@ -180,11 +194,23 @@ function getReorderedIndexInPaths(
   const parentElement = parent.element.value
 
   if (isJSXElement(parentElement) || isJSXFragment(parentElement)) {
-    const innerIndex = parentElement.children.findIndex((child) => {
+    let innerIndex: number | null = null
+    let priorSiblings: Array<JSXElementChild> = []
+    for (let childIndex = 0; childIndex < parentElement.children.length; childIndex++) {
+      const child = parentElement.children[childIndex]
       const childPath = EP.appendToPath(parent.elementPath, child.uid)
-      return EP.pathsEqual(childPath, pathToReorder)
-    })
-    const priorSiblings = parentElement.children.slice(0, innerIndex)
+      if (EP.pathsEqual(childPath, pathToReorder)) {
+        innerIndex = childIndex
+        break
+      }
+      if (innerIndex == null) {
+        priorSiblings.push(child)
+      }
+    }
+    if (innerIndex == null) {
+      return 'do-not-reorder'
+    }
+
     const parentIndex = paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
 
     if (priorSiblings.length === 0) {
@@ -194,9 +220,9 @@ function getReorderedIndexInPaths(
         return parentIndex + 1 + innerIndex
       }
     } else {
-      const priorSiblingPaths = priorSiblings.map((sibling) =>
-        EP.appendToPath(parent.elementPath, sibling.uid),
-      )
+      const priorSiblingPaths = priorSiblings.map((sibling) => {
+        return EP.appendToPath(parent.elementPath, sibling.uid)
+      })
       const priorSiblingDescendants = paths.reduce((workingCount, path) => {
         if (
           priorSiblingPaths.some((priorSiblingPath) => {
@@ -234,7 +260,7 @@ export function getCanvasRoots(trees: ElementPathTrees): Array<ElementPathTree> 
     return []
   }
 
-  return storyboardTree.children
+  return getElementPathTreeChildren(storyboardTree)
 }
 
 export function printTree(treeRoot: ElementPathTrees): string {
@@ -245,7 +271,7 @@ export function printTree(treeRoot: ElementPathTrees): string {
     }
     outputText += EP.toString(element.path)
     outputText += '\n'
-    for (const child of element.children) {
+    for (const child of getElementPathTreeChildren(element)) {
       printElement(child, depth + 1)
     }
   }
@@ -263,7 +289,7 @@ export function forEachChildOfTarget(
 ): void {
   const foundTree = getSubTree(treeRoot, target)
   if (foundTree != null) {
-    fastForEach(Object.values(foundTree.children), (subTree) => {
+    forEachElementPathTreeChild(foundTree, (subTree) => {
       handler(subTree.path)
     })
   }
