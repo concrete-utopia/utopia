@@ -315,6 +315,12 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
     'Padding controls metadata',
   )
 
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'Padding controls projectContents',
+  )
+
   const hoveredViews = useEditorState(
     Substores.highlightedHoveredViews,
     (store) => store.editor.hoveredViews,
@@ -361,9 +367,9 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
   const currentPadding = React.useMemo(() => {
     return combinePaddings(
       paddingFromSpecialSizeMeasurements(elementMetadata, selectedElements[0]),
-      simplePaddingFromMetadata(elementMetadata, selectedElements[0]),
+      simplePaddingFromMetadata(projectContents, elementMetadata, selectedElements[0]),
     )
-  }, [elementMetadata, selectedElements])
+  }, [projectContents, elementMetadata, selectedElements])
 
   const shownByParent = selectedElementHovered || anyControlHovered
 

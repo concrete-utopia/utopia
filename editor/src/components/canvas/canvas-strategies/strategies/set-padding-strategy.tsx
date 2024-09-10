@@ -1,7 +1,6 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
-  isIntrinsicElement,
   isJSXElement,
   jsxElementName,
   jsxElementNameEquals,
@@ -11,11 +10,10 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import type { EdgePiece } from '../../canvas-types'
-import { CSSCursor, isHorizontalEdgePiece, oppositeEdgePiece } from '../../canvas-types'
+import { CSSCursor } from '../../canvas-types'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
-import { setProperty } from '../../commands/set-property-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { isZeroSizedElement } from '../../controls/outline-utils'
 import { PaddingResizeControl } from '../../controls/select-mode/padding-resize-control'
@@ -24,7 +22,6 @@ import { FloatingIndicator } from '../../controls/select-mode/floating-number-in
 import type { CSSPaddingKey, CSSPaddingMappedValues, PaddingAdjustMode } from '../../padding-utils'
 import {
   deltaFromEdge,
-  getSizeUpdateCommandsForNewPadding,
   maybeFullPadding,
   offsetPaddingByEdge,
   paddingAdjustMode,
@@ -50,7 +47,6 @@ import {
   canvasPoint,
   canvasVector,
   isInfinityRectangle,
-  roundTo,
   zeroRectIfNullOrInfinity,
 } from '../../../../core/shared/math-utils'
 import type {
@@ -72,12 +68,12 @@ import { elementHasOnlyTextChildren } from '../../canvas-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
 import type { Axis } from '../../../inspector/inspector-common'
 import { detectFillHugFixedState, isHuggingFixedHugFill } from '../../../inspector/inspector-common'
-import {
-  AdjustCssLengthProperties,
-  adjustCssLengthProperties,
-} from '../../commands/adjust-css-length-command'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
+import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
+import { updateClassListCommand } from '../../commands/update-class-list-command'
+import * as UCL from '../../commands/update-class-list-command'
+import { stripNulls } from '../../../../core/shared/array-utils'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -115,6 +111,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
   if (
     !supportsPaddingControls(
+      canvasState.projectContents,
       canvasState.startingMetadata,
       canvasState.startingElementPathTree,
       selectedElements[0],
@@ -124,6 +121,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
   }
 
   const maybePaddingValueProps = paddingValueIndicatorProps(
+    canvasState.projectContents,
     canvasState,
     interactionSession,
     selectedElements[0],
@@ -184,7 +182,11 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       const edgePiece = interactionSession.activeControl.edgePiece
       const drag = interactionSession.interactionData.drag ?? canvasVector({ x: 0, y: 0 })
-      const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
+      const padding = simplePaddingFromMetadata(
+        canvasState.projectContents,
+        canvasState.startingMetadata,
+        selectedElement,
+      )
       const paddingPropInteractedWith = paddingPropForEdge(edgePiece)
       const currentPadding = padding[paddingPropInteractedWith]?.renderedValuePx ?? 0
       const rawDelta = deltaFromEdge(drag, edgePiece)
@@ -233,58 +235,52 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         canvasState.startingMetadata,
       )
 
-      const adjustSizeCommand = getSizeUpdateCommandsForNewPadding(
-        combinedXPadding,
-        combinedYPadding,
-        targetFrame,
-        filteredSelectedElements,
-        canvasState.startingMetadata,
-        canvasState.startingElementPathTree,
-      )
+      // const adjustSizeCommand = getSizeUpdateCommandsForNewPadding(
+      //   combinedXPadding,
+      //   combinedYPadding,
+      //   targetFrame,
+      //   filteredSelectedElements,
+      //   canvasState.startingMetadata,
+      //   canvasState.startingElementPathTree,
+      // )
 
-      basicCommands.push(adjustSizeCommand)
+      // basicCommands.push(adjustSizeCommand)
 
       // "tearing off" padding
-      if (newPaddingEdge.renderedValuePx < PaddingTearThreshold) {
-        return strategyApplicationResult([
-          ...basicCommands,
-          deleteProperties('always', selectedElement, [
-            StylePaddingProp,
-            stylePropPathMappingFn(paddingPropInteractedWith, styleStringInArray),
-          ]),
-          ...nonZeroPropsToAdd.map(([p, value]) =>
-            setProperty(
-              'always',
-              selectedElement,
-              stylePropPathMappingFn(p, styleStringInArray),
-              value,
-            ),
-          ),
-          setActiveFrames(
-            selectedElements.map((path) => ({
-              action: 'set-padding',
-              target: activeFrameTargetPath(path),
-              source: zeroRectIfNullOrInfinity(
-                MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
-              ),
-            })),
-          ),
-        ])
-      }
+      // if (newPaddingEdge.renderedValuePx < PaddingTearThreshold) {
+      //   return strategyApplicationResult([
+      //     ...basicCommands,
+      //     deleteProperties('always', selectedElement, [
+      //       StylePaddingProp,
+      //       stylePropPathMappingFn(paddingPropInteractedWith, styleStringInArray),
+      //     ]),
+      //     updateClassListCommand('always', selectedElement, UCL.remove('p')),
+      //     ...getTailwindClassUpdateCommands(selectedElement, nonZeroPropsToAdd),
+      //     setActiveFrames(
+      //       selectedElements.map((path) => ({
+      //         action: 'set-padding',
+      //         target: activeFrameTargetPath(path),
+      //         source: zeroRectIfNullOrInfinity(
+      //           MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
+      //         ),
+      //       })),
+      //     ),
+      //   ])
+      // }
 
       const allPaddingPropsDefined = maybeFullPadding(newPaddingMaxed)
 
       // all 4 sides present - can be represented via the padding shorthand property
       if (allPaddingPropsDefined != null) {
-        const paddingString = paddingToPaddingString(allPaddingPropsDefined)
         return strategyApplicationResult([
           ...basicCommands,
-          ...IndividualPaddingProps.map((p) =>
+          ...IndividualPaddingProps.flatMap((p) => [
             deleteProperties('always', selectedElement, [
               stylePropPathMappingFn(p, styleStringInArray),
             ]),
-          ),
-          setProperty('always', selectedElement, StylePaddingProp, paddingString),
+          ]),
+          updateClassListCommand('always', selectedElement, UCL.remove('p')),
+          ...paddingValuesToTailwind(selectedElement, allPaddingPropsDefined),
           setActiveFrames(
             selectedElements.map((path) => ({
               action: 'set-padding',
@@ -304,14 +300,8 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
           StylePaddingProp,
           ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, styleStringInArray)),
         ]),
-        ...nonZeroPropsToAdd.map(([p, value]) =>
-          setProperty(
-            'always',
-            selectedElement,
-            stylePropPathMappingFn(p, styleStringInArray),
-            value,
-          ),
-        ),
+        updateClassListCommand('always', selectedElement, UCL.remove('p')),
+        ...getTailwindClassUpdateCommands(selectedElement, nonZeroPropsToAdd),
         setActiveFrames(
           selectedElements.map((path) => ({
             action: 'set-padding',
@@ -340,6 +330,7 @@ function pickCursorFromEdge(edgePiece: EdgePiece): CSSCursor {
 }
 
 function supportsPaddingControls(
+  projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   path: ElementPath,
@@ -357,7 +348,7 @@ function supportsPaddingControls(
     return false
   }
 
-  const padding = simplePaddingFromMetadata(metadata, path)
+  const padding = simplePaddingFromMetadata(projectContents, metadata, path)
   const { top, right, bottom, left } = element.specialSizeMeasurements.padding
   const elementHasNonzeroPaddingFromMeasurements = [top, right, bottom, left].some(
     (s) => s != null && s > 0,
@@ -403,6 +394,7 @@ function supportsPaddingControls(
 }
 
 function paddingValueIndicatorProps(
+  projectContents: ProjectContentTreeRoot,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   selectedElement: ElementPath,
@@ -423,6 +415,7 @@ function paddingValueIndicatorProps(
   const edgePiece = interactionSession.activeControl.edgePiece
 
   const padding = simplePaddingFromMetadata(
+    projectContents,
     canvasState.startingMetadata,
     filteredSelectedElements[0],
   )
@@ -550,7 +543,11 @@ function calculateAdjustDelta(
 
   const edgePiece = interactionSession.activeControl.edgePiece
   const drag = interactionSession.interactionData.drag ?? canvasVector({ x: 0, y: 0 })
-  const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
+  const padding = simplePaddingFromMetadata(
+    canvasState.projectContents,
+    canvasState.startingMetadata,
+    selectedElement,
+  )
   const paddingPropInteractedWith = paddingPropForEdge(edgePiece)
   const currentPadding = padding[paddingPropForEdge(edgePiece)]?.renderedValuePx ?? 0
   const rawDelta = deltaFromEdge(drag, edgePiece)
@@ -586,4 +583,59 @@ function calculateAdjustDelta(
       : delta
 
   return deltaAdjusted
+}
+
+function paddingValuesToTailwind(
+  elementPath: ElementPath,
+  padding: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>,
+) {
+  return getTailwindClassUpdateCommands(
+    elementPath,
+    stripNulls([
+      padding.paddingBottom == null
+        ? null
+        : [
+            'paddingBottom',
+            printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingBottom), 'px'),
+          ],
+      padding.paddingTop == null
+        ? null
+        : [
+            'paddingTop',
+            printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingTop), 'px'),
+          ],
+      padding.paddingLeft == null
+        ? null
+        : [
+            'paddingLeft',
+            printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingLeft), 'px'),
+          ],
+      padding.paddingRight == null
+        ? null
+        : [
+            'paddingRight',
+            printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingRight), 'px'),
+          ],
+    ]),
+  )
+}
+
+function getTailwindClassUpdateCommands(
+  elementPath: ElementPath,
+  values: Array<[CSSPaddingKey, string | number]>,
+): CanvasCommand[] {
+  return values.map(([prop, value]) => {
+    switch (prop) {
+      case 'paddingBottom':
+        return updateClassListCommand('always', elementPath, UCL.add(`pb-[${value}]`))
+      case 'paddingTop':
+        return updateClassListCommand('always', elementPath, UCL.add(`pb-[${value}]`))
+      case 'paddingLeft':
+        return updateClassListCommand('always', elementPath, UCL.add(`pb-[${value}]`))
+      case 'paddingRight':
+        return updateClassListCommand('always', elementPath, UCL.add(`pb-[${value}]`))
+      default:
+        assertNever(prop)
+    }
+  })
 }

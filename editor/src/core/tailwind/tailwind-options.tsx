@@ -31,6 +31,7 @@ import * as EP from '../shared/element-path'
 import { isTwindEnabled } from './tailwind'
 import type { AttributeCategory } from './attribute-categories'
 import { AttributeCategories } from './attribute-categories'
+import { parse } from '@xengine/tailwindcss-class-parser'
 
 export interface TailWindOption {
   label: string
@@ -222,7 +223,7 @@ export function useFilteredOptions(
   }, [filter, maxResults, onEmptyResults])
 }
 
-function getClassNameAttribute(element: JSXElementChild | null): {
+export function getClassNameAttribute(element: JSXElementChild | null): {
   value: string | null
   isSettable: boolean
 } {
@@ -246,6 +247,20 @@ function getClassNameAttribute(element: JSXElementChild | null): {
       isSettable: true,
     }
   }
+}
+
+export function getClassNameMapping(classString: string): { [key: string]: string } {
+  const mapping: { [key: string]: string } = {}
+  const classParts = classString.split(' ')
+  classParts.forEach((part) => {
+    const parsed = parse(part)
+    if (parsed.kind === 'error') {
+      return
+    }
+
+    mapping[parsed.root] = parsed.value
+  })
+  return mapping
 }
 
 export function useGetSelectedClasses(): {

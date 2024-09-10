@@ -90,6 +90,8 @@ import {
   runShowGridControlsCommand,
   type ShowGridControlsCommand,
 } from './show-grid-controls-command'
+import type { UpdateClassList } from './update-class-list-command'
+import { runUpdateClassList } from './update-class-list-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -145,6 +147,7 @@ export type CanvasCommand =
   | SetActiveFrames
   | UpdateBulkProperties
   | ShowGridControlsCommand
+  | UpdateClassList
 
 export function runCanvasCommand(
   editorState: EditorState,
@@ -192,7 +195,6 @@ export function runCanvasCommand(
       return runPushIntendedBoundsAndUpdateGroups(editorState, command, commandLifecycle)
     case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING_ELEMENTS':
       return runPushIntendedBoundsAndUpdateHuggingElements(editorState, command)
-
     case 'DELETE_PROPERTIES':
       return runDeleteProperties(editorState, command)
     case 'SET_PROPERTY':
@@ -233,6 +235,8 @@ export function runCanvasCommand(
       return runSetActiveFrames(editorState, command)
     case 'SHOW_GRID_CONTROLS':
       return runShowGridControlsCommand(editorState, command)
+    case 'UPDATE_CLASS_LIST':
+      return runUpdateClassList(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

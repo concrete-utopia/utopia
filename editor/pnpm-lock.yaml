@@ -152,6 +152,7 @@ specifiers:
   '@vercel/stega': 0.1.0
   '@vitejs/plugin-react': 4.0.4
   '@welldone-software/why-did-you-render': 5.0.0-rc.1
+  '@xengine/tailwindcss-class-parser': 1.1.17
   ajv: 6.4.0
   anser: 2.1.0
   antd: 4.3.5
@@ -583,6 +584,7 @@ devDependencies:
   '@typescript-eslint/parser': 6.7.2_eunttwzh7wszgg3cozidbdf3ki
   '@vitejs/plugin-react': 4.0.4_vite@4.4.8
   '@welldone-software/why-did-you-render': 5.0.0-rc.1_react@18.1.0
+  '@xengine/tailwindcss-class-parser': 1.1.17
   babel-jest: 29.7.0_@babel+core@7.23.6
   babel-loader: 9.1.3_dtbhlbjtqhosenncixjdp7t7em
   benny: 3.7.1
@@ -6023,6 +6025,14 @@ packages:
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: true
 
+  /@xengine/tailwindcss-class-parser/1.1.17:
+    resolution: {integrity: sha512-LRod5tEDSpr3T2I8R3U0bRH4O18MDfAdybxQRLSbcIta4AboQEeIUrNVsz6wRmJcsrBXtQYbwP4k9zsE+QnKAg==}
+    peerDependencies:
+      tailwindcss: '*'
+    dependencies:
+      colord: 2.9.3
+    dev: true
+
   /@xstate/fsm/2.1.0:
     resolution: {integrity: sha512-oJlc0iD0qZvAM7If/KlyJyqUt7wVI8ocpsnlWzAPl97evguPbd+oJbRM9R4A1vYJffYH96+Bx44nLDE6qS8jQg==}
     dev: false
@@ -7914,6 +7924,10 @@ packages:
       color-convert: 1.9.3
       color-string: 1.9.1
     dev: false
+
+  /colord/2.9.3:
+    resolution: {integrity: sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==}
+    dev: true
 
   /colorette/2.0.20:
     resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}

@@ -441,7 +441,8 @@
     "webpack-cli": "5.1.4",
     "webpack-dev-server": "4.15.1",
     "webpack-merge": "5.9.0",
-    "webpack-node-externals": "3.0.0"
+    "webpack-node-externals": "3.0.0",
+    "@xengine/tailwindcss-class-parser": "1.1.17"
   },
   "optionalDependencies": {
     "fsevents": "2.1.2"

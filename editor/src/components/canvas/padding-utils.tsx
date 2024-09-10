@@ -1,5 +1,5 @@
 import { styleStringInArray } from '../../utils/common-constants'
-import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
+import { applyParserToValue } from '../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { defaultEither, isLeft, right } from '../../core/shared/either'
 import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
@@ -7,7 +7,7 @@ import { isJSXElement } from '../../core/shared/element-template'
 import type { CanvasVector, Size } from '../../core/shared/math-utils'
 import { numberIsZero, roundTo, zeroRectIfNullOrInfinity } from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
-import type { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath, ProjectContents } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import type { CSSNumber, CSSNumberUnit, CSSPadding } from '../inspector/common/css-utils'
 import { printCSSNumber } from '../inspector/common/css-utils'
@@ -34,6 +34,9 @@ import {
 import { detectFillHugFixedState } from '../inspector/inspector-common'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import type { ProjectContentTreeRoot } from '../assets'
+import { getElementFromProjectContents } from '../editor/store/editor-state'
+import { getClassNameAttribute, getClassNameMapping } from '../../core/tailwind/tailwind-options'
 
 export const EdgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
 
@@ -59,6 +62,7 @@ export function paddingFromSpecialSizeMeasurements(
 }
 
 export function simplePaddingFromMetadata(
+  projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined> {
@@ -82,28 +86,21 @@ export function simplePaddingFromMetadata(
 
   const paddingNumbers = paddingFromSpecialSizeMeasurements(metadata, elementPath)
 
+  const classList = getClassNameAttribute(
+    getElementFromProjectContents(elementPath, projectContents),
+  )
+  const mapping = getClassNameMapping(classList.value ?? '')
+
   const padding: CSSPadding | undefined = defaultEither(
     undefined,
-    getLayoutProperty('padding', right(element.element.value.props), styleStringInArray),
+    applyParserToValue('padding', mapping['p']),
   )
 
   const paddingLonghands: CSSPaddingMappedValues<CSSNumber | undefined> = {
-    paddingTop: defaultEither(
-      undefined,
-      getLayoutProperty('paddingTop', right(element.element.value.props), styleStringInArray),
-    ),
-    paddingBottom: defaultEither(
-      undefined,
-      getLayoutProperty('paddingBottom', right(element.element.value.props), styleStringInArray),
-    ),
-    paddingLeft: defaultEither(
-      undefined,
-      getLayoutProperty('paddingLeft', right(element.element.value.props), styleStringInArray),
-    ),
-    paddingRight: defaultEither(
-      undefined,
-      getLayoutProperty('paddingRight', right(element.element.value.props), styleStringInArray),
-    ),
+    paddingTop: defaultEither(undefined, applyParserToValue('paddingTop', mapping['pt'])),
+    paddingBottom: defaultEither(undefined, applyParserToValue('paddingBottom', mapping['pb'])),
+    paddingLeft: defaultEither(undefined, applyParserToValue('paddingLeft', mapping['pl'])),
+    paddingRight: defaultEither(undefined, applyParserToValue('paddingRight', mapping['pr'])),
   }
 
   const make = (prop: CSSPaddingKey): CSSNumberWithRenderedValue | undefined => {
