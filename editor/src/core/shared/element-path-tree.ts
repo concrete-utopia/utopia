@@ -88,15 +88,18 @@ function buildTree_MUTATE(
       const subTree = elementPathTree(path, pathString, [], [])
       trees[pathString] = subTree
       const pathLastPart = EP.lastElementPathForPath(path)
+
       if (pathLastPart?.length === 1) {
+        // If the last part of the path is a single element, it should be added to the inner children.
+        // This would be a path like `a/b/c:d`.
         trees[EP.toString(parentPath)].innerChildren.push(subTree)
       } else {
+        // Otherwise this should be added to the props children.
         trees[EP.toString(parentPath)].propsChildren.push(subTree)
       }
     }
   }
 
-  //console.log('originalPaths', JSON.stringify(originalPaths.map(EP.toString), null, 2))
   let workingPaths = [...originalPaths]
   workingPaths.sort((a, b) => {
     return EP.fullDepth(a) - EP.fullDepth(b)
@@ -104,7 +107,6 @@ function buildTree_MUTATE(
   for (const workingPath of workingPaths) {
     addPathToTree(workingPath)
   }
-  //console.log('after workingPaths', printTree(trees))
 
   for (const elementMetadata of Object.values(metadata)) {
     forEachRight(elementMetadata.element, (element) => {
@@ -166,13 +168,13 @@ function getReorderedPaths(
   missingParents: ElementPath[],
 ): ElementPath[] {
   const pathsToBeReordered = original.filter((path) => {
-    return !missingParents.some((parentPath) => EP.isDescendantOf(path, parentPath)) // omit elements that have a missing parent
+    // Omit elements that have a missing parent.
+    return !missingParents.some((parentPath) => EP.isDescendantOf(path, parentPath))
   })
 
   return original.reduce((paths, path) => {
     const index = getReorderedIndexInPaths(paths, metadata, path)
     if (index === 'do-not-reorder') {
-      //console.log('do-not-reorder', JSON.stringify(paths.map(EP.toString), null, 2))
       return paths
     }
     const pathsWithout = paths.filter((pathEntry) => !EP.pathsEqual(pathEntry, path))
@@ -200,10 +202,13 @@ function getReorderedIndexInPaths(
       const child = parentElement.children[childIndex]
       const childPath = EP.appendToPath(parent.elementPath, child.uid)
       if (EP.pathsEqual(childPath, pathToReorder)) {
+        // We've found the item that we're trying to reorder, so record the index
+        // and stop searching.
         innerIndex = childIndex
         break
-      }
-      if (innerIndex == null) {
+      } else {
+        // As we haven't reached the element of interest, record
+        // this prior sibling for later use.
         priorSiblings.push(child)
       }
     }
@@ -213,16 +218,19 @@ function getReorderedIndexInPaths(
 
     const parentIndex = paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
 
-    if (priorSiblings.length === 0) {
+    if (innerIndex === 0) {
       if (parentIndex < 0) {
         return 'do-not-reorder'
       } else {
-        return parentIndex + 1 + innerIndex
+        // As this is the first item, shift the index past the parent.
+        return parentIndex + 1
       }
     } else {
       const priorSiblingPaths = priorSiblings.map((sibling) => {
         return EP.appendToPath(parent.elementPath, sibling.uid)
       })
+      // As there are prior siblings, we need to count those and their descendants,
+      // so as to shift this element past them.
       const priorSiblingDescendants = paths.reduce((workingCount, path) => {
         if (
           priorSiblingPaths.some((priorSiblingPath) => {
@@ -235,6 +243,8 @@ function getReorderedIndexInPaths(
         }
       }, 0)
 
+      // Shift by the parent position, add 1 to put it past the parent and then shift it by the
+      // count of the prior siblings and their descendants.
       return parentIndex + 1 + priorSiblingDescendants
     }
   } else if (isJSXConditionalExpression(parentElement)) {
