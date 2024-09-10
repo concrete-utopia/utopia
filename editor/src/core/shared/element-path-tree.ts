@@ -30,13 +30,16 @@ export type ElementPathTrees = { [key: string]: ElementPathTree }
 export function buildTree(...metadatas: Array<ElementInstanceMetadataMap>): ElementPathTrees {
   let tree: ElementPathTrees = {}
   for (const metadata of metadatas) {
+    // The tree should maintain the ordering of the statically defined elements,
+    // But the metadata itself may not match that ordering.
     const elementPaths = Object.values(metadata).map((m) => m.elementPath)
-    if (elementPaths.length === 0) {
-      return {}
+    const firstElementPath = elementPaths.at(0)
+    if (firstElementPath == null) {
+      continue
     }
-    const root = EP.getStoryboardPathFromPath(elementPaths[0])
+    const root = EP.getStoryboardPathFromPath(firstElementPath)
     if (root == null) {
-      return {}
+      continue
     }
 
     const missingParents = getMissingParentPaths(elementPaths, metadata)
@@ -48,14 +51,20 @@ export function buildTree(...metadatas: Array<ElementInstanceMetadataMap>): Elem
   return tree
 }
 
+function addRootToTree(rootPath: ElementPath, trees: ElementPathTrees): void {
+  const rootPathString = EP.toString(rootPath)
+  if (!(rootPathString in trees)) {
+    trees[rootPathString] = elementPathTree(rootPath, rootPathString, [])
+  }
+}
+
 function buildTree_MUTATE(
   rootPath: ElementPath,
   trees: ElementPathTrees,
   originalPaths: ElementPath[],
   metadata: ElementInstanceMetadataMap,
 ): void {
-  const rootPathString = EP.toString(rootPath)
-  trees[rootPathString] = elementPathTree(rootPath, rootPathString, [])
+  addRootToTree(rootPath, trees)
 
   function addPathToTree(path: ElementPath): void {
     const pathString = EP.toString(path)
@@ -68,6 +77,7 @@ function buildTree_MUTATE(
     }
   }
 
+  //console.log('originalPaths', JSON.stringify(originalPaths.map(EP.toString), null, 2))
   let workingPaths = [...originalPaths]
   workingPaths.sort((a, b) => {
     return EP.fullDepth(a) - EP.fullDepth(b)
@@ -75,6 +85,7 @@ function buildTree_MUTATE(
   for (const workingPath of workingPaths) {
     addPathToTree(workingPath)
   }
+  //console.log('after workingPaths', printTree(trees))
 
   for (const elementMetadata of Object.values(metadata)) {
     forEachRight(elementMetadata.element, (element) => {
@@ -111,19 +122,6 @@ function buildTree_MUTATE(
       }
     })
   }
-
-  function walkTreeSortingChildren(tree: ElementPathTree): void {
-    tree.children.sort(
-      (a, b) =>
-        originalPaths.findIndex((p) => EP.pathsEqual(p, a.path)) -
-        originalPaths.findIndex((p) => EP.pathsEqual(p, b.path)),
-    )
-    for (const child of tree.children) {
-      walkTreeSortingChildren(child)
-    }
-  }
-
-  walkTreeSortingChildren(trees[rootPathString])
 }
 
 function getMissingParentPaths(
@@ -134,7 +132,7 @@ function getMissingParentPaths(
   for (const path of paths) {
     let parent = EP.parentPath(path)
     while (parent.parts.length > 0) {
-      if (metadata[EP.toString(parent)] == null) {
+      if (!(EP.toString(parent) in metadata)) {
         missingParentPaths.add(parent)
       }
       parent = EP.parentPath(parent)
@@ -148,36 +146,19 @@ function getReorderedPaths(
   metadata: ElementInstanceMetadataMap,
   missingParents: ElementPath[],
 ): ElementPath[] {
-  const elementsToReorder = original.filter((path) => {
-    const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
-    if (elementMetadata == null || isLeft(elementMetadata.element)) {
-      return false
-    }
-    const element = elementMetadata.element.value
-    switch (element.type) {
-      case 'JSX_CONDITIONAL_EXPRESSION':
-      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      case 'JSX_MAP_EXPRESSION':
-      case 'JS_IDENTIFIER':
-      case 'JS_ELEMENT_ACCESS':
-      case 'JS_PROPERTY_ACCESS':
-        return true
-      default:
-        return false
-    }
+  const pathsToBeReordered = original.filter((path) => {
+    return !missingParents.some((parentPath) => EP.isDescendantOf(path, parentPath)) // omit elements that have a missing parent
   })
-  const pathsToBeReordered = original.filter(
-    (path) =>
-      !elementsToReorder.some((other) => EP.pathsEqual(other, path)) && // omit conditionals, that will be reordered
-      !missingParents.some((parentPath) => EP.isDescendantOf(path, parentPath)), // omit elements that have a missing parent
-  )
-  return elementsToReorder.reduce((paths, path) => {
+
+  return original.reduce((paths, path) => {
     const index = getReorderedIndexInPaths(paths, metadata, path)
     if (index === 'do-not-reorder') {
+      //console.log('do-not-reorder', JSON.stringify(paths.map(EP.toString), null, 2))
       return paths
     }
-    const before = paths.slice(0, index)
-    const after = paths.slice(index)
+    const pathsWithout = paths.filter((pathEntry) => !EP.pathsEqual(pathEntry, path))
+    const before = pathsWithout.slice(0, index)
+    const after = pathsWithout.slice(index)
     return [...before, path, ...after]
   }, pathsToBeReordered)
 }
@@ -185,34 +166,58 @@ function getReorderedPaths(
 function getReorderedIndexInPaths(
   paths: ElementPath[],
   metadata: ElementInstanceMetadataMap,
-  conditionalPath: ElementPath,
+  pathToReorder: ElementPath,
 ): number | 'do-not-reorder' {
-  const index = paths.findIndex((path) => EP.isDescendantOf(path, conditionalPath))
+  const index = paths.findIndex((path) => EP.isDescendantOf(path, pathToReorder))
   if (index >= 0) {
     return index
   }
 
-  const parent = MetadataUtils.getParent(metadata, conditionalPath)
+  const parent = MetadataUtils.getParent(metadata, pathToReorder)
   if (parent == null || isLeft(parent.element)) {
     return 'do-not-reorder'
   }
+  const parentElement = parent.element.value
 
-  if (isJSXElement(parent.element.value) || isJSXFragment(parent.element.value)) {
-    const innerIndex = parent.element.value.children.findIndex((child) => {
+  if (isJSXElement(parentElement) || isJSXFragment(parentElement)) {
+    const innerIndex = parentElement.children.findIndex((child) => {
       const childPath = EP.appendToPath(parent.elementPath, child.uid)
-      return EP.pathsEqual(childPath, conditionalPath)
+      return EP.pathsEqual(childPath, pathToReorder)
     })
+    const priorSiblings = parentElement.children.slice(0, innerIndex)
+    const parentIndex = paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
+
+    if (priorSiblings.length === 0) {
+      if (parentIndex < 0) {
+        return 'do-not-reorder'
+      } else {
+        return parentIndex + 1 + innerIndex
+      }
+    } else {
+      const priorSiblingPaths = priorSiblings.map((sibling) =>
+        EP.appendToPath(parent.elementPath, sibling.uid),
+      )
+      const priorSiblingDescendants = paths.reduce((workingCount, path) => {
+        if (
+          priorSiblingPaths.some((priorSiblingPath) => {
+            return EP.isDescendantOfOrEqualTo(path, priorSiblingPath)
+          })
+        ) {
+          return workingCount + 1
+        } else {
+          return workingCount
+        }
+      }, 0)
+
+      return parentIndex + 1 + priorSiblingDescendants
+    }
+  } else if (isJSXConditionalExpression(parentElement)) {
     const parentIndex = paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
     if (parentIndex < 0) {
       return 'do-not-reorder'
+    } else {
+      return parentIndex
     }
-    return parentIndex + innerIndex
-  } else if (isJSXConditionalExpression(parent.element.value)) {
-    const parentIndex = paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
-    if (parentIndex < 0) {
-      return 'do-not-reorder'
-    }
-    return parentIndex
   } else {
     return 'do-not-reorder'
   }
