@@ -439,6 +439,77 @@ export var storyboard = (
           })
         }
       })
+
+      it('can place element with no grid positioning props set', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 620,
+        height: 548,
+        position: 'absolute',
+        left: 212,
+        top: 103,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        data-uid='grid'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 527,
+          height: 461,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr',
+          gridTemplateRows: '1fr 1fr 1fr 1fr 1fr',
+          contain: 'layout',
+          gridGap: 2,
+          position: 'absolute',
+          left: 46,
+          top: 43,
+        }}
+      >
+        <div
+          data-uid='child'
+          data-testid='child'
+          style={{
+            backgroundColor: '#0162ff',
+            position: 'absolute',
+            left: 113,
+            top: 119,
+            width: 174,
+            height: 119,
+          }}
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`,
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene/grid/child')])
+        await pressKey('x')
+
+        {
+          const { position, gridRow, gridColumn, width, height } =
+            editor.renderedDOM.getByTestId('child').style
+          expect({ position, gridRow, gridColumn, width, height }).toEqual({
+            gridColumn: '2 / 4',
+            gridRow: '2 / 4',
+            height: '',
+            position: '',
+            width: '',
+          })
+        }
+      })
     })
   })
 
