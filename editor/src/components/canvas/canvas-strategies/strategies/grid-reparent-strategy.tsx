@@ -35,7 +35,7 @@ import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math
 import { canvasVector, isInfinityRectangle, offsetPoint } from '../../../../core/shared/math-utils'
 import { showGridControls } from '../../commands/show-grid-controls-command'
 import type { GridCellCoordinates } from '../../controls/grid-controls'
-import { GridControls } from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls'
 import {
   gridPositionValue,
   type ElementInstanceMetadataMap,
@@ -137,13 +137,7 @@ export function controlsForGridReparent(reparentTarget: ReparentTarget): Control
       key: 'zero-size-control',
       show: 'visible-only-while-active',
     }),
-    {
-      control: GridControls,
-      props: { targets: [reparentTarget.newParent.intendedParentPath] },
-      key: `draw-into-grid-strategy-controls`,
-      show: 'always-visible',
-      priority: 'bottom',
-    },
+    controlsForGridPlaceholders(reparentTarget.newParent.intendedParentPath),
   ]
 }
 

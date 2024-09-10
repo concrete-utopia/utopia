@@ -51,6 +51,7 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { useRollYourOwnFeatures } from '../../navigator/left-pane/roll-your-own-pane'
 import CanvasActions from '../canvas-actions'
+import type { ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import type {
   GridResizeEdge,
@@ -1700,3 +1701,13 @@ export function getGridPlaceholderDomElementFromCoordinates(params: {
 }
 
 const gridPlaceholderBorder = (color: string) => `2px solid ${color}`
+
+export function controlsForGridPlaceholders(gridPath: ElementPath): ControlWithProps<any> {
+  return {
+    control: GridControls,
+    props: { targets: [gridPath] },
+    key: GridControlsKey(gridPath),
+    show: 'always-visible',
+    priority: 'bottom',
+  }
+}

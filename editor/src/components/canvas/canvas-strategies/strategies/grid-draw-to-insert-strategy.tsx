@@ -24,7 +24,7 @@ import type { InsertElementInsertionSubject } from '../../commands/insert-elemen
 import { insertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import { GridControls } from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import {
   getWrapperWithGeneratedUid,
@@ -153,15 +153,7 @@ const gridDrawToInsertStrategyInner =
         category: 'tools',
         type: 'pointer',
       },
-      controlsToRender: [
-        {
-          control: GridControls,
-          props: { targets: [targetParent] },
-          key: `draw-into-grid-strategy-controls`,
-          show: 'always-visible',
-          priority: 'bottom',
-        },
-      ],
+      controlsToRender: [controlsForGridPlaceholders(targetParent)],
       fitness: 5,
       apply: (strategyLifecycle) => {
         const newTargetCell = getGridCellUnderCursor(

@@ -4,7 +4,8 @@ import type { GridElementProperties, GridPosition } from '../../../../core/share
 import { offsetPoint } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { isCSSKeyword } from '../../../inspector/common/css-utils'
-import { GridControls, GridControlsKey, GridResizeControls } from '../../controls/grid-controls'
+import { isFixedHugFillModeApplied } from '../../../inspector/inspector-common'
+import { controlsForGridPlaceholders, GridResizeControls } from '../../controls/grid-controls'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
@@ -37,6 +38,15 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
     return null
   }
 
+  const isFillContainer = isFixedHugFillModeApplied(
+    canvasState.startingMetadata,
+    selectedElement,
+    'fill',
+  )
+  if (!isFillContainer) {
+    return null
+  }
+
   const parentGridPath = EP.parentPath(selectedElement)
 
   return {
@@ -54,13 +64,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         key: `grid-resize-controls-${EP.toString(selectedElement)}`,
         show: 'always-visible',
       },
-      {
-        control: GridControls,
-        props: { targets: [parentGridPath] },
-        key: GridControlsKey(parentGridPath),
-        show: 'always-visible',
-        priority: 'bottom',
-      },
+      controlsForGridPlaceholders(parentGridPath),
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_RESIZE_HANDLE', 1),
     apply: () => {
