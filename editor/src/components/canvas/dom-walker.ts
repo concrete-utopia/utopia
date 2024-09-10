@@ -60,7 +60,6 @@ import {
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
 import { UTOPIA_SCENE_ID_KEY } from '../../core/model/utopia-constants'
-import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
 import type { PathWithString } from '../../core/shared/uid-utils'
 import { getDeepestPathOnDomElement, getPathStringsOnDomElement } from '../../core/shared/uid-utils'
@@ -72,7 +71,6 @@ import { pick } from '../../core/shared/object-utils'
 import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
-import { CanvasWrapperComponentId } from './canvas-wrapper-component'
 import { CanvasContainerOuterId } from './canvas-component-entry'
 
 export const ResizeObserver =
@@ -293,21 +291,18 @@ export function resubscribeObservers(domWalkerMutableState: {
   mutationObserver: MutationObserver
   resizeObserver: ResizeObserver
 }) {
-  const canvasContainerOuterElement = document.getElementById(CanvasContainerOuterId)
+  const canvasRootContainer = document.getElementById(CanvasContainerOuterId)
 
   if (
     ObserversAvailable &&
-    canvasContainerOuterElement != null &&
+    canvasRootContainer != null &&
     domWalkerMutableState.resizeObserver != null &&
     domWalkerMutableState.mutationObserver != null
   ) {
     document.querySelectorAll(`#${CanvasContainerOuterId} *`).forEach((elem) => {
       domWalkerMutableState.resizeObserver.observe(elem)
     })
-    domWalkerMutableState.mutationObserver.observe(
-      canvasContainerOuterElement,
-      MutationObserverConfig,
-    )
+    domWalkerMutableState.mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
   }
 }
 
