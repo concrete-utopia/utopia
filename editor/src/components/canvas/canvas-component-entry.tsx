@@ -25,7 +25,11 @@ import type {
 } from './ui-jsx-canvas'
 import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvas, pickUiJsxCanvasProps } from './ui-jsx-canvas'
 
-interface CanvasComponentEntryProps {}
+export const CanvasContainerOuterId = 'canvas-container-outer'
+
+interface CanvasComponentEntryProps {
+  shouldRenderCanvas: boolean
+}
 
 export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps) => {
   const canvasStore = React.useContext(CanvasStateContext)
@@ -85,7 +89,7 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
     <>
       {when(canvasProps == null, <CanvasLoadingScreen />)}
       <div
-        id='canvas-container-outer'
+        id={CanvasContainerOuterId}
         ref={containerRef}
         style={{
           position: 'absolute',
@@ -93,14 +97,15 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
           transform: 'translate3d(0px, 0px, 0px)',
         }}
       >
-        {canvasProps == null ? null : (
+        {props.shouldRenderCanvas && canvasProps != null ? (
           <CanvasInner
             canvasProps={canvasProps}
             onRuntimeError={onRuntimeError}
             localClearRuntimeErrors={localClearRuntimeErrors}
           />
-        )}
+        ) : null}
       </div>
+      ,
     </>
   )
 })
