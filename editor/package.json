@@ -287,7 +287,8 @@
     "uuid": "8.3.2",
     "xstate": "4.23.1",
     "yjs": "13.6.8",
-    "zustand": "4.1.5"
+    "zustand": "4.1.5",
+    "@xengine/tailwindcss-class-parser": "1.1.17"
   },
   "devDependencies": {
     "@babel/cli": "7.23.4",
@@ -441,8 +442,7 @@
     "webpack-cli": "5.1.4",
     "webpack-dev-server": "4.15.1",
     "webpack-merge": "5.9.0",
-    "webpack-node-externals": "3.0.0",
-    "@xengine/tailwindcss-class-parser": "1.1.17"
+    "webpack-node-externals": "3.0.0"
   },
   "optionalDependencies": {
     "fsevents": "2.1.2"
