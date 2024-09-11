@@ -99,14 +99,17 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
 
   const colorTheme = useColorTheme()
 
-  const addLayoutSystemOpenerButton = React.useCallback(
-    () => (
-      <SquareButton highlight onClick={NO_OP}>
-        {layoutSystem == null ? <Icons.SmallPlus /> : <Icons.Threedots />}
+  const addLayoutSystemOpenerButton = React.useCallback(() => {
+    return (
+      <SquareButton highlight onClick={NO_OP} primary={popupOpen}>
+        {layoutSystem == null ? (
+          <Icons.SmallPlus />
+        ) : (
+          <Icons.Threedots color={popupOpen ? 'white' : 'main'} />
+        )}
       </SquareButton>
-    ),
-    [layoutSystem],
-  )
+    )
+  }, [layoutSystem, popupOpen])
 
   const addLayoutSystemMenuDropdownItems = React.useMemo((): DropdownMenuItem[] => {
     const gridItems: DropdownMenuItem[] = [
