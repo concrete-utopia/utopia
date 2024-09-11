@@ -391,7 +391,7 @@ const FlexSizeProperties: Array<PropertyPath> = [
 function getConflictingPropertiesToDelete(
   parentFlexDirection: FlexDirection | null,
   propertyPath: PropertyPath,
-) {
+): Array<PropertyPath> {
   let propertiesToDelete: Array<PropertyPath> = []
 
   const parentFlexDimension =
@@ -439,11 +439,15 @@ export function deleteConflictingPropsForWidthHeight(
     propertyPath,
   )
 
-  const { editorStateWithChanges: editorStateWithPropsDeleted } = deleteValuesAtPath(
-    editorState,
-    target,
-    propertiesToDelete,
-  )
+  if (propertiesToDelete.length === 0) {
+    return editorState
+  } else {
+    const { editorStateWithChanges: editorStateWithPropsDeleted } = deleteValuesAtPath(
+      editorState,
+      target,
+      propertiesToDelete,
+    )
 
-  return editorStateWithPropsDeleted
+    return editorStateWithPropsDeleted
+  }
 }

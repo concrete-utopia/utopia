@@ -1,19 +1,21 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   gridPositionValue,
   type ElementInstanceMetadata,
-  type ElementInstanceMetadataMap,
   type GridContainerProperties,
   type GridElementProperties,
   type GridPosition,
 } from '../../../../core/shared/element-template'
 import type { CanvasVector, WindowRectangle } from '../../../../core/shared/math-utils'
 import {
+  canvasPoint,
+  isInfinityRectangle,
   offsetPoint,
-  rectContainsPoint,
-  scaleRect,
-  windowRectangle,
+  scaleVector,
+  windowPoint,
+  windowVector,
   type WindowPoint,
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
@@ -21,86 +23,18 @@ import type { CanvasCommand } from '../../commands/commands'
 import { setProperty } from '../../commands/set-property-command'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { DragInteractionData } from '../interaction-state'
-import type { GridCustomStrategyState } from '../canvas-strategy-types'
-import type { GridCellCoordinates } from '../../controls/grid-controls'
-import { gridCellCoordinates } from '../../controls/grid-controls'
+import type { GridCustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
 import * as EP from '../../../../core/shared/element-path'
 import { deleteProperties } from '../../commands/delete-properties-command'
-import { isCSSKeyword } from '../../../inspector/common/css-utils'
-
-export function getGridCellUnderMouse(mousePoint: WindowPoint, canvasScale: number) {
-  return getGridCellAtPoint(mousePoint, canvasScale, false)
-}
-
-function getGridCellUnderMouseRecursive(mousePoint: WindowPoint, canvasScale: number) {
-  return getGridCellAtPoint(mousePoint, canvasScale, true)
-}
-
-const gridCellTargetIdPrefix = 'grid-cell-target-'
-
-export function gridCellTargetId(
-  gridElementPath: ElementPath,
-  row: number,
-  column: number,
-): string {
-  return gridCellTargetIdPrefix + `${EP.toString(gridElementPath)}-${row}-${column}`
-}
-
-function isGridCellTargetId(id: string): boolean {
-  return id.startsWith(gridCellTargetIdPrefix)
-}
-
-function getGridCellAtPoint(
-  windowPoint: WindowPoint,
-  canvasScale: number,
-  duplicating: boolean,
-): { id: string; coordinates: GridCellCoordinates; cellWindowRectangle: WindowRectangle } | null {
-  function maybeRecursivelyFindCellAtPoint(
-    elements: Element[],
-  ): { element: Element; cellWindowRectangle: WindowRectangle } | null {
-    // If this used during duplication, the canvas controls will be in the way and we need to traverse the children too.
-    for (const element of elements) {
-      if (isGridCellTargetId(element.id)) {
-        const domRect = element.getBoundingClientRect()
-        const windowRect =
-          canvasScale > 1
-            ? scaleRect(windowRectangle(domRect), canvasScale)
-            : windowRectangle(domRect)
-        if (rectContainsPoint(windowRect, windowPoint)) {
-          return { element: element, cellWindowRectangle: windowRect }
-        }
-      }
-
-      if (duplicating) {
-        const child = maybeRecursivelyFindCellAtPoint(Array.from(element.children))
-        if (child != null) {
-          return child
-        }
-      }
-    }
-
-    return null
-  }
-
-  const cellUnderMouse = maybeRecursivelyFindCellAtPoint(
-    document.elementsFromPoint(windowPoint.x, windowPoint.y),
-  )
-  if (cellUnderMouse == null) {
-    return null
-  }
-
-  const { element, cellWindowRectangle } = cellUnderMouse
-  const row = element.getAttribute('data-grid-row')
-  const column = element.getAttribute('data-grid-column')
-  return {
-    id: element.id,
-    cellWindowRectangle: cellWindowRectangle,
-    coordinates: gridCellCoordinates(
-      row == null ? 0 : parseInt(row),
-      column == null ? 0 : parseInt(column),
-    ),
-  }
-}
+import { cssNumber, isCSSKeyword } from '../../../inspector/common/css-utils'
+import { setCssLengthProperty } from '../../commands/set-css-length-command'
+import type { GridCellCoordinates } from './grid-cell-bounds'
+import {
+  getCellWindowRect,
+  getGridCellUnderMouse,
+  getGridCellUnderMouseRecursive,
+  gridCellCoordinates,
+} from './grid-cell-bounds'
 
 export function runGridRearrangeMove(
   targetElement: ElementPath,
@@ -113,7 +47,7 @@ export function runGridRearrangeMove(
   duplicating: boolean,
 ): {
   commands: CanvasCommand[]
-  targetCell: GridCellCoordinates | null
+  targetCell: TargetGridCellData | null
   draggingFromCell: GridCellCoordinates | null
   originalRootCell: GridCellCoordinates | null
   targetRootCell: GridCellCoordinates | null
@@ -134,17 +68,14 @@ export function runGridRearrangeMove(
     canvasOffset,
   )
 
-  const targetCellUnderMouse = getTargetCell(
-    customState.targetCell,
-    canvasScale,
-    duplicating,
-    mouseWindowPoint,
-  )?.gridCellCoordinates
+  const targetCellData =
+    getTargetCell(
+      customState.targetCellData?.gridCellCoordinates ?? null,
+      duplicating,
+      mouseWindowPoint,
+    ) ?? customState.targetCellData
 
-  // if there's no cell target under the mouse, try using the last known cell
-  const newTargetCell = targetCellUnderMouse ?? customState.targetCell ?? null
-
-  if (newTargetCell == null) {
+  if (targetCellData == null) {
     return {
       commands: [],
       targetCell: null,
@@ -153,6 +84,8 @@ export function runGridRearrangeMove(
       targetRootCell: null,
     }
   }
+
+  const targetCellUnderMouse = targetCellData?.gridCellCoordinates ?? null
 
   const originalElementMetadata = MetadataUtils.findElementByElementPath(
     jsxMetadata,
@@ -184,21 +117,21 @@ export function runGridRearrangeMove(
 
   const gridTemplate = containerMetadata.specialSizeMeasurements.containerGridProperties
 
-  const cellGridProperties = getElementGridProperties(originalElementMetadata, newTargetCell)
+  const cellGridProperties = getElementGridProperties(originalElementMetadata, targetCellUnderMouse)
 
   // calculate the difference between the cell the mouse started the interaction from, and the "root"
   // cell of the element, meaning the top-left-most cell the element occupies.
-  const draggingFromCell = customState.draggingFromCell ?? newTargetCell
+  const draggingFromCell = customState.draggingFromCell ?? targetCellUnderMouse
   const rootCell =
     customState.originalRootCell ??
     gridCellCoordinates(cellGridProperties.row, cellGridProperties.column)
   const coordsDiff = getCellCoordsDelta(draggingFromCell, rootCell)
 
   // get the new adjusted row
-  const row = getCoordBounds(newTargetCell, 'row', cellGridProperties.width, coordsDiff.row)
+  const row = getCoordBounds(targetCellUnderMouse, 'row', cellGridProperties.width, coordsDiff.row)
   // get the new adjusted column
   const column = getCoordBounds(
-    newTargetCell,
+    targetCellUnderMouse,
     'column',
     cellGridProperties.height,
     coordsDiff.column,
@@ -206,7 +139,19 @@ export function runGridRearrangeMove(
 
   const targetRootCell = gridCellCoordinates(row.start, column.start)
 
-  const commands = setGridPropsCommands(targetElement, gridTemplate, {
+  const windowRect = getCellWindowRect(targetRootCell)
+
+  const absoluteMoveCommands =
+    windowRect == null
+      ? []
+      : gridChildAbsoluteMoveCommands(
+          MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
+          windowRect,
+          interactionData,
+          { scale: canvasScale, canvasOffset: canvasOffset },
+        )
+
+  const gridCellMoveCommands = setGridPropsCommands(targetElement, gridTemplate, {
     gridColumnStart: gridPositionValue(column.start),
     gridColumnEnd: gridPositionValue(column.end),
     gridRowEnd: gridPositionValue(row.end),
@@ -214,8 +159,8 @@ export function runGridRearrangeMove(
   })
 
   return {
-    commands: commands,
-    targetCell: newTargetCell,
+    commands: [...gridCellMoveCommands, ...absoluteMoveCommands],
+    targetCell: targetCellData ?? customState.targetCellData,
     originalRootCell: rootCell,
     draggingFromCell: draggingFromCell,
     targetRootCell: targetRootCell,
@@ -312,16 +257,20 @@ export function setGridPropsCommands(
   return commands
 }
 
+export interface TargetGridCellData {
+  gridCellCoordinates: GridCellCoordinates
+  cellWindowRectangle: WindowRectangle
+}
+
 export function getTargetCell(
   previousTargetCell: GridCellCoordinates | null,
-  canvasScale: number,
   duplicating: boolean,
   mouseWindowPoint: WindowPoint,
-): { gridCellCoordinates: GridCellCoordinates; cellWindowRectangle: WindowRectangle } | null {
+): TargetGridCellData | null {
   let cell = previousTargetCell ?? null
   const cellUnderMouse = duplicating
-    ? getGridCellUnderMouseRecursive(mouseWindowPoint, canvasScale)
-    : getGridCellUnderMouse(mouseWindowPoint, canvasScale)
+    ? getGridCellUnderMouseRecursive(mouseWindowPoint)
+    : getGridCellUnderMouse(mouseWindowPoint)
   if (cellUnderMouse == null) {
     return null
   }
@@ -406,4 +355,83 @@ function asMaybeNamedAreaOrValue(
     return value === 0 ? 1 : value
   }
   return value
+}
+
+function gridChildAbsoluteMoveCommands(
+  targetMetadata: ElementInstanceMetadata | null,
+  targetCellWindowRect: WindowRectangle,
+  dragInteractionData: DragInteractionData,
+  canvasContext: Pick<InteractionCanvasState, 'scale' | 'canvasOffset'>,
+): CanvasCommand[] {
+  if (
+    targetMetadata == null ||
+    targetMetadata.globalFrame == null ||
+    isInfinityRectangle(targetMetadata.globalFrame) ||
+    !MetadataUtils.isPositionAbsolute(targetMetadata)
+  ) {
+    return []
+  }
+
+  const targetFrameWindow = canvasPointToWindowPoint(
+    canvasPoint({
+      x: targetMetadata.globalFrame.x,
+      y: targetMetadata.globalFrame.y,
+    }),
+    canvasContext.scale,
+    canvasContext.canvasOffset,
+  )
+
+  const dragStartWindow = canvasPointToWindowPoint(
+    canvasPoint({
+      x: dragInteractionData.originalDragStart.x,
+      y: dragInteractionData.originalDragStart.y,
+    }),
+    canvasContext.scale,
+    canvasContext.canvasOffset,
+  )
+
+  const offsetInTarget = windowPoint({
+    x: dragStartWindow.x - targetFrameWindow.x,
+    y: dragStartWindow.y - targetFrameWindow.y,
+  })
+
+  const dragWindowOffset = canvasPointToWindowPoint(
+    offsetPoint(
+      dragInteractionData.originalDragStart,
+      dragInteractionData.drag ?? canvasPoint({ x: 0, y: 0 }),
+    ),
+    canvasContext.scale,
+    canvasContext.canvasOffset,
+  )
+
+  const offset = scaleVector(
+    windowVector({
+      x: dragWindowOffset.x - targetCellWindowRect.x - offsetInTarget.x,
+      y: dragWindowOffset.y - targetCellWindowRect.y - offsetInTarget.y,
+    }),
+    1 / canvasContext.scale,
+  )
+
+  return [
+    deleteProperties('always', targetMetadata.elementPath, [
+      PP.create('style', 'top'),
+      PP.create('style', 'left'),
+      PP.create('style', 'right'),
+      PP.create('style', 'bottom'),
+    ]),
+    setCssLengthProperty(
+      'always',
+      targetMetadata.elementPath,
+      PP.create('style', 'top'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(offset.y, null) },
+      null,
+    ),
+    setCssLengthProperty(
+      'always',
+      targetMetadata.elementPath,
+      PP.create('style', 'left'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(offset.x, null) },
+      null,
+    ),
+  ]
 }

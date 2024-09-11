@@ -61,7 +61,6 @@ const TestScenePath = 'scene-aaa'
 
 const testComponentMetadataChild1: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([
     [BakedInStoryboardUID, TestScenePath],
@@ -72,7 +71,7 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -82,7 +81,6 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([
     [BakedInStoryboardUID, TestScenePath],
@@ -93,7 +91,7 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -104,7 +102,6 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
 
 const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([
     [BakedInStoryboardUID, TestScenePath],
@@ -115,7 +112,7 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -130,7 +127,6 @@ const testComponentPropsGrandchild: ElementProps = {
 
 const testComponentMetadataChild3: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([
     [BakedInStoryboardUID, TestScenePath],
@@ -141,7 +137,7 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -152,7 +148,6 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
 
 const testComponentRoot1: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID, TestScenePath], ['View']]),
   element: right(jsxTestElement('View', [], [])),
@@ -160,7 +155,7 @@ const testComponentRoot1: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -171,7 +166,6 @@ const testComponentRoot1: ElementInstanceMetadata = {
 
 const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([
     [BakedInStoryboardUID, TestScenePath, 'Scene-Child'],
@@ -182,7 +176,7 @@ const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -193,7 +187,6 @@ const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
 
 const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([
     [BakedInStoryboardUID, TestScenePath, 'Scene-Child'],
@@ -204,7 +197,7 @@ const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -215,7 +208,6 @@ const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
 
 const testComponentSceneChildElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID, TestScenePath, 'Scene-Child']]),
   element: right(jsxTestElement('View', [], [])),
@@ -223,7 +215,7 @@ const testComponentSceneChildElement: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -234,7 +226,6 @@ const testComponentSceneChildElement: ElementInstanceMetadata = {
 
 const testComponentSceneElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID, TestScenePath]]),
   element: right(jsxTestElement('Scene', [], [])),
@@ -242,7 +233,7 @@ const testComponentSceneElement: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -260,7 +251,6 @@ const testComponentSceneElementProps: ElementProps = {
 
 const testStoryboardGrandChildElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID, 'Child', 'GrandChild']]),
   element: right(jsxTestElement('View', [], [])),
@@ -268,7 +258,7 @@ const testStoryboardGrandChildElement: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -279,7 +269,6 @@ const testStoryboardGrandChildElement: ElementInstanceMetadata = {
 
 const testStoryboardChildElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID, 'Child']]),
   element: right(jsxTestElement('View', [], [])),
@@ -287,7 +276,7 @@ const testStoryboardChildElement: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -298,7 +287,6 @@ const testStoryboardChildElement: ElementInstanceMetadata = {
 
 const testStoryboardElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID]]),
   element: right(jsxTestElement('Storyboard', [], [])),
@@ -306,7 +294,7 @@ const testStoryboardElement: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -391,7 +379,6 @@ function dummyInstanceDataForElementType(
 ): ElementInstanceMetadata {
   return {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-    localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
     nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
     elementPath: elementPath,
     element: right(jsxTestElement(elementName, [], children)),
@@ -399,7 +386,7 @@ function dummyInstanceDataForElementType(
     isEmotionOrStyledComponent: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
-    attributeMetadatada: emptyAttributeMetadata,
+    attributeMetadata: emptyAttributeMetadata,
     label: null,
     importInfo: importInfo,
     conditionValue: 'not-a-conditional',
@@ -1059,7 +1046,6 @@ describe('getElementLabel', () => {
     spanPath,
     right(spanElement),
     zeroRectangle as CanvasRectangle,
-    zeroRectangle as LocalRectangle,
     zeroRectangle as CanvasRectangle,
     false,
     false,
@@ -1086,7 +1072,6 @@ describe('getElementLabel', () => {
     divPath,
     right(divElement),
     zeroRectangle as CanvasRectangle,
-    zeroRectangle as LocalRectangle,
     zeroRectangle as CanvasRectangle,
     false,
     false,

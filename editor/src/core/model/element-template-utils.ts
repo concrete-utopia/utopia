@@ -1523,9 +1523,8 @@ export function elementChildSupportsChildrenAlsoText(
   propertyControlsInfo: PropertyControlsInfo,
 ): ElementSupportsChildren | null {
   const componentDescriptor = getComponentDescriptorForTarget(
+    { propertyControlsInfo, projectContents },
     path,
-    propertyControlsInfo,
-    projectContents,
   )
   if (componentDescriptor != null && !componentDescriptor.supportsChildren) {
     return 'doesNotSupportChildren'
@@ -1601,9 +1600,13 @@ function findAmongJSXElementChildren(
   condition: (e: JSXElementChild) => boolean,
   children: JSXElementChild[],
 ): Array<ElementPathPart> {
-  return children.flatMap((child) =>
-    findPathToJSXElementChild(condition, child).map((path) => [parentUid, ...path]),
-  )
+  let result: Array<ElementPathPart> = []
+  for (const child of children) {
+    for (const path of findPathToJSXElementChild(condition, child)) {
+      result.push([parentUid, ...path])
+    }
+  }
+  return result
 }
 
 export function findPathToJSXElementChild(

@@ -9,7 +9,6 @@ import { SubduedPaddingControl } from '../canvas/controls/select-mode/subdued-pa
 import { EdgePieces } from '../canvas/padding-utils'
 import type { EditorDispatch } from '../editor/action-types'
 import { useDispatch } from '../editor/store/dispatch-context'
-import type { AllElementProps } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import type { FlexDirection } from './common/css-utils'
 import type { CanvasControlWithProps } from './common/inspector-atoms'
@@ -49,7 +48,6 @@ export const FlexDirectionToggle = React.memo(() => {
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
-  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const nFlexContainers = useEditorState(
     Substores.metadata,
@@ -66,10 +64,9 @@ export const FlexDirectionToggle = React.memo(() => {
         metadataRef.current,
         selectedViewsRef.current,
         elementPathTreeRef.current,
-        allElementPropsRef.current,
         e.button === 0 ? 'column' : null,
       ),
-    [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
+    [dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
   const handleRowClick = React.useCallback(
@@ -79,10 +76,9 @@ export const FlexDirectionToggle = React.memo(() => {
         metadataRef.current,
         selectedViewsRef.current,
         elementPathTreeRef.current,
-        allElementPropsRef.current,
         e.button === 0 ? 'row' : null,
       ),
-    [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
+    [dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
   const handleColumnReverseClick = React.useCallback(
@@ -92,10 +88,9 @@ export const FlexDirectionToggle = React.memo(() => {
         metadataRef.current,
         selectedViewsRef.current,
         elementPathTreeRef.current,
-        allElementPropsRef.current,
         e.button === 0 ? 'column-reverse' : null,
       ),
-    [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
+    [dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
   const handleRowReverseClick = React.useCallback(
@@ -105,10 +100,9 @@ export const FlexDirectionToggle = React.memo(() => {
         metadataRef.current,
         selectedViewsRef.current,
         elementPathTreeRef.current,
-        allElementPropsRef.current,
         e.button === 0 ? 'row-reverse' : null,
       ),
-    [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
+    [dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
   const paddingControlsForHover: Array<CanvasControlWithProps<SubduedPaddingControlProps>> =
@@ -223,7 +217,6 @@ function maybeSetFlexDirection(
   metadata: ElementInstanceMetadataMap,
   selectedViews: ElementPath[],
   elementPathTree: ElementPathTrees,
-  allElementProps: AllElementProps,
   desiredFlexDirection: FlexDirection | null,
 ) {
   const strategies =

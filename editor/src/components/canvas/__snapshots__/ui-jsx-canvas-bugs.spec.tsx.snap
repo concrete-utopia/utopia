@@ -46,7 +46,7 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
 Object {
   "sb/scene": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -156,7 +156,6 @@ Object {
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
-    "localFrame": null,
     "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
@@ -247,7 +246,7 @@ Object {
   },
   "sb/scene/app": Object {
     "assignedToProp": null,
-    "attributeMetadatada": Object {},
+    "attributeMetadata": Object {},
     "componentInstance": true,
     "computedStyle": Object {},
     "conditionValue": "not-a-conditional",
@@ -303,7 +302,6 @@ Object {
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
-    "localFrame": null,
     "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,

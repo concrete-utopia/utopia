@@ -39,7 +39,6 @@ import type {
   ValidGridDimensionKeyword,
 } from './common/css-utils'
 import {
-  GridAutoFlowValues,
   cssKeyword,
   cssNumber,
   cssNumberToString,
@@ -88,6 +87,14 @@ import { NumberOrKeywordControl } from '../../uuiui/inputs/number-or-keyword-con
 import { optionalMap } from '../../core/shared/optional-utils'
 import { cssNumberEqual } from '../canvas/controls/select-mode/controls-common'
 import type { EditorAction } from '../editor/action-types'
+import type { CanvasControlWithProps } from './common/inspector-atoms'
+import type { SubduedGridGapControlProps } from '../canvas/controls/select-mode/subdued-grid-gap-controls'
+import { SubduedGridGapControl } from '../canvas/controls/select-mode/subdued-grid-gap-controls'
+import {
+  useSetFocusedControlsHandlers,
+  useSetHoveredControlsHandlers,
+} from '../canvas/controls/select-mode/select-mode-hooks'
+import type { Axis } from '../canvas/gap-utils'
 
 const axisDropdownMenuButton = 'axisDropdownMenuButton'
 
@@ -145,25 +152,35 @@ export const FlexSection = React.memo(() => {
   )
 
   const columns = React.useMemo(() => {
-    return mergeGridTemplateValues(
-      getGridTemplateAxisValues({
+    const autoCols: GridDimension[] =
+      grid?.specialSizeMeasurements.containerGridProperties.gridAutoColumns?.type === 'DIMENSIONS'
+        ? grid.specialSizeMeasurements.containerGridProperties.gridAutoColumns.dimensions
+        : []
+    return mergeGridTemplateValues({
+      autoValues: autoCols,
+      ...getGridTemplateAxisValues({
         calculated:
           grid?.specialSizeMeasurements.containerGridProperties.gridTemplateColumns ?? null,
         fromProps:
           grid?.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateColumns ??
           null,
       }),
-    )
+    })
   }, [grid])
 
   const rows = React.useMemo(() => {
-    return mergeGridTemplateValues(
-      getGridTemplateAxisValues({
+    const autoRows: GridDimension[] =
+      grid?.specialSizeMeasurements.containerGridProperties.gridAutoRows?.type === 'DIMENSIONS'
+        ? grid.specialSizeMeasurements.containerGridProperties.gridAutoRows.dimensions
+        : []
+    return mergeGridTemplateValues({
+      autoValues: autoRows,
+      ...getGridTemplateAxisValues({
         calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateRows ?? null,
         fromProps:
           grid?.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows ?? null,
       }),
-    )
+    })
   }, [grid])
 
   return (
@@ -647,6 +664,22 @@ function serializeValue(v: CSSNumber) {
 
 type GridGapControlSplitState = 'unified' | 'split'
 
+function getGridGapControlsForHoverAndFocused(
+  hoveredOrFocused: 'hovered' | 'focused',
+  axis: Axis | 'both',
+): Array<CanvasControlWithProps<SubduedGridGapControlProps>> {
+  return [
+    {
+      control: SubduedGridGapControl,
+      props: {
+        hoveredOrFocused: hoveredOrFocused,
+        axis: axis,
+      },
+      key: `subdued-grid-gap-${axis}-control-${hoveredOrFocused}`,
+    },
+  ]
+}
+
 const GapRowColumnControl = React.memo(() => {
   const dispatch = useDispatch()
 
@@ -671,6 +704,47 @@ const GapRowColumnControl = React.memo(() => {
   const gap = useInspectorLayoutInfo('gap') // also matches gridGap
   const columnGap = useInspectorLayoutInfo('columnGap')
   const rowGap = useInspectorLayoutInfo('rowGap')
+
+  const { onMouseEnter, onMouseLeave } = useSetHoveredControlsHandlers<SubduedGridGapControlProps>()
+
+  const onMouseEnterBothAxesWithGridGapControls = React.useCallback(
+    () => onMouseEnter(getGridGapControlsForHoverAndFocused('hovered', 'both')),
+    [onMouseEnter],
+  )
+  const onMouseEnterRowAxisWithGridGapControls = React.useCallback(
+    () => onMouseEnter(getGridGapControlsForHoverAndFocused('hovered', 'row')),
+    [onMouseEnter],
+  )
+  const onMouseEnterColumnAxisWithGridGapControls = React.useCallback(
+    () => onMouseEnter(getGridGapControlsForHoverAndFocused('hovered', 'column')),
+    [onMouseEnter],
+  )
+
+  const { onFocus, onBlur } = useSetFocusedControlsHandlers<SubduedGridGapControlProps>()
+
+  const bothAxesInputProps = React.useMemo(
+    () => ({
+      onFocus: () => onFocus(getGridGapControlsForHoverAndFocused('focused', 'both')),
+      onBlur: onBlur,
+    }),
+    [onFocus, onBlur],
+  )
+
+  const rowAxisInputProps = React.useMemo(
+    () => ({
+      onFocus: () => onFocus(getGridGapControlsForHoverAndFocused('focused', 'row')),
+      onBlur: onBlur,
+    }),
+    [onBlur, onFocus],
+  )
+
+  const columnAxisInputProps = React.useMemo(
+    () => ({
+      onFocus: () => onFocus(getGridGapControlsForHoverAndFocused('focused', 'column')),
+      onBlur: onBlur,
+    }),
+    [onBlur, onFocus],
+  )
 
   const [controlSplitState, setControlSplitState] = React.useState<GridGapControlSplitState>(
     cssNumberEqual(columnGap.value, rowGap.value) ? 'unified' : 'split',
@@ -789,7 +863,12 @@ const GapRowColumnControl = React.memo(() => {
     <FlexRow style={{ justifyContent: 'space-between', gap: 8 }}>
       {when(
         controlSplitState === 'unified',
-        <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
+        <UIGridRow
+          padded={false}
+          variant='<--1fr--><--1fr-->'
+          onMouseEnter={onMouseEnterBothAxesWithGridGapControls}
+          onMouseLeave={onMouseLeave}
+        >
           <NumberInput
             value={columnGap.value}
             numberType={'Length'}
@@ -798,13 +877,14 @@ const GapRowColumnControl = React.memo(() => {
             onForcedSubmitValue={onSubmitUnifiedValue}
             defaultUnitToHide={'px'}
             testId={'grid-column-gap'}
+            inputProps={bothAxesInputProps}
             innerLabel={<Icons.GapHorizontal color='on-highlight-secondary' />}
           />
         </UIGridRow>,
       )}
       {when(
         controlSplitState === 'split',
-        <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
+        <UIGridRow padded={false} variant='<--1fr--><--1fr-->' onMouseLeave={onMouseLeave}>
           <NumberInput
             value={columnGap.value}
             numberType={'Length'}
@@ -813,6 +893,9 @@ const GapRowColumnControl = React.memo(() => {
             onForcedSubmitValue={onSubmitSplitValue('columnGap')}
             defaultUnitToHide={'px'}
             testId={'grid-column-gap'}
+            inputProps={columnAxisInputProps}
+            onMouseEnter={onMouseEnterColumnAxisWithGridGapControls}
+            onMouseLeave={onMouseLeave}
             innerLabel={<Icons.GapHorizontal color='on-highlight-secondary' />}
           />
           <NumberInput
@@ -823,6 +906,9 @@ const GapRowColumnControl = React.memo(() => {
             onForcedSubmitValue={onSubmitSplitValue('rowGap')}
             defaultUnitToHide={'px'}
             testId={'grid-row-gap'}
+            inputProps={rowAxisInputProps}
+            onMouseEnter={onMouseEnterRowAxisWithGridGapControls}
+            onMouseLeave={onMouseLeave}
             innerLabel={<Icons.GapVertical color='on-highlight-secondary' />}
           />
         </UIGridRow>,
@@ -857,10 +943,18 @@ const unsetSelectOption = regularRadixSelectOption({
   placeholder: true,
 })
 
+// `row dense` is omitted from here, because it turns out that the when it's
+// written to the DOM, it's turned into `dense`. This surfaced as a bug, because
+// even though `row dense` was set in the style prop, the DOM walker put `dense`
+// into the specialSizeMeasurements entry for `grid-auto-flow`. We suspect that
+// `row` is implicit in `dense`, and the browser omits the `row` to keep things
+// simple
+const RESTRICTED_GRID_AUTO_FLOW_VALUES: GridAutoFlow[] = ['dense', 'row', 'column', 'column dense']
+
 const autoflowOptions = [
   unsetSelectOption,
   separatorRadixSelectOption(),
-  ...GridAutoFlowValues.map(selectOption),
+  ...RESTRICTED_GRID_AUTO_FLOW_VALUES.map(selectOption),
 ]
 
 const AutoFlowControl = React.memo(() => {
@@ -928,20 +1022,35 @@ const AutoFlowControl = React.memo(() => {
 })
 AutoFlowControl.displayName = 'AutoFlowControl'
 
-function mergeGridTemplateValues({
+export function mergeGridTemplateValues({
   calculated,
   fromProps,
+  autoValues,
 }: {
   calculated: GridDimension[]
   fromProps: GridDimension[]
+  autoValues: GridDimension[]
 }): GridDimension[] {
-  return calculated.map((c, index) => {
+  function getExplicitValue(dimension: GridDimension, index: number): GridDimension {
     if (fromProps.length === 0) {
-      return gridCSSKeyword(cssKeyword('auto'), c.areaName)
+      return gridCSSKeyword(cssKeyword('auto'), dimension.areaName)
+    } else if (fromProps[index] == null) {
+      return dimension
+    } else {
+      return fromProps[index]
     }
-    if (fromProps[index] == null) {
-      return c
+  }
+
+  return calculated.map((c, index) => {
+    const explicitValue = getExplicitValue(c, index)
+
+    const autoValueIndex = index % autoValues.length // wrap around
+    const autoValue = autoValues.at(autoValueIndex)
+
+    if (isGridCSSKeyword(explicitValue) && explicitValue.value.value === 'auto') {
+      return autoValue ?? explicitValue
     }
-    return fromProps[index]
+
+    return explicitValue
   })
 }

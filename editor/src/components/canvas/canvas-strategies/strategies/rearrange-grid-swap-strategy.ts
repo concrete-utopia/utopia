@@ -14,7 +14,7 @@ import { create } from '../../../../core/shared/property-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { rearrangeChildren } from '../../commands/rearrange-children-command'
-import { GridControls, GridControlsKey } from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls'
 import { recurseIntoChildrenOfMapOrFragment } from '../../gap-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
@@ -38,7 +38,8 @@ export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
     interactionSession.interactionData.type !== 'DRAG' ||
     interactionSession.interactionData.drag == null ||
     interactionSession.activeControl.type !== 'GRID_CELL_HANDLE' ||
-    interactionSession.interactionData.modifiers.alt
+    interactionSession.interactionData.modifiers.alt ||
+    interactionSession.interactionData.modifiers.cmd
   ) {
     return null
   }
@@ -66,15 +67,7 @@ export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
       category: 'tools',
       type: 'pointer',
     },
-    controlsToRender: [
-      {
-        control: GridControls,
-        props: { targets: [parentGridPath] },
-        key: GridControlsKey(parentGridPath),
-        show: 'always-visible',
-        priority: 'bottom',
-      },
-    ],
+    controlsToRender: [controlsForGridPlaceholders(parentGridPath)],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 1),
     apply: () => {
       if (

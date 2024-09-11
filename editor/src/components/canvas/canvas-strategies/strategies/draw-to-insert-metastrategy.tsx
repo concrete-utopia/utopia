@@ -9,7 +9,6 @@ import { isImg } from '../../../../core/model/project-file-utils'
 import { mapDropNulls, stripNulls } from '../../../../core/shared/array-utils'
 import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { elementPath } from '../../../../core/shared/element-path'
 import type {
   ElementInstanceMetadataMap,
   JSXAttributes,
@@ -56,6 +55,7 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { boundingArea } from '../interaction-state'
+import type { ParentDisplayType } from './reparent-metastrategy'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 import type { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
@@ -68,6 +68,7 @@ import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 import { gridDrawToInsertStrategy } from './grid-draw-to-insert-strategy'
+import { assertNever } from '../../../../core/shared/utils'
 
 /**
  *
@@ -92,6 +93,15 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
     return []
   }
 
+  const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
+  if (insertionSubjects.length != 1) {
+    return []
+  }
+  const insertionSubject = insertionSubjects[0]
+  if (insertionSubject.textEdit) {
+    return []
+  }
+
   const targetParent = findElementPathUnderInteractionPoint(canvasState, interactionSession)
 
   if (
@@ -102,11 +112,6 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
     return stripNulls([
       gridDrawToInsertStrategy(canvasState, interactionSession, customStrategyState),
     ])
-  }
-
-  const insertionSubjects = getInsertionSubjectsFromInteractionTarget(canvasState.interactionTarget)
-  if (insertionSubjects.length != 1) {
-    return []
   }
 
   const pointOnCanvas =
@@ -141,7 +146,7 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
 
 export function getDrawToInsertStrategyName(
   strategyType: ReparentStrategy,
-  parentDisplayType: 'flex' | 'flow',
+  parentDisplayType: ParentDisplayType,
 ): string {
   switch (strategyType) {
     case 'REPARENT_AS_ABSOLUTE':
@@ -149,9 +154,15 @@ export function getDrawToInsertStrategyName(
     case 'REPARENT_AS_STATIC':
       if (parentDisplayType === 'flex') {
         return 'Draw to Insert (Flex)'
+      } else if (parentDisplayType === 'grid') {
+        return 'Draw to Insert (Grid)'
       } else {
         return 'Draw to Insert (Flow)'
       }
+    case 'REPARENT_INTO_GRID':
+      return 'Draw to Insert (Grid)'
+    default:
+      assertNever(strategyType)
   }
 }
 
@@ -204,7 +215,7 @@ export function drawToInsertStrategyFactory(
         show: 'visible-only-while-active',
       }),
     ], // Uses existing hooks in select-mode-hooks.tsx
-    fitness: !insertionSubject.textEdit && drawToInsertFitness(interactionSession) ? fitness : 0,
+    fitness: drawToInsertFitness(interactionSession) ? fitness : 0,
     apply: (strategyLifecycle) => {
       const rootPath = getRootPath(canvasState.startingMetadata)
       if (interactionSession != null) {

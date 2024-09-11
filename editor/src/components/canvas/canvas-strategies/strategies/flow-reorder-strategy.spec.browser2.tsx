@@ -620,7 +620,7 @@ describe('Flow Reorder Strategy (Mixed Display Type)', () => {
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
+      expect(Object.keys(renderResult.getEditorState().editor.jsxMetadata)).toEqual([
         'utopia-storyboard-uid',
         'utopia-storyboard-uid/scene-aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity',

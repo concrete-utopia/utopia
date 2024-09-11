@@ -124,7 +124,7 @@ import {
   type FilePathMappings,
 } from './project-file-utils'
 import { assertNever, fastForEach } from '../shared/utils'
-import { mapValues, objectValues, omit } from '../shared/object-utils'
+import { mapValues, objectMap, objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import type {
   AllElementProps,
@@ -170,6 +170,7 @@ import type { RemixRoutingTable } from '../../components/editor/store/remix-deri
 import { exists, toFirst } from '../shared/optics/optic-utilities'
 import { eitherRight, fromField, fromTypeGuard, notNull } from '../shared/optics/optic-creators'
 import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
+import { treatElementAsFragmentLike } from '../../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -451,17 +452,25 @@ export const MetadataUtils = {
     )
   },
   isButtonFromMetadata(element: ElementInstanceMetadata | null): boolean {
-    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
-    if (
-      elementName != null &&
-      PP.depth(elementName.propertyPath) === 0 &&
-      elementName.baseVariable === 'button'
-    ) {
-      return true
-    }
-    let buttonRoleFound: boolean = false
-    if (element != null) {
-      forEachRight(element.element, (elem) => {
+    if (element == null) {
+      return false
+    } else {
+      if (element.specialSizeMeasurements.htmlElementName.toLowerCase() === 'button') {
+        return true
+      }
+
+      if (isRight(element.element)) {
+        const elem = element.element.value
+        const elementName = MetadataUtils.getJSXElementName(elem)
+        if (
+          elementName != null &&
+          PP.depth(elementName.propertyPath) === 0 &&
+          elementName.baseVariable === 'button'
+        ) {
+          return true
+        }
+
+        let buttonRoleFound: boolean = false
         if (isJSXElement(elem)) {
           const attrResult = getSimpleAttributeAtPath(right(elem.props), PP.create('role'))
           forEachRight(attrResult, (value) => {
@@ -470,12 +479,11 @@ export const MetadataUtils = {
             }
           })
         }
-      })
-    }
-    if (buttonRoleFound) {
-      return true
-    } else {
-      return element?.specialSizeMeasurements.htmlElementName.toLowerCase() === 'button'
+        if (buttonRoleFound) {
+          return true
+        }
+      }
+      return false
     }
   },
   isButton(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
@@ -1087,9 +1095,8 @@ export const MetadataUtils = {
       return 'supportsChildren'
     }
     const componentDescriptor = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
       target,
-      propertyControlsInfo,
-      projectContents,
     )
     if (componentDescriptor != null && !componentDescriptor.supportsChildren) {
       return 'doesNotSupportChildren'
@@ -1296,7 +1303,7 @@ export const MetadataUtils = {
     Utils.fastForEach(targets, (target) => {
       const instance = MetadataUtils.findElementByElementPath(metadata, target)
       if (instance != null && this.isImg(instance)) {
-        const componentFrame = instance.localFrame
+        const componentFrame = MetadataUtils.getLocalFrame(target, metadata)
         if (componentFrame != null && isFiniteRectangle(componentFrame)) {
           const imageSize = getImageSize(allElementProps, instance)
           const widthMultiplier = imageSize.width / componentFrame.width
@@ -1471,6 +1478,59 @@ export const MetadataUtils = {
       }
     }
   },
+  getClosestNonFragmentParent(
+    metadata: ElementInstanceMetadataMap,
+    allElementProps: AllElementProps,
+    pathTrees: ElementPathTrees,
+    path: ElementPath,
+  ): ElementPath {
+    let currentPath = path
+    while (!EP.isStoryboardPath(currentPath)) {
+      if (!treatElementAsFragmentLike(metadata, allElementProps, pathTrees, currentPath)) {
+        return currentPath
+      }
+      currentPath = EP.parentPath(currentPath)
+    }
+    return currentPath
+  },
+  getLocalFrame(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): MaybeInfinityLocalRectangle | null {
+    function getNonRootParent(parentOf: ElementPath): ElementPath {
+      // If the target is the root element of an instance (`a/b/c:root`), then we want to instead
+      // find `a/b` as the component instance at `a/b/c` will have an identical globalFrame property.
+      // So in that case go up to the grandparent and start checking from there again.
+      if (EP.isRootElementOfInstance(parentOf)) {
+        const grandParent = EP.parentPath(EP.parentPath(parentOf))
+        if (EP.isRootElementOfInstance(grandParent)) {
+          return getNonRootParent(grandParent)
+        } else {
+          return grandParent
+        }
+      } else {
+        return EP.parentPath(parentOf)
+      }
+    }
+
+    const targetGlobalFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
+    const parentPath = getNonRootParent(path)
+    const parentGlobalFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, metadata)
+    if (targetGlobalFrame == null || parentGlobalFrame == null) {
+      return null
+    } else if (isInfinityRectangle(targetGlobalFrame)) {
+      return infinityLocalRectangle
+    } else if (isInfinityRectangle(parentGlobalFrame)) {
+      return localRectangle({
+        x: targetGlobalFrame.x,
+        y: targetGlobalFrame.y,
+        width: targetGlobalFrame.width,
+        height: targetGlobalFrame.height,
+      })
+    } else {
+      return canvasRectangleToLocalRectangle(targetGlobalFrame, parentGlobalFrame)
+    }
+  },
   getFrameInCanvasCoords(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
@@ -1519,19 +1579,11 @@ export const MetadataUtils = {
     )
     return aabb
   },
-  getFrame(
-    path: ElementPath,
-    metadata: ElementInstanceMetadataMap,
-  ): MaybeInfinityLocalRectangle | null {
-    const element = MetadataUtils.findElementByElementPath(metadata, path)
-    return Utils.optionalMap((e) => e.localFrame, element)
-  },
   getFrameOrZeroRect(path: ElementPath, metadata: ElementInstanceMetadataMap): LocalRectangle {
-    const element = MetadataUtils.findElementByElementPath(metadata, path)
-    const frame = Utils.optionalMap((e) => e.localFrame, element)
+    const frame = MetadataUtils.getLocalFrame(path, metadata)
     return zeroRectIfNullOrInfinity(frame)
   },
-  getFrameRelativeTo: function (
+  getFrameRelativeTo(
     parent: ElementPath | null,
     metadata: ElementInstanceMetadataMap,
     frame: CanvasRectangle,
@@ -1541,7 +1593,7 @@ export const MetadataUtils = {
     } else {
       const paths = EP.allPathsForLastPart(parent)
       const parentFrames: Array<MaybeInfinityLocalRectangle> = Utils.stripNulls(
-        paths.map((path) => this.getFrame(path, metadata)),
+        paths.map((path) => this.getLocalFrame(path, metadata)),
       )
       return parentFrames.reduce<LocalRectangle>((working, next) => {
         if (isInfinityRectangle(next)) {
@@ -1790,91 +1842,6 @@ export const MetadataUtils = {
   getDuplicationParentTargets(targets: ElementPath[]): ElementPath | null {
     return EP.getCommonParent(targets)
   },
-  mergeComponentMetadata(
-    elementsByUID: ElementsByUID,
-    fromSpy: ElementInstanceMetadataMap,
-    fromDOM: ElementInstanceMetadataMap,
-    fromDOMReconstructed: ElementInstanceMetadataMap,
-  ): { mergedMetadata: ElementInstanceMetadataMap; elementPathTree: ElementPathTrees } {
-    // This logic effectively puts everything from the spy first,
-    // then anything missed out from the DOM right after it.
-    // Ideally this would function like a VCS diff inserting runs of new elements
-    // inbetween matching metadata, so it may be necessary to implement something
-    // like that in the future. But for now this is likely "good enough" that it
-    // wont make any difference.
-    let workingElements: ElementInstanceMetadataMap = { ...fromSpy }
-    let newlyFoundElements: Array<ElementPath> = []
-    fastForEach(Object.keys(fromDOM), (pathStr) => {
-      const domElem = fromDOM[pathStr]
-      const spyElem = fromSpy[pathStr]
-
-      if (spyElem == null) {
-        workingElements[pathStr] = domElem
-        newlyFoundElements.push(domElem.elementPath)
-      } else {
-        let componentInstance = spyElem.componentInstance || domElem.componentInstance
-        let jsxElement = alternativeEither(spyElem.element, domElem.element)
-
-        const elemUID: string | null = EP.toStaticUid(domElem.elementPath)
-        const possibleElement = elementsByUID[elemUID]
-        if (possibleElement != null) {
-          if (!isIntrinsicElement(possibleElement.name)) {
-            componentInstance = true
-            jsxElement = right(possibleElement)
-          }
-        }
-
-        const elem: ElementInstanceMetadata = {
-          ...domElem,
-          element: jsxElement,
-          componentInstance: componentInstance,
-          isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
-          label: spyElem.label,
-          importInfo: spyElem.importInfo,
-          assignedToProp: spyElem.assignedToProp,
-        }
-        workingElements[EP.toString(domElem.elementPath)] = elem
-      }
-    })
-
-    const spyOnlyElements = fillSpyOnlyMetadata(fromSpy, fromDOM, fromDOMReconstructed)
-
-    workingElements = {
-      ...workingElements,
-      ...spyOnlyElements,
-    }
-
-    const elementsInheritingFromAncestors = fillMissingDataFromAncestors(workingElements)
-    const mergedMetadata: ElementInstanceMetadataMap = {
-      ...workingElements,
-      ...elementsInheritingFromAncestors,
-    }
-
-    // This should exclude entries which have been incorporated into the DOM metadata
-    // as a result of those elements being children of visited DOM elements but that
-    // did not have their parents (by element path) visited.
-    let trimmedMetadata: ElementInstanceMetadataMap = {}
-    for (const elementMetadata of Object.values(mergedMetadata)) {
-      const ancestorPaths = EP.getAncestors(elementMetadata.elementPath).filter(
-        (path) => EP.fullDepth(path) > 2,
-      )
-      const allAncestorsExist = ancestorPaths.every((path) => EP.toString(path) in mergedMetadata)
-      if (allAncestorsExist || EP.fullDepth(elementMetadata.elementPath) <= 2) {
-        trimmedMetadata[EP.toString(elementMetadata.elementPath)] = elementMetadata
-      }
-      // In the above code we're using the fullDepth to effectively not bother checking things like
-      // storyboards and scenes as those will always be included.
-    }
-
-    // Note: This will not necessarily be representative of the structured ordering in
-    // the code that produced these elements.
-    const pathTree = MetadataUtils.createElementPathTreeFromMetadata(trimmedMetadata)
-
-    return {
-      mergedMetadata: trimmedMetadata,
-      elementPathTree: pathTree,
-    }
-  },
   createElementPathTreeFromMetadata(metadata: ElementInstanceMetadataMap): ElementPathTrees {
     return buildTree(metadata)
   },
@@ -2044,9 +2011,8 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
   ): boolean {
     const componentDescriptor = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
       path,
-      propertyControlsInfo,
-      projectContents,
     )
     return (
       componentDescriptor?.focus === 'always' ||
@@ -2083,9 +2049,8 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
   ): boolean {
     const componentDescriptor = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
       path,
-      propertyControlsInfo,
-      projectContents,
     )
     if (componentDescriptor != null && componentDescriptor.focus !== 'default') {
       return false
@@ -2122,9 +2087,8 @@ export const MetadataUtils = {
   ): Emphasis {
     // Look up the emphasis of the component from the property controls.
     const componentDescriptor = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
       path,
-      propertyControlsInfo,
-      projectContents,
     )
     if (componentDescriptor != null) {
       return componentDescriptor.emphasis
@@ -2177,9 +2141,8 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
   ): Icon | null {
     const componentDescriptor = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
       path,
-      propertyControlsInfo,
-      projectContents,
     )
     return componentDescriptor?.icon ?? null
   },
@@ -2587,208 +2550,7 @@ function getNonExpressionDescendantsInner(
   return [element]
 }
 
-function fillSpyOnlyMetadata(
-  fromSpy: ElementInstanceMetadataMap,
-  fromDOM: ElementInstanceMetadataMap,
-  fromReconstructedDOM: ElementInstanceMetadataMap,
-): ElementInstanceMetadataMap {
-  const childrenInDomCache: { [pathStr: string]: Array<ElementInstanceMetadata> } = {}
-
-  const findChildrenInDomRecursively = (pathStr: string): Array<ElementInstanceMetadata> => {
-    const existing = childrenInDomCache[pathStr]
-
-    if (existing != null) {
-      return existing
-    }
-
-    const spyElem = fromSpy[pathStr]
-
-    const { children: childrenFromSpy, unfurledComponents: unfurledComponentsFromSpy } =
-      MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponentsUnordered(
-        spyElem.elementPath,
-        fromSpy,
-      )
-    const childrenAndUnfurledComponentsFromSpy = [...childrenFromSpy, ...unfurledComponentsFromSpy]
-
-    const { children: childrenFromDom, unfurledComponents: unfurledComponentsFromDom } =
-      MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponentsUnordered(
-        spyElem.elementPath,
-        fromDOM,
-      )
-    const {
-      children: childrenFromReconstructedDom,
-      unfurledComponents: unfurledComponentsFromReconstructedDom,
-    } = MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponentsUnordered(
-      spyElem.elementPath,
-      fromReconstructedDOM,
-    )
-    const childrenAndUnfurledComponentsFromDom = [
-      ...childrenFromDom,
-      ...childrenFromReconstructedDom,
-      ...unfurledComponentsFromDom,
-      ...unfurledComponentsFromReconstructedDom,
-    ]
-
-    const childrenAndUnfurledComponentsNotInDom = childrenAndUnfurledComponentsFromSpy.filter(
-      (childNotInDom) =>
-        childrenAndUnfurledComponentsFromDom.every(
-          (childInDom) => !EP.pathsEqual(childNotInDom.elementPath, childInDom.elementPath),
-        ),
-    )
-
-    const recursiveChildrenAndUnfurledComponents = childrenAndUnfurledComponentsNotInDom.flatMap(
-      (c) => {
-        return findChildrenInDomRecursively(EP.toString(c.elementPath))
-      },
-    )
-
-    const childrenAndUnfurledComponents = [
-      ...childrenAndUnfurledComponentsFromDom,
-      ...childrenAndUnfurledComponentsNotInDom,
-      ...recursiveChildrenAndUnfurledComponents,
-    ]
-
-    childrenInDomCache[pathStr] = childrenAndUnfurledComponents
-
-    return childrenAndUnfurledComponents
-  }
-
-  const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
-
-  const elementsWithoutParentData = Object.keys(fromSpy).filter((p) => {
-    const parentLayoutSystem = fromDOM[p]?.specialSizeMeasurements.parentLayoutSystem
-    return parentLayoutSystem == null
-  })
-
-  // Sort and then reverse these, so that lower level elements (with longer paths) are handled ahead of their parents
-  // and ancestors. This means that if there are a grandparent and parent which both lack global frames
-  // then the parent is fixed ahead of the grandparent, which will be based on the parent.
-  elementsWithoutDomMetadata.sort()
-  elementsWithoutDomMetadata.reverse()
-  elementsWithoutParentData.sort()
-  elementsWithoutParentData.reverse()
-
-  const workingElements: ElementInstanceMetadataMap = {}
-
-  fastForEach(elementsWithoutDomMetadata, (pathStr) => {
-    const spyElem = fromSpy[pathStr]
-
-    const children = findChildrenInDomRecursively(pathStr)
-    if (children.length === 0) {
-      return
-    }
-
-    const childrenFromWorking = children.map((child) => {
-      const childPathStr = EP.toString(child.elementPath)
-      const fromWorkingElements = workingElements[childPathStr]
-      if (fromWorkingElements == null) {
-        return child
-      } else {
-        return fromWorkingElements
-      }
-    })
-
-    function getBoundingFrameFromChildren<C extends CoordinateMarker>(
-      childrenFrames: Array<Rectangle<C> | InfinityRectangle<C>>,
-    ) {
-      const childrenNonInfinityFrames = childrenFrames.filter(isFiniteRectangle)
-      const childrenBoundingFrame =
-        childrenNonInfinityFrames.length === childrenFrames.length
-          ? boundingRectangleArray(childrenNonInfinityFrames)
-          : (infinityRectangle as InfinityRectangle<C>)
-
-      return childrenBoundingFrame
-    }
-
-    const childrenBoundingGlobalFrame = getBoundingFrameFromChildren(
-      mapDropNulls((c) => c.globalFrame, childrenFromWorking),
-    )
-
-    const childrenBoundingLocalFrame = getBoundingFrameFromChildren(
-      mapDropNulls((c) => c.localFrame, childrenFromWorking),
-    )
-
-    const childrenBoundingGlobalFrameWithTextContent = getBoundingFrameFromChildren(
-      mapDropNulls(
-        (c) => c.specialSizeMeasurements.globalFrameWithTextContent,
-        childrenFromWorking,
-      ),
-    )
-
-    const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
-
-    const globalContentBoxForChildrenFromDomOrParent =
-      fromDOM[pathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
-      workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
-      null
-
-    workingElements[pathStr] = {
-      ...spyElem,
-      globalFrame: childrenBoundingGlobalFrame,
-      localFrame: childrenBoundingLocalFrame,
-      specialSizeMeasurements: {
-        ...spyElem.specialSizeMeasurements,
-        globalContentBoxForChildren: globalContentBoxForChildrenFromDomOrParent,
-        globalFrameWithTextContent: childrenBoundingGlobalFrameWithTextContent,
-      },
-    }
-  })
-
-  fastForEach(elementsWithoutParentData, (pathStr) => {
-    const spyElem = fromSpy[pathStr]
-    const sameThingFromWorkingElems = workingElements[pathStr]
-    const children = findChildrenInDomRecursively(pathStr)
-    if (children.length === 0) {
-      return
-    }
-
-    const childrenFromWorking = children.map((child) => {
-      const childPathStr = EP.toString(child.elementPath)
-      const fromWorkingElements = workingElements[childPathStr]
-      if (fromWorkingElements == null) {
-        return child
-      } else {
-        return fromWorkingElements
-      }
-    })
-
-    const parentLayoutSystemFromChildren = childrenFromWorking.map(
-      (c) => c.specialSizeMeasurements.parentLayoutSystem,
-    )
-    const parentFlexDirectionFromChildren = childrenFromWorking.map(
-      (c) => c.specialSizeMeasurements.parentFlexDirection,
-    )
-    const immediateParentBoundsFromChildren = childrenFromWorking.map(
-      (c) => c.specialSizeMeasurements.immediateParentBounds,
-    )
-    const positionForChildren = childrenFromWorking.map((c) => c.specialSizeMeasurements.position)
-
-    workingElements[pathStr] = {
-      ...spyElem,
-      ...sameThingFromWorkingElems,
-      specialSizeMeasurements: {
-        ...spyElem.specialSizeMeasurements,
-        ...sameThingFromWorkingElems.specialSizeMeasurements,
-        parentLayoutSystem: allElemsEqual(parentLayoutSystemFromChildren)
-          ? parentLayoutSystemFromChildren[0]
-          : spyElem.specialSizeMeasurements.parentLayoutSystem,
-        parentFlexDirection: allElemsEqual(parentFlexDirectionFromChildren)
-          ? parentFlexDirectionFromChildren[0]
-          : spyElem.specialSizeMeasurements.parentFlexDirection,
-        immediateParentBounds: allElemsEqual(immediateParentBoundsFromChildren)
-          ? immediateParentBoundsFromChildren[0]
-          : spyElem.specialSizeMeasurements.immediateParentBounds,
-        position: allElemsEqual(positionForChildren)
-          ? positionForChildren[0]
-          : spyElem.specialSizeMeasurements.position,
-      },
-    }
-  })
-
-  return workingElements
-}
-
-function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap) {
+export function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap) {
   return [
     fillGlobalContentBoxFromAncestors,
     fillConditionalGlobalFrameFromAncestors,
@@ -2941,32 +2703,14 @@ function fillConditionalGlobalFrameFromAncestors(
     const elem = workingElements[pathStr]
 
     const condParentPathStr = EP.toString(EP.parentPath(elem.elementPath))
-
     const condParentGlobalFrame = workingElements[condParentPathStr]?.globalFrame
-    const condParentGlobalContentBoxForChildren =
-      workingElements[condParentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren
-    const localFrameFromCondParent = (() => {
-      if (condParentGlobalFrame == null || condParentGlobalContentBoxForChildren == null) {
-        return null
-      }
-      if (
-        isInfinityRectangle(condParentGlobalFrame) ||
-        isInfinityRectangle(condParentGlobalContentBoxForChildren)
-      ) {
-        return infinityLocalRectangle
-      }
-      return canvasRectangleToLocalRectangle(
-        condParentGlobalFrame,
-        condParentGlobalContentBoxForChildren,
-      )
-    })()
+
     const condParentglobalFrameWithTextContent =
       workingElements[condParentPathStr]?.specialSizeMeasurements.globalFrameWithTextContent
 
     workingElements[pathStr] = {
       ...elem,
       globalFrame: condParentGlobalFrame,
-      localFrame: localFrameFromCondParent,
       specialSizeMeasurements: {
         ...elem.specialSizeMeasurements,
         globalFrameWithTextContent: condParentglobalFrameWithTextContent,
@@ -3076,11 +2820,6 @@ export function createFakeMetadataForElement(
   const isFlex = parentElement != null && MetadataUtils.isFlexLayoutedContainer(parentElement)
   const parentBounds = parentElement != null ? parentElement.globalFrame : null
 
-  const localFrame =
-    parentBounds == null || isInfinityRectangle(parentBounds)
-      ? localRectangle(frame)
-      : getLocalRectangleInNewParentContext(parentBounds, frame)
-
   const specialSizeMeasurements = { ...emptySpecialSizeMeasurements }
   specialSizeMeasurements.position = isFlex ? 'relative' : 'absolute'
   specialSizeMeasurements.parentLayoutSystem = isFlex ? 'flex' : 'none'
@@ -3097,7 +2836,6 @@ export function createFakeMetadataForElement(
     path,
     right(element),
     frame,
-    localFrame,
     frame,
     false,
     false,

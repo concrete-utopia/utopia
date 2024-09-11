@@ -347,6 +347,7 @@ import type {
   ReplaceElementInScope,
   ReplaceJSXElement,
   ToggleDataCanCondense,
+  UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
@@ -1129,7 +1130,7 @@ function deleteElements(
         if (metadata == null || isLeft(metadata.element)) {
           return null
         }
-        const frame = metadata.localFrame
+        const frame = MetadataUtils.getLocalFrame(path, editor.jsxMetadata)
         if (frame == null || !isFiniteRectangle(frame)) {
           return null
         }
@@ -3332,7 +3333,7 @@ export const UPDATE_FNS = {
   },
   RESET_PINS: (action: ResetPins, editor: EditorModel): EditorModel => {
     const target = action.target
-    const frame = MetadataUtils.getFrame(target, editor.jsxMetadata)
+    const frame = MetadataUtils.getLocalFrame(target, editor.jsxMetadata)
 
     if (frame == null || isInfinityRectangle(frame)) {
       return editor
@@ -3360,7 +3361,7 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_FRAME_DIMENSIONS: (action: UpdateFrameDimensions, editor: EditorModel): EditorModel => {
-    const initialFrame = MetadataUtils.getFrame(action.element, editor.jsxMetadata)
+    const initialFrame = MetadataUtils.getLocalFrame(action.element, editor.jsxMetadata)
 
     if (initialFrame == null || isInfinityRectangle(initialFrame)) {
       return editor
@@ -4221,21 +4222,21 @@ export const UPDATE_FNS = {
         }, updatedEditor)
       }
       case 'TEXT_FILE': {
-        const nextEditor = {
+        let nextEditor = {
           ...editor,
           projectContents: updatedProjectContents,
         }
         if (isComponentDescriptorFile(action.filename)) {
-          const withUpdatedPropertyControls = {
+          // update property controls
+          nextEditor = {
             ...nextEditor,
             propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(
               editor.propertyControlsInfo,
               action.filename,
             ),
           }
-          return removeErrorMessagesForFile(withUpdatedPropertyControls, action.filename)
         }
-        return nextEditor
+        return removeErrorMessagesForFile(nextEditor, action.filename)
       }
       case 'ASSET_FILE':
       case 'IMAGE_FILE': {
@@ -4388,6 +4389,20 @@ export const UPDATE_FNS = {
         },
         currentVariablesInScope: { ...spyCollector.current.spyValues.variablesInScope },
       }
+    }
+  },
+  UPDATE_METADATA_IN_EDITOR_STATE: (
+    action: UpdateMetadataInEditorState,
+    editor: EditorModel,
+    spyCollector: UiJsxCanvasContextData,
+  ): EditorModel => {
+    return {
+      ...editor,
+      // TODO move the reconstructMetadata call here, and remove currentAllElementProps
+      currentAllElementProps: {
+        ...spyCollector.current.spyValues.allElementProps,
+      },
+      currentVariablesInScope: { ...spyCollector.current.spyValues.variablesInScope },
     }
   },
   TRUE_UP_ELEMENTS: (editor: EditorModel): EditorModel => {
@@ -5519,7 +5534,11 @@ export const UPDATE_FNS = {
           editor.jsxMetadata,
           action.insertionPath.intendedParentPath,
         )
-        if (group != null) {
+        const localFrame = MetadataUtils.getLocalFrame(
+          action.insertionPath.intendedParentPath,
+          editor.jsxMetadata,
+        )
+        if (group != null && localFrame != null) {
           switch (element.type) {
             case 'JSX_ELEMENT':
               groupCommands.push(
@@ -5527,7 +5546,7 @@ export const UPDATE_FNS = {
                   newPath,
                   right(element.props),
                   zeroRectIfNullOrInfinity(group.globalFrame),
-                  zeroRectIfNullOrInfinity(group.localFrame),
+                  zeroRectIfNullOrInfinity(localFrame),
                 ),
               )
               break

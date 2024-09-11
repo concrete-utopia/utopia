@@ -191,7 +191,7 @@ import type { CommentFilterMode } from '../../inspector/sections/comment-section
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { OnlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
-import type { FancyError } from 'src/core/shared/code-exec-utils'
+import type { FancyError } from '../../../core/shared/code-exec-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -464,6 +464,7 @@ export function emptyCollaborativeEditingSupport(): CollaborativeEditingSupport 
 }
 
 export type EditorStoreShared = {
+  elementMetadata: ElementInstanceMetadataMap
   postActionInteractionSession: PostActionMenuSession | null
   strategyState: StrategyState
   history: StateHistory
@@ -3277,14 +3278,17 @@ export function updatePackageJsonInEditorState(
       // There is a package.json file, we should update it.
       updatedPackageJsonFile = codeFile(
         transformPackageJson(packageJsonFile.fileContents.code),
-        RevisionsState.CodeAhead,
+        null,
         packageJsonFile.versionNumber + 1,
+        RevisionsState.CodeAheadButPleaseTellVSCodeAboutIt,
       )
     } else {
       // There is something else called package.json, we should bulldoze over it.
       updatedPackageJsonFile = codeFile(
         transformPackageJson(JSON.stringify(DefaultPackageJson)),
         null,
+        0,
+        RevisionsState.CodeAheadButPleaseTellVSCodeAboutIt,
       )
     }
   }
@@ -3396,50 +3400,6 @@ export function parseFailureAsErrorMessages(
       })
     }
     return errors
-  }
-}
-
-export function reconstructJSXMetadata(
-  editor: EditorState,
-  domReconstructedMetadata: ElementInstanceMetadataMap,
-): {
-  metadata: ElementInstanceMetadataMap
-  elementPathTree: ElementPathTrees
-} {
-  const uiFile = getOpenUIJSFile(editor)
-  if (uiFile == null) {
-    return {
-      metadata: editor.jsxMetadata,
-      elementPathTree: editor.elementPathTree,
-    }
-  } else {
-    return foldParsedTextFile(
-      (_) => {
-        return {
-          metadata: editor.jsxMetadata,
-          elementPathTree: editor.elementPathTree,
-        }
-      },
-      (success) => {
-        const elementsByUID = getElementsByUIDFromTopLevelElements(success.topLevelElements)
-        const { mergedMetadata, elementPathTree } = MetadataUtils.mergeComponentMetadata(
-          elementsByUID,
-          editor.spyMetadata,
-          editor.domMetadata,
-          domReconstructedMetadata,
-        )
-        return {
-          metadata: ElementInstanceMetadataMapKeepDeepEquality(editor.jsxMetadata, mergedMetadata)
-            .value,
-          elementPathTree: elementPathTree,
-        }
-      },
-      (_) => ({
-        metadata: editor.jsxMetadata,
-        elementPathTree: editor.elementPathTree,
-      }),
-      uiFile.fileContents.parsed,
-    )
   }
 }
 
@@ -3568,7 +3528,7 @@ export function defaultModifyParseSuccess(success: ParseSuccess): ParseSuccess {
 }
 
 export function modifyUnderlyingTarget(
-  target: ElementPath | null,
+  target: ElementPath,
   editor: EditorState,
   modifyElement: (
     element: JSXElementChild,
@@ -3581,6 +3541,9 @@ export function modifyUnderlyingTarget(
     underlyingFilePath: string,
   ) => ParseSuccess = defaultModifyParseSuccess,
 ): EditorState {
+  if (target == null) {
+    throw new Error(`Target is null.`)
+  }
   const underlyingTarget = normalisePathToUnderlyingTarget(editor.projectContents, target)
   const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
@@ -3638,6 +3601,9 @@ export function modifyUnderlyingParseSuccessOnly(
     underlyingFilePath: string,
   ) => ParseSuccess = defaultModifyParseSuccess,
 ): EditorState {
+  if (target == null) {
+    throw new Error(`Target is null.`)
+  }
   const underlyingTarget = normalisePathToUnderlyingTarget(editor.projectContents, target)
   const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
@@ -3650,7 +3616,7 @@ export function modifyUnderlyingParseSuccessOnly(
 }
 
 export function modifyUnderlyingForOpenFile(
-  target: ElementPath | null,
+  target: ElementPath,
   editor: EditorState,
   modifyElement: (
     element: JSXElementChild,
@@ -3745,32 +3711,36 @@ export function withUnderlyingTarget<T>(
     underlyingDynamicTarget: ElementPath,
   ) => T,
 ): T {
-  const underlyingTarget = normalisePathToUnderlyingTarget(projectContents, target ?? null)
+  if (target == null) {
+    return defaultValue
+  } else {
+    const underlyingTarget = normalisePathToUnderlyingTarget(projectContents, target)
 
-  if (
-    underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' &&
-    underlyingTarget.normalisedPath != null &&
-    underlyingTarget.normalisedDynamicPath != null
-  ) {
-    const parsed = underlyingTarget.textFile.fileContents.parsed
-    if (isParseSuccess(parsed)) {
-      const element = findJSXElementChildAtPath(
-        getUtopiaJSXComponentsFromSuccess(parsed),
-        underlyingTarget.normalisedPath,
-      )
-      if (element != null) {
-        return withTarget(
-          parsed,
-          element,
+    if (
+      underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' &&
+      underlyingTarget.normalisedPath != null &&
+      underlyingTarget.normalisedDynamicPath != null
+    ) {
+      const parsed = underlyingTarget.textFile.fileContents.parsed
+      if (isParseSuccess(parsed)) {
+        const element = findJSXElementChildAtPath(
+          getUtopiaJSXComponentsFromSuccess(parsed),
           underlyingTarget.normalisedPath,
-          underlyingTarget.filePath,
-          underlyingTarget.normalisedDynamicPath,
         )
+        if (element != null) {
+          return withTarget(
+            parsed,
+            element,
+            underlyingTarget.normalisedPath,
+            underlyingTarget.filePath,
+            underlyingTarget.normalisedDynamicPath,
+          )
+        }
       }
     }
-  }
 
-  return defaultValue
+    return defaultValue
+  }
 }
 
 export function withUnderlyingTargetFromEditorState<T>(

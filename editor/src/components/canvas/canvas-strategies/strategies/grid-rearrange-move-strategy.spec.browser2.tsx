@@ -1,12 +1,17 @@
 import * as EP from '../../../../core/shared/element-path'
-import { getRectCenter, localRectangle } from '../../../../core/shared/math-utils'
-import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import {
+  getRectCenter,
+  localRectangle,
+  offsetPoint,
+  windowPoint,
+} from '../../../../core/shared/math-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import CanvasActions from '../../canvas-actions'
 import { GridCellTestId } from '../../controls/grid-controls'
 import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
-import { gridCellTargetId } from './grid-helpers'
+import { gridCellTargetId } from './grid-cell-bounds'
 
 describe('grid rearrange move strategy', () => {
   it('can rearrange elements on a grid', async () => {
@@ -112,6 +117,8 @@ export var storyboard = (
           gridTemplateRows: '1fr',
           gridColumn: 1,
           gridRow: 2,
+		  width: '100%',
+		  height: '100%',
         }}
       >
         <div
@@ -189,6 +196,264 @@ export var storyboard = (
       })
     })
   })
+
+  describe('absolute move within grid', () => {
+    const ProjectCode = `import { Scene, Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        data-uid='grid'
+        style={{
+          backgroundColor: '#fefefe',
+          position: 'absolute',
+          left: 123,
+          top: 133,
+          width: 461,
+          height: 448,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gridTemplateRows: '1fr 1fr',
+          border: '5px solid #000',
+          gridGap: 10,
+        }}
+      >
+        <div
+          data-uid='child'
+          data-testid='child'
+          style={{
+            backgroundColor: '#59a6ed',
+            position: 'absolute',
+            left: 12,
+            top: 16,
+            width: 144,
+            height: 134,
+            gridColumn: 1,
+            gridRow: 1,
+          }}
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+    it('can move absolute element inside a grid cell', async () => {
+      const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
+
+      const child = editor.renderedDOM.getByTestId('child')
+
+      {
+        const { top, left, gridColumn, gridRow } = child.style
+        expect({ top, left, gridColumn, gridRow }).toEqual({
+          gridColumn: '1',
+          gridRow: '1',
+          left: '12px',
+          top: '16px',
+        })
+      }
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/grid/child')])
+
+      const childBounds = child.getBoundingClientRect()
+      const childCenter = windowPoint({
+        x: Math.floor(childBounds.left + childBounds.width / 2),
+        y: Math.floor(childBounds.top + childBounds.height / 2),
+      })
+
+      await mouseDragFromPointToPoint(
+        editor.renderedDOM.getByTestId(GridCellTestId(EP.fromString('sb/scene/grid/child'))),
+        childCenter,
+        offsetPoint(childCenter, windowPoint({ x: 20, y: 20 })),
+      )
+
+      {
+        const { top, left, gridColumn, gridRow } = child.style
+        expect({ top, left, gridColumn, gridRow }).toEqual({
+          gridColumn: '1',
+          gridRow: '1',
+          left: '36px',
+          top: '40px',
+        })
+      }
+    })
+
+    it('can move absolute element inside a grid cell, zoomed in', async () => {
+      const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
+
+      await editor.dispatch([CanvasActions.zoom(2)], true)
+
+      const child = editor.renderedDOM.getByTestId('child')
+
+      {
+        const { top, left, gridColumn, gridRow } = child.style
+        expect({ top, left, gridColumn, gridRow }).toEqual({
+          gridColumn: '1',
+          gridRow: '1',
+          left: '12px',
+          top: '16px',
+        })
+      }
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/grid/child')])
+
+      const childBounds = child.getBoundingClientRect()
+      const childCenter = windowPoint({
+        x: Math.floor(childBounds.left + childBounds.width / 2),
+        y: Math.floor(childBounds.top + childBounds.height / 2),
+      })
+
+      await mouseDragFromPointToPoint(
+        editor.renderedDOM.getByTestId(GridCellTestId(EP.fromString('sb/scene/grid/child'))),
+        childCenter,
+        offsetPoint(childCenter, windowPoint({ x: 240, y: 240 })),
+      )
+
+      {
+        const { top, left, gridColumn, gridRow } = child.style
+        expect({ top, left, gridColumn, gridRow }).toEqual({
+          gridColumn: '1',
+          gridRow: '1',
+          left: '136.5px',
+          top: '140.5px',
+        })
+      }
+    })
+
+    it('can move absolute element among grid cells', async () => {
+      const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
+
+      const child = editor.renderedDOM.getByTestId('child')
+
+      {
+        const { top, left, gridColumn, gridRow } = child.style
+        expect({ top, left, gridColumn, gridRow }).toEqual({
+          gridColumn: '1',
+          gridRow: '1',
+          left: '12px',
+          top: '16px',
+        })
+      }
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/grid/child')])
+
+      const childBounds = child.getBoundingClientRect()
+      const childCenter = windowPoint({
+        x: Math.floor(childBounds.left + childBounds.width / 2),
+        y: Math.floor(childBounds.top + childBounds.height / 2),
+      })
+
+      await mouseDragFromPointToPoint(
+        editor.renderedDOM.getByTestId(GridCellTestId(EP.fromString('sb/scene/grid/child'))),
+        childCenter,
+        offsetPoint(childCenter, windowPoint({ x: 240, y: 240 })),
+      )
+
+      {
+        const { top, left, gridColumn, gridRow } = child.style
+        expect({ top, left, gridColumn, gridRow }).toEqual({
+          gridColumn: '2',
+          gridRow: '2',
+          left: '25.5px',
+          top: '36px',
+        })
+      }
+    })
+
+    it("can move element spanning multiple cell by a cell that isn't the root cell", async () => {
+      const editor = await renderTestEditorWithCode(
+        `import { Scene, Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+      <div
+        data-uid='grid'
+        style={{
+          backgroundColor: '#fefefe',
+          position: 'absolute',
+          left: 123,
+          top: 133,
+          width: 461,
+          height: 448,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr 1fr',
+          gridTemplateRows: '1fr 1fr 1fr 1fr',
+          border: '5px solid #000',
+          gridGap: 10,
+        }}
+      >
+        <div
+          data-uid='child'
+          data-testid='child'
+          style={{
+            position: 'absolute',
+            wordBreak: 'break-word',
+            width: 127,
+            height: 122,
+            backgroundColor: '#ff2800',
+            gridColumn: 2,
+            gridRow: 2,
+            top: 45,
+            left: 41.25,
+          }}
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/grid/child')])
+
+      const child = editor.renderedDOM.getByTestId('child')
+      const childBounds = child.getBoundingClientRect()
+      const startPoint = windowPoint({
+        x: Math.floor(childBounds.left + childBounds.width - 3),
+        y: Math.floor(childBounds.top + childBounds.height - 3),
+      })
+
+      await mouseDragFromPointToPoint(
+        editor.renderedDOM.getByTestId(GridCellTestId(EP.fromString('sb/scene/grid/child'))),
+        startPoint,
+        offsetPoint(startPoint, windowPoint({ x: -100, y: -100 })),
+      )
+
+      {
+        const { top, left, gridColumn, gridRow } = child.style
+        expect({ top, left, gridColumn, gridRow }).toEqual({
+          gridColumn: '1',
+          gridRow: '1',
+          left: '60.5px',
+          top: '61px',
+        })
+      }
+    })
+  })
 })
 
 async function runMoveTest(
@@ -212,13 +477,13 @@ async function runMoveTest(
   await mouseDragFromPointToPoint(
     sourceGridCell,
     {
-      x: sourceRect.x * (props.scale > 1 ? props.scale : 1) + 10,
-      y: sourceRect.y * (props.scale > 1 ? props.scale : 1) + 10,
+      x: sourceRect.x + 10,
+      y: sourceRect.y + 10,
     },
     getRectCenter(
       localRectangle({
-        x: targetRect.x * (props.scale > 1 ? props.scale : 1),
-        y: targetRect.y * (props.scale > 1 ? props.scale : 1),
+        x: targetRect.x,
+        y: targetRect.y,
         width: targetRect.width,
         height: targetRect.height,
       }),

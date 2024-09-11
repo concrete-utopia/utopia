@@ -438,7 +438,7 @@ describe('Smart Convert To Flex', () => {
       data-uid='zero-sized'
     >
       <img
-        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
         alt='Utopia logo'
         style={{
           width: 51,
@@ -451,7 +451,7 @@ describe('Smart Convert To Flex', () => {
         data-uid='first-child'
       />
       <img
-        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
         alt='Utopia logo'
         style={{
           width: 51,
@@ -463,7 +463,7 @@ describe('Smart Convert To Flex', () => {
         data-uid='second-child'
       />
       <img
-        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
         alt='Utopia logo'
         style={{
           width: 51,
@@ -520,20 +520,20 @@ describe('Smart Convert To Flex', () => {
       }}
     >
       <img
-        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
         alt='Utopia logo'
         style={{ width: 51, height: 65 }}
         data-testid='first-child'
         data-uid='first-child'
       />
       <img
-        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
         alt='Utopia logo'
         style={{ width: 51, height: 65 }}
         data-uid='second-child'
       />
       <img
-        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
         alt='Utopia logo'
         style={{ width: 51, height: 65 }}
         data-uid='third-child'

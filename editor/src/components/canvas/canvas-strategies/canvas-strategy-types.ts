@@ -10,8 +10,9 @@ import type { InsertionSubject } from '../../editor/editor-modes'
 import type { AllElementProps } from '../../editor/store/editor-state'
 import type { CanvasCommand } from '../commands/commands'
 import type { ActiveFrameAction } from '../commands/set-active-frames-command'
-import type { GridCellCoordinates } from '../controls/grid-controls'
 import type { StrategyApplicationStatus } from './interaction-state'
+import type { TargetGridCellData } from './strategies/grid-helpers'
+import type { GridCellCoordinates } from './strategies/grid-cell-bounds'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
@@ -25,7 +26,7 @@ export interface CustomStrategyState {
 }
 
 export type GridCustomStrategyState = {
-  targetCell: GridCellCoordinates | null
+  targetCellData: TargetGridCellData | null
   draggingFromCell: GridCellCoordinates | null
   originalRootCell: GridCellCoordinates | null
   currentRootCell: GridCellCoordinates | null
@@ -42,7 +43,7 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     elementsToRerender: [],
     action: null,
     grid: {
-      targetCell: null,
+      targetCellData: null,
       draggingFromCell: null,
       originalRootCell: null,
       currentRootCell: null,

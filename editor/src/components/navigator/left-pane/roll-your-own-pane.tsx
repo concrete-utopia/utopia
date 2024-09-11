@@ -11,18 +11,15 @@ const sections = ['Grid'] as const
 type Section = (typeof sections)[number]
 
 type GridFeatures = {
-  dragLockedToCenter: boolean
   dragVerbatim: boolean
   dragMagnetic: boolean
   dragRatio: boolean
-  animateShadowSnap: boolean
   dotgrid: boolean
   shadow: boolean
-  adaptiveOpacity: boolean
   activeGridColor: string
   dotgridColor: string
   inactiveGridColor: string
-  opacityBaseline: number
+  shadowOpacity: number
   activeGridBackground: string
 }
 
@@ -36,19 +33,16 @@ type RollYourOwnFeatures = {
 
 const defaultRollYourOwnFeatures: RollYourOwnFeatures = {
   Grid: {
-    dragLockedToCenter: false,
     dragVerbatim: false,
     dragMagnetic: false,
     dragRatio: true,
-    animateShadowSnap: false,
     dotgrid: true,
     shadow: true,
-    adaptiveOpacity: true,
     activeGridColor: '#0099ff77',
     activeGridBackground: colorTheme.primary10.value,
     dotgridColor: '#0099ffaa',
     inactiveGridColor: '#00000033',
-    opacityBaseline: 0.25,
+    shadowOpacity: 0.1,
   },
 }
 

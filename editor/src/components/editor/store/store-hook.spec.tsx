@@ -36,6 +36,7 @@ const initialEditorStore: EditorStorePatched = {
   workers: null as any,
   persistence: null as any,
   saveCountThisSession: 0,
+  elementMetadata: null as any,
   postActionInteractionSession: null,
   builtInDependencies: createBuiltInDependenciesList(null),
   storeName: 'editor-store',

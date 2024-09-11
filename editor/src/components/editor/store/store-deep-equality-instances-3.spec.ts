@@ -488,12 +488,6 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       width: 100,
       height: 200,
     }),
-    localFrame: localRectangle({
-      x: 10,
-      y: 20,
-      width: 100,
-      height: 200,
-    }),
     nonRoundedGlobalFrame: canvasRectangle({
       x: 10,
       y: 20,
@@ -623,7 +617,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       a: 'a',
       b: 'b',
     },
-    attributeMetadatada: {
+    attributeMetadata: {
       a: {
         fromStyleSheet: false,
       },
@@ -644,12 +638,6 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       width: 100,
       height: 200,
     }),
-    localFrame: localRectangle({
-      x: 10,
-      y: 20,
-      width: 100,
-      height: 200,
-    }),
     nonRoundedGlobalFrame: canvasRectangle({
       x: 10,
       y: 20,
@@ -779,7 +767,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       a: 'a',
       b: 'b',
     },
-    attributeMetadatada: {
+    attributeMetadata: {
       a: {
         fromStyleSheet: false,
       },
@@ -802,12 +790,11 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     expect(result.value.elementPath).toBe(oldValue.elementPath)
     expect(result.value.element).toBe(oldValue.element)
     expect(result.value.globalFrame).toBe(oldValue.globalFrame)
-    expect(result.value.localFrame).toBe(oldValue.localFrame)
     expect(result.value.componentInstance).toBe(oldValue.componentInstance)
     expect(result.value.isEmotionOrStyledComponent).toBe(oldValue.isEmotionOrStyledComponent)
     expect(result.value.specialSizeMeasurements).toBe(oldValue.specialSizeMeasurements)
     expect(result.value.computedStyle).toBe(oldValue.computedStyle)
-    expect(result.value.attributeMetadatada).toBe(oldValue.attributeMetadatada)
+    expect(result.value.attributeMetadata).toBe(oldValue.attributeMetadata)
     expect(result.value.label).toBe(newDifferentValue.label)
     expect(result.value.importInfo).toBe(oldValue.importInfo)
     expect(result.value).toEqual(newDifferentValue)
@@ -821,12 +808,6 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       elementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
       element: left('div'),
       globalFrame: canvasRectangle({
-        x: 10,
-        y: 20,
-        width: 100,
-        height: 200,
-      }),
-      localFrame: localRectangle({
         x: 10,
         y: 20,
         width: 100,
@@ -961,7 +942,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         a: 'a',
         b: 'b',
       },
-      attributeMetadatada: {
+      attributeMetadata: {
         a: {
           fromStyleSheet: false,
         },
@@ -984,12 +965,6 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         width: 100,
         height: 200,
       }),
-      localFrame: localRectangle({
-        x: 10,
-        y: 20,
-        width: 100,
-        height: 200,
-      }),
       nonRoundedGlobalFrame: canvasRectangle({
         x: 10,
         y: 20,
@@ -1119,7 +1094,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         a: 'a',
         b: 'b',
       },
-      attributeMetadatada: {
+      attributeMetadata: {
         a: {
           fromStyleSheet: false,
         },
@@ -1142,12 +1117,6 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         width: 100,
         height: 200,
       }),
-      localFrame: localRectangle({
-        x: 10,
-        y: 20,
-        width: 100,
-        height: 200,
-      }),
       nonRoundedGlobalFrame: canvasRectangle({
         x: 10,
         y: 20,
@@ -1277,7 +1246,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         a: 'a',
         b: 'b',
       },
-      attributeMetadatada: {
+      attributeMetadata: {
         a: {
           fromStyleSheet: false,
         },
@@ -1306,14 +1275,13 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
     expect(result.value.elem.elementPath).toBe(oldValue.elem.elementPath)
     expect(result.value.elem.element).toBe(oldValue.elem.element)
     expect(result.value.elem.globalFrame).toBe(oldValue.elem.globalFrame)
-    expect(result.value.elem.localFrame).toBe(oldValue.elem.localFrame)
     expect(result.value.elem.componentInstance).toBe(oldValue.elem.componentInstance)
     expect(result.value.elem.isEmotionOrStyledComponent).toBe(
       oldValue.elem.isEmotionOrStyledComponent,
     )
     expect(result.value.elem.specialSizeMeasurements).toBe(oldValue.elem.specialSizeMeasurements)
     expect(result.value.elem.computedStyle).toBe(oldValue.elem.computedStyle)
-    expect(result.value.elem.attributeMetadatada).toBe(oldValue.elem.attributeMetadatada)
+    expect(result.value.elem.attributeMetadata).toBe(oldValue.elem.attributeMetadata)
     expect(result.value.elem.label).toBe(newDifferentValue.elem.label)
     expect(result.value.elem.importInfo).toBe(oldValue.elem.importInfo)
     expect(result.value).toEqual(newDifferentValue)

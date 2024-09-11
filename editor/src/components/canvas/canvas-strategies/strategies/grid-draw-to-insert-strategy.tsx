@@ -13,7 +13,9 @@ import {
   canvasVector,
   offsetPoint,
   roundRectangleToNearestWhole,
+  scaleVector,
   size,
+  windowPoint,
 } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { EditorModes, type InsertionSubject } from '../../../editor/editor-modes'
@@ -22,7 +24,7 @@ import type { InsertElementInsertionSubject } from '../../commands/insert-elemen
 import { insertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import { GridControls } from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import {
   getWrapperWithGeneratedUid,
@@ -151,32 +153,36 @@ const gridDrawToInsertStrategyInner =
         category: 'tools',
         type: 'pointer',
       },
-      controlsToRender: [
-        {
-          control: GridControls,
-          props: { targets: [targetParent] },
-          key: `draw-into-grid-strategy-controls`,
-          show: 'always-visible',
-          priority: 'bottom',
-        },
-      ],
+      controlsToRender: [controlsForGridPlaceholders(targetParent)],
       fitness: 5,
       apply: (strategyLifecycle) => {
-        if (strategyLifecycle === 'mid-interaction' && interactionData.type === 'HOVER') {
-          return strategyApplicationResult([
-            wildcardPatch('mid-interaction', {
-              selectedViews: { $set: [] },
-            }),
-            showGridControls('mid-interaction', targetParent),
-            updateHighlightedViews('mid-interaction', [targetParent]),
-          ])
-        }
-
         const newTargetCell = getGridCellUnderCursor(
           interactionData,
           canvasState,
           customStrategyState,
         )
+
+        if (strategyLifecycle === 'mid-interaction' && interactionData.type === 'HOVER') {
+          return strategyApplicationResult(
+            [
+              wildcardPatch('mid-interaction', {
+                selectedViews: { $set: [] },
+              }),
+              showGridControls('mid-interaction', targetParent),
+              updateHighlightedViews('mid-interaction', [targetParent]),
+            ],
+            {
+              ...customStrategyState,
+              grid: {
+                ...customStrategyState.grid,
+                // this is added here during the hover interaction so that
+                // `GridControls` can render the hover highlight based on the
+                // coordinates in `targetCellData`
+                targetCellData: newTargetCell ?? customStrategyState.grid.targetCellData,
+              },
+            },
+          )
+        }
 
         if (newTargetCell == null) {
           return emptyStrategyApplicationResult
@@ -257,17 +263,16 @@ function getFrameForInsertion(
   offset: CanvasPoint,
 ): CanvasRectangle {
   if (interactionData.type === 'DRAG') {
-    const frame =
-      interactionData.drag ?? canvasVector({ x: defaultSize.width, y: defaultSize.height })
+    const origin = interactionData.drag ?? { x: defaultSize.width / 2, y: defaultSize.height / 2 }
 
-    return roundRectangleToNearestWhole(
-      canvasRectangle({
-        x: offset.x - frame.x,
-        y: offset.y - frame.y,
-        width: frame.x,
-        height: frame.y,
-      }),
-    )
+    const { x, y } = { x: offset.x - origin.x, y: offset.y - origin.y }
+
+    const { width, height } =
+      interactionData.drag == null
+        ? defaultSize
+        : { width: interactionData.drag.x, height: interactionData.drag.y }
+
+    return roundRectangleToNearestWhole(canvasRectangle({ x, y, width, height }))
   }
 
   if (interactionData.type === 'HOVER') {
@@ -318,8 +323,7 @@ function getGridCellUnderCursor(
   )
 
   return getTargetCell(
-    customStrategyState.grid.targetCell,
-    canvasState.scale,
+    customStrategyState.grid.targetCellData?.gridCellCoordinates ?? null,
     false,
     mouseWindowPoint,
   )
@@ -341,8 +345,13 @@ function getOffsetFromGridCell(
     canvasState.canvasOffset,
   )
 
-  return canvasPoint({
-    x: mouseWindowPoint.x - cellWindowRectangle.x,
-    y: mouseWindowPoint.y - cellWindowRectangle.y,
-  })
+  const { x, y } = scaleVector(
+    windowPoint({
+      x: mouseWindowPoint.x - cellWindowRectangle.x,
+      y: mouseWindowPoint.y - cellWindowRectangle.y,
+    }),
+    1 / canvasState.scale,
+  )
+
+  return canvasPoint({ x, y })
 }

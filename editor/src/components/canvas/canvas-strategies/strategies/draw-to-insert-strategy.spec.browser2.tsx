@@ -18,6 +18,7 @@ import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-te
 import type { WindowPoint } from '../../../../core/shared/math-utils'
 import { windowPoint } from '../../../../core/shared/math-utils'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
+import CanvasActions from '../../canvas-actions'
 
 function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: { x: number; y: number }) {
   // FIXME when running in headless chrome, the result of getBoundingClientRect will be slightly
@@ -236,9 +237,52 @@ export var storyboard = (
         gridColumn: '2',
         gridRow: '1',
         height: '100px',
-        left: '33px',
+        left: '83px',
         position: 'absolute',
-        top: '50px',
+        top: '100px',
+        width: '100px',
+      })
+    })
+
+    it('can click to insert into a grid when zoomed in', async () => {
+      const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/grid')])
+      await editor.dispatch([CanvasActions.zoom(2)], true)
+      await editor.getDispatchFollowUpActionsFinished()
+
+      await pressKey('d')
+      ensureInInsertMode(editor)
+
+      const grid = editor.renderedDOM.getByTestId('grid')
+      const gridBB = grid.getBoundingClientRect()
+
+      const target: WindowPoint = windowPoint({
+        x: gridBB.x + 300,
+        y: gridBB.y + 150,
+      })
+
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await mouseMoveToPoint(canvasControlsLayer, target)
+      await mouseClickAtPoint(canvasControlsLayer, target)
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const child = grid.firstChild
+      if (child == null) {
+        throw new Error('Draw to insert should be able to insert an element')
+      }
+
+      const { gridRow, gridColumn, width, height, position, top, left } = (child as HTMLElement)
+        .style
+
+      expect({ gridRow, gridColumn, width, height, position, top, left }).toEqual({
+        gridColumn: '1',
+        gridRow: '1',
+        height: '100px',
+        left: '100px',
+        position: 'absolute',
+        top: '25px',
         width: '100px',
       })
     })
@@ -284,6 +328,53 @@ export var storyboard = (
         position: 'absolute',
         top: '150px',
         width: '40px',
+      })
+    })
+
+    it('can draw to insert into a grid when zoomed in', async () => {
+      const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/grid')])
+
+      await editor.dispatch([CanvasActions.zoom(2)], true)
+      await editor.getDispatchFollowUpActionsFinished()
+
+      await pressKey('d')
+      ensureInInsertMode(editor)
+
+      const grid = editor.renderedDOM.getByTestId('grid')
+      const gridBB = grid.getBoundingClientRect()
+
+      const target: WindowPoint = windowPoint({
+        x: gridBB.x + 250,
+        y: gridBB.y + 150,
+      })
+
+      const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await mouseMoveToPoint(canvasControlsLayer, target)
+      await mouseDragFromPointToPoint(canvasControlsLayer, target, {
+        x: target.x + 40,
+        y: target.y + 60,
+      })
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const child = grid.firstChild
+      if (child == null) {
+        throw new Error('Draw to insert should be able to insert an element')
+      }
+
+      const { gridRow, gridColumn, width, height, position, top, left } = (child as HTMLElement)
+        .style
+
+      expect({ gridRow, gridColumn, width, height, position, top, left }).toEqual({
+        gridColumn: '1',
+        gridRow: '1',
+        height: '30px',
+        left: '125px',
+        position: 'absolute',
+        top: '75px',
+        width: '20px',
       })
     })
   })

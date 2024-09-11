@@ -11,7 +11,7 @@ import { DataRouteObject, ShouldRevalidateFunction } from 'react-router'
 import invariant from './invariant'
 import { isRouteErrorResponse, useRouteError } from '@remix-run/react'
 import { RemixRoute, RemixRouteError } from './remix-route'
-import { ErrorBoundaryHandling } from 'src/components/editor/store/editor-state'
+import { ErrorBoundaryHandling } from '../../components/editor/store/editor-state'
 
 export interface RouteManifest<Route> {
   [routeId: string]: Route

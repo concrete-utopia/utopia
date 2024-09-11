@@ -15,7 +15,7 @@ import {
 import { replaceAll } from './string-utils'
 import type { NonEmptyArray } from './array-utils'
 import { last, dropLastN, drop, dropLast } from './array-utils'
-import { forceNotNull } from './optional-utils'
+import { forceNotNull, optionalMap } from './optional-utils'
 import invariant from '../../third-party/remix/invariant'
 
 // KILLME, except in 28 places
@@ -644,7 +644,12 @@ export function findAmongAncestorsOfPath<T>(
 export function isDescendantOf(target: ElementPath, maybeAncestor: ElementPath): boolean {
   const targetString = toString(target)
   const maybeAncestorString = toString(maybeAncestor)
-  return targetString !== maybeAncestorString && targetString.startsWith(maybeAncestorString)
+  return (
+    targetString !== maybeAncestorString &&
+    targetString.startsWith(maybeAncestorString) &&
+    (targetString[maybeAncestorString.length] === SceneSeparator ||
+      targetString[maybeAncestorString.length] === ElementSeparator)
+  )
 }
 
 export function getAncestorsForLastPart(path: ElementPath): ElementPath[] {
@@ -1202,4 +1207,34 @@ export function isIndexedElement(path: ElementPath): boolean {
 
 export function getFirstPath(pathArray: Array<ElementPath>): ElementPath {
   return forceNotNull('Element path array is empty.', pathArray.at(0))
+}
+
+export function humanReadableDebugPath(path: ElementPath): string {
+  const stringifiedPath = path.parts
+    .map((part, index) =>
+      elementPathPartToHumanReadableDebugString(part, index === path.parts.length - 1),
+    )
+    .join(SceneSeparator)
+  return stringifiedPath
+}
+
+function elementPathPartToHumanReadableDebugString(
+  path: ElementPathPart,
+  lastPart: boolean,
+): string {
+  let result: string = ''
+  const elementsLength = path.length
+  fastForEach(path, (elem, index) => {
+    const lastElem = index === elementsLength - 1
+    if (elem.length < 30 || (lastPart && lastElem)) {
+      result += elem
+    } else {
+      result += elem.slice(0, 4)
+      result += optionalMap((s) => `~~~${s}`, extractIndexFromIndexedUid(elem)) ?? ''
+    }
+    if (index < elementsLength - 1) {
+      result += ElementSeparator
+    }
+  })
+  return result
 }

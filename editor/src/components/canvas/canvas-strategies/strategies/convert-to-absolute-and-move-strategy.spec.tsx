@@ -35,7 +35,6 @@ const simpleMetadata = {
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
     ]),
-    localFrame: { x: 0, y: 0, width: 250, height: 300 },
     globalFrame: { x: 0, y: 0, width: 250, height: 300 },
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -49,7 +48,6 @@ const simpleMetadataPercentValue = {
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
     ]),
-    localFrame: { x: 0, y: 0, width: 200, height: 80 },
     globalFrame: { x: 0, y: 0, width: 200, height: 80 },
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -64,7 +62,6 @@ const complexMetadata = {
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
     ]),
-    localFrame: { x: 0, y: 0, width: 250, height: 100 },
     globalFrame: { x: 0, y: 0, width: 250, height: 100 },
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -76,7 +73,6 @@ const complexMetadata = {
       ['scene-aaa', 'app-entity'],
       ['aaa', 'ccc'],
     ]),
-    localFrame: { x: 15, y: 115, width: 125, height: 50 },
     globalFrame: { x: 15, y: 115, width: 125, height: 50 },
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -88,7 +84,6 @@ const complexMetadata = {
       ['scene-aaa', 'app-entity'],
       ['aaa', 'ddd'],
     ]),
-    localFrame: { x: 0, y: 280, width: 100, height: 50 },
     globalFrame: { x: 0, y: 280, width: 100, height: 50 },
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -103,7 +98,6 @@ const mixedPinsMetadata = {
       ['scene-aaa', 'app-entity'],
       ['aaa', 'bbb'],
     ]),
-    localFrame: { x: 0, y: 0, width: 400, height: 19 },
     globalFrame: { x: 0, y: 0, width: 400, height: 19 },
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -115,7 +109,6 @@ const mixedPinsMetadata = {
       ['scene-aaa', 'app-entity'],
       ['aaa', 'ccc'],
     ]),
-    localFrame: { x: 0, y: 19, width: 65, height: 50 },
     globalFrame: { x: 0, y: 19, width: 65, height: 50 },
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -127,7 +120,6 @@ const mixedPinsMetadata = {
       ['scene-aaa', 'app-entity'],
       ['aaa', 'ddd'],
     ]),
-    localFrame: { x: 0, y: 69, width: 65, height: 50 },
     globalFrame: { x: 0, y: 69, width: 65, height: 50 },
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -139,7 +131,6 @@ const mixedPinsMetadata = {
       ['scene-aaa', 'app-entity'],
       ['aaa', 'eee'],
     ]),
-    localFrame: { x: 0, y: 119, width: 65, height: 50 },
     globalFrame: { x: 0, y: 119, width: 65, height: 50 },
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -151,7 +142,6 @@ const mixedPinsMetadata = {
       ['scene-aaa', 'app-entity'],
       ['aaa', 'fff'],
     ]),
-    localFrame: { x: 0, y: 169, width: 65, height: 50 },
     globalFrame: { x: 0, y: 169, width: 65, height: 50 },
     specialSizeMeasurements: {
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),

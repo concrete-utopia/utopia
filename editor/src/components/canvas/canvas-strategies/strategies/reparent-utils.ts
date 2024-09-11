@@ -319,10 +319,10 @@ export function getReparentOutcomeMultiselect(
 
 export function cursorForMissingReparentedItems(
   reparentedToPaths: Array<ElementPath>,
-  spyMetadata: ElementInstanceMetadataMap,
+  metadata: ElementInstanceMetadataMap,
 ): CSSCursor | null {
   for (const reparentedToPath of reparentedToPaths) {
-    if (!(EP.toString(reparentedToPath) in spyMetadata)) {
+    if (!(EP.toString(reparentedToPath) in metadata)) {
       return CSSCursor.NotPermitted
     }
   }

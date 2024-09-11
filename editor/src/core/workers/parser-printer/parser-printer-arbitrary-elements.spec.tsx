@@ -112,7 +112,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             if (isJSExpressionOtherJavaScript(firstChild)) {
               const elementWithin =
                 firstChild.elementsWithin[Object.keys(firstChild.elementsWithin)[0]]
-              expect(getJSXAttribute(elementWithin.props, 'data-uid')).not.toBeNull()
+              if (isJSXElement(elementWithin)) {
+                expect(getJSXAttribute(elementWithin.props, 'data-uid')).not.toBeNull()
+              }
             } else {
               throw new Error('First child is not an arbitrary block of code.')
             }
@@ -202,14 +204,16 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           const firstChild = view.children[0]
           if (isJSExpressionOtherJavaScript(firstChild)) {
             const elementWithin = firstChild.elementsWithin['bbb']
-            const newAttributes = setJSXValueAtPath(
-              elementWithin.props,
-              PP.create('style'),
-              jsExpressionValue({ left: 20, top: 300 }, emptyComments),
-            )
-            forEachRight(newAttributes, (updated) => {
-              elementWithin.props = updated
-            })
+            if (isJSXElement(elementWithin)) {
+              const newAttributes = setJSXValueAtPath(
+                elementWithin.props,
+                PP.create('style'),
+                jsExpressionValue({ left: 20, top: 300 }, emptyComments),
+              )
+              forEachRight(newAttributes, (updated) => {
+                elementWithin.props = updated
+              })
+            }
           }
         }
       }
@@ -288,14 +292,16 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             .find((prop) => prop.key === 'thing')
           if (jsxProp != null && isJSExpressionOtherJavaScript(jsxProp.value)) {
             const elementWithin = jsxProp.value.elementsWithin['bbb']
-            const newAttributes = setJSXValueAtPath(
-              elementWithin.props,
-              PP.create('style'),
-              jsExpressionValue({ left: 20, top: 300 }, emptyComments),
-            )
-            forEachRight(newAttributes, (updated) => {
-              elementWithin.props = updated
-            })
+            if (isJSXElement(elementWithin)) {
+              const newAttributes = setJSXValueAtPath(
+                elementWithin.props,
+                PP.create('style'),
+                jsExpressionValue({ left: 20, top: 300 }, emptyComments),
+              )
+              forEachRight(newAttributes, (updated) => {
+                elementWithin.props = updated
+              })
+            }
           }
         }
       }

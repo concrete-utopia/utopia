@@ -5,6 +5,7 @@ import type { AnimationControls } from 'framer-motion'
 import { motion, useAnimationControls } from 'framer-motion'
 import type { CSSProperties } from 'react'
 import React from 'react'
+import type { Sides } from 'utopia-api/core'
 import type { ElementPath } from 'utopia-shared/src/types'
 import type { GridDimension } from '../../../components/inspector/common/css-utils'
 import {
@@ -23,15 +24,14 @@ import {
 import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
-  distance,
-  getRectCenter,
+  canvasRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
-  offsetPoint,
-  pointDifference,
+  nullIfInfinity,
   pointsEqual,
   scaleRect,
   windowPoint,
+  zeroRectangle,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import {
@@ -42,30 +42,29 @@ import {
 } from '../../../core/shared/optics/optic-creators'
 import { toFirst } from '../../../core/shared/optics/optic-utilities'
 import type { Optic } from '../../../core/shared/optics/optics'
+import { optionalMap } from '../../../core/shared/optional-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { Modifier } from '../../../utils/modifiers'
 import { when } from '../../../utils/react-conditionals'
+import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { useRollYourOwnFeatures } from '../../navigator/left-pane/roll-your-own-pane'
 import CanvasActions from '../canvas-actions'
+import type { ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import type {
   GridResizeEdge,
   GridResizeEdgeProperties,
 } from '../canvas-strategies/interaction-state'
 import {
-  GridResizeEdges,
   createInteractionViaMouse,
   gridAxisHandle,
   gridCellHandle,
   gridResizeEdgeProperties,
+  GridResizeEdges,
   gridResizeHandle,
 } from '../canvas-strategies/interaction-state'
-import { windowToCanvasCoordinates } from '../dom-lookup'
-import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { useColorTheme, UtopiaStyles } from '../../../uuiui'
-import { gridCellTargetId } from '../canvas-strategies/strategies/grid-helpers'
 import { resizeBoundingBoxFromSide } from '../canvas-strategies/strategies/resize-helpers'
 import type { EdgePosition } from '../canvas-types'
 import {
@@ -75,20 +74,21 @@ import {
   EdgePositionRight,
   EdgePositionTop,
 } from '../canvas-types'
+import { windowToCanvasCoordinates } from '../dom-lookup'
+import type { Axis } from '../gap-utils'
 import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
+import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { CanvasLabel } from './select-mode/controls-common'
-import { optionalMap } from '../../../core/shared/optional-utils'
-import type { Sides } from 'utopia-api/core'
+import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
+import type { GridCellCoordinates } from '../canvas-strategies/strategies/grid-cell-bounds'
+import {
+  getGridPlaceholderDomElementFromCoordinates,
+  gridCellTargetId,
+} from '../canvas-strategies/strategies/grid-cell-bounds'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
-
-export type GridCellCoordinates = { row: number; column: number }
-
-export function gridCellCoordinates(row: number, column: number): GridCellCoordinates {
-  return { row: row, column: column }
-}
 
 function getCellsCount(template: GridAutoOrTemplateBase | null): number {
   if (template == null) {
@@ -105,7 +105,7 @@ function getCellsCount(template: GridAutoOrTemplateBase | null): number {
   }
 }
 
-function getNullableAutoOrTemplateBaseString(
+export function getNullableAutoOrTemplateBaseString(
   template: GridAutoOrTemplateBase | null,
 ): string | undefined {
   if (template == null) {
@@ -135,14 +135,13 @@ function getLabelForAxis(
   return gridCSSNumberToLabel(defaultEither(fromDOM, fromPropsAtIndex))
 }
 
-const SHADOW_SNAP_ANIMATION = 'shadow-snap'
 const GRID_RESIZE_HANDLE_CONTAINER_SIZE = 30 // px
 const GRID_RESIZE_HANDLE_SIZE = 15 // px
 
 export interface GridResizingControlProps {
   dimension: GridDimension
   dimensionIndex: number
-  axis: 'row' | 'column'
+  axis: Axis
   containingFrame: CanvasRectangle
   fromPropsAxisValues: GridAutoOrTemplateBase | null
   padding: number | null
@@ -195,6 +194,16 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
     [canvasOffset, dispatch, props.axis, props.dimensionIndex, scale],
   )
 
+  const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+
+  const onMouseMove = React.useCallback(
+    (e: React.MouseEvent) => {
+      maybeClearHighlightsOnHoverEnd()
+      e.stopPropagation()
+    },
+    [maybeClearHighlightsOnHoverEnd],
+  )
+
   const labelId = `grid-${props.axis}-handle-${props.dimensionIndex}`
   const containerId = `${labelId}-container`
 
@@ -212,13 +221,9 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         display: 'flex',
         alignItems: props.axis === 'column' ? 'flex-start' : 'center',
         justifyContent: props.axis === 'column' ? 'center' : 'flex-start',
-        border: `1px solid ${resizing ? colorTheme.brandNeonPink.value : 'transparent'}`,
         height: props.axis === 'column' && resizing ? shadowSize : '100%',
         width: props.axis === 'row' && resizing ? shadowSize : '100%',
         position: 'relative',
-        ...(resizing
-          ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink60.value, scale)
-          : {}),
       }}
     >
       <div
@@ -230,16 +235,14 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           borderRadius: '100%',
           border: `1px solid ${colorTheme.border0.value}`,
           boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
-              ${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px ${
-            1 / scale
-          }px ${2 / scale}px ${1 / scale}px`,
+              1px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px 1px 2px 2px`,
           background: colorTheme.white.value,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start'),
           fontSize: 8,
-          position: 'relative',
+          pointerEvents: 'initial',
         }}
         css={{
           opacity: resizing ? 1 : 0.5,
@@ -248,6 +251,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           },
         }}
         onMouseDown={mouseDownHandler}
+        onMouseMove={onMouseMove}
       >
         {props.axis === 'row' ? '↕' : '↔'}
         {when(
@@ -267,6 +271,10 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            border: `1px solid ${resizing ? colorTheme.brandNeonPink.value : 'transparent'}`,
+            ...(resizing
+              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink60.value, scale)
+              : {}),
           }}
         >
           <CanvasLabel
@@ -290,7 +298,7 @@ export interface GridResizingProps {
   axisValues: GridAutoOrTemplateBase | null
   fromPropsAxisValues: GridAutoOrTemplateBase | null
   containingFrame: CanvasRectangle
-  axis: 'row' | 'column'
+  axis: Axis
   gap: number | null
   padding: Sides | null
 }
@@ -362,7 +370,22 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
 })
 GridResizing.displayName = 'GridResizing'
 
-function useGridData(elementPaths: ElementPath[]) {
+export type GridData = {
+  elementPath: ElementPath
+  frame: CanvasRectangle
+  gridTemplateColumns: GridAutoOrTemplateBase | null
+  gridTemplateRows: GridAutoOrTemplateBase | null
+  gridTemplateColumnsFromProps: GridAutoOrTemplateBase | null
+  gridTemplateRowsFromProps: GridAutoOrTemplateBase | null
+  gap: number | null
+  rowGap: number | null
+  columnGap: number | null
+  padding: Sides
+  rows: number
+  columns: number
+  cells: number
+}
+export function useGridData(elementPaths: ElementPath[]): GridData[] {
   const grids = useEditorState(
     Substores.metadata,
     (store) => {
@@ -443,7 +466,7 @@ export const GridRowColumnResizingControls =
               fromPropsAxisValues={grid.gridTemplateColumnsFromProps}
               containingFrame={grid.frame}
               axis={'column'}
-              gap={grid.gap}
+              gap={grid.columnGap ?? grid.gap}
               padding={grid.padding}
             />
           )
@@ -456,7 +479,7 @@ export const GridRowColumnResizingControls =
               fromPropsAxisValues={grid.gridTemplateRowsFromProps}
               containingFrame={grid.frame}
               axis={'row'}
-              gap={grid.gap}
+              gap={grid.rowGap ?? grid.gap}
               padding={grid.padding}
             />
           )
@@ -479,6 +502,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
 
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const activelyDraggingOrResizingCell = useEditorState(
     Substores.canvas,
@@ -486,6 +510,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
       store.editor.canvas.interactionSession != null &&
       store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE' &&
       store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
+      store.editor.canvas.interactionSession?.interactionData.modifiers.cmd !== true &&
       store.editor.canvas.interactionSession?.interactionData.drag != null
         ? store.editor.canvas.interactionSession.activeControl.id
         : null,
@@ -498,6 +523,13 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     Substores.restOfStore,
     (store) => store.strategyState.customStrategyState.grid.currentRootCell,
     'GridControls targetRootCell',
+  )
+
+  const currentHoveredCell = useEditorState(
+    Substores.restOfStore,
+    (store) =>
+      store.strategyState.customStrategyState.grid.targetCellData?.gridCellCoordinates ?? null,
+    'GridControls currentHoveredCell',
   )
 
   const dragging = useEditorState(
@@ -589,9 +621,35 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     shadow?.globalFrame ?? null,
   )
 
+  const anyTargetAbsolute = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.some((elementPath) =>
+        MetadataUtils.isPositionAbsolute(
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath),
+        ),
+      ),
+    'GridControls anyTargetAbsolute',
+  )
+
   const gridPath = optionalMap(EP.parentPath, shadow?.elementPath)
 
-  useSnapAnimation({
+  const gridFrame = React.useMemo(() => {
+    if (gridPath == null) {
+      return zeroRectangle
+    }
+    const maybeGridFrame = MetadataUtils.findElementByElementPath(
+      metadataRef.current,
+      gridPath,
+    )?.globalFrame
+    if (maybeGridFrame == null || !isFiniteRectangle(maybeGridFrame)) {
+      return zeroRectangle
+    }
+    return maybeGridFrame
+  }, [gridPath, metadataRef])
+
+  useCellAnimation({
+    disabled: anyTargetAbsolute,
     targetRootCell: targetRootCell,
     controls: controls,
     shadowFrame: initialShadowFrame,
@@ -625,37 +683,6 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
 
   // NOTE: this stuff is meant to be temporary, until we settle on the set of interaction pieces we like.
   // After that, we should get rid of this.
-  const shadowOpacity = React.useMemo(() => {
-    if (shadow == null || initialShadowFrame == null || interactionData == null) {
-      return 0
-    } else if (!features.Grid.adaptiveOpacity) {
-      return features.Grid.opacityBaseline
-    } else if (features.Grid.dragLockedToCenter) {
-      return Math.min(
-        (0.2 * distance(getRectCenter(shadow.globalFrame), mouseCanvasPosition)) /
-          Math.min(shadow.globalFrame.height, shadow.globalFrame.width) +
-          0.05,
-        features.Grid.opacityBaseline,
-      )
-    } else {
-      return Math.min(
-        (0.2 *
-          distance(
-            offsetPoint(
-              interactionData.dragStart,
-              pointDifference(initialShadowFrame, shadow.globalFrame),
-            ),
-            mouseCanvasPosition,
-          )) /
-          Math.min(shadow.globalFrame.height, shadow.globalFrame.width) +
-          0.05,
-        features.Grid.opacityBaseline,
-      )
-    }
-  }, [features, shadow, initialShadowFrame, interactionData, mouseCanvasPosition])
-
-  // NOTE: this stuff is meant to be temporary, until we settle on the set of interaction pieces we like.
-  // After that, we should get rid of this.
   const shadowPosition = React.useMemo(() => {
     const drag = interactionData?.drag
     const dragStart = interactionData?.dragStart
@@ -673,13 +700,6 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     const getCoord = (axis: 'x' | 'y', dimension: 'width' | 'height') => {
       if (features.Grid.dragVerbatim) {
         return initialShadowFrame[axis] + drag[axis]
-      } else if (features.Grid.dragLockedToCenter) {
-        return (
-          shadow.globalFrame[axis] +
-          drag[axis] -
-          (shadow.globalFrame[axis] - dragStart[axis]) -
-          shadow.globalFrame[dimension] / 2
-        )
       } else if (features.Grid.dragMagnetic) {
         return shadow.globalFrame[axis] + (mouseCanvasPosition[axis] - hoveringStart.point[axis])
       } else if (features.Grid.dragRatio) {
@@ -695,8 +715,34 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
       }
     }
 
-    return { x: getCoord('x', 'width'), y: getCoord('y', 'height') }
-  }, [features, initialShadowFrame, interactionData, shadow, hoveringStart, mouseCanvasPosition])
+    // make sure the shadow is displayed only inside the grid container bounds
+    function wrapCoord(c: number, min: number, max: number, shadowSize: number) {
+      return Math.min(Math.max(c, min), max - shadowSize)
+    }
+
+    return {
+      x: wrapCoord(
+        getCoord('x', 'width') ?? 0,
+        gridFrame.x,
+        gridFrame.x + gridFrame.width,
+        shadow.globalFrame.width,
+      ),
+      y: wrapCoord(
+        getCoord('y', 'height') ?? 0,
+        gridFrame.y,
+        gridFrame.y + gridFrame.height,
+        shadow.globalFrame.height,
+      ),
+    }
+  }, [
+    features,
+    initialShadowFrame,
+    interactionData,
+    shadow,
+    hoveringStart,
+    mouseCanvasPosition,
+    gridFrame,
+  ])
 
   if (grids.length === 0) {
     return null
@@ -749,7 +795,11 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
           }
 
           return (
-            <div key={`grid-${EP.toString(grid.elementPath)}`} style={style}>
+            <div
+              key={gridKeyFromPath(grid.elementPath)}
+              id={gridKeyFromPath(grid.elementPath)}
+              style={style}
+            >
               {placeholders.map((cell) => {
                 const countedRow = Math.floor(cell / grid.columns) + 1
                 const countedColumn = Math.floor(cell % grid.columns) + 1
@@ -758,9 +808,11 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                   activelyDraggingOrResizingCell != null
                     ? features.Grid.dotgridColor
                     : 'transparent'
+
                 const borderColor =
-                  activelyDraggingOrResizingCell != null
-                    ? features.Grid.activeGridColor
+                  countedColumn === currentHoveredCell?.column &&
+                  countedRow === currentHoveredCell?.row
+                    ? colorTheme.brandNeonPink.value
                     : features.Grid.inactiveGridColor
 
                 return (
@@ -769,16 +821,16 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                     id={id}
                     data-testid={id}
                     style={{
-                      borderTop: `1px solid ${borderColor}`,
-                      borderLeft: `1px solid ${borderColor}`,
+                      borderTop: gridPlaceholderBorder(borderColor),
+                      borderLeft: gridPlaceholderBorder(borderColor),
                       borderBottom:
                         countedRow >= grid.rows || (grid.rowGap != null && grid.rowGap > 0)
-                          ? `1px solid ${borderColor}`
+                          ? gridPlaceholderBorder(borderColor)
                           : undefined,
                       borderRight:
                         countedColumn >= grid.columns ||
                         (grid.columnGap != null && grid.columnGap > 0)
-                          ? `1px solid ${borderColor}`
+                          ? gridPlaceholderBorder(borderColor)
                           : undefined,
                       position: 'relative',
                       pointerEvents: 'initial',
@@ -887,21 +939,13 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
         })}
         {/* shadow */}
         {features.Grid.shadow &&
+        !anyTargetAbsolute &&
         shadow != null &&
         initialShadowFrame != null &&
         interactionData?.dragStart != null &&
         interactionData?.drag != null &&
         hoveringStart != null ? (
           <motion.div
-            initial={'normal'}
-            variants={{
-              normal: { scale: 1 },
-              [SHADOW_SNAP_ANIMATION]: {
-                scale: [1, 1.4, 1],
-                transition: { duration: 0.15, type: 'tween' },
-              },
-            }}
-            animate={controls}
             style={{
               pointerEvents: 'none',
               position: 'absolute',
@@ -912,26 +956,358 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                   ? `${shadow.borderRadius.top}px ${shadow.borderRadius.right}px ${shadow.borderRadius.bottom}px ${shadow.borderRadius.left}px`
                   : 0,
               backgroundColor: 'black',
-              opacity: shadowOpacity,
+              opacity: features.Grid.shadowOpacity,
               border: '1px solid white',
               top: shadowPosition?.y,
               left: shadowPosition?.x,
             }}
           />
         ) : null}
+        <AbsoluteDistanceIndicators targetRootCell={targetRootCell} />
       </CanvasOffsetWrapper>
     </React.Fragment>
   )
 })
 
-function useSnapAnimation(params: {
+const MIN_INDICATORS_DISTANCE = 32 // px
+
+const AbsoluteDistanceIndicators = React.memo(
+  (props: { targetRootCell: GridCellCoordinates | null }) => {
+    const colorTheme = useColorTheme()
+
+    const cellFrame = useEditorState(
+      Substores.metadata,
+      (store) => {
+        if (store.editor.selectedViews.length !== 1) {
+          return null
+        }
+
+        const meta = MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          store.editor.selectedViews[0],
+        )
+        if (!MetadataUtils.isPositionAbsolute(meta)) {
+          return null
+        }
+
+        return nullIfInfinity(meta?.globalFrame)
+      },
+      'AbsoluteDistanceIndicators cellFrame',
+    )
+    const canvasScale = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.scale,
+      'AbsoluteDistanceIndicators canvasScale',
+    )
+
+    const canvasOffset = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.roundedCanvasOffset,
+      'AbsoluteDistanceIndicators canvasOffset',
+    )
+
+    const targetCellBoundingBox = React.useMemo(() => {
+      if (props.targetRootCell == null) {
+        return null
+      }
+      const element = getGridPlaceholderDomElementFromCoordinates(props.targetRootCell)
+      const boundingBox = element?.getBoundingClientRect()
+      if (boundingBox == null) {
+        return null
+      }
+
+      const canvasOrigin = windowToCanvasCoordinates(
+        canvasScale,
+        canvasOffset,
+        windowPoint({ x: boundingBox.left, y: boundingBox.top }),
+      ).canvasPositionRounded
+      const canvasRect = canvasRectangle({
+        x: canvasOrigin.x,
+        y: canvasOrigin.y,
+        width: boundingBox.width * canvasScale,
+        height: boundingBox.height * canvasScale,
+      })
+
+      return canvasRect
+    }, [props.targetRootCell, canvasScale, canvasOffset])
+
+    const distanceTop =
+      targetCellBoundingBox == null || cellFrame == null ? 0 : cellFrame.y - targetCellBoundingBox.y
+
+    const distanceLeft =
+      targetCellBoundingBox == null || cellFrame == null ? 0 : cellFrame.x - targetCellBoundingBox.x
+
+    const positioning = React.useMemo(() => {
+      if (cellFrame == null || targetCellBoundingBox == null) {
+        return null
+      }
+
+      function position(
+        wantedCoord: 'x' | 'y',
+        cell: CanvasRectangle,
+        root: CanvasRectangle,
+        dominantDistance: number,
+        otherDistance: number,
+      ): { left: number; top: number } {
+        const otherCoord = wantedCoord === 'x' ? 'y' : 'x'
+        const dimension = wantedCoord === 'x' ? 'width' : 'height'
+        const dominant =
+          cell[wantedCoord] < root[wantedCoord] ||
+          dominantDistance < MIN_INDICATORS_DISTANCE ||
+          otherDistance < 0
+            ? root[wantedCoord] + root[dimension] / 2
+            : Math.max(root[wantedCoord], cell[wantedCoord])
+        const other = otherDistance < 0 ? cell[otherCoord] : root[otherCoord]
+        if (wantedCoord === 'x') {
+          return {
+            left: dominant,
+            top: other,
+          }
+        } else {
+          return {
+            left: other,
+            top: dominant,
+          }
+        }
+      }
+
+      function compensationNegative(
+        wantedCoord: 'x' | 'y',
+        cell: CanvasRectangle,
+        root: CanvasRectangle,
+        dist: number,
+      ): { width: number; height: number; left: number; top: number } | null {
+        const otherCoord = wantedCoord === 'x' ? 'y' : 'x'
+        const dimension = wantedCoord === 'x' ? 'width' : 'height'
+
+        const shouldCompensate =
+          dist < 0 && cell[wantedCoord] > root[wantedCoord] + root[dimension] / 2
+        if (!shouldCompensate) {
+          return null
+        }
+
+        const size = Math.abs(root[wantedCoord] + root[dimension] / 2 - cell[wantedCoord])
+        const dominant = root[wantedCoord] + root[dimension] / 2
+        const other = cell[otherCoord]
+
+        return wantedCoord === 'x'
+          ? {
+              width: size,
+              height: 1,
+              top: other,
+              left: dominant,
+            }
+          : {
+              width: 1,
+              height: size,
+              top: dominant,
+              left: other,
+            }
+      }
+
+      function compensationPositive(
+        wantedCoord: 'x' | 'y',
+        cell: CanvasRectangle,
+        root: CanvasRectangle,
+        dist: number,
+      ): { width: number; height: number; left: number; top: number } | null {
+        const otherCoord = wantedCoord === 'x' ? 'y' : 'x'
+        const dimension = wantedCoord === 'x' ? 'width' : 'height'
+
+        const shouldCompensate = dist > 0 && cell[wantedCoord] > root[wantedCoord] + root[dimension]
+        if (!shouldCompensate) {
+          return null
+        }
+
+        const size = Math.abs(root[wantedCoord] + root[dimension] / 2 - cell[wantedCoord])
+        const other = root[otherCoord]
+        const dominant = root[wantedCoord] + root[dimension] / 2
+
+        return wantedCoord === 'x'
+          ? {
+              width: size,
+              height: 1,
+              top: other,
+              left: dominant,
+            }
+          : {
+              height: size,
+              width: 1,
+              left: other,
+              top: dominant,
+            }
+      }
+
+      const topIndicator = {
+        ...position('x', cellFrame, targetCellBoundingBox, distanceLeft, distanceTop),
+        compensateNegative: compensationNegative(
+          'x',
+          cellFrame,
+          targetCellBoundingBox,
+          distanceTop,
+        ),
+        compensatePositive: compensationPositive(
+          'x',
+          cellFrame,
+          targetCellBoundingBox,
+          distanceTop,
+        ),
+      }
+
+      const leftIndicator = {
+        ...position('y', cellFrame, targetCellBoundingBox, distanceLeft, distanceLeft),
+        compensateNegative: compensationNegative(
+          'y',
+          cellFrame,
+          targetCellBoundingBox,
+          distanceLeft,
+        ),
+        compensatePositive: compensationPositive(
+          'y',
+          cellFrame,
+          targetCellBoundingBox,
+          distanceLeft,
+        ),
+      }
+
+      return { topIndicator, leftIndicator }
+    }, [cellFrame, targetCellBoundingBox, distanceLeft, distanceTop])
+
+    if (targetCellBoundingBox == null || cellFrame == null || positioning == null) {
+      return null
+    }
+
+    const backgroundColor = colorTheme.brandNeonPink.value
+    const dashedBorder = `1px dashed ${backgroundColor}`
+
+    return (
+      <React.Fragment>
+        {/* top distance */}
+        <React.Fragment>
+          <div
+            style={{
+              position: 'absolute',
+              borderLeft: dashedBorder,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+
+              left: positioning.topIndicator.left,
+              top: positioning.topIndicator.top,
+              width: 1,
+              height: Math.abs(distanceTop),
+            }}
+          >
+            <span
+              style={{
+                backgroundColor: backgroundColor,
+                padding: '0px 2px',
+                borderRadius: 2,
+                fontSize: 9,
+                color: '#fff',
+              }}
+            >
+              {distanceTop}
+            </span>
+          </div>
+          {/* compensate */}
+          {positioning.topIndicator.compensateNegative != null ? (
+            <div
+              style={{
+                position: 'absolute',
+                borderTop: dashedBorder,
+
+                left: positioning.topIndicator.compensateNegative.left,
+                top: positioning.topIndicator.compensateNegative.top,
+                width: positioning.topIndicator.compensateNegative.width,
+                height: positioning.topIndicator.compensateNegative.height,
+              }}
+            />
+          ) : null}
+          {positioning.topIndicator.compensatePositive != null ? (
+            <div
+              style={{
+                position: 'absolute',
+                borderTop: dashedBorder,
+
+                left: positioning.topIndicator.compensatePositive.left,
+                top: positioning.topIndicator.compensatePositive.top,
+                width: positioning.topIndicator.compensatePositive.width,
+                height: positioning.topIndicator.compensatePositive.height,
+              }}
+            />
+          ) : null}
+        </React.Fragment>
+
+        {/* left distance */}
+        <React.Fragment>
+          <div
+            style={{
+              position: 'absolute',
+              borderTop: dashedBorder,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+
+              left: positioning.leftIndicator.left,
+              top: positioning.leftIndicator.top,
+              width: Math.abs(distanceLeft),
+              height: 1,
+            }}
+          >
+            <span
+              style={{
+                backgroundColor: backgroundColor,
+                padding: '0px 2px',
+                borderRadius: 2,
+                fontSize: 9,
+                color: '#fff',
+              }}
+            >
+              {distanceLeft}
+            </span>
+          </div>
+          {/* compensate */}
+          {positioning.leftIndicator.compensateNegative != null ? (
+            <div
+              style={{
+                position: 'absolute',
+                borderLeft: dashedBorder,
+
+                left: positioning.leftIndicator.compensateNegative.left,
+                top: positioning.leftIndicator.compensateNegative.top,
+                width: positioning.leftIndicator.compensateNegative.width,
+                height: positioning.leftIndicator.compensateNegative.height,
+              }}
+            />
+          ) : null}
+          {positioning.leftIndicator.compensatePositive != null ? (
+            <div
+              style={{
+                position: 'absolute',
+                borderLeft: dashedBorder,
+
+                left: positioning.leftIndicator.compensatePositive.left,
+                top: positioning.leftIndicator.compensatePositive.top,
+                width: positioning.leftIndicator.compensatePositive.width,
+                height: positioning.leftIndicator.compensatePositive.height,
+              }}
+            />
+          ) : null}
+        </React.Fragment>
+      </React.Fragment>
+    )
+  },
+)
+
+function useCellAnimation(params: {
+  disabled: boolean
   gridPath: ElementPath | null
   shadowFrame: CanvasRectangle | null
   targetRootCell: GridCellCoordinates | null
   controls: AnimationControls
 }) {
-  const { gridPath, targetRootCell, controls, shadowFrame } = params
-  const features = useRollYourOwnFeatures()
+  const { gridPath, targetRootCell, controls, shadowFrame, disabled } = params
 
   const [lastTargetRootCellId, setLastTargetRootCellId] = React.useState(targetRootCell)
   const [lastSnapPoint, setLastSnapPoint] = React.useState<CanvasPoint | null>(shadowFrame)
@@ -979,6 +1355,10 @@ function useSnapAnimation(params: {
   }, [canvasScale, canvasOffset, gridPath, targetRootCell])
 
   React.useEffect(() => {
+    if (disabled) {
+      return
+    }
+
     if (targetRootCell != null && snapPoint != null && moveFromPoint != null) {
       const snapPointsDiffer = lastSnapPoint == null || !pointsEqual(snapPoint, lastSnapPoint)
       const hasMovedToANewCell = lastTargetRootCellId != null
@@ -990,12 +1370,12 @@ function useSnapAnimation(params: {
             x: [moveFromPoint.x - snapPoint.x, 0],
             y: [moveFromPoint.y - snapPoint.y, 0],
           },
-          { duration: CELL_ANIMATION_DURATION },
+          {
+            duration: CELL_ANIMATION_DURATION,
+            type: 'tween',
+            ease: 'easeInOut',
+          },
         )
-
-        if (features.Grid.animateShadowSnap) {
-          void controls.start(SHADOW_SNAP_ANIMATION)
-        }
       }
     }
     setLastSnapPoint(snapPoint)
@@ -1003,12 +1383,12 @@ function useSnapAnimation(params: {
   }, [
     targetRootCell,
     controls,
-    features.Grid.animateShadowSnap,
     lastSnapPoint,
     snapPoint,
     animate,
     moveFromPoint,
     lastTargetRootCellId,
+    disabled,
   ])
 }
 
@@ -1298,5 +1678,25 @@ function gridEdgeToWidthHeight(props: GridResizeEdgeProperties, scale: number): 
     left: props.isStart ? 0 : undefined,
     right: props.isEnd ? 0 : undefined,
     bottom: props.isEnd ? 0 : undefined,
+  }
+}
+
+function gridKeyFromPath(path: ElementPath): string {
+  return `grid-${EP.toString(path)}`
+}
+
+export function getGridPlaceholderDomElement(elementPath: ElementPath): HTMLElement | null {
+  return document.getElementById(gridKeyFromPath(elementPath))
+}
+
+const gridPlaceholderBorder = (color: string) => `2px solid ${color}`
+
+export function controlsForGridPlaceholders(gridPath: ElementPath): ControlWithProps<any> {
+  return {
+    control: GridControls,
+    props: { targets: [gridPath] },
+    key: GridControlsKey(gridPath),
+    show: 'always-visible',
+    priority: 'bottom',
   }
 }

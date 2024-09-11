@@ -175,19 +175,24 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
       }
     }
 
-    const autoLayoutSiblings = getAutoLayoutSiblings(
+    const autoLayoutSiblingsExceptGridCells = getAutoLayoutSiblings(
       canvasState.startingMetadata,
       canvasState.startingElementPathTree,
       originalTargets,
+    ).filter(
+      // don't show the siblings control for grid cells
+      (sibling) => !MetadataUtils.isGridCell(canvasState.startingMetadata, sibling.elementPath),
     )
-    const hasAutoLayoutSiblings = autoLayoutSiblings.length > 1
+
+    const showSiblingsControl = autoLayoutSiblingsExceptGridCells.length > 1
+
     const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(
       canvasState.startingMetadata,
       canvasState.startingElementPathTree,
       originalTargets,
     )
 
-    const autoLayoutSiblingsControl = hasAutoLayoutSiblings
+    const autoLayoutSiblingsControl = showSiblingsControl
       ? [
           controlWithProps({
             control: AutoLayoutSiblingsOutline,
@@ -200,7 +205,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
 
     const fitness = getFitness(
       interactionSession,
-      hasAutoLayoutSiblings,
+      showSiblingsControl,
       autoLayoutSiblingsBounds,
       originalTargets.length > 1,
       isPositionRelative,

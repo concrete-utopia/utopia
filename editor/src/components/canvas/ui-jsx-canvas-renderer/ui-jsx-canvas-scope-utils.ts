@@ -24,7 +24,11 @@ export function runBlockUpdatingScope(
   if (result.type === 'ARBITRARY_BLOCK_RAN_TO_END') {
     const definedWithinWithValues: MapLike<any> = {}
     const definedWithinVariableData: VariableData = {}
-    for (const within of block.definedWithin) {
+    const alteredWithin = [
+      ...block.definedWithin,
+      ...block.definedElsewhere.filter((variable) => variable in result.scope),
+    ]
+    for (const within of alteredWithin) {
       currentScope[within] = result.scope[within]
       definedWithinWithValues[within] = result.scope[within]
       if (elementPath != null) {

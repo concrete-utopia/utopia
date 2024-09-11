@@ -764,7 +764,9 @@ function handleStrategiesInner(
   storedState: EditorStoreFull,
   result: EditorStoreUnpatched,
 ): HandleStrategiesResult {
-  const isSaveDomReport = dispatchedActions.some((a) => a.action === 'SAVE_DOM_REPORT')
+  const isSaveDomReport = dispatchedActions.some(
+    (a) => a.action === 'SAVE_DOM_REPORT' || a.action === 'UPDATE_METADATA_IN_EDITOR_STATE',
+  )
 
   const makeChangesPermanent = dispatchedActions.some(shouldApplyClearInteractionSessionResult)
   const cancelInteraction =

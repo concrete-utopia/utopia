@@ -266,6 +266,7 @@ import {
   unionDeepEquality,
   combine11EqualityCalls,
   combine16EqualityCalls,
+  combine15EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -450,6 +451,7 @@ import type {
   GridAxisHandle,
   GridResizeHandle,
   GridResizeEdge,
+  GridGapHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
   boundingArea,
@@ -461,6 +463,7 @@ import {
   gridCellHandle,
   gridAxisHandle,
   gridResizeHandle,
+  gridGapHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import type { Modifiers } from '../../../utils/modifiers'
 import type {
@@ -632,12 +635,13 @@ import type { OnlineState } from '../online-status'
 import { onlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
 import { condensedNavigatorRow, regularNavigatorRow } from '../../navigator/navigator-row'
-import type { SimpleFunctionWrap, FunctionWrap } from 'utopia-shared/src/types'
+import type { SimpleFunctionWrap, FunctionWrap, JSXElementLike } from 'utopia-shared/src/types'
 import { simpleFunctionWrap, isSimpleFunctionWrap } from 'utopia-shared/src/types'
 import type {
   ComponentDescriptorBounds,
   ComponentDescriptorPropertiesBounds,
 } from '../../../core/property-controls/component-descriptor-parser'
+import type { Axis } from '../../../components/canvas/gap-utils'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -1434,8 +1438,33 @@ export function JSXElementWithoutUIDKeepDeepEquality(): KeepDeepEqualityCall<JSX
   )
 }
 
+export const JSXFragmentKeepDeepEquality: KeepDeepEqualityCall<JSXFragment> = combine3EqualityCalls(
+  (fragment) => fragment.children,
+  JSXElementChildArrayKeepDeepEquality,
+  (fragment) => fragment.uid,
+  StringKeepDeepEquality,
+  (fragment) => fragment.longForm,
+  BooleanKeepDeepEquality,
+  (children, uid, longForm) => {
+    return {
+      type: 'JSX_FRAGMENT',
+      children: children,
+      uid: uid,
+      longForm: longForm,
+    }
+  },
+)
+
+export function JSXElementLikeKeepDeepEquality(): KeepDeepEqualityCall<JSXElementLike> {
+  return unionDeepEquality(
+    JSXElementKeepDeepEquality,
+    JSXFragmentKeepDeepEquality,
+    isJSXElement,
+    isJSXFragment,
+  )
+}
 export function ElementsWithinKeepDeepEqualityCall(): KeepDeepEqualityCall<ElementsWithin> {
-  return objectDeepEquality(JSXElementKeepDeepEquality)
+  return objectDeepEquality(JSXElementLikeKeepDeepEquality())
 }
 
 export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<ArbitraryJSBlock> {
@@ -1704,23 +1733,6 @@ export const JSXTextBlockKeepDeepEquality: KeepDeepEqualityCall<JSXTextBlock> =
       }
     },
   )
-
-export const JSXFragmentKeepDeepEquality: KeepDeepEqualityCall<JSXFragment> = combine3EqualityCalls(
-  (fragment) => fragment.children,
-  JSXElementChildArrayKeepDeepEquality,
-  (fragment) => fragment.uid,
-  StringKeepDeepEquality,
-  (fragment) => fragment.longForm,
-  BooleanKeepDeepEquality,
-  (children, uid, longForm) => {
-    return {
-      type: 'JSX_FRAGMENT',
-      children: children,
-      uid: uid,
-      longForm: longForm,
-    }
-  },
-)
 
 export const JSXConditionalExpressionKeepDeepEquality: KeepDeepEqualityCall<JSXConditionalExpression> =
   combine6EqualityCalls(
@@ -2102,7 +2114,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     )(oldSize.globalFrameWithTextContent, newSize.globalFrameWithTextContent)
     const immediateParentProvidesLayoutResult =
       oldSize.immediateParentProvidesLayout === newSize.immediateParentProvidesLayout
-    const closestOffsetParentPathResult = ElementPathKeepDeepEquality(
+    const closestOffsetParentPathResult = nullableDeepEquality(ElementPathKeepDeepEquality)(
       oldSize.closestOffsetParentPath,
       newSize.closestOffsetParentPath,
     ).areEqual
@@ -2358,15 +2370,13 @@ export const EarlyReturnKeepDeepEquality: KeepDeepEqualityCall<
 }
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine16EqualityCalls(
+  combine15EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
     EitherKeepDeepEquality(createCallWithTripleEquals(), JSXElementChildKeepDeepEquality()),
     (metadata) => metadata.globalFrame,
     nullableDeepEquality(MaybeInfinityCanvasRectangleKeepDeepEquality),
-    (metadata) => metadata.localFrame,
-    nullableDeepEquality(MaybeInfinityLocalRectangleKeepDeepEquality),
     (metadata) => metadata.nonRoundedGlobalFrame,
     nullableDeepEquality(MaybeInfinityCanvasRectangleKeepDeepEquality),
     (metadata) => metadata.componentInstance,
@@ -2377,7 +2387,7 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     SpecialSizeMeasurementsKeepDeepEquality(),
     (metadata) => metadata.computedStyle,
     nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
-    (metadata) => metadata.attributeMetadatada,
+    (metadata) => metadata.attributeMetadata,
     nullableDeepEquality(StyleAttributeMetadataKeepDeepEquality),
     (metadata) => metadata.label,
     nullableDeepEquality(createCallWithTripleEquals()),
@@ -2908,6 +2918,9 @@ export const GridResizeHandleKeepDeepEquality: KeepDeepEqualityCall<GridResizeHa
     gridResizeHandle,
   )
 
+export const GridGapHandleKeepDeepEquality: KeepDeepEqualityCall<GridGapHandle> =
+  combine1EqualityCall((handle) => handle.axis, createCallWithTripleEquals<Axis>(), gridGapHandle)
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -2961,6 +2974,11 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
     case 'GRID_RESIZE_HANDLE':
       if (newValue.type === oldValue.type) {
         return GridResizeHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'GRID_GAP_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return GridGapHandleKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
