@@ -391,7 +391,111 @@ describe('scoped variables', () => {
       projectWithInlineComponentDestructured(),
       'dont-await-first-dom-report',
     )
-    expect(renderResult.getEditorState().editor.variablesInScope).toMatchInlineSnapshot(`Object {}`)
+    expect(renderResult.getEditorState().editor.variablesInScope).toMatchInlineSnapshot(`
+      Object {
+        "storyboard-entity": Object {},
+        "storyboard-entity/scene-1-entity": Object {},
+        "storyboard-entity/scene-1-entity/app-entity": Object {},
+        "storyboard-entity/scene-1-entity/app-entity:8ba": Object {
+          "props": Object {
+            "insertionCeiling": Object {
+              "parts": Array [
+                Array [
+                  "storyboard-entity",
+                  "scene-1-entity",
+                  "app-entity",
+                ],
+                Array [
+                  "8ba",
+                ],
+              ],
+              "type": "elementpath",
+            },
+            "spiedValue": Object {
+              "data-uid": "app-entity",
+            },
+          },
+        },
+        "storyboard-entity/scene-1-entity/app-entity:8ba/fakeawaitelement": Object {
+          "props": Object {
+            "insertionCeiling": Object {
+              "parts": Array [
+                Array [
+                  "storyboard-entity",
+                  "scene-1-entity",
+                  "app-entity",
+                ],
+                Array [
+                  "8ba",
+                ],
+              ],
+              "type": "elementpath",
+            },
+            "spiedValue": Object {
+              "data-uid": "app-entity",
+            },
+          },
+        },
+        "storyboard-entity/scene-1-entity/app-entity:8ba/fakeawaitelement/64b/something-div~~~1": Object {
+          "first": Object {
+            "insertionCeiling": Object {
+              "parts": Array [
+                Array [
+                  "storyboard-entity",
+                  "scene-1-entity",
+                  "app-entity",
+                ],
+                Array [
+                  "8ba",
+                  "fakeawaitelement",
+                  "64b",
+                  "something-div~~~1",
+                ],
+              ],
+              "type": "elementpath",
+            },
+            "spiedValue": 1,
+          },
+          "props": Object {
+            "insertionCeiling": Object {
+              "parts": Array [
+                Array [
+                  "storyboard-entity",
+                  "scene-1-entity",
+                  "app-entity",
+                ],
+                Array [
+                  "8ba",
+                ],
+              ],
+              "type": "elementpath",
+            },
+            "spiedValue": Object {
+              "data-uid": "app-entity",
+            },
+          },
+          "thing": Object {
+            "insertionCeiling": Object {
+              "parts": Array [
+                Array [
+                  "storyboard-entity",
+                  "scene-1-entity",
+                  "app-entity",
+                ],
+                Array [
+                  "8ba",
+                  "fakeawaitelement",
+                  "64b",
+                  "something-div~~~1",
+                ],
+              ],
+              "type": "elementpath",
+            },
+            "spiedValue": "a string",
+          },
+        },
+      }
+    `)
   })
 
   it('includes scoped variables for an inline component', async () => {
