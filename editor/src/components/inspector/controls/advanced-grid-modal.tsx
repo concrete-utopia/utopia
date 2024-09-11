@@ -45,7 +45,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
     [justifyContentControl.controlStatus, justifyContentControl.value],
   )
 
-  const justificationOptions = [
+  const contentOptions = [
     unsetSelectOption,
     separatorRadixSelectOption(),
     ...Object.values(FlexJustifyContent).map(selectOption),
@@ -66,18 +66,15 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
     [alignContentControl.controlStatus, alignContentControl.value],
   )
 
-  const alignmentOptions = [
-    unsetSelectOption,
-    separatorRadixSelectOption(),
-    ...Object.values(FlexJustifyContent).map(selectOption),
-  ]
-
   const onSubmitAlignContent = React.useCallback(
     (value: string) => {
       alignContentControl.onSubmitValue(value as FlexJustifyContent)
     },
     [alignContentControl],
   )
+
+  const justifyItemsOptions = React.useMemo(() => itemsOptions('justify'), [])
+  const alignItemsOptions = React.useMemo(() => itemsOptions('align'), [])
 
   const picker = (
     <InspectorModal
@@ -113,7 +110,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
             key='grid.items.justifyItems'
             testId='grid.items.justifyItems'
             value={justifyItemsControl.value}
-            options={itemsOptions('justify')}
+            options={justifyItemsOptions}
             onSubmitValue={justifyItemsControl.onSubmitValue}
             controlStatus={justifyItemsControl.controlStatus}
             controlStyles={justifyItemsControl.controlStyles}
@@ -126,7 +123,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
             key='grid.items.alignItems'
             testId='grid.items.alignItems'
             value={alignItemsControl.value}
-            options={itemsOptions('align')}
+            options={alignItemsOptions}
             onSubmitValue={alignItemsControl.onSubmitValue}
             controlStatus={alignItemsControl.controlStatus}
             controlStyles={alignItemsControl.controlStyles}
@@ -140,7 +137,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
           <RadixSelect
             id='grid.justifyContent'
             value={currentJustifyContentValue ?? unsetSelectOption}
-            options={justificationOptions}
+            options={contentOptions}
             onValueChange={onSubmitJustifyContent}
           />
         </UIGridRow>
@@ -149,7 +146,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
           <RadixSelect
             id='grid.alignContent'
             value={currentAlignContentValue ?? unsetSelectOption}
-            options={alignmentOptions}
+            options={contentOptions}
             onValueChange={onSubmitAlignContent}
           />
         </UIGridRow>
