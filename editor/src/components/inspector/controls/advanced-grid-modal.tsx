@@ -30,7 +30,7 @@ export interface AdvancedGridModalProps {
 }
 
 export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
-  const pickerOffset = props.pickerOffset != null ? props.pickerOffset : { x: -280, y: -20 }
+  const pickerOffset = props.pickerOffset ?? { x: -280, y: -20 }
   const [dropdownOpen, setDropdownOpen] = React.useState({
     justifyContent: false,
     alignContent: false,
