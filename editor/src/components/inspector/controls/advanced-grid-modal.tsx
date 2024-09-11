@@ -30,7 +30,21 @@ export interface AdvancedGridModalProps {
 
 export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
   const pickerOffset = props.pickerOffset != null ? props.pickerOffset : { x: -280, y: -20 }
-  const closePopup = props.closePopup ?? (() => {})
+  const [dropdownOpen, setDropdownOpen] = React.useState({
+    justifyContent: false,
+    alignContent: false,
+  })
+  const toggleJustifyContentDropdown = React.useCallback((state: boolean) => {
+    setDropdownOpen((prev) => ({ ...prev, justifyContent: state }))
+  }, [])
+  const toggleAlignContentDropdown = React.useCallback((state: boolean) => {
+    setDropdownOpen((prev) => ({ ...prev, alignContent: state }))
+  }, [])
+  const closePopup = React.useCallback(() => {
+    if (!dropdownOpen.justifyContent && !dropdownOpen.alignContent) {
+      props.closePopup?.()
+    }
+  }, [dropdownOpen, props])
 
   const alignItemsControl = useInspectorLayoutInfo('alignItems')
   const justifyItemsControl = useInspectorLayoutInfo('justifyItems')
@@ -81,7 +95,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
       offsetX={pickerOffset.x}
       offsetY={pickerOffset.y}
       closePopup={closePopup}
-      closePopupOnUnmount={true}
+      closePopupOnUnmount={false}
       outsideClickIgnoreClass={`ignore-react-onclickoutside-${props.id}`}
       style={{
         ...UtopiaStyles.popup,
@@ -132,22 +146,34 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
         <UIGridRow padded variant='<-------------1fr------------->'>
           <span style={{ fontWeight: 600 }}>Entire Grid</span>
         </UIGridRow>
-        <UIGridRow padded variant='|--67px--|<--------1fr-------->'>
+        <UIGridRow
+          padded
+          variant='|--67px--|<--------1fr-------->'
+          className={`ignore-react-onclickoutside-${props.id}`}
+        >
           <span>Justify</span>
           <RadixSelect
             id='grid.justifyContent'
             value={currentJustifyContentValue ?? unsetSelectOption}
             options={contentOptions}
             onValueChange={onSubmitJustifyContent}
+            contentClassName={`ignore-react-onclickoutside-${props.id}`}
+            onOpenChange={toggleJustifyContentDropdown}
           />
         </UIGridRow>
-        <UIGridRow padded variant='|--67px--|<--------1fr-------->'>
+        <UIGridRow
+          padded
+          variant='|--67px--|<--------1fr-------->'
+          className={`ignore-react-onclickoutside-${props.id}`}
+        >
           <span>Align</span>
           <RadixSelect
             id='grid.alignContent'
             value={currentAlignContentValue ?? unsetSelectOption}
             options={contentOptions}
             onValueChange={onSubmitAlignContent}
+            contentClassName={`ignore-react-onclickoutside-${props.id}`}
+            onOpenChange={toggleAlignContentDropdown}
           />
         </UIGridRow>
       </FlexColumn>

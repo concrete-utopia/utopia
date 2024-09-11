@@ -242,13 +242,19 @@ export const RadixSelect = React.memo(
     options: RadixSelectOption[]
     style?: CSSProperties
     onValueChange?: (value: string) => void
+    contentClassName?: string
+    onOpenChange?: (open: boolean) => void
   }) => {
     const stopPropagation = React.useCallback((e: React.KeyboardEvent) => {
       e.stopPropagation()
     }, [])
 
     return (
-      <Select.Root value={props.value?.value} onValueChange={props.onValueChange}>
+      <Select.Root
+        value={props.value?.value}
+        onValueChange={props.onValueChange}
+        onOpenChange={props.onOpenChange}
+      >
         <Select.Trigger
           style={{
             background: 'transparent',
@@ -278,6 +284,7 @@ export const RadixSelect = React.memo(
         </Select.Trigger>
         <Select.Portal>
           <Select.Content
+            className={props.contentClassName}
             onKeyDown={stopPropagation}
             style={{
               background: colorTheme.black.value,
@@ -286,6 +293,7 @@ export const RadixSelect = React.memo(
               borderRadius: 6,
               color: 'white',
               boxShadow: UtopiaStyles.shadowStyles.high.boxShadow,
+              zIndex: 3,
             }}
           >
             <Select.ScrollUpButton>
