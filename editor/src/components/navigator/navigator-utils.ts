@@ -37,7 +37,11 @@ import {
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
 import type { ElementPathTree, ElementPathTrees } from '../../core/shared/element-path-tree'
-import { getCanvasRoots, getSubTree } from '../../core/shared/element-path-tree'
+import {
+  getCanvasRoots,
+  getElementPathTreeChildren,
+  getSubTree,
+} from '../../core/shared/element-path-tree'
 import { assertNever } from '../../core/shared/utils'
 import type { ConditionalCase } from '../../core/model/conditionals'
 import { getConditionalClausePath } from '../../core/model/conditionals'
@@ -320,7 +324,9 @@ function walkRegularNavigatorEntry(
 
       const childPath = EP.appendToPath(elementPath, getUtopiaID(propValue))
 
-      const subTreeChild = subTree?.children.find((child) => EP.pathsEqual(child.path, childPath))
+      const subTreeChild = getElementPathTreeChildren(subTree).find((child) =>
+        EP.pathsEqual(child.path, childPath),
+      )
       if (subTreeChild != null) {
         const childTreeEntry = createNavigatorSubtree(
           metadata,
@@ -359,7 +365,7 @@ function walkRegularNavigatorEntry(
     })
   }
 
-  const childrenPaths = subTree.children.filter(
+  const childrenPaths = getElementPathTreeChildren(subTree).filter(
     (child) => !processedAccumulator.has(EP.toString(child.path)),
   )
   const children: Array<NavigatorTree> = mapDropNulls((child) => {
@@ -457,7 +463,7 @@ function walkConditionalClause(
   const branch = conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
 
   // Walk the clause of the conditional.
-  const clausePathTrees = Object.values(conditionalSubTree.children).filter((childPath) => {
+  const clausePathTrees = getElementPathTreeChildren(conditionalSubTree).filter((childPath) => {
     if (isDynamic(childPath.path) && hasElementsWithin(branch)) {
       for (const element of Object.values(branch.elementsWithin)) {
         const firstChildPath = EP.appendToPath(EP.parentPath(clausePath), element.uid)
@@ -513,7 +519,7 @@ function walkMapExpression(
   const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
 
   const mapCountOverride = isUtopiaPropOrCommentFlagMapCount(commentFlag) ? commentFlag.value : null
-  const mappedChildren = Object.values(subTree.children).map((child) =>
+  const mappedChildren = getElementPathTreeChildren(subTree).map((child) =>
     createNavigatorSubtree(
       metadata,
       elementPathTrees,
@@ -531,7 +537,7 @@ function walkMapExpression(
     }
 
     let invalidEntries: Array<NavigatorTree> = []
-    for (let i = Object.values(subTree.children).length; i < mapCountOverride; i++) {
+    for (let i = getElementPathTreeChildren(subTree).length; i < mapCountOverride; i++) {
       const entry = invalidOverrideNavigatorEntry(
         EP.appendToPath(subTree.path, `invalid-override-${i + 1}`),
         'data source not found',
