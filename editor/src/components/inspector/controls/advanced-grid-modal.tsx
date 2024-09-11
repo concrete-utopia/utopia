@@ -5,6 +5,7 @@ import { UIGridRow } from '../widgets/ui-grid-row'
 import type { OptionChainOption } from './option-chain-control'
 import { OptionChainControl } from './option-chain-control'
 import { PrettyLabel } from '../sections/layout-section/flex-container-subsection/flex-container-controls'
+import type { InspectorInfo } from '../common/property-path-hooks'
 import { useInspectorLayoutInfo } from '../common/property-path-hooks'
 import {
   RadixSelect,
@@ -52,11 +53,13 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
   const justifyContentControl = useInspectorLayoutInfo('justifyContent')
 
   const currentJustifyContentValue = React.useMemo(
-    () =>
-      justifyContentControl.controlStatus === 'detected'
-        ? unsetSelectOption
-        : optionalMap(selectOption, justifyContentControl.value) ?? undefined,
-    [justifyContentControl.controlStatus, justifyContentControl.value],
+    () => getControlValue(justifyContentControl),
+    [justifyContentControl],
+  )
+
+  const currentAlignContentValue = React.useMemo(
+    () => getControlValue(alignContentControl),
+    [alignContentControl],
   )
 
   const contentOptions = [
@@ -70,14 +73,6 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
       justifyContentControl.onSubmitValue(value as FlexJustifyContent)
     },
     [justifyContentControl],
-  )
-
-  const currentAlignContentValue = React.useMemo(
-    () =>
-      alignContentControl.controlStatus === 'detected'
-        ? unsetSelectOption
-        : optionalMap(selectOption, alignContentControl.value) ?? undefined,
-    [alignContentControl.controlStatus, alignContentControl.value],
   )
 
   const onSubmitAlignContent = React.useCallback(
@@ -123,11 +118,8 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
             id='grid.items.justifyItems'
             key='grid.items.justifyItems'
             testId='grid.items.justifyItems'
-            value={justifyItemsControl.value}
+            {...justifyItemsControl}
             options={justifyItemsOptions}
-            onSubmitValue={justifyItemsControl.onSubmitValue}
-            controlStatus={justifyItemsControl.controlStatus}
-            controlStyles={justifyItemsControl.controlStyles}
           />
         </UIGridRow>
         <UIGridRow padded variant='|--67px--|<--------1fr-------->'>
@@ -136,11 +128,8 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
             id='grid.items.alignItems'
             key='grid.items.alignItems'
             testId='grid.items.alignItems'
-            value={alignItemsControl.value}
+            {...alignItemsControl}
             options={alignItemsOptions}
-            onSubmitValue={alignItemsControl.onSubmitValue}
-            controlStatus={alignItemsControl.controlStatus}
-            controlStyles={alignItemsControl.controlStyles}
           />
         </UIGridRow>
         <UIGridRow padded variant='<-------------1fr------------->'>
@@ -253,3 +242,8 @@ const unsetSelectOption = regularRadixSelectOption({
   value: 'unset',
   placeholder: true,
 })
+
+const getControlValue = (control: InspectorInfo<FlexJustifyContent>) =>
+  control.controlStatus === 'detected'
+    ? unsetSelectOption
+    : optionalMap(selectOption, control.value) ?? undefined
