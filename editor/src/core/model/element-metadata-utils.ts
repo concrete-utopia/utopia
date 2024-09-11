@@ -138,7 +138,15 @@ import {
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
 import type { ElementPathTree, ElementPathTrees } from '../shared/element-path-tree'
-import { buildTree, getSubTree, getCanvasRoots, elementPathTree } from '../shared/element-path-tree'
+import {
+  buildTree,
+  getSubTree,
+  getCanvasRoots,
+  elementPathTree,
+  getElementPathTreeChildren,
+  forEachElementPathTreeChild,
+  printTree,
+} from '../shared/element-path-tree'
 import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
 import type {
@@ -323,7 +331,6 @@ export const MetadataUtils = {
     if (target == null) {
       return []
     }
-
     const parentPath = EP.parentPath(target)
     const siblingPathsOrNull = EP.isRootElementOfInstance(target)
       ? MetadataUtils.getRootViewPathsOrdered(metadata, pathTree, parentPath)
@@ -724,7 +731,7 @@ export const MetadataUtils = {
     if (subTree == null) {
       return []
     } else {
-      return subTree.children
+      return getElementPathTreeChildren(subTree)
         .map((child) => child.path)
         .filter((path) => !EP.isRootElementOfInstance(path))
     }
@@ -845,7 +852,7 @@ export const MetadataUtils = {
       let result: Array<ElementPath> = []
       function recurseElement(tree: ElementPathTree): void {
         result.push(tree.path)
-        fastForEach(Object.values(tree.children), (childTree) => {
+        forEachElementPathTreeChild(tree, (childTree) => {
           recurseElement(childTree)
         })
       }
@@ -878,7 +885,7 @@ export const MetadataUtils = {
       if (tree != null) {
         result.push(tree.path)
 
-        fastForEach(Object.values(tree.children), (childTree) => {
+        forEachElementPathTreeChild(tree, (childTree) => {
           recurseElement(childTree)
         })
       }
@@ -1375,7 +1382,7 @@ export const MetadataUtils = {
 
           let unfurledComponents: Array<ElementPathTree> = []
 
-          fastForEach(Object.values(subTree.children), (child) => {
+          forEachElementPathTreeChild(subTree, (child) => {
             if (EP.isRootElementOfInstance(child.path)) {
               unfurledComponents.push(child)
             } else {

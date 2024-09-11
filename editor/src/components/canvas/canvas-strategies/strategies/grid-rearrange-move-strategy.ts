@@ -1,7 +1,7 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { GridControls, GridControlsKey } from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls'
 import type {
   ElementInstanceMetadataMap,
   GridAutoOrTemplateBase,
@@ -409,14 +409,6 @@ function getStrategyToApply(
   return {
     type: 'GRID_REARRANGE',
     name: 'Rearrange Grid (Move)',
-    controlsToRender: [
-      {
-        control: GridControls,
-        props: { targets: [parentGridPath] },
-        key: GridControlsKey(parentGridPath),
-        show: 'always-visible',
-        priority: 'bottom',
-      },
-    ],
+    controlsToRender: [controlsForGridPlaceholders(parentGridPath)],
   }
 }

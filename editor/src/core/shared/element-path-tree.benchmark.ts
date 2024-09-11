@@ -18,6 +18,62 @@ function dummyMetadataFromPaths(elementPaths: ElementPath[]): ElementInstanceMet
 
 export async function benchmarkBuildTree(): Promise<void> {
   await Benny.suite(
+    'isDescendantOf - for immediate descendant',
+    Benny.add('for immediate descendant', () => {
+      const path1 = EP.fromString(`aaa/bbb/ccc`)
+      const path2 = EP.fromString(`aaa/bbb/ccc:ddd`)
+
+      return () => {
+        EP.isDescendantOf(path2, path1)
+      }
+    }),
+    Benny.cycle(),
+    Benny.complete(),
+    Benny.save({ file: 'buildTree immediate descendant', details: true }),
+  )
+  await Benny.suite(
+    'isDescendantOf - non-descendant',
+    Benny.add('non-descendant', () => {
+      const path1 = EP.fromString(`aaa/bbb/ccc`)
+      const path2 = EP.fromString(`aaa/bbb/ddd`)
+
+      return () => {
+        EP.isDescendantOf(path2, path1)
+      }
+    }),
+    Benny.cycle(),
+    Benny.complete(),
+    Benny.save({ file: 'buildTree non-descendant', details: true }),
+  )
+  await Benny.suite(
+    'isChildOf - child',
+    Benny.add('child', () => {
+      const path1 = EP.fromString(`aaa/bbb/ccc`)
+      const path2 = EP.fromString(`aaa/bbb/ccc:ddd`)
+
+      return () => {
+        EP.isChildOf(path2, path1)
+      }
+    }),
+    Benny.cycle(),
+    Benny.complete(),
+    Benny.save({ file: 'isChildOf child', details: true }),
+  )
+  await Benny.suite(
+    'isChildOf - not child',
+    Benny.add('not child', () => {
+      const path1 = EP.fromString(`aaa/bbb/ccc`)
+      const path2 = EP.fromString(`aaa/bbb/ddd`)
+
+      return () => {
+        EP.isChildOf(path2, path1)
+      }
+    }),
+    Benny.cycle(),
+    Benny.complete(),
+    Benny.save({ file: 'isChildOf not child', details: true }),
+  )
+  await Benny.suite(
     'buildTree - deeply nested elements',
     Benny.add('deeply nested elements', () => {
       let workingPath: ElementPath = EP.elementPath([['root']])

@@ -43,7 +43,7 @@ import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-activ
 import type { GridGapControlProps } from '../../controls/select-mode/grid-gap-control'
 import { GridGapControl } from '../../controls/select-mode/grid-gap-control'
 import type { GridControlsProps } from '../../controls/grid-controls'
-import { GridControls } from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls'
 
 const SetGridGapStrategyId = 'SET_GRID_GAP_STRATEGY'
 
@@ -142,15 +142,7 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
 
   // when the drag is ongoing, keep showing the grid cells
   if (isDragOngoing(interactionSession)) {
-    controlsToRender.push(
-      controlWithProps({
-        control: GridControls,
-        props: { targets: [selectedElement] },
-        key: `set-grid-gap-strategy-controls`,
-        show: 'always-visible',
-        priority: 'bottom',
-      }),
-    )
+    controlsToRender.push(controlsForGridPlaceholders(selectedElement))
   }
 
   return {

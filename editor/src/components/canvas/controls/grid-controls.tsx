@@ -51,6 +51,7 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { useRollYourOwnFeatures } from '../../navigator/left-pane/roll-your-own-pane'
 import CanvasActions from '../canvas-actions'
+import type { ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import type {
   GridResizeEdge,
@@ -80,7 +81,10 @@ import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { CanvasLabel } from './select-mode/controls-common'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import type { GridCellCoordinates } from '../canvas-strategies/strategies/grid-cell-bounds'
-import { gridCellTargetId } from '../canvas-strategies/strategies/grid-cell-bounds'
+import {
+  getGridPlaceholderDomElementFromCoordinates,
+  gridCellTargetId,
+} from '../canvas-strategies/strategies/grid-cell-bounds'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -1685,13 +1689,14 @@ export function getGridPlaceholderDomElement(elementPath: ElementPath): HTMLElem
   return document.getElementById(gridKeyFromPath(elementPath))
 }
 
-export function getGridPlaceholderDomElementFromCoordinates(params: {
-  row: number
-  column: number
-}): HTMLElement | null {
-  return document.querySelector(
-    `[data-grid-row="${params.row}"]` + `[data-grid-column="${params.column}"]`,
-  )
-}
-
 const gridPlaceholderBorder = (color: string) => `2px solid ${color}`
+
+export function controlsForGridPlaceholders(gridPath: ElementPath): ControlWithProps<any> {
+  return {
+    control: GridControls,
+    props: { targets: [gridPath] },
+    key: GridControlsKey(gridPath),
+    show: 'always-visible',
+    priority: 'bottom',
+  }
+}

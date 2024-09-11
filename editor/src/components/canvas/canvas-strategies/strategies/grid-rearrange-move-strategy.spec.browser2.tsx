@@ -5,7 +5,7 @@ import {
   offsetPoint,
   windowPoint,
 } from '../../../../core/shared/math-utils'
-import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import CanvasActions from '../../canvas-actions'
 import { GridCellTestId } from '../../controls/grid-controls'
 import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
@@ -117,6 +117,8 @@ export var storyboard = (
           gridTemplateRows: '1fr',
           gridColumn: 1,
           gridRow: 2,
+		  width: '100%',
+		  height: '100%',
         }}
       >
         <div
@@ -365,6 +367,89 @@ export var storyboard = (
           gridRow: '2',
           left: '25.5px',
           top: '36px',
+        })
+      }
+    })
+
+    it("can move element spanning multiple cell by a cell that isn't the root cell", async () => {
+      const editor = await renderTestEditorWithCode(
+        `import { Scene, Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+      <div
+        data-uid='grid'
+        style={{
+          backgroundColor: '#fefefe',
+          position: 'absolute',
+          left: 123,
+          top: 133,
+          width: 461,
+          height: 448,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr 1fr',
+          gridTemplateRows: '1fr 1fr 1fr 1fr',
+          border: '5px solid #000',
+          gridGap: 10,
+        }}
+      >
+        <div
+          data-uid='child'
+          data-testid='child'
+          style={{
+            position: 'absolute',
+            wordBreak: 'break-word',
+            width: 127,
+            height: 122,
+            backgroundColor: '#ff2800',
+            gridColumn: 2,
+            gridRow: 2,
+            top: 45,
+            left: 41.25,
+          }}
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/grid/child')])
+
+      const child = editor.renderedDOM.getByTestId('child')
+      const childBounds = child.getBoundingClientRect()
+      const startPoint = windowPoint({
+        x: Math.floor(childBounds.left + childBounds.width - 3),
+        y: Math.floor(childBounds.top + childBounds.height - 3),
+      })
+
+      await mouseDragFromPointToPoint(
+        editor.renderedDOM.getByTestId(GridCellTestId(EP.fromString('sb/scene/grid/child'))),
+        startPoint,
+        offsetPoint(startPoint, windowPoint({ x: -100, y: -100 })),
+      )
+
+      {
+        const { top, left, gridColumn, gridRow } = child.style
+        expect({ top, left, gridColumn, gridRow }).toEqual({
+          gridColumn: '1',
+          gridRow: '1',
+          left: '60.5px',
+          top: '61px',
         })
       }
     })

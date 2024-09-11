@@ -137,3 +137,23 @@ export function getGridCellBoundsFromCanvas(
     height: cellHeight,
   }
 }
+
+export function getGridPlaceholderDomElementFromCoordinates(params: {
+  row: number
+  column: number
+}): HTMLElement | null {
+  return document.querySelector(
+    `[data-grid-row="${params.row}"]` + `[data-grid-column="${params.column}"]`,
+  )
+}
+
+export function getCellWindowRect(coords: GridCellCoordinates): WindowRectangle | null {
+  const element = getGridPlaceholderDomElementFromCoordinates(coords)
+  if (element == null) {
+    return null
+  }
+
+  const domRect = element!.getBoundingClientRect()
+  const windowRect = windowRectangle(domRect)
+  return windowRect
+}

@@ -1101,6 +1101,7 @@ describe('getElementLabel', () => {
       spanElementMetadata.elementPath,
       EP.toString(spanElementMetadata.elementPath),
       [],
+      [],
     ),
     [EP.toString(divElementMetadata.elementPath)]: elementPathTree(
       divElementMetadata.elementPath,
@@ -1110,8 +1111,10 @@ describe('getElementLabel', () => {
           spanElementMetadata.elementPath,
           EP.toString(spanElementMetadata.elementPath),
           [],
+          [],
         ),
       ],
+      [],
     ),
   }
   it('the label of a spin containing text is that text', () => {
@@ -1138,16 +1141,19 @@ describe('getting the root paths', () => {
       testComponentSceneElement.elementPath,
       EP.toString(testComponentSceneElement.elementPath),
       [],
+      [],
     )
     const testStoryboardChildTree = elementPathTree(
       testStoryboardChildElement.elementPath,
       EP.toString(testStoryboardChildElement.elementPath),
+      [],
       [],
     )
     const storyboardTree = elementPathTree(
       EP.elementPath([[BakedInStoryboardUID]]),
       EP.toString(EP.elementPath([[BakedInStoryboardUID]])),
       [testComponentSceneTree, testStoryboardChildTree],
+      [],
     )
     const pathTrees: ElementPathTrees = {
       [EP.toString(EP.elementPath([[BakedInStoryboardUID]]))]: storyboardTree,
@@ -1170,41 +1176,49 @@ describe('getting the root paths', () => {
       testComponentSceneChildElement.elementPath,
       EP.toString(testComponentSceneChildElement.elementPath),
       [],
+      [],
     )
     const testComponentChild1Tree = elementPathTree(
       testComponentMetadataChild1.elementPath,
       EP.toString(testComponentMetadataChild1.elementPath),
+      [],
       [],
     )
     const testComponentChild2Tree = elementPathTree(
       testComponentMetadataChild2.elementPath,
       EP.toString(testComponentMetadataChild2.elementPath),
       [],
+      [],
     )
     const testComponentChild3Tree = elementPathTree(
       testComponentMetadataChild3.elementPath,
       EP.toString(testComponentMetadataChild3.elementPath),
+      [],
       [],
     )
     const testComponentRoot1Tree = elementPathTree(
       testComponentRoot1.elementPath,
       EP.toString(testComponentRoot1.elementPath),
       [testComponentChild1Tree, testComponentChild2Tree, testComponentChild3Tree],
+      [],
     )
     const testComponentSceneTree = elementPathTree(
       testComponentSceneElement.elementPath,
       EP.toString(testComponentSceneElement.elementPath),
       [testComponentSceneChildTree, testComponentRoot1Tree],
+      [],
     )
     const testStoryboardChildTree = elementPathTree(
       testStoryboardChildElement.elementPath,
       EP.toString(testStoryboardChildElement.elementPath),
+      [],
       [],
     )
     const storyboardTree = elementPathTree(
       EP.elementPath([[BakedInStoryboardUID]]),
       EP.toString(EP.elementPath([[BakedInStoryboardUID]])),
       [testComponentSceneChildTree, testStoryboardChildTree],
+      [],
     )
     const pathTrees: ElementPathTrees = {
       [EP.toString(EP.elementPath([[BakedInStoryboardUID]]))]: storyboardTree,
