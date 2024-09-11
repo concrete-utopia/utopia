@@ -10,6 +10,7 @@ import {
   isJSXFragment,
 } from './element-template'
 import type { ElementPath } from './project-file-types'
+import { assertNever } from './utils'
 
 export interface ElementPathTree {
   path: ElementPath
@@ -129,8 +130,16 @@ function buildTree_MUTATE(
               case 'JS_PROPERTY_ACCESS':
               case 'JS_ELEMENT_ACCESS':
                 return false
-              default:
+              case 'JSX_ELEMENT':
+              case 'JSX_CONDITIONAL_EXPRESSION':
+              case 'JSX_FRAGMENT':
+              case 'ATTRIBUTE_FUNCTION_CALL':
+              case 'ATTRIBUTE_NESTED_ARRAY':
+              case 'ATTRIBUTE_NESTED_OBJECT':
+              case 'ATTRIBUTE_VALUE':
                 return true
+              default:
+                assertNever(child)
             }
           })
         }

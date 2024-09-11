@@ -642,37 +642,48 @@ export function findAmongAncestorsOfPath<T>(
 }
 
 export function isDescendantOf(target: ElementPath, maybeAncestor: ElementPath): boolean {
-  if (target.parts.length >= maybeAncestor.parts.length) {
-    for (let index = 0; index < maybeAncestor.parts.length - 1; index++) {
-      const maybeAncestorPart = maybeAncestor.parts[index]
-      const targetPart = target.parts[index]
-      if (!elementPathPartsEqual(maybeAncestorPart, targetPart)) {
-        return false
-      }
-    }
-    const lastTargetPart = target.parts[maybeAncestor.parts.length - 1]
-    const lastAncestorPart = maybeAncestor.parts[maybeAncestor.parts.length - 1]
-    if (lastTargetPart.length >= lastAncestorPart.length) {
-      for (let partIndex = 0; partIndex < lastAncestorPart.length; partIndex++) {
-        const part = lastAncestorPart[partIndex]
-        if (lastTargetPart[partIndex] !== part) {
-          return false
-        }
-      }
-      if (
-        target.parts.length === maybeAncestor.parts.length &&
-        lastTargetPart.length === lastAncestorPart.length
-      ) {
-        // This caters for the case where the paths are the same.
-        return false
-      }
-      return true
-    } else {
-      return false
-    }
-  } else {
+  // If the target has less parts than the potential ancestor, it's by default
+  // higher up the hierarchy.
+  if (target.parts.length < maybeAncestor.parts.length) {
     return false
   }
+  // Check if any of the shared (by index) parts are different, if any are that
+  // means these two are on different branches of the hierarchy.
+  for (let index = 0; index < maybeAncestor.parts.length - 1; index++) {
+    const maybeAncestorPart = maybeAncestor.parts[index]
+    const targetPart = target.parts[index]
+    if (!elementPathPartsEqual(maybeAncestorPart, targetPart)) {
+      return false
+    }
+  }
+  // As the rest of the parts are the same, we can check the last part to see
+  // if the target has less parts as that puts it higher up the hierarchy than the
+  // potential ancestor.
+  const lastTargetPart = target.parts[maybeAncestor.parts.length - 1]
+  const lastAncestorPart = maybeAncestor.parts[maybeAncestor.parts.length - 1]
+  if (lastTargetPart.length < lastAncestorPart.length) {
+    return false
+  }
+  // Check the elements of the last part to see if there are any differences
+  // as that means they're on a different branch. Limiting it to the length of
+  // the potential ancestor.
+  for (let partIndex = 0; partIndex < lastAncestorPart.length; partIndex++) {
+    const part = lastAncestorPart[partIndex]
+    if (lastTargetPart[partIndex] !== part) {
+      return false
+    }
+  }
+  // If the lengths of the parts and the lengths of the last parts are the same,
+  // since so far we've determined those to all match, then these are identical paths.
+  if (
+    target.parts.length === maybeAncestor.parts.length &&
+    lastTargetPart.length === lastAncestorPart.length
+  ) {
+    return false
+  }
+
+  // Fallback meaning this is a descendant.
+  return true
 }
 
 export function getAncestorsForLastPart(path: ElementPath): ElementPath[] {
