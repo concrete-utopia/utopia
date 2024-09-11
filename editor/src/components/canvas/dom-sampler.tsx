@@ -42,8 +42,9 @@ import {
   getAttributesComingFromStyleSheets,
 } from './dom-walker'
 import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
+import { limitExecutionCount } from '../../core/shared/execution-count'
 
-export function runDomSampler(options: {
+export function runDomSamplerUnchecked(options: {
   elementsToFocusOn: ElementsToRerender
   domWalkerAdditionalElementsToFocusOn: Array<ElementPath>
   scale: number
@@ -115,6 +116,13 @@ export function runDomSampler(options: {
 
   return result
 }
+
+const wrappedRunDomSamplerResult = limitExecutionCount(
+  { maximumExecutionCount: 2 },
+  runDomSamplerUnchecked,
+)
+export const runDomSampler = wrappedRunDomSamplerResult.wrappedFunction
+export const resetRunDomSamplerLimit = wrappedRunDomSamplerResult.resetCount
 
 function collectMetadataForPaths({
   canvasRootContainer,

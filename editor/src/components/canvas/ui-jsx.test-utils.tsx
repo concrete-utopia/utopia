@@ -156,7 +156,7 @@ import {
 import { uniqBy } from '../../core/shared/array-utils'
 import { InitialOnlineState } from '../editor/online-status'
 import { RadixComponentsPortalId } from '../../uuiui/radix-components'
-import { runDomSampler } from './dom-sampler'
+import { resetRunDomSamplerLimit, runDomSampler } from './dom-sampler'
 import {
   ElementInstanceMetadataKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
@@ -354,6 +354,7 @@ export async function renderTestEditorWithModel(
     waitForDispatchEntireUpdate = false,
     innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
   ) => {
+    resetRunDomSamplerLimit()
     recordedActions.push(...actions)
     const originalEditorState = workingEditorState
     const result = editorDispatchActionRunner(

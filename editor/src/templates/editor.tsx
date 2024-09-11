@@ -136,7 +136,7 @@ import {
   traverseReadOnlyArray,
 } from '../core/shared/optics/optic-creators'
 import { keysEqualityExhaustive, shallowEqual } from '../core/shared/equality-utils'
-import { runDomSampler } from '../components/canvas/dom-sampler'
+import { resetRunDomSamplerLimit, runDomSampler } from '../components/canvas/dom-sampler'
 import { omitWithPredicate } from '../core/shared/object-utils'
 
 if (PROBABLY_ELECTRON) {
@@ -431,6 +431,7 @@ export class Editor {
   ): {
     entireUpdateFinished: Promise<any>
   } => {
+    resetRunDomSamplerLimit()
     const Measure = createPerformanceMeasure()
     Measure.logActions(dispatchedActions)
 
