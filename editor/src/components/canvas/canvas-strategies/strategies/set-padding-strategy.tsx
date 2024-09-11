@@ -629,11 +629,11 @@ function getTailwindClassUpdateCommands(
       case 'paddingBottom':
         return updateClassListCommand('always', elementPath, UCL.add(`pb-[${value}]`))
       case 'paddingTop':
-        return updateClassListCommand('always', elementPath, UCL.add(`pb-[${value}]`))
+        return updateClassListCommand('always', elementPath, UCL.add(`pt-[${value}]`))
       case 'paddingLeft':
-        return updateClassListCommand('always', elementPath, UCL.add(`pb-[${value}]`))
+        return updateClassListCommand('always', elementPath, UCL.add(`pl-[${value}]`))
       case 'paddingRight':
-        return updateClassListCommand('always', elementPath, UCL.add(`pb-[${value}]`))
+        return updateClassListCommand('always', elementPath, UCL.add(`pr-[${value}]`))
       default:
         assertNever(prop)
     }
