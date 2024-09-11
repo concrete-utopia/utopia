@@ -2810,6 +2810,7 @@ export interface SpecialSizeMeasurements {
   gap: number | null
   flexDirection: FlexDirection | null
   justifyContent: FlexJustifyContent | null
+  alignContent: FlexAlignment | null
   alignItems: FlexAlignment | null
   htmlElementName: string
   renderedChildrenCount: number
@@ -2859,6 +2860,7 @@ export function specialSizeMeasurements(
   gap: number | null,
   flexDirection: FlexDirection | null,
   justifyContent: FlexJustifyContent | null,
+  alignContent: FlexAlignment | null,
   alignItems: FlexAlignment | null,
   htmlElementName: string,
   renderedChildrenCount: number,
@@ -2909,6 +2911,7 @@ export function specialSizeMeasurements(
     gap,
     flexDirection,
     justifyContent,
+    alignContent,
     alignItems,
     htmlElementName,
     renderedChildrenCount,
@@ -2959,6 +2962,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   0,
   sides(undefined, undefined, undefined, undefined),
   false,
+  null,
   null,
   null,
   null,

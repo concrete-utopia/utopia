@@ -2276,6 +2276,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.gap,
         newSize.flexDirection,
         newSize.justifyContent,
+        newSize.alignContent,
         newSize.alignItems,
         newSize.htmlElementName,
         newSize.renderedChildrenCount,
@@ -2996,12 +2997,14 @@ export function ElementPathTreeKeepDeepEquality(
   oldValue: ElementPathTree,
   newValue: ElementPathTree,
 ): KeepDeepEqualityResult<ElementPathTree> {
-  return combine3EqualityCalls(
+  return combine4EqualityCalls(
     (pathTree) => pathTree.path,
     ElementPathKeepDeepEquality,
     (pathTree) => pathTree.pathString,
     createCallWithTripleEquals<string>(),
-    (pathTree) => pathTree.children,
+    (pathTree) => pathTree.innerChildren,
+    arrayDeepEquality(ElementPathTreeKeepDeepEquality),
+    (pathTree) => pathTree.propsChildren,
     arrayDeepEquality(ElementPathTreeKeepDeepEquality),
     elementPathTree,
   )(oldValue, newValue)

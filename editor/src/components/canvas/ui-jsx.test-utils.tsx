@@ -306,6 +306,8 @@ export function optOutFromCheckFileTimestamps() {
   })
 }
 
+let prevDomWalkerMutableState: DomWalkerMutableStateData | null = null
+
 export async function renderTestEditorWithModel(
   rawModel: PersistentModel,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
@@ -600,7 +602,10 @@ export async function renderTestEditorWithModel(
     patchedStoreFromFullStore(initialEditorStore, 'canvas-store'),
   )
 
+  prevDomWalkerMutableState?.resizeObserver.disconnect()
+  prevDomWalkerMutableState?.mutationObserver.disconnect()
   const domWalkerMutableState = createDomWalkerMutableState(canvasStoreHook, asyncTestDispatch)
+  prevDomWalkerMutableState = domWalkerMutableState
 
   const lowPriorityStoreHook: UtopiaStoreAPI = createStoresAndState(
     patchedStoreFromFullStore(initialEditorStore, 'low-priority-store'),
