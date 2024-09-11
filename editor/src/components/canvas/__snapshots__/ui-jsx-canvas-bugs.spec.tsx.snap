@@ -158,6 +158,7 @@ Object {
     "label": null,
     "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
+      "alignContent": null,
       "alignItems": null,
       "borderRadius": null,
       "clientHeight": 0,
@@ -304,6 +305,7 @@ Object {
     "label": null,
     "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
+      "alignContent": null,
       "alignItems": null,
       "borderRadius": null,
       "clientHeight": 0,
