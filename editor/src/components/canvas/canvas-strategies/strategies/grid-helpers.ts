@@ -151,7 +151,7 @@ export function runGridRearrangeMove(
       : 1
 
   // The "pure" index in the grid children for the cell under mouse
-  const possiblyReorderIndex = getPureIndex({
+  const possiblyReorderIndex = getGridPositionIndex({
     row: targetCellUnderMouse.row,
     column: targetCellUnderMouse.column,
     gridTemplateColumns: gridTemplateColumns,
@@ -194,13 +194,6 @@ export function runGridRearrangeMove(
     cellsSortedByPosition: cellsSortedByPosition,
   })
 
-  const normalizationCommands = normalizeGridElementProps({
-    cellsSortedByPosition: cellsSortedByPosition,
-    gridTemplateColumns: gridTemplateColumns,
-    selectedElement: selectedElement,
-    moveType: moveType,
-  })
-
   switch (moveType) {
     case 'rearrange': {
       const targetRootCell = gridCellCoordinates(row.start, column.start)
@@ -216,7 +209,6 @@ export function runGridRearrangeMove(
             )
       return {
         commands: [
-          ...normalizationCommands,
           ...gridCellMoveCommands,
           ...absoluteMoveCommands,
           reorderElement(
@@ -234,7 +226,6 @@ export function runGridRearrangeMove(
     case 'reorder': {
       return {
         commands: [
-          ...normalizationCommands,
           reorderElement('always', selectedElement, absolute(possiblyReorderIndex)),
           deleteProperties('always', selectedElement, [
             PP.create('style', 'gridColumn'),
@@ -586,53 +577,10 @@ function isGridPositionNumericValue(p: GridPosition | null): boolean {
   return p != null && !(isCSSKeyword(p) && p.value === 'auto')
 }
 
-function getPureIndex(props: { row: number; column: number; gridTemplateColumns: number }): number {
-  return (props.row - 1) * props.gridTemplateColumns + props.column - 1
-}
-
-function gridPositionToNumber(p: GridPosition | null): number {
-  return p != null && !isCSSKeyword(p) ? p.numericalPosition ?? 1 : 1
-}
-
-function normalizeGridElementProps(props: {
-  cellsSortedByPosition: SortableGridElementProperties[]
+function getGridPositionIndex(props: {
+  row: number
+  column: number
   gridTemplateColumns: number
-  selectedElement: ElementPath
-  moveType: GridMoveType
-}): CanvasCommand[] {
-  let commands: CanvasCommand[] = []
-  for (let i = 0; i < props.cellsSortedByPosition.length; i++) {
-    const current = props.cellsSortedByPosition[i]
-    const currentGridIndex = getPureIndex({
-      row: gridPositionToNumber(current.gridRowStart),
-      column: gridPositionToNumber(current.gridColumnStart),
-      gridTemplateColumns: props.gridTemplateColumns,
-    })
-
-    const actualPrevious = props.cellsSortedByPosition.at(currentGridIndex - 1)
-    if (actualPrevious == null) {
-      continue
-    }
-
-    const shouldRemoveProps =
-      (EP.pathsEqual(actualPrevious.path, props.selectedElement) && props.moveType === 'reorder') ||
-      !(
-        isGridPositionNumericValue(actualPrevious.gridColumnStart ?? null) ||
-        isGridPositionNumericValue(actualPrevious.gridRowStart ?? null)
-      )
-
-    if (shouldRemoveProps) {
-      commands.push(
-        deleteProperties('always', current.path, [
-          PP.create('style', 'gridColumn'),
-          PP.create('style', 'gridRow'),
-          PP.create('style', 'gridColumnStart'),
-          PP.create('style', 'gridColumnEnd'),
-          PP.create('style', 'gridRowStart'),
-          PP.create('style', 'gridRowEnd'),
-        ]),
-      )
-    }
-  }
-  return commands
+}): number {
+  return (props.row - 1) * props.gridTemplateColumns + props.column - 1
 }
