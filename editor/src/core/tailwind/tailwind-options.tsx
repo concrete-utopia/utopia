@@ -253,7 +253,7 @@ export function getClassNameMapping(classString: string): { [key: string]: strin
   const mapping: { [key: string]: string } = {}
   const classParts = classString.split(' ')
   classParts.forEach((part) => {
-    const parsed = parse(part)
+    const parsed = parse(part /* TODO: pass the tailwind config here as the second argument */)
     if (parsed.kind === 'error') {
       return
     }
