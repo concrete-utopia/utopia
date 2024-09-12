@@ -815,11 +815,13 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                     ? features.Grid.dotgridColor
                     : 'transparent'
 
-                const borderColor =
+                const isActiveCell =
                   countedColumn === currentHoveredCell?.column &&
                   countedRow === currentHoveredCell?.row
-                    ? colorTheme.brandNeonPink.value
-                    : features.Grid.inactiveGridColor
+
+                const borderColor = isActiveCell
+                  ? colorTheme.brandNeonPink.value
+                  : features.Grid.inactiveGridColor
 
                 return (
                   <div
@@ -830,10 +832,13 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                       borderTop: gridPlaceholderBorder(borderColor),
                       borderLeft: gridPlaceholderBorder(borderColor),
                       borderBottom:
-                        countedRow >= grid.rows || (grid.rowGap != null && grid.rowGap > 0)
+                        isActiveCell ||
+                        countedRow >= grid.rows ||
+                        (grid.rowGap != null && grid.rowGap > 0)
                           ? gridPlaceholderBorder(borderColor)
                           : undefined,
                       borderRight:
+                        isActiveCell ||
                         countedColumn >= grid.columns ||
                         (grid.columnGap != null && grid.columnGap > 0)
                           ? gridPlaceholderBorder(borderColor)
