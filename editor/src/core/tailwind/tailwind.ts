@@ -245,12 +245,12 @@ function updateTwind(config: TwindConfigType, prefixSelector: string | null) {
     })
   }
 
-  const instance = observe(twind(config, customSheet), document.documentElement)
+  // const instance = observe(twind(config, customSheet), document.documentElement)
 
-  twindInstance = {
-    element: element,
-    instance: instance,
-  }
+  // twindInstance = {
+  //   element: element,
+  //   instance: instance,
+  // }
 }
 
 export function useTwind(
