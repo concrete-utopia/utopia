@@ -47,19 +47,19 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
     }
   }, [dropdownOpen, props])
 
-  const alignItemsControl = useInspectorLayoutInfo('alignItems')
-  const justifyItemsControl = useInspectorLayoutInfo('justifyItems')
-  const alignContentControl = useInspectorLayoutInfo('alignContent')
-  const justifyContentControl = useInspectorLayoutInfo('justifyContent')
+  const alignItemsLayoutInfo = useInspectorLayoutInfo('alignItems')
+  const justifyItemsLayoutInfo = useInspectorLayoutInfo('justifyItems')
+  const alignContentLayoutInfo = useInspectorLayoutInfo('alignContent')
+  const justifyContentLayoutInfo = useInspectorLayoutInfo('justifyContent')
 
   const currentJustifyContentValue = React.useMemo(
-    () => getControlValue(justifyContentControl),
-    [justifyContentControl],
+    () => getLayoutInfoValue(justifyContentLayoutInfo),
+    [justifyContentLayoutInfo],
   )
 
   const currentAlignContentValue = React.useMemo(
-    () => getControlValue(alignContentControl),
-    [alignContentControl],
+    () => getLayoutInfoValue(alignContentLayoutInfo),
+    [alignContentLayoutInfo],
   )
 
   const contentOptions = [
@@ -70,16 +70,16 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
 
   const onSubmitJustifyContent = React.useCallback(
     (value: string) => {
-      justifyContentControl.onSubmitValue(value as FlexJustifyContent)
+      justifyContentLayoutInfo.onSubmitValue(value as FlexJustifyContent)
     },
-    [justifyContentControl],
+    [justifyContentLayoutInfo],
   )
 
   const onSubmitAlignContent = React.useCallback(
     (value: string) => {
-      alignContentControl.onSubmitValue(value as FlexJustifyContent)
+      alignContentLayoutInfo.onSubmitValue(value as FlexJustifyContent)
     },
-    [alignContentControl],
+    [alignContentLayoutInfo],
   )
 
   const justifyItemsOptions = React.useMemo(() => itemsOptions('justify'), [])
@@ -96,7 +96,6 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
       outsideClickIgnoreClass={`ignore-react-onclickoutside-${props.id}`}
       style={{
         ...UtopiaStyles.popup,
-        zIndex: 3,
         minWidth: 230,
       }}
     >
@@ -120,7 +119,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
             id='grid.items.justifyItems'
             key='grid.items.justifyItems'
             testId='grid.items.justifyItems'
-            {...justifyItemsControl}
+            {...justifyItemsLayoutInfo}
             options={justifyItemsOptions}
           />
         </UIGridRow>
@@ -130,7 +129,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
             id='grid.items.alignItems'
             key='grid.items.alignItems'
             testId='grid.items.alignItems'
-            {...alignItemsControl}
+            {...alignItemsLayoutInfo}
             options={alignItemsOptions}
           />
         </UIGridRow>
@@ -183,7 +182,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
   )
 })
 
-export const itemsOptions = (alignOrJustify: 'align' | 'justify') =>
+const itemsOptions = (alignOrJustify: 'align' | 'justify') =>
   [
     {
       value: 'flex-start',
@@ -245,7 +244,7 @@ const unsetSelectOption = regularRadixSelectOption({
   placeholder: true,
 })
 
-const getControlValue = (control: InspectorInfo<FlexJustifyContent>) =>
+const getLayoutInfoValue = (control: InspectorInfo<FlexJustifyContent>) =>
   control.controlStatus === 'detected'
     ? unsetSelectOption
     : optionalMap(selectOption, control.value) ?? undefined

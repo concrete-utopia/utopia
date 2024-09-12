@@ -293,7 +293,7 @@ export const RadixSelect = React.memo(
               borderRadius: 6,
               color: 'white',
               boxShadow: UtopiaStyles.shadowStyles.high.boxShadow,
-              zIndex: 3,
+              zIndex: 'auto',
             }}
           >
             <Select.ScrollUpButton>
