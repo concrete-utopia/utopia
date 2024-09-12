@@ -213,11 +213,17 @@ export function basicResizeStrategy(
             elementParentBounds?.height,
           )
 
+          const gridsToRerender = selectedElements
+            .filter((element) => MetadataUtils.isGridCell(canvasState.startingMetadata, element))
+            .map(EP.parentPath)
+
+          const elementsToRerender = [...selectedElements, ...gridsToRerender]
+
           return strategyApplicationResult([
             adjustCssLengthProperties('always', selectedElement, null, resizeProperties),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-            setElementsToRerenderCommand(selectedElements),
+            setElementsToRerenderCommand(elementsToRerender),
             pushIntendedBoundsAndUpdateGroups(
               [{ target: selectedElement, frame: resizedBounds }],
               'starting-metadata',
