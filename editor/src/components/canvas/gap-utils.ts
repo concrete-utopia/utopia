@@ -22,7 +22,11 @@ import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
 import type { Sides } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'
 import { styleStringInArray } from '../../utils/common-constants'
-import { getSubTree, type ElementPathTrees } from '../../core/shared/element-path-tree'
+import {
+  getElementPathTreeChildren,
+  getSubTree,
+  type ElementPathTrees,
+} from '../../core/shared/element-path-tree'
 import { isReversedFlexDirection } from '../../core/model/flex-utils'
 import * as EP from '../../core/shared/element-path'
 import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragment-like-helpers'
@@ -380,7 +384,7 @@ export function recurseIntoChildrenOfMapOrFragment(
     return []
   }
 
-  return subTree.children.flatMap((element) => {
+  return getElementPathTreeChildren(subTree).flatMap((element) => {
     const elementPath = element.path
     if (EP.isRootElementOfInstance(elementPath)) {
       return []
