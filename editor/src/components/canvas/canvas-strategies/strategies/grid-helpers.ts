@@ -563,17 +563,18 @@ function getGridMoveType(params: {
     params.originalElementMetadata.specialSizeMeasurements.elementGridProperties
 
   // The first element is intrinsically in order, so try to adjust for that
-  if (
-    (params.possiblyReorderIndex === 0 &&
-      (params.cellsSortedByPosition.length === 1 ||
-        EP.pathsEqual(
-          params.cellsSortedByPosition[0].path,
-          params.originalElementMetadata.elementPath,
-        ))) ||
-    (gridPositionNumberValue(elementGridProperties.gridRowStart) === 1 &&
-      gridPositionNumberValue(elementGridProperties.gridColumnStart) === 1)
-  ) {
-    return 'reorder'
+  if (params.possiblyReorderIndex === 0) {
+    const isTheOnlyChild = params.cellsSortedByPosition.length === 1
+    const isAlreadyTheFirstChild = EP.pathsEqual(
+      params.cellsSortedByPosition[0].path,
+      params.originalElementMetadata.elementPath,
+    )
+    const isAlreadyAtOrigin =
+      gridPositionNumberValue(elementGridProperties.gridRowStart) === 1 &&
+      gridPositionNumberValue(elementGridProperties.gridColumnStart) === 1
+    if (isTheOnlyChild || isAlreadyTheFirstChild || isAlreadyAtOrigin) {
+      return 'reorder'
+    }
   }
 
   const previousElement = params.cellsSortedByPosition.at(params.possiblyReorderIndex - 1)
