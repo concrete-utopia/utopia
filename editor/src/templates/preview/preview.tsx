@@ -280,7 +280,7 @@ const initPreview = () => {
       }
     }
 
-    injectTwind(projectContents, requireFn)
+    injectTwind(projectContents, requireFn, '')
 
     const previewJSFileName = getMainJSFilename(projectContents)
     const previewJSFilePath = `/${previewJSFileName}`

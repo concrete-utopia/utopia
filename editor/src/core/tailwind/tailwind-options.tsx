@@ -28,7 +28,7 @@ import {
 } from '../shared/jsx-attribute-utils'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
-import { isTwindEnabled } from './tailwind'
+import { isTwindEnabled, TAILWIND_RAW_CONFIG } from './tailwind'
 import type { AttributeCategory } from './attribute-categories'
 import { AttributeCategories } from './attribute-categories'
 import { parse } from '@xengine/tailwindcss-class-parser'
@@ -253,7 +253,7 @@ export function getClassNameMapping(classString: string): { [key: string]: strin
   const mapping: { [key: string]: string } = {}
   const classParts = classString.split(' ')
   classParts.forEach((part) => {
-    const parsed = parse(part /* TODO: pass the tailwind config here as the second argument */)
+    const parsed = parse(part, (TAILWIND_RAW_CONFIG.current as any) ?? undefined)
     if (parsed.kind === 'error') {
       return
     }
