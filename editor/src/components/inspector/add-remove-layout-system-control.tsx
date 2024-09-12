@@ -24,6 +24,7 @@ import { stripNulls } from '../../core/shared/array-utils'
 import { layoutSystemSelector } from './flex-section'
 import { AdvancedGridModal } from './controls/advanced-grid-modal'
 import { when } from '../../utils/react-conditionals'
+import { useDesignPanelContext } from '../canvas/design-panel-root'
 
 export const AddRemoveLayoutSystemControlTestId = (): string => 'AddRemoveLayoutSystemControlTestId'
 export const AddFlexLayoutOptionId = 'add-flex-layout'
@@ -31,6 +32,10 @@ export const AddGridLayoutOptionId = 'add-grid-layout'
 export const RemoveLayoutSystemOptionId = 'remove-layout-system'
 
 interface AddRemoveLayoutSystemControlProps {}
+
+// adjusting the modal position to have some space from the left edge of the design panel
+const X_OFFSET = 20
+const Y_OFFSET = 20
 
 export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemControlProps>(() => {
   const [popupOpen, setPopupOpen] = React.useState(false)
@@ -179,6 +184,13 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
     }
   }
 
+  const { panelWidth } = useDesignPanelContext()
+  const modalOffset = React.useMemo(() => {
+    const x = -1 * (panelWidth + X_OFFSET)
+    const y = -1 * Y_OFFSET
+    return { x: x, y: y }
+  }, [panelWidth])
+
   return (
     <InspectorSectionHeader
       css={{
@@ -202,11 +214,12 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
         {when(
           popupOpen,
           <AdvancedGridModal
-            id='grid-advanced1'
-            testId='grid-advanced1'
-            key='grid-advanced1'
+            id='grid-advanced'
+            testId='grid-advanced'
+            key='grid-advanced'
             closePopup={closePopup}
             popupOpen={popupOpen}
+            modalOffset={modalOffset}
           />,
         )}
       </FlexRow>

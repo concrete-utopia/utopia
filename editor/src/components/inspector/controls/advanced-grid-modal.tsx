@@ -23,14 +23,14 @@ export interface AdvancedGridModalProps {
   openPopup?: (id: string) => void
   closePopup?: () => void
   style?: React.CSSProperties
-  pickerOffset?: {
+  modalOffset?: {
     x: number
     y: number
   }
 }
 
 export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
-  const pickerOffset = props.pickerOffset ?? { x: -280, y: -20 }
+  const modalOffset = props.modalOffset ?? { x: 0, y: 0 }
   const [dropdownOpen, setDropdownOpen] = React.useState({
     justifyContent: false,
     alignContent: false,
@@ -87,10 +87,10 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
 
   const rowVariant = '|--67px--|<--------1fr-------->'
 
-  const picker = (
+  const advancedGridModal = (
     <InspectorModal
-      offsetX={pickerOffset.x}
-      offsetY={pickerOffset.y}
+      offsetX={modalOffset.x}
+      offsetY={modalOffset.y}
       closePopup={closePopup}
       closePopupOnUnmount={false}
       outsideClickIgnoreClass={`ignore-react-onclickoutside-${props.id}`}
@@ -183,7 +183,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
       className={`ignore-react-onclickoutside-${props.id}`}
       style={props.style}
     >
-      {props.popupOpen ? picker : null}
+      {props.popupOpen ? advancedGridModal : null}
     </div>
   )
 })
