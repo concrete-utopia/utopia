@@ -341,7 +341,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const onFocus = React.useCallback(
     (event: React.FocusEvent<HTMLElement>) => {
       if (focusedPanel !== 'inspector') {
-        dispatch([setFocus('inspector')], 'inspector')
+        queueMicrotask(() => {
+          dispatch([setFocus('inspector')], 'inspector')
+        })
       }
     },
     [dispatch, focusedPanel],
