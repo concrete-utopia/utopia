@@ -1,7 +1,10 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadataMap,
+  GridPositionValue,
+} from '../../../../core/shared/element-template'
 import {
   gridPositionValue,
   type ElementInstanceMetadata,
@@ -542,26 +545,38 @@ type GridMoveType =
   | 'reorder' // reorder the element in the code based on the ascending position, and remove explicit positioning props
   | 'rearrange' // set explicit positioning props, and reorder based on the visual location
 
-function getGridMoveType(props: {
+function getGridMoveType(params: {
   originalElementMetadata: ElementInstanceMetadata
   possiblyReorderIndex: number
-  cellsSortedByPosition: GridElementProperties[]
+  cellsSortedByPosition: SortableGridElementProperties[]
 }): GridMoveType {
   // For absolute move, just use rearrange.
   // TODO: maybe worth reconsidering in the future?
-  if (MetadataUtils.isPositionAbsolute(props.originalElementMetadata)) {
+  if (MetadataUtils.isPositionAbsolute(params.originalElementMetadata)) {
     return 'rearrange'
   }
-  if (props.possiblyReorderIndex >= props.cellsSortedByPosition.length) {
+  if (params.possiblyReorderIndex >= params.cellsSortedByPosition.length) {
     return 'rearrange'
   }
 
-  // The first element is intrinsically in order
-  if (props.possiblyReorderIndex === 0) {
+  const elementGridProperties =
+    params.originalElementMetadata.specialSizeMeasurements.elementGridProperties
+
+  // The first element is intrinsically in order, so try to adjust for that
+  if (
+    (params.possiblyReorderIndex === 0 &&
+      (params.cellsSortedByPosition.length === 1 ||
+        EP.pathsEqual(
+          params.cellsSortedByPosition[0].path,
+          params.originalElementMetadata.elementPath,
+        ))) ||
+    (gridPositionNumberValue(elementGridProperties.gridRowStart) === 1 &&
+      gridPositionNumberValue(elementGridProperties.gridColumnStart) === 1)
+  ) {
     return 'reorder'
   }
 
-  const previousElement = props.cellsSortedByPosition.at(props.possiblyReorderIndex - 1)
+  const previousElement = params.cellsSortedByPosition.at(params.possiblyReorderIndex - 1)
   if (previousElement == null) {
     return 'rearrange'
   }
@@ -573,8 +588,12 @@ function getGridMoveType(props: {
     : 'reorder'
 }
 
-function isGridPositionNumericValue(p: GridPosition | null): boolean {
+function isGridPositionNumericValue(p: GridPosition | null): p is GridPositionValue {
   return p != null && !(isCSSKeyword(p) && p.value === 'auto')
+}
+
+function gridPositionNumberValue(p: GridPosition | null): number | null {
+  return isGridPositionNumericValue(p) ? p.numericalPosition : null
 }
 
 function getGridPositionIndex(props: {
