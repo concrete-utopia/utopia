@@ -85,6 +85,8 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
   const justifyItemsOptions = React.useMemo(() => itemsOptions('justify'), [])
   const alignItemsOptions = React.useMemo(() => itemsOptions('align'), [])
 
+  const rowVariant = '|--67px--|<--------1fr-------->'
+
   const picker = (
     <InspectorModal
       offsetX={pickerOffset.x}
@@ -112,7 +114,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
           <span style={{ fontWeight: 600 }}>Items</span>
         </UIGridRow>
 
-        <UIGridRow padded variant='|--67px--|<--------1fr-------->'>
+        <UIGridRow padded variant={rowVariant}>
           <span>Justify</span>
           <OptionChainControl
             id='grid.items.justifyItems'
@@ -122,7 +124,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
             options={justifyItemsOptions}
           />
         </UIGridRow>
-        <UIGridRow padded variant='|--67px--|<--------1fr-------->'>
+        <UIGridRow padded variant={rowVariant}>
           <span>Align</span>
           <OptionChainControl
             id='grid.items.alignItems'
@@ -137,7 +139,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
         </UIGridRow>
         <UIGridRow
           padded
-          variant='|--67px--|<--------1fr-------->'
+          variant={rowVariant}
           className={`ignore-react-onclickoutside-${props.id}`}
         >
           <span>Justify</span>
@@ -152,7 +154,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
         </UIGridRow>
         <UIGridRow
           padded
-          variant='|--67px--|<--------1fr-------->'
+          variant={rowVariant}
           className={`ignore-react-onclickoutside-${props.id}`}
         >
           <span>Align</span>
