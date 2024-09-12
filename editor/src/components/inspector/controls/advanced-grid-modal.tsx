@@ -148,6 +148,9 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
             options={contentOptions}
             onValueChange={onSubmitJustifyContent}
             contentClassName={`ignore-react-onclickoutside-${props.id}`}
+            contentStyle={{
+              zIndex: 1,
+            }}
             onOpenChange={toggleJustifyContentDropdown}
           />
         </UIGridRow>
@@ -163,6 +166,9 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
             options={contentOptions}
             onValueChange={onSubmitAlignContent}
             contentClassName={`ignore-react-onclickoutside-${props.id}`}
+            contentStyle={{
+              zIndex: 1,
+            }}
             onOpenChange={toggleAlignContentDropdown}
           />
         </UIGridRow>
@@ -181,6 +187,8 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
     </div>
   )
 })
+
+AdvancedGridModal.displayName = 'AdvancedGridModal'
 
 const itemsOptions = (alignOrJustify: 'align' | 'justify') =>
   [

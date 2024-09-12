@@ -241,6 +241,7 @@ export const RadixSelect = React.memo(
     value: RegularRadixSelectOption | null
     options: RadixSelectOption[]
     style?: CSSProperties
+    contentStyle?: CSSProperties
     onValueChange?: (value: string) => void
     contentClassName?: string
     onOpenChange?: (open: boolean) => void
@@ -293,7 +294,7 @@ export const RadixSelect = React.memo(
               borderRadius: 6,
               color: 'white',
               boxShadow: UtopiaStyles.shadowStyles.high.boxShadow,
-              zIndex: 'auto',
+              ...(props.contentStyle ?? {}),
             }}
           >
             <Select.ScrollUpButton>
