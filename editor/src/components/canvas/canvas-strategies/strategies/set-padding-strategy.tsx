@@ -33,7 +33,7 @@ import {
 } from '../../padding-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
-import type { InteractionCanvasState } from '../canvas-strategy-types'
+import type { InteractionCanvasState, InteractionLifecycle } from '../canvas-strategy-types'
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
@@ -74,6 +74,7 @@ import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import { updateClassListCommand } from '../../commands/update-class-list-command'
 import * as UCL from '../../commands/update-class-list-command'
 import { stripNulls } from '../../../../core/shared/array-utils'
+import { setProperty } from '../../commands/set-property-command'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -154,7 +155,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     descriptiveLabel: 'Changing Padding',
     icon: { category: 'tools', type: 'pointer' },
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'PADDING_RESIZE_HANDLE', 1),
-    apply: () => {
+    apply: (lifecycle: InteractionLifecycle) => {
       if (
         interactionSession == null ||
         interactionSession.interactionData.type !== 'DRAG' ||
@@ -274,13 +275,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       if (allPaddingPropsDefined != null) {
         return strategyApplicationResult([
           ...basicCommands,
-          ...IndividualPaddingProps.flatMap((p) => [
-            deleteProperties('always', selectedElement, [
-              stylePropPathMappingFn(p, styleStringInArray),
-            ]),
-          ]),
-          updateClassListCommand('always', selectedElement, UCL.remove('p')),
-          ...paddingValuesToTailwind(selectedElement, allPaddingPropsDefined),
+          ...getStyleUpdateCommandsAllFourSides(selectedElement, lifecycle, allPaddingPropsDefined),
           setActiveFrames(
             selectedElements.map((path) => ({
               action: 'set-padding',
@@ -296,12 +291,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       // only some sides are present - longhand properties have to be used
       return strategyApplicationResult([
         ...basicCommands,
-        deleteProperties('always', selectedElement, [
-          StylePaddingProp,
-          ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, styleStringInArray)),
-        ]),
-        updateClassListCommand('always', selectedElement, UCL.remove('p')),
-        ...getTailwindClassUpdateCommands(selectedElement, nonZeroPropsToAdd),
+        ...getCommandsForSomeSides(selectedElement, lifecycle, nonZeroPropsToAdd),
         setActiveFrames(
           selectedElements.map((path) => ({
             action: 'set-padding',
@@ -638,4 +628,65 @@ function getTailwindClassUpdateCommands(
         assertNever(prop)
     }
   })
+}
+
+function getStyleUpdateCommandsAllFourSides(
+  elementPath: ElementPath,
+  lifecycle: InteractionLifecycle,
+  allPaddingPropsDefined: CSSPaddingMappedValues<CSSNumberWithRenderedValue>,
+): CanvasCommand[] {
+  if (lifecycle === 'mid-interaction') {
+    const paddingString = paddingToPaddingString(allPaddingPropsDefined)
+    return [
+      deleteProperties('always', elementPath, [StylePaddingProp]),
+      ...IndividualPaddingProps.flatMap((p) => [
+        deleteProperties('always', elementPath, [stylePropPathMappingFn(p, styleStringInArray)]),
+      ]),
+      setProperty('always', elementPath, StylePaddingProp, paddingString),
+    ]
+  }
+
+  if (lifecycle === 'end-interaction') {
+    return [
+      deleteProperties('always', elementPath, [StylePaddingProp]),
+      ...IndividualPaddingProps.flatMap((p) => [
+        deleteProperties('always', elementPath, [stylePropPathMappingFn(p, styleStringInArray)]),
+      ]),
+      updateClassListCommand('always', elementPath, UCL.remove('p')),
+      ...paddingValuesToTailwind(elementPath, allPaddingPropsDefined),
+    ]
+  }
+
+  assertNever(lifecycle)
+}
+
+function getCommandsForSomeSides(
+  elementPath: ElementPath,
+  lifecycle: InteractionLifecycle,
+  nonZeroPropsToAdd: [CSSPaddingKey, string | number][],
+): CanvasCommand[] {
+  if (lifecycle === 'mid-interaction') {
+    return [
+      deleteProperties('always', elementPath, [StylePaddingProp]),
+      ...IndividualPaddingProps.flatMap((p) => [
+        deleteProperties('always', elementPath, [stylePropPathMappingFn(p, styleStringInArray)]),
+      ]),
+      ...nonZeroPropsToAdd.map(([p, value]) =>
+        setProperty('always', elementPath, stylePropPathMappingFn(p, styleStringInArray), value),
+      ),
+    ]
+  }
+
+  if (lifecycle === 'end-interaction') {
+    return [
+      deleteProperties('always', elementPath, [StylePaddingProp]),
+      ...IndividualPaddingProps.flatMap((p) => [
+        deleteProperties('always', elementPath, [stylePropPathMappingFn(p, styleStringInArray)]),
+      ]),
+      updateClassListCommand('always', elementPath, UCL.remove('p')),
+      ...getTailwindClassUpdateCommands(elementPath, nonZeroPropsToAdd),
+    ]
+  }
+
+  assertNever(lifecycle)
 }
