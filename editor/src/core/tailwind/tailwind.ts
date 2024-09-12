@@ -109,6 +109,8 @@ function convertTailwindToTwindConfig(tailwindConfig: any): TwindConfigType {
   return twindConfig
 }
 
+export const TAILWIND_RAW_CONFIG: { current: Record<string, unknown> | null } = { current: null }
+
 function getTailwindConfig(
   tailwindFile: ProjectFile | null,
   requireFn: RequireFn,
@@ -117,6 +119,7 @@ function getTailwindConfig(
     try {
       const requireResult = requireFn('/', TailwindConfigPath)
       const rawConfig = importDefault(requireResult)
+      TAILWIND_RAW_CONFIG.current = rawConfig as any
       if (rawConfig != null) {
         const twindConfig = convertTailwindToTwindConfig(rawConfig)
         return right(twindConfig)
