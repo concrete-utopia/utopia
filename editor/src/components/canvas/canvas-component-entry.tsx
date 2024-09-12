@@ -105,7 +105,6 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
           />
         ) : null}
       </div>
-      ,
     </>
   )
 })
