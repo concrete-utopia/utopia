@@ -486,6 +486,7 @@ describe('Grid dom sampler tests', () => {
           gridRow: 1,
           borderRadius: 10,
         }}
+        data-uid={'child'}
       />
       <div
         style={{
@@ -561,6 +562,15 @@ describe('Grid dom sampler tests', () => {
     )
 
     await editor.dispatch([runDOMWalker()], true)
+
+    // non-grids don't have cell measurements:
+    expect(
+      editor.getEditorState().editor.jsxMetadata[
+        'utopia-storyboard-uid/scene-aaa/app-entity:grid/child'
+      ].specialSizeMeasurements.gridCellGlobalFrames,
+    ).toBeNull()
+
+    // grids have cell measurements:
     matchInlineSnapshotBrowser(
       editor.getEditorState().editor.jsxMetadata['utopia-storyboard-uid/scene-aaa/app-entity:grid']
         .specialSizeMeasurements.gridCellGlobalFrames,
