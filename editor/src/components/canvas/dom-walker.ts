@@ -1006,11 +1006,15 @@ function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number>
   if (gridTemplate?.type !== 'DIMENSIONS') {
     return null
   }
-  const result = gridTemplate.dimensions.map((dimension) =>
-    dimension.type === 'NUMBER' ? dimension.value.value : null,
-  )
-  if (result.includes(null)) {
-    return null
+
+  const result: Array<number> = []
+
+  for (const dimension of gridTemplate.dimensions) {
+    if (dimension.type !== 'NUMBER') {
+      return null
+    }
+    result.push(dimension.value.value)
   }
-  return result as Array<number>
+
+  return result
 }
