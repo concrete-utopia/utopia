@@ -2298,6 +2298,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.elementGridPropertiesFromProps,
         newSize.rowGap,
         newSize.columnGap,
+        newSize.gridCellGlobalFrames,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }

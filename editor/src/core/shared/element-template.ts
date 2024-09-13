@@ -2831,6 +2831,7 @@ export interface SpecialSizeMeasurements {
   elementGridPropertiesFromProps: GridElementProperties
   rowGap: number | null
   columnGap: number | null
+  gridCellGlobalFrames: Array<Array<CanvasRectangle>> | null
 }
 
 export function specialSizeMeasurements(
@@ -2882,6 +2883,7 @@ export function specialSizeMeasurements(
   elementGridPropertiesFromProps: GridElementProperties,
   rowGap: number | null,
   columnGap: number | null,
+  gridCellGlobalFrames: Array<Array<CanvasRectangle>> | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -2932,6 +2934,7 @@ export function specialSizeMeasurements(
     elementGridPropertiesFromProps,
     rowGap,
     columnGap,
+    gridCellGlobalFrames,
   }
 }
 
@@ -3007,6 +3010,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     gridRowStart: null,
     gridRowEnd: null,
   },
+  null,
   null,
   null,
 )
