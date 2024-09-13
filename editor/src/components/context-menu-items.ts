@@ -6,7 +6,10 @@ import type { Either } from '../core/shared/either'
 import { isRight } from '../core/shared/either'
 import * as EP from '../core/shared/element-path'
 import type { ElementPathTrees } from '../core/shared/element-path-tree'
-import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
+import type {
+  ElementInstanceMetadataMap,
+  JSXAttributesEntry,
+} from '../core/shared/element-template'
 import { isIntrinsicElement, isJSXElementLike } from '../core/shared/element-template'
 import type { CanvasPoint, WindowPoint } from '../core/shared/math-utils'
 import type { ElementPath } from '../core/shared/project-file-types'
@@ -54,6 +57,12 @@ import {
   type ShowComponentPickerContextMenuCallback,
   renderPropTarget,
 } from './navigator/navigator-item/component-picker-context-menu'
+import type { CanvasCommand } from './canvas/commands/commands'
+import { classname } from '@xengine/tailwindcss-class-parser'
+import { deleteProperties } from './canvas/commands/delete-properties-command'
+import { updateClassListCommand } from './canvas/commands/update-class-list-command'
+import * as UCL from './canvas/commands/update-class-list-command'
+import { mapDropNulls } from '../core/shared/array-utils'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -560,6 +569,73 @@ export const escapeHatch: ContextMenuItem<CanvasData> = {
         [EditorActions.runEscapeHatch(data.selectedViews, 'set-hugging-parent-to-fixed')],
         'everyone',
       )
+    }
+  },
+}
+
+export const convertToTailwind: ContextMenuItem<CanvasData> = {
+  name: 'Convert to Tailwind',
+  enabled: true,
+  action: (data, dispatch) => {
+    const commands: CanvasCommand[] = data.selectedViews.flatMap((view) => {
+      const element = MetadataUtils.getJSXElementFromMetadata(data.jsxMetadata, view)
+      if (element == null) {
+        return []
+      }
+
+      const styleAttribute = element.props.find(
+        (prop) => prop.type === 'JSX_ATTRIBUTES_ENTRY' && prop.key === 'style',
+      ) as JSXAttributesEntry | undefined
+      if (styleAttribute == null) {
+        return []
+      }
+
+      const styleValue = styleAttribute.value
+      if (styleValue.type !== 'ATTRIBUTE_NESTED_OBJECT') {
+        return []
+      }
+
+      const styleProps = mapDropNulls(
+        (c) =>
+          c.type === 'PROPERTY_ASSIGNMENT' && c.value.type === 'ATTRIBUTE_VALUE'
+            ? [c.key, c.value.value]
+            : null,
+        styleValue.content,
+      )
+
+      const stylePropConversions = mapDropNulls(([key, value]) => {
+        try {
+          const valueString =
+            typeof value === 'string'
+              ? value
+              : typeof value === 'number'
+              ? `${value}px`
+              : `${value}`
+          const tailwindClass = classname({ property: key, value: valueString })
+          if (tailwindClass == null) {
+            return null
+          }
+          return [tailwindClass, key]
+        } catch {
+          console.error('Tailwind class conversion', key, 'is not supported')
+          return null
+        }
+      }, styleProps)
+
+      return [
+        deleteProperties(
+          'always',
+          view,
+          stylePropConversions.map(([, prop]) => PP.create('style', prop)),
+        ),
+        ...stylePropConversions.map(([tailwindClass]) =>
+          updateClassListCommand('always', view, UCL.add(tailwindClass)),
+        ),
+      ]
+    })
+
+    if (commands.length > 0 && dispatch != null) {
+      dispatch([EditorActions.applyCommandsAction(commands)])
     }
   },
 }
