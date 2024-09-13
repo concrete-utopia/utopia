@@ -844,7 +844,7 @@ function getSpecialMeasurements(
     ? padding.value
     : sides(undefined, undefined, undefined, undefined)
 
-  const gridCellGlobalFrames = getGlobalFrameOfGridCells(
+  const gridCellGlobalFrames = getGlobalFramesOfGridCells(
     containerGridProperties,
     rowGap,
     columnGap,
@@ -970,7 +970,7 @@ function getClosestOffsetParent(element: HTMLElement): Element | null {
   return null
 }
 
-function getGlobalFrameOfGridCells(
+function getGlobalFramesOfGridCells(
   grid: GridContainerProperties,
   rowGap: number | null,
   columnGap: number | null,
