@@ -11,6 +11,7 @@ import type {
   GridContainerProperties,
   GridElementProperties,
   DomElementMetadata,
+  GridTemplate,
 } from '../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -975,32 +976,14 @@ function getGlobalFramesOfGridCells(
   rowGap: number | null,
   columnGap: number | null,
   padding: Sides,
-): Array<Array<CanvasRectangle>> {
-  const columnWidths = (() => {
-    const columns = grid.gridTemplateColumns
-    if (columns == null) {
-      return []
-    }
-    if (columns.type !== 'DIMENSIONS') {
-      return []
-    }
-    return columns.dimensions.map(
-      (dimension) => (dimension.type === 'NUMBER' ? dimension.value.value : 0), // TODO: this should always be a number, GridTemplateColumns type is too general
-    )
-  })()
+): Array<Array<CanvasRectangle>> | null {
+  const columnWidths = gridTemplateToNumbers(grid.gridTemplateColumns)
 
-  const rowHeights = (() => {
-    const rows = grid.gridTemplateRows
-    if (rows == null) {
-      return []
-    }
-    if (rows.type !== 'DIMENSIONS') {
-      return []
-    }
-    return rows.dimensions.map(
-      (dimension) => (dimension.type === 'NUMBER' ? dimension.value.value : 0), // TODO: this should always be a number, GridTemplateRows type is too general
-    )
-  })()
+  const rowHeights = gridTemplateToNumbers(grid.gridTemplateRows)
+
+  if (columnWidths == null || rowHeights == null) {
+    return null
+  }
 
   const cellRects: Array<Array<CanvasRectangle>> = []
   let yOffset = padding.top ?? 0
@@ -1017,4 +1000,17 @@ function getGlobalFramesOfGridCells(
   })
 
   return cellRects
+}
+
+function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number> | null {
+  if (gridTemplate?.type !== 'DIMENSIONS') {
+    return null
+  }
+  const result = gridTemplate.dimensions.map(
+    (dimension) => (dimension.type === 'NUMBER' ? dimension.value.value : null), // TODO: this should always be a number, GridTemplateColumns type is too general
+  )
+  if (result.includes(null)) {
+    return null
+  }
+  return result as Array<number>
 }
