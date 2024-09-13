@@ -36,7 +36,6 @@ function isRootOfGeneratedElement(target: ElementPath): boolean {
 }
 
 export function applyReorderCommon(
-  originalTargets: Array<ElementPath>,
   targets: Array<ElementPath>,
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession,
