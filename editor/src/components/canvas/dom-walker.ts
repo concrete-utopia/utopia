@@ -1006,8 +1006,8 @@ function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number>
   if (gridTemplate?.type !== 'DIMENSIONS') {
     return null
   }
-  const result = gridTemplate.dimensions.map(
-    (dimension) => (dimension.type === 'NUMBER' ? dimension.value.value : null), // TODO: this should always be a number, GridTemplateColumns type is too general
+  const result = gridTemplate.dimensions.map((dimension) =>
+    dimension.type === 'NUMBER' ? dimension.value.value : null,
   )
   if (result.includes(null)) {
     return null
