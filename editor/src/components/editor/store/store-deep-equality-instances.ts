@@ -2276,6 +2276,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.gap,
         newSize.flexDirection,
         newSize.justifyContent,
+        newSize.alignContent,
         newSize.alignItems,
         newSize.htmlElementName,
         newSize.renderedChildrenCount,
