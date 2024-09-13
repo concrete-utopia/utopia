@@ -1,3 +1,4 @@
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import { isJSXElement } from '../../../../core/shared/element-template'
@@ -637,17 +638,23 @@ async function runReorderTest(
     targetCell: targetCell,
   })
 
-  const { element } = editor.getEditorState().editor.jsxMetadata[gridTestId]
-  if (isLeft(element) || !isJSXElement(element.value)) {
+  const element = editor.getEditorState().editor.jsxMetadata[gridTestId]
+  if (isLeft(element.element) || !isJSXElement(element.element.value)) {
     throw new Error('expected jsx element')
   }
+
+  const cells = MetadataUtils.getChildrenOrdered(
+    editor.getEditorState().editor.jsxMetadata,
+    editor.getEditorState().editor.elementPathTree,
+    element.elementPath,
+  )
 
   return {
     gridRowStart: gridRowStart,
     gridRowEnd: gridRowEnd,
     gridColumnStart: gridColumnStart,
     gridColumnEnd: gridColumnEnd,
-    cells: element.value.children.map((c) => c.uid),
+    cells: cells.map((c) => EP.toUid(c.elementPath)),
   }
 }
 
