@@ -13,6 +13,7 @@ import {
   separatorRadixSelectOption,
 } from '../../../uuiui/radix-components'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import type { FlexAlignment } from 'utopia-api/core'
 import { FlexJustifyContent } from 'utopia-api/core'
 
 export interface AdvancedGridModalProps {
@@ -62,6 +63,16 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
     [alignContentLayoutInfo],
   )
 
+  const currentJustifyItemsValue = React.useMemo(
+    () => getValueOrUnset(justifyItemsLayoutInfo),
+    [justifyItemsLayoutInfo],
+  )
+
+  const currentAlignItemsValue = React.useMemo(
+    () => getValueOrUnset(alignItemsLayoutInfo),
+    [alignItemsLayoutInfo],
+  )
+
   const contentOptions = [
     unsetSelectOption,
     separatorRadixSelectOption(),
@@ -70,14 +81,22 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
 
   const onSubmitJustifyContent = React.useCallback(
     (value: string) => {
-      justifyContentLayoutInfo.onSubmitValue(value as FlexJustifyContent)
+      if (value === 'unset') {
+        justifyContentLayoutInfo.onUnsetValues?.()
+      } else {
+        justifyContentLayoutInfo.onSubmitValue(value as FlexJustifyContent)
+      }
     },
     [justifyContentLayoutInfo],
   )
 
   const onSubmitAlignContent = React.useCallback(
     (value: string) => {
-      alignContentLayoutInfo.onSubmitValue(value as FlexJustifyContent)
+      if (value === 'unset') {
+        alignContentLayoutInfo.onUnsetValues?.()
+      } else {
+        alignContentLayoutInfo.onSubmitValue(value as FlexJustifyContent)
+      }
     },
     [alignContentLayoutInfo],
   )
@@ -120,6 +139,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
             key='grid.items.justifyItems'
             testId='grid.items.justifyItems'
             {...justifyItemsLayoutInfo}
+            value={currentJustifyItemsValue}
             options={justifyItemsOptions}
           />
         </UIGridRow>
@@ -130,6 +150,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
             key='grid.items.alignItems'
             testId='grid.items.alignItems'
             {...alignItemsLayoutInfo}
+            value={currentAlignItemsValue}
             options={alignItemsOptions}
           />
         </UIGridRow>
@@ -252,7 +273,11 @@ const unsetSelectOption = regularRadixSelectOption({
   placeholder: true,
 })
 
+const isUnset = (control: InspectorInfo<any>): boolean =>
+  control.controlStatus === 'detected' || control.controlStatus === 'unset'
+
 const getLayoutInfoValue = (control: InspectorInfo<FlexJustifyContent>) =>
-  control.controlStatus === 'detected'
-    ? unsetSelectOption
-    : optionalMap(selectOption, control.value) ?? undefined
+  isUnset(control) ? unsetSelectOption : optionalMap(selectOption, control.value) ?? undefined
+
+const getValueOrUnset = (control: InspectorInfo<FlexAlignment>): string =>
+  isUnset(control) ? 'unset' : control.value
