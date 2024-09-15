@@ -52,6 +52,9 @@ import { newReparentSubjects } from './reparent-helpers/reparent-strategy-helper
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
 import { stripNulls } from '../../../../core/shared/array-utils'
 import { showGridControls } from '../../commands/show-grid-controls-command'
+import * as PP from '../../../../core/shared/property-path'
+import { propertyToDelete, updateBulkProperties } from '../../commands/set-property-command'
+import { deleteProperties } from '../../commands/delete-properties-command'
 
 export const gridDrawToInsertText: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -218,9 +221,25 @@ const gridDrawToInsertStrategyInner =
             ? []
             : getWrappingCommands(insertedElementPath, maybeWrapperWithUid)
 
+        const isClick = interactionData.type === 'DRAG' && interactionData.drag == null
+
+        // for click-to-insert, don't use absolute positioning
+        const clickToInsertCommands = isClick
+          ? [
+              deleteProperties('always', insertedElementPath, [
+                PP.create('style', 'position'),
+                PP.create('style', 'top'),
+                PP.create('style', 'left'),
+                PP.create('style', 'bottom'),
+                PP.create('style', 'right'),
+              ]),
+            ]
+          : []
+
         return strategyApplicationResult(
           [
             insertionCommand,
+            ...clickToInsertCommands,
             ...setGridPropsCommands(insertedElementPath, gridTemplate, {
               gridRowStart: { numericalPosition: gridCellCoordinates.row },
               gridColumnStart: { numericalPosition: gridCellCoordinates.column },
