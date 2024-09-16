@@ -11,7 +11,7 @@ import {
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import * as EP from '../../../../core/shared/element-path'
 import {
-  getGlobalFramesOfGridCellsFromMetadata,
+  getGlobalFramesOfGridCells,
   type GridCellGlobalFrames,
   type TargetGridCellDataCanvas,
 } from './grid-helpers'
@@ -37,7 +37,7 @@ export function getGridCellUnderMouseFromMetadata(
   grid: ElementInstanceMetadata,
   canvasPoint: CanvasPoint,
 ): TargetGridCellDataCanvas | null {
-  const gridCellGlobalFrames = getGlobalFramesOfGridCellsFromMetadata(grid)
+  const gridCellGlobalFrames = getGlobalFramesOfGridCells(grid)
 
   if (gridCellGlobalFrames == null) {
     return null
@@ -55,7 +55,7 @@ function getGridCellUnderPoint(
     for (let j = 0; j < gridCellGlobalFrames[i].length; j++) {
       if (rectContainsPoint(gridCellGlobalFrames[i][j], canvasPoint)) {
         return {
-          gridCellCoordinates: gridCellCoordinates(i, j),
+          gridCellCoordinates: gridCellCoordinates(i + 1, j + 1),
           cellCanvasRectangle: gridCellGlobalFrames[i][j],
         }
       }

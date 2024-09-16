@@ -91,7 +91,6 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
       )
 
       const cellUnderMouse = getGridCellUnderMouseFromMetadata(container, mouseCanvasPoint)
-
       const targetCell =
         cellUnderMouse == null
           ? customState.grid.targetCellData

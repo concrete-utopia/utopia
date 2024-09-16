@@ -620,25 +620,16 @@ function getGridPositionIndex(props: {
 
 export type GridCellGlobalFrames = Array<Array<CanvasRectangle>>
 
-export function getGlobalFramesOfGridCellsFromMetadata(
+function getGlobalFramesOfGridCellsInner(
   metadata: ElementInstanceMetadata,
 ): GridCellGlobalFrames | null {
-  return getGlobalFramesOfGridCells(metadata.specialSizeMeasurements)
-}
+  const { globalFrame } = metadata
+  if (globalFrame == null || isInfinityRectangle(globalFrame)) {
+    return null
+  }
 
-export const getGlobalFramesOfGridCells = memoize(getGlobalFramesOfGridCellsInner)
+  const { containerGridProperties, padding, rowGap, columnGap } = metadata.specialSizeMeasurements
 
-function getGlobalFramesOfGridCellsInner({
-  containerGridProperties,
-  rowGap,
-  columnGap,
-  padding,
-}: {
-  containerGridProperties: GridContainerProperties
-  rowGap: number | null
-  columnGap: number | null
-  padding: Sides
-}): GridCellGlobalFrames | null {
   const columnWidths = gridTemplateToNumbers(containerGridProperties.gridTemplateColumns)
 
   const rowHeights = gridTemplateToNumbers(containerGridProperties.gridTemplateRows)
@@ -648,9 +639,9 @@ function getGlobalFramesOfGridCellsInner({
   }
 
   const cellRects: Array<Array<CanvasRectangle>> = []
-  let yOffset = padding.top ?? 0
+  let yOffset = globalFrame.y + (padding.top ?? 0)
   rowHeights.forEach((height) => {
-    let xOffset = padding.left ?? 0
+    let xOffset = globalFrame.x + (padding.left ?? 0)
     const rowRects: CanvasRectangle[] = []
     columnWidths.forEach((width) => {
       const rect = canvasRectangle({ x: xOffset, y: yOffset, width: width, height: height })
@@ -663,6 +654,8 @@ function getGlobalFramesOfGridCellsInner({
 
   return cellRects
 }
+
+export const getGlobalFramesOfGridCells = memoize(getGlobalFramesOfGridCellsInner)
 
 function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number> | null {
   if (gridTemplate?.type !== 'DIMENSIONS') {

@@ -1,7 +1,7 @@
 import { matchInlineSnapshotBrowser } from '../../../../../test/karma-snapshots'
 import { runDOMWalker } from '../../../editor/actions/action-creators'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
-import { getGlobalFramesOfGridCellsFromMetadata } from './grid-helpers'
+import { getGlobalFramesOfGridCells } from './grid-helpers'
 
 describe('Grids', () => {
   it('can calculate global frames of grid cells', async () => {
@@ -110,7 +110,7 @@ describe('Grids', () => {
 
     // non-grids don't have cell measurements:
     expect(
-      getGlobalFramesOfGridCellsFromMetadata(
+      getGlobalFramesOfGridCells(
         editor.getEditorState().editor.jsxMetadata[
           'utopia-storyboard-uid/scene-aaa/app-entity:grid/child'
         ],
@@ -119,7 +119,7 @@ describe('Grids', () => {
 
     // grids have cell measurements:
     matchInlineSnapshotBrowser(
-      getGlobalFramesOfGridCellsFromMetadata(
+      getGlobalFramesOfGridCells(
         editor.getEditorState().editor.jsxMetadata[
           'utopia-storyboard-uid/scene-aaa/app-entity:grid'
         ],
