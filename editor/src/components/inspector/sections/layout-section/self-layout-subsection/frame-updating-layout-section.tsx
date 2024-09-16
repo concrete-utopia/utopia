@@ -201,32 +201,43 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
   )
 
   const updateFrame = React.useCallback(
-    (frameUpdate: FrameUpdate) => {
+    (frameUpdate: FrameUpdate, transient: boolean) => {
+      const elementsToRerenderTransient = transient
+        ? selectedViewsRef.current
+        : 'rerender-all-elements'
       switch (frameUpdate.type) {
         case 'DELTA_FRAME_UPDATE':
           if (
             frameUpdate.edgePosition === EdgePositionTop ||
             frameUpdate.edgePosition === EdgePositionLeft
           ) {
-            executeFirstApplicableStrategy(dispatch, [
-              moveInspectorStrategy(
-                metadataRef.current,
-                selectedViewsRef.current,
-                projectContentsRef.current,
-                frameUpdate.edgeMovement,
-              ),
-            ])
+            executeFirstApplicableStrategy(
+              dispatch,
+              [
+                moveInspectorStrategy(
+                  metadataRef.current,
+                  selectedViewsRef.current,
+                  projectContentsRef.current,
+                  frameUpdate.edgeMovement,
+                ),
+              ],
+              elementsToRerenderTransient,
+            )
           } else {
-            executeFirstApplicableStrategy(dispatch, [
-              resizeInspectorStrategy(
-                metadataRef.current,
-                selectedViewsRef.current,
-                projectContentsRef.current,
-                originalGlobalFrame,
-                frameUpdate.edgePosition,
-                frameUpdate.edgeMovement,
-              ),
-            ])
+            executeFirstApplicableStrategy(
+              dispatch,
+              [
+                resizeInspectorStrategy(
+                  metadataRef.current,
+                  selectedViewsRef.current,
+                  projectContentsRef.current,
+                  originalGlobalFrame,
+                  frameUpdate.edgePosition,
+                  frameUpdate.edgeMovement,
+                ),
+              ],
+              elementsToRerenderTransient,
+            )
           }
           break
         case 'DIRECT_FRAME_UPDATE':
@@ -235,27 +246,35 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
             frameUpdate.edgePosition === EdgePositionLeft
           ) {
             const leftOrTop = frameUpdate.edgePosition === EdgePositionLeft ? 'left' : 'top'
-            executeFirstApplicableStrategy(dispatch, [
-              directMoveInspectorStrategy(
-                metadataRef.current,
-                selectedViewsRef.current,
-                projectContentsRef.current,
-                leftOrTop,
-                frameUpdate.edgeValue,
-              ),
-            ])
+            executeFirstApplicableStrategy(
+              dispatch,
+              [
+                directMoveInspectorStrategy(
+                  metadataRef.current,
+                  selectedViewsRef.current,
+                  projectContentsRef.current,
+                  leftOrTop,
+                  frameUpdate.edgeValue,
+                ),
+              ],
+              elementsToRerenderTransient,
+            )
           } else {
             const widthOrHeight =
               frameUpdate.edgePosition === EdgePositionRight ? 'width' : 'height'
-            executeFirstApplicableStrategy(dispatch, [
-              directResizeInspectorStrategy(
-                metadataRef.current,
-                selectedViewsRef.current,
-                projectContentsRef.current,
-                widthOrHeight,
-                frameUpdate.edgeValue,
-              ),
-            ])
+            executeFirstApplicableStrategy(
+              dispatch,
+              [
+                directResizeInspectorStrategy(
+                  metadataRef.current,
+                  selectedViewsRef.current,
+                  projectContentsRef.current,
+                  widthOrHeight,
+                  frameUpdate.edgeValue,
+                ),
+              ],
+              elementsToRerenderTransient,
+            )
           }
           break
         default:
@@ -341,7 +360,7 @@ interface LayoutPinPropertyControlProps {
   label: string
   property: TLWH
   currentValues: Array<number>
-  updateFrame: (frameUpdate: FrameUpdate) => void
+  updateFrame: (frameUpdate: FrameUpdate, transient: boolean) => void
   invalid?: boolean
 }
 
@@ -378,7 +397,7 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
   currentValuesRef.current = currentValues
 
   const onSubmitValue = React.useCallback(
-    (newValue: UnknownOrEmptyInput<CSSNumber>) => {
+    (newValue: UnknownOrEmptyInput<CSSNumber>, transient: boolean = false) => {
       const calculatedSingleCommonValue = getSingleCommonValue(currentValuesRef.current)
       if (isUnknownInputValue(newValue)) {
         // Ignore right now.
@@ -390,14 +409,14 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
         if (newValue.unit == null || newValue.unit === 'px') {
           const edgePosition = getTLWHEdgePosition(property)
           if (calculatedSingleCommonValue == null) {
-            updateFrame(directFrameUpdate(edgePosition, newValue.value))
+            updateFrame(directFrameUpdate(edgePosition, newValue.value), transient)
           } else {
             const movement = getMovementFromValues(
               property,
               calculatedSingleCommonValue,
               newValue.value,
             )
-            updateFrame(deltaFrameUpdate(edgePosition, movement))
+            updateFrame(deltaFrameUpdate(edgePosition, movement), transient)
           }
         } else {
           console.error('Attempting to use a value with a unit, which is invalid.')
