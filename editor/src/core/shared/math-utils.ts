@@ -1,3 +1,4 @@
+import { canvasPointToWindowPoint } from '../../components/canvas/dom-lookup'
 import { stripNulls } from './array-utils'
 import type { Either } from './either'
 import { left, right, mapEither } from './either'
@@ -1248,4 +1249,19 @@ export function resize(
   const aspectRatio = originalSize.width / originalSize.height
   const desiredHeight = (desiredSize.width / aspectRatio) ^ 0
   return size(desiredSize.width, desiredHeight)
+}
+
+export function canvasRectangleToWindowRectangle(
+  canvasRect: CanvasRectangle,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+): WindowRectangle {
+  const location = canvasPointToWindowPoint(canvasRect, canvasScale, canvasOffset)
+  const scaledRect = scaleRect(canvasRect, canvasScale)
+  return windowRectangle({
+    x: location.x,
+    y: location.y,
+    width: scaledRect.width,
+    height: scaledRect.height,
+  })
 }

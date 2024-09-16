@@ -1,17 +1,12 @@
 import type { ReactDOM } from 'react'
-import type {
-  CanvasRectangle,
-  CanvasVector,
-  MaybeInfinityCanvasRectangle,
-  WindowRectangle,
-} from './math-utils'
+import type { CanvasRectangle, MaybeInfinityCanvasRectangle } from './math-utils'
 import {
+  boundingRectangle,
   boundingRectangleArray,
   canvasRectangle,
   isNotNullFiniteRectangle,
   roundToNearestHalf,
   scaleRect,
-  windowRectangle,
 } from './math-utils'
 import { URL_HASH } from '../../common/env-vars'
 import { blockLevelHtmlElements, inlineHtmlElements } from '../../utils/html-elements'
@@ -25,7 +20,6 @@ import {
 } from './element-template'
 import type { AbsolutePin } from '../../components/canvas/canvas-strategies/strategies/resize-helpers'
 import type { MapLike } from 'typescript'
-import { canvasPointToWindowPoint } from '../../components/canvas/dom-lookup'
 
 export const intrinsicHTMLElementNames: Array<keyof ReactDOM> = [
   'a',
@@ -355,21 +349,6 @@ export function getCanvasRectangleFromElement(
     default:
       assertNever(withContent)
   }
-}
-
-export function canvasRectangleToWindowRectangle(
-  canvasRect: CanvasRectangle,
-  canvasScale: number,
-  canvasOffset: CanvasVector,
-): WindowRectangle {
-  const location = canvasPointToWindowPoint(canvasRect, canvasScale, canvasOffset)
-  const scaledRect = scaleRect(canvasRect, canvasScale)
-  return windowRectangle({
-    x: location.x,
-    y: location.y,
-    width: scaledRect.width,
-    height: scaledRect.height,
-  })
 }
 
 export function addStyleSheetToPage(url: string, shouldAppendHash: boolean = true): void {

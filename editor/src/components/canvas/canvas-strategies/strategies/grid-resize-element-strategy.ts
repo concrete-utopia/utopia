@@ -1,13 +1,11 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { canvasRectangleToWindowRectangle } from '../../../../core/shared/dom-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { GridElementProperties, GridPosition } from '../../../../core/shared/element-template'
-import { offsetPoint } from '../../../../core/shared/math-utils'
+import { canvasRectangleToWindowRectangle, offsetPoint } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { isCSSKeyword } from '../../../inspector/common/css-utils'
 import { isFixedHugFillModeApplied } from '../../../inspector/inspector-common'
 import { controlsForGridPlaceholders, GridResizeControls } from '../../controls/grid-controls'
-import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../../dom-lookup'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -18,7 +16,6 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { getGridCellUnderMouseFromMetadata } from './grid-cell-bounds'
-import type { TargetGridCellData } from './grid-helpers'
 import { setGridPropsCommands } from './grid-helpers'
 
 export const gridResizeElementStrategy: CanvasStrategyFactory = (
