@@ -1,11 +1,19 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { GridElementProperties, GridPosition } from '../../../../core/shared/element-template'
-import { canvasRectangleToWindowRectangle, offsetPoint } from '../../../../core/shared/math-utils'
+import {
+  type CanvasRectangle,
+  type CanvasVector,
+  offsetPoint,
+  scaleRect,
+  windowRectangle,
+  type WindowRectangle,
+} from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { isCSSKeyword } from '../../../inspector/common/css-utils'
 import { isFixedHugFillModeApplied } from '../../../inspector/inspector-common'
 import { controlsForGridPlaceholders, GridResizeControls } from '../../controls/grid-controls'
+import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -198,4 +206,19 @@ function gridPropsWithDragOver(props: GridElementProperties): GridElementPropert
   })
 
   return { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }
+}
+
+function canvasRectangleToWindowRectangle(
+  canvasRect: CanvasRectangle,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+): WindowRectangle {
+  const location = canvasPointToWindowPoint(canvasRect, canvasScale, canvasOffset)
+  const scaledRect = scaleRect(canvasRect, canvasScale)
+  return windowRectangle({
+    x: location.x,
+    y: location.y,
+    width: scaledRect.width,
+    height: scaledRect.height,
+  })
 }
