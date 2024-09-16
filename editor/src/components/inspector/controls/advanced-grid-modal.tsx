@@ -195,6 +195,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
       key={props.id}
       id={`trigger-${props.id}`}
       className={`ignore-react-onclickoutside-${props.id}`}
+      data-testid={props.testId}
     >
       {props.popupOpen ? advancedGridModal : null}
     </div>
