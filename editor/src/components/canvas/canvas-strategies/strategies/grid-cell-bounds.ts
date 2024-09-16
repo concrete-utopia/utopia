@@ -46,7 +46,7 @@ export function getGridCellUnderMouseFromMetadata(
   return getGridCellUnderPoint(gridCellGlobalFrames, canvasPoint)
 }
 
-// TODO: optimization: binary search
+// TODO: we could optimize this with binary search, but huge grids are rare
 function getGridCellUnderPoint(
   gridCellGlobalFrames: GridCellGlobalFrames,
   canvasPoint: CanvasPoint,
@@ -64,7 +64,7 @@ function getGridCellUnderPoint(
   return null
 }
 
-// TODO: should be superseded by getGridCellUnderMouseNoDomLookup
+// TODO: should be superseded by getGridCellUnderMouseFromMetadata
 export function getGridCellUnderMouse(mousePoint: WindowPoint) {
   return getGridCellAtPoint(mousePoint, false)
 }
