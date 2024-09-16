@@ -42,7 +42,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
   }, [])
   const closePopup = React.useCallback(() => {
     if (!dropdownOpen.justifyContent && !dropdownOpen.alignContent) {
-      props.closePopup?.()
+      props.closePopup()
     }
   }, [dropdownOpen, props])
 
@@ -80,7 +80,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
   const onSubmitJustifyContent = React.useCallback(
     (value: string) => {
       if (value === 'unset') {
-        justifyContentLayoutInfo.onUnsetValues?.()
+        justifyContentLayoutInfo.onUnsetValues()
       } else {
         justifyContentLayoutInfo.onSubmitValue(value as FlexJustifyContent)
       }
@@ -91,7 +91,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
   const onSubmitAlignContent = React.useCallback(
     (value: string) => {
       if (value === 'unset') {
-        alignContentLayoutInfo.onUnsetValues?.()
+        alignContentLayoutInfo.onUnsetValues()
       } else {
         alignContentLayoutInfo.onSubmitValue(value as FlexJustifyContent)
       }
