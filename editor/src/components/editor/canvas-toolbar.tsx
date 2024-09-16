@@ -72,6 +72,7 @@ import {
   keyToString,
   shortcutDetailsWithDefaults,
 } from './shortcut-definitions'
+import { LowPriorityStoreProvider } from './store/store-context-providers'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertOrEditTextButtonTestId = 'insert-or-edit-text-button'
@@ -579,7 +580,9 @@ export const CanvasToolbar = React.memo(() => {
           )
         : null}
       {/* Live Mode */}
-      {showRemixNavBar ? wrapInSubmenu(<RemixNavigationBar />) : null}
+      <LowPriorityStoreProvider>
+        {showRemixNavBar ? wrapInSubmenu(<RemixNavigationBar />) : null}
+      </LowPriorityStoreProvider>
     </FlexColumn>
   )
 })
