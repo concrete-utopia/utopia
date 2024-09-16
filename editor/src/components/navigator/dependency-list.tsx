@@ -6,6 +6,7 @@ import type {
   RequestedNpmDependency,
   PackageStatusMap,
   PackageStatus,
+  RequireFn,
 } from '../../core/shared/npm-dependency-types'
 import { requestedNpmDependency } from '../../core/shared/npm-dependency-types'
 import type { ProjectFile } from '../../core/shared/project-file-types'
@@ -42,8 +43,12 @@ import { notice } from '../common/notice'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { useDispatch } from '../editor/store/dispatch-context'
+import type { ProjectContentTreeRoot } from '../assets'
 import { getProjectFileByFilePath, packageJsonFileFromProjectContents } from '../assets'
 import { TailwindConfigPath } from '../../core/tailwind/tailwind-config'
+import { importDefault } from '../../core/es-modules/commonjs-interop'
+import type { Config } from 'tailwindcss'
+import { CanvasContainerID } from '../canvas/canvas-types'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch
@@ -461,7 +466,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
               }}
             >
               <AddTailwindButton packagesWithStatus={packagesWithStatus} />
-              <RegenerateTailwindConfigButton />
+              <GenerateTailwindConfigButton />
               <DependencyListItems
                 packages={packagesWithStatus}
                 editingLocked={this.state.dependencyLoadingStatus != 'not-loading'}
@@ -516,7 +521,41 @@ const AddTailwindButton = (props: AddTailwindButtonProps) => {
   )
 }
 
-const RegenerateTailwindConfigButton = () => {
+function ensureElementExists({ type, id }: { type: string; id: string }) {
+  let tag = document.getElementById(id)
+  if (tag == null) {
+    tag = document.createElement(type)
+    tag.id = id
+    document.head.appendChild(tag)
+  }
+  return tag
+}
+
+export const useTailwindConfig = (
+  projectContents: ProjectContentTreeRoot,
+  requireFn: RequireFn,
+) => {
+  const tailwindFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
+  React.useEffect(() => {
+    if (tailwindFile == null || tailwindFile.type !== 'TEXT_FILE') {
+      return
+    }
+    const requireResult = requireFn('/', TailwindConfigPath)
+    const rawConfig = importDefault(requireResult)
+    if (rawConfig == null) {
+      return
+    }
+    mountTailwindConfigToDom(rawConfig as Config)
+  }, [requireFn, tailwindFile])
+}
+
+function mountTailwindConfigToDom(config: Config) {
+  const configTag = ensureElementExists({ type: 'script', id: 'utopia-tailwind-config' })
+  const { content, plugins, ...restOfConfig } = config
+  configTag.innerHTML = `tailwind.config = ${JSON.stringify(restOfConfig)}`
+}
+
+const GenerateTailwindConfigButton = () => {
   const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
 
   const onClick = React.useCallback(async () => {
@@ -532,7 +571,7 @@ const RegenerateTailwindConfigButton = () => {
       tailwindConfigContents.type !== 'TEXT_FILE' ||
       cssContent.type !== 'TEXT_FILE'
     ) {
-      console.error('Failed to regenerate tailwind config')
+      console.error('Failed to generate tailwind config')
       return
     }
 
@@ -547,14 +586,7 @@ const RegenerateTailwindConfigButton = () => {
     const data = await response.json()
     const css = data.generatedCSS
 
-    let styleTag = document.getElementById('utopia-tailwind-generated-styles')
-    if (styleTag == null) {
-      styleTag = document.createElement('style')
-      styleTag.id = 'utopia-tailwind-generated-styles'
-      styleTag.innerHTML = css
-      document.head.appendChild(styleTag)
-    }
-
+    const styleTag = ensureElementExists({ type: 'style', id: 'utopia-tailwind-generated-styles' })
     styleTag.innerHTML = css
   }, [projectContentsRef])
 
@@ -571,7 +603,7 @@ const RegenerateTailwindConfigButton = () => {
         cursor: 'pointer',
       }}
     >
-      Regenerate Tailwind Config
+      Generate Tailwind Config
     </Button>
   )
 }

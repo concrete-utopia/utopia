@@ -77,7 +77,6 @@ import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import type { RemixValidPathsGenerationContext } from './canvas-utils'
 import { getParseSuccessForFilePath, getValidElementPaths } from './canvas-utils'
 import { arrayEqualsByValue, fastForEach, NO_OP } from '../../core/shared/utils'
-import { useTwind } from '../../core/tailwind/tailwind'
 import {
   AlwaysFalse,
   atomWithPubSub,
@@ -98,6 +97,7 @@ import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 import { listenForReactRouterErrors } from '../../core/shared/runtime-report-logs'
 import { getFilePathMappings } from '../../core/model/project-file-utils'
 import { useInvalidatedCanvasRemount } from './canvas-component-entry'
+import { useTailwindConfig } from '../navigator/dependency-list'
 
 applyUIDMonkeyPatch()
 
@@ -498,7 +498,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const executionScope = scope
 
-  useTwind(projectContentsForRequireFn, customRequire, '#canvas-container')
+  useTailwindConfig(projectContentsForRequireFn, customRequire)
 
   const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 

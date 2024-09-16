@@ -178,7 +178,7 @@ export const ClassNameSelect = React.memo(
       isMenuOpenRef.current = true
     }, [])
 
-    const filteredOptions = useFilteredOptions(input, MaxResults, clearFocusedOption)
+    const filteredOptions = useFilteredOptions(clearFocusedOption)
 
     React.useEffect(() => {
       return function cleanup() {

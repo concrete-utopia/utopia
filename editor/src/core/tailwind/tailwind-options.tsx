@@ -28,7 +28,6 @@ import {
 } from '../shared/jsx-attribute-utils'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
-import { isTwindEnabled } from './tailwind'
 import type { AttributeCategory } from './attribute-categories'
 import { AttributeCategories } from './attribute-categories'
 import { parse } from '@xengine/tailwindcss-class-parser'
@@ -90,137 +89,10 @@ function searchStringToIndividualTerms(sanitisedFilter: string): Array<string> {
   return sanitisedFilter.split(/\W/).filter((s) => s != '')
 }
 
-function findMatchingOptions<T>(
-  filter: string,
-  searchTerms: Array<string>,
-  options: Array<T>,
-  toFullString: (t: T) => string,
-  toStringParts: (t: T) => Array<string>,
-  maxPerfectMatches: number,
-): Array<Array<T>> {
-  let orderedFullTermMatches: Array<Array<T>> = []
-  let orderedIndividualTermMatches: Array<Array<T>> = []
-  let perfectMatchCount = 0
-  for (var i = 0; i < options.length && perfectMatchCount < maxPerfectMatches; i++) {
-    const nextOption = options[i]
-    const fullString = toFullString(nextOption)
-    const stringParts = toStringParts(nextOption)
-    const combinatorialQualifiers = stringParts.slice(0, -1) // e.g. sm: hover: etc.
-    const combinatorialPartsMatch = combinatorialQualifiers.every((combinatorialQualifier) =>
-      searchTerms.some(
-        // All combinatorial parts must be at least 50% matched by a search term
-        // This feels better than a perfect match
-        (searchTerm) =>
-          combinatorialQualifier.startsWith(searchTerm) &&
-          combinatorialQualifier.length <= 2 * searchTerm.length,
-      ),
-    )
-    if (combinatorialPartsMatch) {
-      // Only proceed with the match if all combinatorial parts were matched
-      const fullFilterIndexResult = fullString.indexOf(filter)
-      if (fullFilterIndexResult > -1) {
-        // Attempt a match against the full string first
-        let existingMatched = orderedFullTermMatches[fullFilterIndexResult] ?? []
-        existingMatched.push(nextOption)
-        orderedFullTermMatches[fullFilterIndexResult] = existingMatched // Prioritise full string matches
-        if (fullFilterIndexResult === 0) {
-          perfectMatchCount++
-        }
-      } else {
-        const splitInputIndexResult = searchTerms.map((s) => fullString.indexOf(s))
-        const minimumIndexOf = Math.min(...splitInputIndexResult)
-        if (minimumIndexOf > -1) {
-          let existingMatched = orderedIndividualTermMatches[minimumIndexOf] ?? []
-          existingMatched.push(nextOption)
-          orderedIndividualTermMatches[minimumIndexOf] = existingMatched
-          if (minimumIndexOf === 0) {
-            perfectMatchCount++
-          }
-        }
-      }
-    }
-  }
-
-  // Combine the matches, giving priority to the full term matches
-  return [...orderedFullTermMatches, ...orderedIndividualTermMatches]
-}
-
-function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: number): Set<T> {
-  let matchedResults: Set<T> = new Set()
-  let matchCount = 0
-  for (var i = 0; i < orderedSparseArray.length && matchCount < maxMatches; i++) {
-    const nextMatches = orderedSparseArray[i]
-    if (nextMatches != null) {
-      const maxNextMatches = nextMatches.slice(0, maxMatches - matchCount)
-      maxNextMatches.forEach((m) => matchedResults.add(m))
-      matchCount = matchedResults.size
-    }
-  }
-
-  return matchedResults
-}
-
-export function useFilteredOptions(
-  filter: string,
-  maxResults: number,
-  onEmptyResults: () => void = NO_OP,
-): Array<TailWindOption> {
+export function useFilteredOptions(onEmptyResults: () => void = NO_OP): Array<TailWindOption> {
   return React.useMemo(() => {
-    if (isTwindEnabled()) {
-      const sanitisedFilter = filter.trim().toLowerCase()
-      const searchTerms = searchStringToIndividualTerms(sanitisedFilter)
-      let results: Array<TailWindOption>
-
-      if (searchTerms.length === 0) {
-        results = TailWindOptions.slice(0, maxResults)
-      } else {
-        // First find all matches, and use a sparse array to keep the best matches at the front
-        const orderedMatchedResults = findMatchingOptions(
-          sanitisedFilter,
-          searchTerms,
-          TailWindOptions,
-          (option) => option.label,
-          (option) => option.label.split(':'),
-          maxResults,
-        )
-
-        // Now go through and take the first n best matches
-        let matchedResults = takeBestOptions(orderedMatchedResults, maxResults)
-
-        // Next if we haven't hit our max result count, we find matches based on attributes
-        const remainingAllowedMatches = maxResults - matchedResults.size
-        if (remainingAllowedMatches > 0) {
-          const orderedAttributeMatchedResults = findMatchingOptions(
-            sanitisedFilter,
-            searchTerms,
-            AllAttributes,
-            (a) => a,
-            (a) => [a],
-            remainingAllowedMatches,
-          )
-          const bestMatchedAttributes = takeBestOptions(
-            orderedAttributeMatchedResults,
-            remainingAllowedMatches,
-          )
-
-          bestMatchedAttributes.forEach((attribute) => {
-            const matchingOptions = AttributeOptionLookup[attribute] ?? []
-            matchingOptions.forEach((option) => matchedResults.add(option))
-          })
-        }
-
-        results = Array.from(matchedResults)
-      }
-
-      if (results.length === 0) {
-        onEmptyResults()
-      }
-
-      return results
-    } else {
-      return []
-    }
-  }, [filter, maxResults, onEmptyResults])
+    return []
+  }, [])
 }
 
 export function getClassNameAttribute(element: JSXElementChild | null): {
@@ -268,7 +140,6 @@ export function useGetSelectedClasses(): {
   elementPaths: Array<ElementPath>
   isSettable: boolean
 } {
-  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const elements = useEditorState(
     Substores.fullStore,
     (store) =>
@@ -375,7 +246,6 @@ const getColorForCategory = (category: AttributeCategory): string => {
       return '#FF00FF'
 
     default:
-      const _exhaustive: never = category
       throw new Error(`Unknown category ${category}`)
   }
 }
