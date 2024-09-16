@@ -1,6 +1,7 @@
 import React from 'react'
 import { InspectorModal } from '../widgets/inspector-modal'
 import { FlexColumn, H1, SquareButton, UtopiaStyles } from '../../../uuiui'
+import type { GridRowVariant } from '../widgets/ui-grid-row'
 import { UIGridRow } from '../widgets/ui-grid-row'
 import type { OptionChainOption } from './option-chain-control'
 import { OptionChainControl } from './option-chain-control'
@@ -19,12 +20,9 @@ import { FlexJustifyContent } from 'utopia-api/core'
 export interface AdvancedGridModalProps {
   id: string
   testId: string
-  key: string
-  popupOpen?: boolean
-  openPopup?: (id: string) => void
-  closePopup?: () => void
-  style?: React.CSSProperties
-  modalOffset?: {
+  popupOpen: boolean
+  closePopup: () => void
+  modalOffset: {
     x: number
     y: number
   }
@@ -100,11 +98,6 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
     },
     [alignContentLayoutInfo],
   )
-
-  const justifyItemsOptions = React.useMemo(() => itemsOptions('justify'), [])
-  const alignItemsOptions = React.useMemo(() => itemsOptions('align'), [])
-
-  const rowVariant = '|--67px--|<--------1fr-------->'
 
   const advancedGridModal = (
     <InspectorModal
@@ -202,7 +195,6 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
       key={props.id}
       id={`trigger-${props.id}`}
       className={`ignore-react-onclickoutside-${props.id}`}
-      style={props.style}
     >
       {props.popupOpen ? advancedGridModal : null}
     </div>
@@ -258,6 +250,10 @@ const itemsOptions = (alignOrJustify: 'align' | 'justify') =>
       },
     },
   ] as Array<OptionChainOption<string | number>>
+
+const justifyItemsOptions = itemsOptions('justify')
+const alignItemsOptions = itemsOptions('align')
+const rowVariant: GridRowVariant = '|--67px--|<--------1fr-------->'
 
 function selectOption(value: FlexJustifyContent) {
   return regularRadixSelectOption({
