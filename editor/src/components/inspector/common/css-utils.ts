@@ -4492,7 +4492,8 @@ export interface ParsedCSSProperties {
   flexWrap: FlexWrap
   flexDirection: FlexDirection
   alignItems: FlexAlignment
-  alignContent: FlexAlignment
+  justifyItems: FlexAlignment
+  alignContent: FlexJustifyContent
   justifyContent: FlexJustifyContent
   alignSelf: FlexAlignment
   position: CSSPosition
@@ -4602,7 +4603,8 @@ export const cssEmptyValues: ParsedCSSProperties = {
   flexWrap: FlexWrap.NoWrap,
   flexDirection: 'row',
   alignItems: FlexAlignment.FlexStart,
-  alignContent: FlexAlignment.FlexStart,
+  justifyItems: FlexAlignment.FlexStart,
+  alignContent: FlexJustifyContent.FlexStart,
   justifyContent: FlexJustifyContent.FlexStart,
   padding: {
     paddingTop: {
@@ -4771,7 +4773,8 @@ export const cssParsers: CSSParsers = {
   flexWrap: flexWrapParser,
   flexDirection: parseFlexDirection,
   alignItems: flexAlignmentsParser,
-  alignContent: flexAlignmentsParser,
+  justifyItems: flexAlignmentsParser,
+  alignContent: flexJustifyContentParser,
   justifyContent: flexJustifyContentParser,
   padding: parsePadding,
   paddingTop: parseCSSLengthPercent,
@@ -4848,6 +4851,7 @@ const cssPrinters: CSSPrinters = {
   flexWrap: jsxAttributeValueWithNoComments,
   flexDirection: jsxAttributeValueWithNoComments,
   alignItems: jsxAttributeValueWithNoComments,
+  justifyItems: jsxAttributeValueWithNoComments,
   alignContent: jsxAttributeValueWithNoComments,
   justifyContent: jsxAttributeValueWithNoComments,
   padding: printPaddingAsAttributeValue,
@@ -5526,7 +5530,8 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   flexWrap: FlexWrap.NoWrap,
   flexDirection: 'row',
   alignItems: FlexAlignment.FlexStart,
-  alignContent: FlexAlignment.FlexStart,
+  justifyItems: FlexAlignment.FlexStart,
+  alignContent: FlexJustifyContent.FlexStart,
   justifyContent: FlexJustifyContent.FlexStart,
   padding: nontrivial,
   paddingTop: {
