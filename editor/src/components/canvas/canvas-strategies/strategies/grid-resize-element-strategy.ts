@@ -1,4 +1,5 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { canvasRectangleToWindowRectangle } from '../../../../core/shared/dom-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { GridElementProperties, GridPosition } from '../../../../core/shared/element-template'
 import { offsetPoint } from '../../../../core/shared/math-utils'
@@ -6,7 +7,7 @@ import { assertNever } from '../../../../core/shared/utils'
 import { isCSSKeyword } from '../../../inspector/common/css-utils'
 import { isFixedHugFillModeApplied } from '../../../inspector/inspector-common'
 import { controlsForGridPlaceholders, GridResizeControls } from '../../controls/grid-controls'
-import { canvasPointToWindowPoint } from '../../dom-lookup'
+import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../../dom-lookup'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -16,7 +17,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { getGridCellUnderMouse } from './grid-cell-bounds'
+import { getGridCellUnderMouseFromMetadata } from './grid-cell-bounds'
 import type { TargetGridCellData } from './grid-helpers'
 import { setGridPropsCommands } from './grid-helpers'
 
@@ -78,6 +79,14 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
+      const container = MetadataUtils.findElementByElementPath(
+        canvasState.startingMetadata,
+        EP.parentPath(selectedElement),
+      )
+      if (container == null) {
+        return emptyStrategyApplicationResult
+      }
+
       const mouseWindowPoint = canvasPointToWindowPoint(
         offsetPoint(
           interactionSession.interactionData.dragStart,
@@ -88,23 +97,26 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
       )
 
       let targetCell: TargetGridCellData | null = customState.grid.targetCellData
-      const cellUnderMouse = getGridCellUnderMouse(mouseWindowPoint)
+      const cellUnderMouse = getGridCellUnderMouseFromMetadata(
+        container,
+        windowToCanvasCoordinates(canvasState.scale, canvasState.canvasOffset, mouseWindowPoint)
+          .canvasPositionRaw,
+      )
       if (cellUnderMouse != null) {
-        const { cellWindowRectangle, coordinates: gridCellCoordinates } = cellUnderMouse
-        targetCell = { cellWindowRectangle, gridCellCoordinates }
+        targetCell = {
+          ...cellUnderMouse,
+          cellWindowRectangle: canvasRectangleToWindowRectangle(
+            cellUnderMouse.cellCanvasRectangle,
+            canvasState.scale,
+            canvasState.canvasOffset,
+          ),
+        }
       }
 
       if (targetCell == null) {
         return emptyStrategyApplicationResult
       }
 
-      const container = MetadataUtils.findElementByElementPath(
-        canvasState.startingMetadata,
-        EP.parentPath(selectedElement),
-      )
-      if (container == null) {
-        return emptyStrategyApplicationResult
-      }
       const gridTemplate = container.specialSizeMeasurements.containerGridProperties
 
       let gridProps: GridElementProperties = MetadataUtils.findElementByElementPath(

@@ -10,6 +10,12 @@ import {
 } from '../../../../core/shared/math-utils'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import * as EP from '../../../../core/shared/element-path'
+import {
+  getGlobalFramesOfGridCellsFromMetadata,
+  type GridCellGlobalFrames,
+  type TargetGridCellDataCanvas,
+} from './grid-helpers'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
 
 export type GridCellCoordinates = { row: number; column: number }
 
@@ -27,6 +33,37 @@ export function gridCellTargetId(
   return gridCellTargetIdPrefix + `${EP.toString(gridElementPath)}-${row}-${column}`
 }
 
+export function getGridCellUnderMouseFromMetadata(
+  grid: ElementInstanceMetadata,
+  canvasPoint: CanvasPoint,
+): TargetGridCellDataCanvas | null {
+  const gridCellGlobalFrames = getGlobalFramesOfGridCellsFromMetadata(grid)
+
+  if (gridCellGlobalFrames == null) {
+    return null
+  }
+
+  return getGridCellUnderPoint(gridCellGlobalFrames, canvasPoint)
+}
+
+function getGridCellUnderPoint(
+  gridCellGlobalFrames: GridCellGlobalFrames,
+  canvasPoint: CanvasPoint,
+): TargetGridCellDataCanvas | null {
+  for (let i = 0; i < gridCellGlobalFrames.length; i++) {
+    for (let j = 0; j < gridCellGlobalFrames[i].length; j++) {
+      if (rectContainsPoint(gridCellGlobalFrames[i][j], canvasPoint)) {
+        return {
+          gridCellCoordinates: gridCellCoordinates(i, j),
+          cellCanvasRectangle: gridCellGlobalFrames[i][j],
+        }
+      }
+    }
+  }
+  return null
+}
+
+// TODO: should be superseded by getGridCellUnderMouseNoDomLookup
 export function getGridCellUnderMouse(mousePoint: WindowPoint) {
   return getGridCellAtPoint(mousePoint, false)
 }

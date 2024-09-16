@@ -47,6 +47,7 @@ import {
   gridCellCoordinates,
 } from './grid-cell-bounds'
 import type { Sides } from 'utopia-api/core'
+import { memoize } from '../../../../core/shared/memoize'
 
 export function runGridRearrangeMove(
   targetElement: ElementPath,
@@ -350,6 +351,11 @@ export interface TargetGridCellData {
   cellWindowRectangle: WindowRectangle
 }
 
+export interface TargetGridCellDataCanvas {
+  gridCellCoordinates: GridCellCoordinates
+  cellCanvasRectangle: CanvasRectangle
+}
+
 export function getTargetCell(
   previousTargetCell: GridCellCoordinates | null,
   duplicating: boolean,
@@ -612,13 +618,17 @@ function getGridPositionIndex(props: {
   return (props.row - 1) * props.gridTemplateColumns + props.column - 1
 }
 
+export type GridCellGlobalFrames = Array<Array<CanvasRectangle>>
+
 export function getGlobalFramesOfGridCellsFromMetadata(
   metadata: ElementInstanceMetadata,
-): Array<Array<CanvasRectangle>> | null {
+): GridCellGlobalFrames | null {
   return getGlobalFramesOfGridCells(metadata.specialSizeMeasurements)
 }
 
-export function getGlobalFramesOfGridCells({
+export const getGlobalFramesOfGridCells = memoize(getGlobalFramesOfGridCellsInner)
+
+function getGlobalFramesOfGridCellsInner({
   containerGridProperties,
   rowGap,
   columnGap,
@@ -628,7 +638,7 @@ export function getGlobalFramesOfGridCells({
   rowGap: number | null
   columnGap: number | null
   padding: Sides
-}): Array<Array<CanvasRectangle>> | null {
+}): GridCellGlobalFrames | null {
   const columnWidths = gridTemplateToNumbers(containerGridProperties.gridTemplateColumns)
 
   const rowHeights = gridTemplateToNumbers(containerGridProperties.gridTemplateRows)
