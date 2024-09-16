@@ -276,6 +276,7 @@
     "stream-browserify": "3.0.0",
     "string-hash": "1.1.3",
     "strip-ansi": "6.0.0",
+    "tailwindcss": "3.4.11",
     "tippy.js": "6.2.6",
     "typescript": "5.5.4",
     "typescript-for-the-editor": "npm:typescript@4.6.4",
