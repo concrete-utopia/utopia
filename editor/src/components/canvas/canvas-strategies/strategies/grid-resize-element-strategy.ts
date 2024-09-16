@@ -87,31 +87,24 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      const mouseWindowPoint = canvasPointToWindowPoint(
-        offsetPoint(
-          interactionSession.interactionData.dragStart,
-          interactionSession.interactionData.drag,
-        ),
-        canvasState.scale,
-        canvasState.canvasOffset,
+      const mouseCanvasPoint = offsetPoint(
+        interactionSession.interactionData.dragStart,
+        interactionSession.interactionData.drag,
       )
 
-      let targetCell: TargetGridCellData | null = customState.grid.targetCellData
-      const cellUnderMouse = getGridCellUnderMouseFromMetadata(
-        container,
-        windowToCanvasCoordinates(canvasState.scale, canvasState.canvasOffset, mouseWindowPoint)
-          .canvasPositionRaw,
-      )
-      if (cellUnderMouse != null) {
-        targetCell = {
-          ...cellUnderMouse,
-          cellWindowRectangle: canvasRectangleToWindowRectangle(
-            cellUnderMouse.cellCanvasRectangle,
-            canvasState.scale,
-            canvasState.canvasOffset,
-          ),
-        }
-      }
+      const cellUnderMouse = getGridCellUnderMouseFromMetadata(container, mouseCanvasPoint)
+
+      const targetCell =
+        cellUnderMouse == null
+          ? customState.grid.targetCellData
+          : {
+              ...cellUnderMouse,
+              cellWindowRectangle: canvasRectangleToWindowRectangle(
+                cellUnderMouse.cellCanvasRectangle,
+                canvasState.scale,
+                canvasState.canvasOffset,
+              ),
+            }
 
       if (targetCell == null) {
         return emptyStrategyApplicationResult

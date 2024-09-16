@@ -46,6 +46,7 @@ export function getGridCellUnderMouseFromMetadata(
   return getGridCellUnderPoint(gridCellGlobalFrames, canvasPoint)
 }
 
+// TODO: optimization: binary search
 function getGridCellUnderPoint(
   gridCellGlobalFrames: GridCellGlobalFrames,
   canvasPoint: CanvasPoint,
