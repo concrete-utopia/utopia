@@ -42,6 +42,7 @@ import {
   getAttributesComingFromStyleSheets,
 } from './dom-walker'
 import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
+import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 
 export function runDomSampler(options: {
   elementsToFocusOn: ElementsToRerender
@@ -67,6 +68,15 @@ export function runDomSampler(options: {
   }
 
   const validPaths = getValidPathsFromCanvasContainer(canvasRootContainer)
+  // Only perform this validation while in a test environment.
+  if (IS_TEST_ENVIRONMENT) {
+    const uniqueValidPaths = new Set(validPaths.map(EP.toString))
+    if (uniqueValidPaths.size !== validPaths.length) {
+      throw new Error(
+        `Duplicate paths in validPaths: ${JSON.stringify(validPaths.map(EP.toString), null, 2)}`,
+      )
+    }
+  }
 
   const spyPaths = Object.keys(options.spyCollector.current.spyValues.metadata)
   if (spyPaths.length === 0 && validPaths.length > 0) {

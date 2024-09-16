@@ -45,3 +45,9 @@ export function getSingleValueOnly<T>(set: Set<T>): T {
   }
   throw new Error(`Set had ${set.size} when it was expected to have just 1.`)
 }
+
+export function addAll<T>(set: Set<T>, values: Array<T>): void {
+  for (const value of values) {
+    set.add(value)
+  }
+}
