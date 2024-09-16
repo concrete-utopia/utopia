@@ -202,6 +202,7 @@ const config = {
     extensions: ['.ts', '.tsx', '.js', '.json', '.ttf'],
     symlinks: true, // We set this to false as we have symlinked some common code from the website project
     alias: {
+      'tailwindcss/resolveConfig': 'tailwindcss/resolveConfig.js',
       uuiui: srcPath('uuiui'),
       'worker-imports': path.resolve(__dirname, 'src/core/workers/worker-import-utils.ts'),
       'uuiui-deps': srcPath('uuiui-deps'),
