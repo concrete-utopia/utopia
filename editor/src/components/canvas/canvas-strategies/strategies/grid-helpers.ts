@@ -4,6 +4,7 @@ import * as EP from '../../../../core/shared/element-path'
 import type {
   ElementInstanceMetadataMap,
   GridPositionValue,
+  GridTemplate,
 } from '../../../../core/shared/element-template'
 import {
   gridPositionValue,
@@ -12,9 +13,14 @@ import {
   type GridElementProperties,
   type GridPosition,
 } from '../../../../core/shared/element-template'
-import type { CanvasVector, WindowRectangle } from '../../../../core/shared/math-utils'
+import type {
+  CanvasRectangle,
+  CanvasVector,
+  WindowRectangle,
+} from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
+  canvasRectangle,
   isInfinityRectangle,
   offsetPoint,
   scaleVector,
@@ -40,6 +46,7 @@ import {
   getGridCellUnderMouseRecursive,
   gridCellCoordinates,
 } from './grid-cell-bounds'
+import type { Sides } from 'utopia-api/core'
 
 export function runGridRearrangeMove(
   targetElement: ElementPath,
@@ -603,4 +610,63 @@ function getGridPositionIndex(props: {
   gridTemplateColumns: number
 }): number {
   return (props.row - 1) * props.gridTemplateColumns + props.column - 1
+}
+
+export function getGlobalFramesOfGridCellsFromMetadata(
+  metadata: ElementInstanceMetadata,
+): Array<Array<CanvasRectangle>> | null {
+  return getGlobalFramesOfGridCells(metadata.specialSizeMeasurements)
+}
+
+export function getGlobalFramesOfGridCells({
+  containerGridProperties,
+  rowGap,
+  columnGap,
+  padding,
+}: {
+  containerGridProperties: GridContainerProperties
+  rowGap: number | null
+  columnGap: number | null
+  padding: Sides
+}): Array<Array<CanvasRectangle>> | null {
+  const columnWidths = gridTemplateToNumbers(containerGridProperties.gridTemplateColumns)
+
+  const rowHeights = gridTemplateToNumbers(containerGridProperties.gridTemplateRows)
+
+  if (columnWidths == null || rowHeights == null) {
+    return null
+  }
+
+  const cellRects: Array<Array<CanvasRectangle>> = []
+  let yOffset = padding.top ?? 0
+  rowHeights.forEach((height) => {
+    let xOffset = padding.left ?? 0
+    const rowRects: CanvasRectangle[] = []
+    columnWidths.forEach((width) => {
+      const rect = canvasRectangle({ x: xOffset, y: yOffset, width: width, height: height })
+      rowRects.push(rect)
+      xOffset += width + (columnGap ?? 0)
+    })
+    cellRects.push(rowRects)
+    yOffset += height + (rowGap ?? 0)
+  })
+
+  return cellRects
+}
+
+function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number> | null {
+  if (gridTemplate?.type !== 'DIMENSIONS') {
+    return null
+  }
+
+  const result: Array<number> = []
+
+  for (const dimension of gridTemplate.dimensions) {
+    if (dimension.type !== 'NUMBER') {
+      return null
+    }
+    result.push(dimension.value.value)
+  }
+
+  return result
 }
