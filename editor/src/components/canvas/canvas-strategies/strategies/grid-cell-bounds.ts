@@ -63,59 +63,6 @@ function getGridCellUnderPoint(
   return null
 }
 
-function isGridCellTargetId(id: string): boolean {
-  return id.startsWith(gridCellTargetIdPrefix)
-}
-
-export function getGridCellAtPoint(
-  point: WindowPoint,
-  duplicating: boolean,
-): { id: string; coordinates: GridCellCoordinates; cellWindowRectangle: WindowRectangle } | null {
-  function maybeRecursivelyFindCellAtPoint(
-    elements: Element[],
-  ): { element: Element; cellWindowRectangle: WindowRectangle } | null {
-    // If this used during duplication, the canvas controls will be in the way and we need to traverse the children too.
-    for (const element of elements) {
-      if (isGridCellTargetId(element.id)) {
-        const domRect = element.getBoundingClientRect()
-        const windowRect = windowRectangle(domRect)
-        if (rectContainsPoint(windowRect, point)) {
-          return { element: element, cellWindowRectangle: windowRect }
-        }
-      }
-
-      if (duplicating) {
-        const child = maybeRecursivelyFindCellAtPoint(Array.from(element.children))
-        if (child != null) {
-          return child
-        }
-      }
-    }
-
-    return null
-  }
-
-  const cellUnderMouse = maybeRecursivelyFindCellAtPoint(
-    document.elementsFromPoint(point.x, point.y),
-  )
-  if (cellUnderMouse == null) {
-    return null
-  }
-
-  const { element, cellWindowRectangle } = cellUnderMouse
-  const row = element.getAttribute('data-grid-row')
-  const column = element.getAttribute('data-grid-column')
-
-  return {
-    id: element.id,
-    cellWindowRectangle: cellWindowRectangle,
-    coordinates: gridCellCoordinates(
-      row == null ? 0 : parseInt(row),
-      column == null ? 0 : parseInt(column),
-    ),
-  }
-}
-
 export function getGridCellBoundsFromCanvas(
   cell: ElementInstanceMetadata,
   grid: ElementInstanceMetadata,
