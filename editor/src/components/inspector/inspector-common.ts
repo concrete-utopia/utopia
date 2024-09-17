@@ -1436,13 +1436,9 @@ type DetectedGridPositioning = ContainedGridPositioning | SpanningGridPositionin
 
 function getGridElementBounds(
   cell: ElementInstanceMetadata,
-  canvasContext: { scale: number; offset: CanvasVector },
+  grid: ElementInstanceMetadata,
 ): DetectedGridPositioning | null {
-  const initialCellBounds = getGridCellBoundsFromCanvas(
-    cell,
-    canvasContext.scale,
-    canvasContext.offset,
-  )
+  const initialCellBounds = getGridCellBoundsFromCanvas(cell, grid)
 
   if (initialCellBounds == null) {
     return null
@@ -1480,7 +1476,12 @@ function gridChildAbsolutePositionConversionCommands(
     return null
   }
 
-  const cellBounds = getGridElementBounds(instance, canvasContext)
+  const grid = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(elementPath))
+  if (grid == null) {
+    return null
+  }
+
+  const cellBounds = getGridElementBounds(instance, grid)
   if (cellBounds == null) {
     return null
   }
