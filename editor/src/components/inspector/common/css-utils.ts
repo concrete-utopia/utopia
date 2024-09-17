@@ -1096,11 +1096,11 @@ export function parseGridAutoOrTemplateBase(
         for (const child of children) {
           switch (child.type) {
             case 'Dimension': {
-              const parsedNumber = parseCSSNumber(`${child.value}${child.unit}`, 'AnyValid')
-              if (isRight(parsedNumber)) {
-                dimensions.push(gridCSSNumber(parsedNumber.value, getAreaName()))
+              const parsedDimension = parseCSSNumber(`${child.value}${child.unit}`, 'AnyValid')
+              if (isRight(parsedDimension)) {
+                dimensions.push(gridCSSNumber(parsedDimension.value, getAreaName()))
               } else {
-                return left('invalid grid css number')
+                return left('Invalid grid CSS dimension.')
               }
               break
             }
@@ -1108,7 +1108,7 @@ export function parseGridAutoOrTemplateBase(
               if (isValidGridDimensionKeyword(child.name)) {
                 dimensions.push(gridCSSKeyword(cssKeyword(child.name), getAreaName()))
               } else {
-                return left('invalid grid css keyword')
+                return left('Invalid grid CSS keyword.')
               }
               break
             }
@@ -1118,16 +1118,20 @@ export function parseGridAutoOrTemplateBase(
                 const times = parseInt(
                   repeatChildren.find((c) => c.type === 'Number')?.value ?? '0',
                 )
-                const dims: csstree.List<csstree.CssNode> =
-                  new csstree.List<csstree.CssNode>().fromArray(
-                    repeatChildren.filter(
-                      (c) =>
-                        c.type === 'Dimension' || c.type === 'Identifier' || c.type === 'Brackets',
-                    ),
-                  )
-                const parsedDimensions = parseChildren(dims)
+                const values = new csstree.List<csstree.CssNode>().fromArray(
+                  repeatChildren.filter(
+                    (c) =>
+                      c.type === 'Dimension' ||
+                      c.type === 'Identifier' ||
+                      // We want to support area names too, because they are valid CSS
+                      c.type === 'Brackets',
+                  ),
+                )
+                const parsedDimensions = parseChildren(values)
                 if (isRight(parsedDimensions)) {
                   dimensions.push(gridCSSRepeat(times, parsedDimensions.value))
+                } else {
+                  return left('Invalid grid CSS repeat values.')
                 }
               }
               break
@@ -1145,16 +1149,16 @@ export function parseGridAutoOrTemplateBase(
         return right(dimensions)
       }
 
-      const dims = parseChildren(parsed.children)
-      if (isRight(dims)) {
-        return right({ type: 'DIMENSIONS', dimensions: dims.value })
+      const dimensions = parseChildren(parsed.children)
+      if (isRight(dimensions)) {
+        return right({ type: 'DIMENSIONS', dimensions: dimensions.value })
       }
 
-      console.warn(`Invalid grid template, falling back: ${dims.value}`)
+      console.warn(`Invalid grid template, falling back: ${dimensions.value}.`)
       return right({ type: 'FALLBACK', value: input })
     }
   }
-  return left('invalid grid template input')
+  return left('Invalid grid template input.')
 }
 
 export function parseDisplay(input: unknown): Either<string, string> {
