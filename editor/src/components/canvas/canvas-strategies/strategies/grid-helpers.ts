@@ -26,7 +26,6 @@ import {
   scaleVector,
   windowPoint,
   windowVector,
-  type WindowPoint,
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { absolute } from '../../../../utils/utils'
@@ -42,11 +41,9 @@ import type { DragInteractionData } from '../interaction-state'
 import type { GridCellCoordinates } from './grid-cell-bounds'
 import {
   getCellWindowRect,
-  getGridCellUnderMouse,
-  getGridCellUnderMouseRecursive,
+  getGridCellUnderMouseFromMetadata,
   gridCellCoordinates,
 } from './grid-cell-bounds'
-import type { Sides } from 'utopia-api/core'
 import { memoize } from '../../../../core/shared/memoize'
 
 export function runGridRearrangeMove(
@@ -57,7 +54,6 @@ export function runGridRearrangeMove(
   canvasScale: number,
   canvasOffset: CanvasVector,
   customState: GridCustomStrategyState,
-  duplicating: boolean,
 ): {
   commands: CanvasCommand[]
   targetCell: TargetGridCellData | null
@@ -75,18 +71,23 @@ export function runGridRearrangeMove(
     }
   }
 
-  const mouseWindowPoint = canvasPointToWindowPoint(
-    offsetPoint(interactionData.dragStart, interactionData.drag),
-    canvasScale,
-    canvasOffset,
-  )
+  const parentGridPath = EP.parentPath(selectedElement)
+  const grid = MetadataUtils.findElementByElementPath(jsxMetadata, parentGridPath)
+
+  if (grid == null) {
+    return {
+      commands: [],
+      targetCell: null,
+      originalRootCell: null,
+      draggingFromCell: null,
+      targetRootCell: null,
+    }
+  }
+
+  const mousePos = offsetPoint(interactionData.dragStart, interactionData.drag)
 
   const targetCellData =
-    getTargetCell(
-      customState.targetCellData?.gridCellCoordinates ?? null,
-      duplicating,
-      mouseWindowPoint,
-    ) ?? customState.targetCellData
+    getGridCellUnderMouseFromMetadata(grid, mousePos) ?? customState.targetCellData
 
   if (targetCellData == null) {
     return {
@@ -348,34 +349,7 @@ export function setGridPropsCommands(
 
 export interface TargetGridCellData {
   gridCellCoordinates: GridCellCoordinates
-  cellWindowRectangle: WindowRectangle
-}
-
-export interface TargetGridCellDataCanvas {
-  gridCellCoordinates: GridCellCoordinates
   cellCanvasRectangle: CanvasRectangle
-}
-
-export function getTargetCell(
-  previousTargetCell: GridCellCoordinates | null,
-  duplicating: boolean,
-  mouseWindowPoint: WindowPoint,
-): TargetGridCellData | null {
-  let cell = previousTargetCell ?? null
-  const cellUnderMouse = duplicating
-    ? getGridCellUnderMouseRecursive(mouseWindowPoint)
-    : getGridCellUnderMouse(mouseWindowPoint)
-  if (cellUnderMouse == null) {
-    return null
-  }
-  cell = cellUnderMouse.coordinates
-  if (cell.row < 1 || cell.column < 1) {
-    return null
-  }
-  return {
-    gridCellCoordinates: cell,
-    cellWindowRectangle: cellUnderMouse.cellWindowRectangle,
-  }
 }
 
 function getElementGridProperties(
