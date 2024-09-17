@@ -1,7 +1,7 @@
 import { matchInlineSnapshotBrowser } from '../../../../../test/karma-snapshots'
 import { runDOMWalker } from '../../../editor/actions/action-creators'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
-import { getGlobalFramesOfGridCellsFromMetadata } from './grid-helpers'
+import { getGlobalFramesOfGridCells } from './grid-helpers'
 
 describe('Grids', () => {
   it('can calculate global frames of grid cells', async () => {
@@ -17,8 +17,9 @@ describe('Grids', () => {
         display: 'grid',
         gridTemplateColumns: '150px min-content 1fr 1fr',
         gridTemplateRows: 'min-content 1fr 1fr 1fr 1fr',
-        gridGap: 10,
-        padding: 10,
+        rowGap: 10,
+        columnGap: 20,
+        padding: 5,
       }}
       data-uid={'grid'}
     >
@@ -110,7 +111,7 @@ describe('Grids', () => {
 
     // non-grids don't have cell measurements:
     expect(
-      getGlobalFramesOfGridCellsFromMetadata(
+      getGlobalFramesOfGridCells(
         editor.getEditorState().editor.jsxMetadata[
           'utopia-storyboard-uid/scene-aaa/app-entity:grid/child'
         ],
@@ -119,7 +120,7 @@ describe('Grids', () => {
 
     // grids have cell measurements:
     matchInlineSnapshotBrowser(
-      getGlobalFramesOfGridCellsFromMetadata(
+      getGlobalFramesOfGridCells(
         editor.getEditorState().editor.jsxMetadata[
           'utopia-storyboard-uid/scene-aaa/app-entity:grid'
         ],
@@ -129,130 +130,130 @@ describe('Grids', () => {
     Object {
       \"height\": 50,
       \"width\": 150,
-      \"x\": 10,
-      \"y\": 10,
+      \"x\": 132,
+      \"y\": 89,
     },
     Object {
       \"height\": 50,
       \"width\": 80,
-      \"x\": 170,
-      \"y\": 10,
+      \"x\": 302,
+      \"y\": 89,
     },
     Object {
       \"height\": 50,
-      \"width\": 119.5,
-      \"x\": 260,
-      \"y\": 10,
+      \"width\": 109.5,
+      \"x\": 402,
+      \"y\": 89,
     },
     Object {
       \"height\": 50,
-      \"width\": 119.5,
-      \"x\": 389.5,
-      \"y\": 10,
+      \"width\": 109.5,
+      \"x\": 531.5,
+      \"y\": 89,
     },
   ],
   Array [
     Object {
-      \"height\": 83.25,
+      \"height\": 85.75,
       \"width\": 150,
-      \"x\": 10,
-      \"y\": 70,
+      \"x\": 132,
+      \"y\": 149,
     },
     Object {
-      \"height\": 83.25,
+      \"height\": 85.75,
       \"width\": 80,
-      \"x\": 170,
-      \"y\": 70,
+      \"x\": 302,
+      \"y\": 149,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 260,
-      \"y\": 70,
+      \"height\": 85.75,
+      \"width\": 109.5,
+      \"x\": 402,
+      \"y\": 149,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 389.5,
-      \"y\": 70,
+      \"height\": 85.75,
+      \"width\": 109.5,
+      \"x\": 531.5,
+      \"y\": 149,
     },
   ],
   Array [
     Object {
-      \"height\": 83.25,
+      \"height\": 85.75,
       \"width\": 150,
-      \"x\": 10,
-      \"y\": 163.25,
+      \"x\": 132,
+      \"y\": 244.75,
     },
     Object {
-      \"height\": 83.25,
+      \"height\": 85.75,
       \"width\": 80,
-      \"x\": 170,
-      \"y\": 163.25,
+      \"x\": 302,
+      \"y\": 244.75,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 260,
-      \"y\": 163.25,
+      \"height\": 85.75,
+      \"width\": 109.5,
+      \"x\": 402,
+      \"y\": 244.75,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 389.5,
-      \"y\": 163.25,
+      \"height\": 85.75,
+      \"width\": 109.5,
+      \"x\": 531.5,
+      \"y\": 244.75,
     },
   ],
   Array [
     Object {
-      \"height\": 83.25,
+      \"height\": 85.75,
       \"width\": 150,
-      \"x\": 10,
-      \"y\": 256.5,
+      \"x\": 132,
+      \"y\": 340.5,
     },
     Object {
-      \"height\": 83.25,
+      \"height\": 85.75,
       \"width\": 80,
-      \"x\": 170,
-      \"y\": 256.5,
+      \"x\": 302,
+      \"y\": 340.5,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 260,
-      \"y\": 256.5,
+      \"height\": 85.75,
+      \"width\": 109.5,
+      \"x\": 402,
+      \"y\": 340.5,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 389.5,
-      \"y\": 256.5,
+      \"height\": 85.75,
+      \"width\": 109.5,
+      \"x\": 531.5,
+      \"y\": 340.5,
     },
   ],
   Array [
     Object {
-      \"height\": 83.25,
+      \"height\": 85.75,
       \"width\": 150,
-      \"x\": 10,
-      \"y\": 349.75,
+      \"x\": 132,
+      \"y\": 436.25,
     },
     Object {
-      \"height\": 83.25,
+      \"height\": 85.75,
       \"width\": 80,
-      \"x\": 170,
-      \"y\": 349.75,
+      \"x\": 302,
+      \"y\": 436.25,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 260,
-      \"y\": 349.75,
+      \"height\": 85.75,
+      \"width\": 109.5,
+      \"x\": 402,
+      \"y\": 436.25,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 389.5,
-      \"y\": 349.75,
+      \"height\": 85.75,
+      \"width\": 109.5,
+      \"x\": 531.5,
+      \"y\": 436.25,
     },
   ],
 ]`,
