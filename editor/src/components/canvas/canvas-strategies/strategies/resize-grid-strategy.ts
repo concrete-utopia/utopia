@@ -23,8 +23,9 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import type { GridDimension } from '../../../../components/inspector/common/css-utils'
 import {
+  gridCSSRepeat,
   isGridCSSNumber,
-  printArrayGridDimension,
+  printArrayGridDimensions,
 } from '../../../../components/inspector/common/css-utils'
 import { modify, toFirst } from '../../../../core/shared/optics/optic-utilities'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -104,19 +105,49 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
           : gridSpecialSizeMeasurements.containerGridProperties.gridTemplateRows
 
       if (
-        calculatedValues == null ||
-        calculatedValues.type !== 'DIMENSIONS' ||
         originalValues == null ||
-        originalValues.type !== 'DIMENSIONS'
+        originalValues.type !== 'DIMENSIONS' ||
+        calculatedValues == null ||
+        calculatedValues.type !== 'DIMENSIONS'
       ) {
         return emptyStrategyApplicationResult
       }
 
+      type ExpandedGridDimension = GridDimension & {
+        repeated: boolean
+        originalIndex: number
+      }
+
+      const expandedOriginalValues = originalValues.dimensions.reduce(
+        (acc, cur, index): ExpandedGridDimension[] => {
+          if (cur.type === 'REPEAT') {
+            let expanded: ExpandedGridDimension[] = []
+            for (let i = 0; i < cur.times; i++) {
+              expanded.push(
+                ...cur.value.map((v) => ({
+                  ...v,
+                  repeated: true,
+                  originalIndex: index,
+                })),
+              )
+            }
+            return acc.concat(expanded)
+          } else {
+            return acc.concat({
+              ...cur,
+              originalIndex: index,
+              repeated: false,
+            })
+          }
+        },
+        [] as ExpandedGridDimension[],
+      ) as ExpandedGridDimension[]
+
       const mergedValues: GridAutoOrTemplateBase = {
         type: calculatedValues.type,
         dimensions: calculatedValues.dimensions.map((dim, index) => {
-          if (index < originalValues.dimensions.length) {
-            return originalValues.dimensions[index]
+          if (index < expandedOriginalValues.length) {
+            return expandedOriginalValues[index]
           }
           return dim
         }),
@@ -149,7 +180,38 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
           ),
         mergedValues.dimensions,
       )
-      const propertyValueAsString = printArrayGridDimension(newSetting)
+
+      const targetIndex = expandedOriginalValues[control.columnOrRow].originalIndex
+      const leftChunk = originalValues.dimensions.slice(0, targetIndex)
+      const rightChunk = originalValues.dimensions.slice(targetIndex + 1)
+      const midChunkStart = expandedOriginalValues.findIndex((c) => c.originalIndex === targetIndex)
+      const midChunkEnd =
+        midChunkStart + expandedOriginalValues.filter((c) => c.originalIndex === targetIndex).length
+      const midChunkSize = midChunkEnd - midChunkStart
+
+      let midChunk: GridDimension[] = []
+      const target = originalValues.dimensions[targetIndex]
+      if (target.type === 'REPEAT') {
+        const groupSize = midChunkSize / target.times
+        const midChunkValues = newSetting.slice(midChunkStart, midChunkStart + groupSize)
+        const targetChunkIndex = (control.columnOrRow - midChunkStart) % groupSize
+
+        const resizedValue = newSetting[control.columnOrRow]
+        const values = midChunkValues.map((v, index) => {
+          if (index % (groupSize * target.times) === targetChunkIndex) {
+            return resizedValue
+          } else {
+            return v
+          }
+        })
+        midChunk.push(gridCSSRepeat(target.times, values))
+      } else {
+        midChunk.push(...newSetting.slice(midChunkStart, midChunkEnd))
+      }
+
+      const newDimensions = [...leftChunk, ...midChunk, ...rightChunk]
+
+      const propertyValueAsString = printArrayGridDimensions(newDimensions)
 
       const commands = [
         setProperty(

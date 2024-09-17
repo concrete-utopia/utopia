@@ -7,7 +7,10 @@ import type { CSSProperties } from 'react'
 import React from 'react'
 import type { Sides } from 'utopia-api/core'
 import type { ElementPath } from 'utopia-shared/src/types'
-import type { GridDimension } from '../../../components/inspector/common/css-utils'
+import type {
+  GridDimension,
+  GridDiscreteDimension,
+} from '../../../components/inspector/common/css-utils'
 import {
   isCSSKeyword,
   printGridAutoOrTemplateBase,
@@ -17,6 +20,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import { defaultEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
+import type { GridAutoOrTemplateDimensions } from '../../../core/shared/element-template'
 import {
   isGridAutoOrTemplateDimensions,
   type GridAutoOrTemplateBase,
@@ -97,7 +101,9 @@ function getCellsCount(template: GridAutoOrTemplateBase | null): number {
 
   switch (template.type) {
     case 'DIMENSIONS':
-      return template.dimensions.length
+      return template.dimensions.reduce((acc, curr) => {
+        return acc + (curr.type === 'REPEAT' ? curr.times : 1)
+      }, 0)
     case 'FALLBACK':
       return 0
     default:
@@ -129,7 +135,7 @@ function gridCSSNumberToLabel(gridCSSNumber: GridDimension): string {
 function getLabelForAxis(
   fromDOM: GridDimension,
   index: number,
-  fromProps: GridAutoOrTemplateBase | null,
+  fromProps: GridAutoOrTemplateDimensions | null,
 ): string {
   const fromPropsAtIndex = toFirst(getFromPropsOptic(index), fromProps)
   return gridCSSNumberToLabel(defaultEither(fromDOM, fromPropsAtIndex))
@@ -143,8 +149,10 @@ export interface GridResizingControlProps {
   dimensionIndex: number
   axis: Axis
   containingFrame: CanvasRectangle
-  fromPropsAxisValues: GridAutoOrTemplateBase | null
+  fromPropsAxisValues: GridAutoOrTemplateDimensions | null
   padding: number | null
+  resizing: 'resize-target' | 'resize-generated' | 'not-resizing'
+  setResizing: (v: number | null) => void
 }
 
 export const GridResizingControl = React.memo((props: GridResizingControlProps) => {
@@ -161,12 +169,12 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
-  const [resizing, setResizing] = React.useState(false)
+  const { setResizing } = props
 
   const mouseDownHandler = React.useCallback(
     (event: React.MouseEvent): void => {
       function mouseUpHandler() {
-        setResizing(false)
+        setResizing(null)
         window.removeEventListener('mouseup', mouseUpHandler)
       }
       window.addEventListener('mouseup', mouseUpHandler)
@@ -176,7 +184,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         canvasOffset,
         windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
       )
-      setResizing(true)
+      setResizing(props.dimensionIndex)
 
       dispatch([
         CanvasActions.createInteractionSession(
@@ -191,7 +199,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
       event.stopPropagation()
       event.preventDefault()
     },
-    [canvasOffset, dispatch, props.axis, props.dimensionIndex, scale],
+    [canvasOffset, dispatch, props.axis, props.dimensionIndex, scale, setResizing],
   )
 
   const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
@@ -221,8 +229,8 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         display: 'flex',
         alignItems: props.axis === 'column' ? 'flex-start' : 'center',
         justifyContent: props.axis === 'column' ? 'center' : 'flex-start',
-        height: props.axis === 'column' && resizing ? shadowSize : '100%',
-        width: props.axis === 'row' && resizing ? shadowSize : '100%',
+        height: props.axis === 'column' && props.resizing !== 'not-resizing' ? shadowSize : '100%',
+        width: props.axis === 'row' && props.resizing !== 'not-resizing' ? shadowSize : '100%',
         position: 'relative',
       }}
     >
@@ -245,7 +253,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           pointerEvents: 'initial',
         }}
         css={{
-          opacity: resizing ? 1 : 0.5,
+          opacity: props.resizing !== 'not-resizing' ? 1 : 0.5,
           ':hover': {
             opacity: 1,
           },
@@ -260,7 +268,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         )}
       </div>
       {when(
-        resizing,
+        props.resizing !== 'not-resizing',
         <div
           style={{
             position: 'absolute',
@@ -271,10 +279,17 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            border: `1px solid ${resizing ? colorTheme.brandNeonPink.value : 'transparent'}`,
-            ...(resizing
+            border: `1px solid ${
+              props.resizing === 'resize-target'
+                ? colorTheme.brandNeonPink.value
+                : colorTheme.brandNeonPink60.value
+            }`,
+            ...(props.resizing === 'resize-target'
               ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink60.value, scale)
-              : {}),
+              : UtopiaStyles.backgrounds.stripedBackground(
+                  colorTheme.brandNeonPink10.value,
+                  scale,
+                )),
           }}
         >
           <CanvasLabel
@@ -284,7 +299,11 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
               props.fromPropsAxisValues,
             )}
             scale={scale}
-            color={colorTheme.brandNeonPink.value}
+            color={
+              props.resizing === 'resize-target'
+                ? colorTheme.brandNeonPink.value
+                : colorTheme.brandNeonPink60.value
+            }
             textColor={colorTheme.white.value}
           />
         </div>,
@@ -309,6 +328,72 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
     (store) => store.editor.canvas.scale,
     'GridResizing canvasScale',
   )
+
+  const fromProps = React.useMemo((): GridAutoOrTemplateDimensions | null => {
+    if (props.fromPropsAxisValues?.type !== 'DIMENSIONS') {
+      return null
+    }
+    return {
+      type: 'DIMENSIONS',
+      dimensions: props.fromPropsAxisValues.dimensions.reduce(
+        (acc, cur): GridDiscreteDimension[] => {
+          if (cur.type === 'REPEAT') {
+            let expanded: GridDiscreteDimension[] = []
+            for (let i = 0; i < cur.times; i++) {
+              expanded.push(...cur.value.filter((v) => v.type !== 'REPEAT'))
+            }
+            return acc.concat(...expanded)
+          } else {
+            return acc.concat(cur)
+          }
+        },
+        [] as GridDiscreteDimension[],
+      ),
+    }
+  }, [props.fromPropsAxisValues])
+
+  const [resizing, setResizing] = React.useState<number | null>(null)
+  const coresizing: number[] = React.useMemo(() => {
+    if (props.fromPropsAxisValues?.type !== 'DIMENSIONS' || resizing == null) {
+      return []
+    }
+    let i = 0
+    let coresizeIndexes: number[][][] = []
+    for (const dim of props.fromPropsAxisValues.dimensions) {
+      if (dim.type === 'REPEAT') {
+        let start = i
+        let ohmy: number[][] = []
+        for (let j = 0; j < dim.value.length; j++) {
+          let localIndexes: number[] = []
+          // for each value push the coresize indexes
+          for (let t = 0; t < dim.times; t++) {
+            localIndexes.push(start + j + t * dim.value.length)
+          }
+          ohmy.push(localIndexes)
+        }
+        coresizeIndexes.push(ohmy)
+        i += dim.value.length * dim.times
+      } else {
+        coresizeIndexes.push([[i]])
+        i++
+      }
+    }
+
+    let expandedCoresizeIndexes: number[][] = []
+    for (let j = 0; j < props.fromPropsAxisValues.dimensions.length; j++) {
+      const dim = props.fromPropsAxisValues.dimensions[j]
+      if (dim.type === 'REPEAT') {
+        for (let k = 0; k < dim.times * dim.value.length; k++) {
+          expandedCoresizeIndexes.push(coresizeIndexes[j][k % dim.value.length])
+        }
+      } else {
+        expandedCoresizeIndexes.push(coresizeIndexes[j][0])
+      }
+    }
+
+    return expandedCoresizeIndexes[resizing] ?? []
+  }, [props.fromPropsAxisValues, resizing])
+
   if (props.axisValues == null) {
     return null
   }
@@ -347,9 +432,17 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
                 key={`grid-resizing-control-${dimensionIndex}`}
                 dimensionIndex={dimensionIndex}
                 dimension={dimension}
-                fromPropsAxisValues={props.fromPropsAxisValues}
+                fromPropsAxisValues={fromProps}
                 axis={props.axis}
                 containingFrame={props.containingFrame}
+                resizing={
+                  resizing === dimensionIndex
+                    ? 'resize-target'
+                    : coresizing.includes(dimensionIndex)
+                    ? 'resize-generated'
+                    : 'not-resizing'
+                }
+                setResizing={setResizing}
                 padding={
                   props.padding == null
                     ? 0

@@ -35,6 +35,7 @@ import type {
   CSSKeyword,
   CSSNumber,
   GridAutoFlow,
+  GridDiscreteDimension,
   UnknownOrEmptyInput,
   ValidGridDimensionKeyword,
 } from './common/css-utils'
@@ -151,12 +152,13 @@ export const FlexSection = React.memo(() => {
     'FlexSection grid',
   )
 
-  const columns = React.useMemo(() => {
+  const columns = React.useMemo((): GridDiscreteDimension[] => {
     const autoCols: GridDimension[] =
       grid?.specialSizeMeasurements.containerGridProperties.gridAutoColumns?.type === 'DIMENSIONS'
         ? grid.specialSizeMeasurements.containerGridProperties.gridAutoColumns.dimensions
         : []
-    return mergeGridTemplateValues({
+
+    const merged = mergeGridTemplateValues({
       autoValues: autoCols,
       ...getGridTemplateAxisValues({
         calculated:
@@ -166,14 +168,28 @@ export const FlexSection = React.memo(() => {
           null,
       }),
     })
+
+    const reduced = merged.reduce((acc, cur) => {
+      if (cur.type === 'REPEAT') {
+        let expanded: GridDiscreteDimension[] = []
+        for (let i = 0; i < cur.times; i++) {
+          expanded.push(...cur.value.filter((v) => v.type !== 'REPEAT'))
+        }
+        return acc.concat(...expanded)
+      }
+      return acc.concat(cur)
+    }, [] as GridDiscreteDimension[])
+
+    return reduced
   }, [grid])
 
-  const rows = React.useMemo(() => {
+  const rows = React.useMemo((): GridDiscreteDimension[] => {
     const autoRows: GridDimension[] =
       grid?.specialSizeMeasurements.containerGridProperties.gridAutoRows?.type === 'DIMENSIONS'
         ? grid.specialSizeMeasurements.containerGridProperties.gridAutoRows.dimensions
         : []
-    return mergeGridTemplateValues({
+
+    const merged = mergeGridTemplateValues({
       autoValues: autoRows,
       ...getGridTemplateAxisValues({
         calculated: grid?.specialSizeMeasurements.containerGridProperties.gridTemplateRows ?? null,
@@ -181,6 +197,15 @@ export const FlexSection = React.memo(() => {
           grid?.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows ?? null,
       }),
     })
+
+    const reduced = merged.reduce((acc, cur) => {
+      if (cur.type === 'REPEAT') {
+        return acc.concat(...cur.value.filter((v) => v.type !== 'REPEAT'))
+      }
+      return acc.concat(cur)
+    }, [] as GridDiscreteDimension[])
+
+    return reduced
   }, [grid])
 
   return (
@@ -246,7 +271,7 @@ const TemplateDimensionControl = React.memo(
     title,
   }: {
     grid: ElementInstanceMetadata
-    values: GridDimension[]
+    values: GridDiscreteDimension[]
     axis: 'column' | 'row'
     title: string
   }) => {
@@ -498,7 +523,7 @@ function AxisDimensionControl({
   onUpdate,
   opener,
 }: {
-  value: GridDimension
+  value: GridDiscreteDimension
   index: number
   items: DropdownMenuItem[]
   axis: 'column' | 'row'
@@ -594,9 +619,14 @@ function renameAreaInTemplateAtIndex(
   axis: 'column' | 'row',
   index: number,
   newAreaName: string | null,
-) {
-  function renameDimension(dimension: GridDimension, idx: number) {
-    return idx === index ? { ...dimension, areaName: newAreaName } : dimension
+): GridContainerProperties {
+  function renameDimension(dimension: GridDimension, idx: number): GridDimension {
+    return idx === index
+      ? ({
+          ...dimension,
+          areaName: dimension.type === 'REPEAT' ? null : newAreaName,
+        } as GridDimension)
+      : dimension
   }
 
   const gridTemplateRows =
@@ -622,14 +652,18 @@ function renameAreaInTemplateAtIndex(
   }
 }
 
-function gridNumbersToTemplateString(values: GridDimension[]) {
+function gridNumbersToTemplateString(values: GridDiscreteDimension[]) {
   return values
     .map((v) => {
       function getValue(): string {
-        if (isGridCSSKeyword(v)) {
-          return v.value.value
+        switch (v.type) {
+          case 'KEYWORD':
+            return v.value.value
+          case 'NUMBER':
+            return `${v.value.value}${v.value.unit != null ? `${v.value.unit}` : 'px'}`
+          default:
+            assertNever(v)
         }
-        return `${v.value.value}${v.value.unit != null ? `${v.value.unit}` : 'px'}`
       }
       const areaName = v.areaName != null ? `[${v.areaName}] ` : ''
       const value = getValue()
