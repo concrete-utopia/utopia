@@ -17,63 +17,51 @@ export interface TooltipProps {
   textColor?: string
 }
 
-function tooltipPropsEqual(
-  a: React.PropsWithChildren<TooltipProps>,
-  b: React.PropsWithChildren<TooltipProps>,
-): boolean {
-  return (
-    a == b ||
-    (a.title === b.title &&
-      a.placement === b.placement &&
-      a.disabled === b.disabled &&
-      a.children === b.children)
+export const Tooltip: React.FunctionComponent<React.PropsWithChildren<TooltipProps>> = (props) => {
+  const backgroundColor = props.backgroundColor ?? colorTheme.neutralInvertedBackground.value
+  const textColor = props.textColor ?? colorTheme.neutralInvertedForeground.value
+
+  const css = React.useMemo(
+    () =>
+      ({
+        fontWeight: 400,
+        fontSize: 11,
+        textAlign: 'center',
+        fontFamily:
+          "utopian-inter, -apple-system, BlinkMacSystemFont, Helvetica, 'Segoe UI', Roboto, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'",
+        backgroundColor: `${backgroundColor} !important`,
+        color: `${textColor} !important`,
+        '& .tippy-content': {
+          padding: '4px 8px !important',
+        },
+        '&[data-placement^=top] .tippy-arrow::before': {
+          borderTopColor: `${backgroundColor} !important`,
+        },
+        '&[data-placement^=right] .tippy-arrow::before': {
+          borderRightColor: `${backgroundColor} !important`,
+        },
+        '&[data-placement^=bottom] .tippy-arrow::before': {
+          borderBottomColor: `${backgroundColor} !important`,
+        },
+        '&[data-placement^=left] .tippy-arrow::before': {
+          borderLeftColor: `${backgroundColor} !important`,
+        },
+      } as const),
+    [backgroundColor, textColor],
   )
-}
 
-export class Tooltip extends React.Component<React.PropsWithChildren<TooltipProps>> {
-  shouldComponentUpdate(nextProps: React.PropsWithChildren<TooltipProps>): boolean {
-    return !tooltipPropsEqual(this.props, nextProps)
-  }
-
-  render() {
-    const backgroundColor = this.props.backgroundColor ?? colorTheme.neutralInvertedBackground.value
-    const textColor = this.props.textColor ?? colorTheme.neutralInvertedForeground.value
-    return (
-      <Tippy
-        css={{
-          fontWeight: 400,
-          fontSize: 11,
-          textAlign: 'center',
-          fontFamily:
-            "utopian-inter, -apple-system, BlinkMacSystemFont, Helvetica, 'Segoe UI', Roboto, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'",
-          backgroundColor: `${backgroundColor} !important`,
-          color: `${textColor} !important`,
-          '& .tippy-content': {
-            padding: '4px 8px !important',
-          },
-          '&[data-placement^=top] .tippy-arrow::before': {
-            borderTopColor: `${backgroundColor} !important`,
-          },
-          '&[data-placement^=right] .tippy-arrow::before': {
-            borderRightColor: `${backgroundColor} !important`,
-          },
-          '&[data-placement^=bottom] .tippy-arrow::before': {
-            borderBottomColor: `${backgroundColor} !important`,
-          },
-          '&[data-placement^=left] .tippy-arrow::before': {
-            borderLeftColor: `${backgroundColor} !important`,
-          },
-        }}
-        arrow
-        disabled={this.props.disabled}
-        content={this.props.title}
-        placement={this.props.placement ?? 'top'}
-        delay={[500, 0]} // [show, hide] milliseconds
-        animation='fade'
-        theme='material'
-      >
-        {this.props.children}
-      </Tippy>
-    )
-  }
+  return (
+    <Tippy
+      css={css} // TODO we should not use Emotion for this component
+      arrow
+      disabled={props.disabled}
+      content={props.title}
+      placement={props.placement ?? 'top'}
+      delay={[500, 0]} // [show, hide] milliseconds
+      animation='fade'
+      theme='material'
+    >
+      {props.children}
+    </Tippy>
+  )
 }
