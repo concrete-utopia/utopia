@@ -49,6 +49,7 @@ import { TailwindConfigPath } from '../../core/tailwind/tailwind-config'
 import { importDefault } from '../../core/es-modules/commonjs-interop'
 import type { Config } from 'tailwindcss'
 import { CanvasContainerID } from '../canvas/canvas-types'
+import { createTailwindcss } from '@mhsdesign/jit-browser-tailwindcss'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch
@@ -531,21 +532,36 @@ function ensureElementExists({ type, id }: { type: string; id: string }) {
   return tag
 }
 
+async function init(config: Config | null) {
+  const tailwindCss = createTailwindcss({ tailwindConfig: config ?? undefined })
+
+  const contentElement = document.getElementById(CanvasContainerID)
+
+  const content = contentElement?.outerHTML ?? ''
+
+  const style = ensureElementExists({ type: 'style', id: 'utopia-tailwind-jit-styles' })
+
+  style.textContent = await tailwindCss.generateStylesFromContent(
+    `
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+  `,
+    [content],
+  )
+}
+
 export const useTailwindConfig = (
   projectContents: ProjectContentTreeRoot,
   requireFn: RequireFn,
 ) => {
   const tailwindFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
   React.useEffect(() => {
-    if (tailwindFile == null || tailwindFile.type !== 'TEXT_FILE') {
-      return
-    }
-    const requireResult = requireFn('/', TailwindConfigPath)
-    const rawConfig = importDefault(requireResult)
-    if (rawConfig == null) {
-      return
-    }
-    mountTailwindConfigToDom(rawConfig as Config)
+    const rawConfig =
+      tailwindFile == null || tailwindFile.type !== 'TEXT_FILE'
+        ? null
+        : importDefault(requireFn('/', TailwindConfigPath))
+    void init(rawConfig as Config)
   }, [requireFn, tailwindFile])
 }
 

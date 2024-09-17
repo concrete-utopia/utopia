@@ -13,6 +13,15 @@ interface RequestBody {
   tailwindConfigContents: any
 }
 
+/**
+ * Plan for unhardcoding this:
+ * - get the project through the contents api
+ * - generate project structure from the json
+ * - `yarn install`
+ * - `npx tailwind -o build.css'
+ * - return the contents of build.css
+ */
+
 // TODO: this is all super hardcoded, unhardcode it
 // the preferred way to go about this is to install the whole project and run tailwind there
 

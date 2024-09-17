@@ -31,6 +31,7 @@ import * as EP from '../shared/element-path'
 import type { AttributeCategory } from './attribute-categories'
 import { AttributeCategories } from './attribute-categories'
 import { parse } from '@xengine/tailwindcss-class-parser'
+import type { Config } from 'tailwindcss'
 
 export interface TailWindOption {
   label: string
@@ -121,11 +122,24 @@ export function getClassNameAttribute(element: JSXElementChild | null): {
   }
 }
 
+function parseSafe(
+  classString: string,
+  config: Config | null,
+): ReturnType<typeof parse> | { kind: 'error'; message: string } {
+  try {
+    return parse(classString, config ?? undefined)
+  } catch (e) {
+    return { kind: 'error', message: 'Failed to parse class string' }
+  }
+}
 export function getClassNameMapping(classString: string): { [key: string]: string } {
   const mapping: { [key: string]: string } = {}
   const classParts = classString.split(' ')
   classParts.forEach((part) => {
-    const parsed = parse(part /* TODO: pass the tailwind config here as the second argument */)
+    const parsed = parseSafe(
+      part,
+      null /* TODO: pass the tailwind config here as the second argument */,
+    )
     if (parsed.kind === 'error') {
       return
     }
