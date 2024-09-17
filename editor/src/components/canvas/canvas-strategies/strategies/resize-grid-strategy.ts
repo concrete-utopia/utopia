@@ -231,11 +231,10 @@ function buildResizedDimensionsArray(params: {
   const midChunkStart = params.expandedOriginalValues.findIndex(
     (c) => c.originalIndex === targetIndex,
   )
-  // midChunkEnd is the start + the number of repeated elements for this `repeat` function
-  const midChunkEnd =
-    midChunkStart +
-    params.expandedOriginalValues.filter((c) => c.originalIndex === targetIndex).length
-  const midChunkSize = midChunkEnd - midChunkStart
+  // midChunkSize is the number of repeated elements for this `repeat` function
+  const midChunkSize = params.expandedOriginalValues.filter(
+    (c) => c.originalIndex === targetIndex,
+  ).length
 
   let midChunk: GridDimension[] = []
   if (targetDimension.type === 'REPEAT') {
@@ -250,6 +249,7 @@ function buildResizedDimensionsArray(params: {
     })
     midChunk.push(gridCSSRepeat(targetDimension.times, values))
   } else {
+    const midChunkEnd = midChunkStart + midChunkSize
     midChunk.push(...params.resizedValues.slice(midChunkStart, midChunkEnd))
   }
 
