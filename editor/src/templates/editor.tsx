@@ -136,7 +136,10 @@ import {
   traverseReadOnlyArray,
 } from '../core/shared/optics/optic-creators'
 import { keysEqualityExhaustive, shallowEqual } from '../core/shared/equality-utils'
-import { resetRunDomSamplerLimit, runDomSampler } from '../components/canvas/dom-sampler'
+import {
+  resetDomSamplerExecutionCounts,
+  runDomSamplerGroups,
+} from '../components/canvas/dom-sampler'
 import { omitWithPredicate } from '../core/shared/object-utils'
 
 if (PROBABLY_ELECTRON) {
@@ -431,7 +434,7 @@ export class Editor {
   ): {
     entireUpdateFinished: Promise<any>
   } => {
-    resetRunDomSamplerLimit()
+    resetDomSamplerExecutionCounts()
     const Measure = createPerformanceMeasure()
     Measure.logActions(dispatchedActions)
 
@@ -544,7 +547,7 @@ export class Editor {
 
           // re-run the dom-sampler
           Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
-            const metadataResult = runDomSampler({
+            const metadataResult = runDomSamplerGroups({
               elementsToFocusOn: ElementsToRerenderGLOBAL.current,
               domWalkerAdditionalElementsToFocusOn:
                 this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,

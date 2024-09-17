@@ -156,7 +156,11 @@ import {
 import { uniqBy } from '../../core/shared/array-utils'
 import { InitialOnlineState } from '../editor/online-status'
 import { RadixComponentsPortalId } from '../../uuiui/radix-components'
-import { resetRunDomSamplerLimit, runDomSampler } from './dom-sampler'
+import {
+  resetDomSamplerExecutionCounts,
+  runDomSamplerGroups,
+  runDomSamplerRegular,
+} from './dom-sampler'
 import {
   ElementInstanceMetadataKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
@@ -354,7 +358,7 @@ export async function renderTestEditorWithModel(
     waitForDispatchEntireUpdate = false,
     innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
   ) => {
-    resetRunDomSamplerLimit()
+    resetDomSamplerExecutionCounts()
     recordedActions.push(...actions)
     const originalEditorState = workingEditorState
     const result = editorDispatchActionRunner(
@@ -431,7 +435,7 @@ export async function renderTestEditorWithModel(
     {
       resubscribeObservers(domWalkerMutableState)
 
-      const metadataResult = runDomSampler({
+      const metadataResult = runDomSamplerRegular({
         elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
         domWalkerAdditionalElementsToFocusOn:
           workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
@@ -503,7 +507,7 @@ export async function renderTestEditorWithModel(
         {
           resubscribeObservers(domWalkerMutableState)
 
-          const metadataResult = runDomSampler({
+          const metadataResult = runDomSamplerGroups({
             elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
             domWalkerAdditionalElementsToFocusOn:
               workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,

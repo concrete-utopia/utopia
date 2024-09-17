@@ -42,6 +42,7 @@ import {
   getAttributesComingFromStyleSheets,
 } from './dom-walker'
 import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
+import type { LimitExecutionCountReset } from '../../core/shared/execution-count'
 import { limitExecutionCount } from '../../core/shared/execution-count'
 
 export function runDomSamplerUnchecked(options: {
@@ -117,12 +118,24 @@ export function runDomSamplerUnchecked(options: {
   return result
 }
 
-const wrappedRunDomSamplerResult = limitExecutionCount(
-  { maximumExecutionCount: 2 },
+let domSamplerExecutionLimitResets: Array<LimitExecutionCountReset> = []
+
+export function resetDomSamplerExecutionCounts() {
+  for (const reset of domSamplerExecutionLimitResets) {
+    reset()
+  }
+}
+
+const wrappedRunDomSamplerRegular = limitExecutionCount(
+  { maximumExecutionCount: 1, addToResetArray: domSamplerExecutionLimitResets },
   runDomSamplerUnchecked,
 )
-export const runDomSampler = wrappedRunDomSamplerResult.wrappedFunction
-export const resetRunDomSamplerLimit = wrappedRunDomSamplerResult.resetCount
+const wrappedRunDomSamplerGroups = limitExecutionCount(
+  { maximumExecutionCount: 1, addToResetArray: domSamplerExecutionLimitResets },
+  runDomSamplerUnchecked,
+)
+export const runDomSamplerRegular = wrappedRunDomSamplerRegular.wrappedFunction
+export const runDomSamplerGroups = wrappedRunDomSamplerGroups.wrappedFunction
 
 function collectMetadataForPaths({
   canvasRootContainer,
