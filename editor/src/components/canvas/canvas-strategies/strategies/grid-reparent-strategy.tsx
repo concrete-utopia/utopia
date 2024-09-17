@@ -164,10 +164,9 @@ export function applyGridReparent(
           return emptyStrategyApplicationResult
         }
 
-        const parentGridPath = EP.parentPath(selectedElements[0])
         const grid = MetadataUtils.findElementByElementPath(
           canvasState.startingMetadata,
-          parentGridPath,
+          newParent.intendedParentPath,
         )
 
         if (grid == null) {
