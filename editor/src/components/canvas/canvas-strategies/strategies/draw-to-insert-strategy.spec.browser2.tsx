@@ -237,9 +237,9 @@ export var storyboard = (
         gridColumn: '2',
         gridRow: '1',
         height: '100px',
-        left: '83px',
-        position: 'absolute',
-        top: '100px',
+        left: '',
+        position: '',
+        top: '',
         width: '100px',
       })
     })
@@ -280,9 +280,9 @@ export var storyboard = (
         gridColumn: '1',
         gridRow: '1',
         height: '100px',
-        left: '100px',
-        position: 'absolute',
-        top: '25px',
+        left: '',
+        position: '',
+        top: '',
         width: '100px',
       })
     })

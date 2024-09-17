@@ -169,7 +169,7 @@ export function getMarginProps(
 
 export interface FlexParentProps {
   flexDirection?: FlexDirection
-  alignContent?: FlexAlignment
+  alignContent?: FlexJustifyContent
   alignItems?: FlexAlignment
   justifyContent?: FlexJustifyContent
   flexWrap?: FlexWrap

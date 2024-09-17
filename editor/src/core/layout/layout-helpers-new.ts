@@ -77,6 +77,7 @@ export type StyleLayoutProp =
   | 'flexShrink'
   | 'gap'
   | 'alignItems'
+  | 'justifyItems'
   | 'alignContent'
   | 'justifyContent'
   | 'padding'

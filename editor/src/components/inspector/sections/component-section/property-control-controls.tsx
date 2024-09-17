@@ -1,5 +1,6 @@
 import fastDeepEquals from 'fast-deep-equal'
 import React from 'react'
+import ReactDOM from 'react-dom'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { isRight } from '../../../../core/shared/either'
 import { isJSXElement } from '../../../../core/shared/element-template'
@@ -69,6 +70,7 @@ import type { DEPRECATEDSliderControlOptions } from '../../controls/slider-contr
 import { StringControl } from '../../controls/string-control'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { HtmlPreview, ImagePreview } from './property-content-preview'
+import { usePropControlledStateV2 } from '../../common/inspector-utils'
 
 export interface ControlForPropProps<T extends RegularControlDescription> {
   propPath: PropertyPath
@@ -492,9 +494,26 @@ const NumberWithSliderControl = React.memo(
     },
   ) => {
     const { propName, propMetadata, controlDescription } = props
+    const { onTransientSubmitValue, onSubmitValue } = propMetadata
 
     const controlId = `${propName}-slider-property-control`
-    const value = getValueOrUndefinedFromPropMetadata(propMetadata) ?? 0
+    const valueComingFromProps = getValueOrUndefinedFromPropMetadata(propMetadata) ?? 0
+
+    const [valueToShow, setValueToShow] = usePropControlledStateV2(valueComingFromProps)
+
+    const onChangeValue = React.useCallback(
+      (value: any, transient: boolean = false) => {
+        ReactDOM.flushSync(() => {
+          setValueToShow(value)
+        })
+        if (transient) {
+          onTransientSubmitValue(value)
+        } else {
+          onSubmitValue(value, transient)
+        }
+      },
+      [setValueToShow, onTransientSubmitValue, onSubmitValue],
+    )
 
     return (
       <UIGridRow padded={false} variant={'<--------auto-------->|--45px--|'}>
@@ -502,10 +521,10 @@ const NumberWithSliderControl = React.memo(
           key={`${controlId}-slider`}
           id={`${controlId}-slider`}
           testId={`${controlId}-slider`}
-          value={value}
-          onTransientSubmitValue={propMetadata.onTransientSubmitValue}
-          onForcedSubmitValue={propMetadata.onSubmitValue}
-          onSubmitValue={propMetadata.onSubmitValue}
+          value={valueToShow}
+          onTransientSubmitValue={onChangeValue}
+          onForcedSubmitValue={onChangeValue}
+          onSubmitValue={onChangeValue}
           controlStatus={propMetadata.controlStatus}
           controlStyles={propMetadata.controlStyles}
           DEPRECATED_controlOptions={props.controlOptions}
@@ -514,7 +533,7 @@ const NumberWithSliderControl = React.memo(
           id={`${controlId}-number`}
           testId={`${controlId}-number`}
           key={`${controlId}-number`}
-          value={value}
+          value={valueToShow}
           onTransientSubmitValue={propMetadata.onTransientSubmitValue}
           onForcedSubmitValue={propMetadata.onSubmitValue}
           onSubmitValue={propMetadata.onSubmitValue}

@@ -92,9 +92,11 @@ export const OptionChainControl: React.FunctionComponent<
             }}
             value={props.value === option.value}
             // eslint-disable-next-line react/jsx-no-bind
-            onSubmitValue={(value: boolean) => {
-              if (value || option.forceCallOnSubmitValue) {
+            onSubmitValue={(isChecked: boolean) => {
+              if (isChecked || option.forceCallOnSubmitValue) {
                 props.onSubmitValue(option.value)
+              } else {
+                props.onUnsetValues?.()
               }
             }}
           />
