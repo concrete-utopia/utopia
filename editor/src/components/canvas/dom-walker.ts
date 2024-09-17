@@ -72,6 +72,7 @@ import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspecto
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
 import { CanvasContainerOuterId } from './canvas-component-entry'
+import { ElementsToRerenderGLOBAL } from './ui-jsx-canvas'
 
 export const ResizeObserver =
   window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -308,7 +309,7 @@ export function resubscribeObservers(domWalkerMutableState: {
 
 function selectCanvasInteractionHappening(store: EditorStorePatched): boolean {
   const interactionSessionActive = store.editor.canvas.interactionSession != null
-  return interactionSessionActive
+  return interactionSessionActive || ElementsToRerenderGLOBAL.current !== 'rerender-all-elements'
 }
 
 export function initDomWalkerObservers(
