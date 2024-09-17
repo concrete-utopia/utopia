@@ -46,7 +46,10 @@ import {
   type UnknownOrEmptyInput,
 } from '../../../common/css-utils'
 import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
-import { executeFirstApplicableStrategy } from '../../../inspector-strategies/inspector-strategy'
+import {
+  executeFirstApplicableStrategy,
+  executeFirstApplicableStrategyForContinuousInteraction,
+} from '../../../inspector-strategies/inspector-strategy'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import * as EP from '../../../../../core/shared/element-path'
 
@@ -211,7 +214,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
             frameUpdate.edgePosition === EdgePositionTop ||
             frameUpdate.edgePosition === EdgePositionLeft
           ) {
-            executeFirstApplicableStrategy(
+            executeFirstApplicableStrategyForContinuousInteraction(
               dispatch,
               [
                 moveInspectorStrategy(
@@ -224,7 +227,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
               elementsToRerenderTransient,
             )
           } else {
-            executeFirstApplicableStrategy(
+            executeFirstApplicableStrategyForContinuousInteraction(
               dispatch,
               [
                 resizeInspectorStrategy(
@@ -246,7 +249,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
             frameUpdate.edgePosition === EdgePositionLeft
           ) {
             const leftOrTop = frameUpdate.edgePosition === EdgePositionLeft ? 'left' : 'top'
-            executeFirstApplicableStrategy(
+            executeFirstApplicableStrategyForContinuousInteraction(
               dispatch,
               [
                 directMoveInspectorStrategy(
@@ -262,7 +265,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           } else {
             const widthOrHeight =
               frameUpdate.edgePosition === EdgePositionRight ? 'width' : 'height'
-            executeFirstApplicableStrategy(
+            executeFirstApplicableStrategyForContinuousInteraction(
               dispatch,
               [
                 directResizeInspectorStrategy(

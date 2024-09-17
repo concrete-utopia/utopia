@@ -48,9 +48,19 @@ export function commandsForFirstApplicableStrategy(
 
 export function executeFirstApplicableStrategy(
   dispatch: EditorDispatch,
-
   strategies: InspectorStrategy[],
-  elementsToRerenderTransient: ElementsToRerender = 'rerender-all-elements',
+): void {
+  return executeFirstApplicableStrategyForContinuousInteraction(
+    dispatch,
+    strategies,
+    'rerender-all-elements',
+  )
+}
+
+export function executeFirstApplicableStrategyForContinuousInteraction(
+  dispatch: EditorDispatch,
+  strategies: InspectorStrategy[],
+  elementsToRerenderTransient: ElementsToRerender,
 ): void {
   const commands = commandsForFirstApplicableStrategy(strategies)
   if (commands != null) {
