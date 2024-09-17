@@ -307,7 +307,7 @@ export function resubscribeObservers(domWalkerMutableState: {
   }
 }
 
-function selectCanvasInteractionHappening(store: EditorStorePatched): boolean {
+function isCanvasInteractionHappening(store: EditorStorePatched): boolean {
   const interactionSessionActive = store.editor.canvas.interactionSession != null
   return interactionSessionActive || ElementsToRerenderGLOBAL.current !== 'rerender-all-elements'
 }
@@ -330,7 +330,7 @@ export function initDomWalkerObservers(
   // adequately assess the performance impact of doing so, and ideally find a way to only do so when the observed
   // change was not triggered by a user interaction
   const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
-    const canvasInteractionHappening = selectCanvasInteractionHappening(editorStore.getState())
+    const canvasInteractionHappening = isCanvasInteractionHappening(editorStore.getState())
     const selectedViews = editorStore.getState().editor.selectedViews
     if (canvasInteractionHappening) {
       // Warning this only adds the selected views instead of the observed element
@@ -353,7 +353,7 @@ export function initDomWalkerObservers(
   })
 
   const mutationObserver = new window.MutationObserver((mutations: MutationRecord[]) => {
-    const canvasInteractionHappening = selectCanvasInteractionHappening(editorStore.getState())
+    const canvasInteractionHappening = isCanvasInteractionHappening(editorStore.getState())
     const selectedViews = editorStore.getState().editor.selectedViews
 
     if (canvasInteractionHappening) {
