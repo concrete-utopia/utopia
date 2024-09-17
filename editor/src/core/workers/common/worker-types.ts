@@ -1,3 +1,4 @@
+import { chunkArray } from '../../../core/shared/array-utils'
 import type { ProjectContentTreeRoot } from '../../../components/assets'
 import type { ErrorMessage } from '../../shared/error-messages'
 import type { TypeDefinitions } from '../../shared/npm-dependency-types'
@@ -166,7 +167,23 @@ export function createParsePrintFilesRequest(
 
 let PARSE_PRINT_MESSAGE_COUNTER: number = 0
 
-export function getParseResult(
+export async function getParseResult(
+  workers: UtopiaTsWorkers,
+  files: Array<ParseOrPrint>,
+  filePathMappings: FilePathMappings,
+  alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
+  numWorkers: number = 1,
+): Promise<Array<ParseOrPrintResult>> {
+  const chunks = chunkArray(files, numWorkers)
+  const promises = chunks.map((chunk) =>
+    getParseResultSerial(workers, chunk, filePathMappings, alreadyExistingUIDs, applySteganography),
+  )
+  const results = await Promise.all(promises)
+  return results.flat()
+}
+
+export function getParseResultSerial(
   workers: UtopiaTsWorkers,
   files: Array<ParseOrPrint>,
   filePathMappings: FilePathMappings,

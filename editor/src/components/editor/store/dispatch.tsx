@@ -353,6 +353,7 @@ function maybeRequestModelUpdate(
       getFilePathMappings(projectContents),
       existingUIDs,
       isSteganographyEnabled(),
+      5,
     )
       .then((parseResult) => {
         const updates = parseResult.map((fileResult) => {
