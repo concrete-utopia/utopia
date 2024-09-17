@@ -324,9 +324,9 @@ export var storyboard = (
         gridColumn: '2',
         gridRow: '1',
         height: '60px',
-        left: '83px',
+        left: '84px',
         position: 'absolute',
-        top: '150px',
+        top: '151px',
         width: '40px',
       })
     })
@@ -371,9 +371,9 @@ export var storyboard = (
         gridColumn: '1',
         gridRow: '1',
         height: '30px',
-        left: '125px',
+        left: '126px',
         position: 'absolute',
-        top: '75px',
+        top: '76px',
         width: '20px',
       })
     })
