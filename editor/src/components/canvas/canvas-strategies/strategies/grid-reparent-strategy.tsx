@@ -23,13 +23,11 @@ import { controlsForGridPlaceholders } from '../../controls/grid-controls'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
-import { canvasPointToWindowPoint } from '../../dom-lookup'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import type {
   CanvasStrategy,
   ControlWithProps,
   CustomStrategyState,
-  GridCustomStrategyState,
   InteractionCanvasState,
 } from '../canvas-strategy-types'
 import {
@@ -41,14 +39,13 @@ import {
 import type { DragInteractionData, InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { honoursPropsPosition, shouldKeepMovingDraggedGroupChildren } from './absolute-utils'
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
-import type { TargetGridCellData } from './grid-helpers'
-import { getTargetCell, setGridPropsCommands } from './grid-helpers'
+import { setGridPropsCommands } from './grid-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { removeAbsolutePositioningProps } from './reparent-helpers/reparent-property-changes'
 import type { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { flattenSelection } from './shared-move-strategies-helpers'
-import type { GridCellCoordinates } from './grid-cell-bounds'
+import { getGridCellUnderMouseFromMetadata, type GridCellCoordinates } from './grid-cell-bounds'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 
 export function gridReparentStrategy(
@@ -142,27 +139,6 @@ export function controlsForGridReparent(reparentTarget: ReparentTarget): Control
   ]
 }
 
-function getTargetGridCellUnderCursor(
-  interactionData: DragInteractionData,
-  canvasScale: number,
-  canvasOffset: CanvasVector,
-  customState: GridCustomStrategyState,
-): TargetGridCellData | null {
-  const mouseWindowPoint = canvasPointToWindowPoint(
-    offsetPoint(interactionData.dragStart, interactionData.drag ?? canvasVector({ x: 0, y: 0 })),
-    canvasScale,
-    canvasOffset,
-  )
-
-  const targetCellUnderMouse = getTargetCell(
-    customState.targetCellData?.gridCellCoordinates ?? null,
-    false,
-    mouseWindowPoint,
-  )
-
-  return targetCellUnderMouse
-}
-
 export function applyGridReparent(
   canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
@@ -172,7 +148,7 @@ export function applyGridReparent(
   gridFrame: CanvasRectangle,
 ) {
   return () => {
-    if (interactionData.drag == null) {
+    if (interactionData.drag == null || selectedElements.length === 0) {
       return emptyStrategyApplicationResult
     }
 
@@ -184,7 +160,17 @@ export function applyGridReparent(
       selectedElements,
       newParent.intendedParentPath,
       () => {
-        if (interactionData.drag == null) {
+        if (interactionData.drag == null || selectedElements.length === 0) {
+          return emptyStrategyApplicationResult
+        }
+
+        const parentGridPath = EP.parentPath(selectedElements[0])
+        const grid = MetadataUtils.findElementByElementPath(
+          canvasState.startingMetadata,
+          parentGridPath,
+        )
+
+        if (grid == null) {
           return emptyStrategyApplicationResult
         }
 
@@ -201,13 +187,14 @@ export function applyGridReparent(
           return emptyStrategyApplicationResult
         }
 
+        const mousePos = offsetPoint(
+          interactionData.dragStart,
+          interactionData.drag ?? canvasVector({ x: 0, y: 0 }),
+        )
+
         const targetCellData =
-          getTargetGridCellUnderCursor(
-            interactionData,
-            canvasState.scale,
-            canvasState.canvasOffset,
-            customStrategyState.grid,
-          ) ?? customStrategyState.grid.targetCellData
+          getGridCellUnderMouseFromMetadata(grid, mousePos) ??
+          customStrategyState.grid.targetCellData
 
         if (targetCellData == null) {
           return emptyStrategyApplicationResult
