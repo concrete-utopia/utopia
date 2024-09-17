@@ -105,10 +105,10 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
           : gridSpecialSizeMeasurements.containerGridProperties.gridTemplateRows
 
       if (
-        originalValues == null ||
-        originalValues.type !== 'DIMENSIONS' ||
         calculatedValues == null ||
-        calculatedValues.type !== 'DIMENSIONS'
+        calculatedValues.type !== 'DIMENSIONS' ||
+        originalValues == null ||
+        originalValues.type !== 'DIMENSIONS'
       ) {
         return emptyStrategyApplicationResult
       }
