@@ -26,6 +26,40 @@ export function appJSFile(): TextFile {
   )
 }
 
+export function getFileWithCssImport(): TextFile {
+  return textFile(
+    textFileContents(sampleCodeWithCss, unparsed, RevisionsState.CodeAhead),
+    null,
+    null,
+    0,
+  )
+}
+
+export function emptyTextFile(): TextFile {
+  return textFile(textFileContents('', unparsed, RevisionsState.CodeAhead), null, null, 0)
+}
+
+export const sampleCodeWithCss = `
+import * as React from 'react'
+import Utopia, {
+  Scene,
+  Storyboard,
+} from 'utopia-api'
+import { App } from '/src/app.js'
+import '/src/app.css'
+export var storyboard = (
+  <Storyboard data-uid='sample-storyboard'>
+    <Scene
+      data-uid='sample-scene'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='sample-app' />
+    </Scene>
+  </Storyboard>
+)
+
+`
+
 export function getDefaultUIJsFile(): TextFile {
   return textFile(textFileContents(sampleCode, unparsed, RevisionsState.CodeAhead), null, null, 0)
 }

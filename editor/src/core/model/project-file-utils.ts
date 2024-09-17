@@ -78,6 +78,9 @@ import { filenameFromParts, getFilenameParts } from '../../components/images'
 import globToRegexp from 'glob-to-regexp'
 import { is } from '../shared/equality-utils'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
+import json5 from 'json5'
+import type { FilePathMappings, FilePathMapping } from '../workers/common/project-file-utils'
+export type { FilePathMappings, FilePathMapping }
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -176,13 +179,10 @@ export function isRemixOutletAgainstImports(element: JSXElementChild, imports: I
     return false
   }
 
-  if (PP.depth(element.name.propertyPath) === 0) {
-    for (const fromWithin of remix.importedFromWithin) {
-      if (fromWithin.alias === element.name.baseVariable && fromWithin.name === 'Outlet') {
-        return true
-      }
+  for (const fromWithin of remix.importedFromWithin) {
+    if (fromWithin.alias === element.name.baseVariable && fromWithin.name === 'Outlet') {
+      return true
     }
-    return false
   }
 
   return (
@@ -306,17 +306,6 @@ export function importInfoFromImportDetails(
   const foundImportDetail = err[0] ?? createNotImported(filePath, baseVariable)
 
   return foundImportDetail
-}
-
-export function getFilePathForImportedComponent(
-  element: ElementInstanceMetadata | null,
-): string | null {
-  const importInfo = element?.importInfo
-  if (importInfo != null && isImportedOrigin(importInfo)) {
-    return importInfo.filePath
-  } else {
-    return null
-  }
 }
 
 export function isImportedComponentFromProjectFiles(
@@ -868,7 +857,7 @@ export function getDefaultExportedTopLevelElement(file: TextFile): JSXElementChi
 export function getDefaultExportNameAndUidFromFile(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
-): { name: string; uid: string } | null {
+): { name: string; uid: string | null } | null {
   const file = getProjectFileByFilePath(projectContents, filePath)
   if (
     file == null ||
@@ -885,13 +874,11 @@ export function getDefaultExportNameAndUidFromFile(
     return null
   }
 
-  const elementUid = file.fileContents.parsed.topLevelElements.find(
-    (t): t is UtopiaJSXComponent =>
-      t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
-  )?.rootElement.uid
-  if (elementUid == null) {
-    return null
-  }
+  const elementUid =
+    file.fileContents.parsed.topLevelElements.find(
+      (t): t is UtopiaJSXComponent =>
+        t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
+    )?.rootElement.uid ?? null
 
   return { name: defaultExportName, uid: elementUid }
 }
@@ -910,10 +897,8 @@ export function fileExportsFunctionWithName(
     return false
   }
 
-  return (
-    file.fileContents.parsed.exportsDetail.find(
-      (v) => isExportFunction(v) && v.functionName === componentName,
-    ) != null
+  return file.fileContents.parsed.exportsDetail.some(
+    (v) => isExportFunction(v) && v.functionName === componentName,
   )
 }
 
@@ -928,29 +913,16 @@ export function getTopLevelElementByExportsDetail(
   )
 }
 
-export function applyFilePathMappingsToFilePath(
-  filepath: string,
-  filePathMappings: FilePathMappings,
-): string {
-  return filePathMappings.reduce((working, nextMapping) => {
-    // FIXME this is limited to only applying the first mapping, both from the paths object, and from the array of aliased paths
-    const [mapFrom, mapToArray] = nextMapping
-    const mapTo = mapToArray[0]
-    const newWorking = working.replace(mapFrom, mapTo)
-    mapFrom.lastIndex = 0 // Reset the regex!
-    return newWorking
-  }, filepath)
-}
-
-type FilePathMapping = [RegExp, Array<string>]
-export type FilePathMappings = Array<FilePathMapping>
-
 export const getFilePathMappings = memoize(getFilePathMappingsImpl, { maxSize: 1, matchesArg: is })
 
 function getFilePathMappingsImpl(projectContents: ProjectContentTreeRoot): FilePathMappings {
   const jsConfigFile = getProjectFileByFilePath(projectContents, 'jsconfig.json')
   if (jsConfigFile != null && isTextFile(jsConfigFile)) {
     return getFilePathMappingsFromConfigFile(jsConfigFile)
+  }
+  const tsConfigFile = getProjectFileByFilePath(projectContents, 'tsconfig.json')
+  if (tsConfigFile != null && isTextFile(tsConfigFile)) {
+    return getFilePathMappingsFromConfigFile(tsConfigFile)
   }
 
   return []
@@ -963,7 +935,7 @@ const getFilePathMappingsFromConfigFile = memoize(getFilePathMappingsFromConfigF
 
 function getFilePathMappingsFromConfigFileImpl(configFile: TextFile): FilePathMappings {
   try {
-    const parsedJSON = JSON.parse(configFile.fileContents.code)
+    const parsedJSON = json5.parse(configFile.fileContents.code)
     if (typeof parsedJSON === 'object') {
       const compilerOptions = propOrNull('compilerOptions', parsedJSON)
       const paths = propOrNull('paths', compilerOptions)
@@ -996,7 +968,7 @@ function getFilePathMappingsFromConfigFileImpl(configFile: TextFile): FilePathMa
       }
     }
   } catch (e) {
-    // Do nothing
+    console.error('Error parsing file path mappings.', e)
   }
 
   return []

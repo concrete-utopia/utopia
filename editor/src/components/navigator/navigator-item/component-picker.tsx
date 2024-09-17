@@ -3,7 +3,7 @@
 import { jsx } from '@emotion/react'
 import React, { useCallback, useMemo } from 'react'
 import debounce from 'lodash.debounce'
-import { Icn, type IcnProps } from '../../../uuiui'
+import { colorTheme, Icn, type IcnProps } from '../../../uuiui'
 import { dark } from '../../../uuiui/styles/theme/dark'
 import type { JSXElementChild } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
@@ -15,17 +15,27 @@ import type {
 } from '../../canvas/ui/floating-insert-menu'
 import { UIGridRow } from '../../../components/inspector/widgets/ui-grid-row'
 import { FlexRow, type Icon } from 'utopia-api'
-import { assertNever } from '../../../core/shared/utils'
 import { insertableComponent } from '../../shared/project-components'
 import type { StylePropOption, InsertableComponent } from '../../shared/project-components'
 import type { Size } from '../../../core/shared/math-utils'
 import { dataPasteHandler } from '../../../utils/paste-handler'
 import { sortBy } from '../../../core/shared/array-utils'
 import { iconPropsForIcon } from './component-picker-context-menu'
+import type { FileRootPath } from '../../canvas/ui-jsx-canvas'
+
+const FILTER_CATEGORIES: Array<string> = ['Everything']
+
+interface Category {
+  label: string
+  items: Array<InsertMenuItem>
+}
 
 export interface ComponentPickerProps {
   allComponents: Array<InsertMenuItemGroup>
   onItemClick: (elementToInsert: InsertableComponent) => React.UIEventHandler
+  closePicker: () => void
+  shownInToolbar: boolean
+  insertionActive: boolean
 }
 
 export interface ElementToInsert {
@@ -39,7 +49,7 @@ export function elementToInsertToInsertableComponent(
   uid: string,
   stylePropOptions: Array<StylePropOption>,
   defaultSize: Size | null,
-  insertionCeiling: ElementPath | null,
+  insertionCeiling: ElementPath | FileRootPath,
   icon: Icon | null,
 ): InsertableComponent {
   const element = elementToInsert.elementToInsert(uid)
@@ -54,6 +64,8 @@ export function elementToInsertToInsertableComponent(
   )
 }
 
+export const ComponentPickerTestId = 'component-picker-full'
+
 export function componentPickerTestIdForProp(prop: string): string {
   return `component-picker-${prop}`
 }
@@ -67,7 +79,7 @@ export function componentPickerOptionTestId(componentName: string, variant?: str
 }
 
 export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
-  const { onItemClick } = props
+  const { onItemClick, closePicker, shownInToolbar, insertionActive } = props
   const [selectedComponentKey, setSelectedComponentKey] = React.useState<string | null>(null)
   const [filter, setFilter] = React.useState<string>('')
   const menuRef = React.useRef<HTMLDivElement | null>(null)
@@ -142,6 +154,8 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         if (selectedComponent != null) {
           onItemClick(selectedComponent.value)(e)
         }
+      } else if (e.key === 'Escape') {
+        closePicker()
       } else {
         // we don't want to prevent default for other keys
         return
@@ -149,8 +163,15 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
       e.preventDefault()
       e.stopPropagation()
     },
-    [flatComponentsToShow, highlightedComponentKey, onItemClick, selectIndex],
+    [flatComponentsToShow, highlightedComponentKey, onItemClick, selectIndex, closePicker],
   )
+
+  const categorizedComponents = [
+    {
+      label: 'Everything',
+      items: flatComponentsToShow,
+    },
+  ]
 
   return (
     <div
@@ -161,49 +182,68 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         width: '100%',
         height: '100%',
         borderRadius: 10,
+        paddingBottom: shownInToolbar ? '8px' : undefined,
       }}
       onKeyDown={onKeyDown}
       ref={menuRef}
+      data-testid={ComponentPickerTestId}
     >
-      <ComponentPickerTopSection onFilterChange={setFilter} onKeyDown={onKeyDown} />
-      <ComponentPickerComponentSection
-        components={flatComponentsToShow}
-        onItemClick={props.onItemClick}
-        onItemHover={onItemHover}
-        currentlySelectedKey={highlightedComponentKey}
+      <ComponentPickerTopSection
+        components={categorizedComponents}
+        onFilterChange={setFilter}
+        onKeyDown={onKeyDown}
+        shownInToolbar={shownInToolbar}
       />
+      {filter.length > 0 || !insertionActive ? (
+        <ComponentPickerComponentSection
+          components={categorizedComponents}
+          onItemClick={props.onItemClick}
+          onItemHover={onItemHover}
+          currentlySelectedKey={highlightedComponentKey}
+          shownInToolbar={shownInToolbar}
+        />
+      ) : null}
     </div>
   )
 })
 
 interface ComponentPickerTopSectionProps {
+  components: Array<Category>
   onFilterChange: (filter: string) => void
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void
+  shownInToolbar: boolean
 }
 
 const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionProps) => {
-  const { onFilterChange, onKeyDown } = props
+  const { components, shownInToolbar, onFilterChange, onKeyDown } = props
 
   return (
     <div
       style={{
-        padding: '0px 8px 8px 8px',
+        padding: shownInToolbar ? undefined : '0px 8px 8px 8px',
         display: 'flex',
         flexDirection: 'column',
       }}
+      tabIndex={0}
     >
-      <FilterBar onFilterChange={onFilterChange} onKeyDown={onKeyDown} />
+      {components.length > 1 && <FilterButtons components={components} />}
+      <FilterBar
+        onFilterChange={onFilterChange}
+        onKeyDown={onKeyDown}
+        shownInToolbar={shownInToolbar}
+      />
     </div>
   )
 })
 
 interface FilterBarProps {
+  shownInToolbar: boolean
   onFilterChange: (filter: string) => void
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
 }
 
 const FilterBar = React.memo((props: FilterBarProps) => {
-  const { onFilterChange, onKeyDown } = props
+  const { shownInToolbar, onFilterChange, onKeyDown } = props
 
   const [filter, setFilterState] = React.useState<string>('')
   const setFilter = React.useCallback(
@@ -220,14 +260,16 @@ const FilterBar = React.memo((props: FilterBarProps) => {
         if (onKeyDown != null) {
           onKeyDown(e)
         }
-      } else if (e.key === 'Escape') {
+      } else if (e.key === 'Escape' && filter !== '') {
+        // clear filter only if there is text,
+        // otherwise it will close the picker
         setFilter('')
       } else if (onKeyDown != null) {
         onKeyDown(e)
       }
       e.stopPropagation()
     },
-    [setFilter, onKeyDown],
+    [setFilter, onKeyDown, filter],
   )
   const handleFilterChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -245,11 +287,11 @@ const FilterBar = React.memo((props: FilterBarProps) => {
         background: 'transparent',
         // border: `1px solid ${dark.fg3.value}`, --> doesn't work because uses the css var
         border: `1px solid #888`,
-        color: `#888`,
+        color: shownInToolbar ? undefined : `#888`,
         borderRadius: 4,
         width: '100%',
         '&:focus': {
-          color: '#ccc',
+          color: shownInToolbar ? undefined : '#ccc',
           borderColor: '#ccc',
         },
       }}
@@ -260,95 +302,214 @@ const FilterBar = React.memo((props: FilterBarProps) => {
       onKeyDown={handleFilterKeydown}
       onChange={handleFilterChange}
       value={filter}
-      data-testId={componentPickerFilterInputTestId}
+      data-testid={componentPickerFilterInputTestId}
       {...dataPasteHandler(true)}
     />
   )
 })
 
+interface FilterButtonsProps {
+  components: Array<Category>
+}
+
+const FilterButtons = React.memo((props: FilterButtonsProps) => {
+  const { components } = props
+
+  const [focusedIndex, setFocusedIndex] = React.useState(0)
+
+  const setActiveIndexAll = React.useCallback(() => setFocusedIndex(0), [setFocusedIndex])
+
+  return (
+    <div
+      tabIndex={0}
+      aria-describedby='Component categories'
+      css={{
+        display: 'flex',
+        height: 30,
+      }}
+      onKeyDown={(event) => {
+        if (event.key === 'ArrowRight') {
+          setFocusedIndex((prev) => Math.min(prev + 1, FILTER_CATEGORIES.length))
+        } else if (event.key === 'ArrowLeft') {
+          setFocusedIndex((prev) => Math.max(prev - 1, 0))
+        } else if (event.key === 'Enter') {
+          document
+            .getElementById(FILTER_CATEGORIES[Math.max(focusedIndex - 1, 0)])
+            ?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+        } else {
+          return
+        }
+        event.stopPropagation()
+        event.preventDefault()
+      }}
+    >
+      <div css={{ display: 'inline-block', marginRight: 8 }}>
+        <FilterButton
+          highlighted={focusedIndex === 0}
+          index={-1}
+          label='All'
+          setActiveFocus={setActiveIndexAll}
+        />
+      </div>
+      <ul
+        css={{
+          margin: '0 0 8px 0',
+          padding: 0,
+          overflowX: 'scroll',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {components.map(({ label }, index) => (
+          <li key={label} css={{ display: 'inline-block' }}>
+            <FilterButton
+              highlighted={focusedIndex === index + 1}
+              index={index}
+              label={label}
+              setActiveFocus={setFocusedIndex}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+})
+
+interface FilterButtonProps {
+  highlighted: boolean
+  index: number
+  label: string
+  setActiveFocus: (index: number) => void
+}
+
+const FilterButton = React.memo((props: FilterButtonProps) => {
+  const { highlighted, index, label, setActiveFocus } = props
+
+  const ref = React.useRef<HTMLButtonElement>(null)
+
+  React.useEffect(() => {
+    if (highlighted && ref.current !== null) {
+      ref.current.scrollIntoView({
+        block: 'start',
+        behavior: 'instant',
+      })
+    }
+  }, [highlighted])
+
+  return (
+    <button
+      tabIndex={-1}
+      id={`button-${label}`}
+      aria-selected={highlighted}
+      css={{
+        backgroundColor: highlighted ? colorTheme.primary.value : 'transparent',
+        border: 'none',
+        color: highlighted ? 'white' : '#ddd',
+        cursor: 'pointer',
+        fontSize: 12,
+        padding: '4px 8px',
+        borderRadius: 4,
+        outlineOffset: -1,
+        '&:hover': {
+          color: 'white',
+        },
+        '&:focus': {
+          backgroundColor: highlighted ? colorTheme.primary.value : 'transparent',
+          color: highlighted ? 'white' : undefined,
+        },
+      }}
+      onClick={() => {
+        setActiveFocus(index + 1)
+        const element = document.getElementById(`${label}`)
+        if (element !== null) {
+          document.getElementById('filter-container')?.scrollTo({
+            top: element.offsetTop - 75,
+            behavior: 'smooth',
+          })
+        } else {
+          document.getElementById('filter-container')?.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+      }}
+      ref={ref}
+    >
+      {label}
+    </button>
+  )
+})
+
 interface ComponentPickerComponentSectionProps {
-  components: Array<InsertMenuItem>
+  components: Array<Category>
   onItemClick: (elementToInsert: InsertableComponent) => React.MouseEventHandler
   onItemHover: (elementToInsert: InsertMenuItemValue) => React.MouseEventHandler
   currentlySelectedKey: string | null
+  shownInToolbar: boolean
+}
+
+export function componentPickerComponentTestId(key: string): string {
+  return `component-picker-item-${key}`
 }
 
 const ComponentPickerComponentSection = React.memo(
   (props: ComponentPickerComponentSectionProps) => {
-    const { components, onItemClick, onItemHover, currentlySelectedKey } = props
+    const { components, onItemClick, onItemHover, currentlySelectedKey, shownInToolbar } = props
     const [isScrolling, setIsScrolling] = React.useState<boolean>(false)
     const debouncedSetIsScrolling = React.useRef(debounce(() => setIsScrolling(false), 100))
     const onScroll = React.useCallback(() => {
       setIsScrolling(true)
       debouncedSetIsScrolling.current()
     }, [])
+
     return (
       <div
         data-role='component-scroll'
+        id='filter-container'
         style={{
           maxHeight: 250,
           overflowY: 'scroll',
           scrollbarWidth: 'auto',
-          scrollbarColor: 'gray transparent',
+          scrollbarColor: `${colorTheme.subduedBorder.cssValue} transparent`,
         }}
         onScroll={onScroll}
       >
-        {components.map((component) => {
-          const selectedStyle =
-            component.value.key === currentlySelectedKey
-              ? {
-                  background: '#007aff',
-                  color: 'white',
-                }
-              : {}
-
-          return (
-            <FlexRow
-              css={{}}
-              key={component.value.key}
-              style={{
-                marginLeft: 8,
-                marginRight: 8,
-                borderRadius: 4,
-                // indentation!
-                paddingLeft: 8,
-                pointerEvents: isScrolling ? 'none' : 'auto',
-                color: '#EEE',
-                ...selectedStyle,
-              }}
-              onClick={onItemClick(component.value)}
-              onMouseOver={onItemHover(component.value)}
-              data-key={component.value.key}
-            >
-              <FlexRow css={{ gap: 10, height: 28, alignItems: 'center' }}>
-                <Icn
-                  {...iconPropsForIcon(component.value.icon ?? 'component')}
-                  width={12}
-                  height={12}
-                />
-                <label>{component.label}</label>
+        {components.flatMap((category) =>
+          category.items.map((component, index) => {
+            const isSelected = component.value.key === currentlySelectedKey
+            return (
+              <FlexRow
+                css={{}}
+                key={component.value.key}
+                id={index === 0 ? category.label : undefined}
+                style={{
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  margin: shownInToolbar ? undefined : '0 8px',
+                  borderRadius: 4,
+                  // indentation!
+                  paddingLeft: 8,
+                  pointerEvents: isScrolling ? 'none' : 'auto',
+                  color: isSelected ? 'white' : shownInToolbar ? undefined : '#EEE',
+                  backgroundColor: isSelected ? colorTheme.primary.value : undefined,
+                }}
+                onClick={onItemClick(component.value)}
+                onMouseOver={onItemHover(component.value)}
+                data-key={component.value.key}
+                data-testid={componentPickerComponentTestId(component.value.key)}
+              >
+                <FlexRow css={{ gap: 10, height: 28, alignItems: 'center' }}>
+                  <Icn
+                    {...iconPropsForIcon(
+                      component.value.icon ?? 'component',
+                      shownInToolbar && !isSelected,
+                    )}
+                    width={12}
+                    height={12}
+                  />
+                  <span>{component.label}</span>
+                </FlexRow>
               </FlexRow>
-            </FlexRow>
-          )
-
-          // return (
-          //   <ComponentPickerOption
-          //     key={`${comp.label}-label`}
-          //     component={comp}
-          //     onItemClick={onItemClick}
-          //     onItemHover={onItemHover}
-          //     currentlySelectedKey={currentlySelectedKey}
-          //   />
-          // )
-        })}
+            )
+          }),
+        )}
       </div>
     )
   },
 )
-
-interface ComponentPickerOptionProps {
-  component: InsertMenuItem
-  onItemClick: (elementToInsert: InsertableComponent) => React.MouseEventHandler
-  onItemHover: (elementToInsert: InsertMenuItemValue) => React.MouseEventHandler
-  currentlySelectedKey: string | null
-}

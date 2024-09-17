@@ -104,72 +104,63 @@ export const SolidBackgroundLayer = React.memo<SolidBackgroundLayerProps>((props
       items={[removeRow(onRemoveRowSubmit), ...props.unsetContextMenuItem]}
       data={null}
     >
-      <UIGridRow tall alignItems='start' padded={true} variant='<---1fr--->|------172px-------|'>
-        <UIGridRow
-          tall
-          alignItems='start'
-          padded={false}
-          variant='<-auto-><----------1fr--------->'
-        >
-          <CheckboxInput
-            onChange={toggleCheckbox}
-            checked={props.value.enabled}
-            controlStatus={props.controlStatus}
-            onMouseDown={stopPropagation}
-          />
-          <BackgroundSolidOrGradientThumbnailControl
-            id={`background-layer-gradient-${props.index}`}
-            key={`background-layer-gradient-${props.index}`}
-            testId={`background-layer-gradient-${props.index}`}
-            value={props.value}
-            backgroundIndex={props.index}
-            useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
-            onSubmitSolidStringValue={onStringSubmitValue}
-            controlStatus={props.controlStatus}
-            controlStyles={props.controlStyles}
-            modalOffset={{ x: -45, y: 0 }}
-            showString={false}
-            popupOpen={props.popupOpen}
-            setOpenPopup={props.setOpenPopup}
-          />
-        </UIGridRow>
-        <UIGridRow
-          tall
-          alignItems='start'
-          padded={false}
-          variant='<--------auto-------->|--45px--|'
-        >
-          <StringBackgroundColorControl
-            id={`background-layer-gradient-${props.index}`}
-            key={`background-layer-gradient-${props.index}`}
-            testId={`background-layer-gradient-${props.index}`}
-            value={props.value}
-            backgroundIndex={props.index}
-            useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
-            onSubmitSolidStringValue={onStringSubmitValue}
-            controlStatus={props.controlStatus}
-            controlStyles={props.controlStyles}
-            modalOffset={{ x: -45, y: 0 }}
-            showString={true}
-            popupOpen={props.popupOpen}
-            setOpenPopup={props.setOpenPopup}
-          />
-          <SimplePercentInput
-            id={`background-layer-alpha-${props.index}`}
-            testId={`background-layer-alpha-${props.index}`}
-            value={alpha}
-            onSubmitValue={onAlphaSubmitValue}
-            onTransientSubmitValue={onAlphaTransientSubmitValue}
-            onForcedSubmitValue={onAlphaSubmitValue}
-            controlStatus={props.controlStatus}
-            DEPRECATED_labelBelow='alpha'
-            minimum={0}
-            maximum={1}
-            stepSize={0.01}
-            inputProps={{ onMouseDown: stopPropagation }}
-            defaultUnitToHide={null}
-          />
-        </UIGridRow>
+      <UIGridRow
+        tall
+        alignItems='start'
+        padded={true}
+        variant='<-auto-><-auto->|90px|<----1fr---->|'
+      >
+        <CheckboxInput
+          onChange={toggleCheckbox}
+          checked={props.value.enabled}
+          controlStatus={props.controlStatus}
+          onMouseDown={stopPropagation}
+        />
+        <BackgroundSolidOrGradientThumbnailControl
+          id={`background-layer-gradient-${props.index}`}
+          key={`background-layer-gradient-${props.index}`}
+          testId={`background-layer-gradient-${props.index}`}
+          value={props.value}
+          backgroundIndex={props.index}
+          useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
+          onSubmitSolidStringValue={onStringSubmitValue}
+          controlStatus={props.controlStatus}
+          controlStyles={props.controlStyles}
+          modalOffset={{ x: -45, y: 0 }}
+          showString={false}
+          popupOpen={props.popupOpen}
+          setOpenPopup={props.setOpenPopup}
+        />
+        <StringBackgroundColorControl
+          id={`background-layer-gradient-${props.index}`}
+          key={`background-layer-gradient-${props.index}`}
+          testId={`background-layer-gradient-${props.index}`}
+          value={props.value}
+          backgroundIndex={props.index}
+          useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
+          onSubmitSolidStringValue={onStringSubmitValue}
+          controlStatus={props.controlStatus}
+          controlStyles={props.controlStyles}
+          modalOffset={{ x: -45, y: 0 }}
+          showString={true}
+          popupOpen={props.popupOpen}
+          setOpenPopup={props.setOpenPopup}
+        />
+        <SimplePercentInput
+          id={`background-layer-alpha-${props.index}`}
+          testId={`background-layer-alpha-${props.index}`}
+          value={alpha}
+          onSubmitValue={onAlphaSubmitValue}
+          onTransientSubmitValue={onAlphaTransientSubmitValue}
+          onForcedSubmitValue={onAlphaSubmitValue}
+          controlStatus={props.controlStatus}
+          innerLabel={<span style={{ fontSize: 12 }}>α</span>}
+          minimum={0}
+          maximum={1}
+          stepSize={0.01}
+          inputProps={{ onMouseDown: stopPropagation }}
+          defaultUnitToHide={null}
+        />
       </UIGridRow>
     </InspectorContextMenuWrapper>
   )

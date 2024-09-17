@@ -31,7 +31,7 @@ describe('React Render Count Tests -', () => {
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent'])], false)],
       false,
     )
-    expect(renderResult.renderedDOM.getByText('Opacity')).toBeDefined()
+    expect(renderResult.renderedDOM.getByText('Background')).toBeDefined()
 
     await renderResult.dispatch(
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent', 'bbb'])], false)],
@@ -65,7 +65,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`748`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`737`)
     expect(renderResult.getRenderInfo()).toMatchSnapshot()
   })
 
@@ -89,7 +89,7 @@ describe('React Render Count Tests -', () => {
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent'])], false)],
       false,
     )
-    expect(renderResult.renderedDOM.getByText('Opacity')).toBeDefined()
+    expect(renderResult.renderedDOM.getByText('Background')).toBeDefined()
 
     await renderResult.dispatch(
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent', 'child'])], false)],
@@ -127,7 +127,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`859`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`989`)
     expect(renderResult.getRenderInfo()).toMatchSnapshot()
   })
 
@@ -151,7 +151,7 @@ describe('React Render Count Tests -', () => {
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent'])], false)],
       false,
     )
-    expect(renderResult.renderedDOM.getByText('Opacity')).toBeDefined()
+    expect(renderResult.renderedDOM.getByText('Background')).toBeDefined()
 
     await renderResult.dispatch(
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent', 'bbb'])], false)],
@@ -183,7 +183,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`523`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`530`)
     expect(renderResult.getRenderInfo()).toMatchSnapshot()
   })
 
@@ -212,7 +212,7 @@ describe('React Render Count Tests -', () => {
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent'])], false)],
       false,
     )
-    expect(renderResult.renderedDOM.getByText('Opacity')).toBeDefined()
+    expect(renderResult.renderedDOM.getByText('Background')).toBeDefined()
 
     await renderResult.dispatch(
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['parent', 'bbb'])], false)],
@@ -249,7 +249,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`627`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`655`)
     expect(renderResult.getRenderInfo()).toMatchSnapshot()
   })
 })

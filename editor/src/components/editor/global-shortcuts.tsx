@@ -74,7 +74,6 @@ import {
   TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT,
   TOGGLE_NAVIGATOR,
   TOGGLE_LIVE_CANVAS_SHORTCUT,
-  TOGGLE_PREVIEW_SHORTCUT,
   TOGGLE_INSPECTOR,
   TOGGLE_SHADOW_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
@@ -85,7 +84,6 @@ import {
   ZOOM_UI_IN_SHORTCUT,
   ZOOM_UI_OUT_SHORTCUT,
   ADD_ELEMENT_SHORTCUT,
-  GROUP_ELEMENT_PICKER_SHORTCUT,
   GROUP_ELEMENT_DEFAULT_SHORTCUT,
   TOGGLE_FOCUSED_OMNIBOX_TAB,
   FOCUS_CLASS_NAME_INPUT,
@@ -106,9 +104,15 @@ import {
   PASTE_TO_REPLACE,
   WRAP_IN_DIV,
   COMMENT_SHORTCUT,
+  CONVERT_TO_GRID_CONTAINER,
 } from './shortcut-definitions'
-import type { EditorState, LockedElements, NavigatorEntry, UserState } from './store/editor-state'
-import { floatingInsertMenuStateSwap, getOpenFile, RightMenuTab } from './store/editor-state'
+import type {
+  DerivedState,
+  EditorState,
+  LockedElements,
+  NavigatorEntry,
+} from './store/editor-state'
+import { getAllFocusedPaths, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
 import {
@@ -116,11 +120,7 @@ import {
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
 import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
-import {
-  emptyComments,
-  jsExpressionValue,
-  isJSXElementLike,
-} from '../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../core/shared/element-template'
 import {
   toggleTextBold,
   toggleTextItalic,
@@ -130,17 +130,19 @@ import {
 import { commandsForFirstApplicableStrategy } from '../inspector/inspector-strategies/inspector-strategy'
 import {
   addFlexLayoutStrategies,
+  addGridLayoutStrategies,
   removeFlexLayoutStrategies,
+  removeGridLayoutStrategies,
 } from '../inspector/inspector-strategies/inspector-strategies'
 import {
   detectAreElementsFlexContainers,
   toggleResizeToFitSetToFixed,
   toggleAbsolutePositioningCommands,
+  detectAreElementsGridContainers,
 } from '../inspector/inspector-common'
 import { zeroCanvasPoint } from '../../core/shared/math-utils'
 import * as EP from '../../core/shared/element-path'
 import { createWrapInGroupActions } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { isRight } from '../../core/shared/either'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 import { wrapInDivStrategy } from './wrap-in-callbacks'
@@ -148,7 +150,6 @@ import { type ProjectServerState } from './store/project-server-state'
 import { allowedToEditProject } from './store/collaborative-editing'
 import { hasCommentPermission } from './store/permissions'
 import { type ShowComponentPickerContextMenuCallback } from '../navigator/navigator-item/component-picker-context-menu'
-import { showReplaceComponentPicker } from '../context-menu-items'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -358,6 +359,7 @@ export function handleKeyDown(
   event: KeyboardEvent,
   editor: EditorState,
   loginState: LoginState,
+  derived: DerivedState,
   projectServerState: ProjectServerState,
   metadataRef: { current: ElementInstanceMetadataMap },
   navigatorTargetsRef: { current: Array<NavigatorEntry> },
@@ -537,6 +539,8 @@ export function handleKeyDown(
             editor.canvas.scale,
             editor.canvas.realCanvasOffset,
             editor.jsxMetadata,
+            editor.lockedElements,
+            getAllFocusedPaths(editor.focusedElementPath, derived.autoFocusedPaths),
           )
           const nextTarget = Canvas.getNextTarget(
             editor.jsxMetadata,
@@ -589,11 +593,17 @@ export function handleKeyDown(
         return isSelectMode(editor.mode) ? [EditorActions.unwrapElements(editor.selectedViews)] : []
       },
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
-          ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
-          : []
+        if (allowedToEdit) {
+          if (isSelectMode(editor.mode)) {
+            const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
+            showComponentPicker(editor.selectedViews, EditorActions.wrapTarget)(event, {
+              position: mousePoint,
+            })
+            return []
+          }
+        }
+        return []
       },
-      // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) && editor.selectedViews.length > 0
           ? [
@@ -608,11 +618,6 @@ export function handleKeyDown(
             ]
           : []
       },
-      [GROUP_ELEMENT_PICKER_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
-          ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
-          : []
-      },
       [TOGGLE_HIDDEN_SHORTCUT]: () => {
         return [EditorActions.toggleHidden()]
       },
@@ -624,9 +629,6 @@ export function handleKeyDown(
           }
         }
         return []
-      },
-      [TOGGLE_PREVIEW_SHORTCUT]: () => {
-        return [EditorActions.togglePanel('preview')]
       },
       [TOGGLE_LIVE_CANVAS_SHORTCUT]: () => {
         return [EditorActions.toggleCanvasIsLive()]
@@ -749,12 +751,9 @@ export function handleKeyDown(
         if (allowedToEdit) {
           if (isSelectMode(editor.mode)) {
             const mousePoint = WindowMousePositionRaw ?? zeroCanvasPoint
-            showComponentPicker(editor.selectedViews[0], EditorActions.insertAsChildTarget())(
-              event,
-              {
-                position: mousePoint,
-              },
-            )
+            showComponentPicker(editor.selectedViews, EditorActions.insertAsChildTarget())(event, {
+              position: mousePoint,
+            })
             return []
           }
         }
@@ -923,6 +922,37 @@ export function handleKeyDown(
         }
         return [EditorActions.applyCommandsAction(commands)]
       },
+      [CONVERT_TO_GRID_CONTAINER]: () => {
+        if (!isSelectMode(editor.mode)) {
+          return []
+        }
+        const elementsConsideredForGridConversion = editor.selectedViews.filter(
+          (elementPath) =>
+            MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, elementPath) != null,
+        )
+        const selectedElementsGridContainers = detectAreElementsGridContainers(
+          editor.jsxMetadata,
+          elementsConsideredForGridConversion,
+        )
+        const commands = commandsForFirstApplicableStrategy(
+          selectedElementsGridContainers
+            ? removeGridLayoutStrategies(
+                editor.jsxMetadata,
+                elementsConsideredForGridConversion,
+                editor.elementPathTree,
+              )
+            : addGridLayoutStrategies(
+                editor.jsxMetadata,
+                elementsConsideredForGridConversion,
+                editor.elementPathTree,
+                editor.allElementProps,
+              ),
+        )
+        if (commands == null) {
+          return []
+        }
+        return [EditorActions.applyCommandsAction(commands)]
+      },
       [REMOVE_ABSOLUTE_POSITIONING]: () => {
         if (!isSelectMode(editor.mode)) {
           return []
@@ -933,6 +963,7 @@ export function handleKeyDown(
           editor.allElementProps,
           editor.elementPathTree,
           editor.selectedViews,
+          { scale: editor.canvas.scale, offset: editor.canvas.realCanvasOffset },
         )
 
         if (commands.length === 0) {
@@ -977,6 +1008,7 @@ export function handleKeyDown(
             editor.elementPathTree,
             editor.allElementProps,
             editor.projectContents,
+            editor.propertyControlsInfo,
           ),
         ])
         if (commands == null) {

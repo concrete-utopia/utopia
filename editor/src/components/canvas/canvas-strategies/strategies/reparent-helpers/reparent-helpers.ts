@@ -114,7 +114,7 @@ export function isAllowedToReparent(
     (_) => true,
     (elementFromMetadata) =>
       !elementReferencesElsewhere(elementFromMetadata) &&
-      MetadataUtils.targetHonoursPropsPosition(projectContents, metadata),
+      MetadataUtils.targetHonoursPropsPosition(projectContents, metadata) !== 'does-not-honour',
     metadata.element,
   )
 }
@@ -139,7 +139,7 @@ export function isAllowedToNavigatorReparent(
       return foldEither(
         (_) => true,
         (elementFromMetadata) =>
-          MetadataUtils.targetHonoursPropsPosition(projectContents, metadata),
+          MetadataUtils.targetHonoursPropsPosition(projectContents, metadata) !== 'does-not-honour',
         metadata.element,
       )
     }
@@ -531,8 +531,7 @@ export function absolutePositionForReparent(
   }
 
   const localFrame = zeroRectIfNullOrInfinity(
-    MetadataUtils.findElementByElementPath(metadata.currentMetadata, targetParent)?.localFrame ??
-      null,
+    MetadataUtils.getLocalFrame(targetParent, metadata.currentMetadata) ?? null,
   )
 
   // offset the element with the target parent's offset, since the target parent doesn't

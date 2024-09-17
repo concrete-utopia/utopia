@@ -1,4 +1,4 @@
-import type React from 'react'
+import React from 'react'
 import { emptySet } from '../../../core/shared/set-utils'
 import type { MapLike } from 'typescript'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
@@ -6,7 +6,13 @@ import type { Either } from '../../../core/shared/either'
 import { left } from '../../../core/shared/either'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../../assets'
-import type { TransientFilesState, UIFileBase64Blobs } from '../../editor/store/editor-state'
+import type {
+  ElementsToRerender,
+  TransientFilesState,
+  UIFileBase64Blobs,
+} from '../../editor/store/editor-state'
+import type { VariableData } from '../ui-jsx-canvas'
+import type { FilePathMappings } from '../../../core/model/project-file-utils'
 
 export interface MutableUtopiaCtxRefData {
   [filePath: string]: {
@@ -14,6 +20,7 @@ export interface MutableUtopiaCtxRefData {
       requireResult: MapLike<any>
       fileBlobs: UIFileBase64Blobs
       rootScope: MapLike<any>
+      spiedVariablesDeclaredInRootScope: VariableData
       jsxFactoryFunctionName: string | null
     }
   }
@@ -32,6 +39,7 @@ interface RerenderUtopiaContextProps {
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
   editedText: ElementPath | null
+  filePathMappings: FilePathMappings
 }
 
 export const RerenderUtopiaCtxAtom = atomWithPubSub<RerenderUtopiaContextProps>({
@@ -42,6 +50,7 @@ export const RerenderUtopiaCtxAtom = atomWithPubSub<RerenderUtopiaContextProps>(
     canvasIsLive: false,
     shouldIncludeCanvasRootInTheSpy: false,
     editedText: null,
+    filePathMappings: [],
   },
 })
 
@@ -73,3 +82,8 @@ export const SceneLevelUtopiaCtxAtom = atomWithPubSub<SceneLevelContextProps>({
     validPaths: new Set(),
   },
 })
+
+type ElementsToRerenderContextValue = ElementsToRerender
+
+export const ElementsToRerenderContext =
+  React.createContext<ElementsToRerenderContextValue>('rerender-all-elements')

@@ -27,6 +27,7 @@ import { useUpdateRemixSceneRouteInLiveblocks } from '../../../../core/shared/mu
 import { MultiplayerWrapper } from '../../../../utils/multiplayer-wrapper'
 import { getIdOfScene } from '../comment-mode/comment-mode-hooks'
 import { optionalMap } from '../../../../core/shared/optional-utils'
+import { defaultEither } from '../../../../core/shared/either'
 
 export const RemixSceneLabelPathTestId = (path: ElementPath): string =>
   `${EP.toString(path)}-remix-scene-label-path`
@@ -58,7 +59,7 @@ export const RemixSceneLabelTestID = (path: ElementPath): string =>
 function useCurrentLocationMatchesRoutes(pathToRemixScene: ElementPath): boolean {
   const routes = useEditorState(
     Substores.derived,
-    (store) => store.derived.remixData?.routes ?? null,
+    (store) => defaultEither(null, store.derived.remixData)?.routes ?? null,
     'useCurrentLocationMatchesRoutes routes',
   )
   const [remixNavigationData] = useAtom(RemixNavigationAtom)
@@ -359,21 +360,6 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
               onClick={forward}
             >
               〱
-            </span>
-          </Tooltip>
-          <Tooltip title={'Home'}>
-            <span
-              data-testid={RemixSceneLabelButtonTestId(props.target, 'home')}
-              style={{
-                cursor: 'pointer',
-                fontSize: 14 / scale,
-                display: isSelected ? 'block' : 'none',
-                position: 'relative',
-                bottom: 0 / scale,
-              }}
-              onClick={home}
-            >
-              ⛫
             </span>
           </Tooltip>
         </FlexRow>

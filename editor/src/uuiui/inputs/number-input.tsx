@@ -35,7 +35,7 @@ import type {
 } from '../../components/inspector/controls/control'
 import type { Either } from '../../core/shared/either'
 import { isLeft, mapEither } from '../../core/shared/either'
-import { clampValue } from '../../core/shared/math-utils'
+import { clampValue, point } from '../../core/shared/math-utils'
 import { memoize } from '../../core/shared/memoize'
 import type { ControlStyles } from '../../uuiui-deps'
 import { getControlStyles, CSSCursor } from '../../uuiui-deps'
@@ -50,10 +50,8 @@ import {
   InspectorInput,
 } from './base-input'
 import { usePropControlledStateV2 } from '../../components/inspector/common/inspector-utils'
-import { useIsMyProject } from '../../components/editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../utilities/disable-subtree'
-
-export type LabelDragDirection = 'horizontal' | 'vertical'
+import { getPossiblyHashedURL } from '../../utils/hashed-assets'
 
 function getDisplayValueNotMemoized(
   value: CSSNumber | null,
@@ -66,7 +64,7 @@ function getDisplayValueNotMemoized(
     const showUnit = unit !== defaultUnitToHide
     return cssNumberToString(value, showUnit)
   } else {
-    return ''
+    return '–'
   }
 }
 
@@ -89,36 +87,39 @@ function parseDisplayValueNotMemoized(
 
 const parseDisplayValue = memoize(parseDisplayValueNotMemoized, { maxSize: 1000 })
 
-const dragDeltaSign = (start: number, end: number, directionAdjustment: 1 | -1): 1 | -1 => {
-  const raw = (start - end) * directionAdjustment
-  return raw >= 0 ? 1 : -1
+function dragDeltaSign(delta: number): 1 | -1 {
+  return delta >= 0 ? 1 : -1
 }
 
-const calculateDragDirectionDelta = (
-  start: number,
-  end: number,
+export function calculateDragDirectionDelta(
+  delta: number,
   scalingFactor: number,
-  directionAdjustment: 1 | -1,
-): number => {
-  const sign = dragDeltaSign(start, end, directionAdjustment)
-  const rawAbsDelta = Math.abs(start - end)
+): {
+  result: number
+  inverse: (value: number) => number
+} {
+  const sign = dragDeltaSign(delta)
+  const rawAbsDelta = Math.abs(delta)
+  // Floor the value and then restore its sign so that it is rounded towards zero.
   const scaledAbsDelta = Math.floor(rawAbsDelta / scalingFactor)
-  return sign * scaledAbsDelta
+  // save the diff for inverse calculation
+  const diff = rawAbsDelta - scaledAbsDelta * scalingFactor
+  return {
+    result: sign * scaledAbsDelta,
+    inverse: (value: number) => {
+      return sign * (Math.abs(value) * scalingFactor + diff)
+    },
+  }
 }
 
-const calculateDragDelta = (
-  dragOriginX: number,
-  dragOriginY: number,
-  dragScreenX: number,
-  dragScreenY: number,
-  labelDragDirection: LabelDragDirection,
+function calculateDragDelta(
+  delta: number,
   scalingFactor: number = 2,
-) => {
-  if (labelDragDirection === 'horizontal') {
-    return calculateDragDirectionDelta(dragOriginX, dragScreenX, scalingFactor, 1)
-  } else {
-    return calculateDragDirectionDelta(dragOriginY, dragScreenY, scalingFactor, -1)
-  }
+): {
+  result: number
+  inverse: (value: number) => number
+} {
+  return calculateDragDirectionDelta(delta, scalingFactor)
 }
 
 let incrementTimeout: number | undefined = undefined
@@ -126,7 +127,7 @@ let incrementAnimationFrame: number | undefined = undefined
 const repeatThreshold: number = 500
 
 export interface NumberInputOptions {
-  labelInner?: string | IcnProps
+  innerLabel?: React.ReactChild
   minimum?: number
   maximum?: number
   stepSize?: number
@@ -137,6 +138,8 @@ export interface NumberInputOptions {
   numberType: CSSNumberType
   defaultUnitToHide: CSSNumberUnit | null
   pasteHandler?: boolean
+  descriptionLabel?: string
+  disableScrubbing?: boolean
 }
 
 export interface AbstractNumberInputProps<T extends CSSNumber | number>
@@ -144,7 +147,6 @@ export interface AbstractNumberInputProps<T extends CSSNumber | number>
     BaseInputProps,
     InspectorControlProps {
   value: T | null | undefined
-  DEPRECATED_labelBelow?: React.ReactChild
   invalid?: boolean
 }
 
@@ -166,13 +168,11 @@ export const NumberInput = React.memo<NumberInputProps>(
     testId,
     inputProps = {},
     id,
-    className,
-    DEPRECATED_labelBelow,
-    labelInner,
+    innerLabel,
     minimum: unscaledMinimum = -Infinity,
     maximum: unscaledMaximum = Infinity,
     stepSize: unscaledStepSize,
-    incrementControls = true,
+    incrementControls = false,
     chained = 'not-chained',
     height = UtopiaTheme.layout.inputHeight.default,
     roundCorners = 'all',
@@ -188,6 +188,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     onMouseLeave,
     invalid,
     pasteHandler,
+    disableScrubbing = false,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const colorTheme = useColorTheme()
@@ -227,29 +228,15 @@ export const NumberInput = React.memo<NumberInputProps>(
     const [isFauxcused, setIsFauxcused] = React.useState<boolean>(false)
     const isFocused = isActuallyFocused || isFauxcused
 
-    const [labelDragDirection, setLabelDragDirection] =
-      React.useState<LabelDragDirection>('horizontal')
-
     const [, setValueAtDragOriginState] = React.useState<number>(0)
-    const valueAtDragOrigin = React.useRef(0)
+    const valueAtDragOrigin = React.useRef<number | null>(null)
     const setValueAtDragOrigin = (n: number) => {
       valueAtDragOrigin.current = n
       setValueAtDragOriginState(n)
     }
 
-    const [, setDragOriginXState] = React.useState<number>(-Infinity)
-    const dragOriginX = React.useRef(-Infinity)
-    const setDragOriginX = (n: number) => {
-      dragOriginX.current = n
-      setDragOriginXState(n)
-    }
-
-    const [, setDragOriginYState] = React.useState<number>(-Infinity)
-    const dragOriginY = React.useRef(-Infinity)
-    const setDragOriginY = (n: number) => {
-      dragOriginY.current = n
-      setDragOriginYState(n)
-    }
+    const [dragOriginX, setDragOriginX] = React.useState<number | null>(null)
+    const [dragOriginY, setDragOriginY] = React.useState<number | null>(null)
 
     const [, setScrubThresholdPassedState] = React.useState<boolean>(false)
     const scrubThresholdPassed = React.useRef(false)
@@ -257,6 +244,16 @@ export const NumberInput = React.memo<NumberInputProps>(
       scrubThresholdPassed.current = b
       setScrubThresholdPassedState(b)
     }
+
+    const simulatedPointerRef = React.useRef(null)
+    const pointerOriginRef = React.useRef<HTMLDivElement>(null)
+
+    const accumulatedMouseDeltaX = React.useRef(0)
+    const clampedAccumulatedDelta = React.useRef(0)
+    // This is here to alleviate a circular reference issue that I stumbled into with the callbacks,
+    // it means that the cleanup callback isn't dependent on the event listeners, which result in
+    // a break in the circle.
+    const scrubbingCleanupCallbacks = React.useRef<Array<() => void>>([])
 
     const [valueChangedSinceFocus, setValueChangedSinceFocus] = React.useState<boolean>(false)
 
@@ -328,53 +325,43 @@ export const NumberInput = React.memo<NumberInputProps>(
     )
 
     const setScrubValue = React.useCallback(
-      (
-        unit: CSSNumberUnit | null,
-        screenX: number,
-        screenY: number,
-        scrubDragOriginX: number,
-        scrubDragOriginY: number,
-        transient: boolean,
-      ) => {
-        const primaryAxisDelta = calculateDragDelta(
-          scrubDragOriginX,
-          scrubDragOriginY,
-          screenX,
-          screenY,
-          labelDragDirection,
-        )
-        const numericValue = clampValue(
-          valueAtDragOrigin.current - stepSize * primaryAxisDelta,
-          minimum,
-          maximum,
-        )
-        const newValue = cssNumber(numericValue, unit)
+      (transient: boolean) => {
+        if (valueAtDragOrigin.current != null) {
+          const { result: dragDelta, inverse } = calculateDragDelta(clampedAccumulatedDelta.current)
+          const totalClampedValue = clampValue(
+            valueAtDragOrigin.current + stepSize * dragDelta,
+            minimum,
+            maximum,
+          )
+          const clampedDelta = (totalClampedValue - valueAtDragOrigin.current) / stepSize
+          clampedAccumulatedDelta.current = inverse(clampedDelta)
+          const newValue = cssNumber(totalClampedValue, valueUnit)
 
-        if (transient) {
-          if (onTransientSubmitValue != null) {
-            onTransientSubmitValue(newValue)
-          } else if (onSubmitValue != null) {
-            onSubmitValue(newValue)
+          if (transient) {
+            if (onTransientSubmitValue != null) {
+              onTransientSubmitValue(newValue)
+            } else if (onSubmitValue != null) {
+              onSubmitValue(newValue)
+            }
+          } else {
+            if (onForcedSubmitValue != null) {
+              onForcedSubmitValue(newValue)
+            } else if (onSubmitValue != null) {
+              onSubmitValue(newValue)
+            }
           }
-        } else {
-          if (onForcedSubmitValue != null) {
-            onForcedSubmitValue(newValue)
-          } else if (onSubmitValue != null) {
-            onSubmitValue(newValue)
-          }
+          updateValue(newValue)
         }
-        updateValue(newValue)
-        return newValue
       },
       [
-        labelDragDirection,
-        maximum,
-        minimum,
         stepSize,
-        onForcedSubmitValue,
-        onSubmitValue,
-        onTransientSubmitValue,
+        minimum,
+        maximum,
+        valueUnit,
         updateValue,
+        onTransientSubmitValue,
+        onSubmitValue,
+        onForcedSubmitValue,
       ],
     )
 
@@ -386,53 +373,80 @@ export const NumberInput = React.memo<NumberInputProps>(
 
     const onThresholdPassed = (e: MouseEvent, fn: () => void) => {
       const thresholdPassed =
-        scrubThresholdPassed.current || Math.abs(e.screenX - dragOriginX.current) >= ScrubThreshold
+        scrubThresholdPassed.current || Math.abs(accumulatedMouseDeltaX.current) >= ScrubThreshold
       if (thresholdPassed) {
         fn()
       }
     }
 
-    const scrubOnMouseMove = React.useCallback(
-      (e: MouseEvent) => {
-        onThresholdPassed(e, () => {
-          if (!scrubThresholdPassed.current) {
-            setScrubThresholdPassed(true)
-          }
-          setScrubValue(
-            valueUnit,
-            e.screenX,
-            e.screenY,
-            dragOriginX.current,
-            dragOriginY.current,
-            true,
-          )
-        })
-      },
-      [setScrubValue, valueUnit],
-    )
-
-    const scrubOnMouseUp = React.useCallback(
-      (e: MouseEvent) => {
-        window.removeEventListener('mouseup', scrubOnMouseUp)
-        window.removeEventListener('mousemove', scrubOnMouseMove)
+    const cancelPointerLock = React.useCallback(
+      (revertChanges: 'revert-nothing' | 'revert-changes') => {
+        if (document.pointerLockElement === pointerOriginRef.current) {
+          document.exitPointerLock()
+        }
+        if (
+          revertChanges === 'revert-changes' &&
+          onSubmitValue != null &&
+          valueAtDragOrigin.current != null
+        ) {
+          const oldValue = cssNumber(valueAtDragOrigin.current, valueUnit)
+          onSubmitValue(oldValue, false)
+        }
 
         setIsFauxcused(false)
         ref.current?.focus()
 
-        onThresholdPassed(e, () => {
-          setScrubValue(
-            valueUnit,
-            e.screenX,
-            e.screenY,
-            dragOriginX.current,
-            dragOriginY.current,
-            false,
-          )
-        })
         setScrubThresholdPassed(false)
         setGlobalCursor?.(null)
       },
-      [scrubOnMouseMove, setScrubValue, valueUnit, ref, setGlobalCursor],
+      [onSubmitValue, setGlobalCursor, valueUnit],
+    )
+
+    const checkPointerLockChange = React.useCallback(() => {
+      if (document.pointerLockElement !== pointerOriginRef.current) {
+        cancelPointerLock('revert-changes')
+        scrubbingCleanupCallbacks.current.forEach((fn) => fn())
+      }
+    }, [cancelPointerLock])
+
+    const scrubOnMouseUp = React.useCallback(
+      (e: MouseEvent) => {
+        scrubbingCleanupCallbacks.current.forEach((fn) => fn())
+        onThresholdPassed(e, () => {
+          setScrubValue(false)
+        })
+        cancelPointerLock('revert-nothing')
+      },
+      [cancelPointerLock, setScrubValue],
+    )
+
+    const scrubOnMouseMove = React.useCallback(
+      (e: MouseEvent) => {
+        // Apply the movement to the accumulated delta, as the movement is
+        // relative to the last event.
+        accumulatedMouseDeltaX.current += e.movementX
+        clampedAccumulatedDelta.current += e.movementX
+
+        onThresholdPassed(e, () => {
+          if (!scrubThresholdPassed.current) {
+            setScrubThresholdPassed(true)
+            if (pointerOriginRef.current != null) {
+              pointerOriginRef.current.requestPointerLock()
+              scrubbingCleanupCallbacks.current.push(() => {
+                window.removeEventListener('mouseup', scrubOnMouseUp)
+              })
+              scrubbingCleanupCallbacks.current.push(() => {
+                window.removeEventListener('mousemove', scrubOnMouseMove)
+              })
+              scrubbingCleanupCallbacks.current.push(() => {
+                document.removeEventListener('pointerlockchange', checkPointerLockChange, true)
+              })
+            }
+          }
+          setScrubValue(true)
+        })
+      },
+      [checkPointerLockChange, scrubOnMouseUp, setScrubValue],
     )
 
     const rc = roundCorners == null ? 'all' : roundCorners
@@ -462,7 +476,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           ref.current?.blur()
         }
       },
-      [incrementBy, stepSize, ref, updateValue],
+      [updateValue, incrementBy, stepSize],
     )
 
     const onKeyUp = React.useCallback(
@@ -627,7 +641,7 @@ export const NumberInput = React.memo<NumberInputProps>(
 
     const onLabelMouseDown = React.useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
-        if (disabled) {
+        if (disabled || disableScrubbing) {
           return
         }
         if (e.button === 0) {
@@ -635,14 +649,24 @@ export const NumberInput = React.memo<NumberInputProps>(
           setIsFauxcused(true)
           window.addEventListener('mousemove', scrubOnMouseMove)
           window.addEventListener('mouseup', scrubOnMouseUp)
-          setLabelDragDirection('horizontal')
+          document.addEventListener('pointerlockchange', checkPointerLockChange, true)
           setValueAtDragOrigin(value?.value ?? 0)
-          setDragOriginX(e.screenX)
-          setDragOriginY(e.screenY)
+          setDragOriginX(e.pageX)
+          setDragOriginY(e.pageY)
           setGlobalCursor?.(CSSCursor.ResizeEW)
+          accumulatedMouseDeltaX.current = 0
+          clampedAccumulatedDelta.current = 0
         }
       },
-      [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, value, disabled],
+      [
+        disabled,
+        disableScrubbing,
+        scrubOnMouseMove,
+        scrubOnMouseUp,
+        checkPointerLockChange,
+        value?.value,
+        setGlobalCursor,
+      ],
     )
 
     const placeholder = getControlStylesAwarePlaceholder(controlStyles)
@@ -664,17 +688,57 @@ export const NumberInput = React.memo<NumberInputProps>(
           }
         : undefined
 
+    let simulatedPointerTransformX: number | undefined = undefined
+    if (pointerOriginRef.current != null && scrubThresholdPassed.current && dragOriginX != null) {
+      const pointerOriginRect = pointerOriginRef.current.getBoundingClientRect()
+      const intendedPointerX =
+        (pointerOriginRect.left + accumulatedMouseDeltaX.current) % window.screen.width
+      simulatedPointerTransformX = intendedPointerX - pointerOriginRect.left
+    }
+
     return (
-      <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={style}>
+      <div
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        ref={pointerOriginRef}
+        style={style}
+      >
+        <div
+          ref={simulatedPointerRef}
+          style={{
+            width: 5,
+            height: 5,
+            top: dragOriginY == null ? undefined : dragOriginY,
+            transform:
+              simulatedPointerTransformX == null
+                ? undefined
+                : `translateX(${simulatedPointerTransformX}px)`,
+            position: 'fixed',
+            visibility: scrubThresholdPassed.current ? 'visible' : 'hidden',
+            zIndex: 999999,
+          }}
+        >
+          <img
+            style={{
+              position: 'relative',
+              userSelect: 'none',
+              display: 'block',
+            }}
+            width={34}
+            height={33}
+            src={getPossiblyHashedURL(`/editor/cursors/cursor-ew-resize@2x.png`)}
+          />
+        </div>
         <div
           className='number-input-container'
           css={{
             color: controlStyles.mainColor,
             zIndex: isFocused ? 3 : undefined,
             position: 'relative',
-            borderRadius: 2,
+            borderRadius: UtopiaTheme.inputBorderRadius,
             display: 'flex',
             flexDirection: 'row',
+            gap: 5,
             alignItems: 'center',
             boxShadow: 'inset 0px 0px 0px 1px transparent',
             ...chainedStyles,
@@ -692,49 +756,13 @@ export const NumberInput = React.memo<NumberInputProps>(
             },
           }}
         >
-          {labelInner != null ? (
-            <div
-              className='number-input-innerLabel'
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                userSelect: 'none',
-                pointerEvents: 'none',
-                width: 20,
-                height: 20,
-                display: 'block',
-              }}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  pointerEvents: 'none',
-                  left: 0,
-                  top: 2,
-                  textAlign: 'center',
-                  fontWeight: 600,
-                  fontSize: '9px',
-                  width: '100%',
-                  height: '100%',
-                  color: colorTheme.fg7.value,
-                }}
-              >
-                {typeof labelInner === 'object' && 'type' in labelInner ? (
-                  <Icn {...labelInner} />
-                ) : (
-                  labelInner
-                )}
-              </div>
-            </div>
-          ) : null}
           {incrementControls && !disabled ? (
             <div
               className='number-input-increment-controls'
               css={{
                 position: 'absolute',
                 top: 0,
-                right: 1,
+                right: 2,
                 flexDirection: 'column',
                 alignItems: 'stretch',
                 width: 11,
@@ -805,30 +833,22 @@ export const NumberInput = React.memo<NumberInputProps>(
               </div>
             </div>
           ) : null}
-          {DEPRECATED_labelBelow == null && controlStatus != 'off' ? null : (
-            <React.Fragment>
-              {isFauxcused ? (
-                <div
-                  style={{
-                    background: 'transparent',
-                    zIndex: 1,
-                  }}
-                ></div>
-              ) : null}
-              <div
-                onMouseDown={onLabelMouseDown}
-                style={{
-                  paddingLeft: 4,
-                  cursor: CSSCursor.ResizeEW,
-                  fontSize: 9,
-                  textAlign: 'center',
-                  display: 'block',
-                  color: controlStyles.secondaryColor,
-                }}
-              >
-                {DEPRECATED_labelBelow}
-              </div>
-            </React.Fragment>
+          {innerLabel == null && controlStatus != 'off' ? null : (
+            <div
+              data-testid={`${testId}-mouse-down-handler`}
+              onMouseDown={onLabelMouseDown}
+              style={{
+                paddingLeft: 4,
+                cursor: disableScrubbing ? 'default' : CSSCursor.ResizeEW,
+                fontSize: 9,
+                textAlign: 'center',
+                display: 'block',
+                color: controlStyles.secondaryColor,
+                width: 20,
+              }}
+            >
+              {innerLabel}
+            </div>
           )}
           <InspectorInput
             {...inputProps}
@@ -839,7 +859,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             pasteHandler={pasteHandler}
             disabled={disabled}
             focused={isFocused}
-            hasLabel={labelInner != null}
+            hasLabel={innerLabel != null}
             roundCorners={roundCorners}
             mixed={mixed}
             value={displayValue}
@@ -853,7 +873,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             className='number-input'
             height={height}
             id={id}
-            placeholder={placeholder}
+            placeholder={inputProps.placeholder ?? placeholder}
             onFocus={onFocus}
             onKeyDown={onKeyDown}
             onKeyUp={onKeyUp}
@@ -974,13 +994,14 @@ interface ChainedNumberControlProps {
   idPrefix: string
   style?: React.CSSProperties
   setGlobalCursor?: (cursor: CSSCursor | null) => void
+  wrap?: boolean
 }
 
 export const ChainedNumberInput: React.FunctionComponent<
   React.PropsWithChildren<ChainedNumberControlProps>
-> = React.memo(({ propsArray, idPrefix, style, setGlobalCursor }) => {
+> = React.memo(({ propsArray, idPrefix, style, setGlobalCursor, wrap }) => {
   return (
-    <FlexRow style={style}>
+    <FlexRow style={{ flexWrap: wrap ? 'wrap' : 'nowrap', ...style }}>
       {propsArray.map((props, i) => {
         switch (i) {
           case 0: {
@@ -992,7 +1013,6 @@ export const ChainedNumberInput: React.FunctionComponent<
                 chained='first'
                 roundCorners='left'
                 setGlobalCursor={setGlobalCursor}
-                incrementControls={false}
               />
             )
           }
@@ -1005,7 +1025,6 @@ export const ChainedNumberInput: React.FunctionComponent<
                 chained='last'
                 roundCorners='right'
                 setGlobalCursor={setGlobalCursor}
-                incrementControls={false}
               />
             )
           }
@@ -1018,7 +1037,6 @@ export const ChainedNumberInput: React.FunctionComponent<
                 chained='middle'
                 roundCorners='none'
                 setGlobalCursor={setGlobalCursor}
-                incrementControls={false}
               />
             )
           }

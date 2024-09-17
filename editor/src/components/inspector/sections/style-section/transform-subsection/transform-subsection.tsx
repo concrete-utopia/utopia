@@ -18,7 +18,7 @@ import {
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import type { ControlStatus } from '../../../common/control-status'
-import type { ControlStyles } from '../../../common/control-styles'
+import { type ControlStyles } from '../../../common/control-styles'
 import type {
   CSSDefault,
   CSSNumber,
@@ -56,6 +56,7 @@ import {
   isCSSTransformSingleItem,
 } from '../../../common/css-utils'
 import {
+  RemovePropertyButton,
   getIndexedSpliceArrayItem,
   stopPropagation,
   useGetSubsectionHeaderStyle,
@@ -136,7 +137,7 @@ const transformItemControlMetadatas: {
     prettyName: 'Scale',
     stepSize: 0.01,
     numberType: 'Unitless',
-    labelBelow: ['x', 'y'],
+    labelBelow: ['X', 'Y'],
     emptyValue: defaultTransformScale,
     defaultUnitToHide: null,
   },
@@ -163,7 +164,7 @@ const transformItemControlMetadatas: {
   },
   skew: {
     prettyName: 'Skew',
-    labelBelow: ['x', 'y'],
+    labelBelow: ['X', 'Y'],
     numberType: 'Angle',
     emptyValue: defaultTransformSkew,
     defaultUnitToHide: 'deg',
@@ -182,7 +183,7 @@ const transformItemControlMetadatas: {
   },
   translate: {
     prettyName: 'Translate',
-    labelBelow: ['x', 'y'],
+    labelBelow: ['X', 'Y'],
     numberType: 'LengthPercent',
     emptyValue: defaultTransformTranslate,
     defaultUnitToHide: 'px',
@@ -314,7 +315,7 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
     <PropertyRow
       key={props.index}
       style={{
-        gridTemplateColumns: '12px 1fr 46px 20px',
+        gridTemplateColumns: '12px 90px 1fr 22px',
         gridColumnGap: 8,
       }}
     >
@@ -339,6 +340,7 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
           onSubmitValue={onTransformTypeSubmitValue}
           controlStatus={props.controlStatus}
           controlStyles={props.controlStyles}
+          style={{ flex: 1 }}
         />
       </FlexRow>
       <NumberInput
@@ -359,8 +361,8 @@ const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
         controlStatus={props.controlStatus}
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
       />
-      <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1 }}>
-        <Icn category='semantic' type='minus' color='secondary' width={16} height={16} />
+      <SquareButton highlight onMouseDown={removeTransformItem}>
+        <Icons.SmallMinus />
       </SquareButton>
     </PropertyRow>
   )
@@ -435,11 +437,14 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
 
   const controlMetadata = transformItemControlMetadatas[props.value.type]
 
+  const firstLabel = controlMetadata.labelBelow?.at(0)
+  const secondLabel = controlMetadata.labelBelow?.at(1)
+
   return (
     <PropertyRow
       key={props.index}
       style={{
-        gridTemplateColumns: '12px 1fr 46px 46px 20px',
+        gridTemplateColumns: '12px 90px 1fr 1fr 22px',
         gridColumnGap: 8,
       }}
     >
@@ -464,6 +469,7 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
           onSubmitValue={onTransformTypeSubmitValue}
           controlStatus={props.controlStatus}
           controlStyles={props.controlStyles}
+          style={{ flex: 1 }}
         />
       </FlexRow>
       <NumberInput
@@ -479,9 +485,7 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         minimum={controlMetadata.minimum}
         maximum={controlMetadata.maximum}
         numberType={controlMetadata.numberType}
-        DEPRECATED_labelBelow={
-          controlMetadata.labelBelow != null ? controlMetadata.labelBelow[0] : undefined
-        }
+        innerLabel={firstLabel}
         onSubmitValue={doubleLengthZeroethItemSubmitValue}
         onTransientSubmitValue={doubleLengthZeroethItemTransientSubmitValue}
         controlStatus={props.controlStatus}
@@ -500,16 +504,14 @@ const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
         minimum={controlMetadata.minimum}
         maximum={controlMetadata.maximum}
         numberType={controlMetadata.numberType}
-        DEPRECATED_labelBelow={
-          controlMetadata.labelBelow != null ? controlMetadata.labelBelow[1] : undefined
-        }
+        innerLabel={secondLabel}
         onSubmitValue={doubleLengthFirstItemSubmitValue}
         onTransientSubmitValue={doubleLengthFirstItemTransientSubmitValue}
         controlStatus={props.controlStatus}
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
       />
-      <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1 }}>
-        <Icn category='semantic' type='minus' color='secondary' width={16} height={16} />
+      <SquareButton highlight onMouseDown={removeTransformItem}>
+        <Icons.SmallMinus />
       </SquareButton>
     </PropertyRow>
   )
@@ -569,21 +571,14 @@ export const TransformSubsection = React.memo(() => {
             <span>Transforms</span>
           </FlexRow>
           {propertyStatus.overwritable ? (
-            <FlexRow style={{ gap: 4 }}>
-              <SquareButton
-                highlight
-                onMouseDown={removeAllTransformProperties}
-                data-testid={'inspector-transform-remove-all'}
-                style={{ width: 12 }}
-              >
-                <Icn category='semantic' type='cross' width={12} height={12} />
-              </SquareButton>
-              <SquareButton
-                highlight
-                onMouseDown={insertCSSTransformMouseDown}
-                style={{ width: 12 }}
-              >
-                <Icn category='semantic' type='plus' width={12} height={12} />
+            <FlexRow>
+              <RemovePropertyButton
+                testId='inspector-transform-remove-all'
+                onUnsetValues={removeAllTransformProperties}
+                propertySet={propertyStatus.set}
+              />
+              <SquareButton highlight onMouseDown={insertCSSTransformMouseDown}>
+                <Icons.SmallPlus />
               </SquareButton>
             </FlexRow>
           ) : null}

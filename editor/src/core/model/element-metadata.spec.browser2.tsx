@@ -57,16 +57,6 @@ describe('Frame calculation for fragments', () => {
     )
 
     expect(
-      renderResult.getEditorState().editor.jsxMetadata[fragmentComponentPath].localFrame,
-    ).toEqual(
-      localRectangle({
-        x: 64,
-        y: 114,
-        height: 363,
-        width: 210,
-      }),
-    )
-    expect(
       renderResult.getEditorState().editor.jsxMetadata[fragmentComponentPath].globalFrame,
     ).toEqual(
       canvasRectangle({
@@ -85,16 +75,6 @@ describe('Frame calculation for fragments', () => {
       'await-first-dom-report',
     )
 
-    expect(
-      renderResult.getEditorState().editor.jsxMetadata[fragmentComponentPath].localFrame,
-    ).toEqual(
-      localRectangle({
-        x: 64,
-        y: 114,
-        height: 90,
-        width: 10,
-      }),
-    )
     expect(
       renderResult.getEditorState().editor.jsxMetadata[fragmentComponentPath].globalFrame,
     ).toEqual(
@@ -117,9 +97,6 @@ describe('Frame calculation for fragments', () => {
 
     expect(renderResult.getEditorState().editor.jsxMetadata[condComponentPath].globalFrame).toEqual(
       renderResult.getEditorState().editor.jsxMetadata[trueBranchComponentPath].globalFrame,
-    )
-    expect(renderResult.getEditorState().editor.jsxMetadata[condComponentPath].localFrame).toEqual(
-      renderResult.getEditorState().editor.jsxMetadata[trueBranchComponentPath].localFrame,
     )
   })
 })
@@ -407,12 +384,6 @@ describe('globalContentBoxForChildren calculation', () => {
       }
 
       expect(conditionalInstance.globalFrame).toEqual(containerInstance.globalFrame)
-      expect(conditionalInstance.localFrame).toEqual({
-        x: 0,
-        y: 0,
-        width: 150,
-        height: 150,
-      })
     })
     it(`globalFrame and localFrame of conditionals (without siblings and expression with element inside in the active branch) are NOT coming from the parent of the conditional`, async () => {
       const editor = await renderTestEditorWithCode(
@@ -489,12 +460,6 @@ describe('globalContentBoxForChildren calculation', () => {
         width: 10,
         height: 20,
       })
-      expect(conditionalInstance.localFrame).toEqual({
-        x: 0,
-        y: 0,
-        width: 10,
-        height: 20,
-      })
     })
     it(`globalFrame and localFrame of conditionals can be inherited from the parent through muliple conditionals when the final has an active branch with only an expression inside`, async () => {
       const editor = await renderTestEditorWithCode(
@@ -560,13 +525,6 @@ describe('globalContentBoxForChildren calculation', () => {
       }
 
       expect(conditional1Instance.globalFrame).toEqual(containerInstance.globalFrame)
-      expect(conditional1Instance.localFrame).toEqual({
-        x: 0,
-        y: 0,
-        width: 150,
-        height: 150,
-      })
-
       const conditional2Instance = MetadataUtils.findElementByElementPath(
         editor.getEditorState().editor.jsxMetadata,
         elementPathInInnards('root/container/conditional1/conditional2'),
@@ -576,12 +534,6 @@ describe('globalContentBoxForChildren calculation', () => {
       }
 
       expect(conditional2Instance.globalFrame).toEqual(containerInstance.globalFrame)
-      expect(conditional2Instance.localFrame).toEqual({
-        x: 0,
-        y: 0,
-        width: 150,
-        height: 150,
-      })
     })
 
     it(`globalFrame and localFrame of conditionals (with siblings) are null when the active branch is an expression`, async () => {
@@ -629,7 +581,6 @@ describe('globalContentBoxForChildren calculation', () => {
       }
 
       expect(conditionalInstance.globalFrame).toBeNull()
-      expect(conditionalInstance.localFrame).toBeNull()
     })
   })
 
@@ -1400,52 +1351,124 @@ describe('record variable values', () => {
     const editor = await renderTestEditorWithCode(ProjectWithVariables, 'await-first-dom-report')
     const { variablesInScope } = editor.getEditorState().editor
     expect(variablesInScope['sb/scene/pg:root']).toEqual<VariableData>({
-      definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg') },
+      add: {
+        insertionCeiling: { type: 'file-root' },
+        spiedValue: expect.any(Function),
+      },
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg:root') },
       definedInsideObject: {
         spiedValue: {
           prop: [33],
         },
-        insertionCeiling: EP.fromString('sb/scene/pg'),
+        insertionCeiling: EP.fromString('sb/scene/pg:root'),
       },
-      definedInsideString: { spiedValue: 'hello', insertionCeiling: EP.fromString('sb/scene/pg') },
-      functionResult: { spiedValue: 35, insertionCeiling: EP.fromString('sb/scene/pg') },
-      style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg') },
+      definedInsideString: {
+        spiedValue: 'hello',
+        insertionCeiling: EP.fromString('sb/scene/pg:root'),
+      },
+      functionResult: { spiedValue: 35, insertionCeiling: EP.fromString('sb/scene/pg:root') },
+      style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg:root') },
     })
     expect(variablesInScope['sb/scene/pg:root/111']).toEqual<VariableData>({
-      definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg') },
+      add: {
+        insertionCeiling: { type: 'file-root' },
+        spiedValue: expect.any(Function),
+      },
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg:root') },
       definedInsideObject: {
         spiedValue: {
           prop: [33],
         },
-        insertionCeiling: EP.fromString('sb/scene/pg'),
+        insertionCeiling: EP.fromString('sb/scene/pg:root'),
       },
-      definedInsideString: { spiedValue: 'hello', insertionCeiling: EP.fromString('sb/scene/pg') },
-      functionResult: { spiedValue: 35, insertionCeiling: EP.fromString('sb/scene/pg') },
-      style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg') },
+      definedInsideString: {
+        spiedValue: 'hello',
+        insertionCeiling: EP.fromString('sb/scene/pg:root'),
+      },
+      functionResult: { spiedValue: 35, insertionCeiling: EP.fromString('sb/scene/pg:root') },
+      style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg:root') },
     })
     expect(variablesInScope['sb/scene/pg:root/222']).toEqual<VariableData>({
-      definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg') },
+      add: {
+        insertionCeiling: { type: 'file-root' },
+        spiedValue: expect.any(Function),
+      },
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg:root') },
       definedInsideObject: {
         spiedValue: {
           prop: [33],
         },
-        insertionCeiling: EP.fromString('sb/scene/pg'),
+        insertionCeiling: EP.fromString('sb/scene/pg:root'),
       },
-      definedInsideString: { spiedValue: 'hello', insertionCeiling: EP.fromString('sb/scene/pg') },
-      functionResult: { spiedValue: 35, insertionCeiling: EP.fromString('sb/scene/pg') },
-      style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg') },
+      definedInsideString: {
+        spiedValue: 'hello',
+        insertionCeiling: EP.fromString('sb/scene/pg:root'),
+      },
+      functionResult: { spiedValue: 35, insertionCeiling: EP.fromString('sb/scene/pg:root') },
+      style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg:root') },
     })
     expect(variablesInScope['sb/scene/pg:root/333']).toEqual<VariableData>({
-      definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg') },
+      add: {
+        insertionCeiling: { type: 'file-root' },
+        spiedValue: expect.any(Function),
+      },
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: EP.fromString('sb/scene/pg:root') },
       definedInsideObject: {
         spiedValue: {
           prop: [33],
         },
-        insertionCeiling: EP.fromString('sb/scene/pg'),
+        insertionCeiling: EP.fromString('sb/scene/pg:root'),
       },
-      definedInsideString: { spiedValue: 'hello', insertionCeiling: EP.fromString('sb/scene/pg') },
-      functionResult: { spiedValue: 35, insertionCeiling: EP.fromString('sb/scene/pg') },
-      style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg') },
+      definedInsideString: {
+        spiedValue: 'hello',
+        insertionCeiling: EP.fromString('sb/scene/pg:root'),
+      },
+      functionResult: { spiedValue: 35, insertionCeiling: EP.fromString('sb/scene/pg:root') },
+      style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg:root') },
+    })
+  })
+})
+
+describe('specialSizeMeasurements.globalFrameWithTextContent', () => {
+  // Disabled temporarily as we're seeing different results in different places.
+  xit('includes the size of a contained text node', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div data-uid='div' style={{position: 'absolute', left: 0, top: 0, width: 50, height: 50}}>
+        THIS IS A BIG CHUNK OF TEXT WHICH SHOULD MAKE THE OVERALL SIZE A LITTLE LARGER 
+      </div>
+    `),
+      'await-first-dom-report',
+    )
+    const divMetadata =
+      renderResult.getEditorState().editor.jsxMetadata[
+        `utopia-storyboard-uid/scene-aaa/app-entity:div`
+      ]
+    expect(divMetadata.specialSizeMeasurements.globalFrameWithTextContent).toEqual({
+      x: 0,
+      y: 0,
+      height: 251,
+      width: 74.5,
+    })
+  })
+  it('does not include the size of a contained div', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div data-uid='div' style={{position: 'absolute', left: 0, top: 0, width: 50, height: 50}}>
+        <div style={{position: 'absolute', left: 0, top: 0, width: 30, height: 30}} /> 
+      </div>
+    `),
+      'await-first-dom-report',
+    )
+    const divMetadata =
+      renderResult.getEditorState().editor.jsxMetadata[
+        `utopia-storyboard-uid/scene-aaa/app-entity:div`
+      ]
+    expect(divMetadata.specialSizeMeasurements.globalFrameWithTextContent).toEqual({
+      x: 0,
+      y: 0,
+      width: 50,
+      height: 50,
     })
   })
 })

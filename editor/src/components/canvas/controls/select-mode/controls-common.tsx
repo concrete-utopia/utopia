@@ -7,18 +7,19 @@ import type { Modifiers } from '../../../../utils/modifiers'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import { colorTheme } from '../../../../uuiui'
 import type { CSSNumber, CSSNumberUnit } from '../../../inspector/common/css-utils'
-import { printCSSNumber } from '../../../inspector/common/css-utils'
+import { cssNumber, printCSSNumber } from '../../../inspector/common/css-utils'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { treatElementAsGroupLikeFromMetadata } from '../../canvas-strategies/strategies/group-helpers'
 import { assertNever } from '../../../../core/shared/utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
+import type { PropertyControlsInfo } from '../../../custom-code/code-file'
 
 export const Emdash: string = '\u2014'
 
 export interface CSSNumberWithRenderedValue {
-  value: CSSNumber
+  value: CSSNumber | null
   renderedValuePx: number
 }
 
@@ -26,11 +27,11 @@ export const unitlessCSSNumberWithRenderedValue = (
   renderedValuePx: number,
 ): CSSNumberWithRenderedValue => ({
   value: { value: renderedValuePx, unit: null },
-  renderedValuePx,
+  renderedValuePx: renderedValuePx,
 })
 
 export const cssNumberWithRenderedValue = (
-  value: CSSNumber,
+  value: CSSNumber | null,
   renderedValuePx: number,
 ): CSSNumberWithRenderedValue => ({ value, renderedValuePx })
 
@@ -68,6 +69,8 @@ export function measurementBasedOnOtherMeasurement(
     precision,
   )
 
+  const baseValue = fallbackEmptyValue(base)
+
   if (base.renderedValuePx === 0) {
     return {
       renderedValuePx: desiredRenderedValueWithPrecision,
@@ -75,9 +78,9 @@ export function measurementBasedOnOtherMeasurement(
     }
   }
 
-  const pixelsPerUnit = base.value.value / base.renderedValuePx
+  const pixelsPerUnit = baseValue.value / base.renderedValuePx
   const desiredValueInUnits = valueWithUnitAppropriatePrecision(
-    base.value.unit,
+    baseValue.unit,
     desiredRenderedValue * pixelsPerUnit,
     precision,
   )
@@ -85,7 +88,7 @@ export function measurementBasedOnOtherMeasurement(
   return {
     renderedValuePx: desiredRenderedValueWithPrecision,
     value: {
-      unit: base.value.unit,
+      unit: baseValue.unit,
       value: desiredValueInUnits,
     },
   }
@@ -102,6 +105,8 @@ interface CanvasLabelProps {
   color: string
   textColor: string
   value: string | number
+  onMouseDown?: React.MouseEventHandler
+  testId?: string
 }
 
 export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => {
@@ -112,6 +117,7 @@ export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => 
   const borderRadius = BorderRadius / scale
   return (
     <div
+      data-testid={props.testId}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -125,6 +131,7 @@ export const CanvasLabel = React.memo((props: CanvasLabelProps): JSX.Element => 
         borderRadius: borderRadius,
         height: ExplicitHeightHacked / scale,
       }}
+      onMouseDown={props.onMouseDown}
     >
       {value}
     </div>
@@ -181,7 +188,8 @@ export function indicatorMessage(
   value: CSSNumberWithRenderedValue,
 ): string | number {
   if (isOverThreshold) {
-    return printCSSNumber(value.value, value.value.unit)
+    const valueOrRendered = fallbackEmptyValue(value)
+    return printCSSNumber(valueOrRendered, valueOrRendered.unit)
   }
 
   return Emdash // emdash
@@ -202,6 +210,7 @@ export function canShowCanvasPropControl(
   scale: number,
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
+  propertyControlsInfo: PropertyControlsInfo,
 ): Set<CanvasPropControl> {
   function getControls(element: ElementInstanceMetadata): CanvasPropControl[] {
     const frame = zeroRectIfNullOrInfinity(element.globalFrame)
@@ -225,6 +234,7 @@ export function canShowCanvasPropControl(
         element.elementPath,
         metadata,
         elementPathTree,
+        propertyControlsInfo,
       )
     ) {
       return ['borderRadius', 'gap']
@@ -285,4 +295,10 @@ export function shouldShowControls(
   }
 
   return true
+}
+
+export function fallbackEmptyValue(numberWithRenderedValue: CSSNumberWithRenderedValue): CSSNumber {
+  return numberWithRenderedValue.value == null
+    ? cssNumber(numberWithRenderedValue.renderedValuePx, 'px')
+    : numberWithRenderedValue.value
 }

@@ -5,12 +5,7 @@ import type { DataRouteObject, Location, RouteObject } from 'react-router'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import {
-  useRefEditorState,
-  useEditorState,
-  Substores,
-  useSelectorWithCallback,
-} from '../../editor/store/store-hook'
+import { Substores, useSelectorWithCallback } from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
 import { PathPropHOC } from './path-props-hoc'
 import { atom, useAtom, useSetAtom } from 'jotai'
@@ -23,6 +18,12 @@ import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-wi
 import { CreateRemixDerivedDataRefsGLOBAL } from '../../editor/store/remix-derived-data'
 import { patchRoutesWithContext } from '../../../third-party/remix/create-remix-stub'
 import type { AppLoadContext } from '@remix-run/server-runtime'
+import {
+  useAllowRerenderOnlyOnAllElements,
+  useCanvasState,
+  useRefCanvasState,
+} from '../ui-jsx-canvas-renderer/canvas-state-hooks'
+import { defaultEither, isLeft } from '../../../core/shared/either'
 
 type RouteModule = RouteModules[keyof RouteModules]
 type RouterType = ReturnType<typeof createMemoryRouter>
@@ -77,21 +78,25 @@ export function useRemixNavigationContext(
 }
 
 function useGetRouteModules(basePath: ElementPath) {
-  const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
-  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
-  const fileBlobsRef = useRefEditorState((store) => store.editor.canvas.base64Blobs)
-  const hiddenInstancesRef = useRefEditorState((store) => store.editor.hiddenInstances)
-  const displayNoneInstancesRef = useRefEditorState((store) => store.editor.displayNoneInstances)
+  const remixDerivedDataRef = useRefCanvasState((store) =>
+    defaultEither(null, store.derived.remixData),
+  )
+  const projectContentsRef = useRefCanvasState((store) => store.editor.projectContents)
+  const fileBlobsRef = useRefCanvasState((store) => store.editor.canvas.base64Blobs)
+  const hiddenInstancesRef = useRefCanvasState((store) => store.editor.hiddenInstances)
+  const displayNoneInstancesRef = useRefCanvasState((store) => store.editor.displayNoneInstances)
 
   let metadataContext: UiJsxCanvasContextData = forceNotNull(
     `Missing UiJsxCanvasCtxAtom provider`,
     usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
   )
 
-  const defaultExports = useEditorState(
+  const defaultExports = useCanvasState(
     Substores.derived,
+    useAllowRerenderOnlyOnAllElements(),
     (store) => {
-      const routeModuleCreators = store.derived.remixData?.routeModuleCreators ?? {}
+      const routeModuleCreators =
+        defaultEither(null, store.derived.remixData)?.routeModuleCreators ?? {}
       return Object.values(routeModuleCreators).map(
         (rmc) => getDefaultExportNameAndUidFromFile(projectContentsRef.current, rmc.filePath)?.name,
       )
@@ -171,17 +176,20 @@ export const RouteExportsForRouteObject: Array<keyof RouteObject> = [
 function useGetRoutes(
   getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext,
 ) {
-  const routes = useEditorState(
+  const routes = useCanvasState(
     Substores.derived,
-    (store) => store.derived.remixData?.routes ?? [],
+    useAllowRerenderOnlyOnAllElements(),
+    (store) => defaultEither(null, store.derived.remixData)?.routes ?? [],
     'UtopiaRemixRootComponent routes',
   )
 
-  const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
-  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
-  const fileBlobsRef = useRefEditorState((store) => store.editor.canvas.base64Blobs)
-  const hiddenInstancesRef = useRefEditorState((store) => store.editor.hiddenInstances)
-  const displayNoneInstancesRef = useRefEditorState((store) => store.editor.displayNoneInstances)
+  const remixDerivedDataRef = useRefCanvasState((store) =>
+    defaultEither(null, store.derived.remixData),
+  )
+  const projectContentsRef = useRefCanvasState((store) => store.editor.projectContents)
+  const fileBlobsRef = useRefCanvasState((store) => store.editor.canvas.base64Blobs)
+  const hiddenInstancesRef = useRefCanvasState((store) => store.editor.hiddenInstances)
+  const displayNoneInstancesRef = useRefCanvasState((store) => store.editor.displayNoneInstances)
 
   let metadataContext: UiJsxCanvasContextData = forceNotNull(
     `Missing UiJsxCanvasCtxAtom provider`,
@@ -286,10 +294,11 @@ function traverseRoutesAndGetIDs(routes: RouteLike[]): Set<string> {
 export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
   getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext
+  startingRoute?: string
 }
 
 export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) => {
-  const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
+  const remixDerivedDataRef = useRefCanvasState((store) => store.derived.remixData)
 
   const routes = useRoutesWithIdEquality(props.getLoadContext)
 
@@ -313,6 +322,12 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
     const initialEntries = currentEntriesRef.current == null ? undefined : currentEntriesRef.current
     return createMemoryRouter(routes, { initialEntries: initialEntries })
   }, [routes])
+
+  React.useEffect(() => {
+    if (props.startingRoute != null && router != null) {
+      void router.navigate(props.startingRoute)
+    }
+  }, [router, props.startingRoute])
 
   const setNavigationDataForRouter = React.useCallback(
     (
@@ -389,11 +404,15 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
     return
   }, [router, updateNavigationData])
 
-  if (remixDerivedDataRef.current == null || router == null || routeModules == null) {
+  if (router == null || routeModules == null) {
     return null
   }
 
-  const { assetsManifest, futureConfig } = remixDerivedDataRef.current
+  if (isLeft(remixDerivedDataRef.current) || remixDerivedDataRef.current.value == null) {
+    return null
+  }
+
+  const { assetsManifest, futureConfig } = remixDerivedDataRef.current.value
 
   return (
     <RemixContext.Provider

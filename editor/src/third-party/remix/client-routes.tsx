@@ -11,6 +11,7 @@ import { DataRouteObject, ShouldRevalidateFunction } from 'react-router'
 import invariant from './invariant'
 import { isRouteErrorResponse, useRouteError } from '@remix-run/react'
 import { RemixRoute, RemixRouteError } from './remix-route'
+import { ErrorBoundaryHandling } from '../../components/editor/store/editor-state'
 
 export interface RouteManifest<Route> {
   [routeId: string]: Route
@@ -56,7 +57,8 @@ export function createClientRoutesWithHMRRevalidationOptOut(
   manifest: RouteManifest<EntryRoute>,
   routeModulesCache: RouteModules,
   future: FutureConfig,
-) {
+  errorBoundaryHandling: ErrorBoundaryHandling,
+): ReturnType<typeof createClientRoutes> {
   return createClientRoutes(
     manifest,
     routeModulesCache,
@@ -64,6 +66,7 @@ export function createClientRoutesWithHMRRevalidationOptOut(
     '',
     groupRoutesByParentId(manifest),
     needsRevalidation,
+    errorBoundaryHandling,
   )
 }
 
@@ -75,15 +78,21 @@ export function createClientRoutes(
   routesByParentId: Record<string, Omit<EntryRoute, 'children'>[]> = groupRoutesByParentId(
     manifest,
   ),
-  needsRevalidation?: Set<string>,
+  needsRevalidation: Set<string> | null,
+  errorBoundaryHandling: ErrorBoundaryHandling,
 ): DataRouteObject[] {
-  return (routesByParentId[parentId] || []).map((route) => {
-    let hasErrorBoundary = route.hasErrorBoundary
+  return (routesByParentId[parentId] ?? []).map((route) => {
+    const errorElement =
+      route.hasErrorBoundary && errorBoundaryHandling === 'use-error-boundaries' ? (
+        <RemixRouteError id={route.id} />
+      ) : (
+        <ErrorThrower />
+      )
 
     let dataRoute: DataRouteObject = {
       caseSensitive: route.caseSensitive,
       element: <RemixRoute id={route.id} />,
-      errorElement: hasErrorBoundary ? <RemixRouteError id={route.id} /> : <ErrorThrower />,
+      errorElement: errorElement,
       id: route.id,
       index: route.index,
       path: route.path,
@@ -101,6 +110,7 @@ export function createClientRoutes(
       route.id,
       routesByParentId,
       needsRevalidation,
+      errorBoundaryHandling,
     )
     if (children.length > 0) dataRoute.children = children
     return dataRoute
@@ -110,7 +120,7 @@ export function createClientRoutes(
 function createShouldRevalidate(
   route: EntryRoute,
   routeModules: RouteModules,
-  needsRevalidation?: Set<string>,
+  needsRevalidation: Set<string> | null,
 ): ShouldRevalidateFunction {
   let handledRevalidation = false
   return function (arg) {
@@ -120,7 +130,7 @@ function createShouldRevalidate(
     // When an HMR / HDR update happens we opt out of all user-defined
     // revalidation logic and the do as the dev server tells us the first
     // time router.revalidate() is called.
-    if (needsRevalidation !== undefined && !handledRevalidation) {
+    if (needsRevalidation != null && !handledRevalidation) {
       handledRevalidation = true
       return needsRevalidation.has(route.id)
     }

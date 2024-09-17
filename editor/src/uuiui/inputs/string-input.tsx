@@ -8,7 +8,7 @@ import type { ControlStatus } from '../../components/inspector/common/control-st
 import type { ControlStyles } from '../../components/inspector/common/control-styles'
 import { getControlStyles } from '../../components/inspector/common/control-styles'
 import { preventDefault, stopPropagation } from '../../components/inspector/common/inspector-utils'
-import { useColorTheme } from '../styles/theme'
+import { UtopiaTheme, useColorTheme } from '../styles/theme'
 import { InspectorInputEmotionStyle, getControlStylesAwarePlaceholder } from './base-input'
 import { useControlsDisabledInSubtree } from '../utilities/disable-subtree'
 import { dataPasteHandler } from '../../utils/paste-handler'
@@ -32,6 +32,8 @@ export interface StringInputProps
   onSubmitValue?: (value: string) => void
   onEscape?: () => void
   pasteHandler?: boolean
+  showBorder?: boolean
+  innerStyle?: React.CSSProperties
 }
 
 export const StringInput = React.memo(
@@ -40,11 +42,13 @@ export const StringInput = React.memo(
       {
         controlStatus = 'simple',
         style,
+        innerStyle,
         focusOnMount = false,
         includeBoxShadow = true,
         placeholder: initialPlaceHolder,
         DEPRECATED_labelBelow: labelBelow,
         testId,
+        showBorder,
         ...inputProps
       },
       propsRef,
@@ -93,11 +97,13 @@ export const StringInput = React.memo(
         >
           <div
             className='string-input-container'
+            style={innerStyle}
             css={{
-              borderRadius: 2,
+              borderRadius: UtopiaTheme.inputBorderRadius,
               color: controlStyles.mainColor,
               position: 'relative',
               background: 'transparent',
+              boxShadow: showBorder ? `inset 0px 0px 0px 1px ${colorTheme.fg7.value}` : undefined,
               '&:hover': {
                 boxShadow: includeBoxShadow
                   ? `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`

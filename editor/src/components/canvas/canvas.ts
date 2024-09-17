@@ -18,7 +18,7 @@ import type {
 } from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
 import type { ElementPathTree, ElementPathTrees } from '../../core/shared/element-path-tree'
-import { getSubTree } from '../../core/shared/element-path-tree'
+import { forEachElementPathTreeChild, getSubTree } from '../../core/shared/element-path-tree'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import { memoize } from '../../core/shared/memoize'
 import { maybeToArray } from '../../core/shared/optional-utils'
@@ -73,7 +73,7 @@ function getFramesInCanvasContextUncached(
 
     let children: Array<ElementPathTree> = []
     let unfurledComponents: Array<ElementPathTree> = []
-    fastForEach(Object.values(componentTree.children), (childTree) => {
+    forEachElementPathTreeChild(componentTree, (childTree) => {
       if (EP.isRootElementOfInstance(childTree.path)) {
         unfurledComponents.push(childTree)
       } else {
@@ -128,6 +128,7 @@ function getFramesInCanvasContextUncached(
   })
 }
 
+// eslint-disable-next-line object-shorthand
 const Canvas = {
   parentsAndSiblings: [
     TargetSearchType.SelectedElements,

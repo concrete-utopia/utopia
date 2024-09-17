@@ -69,6 +69,7 @@ describe('registered property controls', () => {
       '/src/card': {
         Card: {
           component: Card,
+          label: "Labeled Card",
           properties: {
             label: {
               control: 'string-input',
@@ -82,7 +83,7 @@ describe('registered property controls', () => {
             },
           },
           focus: 'default',
-          inspector: ['visual', 'typography'],
+          inspector: { display: 'expanded', sections: ['visual', 'typography'] },
           emphasis: 'regular',
           icon: 'component',
           variants: [
@@ -117,10 +118,15 @@ describe('registered property controls', () => {
           "emphasis": "regular",
           "focus": "default",
           "icon": "component",
-          "inspector": Array [
-            "visual",
-            "typography",
-          ],
+          "inspector": Object {
+            "display": "expanded",
+            "sections": Array [
+              "visual",
+              "typography",
+            ],
+            "type": "shown",
+          },
+          "label": "Labeled Card",
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
@@ -135,6 +141,34 @@ describe('registered property controls', () => {
             },
           },
           "source": Object {
+            "bounds": Object {
+              "bounds": Object {
+                "endCol": 4,
+                "endLine": 41,
+                "startCol": 3,
+                "startLine": 4,
+              },
+              "properties": Object {
+                "background": Object {
+                  "endCol": 8,
+                  "endLine": 13,
+                  "startCol": 7,
+                  "startLine": 11,
+                },
+                "label": Object {
+                  "endCol": 8,
+                  "endLine": 10,
+                  "startCol": 7,
+                  "startLine": 8,
+                },
+                "visible": Object {
+                  "endCol": 8,
+                  "endLine": 17,
+                  "startCol": 7,
+                  "startLine": 14,
+                },
+              },
+            },
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
           },
@@ -187,6 +221,127 @@ describe('registered property controls', () => {
       }
     `)
   })
+  it('can register controls for components with property path in their names', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      createModifiedProject({
+        ['/src/card.js']: `import React from 'react'
+
+        const Card = ({ label }) => {
+          return <div>{label}</div>
+        }
+        
+        export const ExportedObj = {
+          Card: Card,
+        }
+        `,
+        [StoryboardFilePath]: `import * as React from 'react'
+      import { Scene, Storyboard, View } from 'utopia-api'
+    
+      export var App = (props) => {
+        return (
+          <div>hello</div>
+        )
+      }
+    
+      export var storyboard = (props) => {
+        return (
+          <Storyboard data-uid='${BakedInStoryboardUID}'>
+            <Scene
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
+              data-uid='${TestScene0UID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
+          </Storyboard>
+        )
+      }`,
+        ['/utopia/components.utopia.js']: `import { ExportedObj } from '../src/card'
+        
+        const Components = {
+      '/src/card': {
+        'ExportedObj.Card': {
+          component: ExportedObj.Card,
+          properties: {
+            label: {
+              control: 'string-input',
+            },
+            background: {
+              control: 'color',
+            },
+            visible: {
+              control: 'checkbox',
+              defaultValue: true,
+            },
+          },
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+      Object {
+        "ExportedObj.Card": Object {
+          "emphasis": "regular",
+          "focus": "default",
+          "icon": "component",
+          "inspector": Object {
+            "display": "expanded",
+            "sections": Array [
+              "layout",
+              "layout-system",
+              "visual",
+              "typography",
+            ],
+            "type": "shown",
+          },
+          "label": null,
+          "preferredChildComponents": Array [],
+          "properties": Object {
+            "background": Object {
+              "control": "color",
+            },
+            "label": Object {
+              "control": "string-input",
+            },
+            "visible": Object {
+              "control": "checkbox",
+              "defaultValue": true,
+            },
+          },
+          "source": Object {
+            "bounds": null,
+            "sourceDescriptorFile": "/utopia/components.utopia.js",
+            "type": "DESCRIPTOR_FILE",
+          },
+          "supportsChildren": true,
+          "variants": Array [
+            Object {
+              "elementToInsert": [Function],
+              "importsToAdd": Object {
+                "/src/card": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "ExportedObj",
+                      "name": "ExportedObj",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+              },
+              "insertMenuLabel": "ExportedObj.Card",
+            },
+          ],
+        },
+      }
+    `)
+  })
   it('Can set property control options using the control factory functions', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
@@ -204,7 +359,7 @@ describe('registered property controls', () => {
                 }),
               },
               variants: [],
-              inspector: 'all',
+              inspector: { display: 'expanded' }
             },
           },
         }
@@ -223,7 +378,17 @@ describe('registered property controls', () => {
           "emphasis": "regular",
           "focus": "default",
           "icon": "component",
-          "inspector": "all",
+          "inspector": Object {
+            "display": "expanded",
+            "sections": Array [
+              "layout",
+              "layout-system",
+              "visual",
+              "typography",
+            ],
+            "type": "shown",
+          },
+          "label": null,
           "preferredChildComponents": Array [],
           "properties": Object {
             "label": Object {
@@ -234,6 +399,22 @@ describe('registered property controls', () => {
             },
           },
           "source": Object {
+            "bounds": Object {
+              "bounds": Object {
+                "endCol": 4,
+                "endLine": 15,
+                "startCol": 3,
+                "startLine": 5,
+              },
+              "properties": Object {
+                "label": Object {
+                  "endCol": 9,
+                  "endLine": 11,
+                  "startCol": 7,
+                  "startLine": 8,
+                },
+              },
+            },
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
           },
@@ -355,8 +536,8 @@ describe('registered property controls', () => {
             passTime: null,
             severity: 'fatal',
             source: 'component-descriptor',
-            startColumn: 25,
-            startLine: 4,
+            startColumn: 23,
+            startLine: 3,
             type: '',
           },
         ],
@@ -475,7 +656,7 @@ describe('registered property controls', () => {
 
     expect(srcCardKey).toBeUndefined()
   })
-  it('control registration fails when the imported internal component does not match the name of registration key', async () => {
+  it('control registration happens when the imported internal component does not match the name of registration key (with a warning)', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
         ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
@@ -511,7 +692,7 @@ describe('registered property controls', () => {
             message:
               'Validation failed: Component name (Card) does not match the registration key (Cart)',
             passTime: null,
-            severity: 'fatal',
+            severity: 'warning',
             source: 'component-descriptor',
             startColumn: null,
             startLine: null,
@@ -525,9 +706,9 @@ describe('registered property controls', () => {
       (key) => key === '/src/card',
     )
 
-    expect(srcCardKey).toBeUndefined()
+    expect(srcCardKey).not.toBeUndefined()
   })
-  it('control registration fails when the module name of an imported internal component does not match the name of the registration key', async () => {
+  it('control registration happens when the module name of an imported internal component does not match the name of the registration key (with a warning)', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
         ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
@@ -563,7 +744,7 @@ describe('registered property controls', () => {
             message:
               'Validation failed: Module name (/src/card) does not match the module key (/src/cardd)',
             passTime: null,
-            severity: 'fatal',
+            severity: 'warning',
             source: 'component-descriptor',
             startColumn: null,
             startLine: null,
@@ -574,12 +755,12 @@ describe('registered property controls', () => {
     })
 
     const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
-      (key) => key === '/src/card',
+      (key) => key === '/src/cardd',
     )
 
-    expect(srcCardKey).toBeUndefined()
+    expect(srcCardKey).not.toBeUndefined()
   })
-  it('control registration fails when the imported external component does not match the name of registration key', async () => {
+  it('control registration happens when the imported external component does not match the name of registration key (with a warning)', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
         ['/utopia/components.utopia.js']: `import { View } from 'utopia-api'
@@ -615,7 +796,7 @@ describe('registered property controls', () => {
             message:
               'Validation failed: Component name (View) does not match the registration key (Vieww)',
             passTime: null,
-            severity: 'fatal',
+            severity: 'warning',
             source: 'component-descriptor',
             startColumn: null,
             startLine: null,
@@ -625,13 +806,13 @@ describe('registered property controls', () => {
       },
     })
 
-    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
-      (key) => key === '/src/card',
-    )
+    const utopiaApiKey = Object.keys(
+      renderResult.getEditorState().editor.propertyControlsInfo,
+    ).find((key) => key === 'utopia-api')
 
-    expect(srcCardKey).toBeUndefined()
+    expect(utopiaApiKey).not.toBeUndefined()
   })
-  it('control registration fails when the module name of an imported external component does not match the name of registration key', async () => {
+  it('control registration happens when the module name of an imported external component does not match the name of registration key (with a warning)', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
         ['/utopia/components.utopia.js']: `import { View } from 'utopia-api'
@@ -667,7 +848,7 @@ describe('registered property controls', () => {
             message:
               'Validation failed: Module name (utopia-api) does not match the module key (utopia-apii)',
             passTime: null,
-            severity: 'fatal',
+            severity: 'warning',
             source: 'component-descriptor',
             startColumn: null,
             startLine: null,
@@ -677,11 +858,11 @@ describe('registered property controls', () => {
       },
     })
 
-    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
-      (key) => key === '/src/card',
-    )
+    const utopiaApiiKey = Object.keys(
+      renderResult.getEditorState().editor.propertyControlsInfo,
+    ).find((key) => key === 'utopia-apii')
 
-    expect(srcCardKey).toBeUndefined()
+    expect(utopiaApiiKey).not.toBeUndefined()
   })
   it('updating the control registration removes the build errors', async () => {
     const renderResult = await renderTestEditorWithModel(
@@ -718,7 +899,7 @@ describe('registered property controls', () => {
             message:
               'Validation failed: Component name (Card) does not match the registration key (Cart)',
             passTime: null,
-            severity: 'fatal',
+            severity: 'warning',
             source: 'component-descriptor',
             startColumn: null,
             startLine: null,
@@ -732,7 +913,7 @@ describe('registered property controls', () => {
       (key) => key === '/src/card',
     )
 
-    expect(srcCardKey).toBeUndefined()
+    expect(srcCardKey).not.toBeUndefined()
 
     await renderResult.dispatch(
       [
@@ -836,7 +1017,17 @@ describe('registered property controls', () => {
           "emphasis": "regular",
           "focus": "default",
           "icon": "component",
-          "inspector": Array [],
+          "inspector": Object {
+            "display": "expanded",
+            "sections": Array [
+              "layout",
+              "layout-system",
+              "visual",
+              "typography",
+            ],
+            "type": "shown",
+          },
+          "label": null,
           "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
@@ -851,6 +1042,34 @@ describe('registered property controls', () => {
             },
           },
           "source": Object {
+            "bounds": Object {
+              "bounds": Object {
+                "endCol": 4,
+                "endLine": 31,
+                "startCol": 3,
+                "startLine": 4,
+              },
+              "properties": Object {
+                "background": Object {
+                  "endCol": 8,
+                  "endLine": 10,
+                  "startCol": 7,
+                  "startLine": 8,
+                },
+                "label": Object {
+                  "endCol": 36,
+                  "endLine": 7,
+                  "startCol": 7,
+                  "startLine": 7,
+                },
+                "visible": Object {
+                  "endCol": 8,
+                  "endLine": 14,
+                  "startCol": 7,
+                  "startLine": 11,
+                },
+              },
+            },
             "sourceDescriptorFile": "/utopia/components.utopia.js",
             "type": "DESCRIPTOR_FILE",
           },
@@ -977,6 +1196,7 @@ describe('registered property controls', () => {
     expect(Object.keys(editorState.propertyControlsInfo['/src/card'])).toMatchInlineSnapshot(`
       Array [
         "Card",
+        "Card2",
       ]
     `)
   })
@@ -1660,7 +1880,17 @@ describe('registered property controls', () => {
             "emphasis": "regular",
             "focus": "default",
             "icon": "component",
-            "inspector": Array [],
+            "inspector": Object {
+              "display": "expanded",
+              "sections": Array [
+                "layout",
+                "layout-system",
+                "visual",
+                "typography",
+              ],
+              "type": "shown",
+            },
+            "label": null,
             "preferredChildComponents": Array [],
             "properties": Object {
               "label": Object {
@@ -1754,6 +1984,22 @@ describe('registered property controls', () => {
               },
             },
             "source": Object {
+              "bounds": Object {
+                "bounds": Object {
+                  "endCol": 4,
+                  "endLine": 33,
+                  "startCol": 3,
+                  "startLine": 5,
+                },
+                "properties": Object {
+                  "label": Object {
+                    "endCol": 8,
+                    "endLine": 31,
+                    "startCol": 7,
+                    "startLine": 8,
+                  },
+                },
+              },
               "sourceDescriptorFile": "/utopia/components.utopia.js",
               "type": "DESCRIPTOR_FILE",
             },
@@ -1776,6 +2022,68 @@ describe('registered property controls', () => {
                 "insertMenuLabel": "Card",
               },
             ],
+          },
+        }
+      `)
+    })
+  })
+
+  describe('folders', () => {
+    it('can specify a folder prop', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        project({
+          ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+          
+          const Components = {
+        '/src/card': {
+          Card: {
+            component: Card,
+            properties: {
+              label: {
+                control: 'jsx',
+              },
+              header: {
+                control: 'jsx',
+                folder: 'Header',
+              },
+              footer: {
+                control: 'jsx',
+                folder: 'Footer',
+              }
+            }
+          },
+        },
+      }
+      
+      export default Components
+    `,
+        }),
+        'await-first-dom-report',
+      )
+      const editorState = renderResult.getEditorState().editor
+
+      const cardRegistration = editorState.propertyControlsInfo['/src/card']['Card']
+      expect(cardRegistration).not.toBeUndefined()
+
+      const propsToCheck = pick(['properties'], cardRegistration)
+
+      expect(propsToCheck).toMatchInlineSnapshot(`
+        Object {
+          "properties": Object {
+            "footer": Object {
+              "control": "jsx",
+              "folder": "Footer",
+              "preferredChildComponents": Array [],
+            },
+            "header": Object {
+              "control": "jsx",
+              "folder": "Header",
+              "preferredChildComponents": Array [],
+            },
+            "label": Object {
+              "control": "jsx",
+              "preferredChildComponents": Array [],
+            },
           },
         }
       `)
@@ -2443,6 +2751,22 @@ describe('Lifecycle management of registering components', () => {
       expect(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']['Card'].source)
         .toMatchInlineSnapshot(`
         Object {
+          "bounds": Object {
+            "bounds": Object {
+              "endCol": 4,
+              "endLine": 11,
+              "startCol": 3,
+              "startLine": 4,
+            },
+            "properties": Object {
+              "label": Object {
+                "endCol": 8,
+                "endLine": 9,
+                "startCol": 7,
+                "startLine": 7,
+              },
+            },
+          },
           "sourceDescriptorFile": "/utopia/components1.utopia.js",
           "type": "DESCRIPTOR_FILE",
         }
@@ -2454,6 +2778,22 @@ describe('Lifecycle management of registering components', () => {
       expect(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']['Card'].source)
         .toMatchInlineSnapshot(`
         Object {
+          "bounds": Object {
+            "bounds": Object {
+              "endCol": 4,
+              "endLine": 11,
+              "startCol": 3,
+              "startLine": 4,
+            },
+            "properties": Object {
+              "label": Object {
+                "endCol": 8,
+                "endLine": 9,
+                "startCol": 7,
+                "startLine": 7,
+              },
+            },
+          },
           "sourceDescriptorFile": "/utopia/components2.utopia.js",
           "type": "DESCRIPTOR_FILE",
         }
@@ -2489,6 +2829,22 @@ describe('Lifecycle management of registering components', () => {
       expect(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']['Card'].source)
         .toMatchInlineSnapshot(`
         Object {
+          "bounds": Object {
+            "bounds": Object {
+              "endCol": 4,
+              "endLine": 11,
+              "startCol": 3,
+              "startLine": 4,
+            },
+            "properties": Object {
+              "label": Object {
+                "endCol": 8,
+                "endLine": 9,
+                "startCol": 7,
+                "startLine": 7,
+              },
+            },
+          },
           "sourceDescriptorFile": "/utopia/components1.utopia.js",
           "type": "DESCRIPTOR_FILE",
         }
@@ -2534,6 +2890,22 @@ describe('Lifecycle management of registering components', () => {
       expect(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']['Card'].source)
         .toMatchInlineSnapshot(`
         Object {
+          "bounds": Object {
+            "bounds": Object {
+              "endCol": 4,
+              "endLine": 11,
+              "startCol": 3,
+              "startLine": 4,
+            },
+            "properties": Object {
+              "label": Object {
+                "endCol": 8,
+                "endLine": 9,
+                "startCol": 7,
+                "startLine": 7,
+              },
+            },
+          },
           "sourceDescriptorFile": "/utopia/components1.utopia.js",
           "type": "DESCRIPTOR_FILE",
         }

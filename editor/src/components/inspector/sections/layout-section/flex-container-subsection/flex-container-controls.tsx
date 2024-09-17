@@ -16,9 +16,24 @@ import type { OptionsType } from 'react-select'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../../widgets/property-label'
-import { PopupList, useWrappedEmptyOrUnknownOnSubmitValue, NumberInput } from '../../../../../uuiui'
+import {
+  PopupList,
+  useWrappedEmptyOrUnknownOnSubmitValue,
+  NumberInput,
+  Icons,
+} from '../../../../../uuiui'
 import { useContextSelector } from 'use-context-selector'
 import type { FlexDirection } from '../../../common/css-utils'
+import { when } from '../../../../../utils/react-conditionals'
+import { Substores, useEditorState } from '../../../../editor/store/store-hook'
+import { flexDirectionSelector } from '../../../inpector-selectors'
+import type { CanvasControlWithProps } from '../../../../../components/inspector/common/inspector-atoms'
+import type { SubduedFlexGapControlProps } from '../../../../../components/canvas/controls/select-mode/subdued-flex-gap-controls'
+import { SubduedFlexGapControl } from '../../../../../components/canvas/controls/select-mode/subdued-flex-gap-controls'
+import {
+  useSetFocusedControlsHandlers,
+  useSetHoveredControlsHandlers,
+} from '../../../../../components/canvas/controls/select-mode/select-mode-hooks'
 
 type uglyLabel =
   | 'left'
@@ -43,7 +58,7 @@ type prettyLabel =
   | 'Horizontal'
   | 'Vertical'
 
-const PrettyLabel: { [K in uglyLabel]: prettyLabel } = {
+export const PrettyLabel: { [K in uglyLabel]: prettyLabel } = {
   left: 'Left',
   center: 'Center',
   right: 'Right',
@@ -56,7 +71,7 @@ const PrettyLabel: { [K in uglyLabel]: prettyLabel } = {
   vertical: 'Vertical',
 }
 
-interface FlexFieldControlProps<T> {
+export interface FlexFieldControlProps<T> {
   value: T
   controlStatus: ControlStatus
   controlStyles: ControlStyles
@@ -169,6 +184,11 @@ export const FlexWrapControl = React.memo((props: FlexWrapControlProps) => {
     },
     [onSubmit],
   )
+  const flexDirection = useEditorState(
+    Substores.metadata,
+    flexDirectionSelector,
+    'FlexWrapControl flexDirection',
+  )
 
   return (
     <InspectorContextMenuWrapper
@@ -181,13 +201,17 @@ export const FlexWrapControl = React.memo((props: FlexWrapControlProps) => {
         width: undefined,
       }}
     >
-      <PopupList
-        value={FlexWrapOptions.find((option) => option.value === props.value)}
-        options={FlexWrapOptions}
-        onSubmitValue={onSubmitValue}
-        controlStyles={props.controlStyles}
-        style={{ background: 'transparent' }}
-      />
+      <UIGridRow padded={false} variant='<-auto-><----------1fr--------->'>
+        {when(flexDirection.startsWith('row'), <Icons.WrapRow />)}
+        {when(flexDirection.startsWith('column'), <Icons.WrapColumn />)}
+        <PopupList
+          value={FlexWrapOptions.find((option) => option.value === props.value)}
+          options={FlexWrapOptions}
+          onSubmitValue={onSubmitValue}
+          controlStyles={props.controlStyles}
+          style={{ background: 'transparent' }}
+        />
+      </UIGridRow>
     </InspectorContextMenuWrapper>
   )
 })
@@ -230,6 +254,30 @@ export const FlexJustifyContentControl = React.memo((props: FlexJustifyContentCo
   )
 })
 
+const flexGapControlsForHoverAndFocused: {
+  hovered: Array<CanvasControlWithProps<SubduedFlexGapControlProps>>
+  focused: Array<CanvasControlWithProps<SubduedFlexGapControlProps>>
+} = {
+  hovered: [
+    {
+      control: SubduedFlexGapControl,
+      props: {
+        hoveredOrFocused: 'hovered',
+      },
+      key: `subdued-flex-gap-control-hovered`,
+    },
+  ],
+  focused: [
+    {
+      control: SubduedFlexGapControl,
+      props: {
+        hoveredOrFocused: 'focused',
+      },
+      key: `subdued-flex-gap-control-focused`,
+    },
+  ],
+}
+
 export const FlexGapControl = React.memo(() => {
   const { value, onSubmitValue, onUnsetValues, onTransientSubmitValue, controlStatus } =
     useInspectorLayoutInfo('gap')
@@ -241,17 +289,40 @@ export const FlexGapControl = React.memo(() => {
     onUnsetValues,
   )
 
-  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
-  const flexGapProp = React.useMemo(() => {
-    return [stylePropPathMappingFn('gap', targetPath)]
-  }, [targetPath])
+  const flexDirection = useEditorState(
+    Substores.metadata,
+    flexDirectionSelector,
+    'FlexGapControl flexDirection',
+  )
+
+  const { onMouseEnter, onMouseLeave } = useSetHoveredControlsHandlers<SubduedFlexGapControlProps>()
+  const onMouseEnterWithFlexGapControls = React.useCallback(
+    () => onMouseEnter(flexGapControlsForHoverAndFocused.hovered),
+    [onMouseEnter],
+  )
+
+  const { onFocus, onBlur } = useSetFocusedControlsHandlers<SubduedFlexGapControlProps>()
+  const onFocusWithFlexGapControls = React.useCallback(
+    () => onFocus(flexGapControlsForHoverAndFocused.focused),
+    [onFocus],
+  )
+
+  const inputProps = React.useMemo(
+    () => ({
+      onFocus: onFocusWithFlexGapControls,
+      onBlur: onBlur,
+    }),
+    [onFocusWithFlexGapControls, onBlur],
+  )
 
   return (
     <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
-      <UIGridRow padded={false} variant='<-auto-><----------1fr--------->'>
-        <PropertyLabel target={flexGapProp}>Gap</PropertyLabel>
+      <UIGridRow
+        padded={false}
+        variant='<-------------1fr------------->'
+        onMouseEnter={onMouseEnterWithFlexGapControls}
+        onMouseLeave={onMouseLeave}
+      >
         <NumberInput
           id='flex.container.gap'
           testId='flex.container.gap'
@@ -263,6 +334,14 @@ export const FlexGapControl = React.memo(() => {
           controlStatus={controlStatus}
           numberType='LengthPercent'
           defaultUnitToHide={'px'}
+          innerLabel={
+            flexDirection.startsWith('row') ? (
+              <Icons.GapHorizontal color='on-highlight-secondary' />
+            ) : (
+              <Icons.GapVertical color='on-highlight-secondary' />
+            )
+          }
+          inputProps={inputProps}
         />
       </UIGridRow>
     </InspectorContextMenuWrapper>

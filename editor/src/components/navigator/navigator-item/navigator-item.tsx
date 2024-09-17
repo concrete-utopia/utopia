@@ -2,6 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import createCachedSelector from 're-reselect'
+import type { CSSProperties } from 'react'
 import React from 'react'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 import {
@@ -10,9 +11,6 @@ import {
   getConditionalCaseCorrespondingToBranchPath,
   getConditionalClausePath,
   getConditionalFlag,
-  isActiveBranchOfConditional,
-  isDefaultBranchOfConditional,
-  isOverriddenConditional,
   maybeConditionalActiveBranch,
   maybeConditionalExpression,
   useConditionalCaseCorrespondingToBranchPath,
@@ -24,16 +22,15 @@ import type {
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
 import { hasElementsWithin } from '../../../core/shared/element-template'
-import type { ElementPath, HighlightBoundsWithFile } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { unless } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import type { IcnColor, IcnProps } from '../../../uuiui'
 import { FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isEntryAPlaceholder } from '../../canvas/canvas-utils'
-import type { EditorAction, EditorDispatch } from '../../editor/action-types'
+import type { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
-import * as MetaActions from '../../editor/actions/meta-actions'
 import type {
   ElementWarnings,
   NavigatorEntry,
@@ -43,10 +40,8 @@ import {
   defaultElementWarnings,
   isConditionalClauseNavigatorEntry,
   isDataReferenceNavigatorEntry,
-  isInvalidOverrideNavigatorEntry,
   isRegularNavigatorEntry,
   isRenderPropNavigatorEntry,
-  isSlotNavigatorEntry,
   isSyntheticNavigatorEntry,
   navigatorEntryToKey,
   varSafeNavigatorEntryToKey,
@@ -56,30 +51,24 @@ import type {
   DerivedSubstate,
   MetadataSubstate,
 } from '../../editor/store/store-hook-substore-types'
-import { navigatorDepth } from '../navigator-utils'
 import { ComponentPreview } from './component-preview'
 import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
-import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { MapCounter } from './map-counter'
 import {
   conditionalTarget,
   renderPropTarget,
   useCreateCallbackToShowComponentPicker,
 } from './component-picker-context-menu'
-import { getHighlightBoundsForProject } from '../../../core/model/project-file-utils'
-import {
-  selectedElementChangedMessageFromHighlightBounds,
-  sendMessage,
-} from '../../../core/vscode/vscode-bridge'
-import { toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import type { Emphasis, Icon } from 'utopia-api'
 import { contextMenu } from 'react-contexify'
 import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
-import { MapListSourceCartouche } from '../../inspector/sections/layout-section/list-source-cartouche'
+import { MapListSourceCartoucheNavigator } from '../../inspector/sections/layout-section/list-source-cartouche'
+import { regularNavigatorRow } from '../navigator-row'
+import { NavigatorRowClickableWrapper } from './navigator-item-clickable-wrapper'
+import { useNavigatorSelectionBoundsForEntry } from './use-navigator-selection-bounds-for-entry'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -101,99 +90,11 @@ interface ComputedLook {
 export const BasePaddingUnit = 17
 
 export function getElementPadding(withNavigatorDepth: number): number {
-  const paddingOffset = withNavigatorDepth - 1
+  const paddingOffset = withNavigatorDepth
   return paddingOffset * BasePaddingUnit
 }
 
 export type ParentOutline = 'solid' | 'child' | 'none'
-
-function getSelectionActions(
-  getSelectedViewsInRange: (i: number) => Array<ElementPath>,
-  index: number,
-  elementPath: ElementPath,
-  selected: boolean,
-  event: React.MouseEvent<HTMLDivElement>,
-): Array<EditorAction> {
-  if (!selected) {
-    if (event.metaKey && !event.shiftKey) {
-      // adds to selection
-      return MetaActions.selectComponents([elementPath], true)
-    } else if (event.shiftKey) {
-      // selects range of items
-      const targets = getSelectedViewsInRange(index)
-      return MetaActions.selectComponents(targets, false)
-    } else {
-      return MetaActions.selectComponents([elementPath], false)
-    }
-  } else {
-    return []
-  }
-}
-
-type ConditionalOverrideUpdate = ConditionalCase | 'clear-override' | 'no-update'
-
-function getConditionalOverrideActions(
-  targetPath: ElementPath,
-  conditionalOverrideUpdate: ConditionalOverrideUpdate,
-): Array<EditorAction> {
-  switch (conditionalOverrideUpdate) {
-    case 'no-update':
-      return []
-    case 'clear-override':
-      return [EditorActions.setConditionalOverriddenCondition(targetPath, null)]
-    case 'true-case':
-      return [EditorActions.setConditionalOverriddenCondition(targetPath, true)]
-    case 'false-case':
-      return [EditorActions.setConditionalOverriddenCondition(targetPath, false)]
-    default:
-      assertNever(conditionalOverrideUpdate)
-  }
-}
-
-function selectItem(
-  dispatch: EditorDispatch,
-  getSelectedViewsInRange: (i: number) => Array<ElementPath>,
-  navigatorEntry: NavigatorEntry,
-  index: number,
-  selected: boolean,
-  event: React.MouseEvent<HTMLDivElement>,
-  conditionalOverrideUpdate: ConditionalOverrideUpdate,
-  highlightBounds: HighlightBoundsWithFile | null,
-) {
-  const elementPath = navigatorEntry.elementPath
-
-  const shouldSelect = !(
-    isDataReferenceNavigatorEntry(navigatorEntry) ||
-    isConditionalClauseNavigatorEntry(navigatorEntry) ||
-    isInvalidOverrideNavigatorEntry(navigatorEntry) ||
-    isRenderPropNavigatorEntry(navigatorEntry) ||
-    isSlotNavigatorEntry(navigatorEntry)
-  )
-
-  let selectionActions: EditorAction[] = []
-  if (shouldSelect) {
-    selectionActions.push(
-      ...getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event),
-    )
-  } else if (isRenderPropNavigatorEntry(navigatorEntry) && navigatorEntry.childPath != null) {
-    selectionActions.push(...MetaActions.selectComponents([navigatorEntry.childPath], false))
-  }
-
-  // when we click on an already selected item we should force vscode to navigate there
-  if (selected && shouldSelect && highlightBounds != null) {
-    sendMessage(
-      toVSCodeExtensionMessage(
-        selectedElementChangedMessageFromHighlightBounds(highlightBounds, 'force-navigation'),
-      ),
-    )
-  }
-
-  const conditionalOverrideActions = isConditionalClauseNavigatorEntry(navigatorEntry)
-    ? getConditionalOverrideActions(elementPath, conditionalOverrideUpdate)
-    : getConditionalOverrideActions(EP.parentPath(elementPath), conditionalOverrideUpdate)
-
-  dispatch([...conditionalOverrideActions, ...selectionActions], 'leftpane')
-}
 
 const highlightItem = (
   dispatch: EditorDispatch,
@@ -216,8 +117,8 @@ const collapseItem = (
   elementPath: ElementPath,
   e: React.MouseEvent<HTMLDivElement>,
 ) => {
-  dispatch([EditorActions.toggleCollapse(elementPath)], 'leftpane')
   e.stopPropagation()
+  dispatch([EditorActions.toggleCollapse(elementPath)], 'leftpane')
 }
 
 type StyleType =
@@ -268,21 +169,38 @@ const getColors = (
   }
 }
 
-const computeResultingStyle = (
-  selected: boolean,
-  emphasis: Emphasis,
-  isInsideComponent: boolean,
-  isDynamic: boolean,
-  isProbablyScene: boolean,
-  fullyVisible: boolean,
-  isFocusedComponent: boolean,
-  isInFocusedComponentSubtree: boolean,
-  isFocusableComponent: boolean,
-  isHighlightedForInteraction: boolean,
-  isDescendantOfSelected: boolean,
-  isErroredGroup: boolean,
-  colorTheme: ThemeObject,
-) => {
+export const NavigatorRowBorderRadius = 5
+
+const computeResultingStyle = (params: {
+  selected: boolean
+  isTopOfSelection: boolean
+  isBottomOfSelection: boolean
+  emphasis: Emphasis
+  isInsideComponent: boolean
+  isProbablyScene: boolean
+  fullyVisible: boolean
+  isFocusedComponent: boolean
+  isFocusableComponent: boolean
+  isHighlightedForInteraction: boolean
+  isDescendantOfSelected: boolean
+  isErroredGroup: boolean
+  colorTheme: ThemeObject
+}) => {
+  const {
+    selected,
+    isTopOfSelection,
+    isBottomOfSelection,
+    emphasis,
+    isInsideComponent,
+    isProbablyScene,
+    fullyVisible,
+    isFocusedComponent,
+    isFocusableComponent,
+    isHighlightedForInteraction,
+    isDescendantOfSelected,
+    isErroredGroup,
+    colorTheme,
+  } = params
   let styleType: StyleType = 'default'
   let selectedType: SelectedType = 'unselected'
 
@@ -323,11 +241,16 @@ const computeResultingStyle = (
 
   let result = getColors(styleType, selectedType, colorTheme)
 
+  const borderRadiusTop = isTopOfSelection ? NavigatorRowBorderRadius : 0
+  const borderRadiusBottom = isBottomOfSelection ? NavigatorRowBorderRadius : 0
+
   result.style = {
     ...result.style,
     fontWeight: isProbablyParentOfSelected || isProbablyScene ? 600 : 'inherit',
-    // TODO compute bottom borderRadius style by if it has children or siblings
-    borderRadius: selected ? '5px 5px 0 0' : undefined,
+    borderTopLeftRadius: borderRadiusTop,
+    borderTopRightRadius: borderRadiusTop,
+    borderBottomLeftRadius: borderRadiusBottom,
+    borderBottomRightRadius: borderRadiusBottom,
   }
 
   return result
@@ -461,7 +384,7 @@ const isHiddenConditionalBranchSelector = createCachedSelector(
   },
 )((_, elementPath, parentPath) => `${EP.toString(elementPath)}_${EP.toString(parentPath)}`)
 
-const elementWarningsSelector = createCachedSelector(
+export const elementWarningsSelector = createCachedSelector(
   (store: DerivedSubstate) => store.derived.elementWarnings,
   (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
   (elementWarnings, navigatorEntry) => {
@@ -478,7 +401,7 @@ export type RemixItemType = 'scene' | 'outlet' | 'link' | 'none'
 
 export interface NavigatorItemInnerProps {
   navigatorEntry: NavigatorEntry
-  index: number
+  indentation: number
   getSelectedViewsInRange: (i: number) => Array<ElementPath> // TODO KILLME
   noOfChildren: number
   label: string
@@ -496,34 +419,7 @@ export interface NavigatorItemInnerProps {
 export const NavigatorItem: React.FunctionComponent<
   React.PropsWithChildren<NavigatorItemInnerProps>
 > = React.memo((props) => {
-  const {
-    dispatch,
-    isHighlighted,
-    isElementVisible,
-    selected,
-    collapsed,
-    navigatorEntry,
-    isOutletOrDescendantOfOutlet,
-    getSelectedViewsInRange,
-    index,
-  } = props
-
-  const highlightBounds = useEditorState(
-    Substores.projectContents,
-    (store) => {
-      const staticPath = EP.dynamicPathToStaticPath(navigatorEntry.elementPath)
-      if (staticPath != null) {
-        const bounds = getHighlightBoundsForProject(store.editor.projectContents)
-        if (bounds != null) {
-          const highlightedUID = EP.toUid(staticPath)
-          return bounds[highlightedUID]
-        }
-      }
-
-      return null
-    },
-    'NavigatorItem highlightBounds',
-  )
+  const { dispatch, isHighlighted, isElementVisible, selected, collapsed, navigatorEntry } = props
 
   const colorTheme = useColorTheme()
 
@@ -548,7 +444,6 @@ export const NavigatorItem: React.FunctionComponent<
   const isInFocusedComponentSubtree = useEditorState(
     Substores.focusedElement,
     (store) =>
-      isRegularNavigatorEntry(navigatorEntry) &&
       EP.isInExplicitlyFocusedSubtree(
         store.editor.focusedElementPath,
         autoFocusedPaths,
@@ -587,13 +482,7 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isManuallyFocusableComponent',
   )
 
-  const entryNavigatorDepth = useEditorState(
-    Substores.metadata,
-    (store) => {
-      return navigatorDepth(navigatorEntry, store.editor.jsxMetadata)
-    },
-    'NavigatorItem entryNavigatorDepth',
-  )
+  const entryNavigatorDepth = props.indentation
 
   const containsExpressions: boolean = useEditorState(
     Substores.metadata,
@@ -604,7 +493,7 @@ export const NavigatorItem: React.FunctionComponent<
         store.editor.elementPathTree,
       )
     },
-    'NavigatorItem entryNavigatorDepth',
+    'NavigatorItem containsExpressions',
   )
 
   const isConditionalDynamicBranch = useEditorState(
@@ -696,47 +585,6 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const isConditional = codeItemType === 'conditional'
-  const isRemixItem = codeItemType === 'remix'
-  const isCodeItem = codeItemType !== 'none'
-
-  const conditionalOverrideUpdate = useEditorState(
-    Substores.metadata,
-    (store): ConditionalOverrideUpdate => {
-      const path = navigatorEntry.elementPath
-      const metadata = store.editor.jsxMetadata
-      const elementMetadata = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        navigatorEntry.elementPath,
-      )
-      if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
-        if (isActiveBranchOfConditional(navigatorEntry.clause, elementMetadata)) {
-          if (isOverriddenConditional(elementMetadata)) {
-            return 'clear-override'
-          } else {
-            return navigatorEntry.clause
-          }
-        } else {
-          return navigatorEntry.clause
-        }
-      } else {
-        const conditionalCase = getConditionalCaseCorrespondingToBranchPath(path, metadata)
-        if (conditionalCase != null) {
-          const parentPath = EP.parentPath(path)
-          const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parentPath)
-          if (isActiveBranchOfConditional(conditionalCase, parentMetadata)) {
-            return 'no-update'
-          } else if (isDefaultBranchOfConditional(conditionalCase, parentMetadata)) {
-            return 'clear-override'
-          } else {
-            return conditionalCase
-          }
-        }
-
-        return 'no-update'
-      }
-    },
-    'NavigatorItem conditionalOverrideUpdate',
-  )
 
   const metadata = useEditorState(
     Substores.metadata,
@@ -802,22 +650,6 @@ export const NavigatorItem: React.FunctionComponent<
     return elementWarnings.invalidGroup != null || elementWarnings.invalidGroupChild != null
   }, [elementWarnings])
 
-  const resultingStyle = computeResultingStyle(
-    elementIsData ? false : selected,
-    emphasis,
-    isInsideComponent,
-    isDynamic,
-    isProbablyScene,
-    fullyVisible,
-    isFocusedComponent,
-    isInFocusedComponentSubtree,
-    isManuallyFocusableComponent,
-    isHighlightedForInteraction,
-    elementIsData && selected ? false : isDescendantOfSelected,
-    isErroredGroup,
-    colorTheme,
-  )
-
   const collapse = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       collapseItem(dispatch, navigatorEntry.elementPath, event)
@@ -826,37 +658,9 @@ export const NavigatorItem: React.FunctionComponent<
     [dispatch, navigatorEntry.elementPath],
   )
 
-  const select = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) =>
-      selectItem(
-        dispatch,
-        getSelectedViewsInRange,
-        navigatorEntry,
-        index,
-        selected,
-        event,
-        conditionalOverrideUpdate,
-        highlightBounds,
-      ),
-    [
-      dispatch,
-      getSelectedViewsInRange,
-      navigatorEntry,
-      index,
-      selected,
-      conditionalOverrideUpdate,
-      highlightBounds,
-    ],
-  )
-
   const highlight = React.useCallback(
     () => highlightItem(dispatch, navigatorEntry, selected, isHighlighted),
     [dispatch, navigatorEntry, selected, isHighlighted],
-  )
-
-  const removeHighlight = React.useCallback(
-    () => dispatch([EditorActions.clearHighlightedViews()]),
-    [dispatch],
   )
 
   const focusComponent = React.useCallback(
@@ -886,7 +690,6 @@ export const NavigatorItem: React.FunctionComponent<
 
   const isPlaceholder = isEntryAPlaceholder(props.navigatorEntry)
 
-  const isComponentScene = useIsProbablyScene(navigatorEntry) && childComponentCount === 1
   const isRenderProp = isRenderPropNavigatorEntry(navigatorEntry)
 
   const containerStyle: React.CSSProperties = React.useMemo(() => {
@@ -900,20 +703,42 @@ export const NavigatorItem: React.FunctionComponent<
 
   const cursorStyle = isConditionalClauseNavigatorEntry(navigatorEntry) ? { cursor: 'pointer' } : {}
 
-  const rowStyle = useKeepReferenceEqualityIfPossible({
-    paddingLeft: getElementPadding(entryNavigatorDepth),
-    height: getItemHeight(navigatorEntry),
-    ...resultingStyle.style,
-    ...cursorStyle,
-  })
-
-  const showExpandableIndicator = React.useMemo(() => {
+  const canBeExpanded = React.useMemo(() => {
     return (
       isConditional || // if it is a conditional, so it could have no children if both branches are null
       childComponentCount > 0 ||
       isFocusedComponent
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
+
+  const { isTopOfSelection, isBottomOfSelection } = useNavigatorSelectionBoundsForEntry(
+    navigatorEntry,
+    selected,
+    childComponentCount,
+  )
+
+  const resultingStyle = computeResultingStyle({
+    selected: elementIsData ? false : selected,
+    isTopOfSelection: isTopOfSelection,
+    isBottomOfSelection: isBottomOfSelection,
+    emphasis: emphasis,
+    isInsideComponent: isInsideComponent,
+    isProbablyScene: isProbablyScene,
+    fullyVisible: fullyVisible,
+    isFocusedComponent: isFocusedComponent,
+    isFocusableComponent: isManuallyFocusableComponent,
+    isHighlightedForInteraction: isHighlightedForInteraction,
+    isDescendantOfSelected: elementIsData && selected ? false : isDescendantOfSelected,
+    isErroredGroup: isErroredGroup,
+    colorTheme: colorTheme,
+  })
+
+  const rowStyle = useKeepReferenceEqualityIfPossible({
+    paddingLeft: getElementPadding(entryNavigatorDepth),
+    height: getItemHeight(navigatorEntry),
+    ...resultingStyle.style,
+    ...cursorStyle,
+  })
 
   const iconColor = resultingStyle.iconColor
 
@@ -930,138 +755,161 @@ export const NavigatorItem: React.FunctionComponent<
     [navigatorEntry],
   )
 
+  const isScene = React.useMemo(() => {
+    return (
+      MetadataUtils.isProbablyScene(metadata, props.navigatorEntry.elementPath) ||
+      MetadataUtils.isProbablyRemixScene(metadata, props.navigatorEntry.elementPath)
+    )
+  }, [props.navigatorEntry, metadata])
+
+  const hideExpandableIndicator = React.useMemo(() => {
+    return props.navigatorEntry.type === 'CONDITIONAL_CLAUSE' || isScene
+  }, [props.navigatorEntry, isScene])
+
   return (
-    <div
-      onClick={onClick}
-      style={{
-        borderRadius: 5,
-        outline: `1px solid ${
-          props.parentOutline === 'solid'
-            ? colorTheme.navigatorResizeHintBorder.value
-            : 'transparent'
-        }`,
-        outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
-      }}
+    <NavigatorRowClickableWrapper
+      row={regularNavigatorRow(props.navigatorEntry, props.indentation)}
     >
-      <FlexRow
-        data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
-        style={rowStyle}
-        onMouseDown={select}
-        onMouseMove={highlight}
-        onDoubleClick={focusComponent}
+      <div
+        onClick={onClick}
+        style={{
+          flex: 1,
+          borderRadius: 5,
+          outline: `1px solid ${
+            props.parentOutline === 'solid'
+              ? colorTheme.navigatorResizeHintBorder.value
+              : 'transparent'
+          }`,
+          outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
+        }}
       >
-        {isPlaceholder ? (
-          navigatorEntry.type === 'SLOT' ? (
-            <RenderPropSlot
-              label={props.label}
-              parentOutline={props.parentOutline}
-              navigatorEntry={navigatorEntry}
-            />
-          ) : conditionalCase !== null ? (
-            <ConditionalBranchSlot
-              label={props.label}
-              parentOutline={props.parentOutline}
-              navigatorEntry={navigatorEntry}
-              conditionalCase={conditionalCase}
-            />
+        <FlexRow
+          data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
+          style={rowStyle}
+          onMouseMove={highlight}
+          onDoubleClick={focusComponent}
+        >
+          {isPlaceholder ? (
+            navigatorEntry.type === 'SLOT' ? (
+              <RenderPropSlot
+                label={props.label}
+                parentOutline={props.parentOutline}
+                navigatorEntry={navigatorEntry}
+              />
+            ) : conditionalCase !== null ? (
+              <ConditionalBranchSlot
+                label={props.label}
+                parentOutline={props.parentOutline}
+                navigatorEntry={navigatorEntry}
+                conditionalCase={conditionalCase}
+              />
+            ) : (
+              <PlaceholderSlot label={props.label} parentOutline={props.parentOutline} />
+            )
+          ) : isRenderProp ? (
+            <div
+              key={`label-${props.label}-slot`}
+              style={{
+                width: 140,
+                height: 19,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                color: colorTheme.fg5.value,
+                border: colorTheme.navigatorResizeHintBorder.value,
+                marginLeft: 23,
+                paddingTop: 6,
+                overflow: 'hidden',
+              }}
+            >
+              {props.label}
+            </div>
+          ) : elementIsData ? (
+            <div
+              key={`data-reference-${props.label}`}
+              style={{
+                maxWidth: 140,
+                color: colorTheme.fg5.value,
+                border: colorTheme.navigatorResizeHintBorder.value,
+                marginLeft: 23,
+                overflow: 'hidden',
+              }}
+            >
+              <DataReferenceCartoucheControl
+                elementPath={navigatorEntry.elementPath}
+                renderedAt={navigatorEntry.renderedAt}
+                surroundingScope={navigatorEntry.surroundingScope}
+                childOrAttribute={navigatorEntry.childOrAttribute}
+                selected={selected}
+              />
+            </div>
           ) : (
-            <PlaceholderSlot label={props.label} parentOutline={props.parentOutline} />
-          )
-        ) : isRenderProp ? (
-          <div
-            key={`label-${props.label}-slot`}
-            style={{
-              width: 140,
-              height: 19,
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              color: colorTheme.fg5.value,
-              border: colorTheme.navigatorResizeHintBorder.value,
-              marginLeft: 23,
-              paddingTop: 6,
-              overflow: 'hidden',
-            }}
-          >
-            {props.label}
-          </div>
-        ) : elementIsData ? (
-          <div
-            key={`data-reference-${props.label}`}
-            style={{
-              maxWidth: 140,
-              color: colorTheme.fg5.value,
-              border: colorTheme.navigatorResizeHintBorder.value,
-              marginLeft: 23,
-              overflow: 'hidden',
-            }}
-          >
-            <DataReferenceCartoucheControl
-              elementPath={navigatorEntry.elementPath}
-              childOrAttribute={navigatorEntry.childOrAttribute}
-              selected={selected}
-            />
-          </div>
-        ) : (
-          <FlexRow
-            style={{
-              justifyContent: 'space-between',
-              ...containerStyle,
-              padding: '0 5px',
-              width: '100%',
-            }}
-          >
-            <FlexRow style={{ width: '100%' }}>
-              {unless(
-                props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
-                <ExpandableIndicator
-                  key='expandable-indicator'
-                  visible={showExpandableIndicator}
-                  collapsed={collapsed}
-                  selected={selected && !isInsideComponent}
-                  onMouseDown={collapse}
-                  style={{
-                    opacity: 'var(--paneHoverOpacity)',
-                  }}
-                  testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
+            <FlexRow
+              style={{
+                justifyContent: 'space-between',
+                ...containerStyle,
+                padding: '0 5px',
+                width: '100%',
+              }}
+            >
+              <FlexRow style={{ width: '100%' }}>
+                {unless(
+                  hideExpandableIndicator,
+                  <ExpandableIndicator
+                    key='expandable-indicator'
+                    visible={canBeExpanded}
+                    collapsed={collapsed}
+                    selected={selected && !isInsideComponent}
+                    onClick={collapse}
+                    style={{
+                      opacity: 'var(--paneHoverOpacity)',
+                    }}
+                    testId={`navigator-item-collapse-${navigatorEntryToKey(props.navigatorEntry)}`}
+                    iconColor={iconColor}
+                  />,
+                )}
+                <NavigatorRowLabel
+                  shouldShowParentOutline={props.parentOutline === 'child'}
+                  navigatorEntry={navigatorEntry}
+                  label={props.label}
+                  renamingTarget={props.renamingTarget}
+                  selected={props.selected}
+                  codeItemType={codeItemType}
+                  remixItemType={remixItemType}
+                  emphasis={emphasis}
+                  dispatch={props.dispatch}
+                  isDynamic={isDynamic}
                   iconColor={iconColor}
+                  iconOverride={iconOverride}
+                  elementWarnings={!isConditional ? elementWarnings : null}
+                  childComponentCount={childComponentCount}
+                  insideFocusedComponent={isInsideComponent && isDescendantOfSelected}
+                  style={{
+                    paddingLeft: isScene ? 0 : 5,
+                    paddingRight: codeItemType === 'map' ? 0 : 5,
+                  }}
+                />
+              </FlexRow>
+              {unless(
+                currentlyRenaming || props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+                <NavigatorItemActionSheet
+                  navigatorEntry={navigatorEntry}
+                  selected={selected}
+                  highlighted={isHighlighted}
+                  isVisibleOnCanvas={isElementVisible}
+                  instanceOriginalComponentName={null}
+                  dispatch={dispatch}
+                  isSlot={isPlaceholder}
+                  iconColor={iconColor}
+                  background={rowStyle.background}
+                  isScene={isScene}
+                  collapsed={collapsed}
                 />,
               )}
-              <NavigatorRowLabel
-                shouldShowParentOutline={props.parentOutline === 'child'}
-                navigatorEntry={navigatorEntry}
-                label={props.label}
-                renamingTarget={props.renamingTarget}
-                selected={props.selected}
-                codeItemType={codeItemType}
-                remixItemType={remixItemType}
-                emphasis={emphasis}
-                dispatch={props.dispatch}
-                isDynamic={isDynamic}
-                iconColor={iconColor}
-                iconOverride={iconOverride}
-                elementWarnings={!isConditional ? elementWarnings : null}
-                childComponentCount={childComponentCount}
-                insideFocusedComponent={isInsideComponent && isDescendantOfSelected}
-              />
             </FlexRow>
-            {unless(
-              currentlyRenaming || props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
-              <NavigatorItemActionSheet
-                navigatorEntry={navigatorEntry}
-                selected={selected}
-                highlighted={isHighlighted}
-                isVisibleOnCanvas={isElementVisible}
-                instanceOriginalComponentName={null}
-                dispatch={dispatch}
-                isSlot={isPlaceholder}
-                iconColor={iconColor}
-                background={rowStyle.background}
-              />,
-            )}
-          </FlexRow>
-        )}
-      </FlexRow>
-    </div>
+          )}
+        </FlexRow>
+      </div>
+    </NavigatorRowClickableWrapper>
   )
 })
 NavigatorItem.displayName = 'NavigatorItem'
@@ -1078,9 +926,9 @@ const RenderPropSlot = React.memo((props: RenderPropSlotProps) => {
   const insertionTarget = renderPropTarget(navigatorEntry.prop)
 
   const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
-    target,
+    [target],
     insertionTarget,
-  )
+  ) as React.MouseEventHandler<Element>
 
   return (
     <PlaceholderSlot
@@ -1107,9 +955,9 @@ const ConditionalBranchSlot = React.memo((props: ConditionalBranchSlotProps) => 
   const target = EP.parentPath(navigatorEntry.elementPath)
 
   const showComponentPickerContextMenu = useCreateCallbackToShowComponentPicker()(
-    target,
+    [target],
     conditionalTarget(conditionalCase),
-  )
+  ) as React.MouseEventHandler<Element>
 
   return (
     <PlaceholderSlot
@@ -1181,6 +1029,7 @@ interface NavigatorRowLabelProps {
   childComponentCount: number
   dispatch: EditorDispatch
   insideFocusedComponent: boolean
+  style?: CSSProperties
 }
 
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
@@ -1189,6 +1038,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   return (
     <div
       style={{
+        ...props.style,
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
@@ -1196,8 +1046,6 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         gap: 5,
         borderRadius: 20,
         height: 22,
-        paddingLeft: 5,
-        paddingRight: props.codeItemType === 'map' ? 0 : 5,
       }}
     >
       {unless(
@@ -1214,15 +1062,18 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
               ? 'component'
               : props.emphasis === 'subdued'
               ? 'subdued'
-              : props.emphasis === 'emphasized'
-              ? 'primary'
               : props.iconColor
           }
           elementWarnings={props.elementWarnings}
         />,
       )}
 
-      <div style={{ textTransform: isCodeItem ? 'uppercase' : undefined }}>
+      <div
+        style={{
+          textTransform: isCodeItem ? 'uppercase' : undefined,
+          display: props.codeItemType === 'map' ? 'none' : 'block',
+        }}
+      >
         <ItemLabel
           key={`label-${props.label}`}
           testId={`navigator-item-label-${props.label}`}
@@ -1235,13 +1086,11 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
           remixItemType={props.remixItemType}
         />
       </div>
-      <MapListSourceCartouche
+      <MapListSourceCartoucheNavigator
         target={props.navigatorEntry.elementPath}
-        inverted={props.selected}
         selected={props.selected}
         openOn='double-click'
       />
-      <MapCounter navigatorEntry={props.navigatorEntry} dispatch={props.dispatch} />
       <ComponentPreview
         key={`preview-${props.label}`}
         navigatorEntry={props.navigatorEntry}

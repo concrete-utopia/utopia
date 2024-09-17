@@ -1,6 +1,6 @@
 import type { UtopiaTsWorkers } from '../../../../core/workers/common/worker-types'
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
-import { getProjectFileByFilePath } from '../../../../components/assets'
+import { getProjectFileByFilePath, walkContentsTree } from '../../../../components/assets'
 import {
   packageJsonFileFromProjectContents,
   walkContentsTreeAsync,
@@ -24,19 +24,21 @@ import { refreshDependencies } from '../../dependencies'
 import type { RequestedNpmDependency } from '../../npm-dependency-types'
 import { forceNotNull } from '../../optional-utils'
 import { isTextFile } from '../../project-file-types'
-import type { BranchContent, GetBranchContentResponse, GithubOperationSource } from '../helpers'
+import type { BranchContent, GithubOperationSource } from '../helpers'
 import {
   connectRepo,
-  getBranchContentFromServer,
+  getExistingAssets,
   githubAPIError,
-  githubAPIErrorFromResponse,
   runGithubOperation,
   saveGithubAsset,
 } from '../helpers'
-import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
 import type { GithubOperationContext } from './github-operation-context'
 import { createStoryboardFileIfNecessary } from '../../../../components/editor/actions/actions'
 import { getAllComponentDescriptorFilePaths } from '../../../property-controls/property-controls-local'
+import type { ExistingAsset } from '../../../../components/editor/server'
+import { GithubOperations } from '.'
+import { assertNever } from '../../utils'
+import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
 
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
@@ -48,6 +50,7 @@ export const saveAssetsToProject =
     currentProjectContents: ProjectContentTreeRoot,
     initiator: GithubOperationSource,
   ): Promise<void> => {
+    let promises: Promise<void>[] = []
     await walkContentsTreeAsync(branchContent.content, async (fullPath, projectFile) => {
       const alreadyExistingFile = getProjectFileByFilePath(currentProjectContents, fullPath)
       // Only for these two types of project file (easing the typechecking of the subsequent check).
@@ -64,25 +67,29 @@ export const saveAssetsToProject =
         ) {
           switch (projectFile.type) {
             case 'IMAGE_FILE':
-              await saveGithubAsset(
-                githubRepo,
-                forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
-                projectID,
-                fullPath,
-                dispatch,
-                operationContext,
-                initiator,
+              promises.push(
+                saveGithubAsset(
+                  githubRepo,
+                  forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
+                  projectID,
+                  fullPath,
+                  dispatch,
+                  operationContext,
+                  initiator,
+                ),
               )
               break
             case 'ASSET_FILE':
-              await saveGithubAsset(
-                githubRepo,
-                forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
-                projectID,
-                fullPath,
-                dispatch,
-                operationContext,
-                initiator,
+              promises.push(
+                saveGithubAsset(
+                  githubRepo,
+                  forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
+                  projectID,
+                  fullPath,
+                  dispatch,
+                  operationContext,
+                  initiator,
+                ),
               )
               break
             default:
@@ -91,6 +98,7 @@ export const saveAssetsToProject =
         }
       }
     })
+    await Promise.all(promises)
   }
 
 export const updateProjectWithBranchContent =
@@ -100,7 +108,7 @@ export const updateProjectWithBranchContent =
     dispatch: EditorDispatch,
     projectID: string,
     githubRepo: GithubRepo,
-    branchName: string | null,
+    branchName: string,
     resetBranches: boolean,
     currentDeps: Array<RequestedNpmDependency>,
     builtInDependencies: BuiltInDependencies,
@@ -116,18 +124,16 @@ export const updateProjectWithBranchContent =
       dispatch,
       initiator,
       async (operation: GithubOperation) => {
-        const response = await getBranchContentFromServer(
-          githubRepo,
-          branchName,
-          null,
-          null,
-          operationContext,
-        )
-        if (!response.ok) {
-          throw githubAPIErrorFromResponse(operation, response)
-        }
+        const responseBody = await GithubOperations.getBranchProjectContents({
+          projectId: projectID,
+          owner: githubRepo.owner,
+          repo: githubRepo.repository,
+          branch: branchName,
+          existingAssets: getExistingAssets(currentProjectContents),
+          previousCommitSha: null,
+          specificCommitSha: null,
+        })
 
-        const responseBody: GetBranchContentResponse = await response.json()
         switch (responseBody.type) {
           case 'FAILURE':
             throw githubAPIError(operation, responseBody.failureReason)
@@ -147,16 +153,6 @@ export const updateProjectWithBranchContent =
             const parsedProjectContents = createStoryboardFileIfNecessary(
               await updateProjectContentsWithParseResults(workers, responseBody.branch.content),
               'create-placeholder',
-            )
-
-            // Save assets to the server from Github.
-            await saveAssetsToProject(operationContext)(
-              githubRepo,
-              projectID,
-              responseBody.branch,
-              dispatch,
-              currentProjectContents,
-              initiator,
             )
 
             // Update the editor with everything so that if anything else fails past this point
@@ -225,11 +221,7 @@ export const updateProjectWithBranchContent =
 
             break
           default:
-            const _exhaustiveCheck: never = responseBody
-            throw githubAPIError(
-              operation,
-              `Unhandled response body ${JSON.stringify(responseBody)}`,
-            )
+            assertNever(responseBody)
         }
         return []
       },

@@ -6,24 +6,13 @@ import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './
 import { colorTheme } from '../../../uuiui'
 import type { IcnProps } from '../../../uuiui'
 import { UtopiaTheme, Tooltip, Icn } from '../../../uuiui'
-import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../../../uuiui/utilities/disable-subtree'
 
 export interface DEPRECATEDOptionControlOptions extends DEPRECATEDGenericControlOptions {
   icon?: IcnProps
+  iconComponent?: React.ReactNode
   labelInner?: string
   tooltip?: string
-  roundCorners?:
-    | 'right'
-    | 'left'
-    | 'top'
-    | 'bottom'
-    | 'topLeft'
-    | 'topRight'
-    | 'bottomRight'
-    | 'bottomLeft'
-    | 'none'
-    | 'all'
   width?: number
   height?: number
 }
@@ -69,7 +58,7 @@ export const OptionControl: React.FunctionComponent<
     if (props.controlStatus === 'overridden' && props.value) {
       return colorTheme.brandNeonPink10.value
     } else if (props.value) {
-      return colorTheme.bg2.value
+      return colorTheme.bg4.value
     } else {
       return 'transparent'
     }
@@ -94,36 +83,49 @@ export const OptionControl: React.FunctionComponent<
           data-testid={props.testId}
           data-ischecked={isChecked}
           data-controlstatus={props.controlStatus}
-          css={{
-            border: isChecked ? undefined : `1px solid ${colorTheme.fg8.value}`,
-            backgroundColor: props.value ? colorTheme.bg2.value : 'transparent',
-            background: background,
-            color:
-              isChecked && props.controlStatus === 'overridden'
-                ? colorTheme.brandNeonPink.value
-                : undefined,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flex: 1,
-            padding: '0 2px',
-            textAlign: 'center',
-            fontWeight: 600,
-            minWidth: controlOptions.width,
-            height: '100%',
-            borderRadius: UtopiaTheme.inputBorderRadius,
-            opacity: controlOpacity,
-            '&:hover': {
-              opacity: props.controlStatus == 'disabled' ? undefined : controlOpacity + 0.2,
-            },
-            '&:active': {
-              opacity: props.controlStatus == 'disabled' ? undefined : 1,
-            },
-          }}
           className={`option-control ${
             props.controlClassName != null ? props.controlClassName : ''
           }`}
           onContextMenu={props.onContextMenu}
+          css={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 1,
+            padding: '0 4px',
+            textAlign: 'center',
+            minWidth: controlOptions.width,
+            height: controlOptions.height,
+            backgroundColor: background,
+            color:
+              isChecked && props.controlStatus === 'overridden'
+                ? colorTheme.brandNeonPink.value
+                : colorTheme.fg1.value,
+            filter: props.controlStatus == 'disabled' ? 'grayscale(0)' : undefined,
+            opacity: props.controlStatus == 'disabled' ? undefined : isChecked ? 1 : 0.4,
+            // If part of a option chain control:
+            '.option-chain-control-container &': {
+              boxShadow: 'none !important',
+              borderRadius: 2,
+              opacity: isChecked ? 1 : 0.4,
+              '&:hover': {
+                opacity: props.controlStatus == 'disabled' ? undefined : 1,
+                color:
+                  isChecked && props.controlStatus === 'overridden'
+                    ? colorTheme.brandNeonPink.value
+                    : colorTheme.fg1.value,
+              },
+            },
+            '&:hover': {
+              opacity: props.controlStatus == 'disabled' ? undefined : 1,
+            },
+            '.control-option-icon-component': {
+              opacity: 0.4,
+            },
+            '&:hover .control-option-icon-component': {
+              opacity: 1,
+            },
+          }}
         >
           <input
             style={{
@@ -153,7 +155,11 @@ export const OptionControl: React.FunctionComponent<
                 style={{ marginRight: controlOptions.labelInner == null ? 0 : 4 }}
                 {...controlOptions.icon}
               />
-            ) : null}
+            ) : (
+              <div className='control-option-icon-component'>
+                {controlOptions.iconComponent ?? null}
+              </div>
+            )}
             {controlOptions.labelInner != null ? controlOptions.labelInner : null}
           </div>
         </label>

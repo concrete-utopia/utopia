@@ -1,3 +1,4 @@
+import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import type { ParsedTextFile, TextFile } from '../../../core/shared/project-file-types'
 import {
@@ -15,7 +16,13 @@ import { updateFromCodeEditor } from '../../editor/actions/actions-from-vscode'
 import { EditorModes } from '../../editor/editor-modes'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import { mouseClickAtPoint } from '../event-helpers.test-utils'
-import { type EditorRenderResult, renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import {
+  type EditorRenderResult,
+  renderTestEditorWithCode,
+  renderTestEditorWithModel,
+  TestAppUID,
+  TestSceneUID,
+} from '../ui-jsx.test-utils'
 
 const indirectFilePath = '/app/indirect.js'
 const indirectDependencyValueBefore = 'Initial indirect dependency value'
@@ -95,6 +102,7 @@ describe('Updating a transitive dependency', () => {
 
     const updatedIndirectFileParsedTextFile = lintAndParse(
       indirectFilePath,
+      [],
       updatedIndirectFileContent,
       null,
       emptySet(),
@@ -304,3 +312,80 @@ describe('Re-mounting is avoided when', () => {
     expect(renderResult.renderedDOM.queryByText('Clicked: 1 times!')).not.toBeNull()
   })
 })
+
+describe('Updating the scope when variables change in arbitrary JS', () => {
+  it('should update the scope when a variable is reassigned', async () => {
+    const renderResult = await renderWithAppCode(`
+    let title='Wrong Title'
+    export var App = (props) => {
+      title='Correct Title'
+      return (
+        <div data-testid='title'>{title}</div>
+      )
+    }
+    `)
+
+    const title = renderResult.renderedDOM.getByTestId('title')
+    expect(title.textContent).toEqual('Correct Title')
+  })
+
+  it('should update the scope when the entire prop variable is reassigned', async () => {
+    const renderResult = await renderWithAppCode(`
+    export var App = (props) => {
+      props={title:'Correct Title'}
+      return (
+        <div data-testid='title'>{props.title}</div>
+      )
+    }
+    `)
+
+    const title = renderResult.renderedDOM.getByTestId('title')
+    expect(title.textContent).toEqual('Correct Title')
+  })
+
+  it('should update the scope when a variable is reassigned inside the props object', async () => {
+    const renderResult = await renderWithAppCode(`
+    export var App = (props) => {
+      props.title='Correct Title'
+      return (
+        <div data-testid='title'>{props.title}</div>
+      )
+    }
+    `)
+
+    const title = renderResult.renderedDOM.getByTestId('title')
+    expect(title.textContent).toEqual('Correct Title')
+  })
+})
+
+function renderWithAppCode(appCode: string) {
+  return renderTestEditorWithCode(
+    `
+    import * as React from 'react'
+    import {
+      Scene,
+      Storyboard,
+    } from 'utopia-api'
+     
+    ${appCode}
+
+    export var storyboard = (props) => {
+      return (
+        <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+          <Scene
+            style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
+            data-uid={'${TestSceneUID}'}
+          >
+            <App
+              data-uid='${TestAppUID}' 
+              style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              title='Initial Title'
+            />
+          </Scene>
+        </Storyboard>
+      )
+    }
+  `,
+    'await-first-dom-report',
+  )
+}

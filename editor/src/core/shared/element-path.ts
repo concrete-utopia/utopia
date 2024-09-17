@@ -15,7 +15,7 @@ import {
 import { replaceAll } from './string-utils'
 import type { NonEmptyArray } from './array-utils'
 import { last, dropLastN, drop, dropLast } from './array-utils'
-import { forceNotNull } from './optional-utils'
+import { forceNotNull, optionalMap } from './optional-utils'
 import invariant from '../../third-party/remix/invariant'
 
 // KILLME, except in 28 places
@@ -620,19 +620,6 @@ export function areSiblings(paths: Array<ElementPath>): boolean {
   return paths.every((p) => isSiblingOf(paths[0], p))
 }
 
-function slicedPathsEqual(l: ElementPathPart, r: ElementPathPart): boolean {
-  const slicedL = l.slice(0, r.length)
-  return elementPathPartsEqual(slicedL, r)
-}
-
-function elementIsDescendant(l: ElementPathPart, r: ElementPathPart): boolean {
-  return l.length > r.length && slicedPathsEqual(l, r)
-}
-
-function elementIsDescendantOrEqualTo(l: ElementPathPart, r: ElementPathPart): boolean {
-  return l.length >= r.length && slicedPathsEqual(l, r)
-}
-
 export function isDescendantOfOrEqualTo(
   target: ElementPath,
   maybeAncestorOrEqual: ElementPath,
@@ -655,33 +642,48 @@ export function findAmongAncestorsOfPath<T>(
 }
 
 export function isDescendantOf(target: ElementPath, maybeAncestor: ElementPath): boolean {
-  const targetElementPath = target.parts
-  const maybeAncestorElementPath = maybeAncestor.parts
-  if (targetElementPath.length >= maybeAncestorElementPath.length) {
-    for (let pathPartIndex = 0; pathPartIndex < maybeAncestorElementPath.length; pathPartIndex++) {
-      const elementPathPart = targetElementPath[pathPartIndex]
-      // all parts up to the last must match, and the last must be a descendant
-      const maybeAncestorElementPathPart = maybeAncestorElementPath[pathPartIndex]
-      if (pathPartIndex < maybeAncestorElementPath.length - 1) {
-        if (!elementPathPartsEqual(elementPathPart, maybeAncestorElementPathPart)) {
-          return false
-        }
-      } else {
-        if (targetElementPath.length === maybeAncestorElementPath.length) {
-          if (!elementIsDescendant(elementPathPart, maybeAncestorElementPathPart)) {
-            return false
-          }
-        } else {
-          if (!elementIsDescendantOrEqualTo(elementPathPart, maybeAncestorElementPathPart)) {
-            return false
-          }
-        }
-      }
-    }
-    return true
-  } else {
+  // If the target has less parts than the potential ancestor, it's by default
+  // higher up the hierarchy.
+  if (target.parts.length < maybeAncestor.parts.length) {
     return false
   }
+  // Check if any of the shared (by index) parts are different, if any are that
+  // means these two are on different branches of the hierarchy.
+  for (let index = 0; index < maybeAncestor.parts.length - 1; index++) {
+    const maybeAncestorPart = maybeAncestor.parts[index]
+    const targetPart = target.parts[index]
+    if (!elementPathPartsEqual(maybeAncestorPart, targetPart)) {
+      return false
+    }
+  }
+  // As the rest of the parts are the same, we can check the last part to see
+  // if the target has less parts as that puts it higher up the hierarchy than the
+  // potential ancestor.
+  const lastTargetPart = target.parts[maybeAncestor.parts.length - 1]
+  const lastAncestorPart = maybeAncestor.parts[maybeAncestor.parts.length - 1]
+  if (lastTargetPart.length < lastAncestorPart.length) {
+    return false
+  }
+  // Check the elements of the last part to see if there are any differences
+  // as that means they're on a different branch. Limiting it to the length of
+  // the potential ancestor.
+  for (let partIndex = 0; partIndex < lastAncestorPart.length; partIndex++) {
+    const part = lastAncestorPart[partIndex]
+    if (lastTargetPart[partIndex] !== part) {
+      return false
+    }
+  }
+  // If the lengths of the parts and the lengths of the last parts are the same,
+  // since so far we've determined those to all match, then these are identical paths.
+  if (
+    target.parts.length === maybeAncestor.parts.length &&
+    lastTargetPart.length === lastAncestorPart.length
+  ) {
+    return false
+  }
+
+  // Fallback meaning this is a descendant.
+  return true
 }
 
 export function getAncestorsForLastPart(path: ElementPath): ElementPath[] {
@@ -1188,6 +1190,10 @@ export function createIndexedUid(originalUid: string, index: string | number): s
   return `${originalUid}${GeneratedUIDSeparator}${index}`
 }
 
+export function isIndexedUid(uid: string): boolean {
+  return uid.includes(GeneratedUIDSeparator)
+}
+
 export function extractOriginalUidFromIndexedUid(uid: string): string {
   const separatorIndex = uid.indexOf(GeneratedUIDSeparator)
   if (separatorIndex >= 0) {
@@ -1227,4 +1233,42 @@ export function multiplePathsAllWithTheSameUID(paths: Array<ElementPath>): boole
     return true
   }
   return false
+}
+
+export function isIndexedElement(path: ElementPath): boolean {
+  return isIndexedUid(toUid(path))
+}
+
+export function getFirstPath(pathArray: Array<ElementPath>): ElementPath {
+  return forceNotNull('Element path array is empty.', pathArray.at(0))
+}
+
+export function humanReadableDebugPath(path: ElementPath): string {
+  const stringifiedPath = path.parts
+    .map((part, index) =>
+      elementPathPartToHumanReadableDebugString(part, index === path.parts.length - 1),
+    )
+    .join(SceneSeparator)
+  return stringifiedPath
+}
+
+function elementPathPartToHumanReadableDebugString(
+  path: ElementPathPart,
+  lastPart: boolean,
+): string {
+  let result: string = ''
+  const elementsLength = path.length
+  fastForEach(path, (elem, index) => {
+    const lastElem = index === elementsLength - 1
+    if (elem.length < 30 || (lastPart && lastElem)) {
+      result += elem
+    } else {
+      result += elem.slice(0, 4)
+      result += optionalMap((s) => `~~~${s}`, extractIndexFromIndexedUid(elem)) ?? ''
+    }
+    if (index < elementsLength - 1) {
+      result += ElementSeparator
+    }
+  })
+  return result
 }

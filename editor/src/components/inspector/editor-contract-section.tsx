@@ -16,6 +16,7 @@ import {
   PopupList,
   Subdued,
   Tooltip,
+  UtopiaTheme,
   colorTheme,
 } from '../../uuiui'
 import type { ControlStyles } from '../../uuiui-deps'
@@ -349,7 +350,7 @@ export const EditorContractDropdown = React.memo(() => {
         onSubmitValue={onChange}
         controlStyles={simpleControlStyles}
         containerMode={'noBorder'}
-        style={{ borderRadius: 2, width: 'min-wdith', paddingRight: 6 }}
+        style={{ width: 'min-width', paddingRight: 6, borderRadius: UtopiaTheme.inputBorderRadius }}
       />
       {when(
         groupProblems.length > 0,
@@ -367,7 +368,7 @@ export const EditorContractDropdown = React.memo(() => {
               backgroundColor: colorTheme.errorForeground20.value,
               color: colorTheme.errorForeground.value,
               padding: '0 6px',
-              borderRadius: 2,
+              borderRadius: UtopiaTheme.inputBorderRadius,
             }}
             onClick={fixGroupProblems}
           >

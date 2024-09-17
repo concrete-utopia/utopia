@@ -38,7 +38,7 @@ import { getElementFromRenderResult } from './actions.test-utils'
 import {
   expectNoAction,
   expectSingleUndoNSaves,
-  searchInFloatingMenu,
+  searchInComponentPicker,
   selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
 } from '../../../utils/utils.test-utils'
@@ -82,6 +82,7 @@ import { getDomRectCenter } from '../../../core/shared/dom-utils'
 import { FloatingPostActionMenuTestId } from '../../canvas/controls/select-mode/post-action-menu'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
+import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -269,7 +270,7 @@ describe('actions', () => {
       {
         name: 'delete empty fragments (multiple targets)',
         input: `
-    <View data-uid='aaa'>
+    <View data-uid='xxx'>
       <View
         style={{ background: '#09f', width: 50, height: 50 }}
         data-uid='bbb'
@@ -307,12 +308,12 @@ describe('actions', () => {
     </View>
     `,
         targets: [
-          makeTargetPath('aaa/000/eee'),
-          makeTargetPath('aaa/001/fff'),
-          makeTargetPath('aaa/001/ggg'),
+          makeTargetPath('xxx/000/eee'),
+          makeTargetPath('xxx/001/fff'),
+          makeTargetPath('xxx/001/ggg'),
         ],
         wantCode: `
-    <View data-uid='aaa'>
+    <View data-uid='xxx'>
       <View
         style={{ background: '#09f', width: 50, height: 50 }}
         data-uid='bbb'
@@ -332,7 +333,7 @@ describe('actions', () => {
       />
     </View>
     `,
-        wantSelection: [makeTargetPath('aaa/000/ccc'), makeTargetPath('aaa')],
+        wantSelection: [makeTargetPath('xxx/000/ccc'), makeTargetPath('xxx')],
       },
       {
         name: 'delete map expression',
@@ -604,7 +605,11 @@ describe('actions', () => {
         'await-first-dom-report',
       )
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-sb/scene',
         'regular-sb/scene/map',
         'regular-sb/scene/map/card~~~1',
@@ -622,7 +627,11 @@ describe('actions', () => {
 
       await pressKey('Backspace')
 
-      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      expect(
+        getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+          navigatorEntryToKey,
+        ),
+      ).toEqual([
         'regular-sb/scene',
         'regular-sb/scene/map',
         'regular-sb/scene/map/card~~~1',
@@ -2316,7 +2325,9 @@ export var storyboard = (
           y: 2,
         })
         expect(
-          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            editor.getEditorState().editor,
+          ).visibleNavigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',
@@ -2361,7 +2372,9 @@ export var storyboard = (
         })
 
         expect(
-          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            editor.getEditorState().editor,
+          ).visibleNavigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',
@@ -2406,7 +2419,9 @@ export var storyboard = (
         })
 
         expect(
-          editor.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            editor.getEditorState().editor,
+          ).visibleNavigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-sb/scene',
           'regular-sb/scene/app',
@@ -2515,7 +2530,11 @@ export var storyboard = (
         await pressKey('Esc')
         await editor.getDispatchFollowUpActionsFinished()
 
-        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        expect(
+          getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+            navigatorEntryToKey,
+          ),
+        ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
@@ -2688,7 +2707,9 @@ export var storyboard = (props) => {
         await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -2863,7 +2884,9 @@ export var storyboard = (props) => {
         await renderResult.getDispatchFollowUpActionsFinished()
 
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -3398,7 +3421,7 @@ export var storyboard = (props) => {
           await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
           await pressKey('c', { modifiers: cmdModifier })
 
-          await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/a25')])
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/d84')])
 
           const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
@@ -3472,7 +3495,7 @@ export var storyboard = (props) => {
           await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
           await pressKey('x', { modifiers: cmdModifier })
 
-          await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/a25')])
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/d84')])
 
           const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
@@ -5752,7 +5775,9 @@ export var storyboard = (
 
         expect(renderResult.getEditorState().postActionInteractionSession).toBeNull()
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -5803,7 +5828,9 @@ export var storyboard = (
 
         expect(renderResult.getEditorState().postActionInteractionSession).not.toBeNull()
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual([
           'regular-utopia-storyboard-uid/scene-aaa',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity',
@@ -7841,5 +7868,5 @@ async function wrapInElement(
   await selectComponentsForTest(renderResult, pathsToWrap)
   await pressKey('w') // open the wrap menu
   FOR_TESTS_setNextGeneratedUid(uid)
-  await searchInFloatingMenu(renderResult, query)
+  await searchInComponentPicker(renderResult, query)
 }

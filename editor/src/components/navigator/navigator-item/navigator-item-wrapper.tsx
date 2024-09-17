@@ -1,9 +1,9 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import React from 'react'
-import { assertNever } from '../../../core/shared/utils'
 import { createCachedSelector } from 're-reselect'
+import React from 'react'
+import { maybeConditionalExpression } from '../../../core/model/conditionals'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import type {
@@ -15,6 +15,8 @@ import {
   isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
+import { assertNever } from '../../../core/shared/utils'
+import { getRouteComponentNameForOutlet } from '../../canvas/remix/remix-utils'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import type {
   DropTargetHint,
@@ -31,8 +33,11 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import type {
   DerivedSubstate,
   MetadataSubstate,
+  NavigatorTargetsSubstate,
   ProjectContentAndMetadataSubstate,
+  PropertyControlsInfoSubstate,
 } from '../../editor/store/store-hook-substore-types'
+import { isRegulaNavigatorRow, type NavigatorRow } from '../navigator-row'
 import type {
   ConditionalClauseNavigatorItemContainerProps,
   ErrorNavigatorItemContainerProps,
@@ -51,14 +56,16 @@ import {
   SlotNavigatorItemContainer,
   SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
-import { navigatorDepth } from '../navigator-utils'
-import { maybeConditionalExpression } from '../../../core/model/conditionals'
-import { getRouteComponentNameForOutlet } from '../../canvas/remix/remix-utils'
+import { CondensedEntryItemWrapper } from './navigator-condensed-entry'
+import {
+  navigatorTargetsSelector,
+  navigatorTargetsSelectorNavigatorTargets,
+} from '../navigator-utils'
 
 interface NavigatorItemWrapperProps {
   index: number
   targetComponentKey: string
-  navigatorEntry: NavigatorEntry
+  navigatorRow: NavigatorRow
   getCurrentlySelectedEntries: () => Array<NavigatorEntry>
   getSelectedViewsInRange: (index: number) => Array<ElementPath>
   windowStyle: React.CSSProperties
@@ -73,10 +80,10 @@ const targetElementMetadataSelector = createCachedSelector(
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 const targetInNavigatorItemsSelector = createCachedSelector(
-  (store: EditorStorePatched) => store.derived.navigatorTargets,
+  navigatorTargetsSelector,
   (store: EditorStorePatched, target: NavigatorEntry) => target,
   (navigatorTargets, target) => {
-    return navigatorTargets.some((navigatorTarget) => {
+    return navigatorTargets.navigatorTargets.some((navigatorTarget) => {
       return navigatorEntriesEqual(target, navigatorTarget)
     })
   },
@@ -88,7 +95,15 @@ const elementSupportsChildrenSelector = createCachedSelector(
   targetElementMetadataSelector,
   (store: MetadataSubstate) => store.editor.elementPathTree,
   targetInNavigatorItemsSelector,
-  (projectContents, metadata, elementMetadata, pathTrees, elementInNavigatorTargets) => {
+  (store: PropertyControlsInfoSubstate) => store.editor.propertyControlsInfo,
+  (
+    projectContents,
+    metadata,
+    elementMetadata,
+    pathTrees,
+    elementInNavigatorTargets,
+    propertyControlsInfo,
+  ) => {
     if (!elementInNavigatorTargets || elementMetadata == null) {
       return false
     }
@@ -97,6 +112,7 @@ const elementSupportsChildrenSelector = createCachedSelector(
       elementMetadata.elementPath,
       metadata,
       pathTrees,
+      propertyControlsInfo,
     )
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
@@ -131,11 +147,11 @@ export const labelSelector = createCachedSelector(
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 const noOfChildrenSelector = createCachedSelector(
-  (store: DerivedSubstate) => store.derived.navigatorTargets,
-  (_: DerivedSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
+  navigatorTargetsSelector,
+  (_: NavigatorTargetsSubstate, navigatorEntry: NavigatorEntry) => navigatorEntry,
   (navigatorTargets, navigatorEntry) => {
     let result = 0
-    for (const nt of navigatorTargets) {
+    for (const nt of navigatorTargets.navigatorTargets) {
       if (
         isRegularNavigatorEntry(navigatorEntry) &&
         EP.isChildOf(nt.elementPath, navigatorEntry.elementPath)
@@ -208,8 +224,39 @@ export function getNavigatorEntryLabel(
   }
 }
 
-export const NavigatorItemWrapper: React.FunctionComponent<
-  React.PropsWithChildren<NavigatorItemWrapperProps>
+export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperProps> = React.memo(
+  (props) => {
+    if (isRegulaNavigatorRow(props.navigatorRow)) {
+      const navigatorEntry = props.navigatorRow.entry
+      return (
+        <SingleEntryNavigatorItemWrapper
+          index={props.index}
+          indentation={props.navigatorRow.indentation}
+          targetComponentKey={props.targetComponentKey}
+          navigatorRow={props.navigatorRow}
+          getCurrentlySelectedEntries={props.getCurrentlySelectedEntries}
+          getSelectedViewsInRange={props.getSelectedViewsInRange}
+          windowStyle={props.windowStyle}
+          navigatorEntry={navigatorEntry}
+        />
+      )
+    }
+    return (
+      <CondensedEntryItemWrapper
+        windowStyle={props.windowStyle}
+        navigatorRow={props.navigatorRow}
+      />
+    )
+  },
+)
+
+type SingleEntryNavigatorItemWrapperProps = NavigatorItemWrapperProps & {
+  indentation: number
+  navigatorEntry: NavigatorEntry
+}
+
+const SingleEntryNavigatorItemWrapper: React.FunctionComponent<
+  React.PropsWithChildren<SingleEntryNavigatorItemWrapperProps>
 > = React.memo((props) => {
   const isSelected = useEditorState(
     Substores.selectedViews,
@@ -227,7 +274,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   )
 
   const noOfChildren = useEditorState(
-    Substores.derived,
+    Substores.navigatorTargetsSubstate, // TODO do not use fullStore here
     (store) => {
       return noOfChildrenSelector(store, props.navigatorEntry)
     },
@@ -282,17 +329,9 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   )
   const label = getNavigatorEntryLabel(props.navigatorEntry, labelForTheElement)
 
-  const entryDepth = useEditorState(
-    Substores.metadata,
-    (store) => {
-      return navigatorDepth(props.navigatorEntry, store.editor.jsxMetadata)
-    },
-    'NavigatorItemWrapper entryDepth',
-  )
-
   const visibleNavigatorTargets = useEditorState(
-    Substores.derived,
-    (store) => store.derived.visibleNavigatorTargets,
+    Substores.navigatorTargetsSubstate,
+    navigatorTargetsSelectorNavigatorTargets,
     'NavigatorItemWrapper navigatorTargets',
   )
   const dispatch = useDispatch()
@@ -335,8 +374,8 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   const navigatorItemProps: NavigatorItemDragAndDropWrapperPropsBase = {
     type: NavigatorItemDragType,
     index: props.index,
+    indentation: props.indentation,
     editorDispatch: dispatch,
-    entryDepth: entryDepth,
     selected: isSelected,
     highlighted: isHighlighted,
     collapsed: isCollapsed,

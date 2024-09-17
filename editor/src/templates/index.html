@@ -6,12 +6,12 @@
     <link
       rel="icon"
       type="image/png"
-      href="<%- UTOPIA_DOMAIN %>/editor/icons/favicons/favicon-192.png?hash=<%- UTOPIA_SHA %>"
+      href="<%- UTOPIA_DOMAIN %>/editor/icons/favicons/favicon-128.png?hash=<%- UTOPIA_SHA %>"
     />
     <link
       rel="preload"
       type="image/png"
-      href="<%- UTOPIA_DOMAIN %>/editor/pyramid_fullsize@2x.jpg?hash=<%- UTOPIA_SHA %>"
+      href="<%- UTOPIA_DOMAIN %>/editor/pyramid_fullsize@2x.png?hash=<%- UTOPIA_SHA %>"
       as="image"
     />
 
@@ -30,80 +30,86 @@
     <style>
       body {
         margin: 0;
-        font-size: 11px !important;
-        overflow: hidden;
-        cursor: default;
-        outline: none;
-        overscroll-behavior-x: contain;
-        --loadscreen-accent: rgba(46, 255, 109, 0.5);
       }
 
-      @keyframes animation-keyframes {
-        from {
-          transform: translateX(-212px);
-        }
-        to {
-          transform: translateX(0px);
-        }
-      }
-
-      @keyframes animate-pyramid {
-        0% {
-          transform: translateY(10px);
-        }
-        100% {
-          transform: translateY(-10px);
-        }
-      }
-
-      .animation-progress {
-        animation-name: animation-keyframes;
-        animation-duration: 10s;
-        animation-iteration-count: infinite;
-        animation-direction: alternate;
-      }
-
-      .utopia-logo-pyramid {
-        animation-name: animate-pyramid;
-        animation-duration: 1.5s;
-        animation-iteration-count: infinite;
-        animation-direction: alternate;
-        animation-timing-function: ease-in-out;
-      }
-
-      .progress-bar-shell {
-        border: 1px solid black;
-      }
-
-      .progress-bar-progress {
-        background-color: black;
-      }
-
-      .utopia-logo-pyramid.light {
-        display: block;
-      }
-      .utopia-logo-pyramid.dark {
-        display: none;
-      }
-
-      @media (prefers-color-scheme: dark) {
+      @scope (:root) to (#canvas-container) {
         body {
-          background-color: #1a1a1a;
+          margin: 0;
+          font-size: 11px !important;
+          overflow: hidden;
+          cursor: default;
+          outline: none;
+          overscroll-behavior-x: contain;
+          --loadscreen-accent: rgba(46, 255, 109, 0.5);
+        }
+
+        @keyframes animation-keyframes {
+          from {
+            transform: translateX(-212px);
+          }
+          to {
+            transform: translateX(0px);
+          }
+        }
+
+        @keyframes animate-pyramid {
+          0% {
+            transform: translateY(10px);
+          }
+          100% {
+            transform: translateY(-10px);
+          }
+        }
+
+        .animation-progress {
+          animation-name: animation-keyframes;
+          animation-duration: 10s;
+          animation-iteration-count: infinite;
+          animation-direction: alternate;
+        }
+
+        .utopia-logo-pyramid {
+          animation-name: animate-pyramid;
+          animation-duration: 1.5s;
+          animation-iteration-count: infinite;
+          animation-direction: alternate;
+          animation-timing-function: ease-in-out;
         }
 
         .progress-bar-shell {
-          border: 1px solid white;
+          border: 1px solid black;
         }
 
         .progress-bar-progress {
-          background-color: white;
+          background-color: black;
         }
 
         .utopia-logo-pyramid.light {
-          display: none;
+          display: block;
         }
         .utopia-logo-pyramid.dark {
-          display: block;
+          display: none;
+        }
+
+        @media (prefers-color-scheme: dark) {
+          body {
+            background-color: #1a1a1a;
+          }
+
+          .progress-bar-shell {
+            border: 1px solid white;
+          }
+
+          .progress-bar-progress {
+            background-color: white;
+          }
+
+          .utopia-logo-pyramid.light {
+            display: none;
+          }
+          .utopia-logo-pyramid.dark {
+            display: block;
+          }
         }
       }
     </style>
@@ -112,7 +118,8 @@
     <!--projectIDScript-->
     <div id="portal-target"></div>
     <div id="canvas-contextmenu-portal-target"></div>
-    <div id="text-field-placeholder"></div>
+    <!-- Keep id in sync with the constant stored in the code. -->
+    <div id="radix-components-portal"></div>
     <div
       id="application-wrapper"
       style="position: fixed; left: 0px; top: 0px; right: 0px; bottom: 0px"
@@ -148,13 +155,13 @@
         >
           <img
             src="<%- UTOPIA_DOMAIN %>/editor/pyramid_dark.png?hash=<%- UTOPIA_SHA %>"
-            height="128px"
+            height="78px"
             alt="Utopia Logo"
             class="utopia-logo-pyramid dark"
           />
           <img
             src="<%- UTOPIA_DOMAIN %>/editor/pyramid_light.png?hash=<%- UTOPIA_SHA %>"
-            height="128px"
+            height="78px"
             alt="Utopia Logo"
             class="utopia-logo-pyramid light"
           />

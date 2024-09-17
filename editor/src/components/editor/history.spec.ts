@@ -1,6 +1,7 @@
 import { add, baseAssetPromise, init, redo, undo } from './history'
 import { createEditorState, deriveState } from './store/editor-state'
 import { updateAssetFileName } from './server'
+import { right } from '../../core/shared/either'
 
 jest.mock('./server')
 
@@ -15,7 +16,7 @@ describe('history', () => {
         ...createEditorState(() => {}),
         id: 'testproject',
       }
-      const derivedState = deriveState(editorState, null, 'unpatched', () => null)
+      const derivedState = deriveState(editorState, null, 'unpatched', () => right(null))
       const stateHistory = init(editorState, derivedState)
       const updatedStateHistory = add(stateHistory, editorState, derivedState, [
         { filenameChangedFrom: 'thing.jpg', filenameChangedTo: 'otherthing.jpg' },
@@ -35,7 +36,7 @@ describe('history', () => {
         ...createEditorState(() => {}),
         id: 'testproject',
       }
-      const derivedState = deriveState(editorState, null, 'unpatched', () => null)
+      const derivedState = deriveState(editorState, null, 'unpatched', () => right(null))
       const stateHistory = init(editorState, derivedState)
       const updatedStateHistory = add(stateHistory, editorState, derivedState, [
         { filenameChangedFrom: 'thing.jpg', filenameChangedTo: 'otherthing.jpg' },
@@ -57,7 +58,7 @@ describe('history', () => {
         ...createEditorState(() => {}),
         id: 'testproject',
       }
-      const derivedState = deriveState(editorState, null, 'unpatched', () => null)
+      const derivedState = deriveState(editorState, null, 'unpatched', () => right(null))
       const stateHistory = init(editorState, derivedState)
       const updatedStateHistory = add(stateHistory, editorState, derivedState, [
         { filenameChangedFrom: 'thing.jpg', filenameChangedTo: 'otherthing.jpg' },

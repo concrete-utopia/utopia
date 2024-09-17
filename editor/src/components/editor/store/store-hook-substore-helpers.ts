@@ -88,10 +88,8 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
       reparentedToPaths: [],
       dragToMoveIndicatorFlags: null as any,
       parentOutlineHighlight: null,
+      gridControls: null,
     },
-  },
-  floatingInsertMenu: {
-    insertMenuMode: 'closed',
   },
   inspector: {
     visible: true,
@@ -177,4 +175,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   forking: false,
   collaborators: [],
   sharingDialogOpen: false,
+  editorRemixConfig: {
+    errorBoundaryHandling: 'ignore-error-boundaries',
+  },
 }

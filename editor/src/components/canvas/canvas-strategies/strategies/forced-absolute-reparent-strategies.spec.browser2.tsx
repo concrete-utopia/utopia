@@ -328,10 +328,9 @@ describe('Fallback Absolute Reparent Strategies', () => {
       dragDelta,
       cmdModifier,
       async function midDragCallback() {
-        await pressKey('2') // this should select the Reparent (Abs) strategy
+        await pressKey('2', { modifiers: cmdModifier }) // this should select the Reparent (Flow) strategy
       },
     )
-
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

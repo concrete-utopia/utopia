@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectRegularCounterWithCount"] }] */
 import {
   TestSceneUID,
   formatTestProjectCode,
@@ -9,6 +10,7 @@ import * as EP from '../../core/shared/element-path'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { navigatorEntryToKey } from '../editor/store/editor-state'
 import { getMapCounterTestId } from './navigator-item/map-counter'
+import { getNavigatorTargetsFromEditorState } from './navigator-utils'
 
 function getProjectCode<T>(arr: Array<T>, countOverride?: number): string {
   return formatTestProjectCode(`import * as React from 'react'
@@ -75,8 +77,6 @@ export var ${BakedInStoryboardVariableName} = (
 
 function expectRegularCounterWithCount(domElement: HTMLElement, count: number) {
   expect(domElement.textContent).toEqual(count.toString())
-  expect(domElement.style.backgroundColor).toEqual('var(--utopitheme-dynamicBlue10)')
-  expect(domElement.style.color).toEqual('')
 }
 
 function expectOverriddenCounterWithCount(
@@ -85,10 +85,9 @@ function expectOverriddenCounterWithCount(
   overrideSuccess: boolean,
 ) {
   expect(domElement.textContent).toEqual(count.toString())
-  expect(domElement.style.color).toEqual('var(--utopitheme-brandNeonPink)')
   if (overrideSuccess) {
     // successful override background color
-    expect(domElement.style.backgroundColor).toEqual('var(--utopitheme-pinkSubdued)')
+    expect(domElement.style.backgroundColor).toEqual('var(--utopitheme-brandNeonPink60)')
   } else {
     // failed override shows a diagonal strikethrough implemented with linear-gradient
     expect(domElement.style.background.slice(0, 15)).toEqual('linear-gradient')
@@ -106,7 +105,7 @@ describe('maps in the navigator', () => {
         )
 
         const mapPath = EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/map')
-        const counterTestId = getMapCounterTestId(mapPath)
+        const counterTestId = getMapCounterTestId(mapPath, 'navigator')
         const counter = await renderResult.renderedDOM.findByTestId(counterTestId)
 
         expectRegularCounterWithCount(counter, arr.length)
@@ -230,12 +229,14 @@ describe('maps in the navigator', () => {
           mapParent,
         )[0]
 
-        const counterTestId = getMapCounterTestId(mapElement.elementPath)
+        const counterTestId = getMapCounterTestId(mapElement.elementPath, 'navigator')
         const counter = await renderResult.renderedDOM.findByTestId(counterTestId)
 
         expectOverriddenCounterWithCount(counter, overrideCount, overrideSuccess)
         expect(
-          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          getNavigatorTargetsFromEditorState(
+            renderResult.getEditorState().editor,
+          ).navigatorTargets.map(navigatorEntryToKey),
         ).toEqual(expectedTargets)
       })
     })
@@ -249,7 +250,7 @@ describe('maps in the navigator', () => {
       )
 
       const mapPath = EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/map')
-      const counterTestId = getMapCounterTestId(mapPath)
+      const counterTestId = getMapCounterTestId(mapPath, 'navigator')
       let counter = await renderResult.renderedDOM.findByTestId(counterTestId)
       const counterBounds = counter.getBoundingClientRect()
       const counterCentre = {
@@ -282,7 +283,7 @@ describe('maps in the navigator', () => {
       )
 
       const mapPath = EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/map')
-      const counterTestId = getMapCounterTestId(mapPath)
+      const counterTestId = getMapCounterTestId(mapPath, 'navigator')
       let counter = await renderResult.renderedDOM.findByTestId(counterTestId)
       const counterBounds = counter.getBoundingClientRect()
       const counterCentre = {
@@ -315,7 +316,7 @@ describe('maps in the navigator', () => {
       )
 
       const mapPath = EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/map')
-      const counterTestId = getMapCounterTestId(mapPath)
+      const counterTestId = getMapCounterTestId(mapPath, 'navigator')
       let counter = await renderResult.renderedDOM.findByTestId(counterTestId)
       const counterBounds = counter.getBoundingClientRect()
       const counterCentre = {
@@ -344,7 +345,7 @@ describe('maps in the navigator', () => {
       )
 
       const mapPath = EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/map')
-      const counterTestId = getMapCounterTestId(mapPath)
+      const counterTestId = getMapCounterTestId(mapPath, 'navigator')
       let counter = await renderResult.renderedDOM.findByTestId(counterTestId)
       const counterBounds = counter.getBoundingClientRect()
       const counterCentre = {

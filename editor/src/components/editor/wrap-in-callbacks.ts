@@ -36,13 +36,14 @@ import { useRefEditorState } from './store/store-hook'
 import { useDispatch } from './store/dispatch-context'
 import { applyCommandsAction } from './actions/action-creators'
 import { generateConsistentUID } from '../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { getUidMappings, getAllUniqueUidsFromMapping } from '../../core/model/get-uid-mappings'
 import { updateSelectedViews } from '../canvas/commands/update-selected-views-command'
 import type { IndexPosition } from '../../utils/utils'
 import { absolute } from '../../utils/utils'
 import { setProperty } from '../canvas/commands/set-property-command'
 import * as PP from '../../core/shared/property-path'
 import type { InspectorStrategy } from '../inspector/inspector-strategies/inspector-strategy'
+import type { PropertyControlsInfo } from '../custom-code/code-file'
 
 type WrapInDivError =
   | 'No elements selected'
@@ -55,6 +56,7 @@ export const wrapInDivStrategy = (
   elementPathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   projectContents: ProjectContentTreeRoot,
+  propertyControlsInfo: PropertyControlsInfo,
 ): InspectorStrategy => ({
   name: 'Wrap in div',
   strategy: () => {
@@ -64,6 +66,7 @@ export const wrapInDivStrategy = (
       allElementProps,
       projectContents,
       selectedViews,
+      propertyControlsInfo,
     )
     if (isLeft(result)) {
       return null
@@ -78,6 +81,7 @@ function wrapInDivCommands(
   allElementProps: AllElementProps,
   projectContents: ProjectContentTreeRoot,
   selectedViews: ElementPath[],
+  propertyControlsInfo: PropertyControlsInfo,
 ): Either<WrapInDivError, CanvasCommand[]> {
   if (!isNonEmptyArray(selectedViews)) {
     return left('No elements selected')
@@ -93,7 +97,9 @@ function wrapInDivCommands(
     return left('Cannot determine the bounding box of selected elements')
   }
 
-  const allIds = new Set(getAllUniqueUids(projectContents).allIDs)
+  const allIds = new Set(
+    getAllUniqueUidsFromMapping(getUidMappings(projectContents).filePathToUids),
+  )
 
   const wrapperUid = generateConsistentUID('wrapper', allIds)
   allIds.add(wrapperUid)
@@ -108,6 +114,7 @@ function wrapInDivCommands(
     elementPathTrees,
     fragmentWrapperUid,
     1,
+    propertyControlsInfo,
   )
   if (insertionPath == null) {
     return left('Cannot insert into parent of selected elements')
@@ -222,6 +229,8 @@ function getWrapperStyle(
         top: desiredFrame.y,
         left: desiredFrame.x,
       }
+    case 'REPARENT_INTO_GRID':
+      return style
     default:
       assertNever(parentType)
   }
@@ -238,6 +247,7 @@ export function useWrapInDiv(): () => void {
       editorRef.current.allElementProps,
       editorRef.current.projectContents,
       editorRef.current.selectedViews,
+      editorRef.current.propertyControlsInfo,
     )
 
     if (isLeft(result)) {

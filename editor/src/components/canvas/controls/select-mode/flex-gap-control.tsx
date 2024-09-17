@@ -30,7 +30,7 @@ import {
 } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { CSSNumberWithRenderedValue } from './controls-common'
-import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
+import { CanvasLabel, fallbackEmptyValue, PillHandle, useHoverWithDelay } from './controls-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import {
@@ -156,10 +156,10 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     }
 
     const bounds = boundingRectangleArray(
-      mapDropNulls(
-        (c) => (c.localFrame != null && isFiniteRectangle(c.localFrame) ? c.localFrame : null),
-        children,
-      ),
+      mapDropNulls((c) => {
+        const localFrame = MetadataUtils.getLocalFrame(c.elementPath, metadata)
+        return localFrame != null && isFiniteRectangle(localFrame) ? localFrame : null
+      }, children),
     )
 
     if (bounds == null) {
@@ -180,7 +180,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
         ),
       }
     }
-  }, [children, flexGap.direction, flexGapValue.renderedValuePx])
+  }, [children, flexGap.direction, flexGapValue.renderedValuePx, metadata])
 
   const justifyContent = React.useMemo(() => {
     return (
@@ -201,6 +201,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
       <div data-testid={FlexGapControlTestId} style={{ pointerEvents: 'none' }}>
         {controlBounds.map(({ bounds, path: p }) => {
           const path = EP.toString(p)
+          const valueToShow = fallbackEmptyValue(flexGapValue)
           return (
             <GapControlSegment
               key={path}
@@ -216,7 +217,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               scale={scale}
               backgroundShown={backgroundShown}
               isDragging={isDragging}
-              gapValue={flexGapValue.value}
+              gapValue={valueToShow}
               justifyContent={justifyContent}
               alignItems={alignItems}
             />

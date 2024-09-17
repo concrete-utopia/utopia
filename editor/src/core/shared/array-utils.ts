@@ -48,6 +48,10 @@ export function mapDropNulls<T, U>(
   return result
 }
 
+export function dropNulls<T>(a: ReadonlyArray<T | null | undefined>): Array<T> {
+  return mapDropNulls((t) => t, a)
+}
+
 export function mapAndFilter<T, U>(
   mapFn: (t: T, i: number) => U,
   filter: (u: U) => boolean,
@@ -64,7 +68,7 @@ export function mapAndFilter<T, U>(
 }
 
 export function mapFirstApplicable<T, U>(
-  array: ReadonlyArray<T>,
+  array: Iterable<T>,
   mapFn: (t: T, i: number) => U | null,
 ): U | null {
   for (const value of array) {
@@ -520,4 +524,17 @@ export function isPrefixOf<T>(
 
 export function valueOrArrayToArray<T>(ts: T | T[]): T[] {
   return Array.isArray(ts) ? ts : [ts]
+}
+
+export function createArrayWithLength<T>(length: number, value: (index: number) => T): T[] {
+  return Array.from({ length }, (_, index) => {
+    // see issue https://github.com/microsoft/TypeScript/issues/37750
+    return value instanceof Function ? value(index) : value
+  })
+}
+
+export function matrixGetter<T>(array: T[], width: number): (row: number, column: number) => T {
+  return (row, column) => {
+    return array[row * width + column]
+  }
 }

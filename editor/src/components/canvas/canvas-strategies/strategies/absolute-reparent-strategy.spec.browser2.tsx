@@ -17,7 +17,7 @@ import {
   windowPoint,
 } from '../../../../core/shared/math-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
-import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
+import { cmdModifier } from '../../../../utils/modifiers'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { RightMenuTab, navigatorEntryToKey } from '../../../editor/store/editor-state'
 import { CSSCursor } from '../../canvas-types'
@@ -58,6 +58,8 @@ import {
   selectComponentsForTest,
   wait,
 } from '../../../../utils/utils.test-utils'
+import CanvasActions from '../../canvas-actions'
+import { getNavigatorTargetsFromEditorState } from '../../../navigator/navigator-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -70,6 +72,7 @@ async function dragElement(
   modifiers: Modifiers,
   checkCursor: CheckCursor | null,
   midDragCallback: (() => Promise<void>) | null,
+  mouseDownModifiers?: Modifiers,
 ) {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
@@ -88,6 +91,7 @@ async function dragElement(
   await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
   await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
     modifiers: modifiers,
+    mouseDownModifiers: mouseDownModifiers,
     midDragCallback: combinedMidDragCallback,
   })
 }
@@ -190,8 +194,8 @@ describe('Absolute Reparent Strategy', () => {
       y: targetElementBounds.y + 50,
     }
 
-    await mouseMoveToPoint(canvasControlsLayer, firstInsertionPoint)
-    await mouseClickAtPoint(canvasControlsLayer, firstInsertionPoint)
+    await mouseMoveToPoint(canvasControlsLayer, firstInsertionPoint, { modifiers: cmdModifier })
+    await mouseClickAtPoint(canvasControlsLayer, firstInsertionPoint, { modifiers: cmdModifier })
 
     await renderResult.getDispatchFollowUpActionsFinished()
     const afterFirstInsertMetadataKeys = new Set(
@@ -215,8 +219,8 @@ describe('Absolute Reparent Strategy', () => {
       y: targetElementBounds.y + 200,
     }
 
-    await mouseMoveToPoint(canvasControlsLayer, secondInsertionPoint)
-    await mouseClickAtPoint(canvasControlsLayer, secondInsertionPoint)
+    await mouseMoveToPoint(canvasControlsLayer, secondInsertionPoint, { modifiers: cmdModifier })
+    await mouseClickAtPoint(canvasControlsLayer, secondInsertionPoint, { modifiers: cmdModifier })
 
     await renderResult.getDispatchFollowUpActionsFinished()
     const afterSecondInsertMetadataKeys = new Set(
@@ -321,6 +325,11 @@ describe('Absolute Reparent Strategy', () => {
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
     await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, async () => {
+      await renderResult.dispatch(
+        [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+        true,
+      )
+
       expect(getRegularNavigatorTargets(renderResult)).toEqual([
         'utopia-storyboard-uid/scene-aaa',
         'utopia-storyboard-uid/scene-aaa/app-entity',
@@ -392,8 +401,12 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: 400, y: 400 })
-    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
-    await dragElement(renderResult, 'ccc', dragDelta, cmdModifier, null, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, async () =>
+      renderResult.dispatch([CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')], true),
+    )
+    await dragElement(renderResult, 'ccc', dragDelta, cmdModifier, null, async () =>
+      renderResult.dispatch([CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')], true),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -458,7 +471,9 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, async () =>
+      renderResult.dispatch([CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')], true),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -499,7 +514,8 @@ describe('Absolute Reparent Strategy', () => {
       ),
     )
   })
-  it('reparents to the canvas root when target parent on the canvas is small', async () => {
+  // this test is outdated, we only reparent with cmd pressed, and then we reparent to smaller parents too
+  xit('reparents to the canvas root when target parent on the canvas is small', async () => {
     const renderResult = await renderTestEditorWithCode(
       formatTestProjectCode(`
 import * as React from 'react'
@@ -540,7 +556,12 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, async () => {
+      void renderResult.dispatch(
+        [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+        true,
+      )
+    })
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -584,7 +605,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       ),
     )
   })
-  it('does not reparent to ancestor outside of the containing component when the mouse is inside the containing component bounds', async () => {
+  // Outdated test, cmd is necessary for reparenting, and it forces reparenting to ancestor outside of the containing component
+  xit('does not reparent to ancestor outside of the containing component when the mouse is inside the containing component bounds', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <>  
@@ -606,7 +628,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -748,7 +770,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -886,15 +908,19 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     await mouseDoubleClickAtPoint(canvasControlsLayer, dragHereCenter)
 
     // check that `drag-here` is expanded in the navigator
-    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+    expect(
+      getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
       'regular-sb/scene1',
       'regular-sb/scene1/container1',
       'regular-sb/scene1/container1:container-root-div',
-      'regular-sb/scene1/container1:container-root-div/afd',
+      'regular-sb/scene1/container1:container-root-div/135',
       'regular-sb/scene1/container1/hello',
       'regular-sb/container2',
       'regular-sb/container2:container-root-div',
-      'regular-sb/container2:container-root-div/afd',
+      'regular-sb/container2:container-root-div/135',
       'regular-sb/container2/hi',
     ])
 
@@ -902,14 +928,13 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       x: dragHereCenter.x - dragMeCenter.x,
       y: dragHereCenter.y - dragMeCenter.y,
     })
-    await dragElement(
-      editor,
-      'drag-me',
-      dragDelta,
-      cmdModifier,
-      { cursor: CSSCursor.NotPermitted }, // checks that we show that it's not permitted
-      null,
-    )
+
+    await dragElement(editor, 'drag-me', dragDelta, cmdModifier, null, async () => {
+      await editor.dispatch([CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')], true)
+      expect(getCursorFromEditor(await editor.getEditorState().editor)).toEqual(
+        CSSCursor.NotPermitted, // checks that we show that it's not permitted
+      )
+    })
 
     // the drag is prevented, nothing changes
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(ProjectWithNestedComponents)
@@ -960,7 +985,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, async () =>
+      renderResult.dispatch([CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')], true),
+    )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1025,7 +1052,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       }
 
       const dragDelta = windowPoint({ x: bbbCenter.x - cccCenter.x, y: bbbCenter.y - cccCenter.y })
-      await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, null, async () => {
+      await dragElement(renderResult, 'ccc', dragDelta, cmdModifier, null, async () => {
         const draggedElement = await renderResult.renderedDOM.findByTestId('ccc')
         const draggedElementBounds = draggedElement.getBoundingClientRect()
         const draggedElementCanvasBounds = boundingClientRectToCanvasRectangle(
@@ -1146,7 +1173,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       }
 
       const dragDelta = windowPoint({ x: bbbCenter.x - cccCenter.x, y: bbbCenter.y - cccCenter.y })
-      await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, null, async () => {
+      await dragElement(renderResult, 'ccc', dragDelta, cmdModifier, null, async () => {
         const draggedElement = await renderResult.renderedDOM.findByTestId('ccc')
         const draggedElementBounds = draggedElement.getBoundingClientRect()
         const draggedElementCanvasBounds = boundingClientRectToCanvasRectangle(
@@ -1300,7 +1327,15 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           )
 
           const dragDelta = windowPoint({ x: 50, y: 0 })
-          await dragElement(renderResult, 'child-1', dragDelta, cmdModifier, null, null)
+          await dragElement(
+            renderResult,
+            'child-1',
+            dragDelta,
+            cmdModifier,
+            null,
+            null,
+            cmdModifier,
+          )
 
           await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1351,7 +1386,11 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           dragDelta,
           cmdModifier,
           null,
-          null,
+          async () =>
+            renderResult.dispatch(
+              [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+              true,
+            ),
         )
 
         await renderResult.getDispatchFollowUpActionsFinished()
@@ -1429,7 +1468,11 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           dragDelta,
           cmdModifier,
           null,
-          null,
+          async () =>
+            renderResult.dispatch(
+              [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+              true,
+            ),
         )
 
         await renderResult.getDispatchFollowUpActionsFinished()
@@ -1503,7 +1546,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
 
       const dragDelta = windowPoint({ x: -150, y: -150 })
-      await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+      await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1552,7 +1595,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
 
       const dragDelta = windowPoint({ x: -150, y: -150 })
-      await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+      await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1606,7 +1649,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
 
       const dragDelta = windowPoint({ x: -150, y: -150 })
-      await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+      await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -1730,6 +1773,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         canvasControlsLayer,
         { x: dragme.x + 10, y: dragme.y + 10 },
         { x: -100, y: 0 },
+        {
+          modifiers: cmdModifier,
+          midDragCallback: async () =>
+            renderResult.dispatch(
+              [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+              true,
+            ),
+        },
       )
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -1778,6 +1829,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         canvasControlsLayer,
         { x: dragme.x + 10, y: dragme.y + 10 },
         { x: -100, y: 0 },
+        {
+          modifiers: cmdModifier,
+          midDragCallback: async () =>
+            renderResult.dispatch(
+              [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+              true,
+            ),
+        },
       )
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -1807,7 +1866,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
     })
   })
-  describe('snapping', () => {
+  // we don't have snapping with reparenting anymore, because cmd enables reparenting and disables snapping at the same time
+  xdescribe('snapping', () => {
     const NewParentTestId = 'new-parent'
     const NewSiblingTestId = 'new-sibling'
     const project = (innards: string) => `<div
@@ -1864,7 +1924,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           data-uid='container'
         >
           <img
-            src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+            src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
             alt='Utopia logo'
             style={{
               width: 46,
@@ -1896,6 +1956,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         elementToDragCenter,
         windowPoint({ x: newParentCenterX, y: newSiblingCenterY }),
         {
+          modifiers: cmdModifier,
           midDragCallback: async () => {
             const guidelines =
               renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
@@ -1923,7 +1984,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           data-uid='container'
         >
           <img
-            src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+            src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
             alt='Utopia logo'
             style={{
               width: 46,
@@ -1955,6 +2016,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         elementToDragCenter,
         windowPoint({ x: newParentCenterX, y: newSiblingCenterY }),
         {
+          modifiers: cmdModifier,
           midDragCallback: async () => {
             const guidelines =
               renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
@@ -1982,7 +2044,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             data-uid='container'
           >
             <img
-              src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+              src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
               alt='Utopia logo'
               style={{
                 width: 46,
@@ -2014,6 +2076,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         elementToDragCenter,
         windowPoint({ x: newParentCenterX, y: newSiblingCenterY }),
         {
+          modifiers: cmdModifier,
           midDragCallback: async () => {
             const guidelines =
               renderResult.getEditorState().editor.canvas.controls.snappingGuidelines

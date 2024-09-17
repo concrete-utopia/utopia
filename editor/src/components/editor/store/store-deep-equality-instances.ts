@@ -38,6 +38,7 @@ import type {
   TextFile,
   TextFileContents,
   Unparsed,
+  ElementPropertyPath,
 } from '../../../core/shared/project-file-types'
 import { directory } from '../../../core/shared/project-file-types'
 import {
@@ -78,7 +79,7 @@ import {
   exportType,
   singleFileBuildResult,
 } from '../../../core/workers/common/worker-types'
-import type { Sides, Focus, Styling, Emphasis, Icon, InspectorSpec } from 'utopia-api/core'
+import type { Sides, Focus, Styling, Emphasis, Icon } from 'utopia-api/core'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -130,7 +131,6 @@ import type {
   JSXConditionalExpression,
   ActiveAndDefaultConditionValues,
   JSXMapExpression,
-  JSExpressionMapOrOtherJavascript,
   JSExpressionOtherJavaScript,
   JSIdentifier,
   JSPropertyAccess,
@@ -142,16 +142,20 @@ import type {
   JSOpaqueArbitraryStatement,
   JSAssignmentStatement,
   JSAssignment,
+  GridContainerProperties,
+  GridTemplate,
+  GridAuto,
+  GridElementProperties,
+  GridPositionValue,
+  GridPosition,
+  GridAutoOrTemplateBase,
+  GridAutoOrTemplateDimensions,
+  GridAutoOrTemplateFallback,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
   isArraySpread,
   isArrayValue,
-  modifiableAttributeIsAttributeFunctionCall,
-  modifiableAttributeIsAttributeNestedArray,
-  modifiableAttributeIsAttributeNestedObject,
-  modifiableAttributeIsAttributeOtherJavaScript,
-  isJSXAttributeValue,
   isJSXElement,
   isJSXFragment,
   isJSXTextBlock,
@@ -213,6 +217,11 @@ import {
   jsAssignmentStatement,
   jsAssignment,
   jsxMapExpression,
+  gridContainerProperties,
+  gridElementProperties,
+  gridPositionValue,
+  gridAutoOrTemplateFallback,
+  gridAutoOrTemplateDimensions,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -255,10 +264,9 @@ import {
   NullableNumberKeepDeepEquality,
   combine9EqualityCalls,
   unionDeepEquality,
-  combine14EqualityCalls,
   combine11EqualityCalls,
-  combine15EqualityCalls,
   combine16EqualityCalls,
+  combine15EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -299,11 +307,6 @@ import type {
   CanvasCursor,
   CursorStackItem,
   CursorImportanceLevel,
-  FloatingInsertMenuStateClosed,
-  FloatingInsertMenuStateSwap,
-  FloatingInsertMenuStateWrap,
-  FloatingInsertMenuStateInsert,
-  FloatingInsertMenuState,
   EditorStateInspector,
   EditorStateFileBrowser,
   EditorStateDependencyList,
@@ -357,6 +360,9 @@ import type {
   DataReferenceNavigatorEntry,
   GithubUser,
   PullRequest,
+  RenderedAt,
+  EditorRemixConfig,
+  ErrorBoundaryHandling,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -367,6 +373,8 @@ import {
   renderPropValueNavigatorEntry,
   dataReferenceNavigatorEntry,
   newGithubData,
+  renderedAtPropertyPath,
+  renderedAtChildNode,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -384,10 +392,6 @@ import {
   editorStateCanvas,
   cursorStackItem,
   canvasCursor,
-  floatingInsertMenuStateClosed,
-  floatingInsertMenuStateSwap,
-  floatingInsertMenuStateWrap,
-  floatingInsertMenuStateInsert,
   editorStateInspector,
   editorStateFileBrowser,
   editorStateDependencyList,
@@ -406,7 +410,6 @@ import {
   draggingFromSidebar,
   fileUploadInfo,
   fileRevertModal,
-  emptyGithubData,
   dragToMoveIndicatorFlags,
   projectGithubSettings,
   newColorSwatch,
@@ -444,6 +447,11 @@ import type {
   ResizeHandle,
   BorderRadiusResizeHandle,
   ZeroDragPermitted,
+  GridCellHandle,
+  GridAxisHandle,
+  GridResizeHandle,
+  GridResizeEdge,
+  GridGapHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
   boundingArea,
@@ -452,6 +460,10 @@ import {
   interactionSession,
   keyboardCatcherControl,
   resizeHandle,
+  gridCellHandle,
+  gridAxisHandle,
+  gridResizeHandle,
+  gridGapHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import type { Modifiers } from '../../../utils/modifiers'
 import type {
@@ -481,6 +493,9 @@ import type {
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
   ComponentDescriptorFromDescriptorFile,
+  TypedInpsectorSpec,
+  ShownInspectorSpec,
+  StyleSectionState,
 } from '../../custom-code/code-file'
 import {
   codeResult,
@@ -543,14 +558,28 @@ import type {
   CSSFontWeightAndStyle,
   CSSLetterSpacing,
   CSSLineHeight,
+  CSSNumber,
+  CSSNumberUnit,
   CSSTextAlign,
   CSSTextDecorationLine,
   FontSettings,
+  GridCSSKeyword,
+  GridCSSNumber,
+  GridDimension,
+  GridAutoFlow,
 } from '../../inspector/common/css-utils'
-import { fontSettings } from '../../inspector/common/css-utils'
+import {
+  cssNumber,
+  fontSettings,
+  gridCSSKeyword,
+  gridCSSNumber,
+  isCSSKeyword,
+  isGridCSSKeyword,
+  isGridCSSNumber,
+} from '../../inspector/common/css-utils'
 import type { ElementPaste, ProjectListing } from '../action-types'
 import { projectListing } from '../action-types'
-import type { UtopiaVSCodeConfig } from 'utopia-vscode-common'
+import type { Bounds, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { MouseButtonsPressed } from '../../../utils/mouse'
 import { assertNever } from '../../../core/shared/utils'
 import type {
@@ -604,6 +633,25 @@ import type {
 } from '../../custom-code/internal-property-controls'
 import type { OnlineState } from '../online-status'
 import { onlineState } from '../online-status'
+import type { NavigatorRow } from '../../navigator/navigator-row'
+import { condensedNavigatorRow, regularNavigatorRow } from '../../navigator/navigator-row'
+import type { SimpleFunctionWrap, FunctionWrap, JSXElementLike } from 'utopia-shared/src/types'
+import { simpleFunctionWrap, isSimpleFunctionWrap } from 'utopia-shared/src/types'
+import type {
+  ComponentDescriptorBounds,
+  ComponentDescriptorPropertiesBounds,
+} from '../../../core/property-controls/component-descriptor-parser'
+import type { Axis } from '../../../components/canvas/gap-utils'
+
+export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
+  return combine2EqualityCalls(
+    (e) => e.elementPath,
+    ElementPathKeepDeepEquality,
+    (e) => e.propertyPath,
+    PropertyPathKeepDeepEquality(),
+    (elementPath, propertyPath) => ({ elementPath, propertyPath }),
+  )
+}
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine4EqualityCalls(
@@ -689,9 +737,44 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
     syntheticNavigatorEntry,
   )
 
+export const RenderedAtKeepDeepEquality: KeepDeepEqualityCall<RenderedAt> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'element-property-path':
+      if (oldValue.type === newValue.type) {
+        return combine1EqualityCall(
+          (r) => r.elementPropertyPath,
+          ElementPropertyPathKeepDeepEquality(),
+          renderedAtPropertyPath,
+        )(oldValue, newValue)
+      }
+      break
+    case 'child-node':
+      if (oldValue.type === newValue.type) {
+        return combine2EqualityCalls(
+          (r) => r.parentPath,
+          ElementPathKeepDeepEquality,
+          (r) => r.nodeUid,
+          StringKeepDeepEquality,
+          renderedAtChildNode,
+        )(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const DataReferenceNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<DataReferenceNavigatorEntry> =
-  combine2EqualityCalls(
+  combine4EqualityCalls(
     (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.renderedAt,
+    RenderedAtKeepDeepEquality,
+    (entry) => entry.surroundingScope,
     ElementPathKeepDeepEquality,
     (entry) => entry.childOrAttribute,
     JSXElementChildKeepDeepEquality(),
@@ -735,6 +818,41 @@ export const SlotNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<SlotNaviga
     StringKeepDeepEquality,
     (elementPath, prop) => ({ type: 'SLOT', elementPath: elementPath, prop: prop }),
   )
+
+export const NavigatorRowKeepDeepEquality: KeepDeepEqualityCall<NavigatorRow> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'regular-row':
+      if (oldValue.type === newValue.type) {
+        return combine2EqualityCalls(
+          (row) => row.entry,
+          NavigatorEntryKeepDeepEquality,
+          (row) => row.indentation,
+          createCallWithTripleEquals<number>(),
+          regularNavigatorRow,
+        )(oldValue, newValue)
+      }
+      break
+    case 'condensed-row':
+      if (oldValue.type === newValue.type) {
+        return combine3EqualityCalls(
+          (row) => row.entries,
+          arrayDeepEquality(NavigatorEntryKeepDeepEquality),
+          (row) => row.variant,
+          createCallWithTripleEquals<'trunk' | 'leaf'>(),
+          (row) => row.indentation,
+          createCallWithTripleEquals<number>(),
+          condensedNavigatorRow,
+        )(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
 
 export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry> = (
   oldValue,
@@ -841,11 +959,7 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine9EqualityCalls(
-    (state) => state.navigatorTargets,
-    arrayDeepEquality(NavigatorEntryKeepDeepEquality),
-    (state) => state.visibleNavigatorTargets,
-    arrayDeepEquality(NavigatorEntryKeepDeepEquality),
+  return combine7EqualityCalls(
     (state) => state.autoFocusedPaths,
     arrayDeepEquality(ElementPathKeepDeepEquality),
     (state) => state.controls,
@@ -857,12 +971,10 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     (state) => state.branchOriginContentsChecksums,
     nullableDeepEquality(FileChecksumsWithFileKeepDeepEquality),
     (state) => state.remixData,
-    createCallWithTripleEquals(),
+    EitherKeepDeepEquality(createCallWithTripleEquals(), createCallWithTripleEquals()),
     (state) => state.filePathMappings,
     createCallWithShallowEquals(),
     (
-      navigatorTargets,
-      visibleNavigatorTargets,
       autoFocusedPaths,
       controls,
       elementWarnings,
@@ -872,8 +984,6 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
       filePathMappings,
     ) => {
       return {
-        navigatorTargets: navigatorTargets,
-        visibleNavigatorTargets: visibleNavigatorTargets,
         autoFocusedPaths: autoFocusedPaths,
         controls: controls,
         elementWarnings: elementWarnings,
@@ -993,7 +1103,7 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
 export function JSAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<JSAssignment> {
   return combine2EqualityCalls(
     (assignment) => assignment.leftHandSide,
-    JSIdentifierKeepDeepEquality(),
+    BoundParamKeepDeepEquality(),
     (assignment) => assignment.rightHandSide,
     JSExpressionKeepDeepEqualityCall,
     jsAssignment,
@@ -1328,8 +1438,33 @@ export function JSXElementWithoutUIDKeepDeepEquality(): KeepDeepEqualityCall<JSX
   )
 }
 
+export const JSXFragmentKeepDeepEquality: KeepDeepEqualityCall<JSXFragment> = combine3EqualityCalls(
+  (fragment) => fragment.children,
+  JSXElementChildArrayKeepDeepEquality,
+  (fragment) => fragment.uid,
+  StringKeepDeepEquality,
+  (fragment) => fragment.longForm,
+  BooleanKeepDeepEquality,
+  (children, uid, longForm) => {
+    return {
+      type: 'JSX_FRAGMENT',
+      children: children,
+      uid: uid,
+      longForm: longForm,
+    }
+  },
+)
+
+export function JSXElementLikeKeepDeepEquality(): KeepDeepEqualityCall<JSXElementLike> {
+  return unionDeepEquality(
+    JSXElementKeepDeepEquality,
+    JSXFragmentKeepDeepEquality,
+    isJSXElement,
+    isJSXFragment,
+  )
+}
 export function ElementsWithinKeepDeepEqualityCall(): KeepDeepEqualityCall<ElementsWithin> {
-  return objectDeepEquality(JSXElementKeepDeepEquality)
+  return objectDeepEquality(JSXElementLikeKeepDeepEquality())
 }
 
 export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<ArbitraryJSBlock> {
@@ -1486,8 +1621,29 @@ export function JSXElementChildKeepDeepEquality(): KeepDeepEqualityCall<JSXEleme
   }
 }
 
+export const SimpleFunctionWrapKeepDeepEquality: KeepDeepEqualityCall<SimpleFunctionWrap> =
+  combine1EqualityCall(
+    (wrap) => wrap.functionExpression,
+    JSExpressionKeepDeepEqualityCall,
+    simpleFunctionWrap,
+  )
+
+export const FunctionWrapKeepDeepEquality: KeepDeepEqualityCall<FunctionWrap> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'SIMPLE_FUNCTION_WRAP':
+      if (isSimpleFunctionWrap(newValue)) {
+        return SimpleFunctionWrapKeepDeepEquality(oldValue, newValue)
+      }
+      break
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const UtopiaJSXComponentKeepDeepEquality: KeepDeepEqualityCall<UtopiaJSXComponent> =
-  combine10EqualityCalls(
+  combine11EqualityCalls(
     (component) => component.name,
     createCallWithTripleEquals(),
     (component) => component.isFunction,
@@ -1496,8 +1652,10 @@ export const UtopiaJSXComponentKeepDeepEquality: KeepDeepEqualityCall<UtopiaJSXC
     createCallWithTripleEquals(),
     (component) => component.blockOrExpression,
     createCallWithTripleEquals(),
-    (component) => component.param,
-    nullableDeepEquality(ParamKeepDeepEquality()),
+    (component) => component.functionWrapping,
+    arrayDeepEquality(FunctionWrapKeepDeepEquality),
+    (component) => component.params,
+    nullableDeepEquality(arrayDeepEquality(ParamKeepDeepEquality())),
     (component) => component.propsUsed,
     arrayDeepEquality(createCallWithTripleEquals()),
     (component) => component.rootElement,
@@ -1576,23 +1734,6 @@ export const JSXTextBlockKeepDeepEquality: KeepDeepEqualityCall<JSXTextBlock> =
     },
   )
 
-export const JSXFragmentKeepDeepEquality: KeepDeepEqualityCall<JSXFragment> = combine3EqualityCalls(
-  (fragment) => fragment.children,
-  JSXElementChildArrayKeepDeepEquality,
-  (fragment) => fragment.uid,
-  StringKeepDeepEquality,
-  (fragment) => fragment.longForm,
-  BooleanKeepDeepEquality,
-  (children, uid, longForm) => {
-    return {
-      type: 'JSX_FRAGMENT',
-      children: children,
-      uid: uid,
-      longForm: longForm,
-    }
-  },
-)
-
 export const JSXConditionalExpressionKeepDeepEquality: KeepDeepEqualityCall<JSXConditionalExpression> =
   combine6EqualityCalls(
     (conditional) => conditional.uid,
@@ -1631,7 +1772,7 @@ export const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> =
     (param) => param.paramName,
     createCallWithTripleEquals(),
     (param) => param.defaultExpression,
-    nullableDeepEquality(JSExpressionOtherJavaScriptOrJSXMapExpressionKeepDeepEqualityCall),
+    nullableDeepEquality(JSExpressionKeepDeepEqualityCall),
     regularParam,
   )
 
@@ -1642,7 +1783,7 @@ export const DestructuredParamPartKeepDeepEquality: KeepDeepEqualityCall<Destruc
     (paramPart) => paramPart.param,
     ParamKeepDeepEquality(),
     (paramPart) => paramPart.defaultExpression,
-    nullableDeepEquality(JSExpressionOtherJavaScriptOrJSXMapExpressionKeepDeepEqualityCall),
+    nullableDeepEquality(JSExpressionKeepDeepEqualityCall),
     destructuredParamPart,
   )
 
@@ -1823,6 +1964,140 @@ export const ImportInfoKeepDeepEquality: KeepDeepEqualityCall<ImportInfo> = (
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const CSSNumberKeepDeepEquality: KeepDeepEqualityCall<CSSNumber> = combine2EqualityCalls(
+  (cssNum) => cssNum.value,
+  createCallWithTripleEquals<number>(),
+  (cssNum) => cssNum.unit,
+  undefinableDeepEquality(nullableDeepEquality(createCallWithTripleEquals<CSSNumberUnit>())),
+  cssNumber,
+)
+
+export const GridCSSNumberKeepDeepEquality: KeepDeepEqualityCall<GridCSSNumber> =
+  combine2EqualityCalls(
+    (p) => p.value,
+    CSSNumberKeepDeepEquality,
+    (p) => p.areaName,
+    NullableStringKeepDeepEquality,
+    gridCSSNumber,
+  )
+
+export const GridCSSKeywordKeepDeepEquality: KeepDeepEqualityCall<GridCSSKeyword> =
+  combine2EqualityCalls(
+    (p) => p.value,
+    createCallWithTripleEquals(),
+    (p) => p.areaName,
+    NullableStringKeepDeepEquality,
+    gridCSSKeyword,
+  )
+
+export const GridDimensionKeepDeepEquality: KeepDeepEqualityCall<GridDimension> =
+  combine1EqualityCall(
+    (dimension) => dimension,
+    unionDeepEquality(
+      GridCSSNumberKeepDeepEquality,
+      GridCSSKeywordKeepDeepEquality,
+      isGridCSSNumber,
+      isGridCSSKeyword,
+    ),
+    (dimension) => dimension,
+  )
+
+export const GridAutoOrTemplateDimensionsKeepDeepEquality: KeepDeepEqualityCall<GridAutoOrTemplateDimensions> =
+  combine1EqualityCall(
+    (value) => value.dimensions,
+    arrayDeepEquality(GridDimensionKeepDeepEquality),
+    gridAutoOrTemplateDimensions,
+  )
+
+export const GridAutoOrTemplateFallbackKeepDeepEquality: KeepDeepEqualityCall<GridAutoOrTemplateFallback> =
+  combine1EqualityCall(
+    (value) => value.value,
+    createCallWithTripleEquals<string>(),
+    gridAutoOrTemplateFallback,
+  )
+
+export const GridAutoOrTemplateBaseKeepDeepEquality: KeepDeepEqualityCall<
+  GridAutoOrTemplateBase
+> = (oldValue, newValue) => {
+  switch (oldValue.type) {
+    case 'DIMENSIONS':
+      if (newValue.type === oldValue.type) {
+        return GridAutoOrTemplateDimensionsKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'FALLBACK':
+      if (newValue.type === oldValue.type) {
+        return GridAutoOrTemplateFallbackKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const GridTemplateKeepDeepEquality: KeepDeepEqualityCall<GridTemplate> =
+  GridAutoOrTemplateBaseKeepDeepEquality
+
+export const GridAutoKeepDeepEquality: KeepDeepEqualityCall<GridAuto> =
+  GridAutoOrTemplateBaseKeepDeepEquality
+
+export function GridContainerPropertiesKeepDeepEquality(): KeepDeepEqualityCall<GridContainerProperties> {
+  return combine5EqualityCalls(
+    (properties) => properties.gridTemplateColumns,
+    nullableDeepEquality(GridTemplateKeepDeepEquality),
+    (properties) => properties.gridTemplateRows,
+    nullableDeepEquality(GridTemplateKeepDeepEquality),
+    (properties) => properties.gridAutoColumns,
+    nullableDeepEquality(GridAutoKeepDeepEquality),
+    (properties) => properties.gridAutoRows,
+    nullableDeepEquality(GridAutoKeepDeepEquality),
+    (properties) => properties.gridAutoFlow,
+    nullableDeepEquality(createCallWithTripleEquals<GridAutoFlow>()),
+    gridContainerProperties,
+  )
+}
+
+export const GridPositionValueKeepDeepEquality: KeepDeepEqualityCall<GridPositionValue> =
+  combine1EqualityCall(
+    (value) => value.numericalPosition,
+    nullableDeepEquality(createCallWithTripleEquals<number>()),
+    gridPositionValue,
+  )
+
+export const GridPositionKeepDeepEquality: KeepDeepEqualityCall<GridPosition> = (
+  oldValue,
+  newValue,
+) => {
+  if (isCSSKeyword(oldValue)) {
+    if (isCSSKeyword(newValue)) {
+      return createCallWithTripleEquals<GridPosition>()(oldValue, newValue)
+    } else {
+      return keepDeepEqualityResult(newValue, false)
+    }
+  } else {
+    if (isCSSKeyword(newValue)) {
+      return keepDeepEqualityResult(newValue, false)
+    } else {
+      return GridPositionValueKeepDeepEquality(oldValue, newValue)
+    }
+  }
+}
+
+export function GridElementPropertiesKeepDeepEquality(): KeepDeepEqualityCall<GridElementProperties> {
+  return combine4EqualityCalls(
+    (properties) => properties.gridColumnStart,
+    nullableDeepEquality(GridPositionKeepDeepEquality),
+    (properties) => properties.gridColumnEnd,
+    nullableDeepEquality(GridPositionKeepDeepEquality),
+    (properties) => properties.gridRowStart,
+    nullableDeepEquality(GridPositionKeepDeepEquality),
+    (properties) => properties.gridRowEnd,
+    nullableDeepEquality(GridPositionKeepDeepEquality),
+    gridElementProperties,
+  )
+}
+
 export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<SpecialSizeMeasurements> {
   return (oldSize, newSize) => {
     const offsetResult = LocalPointKeepDeepEquality(oldSize.offset, newSize.offset)
@@ -1839,7 +2114,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     )(oldSize.globalFrameWithTextContent, newSize.globalFrameWithTextContent)
     const immediateParentProvidesLayoutResult =
       oldSize.immediateParentProvidesLayout === newSize.immediateParentProvidesLayout
-    const closestOffsetParentPathResult = ElementPathKeepDeepEquality(
+    const closestOffsetParentPathResult = nullableDeepEquality(ElementPathKeepDeepEquality)(
       oldSize.closestOffsetParentPath,
       newSize.closestOffsetParentPath,
     ).areEqual
@@ -1899,6 +2174,30 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.computedHugProperty.width === newSize.computedHugProperty.width &&
       oldSize.computedHugProperty.height === newSize.computedHugProperty.height
 
+    const gridContainerPropertiesEqual = GridContainerPropertiesKeepDeepEquality()(
+      oldSize.containerGridProperties,
+      newSize.containerGridProperties,
+    ).areEqual
+    const gridElementPropertiesEqual = GridElementPropertiesKeepDeepEquality()(
+      oldSize.elementGridProperties,
+      newSize.elementGridProperties,
+    ).areEqual
+
+    const gridContainerPropertiesFromPropsEqual = GridContainerPropertiesKeepDeepEquality()(
+      oldSize.containerGridPropertiesFromProps,
+      newSize.containerGridPropertiesFromProps,
+    ).areEqual
+    const gridElementPropertiesFromPropsEqual = GridElementPropertiesKeepDeepEquality()(
+      oldSize.elementGridPropertiesFromProps,
+      newSize.elementGridPropertiesFromProps,
+    ).areEqual
+
+    const rowGapEquals = NullableNumberKeepDeepEquality(oldSize.rowGap, newSize.rowGap).areEqual
+    const columnGapEquals = NullableNumberKeepDeepEquality(
+      oldSize.columnGap,
+      newSize.columnGap,
+    ).areEqual
+
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -1940,7 +2239,13 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       fontStyleEquals &&
       textDecorationLineEquals &&
       textBoundsEqual &&
-      computedHugPropertyEqual
+      computedHugPropertyEqual &&
+      gridContainerPropertiesEqual &&
+      gridElementPropertiesEqual &&
+      gridContainerPropertiesFromPropsEqual &&
+      gridElementPropertiesFromPropsEqual &&
+      rowGapEquals &&
+      columnGapEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1971,6 +2276,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.gap,
         newSize.flexDirection,
         newSize.justifyContent,
+        newSize.alignContent,
         newSize.alignItems,
         newSize.htmlElementName,
         newSize.renderedChildrenCount,
@@ -1986,6 +2292,12 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.textDecorationLine,
         newSize.textBounds,
         newSize.computedHugProperty,
+        newSize.containerGridProperties,
+        newSize.elementGridProperties,
+        newSize.containerGridPropertiesFromProps,
+        newSize.elementGridPropertiesFromProps,
+        newSize.rowGap,
+        newSize.columnGap,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
@@ -2059,15 +2371,13 @@ export const EarlyReturnKeepDeepEquality: KeepDeepEqualityCall<
 }
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine16EqualityCalls(
+  combine15EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
     EitherKeepDeepEquality(createCallWithTripleEquals(), JSXElementChildKeepDeepEquality()),
     (metadata) => metadata.globalFrame,
     nullableDeepEquality(MaybeInfinityCanvasRectangleKeepDeepEquality),
-    (metadata) => metadata.localFrame,
-    nullableDeepEquality(MaybeInfinityLocalRectangleKeepDeepEquality),
     (metadata) => metadata.nonRoundedGlobalFrame,
     nullableDeepEquality(MaybeInfinityCanvasRectangleKeepDeepEquality),
     (metadata) => metadata.componentInstance,
@@ -2078,7 +2388,7 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     SpecialSizeMeasurementsKeepDeepEquality(),
     (metadata) => metadata.computedStyle,
     nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
-    (metadata) => metadata.attributeMetadatada,
+    (metadata) => metadata.attributeMetadata,
     nullableDeepEquality(StyleAttributeMetadataKeepDeepEquality),
     (metadata) => metadata.label,
     nullableDeepEquality(createCallWithTripleEquals()),
@@ -2336,7 +2646,7 @@ export const DragToMoveIndicatorFlagsKeepDeepEquality: KeepDeepEqualityCall<Drag
   )
 
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
-  combine8EqualityCalls(
+  combine9EqualityCalls(
     (controls) => controls.snappingGuidelines,
     arrayDeepEquality(GuidelineWithSnappingVectorAndPointsOfRelevanceKeepDeepEquality),
     (controls) => controls.outlineHighlights,
@@ -2352,6 +2662,8 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     (controls) => controls.dragToMoveIndicatorFlags,
     DragToMoveIndicatorFlagsKeepDeepEquality,
     (controls) => controls.parentOutlineHighlight,
+    nullableDeepEquality(ElementPathKeepDeepEquality),
+    (controls) => controls.gridControls,
     nullableDeepEquality(ElementPathKeepDeepEquality),
     editorStateCanvasControls,
   )
@@ -2582,6 +2894,34 @@ export const BorderRadiusResizeHandleKeepDeepEquality: KeepDeepEqualityCall<
   return keepDeepEqualityResult(oldValue, true)
 }
 
+export const GridCellHandleKeepDeepEquality: KeepDeepEqualityCall<GridCellHandle> =
+  combine1EqualityCall(
+    (handle) => handle.id,
+    createCallWithTripleEquals<string>(),
+    (id) => gridCellHandle({ id }),
+  )
+
+export const GridAxisHandleKeepDeepEquality: KeepDeepEqualityCall<GridAxisHandle> =
+  combine2EqualityCalls(
+    (handle) => handle.axis,
+    createCallWithTripleEquals(),
+    (handle) => handle.columnOrRow,
+    createCallWithTripleEquals<number>(),
+    gridAxisHandle,
+  )
+
+export const GridResizeHandleKeepDeepEquality: KeepDeepEqualityCall<GridResizeHandle> =
+  combine2EqualityCalls(
+    (handle) => handle.id,
+    createCallWithTripleEquals<string>(),
+    (handle) => handle.edge,
+    createCallWithTripleEquals<GridResizeEdge>(),
+    gridResizeHandle,
+  )
+
+export const GridGapHandleKeepDeepEquality: KeepDeepEqualityCall<GridGapHandle> =
+  combine1EqualityCall((handle) => handle.axis, createCallWithTripleEquals<Axis>(), gridGapHandle)
+
 export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasControlType> = (
   oldValue,
   newValue,
@@ -2622,6 +2962,26 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
         return BorderRadiusResizeHandleKeepDeepEquality(oldValue, newValue)
       }
       break
+    case 'GRID_CELL_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return GridCellHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'GRID_AXIS_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return GridAxisHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'GRID_RESIZE_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return GridResizeHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'GRID_GAP_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return GridGapHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
     default:
       const _exhaustiveCheck: never = oldValue
       throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
@@ -2637,12 +2997,14 @@ export function ElementPathTreeKeepDeepEquality(
   oldValue: ElementPathTree,
   newValue: ElementPathTree,
 ): KeepDeepEqualityResult<ElementPathTree> {
-  return combine3EqualityCalls(
+  return combine4EqualityCalls(
     (pathTree) => pathTree.path,
     ElementPathKeepDeepEquality,
     (pathTree) => pathTree.pathString,
     createCallWithTripleEquals<string>(),
-    (pathTree) => pathTree.children,
+    (pathTree) => pathTree.innerChildren,
+    arrayDeepEquality(ElementPathTreeKeepDeepEquality),
+    (pathTree) => pathTree.propsChildren,
     arrayDeepEquality(ElementPathTreeKeepDeepEquality),
     elementPathTree,
   )(oldValue, newValue)
@@ -3020,6 +3382,38 @@ export const HighlightBoundsKeepDeepEquality: KeepDeepEqualityCall<HighlightBoun
     highlightBounds,
   )
 
+export const BoundsKeepDeepEquality: KeepDeepEqualityCall<Bounds> = combine4EqualityCalls(
+  (bounds) => bounds.startLine,
+  NumberKeepDeepEquality,
+  (bounds) => bounds.startCol,
+  NumberKeepDeepEquality,
+  (bounds) => bounds.endLine,
+  NumberKeepDeepEquality,
+  (bounds) => bounds.endCol,
+  NumberKeepDeepEquality,
+  (startLine, startCol, endLine, endCol) => ({
+    startLine,
+    startCol,
+    endLine,
+    endCol,
+  }),
+)
+
+export const ComponentDescriptorPropertiesBoundsKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptorPropertiesBounds> =
+  objectDeepEquality(BoundsKeepDeepEquality)
+
+export const ComponentDescriptorBoundsKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptorBounds> =
+  combine2EqualityCalls(
+    (descriptorBounds) => descriptorBounds.bounds,
+    BoundsKeepDeepEquality,
+    (descriptorBounds) => descriptorBounds.properties,
+    ComponentDescriptorPropertiesBoundsKeepDeepEquality,
+    (bounds, properties) => ({
+      bounds,
+      properties,
+    }),
+  )
+
 export const HighlightBoundsForUidsKeepDeepEquality: KeepDeepEqualityCall<HighlightBoundsForUids> =
   objectDeepEquality(HighlightBoundsKeepDeepEquality)
 
@@ -3375,12 +3769,15 @@ const PreferredChildComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Pr
   )
 
 export const DescriptorFileComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptorFromDescriptorFile> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (descriptor) => descriptor.type,
     StringKeepDeepEquality,
     (descriptor) => descriptor.sourceDescriptorFile,
     StringKeepDeepEquality,
-    componentDescriptorFromDescriptorFile,
+    (descriptor) => descriptor.bounds,
+    nullableDeepEquality(ComponentDescriptorBoundsKeepDeepEquality),
+    (_, sourceDescriptorFile, lineNumber) =>
+      componentDescriptorFromDescriptorFile(sourceDescriptorFile, lineNumber),
   )
 
 export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCall<ComponentDescriptorSource> {
@@ -3404,20 +3801,35 @@ export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCal
   }
 }
 
-const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<InspectorSpec> = (oldValue, newValue) => {
-  if (typeof oldValue === 'string' && typeof newValue === 'string') {
-    return StringKeepDeepEquality(oldValue, newValue) as KeepDeepEqualityResult<InspectorSpec>
+const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<TypedInpsectorSpec> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'hidden':
+      if (oldValue.type === newValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      }
+      break
+    case 'shown':
+      if (oldValue.type === newValue.type) {
+        return combine2EqualityCalls<StyleSectionState, Styling[], ShownInspectorSpec>(
+          (i) => i.display,
+          createCallWithTripleEquals(),
+          (i) => i.sections,
+          arrayDeepEquality(createCallWithTripleEquals()),
+          (display, sections) => ({ type: 'shown', display: display, sections: sections }),
+        )(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
   }
-
-  if (Array.isArray(oldValue) && Array.isArray(newValue)) {
-    return arrayDeepEquality(createCallWithTripleEquals<Styling>())(oldValue, newValue)
-  }
-
-  return { value: newValue, areEqual: false }
+  return keepDeepEqualityResult(newValue, false)
 }
 
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
-  combine9EqualityCalls(
+  combine10EqualityCalls(
     (descriptor) => descriptor.properties,
     PropertyControlsKeepDeepEquality,
     (descriptor) => descriptor.supportsChildren,
@@ -3436,6 +3848,8 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     createCallWithTripleEquals<Emphasis>(),
     (descriptor) => descriptor.icon,
     createCallWithTripleEquals<Icon>(),
+    (descriptor) => descriptor.label,
+    nullableDeepEquality(StringKeepDeepEquality),
     componentDescriptor,
   )
 
@@ -3799,70 +4213,6 @@ export function IndexPositionKeepDeepEquality(
     case 'before':
       if (newValue.type === oldValue.type) {
         return BeforeKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    default:
-      const _exhaustiveCheck: never = oldValue
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
-  }
-  return keepDeepEqualityResult(newValue, false)
-}
-
-// Here to cause the build to break if `FloatingInsertMenuStateClosed` is changed.
-floatingInsertMenuStateClosed()
-export const FloatingInsertMenuStateClosedKeepDeepEquality: KeepDeepEqualityCall<
-  FloatingInsertMenuStateClosed
-> = (oldValue, newValue) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
-
-export const FloatingInsertMenuStateInsertKeepDeepEquality: KeepDeepEqualityCall<FloatingInsertMenuStateInsert> =
-  combine2EqualityCalls(
-    (menu) => menu.parentPath,
-    nullableDeepEquality(ElementPathKeepDeepEquality),
-    (menu) => menu.indexPosition,
-    nullableDeepEquality(IndexPositionKeepDeepEquality),
-    floatingInsertMenuStateInsert,
-  )
-
-// Here to cause the build to break if `FloatingInsertMenuStateConvert` is changed.
-floatingInsertMenuStateSwap()
-export const FloatingInsertMenuStateConvertKeepDeepEquality: KeepDeepEqualityCall<
-  FloatingInsertMenuStateSwap
-> = (oldValue, newValue) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
-
-// Here to cause the build to break if `FloatingInsertMenuStateWrap` is changed.
-floatingInsertMenuStateWrap()
-export const FloatingInsertMenuStateWrapKeepDeepEquality: KeepDeepEqualityCall<
-  FloatingInsertMenuStateWrap
-> = (oldValue, newValue) => {
-  return keepDeepEqualityResult(oldValue, true)
-}
-
-export const FloatingInsertMenuStateKeepDeepEquality: KeepDeepEqualityCall<
-  FloatingInsertMenuState
-> = (oldValue, newValue) => {
-  switch (oldValue.insertMenuMode) {
-    case 'closed':
-      if (newValue.insertMenuMode === oldValue.insertMenuMode) {
-        return FloatingInsertMenuStateClosedKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'insert':
-      if (newValue.insertMenuMode === oldValue.insertMenuMode) {
-        return FloatingInsertMenuStateInsertKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'swap':
-      if (newValue.insertMenuMode === oldValue.insertMenuMode) {
-        return FloatingInsertMenuStateConvertKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'wrap':
-      if (newValue.insertMenuMode === oldValue.insertMenuMode) {
-        return FloatingInsertMenuStateWrapKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
@@ -4654,6 +5004,17 @@ export const FrameOrPathKeepDeepEquality: KeepDeepEqualityCall<ActiveFrame> = co
   (target, action, source) => ({ target, action, source }),
 )
 
+export const RemixConfigKeepDeepEquality: KeepDeepEqualityCall<EditorRemixConfig> =
+  combine1EqualityCall(
+    (config) => config.errorBoundaryHandling,
+    createCallWithTripleEquals<ErrorBoundaryHandling>(),
+    (errorBoundaryHandling) => {
+      return {
+        errorBoundaryHandling: errorBoundaryHandling,
+      }
+    },
+  )
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -4782,10 +5143,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.interfaceDesigner,
   )
   const canvasResults = EditorStateCanvasKeepDeepEquality(oldValue.canvas, newValue.canvas)
-  const floatingInsertMenuResults = FloatingInsertMenuStateKeepDeepEquality(
-    oldValue.floatingInsertMenu,
-    newValue.floatingInsertMenu,
-  )
   const inspectorResults = EditorStateInspectorKeepDeepEquality(
     oldValue.inspector,
     newValue.inspector,
@@ -4959,6 +5316,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.sharingDialogOpen,
   )
 
+  const remixConfigResults = RemixConfigKeepDeepEquality(
+    oldValue.editorRemixConfig,
+    newValue.editorRemixConfig,
+  )
+
   const areEqual =
     idResult.areEqual &&
     forkedFromProjectIdResult.areEqual &&
@@ -4994,7 +5356,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     rightMenuResults.areEqual &&
     interfaceDesignerResults.areEqual &&
     canvasResults.areEqual &&
-    floatingInsertMenuResults.areEqual &&
     inspectorResults.areEqual &&
     fileBrowserResults.areEqual &&
     dependencyListResults.areEqual &&
@@ -5040,7 +5401,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     commentFilterModeResults.areEqual &&
     forkingResults.areEqual &&
     collaboratorsResults.areEqual &&
-    sharingDialogOpenResults.areEqual
+    sharingDialogOpenResults.areEqual &&
+    remixConfigResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -5080,7 +5442,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       rightMenuResults.value,
       interfaceDesignerResults.value,
       canvasResults.value,
-      floatingInsertMenuResults.value,
       inspectorResults.value,
       fileBrowserResults.value,
       dependencyListResults.value,
@@ -5128,6 +5489,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       forkingResults.value,
       collaboratorsResults.value,
       sharingDialogOpenResults.value,
+      remixConfigResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

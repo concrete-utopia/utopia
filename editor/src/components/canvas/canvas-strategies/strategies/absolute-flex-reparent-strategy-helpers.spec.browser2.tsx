@@ -37,6 +37,7 @@ async function dragElement(
   modifiers: Modifiers,
   includeMouseUp: boolean,
   midDragCallback?: () => Promise<void>,
+  mouseDownModifiers?: Modifiers,
 ): Promise<void> {
   const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
@@ -51,10 +52,11 @@ async function dragElement(
   if (includeMouseUp) {
     await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
       modifiers: modifiers,
+      mouseDownModifiers: mouseDownModifiers,
       midDragCallback: midDragCallback,
     })
   } else {
-    await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: modifiers })
+    await mouseDownAtPoint(canvasControlsLayer, startPoint)
     await mouseMoveToPoint(canvasControlsLayer, endPoint, {
       modifiers: modifiers,
       eventOptions: { buttons: 1 },
@@ -65,6 +67,62 @@ async function dragElement(
 const defaultMouseDownOffset = windowPoint({ x: 20, y: 20 })
 
 describe('Unified Reparent Fitness Function Tests', () => {
+  it('if cmd is not pressed no reparent strategies have nonzero fitness', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            backgroundColor: 'white',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='aaa'
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 40,
+              top: 40,
+              width: 100,
+              height: 100,
+            }}
+            data-uid='bbb'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 200,
+                height: 200,
+              }}
+              data-uid='ccc'
+              data-testid='ccc'
+            />
+          </div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const dragDelta = windowPoint({ x: 120, y: 0 })
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+    await dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, false)
+
+    const strategies = renderResult.getEditorState().strategyState.sortedApplicableStrategies
+
+    if (strategies == null) {
+      // here for type assertion
+      throw new Error('`strategies` should not be null')
+    }
+    expect(strategies[0].strategy.id.includes('REPARENT')).toBeFalsy()
+  })
+
   it('if an element is larger than its parent, we still allow reparent to its grandparent, if the reparenting starts from the area of the original parent', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -110,7 +168,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
-    await dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, true)
+    await dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, cmdModifier, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -198,7 +256,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    await dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, emptyModifiers, true)
+    await dragElement(renderResult, 'ccc', defaultMouseDownOffset, dragDelta, cmdModifier, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -291,7 +349,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
       'draggedElement',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       true,
     )
 
@@ -486,7 +544,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
       'draggedElement',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       true,
     )
 
@@ -582,7 +640,7 @@ describe('Unified Reparent Fitness Function Tests', () => {
       'draggedElement',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       true,
     )
 
@@ -949,7 +1007,7 @@ describe('Target parents with flow layout', () => {
         'draggedElement',
         defaultMouseDownOffset,
         dragDelta,
-        emptyModifiers,
+        cmdModifier,
         true,
       )
 
@@ -1092,7 +1150,7 @@ describe('Target parents with flow layout', () => {
         'draggedElement',
         defaultMouseDownOffset,
         dragDelta,
-        emptyModifiers,
+        cmdModifier,
         true,
       )
 
@@ -1200,7 +1258,7 @@ describe('Target parents with flow layout', () => {
         'draggedElement',
         defaultMouseDownOffset,
         dragDelta,
-        emptyModifiers,
+        cmdModifier,
         true,
       )
 
@@ -1297,7 +1355,7 @@ describe('Target parents with flow layout', () => {
         'draggedElement',
         defaultMouseDownOffset,
         dragDelta,
-        emptyModifiers,
+        cmdModifier,
         true,
         () => pressKey('2', { modifiers: cmdModifier }), // Switch to flow reparenting strategy
       )
@@ -1423,7 +1481,7 @@ describe('Target parents with flow layout', () => {
         'draggedElement',
         defaultMouseDownOffset,
         dragDelta,
-        emptyModifiers,
+        cmdModifier,
         true,
         () => pressKey('2', { modifiers: cmdModifier }), // Switch to flow reparenting strategy
       )
@@ -1918,7 +1976,8 @@ describe('Target parent filtering', () => {
     )
   })
 
-  it('Dragging without cmd with cursor over the smaller element prevents reparenting into the larger element', async () => {
+  // now we need cmd for any kind of reparent, so this test is outdated
+  xit('Dragging without cmd with cursor over the smaller element prevents reparenting into the larger element', async () => {
     const renderResult = await renderTestEditorWithCode(startingCode, 'await-first-dom-report')
 
     const targetPath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID, 'dragme']])
@@ -1929,7 +1988,7 @@ describe('Target parent filtering', () => {
     // drag to the left so that the cursor is over the larger element
     const dragDelta = windowPoint({ x: -10, y: -10 })
 
-    await dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, emptyModifiers, true)
+    await dragElement(renderResult, 'dragme', mouseDownOffset, dragDelta, cmdModifier, true)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -2272,7 +2331,7 @@ describe('Reparent indicators', () => {
       'seconddiv',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2318,7 +2377,7 @@ describe('Reparent indicators', () => {
       'seconddiv',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2361,7 +2420,7 @@ describe('Reparent indicators', () => {
       'seconddiv',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2404,7 +2463,7 @@ describe('Reparent indicators', () => {
       'seconddiv',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2448,7 +2507,7 @@ describe('Reparent indicators', () => {
       'absolutechild',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2492,7 +2551,7 @@ describe('Reparent indicators', () => {
       'absolutechild',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2536,7 +2595,7 @@ describe('Reparent indicators', () => {
       'absolutechild',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2580,7 +2639,7 @@ describe('Reparent indicators', () => {
       'absolutechild',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
@@ -2660,11 +2719,11 @@ describe('Reparent indicators', () => {
       'absolutechild',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
-    await pressKey('2') // Switch to flow reparenting strategy
+    await pressKey('2', { modifiers: cmdModifier }) // Switch to flow reparenting strategy
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -2758,11 +2817,11 @@ describe('Reparent indicators', () => {
       'absolutechild',
       defaultMouseDownOffset,
       dragDelta,
-      emptyModifiers,
+      cmdModifier,
       false,
     )
 
-    await pressKey('2') // Switch to flow reparenting strategy
+    await pressKey('2', { modifiers: cmdModifier }) // Switch to flow reparenting strategy
 
     await renderResult.getDispatchFollowUpActionsFinished()
 

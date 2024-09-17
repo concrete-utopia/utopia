@@ -6,6 +6,7 @@ import type {
   SelectedElementChanged,
   UpdateDecorationsMessage,
   ForceNavigation,
+  Bounds,
 } from 'utopia-vscode-common'
 import {
   boundsInFile,
@@ -13,24 +14,26 @@ import {
   deletePathChange,
   ensureDirectoryExistsChange,
   initProject,
-  isFromVSCodeExtensionMessage,
-  isIndexedDBFailure,
+  isClearLoadingScreen,
+  isEditorCursorPositionChanged,
   isMessageListenersReady,
+  isUtopiaVSCodeConfigValues,
   isVSCodeBridgeReady,
   isVSCodeFileChange,
   isVSCodeFileDelete,
+  isVSCodeReady,
   openFileMessage,
   projectDirectory,
   projectTextFile,
   selectedElementChanged,
   setFollowSelectionConfig,
   setVSCodeTheme,
-  toVSCodeExtensionMessage,
   updateDecorationsMessage,
   writeProjectFileChange,
 } from 'utopia-vscode-common'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { walkContentsTree } from '../../components/assets'
+import type { EditorAction } from '../../components/editor/action-types'
 import { EditorDispatch } from '../../components/editor/action-types'
 import type { EditorState } from '../../components/editor/store/editor-state'
 import { getHighlightBoundsForElementPath } from '../../components/editor/store/editor-state'
@@ -43,7 +46,6 @@ import type {
   ProjectFile,
 } from '../shared/project-file-types'
 import { assertNever, NO_OP } from '../shared/utils'
-import type { FromVSCodeAction } from '../../components/editor/actions/actions-from-vscode'
 import {
   deleteFileFromVSCode,
   hideVSCodeLoadingScreen,
@@ -55,6 +57,7 @@ import {
   updateConfigFromVSCode,
   updateFromCodeEditor,
 } from '../../components/editor/actions/actions-from-vscode'
+import { reactRouterErrorTriggeredReset } from '../shared/runtime-report-logs'
 
 export const VSCODE_EDITOR_IFRAME_ID = 'vscode-editor'
 
@@ -92,12 +95,13 @@ function convertProjectContents(projectContents: ProjectContentTreeRoot): Array<
 }
 
 let vscodeIFrame: MessageEventSource | null = null
+let queuedMessagesToVSCode: Array<FromUtopiaToVSCodeMessage> = []
 let registeredHandlers: (messageEvent: MessageEvent) => void = NO_OP
 
 export function initVSCodeBridge(
   projectContents: ProjectContentTreeRoot,
-  dispatch: (actions: Array<FromVSCodeAction>) => void,
-  openFilePath: string | null,
+  dispatch: (actions: Array<EditorAction>) => void,
+  openFilePath: string,
 ) {
   let loadingScreenHidden = false
   let seenMessageListenersReadyMessage = false
@@ -120,36 +124,26 @@ export function initVSCodeBridge(
       messageEvent.source.postMessage(initProject(projectFiles, openFilePath), {
         targetOrigin: '*',
       })
-
-      if (openFilePath == null) {
-        loadingScreenHidden = true
-        dispatch([hideVSCodeLoadingScreen()])
-      }
     } else if (isVSCodeBridgeReady(data) && messageEvent.source != null) {
       // Store the source
       vscodeIFrame = messageEvent.source
+
+      if (queuedMessagesToVSCode.length > 0) {
+        queuedMessagesToVSCode.forEach(sendMessageToVSCode)
+        queuedMessagesToVSCode = []
+      }
+
       dispatch([markVSCodeBridgeReady(true)])
-    } else if (isFromVSCodeExtensionMessage(data)) {
-      const message = data.message
-      switch (message.type) {
-        case 'EDITOR_CURSOR_POSITION_CHANGED':
-          dispatch([selectFromFileAndPosition(message.filePath, message.line, message.column)])
-          break
-        case 'UTOPIA_VSCODE_CONFIG_VALUES':
-          dispatch([updateConfigFromVSCode(message.config)])
-          break
-        case 'VSCODE_READY':
-          dispatch([sendCodeEditorInitialisation()])
-          break
-        case 'CLEAR_LOADING_SCREEN':
-          if (!loadingScreenHidden) {
-            loadingScreenHidden = true
-            dispatch([hideVSCodeLoadingScreen()])
-          }
-          break
-        default:
-          const _exhaustiveCheck: never = message
-          throw new Error(`Unhandled message type${JSON.stringify(message)}`)
+    } else if (isEditorCursorPositionChanged(data)) {
+      dispatch([selectFromFileAndPosition(data.filePath, data.line, data.column)])
+    } else if (isUtopiaVSCodeConfigValues(data)) {
+      dispatch([updateConfigFromVSCode(data.config)])
+    } else if (isVSCodeReady(data)) {
+      dispatch([sendCodeEditorInitialisation()])
+    } else if (isClearLoadingScreen(data)) {
+      if (!loadingScreenHidden) {
+        loadingScreenHidden = true
+        dispatch([hideVSCodeLoadingScreen()])
       }
     } else if (isVSCodeFileChange(data)) {
       const { filePath, fileContent } = data
@@ -162,11 +156,11 @@ export function initVSCodeBridge(
         filePath,
         fileContent.unsavedContent ?? fileContent.content,
       )
-      dispatch([updateAction, requestLintAction])
+      let actionsToDispatch: Array<EditorAction> = [updateAction, requestLintAction]
+      actionsToDispatch.push(...reactRouterErrorTriggeredReset())
+      dispatch(actionsToDispatch)
     } else if (isVSCodeFileDelete(data)) {
       dispatch([deleteFileFromVSCode(data.filePath)])
-    } else if (isIndexedDBFailure(data)) {
-      dispatch([setIndexedDBFailed(true)])
     }
   }
 
@@ -174,15 +168,23 @@ export function initVSCodeBridge(
 }
 
 export function sendMessage(message: FromUtopiaToVSCodeMessage) {
-  vscodeIFrame?.postMessage(message, { targetOrigin: '*' })
+  if (vscodeIFrame == null) {
+    queuedMessagesToVSCode.push(message)
+  } else {
+    sendMessageToVSCode(message)
+  }
 }
 
-export function sendOpenFileMessage(filePath: string) {
-  sendMessage(toVSCodeExtensionMessage(openFileMessage(filePath)))
+function sendMessageToVSCode(message: FromUtopiaToVSCodeMessage) {
+  vscodeIFrame!.postMessage(message, { targetOrigin: '*' })
+}
+
+export function sendOpenFileMessage(filePath: string, bounds: Bounds | null) {
+  sendMessage(openFileMessage(filePath, bounds))
 }
 
 export function sendSetFollowSelectionEnabledMessage(enabled: boolean) {
-  sendMessage(toVSCodeExtensionMessage(setFollowSelectionConfig(enabled)))
+  sendMessage(setFollowSelectionConfig(enabled))
 }
 
 export function applyProjectChanges(changes: Array<ProjectFileChange>) {
@@ -239,7 +241,7 @@ export function getCodeEditorDecorations(editorState: EditorState): UpdateDecora
 
 export function sendCodeEditorDecorations(editorState: EditorState) {
   const decorationsMessage = getCodeEditorDecorations(editorState)
-  sendMessage(toVSCodeExtensionMessage(decorationsMessage))
+  sendMessage(decorationsMessage)
 }
 
 export function getSelectedElementChangedMessage(
@@ -280,7 +282,7 @@ export function sendSelectedElement(newEditorState: EditorState) {
     'do-not-force-navigation',
   )
   if (selectedElementChangedMessage != null) {
-    sendMessage(toVSCodeExtensionMessage(selectedElementChangedMessage))
+    sendMessage(selectedElementChangedMessage)
   }
 }
 
@@ -298,5 +300,5 @@ function vsCodeThemeForTheme(theme: Theme): string {
 
 export function sendSetVSCodeTheme(theme: Theme) {
   const vsCodeTheme = vsCodeThemeForTheme(theme)
-  sendMessage(toVSCodeExtensionMessage(setVSCodeTheme(vsCodeTheme)))
+  sendMessage(setVSCodeTheme(vsCodeTheme))
 }

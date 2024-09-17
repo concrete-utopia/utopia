@@ -58,6 +58,7 @@ function getNavigatorReparentCommands(
     editor.elementPathTree,
     wrapperUID,
     data.dragSources.length,
+    editor.propertyControlsInfo,
   )
 
   if (newParentPath == null) {
@@ -102,11 +103,7 @@ function getNavigatorReparentCommands(
   const oldPathToNewPathMapping: OldPathToNewPathMapping = {}
 
   for (const value of data.dragSources) {
-    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(
-      editor.jsxMetadata,
-      editor.elementPathTree,
-      value,
-    )
+    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(editor.elementPathTree, value)
 
     const pathAfterReparent = elementPathFromInsertionPath(newParentPath, EP.toUid(value))
 
@@ -257,7 +254,6 @@ export function collectGroupTrueUp(
   if (maybeElementAncestorGroup != null) {
     // the reparented element comes out of a group, so true up the group by its elements
     const groupChildren = MetadataUtils.getChildrenPathsOrdered(
-      jsxMetadata,
       pathTrees,
       maybeElementAncestorGroup,
     )

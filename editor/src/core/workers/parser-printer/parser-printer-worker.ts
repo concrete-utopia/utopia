@@ -14,6 +14,7 @@ import {
   createPrintAndReparseResult,
 } from '../common/worker-types'
 import localforage from 'localforage'
+import type { FilePathMappings } from '../common/project-file-utils'
 
 export async function handleMessage(
   workerMessage: ParsePrintFilesRequest,
@@ -29,6 +30,7 @@ export async function handleMessage(
               case 'parsefile':
                 return getParseFileResultWithCache(
                   file.filename,
+                  workerMessage.filePathMappings,
                   file.content,
                   file.previousParsed,
                   file.versionNumber,
@@ -38,6 +40,7 @@ export async function handleMessage(
               case 'printandreparsefile':
                 return getPrintAndReparseCodeResult(
                   file.filename,
+                  workerMessage.filePathMappings,
                   file.parseSuccess,
                   file.stripUIDs,
                   file.versionNumber,
@@ -67,6 +70,7 @@ function getCacheKey(filename: string, versionNumber: number): string {
 
 async function getParseFileResultWithCache(
   filename: string,
+  filePathMappings: FilePathMappings,
   content: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
   versionNumber: number,
@@ -86,6 +90,7 @@ async function getParseFileResultWithCache(
 
   const parseResult = getParseFileResult(
     filename,
+    filePathMappings,
     content,
     oldParseResultForUIDComparison,
     versionNumber,
@@ -98,6 +103,7 @@ async function getParseFileResultWithCache(
 
 function getParseFileResult(
   filename: string,
+  filePathMappings: FilePathMappings,
   content: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
   versionNumber: number,
@@ -106,6 +112,7 @@ function getParseFileResult(
 ): ParseFileResult {
   const parseResult = lintAndParse(
     filename,
+    filePathMappings,
     content,
     oldParseResultForUIDComparison,
     alreadyExistingUIDs_MUTABLE,
@@ -153,6 +160,7 @@ function storeParseResultInCache(
 
 export function getPrintAndReparseCodeResult(
   filename: string,
+  filePathMappings: FilePathMappings,
   parseSuccess: ParseSuccess,
   stripUIDs: boolean,
   versionNumber: number,
@@ -170,6 +178,7 @@ export function getPrintAndReparseCodeResult(
 
   const parseResult = getParseFileResult(
     filename,
+    filePathMappings,
     printedCode,
     parseSuccess,
     versionNumber,

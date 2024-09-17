@@ -96,7 +96,6 @@ export function flexReorderStrategy(
         return interactionSession == null
           ? emptyStrategyApplicationResult
           : applyReorderCommon(
-              originalTargets,
               retargetedTargets,
               canvasState,
               interactionSession,

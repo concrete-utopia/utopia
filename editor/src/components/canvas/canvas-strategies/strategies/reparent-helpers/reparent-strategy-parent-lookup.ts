@@ -35,6 +35,7 @@ import type { ElementPathTrees } from '../../../../../core/shared/element-path-t
 import { isConditionalWithEmptyOrTextEditableActiveBranch } from '../../../../../core/model/conditionals'
 import { getInsertionPathForReparentTarget } from './reparent-helpers'
 import { treatElementAsGroupLike } from '../group-helpers'
+import type { PropertyControlsInfo } from '../../../../custom-code/code-file'
 
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy
@@ -52,6 +53,7 @@ export function getReparentTargetUnified(
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
   elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
+  propertyControlsInfo: PropertyControlsInfo,
 ): ReparentTarget | null {
   const canvasScale = canvasState.scale
 
@@ -65,6 +67,7 @@ export function getReparentTargetUnified(
     allElementProps,
     allowSmallerParent,
     elementSupportsChildren,
+    propertyControlsInfo,
   )
 
   // For Flex parents, we want to be able to insert between two children that don't have a gap between them.
@@ -151,6 +154,7 @@ function findValidTargetsUnderPoint(
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
   elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
+  propertyControlsInfo: PropertyControlsInfo,
 ): Array<ElementPath> {
   const projectContents = canvasState.projectContents
   const openFile = canvasState.openFile ?? null
@@ -222,6 +226,7 @@ function findValidTargetsUnderPoint(
           metadata,
           target,
           elementPathTree,
+          propertyControlsInfo,
         ),
       )
     ) {
@@ -345,9 +350,14 @@ function findParentByPaddedInsertionZone(
   // with current parent under cursor filter ancestors from reparent targets
   const currentParentUnderCursor =
     reparentSubjects.type === 'EXISTING_ELEMENTS'
-      ? validTargetparentsUnderPoint.find((targetParent) =>
-          EP.isParentOf(targetParent, reparentSubjects.elements[0]),
-        ) ?? null
+      ? validTargetparentsUnderPoint.find((targetParent) => {
+          const firstReparentSubjectElement = reparentSubjects.elements.at(0)
+          if (firstReparentSubjectElement == null) {
+            return false
+          } else {
+            return EP.isParentOf(targetParent, firstReparentSubjectElement)
+          }
+        }) ?? null
       : null
   const validTargetparentsUnderPointFiltered =
     currentParentUnderCursor != null
@@ -456,7 +466,16 @@ function findParentUnderPointByArea(
 
   const targetParentUnderPoint: ReparentTarget = (() => {
     const insertionPath = getInsertionPathForReparentTarget(targetParentPath, metadata)
-    if (shouldReparentAsAbsoluteOrStatic === 'REPARENT_AS_ABSOLUTE') {
+    if (shouldReparentAsAbsoluteOrStatic === 'REPARENT_INTO_GRID') {
+      return {
+        shouldReparent: true,
+        newParent: insertionPath,
+        shouldShowPositionIndicator: false,
+        newIndex: -1,
+        shouldConvertToInline: 'do-not-convert',
+        defaultReparentType: 'REPARENT_INTO_GRID',
+      }
+    } else if (shouldReparentAsAbsoluteOrStatic === 'REPARENT_AS_ABSOLUTE') {
       // TODO we now assume this is "absolute", but this is too vauge
       return {
         shouldReparent: true,
@@ -557,10 +576,12 @@ export function autoLayoutParentAbsoluteOrStatic(
     return 'REPARENT_AS_ABSOLUTE'
   }
 
-  const parentIsFlexLayout =
-    MetadataUtils.findLayoutSystemForChildren(metadata, pathTrees, parent) === 'flex'
-  if (parentIsFlexLayout) {
+  const parentLayout = MetadataUtils.findLayoutSystemForChildren(metadata, pathTrees, parent)
+
+  if (parentLayout === 'flex') {
     return 'REPARENT_AS_STATIC'
+  } else if (parentLayout === 'grid') {
+    return 'REPARENT_INTO_GRID'
   }
 
   const isTextFromMetadata = MetadataUtils.isTextFromMetadata(

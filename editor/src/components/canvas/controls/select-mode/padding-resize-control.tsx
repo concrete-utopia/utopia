@@ -40,7 +40,7 @@ import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import type { CSSNumberWithRenderedValue } from './controls-common'
-import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
+import { CanvasLabel, fallbackEmptyValue, PillHandle, useHoverWithDelay } from './controls-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 
@@ -288,7 +288,7 @@ const PaddingResizeControlI = React.memo((props: ResizeContolProps) => {
             }}
           >
             <CanvasLabel
-              value={printCSSNumber(props.paddingValue.value, 'px')}
+              value={printCSSNumber(fallbackEmptyValue(props.paddingValue), 'px')}
               scale={scale}
               color={color}
               textColor={colorTheme.white.value}

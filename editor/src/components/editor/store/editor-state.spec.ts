@@ -111,11 +111,12 @@ describe('modifyUnderlyingTarget', () => {
       expect(parsed.imports).toEqual(
         addImport(
           '',
+          [],
           'non-existant-dummy-library',
           null,
           [importAlias('Spring')],
           null,
-          addImport('', 'react', null, [], 'React', emptyImports()).imports,
+          addImport('', [], 'react', null, [], 'React', emptyImports()).imports,
         ).imports,
       )
     } else {

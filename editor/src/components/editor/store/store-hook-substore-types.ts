@@ -18,6 +18,7 @@ export type Substates = {
   projectContents: ProjectContentSubstate
   canvas: CanvasSubstate
   canvasOffset: CanvasOffsetSubstate
+  navigatorTargetsSubstate: NavigatorTargetsSubstate
   derived: { derived: DerivedState }
   restOfEditor: RestOfEditorState
   restOfStore: Omit<EditorStorePatched, 'editor' | 'derived'>
@@ -30,6 +31,7 @@ export type Substates = {
   projectServerState: ProjectServerStateSubstate
   variablesInScope: VariablesInScopeSubstate
   propertyControlsInfo: PropertyControlsInfoSubstate
+  metadataAndPropertyControlsInfo: MetadataAndPropertyControlsInfoSubstate
 }
 
 export type StoreKey = keyof Substates
@@ -55,6 +57,19 @@ const emptyMetadataSubstate = {
   editor: pick(metadataSubstateKeys, EmptyEditorStateForKeysOnly),
 } as const
 export type MetadataSubstate = typeof emptyMetadataSubstate
+
+// NavigatorTargetsSubstate
+export const navigatorTargetsSubstateKeys = [
+  'jsxMetadata',
+  'elementPathTree',
+  'navigator',
+  'propertyControlsInfo',
+  'projectContents',
+] as const
+const emptyNavigatorTargetsSubstate = {
+  editor: pick(navigatorTargetsSubstateKeys, EmptyEditorStateForKeysOnly),
+} as const
+export type NavigatorTargetsSubstate = typeof emptyNavigatorTargetsSubstate
 
 // SelectedViewsSubstate
 export const selectedViewsSubstateKeys = ['selectedViews'] as const
@@ -143,6 +158,9 @@ const propertyControlsInfoSubstate = {
 } as const
 export type PropertyControlsInfoSubstate = typeof propertyControlsInfoSubstate
 
+export type MetadataAndPropertyControlsInfoSubstate = MetadataSubstate &
+  PropertyControlsInfoSubstate
+
 export interface DerivedSubstate {
   derived: DerivedState
 }
@@ -193,6 +211,10 @@ export type CanvasAndMetadataSubstate = {
 } & CanvasSubstate
 
 export type ProjectContentAndMetadataSubstate = ProjectContentSubstate & MetadataSubstate
+
+export type ProjectContentAndMetadataAndVariablesInScopeSubstate = ProjectContentSubstate &
+  MetadataSubstate &
+  VariablesInScopeSubstate
 
 export type NavigatorSubstate = {
   editor: Pick<EditorState, 'navigator'>

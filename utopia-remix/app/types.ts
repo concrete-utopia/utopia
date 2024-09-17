@@ -3,6 +3,14 @@ import { Prisma } from 'prisma-client'
 import { ensure } from './util/api.server'
 import { assertNever } from './util/assertNever'
 import { Status } from './util/statusCodes'
+import type { FileType } from './util/files'
+import type {
+  AssetFile,
+  ImageFile,
+  ProjectContentDirectory,
+  ProjectContentFile,
+  TextFile,
+} from 'utopia-shared/src/types'
 
 const fullProjectFromDB = Prisma.validator<Prisma.ProjectDefaultArgs>()({
   include: {
@@ -43,9 +51,21 @@ export interface Collaborator {
   avatar: string | null
 }
 
-export type CollaboratorsByProject = { [projectId: string]: Collaborator[] }
+export type Collaborators = {
+  byProjectId: { [projectId: string]: string[] }
+  byUserId: { [userId: string]: Collaborator }
+}
 
-export function userToCollaborator(user: UserDetails): Collaborator {
+export function emptyCollaborators(): Collaborators {
+  return {
+    byProjectId: {},
+    byUserId: {},
+  }
+}
+
+export function userToCollaborator(
+  user: Pick<UserDetails, 'user_id' | 'name' | 'picture'>,
+): Collaborator {
   return {
     id: user.user_id,
     name: user.name,
@@ -357,7 +377,7 @@ export function isSearchPublicRepositoriesRequest(
   return u != null && typeof u === 'object' && maybe.owner != null && maybe.repo != null
 }
 
-type ApiSuccess<T> = T & { type: 'SUCCESS' }
+export type ApiSuccess<T> = T & { type: 'SUCCESS' }
 
 export function toApiSuccess<T>(data: T): ApiSuccess<T> {
   return {
@@ -395,4 +415,72 @@ export function isResponseWithMessageData(u: unknown): u is WithMessageData {
     maybe.response.data.message != null &&
     maybe.status != null
   )
+}
+
+export type GetBranchProjectContentsRequest = {
+  type: 'GET_BRANCH_PROJECT_CONTENTS_REQUEST'
+  existingAssets: ExistingAsset[] | null
+  uploadAssets: boolean
+  previousCommitSha: string | null
+  specificCommitSha: string | null
+}
+
+export function getBranchProjectContentsRequest(
+  params: Omit<GetBranchProjectContentsRequest, 'type'>,
+): GetBranchProjectContentsRequest {
+  return {
+    type: 'GET_BRANCH_PROJECT_CONTENTS_REQUEST',
+    ...params,
+  }
+}
+
+export type ExistingAsset = {
+  gitBlobSha?: string
+  path: string
+  type: FileType
+}
+
+export function projectContentDirectory(fullPath: string): ProjectContentDirectory {
+  return {
+    type: 'PROJECT_CONTENT_DIRECTORY',
+    fullPath: fullPath,
+    directory: { type: 'DIRECTORY' },
+    children: {},
+  }
+}
+
+export function projectContentFile(
+  fullPath: string,
+  content: TextFile | ImageFile | AssetFile,
+): ProjectContentFile {
+  return {
+    type: 'PROJECT_CONTENT_FILE',
+    fullPath: fullPath,
+    content: content,
+  }
+}
+
+export function textFile(code: string): TextFile {
+  return {
+    type: 'TEXT_FILE',
+    fileContents: { code: code, parsed: { type: 'UNPARSED' }, revisionsState: 'CODE_AHEAD' },
+    lastParseSuccess: null,
+    lastSavedContents: null,
+    versionNumber: 0,
+  }
+}
+
+export function imageFile(params: { hash: number; gitBlobSha: string }): ImageFile {
+  return {
+    type: 'IMAGE_FILE',
+    hash: params.hash,
+    gitBlobSha: params.gitBlobSha,
+  }
+}
+
+export function assetFile(params: { gitBlobSha: string }): AssetFile {
+  return {
+    type: 'ASSET_FILE',
+    gitBlobSha: params.gitBlobSha,
+  }
 }

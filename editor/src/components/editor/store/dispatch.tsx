@@ -7,7 +7,7 @@ import { optionalDeepFreeze } from '../../../utils/deep-freeze'
 import type { CanvasAction } from '../../canvas/canvas-types'
 import type { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
-import type { EditorAction, EditorDispatch } from '../action-types'
+import type { EditorAction, EditorDispatch, UpdateMetadataInEditorState } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import {
   isTransientAction,
@@ -30,7 +30,6 @@ import type {
 import {
   deriveState,
   persistentModelFromEditorModel,
-  reconstructJSXMetadata,
   storedEditorStateFromEditorState,
 } from './editor-state'
 import {
@@ -68,7 +67,7 @@ import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-s
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 import { arrayOfPathsEqual, removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { notice } from '../../../components/common/notice'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getUidMappings, getAllUniqueUidsFromMapping } from '../../../core/model/get-uid-mappings'
 import { updateSimpleLocks } from '../../../core/shared/element-locking'
 import {
   getFilesToUpdate,
@@ -84,8 +83,13 @@ import {
   createModuleEvaluator,
   isComponentDescriptorFile,
 } from '../../../core/property-controls/property-controls-local'
-import { setReactRouterErrorHasBeenLogged } from '../../../core/shared/runtime-report-logs'
+import {
+  hasReactRouterErrorBeenLogged,
+  setReactRouterErrorHasBeenLogged,
+} from '../../../core/shared/runtime-report-logs'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
+import { getFilePathMappings } from '../../../core/model/project-file-utils'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -278,6 +282,7 @@ function processAction(
         unpatchedEditor: withPossiblyClearedPseudoInsert,
         unpatchedDerived: working.unpatchedDerived,
         strategyState: working.strategyState, // this means the actions cannot update strategyState – this piece of state lives outside our "redux" state
+        elementMetadata: working.elementMetadata,
         postActionInteractionSession: working.postActionInteractionSession,
         history: newStateHistory,
         userState: working.userState,
@@ -345,6 +350,7 @@ function maybeRequestModelUpdate(
     const parseFinished = getParseResult(
       workers,
       filesToUpdate,
+      getFilePathMappings(projectContents),
       existingUIDs,
       isSteganographyEnabled(),
     )
@@ -493,18 +499,6 @@ export function editorDispatchActionRunner(
   return result
 }
 
-function reactRouterErrorTriggeredReset(
-  editor: EditorState,
-  reactRouterErrorPreviouslyLogged: boolean,
-): EditorState {
-  if (reactRouterErrorPreviouslyLogged) {
-    setReactRouterErrorHasBeenLogged(false)
-    return UPDATE_FNS.RESET_CANVAS(EditorActions.resetCanvas(), editor)
-  } else {
-    return editor
-  }
-}
-
 export function editorDispatchClosingOut(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
@@ -646,6 +640,7 @@ export function editorDispatchClosingOut(
     patchedDerived: patchedDerivedState,
     strategyState: optionalDeepFreeze(newStrategyState),
     history: newHistory,
+    elementMetadata: result.elementMetadata,
     postActionInteractionSession: result.postActionInteractionSession,
     userState: result.userState,
     workers: storedState.workers,
@@ -726,13 +721,6 @@ export function editorDispatchClosingOut(
         filesModifiedByAnotherUser: updatedFilesModifiedByElsewhere,
       },
     }
-
-    if (filesChanged.length > 0) {
-      finalStoreV1Final.unpatchedEditor = reactRouterErrorTriggeredReset(
-        finalStoreV1Final.unpatchedEditor,
-        reactRouterErrorPreviouslyLogged,
-      )
-    }
   }
 
   const shouldUpdatePreview =
@@ -799,7 +787,9 @@ function maybeCullElementPathCache(
 }
 
 export function cullElementPathCache(): void {
-  const allExistingUids = getAllUniqueUids(lastProjectContents).allIDs
+  const allExistingUids = getAllUniqueUidsFromMapping(
+    getUidMappings(lastProjectContents).filePathToUids,
+  )
   removePathsWithDeadUIDs(new Set(allExistingUids))
 }
 
@@ -837,6 +827,7 @@ function applyProjectChangesToEditor(
 
 export const UTOPIA_DUPLICATE_UID_ERROR_MESSAGE = (dispatchedActions: string) =>
   `A dispatched action resulted in duplicated UIDs. Suspicious actions: ${dispatchedActions}`
+
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
@@ -884,11 +875,32 @@ function editorDispatchInner(
       storedState.unpatchedEditor.currentVariablesInScope !==
       result.unpatchedEditor.currentVariablesInScope
 
+    const updateMetadataInEditorStateAction = dispatchedActions.find(
+      (action): action is UpdateMetadataInEditorState =>
+        action.action === 'UPDATE_METADATA_IN_EDITOR_STATE',
+    )
     const metadataChanged =
-      domMetadataChanged || spyMetadataChanged || allElementPropsChanged || variablesInScopeChanged
+      domMetadataChanged ||
+      spyMetadataChanged ||
+      allElementPropsChanged ||
+      variablesInScopeChanged ||
+      updateMetadataInEditorStateAction != null
 
     if (metadataChanged) {
-      const { metadata, elementPathTree } = reconstructJSXMetadata(result.unpatchedEditor)
+      function getMetadataSomehow() {
+        if (updateMetadataInEditorStateAction != null) {
+          return {
+            metadata: updateMetadataInEditorStateAction.newFinalMetadata,
+            elementPathTree: updateMetadataInEditorStateAction.tree,
+          }
+        } else {
+          return {
+            metadata: { ...result.unpatchedEditor.jsxMetadata },
+            elementPathTree: result.unpatchedEditor.elementPathTree,
+          }
+        }
+      }
+      const { metadata, elementPathTree } = getMetadataSomehow()
       // Cater for the strategies wiping out the metadata on completion.
       const storedStateHasEmptyElementPathTree = isEmptyObject(
         storedState.unpatchedEditor.elementPathTree,
@@ -943,7 +955,7 @@ function editorDispatchInner(
     const actionNames = simpleStringifyActions(dispatchedActions)
 
     // Check for duplicate UIDs that have originated from actions being applied.
-    const uniqueIDsResult = getAllUniqueUids(result.unpatchedEditor.projectContents)
+    const uniqueIDsResult = getUidMappings(result.unpatchedEditor.projectContents)
     if (Object.keys(uniqueIDsResult.duplicateIDs).length > 0) {
       const errorMessage = `Running ${actionNames} resulted in duplicate UIDs ${JSON.stringify(
         uniqueIDsResult.duplicateIDs,
@@ -1017,6 +1029,7 @@ function editorDispatchInner(
       unpatchedDerived: frozenDerivedState,
       patchedDerived: patchedDerivedState,
       strategyState: newStrategyState,
+      elementMetadata: result.elementMetadata, // TODO do we want to do anything here?
       postActionInteractionSession: updatePostActionState(
         result.postActionInteractionSession,
         dispatchedActions,

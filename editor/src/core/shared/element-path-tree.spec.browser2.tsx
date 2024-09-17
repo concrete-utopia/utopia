@@ -126,25 +126,25 @@ describe('Building and ordering the element path tree for a real project', () =>
 
     expect(printTree(renderResult.getEditorState().editor.elementPathTree)).toEqual(
       `sb
-  sb/1e7
   sb/sc
     sb/sc/app
       sb/sc/app:app-root
         sb/sc/app:app-root/card
           sb/sc/app:app-root/card:card-root
-            sb/sc/app:app-root/card:card-root/30d
             sb/sc/app:app-root/card:card-root/card-span
+            sb/sc/app:app-root/card:card-root/30d
           sb/sc/app:app-root/card/card-child
-        sb/sc/app:app-root/52e
         sb/sc/app:app-root/frag
           sb/sc/app:app-root/frag/frag-child
           sb/sc/app:app-root/frag/cond-1
             sb/sc/app:app-root/frag/cond-1/cond-1-true
               sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-1-true-child
               sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2
-                sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/c87
-                  sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/c87/cond-2-child~~~1
+                sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/e26
+                  sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/e26/cond-2-child~~~1
+        sb/sc/app:app-root/52e
       sb/sc/app/app-child
+  sb/1e7
 `,
     )
   })
@@ -163,7 +163,7 @@ describe('getChildrenOrdered', () => {
     )
 
     expect(childrenOfCond2.map((c) => EP.toString(c.elementPath))).toEqual([
-      'sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/c87',
+      'sb/sc/app:app-root/frag/cond-1/cond-1-true/cond-2/e26',
     ])
   })
 })

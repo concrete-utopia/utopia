@@ -9,7 +9,6 @@ import { SubduedPaddingControl } from '../canvas/controls/select-mode/subdued-pa
 import { EdgePieces } from '../canvas/padding-utils'
 import type { EditorDispatch } from '../editor/action-types'
 import { useDispatch } from '../editor/store/dispatch-context'
-import type { AllElementProps } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import type { FlexDirection } from './common/css-utils'
 import type { CanvasControlWithProps } from './common/inspector-atoms'
@@ -49,7 +48,6 @@ export const FlexDirectionToggle = React.memo(() => {
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
-  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const nFlexContainers = useEditorState(
     Substores.metadata,
@@ -66,10 +64,9 @@ export const FlexDirectionToggle = React.memo(() => {
         metadataRef.current,
         selectedViewsRef.current,
         elementPathTreeRef.current,
-        allElementPropsRef.current,
         e.button === 0 ? 'column' : null,
       ),
-    [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
+    [dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
   const handleRowClick = React.useCallback(
@@ -79,10 +76,33 @@ export const FlexDirectionToggle = React.memo(() => {
         metadataRef.current,
         selectedViewsRef.current,
         elementPathTreeRef.current,
-        allElementPropsRef.current,
         e.button === 0 ? 'row' : null,
       ),
-    [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
+    [dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
+  )
+
+  const handleColumnReverseClick = React.useCallback(
+    (e: React.MouseEvent) =>
+      maybeSetFlexDirection(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        elementPathTreeRef.current,
+        e.button === 0 ? 'column-reverse' : null,
+      ),
+    [dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
+  )
+
+  const handleRowReverseClick = React.useCallback(
+    (e: React.MouseEvent) =>
+      maybeSetFlexDirection(
+        dispatch,
+        metadataRef.current,
+        selectedViewsRef.current,
+        elementPathTreeRef.current,
+        e.button === 0 ? 'row-reverse' : null,
+      ),
+    [dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
   const paddingControlsForHover: Array<CanvasControlWithProps<SubduedPaddingControlProps>> =
@@ -117,7 +137,7 @@ export const FlexDirectionToggle = React.memo(() => {
       style={{
         display: 'grid',
         gridTemplateRows: '1fr',
-        gridTemplateColumns: '1fr 1fr',
+        gridTemplateColumns: '1fr 1fr 1fr 1fr',
         aspectRatio: '2',
         width: 50,
       }}
@@ -136,7 +156,24 @@ export const FlexDirectionToggle = React.memo(() => {
           borderRadius: UtopiaTheme.inputBorderRadius,
         }}
       >
-        <Icons.FlexRow />
+        <Icons.FlexDirectionRow />
+      </div>
+      <div
+        data-testid={FlexDirectionToggleTestId('row-reverse')}
+        onMouseDown={handleRowReverseClick}
+        style={{
+          aspectRatio: '1',
+          backgroundColor: (flexDirection === 'row-reverse' ? colorTheme.bg2 : colorTheme.bg1)
+            .value,
+          cursor: 'pointer',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 3,
+          borderRadius: UtopiaTheme.inputBorderRadius,
+        }}
+      >
+        <Icons.FlexDirectionRowReverse />
       </div>
       <div
         data-testid={FlexDirectionToggleTestId('column')}
@@ -152,7 +189,24 @@ export const FlexDirectionToggle = React.memo(() => {
           borderRadius: UtopiaTheme.inputBorderRadius,
         }}
       >
-        <Icons.FlexColumn />
+        <Icons.FlexDirectionColumn />
+      </div>
+      <div
+        data-testid={FlexDirectionToggleTestId('column-reverse')}
+        onMouseDown={handleColumnReverseClick}
+        style={{
+          aspectRatio: '1',
+          backgroundColor: (flexDirection === 'column-reverse' ? colorTheme.bg2 : colorTheme.bg1)
+            .value,
+          cursor: 'pointer',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 3,
+          borderRadius: UtopiaTheme.inputBorderRadius,
+        }}
+      >
+        <Icons.FlexDirectionColumnReverse />
       </div>
     </div>
   )
@@ -163,7 +217,6 @@ function maybeSetFlexDirection(
   metadata: ElementInstanceMetadataMap,
   selectedViews: ElementPath[],
   elementPathTree: ElementPathTrees,
-  allElementProps: AllElementProps,
   desiredFlexDirection: FlexDirection | null,
 ) {
   const strategies =

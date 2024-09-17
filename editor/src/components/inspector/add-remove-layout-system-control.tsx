@@ -2,34 +2,53 @@
 /** @jsx jsx */
 import React from 'react'
 import { jsx } from '@emotion/react'
-import {
-  Icons,
-  FlexRow,
-  SquareButton,
-  FunctionIcons,
-  InspectorSectionHeader,
-  useColorTheme,
-  Icn,
-} from '../../uuiui'
+import { Icons, FlexRow, SquareButton, InspectorSectionHeader, useColorTheme } from '../../uuiui'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   addFlexLayoutStrategies,
+  addGridLayoutStrategies,
   removeFlexLayoutStrategies,
+  removeGridLayoutStrategies,
 } from './inspector-strategies/inspector-strategies'
-import { detectAreElementsFlexContainers } from './inspector-common'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { NO_OP, assertNever } from '../../core/shared/utils'
+import type { DropdownMenuItem } from '../../uuiui/radix-components'
+import {
+  DropdownMenu,
+  regularDropdownMenuItem,
+  separatorDropdownMenuItem,
+} from '../../uuiui/radix-components'
+import { stripNulls } from '../../core/shared/array-utils'
+import { layoutSystemSelector } from './flex-section'
+import { AdvancedGridModal } from './controls/advanced-grid-modal'
+import { when } from '../../utils/react-conditionals'
+import { useDesignPanelContext } from '../canvas/design-panel-root'
 
 export const AddRemoveLayoutSystemControlTestId = (): string => 'AddRemoveLayoutSystemControlTestId'
+export const AddFlexLayoutOptionId = 'add-flex-layout'
+export const AddGridLayoutOptionId = 'add-grid-layout'
+export const RemoveLayoutSystemOptionId = 'remove-layout-system'
 
 interface AddRemoveLayoutSystemControlProps {}
 
+// adjusting the modal position to have some space from the left edge of the design panel
+const X_OFFSET = 20
+const Y_OFFSET = 20
+
 export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemControlProps>(() => {
-  const isFlexLayoutedContainer = useEditorState(
+  const [popupOpen, setPopupOpen] = React.useState(false)
+  const closePopup = React.useCallback(() => {
+    setPopupOpen(false)
+  }, [])
+  const openPopup = React.useCallback(() => {
+    setPopupOpen(true)
+  }, [])
+
+  const layoutSystem = useEditorState(
     Substores.metadata,
-    (store) =>
-      detectAreElementsFlexContainers(metadataSelector(store), selectedViewsSelector(store)),
+    layoutSystemSelector,
     'AddRemoveLayoutSystemControl isFlexLayoutedContainer',
   )
 
@@ -39,7 +58,7 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
-  const addLayoutSystem = React.useCallback(
+  const addFlexLayoutSystem = React.useCallback(
     () =>
       executeFirstApplicableStrategy(
         dispatch,
@@ -53,20 +72,124 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
     [allElementPropsRef, dispatch, elementMetadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
-  const removeLayoutSystem = React.useCallback(
+  const addGridLayoutSystem = React.useCallback(
     () =>
       executeFirstApplicableStrategy(
         dispatch,
-        removeFlexLayoutStrategies(
+        addGridLayoutStrategies(
+          elementMetadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+        ),
+      ),
+    [allElementPropsRef, dispatch, elementMetadataRef, elementPathTreeRef, selectedViewsRef],
+  )
+
+  const removeLayoutSystem = React.useCallback(
+    () =>
+      executeFirstApplicableStrategy(dispatch, [
+        ...removeFlexLayoutStrategies(
           elementMetadataRef.current,
           selectedViewsRef.current,
           elementPathTreeRef.current,
         ),
-      ),
+        ...removeGridLayoutStrategies(
+          elementMetadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+        ),
+      ]),
     [dispatch, elementMetadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
   const colorTheme = useColorTheme()
+
+  const addLayoutSystemOpenerButton = React.useCallback(() => {
+    return (
+      <SquareButton highlight onClick={NO_OP} primary={popupOpen}>
+        {layoutSystem == null ? (
+          <Icons.SmallPlus />
+        ) : (
+          <Icons.Threedots color={popupOpen ? 'white' : 'main'} />
+        )}
+      </SquareButton>
+    )
+  }, [layoutSystem, popupOpen])
+
+  const addLayoutSystemMenuDropdownItems = React.useMemo((): DropdownMenuItem[] => {
+    const gridItems: DropdownMenuItem[] = [
+      regularDropdownMenuItem({
+        id: 'more-settings',
+        label: 'Advanced',
+        onSelect: openPopup,
+      }),
+      regularDropdownMenuItem({
+        id: AddFlexLayoutOptionId,
+        label: 'Convert to Flex',
+        onSelect: addFlexLayoutSystem,
+      }),
+      separatorDropdownMenuItem('dropdown-separator'),
+      regularDropdownMenuItem({
+        id: RemoveLayoutSystemOptionId,
+        label: 'Remove Grid',
+        onSelect: removeLayoutSystem,
+        danger: true,
+      }),
+    ]
+
+    const flexItems: DropdownMenuItem[] = [
+      regularDropdownMenuItem({
+        id: AddGridLayoutOptionId,
+        label: 'Convert to Grid',
+        onSelect: addGridLayoutSystem,
+      }),
+      separatorDropdownMenuItem('dropdown-separator'),
+      regularDropdownMenuItem({
+        id: RemoveLayoutSystemOptionId,
+        label: 'Remove Flex',
+        onSelect: removeLayoutSystem,
+        danger: true,
+      }),
+    ]
+
+    const noLayoutItems: DropdownMenuItem[] = [
+      regularDropdownMenuItem({
+        id: AddFlexLayoutOptionId,
+        label: 'Flex',
+        onSelect: addFlexLayoutSystem,
+      }),
+      regularDropdownMenuItem({
+        id: AddGridLayoutOptionId,
+        label: 'Grid',
+        onSelect: addGridLayoutSystem,
+      }),
+    ]
+
+    return stripNulls(
+      layoutSystem === 'grid' ? gridItems : layoutSystem === 'flex' ? flexItems : noLayoutItems,
+    )
+  }, [addFlexLayoutSystem, addGridLayoutSystem, layoutSystem, removeLayoutSystem, openPopup])
+
+  const label = () => {
+    switch (layoutSystem) {
+      case null:
+        return 'Layout System'
+      case 'flex':
+        return 'Flex'
+      case 'grid':
+        return 'Grid'
+      default:
+        assertNever(layoutSystem)
+    }
+  }
+
+  const { panelWidth } = useDesignPanelContext()
+  const modalOffset = React.useMemo(() => {
+    const x = -1 * (panelWidth + X_OFFSET)
+    const y = -1 * Y_OFFSET
+    return { x: x, y: y }
+  }, [panelWidth])
 
   return (
     <InspectorSectionHeader
@@ -87,25 +210,26 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
           gap: 8,
         }}
       >
-        <span style={{ textTransform: 'capitalize', fontSize: '11px' }}>Layout System</span>
+        <span style={{ textTransform: 'capitalize', fontSize: '11px' }}>{label()}</span>
+        {when(
+          popupOpen,
+          <AdvancedGridModal
+            id='grid-advanced'
+            testId='grid-advanced'
+            key='grid-advanced'
+            closePopup={closePopup}
+            popupOpen={popupOpen}
+            modalOffset={modalOffset}
+          />,
+        )}
       </FlexRow>
-      {isFlexLayoutedContainer ? (
-        <SquareButton
-          data-testid={AddRemoveLayoutSystemControlTestId()}
-          highlight
-          onClick={removeLayoutSystem}
-        >
-          <Icn category='semantic' type='cross' width={12} height={12} />
-        </SquareButton>
-      ) : (
-        <SquareButton
-          data-testid={AddRemoveLayoutSystemControlTestId()}
-          highlight
-          onClick={addLayoutSystem}
-        >
-          <Icn category='semantic' type='plus' width={12} height={12} />
-        </SquareButton>
-      )}
+      <div data-testid={AddRemoveLayoutSystemControlTestId()}>
+        <DropdownMenu
+          align='end'
+          items={addLayoutSystemMenuDropdownItems}
+          opener={addLayoutSystemOpenerButton}
+        />
+      </div>
     </InspectorSectionHeader>
   )
 })

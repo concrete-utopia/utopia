@@ -17,6 +17,7 @@ import {
 } from '../../../core/model/element-template-utils'
 import {
   applyUtopiaJSXComponentsChanges,
+  getFilePathMappings,
   getUtopiaJSXComponentsFromSuccess,
 } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -26,6 +27,7 @@ import type {
   JSXConditionalExpression,
   JSXElement,
   JSXFragment,
+  JSXMapExpression,
 } from '../../../core/shared/element-template'
 import {
   JSXElementChild,
@@ -63,7 +65,7 @@ import { addElement } from '../../canvas/commands/add-element-command'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { fixUtopiaElementGeneric } from '../../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getUidMappings, getAllUniqueUidsFromMapping } from '../../../core/model/get-uid-mappings'
 import { foldEither, right } from '../../../core/shared/either'
 import { editorStateToElementChildOptic } from '../../../core/model/common-optics'
 import { fromField, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
@@ -180,6 +182,7 @@ export function unwrapTextContainingConditional(
         editor.elementPathTree,
         wrapperUID,
         1,
+        editor.propertyControlsInfo,
       )
       if (insertionPath == null) {
         throw new Error('Invalid unwrap insertion path')
@@ -333,7 +336,7 @@ export function wrapElementInsertions(
   editor: EditorState,
   targets: Array<ElementPath>,
   parentPath: InsertionPath,
-  rawElementToInsert: JSXElement | JSXFragment | JSXConditionalExpression,
+  rawElementToInsert: JSXElement | JSXFragment | JSXConditionalExpression | JSXMapExpression,
   importsToAdd: Imports,
   anyTargetIsARootElement: boolean,
   targetThatIsRootElementOfCommonParent: ElementPath | undefined,
@@ -342,7 +345,9 @@ export function wrapElementInsertions(
   const staticTarget =
     optionalMap(childInsertionPath, targetThatIsRootElementOfCommonParent) ?? parentPath
 
-  const existingIDsMutable = new Set(getAllUniqueUids(editor.projectContents).allIDs)
+  const existingIDsMutable = new Set(
+    getAllUniqueUidsFromMapping(getUidMappings(editor.projectContents).filePathToUids),
+  )
   const elementToInsert = fixUtopiaElementGeneric<typeof rawElementToInsert>(
     rawElementToInsert,
     existingIDsMutable,
@@ -446,6 +451,28 @@ export function wrapElementInsertions(
           return { updatedEditor: editor, newPath: null }
       }
     }
+    case 'JSX_MAP_EXPRESSION': {
+      switch (staticTarget.type) {
+        case 'CHILD_INSERTION':
+          return {
+            updatedEditor: foldAndApplyCommandsSimple(editor, [
+              addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
+            ]),
+            newPath: newPath,
+          }
+        case 'CONDITIONAL_CLAUSE_INSERTION':
+          const withTargetAdded = insertElementIntoJSXConditional(
+            editor,
+            staticTarget,
+            jsxFragment(elementToInsert.uid, [elementToInsert], false),
+            importsToAdd,
+          )
+          return { updatedEditor: withTargetAdded, newPath: newPath }
+        default:
+          // const _exhaustiveCheck: never = staticTarget
+          return { updatedEditor: editor, newPath: null }
+      }
+    }
     default:
       const _exhaustiveCheck: never = elementToInsert
       return { updatedEditor: editor, newPath: null }
@@ -493,6 +520,7 @@ export function insertElementIntoJSXConditional(
 
       const { imports, duplicateNameMapping } = mergeImports(
         underlyingFilePath,
+        getFilePathMappings(editor.projectContents),
         success.imports,
         importsToAdd,
       )
@@ -550,6 +578,7 @@ function insertConditionalIntoConditionalClause(
     (success, _, underlyingFilePath) => {
       const { imports, duplicateNameMapping } = mergeImports(
         underlyingFilePath,
+        getFilePathMappings(editor.projectContents),
         success.imports,
         importsToAdd,
       )

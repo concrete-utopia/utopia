@@ -37,7 +37,7 @@ describe('Keyboard Absolute Move Strategy', () => {
     'Key %s with modifiers %o works with a TL pinned absolute element',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, moveX: number, moveY: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 
@@ -52,7 +52,6 @@ describe('Keyboard Absolute Move Strategy', () => {
     `,
         [targetElement],
       )
-
       const finalEditor = pressKeys(initialEditor, keyboardAbsoluteMoveStrategy, keys, modifiers)
 
       expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
@@ -87,7 +86,7 @@ describe('Keyboard Absolute Move Strategy', () => {
     'Key %s with modifiers %o works with a TL pinned absolute element with px values',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, moveX: number, moveY: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 
@@ -137,7 +136,7 @@ describe('Keyboard Absolute Move Strategy', () => {
     'Key %s with modifiers %o works with a RB pinned absolute element',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, moveX: number, moveY: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 
@@ -186,7 +185,7 @@ describe('Keyboard Absolute Move Strategy', () => {
     'Key %s with modifiers %o works with a TLRB pinned absolute element',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, moveX: number, moveY: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 
@@ -236,7 +235,7 @@ describe('Keyboard Absolute Move Strategy', () => {
     'Key %s with modifiers %o replace expressions and fires toast',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, moveX: number, moveY: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 
@@ -286,7 +285,7 @@ describe('Keyboard Absolute Move Strategy', () => {
     'Key %s with modifiers %o works with percentages',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, moveX: number, moveY: number) => {
       const targetElement = elementPath([
-        ['scene-aaa', 'app-entity'],
+        ['utopia-storyboard-uid', 'scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ])
 

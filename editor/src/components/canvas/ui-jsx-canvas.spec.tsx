@@ -1,4 +1,4 @@
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "testCanvasRender", "testCanvasRenderMultifile", "testCanvasErrorMultifile"] }] */
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "testCanvasRender", "testCanvasRenderMultifile", "testCanvasErrorMultifile", "testCanvasRenderInline"] }] */
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { AwkwardFragmentsCode } from '../../core/workers/parser-printer/parser-printer-fragments.test-utils'
 import {
@@ -153,6 +153,181 @@ export { ToBeDefaultExported as default }`,
       }
       `,
       { '/testspecialvalue.js': 'module.exports = { specialValue: 100 }' },
+    )
+  })
+
+  it('renders a canvas with a component wrapped in React.memo', () => {
+    testCanvasRenderInline(
+      null,
+      `
+      import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+      
+      export var App = React.memo((props) => {
+        return (
+          <div
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
+            data-uid={'aaa'}
+          >
+            <span style={{position: 'absolute'}} data-uid={'bbb'}>hi</span>
+          </div>
+        )
+      })
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
+    )
+  })
+
+  it('renders a canvas with a component wrapped in a function that wraps the component with more content', () => {
+    testCanvasRenderInline(
+      null,
+      `
+      import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+
+      function wrapComponent(Component) {
+        return () => {
+          return <div>
+            <div>
+              <span>wrapComponent</span>
+            </div>
+            <div><Component /></div>
+          </div>
+        }
+      }
+      
+      export var App = wrapComponent(() => {
+        return (
+          <div
+            style={{ backgroundColor: '#FFFFFF' }}
+            data-uid={'aaa'}
+          >
+            <span style={{position: 'absolute'}} data-uid={'bbb'}>hi</span>
+          </div>
+        )
+      })
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
+    )
+  })
+
+  it('renders a canvas with a component wrapped in a function that has more that one parameter', () => {
+    testCanvasRenderInline(
+      null,
+      `
+      import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+
+      function twoParameterWrapper(componentFunction) {
+        return (props) => {
+          return componentFunction(props, 'Some Text')
+        }
+      }
+      
+      export var App = twoParameterWrapper((props, otherValue) => {
+        return (
+          <div
+            style={{ backgroundColor: props.backgroundColor }}
+            data-uid={'aaa'}
+          >
+            <span style={{position: 'absolute'}} data-uid={'bbb'}>{otherValue}</span>
+          </div>
+        )
+      })
+
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                backgroundColor='green'
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
+    )
+  })
+
+  it('renders a canvas with a component wrapped in forwardRef', () => {
+    testCanvasRenderInline(
+      null,
+      `
+      import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+
+      export var ComponentThatForwards = React.forwardRef((props, ref) => {
+        return (
+          <div
+            style={{ backgroundColor: props.backgroundColor }}
+            data-uid={'aaa'}
+            ref={ref}
+          >
+            <span style={{position: 'absolute'}} data-uid={'bbb'}>Something</span>
+          </div>
+        )
+      })
+
+      export var App = () => {
+        const ref = React.useRef(null)
+        return (
+          <ComponentThatForwards ref={ref} />
+        )
+      }
+
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                backgroundColor='green'
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
     )
   })
 

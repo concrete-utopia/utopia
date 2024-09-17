@@ -6,7 +6,7 @@ import {
   UTOPIA_INSTANCE_PATH,
   UTOPIA_UID_KEY,
 } from '../../../core/model/utopia-constants'
-import { forEachRight } from '../../../core/shared/either'
+import { type Either, forEachRight, left } from '../../../core/shared/either'
 import type {
   JSXElementChild,
   JSXElement,
@@ -16,6 +16,7 @@ import type {
   JSIdentifier,
   JSPropertyAccess,
   JSElementAccess,
+  JSXAttributes,
 } from '../../../core/shared/element-template'
 import {
   isJSXElement,
@@ -72,12 +73,13 @@ import type { TextEditorProps } from '../../text-editor/text-editor'
 import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 import {
   findUtopiaCommentFlag,
-  isUtopiaCommentFlagConditional,
-  isUtopiaCommentFlagMapCount,
-} from '../../../core/shared/comment-flags'
+  isUtopiaPropOrCommentFlagConditional,
+  isUtopiaPropOrCommentFlagMapCount,
+} from '../../../core/shared/utopia-flags'
 import { RemixSceneComponent } from './remix-scene-component'
 import { STEGANOGRAPHY_ENABLED, isFeatureEnabled } from '../../../utils/feature-switches'
 import { jsxElementChildToText } from './jsx-element-child-to-text'
+import type { FilePathMappings } from '../../../core/model/project-file-utils'
 
 export interface RenderContext {
   rootScope: MapLike<any>
@@ -98,6 +100,7 @@ export interface RenderContext {
   highlightBounds: HighlightBoundsForUids | null
   editedText: ElementPath | null
   variablesInScope: VariableData
+  filePathMappings: FilePathMappings
 }
 
 export function createLookupRender(
@@ -106,39 +109,45 @@ export function createLookupRender(
   renderLimit: number | null,
   valuesInScopeFromParameters: Array<string>,
   assignedToProp: string | null,
-): (element: JSXElement, scope: MapLike<any>) => React.ReactChild | null {
+): (element: JSXElementLike, scope: MapLike<any>) => React.ReactChild | null {
   let index = 0
 
-  return (element: JSXElement, scope: MapLike<any>): React.ReactChild | null => {
+  return (element: JSXElementLike, scope: MapLike<any>): React.ReactChild | null => {
     index++
     if (renderLimit != null && index > renderLimit) {
       return null
     }
     const innerUID = getUtopiaID(element)
     const generatedUID = EP.createIndexedUid(innerUID, index)
-    const withGeneratedUID = setJSXValueAtPath(
-      element.props,
-      PP.create('data-uid'),
-      jsExpressionValue(generatedUID, emptyComments),
-    )
+    const withGeneratedUID: Either<string, JSXAttributes> = isJSXElement(element)
+      ? setJSXValueAtPath(
+          element.props,
+          PP.create('data-uid'),
+          jsExpressionValue(generatedUID, emptyComments),
+        )
+      : left('fragment')
 
     const innerPath = optionalMap((path) => EP.appendToPath(path, generatedUID), elementPath)
 
     let augmentedInnerElement = element
     forEachRight(withGeneratedUID, (attrs) => {
-      augmentedInnerElement = {
-        ...augmentedInnerElement,
-        props: attrs,
-      }
+      augmentedInnerElement = isJSXElement(augmentedInnerElement)
+        ? {
+            ...augmentedInnerElement,
+            props: attrs,
+          }
+        : augmentedInnerElement
     })
 
     let innerVariablesInScope: VariableData = {
       ...context.variablesInScope,
     }
-    for (const valueInScope of valuesInScopeFromParameters) {
-      innerVariablesInScope[valueInScope] = {
-        spiedValue: scope[valueInScope],
-        insertionCeiling: innerPath,
+    if (innerPath != null) {
+      for (const valueInScope of valuesInScopeFromParameters) {
+        innerVariablesInScope[valueInScope] = {
+          spiedValue: scope[valueInScope],
+          insertionCeiling: innerPath,
+        }
       }
     }
 
@@ -166,9 +175,11 @@ function monkeyUidProp(uid: string | undefined, propsToUpdate: MapLike<any>): Ma
   return monkeyedProps
 }
 
-function NoOpLookupRender(element: JSXElement, scope: MapLike<any>): React.ReactChild {
+function NoOpLookupRender(element: JSXElementLike, scope: MapLike<any>): React.ReactChild {
   throw new Error(
-    `Utopia Error: createLookupRender was not used properly for element: ${element.name.baseVariable}`,
+    `Utopia Error: createLookupRender was not used properly for  ${
+      isJSXElement(element) ? `element: ${element.name.baseVariable}` : 'fragment'
+    }`,
   )
 }
 
@@ -244,7 +255,9 @@ export function renderCoreElement(
     }
     case 'JSX_MAP_EXPRESSION': {
       const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
-      const mapCountOverride = isUtopiaCommentFlagMapCount(commentFlag) ? commentFlag.value : null
+      const mapCountOverride = isUtopiaPropOrCommentFlagMapCount(commentFlag)
+        ? commentFlag.value
+        : null
 
       const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
 
@@ -348,7 +361,7 @@ export function renderCoreElement(
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
       const mapCountOverride =
-        isJSXMapExpression(element) && isUtopiaCommentFlagMapCount(commentFlag)
+        isJSXMapExpression(element) && isUtopiaPropOrCommentFlagMapCount(commentFlag)
           ? commentFlag.value
           : null
 
@@ -491,7 +504,7 @@ export function renderCoreElement(
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
       const commentFlag = findUtopiaCommentFlag(element.comments, 'conditional')
-      const override = isUtopiaCommentFlagConditional(commentFlag) ? commentFlag.value : null
+      const override = isUtopiaPropOrCommentFlagConditional(commentFlag) ? commentFlag.value : null
       const defaultConditionValueAsAny = jsxAttributeToValue(
         inScope,
         element.condition,
@@ -704,6 +717,7 @@ function renderJSXElement(
     highlightBounds,
     editedText,
     variablesInScope,
+    filePathMappings,
   } = renderContext
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
     const childPath = optionalMap((path) => EP.appendToPath(path, getUtopiaID(child)), elementPath)
@@ -729,7 +743,7 @@ function renderJSXElement(
   // elements from scope and import to confirm it's not a top level element.
   const importedFrom = elementIsFragment
     ? null
-    : importedFromWhere(filePath, jsx.name.baseVariable, [], imports)
+    : importedFromWhere(filePathMappings, filePath, jsx.name.baseVariable, [], imports)
 
   const isElementImportedFromModule = (moduleName: string, name: string) =>
     !elementIsIntrinsic &&
@@ -939,7 +953,7 @@ function displayNoneElement(props: any): any {
 export function utopiaCanvasJSXLookup(
   elementsWithin: ElementsWithin,
   executionScope: MapLike<any>,
-  render: (element: JSXElement, inScope: MapLike<any>) => React.ReactChild | null,
+  render: (element: JSXElementLike, inScope: MapLike<any>) => React.ReactChild | null,
 ): (uid: string, inScope: MapLike<any>) => React.ReactChild | null {
   return (uid, inScope) => {
     const element = elementsWithin[uid]
@@ -952,7 +966,7 @@ export function utopiaCanvasJSXLookup(
   }
 }
 
-function runJSExpression(
+export function runJSExpression(
   block: JSExpression,
   elementPath: ElementPath | null,
   currentScope: MapLike<any>,

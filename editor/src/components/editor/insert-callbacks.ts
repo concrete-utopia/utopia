@@ -35,7 +35,7 @@ import {
   getTargetParentForOneShotInsertion,
 } from '../canvas/canvas-strategies/strategies/reparent-utils'
 import { fixUtopiaElement, generateConsistentUID } from '../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { getUidMappings, getAllUniqueUidsFromMapping } from '../../core/model/get-uid-mappings'
 import { assertNever } from '../../core/shared/utils'
 import type { ComponentElementToInsert } from '../custom-code/code-file'
 import { notice } from '../common/notice'
@@ -167,6 +167,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const openFileRef = useRefEditorState((store) => store.editor.canvas.openFile?.filename ?? null)
   const nodeModulesRef = useRefEditorState((store) => store.editor.nodeModules)
+  const propertyControlsInfoRef = useRefEditorState((store) => store.editor.propertyControlsInfo)
 
   return React.useCallback(
     (elementToInsert: InsertMenuItem | null) => {
@@ -183,7 +184,9 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
         return
       }
 
-      const allElementUids = new Set(getAllUniqueUids(projectContentsRef.current).uniqueIDs)
+      const allElementUids = new Set(
+        getAllUniqueUidsFromMapping(getUidMappings(projectContentsRef.current).filePathToUids),
+      )
 
       const wrappedUid = generateConsistentUID('wrapper', allElementUids)
 
@@ -211,6 +214,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
         [element.element],
         elementPathTreeRef.current,
         elementToInsert.value.insertionCeiling,
+        propertyControlsInfoRef.current,
       )
 
       if (isLeft(targetParent)) {
@@ -255,6 +259,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
       openFileRef,
       projectContentsRef,
       selectedViewsRef,
+      propertyControlsInfoRef,
     ],
   )
 }

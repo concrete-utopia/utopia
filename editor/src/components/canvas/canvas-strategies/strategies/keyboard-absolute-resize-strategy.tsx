@@ -43,6 +43,7 @@ import * as EP from '../../../../core/shared/element-path'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -124,11 +125,27 @@ export function keyboardAbsoluteResizeStrategy(
     retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
   if (
+    pathsWereReplaced &&
+    getTargetPathsFromInteractionTarget(canvasState.interactionTarget).some((originalTarget) => {
+      return MetadataUtils.isComponentInstanceFromMetadata(
+        canvasState.startingMetadata,
+        originalTarget,
+      )
+    })
+  ) {
+    return null
+  }
+
+  if (
     selectedElements.length === 0 ||
     !selectedElements.every((element) => {
       return supportsAbsoluteResize(canvasState.startingMetadata, element, canvasState)
     })
   ) {
+    return null
+  }
+
+  if (MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElements[0])) {
     return null
   }
 

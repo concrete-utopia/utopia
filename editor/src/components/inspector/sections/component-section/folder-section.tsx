@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import React from 'react'
-import { css, jsx } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import { unless, when } from '../../../../utils/react-conditionals'
 import type { CSSCursor } from '../../../canvas/canvas-types'
 import type {
@@ -14,9 +14,11 @@ import * as PP from '../../../../core/shared/property-path'
 import { useColorTheme } from '../../../../uuiui'
 import { RowOrFolderWrapper } from './row-or-folder-wrapper'
 import { RowForControl } from './component-section'
-import { InspectorWidthAtom } from '../../common/inspector-atoms'
-import { useAtom } from 'jotai'
-import { specialPropertiesToIgnore } from '../../../../core/property-controls/property-controls-utils'
+import {
+  isAdvancedFolderLabel,
+  specialPropertiesToIgnore,
+} from '../../../../core/property-controls/property-controls-utils'
+import { InspectorSectionHeader } from '../../section-header'
 
 interface FolderSectionProps {
   isRoot: boolean
@@ -28,18 +30,17 @@ interface FolderSectionProps {
   setGlobalCursor: (cursor: CSSCursor | null) => void
   showHiddenControl: (path: string) => void
   title?: string
+  propsToIgnore: string[]
 }
 
 export const FolderSection = React.memo((props: FolderSectionProps) => {
-  const showIndentation = useAtom(InspectorWidthAtom)[0] === 'wide'
-  const [open, setOpen] = React.useState(true)
+  const [open, setOpen] = React.useState(!isAdvancedFolderLabel(props.title))
   const colorTheme = useColorTheme()
   const hiddenPropsList = React.useMemo(
     () =>
       Object.keys(props.propertyControls).filter((prop) => {
         const control = props.propertyControls[prop]
-        const isVisibleByDefault =
-          control.control === 'folder' || (control.visibleByDefault ?? true)
+        const isVisibleByDefault = control.visibleByDefault ?? true
         return (
           !isVisibleByDefault &&
           props.unsetPropNames.includes(prop) &&
@@ -87,6 +88,9 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
 
   const createRowForControl = (propName: string, focusOnMount: boolean) => {
     const controlDescription = props.propertyControls[propName]
+    if (controlDescription.control === 'none') {
+      return null
+    }
     return (
       <RowOrFolderWrapper
         key={`section-row-${propName}`}
@@ -94,7 +98,8 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
         controlDescription={controlDescription}
         isScene={false}
         setGlobalCursor={props.setGlobalCursor}
-        indentationLevel={props.indentationLevel + 1}
+        indentationLevel={props.indentationLevel}
+        shouldIncreaseIdentation={false}
         visibleEmptyControls={props.visibleEmptyControls}
         unsetPropNames={props.unsetPropNames}
         showHiddenControl={props.showHiddenControl}
@@ -107,13 +112,7 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
     <div css={cssHoverEffect}>
       {unless(
         props.isRoot,
-        <FolderLabel
-          indentationLevel={props.indentationLevel}
-          showIndentation={showIndentation}
-          open={open}
-          toggleOpen={toggleOpen}
-          title={props.title ?? ''}
-        />,
+        <InspectorSectionHeader title={props.title ?? ''} toggle={toggleOpen} open={open} />,
       )}
       {when(
         open,
@@ -122,7 +121,7 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
       {when(
         props.isRoot,
         Object.keys(props.detectedPropsAndValuesWithoutControls).map((propName) => {
-          if (specialPropertiesToIgnore.includes(propName)) {
+          if (props.propsToIgnore.includes(propName)) {
             return null
           } else {
             const propValue = props.detectedPropsAndValuesWithoutControls[propName]
@@ -130,18 +129,23 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
               propValue,
               propName,
             )
-            return (
-              <RowForControl
-                key={propName}
-                propPath={PP.create(propName)}
-                controlDescription={controlDescription}
-                isScene={false}
-                setGlobalCursor={props.setGlobalCursor}
-                indentationLevel={props.indentationLevel + 1}
-                showHiddenControl={props.showHiddenControl}
-                focusOnMount={false}
-              />
-            )
+            if (controlDescription.control === 'none') {
+              return null
+            } else {
+              return (
+                <RowForControl
+                  key={propName}
+                  propPath={PP.create(propName)}
+                  controlDescription={controlDescription}
+                  isScene={false}
+                  setGlobalCursor={props.setGlobalCursor}
+                  indentationLevel={props.indentationLevel}
+                  shouldIncreaseIdentation={true}
+                  showHiddenControl={props.showHiddenControl}
+                  focusOnMount={false}
+                />
+              )
+            }
           }
         }),
       )}
@@ -154,73 +158,10 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
         <HiddenControls
           hiddenPropNames={hiddenPropsList}
           showHiddenControl={props.showHiddenControl}
-          indentationLevel={props.indentationLevel + 1}
+          indentationLevel={props.indentationLevel}
         />,
       )}
     </div>
   )
 })
-
-interface FolderLabelProps {
-  indentationLevel: number
-  open: boolean
-  toggleOpen: () => void
-  title: string
-  showIndentation: boolean
-}
-
-const FolderLabel = React.memo((props: FolderLabelProps) => {
-  const { toggleOpen } = props
-  const indentation = props.showIndentation ? props.indentationLevel * 8 : 0
-  const handleOnClick = React.useCallback(() => toggleOpen(), [toggleOpen])
-  return (
-    <div
-      style={{
-        paddingLeft: indentation,
-        display: 'flex',
-        alignItems: 'center',
-        height: 34,
-        fontWeight: 500,
-        gap: 4,
-        cursor: 'pointer',
-        transition: 'padding-left 100ms ease-in-out',
-      }}
-      onClick={handleOnClick}
-    >
-      <ExpansionArrowSVG
-        style={{
-          transform: props.open ? 'none' : 'rotate(-90deg)',
-          transition: 'all linear .1s',
-        }}
-      />
-      <span>{props.title}</span>
-    </div>
-  )
-})
-
-interface ExpansionArrowSVGProps {
-  style: React.CSSProperties
-}
-
-const ExpansionArrowSVG = React.memo((props: ExpansionArrowSVGProps) => {
-  const colorTheme = useColorTheme()
-  return (
-    <svg width='7px' height='5px' viewBox='0 0 7 5' version='1.1' style={props.style}>
-      <g
-        strokeWidth='1'
-        fillRule='evenodd'
-        strokeLinecap='round'
-        strokeLinejoin='round'
-        id='expansion-triangle-open'
-        transform='translate(-1.000000, 0.000000)'
-        fill={colorTheme.textColor.value}
-        stroke={colorTheme.textColor.value}
-      >
-        <polygon
-          transform='translate(3.828427, 0.828427) rotate(-45.000000) translate(-3.828427, -0.828427) '
-          points='1.82842712 -1.17157288 1.82842712 2.82842712 5.82842712 2.82842712'
-        />
-      </g>
-    </svg>
-  )
-})
+FolderSection.displayName = 'FolderSection'

@@ -8,6 +8,7 @@ import type {
   JSXFragment,
   TopLevelElement,
   JSExpressionOtherJavaScript,
+  JSXMapExpression,
 } from '../../core/shared/element-template'
 import type { KeysPressed, Key } from '../../utils/keyboard'
 import type { IndexPosition } from '../../utils/utils'
@@ -47,7 +48,6 @@ import type {
   EditorState,
   ElementsToRerender,
   ErrorMessages,
-  FloatingInsertMenuState,
   GithubState,
   LeftMenuTab,
   ModalDialog,
@@ -62,6 +62,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
+  ErrorBoundaryHandling,
 } from './store/editor-state'
 import type { Notice } from '../common/notice'
 import type { LoginState } from '../../common/user'
@@ -81,6 +82,10 @@ import type { MapLike } from 'typescript'
 import type { CommentFilterMode } from '../inspector/sections/comment-section'
 import type { Collaborator } from '../../core/shared/multiplayer'
 import type { PageTemplate } from '../canvas/remix/remix-utils'
+import type { Bounds } from 'utopia-vscode-common'
+import type { Optic } from '../../core/shared/optics/optics'
+import { makeOptic } from '../../core/shared/optics/optics'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -143,19 +148,24 @@ export type ClearSelection = {
 }
 
 export type ReplaceTarget = { type: 'replace-target' }
+export type WrapTarget = { type: 'wrap-target' }
 export type ReplaceKeepChildrenAndStyleTarget = { type: 'replace-target-keep-children-and-style' }
 export type InsertAsChildTarget = { type: 'insert-as-child'; indexPosition?: IndexPosition }
-export type InsertionBehaviour =
-  | InsertAsChildTarget
-  | ReplaceTarget
-  | ReplaceKeepChildrenAndStyleTarget
 
 export interface InsertJSXElement {
   action: 'INSERT_JSX_ELEMENT'
   jsxElement: JSXElement
   target: ElementPath | null
   importsToAdd: Imports
-  insertionBehaviour: InsertionBehaviour
+  indexPosition: IndexPosition | null
+}
+
+export interface ReplaceJSXElement {
+  action: 'REPLACE_JSX_ELEMENT'
+  jsxElement: JSXElement
+  target: ElementPath
+  importsToAdd: Imports
+  behaviour: ReplaceKeepChildrenAndStyleTarget | ReplaceTarget
 }
 
 export interface ReplaceMappedElement {
@@ -163,6 +173,21 @@ export interface ReplaceMappedElement {
   jsxElement: JSXElement
   target: ElementPath
   importsToAdd: Imports
+}
+
+export type ElementReplacementPath =
+  | {
+      type: 'replace-child-with-uid'
+      uid: string
+      replaceWith: JSXElementChild
+    }
+  | { type: 'update-map-expression'; valueToMap: JSExpression }
+  | { type: 'replace-property-value'; propertyPath: PropertyPath; replaceWith: JSExpression }
+
+export interface ReplaceElementInScope {
+  action: 'REPLACE_ELEMENT_IN_SCOPE'
+  target: ElementPath
+  replacementPath: ElementReplacementPath
 }
 
 export interface InsertAttributeOtherJavascriptIntoElement {
@@ -203,6 +228,11 @@ export interface ToggleCanvasIsLive {
 
 export type ToggleHidden = {
   action: 'TOGGLE_HIDDEN'
+  targets: Array<ElementPath>
+}
+
+export type ToggleDataCanCondense = {
+  action: 'TOGGLE_DATA_CAN_CONDENSE'
   targets: Array<ElementPath>
 }
 
@@ -506,7 +536,7 @@ export type ResetPins = {
 }
 
 export interface WrapInElementWith {
-  element: JSXElement | JSXConditionalExpression | JSXFragment
+  element: JSXElement | JSXConditionalExpression | JSXFragment | JSXMapExpression
   importsToAdd: Imports
 }
 
@@ -514,15 +544,6 @@ export interface WrapInElement {
   action: 'WRAP_IN_ELEMENT'
   targets: ElementPath[]
   whatToWrapWith: WrapInElementWith
-}
-
-export interface OpenFloatingInsertMenu {
-  action: 'OPEN_FLOATING_INSERT_MENU'
-  mode: FloatingInsertMenuState
-}
-
-export interface CloseFloatingInsertMenu {
-  action: 'CLOSE_FLOATING_INSERT_MENU'
 }
 
 export interface UnwrapElements {
@@ -628,6 +649,7 @@ export interface OpenCodeEditorFile {
   action: 'OPEN_CODE_EDITOR_FILE'
   filename: string
   forceShowCodeEditor: boolean
+  bounds: Bounds | null
 }
 
 export interface CloseDesignerFile {
@@ -766,6 +788,12 @@ export interface SaveDOMReport {
   invalidatedPaths: Array<string>
 }
 
+export interface UpdateMetadataInEditorState {
+  action: 'UPDATE_METADATA_IN_EDITOR_STATE'
+  newFinalMetadata: ElementInstanceMetadataMap
+  tree: ElementPathTrees
+}
+
 export interface RunDOMWalker {
   action: 'RUN_DOM_WALKER'
 }
@@ -831,12 +859,6 @@ export interface UpdateConditionalExpression {
   action: 'UPDATE_CONIDTIONAL_EXPRESSION'
   target: ElementPath
   expression: string
-}
-
-export interface UpdateMapExpression {
-  action: 'UPDATE_MAP_EXPRESSION'
-  target: ElementPath
-  expression: JSExpression
 }
 
 export interface AddImports {
@@ -1171,10 +1193,17 @@ export interface IncreaseOnlineStateFailureCount {
   action: 'INCREASE_ONLINE_STATE_FAILURE_COUNT'
 }
 
+export interface SetErrorBoundaryHandling {
+  action: 'SET_ERROR_BOUNDARY_HANDLING'
+  errorBoundaryHandling: ErrorBoundaryHandling
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
+  | ReplaceJSXElement
   | ReplaceMappedElement
+  | ReplaceElementInScope
   | InsertAttributeOtherJavascriptIntoElement
   | DeleteSelected
   | DeleteView
@@ -1200,6 +1229,7 @@ export type EditorAction =
   | Undo
   | Redo
   | ToggleHidden
+  | ToggleDataCanCondense
   | RenameComponent
   | SetPanelVisibility
   | ToggleFocusedOmniboxTab
@@ -1235,8 +1265,6 @@ export type EditorAction =
   | SaveAsset
   | ResetPins
   | WrapInElement
-  | OpenFloatingInsertMenu
-  | CloseFloatingInsertMenu
   | UnwrapElements
   | SetNavigatorRenamingTarget
   | RedrawOldCanvasControls
@@ -1280,6 +1308,7 @@ export type EditorAction =
   | SetCodeEditorLintErrors
   | SetCodeEditorComponentDescriptorErrors
   | SaveDOMReport
+  | UpdateMetadataInEditorState
   | RunDOMWalker
   | TrueUpElements
   | SetProp
@@ -1342,7 +1371,6 @@ export type EditorAction =
   | SetMapCountOverride
   | SwitchConditionalBranches
   | UpdateConditionalExpression
-  | UpdateMapExpression
   | ExecutePostActionMenuChoice
   | ClearPostActionSession
   | StartPostActionSession
@@ -1360,6 +1388,54 @@ export type EditorAction =
   | SetSharingDialogOpen
   | ResetOnlineState
   | IncreaseOnlineStateFailureCount
+  | SetErrorBoundaryHandling
+
+function actionForEach(action: EditorAction, fn: (action: EditorAction) => void): void {
+  fn(action)
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      action.transientActions.forEach((a) => actionForEach(a, fn))
+      break
+    case 'ATOMIC':
+      action.actions.forEach((a) => actionForEach(a, fn))
+      break
+    case 'MERGE_WITH_PREV_UNDO':
+      action.actions.forEach((a) => actionForEach(a, fn))
+      break
+    default:
+      break
+  }
+}
+
+function actionUpdate(
+  action: EditorAction,
+  updater: (action: EditorAction) => EditorAction,
+): EditorAction {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return updater({
+        ...action,
+        transientActions: action.transientActions.map((a) => actionUpdate(a, updater)),
+      })
+    case 'ATOMIC':
+      return updater({
+        ...action,
+        actions: action.actions.map((a) => actionUpdate(a, updater)),
+      })
+    case 'MERGE_WITH_PREV_UNDO':
+      return updater({
+        ...action,
+        actions: action.actions.map((a) => actionUpdate(a, updater)),
+      })
+    default:
+      return updater(action)
+  }
+}
+
+export const actionActionsOptic: Optic<EditorAction, EditorAction> = makeOptic(
+  actionForEach,
+  actionUpdate,
+)
 
 export type DispatchPriority =
   | 'everyone'

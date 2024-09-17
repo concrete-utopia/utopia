@@ -8,6 +8,7 @@ import {
   isIntrinsicHTMLElement,
   isIntrinsicElement,
   isJSXElement,
+  jsxElementName,
 } from '../shared/element-template'
 import type { ParseSuccess, StaticElementPath, ElementPath } from '../shared/project-file-types'
 import type { EditorState } from '../../components/editor/store/editor-state'
@@ -22,15 +23,23 @@ import { dropFileExtension } from '../shared/file-utils'
 import type { Styling } from 'utopia-api'
 import { StylingOptions } from 'utopia-api'
 import { intersection } from '../shared/set-utils'
+import { getFilePathMappings } from '../model/project-file-utils'
+import { valueDependentCache } from '../shared/memoize'
+import * as EP from '../shared/element-path'
+import { shallowEqual } from '../shared/equality-utils'
+import { stripExtension } from '../../components/custom-code/custom-code-utils'
 
 export function propertyControlsForComponentInFile(
   componentName: string,
   filePathNoExtension: string,
   propertyControlsInfo: PropertyControlsInfo,
-): PropertyControls {
+): PropertyControls | null {
   const propertyControlsForFile = propertyControlsInfo[filePathNoExtension] ?? {}
-  const propertyControlsForComponent = propertyControlsForFile[componentName]?.properties
-  return propertyControlsForComponent ?? {}
+  const propertyControlsForComponent = propertyControlsForFile[componentName]
+  if (propertyControlsForComponent == null) {
+    return null
+  }
+  return propertyControlsForComponent.properties
 }
 
 export function getPropertyControlsForTargetFromEditor(
@@ -45,6 +54,7 @@ export function getPropertyControlsForTarget(
   propertyControlsInfo: PropertyControlsInfo,
   projectContents: ProjectContentTreeRoot,
 ): PropertyControls | null {
+  const filePathMappings = getFilePathMappings(projectContents)
   return withUnderlyingTarget(
     target,
     projectContents,
@@ -57,6 +67,7 @@ export function getPropertyControlsForTarget(
     ) => {
       if (isJSXElement(element)) {
         const importedFrom = importedFromWhere(
+          filePathMappings,
           underlyingFilePath,
           element.name.baseVariable,
           success.topLevelElements,
@@ -94,7 +105,11 @@ export function getPropertyControlsForTarget(
         } else {
           const originalName =
             importedFrom?.type === 'IMPORTED_ORIGIN' ? importedFrom.exportedName : null
-          const nameAsString = originalName ?? getJSXElementNameAsString(element.name)
+          const jsxName =
+            originalName != null
+              ? jsxElementName(originalName, element.name.propertyPath.propertyElements)
+              : element.name
+          const nameAsString = getJSXElementNameAsString(jsxName)
 
           const props = propertyControlsInfo[filenameForLookup]?.[nameAsString]?.properties
 
@@ -124,11 +139,27 @@ export function getPropertyControlsForTarget(
   )
 }
 
-export function getComponentDescriptorForTarget(
+export const getComponentDescriptorForTarget = valueDependentCache(
+  getComponentDescriptorForTargetInner,
+  EP.toString,
+  {
+    equality: (s1, s2) =>
+      s1.projectContents === s2.projectContents &&
+      s1.propertyControlsInfo === s2.propertyControlsInfo,
+  },
+)
+
+function getComponentDescriptorForTargetInner(
+  {
+    projectContents,
+    propertyControlsInfo,
+  }: {
+    propertyControlsInfo: PropertyControlsInfo
+    projectContents: ProjectContentTreeRoot
+  },
   target: ElementPath,
-  propertyControlsInfo: PropertyControlsInfo,
-  projectContents: ProjectContentTreeRoot,
 ): ComponentDescriptor | null {
+  const filePathMappings = getFilePathMappings(projectContents)
   return withUnderlyingTarget(
     target,
     projectContents,
@@ -140,7 +171,12 @@ export function getComponentDescriptorForTarget(
       underlyingFilePath: string,
     ) => {
       if (isJSXElement(element)) {
+        if (isIntrinsicElement(element.name)) {
+          return null
+        }
+
         const importedFrom = importedFromWhere(
+          filePathMappings,
           underlyingFilePath,
           element.name.baseVariable,
           success.topLevelElements,
@@ -149,11 +185,7 @@ export function getComponentDescriptorForTarget(
 
         let filenameForLookup: string | null = null
         if (importedFrom == null) {
-          if (isIntrinsicElement(element.name)) {
-            return null
-          } else {
-            filenameForLookup = underlyingFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
-          }
+          filenameForLookup = stripExtension(underlyingFilePath)
         } else {
           filenameForLookup = importedFrom.filePath
         }
@@ -163,7 +195,11 @@ export function getComponentDescriptorForTarget(
         } else {
           const originalName =
             importedFrom?.type === 'IMPORTED_ORIGIN' ? importedFrom.exportedName : null
-          const nameAsString = originalName ?? getJSXElementNameAsString(element.name)
+          const jsxName =
+            originalName != null
+              ? jsxElementName(originalName, element.name.propertyPath.propertyElements)
+              : element.name
+          const nameAsString = getJSXElementNameAsString(jsxName)
 
           const componentDescriptor = propertyControlsInfo[filenameForLookup]?.[nameAsString]
 
@@ -181,7 +217,7 @@ export function getComponentDescriptorForTarget(
           )
 
           const trimmedPath = absolutePath.includes('/')
-            ? absolutePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+            ? stripExtension(absolutePath)
             : absolutePath
 
           return propertyControlsInfo[trimmedPath]?.[nameAsString]
@@ -207,7 +243,7 @@ export function hasStyleControls(propertyControls: PropertyControls): boolean {
   return propertyControls['style']?.control === 'style-controls'
 }
 
-export const specialPropertiesToIgnore: Array<string> = ['style', 'children']
+export const specialPropertiesToIgnore: Array<string> = ['style']
 
 export type InspectorSectionPreference = 'layout' | 'layout-system' | 'visual' | 'typography'
 
@@ -219,12 +255,19 @@ export function getInspectorPreferencesForTargets(
   projectContents: ProjectContentTreeRoot,
 ): InspectorSectionPreference[] {
   const inspectorPreferences = targets.map((target) => {
-    const controls = getComponentDescriptorForTarget(target, propertyControlsInfo, projectContents)
-    if (controls == null || controls.inspector == null || controls.inspector === 'all') {
+    const controls = getComponentDescriptorForTarget(
+      { propertyControlsInfo, projectContents },
+      target,
+    )
+    if (controls == null || controls.inspector == null) {
       return { type: 'all' }
     }
 
-    return { type: 'sections', sections: controls.inspector }
+    if (controls.inspector.type === 'shown') {
+      return { type: 'sections', sections: controls.inspector.sections }
+    }
+
+    return { type: 'sections', sections: [] }
   })
 
   let sectionsToShow: Set<Styling> = new Set(StylingOptions)
@@ -241,3 +284,9 @@ export function getInspectorPreferencesForTargets(
 
   return [...sectionsToShow]
 }
+
+export const AdvancedFolderLabel = 'Advanced'
+
+const advancedFolderLabel = AdvancedFolderLabel.toLowerCase()
+export const isAdvancedFolderLabel = (title: string | undefined) =>
+  title != null && title.toLowerCase() === advancedFolderLabel

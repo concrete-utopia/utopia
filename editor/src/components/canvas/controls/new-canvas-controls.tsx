@@ -15,7 +15,7 @@ import type {
 } from '../../editor/store/editor-state'
 import { getMetadata } from '../../editor/store/editor-state'
 import type { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
-import type { CanvasPositions, CSSCursor } from '../canvas-types'
+import type { CSSCursor, CanvasPositions } from '../canvas-types'
 import { HighlightControl } from './highlight-control'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
@@ -36,6 +36,7 @@ import type { ResolveFn } from '../../custom-code/code-file'
 import { useColorTheme } from '../../../uuiui'
 import {
   isDragInteractionActive,
+  isGridDragInteractionActive,
   pickSelectionEnabled,
   useMaybeHighlightElement,
   useSelectAndHover,
@@ -45,7 +46,10 @@ import type { ProjectContentTreeRoot } from '../../assets'
 import { LayoutParentControl } from './layout-parent-control'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
-import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
+import {
+  DataReferenceParentOutline,
+  MultiSelectOutlineControl,
+} from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
 import { showContextMenu } from '../../editor/actions/action-creators'
 import { InsertionControls } from './insertion-plus-button'
@@ -68,10 +72,8 @@ import { useSelectionArea } from './selection-area-hooks'
 import { RemixSceneLabelControl } from './select-mode/remix-scene-label'
 import { NO_OP } from '../../../core/shared/utils'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
-import { useStatus } from '../../../../liveblocks.config'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -167,7 +169,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
     canDrop: () => true,
   }
 
-  const [_, drop] = useDrop(dropSpec)
+  const [, drop] = useDrop(dropSpec)
 
   const forwardedRef = React.useCallback(
     (node: ConnectableElement) => {
@@ -216,6 +218,7 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
               : ' canvas-controls '
           }
           id='canvas-controls'
+          data-testid='canvas-controls'
           style={{
             pointerEvents: 'initial',
             position: 'absolute',
@@ -291,6 +294,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     keysPressed,
     componentMetadata,
     dragInteractionActive,
+    gridDragInteractionActive,
     selectionEnabled,
     textEditor,
     editorMode,
@@ -309,6 +313,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         keysPressed: store.editor.keysPressed,
         componentMetadata: getMetadata(store.editor),
         dragInteractionActive: isDragInteractionActive(store.editor),
+        gridDragInteractionActive: isGridDragInteractionActive(store.editor),
         selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
         editorMode: store.editor.mode,
         textEditor: store.editor.canvas.textEditor,
@@ -489,6 +494,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               EP.fromString(p),
               componentMetadata,
               pathTrees,
+              propertyControlsInfo,
             ),
           )
         )
@@ -534,17 +540,26 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       >
         {when(
           isSelectMode(editorMode) || isCommentMode(editorMode),
-          <SceneLabelControl
-            maybeHighlightOnHover={maybeHighlightOnHover}
-            maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
-          />,
+          <>
+            <SceneLabelControl
+              maybeHighlightOnHover={maybeHighlightOnHover}
+              maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+            />
+            <DataReferenceParentOutline
+              selectedViews={localSelectedViews}
+              highlightedViews={localHighlightedViews}
+            />
+          </>,
         )}
         {when(
           resizeStatus !== 'disabled',
           <>
             {renderHighlightControls()}
             {unless(dragInteractionActive, <LayoutParentControl />)}
-            <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
+            {unless(
+              gridDragInteractionActive,
+              <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />,
+            )}
             <ZeroSizedElementControls.control showAllPossibleElements={false} />
 
             {when(

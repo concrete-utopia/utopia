@@ -30,8 +30,9 @@ import {
   pasteToReplace,
   pasteHere,
   replace,
+  toggleCanCondense,
 } from './context-menu-items'
-import { MomentumContextMenu } from './context-menu-wrapper'
+import { ContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState, Substores } from './editor/store/store-hook'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 import type { EditorDispatch } from './editor/action-types'
@@ -39,7 +40,7 @@ import { setHighlightedView } from './editor/actions/action-creators'
 import { selectComponents } from './editor/actions/meta-actions'
 import * as EP from '../core/shared/element-path'
 import type { ElementPath } from '../core/shared/project-file-types'
-import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
+import { getNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
 import type { IcnProps } from '../uuiui'
 import { FlexRow, Icn, useColorTheme } from '../uuiui'
 import { getAllTargetsAtPoint } from './canvas/dom-lookup'
@@ -48,6 +49,14 @@ import type { WindowPoint } from '../core/shared/math-utils'
 import { pointsEqual } from '../core/shared/math-utils'
 import { useDispatch } from './editor/store/dispatch-context'
 import { useCreateCallbackToShowComponentPicker } from './navigator/navigator-item/component-picker-context-menu'
+import { navigatorTargetsSelector, useGetNavigatorTargets } from './navigator/navigator-utils'
+import { foldEither } from '../core/shared/either'
+import type { AllElementProps, EditorStorePatched } from './editor/store/editor-state'
+import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
+import type { ElementPathTrees } from '../core/shared/element-path-tree'
+import type { FilePathMappings } from '../core/model/project-file-utils'
+import type { PropertyControlsInfo } from './custom-code/code-file'
+import type { ProjectContentTreeRoot } from './assets'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -90,6 +99,7 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   sendToBack,
   lineSeparator,
   toggleVisibility,
+  toggleCanCondense,
   lineSeparator,
   toggleBackgroundLayersItem,
   toggleBorderItem,
@@ -98,11 +108,26 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
 
 const ContextMenuItemsNoSelection: Array<ContextMenuItem<CanvasData>> = [pasteHere]
 
-function useCanvasContextMenuItems(
+function getCanvasContextMenuItems(
   contextMenuInstance: ElementContextMenuInstance,
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPathTree: ElementPathTrees,
+  autoFocusedPaths: Array<ElementPath>,
+  filePathMappings: FilePathMappings,
+  propertyControlsInfo: PropertyControlsInfo,
+  projectContents: ProjectContentTreeRoot,
   dispatch: EditorDispatch,
 ): Array<ContextMenuItem<CanvasData>> {
-  const elementNamesAndIcons = useNamesAndIconsAllPaths()
+  const elementNamesAndIcons = getNamesAndIconsAllPaths(
+    metadata,
+    allElementProps,
+    elementPathTree,
+    autoFocusedPaths,
+    filePathMappings,
+    propertyControlsInfo,
+    projectContents,
+  )
 
   if (contextMenuInstance === 'context-menu-canvas-no-selection') {
     return ContextMenuItemsNoSelection
@@ -140,6 +165,8 @@ function useCanvasContextMenuItems(
                 data.scale,
                 data.canvasOffset,
                 data.jsxMetadata,
+                data.lockedElements,
+                data.autoFocusedPaths,
               )
               lastMousePosition = WindowMousePositionRaw
             }
@@ -187,7 +214,11 @@ function useCanvasContextMenuGetData(
       projectContents: store.editor.projectContents,
       filePathMappings: store.derived.filePathMappings,
       nodeModules: store.editor.nodeModules.files,
-      remixRoutingTable: store.derived.remixData?.routingTable ?? null,
+      remixRoutingTable: foldEither(
+        () => null,
+        (remixData) => remixData?.routingTable,
+        store.derived.remixData,
+      ),
       resolve: resolveFn,
       hiddenInstances: store.editor.hiddenInstances,
       scale: store.editor.canvas.scale,
@@ -197,10 +228,12 @@ function useCanvasContextMenuGetData(
       openFile: store.editor.canvas.openFile?.filename ?? null,
       internalClipboard: store.editor.internalClipboard,
       autoFocusedPaths: store.derived.autoFocusedPaths,
-      navigatorTargets: store.derived.navigatorTargets,
       propertyControlsInfo: store.editor.propertyControlsInfo,
+      lockedElements: store.editor.lockedElements,
+      autofocusedPaths: store.derived.autoFocusedPaths,
     }
   })
+  const navigatorTargetsRef = useRefEditorState(navigatorTargetsSelector)
   const showComponentPicker = useCreateCallbackToShowComponentPicker()
 
   return React.useCallback(() => {
@@ -223,25 +256,55 @@ function useCanvasContextMenuGetData(
       internalClipboard: currentEditor.internalClipboard,
       contextMenuInstance: contextMenuInstance,
       autoFocusedPaths: currentEditor.autoFocusedPaths,
-      navigatorTargets: currentEditor.navigatorTargets,
+      navigatorTargets: navigatorTargetsRef.current.navigatorTargets,
       propertyControlsInfo: currentEditor.propertyControlsInfo,
       showComponentPicker: showComponentPicker,
+      lockedElements: currentEditor.lockedElements,
+      autofocusedPaths: currentEditor.autoFocusedPaths,
     }
-  }, [editorSliceRef, contextMenuInstance, showComponentPicker])
+  }, [editorSliceRef, navigatorTargetsRef, contextMenuInstance, showComponentPicker])
 }
 
 export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementContextMenuProps) => {
   const dispatch = useDispatch()
-
   const getData: () => CanvasData = useCanvasContextMenuGetData(contextMenuInstance)
-  const contextMenuItems = useCanvasContextMenuItems(contextMenuInstance, dispatch)
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
+  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
+  const autoFocusedPathsRef = useRefEditorState((store) => store.derived.autoFocusedPaths)
+  const filePathMappingsRef = useRefEditorState((store) => store.derived.filePathMappings)
+  const propertyControlsInfoRef = useRefEditorState((store) => store.editor.propertyControlsInfo)
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+  const contextMenuItems = React.useCallback(() => {
+    return getCanvasContextMenuItems(
+      contextMenuInstance,
+      metadataRef.current,
+      allElementPropsRef.current,
+      elementPathTreeRef.current,
+      autoFocusedPathsRef.current,
+      filePathMappingsRef.current,
+      propertyControlsInfoRef.current,
+      projectContentsRef.current,
+      dispatch,
+    )
+  }, [
+    allElementPropsRef,
+    autoFocusedPathsRef,
+    contextMenuInstance,
+    dispatch,
+    elementPathTreeRef,
+    filePathMappingsRef,
+    metadataRef,
+    projectContentsRef,
+    propertyControlsInfoRef,
+  ])
 
   const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
   if (portalTarget == null) {
     return null
   } else {
     return ReactDOM.createPortal(
-      <MomentumContextMenu
+      <ContextMenu
         id={contextMenuInstance}
         key='element-context-menu'
         items={contextMenuItems}

@@ -51,7 +51,7 @@ import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
-import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
+import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button, SquareButton } from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
 import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { unless, when } from '../../utils/react-conditionals'
@@ -82,8 +82,21 @@ import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layou
 import { ConstraintsSection } from './constraints-section'
 import { usePermissions } from '../editor/store/permissions'
 import { DisableControlsInSubtree } from '../../uuiui/utilities/disable-subtree'
-import { getInspectorPreferencesForTargets } from '../../core/property-controls/property-controls-utils'
+import {
+  getComponentDescriptorForTarget,
+  getInspectorPreferencesForTargets,
+} from '../../core/property-controls/property-controls-utils'
 import { ListSection } from './sections/layout-section/list-section'
+import { isIntrinsicElementMetadata } from '../../core/model/project-file-utils'
+import { assertNever } from '../../core/shared/utils'
+import { DataReferenceSection } from './sections/data-reference-section'
+import {
+  elementSupportsChildrenFromPropertyControls,
+  replaceFirstChildAndDeleteSiblings,
+} from '../editor/element-children'
+import { InspectorSectionHeader } from './section-header'
+import { GridPlacementSubsection } from './sections/style-section/container-subsection/grid-cell-subsection'
+import { ContainerSubsection } from './sections/style-section/container-subsection/container-subsection'
 
 export interface ElementPathElement {
   name?: string
@@ -109,7 +122,7 @@ interface AlignDistributeButtonProps {
 const AlignDistributeButton = React.memo<AlignDistributeButtonProps>(
   (props: AlignDistributeButtonProps) => {
     return (
-      <Button disabled={props.disabled} onMouseUp={props.onMouseUp}>
+      <SquareButton highlight disabled={props.disabled} onMouseUp={props.onMouseUp}>
         <Icn
           tooltipText={props.toolTip}
           category='layout/commands'
@@ -117,7 +130,7 @@ const AlignDistributeButton = React.memo<AlignDistributeButtonProps>(
           width={16}
           height={16}
         />
-      </Button>
+      </SquareButton>
     )
   },
 )
@@ -164,9 +177,8 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
         justifyContent: 'space-around',
         alignItems: 'center',
         height: UtopiaTheme.layout.rowHeight.normal,
-        outline: `1px solid ${colorTheme.seperator.value}`,
-        background: colorTheme.inspectorBackground.value,
-        padding: '8px 0',
+        padding: '8px 0px',
+        flexShrink: 0,
       }}
     >
       <AlignDistributeButton
@@ -245,7 +257,7 @@ export const InspectorSectionsContainerTestID = 'inspector-sections-container'
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const { selectedViews, setSelectedTarget, targets } = props
 
-  const hideAllSections = useEditorState(
+  const isCodeElement = useEditorState(
     Substores.metadata,
     (store) =>
       store.editor.selectedViews.length > 0 &&
@@ -255,7 +267,19 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           MetadataUtils.isExpressionOtherJavascript(path, store.editor.jsxMetadata) ||
           MetadataUtils.isJSXMapExpression(path, store.editor.jsxMetadata),
       ),
-    'Inspector hideAllSections',
+    'Inspector isCodeElement',
+  )
+
+  const isDataReference = useEditorState(
+    Substores.projectContentsAndMetadata,
+    (store) =>
+      store.editor.selectedViews.length > 0 &&
+      store.editor.selectedViews.every((path) =>
+        MetadataUtils.isElementDataReference(
+          getElementFromProjectContents(path, store.editor.projectContents),
+        ),
+      ),
+    'Inspector isDataReference',
   )
 
   const multiselectedContract = useEditorState(
@@ -269,7 +293,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   }, [selectedViews, targets, setSelectedTarget])
 
   const dispatch = useDispatch()
-  const { focusedPanel, anyComponents, hasNonDefaultPositionAttributes } = useEditorState(
+  const { focusedPanel, anyComponents } = useEditorState(
     Substores.fullStore,
     (store) => {
       const rootMetadata = store.editor.jsxMetadata
@@ -317,7 +341,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const onFocus = React.useCallback(
     (event: React.FocusEvent<HTMLElement>) => {
       if (focusedPanel !== 'inspector') {
-        dispatch([setFocus('inspector')], 'inspector')
+        queueMicrotask(() => {
+          dispatch([setFocus('inspector')], 'inspector')
+        })
       }
     },
     [dispatch, focusedPanel],
@@ -330,10 +356,15 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   )
 
   const anyKnownElements = useEditorState(
-    Substores.metadata,
+    Substores.projectContentsAndMetadata,
     (store) => {
       return strictEvery(store.editor.selectedViews, (view) => {
-        return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view) != null
+        return (
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view) != null ||
+          MetadataUtils.isElementDataReference(
+            getElementFromProjectContents(view, store.editor.projectContents),
+          )
+        )
       })
     },
     'Inspector anyKnownElements',
@@ -352,13 +383,58 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'Inspector inspectorPreferences',
   )
 
-  const shouldShowAlignmentButtons = !hideAllSections && inspectorPreferences.includes('layout')
+  const supportsChildren = useEditorState(
+    Substores.metadataAndPropertyControlsInfo,
+    (store) => {
+      return store.editor.selectedViews.every((view) =>
+        elementSupportsChildrenFromPropertyControls(
+          store.editor.jsxMetadata,
+          store.editor.propertyControlsInfo,
+          view,
+        ),
+      )
+    },
+    'Inspector supportChildren',
+  )
+
+  const {
+    value: styleSectionOpen,
+    toggle: toggleStyleSection,
+    set: setStyleSectionOpen,
+  } = useBoolean(true)
+  const { value: advancedSectionOpen, toggle: toggleAdvancedSection } = useBoolean(false)
+
+  const shouldExpandStyleSection = useShouldExpandStyleSection()
+
+  React.useEffect(() => {
+    setStyleSectionOpen(shouldExpandStyleSection)
+  }, [setStyleSectionOpen, shouldExpandStyleSection])
+
+  const shouldHideInspectorSections = useShouldHideInspectorSections()
+
+  const shouldShowStyleSectionContents = styleSectionOpen && !shouldHideInspectorSections
+  const shouldShowAdvancedSectionContents = advancedSectionOpen && !shouldHideInspectorSections
+
+  const shouldShowAlignmentButtons = !isCodeElement && inspectorPreferences.includes('layout')
   const shouldShowClassNameSubsection = isTwindEnabled() && inspectorPreferences.includes('visual')
   const shouldShowTargetSelectorSection = canEdit && inspectorPreferences.includes('visual')
   const shouldShowFlexSection =
-    multiselectedContract === 'frame' && inspectorPreferences.includes('layout-system')
+    multiselectedContract === 'frame' &&
+    inspectorPreferences.includes('layout-system') &&
+    supportsChildren
 
   const shouldShowSimplifiedLayoutSection = inspectorPreferences.includes('layout')
+
+  const shouldShowGridCellSection = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.length === 1 &&
+      MetadataUtils.isGridCell(store.editor.jsxMetadata, store.editor.selectedViews[0]),
+    'Inspector shouldShowGridCellSection',
+  )
+
+  const shouldShowContainerSection =
+    selectedViews.length > 0 && inspectorPreferences.includes('layout')
 
   function renderInspectorContents() {
     return (
@@ -378,72 +454,103 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           data-testid={InspectorSectionsContainerTestID}
         >
           <DisableControlsInSubtree disable={!canEdit}>
-            <FlexCol
-              css={{
-                overflowY: 'scroll',
-                width: '100%',
-                height: '100%',
-                position: 'relative',
-                paddingBottom: 50,
-              }}
-            >
-              {rootElementIsSelected ? (
-                <RootElementIndicator />
-              ) : (
-                when(
-                  shouldShowAlignmentButtons,
-                  <AlignmentButtons numberOfTargets={selectedViews.length} />,
-                )
-              )}
-              {unless(
-                hideAllSections,
-                <>
-                  {when(shouldShowClassNameSubsection, <ClassNameSubsection />)}
-                  {anyComponents || multiselectedContract === 'fragment' ? (
-                    <ComponentSection isScene={false} />
-                  ) : null}
-                </>,
-              )}
-              <CodeElementSection paths={selectedViews} />
-              <ConditionalSection paths={selectedViews} />
-              <ListSection paths={selectedViews} />
-              {unless(
-                hideAllSections,
-                <>
-                  {when(
-                    shouldShowTargetSelectorSection,
-                    <TargetSelectorSection
-                      targets={props.targets}
-                      selectedTargetPath={props.selectedTargetPath}
-                      onSelectTarget={props.onSelectTarget}
-                      onStyleSelectorRename={props.onStyleSelectorRename}
-                      onStyleSelectorDelete={props.onStyleSelectorDelete}
-                      onStyleSelectorInsert={props.onStyleSelectorInsert}
-                    />,
-                  )}
-                  {when(multiselectedContract === 'fragment', <FragmentSection />)}
-                  {when(
-                    multiselectedContract !== 'fragment' && shouldShowSimplifiedLayoutSection,
-                    // Position and Sizing sections are shown if Frame or Group is selected
-                    <>
-                      <SimplifiedLayoutSubsection />
-                      <ConstraintsSection />
-                    </>,
-                  )}
-                  {when(shouldShowFlexSection, <FlexSection />)}
-                  {when(
-                    multiselectedContract === 'frame' || multiselectedContract === 'wrapper-div',
-                    // All the regular inspector sections are only visible if frames are selected
-                    <>
-                      <StyleSection />
-                      <WarningSubsection />
-                      <ImgSection />
-                      <EventHandlersSection />
-                    </>,
-                  )}
-                </>,
-              )}
-            </FlexCol>
+            {when(isDataReference, <DataReferenceSection paths={selectedViews} />)}
+            {when(
+              isCodeElement,
+              <>
+                <CodeElementSection paths={selectedViews} />
+                <ConditionalSection paths={selectedViews} />
+                <ListSection paths={selectedViews} />
+              </>,
+            )}
+            {unless(
+              isCodeElement || isDataReference,
+              <FlexCol
+                data-testid='inspector-column'
+                css={{
+                  overflowY: 'scroll',
+                  width: '100%',
+                  height: '100%',
+                  position: 'relative',
+                  paddingBottom: 50,
+                }}
+              >
+                {rootElementIsSelected ? (
+                  <RootElementIndicator />
+                ) : (
+                  when(
+                    shouldShowAlignmentButtons,
+                    <AlignmentButtons numberOfTargets={selectedViews.length} />,
+                  )
+                )}
+                {anyComponents || multiselectedContract === 'fragment' ? (
+                  <ComponentSection isScene={false} />
+                ) : null}
+
+                {unless(
+                  shouldHideInspectorSections,
+                  <InspectorSectionHeader
+                    title='Styles'
+                    toggle={toggleStyleSection}
+                    open={styleSectionOpen}
+                    uppercase={true}
+                  />,
+                )}
+                {when(
+                  shouldShowStyleSectionContents,
+                  <>
+                    {when(multiselectedContract === 'fragment', <FragmentSection />)}
+                    {when(
+                      multiselectedContract !== 'fragment' && shouldShowSimplifiedLayoutSection,
+                      // Position and Sizing sections are shown if Frame or Group is selected
+                      <>
+                        <SimplifiedLayoutSubsection />
+                        {when(shouldShowContainerSection, <ContainerSubsection />)}
+                        <ConstraintsSection />
+                      </>,
+                    )}
+                    {when(shouldShowGridCellSection, <GridPlacementSubsection />)}
+                    {when(shouldShowFlexSection, <FlexSection />)}
+                    {when(
+                      multiselectedContract === 'frame' || multiselectedContract === 'wrapper-div',
+                      // All the regular inspector sections are only visible if frames are selected
+                      <>
+                        <StyleSection />
+                        <WarningSubsection />
+                        <ImgSection />
+                        <EventHandlersSection />
+                      </>,
+                    )}
+                  </>,
+                )}
+                {unless(
+                  shouldHideInspectorSections,
+                  <InspectorSectionHeader
+                    title='Advanced'
+                    toggle={toggleAdvancedSection}
+                    open={advancedSectionOpen}
+                    uppercase={true}
+                  />,
+                )}
+                {when(
+                  shouldShowAdvancedSectionContents,
+                  <>
+                    {when(shouldShowClassNameSubsection, <ClassNameSubsection />)}
+                    {when(
+                      shouldShowTargetSelectorSection,
+                      <TargetSelectorSection
+                        targets={props.targets}
+                        selectedTargetPath={props.selectedTargetPath}
+                        onSelectTarget={props.onSelectTarget}
+                        onStyleSelectorRename={props.onStyleSelectorRename}
+                        onStyleSelectorDelete={props.onStyleSelectorDelete}
+                        onStyleSelectorInsert={props.onStyleSelectorInsert}
+                      />,
+                    )}
+                  </>,
+                )}
+              </FlexCol>,
+            )}
           </DisableControlsInSubtree>
         </div>
       </React.Fragment>
@@ -668,7 +775,7 @@ export const InspectorContextProvider = React.memo<{
   Utils.fastForEach(selectedViews, (path) => {
     const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
     if (elementMetadata != null) {
-      if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadatada == null) {
+      if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadata == null) {
         /**
          * This early return will cause the inspector to render with empty fields.
          * Because the computedStyle is only used in some cases for some controls,
@@ -689,7 +796,7 @@ export const InspectorContextProvider = React.memo<{
       newEditedMultiSelectedProps.push(jsxAttributes)
       newSpiedProps.push(allElementProps[EP.toString(path)] ?? {})
       newComputedStyles.push(elementMetadata.computedStyle)
-      newAttributeMetadatas.push(elementMetadata.attributeMetadatada)
+      newAttributeMetadatas.push(elementMetadata.attributeMetadata)
     }
   })
 
@@ -703,11 +810,22 @@ export const InspectorContextProvider = React.memo<{
     getElementsToTarget(selectedViews),
   )
 
+  const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+
   const onSubmitValueForHooks = React.useCallback(
     (newValue: JSExpression, path: PropertyPath, transient: boolean) => {
       const actionsArray = [
-        ...refElementsToTargetForUpdates.current.map((elem) => {
-          return setProp_UNSAFE(elem, path, newValue)
+        ...refElementsToTargetForUpdates.current.flatMap((elem): EditorAction[] => {
+          // if the target is the children prop, replace the elements instead
+          if (path.propertyElements[0] === 'children') {
+            const element = MetadataUtils.findElementByElementPath(jsxMetadataRef.current, elem)
+            const children =
+              element != null && isRight(element.element) && isJSXElement(element.element.value)
+                ? element.element.value.children
+                : []
+            return replaceFirstChildAndDeleteSiblings(elem, children, newValue)
+          }
+          return [setProp_UNSAFE(elem, path, newValue)]
         }),
       ]
       const actions: EditorAction[] = transient
@@ -715,7 +833,7 @@ export const InspectorContextProvider = React.memo<{
         : actionsArray
       dispatch(actions, 'everyone')
     },
-    [dispatch, refElementsToTargetForUpdates],
+    [dispatch, refElementsToTargetForUpdates, jsxMetadataRef],
   )
 
   const onUnsetValue = React.useCallback(
@@ -828,3 +946,85 @@ export const InspectorContextProvider = React.memo<{
     </InspectorCallbackContext.Provider>
   )
 })
+
+function useBoolean(starting: boolean): {
+  value: boolean
+  set: (_: boolean) => void
+  toggle: () => void
+} {
+  const [value, set] = React.useState(starting)
+  const toggle = React.useCallback(() => set((v) => !v), [])
+  return { value, set, toggle }
+}
+
+function useShouldExpandStyleSection(): boolean {
+  const shouldExpandFromElementOrComponent = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.every((target) => {
+        const instance = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target)
+        if (instance == null) {
+          return true
+        }
+        return (
+          MetadataUtils.isFragmentFromMetadata(instance) ||
+          MetadataUtils.isGroupAgainstImports(instance) ||
+          isIntrinsicElementMetadata(instance)
+        )
+      }),
+    'useShouldExpandStyleSection shouldExpandFromElementOrComponent',
+  )
+
+  return useEditorState(
+    Substores.propertyControlsInfo,
+    (store) => {
+      return store.editor.selectedViews.every((target) => {
+        const { propertyControlsInfo, projectContents } = store.editor
+        const descriptor = getComponentDescriptorForTarget(
+          { propertyControlsInfo, projectContents },
+          target,
+        )
+
+        if (descriptor == null || descriptor.inspector == null) {
+          return shouldExpandFromElementOrComponent
+        }
+
+        if (descriptor.inspector.type === 'hidden') {
+          return false
+        }
+
+        switch (descriptor.inspector.display) {
+          case 'collapsed':
+            return false
+          case 'expanded':
+            return true
+          default:
+            assertNever(descriptor.inspector.display)
+        }
+      })
+    },
+    'useShouldExpandStyleSection shouldExpandFromComponentDescription',
+  )
+}
+
+function useShouldHideInspectorSections(): boolean {
+  return useEditorState(
+    Substores.propertyControlsInfo,
+    (store) =>
+      store.editor.selectedViews.some((target) => {
+        const { propertyControlsInfo, projectContents } = store.editor
+        const descriptor = getComponentDescriptorForTarget(
+          { propertyControlsInfo, projectContents },
+          target,
+        )
+
+        if (descriptor?.inspector == null) {
+          return false
+        }
+
+        return descriptor.inspector.type === 'hidden'
+      }),
+
+    'Inspector inspectorPreferences',
+  )
+}

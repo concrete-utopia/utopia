@@ -6,10 +6,9 @@ import {
   MetadataUtils,
 } from '../../../../core/model/element-metadata-utils'
 import { isImg } from '../../../../core/model/project-file-utils'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { mapDropNulls, stripNulls } from '../../../../core/shared/array-utils'
 import { foldEither } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { elementPath } from '../../../../core/shared/element-path'
 import type {
   ElementInstanceMetadataMap,
   JSXAttributes,
@@ -34,7 +33,9 @@ import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-rep
 import type { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
 import {
   findCanvasStrategy,
+  findElementPathUnderInteractionPoint,
   getWrapperWithGeneratedUid,
+  getWrappingCommands,
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
   RegisteredCanvasStrategies,
@@ -54,6 +55,7 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { boundingArea } from '../interaction-state'
+import type { ParentDisplayType } from './reparent-metastrategy'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 import type { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
@@ -65,7 +67,17 @@ import { wrapInContainerCommand } from '../../commands/wrap-in-container-command
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
+import { gridDrawToInsertStrategy } from './grid-draw-to-insert-strategy'
+import { assertNever } from '../../../../core/shared/utils'
 
+/**
+ *
+ * NOTE: https://github.com/concrete-utopia/utopia/pull/5819 deleted a bunch of
+ * tests for this strategy that relied on the legacy insert menu.
+ *
+ * ! IF YOU WORK ON THIS, PLEASE RESURRECT THE TESTS AND MAKE THEM USE THE 'F' SHORTCUT !
+ *
+ */
 export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
@@ -85,6 +97,22 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   if (insertionSubjects.length != 1) {
     return []
   }
+  const insertionSubject = insertionSubjects[0]
+  if (insertionSubject.textEdit) {
+    return []
+  }
+
+  const targetParent = findElementPathUnderInteractionPoint(canvasState, interactionSession)
+
+  if (
+    MetadataUtils.isGridLayoutedContainer(
+      MetadataUtils.findElementByElementPath(canvasState.startingMetadata, targetParent),
+    )
+  ) {
+    return stripNulls([
+      gridDrawToInsertStrategy(canvasState, interactionSession, customStrategyState),
+    ])
+  }
 
   const pointOnCanvas =
     interactionSession.interactionData.type === 'DRAG'
@@ -94,7 +122,7 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
   const applicableReparentFactories = getApplicableReparentFactories(
     canvasState,
     pointOnCanvas,
-    interactionSession.interactionData.modifiers.cmd,
+    true, // cmd is necessary to allow reparenting
     true,
     'allow-smaller-parent',
     customStrategyState,
@@ -118,7 +146,7 @@ export const drawToInsertMetaStrategy: MetaCanvasStrategy = (
 
 export function getDrawToInsertStrategyName(
   strategyType: ReparentStrategy,
-  parentDisplayType: 'flex' | 'flow',
+  parentDisplayType: ParentDisplayType,
 ): string {
   switch (strategyType) {
     case 'REPARENT_AS_ABSOLUTE':
@@ -126,9 +154,15 @@ export function getDrawToInsertStrategyName(
     case 'REPARENT_AS_STATIC':
       if (parentDisplayType === 'flex') {
         return 'Draw to Insert (Flex)'
+      } else if (parentDisplayType === 'grid') {
+        return 'Draw to Insert (Grid)'
       } else {
         return 'Draw to Insert (Flow)'
       }
+    case 'REPARENT_INTO_GRID':
+      return 'Draw to Insert (Grid)'
+    default:
+      assertNever(strategyType)
   }
 }
 
@@ -181,7 +215,7 @@ export function drawToInsertStrategyFactory(
         show: 'visible-only-while-active',
       }),
     ], // Uses existing hooks in select-mode-hooks.tsx
-    fitness: !insertionSubject.textEdit && drawToInsertFitness(interactionSession) ? fitness : 0,
+    fitness: drawToInsertFitness(interactionSession) ? fitness : 0,
     apply: (strategyLifecycle) => {
       const rootPath = getRootPath(canvasState.startingMetadata)
       if (interactionSession != null) {
@@ -310,27 +344,7 @@ export function drawToInsertStrategyFactory(
               const newPath = EP.appendToPath(targetParent.intendedParentPath, insertionSubject.uid)
 
               const optionalWrappingCommand =
-                maybeWrapperWithUid != null
-                  ? [
-                      updateFunctionCommand(
-                        'always',
-                        (editorState, lifecycle): Array<EditorStatePatch> =>
-                          foldAndApplyCommandsInner(
-                            editorState,
-                            [],
-                            [
-                              wrapInContainerCommand(
-                                'always',
-                                newPath,
-                                maybeWrapperWithUid.uid,
-                                maybeWrapperWithUid.wrapper,
-                              ),
-                            ],
-                            lifecycle,
-                          ).statePatches,
-                      ),
-                    ]
-                  : []
+                maybeWrapperWithUid != null ? getWrappingCommands(newPath, maybeWrapperWithUid) : []
 
               return strategyApplicationResult(
                 [insertionCommand.command, reparentCommand, ...optionalWrappingCommand],
@@ -483,7 +497,7 @@ function getInsertionCommands(
   return null
 }
 
-function getStyleAttributesForFrameInAbsolutePosition(
+export function getStyleAttributesForFrameInAbsolutePosition(
   subject: InsertionSubject,
   frame: CanvasRectangle,
 ) {
@@ -541,7 +555,7 @@ function getStyleAttributesForFixedPositionAndSizeHug(
   )
 }
 
-function updateInsertionSubjectWithAttributes(
+export function updateInsertionSubjectWithAttributes(
   subject: InsertionSubject,
   updatedAttributes: JSXAttributes,
 ): InsertionSubject {

@@ -1,3 +1,4 @@
+import { assertNever } from '../../core/shared/utils'
 import type { Key } from '../../utils/keyboard'
 import { Keyboard } from '../../utils/keyboard'
 import type { ComplexMap } from '../../utils/map'
@@ -44,11 +45,9 @@ export const DUPLICATE_SELECTION_SHORTCUT = 'duplicate-selection'
 export const TOGGLE_BACKGROUND_SHORTCUT = 'toggle-background'
 export const UNWRAP_ELEMENT_SHORTCUT = 'unwrap-element'
 export const WRAP_ELEMENT_PICKER_SHORTCUT = 'wrap-element-picker'
-export const GROUP_ELEMENT_PICKER_SHORTCUT = 'group-element-picker'
 export const GROUP_ELEMENT_DEFAULT_SHORTCUT = 'group-element-default'
 export const TOGGLE_HIDDEN_SHORTCUT = 'toggle-hidden'
 export const INSERT_IMAGE_SHORTCUT = 'insert-image'
-export const TOGGLE_PREVIEW_SHORTCUT = 'toggle-preview'
 export const TOGGLE_LIVE_CANVAS_SHORTCUT = 'toggle-live-canvas'
 export const START_RENAMING_SHORTCUT = 'start-renaming'
 export const INSERT_RECTANGLE_SHORTCUT = 'insert-rectangle'
@@ -86,10 +85,11 @@ export const REMOVE_ABSOLUTE_POSITIONING = 'remove-absolute-positioning'
 export const RESIZE_TO_FIT = 'resize-to-fit'
 export const OPEN_INSERT_MENU = 'open-insert-menu'
 export const WRAP_IN_DIV = 'wrap-in-div'
+export const CONVERT_TO_GRID_CONTAINER = 'convert-to-grid-container'
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
-const shortcutDetailsWithDefaults: ShortcutDetails = {
+export const shortcutDetailsWithDefaults: ShortcutDetails = {
   [DELETE_SELECTED_SHORTCUT]: shortcut('Delete the selected element.', [
     key('delete', []),
     key('backspace', []),
@@ -150,14 +150,9 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     key('g', ['cmd', 'shift']),
   ),
   [WRAP_ELEMENT_PICKER_SHORTCUT]: shortcut('Wrap elements with a selected element.', key('w', [])),
-  [GROUP_ELEMENT_PICKER_SHORTCUT]: shortcut(
-    'Group elements with a selected element.',
-    key('g', []),
-  ),
   [GROUP_ELEMENT_DEFAULT_SHORTCUT]: shortcut('Group elements with a div.', key('g', 'cmd')),
   [TOGGLE_HIDDEN_SHORTCUT]: shortcut('Toggle element as hidden.', key('h', ['cmd', 'shift'])),
   [INSERT_IMAGE_SHORTCUT]: shortcut('Insert an image.', key('i', [])),
-  [TOGGLE_PREVIEW_SHORTCUT]: shortcut('Toggle the preview panel.', key('p', 'cmd')),
   [TOGGLE_LIVE_CANVAS_SHORTCUT]: shortcut(
     'Toggle the canvas between live and edit mode.',
     key('p', ['cmd', 'shift']),
@@ -237,6 +232,10 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [CONVERT_TO_FLEX_CONTAINER]: shortcut(
     'Convert selected elements to flex containers',
     key('a', ['shift']),
+  ),
+  [CONVERT_TO_GRID_CONTAINER]: shortcut(
+    'Convert selected elements to grid containers',
+    key('a', ['shift', 'alt']),
   ),
   [REMOVE_ABSOLUTE_POSITIONING]: shortcut(`Strip absolute sizing props props`, key('x', [])),
   [COPY_STYLE_PROPERTIES]: shortcut('Copy style properties', key('c', ['alt', 'cmd'])),
@@ -341,4 +340,32 @@ export function handleShortcuts<T>(
       return callback()
     }
   }
+}
+
+export function keyToString(shortcutKey: Key): string {
+  const mods = shortcutKey.modifiers.map((m) => {
+    switch (m) {
+      case 'alt':
+        return '⌥'
+      case 'cmd':
+        return '⌘'
+      case 'ctrl':
+        return '^'
+      case 'shift':
+        return '⬆'
+      default:
+        assertNever(m)
+    }
+  })
+
+  const char = () => {
+    switch (shortcutKey.character) {
+      case 'period':
+        return '.'
+      default:
+        return shortcutKey.character
+    }
+  }
+
+  return [...mods, char()].join('')
 }

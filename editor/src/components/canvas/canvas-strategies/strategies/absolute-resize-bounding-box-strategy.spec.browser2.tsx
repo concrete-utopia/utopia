@@ -77,6 +77,7 @@ import {
   SmallElementSize,
 } from '../../controls/bounding-box-hooks'
 import { act } from 'react-dom/test-utils'
+import { ComponentsHonouringPropsStylesProject } from './common-projects.test-utils'
 
 // no mouseup here! it starts the interaction and resizes with drag delta
 async function startDragUsingActions(
@@ -697,6 +698,297 @@ describe('Absolute Resize Strategy', () => {
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       projectDoesHonourSizeProperties(340, 275),
     )
+  })
+  it('resizes a component instance that honours the size properties by updating the instance', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      ComponentsHonouringPropsStylesProject,
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString('storyboard/scene/mycompdiv')
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+
+    expect(renderResult.renderedDOM.getByTestId('parent-resize-label')).toBeTruthy()
+
+    const dragDelta = windowPoint({ x: 0, y: 30 })
+    await resizeElement(renderResult, dragDelta, EdgePositionBottom, emptyModifiers)
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState()))
+      .toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export const MyCompDiv = (props) => {
+  return (
+    <div
+      data-uid='mycompdivinnerdiv'
+      data-testid='mycompdivinnerdiv'
+      style={props.style}
+    >
+      MyCompDiv
+    </div>
+  )
+}
+
+export const MyCompFrag = (props) => {
+  return (
+    <>
+      <div
+        data-uid='mycompfraginnerdiv'
+        data-testid='mycompfraginnerdiv'
+        style={props.style}
+      >
+        MyCompFrag
+      </div>
+    </>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-uid='scene'
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 118,
+        top: 172,
+        width: 300,
+        height: 300,
+      }}
+    >
+      <MyCompDiv
+        data-uid='mycompdiv'
+        style={{
+          position: 'absolute',
+          width: 137,
+          height: 121,
+          left: 137,
+          top: 36,
+        }}
+      />
+      <MyCompFrag
+        data-uid='mycompfrag'
+        style={{
+          position: 'absolute',
+          width: 150,
+          height: 60.5,
+          left: 21,
+          top: 36,
+        }}
+      />
+      <div
+        data-uid='regulardiv'
+        data-testid='regulardiv'
+        style={{
+          position: 'absolute',
+          backgroundColor: 'lightblue',
+          left: 171,
+          top: 109,
+          height: 93,
+          width: 108,
+        }}
+      >
+        Regular Div
+      </div>
+    </div>
+  </Storyboard>
+)
+`)
+  })
+  it('resizes a component instance that honours the size properties (inside a fragment) by updating the instance', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      ComponentsHonouringPropsStylesProject,
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString('storyboard/scene/mycompfrag')
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+
+    expect(renderResult.renderedDOM.getByTestId('parent-resize-label')).toBeTruthy()
+
+    const dragDelta = windowPoint({ x: 0, y: 30 })
+    await resizeElement(renderResult, dragDelta, EdgePositionBottom, emptyModifiers)
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState()))
+      .toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export const MyCompDiv = (props) => {
+  return (
+    <div
+      data-uid='mycompdivinnerdiv'
+      data-testid='mycompdivinnerdiv'
+      style={props.style}
+    >
+      MyCompDiv
+    </div>
+  )
+}
+
+export const MyCompFrag = (props) => {
+  return (
+    <>
+      <div
+        data-uid='mycompfraginnerdiv'
+        data-testid='mycompfraginnerdiv'
+        style={props.style}
+      >
+        MyCompFrag
+      </div>
+    </>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-uid='scene'
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 118,
+        top: 172,
+        width: 300,
+        height: 300,
+      }}
+    >
+      <MyCompDiv
+        data-uid='mycompdiv'
+        style={{
+          position: 'absolute',
+          width: 137,
+          height: 91.5,
+          left: 137,
+          top: 36,
+        }}
+      />
+      <MyCompFrag
+        data-uid='mycompfrag'
+        style={{
+          position: 'absolute',
+          width: 150,
+          height: 93,
+          left: 21,
+          top: 36,
+        }}
+      />
+      <div
+        data-uid='regulardiv'
+        data-testid='regulardiv'
+        style={{
+          position: 'absolute',
+          backgroundColor: 'lightblue',
+          left: 171,
+          top: 109,
+          height: 93,
+          width: 108,
+        }}
+      >
+        Regular Div
+      </div>
+    </div>
+  </Storyboard>
+)
+`)
+  })
+  it('resizes a regular div by updating it', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      ComponentsHonouringPropsStylesProject,
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString('storyboard/scene/regulardiv')
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+
+    expect(renderResult.renderedDOM.getByTestId('parent-resize-label')).toBeTruthy()
+
+    const dragDelta = windowPoint({ x: 0, y: 30 })
+    await resizeElement(renderResult, dragDelta, EdgePositionBottom, emptyModifiers)
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState()))
+      .toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export const MyCompDiv = (props) => {
+  return (
+    <div
+      data-uid='mycompdivinnerdiv'
+      data-testid='mycompdivinnerdiv'
+      style={props.style}
+    >
+      MyCompDiv
+    </div>
+  )
+}
+
+export const MyCompFrag = (props) => {
+  return (
+    <>
+      <div
+        data-uid='mycompfraginnerdiv'
+        data-testid='mycompfraginnerdiv'
+        style={props.style}
+      >
+        MyCompFrag
+      </div>
+    </>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-uid='scene'
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 118,
+        top: 172,
+        width: 300,
+        height: 300,
+      }}
+    >
+      <MyCompDiv
+        data-uid='mycompdiv'
+        style={{
+          position: 'absolute',
+          width: 137,
+          height: 91.5,
+          left: 137,
+          top: 36,
+        }}
+      />
+      <MyCompFrag
+        data-uid='mycompfrag'
+        style={{
+          position: 'absolute',
+          width: 150,
+          height: 60.5,
+          left: 21,
+          top: 36,
+        }}
+      />
+      <div
+        data-uid='regulardiv'
+        data-testid='regulardiv'
+        style={{
+          position: 'absolute',
+          backgroundColor: 'lightblue',
+          left: 171,
+          top: 109,
+          height: 123,
+          width: 108,
+        }}
+      >
+        Regular Div
+      </div>
+    </div>
+  </Storyboard>
+)
+`)
   })
   it('does not resize a component instance that does not honour the size properties', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -2163,6 +2455,7 @@ export var storyboard = (
         expect(span.clientWidth).toEqual(88)
         expect(isBetween(span.clientHeight, 37, 39)).toBe(true)
       })
+
       it('does not resize text elements past their intrinsic size when zoomed in', async () => {
         const renderResult = await renderTestEditorWithCode(
           formatTestProjectCode(`
@@ -3123,6 +3416,96 @@ describe('Double click on resize edge', () => {
     const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionRight))
     expect(div.style.width).toEqual(MaxContent)
     expect(div.style.height).toEqual('445px')
+  })
+
+  describe('grids', () => {
+    const project = ({
+      rows: rows,
+      columns: columns,
+    }: {
+      rows: string
+      columns: string
+    }) => `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='sc'
+    >
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateRows: '${rows}',
+          gridTemplateColumns: '${columns}',
+          backgroundColor: '#0074ff',
+          position: 'absolute',
+          left: 135,
+          top: 55,
+          width: 400,
+          height: 400,
+          opacity: '30%',
+        }}
+        data-uid='grid'
+        data-testid='mydiv'
+      >
+        <img
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.png?raw=true'
+          alt='Utopia logo'
+          style={{
+            objectFit: 'contain',
+            display: 'inline-block',
+            width: 100,
+            height: 100,
+            gridColumnStart: 2,
+            gridColumnEnd: 2,
+            gridRowStart: 2,
+            gridRowEnd: 2,
+          }}
+          data-uid='smyramid'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+    it('removes width when right edge is clicked', async () => {
+      const editor = await renderTestEditorWithCode(
+        project({ rows: '66px 66px 66px 66px', columns: '50px 81px 96px 85px' }),
+        'await-first-dom-report',
+      )
+      const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionRight))
+      expect(div.style.width).toEqual('') // width is removed
+      expect(div.style.height).toEqual('400px')
+    })
+    it('removes height when bottom edge is clicked', async () => {
+      const editor = await renderTestEditorWithCode(
+        project({ rows: '66px 66px 66px 66px', columns: '50px 81px 96px 85px' }),
+        'await-first-dom-report',
+      )
+      const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionBottom))
+      expect(div.style.width).toEqual('400px')
+      expect(div.style.height).toEqual('') // height is removed
+    })
+    it("isn't applicable when the selected grid uses fr along the affected axis", async () => {
+      const editor = await renderTestEditorWithCode(
+        project({ rows: '66px 1fr 66px 66px', columns: '50px 81px 96px 85px' }),
+        'await-first-dom-report',
+      )
+      const div = await doDblClickTest(editor, edgeResizeControlTestId(EdgePositionBottom))
+      expect(div.style.width).toEqual('400px')
+      expect(div.style.height).toEqual('400px')
+    })
   })
 })
 

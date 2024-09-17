@@ -70,6 +70,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_CODE_EDITOR_LINT_ERRORS':
     case 'SET_CODE_EDITOR_COMPONENT_DESCRIPTOR_ERRORS':
     case 'SAVE_DOM_REPORT':
+    case 'UPDATE_METADATA_IN_EDITOR_STATE':
     case 'RUN_DOM_WALKER':
     case 'SET_FILEBROWSER_RENAMING_TARGET':
     case 'UPDATE_DUPLICATION_STATE':
@@ -107,8 +108,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'FOCUS_CLASS_NAME_INPUT':
     case 'FOCUS_FORMULA_BAR':
     case 'UPDATE_FORMULA_BAR_MODE':
-    case 'OPEN_FLOATING_INSERT_MENU':
-    case 'CLOSE_FLOATING_INSERT_MENU':
     case 'SET_PROP_TRANSIENT':
     case 'CLEAR_TRANSIENT_PROPS':
     case 'DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
@@ -139,6 +138,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_SHARING_DIALOG_OPEN':
     case 'RESET_ONLINE_STATE':
     case 'INCREASE_ONLINE_STATE_FAILURE_COUNT':
+    case 'SET_ERROR_BOUNDARY_HANDLING':
       return true
 
     case 'TRUE_UP_ELEMENTS':
@@ -150,6 +150,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DELETE_VIEW':
     case 'UNSET_PROPERTY':
     case 'INSERT_JSX_ELEMENT':
+    case 'REPLACE_JSX_ELEMENT':
     case 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT':
     case 'MOVE_SELECTED_TO_BACK':
     case 'MOVE_SELECTED_TO_FRONT':
@@ -171,6 +172,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'ALIGN_SELECTED_VIEWS':
     case 'DISTRIBUTE_SELECTED_VIEWS':
     case 'TOGGLE_HIDDEN':
+    case 'TOGGLE_DATA_CAN_CONDENSE':
     case 'UPDATE_FILE_PATH':
     case 'UPDATE_REMIX_ROUTE':
     case 'ADD_FOLDER':
@@ -208,13 +210,13 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_MAP_COUNT_OVERRIDE':
     case 'SWITCH_CONDITIONAL_BRANCHES':
     case 'UPDATE_CONIDTIONAL_EXPRESSION':
-    case 'UPDATE_MAP_EXPRESSION':
     case 'CUT_SELECTION_TO_CLIPBOARD':
     case 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE':
     case 'UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE':
     case 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE':
     case 'UPDATE_CODE_FROM_COLLABORATION_UPDATE':
     case 'REPLACE_MAPPED_ELEMENT':
+    case 'REPLACE_ELEMENT_IN_SCOPE':
       return false
     case 'SAVE_ASSET':
       return (

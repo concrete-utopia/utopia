@@ -17,7 +17,7 @@ import type { ContextMenuItem } from '../../../../context-menu-items'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues, removeRow } from '../../../common/context-menu-items'
 import type { ControlStatus } from '../../../common/control-status'
-import type { ControlStyles } from '../../../common/control-styles'
+import { type ControlStyles } from '../../../common/control-styles'
 import type {
   CSSBoxShadow,
   CSSBoxShadows,
@@ -33,7 +33,7 @@ import {
   cssDefault,
   toggleShadowEnabled,
 } from '../../../common/css-utils'
-import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
+import { RemovePropertyButton, useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import type { UseSubmitValueFactory } from '../../../common/property-path-hooks'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
@@ -223,43 +223,51 @@ const ShadowItem = React.memo<ShadowItemProps>((props) => {
           propsArray={[
             {
               value: props.value.offsetX,
-              DEPRECATED_labelBelow: 'x',
+              innerLabel: 'X',
               onSubmitValue: offsetXSubmitValue,
               onTransientSubmitValue: offsetXTransientSubmitValue,
               controlStatus: props.controlStatus,
               numberType: 'Length',
               defaultUnitToHide: 'px',
               testId: 'boxShadow-x',
+              stepSize: 0.1,
+              incrementControls: false,
             },
             {
               value: props.value.offsetY,
-              DEPRECATED_labelBelow: 'y',
+              innerLabel: 'Y',
               onSubmitValue: offsetYSubmitValue,
               onTransientSubmitValue: offsetYTransientSubmitValue,
               controlStatus: props.controlStatus,
               numberType: 'Length',
               defaultUnitToHide: 'px',
               testId: 'boxShadow-y',
+              stepSize: 0.1,
+              incrementControls: false,
             },
             {
               value: props.value.blurRadius.value,
-              DEPRECATED_labelBelow: 'blur',
+              innerLabel: 'B',
               onSubmitValue: blurRadiusSubmitValue,
               onTransientSubmitValue: blurRadiusTransientSubmitValue,
               controlStatus: props.controlStatus,
               numberType: 'Length',
               defaultUnitToHide: 'px',
               testId: 'boxShadow-blur',
+              stepSize: 0.1,
+              incrementControls: false,
             },
             {
               value: props.value.spreadRadius.value,
-              DEPRECATED_labelBelow: 'spread',
+              innerLabel: 'S',
               onSubmitValue: spreadRadiusSubmitValue,
               onTransientSubmitValue: spreadRadiusTransientSubmitValue,
               controlStatus: props.controlStatus,
               numberType: 'Length',
               defaultUnitToHide: 'px',
               testId: 'boxShadow-spread',
+              stepSize: 0.1,
+              incrementControls: false,
             },
           ]}
         />
@@ -308,23 +316,14 @@ export const ShadowSubsection = React.memo(() => {
           <span>Shadow</span>
         </FlexRow>
         {propertyStatus.overwritable ? (
-          <FlexRow style={{ gap: 4 }}>
-            <SquareButton
-              highlight
-              onMouseDown={onUnsetValues}
-              data-testid={'inspector-shadow-remove-all'}
-              style={{ width: 12 }}
-            >
-              <Icn category='semantic' type='cross' width={12} height={12} />
-            </SquareButton>
-            <SquareButton highlight onMouseDown={insertShadowValue} style={{ width: 12 }}>
-              <Icn
-                onMouseDown={insertShadowValue}
-                category='semantic'
-                type='plus'
-                width={12}
-                height={12}
-              />
+          <FlexRow>
+            <RemovePropertyButton
+              testId='inspector-shadow-remove-all'
+              onUnsetValues={onUnsetValues}
+              propertySet={propertyStatus.set}
+            />
+            <SquareButton highlight onMouseDown={insertShadowValue}>
+              <Icons.SmallPlus />
             </SquareButton>
           </FlexRow>
         ) : null}

@@ -45,7 +45,15 @@ export type Focus = (typeof FocusOptions)[number]
 export const StylingOptions = ['layout', 'layout-system', 'visual', 'typography'] as const
 export type Styling = (typeof StylingOptions)[number]
 
-export type InspectorSpec = 'all' | Styling[]
+export const DisplayOptions = ['expanded', 'collapsed'] as const
+export type Display = (typeof DisplayOptions)[number]
+
+export interface SectionSpec {
+  display?: Display
+  sections?: Styling[]
+}
+
+export type InspectorSpec = 'hidden' | SectionSpec
 
 export const EmphasisOptions = ['subdued', 'regular', 'emphasized'] as const
 export type Emphasis = (typeof EmphasisOptions)[number]
@@ -95,6 +103,7 @@ export interface ComponentToRegister {
   inspector?: InspectorSpec
   emphasis?: Emphasis
   icon?: Icon
+  label?: string
   variants?: ComponentExample | Array<ComponentExample>
 }
 

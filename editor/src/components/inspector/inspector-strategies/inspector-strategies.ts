@@ -3,20 +3,26 @@ import { setProperty } from '../../canvas/commands/set-property-command'
 import type { Axis, FlexAlignment, FlexJustifyContent } from '../inspector-common'
 import {
   filterKeepFlexContainers,
+  filterKeepGridContainers,
   flexChildProps,
+  gridContainerProps,
   prunePropsCommands,
   sizeToVisualDimensions,
 } from '../inspector-common'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import type { CSSNumber, FlexDirection } from '../common/css-utils'
-import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
+import {
+  removeFlexConvertToAbsolute,
+  removeGridConvertToAbsolute,
+} from './remove-flex-convert-to-absolute-strategy'
 import type { InspectorStrategy } from './inspector-strategy'
 import type { WhenToRun } from '../../../components/canvas/commands/commands'
 import {
   hugContentsAbsoluteStrategy,
   hugContentsBasicStrategy,
-} from './hug-contents-basic-strategy'
+  hugContentsGridStrategy,
+} from './hug-contents-strategy'
 import {
   fillContainerStrategyFlexParent,
   fillContainerStrategyFlow,
@@ -29,6 +35,7 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { AllElementProps } from '../../editor/store/editor-state'
+import { convertLayoutToGridCommands } from '../../common/shared-strategies/convert-to-grid-strategy'
 
 export const setFlexAlignStrategies = (
   metadata: ElementInstanceMetadataMap,
@@ -133,7 +140,7 @@ export const updateFlexDirectionStrategies = (
 
       return elements.flatMap((path) => [
         setProperty('always', path, PP.create('style', 'flexDirection'), flexDirection),
-        ...MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, path).flatMap((child) => [
+        ...MetadataUtils.getChildrenPathsOrdered(pathTrees, path).flatMap((child) => [
           ...prunePropsCommands(flexChildProps, child),
           ...sizeToVisualDimensions(metadata, pathTrees, child),
         ]),
@@ -156,6 +163,20 @@ export const addFlexLayoutStrategies = (
   },
 ]
 
+export const addGridLayoutStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
+): Array<InspectorStrategy> => [
+  {
+    name: 'Add grid layout',
+    strategy: () => {
+      return convertLayoutToGridCommands(metadata, elementPathTree, elementPaths, allElementProps)
+    },
+  },
+]
+
 export const removeFlexLayoutStrategies = (
   metadata: ElementInstanceMetadataMap,
   elementPaths: ElementPath[],
@@ -174,6 +195,26 @@ export const removeFlexLayoutStrategies = (
       return elements.map((path) =>
         deleteProperties('always', path, [PP.create('style', 'display')]),
       )
+    },
+  },
+]
+
+export const removeGridLayoutStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+  pathTrees: ElementPathTrees,
+): Array<InspectorStrategy> => [
+  removeGridConvertToAbsolute(metadata, elementPaths, pathTrees),
+  {
+    name: 'Remove grid layout',
+    strategy: () => {
+      const elements = filterKeepGridContainers(metadata, elementPaths)
+
+      if (elements.length === 0) {
+        return null
+      }
+
+      return elements.map((path) => deleteProperties('always', path, gridContainerProps))
     },
   },
 ]
@@ -204,7 +245,10 @@ export const setPropHugStrategies = (
   elementPaths: ElementPath[],
   pathTrees: ElementPathTrees,
   axis: Axis,
-): Array<InspectorStrategy> => [hugContentsBasicStrategy(metadata, elementPaths, pathTrees, axis)]
+): Array<InspectorStrategy> => [
+  hugContentsGridStrategy(metadata, elementPaths, axis),
+  hugContentsBasicStrategy(metadata, elementPaths, pathTrees, axis),
+]
 
 export const setPropHugAbsoluteStrategies = (
   metadata: ElementInstanceMetadataMap,

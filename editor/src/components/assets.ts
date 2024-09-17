@@ -7,7 +7,12 @@ import type {
   AssetFile,
   ParseSuccess,
 } from '../core/shared/project-file-types'
-import { directory, isDirectory, isImageFile } from '../core/shared/project-file-types'
+import {
+  directory,
+  isDirectory,
+  isImageFile,
+  RevisionsState,
+} from '../core/shared/project-file-types'
 import { isTextFile, isParseSuccess, isAssetFile } from '../core/shared/project-file-types'
 import Utils from '../utils/utils'
 import { dropLeadingSlash } from './filebrowser/filepath-utils'
@@ -17,13 +22,25 @@ import { emptySet } from '../core/shared/set-utils'
 import { sha1 } from 'sha.js'
 import type { GithubFileChanges, TreeConflicts } from '../core/shared/github/helpers'
 import type { FileChecksumsWithFile } from './editor/store/editor-state'
-import { memoize } from '../core/shared/memoize'
-import type { Optic } from '../core/shared/optics/optics'
-import { traversal } from '../core/shared/optics/optics'
-
-export interface AssetFileWithFileName {
-  fileName: string
-  file: ImageFile | AssetFile
+import { memoize, valueDependentCache } from '../core/shared/memoize'
+import { makeOptic, type Optic } from '../core/shared/optics/optics'
+import type {
+  AssetFileWithFileName,
+  ProjectContentTreeRoot,
+  ProjectContentDirectory,
+  ProjectContentFile,
+  ProjectContentsTree,
+  PathAndFileEntry,
+} from 'utopia-shared/src/types/assets'
+import { filtered, fromField, fromTypeGuard } from '../core/shared/optics/optic-creators'
+import { anyBy, toArrayOf } from '../core/shared/optics/optic-utilities'
+export type {
+  AssetFileWithFileName,
+  ProjectContentTreeRoot,
+  ProjectContentDirectory,
+  ProjectContentFile,
+  ProjectContentsTree,
+  PathAndFileEntry,
 }
 
 export function getAllProjectAssetFiles(
@@ -192,17 +209,6 @@ export function deriveGithubFileChanges(
   }
 }
 
-// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export type ProjectContentTreeRoot = { [key: string]: ProjectContentsTree }
-
-// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs
-export interface ProjectContentDirectory {
-  type: 'PROJECT_CONTENT_DIRECTORY'
-  fullPath: string
-  directory: Directory
-  children: ProjectContentTreeRoot
-}
-
 export function projectContentDirectory(
   fullPath: string,
   dir: Directory,
@@ -216,13 +222,6 @@ export function projectContentDirectory(
   }
 }
 
-// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export interface ProjectContentFile {
-  type: 'PROJECT_CONTENT_FILE'
-  fullPath: string
-  content: TextFile | ImageFile | AssetFile
-}
-
 export function projectContentFile(
   fullPath: string,
   content: TextFile | ImageFile | AssetFile,
@@ -233,9 +232,6 @@ export function projectContentFile(
     content: content,
   }
 }
-
-// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export type ProjectContentsTree = ProjectContentDirectory | ProjectContentFile
 
 export function isProjectContentDirectory(
   projectContentsTree: ProjectContentsTree | null,
@@ -383,18 +379,11 @@ export function walkContentsTree(
   })
 }
 
-export interface PathAndFileEntry {
-  fullPath: string
-  file: ProjectFile
-}
-
-export const contentsTreeOptic: Optic<ProjectContentTreeRoot, PathAndFileEntry> = traversal(
-  (tree) => {
-    let result: Array<PathAndFileEntry> = []
+export const contentsTreeOptic: Optic<ProjectContentTreeRoot, PathAndFileEntry> = makeOptic(
+  (tree, callback) => {
     walkContentsTree(tree, (fullPath, file) => {
-      result.push({ fullPath: fullPath, file: file })
+      callback({ fullPath: fullPath, file: file })
     })
-    return result
   },
   (tree: ProjectContentTreeRoot, modify: (entry: PathAndFileEntry) => PathAndFileEntry) => {
     let result: ProjectContentTreeRoot = {}
@@ -405,6 +394,32 @@ export const contentsTreeOptic: Optic<ProjectContentTreeRoot, PathAndFileEntry> 
     return result
   },
 )
+
+export function anyCodeAhead(tree: ProjectContentTreeRoot): boolean {
+  const revisionsStateOptic = contentsTreeOptic
+    .compose(fromField('file'))
+    .compose(fromTypeGuard(isTextFile))
+    .compose(fromField('fileContents'))
+    .compose(filtered((f) => f.parsed.type === 'PARSE_SUCCESS'))
+    .compose(fromField('revisionsState'))
+
+  return anyBy(
+    revisionsStateOptic,
+    (revisionsState) => {
+      switch (revisionsState) {
+        case 'BOTH_MATCH':
+        case 'PARSED_AHEAD':
+          return false
+        case 'CODE_AHEAD':
+        case 'CODE_AHEAD_BUT_PLEASE_TELL_VSCODE_ABOUT_IT':
+          return true
+        default:
+          assertNever(revisionsState)
+      }
+    },
+    tree,
+  )
+}
 
 export function walkContentsTreeForParseSuccess(
   tree: ProjectContentTreeRoot,
@@ -552,7 +567,12 @@ export function getContentsTreeFromElements(
   }
 }
 
-export function getProjectFileByFilePath(
+export const getProjectFileByFilePath = valueDependentCache(
+  getProjectFileByFilePathUncached,
+  (path) => path,
+)
+
+export function getProjectFileByFilePathUncached(
   tree: ProjectContentTreeRoot,
   path: string,
 ): ProjectFile | null {

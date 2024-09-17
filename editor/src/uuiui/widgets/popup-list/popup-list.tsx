@@ -106,8 +106,7 @@ const Option = (props: OptionProps<SelectOption>) => {
         {props.data.icon == null ? null : (
           <Icn
             {...props.data.icon}
-            // We override the color prop here so it can switch between dark and light depending on whether its highlighted (to always contrast the background)
-            color={props.isFocused ? 'on-highlight-main' : 'main'}
+            color={'white'}
             width={16}
             height={16}
             style={{ marginLeft: 4 }}
@@ -473,7 +472,7 @@ const SingleValue = (props: SingleValueProps<SelectOption>) => {
       )}
       <span
         data-testid={props.selectProps.id == null ? undefined : `${props.selectProps.id}-popuplist`}
-        style={{ paddingLeft: iconShown ? 22 : 4 }}
+        style={{ paddingLeft: iconShown ? 26 : 4 }}
       >
         {props.children}
       </span>
@@ -672,6 +671,13 @@ export const PopupList = React.memo<PopupListProps>(
               outline: '0 !important',
               position: 'relative',
               transition: 'all 100ms',
+              paddingRight: 4,
+              '&:hover': {
+                justifyContent: 'space-between',
+              },
+              '&:focus-within': {
+                justifyContent: 'space-between',
+              },
             }),
             singleValue: () => ({
               label: 'singleValue',
@@ -735,12 +741,11 @@ export const PopupList = React.memo<PopupListProps>(
               height: OptionHeight,
               boxSizing: 'border-box',
               overflow: 'hidden',
-              padding: `2px 2px 2px ${ValueContainerLeftPadding}px`,
+              padding: `2px 8px 2px ${ValueContainerLeftPadding}px`,
               position: 'relative',
               borderRadius: UtopiaTheme.inputBorderRadius,
               display: 'flex',
               alignItems: 'center',
-              flexGrow: containerMode === 'noBorder' ? 0 : 1,
             }),
             indicatorSeparator: displayNone,
             clearIndicator: displayNone,

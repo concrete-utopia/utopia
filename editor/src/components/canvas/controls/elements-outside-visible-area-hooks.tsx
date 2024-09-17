@@ -1,52 +1,22 @@
 import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
-import * as EP from '../../../core/shared/element-path'
-import type { CanvasRectangle, WindowPoint, WindowRectangle } from '../../../core/shared/math-utils'
+import { mapDropNulls } from '../../../core/shared/array-utils'
+import type { CanvasRectangle, WindowPoint } from '../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
   getRectCenter,
-  isFiniteRectangle,
   rectangleIntersection,
-  scaleRect,
   windowRectangle,
 } from '../../../core/shared/math-utils'
-import type { ElementPath } from '../../../core/shared/project-file-types'
-import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 
-const topBarHeight = 40 // px
-
-type ElementOutsideVisibleArea = {
-  path: ElementPath
-  rect: WindowRectangle
-}
-
 export type ElementOutsideVisibleAreaIndicator = {
-  elements: number
-  rect: CanvasRectangle
   position: WindowPoint
-  selected: boolean
 }
 
 export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndicator | null {
   const canvasBounds = document.getElementById('canvas-root')?.getBoundingClientRect()
-
-  const selectedViews = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews,
-    'useElementsOutsideVisibleArea selectedViews',
-  )
-
-  const highlightedViews = useEditorState(
-    Substores.highlightedHoveredViews,
-    (store) => store.editor.highlightedViews,
-    'useElementsOutsideVisibleArea highlightedViews',
-  )
-
-  const storeRef = useRefEditorState((store) => ({
-    jsxMetadata: store.editor.jsxMetadata,
-  }))
 
   const canvasScale = useEditorState(
     Substores.canvasOffset,
@@ -59,25 +29,6 @@ export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndica
     'useElementsOutsideVisibleArea canvasOffset',
   )
 
-  const elements = React.useMemo(() => {
-    return uniqBy([...selectedViews, ...highlightedViews], EP.pathsEqual)
-  }, [selectedViews, highlightedViews])
-
-  const framesByPathString = React.useMemo(() => {
-    const frames: { [key: string]: CanvasRectangle } = {}
-    for (const path of elements) {
-      const metadata = MetadataUtils.findElementByElementPath(storeRef.current.jsxMetadata, path)
-      if (
-        metadata != null &&
-        metadata.globalFrame != null &&
-        isFiniteRectangle(metadata.globalFrame)
-      ) {
-        frames[EP.toString(path)] = metadata.globalFrame
-      }
-    }
-    return frames
-  }, [storeRef, elements])
-
   const scaledCanvasArea = React.useMemo(() => {
     if (canvasBounds == null) {
       return null
@@ -85,63 +36,56 @@ export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndica
     const scaleRatio = canvasScale > 1 ? canvasScale : 1
     return windowRectangle({
       x: canvasBounds.x * scaleRatio,
-      y: (canvasBounds.y - topBarHeight) * scaleRatio,
+      y: canvasBounds.y * scaleRatio,
       width: canvasBounds.width,
       height: canvasBounds.height,
     })
   }, [canvasBounds, canvasScale])
 
-  const elementsOutsideVisibleArea = React.useMemo(() => {
-    return mapDropNulls((path: ElementPath): ElementOutsideVisibleArea | null => {
-      if (scaledCanvasArea == null) {
-        return null
-      }
-      const frame = framesByPathString[EP.toString(path)]
-      if (frame == null) {
+  const selectedElementsFrames: CanvasRectangle[] = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return mapDropNulls(
+        (view) => MetadataUtils.getFrameOrZeroRectInCanvasCoords(view, store.editor.jsxMetadata),
+        store.editor.selectedViews,
+      )
+    },
+    'useElementsOutsideVisibleArea selectedElementsFrames',
+  )
+
+  return React.useMemo(() => {
+    if (scaledCanvasArea == null) {
+      return null
+    }
+
+    const framesOutsideVisibleArea = mapDropNulls((frame) => {
+      if (frame.width === 0 || frame.height === 0) {
         return null
       }
 
       const topLeftPoint = canvasPointToWindowPoint(frame, canvasScale, canvasOffset)
-      const elementRect = windowRectangle({
+      const elementWindowRect = windowRectangle({
         x: topLeftPoint.x,
-        y: topLeftPoint.y - topBarHeight,
+        y: topLeftPoint.y,
         width: frame.width * canvasScale,
         height: frame.height * canvasScale,
       })
-
-      const isOutsideVisibleArea = rectangleIntersection(scaledCanvasArea, elementRect) == null
-      if (!isOutsideVisibleArea) {
+      if (rectangleIntersection(scaledCanvasArea, elementWindowRect) != null) {
         return null
       }
 
-      return {
-        path: path,
-        rect: elementRect,
-      }
-    }, elements)
-  }, [elements, canvasOffset, canvasScale, scaledCanvasArea, framesByPathString])
+      return elementWindowRect
+    }, selectedElementsFrames)
 
-  return React.useMemo((): ElementOutsideVisibleAreaIndicator | null => {
-    if (elementsOutsideVisibleArea.length === 0) {
-      return null
-    }
-    const windowRect = boundingRectangleArray(elementsOutsideVisibleArea.map((a) => a.rect))
+    const windowRect = boundingRectangleArray(framesOutsideVisibleArea)
     if (windowRect == null) {
       return null
     }
-    const canvasRect = boundingRectangleArray(
-      elementsOutsideVisibleArea.map((a) => framesByPathString[EP.toString(a.path)]),
-    )
-    if (canvasRect == null) {
-      return null
-    }
+
     return {
-      elements: elementsOutsideVisibleArea.length,
-      rect: canvasRect,
-      position: getRectCenter(scaleRect(windowRect, canvasScale)),
-      selected: elementsOutsideVisibleArea.some((e) => EP.containsPath(e.path, selectedViews)),
+      position: getRectCenter(windowRect),
     }
-  }, [elementsOutsideVisibleArea, framesByPathString, selectedViews, canvasScale])
+  }, [selectedElementsFrames, canvasOffset, canvasScale, scaledCanvasArea])
 }
 
 export function getIndicatorAngleToTarget(from: WindowPoint, to: WindowPoint): number {

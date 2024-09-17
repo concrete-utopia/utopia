@@ -1213,10 +1213,20 @@ export const GithubPane = React.memo(() => {
 
   const [refreshingGithubData, setRefreshingGithubData] = React.useState(false)
 
+  const projectId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.id,
+    'GithubPane projectId',
+  )
+
   const onClickRefresh = React.useCallback(() => {
+    if (projectId == null) {
+      return
+    }
     setRefreshingGithubData(true)
     void refreshGithubData(
       dispatch,
+      projectId,
       githubData.targetRepository,
       githubData.branchName,
       branchOriginContentsChecksums,
@@ -1227,7 +1237,7 @@ export const GithubPane = React.memo(() => {
     ).finally(() => {
       setRefreshingGithubData(false)
     })
-  }, [dispatch, githubData, branchOriginContentsChecksums])
+  }, [dispatch, githubData, branchOriginContentsChecksums, projectId])
 
   return (
     <div style={{ height: '100%', overflowY: 'scroll' }} onFocus={onFocus}>

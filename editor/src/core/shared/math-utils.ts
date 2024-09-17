@@ -60,6 +60,10 @@ export function canvasVector(vector: PointInner): CanvasVector {
   return vector as CanvasVector
 }
 
+export function windowVector(vector: PointInner): WindowVector {
+  return vector as WindowVector
+}
+
 export type Circle = {
   cx: number
   cy: number

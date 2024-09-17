@@ -65,7 +65,7 @@ describe('Monkey Function', () => {
   it('class components have a working context', () => {
     const MyContext = React.createContext({ value: 'wrong!' })
     class TestClass extends React.Component {
-      context: any
+      context: React.ContextType<typeof MyContext> = { value: '' }
       render() {
         return (
           <div data-uid='inner-div' data-path='inner-div'>
@@ -91,7 +91,7 @@ describe('Monkey Function', () => {
   it('class components have a working context, third variant', () => {
     const MyContext = React.createContext({ value: 'wrong!' })
     class TestClass extends React.Component {
-      context: any
+      context: React.ContextType<typeof MyContext> = { value: '' }
       render() {
         return (
           <div data-uid='inner-div' data-path='inner-div'>
@@ -354,6 +354,20 @@ describe('Monkey Function', () => {
 
     expect(renderToFormattedString(<Component data-uid={'test1'} />)).toMatchInlineSnapshot(`
       "<div data-uid=\\"test1\\">Hello!</div>
+      "
+    `)
+  })
+
+  it('Props get pushed down off of a fragment onto the children', () => {
+    const ElementThatIsReallyAFragment: any = React.Fragment as any
+    expect(
+      renderToFormattedString(
+        <ElementThatIsReallyAFragment style={{ backgroundColor: 'red' }}>
+          <div>Hello!</div>
+        </ElementThatIsReallyAFragment>,
+      ),
+    ).toMatchInlineSnapshot(`
+      "<div style=\\"background-color: red\\">Hello!</div>
       "
     `)
   })

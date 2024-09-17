@@ -2,7 +2,7 @@ import React from 'react'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import { assertNever, fastForEach } from '../../../core/shared/utils'
-import { useColorTheme } from '../../../uuiui'
+import { Icn, SquareButton, useColorTheme } from '../../../uuiui'
 import { useForceUpdate } from '../../editor/hook-utils'
 import type { OnSubmitValue } from '../controls/control'
 import type { ControlStatus } from './control-status'
@@ -235,4 +235,26 @@ export function useControlModeWithCycle(
   const resetMode = React.useCallback(() => setControlMode(null), [setControlMode])
 
   return [controlMode, cycleToNextMode, resetMode]
+}
+
+export interface RemovePropertyButtonProps {
+  onUnsetValues: () => void
+  propertySet: boolean
+  testId: string
+}
+
+export function RemovePropertyButton({
+  testId,
+  onUnsetValues,
+  propertySet,
+}: RemovePropertyButtonProps) {
+  if (!propertySet) {
+    return null
+  }
+
+  return (
+    <SquareButton highlight onMouseDown={onUnsetValues} data-testid={testId}>
+      <Icn category='semantic' type='cross' width={12} height={12} />
+    </SquareButton>
+  )
 }

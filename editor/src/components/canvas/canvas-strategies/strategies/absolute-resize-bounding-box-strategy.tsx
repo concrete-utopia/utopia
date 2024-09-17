@@ -77,6 +77,15 @@ export function absoluteResizeBoundingBoxStrategy(
 
   const { pathsWereReplaced, paths } = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
+  if (
+    pathsWereReplaced &&
+    originalTargets.some((originalTarget) =>
+      MetadataUtils.isComponentInstanceFromMetadata(canvasState.startingMetadata, originalTarget),
+    )
+  ) {
+    return null
+  }
+
   const retargetedTargets = flattenSelection(paths)
 
   if (
@@ -84,6 +93,12 @@ export function absoluteResizeBoundingBoxStrategy(
     !retargetedTargets.every((element) => {
       return supportsAbsoluteResize(canvasState.startingMetadata, element, canvasState)
     })
+  ) {
+    return null
+  }
+
+  if (
+    retargetedTargets.some((path) => MetadataUtils.isGridCell(canvasState.startingMetadata, path))
   ) {
     return null
   }
@@ -461,10 +476,11 @@ function getConstrainedSizes(
       constraints.right ||
       constraints.width
 
+    const localFrame = MetadataUtils.getLocalFrame(element.elementPath, jsxMetadata)
     if (
       isConstrained &&
-      element.localFrame != null &&
-      isFiniteRectangle(element.localFrame) &&
+      localFrame != null &&
+      isFiniteRectangle(localFrame) &&
       element.globalFrame != null &&
       isFiniteRectangle(element.globalFrame)
     ) {
@@ -487,16 +503,16 @@ function getConstrainedSizes(
           constraints.right,
           constraints.width,
           originalFrame.width,
-          element.localFrame.x,
-          element.localFrame.width + offsetDiffX,
+          localFrame.x,
+          localFrame.width + offsetDiffX,
         ),
         height: getBoundDimension(
           constraints.top,
           constraints.bottom,
           constraints.height,
           originalFrame.height,
-          element.localFrame.y,
-          element.localFrame.height + offsetDiffY,
+          localFrame.y,
+          localFrame.height + offsetDiffY,
         ),
       })
     }

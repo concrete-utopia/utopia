@@ -62,11 +62,11 @@ import {
   textFileContents,
   unparsed,
 } from '../../../core/shared/project-file-types'
+import { regularNavigatorRow } from '../../navigator/navigator-row'
+import { right } from '../../../core/shared/either'
 
 describe('DerivedStateKeepDeepEquality', () => {
   const oldValue: DerivedState = {
-    navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
-    visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
     controls: [],
     elementWarnings: {
@@ -94,12 +94,10 @@ describe('DerivedStateKeepDeepEquality', () => {
         ),
       },
     },
-    remixData: null,
+    remixData: right(null),
     filePathMappings: [],
   }
   const newSameValue: DerivedState = {
-    navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
-    visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
     controls: [],
     elementWarnings: {
@@ -127,13 +125,11 @@ describe('DerivedStateKeepDeepEquality', () => {
         ),
       },
     },
-    remixData: null,
+    remixData: right(null),
     filePathMappings: [],
   }
   const newDifferentValue: DerivedState = {
-    navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'ddd']]))],
-    visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
-    autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
+    autoFocusedPaths: [EP.elementPath([['scene'], ['aab']])],
     controls: [],
     elementWarnings: {
       [EP.toString(EP.elementPath([['scene'], ['aaa', 'bbb']]))]: defaultElementWarnings,
@@ -160,7 +156,7 @@ describe('DerivedStateKeepDeepEquality', () => {
         ),
       },
     },
-    remixData: null,
+    remixData: right(null),
     filePathMappings: [],
   }
   it('same reference returns the same reference', () => {
@@ -175,11 +171,7 @@ describe('DerivedStateKeepDeepEquality', () => {
   })
   it('different but similar value handled appropriately', () => {
     const result = DerivedStateKeepDeepEquality()(oldValue, newDifferentValue)
-    expect(result.value.navigatorTargets[0].elementPath).toBe(
-      newDifferentValue.navigatorTargets[0].elementPath,
-    )
-    expect(result.value.visibleNavigatorTargets).toBe(oldValue.visibleNavigatorTargets)
-    expect(result.value.autoFocusedPaths).toBe(oldValue.autoFocusedPaths)
+    expect(result.value.autoFocusedPaths).toEqual(newDifferentValue.autoFocusedPaths)
     expect(result.value.controls).toBe(oldValue.controls)
     expect(result.value.elementWarnings).toBe(oldValue.elementWarnings)
     expect(result.value).toEqual(newDifferentValue)

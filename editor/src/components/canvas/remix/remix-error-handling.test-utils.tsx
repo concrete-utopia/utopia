@@ -1,11 +1,15 @@
 require('jest-fetch-mock').enableMocks()
-
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { notLoggedIn } from '../../editor/action-types'
-import { runDOMWalker, switchEditorMode } from '../../editor/actions/action-creators'
+import {
+  resetCanvas,
+  runDOMWalker,
+  setErrorBoundaryHandling,
+  switchEditorMode,
+} from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
-import type { PersistentModel } from '../../editor/store/editor-state'
+import type { ErrorBoundaryHandling, PersistentModel } from '../../editor/store/editor-state'
 import { RegisteredCanvasStrategies } from '../canvas-strategies/canvas-strategies'
 import { mouseClickAtPoint } from '../event-helpers.test-utils'
 import { DefaultStartingFeatureSwitches, renderTestEditorWithModel } from '../ui-jsx.test-utils'
@@ -153,12 +157,20 @@ export function createMaybeFailingProject(induceFailure: boolean): PersistentMod
 
 export async function runTestReturningErrorBoundaries(
   withCustomBoundary: 'with-custom-boundary' | 'without-custom-boundary',
+  errorBoundaryHandling: ErrorBoundaryHandling,
 ): Promise<{ customBoundary: HTMLElement | null; canvasOverlay: HTMLElement | null }> {
   const project = createProject(withCustomBoundary === 'with-custom-boundary')
 
   const renderResult = await renderRemixProject(project)
 
-  await renderResult.dispatch([switchEditorMode(EditorModes.liveMode())], true)
+  await renderResult.dispatch(
+    [
+      setErrorBoundaryHandling(errorBoundaryHandling),
+      resetCanvas(),
+      switchEditorMode(EditorModes.liveMode()),
+    ],
+    true,
+  )
   await clickLinkWithTestId(renderResult, 'remix-link')
 
   const customBoundary = renderResult.renderedDOM.queryByText(CustomBoundaryText)

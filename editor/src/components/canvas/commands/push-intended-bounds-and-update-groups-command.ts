@@ -180,7 +180,6 @@ function getUpdateResizedGroupChildrenCommands(
     )
     if (targetIsGroup) {
       const children = MetadataUtils.getChildrenPathsOrdered(
-        editor.jsxMetadata,
         editor.elementPathTree,
         frameAndTarget.target,
       )
@@ -344,7 +343,6 @@ function getResizeAncestorGroupsCommands(
     }
 
     const childrenExceptTheTarget = MetadataUtils.getChildrenPathsOrdered(
-      editor.jsxMetadata,
       editor.elementPathTree,
       parentPath,
     ).filter((c) => !EP.pathsEqual(c, frameAndTarget.target))
@@ -392,7 +390,6 @@ function getResizeAncestorGroupsCommands(
           globalFrameDiff.height !== 0
         ) {
           const children = MetadataUtils.getChildrenPathsOrdered(
-            editor.jsxMetadata,
             editor.elementPathTree,
             elementToUpdate,
           )

@@ -103,6 +103,14 @@ export var whatever = ({prop, ...otherProps}) => {
 }
 `
 
+const codeWithDestructuredPropsObjectWithElementNamePropAndRestParam = `import React from "react";
+export var whatever = ({As = 'div', ...otherProps}) => {
+  return (
+    <As data-uid={'aaa'} />
+  )
+}
+`
+
 const codeWithDestructuredArray = `import React from "react";
 import { View } from "utopia-api";
 export var whatever = ([prop]) => {
@@ -196,6 +204,7 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
+      [],
       defaultPropsParam,
       [],
       view,
@@ -251,7 +260,8 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
-      propsParam,
+      [],
+      [propsParam],
       [],
       view,
       null,
@@ -289,7 +299,8 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
-      propsParam,
+      [],
+      [propsParam],
       [],
       view,
       null,
@@ -331,7 +342,8 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
-      propsParam,
+      [],
+      [propsParam],
       ['prop'],
       view,
       null,
@@ -388,7 +400,8 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
-      propsParam,
+      [],
+      [propsParam],
       ['prop'],
       view,
       null,
@@ -431,7 +444,8 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
-      propsParam,
+      [],
+      [propsParam],
       ['prop'],
       view,
       null,
@@ -488,7 +502,8 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
-      propsParam,
+      [],
+      [propsParam],
       ['prop'],
       view,
       null,
@@ -532,7 +547,8 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
-      propsParam,
+      [],
+      [propsParam],
       ['prop'],
       view,
       null,
@@ -571,7 +587,8 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
-      propsParam,
+      [],
+      [propsParam],
       [],
       view,
       null,
@@ -625,7 +642,8 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
-      propsParam,
+      [],
+      [propsParam],
       [],
       view,
       null,
@@ -668,7 +686,8 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
-      propsParam,
+      [],
+      [propsParam],
       [],
       view,
       null,
@@ -724,7 +743,8 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
-      outerDestructuredObject,
+      [],
+      [outerDestructuredObject],
       ['arrayPart'],
       view,
       null,
@@ -812,7 +832,8 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
-      outerDestructuredObject,
+      [],
+      [outerDestructuredObject],
       ['arrayPart'],
       view,
       null,
@@ -851,6 +872,7 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
+      [],
       defaultPropsParam,
       [],
       view,
@@ -894,6 +916,7 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
+      [],
       defaultPropsParam,
       [],
       view,
@@ -950,6 +973,7 @@ describe('Parsing a function component with props', () => {
       true,
       'var',
       'block',
+      [],
       defaultPropsParam,
       ['showA'],
       expect.objectContaining({
@@ -1041,6 +1065,10 @@ describe('Parsing, printing, reparsing a function component with props', () => {
 
   it('Correctly parses back and forth a destructured props object that uses a rest param', () => {
     testParsePrintParse(codeWithDestructuredPropsObjectWithRestParam)
+  })
+
+  it('Correctly parses back and forth a destructured props object with element name prop and rest param', () => {
+    testParsePrintParse(codeWithDestructuredPropsObjectWithElementNamePropAndRestParam)
   })
 
   it('Correctly parses back and forth a destructured props array', () => {

@@ -18,7 +18,10 @@ import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
-import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
+import {
+  getFilePathMappings,
+  getUtopiaJSXComponentsFromSuccess,
+} from '../../../core/model/project-file-utils'
 import type { InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { assertNever } from '../../../core/shared/utils'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
@@ -34,7 +37,7 @@ import { jsxTextBlock } from '../../../core/shared/element-template'
 import type { CSSProperties } from 'react'
 import type { Property } from 'csstype'
 import { generateConsistentUID } from '../../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getUidMappings, getAllUniqueUidsFromMapping } from '../../../core/model/get-uid-mappings'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 import { forEachRight, right } from '../../../core/shared/either'
 
@@ -99,6 +102,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         editor.elementPathTree,
         wrapperUID,
         1,
+        editor.propertyControlsInfo,
       )
       if (insertionPath == null) {
         return // maybe this should throw instead?
@@ -115,7 +119,12 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         getPatchForComponentChange(
           success.topLevelElements,
           insertionResult.components,
-          mergeImports(underlyingFilePath, withElementRemoved.imports, imports).imports,
+          mergeImports(
+            underlyingFilePath,
+            getFilePathMappings(editor.projectContents),
+            withElementRemoved.imports,
+            imports,
+          ).imports,
           underlyingFilePath,
         ),
       )
@@ -245,7 +254,7 @@ function getInsertionSubjectWrapperConditionalFalseBranch(
 ): JSXElementChild {
   const uid = generateConsistentUID(
     'false-branch',
-    new Set(getAllUniqueUids(projectContents).uniqueIDs),
+    new Set(getAllUniqueUidsFromMapping(getUidMappings(projectContents).filePathToUids)),
   )
 
   const style = getInsertionSubjectStyleFromConditionalTrueBranch(trueBranch)

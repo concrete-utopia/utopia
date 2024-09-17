@@ -17,7 +17,8 @@ import {
   Icons,
   NumberInput,
   SquareButton,
-  Icn,
+  colorTheme,
+  UtopiaTheme,
 } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { EditorAction } from '../../../../editor/action-types'
@@ -26,7 +27,10 @@ import { useRefEditorState } from '../../../../editor/store/store-hook'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import type { CSSFontStyle, CSSTextDecorationLine } from '../../../common/css-utils'
 import { cssNumber, ParsedCSSPropertiesKeys } from '../../../common/css-utils'
-import { usePropControlledRef_DANGEROUS } from '../../../common/inspector-utils'
+import {
+  RemovePropertyButton,
+  usePropControlledRef_DANGEROUS,
+} from '../../../common/inspector-utils'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
@@ -38,17 +42,17 @@ import {
   useSelectedViews,
 } from '../../../common/property-path-hooks'
 import { ColorControl } from '../../../controls/color-control'
-import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
+import { OptionChainControl } from '../../../controls/option-chain-control'
 import { OptionControl } from '../../../controls/option-control'
 import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelect } from './font-family-select'
 import { FontVariantSelect } from './font-variant-select'
 import { FlexRow } from 'utopia-api'
-import { getControlStyles } from '../../../common/control-styles'
-import { Utils } from '../../../../../uuiui-deps'
 import { TextRelatedProperties } from '../../../../../core/properties/css-properties'
 import { useContextSelector } from 'use-context-selector'
 import { TextAutoSizingControl } from './text-auto-sizing-control'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
+import { TextAlignControl } from './text-align-control'
 
 const ObjectPathImmutable: any = OPI
 
@@ -56,8 +60,49 @@ function updateItalicFontStyle(newValue: boolean, oldValue: CSSFontStyle): CSSFo
   return newValue ? 'italic' : 'normal'
 }
 
-function updateUnderlinedTextDecoration(newValue: boolean): CSSTextDecorationLine {
-  return newValue ? 'underline' : 'none'
+const spaceRegex = /\s+/
+
+function updateTextDecorationLine(
+  addValue: boolean,
+  toAddOrRemove: string,
+  currentValue: CSSTextDecorationLine,
+): CSSTextDecorationLine {
+  if (currentValue === 'none') {
+    if (addValue) {
+      return toAddOrRemove
+    } else {
+      return 'none'
+    }
+  } else {
+    if (addValue) {
+      if (currentValue.includes(toAddOrRemove)) {
+        return currentValue
+      } else {
+        return `${currentValue} ${toAddOrRemove}`
+      }
+    } else {
+      const possibleNewValue = currentValue
+        .split(spaceRegex)
+        .filter((value) => value !== toAddOrRemove)
+        .join(' ')
+        .trim()
+      return possibleNewValue === '' ? 'none' : possibleNewValue
+    }
+  }
+}
+
+export function updateUnderlinedTextDecoration(
+  newValue: boolean,
+  oldValue: CSSTextDecorationLine,
+): CSSTextDecorationLine {
+  return updateTextDecorationLine(newValue, 'underline', oldValue)
+}
+
+export function updateStrikethroughTextDecoration(
+  newValue: boolean,
+  oldValue: CSSTextDecorationLine,
+): CSSTextDecorationLine {
+  return updateTextDecorationLine(newValue, 'line-through', oldValue)
 }
 
 const normalLetterSpacingAsCSSNumber = cssNumber(0, 'px')
@@ -79,8 +124,13 @@ export const TextSubsection = React.memo(() => {
   const textAlignMetadata = useInspectorStyleInfo('textAlign')
 
   const textDecorationLineMetadata = useInspectorStyleInfo('textDecorationLine')
+
   const [onUnderlinedSubmitValue] = textDecorationLineMetadata.useSubmitValueFactory(
     updateUnderlinedTextDecoration,
+  )
+
+  const [onStrikethroughSubmitValue] = textDecorationLineMetadata.useSubmitValueFactory(
+    updateStrikethroughTextDecoration,
   )
 
   const letterSpacingMetadata = useInspectorStyleInfo('letterSpacing')
@@ -98,6 +148,17 @@ export const TextSubsection = React.memo(() => {
     textDecorationLineMetadata.controlStyles.unsettable ||
     letterSpacingMetadata.controlStyles.unsettable ||
     lineHeightMetadata.controlStyles.unsettable
+
+  const anyTextRelatedPropSet = [
+    colorMetadata,
+    fontFamilyMetadata,
+    fontStyleMetadata,
+    fontSizeMetadata,
+    textAlignMetadata,
+    textDecorationLineMetadata,
+    letterSpacingMetadata,
+    lineHeightMetadata,
+  ].some((m) => m.propertyStatus.set)
 
   const { onContextUnsetValue } = useInspectorContext()
 
@@ -143,6 +204,12 @@ export const TextSubsection = React.memo(() => {
   ])
 
   const underlineContextMenuItems = utils.stripNulls([
+    textDecorationLineMetadata.controlStyles.unsettable
+      ? addOnUnsetValues(['textDecorationLine'], textDecorationLineMetadata.onUnsetValues)
+      : null,
+  ])
+
+  const strikethroughContextMenuItems = utils.stripNulls([
     textDecorationLineMetadata.controlStyles.unsettable
       ? addOnUnsetValues(['textDecorationLine'], textDecorationLineMetadata.onUnsetValues)
       : null,
@@ -196,8 +263,11 @@ export const TextSubsection = React.memo(() => {
     return null
   }
 
+  const isUnderlined = textDecorationLineMetadata.value.includes('underline')
+  const isStruckthrough = textDecorationLineMetadata.value.includes('line-through')
+
   return (
-    <>
+    <div style={{ paddingBottom: 10 }}>
       <InspectorContextMenuWrapper
         id='text-subsection-context-menu'
         items={subsectionContextMenuItems}
@@ -212,127 +282,74 @@ export const TextSubsection = React.memo(() => {
           >
             <span>Type</span>
           </FlexRow>
-          <SquareButton
-            highlight
-            onMouseDown={onUnsetSubsectionValues}
-            data-testid={'inspector-text-remove-all'}
-            style={{ width: 12, marginRight: 4 }}
-          >
-            <Icn category='semantic' type='cross' width={12} height={12} />
+          <RemovePropertyButton
+            testId='inspector-text-remove-all'
+            onUnsetValues={onUnsetSubsectionValues}
+            propertySet={anyTextRelatedPropSet}
+          />
+          <SquareButton highlight onClick={toggleExpanded} spotlight={expanded ? true : false}>
+            <Icons.Threedots />
           </SquareButton>
-          <Icons.Threedots color={expanded ? 'secondary' : 'subdued'} onClick={toggleExpanded} />
         </InspectorSubsectionHeader>
       </InspectorContextMenuWrapper>
       <FontFamilySelect />
-      <PropertyRow style={{ gridColumnGap: 8, gridTemplateColumns: '130px 55px 28px' }}>
+      <UIGridRow
+        padded={false}
+        variant='<--------1fr-------->|60px||28px|'
+        style={{
+          padding: '0 8px 0 4px',
+          alignItems: 'center',
+          minHeight: UtopiaTheme.layout.rowHeight.normal,
+        }}
+      >
         <FontVariantSelect />
-        <InspectorContextMenuWrapper
-          id='fontSize-context-menu'
-          items={fontSizeContextMenuItems}
-          data={null}
-          style={{ gridColumn: '2' }}
-        >
-          <NumberInput
-            id='fontSize'
-            testId='fontSize'
-            key='font-size-number-input'
-            value={fontSizeMetadata.value}
-            controlStatus={fontSizeMetadata.controlStatus}
-            onSubmitValue={wrappedFontSizeOnSubmitValue}
-            onTransientSubmitValue={wrappedFontSizeOnTransientSubmitValue}
-            minimum={0}
-            numberType='Length'
-            defaultUnitToHide={'px'}
-          />
-        </InspectorContextMenuWrapper>
-        <InspectorContextMenuWrapper
-          id='color-context-menu'
-          items={colorContextMenuItems}
-          data={null}
-          style={{ gridColumn: '3' }}
-        >
-          <ColorControl
-            id='color-control'
-            key='color-control'
-            testId='text-subsection-color-control'
-            value={colorMetadata.value}
-            onSubmitValue={colorMetadata.onSubmitValue}
-            onTransientSubmitValue={colorMetadata.onTransientSubmitValue}
-            pickerOffset={{ x: -223, y: 0 }}
-            controlStatus={colorMetadata.controlStatus}
-            controlStyles={colorMetadata.controlStyles}
-          />
-        </InspectorContextMenuWrapper>
-      </PropertyRow>
-      <PropertyRow style={{ gridColumnGap: 8 }}>
+        <NumberInput
+          id='fontSize'
+          testId='fontSize'
+          key='font-size-number-input'
+          value={fontSizeMetadata.value}
+          controlStatus={fontSizeMetadata.controlStatus}
+          onSubmitValue={wrappedFontSizeOnSubmitValue}
+          onTransientSubmitValue={wrappedFontSizeOnTransientSubmitValue}
+          minimum={0}
+          numberType='Length'
+          defaultUnitToHide={'px'}
+          incrementControls
+        />
+        <ColorControl
+          id='color-control'
+          key='color-control'
+          testId='text-subsection-color-control'
+          value={colorMetadata.value}
+          onSubmitValue={colorMetadata.onSubmitValue}
+          onTransientSubmitValue={colorMetadata.onTransientSubmitValue}
+          pickerOffset={{ x: -230, y: 0 }}
+          controlStatus={colorMetadata.controlStatus}
+          controlStyles={colorMetadata.controlStyles}
+        />
+      </UIGridRow>
+      <FlexRow
+        style={{
+          gridColumnGap: 8,
+          padding: '0 8px',
+          minHeight: UtopiaTheme.layout.rowHeight.normal,
+          alignItems: 'center',
+        }}
+        css={undefined}
+      >
         <TextAutoSizingControl />
-        <InspectorContextMenuWrapper
-          id='textAlign-context-menu'
-          items={textAlignContextMenuItems}
-          data={null}
-          style={{ gridColumn: '4 / span 3' }}
-        >
-          <OptionChainControl
-            id='textAlign'
-            key='textAlign'
-            testId='textAlign'
-            value={textAlignMetadata.value}
-            onSubmitValue={textAlignMetadata.onSubmitValue}
-            controlStatus={textAlignMetadata.controlStatus}
-            controlStyles={textAlignMetadata.controlStyles}
-            options={[
-              {
-                value: 'left',
-                icon: {
-                  category: 'typography',
-                  type: 'leftAlign',
-                  color: 'secondary',
-                  width: 16,
-                  height: 16,
-                },
-              },
-              {
-                value: 'center',
-                icon: {
-                  category: 'typography',
-                  type: 'centerAlign',
-                  color: 'secondary',
-                  width: 16,
-                  height: 16,
-                },
-              },
-              {
-                value: 'right',
-                icon: {
-                  category: 'typography',
-                  type: 'rightAlign',
-                  color: 'secondary',
-                  width: 16,
-                  height: 16,
-                },
-              },
-              {
-                value: 'justify',
-                icon: {
-                  category: 'typography',
-                  type: 'justify',
-                  color: 'secondary',
-                  width: 16,
-                  height: 16,
-                },
-              },
-            ]}
-          />
-        </InspectorContextMenuWrapper>
-      </PropertyRow>
+        <TextAlignControl />
+      </FlexRow>
       {expanded ? (
-        <PropertyRow style={{ gridColumnGap: 8 }}>
-          <InspectorContextMenuWrapper
-            id='italic-context-menu'
-            items={italicContextMenuItems}
-            data={null}
-            style={{ gridColumn: '1 / span 1' }}
-          >
+        <FlexRow
+          css={{
+            padding: '0 8px',
+            minHeight: UtopiaTheme.layout.rowHeight.normal,
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          <FlexRow css={{ gap: 4, flex: 1 }}>
             <OptionControl
               id='italic'
               key='italic'
@@ -341,95 +358,107 @@ export const TextSubsection = React.memo(() => {
               onSubmitValue={onItalicSubmitValue}
               controlStatus={fontStyleMetadata.controlStatus}
               controlStyles={fontStyleMetadata.controlStyles}
+              style={{
+                border: `1px solid ${colorTheme.bg4.value}`,
+                borderRadius: UtopiaTheme.inputBorderRadius,
+              }}
               DEPRECATED_controlOptions={{
                 tooltip: 'Italic',
+                width: 24,
                 icon: {
                   category: 'typography',
                   type: 'italic',
-                  color: 'secondary',
                   width: 16,
                   height: 16,
                 },
               }}
             />
-          </InspectorContextMenuWrapper>
-          <InspectorContextMenuWrapper
-            id='textDecorationLine-context-menu'
-            items={underlineContextMenuItems}
-            data={null}
-          >
             <OptionControl
               id='underlined'
               key='underlined'
               testId='underlined'
-              value={textDecorationLineMetadata.value === 'underline'}
+              value={isUnderlined}
               onSubmitValue={onUnderlinedSubmitValue}
               controlStatus={textDecorationLineMetadata.controlStatus}
               controlStyles={textDecorationLineMetadata.controlStyles}
-              style={{ gridColumn: '2 / span 1' }}
+              style={{
+                border: `1px solid ${colorTheme.bg4.value}`,
+                borderRadius: UtopiaTheme.inputBorderRadius,
+              }}
               DEPRECATED_controlOptions={{
                 tooltip: 'Underline',
+                width: 24,
                 icon: {
                   category: 'typography',
                   type: 'underline',
-                  color: 'secondary',
                   width: 16,
                   height: 16,
                 },
               }}
             />
-          </InspectorContextMenuWrapper>
-          <InspectorContextMenuWrapper
-            id='letterSpacing-context-menu'
-            items={letterSpacingContextMenuItems}
-            data={null}
-            style={{ gridColumn: '3 / span 2' }}
-          >
-            <NumberInput
-              key='letterSpacing'
-              id='letterSpacing'
-              testId='letterSpacing'
-              value={
-                letterSpacingMetadata.value === 'normal'
-                  ? normalLetterSpacingAsCSSNumber
-                  : letterSpacingMetadata.value
-              }
-              onSubmitValue={wrappedLetterSpacingOnSubmitValue}
-              onTransientSubmitValue={wrappedLetterSpacingOnTransientSubmitValue}
-              controlStatus={letterSpacingMetadata.controlStatus}
-              DEPRECATED_labelBelow='letter'
-              stepSize={0.01}
-              numberType='Length'
-              defaultUnitToHide={'px'}
+            <OptionControl
+              id='strikethrough'
+              key='strikethrough'
+              testId='strikethrough'
+              value={isStruckthrough}
+              onSubmitValue={onStrikethroughSubmitValue}
+              controlStatus={textDecorationLineMetadata.controlStatus}
+              controlStyles={textDecorationLineMetadata.controlStyles}
+              style={{
+                border: `1px solid ${colorTheme.bg4.value}`,
+                borderRadius: UtopiaTheme.inputBorderRadius,
+              }}
+              DEPRECATED_controlOptions={{
+                tooltip: 'Strikethrough',
+                width: 24,
+                icon: {
+                  category: 'inspector-element',
+                  type: 'strikethrough',
+                  width: 16,
+                  height: 16,
+                },
+              }}
             />
-          </InspectorContextMenuWrapper>
-          <InspectorContextMenuWrapper
-            id='lineHeight-context-menu'
-            items={lineHeightContextMenuItems}
-            data={null}
-            style={{ gridColumn: '5 / span 2' }}
-          >
-            <NumberInput
-              key='lineHeight'
-              id='lineHeight'
-              testId='lineHeight'
-              value={
-                lineHeightMetadata.value === 'normal'
-                  ? normalLineHeightAsCSSNumber
-                  : lineHeightMetadata.value
-              }
-              controlStatus={lineHeightMetadata.controlStatus}
-              onSubmitValue={wrappedLineHeightOnSubmitValue}
-              onTransientSubmitValue={wrappedLineHeightOnTransientSubmitValue}
-              DEPRECATED_labelBelow='line'
-              stepSize={0.01}
-              numberType='Length'
-              defaultUnitToHide={'em'}
-            />
-          </InspectorContextMenuWrapper>
-        </PropertyRow>
+          </FlexRow>
+          <NumberInput
+            key='letterSpacing'
+            id='letterSpacing'
+            testId='letterSpacing'
+            value={
+              letterSpacingMetadata.value === 'normal'
+                ? normalLetterSpacingAsCSSNumber
+                : letterSpacingMetadata.value
+            }
+            onSubmitValue={wrappedLetterSpacingOnSubmitValue}
+            onTransientSubmitValue={wrappedLetterSpacingOnTransientSubmitValue}
+            controlStatus={letterSpacingMetadata.controlStatus}
+            innerLabel={<Icons.LetterSpacing color='on-highlight-secondary' />}
+            stepSize={0.01}
+            numberType='Length'
+            defaultUnitToHide={'px'}
+            style={{ flex: 1 }}
+          />
+          <NumberInput
+            key='lineHeight'
+            id='lineHeight'
+            testId='lineHeight'
+            value={
+              lineHeightMetadata.value === 'normal'
+                ? normalLineHeightAsCSSNumber
+                : lineHeightMetadata.value
+            }
+            controlStatus={lineHeightMetadata.controlStatus}
+            onSubmitValue={wrappedLineHeightOnSubmitValue}
+            onTransientSubmitValue={wrappedLineHeightOnTransientSubmitValue}
+            innerLabel={<Icons.LineHeight color='on-highlight-secondary' />}
+            stepSize={0.01}
+            numberType='Length'
+            defaultUnitToHide={'em'}
+            style={{ flex: 1 }}
+          />
+        </FlexRow>
       ) : null}
-    </>
+    </div>
   )
 })
 TextSubsection.displayName = 'TextSubsection'

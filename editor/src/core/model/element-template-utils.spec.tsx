@@ -192,6 +192,7 @@ describe('removeJSXElementChild', () => {
       true,
       'var',
       'block',
+      [],
       defaultPropsParam,
       [],
       jsxElement(
@@ -212,6 +213,7 @@ describe('removeJSXElementChild', () => {
       true,
       'var',
       'block',
+      [],
       defaultPropsParam,
       [],
       jsxElement(
@@ -422,7 +424,7 @@ export const TestComponent = (props) => {
 })
 
 describe('componentHonoursPropsPosition', () => {
-  it('returns true for a component that uses top and left directly', () => {
+  it('returns absolute-position-and-honours-numeric-props for a component that uses top and left directly', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -432,9 +434,21 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
-  it('returns true for a component that uses top and right directly', () => {
+  it('returns honours-numeric-props-only for a component that uses top and left directly without position: absolute', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={{left: props.style.left, top: props.style.top}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual('honours-numeric-props-only')
+  })
+  it('returns absolute-position-and-honours-numeric-props for a component that uses top and right directly', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -444,9 +458,21 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
-  it('returns false for a component that uses left and right only', () => {
+  it('returns honours-numeric-props-only for a component that uses top and right directly without position: absolute', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={{right: props.style.right, top: props.style.top}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual('honours-numeric-props-only')
+  })
+  it('returns does-not-honour for a component that uses left and right only', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -456,9 +482,9 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(false)
+    expect(result).toEqual('does-not-honour')
   })
-  it('returns false for a component that uses top only', () => {
+  it('returns does-not-honour for a component that uses top only', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -468,9 +494,9 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(false)
+    expect(result).toEqual('does-not-honour')
   })
-  it('returns false for a component that uses nothing from props', () => {
+  it('returns does-not-honour for a component that uses nothing from props', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -480,9 +506,9 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(false)
+    expect(result).toEqual('does-not-honour')
   })
-  it('returns false for a component that has no props parameter', () => {
+  it('returns does-not-honour for a component that has no props parameter', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -492,9 +518,9 @@ export const TestComponent = () => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(false)
+    expect(result).toEqual('does-not-honour')
   })
-  it('returns true for a component that uses top and left directly with destructuring', () => {
+  it('returns absolute-position-and-honours-numeric-props for a component that uses top and left directly with destructuring', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -504,9 +530,9 @@ export const TestComponent = ({style}) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
-  it('returns true for a component that uses bottom and right directly', () => {
+  it('returns absolute-position-and-honours-numeric-props for a component that uses bottom and right directly', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -516,9 +542,9 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
-  it('returns true for a component that spreads style into the props', () => {
+  it('returns absolute-position-and-honours-numeric-props for a component that spreads style into the props', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -528,9 +554,9 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
-  it('returns true for a component that assigns props.style to style directly', () => {
+  it('returns absolute-position-and-honours-numeric-props for a component that assigns props.style to style directly', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -540,9 +566,9 @@ export const TestComponent = (props) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
-  it('returns true for a component that spreads style into the props with destructuring', () => {
+  it('returns absolute-position-and-honours-numeric-props for a component that spreads style into the props with destructuring', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -552,9 +578,9 @@ export const TestComponent = ({style}) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
-  it('returns true for a component that assigns to style directly with destructuring', () => {
+  it('returns absolute-position-and-honours-numeric-props for a component that assigns to style directly with destructuring', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
@@ -564,7 +590,7 @@ export const TestComponent = ({style}) => {
     `,
     )
     const result = componentHonoursPropsPosition(component)
-    expect(result).toEqual(true)
+    expect(result).toEqual('absolute-position-and-honours-numeric-props')
   })
 })
 
@@ -1075,7 +1101,7 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/409',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/03d',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/false',
     ])
   })
@@ -1137,7 +1163,7 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/409',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/03d',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root/ternary-false-child',
     ])
@@ -1507,7 +1533,7 @@ describe('insertJSXElementChildren', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/', // <- the new fragment!
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/409', // <- the original hello!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/03d', // <- the original hello!
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/hello2', // <- the inserted hello!
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
     ])
@@ -1868,7 +1894,7 @@ describe('transformJSXComponentAtPath', () => {
     </div>
     `)
 
-    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond/409'
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond/03d'
 
     const updatedComponents = transformJSXComponentAtPath(
       components,

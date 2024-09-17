@@ -5,8 +5,8 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import type {
   AllElementProps,
-  DerivedState,
   EditorState,
+  EditorStatePatch,
   EditorStorePatched,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
@@ -46,7 +46,11 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { setPaddingStrategy } from './strategies/set-padding-strategy'
 import { drawToInsertMetaStrategy } from './strategies/draw-to-insert-metastrategy'
 import { dragToInsertMetaStrategy } from './strategies/drag-to-insert-metastrategy'
-import { DoNothingStrategyID, dragToMoveMetaStrategy } from './strategies/drag-to-move-metastrategy'
+import {
+  DoNothingStrategyID,
+  doNothingStrategy,
+  dragToMoveMetaStrategy,
+} from './strategies/drag-to-move-metastrategy'
 import { ancestorMetaStrategy } from './strategies/ancestor-metastrategy'
 import { keyboardReorderStrategy } from './strategies/keyboard-reorder-strategy'
 import { setFlexGapStrategy } from './strategies/set-flex-gap-strategy'
@@ -56,13 +60,27 @@ import * as EP from '../../../core/shared/element-path'
 import { keyboardSetFontSizeStrategy } from './strategies/keyboard-set-font-size-strategy'
 import { keyboardSetFontWeightStrategy } from './strategies/keyboard-set-font-weight-strategy'
 import { keyboardSetOpacityStrategy } from './strategies/keyboard-set-opacity-strategy'
-import { drawToInsertTextStrategy } from './strategies/draw-to-insert-text-strategy'
+import { drawToInsertTextMetaStrategy } from './strategies/draw-to-insert-text-strategy'
 import { flexResizeStrategy } from './strategies/flex-resize-strategy'
 import { basicResizeStrategy } from './strategies/basic-resize-strategy'
 import type { InsertionSubject, InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './strategies/fragment-like-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { gridRearrangeMoveStrategy } from './strategies/grid-rearrange-move-strategy'
+import { resizeGridStrategy } from './strategies/resize-grid-strategy'
+import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
+import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
+import { gridRearrangeMoveDuplicateStrategy } from './strategies/grid-rearrange-move-duplicate-strategy'
+import { setGridGapStrategy } from './strategies/set-grid-gap-strategy'
+import type { CanvasCommand } from '../commands/commands'
+import { foldAndApplyCommandsInner } from '../commands/commands'
+import { updateFunctionCommand } from '../commands/update-function-command'
+import { wrapInContainerCommand } from '../commands/wrap-in-container-command'
+import type { ElementPath } from 'utopia-shared/src/types'
+import { reparentSubjectsForInteractionTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
+import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
+import { gridRearrangeResizeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -90,6 +108,10 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       convertToAbsoluteAndMoveStrategy,
       convertToAbsoluteAndMoveAndSetParentFixedStrategy,
       reorderSliderStategy,
+      gridRearrangeMoveStrategy,
+      rearrangeGridSwapStrategy,
+      gridRearrangeMoveDuplicateStrategy,
+      gridRearrangeResizeKeyboardStrategy,
     ],
   )
 }
@@ -100,13 +122,15 @@ const resizeStrategies: MetaCanvasStrategy = (
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
-    (factory) => factory(canvasState, interactionSession),
+    (factory) => factory(canvasState, interactionSession, customStrategyState),
     [
       keyboardAbsoluteResizeStrategy,
       absoluteResizeBoundingBoxStrategy,
       flexResizeBasicStrategy,
       flexResizeStrategy,
       basicResizeStrategy,
+      resizeGridStrategy,
+      gridResizeElementStrategy,
     ],
   )
 }
@@ -118,7 +142,7 @@ const propertyControlStrategies: MetaCanvasStrategy = (
 ): Array<CanvasStrategy> => {
   return mapDropNulls(
     (factory) => factory(canvasState, interactionSession, customStrategyState),
-    [setPaddingStrategy, setFlexGapStrategy, setBorderRadiusStrategy],
+    [setPaddingStrategy, setFlexGapStrategy, setGridGapStrategy, setBorderRadiusStrategy],
   )
 }
 
@@ -169,7 +193,7 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
   dragToInsertMetaStrategy,
   ancestorMetaStrategy(AncestorCompatibleStrategies, 1),
   keyboardShortcutStrategies,
-  drawToInsertTextStrategy,
+  drawToInsertTextMetaStrategy,
 ]
 
 export function pickCanvasStateFromEditorState(
@@ -187,6 +211,7 @@ export function pickCanvasStateFromEditorState(
     startingMetadata: editorState.jsxMetadata,
     startingElementPathTree: editorState.elementPathTree,
     startingAllElementProps: editorState.allElementProps,
+    propertyControlsInfo: editorState.propertyControlsInfo,
   }
 }
 
@@ -207,6 +232,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
     startingMetadata: metadata,
     startingElementPathTree: editorState.elementPathTree, // IMPORTANT! This isn't based on the passed in metadata
     startingAllElementProps: allElementProps ?? editorState.allElementProps,
+    propertyControlsInfo: editorState.propertyControlsInfo,
   }
 }
 
@@ -336,12 +362,32 @@ export function getApplicableStrategiesOrderedByFitness(
     return r.fitness - l.fitness
   })
 
-  // Special case for the DO NOTHING strategy - it should never be a fallback strategy
-  const filteredSortedStrategies = sortedStrategies.filter(
+  return fixDoNothingStrategies(sortedStrategies, canvasState)
+}
+
+// Special cases for the DO NOTHING strategy - it should never be a fallback strategy,
+// and when there is no other applicable strategy then do nothing should always appear as a single one
+function fixDoNothingStrategies(
+  sortedStrategies: Array<StrategyWithFitness>,
+  canvasState: InteractionCanvasState,
+): Array<StrategyWithFitness> {
+  const positiveFitnessStrategyExists = sortedStrategies.find(({ fitness }) => fitness > 0) != null
+
+  const doNothing = doNothingStrategy(canvasState)
+
+  if (!positiveFitnessStrategyExists) {
+    return [
+      {
+        strategy: doNothing,
+        fitness: doNothing.fitness,
+      },
+      ...sortedStrategies,
+    ]
+  }
+
+  return sortedStrategies.filter(
     ({ strategy }, index) => index === 0 || strategy.id !== DoNothingStrategyID,
   )
-
-  return filteredSortedStrategies
 }
 
 function pickDefaultCanvasStrategy(
@@ -510,6 +556,7 @@ export function isResizableStrategy(canvasStrategy: CanvasStrategy): boolean {
     case 'FLEX_RESIZE_BASIC':
     case 'FLEX_RESIZE':
     case 'BASIC_RESIZE':
+    case 'GRID-CELL-RESIZE-STRATEGY':
       return true
     default:
       return false
@@ -553,6 +600,17 @@ export function interactionInProgress(interactionSession: InteractionSession | n
   }
 }
 
+function controlPriorityToNumber(prio: ControlWithProps<any>['priority']): number {
+  switch (prio) {
+    case 'bottom':
+      return 0
+    case undefined:
+      return 1
+    case 'top':
+      return 2
+  }
+}
+
 export function useGetApplicableStrategyControls(): Array<ControlWithProps<unknown>> {
   const applicableStrategies = useGetApplicableStrategies()
   const currentStrategy = useDelayedCurrentStrategy()
@@ -575,13 +633,18 @@ export function useGetApplicableStrategyControls(): Array<ControlWithProps<unkno
       applicableControls = addAllUniquelyBy(
         applicableControls,
         strategyControls,
-        (l, r) => l.control === r.control,
+        (l, r) => l.control === r.control && l.key === r.key,
       )
     }
     // Special case controls.
     if (!isResizable && !currentlyInProgress) {
       applicableControls.push(notResizableControls)
     }
+
+    applicableControls = applicableControls.sort(
+      (a, b) => controlPriorityToNumber(a.priority) - controlPriorityToNumber(b.priority),
+    )
+
     return applicableControls
   }, [applicableStrategies, currentStrategy, currentlyInProgress])
 }
@@ -618,11 +681,16 @@ export function onlyFitWhenDraggingThisControl(
   }
 }
 
+export interface WrapperWithUid {
+  wrapper: InsertionSubjectWrapper
+  uid: string
+}
+
 export function getWrapperWithGeneratedUid(
   customStrategyState: CustomStrategyState,
   canvasState: InteractionCanvasState,
   subjects: Array<InsertionSubject>,
-): { wrapper: InsertionSubjectWrapper; uid: string } | null {
+): WrapperWithUid | null {
   const insertionSubjectWrapper = subjects.at(0)?.insertionSubjectWrapper ?? null
   if (insertionSubjectWrapper == null) {
     return null
@@ -635,6 +703,62 @@ export function getWrapperWithGeneratedUid(
   return { wrapper: insertionSubjectWrapper, uid: uid }
 }
 
+export function getWrappingCommands(
+  wrappedElementPath: ElementPath,
+  wrapperWithUid: WrapperWithUid,
+): CanvasCommand[] {
+  return [
+    updateFunctionCommand(
+      'always',
+      (editorState, lifecycle): Array<EditorStatePatch> =>
+        foldAndApplyCommandsInner(
+          editorState,
+          [],
+          [
+            wrapInContainerCommand(
+              'always',
+              wrappedElementPath,
+              wrapperWithUid.uid,
+              wrapperWithUid.wrapper,
+            ),
+          ],
+          lifecycle,
+        ).statePatches,
+    ),
+  ]
+}
+
+export function findElementPathUnderInteractionPoint(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): ElementPath | null {
+  const reparentSubjects = reparentSubjectsForInteractionTarget(canvasState.interactionTarget)
+
+  if (interactionSession == null || interactionSession.interactionData.type === 'KEYBOARD') {
+    return null
+  }
+
+  const { interactionData } = interactionSession
+
+  const pointOnCanvas =
+    interactionData.type === 'DRAG' ? interactionData.originalDragStart : interactionData.point
+
+  const targetParent = getReparentTargetUnified(
+    reparentSubjects,
+    pointOnCanvas,
+    true, // cmd is necessary to allow reparenting,
+    canvasState,
+    canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
+    canvasState.startingAllElementProps,
+    'allow-smaller-parent',
+    ['supportsChildren'],
+    canvasState.propertyControlsInfo,
+  )?.newParent.intendedParentPath
+
+  return targetParent ?? null
+}
+
 export function getDescriptiveStrategyLabelWithRetargetedPaths(
   originalLabel: string,
   pathsWereReplaced: boolean,
@@ -643,4 +767,23 @@ export function getDescriptiveStrategyLabelWithRetargetedPaths(
     return `${originalLabel} (Children)`
   }
   return originalLabel
+}
+
+function isOnlyDoNothingStrategy(strategies: Array<ApplicableStrategy>): boolean {
+  // This is an optimization, we should check all strategies, but we know we can not have do_nothing strategy in non-zero position
+  if (strategies.length > 1) {
+    return false
+  }
+  if (strategies.length === 0) {
+    return true
+  }
+  return strategies[0].strategy.id === 'DO_NOTHING'
+}
+
+export function useIsOnlyDoNothingStrategy(): boolean {
+  return useEditorState(
+    Substores.restOfStore,
+    (store) => isOnlyDoNothingStrategy(store.strategyState.sortedApplicableStrategies ?? []),
+    'useIsOnlyDoNothingStrategy',
+  )
 }

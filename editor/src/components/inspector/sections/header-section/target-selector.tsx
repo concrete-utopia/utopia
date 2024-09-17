@@ -18,7 +18,7 @@ import {
   UIRow,
   Icn,
 } from '../../../../uuiui'
-import { ContextMenuWrapper } from '../../../../uuiui-deps'
+import { ContextMenuWrapper_DEPRECATED } from '../../../../uuiui-deps'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
@@ -105,7 +105,6 @@ export const TargetSelectorPanel = React.memo((props: TargetSelectorPanelProps) 
         position: 'relative',
         userSelect: 'none',
         WebkitUserSelect: 'none',
-        borderTop: `1px solid ${colorTheme.seperator.value}`,
       }}
     >
       <TargetListHeader
@@ -299,7 +298,7 @@ const TargetListItem = React.memo((props: TargetListItemProps) => {
   }, [onDeleteByIndex, itemIndex])
 
   return (
-    <ContextMenuWrapper
+    <ContextMenuWrapper_DEPRECATED
       id={`${id}-contextMenu`}
       items={[
         {
@@ -366,7 +365,7 @@ const TargetListItem = React.memo((props: TargetListItemProps) => {
           </React.Fragment>
         )}
       </UIRow>
-    </ContextMenuWrapper>
+    </ContextMenuWrapper_DEPRECATED>
   )
 })
 
@@ -380,7 +379,6 @@ interface TargetListHeaderProps {
 }
 
 const TargetListHeader = React.memo((props: TargetListHeaderProps) => {
-  const colorTheme = useColorTheme()
   const { isOpen, setIsOpen, setAddingIndex, selectedTargetPath, isAdding, targetIndex } = props
 
   const startAdding = React.useCallback(() => {
@@ -396,7 +394,7 @@ const TargetListHeader = React.memo((props: TargetListHeaderProps) => {
         paddingLeft: 8,
         paddingRight: 8,
         cursor: 'pointer',
-        height: 42,
+        height: 38,
       }}
     >
       <H1
@@ -407,13 +405,13 @@ const TargetListHeader = React.memo((props: TargetListHeaderProps) => {
           overflow: 'hidden',
         }}
       >
-        {selectedTargetPath}
+        Target
       </H1>
-      <SectionActionSheet className='actionsheet' style={{ gap: 4 }}>
-        <SquareButton highlight disabled={isAdding} onClick={startAdding} style={{ width: 12 }}>
+      <SectionActionSheet className='actionsheet'>
+        <SquareButton highlight disabled={isAdding} onClick={startAdding}>
           <Icn category='semantic' type='cross' width={12} height={12} />
         </SquareButton>
-        <SquareButton highlight onClick={togglePathPanel} style={{ width: 12 }}>
+        <SquareButton highlight onClick={togglePathPanel}>
           <ExpandableIndicator
             testId='target-selector'
             visible

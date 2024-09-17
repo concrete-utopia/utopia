@@ -507,7 +507,7 @@ const ClassNameControl = React.memo(() => {
         }}
       >
         <span style={{ flexGrow: 1, cursor: 'pointer' }} onClick={toggleIsExpanded}>
-          Class Names
+          CSS
         </span>
         <SquareButton highlight onClick={toggleIsExpanded}>
           <ExpandableIndicator visible collapsed={!isExpanded} selected={false} />

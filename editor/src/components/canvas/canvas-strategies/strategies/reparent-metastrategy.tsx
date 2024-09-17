@@ -32,12 +32,15 @@ import { flattenSelection } from './shared-move-strategies-helpers'
 import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 import { treatElementAsGroupLike } from './group-helpers'
+import { gridReparentStrategy } from './grid-reparent-strategy'
+
+export type ParentDisplayType = 'flex' | 'flow' | 'grid'
 
 interface ReparentFactoryAndDetails {
   targetParent: InsertionPath
   targetIndex: number | null
   strategyType: ReparentStrategy // FIXME horrible name
-  targetParentDisplayType: 'flex' | 'flow' // should this be here?
+  targetParentDisplayType: ParentDisplayType // should this be here?
   fitness: number
   dragType: 'absolute' | 'static'
   factory: CanvasStrategyFactory
@@ -46,6 +49,7 @@ interface ReparentFactoryAndDetails {
 const DefaultReparentWeight = 4
 const FallbackReparentWeight = DefaultReparentWeight - 1
 const FlowReparentWeight = FallbackReparentWeight - 1
+const OutOfSceneReparentWeight = FlowReparentWeight - 1
 
 export function getApplicableReparentFactories(
   canvasState: InteractionCanvasState,
@@ -64,62 +68,108 @@ export function getApplicableReparentFactories(
     elementSupportsChildren,
   )
 
-  const factories: Array<ReparentFactoryAndDetails> = reparentStrategies.map((result) => {
-    switch (result.strategy) {
-      case 'REPARENT_AS_ABSOLUTE': {
-        const fitness = result.isFallback ? FallbackReparentWeight : DefaultReparentWeight
-        if (allDraggedElementsAbsolute) {
+  const factories: Array<ReparentFactoryAndDetails> = reparentStrategies.map(
+    (result): ReparentFactoryAndDetails => {
+      switch (result.strategy) {
+        case 'REPARENT_INTO_GRID': {
+          const fitness = (() => {
+            if (!cmdPressed) {
+              return 0
+            }
+            if (result.isReparentingOutFromScene) {
+              return OutOfSceneReparentWeight
+            }
+            if (result.isFallback) {
+              return FallbackReparentWeight
+            }
+            return DefaultReparentWeight
+          })()
           return {
             targetParent: result.target.newParent,
             targetIndex: null,
             strategyType: result.strategy,
-            targetParentDisplayType: 'flow',
+            targetParentDisplayType: 'grid',
             fitness: fitness,
             dragType: 'absolute',
-            factory: baseAbsoluteReparentStrategy(result.target, fitness, customStrategyState),
+            factory: gridReparentStrategy(result.target, fitness, customStrategyState),
           }
-        } else {
+        }
+        case 'REPARENT_AS_ABSOLUTE': {
+          const fitness = (() => {
+            if (!cmdPressed) {
+              return 0
+            }
+            if (result.isReparentingOutFromScene) {
+              return OutOfSceneReparentWeight
+            }
+            if (result.isFallback) {
+              return FallbackReparentWeight
+            }
+            return DefaultReparentWeight
+          })()
+
+          if (allDraggedElementsAbsolute) {
+            return {
+              targetParent: result.target.newParent,
+              targetIndex: null,
+              strategyType: result.strategy,
+              targetParentDisplayType: 'flow',
+              fitness: fitness,
+              dragType: 'absolute',
+              factory: baseAbsoluteReparentStrategy(result.target, fitness, customStrategyState),
+            }
+          } else {
+            return {
+              targetParent: result.target.newParent,
+              targetIndex: null,
+              strategyType: result.strategy,
+              targetParentDisplayType: 'flow',
+              fitness: fitness,
+              dragType: 'absolute',
+              factory: baseFlexReparentToAbsoluteStrategy(result.target, fitness),
+            }
+          }
+        }
+        case 'REPARENT_AS_STATIC': {
+          const parentLayoutSystem = MetadataUtils.findLayoutSystemForChildren(
+            canvasState.startingMetadata,
+            canvasState.startingElementPathTree,
+            result.target.newParent.intendedParentPath,
+          )
+          const targetParentDisplayType = parentLayoutSystem === 'flex' ? 'flex' : 'flow'
+
+          // We likely never want flow insertion or re-parenting to be the default
+          const fitness = (() => {
+            if (!cmdPressed) {
+              return 0
+            }
+            if (result.isReparentingOutFromScene) {
+              return OutOfSceneReparentWeight
+            }
+            if (targetParentDisplayType === 'flow') {
+              return FlowReparentWeight
+            }
+            if (result.isFallback) {
+              return FallbackReparentWeight
+            }
+            return DefaultReparentWeight
+          })()
+
           return {
             targetParent: result.target.newParent,
-            targetIndex: null,
+            targetIndex: result.target.newIndex,
             strategyType: result.strategy,
-            targetParentDisplayType: 'flow',
+            targetParentDisplayType: targetParentDisplayType,
             fitness: fitness,
-            dragType: 'absolute',
-            factory: baseFlexReparentToAbsoluteStrategy(result.target, fitness),
+            dragType: 'static',
+            factory: baseReparentAsStaticStrategy(result.target, fitness, targetParentDisplayType),
           }
         }
+        default:
+          assertNever(result.strategy)
       }
-      case 'REPARENT_AS_STATIC': {
-        const parentLayoutSystem = MetadataUtils.findLayoutSystemForChildren(
-          canvasState.startingMetadata,
-          canvasState.startingElementPathTree,
-          result.target.newParent.intendedParentPath,
-        )
-        const targetParentDisplayType = parentLayoutSystem === 'flex' ? 'flex' : 'flow'
-
-        // We likely never want flow insertion or re-parenting to be the default
-        const fitness =
-          targetParentDisplayType === 'flow'
-            ? FlowReparentWeight
-            : result.isFallback
-            ? FallbackReparentWeight
-            : DefaultReparentWeight
-
-        return {
-          targetParent: result.target.newParent,
-          targetIndex: result.target.newIndex,
-          strategyType: result.strategy,
-          targetParentDisplayType: targetParentDisplayType,
-          fitness: fitness,
-          dragType: 'static',
-          factory: baseReparentAsStaticStrategy(result.target, fitness, targetParentDisplayType),
-        }
-      }
-      default:
-        assertNever(result.strategy)
-    }
-  })
+    },
+  )
 
   return factories
 }
@@ -158,6 +208,7 @@ function getStartingTargetParentsToFilterOutInner(
     canvasState.startingAllElementProps,
     allowSmallerParent,
     elementSupportsChildren,
+    canvasState.propertyControlsInfo,
   )
   if (regularReparentTarget != null) {
     result.push(regularReparentTarget)

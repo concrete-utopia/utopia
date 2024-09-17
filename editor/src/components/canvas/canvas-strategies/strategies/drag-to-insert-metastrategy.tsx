@@ -47,6 +47,7 @@ import {
   targetPaths,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
+import type { ParentDisplayType } from './reparent-metastrategy'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 import type { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
@@ -58,6 +59,10 @@ import { wrapInContainerCommand } from '../../commands/wrap-in-container-command
 import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 
+/**
+ * NOTE: this strategy was mostly used for legacy insert menu interactions, but it's kept
+ * intact since it's still used for image insertion from other places.
+ */
 export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
@@ -88,7 +93,7 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   const applicableReparentFactories = getApplicableReparentFactories(
     canvasState,
     pointOnCanvas,
-    interactionData.modifiers.cmd,
+    true, // cmd is necessary to allow reparenting
     true,
     'allow-smaller-parent',
     customStrategyState,
@@ -112,9 +117,11 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
 
 function getDragToInsertStrategyName(
   strategyType: ReparentStrategy,
-  parentDisplayType: 'flex' | 'flow',
+  parentDisplayType: ParentDisplayType,
 ): string {
   switch (strategyType) {
+    case 'REPARENT_INTO_GRID':
+      return 'Drag to Insert (Grid)'
     case 'REPARENT_AS_ABSOLUTE':
       return 'Drag to Insert (Abs)'
     case 'REPARENT_AS_STATIC':

@@ -1,5 +1,6 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { navigatorEntryToKey, StoryboardFilePath } from '../../editor/store/editor-state'
+import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 
 const appFilePath = '/src/app.js'
@@ -64,7 +65,9 @@ async function createAndRenderProject() {
 describe('a project with conditionals', () => {
   it('fills the content of the navigator', async () => {
     const renderedProject = await createAndRenderProject()
-    const navigatorTargets = renderedProject.getEditorState().derived.visibleNavigatorTargets
+    const navigatorTargets = getNavigatorTargetsFromEditorState(
+      renderedProject.getEditorState().editor,
+    ).visibleNavigatorTargets
     const pathStrings = navigatorTargets.map(navigatorEntryToKey)
     expect(pathStrings).toEqual([
       'regular-storyboard/scene',
@@ -76,9 +79,9 @@ describe('a project with conditionals', () => {
       'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-true-case',
       'regular-storyboard/scene/app:app-root/conditional1/conditional2/div-inside-conditionals',
       'conditional-clause-storyboard/scene/app:app-root/conditional1/conditional2-false-case',
-      'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/60c-attribute',
+      'synthetic-storyboard/scene/app:app-root/conditional1/conditional2/eff-attribute',
       'conditional-clause-storyboard/scene/app:app-root/conditional1-false-case',
-      'synthetic-storyboard/scene/app:app-root/conditional1/30e-attribute',
+      'synthetic-storyboard/scene/app:app-root/conditional1/d50-attribute',
     ])
   })
 })

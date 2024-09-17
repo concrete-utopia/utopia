@@ -86,6 +86,9 @@ import { editorStateToElementChildOptic } from '../core/model/common-optics'
 import { toFirst } from '../core/shared/optics/optic-utilities'
 import { emptyUiJsxCanvasContextData } from '../components/canvas/ui-jsx-canvas'
 import type { RenderContext } from '../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
+import { ComponentPickerTestId } from '../components/navigator/navigator-item/component-picker'
+import { forceNotNull } from '../core/shared/optional-utils'
+import { pressKey } from '../components/canvas/event-helpers.test-utils'
 
 export const testRenderContext: RenderContext = {
   rootScope: {},
@@ -106,6 +109,7 @@ export const testRenderContext: RenderContext = {
   highlightBounds: null,
   editedText: null,
   variablesInScope: {},
+  filePathMappings: [],
 }
 
 export function delay(time: number): Promise<void> {
@@ -379,13 +383,12 @@ function createFakeMetadataForJSXElement(
       elementPath: elementPath,
       element: right(element),
       globalFrame: canvasRectangle(frame),
-      localFrame: localRectangle(frame),
       nonRoundedGlobalFrame: canvasRectangle(frame),
       componentInstance: false,
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
-      attributeMetadatada: emptyAttributeMetadata,
+      attributeMetadata: emptyAttributeMetadata,
       label: props[PP.toString(PathForSceneDataLabel)],
       importInfo: null,
       conditionValue: 'not-a-conditional',
@@ -416,7 +419,6 @@ function createFakeMetadataForJSXElement(
 function createFakeMetadataForStoryboard(elementPath: ElementPath): ElementInstanceMetadata {
   return {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
-    localFrame: localRectangle({ x: 0, y: 0, width: 0, height: 0 }),
     nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
     elementPath: elementPath,
     element: right(jsxTestElement('Storyboard', [], [])),
@@ -424,7 +426,7 @@ function createFakeMetadataForStoryboard(elementPath: ElementPath): ElementInsta
     isEmotionOrStyledComponent: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
-    attributeMetadatada: emptyAttributeMetadata,
+    attributeMetadata: emptyAttributeMetadata,
     label: null,
     importInfo: null,
     conditionValue: 'not-a-conditional',
@@ -620,22 +622,20 @@ export function boundingClientRectToCanvasRectangle(
   const canvasRootRectangle = getCanvasRectangleFromElement(
     canvasRootContainer,
     canvasScale,
-    'without-content',
+    'without-text-content',
     'nearest-half',
+    new Map(),
   )
   const canvasBounds = offsetRect(canvasRectangle(elementBounds), negate(canvasRootRectangle))
 
   return canvasBounds
 }
 
-export async function searchInFloatingMenu(editor: EditorRenderResult, query: string) {
-  const floatingMenu = editor.renderedDOM.getByTestId(CanvasToolbarSearchTestID)
-  const searchBox = queryByAttribute('type', floatingMenu, 'text')!
+export async function searchInComponentPicker(editor: EditorRenderResult, query: string) {
+  document.execCommand('insertText', false, query)
 
-  await act(() => {
-    fireEvent.focus(searchBox)
-    fireEvent.change(searchBox, { target: { value: query } })
-    fireEvent.blur(searchBox)
-    fireEvent.keyDown(searchBox, { key: 'Enter', keyCode: 13, metaKey: true })
-  })
+  const picker = await editor.renderedDOM.findByTestId(ComponentPickerTestId)
+  forceNotNull('the component picker must not be null', picker)
+
+  await pressKey('Enter', { targetElement: picker })
 }

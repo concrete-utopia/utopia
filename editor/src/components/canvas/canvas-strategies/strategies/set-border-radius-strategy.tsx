@@ -54,6 +54,7 @@ import {
   canShowCanvasPropControl,
   cssNumberEqual,
   cssNumberWithRenderedValue,
+  fallbackEmptyValue,
   measurementBasedOnOtherMeasurement,
   precisionFromModifiers,
   shouldShowControls,
@@ -105,6 +106,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
     canvasState.scale,
     canvasState.startingMetadata,
     canvasState.startingElementPathTree,
+    canvasState.propertyControlsInfo,
   ).has('borderRadius')
   if (!canShowBorderRadiusControls) {
     return null
@@ -506,12 +508,6 @@ function updateBorderRadiusFn(
   }
 }
 
-function borderRadiusSidesAllEqual(sides: BorderRadiusSides<CSSNumberWithRenderedValue>): boolean {
-  return allElemsEqual([sides.bl, sides.br, sides.tl, sides.tr], (l, r) =>
-    cssNumberEqual(l.value, r.value),
-  )
-}
-
 function setBorderRadiusStrategyRunResult(
   data: BorderRadiusData<CSSNumberWithRenderedValue>,
   borderRadiusAdjustData: BorderRadiusAdjustData | null,
@@ -540,7 +536,7 @@ function setBorderRadiusStrategyRunResult(
 
     return {
       commands: setLonghandStylePropertyCommand(
-        mapBorderRadiusSides((v) => v.value, updatedBorderRadiusSides),
+        mapBorderRadiusSides((v) => fallbackEmptyValue(v), updatedBorderRadiusSides),
       ),
       updatedBorderRadius: updatedBorderRadiusSides,
     }
@@ -552,7 +548,9 @@ function setBorderRadiusStrategyRunResult(
   )
 
   return {
-    commands: setShorthandStylePropertyCommand(printCSSNumber(allUpdated.tl.value, null)),
+    commands: setShorthandStylePropertyCommand(
+      printCSSNumber(fallbackEmptyValue(allUpdated.tl), null),
+    ),
     updatedBorderRadius: allUpdated,
   }
 }

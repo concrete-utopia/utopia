@@ -6,9 +6,7 @@ import type { FramePin } from 'utopia-api/core'
 import {
   FlexAlignment,
   FlexJustifyContent,
-  FlexLength,
   FlexWrap,
-  isPercentPin,
   LayoutSystem,
   UtopiaUtils,
 } from 'utopia-api/core'
@@ -16,12 +14,14 @@ import type { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/
 import { findLastIndex } from '../../../core/shared/array-utils'
 import type { Either, Right as EitherRight } from '../../../core/shared/either'
 import {
+  applicative2Either,
   bimapEither,
   eitherToMaybe,
   flatMapEither,
   isLeft,
   isRight,
   left,
+  leftMapEither,
   mapEither,
   right,
   traverseEither,
@@ -31,6 +31,10 @@ import type {
   JSXAttributes,
   JSExpressionValue,
   JSXElement,
+  GridPosition,
+  GridRange,
+  GridAutoOrTemplateBase,
+  GridContainerProperties,
 } from '../../../core/shared/element-template'
 import {
   emptyComments,
@@ -40,6 +44,9 @@ import {
   isRegularJSXAttribute,
   jsExpressionFunctionCall,
   jsExpressionValue,
+  gridPositionValue,
+  gridRange,
+  gridAutoOrTemplateDimensions,
 } from '../../../core/shared/element-template'
 import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import {
@@ -61,7 +68,7 @@ import {
 } from '../../../core/shared/math-utils'
 import type { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { PrimitiveType, ValueOf } from '../../../core/shared/utils'
+import { assertNever, type PrimitiveType, type ValueOf } from '../../../core/shared/utils'
 import { parseBackgroundSize } from '../../../printer-parsers/css/css-parser-background-size'
 import { parseBorder } from '../../../printer-parsers/css/css-parser-border'
 import Utils from '../../../utils/utils'
@@ -76,6 +83,12 @@ import {
 } from '../../../printer-parsers/css/css-parser-margin'
 import { parseFlex, printFlexAsAttributeValue } from '../../../printer-parsers/css/css-parser-flex'
 import { memoize } from '../../../core/shared/memoize'
+import { parseCSSArray } from '../../../printer-parsers/css/css-parser-utils'
+import type { ParseError } from '../../../utils/value-parser-utils'
+import { descriptionParseError } from '../../../utils/value-parser-utils'
+import * as csstree from 'css-tree'
+import { expandCssTreeNodeValue, parseCssTreeNodeValue } from './css-tree-utils'
+import type { IcnProps } from '../../../uuiui'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -485,6 +498,7 @@ export type CSSNumberType =
   | 'Unitless'
   | 'UnitlessPercent'
   | 'AnyValid'
+  | 'Grid'
 
 // https://developer.mozilla.org/en-US/docs/Web/CSS/length
 export type FontRelativeLengthUnit = 'cap' | 'ch' | 'em' | 'ex' | 'ic' | 'lh' | 'rem' | 'rlh'
@@ -570,6 +584,59 @@ export interface CSSNumber {
   unit: CSSNumberUnit | null
 }
 
+export type GridCSSNumberUnit = LengthUnit | ResolutionUnit | PercentUnit | 'fr'
+const GridCSSNumberUnits: Array<GridCSSNumberUnit> = [...LengthUnits, ...ResolutionUnits, '%', 'fr']
+
+type BaseGridDimension = {
+  areaName: string | null
+}
+
+export type GridCSSNumber = BaseGridDimension & {
+  type: 'NUMBER'
+  value: CSSNumber
+}
+
+export type GridCSSKeyword = BaseGridDimension & {
+  type: 'KEYWORD'
+  value: CSSKeyword<ValidGridDimensionKeyword>
+}
+
+export function isGridCSSKeyword(dim: GridDimension): dim is GridCSSKeyword {
+  return dim.type === 'KEYWORD'
+}
+
+export function gridCSSKeyword(
+  value: CSSKeyword<ValidGridDimensionKeyword>,
+  areaName: string | null,
+): GridCSSKeyword {
+  return {
+    type: 'KEYWORD',
+    value: value,
+    areaName: areaName,
+  }
+}
+
+export function isGridCSSNumber(dim: GridDimension): dim is GridCSSNumber {
+  return dim.type === 'NUMBER'
+}
+
+export function gridCSSNumber(value: CSSNumber, areaName: string | null): GridCSSNumber {
+  return {
+    type: 'NUMBER',
+    value: value,
+    areaName: areaName,
+  }
+}
+
+export type GridDimension = GridCSSNumber | GridCSSKeyword
+
+export function printGridCSSNumber(dim: GridDimension): string {
+  if (isGridCSSNumber(dim)) {
+    return `${dim.value.value}${dim.value.unit ?? ''}`
+  }
+  return dim.value.value
+}
+
 export function cssNumber(value: number, unit: CSSNumberUnit | null = null): CSSNumber {
   return { value, unit }
 }
@@ -647,6 +714,7 @@ const parseCSSResolutionUnit = (input: string) => parseCSSNumberUnit(input, Reso
 const parseCSSUnitlessUnit = (_: string) => left<string, never>(`No unit expected`)
 const parseCSSUnitlessPercentUnit = (input: string) => parseCSSNumberUnit(input, ['%'])
 const parseCSSAnyValidNumberUnit = (input: string) => parseCSSNumberUnit(input, CSSNumberUnits)
+const parseCSSGridUnit = (input: string) => parseCSSNumberUnit(input, GridCSSNumberUnits)
 
 function unitParseFnForType(
   numberType: CSSNumberType,
@@ -676,6 +744,8 @@ function unitParseFnForType(
       return parseCSSUnitlessPercentUnit
     case 'AnyValid':
       return parseCSSAnyValidNumberUnit
+    case 'Grid':
+      return parseCSSGridUnit
     default:
       const _exhaustiveCheck: never = numberType
       throw new Error(`Unable to parse CSSNumber of type ${numberType}`)
@@ -702,7 +772,7 @@ function parseCSSNumericTypeString(
     return flatMapEither((value) => {
       const maybeUnit = matches[2]
       if (maybeUnit == null || maybeUnit === '') {
-        return right({ value, unit: defaultUnit })
+        return right({ value: value, unit: defaultUnit })
       } else {
         const parsedUnit = parseUnit(maybeUnit)
         return mapEither((unit) => cssNumber(value, unit), parsedUnit)
@@ -724,6 +794,30 @@ export function printCSSNumber(
     return fixNumber(value)
   } else {
     return `${fixNumber(value)}${unit}`
+  }
+}
+
+export function printArrayGridDimension(array: Array<GridDimension>): string {
+  return array
+    .map((dimension) => {
+      if (isGridCSSKeyword(dimension)) {
+        return dimension.value.value
+      }
+      const printed = printCSSNumber(dimension.value, null)
+      const areaName = dimension.areaName != null ? `[${dimension.areaName}] ` : ''
+      return `${areaName}${printed}`
+    })
+    .join(' ')
+}
+
+export function printGridAutoOrTemplateBase(input: GridAutoOrTemplateBase): string {
+  switch (input.type) {
+    case 'DIMENSIONS':
+      return printArrayGridDimension(input.dimensions)
+    case 'FALLBACK':
+      return input.value
+    default:
+      assertNever(input)
   }
 }
 
@@ -773,6 +867,16 @@ export const parseCSSTimePercent = (input: unknown) => parseCSSNumber(input, 'Ti
 export const parseCSSUnitless = (input: unknown) => parseCSSNumber(input, 'Unitless')
 export const parseCSSUnitlessPercent = (input: unknown) => parseCSSNumber(input, 'UnitlessPercent')
 export const parseCSSAnyValidNumber = (input: unknown) => parseCSSNumber(input, 'AnyValid')
+export const parseCSSGrid = (input: unknown): Either<string, GridDimension> => {
+  const maybeNumber = parseCSSNumber(input, 'Grid')
+  if (isRight(maybeNumber)) {
+    return right(gridCSSNumber(maybeNumber.value, null))
+  }
+  if (isValidGridDimensionKeyword(input)) {
+    return right(gridCSSKeyword(cssKeyword(input), null))
+  }
+  return left('invalid css grid dimension')
+}
 export const parseCSSUnitlessAsNumber = (input: unknown): Either<string, number> => {
   const parsed = parseCSSNumber(input, 'Unitless')
   if (isRight(parsed)) {
@@ -780,6 +884,51 @@ export const parseCSSUnitlessAsNumber = (input: unknown): Either<string, number>
   } else {
     return parsed
   }
+}
+
+const validGridDimensionKeywords = [
+  'auto',
+  'min-content',
+  'max-content',
+  'none',
+  'inherit',
+  'initial',
+  'unset',
+  'subgrid',
+  'auto-fit',
+  'auto-fill',
+  // NOTE: function keywords are omitted as they are treated separately
+] as const
+
+export type ValidGridDimensionKeyword = (typeof validGridDimensionKeywords)[number]
+
+export function isValidGridDimensionKeyword(value: unknown): value is ValidGridDimensionKeyword {
+  return validGridDimensionKeywords.includes(value as ValidGridDimensionKeyword)
+}
+
+const gridCSSTemplateNumberRegex = /^\[(.+)\]\s*(.+)$/
+
+export function parseToCSSGridDimension(input: unknown): Either<string, GridDimension> {
+  function getParts() {
+    if (typeof input === 'string') {
+      const match = input.match(gridCSSTemplateNumberRegex)
+      if (match != null) {
+        return {
+          areaName: match[1],
+          inputToParse: match[2],
+        }
+      }
+    }
+    return { areaName: null, inputToParse: input }
+  }
+  const { areaName, inputToParse } = getParts()
+
+  return mapEither((value) => {
+    return {
+      ...value,
+      areaName: areaName,
+    }
+  }, parseCSSGrid(inputToParse))
 }
 
 export const parseCSSNumber = (
@@ -794,6 +943,170 @@ export const parseCSSNumber = (
     return parseCSSNumericTypeString(input, unitParseFn, defaultUnit)
   } else {
     return left(`Unable to parse invalid number`)
+  }
+}
+
+export function parseGridPosition(
+  container: GridContainerProperties,
+  axis: 'row' | 'column',
+  edge: 'start' | 'end',
+  shorthand: GridPosition | null,
+  input: unknown,
+): Either<string, GridPosition> {
+  if (input === 'auto') {
+    return right(cssKeyword('auto'))
+  } else if (typeof input === 'string') {
+    const referenceTemplate =
+      axis === 'row' ? container.gridTemplateRows : container.gridTemplateColumns
+    if (referenceTemplate?.type === 'DIMENSIONS') {
+      const maybeArea = referenceTemplate.dimensions.findIndex((dim) => dim.areaName === input)
+      if (maybeArea >= 0) {
+        let value = gridPositionValue(maybeArea + 1)
+        if (
+          edge === 'end' &&
+          shorthand != null &&
+          !isCSSKeyword(shorthand) &&
+          shorthand.numericalPosition === value.numericalPosition
+        ) {
+          value.numericalPosition = (value.numericalPosition ?? 0) + 1
+        }
+        return right(value)
+      }
+    }
+
+    const asNumber = parseNumber(input)
+    return mapEither(gridPositionValue, asNumber)
+  } else if (typeof input === 'number') {
+    return right(gridPositionValue(input))
+  } else {
+    return left('Not a valid grid position.')
+  }
+}
+
+export const GridAutoFlowValues = ['column', 'column dense', 'row', 'row dense', 'dense'] as const
+export type GridAutoFlow = (typeof GridAutoFlowValues)[number]
+
+export function gridAutoFlowIcon(value: GridAutoFlow): IcnProps {
+  switch (value) {
+    case 'column':
+    case 'column dense':
+      return {
+        category: 'inspector-element',
+        type: 'arrowDown',
+        color: 'black',
+        width: 16,
+        height: 16,
+      }
+    case 'dense':
+    case 'row':
+    case 'row dense':
+      return {
+        category: 'inspector-element',
+        type: 'arrowRight',
+        color: 'black',
+        width: 16,
+        height: 16,
+      }
+    default:
+      assertNever(value)
+  }
+}
+
+export function parseGridAutoFlow(rawValue: string): GridAutoFlow | null {
+  if (GridAutoFlowValues.some((v) => v === rawValue)) {
+    return rawValue as GridAutoFlow
+  }
+
+  return null
+}
+
+export function parseGridRange(
+  container: GridContainerProperties,
+  axis: 'row' | 'column',
+  input: unknown,
+): Either<string, GridRange> {
+  if (typeof input === 'string') {
+    if (input.includes('/')) {
+      const splitInput = input.split('/')
+      const startParsed = parseGridPosition(container, axis, 'start', null, splitInput[0])
+      const endParsed = parseGridPosition(container, axis, 'end', null, splitInput[1])
+      return applicative2Either(gridRange, startParsed, endParsed)
+    } else {
+      const startParsed = parseGridPosition(container, axis, 'start', null, input)
+      return mapEither((start) => {
+        const end =
+          !isCSSKeyword(start) && start.numericalPosition != null
+            ? gridPositionValue(start.numericalPosition + 1)
+            : null
+        return gridRange(start, end)
+      }, startParsed)
+    }
+  } else {
+    return left('Not a valid grid range.')
+  }
+}
+
+export function expandRepeatFunctions(str: string): string {
+  const node = parseCssTreeNodeValue(str)
+  const expanded = expandCssTreeNodeValue(node)
+  return csstree.generate(expanded)
+}
+
+const reGridAreaNameBrackets = /^\[.+\]$/
+
+function normalizeGridTemplate(template: string): string {
+  type normalizeFn = (s: string) => string
+
+  const normalizePasses: normalizeFn[] = [
+    // 1. expand repeat functions
+    expandRepeatFunctions,
+    // 2. normalize area names spacing
+    (s) => s.replace(/\]/g, '] ').replace(/\[/g, ' ['),
+  ]
+
+  return normalizePasses.reduce((working, normalize) => normalize(working), template).trim()
+}
+
+export function tokenizeGridTemplate(template: string): string[] {
+  let tokens: string[] = []
+  let parts = normalizeGridTemplate(template).split(/\s+/)
+  while (parts.length > 0) {
+    const part = parts.shift()?.trim()
+    if (part == null) {
+      break
+    }
+    if (part.match(reGridAreaNameBrackets) != null && parts.length > 0) {
+      const withAreaName = `${part} ${parts.shift()}`
+      tokens.push(withAreaName)
+    } else {
+      tokens.push(part)
+    }
+  }
+  return tokens
+}
+
+export function parseGridAutoOrTemplateBase(
+  input: unknown,
+): Either<string, GridAutoOrTemplateBase> {
+  function numberOrKeywordParse(inputToParse: unknown): Either<ParseError, GridDimension> {
+    const result = parseToCSSGridDimension(inputToParse)
+    return leftMapEither<string, ParseError, GridDimension>(descriptionParseError, result)
+  }
+  if (typeof input === 'string') {
+    const parsedCSSArray = parseCSSArray([numberOrKeywordParse])(tokenizeGridTemplate(input))
+    return bimapEither(
+      (error) => {
+        if (error.type === 'DESCRIPTION_PARSE_ERROR') {
+          return error.description
+        } else {
+          return error.toString()
+        }
+      },
+      gridAutoOrTemplateDimensions,
+      parsedCSSArray,
+    )
+  } else {
+    return left('Unknown input.')
   }
 }
 
@@ -1038,6 +1351,33 @@ export const defaultBorderWidth = cssNumber(1, 'px')
 
 export const emptyCSSBorder: CSSBorder = {
   type: 'border',
+}
+
+export const emptyCssBorderDefault: CSSBorder = {
+  type: 'border',
+  width: {
+    type: 'line-width',
+    value: {
+      value: 0,
+      unit: 'px',
+    },
+  },
+  style: {
+    type: 'line-style',
+    value: {
+      type: 'keyword',
+      value: 'none',
+    },
+  },
+  color: {
+    type: 'RGB',
+    r: 0,
+    g: 0,
+    b: 0,
+    a: 1,
+    percentageAlpha: false,
+    percentagesUsed: false,
+  },
 }
 
 export const defaultCSSBorder: Complete<CSSBorder> = {
@@ -3490,7 +3830,7 @@ export type CSSTextAlign = 'left' | 'right' | 'center' | 'justify' | 'start' | '
 
 export type CSSDirection = 'ltr' | 'rtl'
 
-export type CSSTextDecorationLine = 'underline' | 'overline' | 'line-through' | 'none'
+export type CSSTextDecorationLine = string
 
 export type CSSTextDecorationStyle = 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'
 
@@ -3681,12 +4021,7 @@ function printTextAlign(cssTextAlign: CSSTextAlign): JSExpressionValue<Property.
   return jsExpressionValue(cssTextAlign, emptyComments)
 }
 
-const parseTextDecorationLine = isOneOfTheseParser<CSSTextDecorationLine>([
-  'underline',
-  'overline',
-  'line-through',
-  'none',
-])
+const parseTextDecorationLine = parseString
 
 function printTextDecorationLine(
   cssTextDecorationLine: CSSTextDecorationLine,
@@ -4157,7 +4492,8 @@ export interface ParsedCSSProperties {
   flexWrap: FlexWrap
   flexDirection: FlexDirection
   alignItems: FlexAlignment
-  alignContent: FlexAlignment
+  justifyItems: FlexAlignment
+  alignContent: FlexJustifyContent
   justifyContent: FlexJustifyContent
   alignSelf: FlexAlignment
   position: CSSPosition
@@ -4178,6 +4514,9 @@ export interface ParsedCSSProperties {
   flexBasis: CSSNumber | undefined
   gap: CSSNumber
   zIndex: CSSNumber | undefined
+  rowGap: CSSNumber
+  columnGap: CSSNumber
+  gridAutoFlow: GridAutoFlow | null
 }
 
 export type ParsedCSSPropertiesKeys = keyof ParsedCSSProperties
@@ -4264,7 +4603,8 @@ export const cssEmptyValues: ParsedCSSProperties = {
   flexWrap: FlexWrap.NoWrap,
   flexDirection: 'row',
   alignItems: FlexAlignment.FlexStart,
-  alignContent: FlexAlignment.FlexStart,
+  justifyItems: FlexAlignment.FlexStart,
+  alignContent: FlexJustifyContent.FlexStart,
   justifyContent: FlexJustifyContent.FlexStart,
   padding: {
     paddingTop: {
@@ -4384,6 +4724,15 @@ export const cssEmptyValues: ParsedCSSProperties = {
     unit: null,
   },
   zIndex: undefined,
+  rowGap: {
+    value: 0,
+    unit: null,
+  },
+  columnGap: {
+    value: 0,
+    unit: null,
+  },
+  gridAutoFlow: null,
 }
 
 type CSSParsers = {
@@ -4424,7 +4773,8 @@ export const cssParsers: CSSParsers = {
   flexWrap: flexWrapParser,
   flexDirection: parseFlexDirection,
   alignItems: flexAlignmentsParser,
-  alignContent: flexAlignmentsParser,
+  justifyItems: flexAlignmentsParser,
+  alignContent: flexJustifyContentParser,
   justifyContent: flexJustifyContentParser,
   padding: parsePadding,
   paddingTop: parseCSSLengthPercent,
@@ -4456,6 +4806,9 @@ export const cssParsers: CSSParsers = {
   height: parseCSSLengthPercent,
   flexBasis: parseCSSLengthPercent,
   zIndex: parseCSSUnitless,
+  rowGap: parseCSSLengthPercent,
+  columnGap: parseCSSLengthPercent,
+  gridAutoFlow: parseGridAutoFlowValue,
 }
 
 type CSSPrinters = {
@@ -4498,6 +4851,7 @@ const cssPrinters: CSSPrinters = {
   flexWrap: jsxAttributeValueWithNoComments,
   flexDirection: jsxAttributeValueWithNoComments,
   alignItems: jsxAttributeValueWithNoComments,
+  justifyItems: jsxAttributeValueWithNoComments,
   alignContent: jsxAttributeValueWithNoComments,
   justifyContent: jsxAttributeValueWithNoComments,
   padding: printPaddingAsAttributeValue,
@@ -4530,6 +4884,9 @@ const cssPrinters: CSSPrinters = {
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
   gap: printCSSNumberAsAttributeValue('px'),
   zIndex: printCSSNumberUnitlessOrUndefinedAsAttributeValue,
+  rowGap: printCSSNumberAsAttributeValue('px'),
+  columnGap: printCSSNumberAsAttributeValue('px'),
+  gridAutoFlow: jsxAttributeValueWithNoComments,
 }
 
 export interface UtopianElementProperties {
@@ -4965,6 +5322,14 @@ export function parseAnyParseableValue<K extends keyof ParsedProperties>(
   }
 }
 
+function parseGridAutoFlowValue(value: unknown): Either<string, GridAutoFlow> {
+  const maybeParsedValue = typeof value !== 'string' ? null : parseGridAutoFlow(value)
+  if (maybeParsedValue == null) {
+    return left(`${value} is not a valid grid-auto-flow value`)
+  }
+  return right(maybeParsedValue)
+}
+
 // hmmmm
 type PrintedValue = JSExpression
 
@@ -5114,7 +5479,7 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   backgroundColor: cssDefault(emptyBackgroundColor),
   backgroundImage: [],
   backgroundSize: [],
-  border: emptyCSSBorder,
+  border: emptyCssBorderDefault,
   borderRadius: {
     type: 'LEFT',
     value: {
@@ -5165,7 +5530,8 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   flexWrap: FlexWrap.NoWrap,
   flexDirection: 'row',
   alignItems: FlexAlignment.FlexStart,
-  alignContent: FlexAlignment.FlexStart,
+  justifyItems: FlexAlignment.FlexStart,
+  alignContent: FlexJustifyContent.FlexStart,
   justifyContent: FlexJustifyContent.FlexStart,
   padding: nontrivial,
   paddingTop: {
@@ -5244,6 +5610,15 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
     unit: 'px',
   },
   zIndex: undefined,
+  rowGap: {
+    value: 0,
+    unit: 'px',
+  },
+  columnGap: {
+    value: 0,
+    unit: 'px',
+  },
+  gridAutoFlow: null,
 }
 
 export function isTrivialDefaultValue(

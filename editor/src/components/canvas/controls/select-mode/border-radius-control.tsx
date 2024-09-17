@@ -40,7 +40,7 @@ import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import type { CSSNumberWithRenderedValue } from './controls-common'
-import { CanvasLabel } from './controls-common'
+import { CanvasLabel, fallbackEmptyValue } from './controls-common'
 
 export const CircularHandleTestId = (corner: BorderRadiusCorner): string =>
   `circular-handle-${corner}`
@@ -229,7 +229,7 @@ const CircularHandle = React.memo((props: CircularHandleProp) => {
             }}
           >
             <CanvasLabel
-              value={`${printCSSNumber(borderRadius.value, null)}`}
+              value={`${printCSSNumber(fallbackEmptyValue(borderRadius), null)}`}
               scale={scale}
               color={colorTheme.brandNeonPink.value}
               textColor={colorTheme.white.value}

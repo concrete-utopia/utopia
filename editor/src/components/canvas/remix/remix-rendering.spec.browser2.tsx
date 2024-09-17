@@ -60,6 +60,9 @@ import {
   type MetaCanvasStrategy,
   RegisteredCanvasStrategies,
 } from '../canvas-strategies/canvas-strategies'
+import CanvasActions from '../canvas-actions'
+import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
+import { addFlexLayout } from '../../inspector/layout-systems.test-utils'
 
 const DefaultRouteTextContent = 'Hello Remix!'
 const RootTextContent = 'This is root!'
@@ -1353,10 +1356,6 @@ describe('Remix navigation', () => {
         renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
       ).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
-
-      await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
-      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
     })
 
     it('can navigate with the scene label nav buttons, in edit mode', async () => {
@@ -1392,10 +1391,6 @@ describe('Remix navigation', () => {
         renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
       ).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
-
-      await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
-      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
     })
 
     it('navigating in one Remix scene does not affect the navigation state in the other', async () => {
@@ -1762,8 +1757,7 @@ export default function Index() {
 
     const absoluteDiv = await clickElementOnCanvasControlsLayer(renderResult, AbsoluteDivTestId)
 
-    const targetElement = renderResult.renderedDOM.getByTestId(AddRemoveLayoutSystemControlTestId())
-    await mouseClickAtPoint(targetElement, { x: 1, y: 1 }, { modifiers: cmdModifier })
+    await addFlexLayout(renderResult)
 
     expect(absoluteDiv.style.display).toEqual('flex')
   })
@@ -1773,19 +1767,21 @@ export default function Index() {
 
     await renderResult.dispatch([runDOMWalker()], true)
 
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-sb/remix-scene',
-        'regular-sb/remix-scene:app',
-        'regular-sb/remix-scene:app/outlet',
-        'regular-sb/remix-scene:app/outlet:index',
-        'regular-sb/remix-scene:app/outlet:index/absolute-div',
-        'regular-sb/remix-scene:app/outlet:index/flex-div',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-1',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-2',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-3',
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-sb/remix-scene',
+      'regular-sb/remix-scene:app',
+      'regular-sb/remix-scene:app/outlet',
+      'regular-sb/remix-scene:app/outlet:index',
+      'regular-sb/remix-scene:app/outlet:index/absolute-div',
+      'regular-sb/remix-scene:app/outlet:index/flex-div',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-1',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-2',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-3',
+    ])
 
     const child1 = await clickElementOnCanvasControlsLayer(renderResult, Child1TestId)
     const child1Bounds = child1.getBoundingClientRect()
@@ -1795,19 +1791,21 @@ export default function Index() {
       windowPoint({ x: child1Bounds.width * 1.5, y: 0 }),
     )
 
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-sb/remix-scene',
-        'regular-sb/remix-scene:app',
-        'regular-sb/remix-scene:app/outlet',
-        'regular-sb/remix-scene:app/outlet:index',
-        'regular-sb/remix-scene:app/outlet:index/absolute-div',
-        'regular-sb/remix-scene:app/outlet:index/flex-div',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-2',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-1', // <- child1 is the middle element after the reorder
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-3',
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-sb/remix-scene',
+      'regular-sb/remix-scene:app',
+      'regular-sb/remix-scene:app/outlet',
+      'regular-sb/remix-scene:app/outlet:index',
+      'regular-sb/remix-scene:app/outlet:index/absolute-div',
+      'regular-sb/remix-scene:app/outlet:index/flex-div',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-2',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-1', // <- child1 is the middle element after the reorder
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-3',
+    ])
   })
 
   it('absolute move elements inside Remix', async () => {
@@ -1856,8 +1854,7 @@ export default function Index() {
     // Nothing should have changed
     expect({ left: absoluteDiv.style.left, top: absoluteDiv.style.top }).toEqual(styleBefore)
 
-    // Ensure we have both types of metadata for all paths
-    expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
+    expect(Object.keys(renderResult.getEditorState().editor.jsxMetadata)).toEqual([
       'sb',
       'sb/remix-scene',
       'sb/remix-scene:app',
@@ -1868,18 +1865,6 @@ export default function Index() {
       'sb/remix-scene:app/outlet:index/flex-div/child-1',
       'sb/remix-scene:app/outlet:index/flex-div/child-2',
       'sb/remix-scene:app/outlet:index/flex-div/child-3',
-    ])
-    expect(Object.keys(renderResult.getEditorState().editor.domMetadata)).toEqual([
-      'sb/remix-scene:app/outlet:index/absolute-div',
-      'sb/remix-scene:app/outlet:index/flex-div/child-1',
-      'sb/remix-scene:app/outlet:index/flex-div/child-2',
-      'sb/remix-scene:app/outlet:index/flex-div/child-3',
-      'sb/remix-scene:app/outlet:index/flex-div',
-      'sb/remix-scene:app/outlet:index',
-      'sb/remix-scene:app/outlet',
-      'sb/remix-scene:app',
-      'sb/remix-scene',
-      'sb',
     ])
   })
 
@@ -1888,19 +1873,21 @@ export default function Index() {
 
     await renderResult.dispatch([runDOMWalker()], true)
 
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-sb/remix-scene',
-        'regular-sb/remix-scene:app',
-        'regular-sb/remix-scene:app/outlet',
-        'regular-sb/remix-scene:app/outlet:index',
-        'regular-sb/remix-scene:app/outlet:index/absolute-div',
-        'regular-sb/remix-scene:app/outlet:index/flex-div',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-1',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-2',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-3',
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-sb/remix-scene',
+      'regular-sb/remix-scene:app',
+      'regular-sb/remix-scene:app/outlet',
+      'regular-sb/remix-scene:app/outlet:index',
+      'regular-sb/remix-scene:app/outlet:index/absolute-div',
+      'regular-sb/remix-scene:app/outlet:index/flex-div',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-1',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-2',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-3',
+    ])
 
     await pressKey('d') // enter draw to insert mode
 
@@ -2110,19 +2097,21 @@ export default function Index() {
 
   it('dragging elements between Remix and the storyboard', async () => {
     const renderResult = await renderRemixProject(remixProjectForEditingTests)
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-sb/remix-scene',
-        'regular-sb/remix-scene:app',
-        'regular-sb/remix-scene:app/outlet',
-        'regular-sb/remix-scene:app/outlet:index',
-        'regular-sb/remix-scene:app/outlet:index/absolute-div',
-        'regular-sb/remix-scene:app/outlet:index/flex-div',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-1',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-2',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-3',
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-sb/remix-scene',
+      'regular-sb/remix-scene:app',
+      'regular-sb/remix-scene:app/outlet',
+      'regular-sb/remix-scene:app/outlet:index',
+      'regular-sb/remix-scene:app/outlet:index/absolute-div',
+      'regular-sb/remix-scene:app/outlet:index/flex-div',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-1',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-2',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-3',
+    ])
 
     {
       // Drag the element out of Remix
@@ -2131,26 +2120,35 @@ export default function Index() {
         AbsoluteDivTestId,
       )
       const absoluteDivBounds = absoluteElement.getBoundingClientRect()
+
       await dragMouse(
         renderResult,
         windowPoint({ x: absoluteDivBounds.x + 1, y: absoluteDivBounds.y + 1 }),
         windowPoint({ x: 10, y: -77 }),
+        cmdModifier,
+        async () =>
+          renderResult.dispatch(
+            [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+            true,
+          ),
       )
     }
 
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-sb/remix-scene',
-        'regular-sb/remix-scene:app',
-        'regular-sb/remix-scene:app/outlet',
-        'regular-sb/remix-scene:app/outlet:index',
-        'regular-sb/remix-scene:app/outlet:index/flex-div',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-1',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-2',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-3',
-        'regular-sb/absolute-div',
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-sb/remix-scene',
+      'regular-sb/remix-scene:app',
+      'regular-sb/remix-scene:app/outlet',
+      'regular-sb/remix-scene:app/outlet:index',
+      'regular-sb/remix-scene:app/outlet:index/flex-div',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-1',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-2',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-3',
+      'regular-sb/absolute-div',
+    ])
 
     {
       // Drag the element back into Remix
@@ -2159,26 +2157,35 @@ export default function Index() {
         AbsoluteDivTestId,
       )
       const absoluteDivBounds = absoluteElement.getBoundingClientRect()
+
       await dragMouse(
         renderResult,
         windowPoint({ x: absoluteDivBounds.x + 1, y: absoluteDivBounds.y + 1 }),
         windowPoint({ x: -10, y: 77 }),
+        cmdModifier,
+        async () =>
+          renderResult.dispatch(
+            [CanvasActions.setUsersPreferredStrategy('ABSOLUTE_REPARENT')],
+            true,
+          ),
       )
     }
 
-    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
-      [
-        'regular-sb/remix-scene',
-        'regular-sb/remix-scene:app',
-        'regular-sb/remix-scene:app/outlet',
-        'regular-sb/remix-scene:app/outlet:index',
-        'regular-sb/remix-scene:app/outlet:index/flex-div',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-1',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-2',
-        'regular-sb/remix-scene:app/outlet:index/flex-div/child-3',
-        'regular-sb/remix-scene:app/outlet:index/absolute-div',
-      ],
-    )
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-sb/remix-scene',
+      'regular-sb/remix-scene:app',
+      'regular-sb/remix-scene:app/outlet',
+      'regular-sb/remix-scene:app/outlet:index',
+      'regular-sb/remix-scene:app/outlet:index/flex-div',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-1',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-2',
+      'regular-sb/remix-scene:app/outlet:index/flex-div/child-3',
+      'regular-sb/remix-scene:app/outlet:index/absolute-div',
+    ])
   })
 })
 

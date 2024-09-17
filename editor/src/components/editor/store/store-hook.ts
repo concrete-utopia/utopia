@@ -2,7 +2,7 @@ import React from 'react'
 import type { EqualityChecker, Mutate, StoreApi, UseBoundStore } from 'zustand'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { shallowEqual } from '../../../core/shared/equality-utils'
+import { keysEquality, shallowEqual } from '../../../core/shared/equality-utils'
 import { objectMap } from '../../../core/shared/object-utils'
 import {
   MultiplayerSubstateKeepDeepEquality,
@@ -25,11 +25,14 @@ import type {
   FocusedElementPathSubstate,
   GithubSubstate,
   HighlightedHoveredViewsSubstate,
+  MetadataAndPropertyControlsInfoSubstate,
   MetadataSubstate,
   MultiplayerSubstate,
   NavigatorSubstate,
+  NavigatorTargetsSubstate,
   OnlineStateSubstate,
   PostActionInteractionSessionSubstate,
+  ProjectContentAndMetadataAndVariablesInScopeSubstate,
   ProjectContentAndMetadataSubstate,
   ProjectContentSubstate,
   ProjectServerStateSubstate,
@@ -49,6 +52,7 @@ import {
   githubSubstateKeys,
   highlightedHoveredViewsSubstateKeys,
   metadataSubstateKeys,
+  navigatorTargetsSubstateKeys,
   projectContentsKeys,
   propertyControlsInfoSubstateKeys,
   restOfEditorStateKeys,
@@ -57,6 +61,7 @@ import {
   variablesInScopeSubstateKeys,
 } from './store-hook-substore-types'
 import { Getter } from '../hook-utils'
+import { uniq } from '../../../core/shared/array-utils'
 
 // This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 4.1.5 https://github.com/pmndrs/zustand#using-subscribe-with-selector
 type Store<S> = UseBoundStore<Mutate<StoreApi<S>, [['zustand/subscribeWithSelector', never]]>>
@@ -125,9 +130,10 @@ export const useEditorState = <K extends StoreKey, S extends (typeof Substores)[
   selector: StateSelector<Parameters<S>[0], U>,
   selectorName: string,
   equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
+  storeContext: React.Context<UtopiaStoreAPI | null> = EditorStateContext,
 ): U => {
   const storeKey: K = storeKey_.name as K
-  const context = React.useContext(EditorStateContext)
+  const context = React.useContext(storeContext)
 
   const wrappedSelector = useWrapSelectorInPerformanceMeasureBlock(storeKey, selector, selectorName)
 
@@ -218,8 +224,9 @@ export const useSelectorWithCallback = <K extends StoreKey, S extends (typeof Su
 export const useRefEditorState = <U>(
   selector: StateSelector<EditorStorePatched, U>,
   explainMe = false,
+  storeContext: React.Context<UtopiaStoreAPI | null> = EditorStateContext,
 ): { readonly current: U } => {
-  const context = React.useContext(EditorStateContext)
+  const context = React.useContext(storeContext)
   if (context == null) {
     throw new Error('useStore is missing from editor context')
   }
@@ -289,6 +296,9 @@ export const Substores = {
   navigator: (a: NavigatorSubstate, b: NavigatorSubstate) => {
     return NavigatorStateKeepDeepEquality(a.editor.navigator, b.editor.navigator).areEqual
   },
+  navigatorTargetsSubstate: (a: NavigatorTargetsSubstate, b: NavigatorTargetsSubstate) => {
+    return keysEquality(navigatorTargetsSubstateKeys, a.editor, b.editor)
+  },
   postActionInteractionSession: (
     a: PostActionInteractionSessionSubstate,
     b: PostActionInteractionSessionSubstate,
@@ -300,6 +310,16 @@ export const Substores = {
     b: ProjectContentAndMetadataSubstate,
   ) => {
     return keysEquality([...projectContentsKeys, ...metadataSubstateKeys], a.editor, b.editor)
+  },
+  projectContentsAndMetadataAndVariablesInScope: (
+    a: ProjectContentAndMetadataAndVariablesInScopeSubstate,
+    b: ProjectContentAndMetadataAndVariablesInScopeSubstate,
+  ) => {
+    return keysEquality(
+      [...projectContentsKeys, ...metadataSubstateKeys, ...variablesInScopeSubstateKeys],
+      a.editor,
+      b.editor,
+    )
   },
   projectServerState: (a: ProjectServerStateSubstate, b: ProjectServerStateSubstate) => {
     return ProjectServerStateKeepDeepEquality(a.projectServerState, b.projectServerState).areEqual
@@ -325,6 +345,16 @@ export const Substores = {
   propertyControlsInfo: (a: PropertyControlsInfoSubstate, b: PropertyControlsInfoSubstate) => {
     return keysEquality(propertyControlsInfoSubstateKeys, a.editor, b.editor)
   },
+  metadataAndPropertyControlsInfo: (
+    a: MetadataAndPropertyControlsInfoSubstate,
+    b: MetadataAndPropertyControlsInfoSubstate,
+  ) => {
+    return keysEquality(
+      uniq([...propertyControlsInfoSubstateKeys, ...metadataSubstateKeys]),
+      a.editor,
+      b.editor,
+    )
+  },
 } as const
 
 export const SubstateEqualityFns: {
@@ -337,11 +367,4 @@ function tailoredEqualFunctions<K extends keyof Substates>(
   key: K,
 ) {
   return SubstateEqualityFns[key](oldEditorStore, editorStore)
-}
-
-function keyEquality<T>(key: keyof T, a: T, b: T): boolean {
-  return a[key] === b[key]
-}
-function keysEquality<T>(keys: ReadonlyArray<keyof T>, a: T, b: T): boolean {
-  return keys.every((key) => keyEquality(key, a, b))
 }

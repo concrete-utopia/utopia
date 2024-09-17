@@ -11,7 +11,12 @@ import type {
   ElementInstanceMetadataMap,
   JSXElement,
 } from '../../../../core/shared/element-template'
-import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import type {
+  CanvasPoint,
+  CanvasRectangle,
+  CanvasVector,
+  LocalRectangle,
+} from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
   zeroRectIfNullOrInfinity,
@@ -22,6 +27,7 @@ import {
   roundRectangleToNearestWhole,
   zeroCanvasPoint,
   zeroCanvasRect,
+  localPoint,
 } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 
@@ -60,8 +66,11 @@ import { memoize } from '../../../../core/shared/memoize'
 import { is } from '../../../../core/shared/equality-utils'
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import type { InspectorStrategy } from '../../../../components/inspector/inspector-strategies/inspector-strategy'
-import { rectangleToSixFramePoints } from '../../commands/utils/group-resize-utils'
-import invariant from '../../../../third-party/remix/invariant'
+import type { FrameWithFourToSixPoints } from '../../commands/utils/group-resize-utils'
+import {
+  rectangleToFourFramePoints,
+  rectangleToSixFramePoints,
+} from '../../commands/utils/group-resize-utils'
 import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
 import {
   setCssLengthProperty,
@@ -265,18 +274,7 @@ export function getMoveCommandsForSelectedElement(
     MetadataUtils.getFrameInCanvasCoords(selectedElement, startingMetadata),
   )
 
-  invariant(
-    globalFrame != null,
-    `Error in changeBounds: the ${EP.toString(
-      selectedElement,
-    )} element's global frame was null or infinity`,
-  )
-  invariant(
-    elementParentBounds != null,
-    `Error in changeBounds: the ${EP.toString(
-      selectedElement,
-    )} element's coordinateSystemBounds was null`,
-  )
+  const localFrame = nullIfInfinity(MetadataUtils.getLocalFrame(selectedElement, startingMetadata))
 
   if (element == null) {
     return { commands: [], intendedBounds: [] }
@@ -294,12 +292,17 @@ export function getMoveCommandsForSelectedElement(
     )
   }
 
+  if (globalFrame == null || localFrame == null) {
+    return { commands: [], intendedBounds: [] }
+  }
+
   return createMoveCommandsForElementCreatingMissingPins(
     element,
     selectedElement,
     mappedPath,
     drag,
     globalFrame,
+    localFrame,
     elementParentBounds,
     elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null,
   )
@@ -444,7 +447,8 @@ export function createMoveCommandsForElementCreatingMissingPins(
   mappedPath: ElementPath,
   drag: CanvasVector,
   globalFrame: CanvasRectangle,
-  elementParentBounds: CanvasRectangle,
+  localFrame: LocalRectangle,
+  elementParentBounds: CanvasRectangle | null,
   elementParentFlexDirection: FlexDirection | null,
 ): {
   commands: Array<SetCssLengthProperty>
@@ -466,10 +470,13 @@ export function createMoveCommandsForElementCreatingMissingPins(
 
   const intendedGlobalFrame = roundRectangleToNearestWhole(offsetRect(globalFrame, drag))
 
-  const intendedLocalFullFrame = rectangleToSixFramePoints(
-    canvasRectangleToLocalRectangle(intendedGlobalFrame, elementParentBounds),
-    elementParentBounds,
-  )
+  const intendedLocalFullFrame: FrameWithFourToSixPoints =
+    elementParentBounds == null
+      ? rectangleToFourFramePoints(offsetRect(localFrame, localPoint(drag)))
+      : rectangleToSixFramePoints(
+          canvasRectangleToLocalRectangle(intendedGlobalFrame, elementParentBounds),
+          elementParentBounds,
+        )
 
   const setCssLengthPropertyCommands = mapDropNulls((pin) => {
     const horizontal = isHorizontalPoint(
@@ -478,6 +485,9 @@ export function createMoveCommandsForElementCreatingMissingPins(
     )
 
     const adjustedValue = intendedLocalFullFrame[pin]
+    if (adjustedValue == null) {
+      return null
+    }
 
     return setCssLengthProperty(
       'always',
@@ -488,19 +498,12 @@ export function createMoveCommandsForElementCreatingMissingPins(
         horizontal ? elementParentBounds?.width : elementParentBounds?.height,
       ),
       elementParentFlexDirection,
-
       'create-if-not-existing',
       'warn-about-replacement',
     )
   }, pinsOnlyForDimensionThatChanged)
 
-  const intendedBounds = (() => {
-    if (globalFrame == null) {
-      return []
-    } else {
-      return [{ target: mappedPath, frame: intendedGlobalFrame }]
-    }
-  })()
+  const intendedBounds = [{ target: mappedPath, frame: intendedGlobalFrame }]
 
   return { commands: setCssLengthPropertyCommands, intendedBounds: intendedBounds }
 }

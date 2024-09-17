@@ -26,6 +26,7 @@ import type {
 } from './canvas-strategy-types'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
 import type { VariablesInScope } from '../ui-jsx-canvas'
+import type { Axis } from '../gap-utils'
 
 export type ZeroDragPermitted = 'zero-drag-permitted' | 'zero-drag-not-permitted'
 
@@ -131,6 +132,21 @@ export function interactionSession(
     updatedTargetPaths: updatedTargetPaths,
     aspectRatioLock: aspectRatioLock,
     latestElementPathTree: elementPathTree,
+  }
+}
+
+export function interactionSessionIsActive(session: InteractionSession | null): boolean {
+  if (session == null) {
+    return false
+  } else {
+    switch (session.interactionData.type) {
+      case 'DRAG':
+        return session.interactionData.drag != null
+      case 'HOVER':
+        return true
+      case 'KEYBOARD':
+        return true
+    }
   }
 }
 
@@ -559,6 +575,32 @@ export function flexGapHandle(): FlexGapHandle {
   }
 }
 
+export interface GridAxisHandle {
+  type: 'GRID_AXIS_HANDLE'
+  axis: Axis
+  columnOrRow: number
+}
+
+export function gridAxisHandle(axis: Axis, columnOrRow: number): GridAxisHandle {
+  return {
+    type: 'GRID_AXIS_HANDLE',
+    axis: axis,
+    columnOrRow: columnOrRow,
+  }
+}
+
+export interface GridGapHandle {
+  type: 'GRID_GAP_HANDLE'
+  axis: Axis
+}
+
+export function gridGapHandle(axis: Axis): GridGapHandle {
+  return {
+    type: 'GRID_GAP_HANDLE',
+    axis: axis,
+  }
+}
+
 export interface PaddingResizeHandle {
   type: 'PADDING_RESIZE_HANDLE'
   edgePiece: EdgePiece
@@ -602,14 +644,63 @@ export function reorderSlider(): ReorderSlider {
   }
 }
 
+export interface GridCellHandle {
+  type: 'GRID_CELL_HANDLE'
+  id: string
+}
+
+export function gridCellHandle(params: { id: string }): GridCellHandle {
+  return {
+    type: 'GRID_CELL_HANDLE',
+    id: params.id,
+  }
+}
+
+export const GridResizeEdges = ['row-start', 'row-end', 'column-start', 'column-end'] as const
+export type GridResizeEdge = (typeof GridResizeEdges)[number]
+
+export type GridResizeEdgeProperties = {
+  isRow: boolean
+  isColumn: boolean
+  isStart: boolean
+  isEnd: boolean
+}
+
+export function gridResizeEdgeProperties(edge: GridResizeEdge): GridResizeEdgeProperties {
+  return {
+    isRow: edge === 'row-start' || edge === 'row-end',
+    isColumn: edge === 'column-start' || edge === 'column-end',
+    isStart: edge === 'row-start' || edge === 'column-start',
+    isEnd: edge === 'row-end' || edge === 'column-end',
+  }
+}
+
+export interface GridResizeHandle {
+  type: 'GRID_RESIZE_HANDLE'
+  id: string
+  edge: GridResizeEdge
+}
+
+export function gridResizeHandle(id: string, edge: GridResizeEdge): GridResizeHandle {
+  return {
+    type: 'GRID_RESIZE_HANDLE',
+    id: id,
+    edge: edge,
+  }
+}
+
 export type CanvasControlType =
   | BoundingArea
   | ResizeHandle
   | FlexGapHandle
+  | GridGapHandle
   | PaddingResizeHandle
   | KeyboardCatcherControl
   | ReorderSlider
   | BorderRadiusResizeHandle
+  | GridCellHandle
+  | GridAxisHandle
+  | GridResizeHandle
 
 export function isDragToPan(
   interaction: InteractionSession | null,

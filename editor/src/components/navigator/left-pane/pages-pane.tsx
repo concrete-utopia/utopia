@@ -6,23 +6,18 @@ import { jsx } from '@emotion/react'
 import { useAtom } from 'jotai'
 import React from 'react'
 import { matchPath, matchRoutes } from 'react-router'
-import { mapFirstApplicable, safeIndex, uniqBy } from '../../../core/shared/array-utils'
+import { mapFirstApplicable } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import {
-  NO_OP,
-  PortalTargetID,
-  arrayEqualsByReference,
-  assertNever,
-} from '../../../core/shared/utils'
+import { NO_OP, arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import {
   FlexColumn,
   FlexRow,
   FunctionIcons,
   Icn,
+  Icons,
   InspectorSectionHeader,
   SquareButton,
   StringInput,
-  Subdued,
   Tooltip,
   UtopiaTheme,
   colorTheme,
@@ -33,32 +28,32 @@ import {
   ActiveRemixSceneAtom,
   RemixNavigationAtom,
 } from '../../canvas/remix/utopia-remix-root-component'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { ExpandableIndicator } from '../navigator-item/expandable-indicator'
 import {
   getFeaturedRoutesFromPackageJSON,
   getPageTemplatesFromPackageJSON,
 } from '../../../printer-parsers/html/external-resources-parser'
-import { defaultEither } from '../../../core/shared/either'
+import { defaultEither, foldEither } from '../../../core/shared/either'
 import { unless, when } from '../../../utils/react-conditionals'
-import { MomentumContextMenu } from '../../context-menu-wrapper'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import {
   addNewPage,
-  showContextMenu,
   showToast,
   updateRemixRoute,
-  addNewFeaturedRoute,
-  removeFeaturedRoute,
+  scrollToPosition,
 } from '../../editor/actions/action-creators'
-import type { ElementContextMenuInstance } from '../../element-context-menu'
-import ReactDOM from 'react-dom'
 import { createNewPageName } from '../../editor/store/editor-state'
 import urljoin from 'url-join'
 import { notice } from '../../common/notice'
-import type { EditorDispatch } from '../../editor/action-types'
-import { maybeToArray } from '../../../core/shared/optional-utils'
+import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import { StarUnstarIcon } from '../../canvas/star-unstar-icon'
+import { canvasRectangle, isFiniteRectangle } from '../../../core/shared/math-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementPath } from 'utopia-shared/src/types'
+import type { DropdownMenuItem } from '../../../uuiui/radix-components'
+import { DropdownMenu, regularDropdownMenuItem } from '../../../uuiui/radix-components'
 
 type RouteMatch = {
   path: string
@@ -122,7 +117,14 @@ export const PagesPane = React.memo((props) => {
         }
         return result
       }
-      const routes = processRoutes(store.derived.remixData?.routes ?? [], '')
+      const routes = processRoutes(
+        foldEither(
+          () => [],
+          (remixData) => remixData?.routes ?? [],
+          store.derived.remixData,
+        ),
+        '',
+      )
       return routes
     },
     'PagesPane remixRoutes',
@@ -144,13 +146,6 @@ export const PagesPane = React.memo((props) => {
   }, [pageTemplates])
 
   const dispatch = useDispatch()
-
-  const onClickAddPage = React.useCallback(
-    (e: React.MouseEvent) => {
-      dispatch([showContextMenu('context-menu-add-page', e.nativeEvent)])
-    },
-    [dispatch],
-  )
 
   const [navigateTo, setNavigateTo] = React.useState<NavigateTo | null>(null)
 
@@ -174,6 +169,41 @@ export const PagesPane = React.memo((props) => {
   useNavigateToRouteWhenAvailable(remixRoutes, navigateTo, () => {
     setNavigateTo(null)
   })
+
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+
+  const addPageAction = React.useCallback(
+    (template: PageTemplate) => () => {
+      const newPageName = createNewPageName()
+      dispatch([
+        addNewPage('/app/routes', template, newPageName),
+        ...resetCanvasForNewPage(metadataRef.current, activeRemixScene),
+      ])
+      onAfterPageAdd(newPageName)
+    },
+    [dispatch, metadataRef, activeRemixScene, onAfterPageAdd],
+  )
+
+  const addPageDropdownItems: DropdownMenuItem[] = React.useMemo(
+    () =>
+      pageTemplates.map((t) =>
+        regularDropdownMenuItem({
+          id: t.label,
+          label: t.label,
+          onSelect: addPageAction(t),
+        }),
+      ),
+    [addPageAction, pageTemplates],
+  )
+
+  const addPageOpenButton = React.useCallback(
+    () => (
+      <SquareButton highlight onClick={NO_OP}>
+        <Icons.SmallPlus />
+      </SquareButton>
+    ),
+    [],
+  )
 
   const activeRouteDoesntMatchAnyFavorites = !featuredRoutes.includes(activeRoute!)
   const activeRouteTemplatePath = matchRoutes(remixRoutes, pathname)?.[0].route.path
@@ -212,14 +242,7 @@ export const PagesPane = React.memo((props) => {
         {when(
           canAddPage,
           <React.Fragment>
-            <SquareButton onClick={onClickAddPage}>
-              <FunctionIcons.Add />
-            </SquareButton>
-            <AddPageContextMenu
-              contextMenuInstance={'context-menu-add-page'}
-              pageTemplates={pageTemplates}
-              onAfterPageAdd={onAfterPageAdd}
-            />
+            <DropdownMenu items={addPageDropdownItems} opener={addPageOpenButton} />
           </React.Fragment>,
         )}
       </InspectorSectionHeader>
@@ -506,48 +529,22 @@ function fillInGapsInRoutes(routes: RouteMatches): Array<RouteMatch> {
   return Object.values(result).sort((a, b) => a.path.localeCompare(b.path))
 }
 
-export const AddPageContextMenu = React.memo(
-  ({
-    contextMenuInstance,
-    pageTemplates,
-    onAfterPageAdd,
-  }: {
-    contextMenuInstance: ElementContextMenuInstance
-    pageTemplates: PageTemplate[]
-    onAfterPageAdd: (pageName: string) => void
-  }) => {
-    const dispatch = useDispatch()
-
-    const addPageAction = React.useCallback(
-      (template: PageTemplate) => () => {
-        const newPageName = createNewPageName()
-        dispatch([addNewPage('/app/routes', template, newPageName)])
-        onAfterPageAdd(newPageName)
-      },
-      [dispatch, onAfterPageAdd],
-    )
-
-    const portalTarget = document.getElementById(PortalTargetID)
-    if (portalTarget == null) {
-      return null
-    }
-
-    return ReactDOM.createPortal(
-      <MomentumContextMenu
-        id={contextMenuInstance}
-        key='add-page-context-menu'
-        items={pageTemplates.map((t) => ({
-          name: t.label,
-          enabled: true,
-          action: addPageAction(t),
-        }))}
-        dispatch={dispatch}
-        getData={NO_OP}
-      />,
-      portalTarget,
-    )
-  },
-)
+function resetCanvasForNewPage(
+  metadata: ElementInstanceMetadataMap,
+  activeScenePath: ElementPath,
+): EditorAction[] {
+  const sceneFrame = MetadataUtils.getFrameInCanvasCoords(activeScenePath, metadata)
+  if (sceneFrame != null && isFiniteRectangle(sceneFrame)) {
+    const target = canvasRectangle({
+      x: sceneFrame.x,
+      y: sceneFrame.y,
+      width: 0,
+      height: 0,
+    })
+    return [scrollToPosition(target, 'keep-scroll-position-if-visible')]
+  }
+  return []
+}
 
 function useNavigateToRouteWhenAvailable(
   remixRoutes: RouteMatch[],

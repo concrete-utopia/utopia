@@ -1,4 +1,3 @@
-import Hash from 'object-hash'
 import type { SceneMetadata, StaticElementPath, PropertyPath } from '../shared/project-file-types'
 import { isTextFile, isParseSuccess } from '../shared/project-file-types'
 import type {
@@ -34,6 +33,7 @@ import type { ProjectContentTreeRoot } from '../../components/assets'
 import { getProjectFileByFilePath } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 import { generateConsistentUID, getUtopiaID } from '../shared/uid-utils'
+import { hashObject } from '../shared/hash'
 
 export const PathForSceneComponent = PP.create('component')
 export const PathForSceneDataUid = PP.create('data-uid')
@@ -116,6 +116,7 @@ export function convertScenesToUtopiaCanvasComponent(
     false,
     'var',
     'block',
+    [],
     null,
     [],
     jsxElement(
@@ -148,12 +149,12 @@ export function createSceneFromComponent(
       emptyComments,
     ),
   })
-  const hash = Hash({
+  const hash = hashObject({
     fileName: filePath,
     name: componentImportedAs,
     props: jsxAttributesFromMap({}),
   })
-  const componentUID = generateConsistentUID(hash)
+  const componentUID = generateConsistentUID(hash, new Set())
   return jsxElement('Scene', uid, sceneProps, [
     jsxElement(
       componentImportedAs,

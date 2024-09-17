@@ -1,8 +1,7 @@
 import React from 'react'
 import { usePubSubAtomWriteOnly } from '../../core/shared/atom-with-pub-sub'
-import type { ErrorMessage } from '../../core/shared/error-messages'
 import { useErrorOverlayRecords } from '../../core/shared/runtime-report-logs'
-import { NO_OP, fastForEach } from '../../core/shared/utils'
+import { NO_OP } from '../../core/shared/utils'
 import { EditorCanvas } from '../../templates/editor-canvas'
 import CloseButton from '../../third-party/react-error-overlay/components/CloseButton'
 import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
@@ -19,29 +18,6 @@ import {
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { shouldShowErrorOverlay } from './canvas-utils'
 import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
-
-export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
-  let passTimes: { [key: string]: number } = {}
-  fastForEach(errorMessages, (errorMessage) => {
-    if (errorMessage.passTime != null) {
-      if (errorMessage.source in passTimes) {
-        const existingPassCount = passTimes[errorMessage.source]
-        if (errorMessage.passTime > existingPassCount) {
-          passTimes[errorMessage.source] = errorMessage.passTime
-        }
-      } else {
-        passTimes[errorMessage.source] = errorMessage.passTime
-      }
-    }
-  })
-  return errorMessages.filter((errorMessage) => {
-    if (errorMessage.passTime == null) {
-      return true
-    } else {
-      return passTimes[errorMessage.source] === errorMessage.passTime
-    }
-  })
-}
 
 export const CanvasWrapperComponent = React.memo(() => {
   const dispatch = useDispatch()
@@ -109,17 +85,16 @@ export const CanvasWrapperComponent = React.memo(() => {
         // ^ prevents Monaco from pushing the inspector out
       }}
     >
-      {fatalErrors.length === 0 && !safeMode ? (
-        <EditorCanvas
-          userState={userState}
-          editor={editorState}
-          derived={derivedState}
-          model={createCanvasModelKILLME(editorState, derivedState)}
-          builtinDependencies={builtinDependencies}
-          updateCanvasSize={updateCanvasSize}
-          dispatch={dispatch}
-        />
-      ) : null}
+      <EditorCanvas
+        userState={userState}
+        editor={editorState}
+        derived={derivedState}
+        model={createCanvasModelKILLME(editorState, derivedState)}
+        builtinDependencies={builtinDependencies}
+        updateCanvasSize={updateCanvasSize}
+        dispatch={dispatch}
+        shouldRenderCanvas={fatalErrors.length === 0 && !safeMode}
+      />
 
       <FlexRow
         style={{

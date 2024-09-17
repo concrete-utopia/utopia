@@ -18,7 +18,6 @@ import {
 import type {
   AllElementProps,
   ConditionalClauseNavigatorEntry,
-  DerivedState,
   DropTargetHint,
   DropTargetType,
   EditorState,
@@ -31,7 +30,6 @@ import {
   regularNavigatorEntry,
   renderPropNavigatorEntry,
   slotNavigatorEntry,
-  syntheticNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import {
@@ -47,7 +45,11 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { when } from '../../../utils/react-conditionals'
 import { metadataSelector } from '../../inspector/inpector-selectors'
-import { baseNavigatorDepth, navigatorDepth } from '../navigator-utils'
+import {
+  baseNavigatorDepth,
+  navigatorTargetsSelector,
+  useGetNavigatorTargets,
+} from '../navigator-utils'
 import type {
   ElementInstanceMetadataMap,
   JSXElementChild,
@@ -66,11 +68,12 @@ import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { useAtom, atom } from 'jotai'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import type { CanvasPoint } from '../../../core/shared/math-utils'
-import { canvasPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
+import { zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { createNavigatorReparentPostActionActions } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
 import createCachedSelector from 're-reselect'
 import type { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import { getCanvasViewportCenter } from '../../../templates/paste-helpers'
+import { isRegulaNavigatorRow } from '../navigator-row'
 
 export const WiggleUnit = BasePaddingUnit * 1.5
 
@@ -101,7 +104,7 @@ export const NavigatorItemDragType = 'navigator-item-drag-item' as const
 export interface NavigatorItemDragAndDropWrapperPropsBase {
   type: typeof NavigatorItemDragType
   index: number
-  entryDepth: number
+  indentation: number
   appropriateDropTargetHint: DropTargetHint | null
   editorDispatch: EditorDispatch
   selected: boolean
@@ -273,6 +276,7 @@ function canDropInto(editorState: EditorState, moveToEntry: ElementPath): boolea
     editorState.jsxMetadata,
     moveToEntry,
     editorState.elementPathTree,
+    editorState.propertyControlsInfo,
   )
 
   return (
@@ -382,7 +386,7 @@ function onHoverDropTargetLine(
       regularNavigatorEntry(propsOfDropTargetItem.elementPath),
     )
 
-    const maximumTargetDepth = propsOfDropTargetItem.entryDepth
+    const maximumTargetDepth = baseNavigatorDepth(propsOfDropTargetItem.elementPath) // this differs from the `indentation` prop as it needs to be calculated on the actual path length
     const cursorTargetDepth = 1 + Math.floor(Math.abs(cursorDelta.x) / WiggleUnit)
 
     const nPathPartsToDrop = Math.min(
@@ -551,14 +555,10 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   const dropTargetHint = useEditorState(
     Substores.navigator,
     (store) => store.editor.navigator.dropTargetHint,
-    'NavigatorItemDndWrapper moveToElementPath',
+    'NavigatorItemDndWrapper dropTargetHint',
   )
 
-  const navigatorTargets = useEditorState(
-    Substores.derived,
-    (store) => store.derived.navigatorTargets,
-    'NavigatorItemDndWrapper moveToElementPath',
-  )
+  const navigatorTargets = useGetNavigatorTargets().navigatorTargets
 
   const isFirstSibling = React.useMemo(() => {
     const siblings = MetadataUtils.getSiblingsOrdered(
@@ -793,14 +793,24 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     !isHintDisallowed(props.elementPath, editorStateRef.current.jsxMetadata) &&
     isCollapsedCondtionalEntry
 
+  const navigatorRows = useRefEditorState(navigatorTargetsSelector)
+
   const margin = (() => {
     if (dropTargetHint == null) {
       return 0
     }
 
-    return getHintPaddingForDepth(
-      navigatorDepth(dropTargetHint.targetParent, editorStateRef.current.jsxMetadata),
+    const targetRow = navigatorRows.current.navigatorRows.find((row) =>
+      isRegulaNavigatorRow(row)
+        ? EP.pathsEqual(row.entry.elementPath, dropTargetHint.targetParent.elementPath)
+        : row.entries.some((entry) =>
+            EP.pathsEqual(dropTargetHint.targetParent.elementPath, entry.elementPath),
+          ),
     )
+    if (targetRow != null) {
+      return getHintPaddingForDepth(targetRow.indentation)
+    }
+    return props.indentation
   })()
 
   const parentOutline = React.useMemo((): ParentOutline => {
@@ -869,7 +879,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       >
         <NavigatorItem
           navigatorEntry={props.navigatorEntry}
-          index={props.index}
+          indentation={props.indentation}
           getSelectedViewsInRange={props.getSelectedViewsInRange}
           noOfChildren={props.noOfChildren}
           label={props.label}
@@ -1022,7 +1032,7 @@ export const SyntheticNavigatorItemContainer = React.memo(
         >
           <NavigatorItem
             navigatorEntry={navigatorEntry}
-            index={props.index}
+            indentation={props.indentation}
             getSelectedViewsInRange={props.getSelectedViewsInRange}
             noOfChildren={props.noOfChildren}
             label={props.label}
@@ -1064,7 +1074,7 @@ export const RenderPropNavigatorItemContainer = React.memo(
         >
           <NavigatorItem
             navigatorEntry={navigatorEntry}
-            index={props.index}
+            indentation={props.indentation}
             getSelectedViewsInRange={props.getSelectedViewsInRange}
             noOfChildren={props.noOfChildren}
             label={props.label}
@@ -1105,7 +1115,7 @@ export const SlotNavigatorItemContainer = React.memo((props: SlotNavigatorItemCo
       >
         <NavigatorItem
           navigatorEntry={navigatorEntry}
-          index={props.index}
+          indentation={props.indentation}
           getSelectedViewsInRange={props.getSelectedViewsInRange}
           noOfChildren={props.noOfChildren}
           label={props.label}
@@ -1151,7 +1161,7 @@ export const ConditionalClauseNavigatorItemContainer = React.memo(
         >
           <NavigatorItem
             navigatorEntry={props.navigatorEntry}
-            index={props.index}
+            indentation={props.indentation}
             getSelectedViewsInRange={props.getSelectedViewsInRange}
             noOfChildren={props.noOfChildren}
             label={props.label}
@@ -1196,7 +1206,7 @@ export const ErrorNavigatorItemContainer = React.memo((props: ErrorNavigatorItem
       >
         <NavigatorItem
           navigatorEntry={props.navigatorEntry}
-          index={props.index}
+          indentation={props.indentation}
           getSelectedViewsInRange={props.getSelectedViewsInRange}
           noOfChildren={props.noOfChildren}
           label={props.label}

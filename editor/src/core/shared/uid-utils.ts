@@ -1,7 +1,7 @@
 import { v4 as UUID } from 'uuid'
 import { UTOPIA_PATH_KEY } from '../model/utopia-constants'
 import { mapDropNulls } from './array-utils'
-import { deepFindUtopiaCommentFlag, isUtopiaCommentFlagUid } from './comment-flags'
+import { deepFindUtopiaCommentFlag, isUtopiaPropOrCommentFlagUid } from './utopia-flags'
 import { getDOMAttribute } from './dom-utils'
 import type { Either } from './either'
 import { flatMapEither, foldEither, isLeft, isRight, left, right } from './either'
@@ -29,6 +29,7 @@ import type {
   JSIdentifier,
   JSPropertyAccess,
   JSElementAccess,
+  JSXElementLike,
 } from './element-template'
 import {
   emptyComments,
@@ -68,6 +69,7 @@ import {
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
 } from './jsx-attribute-utils'
+import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -119,41 +121,9 @@ export const atoz = [
 // Assumes possibleStartingValue consists only of characters that are valid to begin with.
 export function generateConsistentUID(
   possibleStartingValue: string,
-  ...existingIDSets: Array<Set<string>>
+  existingIDs: Set<string>,
 ): string {
-  function alreadyExistingID(idToCheck: string): boolean {
-    return existingIDSets.some((s) => s.has(idToCheck))
-  }
-  const mockUID = generateMockNextGeneratedUID()
-  if (mockUID == null) {
-    if (possibleStartingValue.length >= 3) {
-      const maxSteps = Math.floor(possibleStartingValue.length / 3)
-      for (let step = 0; step < maxSteps; step++) {
-        const possibleUID = possibleStartingValue.substring(step * 3, (step + 1) * 3)
-
-        if (!alreadyExistingID(possibleUID)) {
-          return possibleUID
-        }
-      }
-    }
-
-    for (let firstChar of atoz) {
-      for (let secondChar of atoz) {
-        for (let thirdChar of atoz) {
-          const possibleUID = `${firstChar}${secondChar}${thirdChar}`
-
-          if (!alreadyExistingID(possibleUID)) {
-            return possibleUID
-          }
-        }
-      }
-    }
-
-    // Fallback bailout.
-    throw new Error(`Unable to generate a UID from '${possibleStartingValue}'.`)
-  } else {
-    return mockUID
-  }
+  return newElementUID(possibleStartingValue, existingIDs)
 }
 
 export function updateHighlightBounds(
@@ -185,33 +155,13 @@ export function updateHighlightBounds(
   return result
 }
 
-export function generateUID(existingIDs: Array<string> | Set<string>): string {
-  const mockUID = generateMockNextGeneratedUID()
-  if (mockUID == null) {
-    const fullUid = UUID().replace(/\-/g, '')
-    // trying to find a new 3 character substring from the full uid
-    for (let i = 0; i < fullUid.length - 3; i++) {
-      const id = fullUid.substring(i, i + 3)
-      if (Array.isArray(existingIDs)) {
-        if (!existingIDs.includes(id)) {
-          return id
-        }
-      } else {
-        if (!existingIDs.has(id)) {
-          return id
-        }
-      }
-    }
-    // if all the substrings are already used as ids, let's try again with a new full uid
-    return generateUID(existingIDs)
-  } else {
-    return mockUID
-  }
+export function generateUID(existingIDs: Set<string>): string {
+  return generateConsistentUID(newRandomUID(UUID(), existingIDs), existingIDs)
 }
 
 export function parseUIDFromComments(comments: ParsedComments): Either<string, string> {
   const commentFlag = deepFindUtopiaCommentFlag(comments ?? null, 'uid')
-  if (commentFlag != null && isUtopiaCommentFlagUid(commentFlag)) {
+  if (commentFlag != null && isUtopiaPropOrCommentFlagUid(commentFlag)) {
     const { value } = commentFlag
     return right(value)
   } else {
@@ -302,6 +252,17 @@ export function fixUtopiaElement(
           assertNever(attributeToFix)
       }
     })
+  }
+
+  function fixJSXElementLike(element: JSXElementLike): JSXElementLike {
+    switch (element.type) {
+      case 'JSX_ELEMENT':
+        return fixJSXElement(element)
+      case 'JSX_FRAGMENT':
+        return fixJSXFragment(element)
+      default:
+        assertNever(element)
+    }
   }
 
   function fixJSXElement(element: JSXElement): JSXElement {
@@ -423,7 +384,7 @@ export function fixUtopiaElement(
     return {
       ...otherJavaScript,
       uid: fixedUID,
-      elementsWithin: objectMap(fixJSXElement, otherJavaScript.elementsWithin),
+      elementsWithin: objectMap(fixJSXElementLike, otherJavaScript.elementsWithin),
     }
   }
 
@@ -623,127 +584,6 @@ export function getDeepestPathOnDomElement(element: Element): ElementPath | null
   return pathAttribute == null ? null : EP.fromString(pathAttribute)
 }
 
-export function findElementWithUID(
-  topLevelElement: TopLevelElement,
-  targetUID: string,
-): JSXElement | null {
-  function findForJSXElementChild(element: JSXElementChild): JSXElement | null {
-    switch (element.type) {
-      case 'JSX_ELEMENT':
-        return findForJSXElement(element)
-      case 'JSX_FRAGMENT':
-        for (const child of element.children) {
-          const childResult = findForJSXElementChild(child)
-          if (childResult != null) {
-            return childResult
-          }
-        }
-        return null
-      case 'JSX_TEXT_BLOCK':
-        return null
-      case 'JSX_MAP_EXPRESSION':
-        return (
-          findForJSXElementChild(element.valueToMap) ?? findForJSXElementChild(element.mapFunction)
-        )
-      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-        if (targetUID in element.elementsWithin) {
-          return element.elementsWithin[targetUID]
-        }
-        for (const elementWithin of Object.values(element.elementsWithin)) {
-          const elementWithinResult = findForJSXElement(elementWithin)
-          if (elementWithinResult != null) {
-            return elementWithinResult
-          }
-        }
-        return null
-      case 'JSX_CONDITIONAL_EXPRESSION':
-        const findResultWhenTrue = findForJSXElementChild(element.whenTrue)
-        if (findResultWhenTrue != null) {
-          return findResultWhenTrue
-        }
-        const findResultWhenFalse = findForJSXElementChild(element.whenFalse)
-        if (findResultWhenFalse != null) {
-          return findResultWhenFalse
-        }
-        return null
-      case 'ATTRIBUTE_VALUE':
-      case 'JS_IDENTIFIER':
-        return null
-      case 'JS_ELEMENT_ACCESS': {
-        const findResultOnValue = findForJSXElementChild(element.onValue)
-        if (findResultOnValue != null) {
-          return findResultOnValue
-        }
-        const findResultElement = findForJSXElementChild(element.element)
-        if (findResultElement != null) {
-          return findResultElement
-        }
-        return null
-      }
-      case 'JS_PROPERTY_ACCESS': {
-        const findResultOnValue = findForJSXElementChild(element.onValue)
-        if (findResultOnValue != null) {
-          return findResultOnValue
-        }
-        return null
-      }
-      case 'ATTRIBUTE_NESTED_ARRAY':
-        for (const contentElement of element.content) {
-          const elementWithinResult = findForJSXElementChild(contentElement.value)
-          if (elementWithinResult != null) {
-            return elementWithinResult
-          }
-        }
-        return null
-      case 'ATTRIBUTE_NESTED_OBJECT':
-        for (const contentElement of element.content) {
-          const elementWithinResult = findForJSXElementChild(contentElement.value)
-          if (elementWithinResult != null) {
-            return elementWithinResult
-          }
-        }
-        return null
-      case 'ATTRIBUTE_FUNCTION_CALL':
-        for (const parameter of element.parameters) {
-          const elementWithinResult = findForJSXElementChild(parameter)
-          if (elementWithinResult != null) {
-            return elementWithinResult
-          }
-        }
-        return null
-      default:
-        const _exhaustiveCheck: never = element
-        throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
-    }
-  }
-
-  function findForJSXElement(element: JSXElement): JSXElement | null {
-    const uid = getUtopiaIDFromJSXElement(element)
-    if (uid === targetUID) {
-      return element
-    } else {
-      for (const child of element.children) {
-        const childResult = findForJSXElementChild(child)
-        if (childResult != null) {
-          return childResult
-        }
-      }
-    }
-    return null
-  }
-
-  switch (topLevelElement.type) {
-    case 'UTOPIA_JSX_COMPONENT':
-      return findForJSXElementChild(topLevelElement.rootElement)
-    case 'ARBITRARY_JS_BLOCK':
-      return null
-    case 'UNPARSED_CODE':
-      return null
-    case 'IMPORT_STATEMENT':
-      return null
-  }
-}
-
 // THIS IS SUPER UGLY, DO NOT USE OUTSIDE OF FILE
 function isUtopiaJSXElement(
   element: JSXElementChild | ElementInstanceMetadata,
@@ -862,4 +702,94 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
     return EP.toUid(element.elementPath)
   }
   return element.uid
+}
+
+// The length of element UIDs generated by the editor.
+const UID_LENGTH = IS_TEST_ENVIRONMENT ? 3 : 32 // in characters
+
+/**
+ * Generate a new UID suitable for elements.
+ * The UID will try to use the `possibleUID` value if possible.
+ * The UID will be guaranteed to not clash with the other IDs in the Set passed as argument.
+ * The returned UID will be trimmed to a length of UID_LENGTH.
+ * Note: if a mock UID is available, it will have precedence and be returned immediately.
+ */
+function newElementUID(possibleUID: string, existingUIDs: Set<string>): string {
+  const mockUID = generateMockNextGeneratedUID()
+  if (mockUID != null) {
+    return mockUID
+  }
+
+  let uid = truncateUID(possibleUID)
+  // if the initial UID is empty, default it to a random one.
+  if (uid.trim().length === 0) {
+    uid = newRandomUID(possibleUID, existingUIDs)
+  }
+
+  while (existingUIDs.has(uid)) {
+    uid = newRandomUID(possibleUID, existingUIDs)
+  }
+  return uid
+}
+
+// Truncates the given UID to the length UID_LENGTH.
+function truncateUID(uid: string): string {
+  return uid.slice(0, UID_LENGTH)
+}
+
+function newRandomUID(possibleUID: string, existingUIDs: Set<string>): string {
+  return IS_TEST_ENVIRONMENT ? newUIDForTests(possibleUID, existingUIDs) : truncateUID(UUID())
+}
+
+function newUIDForTests(possibleUID: string, existingUIDs: Set<string>): string {
+  if (possibleUID.length >= UID_LENGTH) {
+    // try to use a portion of the possible starting value
+    const maxSteps = Math.floor(possibleUID.length / UID_LENGTH)
+    for (let step = 0; step < maxSteps; step++) {
+      const substringUID = possibleUID.substring(step * UID_LENGTH, (step + 1) * UID_LENGTH)
+
+      if (!existingUIDs.has(substringUID)) {
+        return substringUID
+      }
+    }
+  }
+
+  // otherwise, build an atoz UID
+  let atozUID = 'a'.repeat(UID_LENGTH)
+  while (existingUIDs.has(atozUID)) {
+    atozUID = nextTestUID(atozUID)
+  }
+  return atozUID
+}
+
+// For test UIDs, increment the input uid deterministically ('aaab'->'aaac', 'aazz'->'abaa', etc.) while keeping the original length.
+// Non alphabetical characters will be defaulted to 'a'.
+// If the UID cannot be incremented (because it's entirely made of `z`'s), an error will be thrown.
+export function nextTestUID(uid: string): string {
+  let result = Array.from(uid)
+
+  // reset to 'a' non-atoz characters
+  for (let i = 0; i < result.length; i++) {
+    if (result[i] < 'a' || result[i] > 'z') {
+      result[i] = 'a'
+    }
+  }
+
+  let i = result.length - 1
+
+  while (i >= 0) {
+    if (result[i] >= 'z') {
+      result[i] = 'a'
+      i--
+    } else {
+      result[i] = String.fromCharCode(result[i].charCodeAt(0) + 1)
+      break
+    }
+  }
+  if (i < 0) {
+    // Fallback bailout, no increments have been made.
+    throw new Error(`Unable to generate a UID from '${uid}'.`)
+  }
+
+  return result.join('')
 }

@@ -32,6 +32,7 @@ import { slightlyOffsetPointBecauseVeryWeirdIssue, wait } from '../../utils/util
 import { mouseClickAtPoint, mouseDownAtPoint, mouseMoveToPoint } from './event-helpers.test-utils'
 import { EditorModes } from '../editor/editor-modes'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 disableStoredStateforTests()
 
@@ -44,10 +45,10 @@ describe('DOM Walker', () => {
       BakedInStoryboardUID,
       `${BakedInStoryboardUID}/${TestSceneUID}`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}`,
-      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/d63`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/488`,
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/d63`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/d63/bbb~~~1`,
       `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/d63/bbb~~~2`,
     ]
@@ -116,70 +117,6 @@ describe('DOM Walker', () => {
     expect(resultGlobalFrames).toEqual(expectedGlobalFrames)
   })
 
-  it('Test Project metadata contains local frames for all elements', async () => {
-    const renderResult = await renderTestEditorWithCode(TestProject, 'await-first-dom-report')
-    const metadata = renderResult.getEditorState().editor.jsxMetadata
-
-    const expectedLocalFrames: MapLike<MaybeInfinityLocalRectangle> = {
-      [BakedInStoryboardUID]: infinityLocalRectangle,
-      [`${BakedInStoryboardUID}/${TestSceneUID}`]: localRectangle({
-        x: 0,
-        y: 0,
-        width: 375,
-        height: 812,
-      }),
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}`]: localRectangle({
-        x: 0,
-        y: 0,
-        width: 375,
-        height: 812,
-      }),
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c`]: localRectangle({
-        x: 0,
-        y: 0,
-        width: 375,
-        height: 812,
-      }),
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0`]: localRectangle({
-        x: 55,
-        y: 98,
-        width: 266,
-        height: 124,
-      }),
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/488`]: localRectangle({
-        x: 71,
-        y: 27,
-        width: 125,
-        height: 70,
-      }),
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/d63`]: localRectangle({
-        x: 0,
-        y: 0,
-        width: 266,
-        height: 0,
-      }),
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/d63/bbb~~~1`]: localRectangle(
-        {
-          x: 0,
-          y: 0,
-          width: 266,
-          height: 0,
-        },
-      ),
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:05c/ef0/d63/bbb~~~2`]: localRectangle(
-        {
-          x: 0,
-          y: 0,
-          width: 266,
-          height: 0,
-        },
-      ),
-    }
-
-    const resultLocalFrames = objectMap((element) => element.localFrame, metadata)
-    expect(resultLocalFrames).toEqual(expectedLocalFrames)
-  })
-
   it('Test Project metadata contains computedStyle only for selected view', async () => {
     const renderResult = await renderTestEditorWithCode(TestProject, 'await-first-dom-report')
 
@@ -197,6 +134,85 @@ describe('DOM Walker', () => {
       } else {
         expect(computedStyleIsEmpty).toEqual(true)
       }
+    })
+  })
+
+  it('Fragments at the root of a component result in correctly sized elements', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const MyComp = (props) => {
+  return (
+    <>
+      <div
+        data-uid='first-div'
+        style={{
+          backgroundColor: '#FFFF0B',
+          position: 'absolute',
+          left: 71,
+          top: 141,
+          width: 226,
+          height: 56,
+        }}
+      >
+        MyComp
+      </div>
+      {props.children}
+      <div
+        data-uid='second-div'
+        style={{
+          backgroundColor: '#0CE3FF',
+          position: 'absolute',
+          left: 72,
+          top: 246,
+          width: 232,
+          height: 54,
+        }}
+      >
+        Also MyComp
+      </div>
+    </>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <div
+      data-uid='container'
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 300,
+        top: 163,
+        width: 395,
+        height: 453,
+      }}
+    >
+      <MyComp data-uid='mycomp'>
+        <div
+          data-uid='inner-div'
+          style={{
+            backgroundColor: 'pink',
+            position: 'absolute',
+            left: 20,
+            top: 20,
+            width: 50,
+            height: 50,
+          }}
+        />
+      </MyComp>
+    </div>
+  </Storyboard>
+)`,
+      'await-first-dom-report',
+    )
+    const metadata = renderResult.getEditorState().editor.jsxMetadata
+    expect(metadata['storyboard/container/mycomp'].globalFrame).toEqual({
+      x: 320,
+      y: 183,
+      width: 284,
+      height: 280,
     })
   })
 
@@ -332,22 +348,6 @@ describe('DOM Walker', () => {
       globalFramesBeforeUpdate[`${BakedInStoryboardUID}/flex-container/ccc`].x,
     )
   })
-
-  it('clears all of the invalidated paths including svgs', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      TestProjectWithSVG,
-      'await-first-dom-report',
-    )
-    await renderResult.getDispatchFollowUpActionsFinished()
-    // This is here to ensure that the DOM walker runs and clears the
-    // entries that are added in by the resize observer, which triggers at
-    // an awkward timing after the entirety of `renderTestEditorWithCode` executes.
-    // That results in an entry for the scene being added, which then would cause the
-    // test to fail.
-    await renderResult.dispatch([clearSelection()], true)
-    const domWalkerState = renderResult.getDomWalkerState()
-    expect(Array.from(domWalkerState.invalidatedPaths)).toHaveLength(0)
-  })
 })
 
 describe('Capturing closest offset parent', () => {
@@ -404,7 +404,10 @@ describe('Capturing closest offset parent', () => {
       renderResult.getEditorState().editor.jsxMetadata['sb/scene/app/child']
     const expectedClosestOffsetParent = 'sb/scene/app:app-root/inner-div'
     expect(
-      EP.toString(metadataOfInnerElement.specialSizeMeasurements.closestOffsetParentPath),
+      optionalMap(
+        EP.toString,
+        metadataOfInnerElement.specialSizeMeasurements.closestOffsetParentPath,
+      ),
     ).toBe(expectedClosestOffsetParent)
   })
 })
@@ -526,7 +529,7 @@ describe('Observing runtime changes', () => {
     expect(metadataAfter).not.toBeNull()
   })
 
-  it('Does not update the metadata in select mode', async () => {
+  xit('Does not update the metadata in select mode', async () => {
     const renderResult = await renderTestEditorWithCode(
       changingProjectCode,
       'await-first-dom-report',

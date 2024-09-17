@@ -17,6 +17,7 @@ import type {
   JSXConditionalExpression,
   JSXElement,
   JSXElementChild,
+  JSXElementLike,
   JSXFragment,
   JSXMapExpression,
   JSXProperty,
@@ -24,7 +25,11 @@ import type {
   TopLevelElement,
   UtopiaJSXComponent,
 } from '../../shared/element-template'
-import { isArbitraryJSBlock, isUtopiaJSXComponent } from '../../shared/element-template'
+import {
+  isArbitraryJSBlock,
+  isJSXFragment,
+  isUtopiaJSXComponent,
+} from '../../shared/element-template'
 import {
   emptyComments,
   getJSXAttribute,
@@ -163,8 +168,7 @@ function updateUID<T>(
           // - Add a mapping for this change.
           uidToUse = generateConsistentUID(
             oldUID,
-            fixUIDsState.mutableAllNewUIDs,
-            fixUIDsState.uidsExpectedToBeSeen,
+            new Set([...fixUIDsState.mutableAllNewUIDs, ...fixUIDsState.uidsExpectedToBeSeen]),
           )
           addMapping(newUID, uidToUse)
         } else if (oldUID === newUID) {
@@ -546,7 +550,7 @@ export function fixElementsWithin(
     if (oldElement == null) {
       oldElement = oldExpression[fallbackIdMatch[newWithinKey]]
     }
-    const fixedElement = fixJSXElementUIDs(oldElement, newElement, fixUIDsState)
+    const fixedElement = fixJSXElementLikeUIDs(oldElement, newElement, fixUIDsState)
     result[fixedElement.uid] = fixedElement
   }
 
@@ -710,8 +714,7 @@ export function fixJSXElementUIDs(
     // Backup case for where there is no `data-uid` prop.
     dataUIDPropUID = generateConsistentUID(
       elementWithUpdatedUID.uid,
-      fixUIDsState.mutableAllNewUIDs,
-      fixUIDsState.uidsExpectedToBeSeen,
+      new Set([...fixUIDsState.mutableAllNewUIDs, ...fixUIDsState.uidsExpectedToBeSeen]),
     )
     fixUIDsState.mutableAllNewUIDs.add(dataUIDPropUID)
   } else {
@@ -745,6 +748,40 @@ export function fixJSXElementUIDs(
     ...elementWithUpdatedUID,
     props: fixedProps,
     children: fixedChildren,
+  }
+}
+
+export function fixJSXFragmentUIDs(
+  oldElement: JSXElementChild | null | undefined,
+  newElement: JSXFragment,
+  fixUIDsState: FixUIDsState,
+): JSXFragment {
+  // since we don't process props for fragments, we don't have a data-uid prop to update
+  let fixedChildren: Array<JSXElementChild>
+  if (oldElement != null && isJSXFragment(oldElement)) {
+    fixedChildren = fixJSXElementChildArray(oldElement.children, newElement.children, fixUIDsState)
+  } else {
+    fixedChildren = fixJSXElementChildArray(newElement.children, newElement.children, fixUIDsState)
+  }
+
+  return {
+    ...newElement,
+    children: fixedChildren,
+  }
+}
+
+export function fixJSXElementLikeUIDs(
+  oldElement: JSXElementChild | null | undefined,
+  newElement: JSXElementLike,
+  fixUIDsState: FixUIDsState,
+): JSXElementLike {
+  switch (newElement.type) {
+    case 'JSX_ELEMENT':
+      return fixJSXElementUIDs(oldElement, newElement, fixUIDsState)
+    case 'JSX_FRAGMENT':
+      return fixJSXFragmentUIDs(oldElement, newElement, fixUIDsState)
+    default:
+      assertNever(newElement)
   }
 }
 

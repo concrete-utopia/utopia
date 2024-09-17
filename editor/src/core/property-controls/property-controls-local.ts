@@ -2,15 +2,21 @@ import type {
   RegularControlDescription as RegularControlDescriptionFromUtopia,
   JSXControlDescription as JSXControlDescriptionFromUtopia,
   PropertyControls as PropertyControlsFromUtopiaAPI,
+  RadioControlDescription as RadioControlDescriptionFromUtopia,
+  AllowedEnumType as AllowedEnumTypeFromUtopia,
+  BasicControlOptionWithIcon as BasicControlOptionWithIconFromUtopia,
   ComponentToRegister,
-  Styling,
   ComponentInsertOption,
   ComponentExample,
   ChildrenSpec,
   Children,
   PreferredContents,
+  SectionSpec,
+  Display,
+  InspectorSpec,
 } from 'utopia-api/core'
 import {
+  DisplayOptions,
   EmphasisOptions,
   FocusOptions,
   IconOptions,
@@ -23,6 +29,8 @@ import type {
   RegularControlDescription,
   JSXControlDescription,
   PreferredChildComponentDescriptor,
+  RadioControlDescription,
+  RadioControlOption,
 } from '../../components/custom-code/internal-property-controls'
 import { packageJsonFileFromProjectContents, walkContentsTree } from '../../components/assets'
 import {
@@ -35,6 +43,7 @@ import type {
   ComponentDescriptorWithName,
   ComponentInfo,
   PropertyControlsInfo,
+  TypedInpsectorSpec,
 } from '../../components/custom-code/code-file'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { parseControlDescription } from './property-controls-parser'
@@ -50,7 +59,6 @@ import {
   parseArray,
   parseConstant,
   parseEnum,
-  parseNumber,
   parseObject,
   parseString,
 } from '../../utils/value-parser-utils'
@@ -62,14 +70,19 @@ import {
   foldEither,
   forEachRight,
   isLeft,
+  isRight,
   left,
   mapEither,
   right,
   sequenceEither,
 } from '../shared/either'
-import { setOptionalProp } from '../shared/object-utils'
 import { assertNever } from '../shared/utils'
-import type { Imports, ParsedTextFile } from '../shared/project-file-types'
+import type {
+  Imports,
+  ParsedTextFile,
+  TextFile,
+  TextFileContents,
+} from '../shared/project-file-types'
 import {
   importAlias,
   importDetails,
@@ -94,14 +107,22 @@ import {
 } from '../../components/editor/actions/action-creators'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import type { JSXElementChildWithoutUID } from '../shared/element-template'
-import { jsxAttributesFromMap, jsxElement, jsxTextBlock } from '../shared/element-template'
-import type { ErrorMessage } from '../shared/error-messages'
+import {
+  getJSXElementNameLastPart,
+  jsxAttributesFromMap,
+  jsxElement,
+  jsxElementNameFromString,
+  jsxTextBlock,
+} from '../shared/element-template'
+import type { ErrorMessage, ErrorMessageSeverity } from '../shared/error-messages'
 import { errorMessage } from '../shared/error-messages'
 import { dropFileExtension } from '../shared/file-utils'
 import type { FancyError } from '../shared/code-exec-utils'
 import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
 import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
 import { valueOrArrayToArray } from '../shared/array-utils'
+import { optionalMap } from '../shared/optional-utils'
+import { generateComponentBounds } from './component-descriptor-parser'
 
 const exportedNameSymbol = Symbol('__utopia__exportedName')
 const moduleNameSymbol = Symbol('__utopia__moduleName')
@@ -144,7 +165,13 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
       current: MapLike<MapLike<ComponentRendererComponent>>
     } = { current: {} }
     const emptyMetadataContext: UiJsxCanvasContextData = {
-      current: { spyValues: { allElementProps: {}, metadata: {}, variablesInScope: {} } },
+      current: {
+        spyValues: {
+          allElementProps: {},
+          metadata: {},
+          variablesInScope: {},
+        },
+      },
     }
 
     let resolvedFiles: MapLike<MapLike<any>> = {}
@@ -254,6 +281,7 @@ type ComponentDescriptorRegistrationError =
   | {
       type: 'registration-validation-failed'
       validationError: ComponentRegistrationValidationError
+      severity: ErrorMessageSeverity
     }
 
 interface ComponentDescriptorRegistrationResult {
@@ -274,7 +302,15 @@ function isComponentRegistrationValid(
 
   // check validity of internal component
   if (isComponentRendererComponent(component)) {
-    if (component.originalName !== registrationKey) {
+    // TODO: we only validate the last part of the name
+    const nameLastPart = optionalMap(
+      (name) => getJSXElementNameLastPart(jsxElementNameFromString(name)),
+      component.originalName,
+    )
+    const registrationKeyLastPart = getJSXElementNameLastPart(
+      jsxElementNameFromString(registrationKey),
+    )
+    if (nameLastPart !== registrationKeyLastPart) {
       return {
         type: 'component-name-does-not-match',
         registrationKey: registrationKey,
@@ -294,11 +330,19 @@ function isComponentRegistrationValid(
 
   // check validity of external component
   const { name, moduleName } = getRequireInfoFromComponent(component)
-  if (name != null && name !== registrationKey) {
-    return {
-      type: 'component-name-does-not-match',
-      registrationKey: registrationKey,
-      componentName: name,
+  if (name != null) {
+    // TODO: this doesn't work yet for components which are not directly imported, e.g. Typography.Text (where Typography is the imported object)
+    // The code is here to check the last part of the name, but since we don't require the component itself in these cases, the name and the moduleName will not be available.
+    const nameLastPart = getJSXElementNameLastPart(jsxElementNameFromString(name))
+    const registrationKeyLastPart = getJSXElementNameLastPart(
+      jsxElementNameFromString(registrationKey),
+    )
+    if (nameLastPart !== registrationKeyLastPart) {
+      return {
+        type: 'component-name-does-not-match',
+        registrationKey: registrationKey,
+        componentName: name,
+      }
     }
   }
   if (moduleName != null && moduleName !== moduleKey) {
@@ -313,27 +357,31 @@ function isComponentRegistrationValid(
 }
 
 async function getComponentDescriptorPromisesFromParseResult(
-  descriptorFile: ParsedTextFileWithPath,
+  descriptorFile: TextFileContentsWithPath,
   workers: UtopiaTsWorkers,
   evaluator: ModuleEvaluator,
 ): Promise<ComponentDescriptorRegistrationResult> {
-  if (descriptorFile.file.type === 'UNPARSED') {
+  if (descriptorFile.file.parsed.type === 'UNPARSED') {
     return { descriptors: [], errors: [{ type: 'file-unparsed' }] }
   }
 
-  if (descriptorFile.file.type === 'PARSE_FAILURE') {
+  if (descriptorFile.file.parsed.type === 'PARSE_FAILURE') {
     return {
       descriptors: [],
       errors: [
-        { type: 'file-parse-failure', parseErrorMessages: descriptorFile.file.errorMessages },
+        {
+          type: 'file-parse-failure',
+          parseErrorMessages: descriptorFile.file.parsed.errorMessages,
+        },
       ],
     }
   }
 
-  const exportDefaultIdentifier = descriptorFile.file.exportsDetail.find(isExportDefault)
+  const exportDefaultIdentifier = descriptorFile.file.parsed.exportsDetail.find(isExportDefault)
   if (exportDefaultIdentifier?.name == null) {
     return { descriptors: [], errors: [{ type: 'no-export-default' }] }
   }
+  const componentBoundsByModule = generateComponentBounds(descriptorFile)
 
   try {
     const evaluatedFile = evaluator(descriptorFile.path)
@@ -364,15 +412,25 @@ async function getComponentDescriptorPromisesFromParseResult(
           componentToRegister,
         )
         if (validationResult.type !== 'valid') {
-          errors.push({ type: 'registration-validation-failed', validationError: validationResult })
-          continue
+          const severity = validationResult.type === 'component-undefined' ? 'fatal' : 'warning'
+          errors.push({
+            type: 'registration-validation-failed',
+            validationError: validationResult,
+            severity: severity,
+          })
+          if (severity === 'fatal') {
+            continue
+          }
         }
         const componentDescriptor = await componentDescriptorForComponentToRegister(
           componentToRegister,
           componentName,
           moduleName,
           workers,
-          componentDescriptorFromDescriptorFile(descriptorFile.path),
+          componentDescriptorFromDescriptorFile(
+            descriptorFile.path,
+            componentBoundsByModule[moduleName][componentName] ?? null,
+          ),
         )
 
         switch (componentDescriptor.type) {
@@ -397,7 +455,11 @@ async function getComponentDescriptorPromisesFromParseResult(
   }
 }
 
-function simpleErrorMessage(fileName: string, error: string): ErrorMessage {
+function simpleErrorMessage(
+  fileName: string,
+  error: string,
+  severity: ErrorMessageSeverity = 'fatal',
+): ErrorMessage {
   return errorMessage(
     fileName,
     null,
@@ -405,7 +467,7 @@ function simpleErrorMessage(fileName: string, error: string): ErrorMessage {
     null,
     null,
     '',
-    'fatal',
+    severity,
     '',
     error,
     '',
@@ -469,6 +531,7 @@ function errorsFromComponentRegistration(
             `Validation failed: ${messageForComponentRegistrationValidationError(
               error.validationError,
             )}`,
+            error.severity,
           ),
         ]
       default:
@@ -477,14 +540,14 @@ function errorsFromComponentRegistration(
   })
 }
 
-export interface ParsedTextFileWithPath {
-  file: ParsedTextFile
+export interface TextFileContentsWithPath {
+  file: TextFileContents
   path: string
 }
 
 export async function maybeUpdatePropertyControls(
   previousPropertyControlsInfo: PropertyControlsInfo,
-  filesToUpdate: ParsedTextFileWithPath[],
+  filesToUpdate: TextFileContentsWithPath[],
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
   evaluator: ModuleEvaluator,
@@ -561,6 +624,7 @@ export function updatePropertyControlsOnDescriptorFileUpdate(
         inspector: descriptor.inspector,
         emphasis: descriptor.emphasis,
         icon: descriptor.icon,
+        label: descriptor.label,
       }
     })
   })
@@ -615,9 +679,10 @@ function componentInsertOptionFromExample(
           code: `<${typed.name} />`,
         }
       }
+      const jsxName = jsxElementNameFromString(typed.name)
       return {
         label: typed.name,
-        imports: `import {${typed.name}} from '${moduleName}'`,
+        imports: `import {${jsxName.baseVariable}} from '${moduleName}'`,
         code: `<${typed.name} />`,
       }
     case 'component-reference':
@@ -703,6 +768,86 @@ async function parseJSXControlDescription(
   })
 }
 
+function parseAllowedEnumType(option: AllowedEnumTypeFromUtopia): RadioControlOption<unknown> {
+  return { type: 'allowed-enum-type', allowedEnumType: option }
+}
+
+function parseBasicControlOptionWithIcon(
+  option: BasicControlOptionWithIconFromUtopia<unknown>,
+): RadioControlOption<unknown> {
+  return {
+    type: 'control-option-with-icon',
+    option: {
+      label: option.label,
+      value: option.value,
+      icon: option.icon ?? null,
+    },
+  }
+}
+
+function isAllowedEnumType(
+  option: AllowedEnumTypeFromUtopia | BasicControlOptionWithIconFromUtopia<unknown>,
+): option is AllowedEnumTypeFromUtopia {
+  return (
+    typeof option === 'string' ||
+    typeof option === 'boolean' ||
+    typeof option === 'number' ||
+    typeof option === 'undefined' ||
+    (typeof option === 'object' && option === null)
+  )
+}
+
+function parseRadioControlOptions(
+  options: AllowedEnumTypeFromUtopia[] | BasicControlOptionWithIconFromUtopia<unknown>[],
+): Either<string, RadioControlOption<unknown>[]> {
+  const allowedEnumTypes = sequenceEither(
+    options.map(
+      (o): Either<string, RadioControlOption<unknown>> =>
+        isAllowedEnumType(o) ? right(parseAllowedEnumType(o)) : left('Not an allowed enum type'),
+    ),
+  )
+
+  if (isRight(allowedEnumTypes)) {
+    return allowedEnumTypes
+  }
+
+  const basicControlOptions = sequenceEither(
+    options.map(
+      (o): Either<string, RadioControlOption<unknown>> =>
+        isAllowedEnumType(o)
+          ? left('Not a BasicControlOptionWithIcon<unknown>>')
+          : right(parseBasicControlOptionWithIcon(o)),
+    ),
+  )
+
+  if (isRight(basicControlOptions)) {
+    return basicControlOptions
+  }
+
+  return left('Cannot mix AllowedEnumType and BasicControlOptionWithIcon')
+}
+
+async function parseRadioControlDescription(
+  descriptor: RadioControlDescriptionFromUtopia,
+): Promise<PropertyDescriptorResult<RadioControlDescription>> {
+  const options = parseRadioControlOptions(descriptor.options)
+  if (isLeft(options)) {
+    return options
+  }
+
+  return right({
+    control: descriptor.control,
+    label: descriptor.label,
+    visibleByDefault: descriptor.visibleByDefault,
+    options: options.value,
+    required: descriptor.required,
+    defaultValue: isAllowedEnumType(descriptor.defaultValue)
+      ? parseAllowedEnumType(descriptor.defaultValue)
+      : parseBasicControlOptionWithIcon(descriptor.defaultValue),
+    folder: descriptor.folder,
+  })
+}
+
 async function makeRegularControlDescription(
   descriptor: RegularControlDescriptionFromUtopia,
   context: { moduleName: string; workers: UtopiaTsWorkers },
@@ -711,6 +856,9 @@ async function makeRegularControlDescription(
     if (descriptor.control === 'jsx') {
       const parsedJSXControlDescription = parseJSXControlDescription(descriptor, context)
       return parsedJSXControlDescription
+    }
+    if (descriptor.control === 'radio') {
+      return parseRadioControlDescription(descriptor)
     }
     return right(descriptor)
   }
@@ -770,19 +918,11 @@ async function makePropertyDescriptors(
   let result: PropertyControls = {}
 
   for await (const [propertyName, descriptor] of Object.entries(properties)) {
-    if (descriptor.control === 'folder') {
-      const parsedControlsInFolder = await makePropertyDescriptors(descriptor.controls, context)
-      if (isLeft(parsedControlsInFolder)) {
-        return parsedControlsInFolder
-      }
-      result['propertyName'] = { ...descriptor, controls: parsedControlsInFolder.value }
-    } else {
-      const parsedRegularControl = await makeRegularControlDescription(descriptor, context)
-      if (isLeft(parsedRegularControl)) {
-        return parsedRegularControl
-      }
-      result[propertyName] = parsedRegularControl.value
+    const parsedRegularControl = await makeRegularControlDescription(descriptor, context)
+    if (isLeft(parsedRegularControl)) {
+      return parsedRegularControl
     }
+    result[propertyName] = parsedRegularControl.value
   }
 
   return right(result)
@@ -839,10 +979,11 @@ export function defaultImportsForComponentModule(
   componentName: string,
   moduleName: string | null,
 ): Imports {
+  const jsxName = jsxElementNameFromString(componentName)
   return moduleName == null
     ? {}
     : {
-        [moduleName]: importDetails(null, [importAlias(componentName)], null),
+        [moduleName]: importDetails(null, [importAlias(jsxName.baseVariable)], null),
       }
 }
 
@@ -880,10 +1021,11 @@ async function parseComponentVariants(
     componentToRegister.variants == null ||
     (Array.isArray(componentToRegister.variants) && componentToRegister.variants.length === 0)
   ) {
+    const jsxName = jsxElementNameFromString(componentName)
     const parsed = await parseCodeFromInsertOption(
       {
         label: componentName,
-        imports: `import { ${componentName} } from '${moduleName}'`,
+        imports: `import { ${jsxName.baseVariable} } from '${moduleName}'`,
         code: `<${componentName} />`,
       },
       workers,
@@ -904,6 +1046,21 @@ async function parseComponentVariants(
   )
 
   return parsedVariants
+}
+
+function parseInspectorSpec(inspector: InspectorSpec | undefined): TypedInpsectorSpec {
+  if (inspector == null) {
+    return ComponentDescriptorDefaults.inspector
+  }
+  if (inspector === 'hidden') {
+    return { type: 'hidden' }
+  }
+
+  return {
+    type: 'shown',
+    display: inspector.display ?? 'expanded',
+    sections: inspector.sections ?? [...StylingOptions],
+  }
 }
 
 export async function componentDescriptorForComponentToRegister(
@@ -953,9 +1110,10 @@ export async function componentDescriptorForComponentToRegister(
     supportsChildren: supportsChildren,
     preferredChildComponents: childrenPropSpec.value,
     focus: componentToRegister.focus ?? ComponentDescriptorDefaults.focus,
-    inspector: componentToRegister.inspector ?? ComponentDescriptorDefaults.inspector,
+    inspector: parseInspectorSpec(componentToRegister.inspector),
     emphasis: componentToRegister.emphasis ?? ComponentDescriptorDefaults.emphasis,
     icon: componentToRegister.icon ?? ComponentDescriptorDefaults.icon,
+    label: componentToRegister.label ?? null,
   })
 }
 
@@ -1017,8 +1175,14 @@ export const parseChildrenSpec = (value: unknown): ParseResult<ChildrenSpec> => 
   )
 }
 
+const parseSectionSpec = objectParser<SectionSpec>({
+  display: optionalProp(parseEnum<Display>(DisplayOptions)),
+  sections: optionalProp(parseArray(parseEnum(StylingOptions))),
+})
+
 const parseComponentToRegister = objectParser<ComponentToRegister>({
   component: parseAny,
+  label: optionalProp(parseString),
   properties: fullyParsePropertyControls,
   variants: optionalProp(
     parseAlternative<ComponentExample | Array<ComponentExample>>(
@@ -1034,8 +1198,8 @@ const parseComponentToRegister = objectParser<ComponentToRegister>({
   ),
   focus: optionalProp(parseEnum(FocusOptions)),
   inspector: optionalProp(
-    parseAlternative<'all' | Styling[]>(
-      [parseConstant('all'), parseArray(parseEnum(StylingOptions))],
+    parseAlternative<'hidden' | SectionSpec>(
+      [parseConstant('hidden'), parseSectionSpec],
       'inspector value invalid',
     ),
   ),
@@ -1073,8 +1237,8 @@ function fancyErrorToErrorMessage(error: FancyError): ErrorMessage | null {
     const code = printScriptLines(frames[0]._originalScriptCode ?? [], frames[0].columnNumber)
     return errorMessage(
       frames[0]._originalFileName ?? '',
-      frames[0].lineNumber,
-      frames[0].columnNumber,
+      frames[0]._originalLineNumber,
+      frames[0]._originalColumnNumber,
       null,
       null,
       code,

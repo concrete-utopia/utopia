@@ -2,8 +2,8 @@ import React from 'react'
 import * as ReactDOM from 'react-dom'
 import { useHandleCloseOnESCOrEnter } from '../common/inspector-utils'
 import { EditorID, PortalTargetID } from '../../../core/shared/utils'
-import ResizeObserver from 'resize-observer-polyfill'
 import { OnClickOutsideHOC } from '../../../uuiui'
+import { ResizeObserver } from '../../canvas/dom-walker'
 
 export type InspectorModalProps = {
   offsetX: number
@@ -62,7 +62,7 @@ export const InspectorModal: React.FunctionComponent<
       setOriginLeft(boundingRect.left)
       setOriginTop(boundingRect.top)
     }
-  }, [editor.clientWidth, editor.clientHeight])
+  }, [editor.clientHeight, editor.clientWidth])
 
   React.useLayoutEffect(() => {
     window.addEventListener('resize', updatePositionAndSize)

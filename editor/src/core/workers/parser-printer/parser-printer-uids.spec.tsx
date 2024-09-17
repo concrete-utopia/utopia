@@ -36,7 +36,7 @@ import { emptySet } from '../../shared/set-utils'
 import { createCodeFile } from '../../../components/custom-code/code-file.test-utils'
 import { renderTestEditorWithProjectContent } from '../../../components/canvas/ui-jsx.test-utils'
 import { updateFile } from '../../../components/editor/actions/action-creators'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getUidMappings, getAllUniqueUidsFromMapping } from '../../model/get-uid-mappings'
 
 function addCodeFileToProjectContents(
   projectContents: ProjectContentTreeRoot,
@@ -46,6 +46,7 @@ function addCodeFileToProjectContents(
 ): ProjectContentTreeRoot {
   const parseResult = lintAndParse(
     path,
+    [],
     contents,
     null,
     alreadyExistingUIDs_MUTABLE,
@@ -79,9 +80,9 @@ describe('parseCode', () => {
             0,
           ),
         )
-        const result = getAllUniqueUids(projectContents)
-        expect(result.uniqueIDs).toHaveLength(493)
-        expect(result.duplicateIDs).toEqual({})
+        const result = getUidMappings(projectContents)
+        expect(getAllUniqueUidsFromMapping(result.filePathToUids)).toHaveLength(493)
+        expect(result.duplicateIDs.size).toEqual(0)
       },
       (_) => {
         throw new Error('Is unparsed.')
@@ -112,9 +113,9 @@ describe('parseCode', () => {
       alreadyExistingUIDs_MUTABLE,
     )
 
-    const result = getAllUniqueUids(projectContents)
-    expect(result.uniqueIDs).toHaveLength(7)
-    expect(result.duplicateIDs).toEqual({})
+    const result = getUidMappings(projectContents)
+    expect(getAllUniqueUidsFromMapping(result.filePathToUids)).toHaveLength(7)
+    expect(result.duplicateIDs.size).toEqual(0)
   })
 
   it('fixes duplicated UIDs for multifile projects', () => {
@@ -155,9 +156,9 @@ describe('parseCode', () => {
       alreadyExistingUIDs_MUTABLE,
     )
 
-    const result = getAllUniqueUids(projectContents)
-    expect(result.uniqueIDs).toHaveLength(14)
-    expect(result.duplicateIDs).toEqual({})
+    const result = getUidMappings(projectContents)
+    expect(getAllUniqueUidsFromMapping(result.filePathToUids)).toHaveLength(14)
+    expect(result.duplicateIDs.size).toEqual(0)
   })
 
   it('can successfully load a multifile project with duplicated UIDs', async () => {
@@ -229,9 +230,9 @@ describe('parseCode', () => {
       'dont-await-first-dom-report',
     )
 
-    const result = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(result.uniqueIDs).toHaveLength(26)
-    expect(result.duplicateIDs).toEqual({})
+    const result = getUidMappings(renderResult.getEditorState().editor.projectContents)
+    expect(getAllUniqueUidsFromMapping(result.filePathToUids)).toHaveLength(26)
+    expect(result.duplicateIDs.size).toEqual(0)
   })
 
   it('can successfully handle a multifile project with duplicated UIDs added later', async () => {
@@ -288,9 +289,9 @@ describe('parseCode', () => {
       'dont-await-first-dom-report',
     )
 
-    const resultBefore = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(resultBefore.uniqueIDs).toHaveLength(17)
-    expect(resultBefore.duplicateIDs).toEqual({})
+    const resultBefore = getUidMappings(renderResult.getEditorState().editor.projectContents)
+    expect(getAllUniqueUidsFromMapping(resultBefore.filePathToUids)).toHaveLength(17)
+    expect(resultBefore.duplicateIDs.size).toEqual(0)
 
     await renderResult.dispatch(
       [
@@ -317,9 +318,9 @@ describe('parseCode', () => {
       false,
     )
 
-    const resultAfter = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
-    expect(resultAfter.uniqueIDs).toHaveLength(25)
-    expect(resultAfter.duplicateIDs).toEqual({})
+    const resultAfter = getUidMappings(renderResult.getEditorState().editor.projectContents)
+    expect(getAllUniqueUidsFromMapping(resultAfter.filePathToUids)).toHaveLength(25)
+    expect(resultAfter.duplicateIDs.size).toEqual(0)
   })
 })
 
@@ -352,6 +353,7 @@ export var app = (props) => {
     `
     const parsedCode = parseCode(
       'test.js',
+      [],
       startingCode,
       null,
       emptySet(),
@@ -368,56 +370,59 @@ export var app = (props) => {
               if (isJSExpressionOtherJavaScript(firstChild)) {
                 const firstKey = Object.keys(firstChild.elementsWithin)[0]
                 const firstElementWithin = firstChild.elementsWithin[firstKey]
-                const updatedAttributes = jsxAttributesFromMap({
-                  style: jsExpressionValue(
-                    {
-                      backgroundColor: 'red',
-                      position: 'absolute',
-                      left: 0,
-                      top: 0,
-                      width: 100,
-                      height: 200,
-                    },
-                    emptyComments,
-                  ),
-                })
-                const updatedElementsWithin = {
-                  [firstKey]: jsxElement(
-                    firstElementWithin.name,
-                    firstKey,
-                    updatedAttributes,
-                    firstElementWithin.children,
-                  ),
+                if (isJSXElement(firstElementWithin)) {
+                  const updatedAttributes = jsxAttributesFromMap({
+                    style: jsExpressionValue(
+                      {
+                        backgroundColor: 'red',
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        width: 100,
+                        height: 200,
+                      },
+                      emptyComments,
+                    ),
+                  })
+                  const updatedElementsWithin = {
+                    [firstKey]: jsxElement(
+                      firstElementWithin.name,
+                      firstKey,
+                      updatedAttributes,
+                      firstElementWithin.children,
+                    ),
+                  }
+                  const updatedFirstChild = jsExpressionOtherJavaScript(
+                    isJSExpressionOtherJavaScript(firstChild) ? firstChild.params : [],
+                    firstChild.originalJavascript,
+                    firstChild.javascriptWithUIDs,
+                    firstChild.transpiledJavascript,
+                    firstChild.definedElsewhere,
+                    firstChild.sourceMap,
+                    updatedElementsWithin,
+                    firstChild.comments,
+                  )
+                  const updatedRootElement = jsxElement(
+                    rootElement.name,
+                    rootElement.uid,
+                    rootElement.props,
+                    [updatedFirstChild],
+                  )
+                  const updatedComponent = utopiaJSXComponent(
+                    tle.name,
+                    tle.isFunction,
+                    tle.declarationSyntax,
+                    tle.blockOrExpression,
+                    tle.functionWrapping,
+                    tle.params,
+                    tle.propsUsed,
+                    updatedRootElement,
+                    tle.arbitraryJSBlock,
+                    tle.usedInReactDOMRender,
+                    tle.returnStatementComments,
+                  )
+                  return updatedComponent
                 }
-                const updatedFirstChild = jsExpressionOtherJavaScript(
-                  isJSExpressionOtherJavaScript(firstChild) ? firstChild.params : [],
-                  firstChild.originalJavascript,
-                  firstChild.javascriptWithUIDs,
-                  firstChild.transpiledJavascript,
-                  firstChild.definedElsewhere,
-                  firstChild.sourceMap,
-                  updatedElementsWithin,
-                  firstChild.comments,
-                )
-                const updatedRootElement = jsxElement(
-                  rootElement.name,
-                  rootElement.uid,
-                  rootElement.props,
-                  [updatedFirstChild],
-                )
-                const updatedComponent = utopiaJSXComponent(
-                  tle.name,
-                  tle.isFunction,
-                  tle.declarationSyntax,
-                  tle.blockOrExpression,
-                  tle.param,
-                  tle.propsUsed,
-                  updatedRootElement,
-                  tle.arbitraryJSBlock,
-                  tle.usedInReactDOMRender,
-                  tle.returnStatementComments,
-                )
-                return updatedComponent
               }
             }
           }

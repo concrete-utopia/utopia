@@ -50,10 +50,9 @@ import {
   onlyChildIsSpan,
   sizeToVisualDimensions,
 } from '../../inspector/inspector-common'
-import { setHugContentForAxis } from '../../inspector/inspector-strategies/hug-contents-basic-strategy'
-
-type FlexDirectionRowColumn = 'row' | 'column' // a limited subset as we won't never guess row-reverse or column-reverse
-type FlexAlignItems = 'center' | 'flex-end'
+import { setHugContentForAxis } from '../../inspector/inspector-strategies/hug-contents-strategy'
+import type { FlexAlignItems, FlexDirectionRowColumn } from './convert-strategies-common'
+import { getChildrenPathsForContainer } from './convert-strategies-common'
 
 function checkConstraintsForThreeElementRow(
   allElementProps: AllElementProps,
@@ -172,7 +171,12 @@ function convertThreeElementGroupRow(
     const childrenMetadata = mapDropNulls(
       (childPath) => MetadataUtils.findElementByElementPath(metadata, childPath),
       childrenPaths,
-    )
+    ).map((element) => {
+      return {
+        ...element,
+        localFrame: MetadataUtils.getLocalFrame(element.elementPath, metadata),
+      }
+    })
     if (childrenMetadata.length === 3) {
       // This should make the logic independent of the ordering within the code,
       // as their logical order does not necessarily relate to their visual position.
@@ -268,19 +272,11 @@ export function convertLayoutToFlexCommands(
       ]
     }
 
-    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(
+    const childrenPaths = getChildrenPathsForContainer(
       metadata,
       elementPathTree,
       path,
-    ).flatMap((child) =>
-      isElementNonDOMElement(metadata, allElementProps, elementPathTree, child)
-        ? replaceNonDOMElementPathsWithTheirChildrenRecursive(
-            metadata,
-            allElementProps,
-            elementPathTree,
-            [child],
-          )
-        : child,
+      allElementProps,
     )
 
     const parentFlexDirection =
@@ -408,7 +404,7 @@ function ifElementIsFragmentLikeFirstConvertItToFrame(
         metadata,
         allElementProps,
         elementPathTrees,
-        MetadataUtils.getChildrenPathsOrdered(metadata, elementPathTrees, target),
+        MetadataUtils.getChildrenPathsOrdered(elementPathTrees, target),
       ),
     )
 
@@ -729,7 +725,7 @@ function getTopLevelChildrenAndMeasurementBoundaries(
   let topLevelChildren: Array<string> = []
   let maesurementBoundaries: Array<NonDOMElementWithLeaves> = []
 
-  const childrenPaths = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, parentPath)
+  const childrenPaths = MetadataUtils.getChildrenPathsOrdered(pathTrees, parentPath)
 
   for (const child of childrenPaths) {
     if (isElementNonDOMElement(metadata, allElementProps, pathTrees, child)) {

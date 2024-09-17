@@ -3,6 +3,7 @@ import type { MapLike } from 'typescript'
 import type {
   EarlyReturn,
   JSXElementChild,
+  Param,
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import {
@@ -18,13 +19,13 @@ import type {
   UiJsxCanvasContextData,
   VariableData,
 } from '../ui-jsx-canvas'
-import {
-  DomWalkerInvalidatePathsCtxAtom,
-  UiJsxCanvasCtxAtom,
-  ElementsToRerenderGLOBAL,
-} from '../ui-jsx-canvas'
+import { DomWalkerInvalidatePathsCtxAtom, UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import type { MutableUtopiaCtxRefData } from './ui-jsx-canvas-contexts'
-import { RerenderUtopiaCtxAtom, SceneLevelUtopiaCtxAtom } from './ui-jsx-canvas-contexts'
+import {
+  ElementsToRerenderContext,
+  RerenderUtopiaCtxAtom,
+  SceneLevelUtopiaCtxAtom,
+} from './ui-jsx-canvas-contexts'
 import { applyPropsParamToPassedProps } from './ui-jsx-canvas-props-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -48,6 +49,8 @@ import type { ComponentRendererComponent } from './component-renderer-component'
 import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { addFakeSpyEntry } from './ui-jsx-canvas-spy-wrapper'
+import type { FilePathMappings } from '../../../core/model/project-file-utils'
+import type { ElementsToRerender } from '../../editor/store/editor-state'
 
 function tryToGetInstancePath(
   maybePath: ElementPath | null,
@@ -63,34 +66,65 @@ function tryToGetInstancePath(
   }
 }
 
+type EmptyBuildResult = {
+  type: 'EMPTY_BUILD_RESULT'
+}
+
+type RenderedBuildResult = {
+  type: 'RENDERED_BUILD_RESULT'
+  result: React.ReactElement | null
+}
+
+type BuildResult = EmptyBuildResult | RenderedBuildResult
+
+function emptyBuildResult(): EmptyBuildResult {
+  return { type: 'EMPTY_BUILD_RESULT' }
+}
+
+function renderedBuildResult(result: React.ReactElement | null): RenderedBuildResult {
+  return { type: 'RENDERED_BUILD_RESULT', result: result }
+}
+
 export function createComponentRendererComponent(params: {
   topLevelElementName: string | null
   filePath: string
   mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>
 }): ComponentRendererComponent {
-  const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
+  const Component = (...functionArguments: Array<any>) => {
+    // Attempt to determine which function argument is the "regular" props object/value.
+    // Default it to the first if one is not identified by looking for some of our special keys.
+    let regularPropsArgumentIndex: number = functionArguments.findIndex((functionArgument) => {
+      if (
+        typeof functionArgument === 'object' &&
+        functionArgument != null &&
+        !Array.isArray(functionArgument)
+      ) {
+        return UTOPIA_INSTANCE_PATH in functionArgument || UTOPIA_PATH_KEY in functionArgument
+      } else {
+        return false
+      }
+    })
+    if (regularPropsArgumentIndex < 0) {
+      regularPropsArgumentIndex = 0
+    }
     const {
       [UTOPIA_INSTANCE_PATH]: instancePathAny, // TODO types?
       [UTOPIA_PATH_KEY]: pathsString, // TODO types?
       ...realPassedProps
-    } = realPassedPropsIncludingUtopiaSpecialStuff
+    } = functionArguments[regularPropsArgumentIndex]
+
+    // We want to strip the instance path and path from the props that we pass to the component.
+    let slightlyStrippedFunctionsArguments = [...functionArguments]
+    slightlyStrippedFunctionsArguments[regularPropsArgumentIndex] = realPassedProps
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
     const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
 
-    function shouldUpdate() {
-      return (
-        ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
-        ElementsToRerenderGLOBAL.current.some((er) => {
-          return (
-            (instancePath != null &&
-              (EP.pathsEqual(er, instancePath) || EP.isParentComponentOf(instancePath, er))) ||
-            isElementInChildrenOrPropsTree(EP.toString(er), realPassedProps)
-          )
-        })
-      )
-    }
+    const shouldUpdate = useAllowRerenderForPath(
+      instancePath ?? 'rerender-all-elements',
+      realPassedProps,
+    )
 
     const rerenderUtopiaContext = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom, shouldUpdate)
 
@@ -130,6 +164,8 @@ export function createComponentRendererComponent(params: {
       instancePath,
     )
 
+    // TODO we should throw an error if rootElementPath is null
+
     let codeError: Error | null = null
 
     const appliedProps = optionalMap(
@@ -137,7 +173,7 @@ export function createComponentRendererComponent(params: {
         applyPropsParamToPassedProps(
           mutableContext.rootScope,
           rootElementPath,
-          realPassedProps,
+          slightlyStrippedFunctionsArguments,
           param,
           {
             requireResult: mutableContext.requireResult,
@@ -157,12 +193,13 @@ export function createComponentRendererComponent(params: {
             code: code,
             highlightBounds: highlightBounds,
             editedText: rerenderUtopiaContext.editedText,
-            variablesInScope: {},
+            variablesInScope: mutableContext.spiedVariablesDeclaredInRootScope,
+            filePathMappings: rerenderUtopiaContext.filePathMappings,
           },
           undefined,
           codeError,
         ),
-      utopiaJsxComponent.param,
+      utopiaJsxComponent.params,
     ) ?? { props: realPassedProps }
 
     let scope: MapLike<any> = {
@@ -170,20 +207,18 @@ export function createComponentRendererComponent(params: {
       ...appliedProps,
     }
 
-    let spiedVariablesInScope: VariableData = {}
-    if (utopiaJsxComponent.param != null) {
-      spiedVariablesInScope = mapArrayToDictionary(
-        propertiesExposedByParam(utopiaJsxComponent.param),
-        (paramName) => {
-          return paramName
-        },
-        (paramName) => {
-          return {
+    let spiedVariablesInScope: VariableData = {
+      ...mutableContext.spiedVariablesDeclaredInRootScope,
+    }
+    if (rootElementPath != null && utopiaJsxComponent.params != null) {
+      for (const param of utopiaJsxComponent.params) {
+        propertiesExposedByParam(param).forEach((paramName) => {
+          spiedVariablesInScope[paramName] = {
             spiedValue: scope[paramName],
-            insertionCeiling: instancePath,
+            insertionCeiling: rootElementPath,
           }
-        },
-      )
+        })
+      }
     }
 
     // Protect against infinite recursion by taking the view that anything
@@ -228,9 +263,10 @@ export function createComponentRendererComponent(params: {
       code: code,
       highlightBounds: highlightBounds,
       editedText: rerenderUtopiaContext.editedText,
+      filePathMappings: rerenderUtopiaContext.filePathMappings,
     }
 
-    const buildResult = React.useRef<React.ReactElement | null>(null)
+    const buildResult = React.useRef<BuildResult>(emptyBuildResult())
 
     let earlyReturn: EarlyReturn | null = null
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
@@ -255,7 +291,9 @@ export function createComponentRendererComponent(params: {
       )
       applyBlockReturnFunctions(scope)
 
+      // possibly problematic: this should ONLY run if shouldUpdate() is true
       const arbitraryBlockResult = runBlockUpdatingScope(
+        rootElementPath,
         params.filePath,
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
@@ -264,24 +302,27 @@ export function createComponentRendererComponent(params: {
 
       switch (arbitraryBlockResult.type) {
         case 'ARBITRARY_BLOCK_RAN_TO_END':
-          spiedVariablesInScope = {
-            ...spiedVariablesInScope,
-            ...objectMap(
-              (spiedValue) => ({
-                spiedValue: spiedValue,
-                insertionCeiling: instancePath,
-              }),
-              arbitraryBlockResult.scope,
-            ),
+          if (rootElementPath != null) {
+            spiedVariablesInScope = {
+              ...spiedVariablesInScope,
+              ...arbitraryBlockResult.spiedVariablesDeclaredWithinBlock,
+              ...objectMap(
+                (spiedValue) => ({
+                  spiedValue: spiedValue,
+                  insertionCeiling: rootElementPath,
+                }),
+                arbitraryBlockResult.scope,
+              ),
+            }
           }
           break
         case 'EARLY_RETURN_VOID':
           earlyReturn = arbitraryBlockResult
-          buildResult.current = undefined as any
+          buildResult.current = renderedBuildResult(undefined as any)
           break
         case 'EARLY_RETURN_RESULT':
           earlyReturn = arbitraryBlockResult
-          buildResult.current = arbitraryBlockResult.result as any
+          buildResult.current = renderedBuildResult(arbitraryBlockResult.result as any)
           break
         default:
           assertNever(arbitraryBlockResult)
@@ -328,10 +369,19 @@ export function createComponentRendererComponent(params: {
           null,
         )
       }
-    } else if (shouldUpdate()) {
-      buildResult.current = buildComponentRenderResult(utopiaJsxComponent.rootElement)
+    } else if (shouldUpdate() || buildResult.current.type === 'EMPTY_BUILD_RESULT') {
+      buildResult.current = renderedBuildResult(
+        buildComponentRenderResult(utopiaJsxComponent.rootElement),
+      )
     }
-    return buildResult.current
+    switch (buildResult.current.type) {
+      case 'EMPTY_BUILD_RESULT':
+        return null
+      case 'RENDERED_BUILD_RESULT':
+        return buildResult.current.result
+      default:
+        assertNever(buildResult.current)
+    }
   }
   Component.displayName = `ComponentRenderer(${params.topLevelElementName})`
   Component.topLevelElementName = params.topLevelElementName
@@ -341,7 +391,7 @@ export function createComponentRendererComponent(params: {
   return Component
 }
 
-function isRenderProp(prop: any): prop is { [UTOPIA_PATH_KEY]: string; props: MapLike<any> } {
+function isRenderProp(prop: any): prop is { props: { [UTOPIA_PATH_KEY]: string } } {
   return (
     prop != null &&
     typeof prop === 'object' &&
@@ -351,21 +401,77 @@ function isRenderProp(prop: any): prop is { [UTOPIA_PATH_KEY]: string; props: Ma
   )
 }
 
-function isElementInChildrenOrPropsTree(elementPath: string, props: any): boolean {
-  const childrenArr = React.Children.toArray(props.children).filter(React.isValidElement)
-  const elementIsChild = childrenArr.some((c) => (c.props as any)[UTOPIA_PATH_KEY] === elementPath)
-  if (elementIsChild) {
-    return true
+function areElementsInChildrenOrPropsTree(elementPaths: Array<string>, props: any): boolean {
+  const childrenArr = fastReactChildrenToArray(props.children)
+
+  for (let c of childrenArr) {
+    if (elementPaths.includes((c.props as any)[UTOPIA_PATH_KEY])) {
+      return true
+    }
   }
 
-  const elementsInProps = Object.values(props).filter(isRenderProp)
-  const isElementInProps = elementsInProps.some((p) => p[UTOPIA_PATH_KEY] === elementPath)
-  if (isElementInProps) {
-    return true
+  for (let p in props) {
+    if (React.isValidElement(p) && elementPaths.includes((p.props as any)[UTOPIA_PATH_KEY])) {
+      return true
+    }
   }
 
-  return (
-    childrenArr.some((c) => isElementInChildrenOrPropsTree(elementPath, c.props)) ||
-    elementsInProps.some((p) => isElementInChildrenOrPropsTree(elementPath, p.props))
+  for (let c of childrenArr) {
+    if (areElementsInChildrenOrPropsTree(elementPaths, c.props)) {
+      return true
+    }
+  }
+
+  for (let p in props) {
+    if (isRenderProp(p) && areElementsInChildrenOrPropsTree(elementPaths, p.props)) {
+      return true
+    }
+  }
+  return false
+}
+
+function fastReactChildrenToArray(children: any) {
+  if (children == null || typeof children === 'string') {
+    return []
+  }
+  if (React.isValidElement(children)) {
+    return [children]
+  }
+  if (Array.isArray(children)) {
+    return children.filter(React.isValidElement)
+  }
+  return React.Children.toArray(children).filter(React.isValidElement)
+}
+
+export function useAllowRerenderForPath(
+  elementPath: ElementPath | 'rerender-all-elements',
+  realPassedProps: any,
+) {
+  const elementsToRerender = React.useContext(ElementsToRerenderContext)
+  const shouldUpdate = React.useMemo(
+    () => shouldUpdateInner(elementPath, realPassedProps, elementsToRerender),
+    [elementPath, realPassedProps, elementsToRerender],
   )
+  return React.useCallback(() => shouldUpdate, [shouldUpdate])
+}
+
+function shouldUpdateInner(
+  elementPath: ElementPath | 'rerender-all-elements',
+  realPassedProps: any,
+  elementsToRerender: ElementsToRerender,
+) {
+  if (elementsToRerender === 'rerender-all-elements') {
+    return true
+  }
+
+  if (
+    elementPath != 'rerender-all-elements' &&
+    elementsToRerender.some(
+      (er) => EP.pathsEqual(er, elementPath) || EP.isParentComponentOf(elementPath, er),
+    )
+  ) {
+    return true
+  }
+
+  return areElementsInChildrenOrPropsTree(elementsToRerender.map(EP.toString), realPassedProps)
 }

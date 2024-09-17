@@ -77,6 +77,7 @@ export type StyleLayoutProp =
   | 'flexShrink'
   | 'gap'
   | 'alignItems'
+  | 'justifyItems'
   | 'alignContent'
   | 'justifyContent'
   | 'padding'
@@ -106,6 +107,8 @@ export type StyleLayoutProp =
   | 'borderBottomLeftRadius'
   | 'borderBottomRightRadius'
   | 'zIndex'
+  | 'rowGap'
+  | 'columnGap'
 
 export function framePointForPinnedProp(pinnedProp: LayoutPinnedProp): FramePoint {
   switch (pinnedProp) {

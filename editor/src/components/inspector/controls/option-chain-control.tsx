@@ -3,9 +3,8 @@
 import type { Interpolation } from '@emotion/react'
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { FlexRow } from '../../../uuiui'
+import { UtopiaTheme, colorTheme } from '../../../uuiui'
 import type { IcnProps } from '../../../uuiui'
-import { UtopiaTheme } from '../../../uuiui'
 import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { OptionControl } from './option-control'
 import Utils from '../../../utils/utils'
@@ -13,6 +12,7 @@ import Utils from '../../../utils/utils'
 export interface OptionChainOption<T> {
   value: T
   icon?: IcnProps
+  iconComponent?: React.ReactNode
   label?: string
   tooltip?: string
   forceCallOnSubmitValue?: boolean // Call the onSubmitValue again even when the control is already on that value
@@ -64,8 +64,9 @@ export const OptionChainControl: React.FunctionComponent<
         style={{
           display: 'flex',
           flexDirection: 'row',
-          height: 26,
-          width: '100%',
+          border: `1px solid ${colorTheme.bg4.value}`,
+          borderRadius: UtopiaTheme.inputBorderRadius,
+          padding: '1px',
         }}
         className={`option-chain-control-container ${Utils.pathOr(
           '',
@@ -74,33 +75,32 @@ export const OptionChainControl: React.FunctionComponent<
         )}`}
         onContextMenu={props.onContextMenu}
       >
-        <FlexRow style={{ gap: 1, width: '100%' }}>
-          {options.map((option: OptionChainOption<number | string>, index) => (
-            <OptionControl
-              {...props}
-              css={optionCSS}
-              controlStatus={props.controlStatus}
-              style={{ height: '100%' }}
-              key={'option-' + index}
-              testId={getOptionControlTestId(
-                props.testId,
-                option.label?.toLowerCase() ?? index.toString(),
-              )}
-              DEPRECATED_controlOptions={{
-                tooltip: option.tooltip,
-                icon: option.icon,
-                labelInner: option.label,
-              }}
-              value={props.value === option.value}
-              // eslint-disable-next-line react/jsx-no-bind
-              onSubmitValue={(value: boolean) => {
-                if (value || option.forceCallOnSubmitValue) {
-                  props.onSubmitValue(option.value)
-                }
-              }}
-            />
-          ))}
-        </FlexRow>
+        {options.map((option: OptionChainOption<number | string>, index) => (
+          <OptionControl
+            {...props}
+            css={optionCSS}
+            key={'option-' + index}
+            testId={getOptionControlTestId(
+              props.testId,
+              option.label?.toLowerCase() ?? index.toString(),
+            )}
+            DEPRECATED_controlOptions={{
+              tooltip: option.tooltip,
+              icon: option.icon,
+              iconComponent: option.iconComponent,
+              labelInner: option.label,
+            }}
+            value={props.value === option.value}
+            // eslint-disable-next-line react/jsx-no-bind
+            onSubmitValue={(isChecked: boolean) => {
+              if (isChecked || option.forceCallOnSubmitValue) {
+                props.onSubmitValue(option.value)
+              } else {
+                props.onUnsetValues?.()
+              }
+            }}
+          />
+        ))}
       </div>
       {labelBelow == null ? null : (
         <label

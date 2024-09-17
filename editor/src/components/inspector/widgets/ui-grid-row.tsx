@@ -26,6 +26,14 @@ const gridTemplates = {
     gridColumnGap: 8,
     gridTemplateColumns: 'auto 20px 1fr',
   },
+  '<-auto-><-auto->|70px|<----1fr---->|': {
+    gridColumnGap: 4,
+    gridTemplateColumns: 'auto auto 70px 1fr',
+  },
+  '<-auto-><-auto->|90px|<----1fr---->|': {
+    gridColumnGap: 4,
+    gridTemplateColumns: 'auto auto 90px 1fr',
+  },
   '<-------1fr------>|----80px----|': {
     gridTemplateColumns: '1fr 80px',
     gridColumnGap: 4,
@@ -58,13 +66,25 @@ const gridTemplates = {
     gridColumnGap: 4,
     gridTemplateColumns: '1fr 1fr 1fr',
   },
+  '<--1fr--><--1fr--><--1fr--><--1fr-->': {
+    gridColumnGap: 4,
+    gridTemplateColumns: '1fr 1fr 1fr 1fr',
+  },
   '|20px|<--1fr--><--1fr-->': {
     gridColumnGap: 4,
     gridTemplateColumns: '20px 1fr 1fr',
   },
   '<--1fr--><--1fr-->': {
-    gridColumnGap: 4,
+    gridColumnGap: 8,
     gridTemplateColumns: '1fr 1fr',
+  },
+  '<--1fr--><--1fr-->|22px|': {
+    gridColumnGap: 8,
+    gridTemplateColumns: '1fr 1fr 22px',
+  },
+  '<--auto--><--1fr-->|22px|': {
+    gridColumnGap: 8,
+    gridTemplateColumns: 'auto 1fr 22px',
   },
   '<--1fr--><--1fr-->|-18px-|': {
     gridColumnGap: 4,
@@ -93,6 +113,14 @@ const gridTemplates = {
     gridColumnGap: 10,
     gridTemplateColumns: '80px 1fr',
   },
+  '|--50px--|<--------1fr-------->': {
+    gridColumnGap: 10,
+    gridTemplateColumns: '50px 1fr',
+  },
+  '|--60px--|<--1fr-->|22px|': {
+    gridColumnGap: 10,
+    gridTemplateColumns: '60px 1fr 22px',
+  },
   '<--------1fr-------->|145px|': {
     gridColumnGap: 4,
     gridTemplateColumns: '1fr 145px',
@@ -104,6 +132,10 @@ const gridTemplates = {
   '<--------1fr-------->|145px||22px|': {
     gridColumnGap: 0,
     gridTemplateColumns: '1fr 145px 22px',
+  },
+  '<--------1fr-------->|60px||28px|': {
+    gridColumnGap: 8,
+    gridTemplateColumns: '1fr 60px 28px',
   },
 } as const
 
@@ -127,32 +159,32 @@ export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> 
    * alignItems: default value is 'center'
    */
   alignItems?: 'start' | 'center' | 'stretch'
+  /**
+   * alignContent: default value is 'center'
+   */
+  alignContent?: 'start' | 'center' | 'stretch'
 }
 
-export const UIGridRow: React.FunctionComponent<React.PropsWithChildren<GridRowProps>> = ({
-  tall,
-  variant,
-  alignItems,
-  style,
-  padded,
-  children,
-  ...props
-}) => (
-  <div
-    {...props}
-    css={{
-      padding: padded ? `0px ${UtopiaTheme.layout.rowHorizontalPadding}px` : undefined,
-      display: 'grid',
-      minHeight: tall ? UtopiaTheme.layout.rowHeight.max : UtopiaTheme.layout.rowHeight.normal,
-      whiteSpace: 'normal',
-      gridColumnGap: 10,
-      overflow: 'hidden',
-      alignItems: alignItems ?? 'center',
-      ...gridTemplates[variant],
-      ...(style as any), // TODO Emotion and React 18 types don't like each other
-    }}
-  >
-    {children}
-  </div>
+export const UIGridRow = React.forwardRef<HTMLDivElement, React.PropsWithChildren<GridRowProps>>(
+  ({ tall, variant, alignItems, alignContent, style, padded, children, ...props }, ref) => (
+    <div
+      ref={ref}
+      {...props}
+      css={{
+        padding: padded ? `0px ${UtopiaTheme.layout.rowHorizontalPadding}px` : undefined,
+        display: 'grid',
+        minHeight: tall ? UtopiaTheme.layout.rowHeight.max : UtopiaTheme.layout.rowHeight.normal,
+        whiteSpace: 'normal',
+        gridColumnGap: 10,
+        overflow: 'hidden',
+        alignItems: alignItems ?? 'center',
+        alignContent: alignContent,
+        ...gridTemplates[variant],
+        ...(style as any), // TODO Emotion and React 18 types don't like each other
+      }}
+    >
+      {children}
+    </div>
+  ),
 )
 UIGridRow.displayName = 'UIGridRow'

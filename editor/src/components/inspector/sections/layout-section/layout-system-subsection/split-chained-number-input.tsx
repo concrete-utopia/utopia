@@ -27,6 +27,7 @@ import {
   InspectorFocusedCanvasControls,
   InspectorHoveredCanvasControls,
 } from '../../../common/inspector-atoms'
+import { when } from '../../../../../utils/react-conditionals'
 
 export type ControlMode =
   | 'one-value' // a single value that applies to all sides
@@ -106,13 +107,13 @@ export interface SplitChainedNumberInputProps<T> {
   mode: ControlMode | null
   onCycleMode: () => void
   labels?: {
-    top?: string
-    bottom?: string
-    left?: string
-    right?: string
-    horizontal?: string
-    vertical?: string
-    oneValue?: string
+    top?: React.ReactChild
+    bottom?: React.ReactChild
+    left?: React.ReactChild
+    right?: React.ReactChild
+    horizontal?: React.ReactChild
+    vertical?: React.ReactChild
+    oneValue?: React.ReactChild
   }
   tooltips?: {
     oneValue?: string
@@ -128,6 +129,7 @@ export interface SplitChainedNumberInputProps<T> {
   values: SplitChainedNumberInputValues
   numberType: CSSNumberType
   eventHandler: SplitChainedNumberInputEventHandler
+  fourSidesOrder?: Array<SplitFourValueSide>
 }
 
 export type SplitChainedNumberInputEventHandler = (
@@ -159,6 +161,8 @@ export function getInitialMode(
 
 type CSSNumberOrNull = CSSNumber | null
 
+export type SplitFourValueSide = 'T' | 'R' | 'B' | 'L'
+
 export type FourValue =
   | { type: 'T'; value: CSSNumberOrNull }
   | { type: 'R'; value: CSSNumberOrNull }
@@ -173,7 +177,7 @@ export type SplitChainedEvent =
   | { type: 'four-value'; value: FourValue }
 
 export function splitChainedEventValueForProp(
-  prop: 'T' | 'R' | 'B' | 'L',
+  prop: SplitFourValueSide,
   e: SplitChainedEvent,
 ): CSSNumber | null {
   switch (e.type) {
@@ -455,7 +459,15 @@ const whenCSSNumber = (fn: (v: CSSNumber | null) => any) => (v: UnknownOrEmptyIn
 }
 
 export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInputProps<any>) => {
-  const { name, canvasControls, numberType, eventHandler, labels, values } = props
+  const {
+    name,
+    canvasControls,
+    numberType,
+    eventHandler,
+    labels,
+    values,
+    fourSidesOrder = ['T', 'R', 'L', 'B'],
+  } = props
 
   const setHoveredCanvasControls = useSetAtom(InspectorHoveredCanvasControls)
   const setFocusedCanvasControls = useSetAtom(InspectorFocusedCanvasControls)
@@ -519,9 +531,9 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         case 'one-value':
           return [
             {
-              style: { width: '100%' },
+              style: { width: '50%' },
               value: values.oneValue?.value,
-              DEPRECATED_labelBelow: labels?.oneValue ?? '↔',
+              innerLabel: labels?.oneValue ?? '↔',
               minimum: 0,
               onSubmitValue: onSubmitValueOne(false),
               onTransientSubmitValue: onSubmitValueOne(true),
@@ -550,31 +562,9 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
         case 'per-direction':
           return [
             {
-              value: values.twoValue.horizontal?.value,
-              DEPRECATED_labelBelow: labels?.horizontal ?? 'H',
-              minimum: 0,
-              onSubmitValue: onSubmitValueHorizontal(false),
-              onTransientSubmitValue: onSubmitValueHorizontal(true),
-              numberType: numberType,
-              controlStatus: values.twoValue.horizontal?.controlStatus,
-              defaultUnitToHide: 'px',
-              onMouseEnter: onMouseEnterForControls([
-                rightCanvasControls?.onHover,
-                leftCanvasControls?.onHover,
-              ]),
-              onMouseLeave: onMouseLeave,
-              inputProps: {
-                onFocus: onFocusForControls([
-                  rightCanvasControls?.onFocus,
-                  leftCanvasControls?.onFocus,
-                ]),
-                onBlur: onBlur,
-              },
-              testId: `${name}-H`,
-            },
-            {
+              style: { width: '48%' },
               value: values.twoValue.vertical?.value,
-              DEPRECATED_labelBelow: labels?.vertical ?? 'V',
+              innerLabel: labels?.vertical ?? 'V',
               minimum: 0,
               onSubmitValue: onSubmitValueVertical(false),
               onTransientSubmitValue: onSubmitValueVertical(true),
@@ -595,12 +585,37 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               },
               testId: `${name}-V`,
             },
+            {
+              style: { width: '48%' },
+              value: values.twoValue.horizontal?.value,
+              innerLabel: labels?.horizontal ?? 'H',
+              minimum: 0,
+              onSubmitValue: onSubmitValueHorizontal(false),
+              onTransientSubmitValue: onSubmitValueHorizontal(true),
+              numberType: numberType,
+              controlStatus: values.twoValue.horizontal?.controlStatus,
+              defaultUnitToHide: 'px',
+              onMouseEnter: onMouseEnterForControls([
+                rightCanvasControls?.onHover,
+                leftCanvasControls?.onHover,
+              ]),
+              onMouseLeave: onMouseLeave,
+              inputProps: {
+                onFocus: onFocusForControls([
+                  rightCanvasControls?.onFocus,
+                  leftCanvasControls?.onFocus,
+                ]),
+                onBlur: onBlur,
+              },
+              testId: `${name}-H`,
+            },
           ]
         case 'per-side':
-          return [
-            {
+          const sides: Record<SplitFourValueSide, Omit<NumberInputProps, 'chained' | 'id'>> = {
+            T: {
+              style: { width: '48%' },
               value: values.fourValue.top?.value,
-              DEPRECATED_labelBelow: labels?.top ?? 'T',
+              innerLabel: labels?.top ?? 'T',
               minimum: 0,
               onSubmitValue: onSubmitValueTop(false),
               onTransientSubmitValue: onSubmitValueTop(true),
@@ -615,9 +630,10 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               },
               testId: `${name}-T`,
             },
-            {
+            R: {
+              style: { width: '48%' },
               value: values.fourValue.right?.value,
-              DEPRECATED_labelBelow: labels?.right ?? 'R',
+              innerLabel: labels?.right ?? 'R',
               minimum: 0,
               onSubmitValue: onSubmitValueRight(false),
               onTransientSubmitValue: onSubmitValueRight(true),
@@ -632,26 +648,10 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               },
               testId: `${name}-R`,
             },
-            {
-              value: values.fourValue.bottom?.value,
-              DEPRECATED_labelBelow: labels?.bottom ?? 'B',
-              minimum: 0,
-              onSubmitValue: onSubmitValueBottom(false),
-              onTransientSubmitValue: onSubmitValueBottom(true),
-              controlStatus: values.fourValue.bottom?.controlStatus,
-              numberType: numberType,
-              defaultUnitToHide: 'px',
-              onMouseEnter: onMouseEnterForControls([bottomCanvasControls?.onHover]),
-              onMouseLeave: onMouseLeave,
-              inputProps: {
-                onFocus: onFocusForControls([bottomCanvasControls?.onFocus]),
-                onBlur: onBlur,
-              },
-              testId: `${name}-B`,
-            },
-            {
+            L: {
+              style: { width: '48%' },
               value: values.fourValue.left?.value,
-              DEPRECATED_labelBelow: labels?.left ?? 'L',
+              innerLabel: labels?.left ?? 'L',
               minimum: 0,
               onSubmitValue: onSubmitValueLeft(false),
               onTransientSubmitValue: onSubmitValueLeft(true),
@@ -666,7 +666,26 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
               },
               testId: `${name}-L`,
             },
-          ]
+            B: {
+              style: { width: '48%' },
+              value: values.fourValue.bottom?.value,
+              innerLabel: labels?.bottom ?? 'B',
+              minimum: 0,
+              onSubmitValue: onSubmitValueBottom(false),
+              onTransientSubmitValue: onSubmitValueBottom(true),
+              controlStatus: values.fourValue.bottom?.controlStatus,
+              numberType: numberType,
+              defaultUnitToHide: 'px',
+              onMouseEnter: onMouseEnterForControls([bottomCanvasControls?.onHover]),
+              onMouseLeave: onMouseLeave,
+              inputProps: {
+                onFocus: onFocusForControls([bottomCanvasControls?.onFocus]),
+                onBlur: onBlur,
+              },
+              testId: `${name}-B`,
+            },
+          }
+          return fourSidesOrder.map((side) => sides[side])
         case null:
           return []
         default:
@@ -682,6 +701,7 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
       eventHandler,
       props.mode,
       values,
+      fourSidesOrder,
     ])
 
   const tooltipTitle = React.useMemo(() => {
@@ -714,28 +734,33 @@ export const SplitChainedNumberInput = React.memo((props: SplitChainedNumberInpu
     }
   }, [props.mode])
 
+  const cycleModeControl = React.useMemo(() => {
+    return (
+      <Tooltip title={tooltipTitle}>
+        <SquareButton data-testid={`${name}-cycle-mode`} onClick={props.onCycleMode} highlight>
+          {modeIcon}
+        </SquareButton>
+      </Tooltip>
+    )
+  }, [modeIcon, name, props.onCycleMode, tooltipTitle])
+
   return (
     <div
       style={{
         display: 'flex',
         flexDirection: 'row',
         gap: 10,
+        justifyContent: 'space-between',
+        flex: 1,
       }}
     >
-      <Tooltip title={tooltipTitle}>
-        <SquareButton
-          data-testid={`${name}-cycle-mode`}
-          onClick={props.onCycleMode}
-          style={{ paddingRight: 4 }}
-        >
-          {modeIcon}
-        </SquareButton>
-      </Tooltip>
       <ChainedNumberInput
         idPrefix={name}
-        style={{ flex: 1, gap: 4 }}
+        style={{ flex: 1, gap: 8 }}
         propsArray={chainedPropsToRender}
+        wrap={true}
       />
+      {cycleModeControl}
     </div>
   )
 })

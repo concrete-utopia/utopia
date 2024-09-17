@@ -221,7 +221,7 @@ describe('Use the text editor', () => {
       const { before, after } = await testModifierExpectingWayTooManySavesTheFirstTime(
         cmdModifier,
         'b',
-        projectWithoutTextWithExtraStyle({ font: 'bold 1.2em "Fira Sans"' }),
+        projectWithCustomTextAndExtraStyle('', { font: 'bold 1.2em "Fira Sans"' }),
       )
       expect(before).toEqual(
         projectWithStyle({ fontWeight: 'normal' }, { font: 'bold 1.2em "Fira Sans"' }),
@@ -240,7 +240,7 @@ describe('Use the text editor', () => {
       const { before, after } = await testModifierExpectingWayTooManySavesTheFirstTime(
         cmdModifier,
         'i',
-        projectWithoutTextWithExtraStyle({ font: 'italic 1.2em "Fira Sans"' }),
+        projectWithCustomTextAndExtraStyle('', { font: 'italic 1.2em "Fira Sans"' }),
       )
       expect(before).toEqual(
         projectWithStyle({ fontStyle: 'normal' }, { font: 'italic 1.2em "Fira Sans"' }),
@@ -672,6 +672,49 @@ describe('Use the text editor', () => {
       })
     })
   })
+  describe('elements with custom css', () => {
+    it('allows trailing spaces while editing text-wrap:pretty', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithCustomTextAndExtraStyle('Initial', { textWrap: 'pretty' }),
+        'await-first-dom-report',
+      )
+
+      await enterTextEditMode(editor)
+      typeText('Hello')
+      typeText(' ')
+      typeText('Utopia')
+      await closeTextEditor()
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+
+
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <div
+              data-testid='div'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 288,
+                height: 362,
+                textWrap: 'pretty',
+              }}
+              data-uid='39e'
+            >
+              InitialHello Utopia
+            </div>
+          </Storyboard>
+        )`),
+      )
+    })
+  })
   describe('multiline editing', () => {
     it('renders and escapes newlines', async () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
@@ -1061,7 +1104,7 @@ describe('Use the text editor', () => {
         'await-first-dom-report',
       )
 
-      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/409')], false)], true)
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/03d')], false)], true)
       await pressKey('enter')
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -1208,7 +1251,7 @@ describe('Use the text editor', () => {
         'await-first-dom-report',
       )
 
-      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/409')], false)], true)
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/03d')], false)], true)
       await pressKey('enter')
       await editor.getDispatchFollowUpActionsFinished()
 
@@ -1312,7 +1355,7 @@ describe('Use the text editor', () => {
           true ? (
             // @utopia/uid=6b9
             [0,1,2].map(() => <div>hello</div>)
-          ) : <div data-uid='416' />
+          ) : <div data-uid='xxx' />
         }`),
         'await-first-dom-report',
       )
@@ -1323,7 +1366,7 @@ describe('Use the text editor', () => {
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual(
-        'sb/39e/cond/6b9/416~~~1',
+        'sb/39e/cond/6b9/2c7~~~1',
       )
     })
     it('editing expression in the active true clause from the selected conditional', async () => {
@@ -2536,7 +2579,10 @@ export var storyboard = (
 )
 `)
 
-function projectWithoutTextWithExtraStyle(extraStyleProps: { [prop: string]: string }) {
+function projectWithCustomTextAndExtraStyle(
+  text: string,
+  extraStyleProps: { [prop: string]: string },
+) {
   const styleProps = {
     backgroundColor: '#0091FFAA',
     position: 'absolute',
@@ -2557,7 +2603,7 @@ function projectWithoutTextWithExtraStyle(extraStyleProps: { [prop: string]: str
           data-testid='div'
           style={${JSON.stringify(styleProps)}}
           data-uid='39e'
-        />
+        >${text}</div>
       </Storyboard>
     )
   `)

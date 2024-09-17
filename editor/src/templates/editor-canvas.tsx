@@ -101,12 +101,10 @@ import { UtopiaStyles, colorTheme } from '../uuiui'
 import { DropHandlers } from './image-drop'
 import { EditorCommon } from '../components/editor/editor-component-common'
 import { CursorComponent } from '../components/canvas/controls/select-mode/cursor-component'
-import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 import { isFeatureEnabled } from '../utils/feature-switches'
 import { getCanvasViewportCenter } from './paste-helpers'
-import { InsertMenuId } from '../components/editor/insertmenu'
 import { DataPasteHandler, isPasteHandler } from '../utils/paste-handler'
-const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
+import { ResizeObserver } from '../components/canvas/dom-walker'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -135,6 +133,9 @@ function cursorForKeysPressed(
       return CSSCursor.OpenHand
     }
   }
+  if (keysPressed['alt']) {
+    return CSSCursor.Duplicate
+  }
   return null
 }
 
@@ -149,20 +150,18 @@ function cursorForHoveredControl(
 
 function getDefaultCursorForMode(mode: Mode): CSSCursor {
   switch (mode.type) {
-    case 'select':
-      return CSSCursor.Select
     case 'insert':
       return CSSCursor.Insert
     case 'live':
       return CSSCursor.BrowserAuto
-    case 'textEdit':
-      return CSSCursor.Select
     case 'comment':
       if (isCommentMode(mode)) {
         return CSSCursor.Comment
       }
       return CSSCursor.Select
+    case 'select':
     case 'follow':
+    case 'textEdit':
       return CSSCursor.Select
     default:
       const _exhaustiveCheck: never = mode
@@ -465,6 +464,7 @@ export function runLocalCanvasAction(
             [],
             emptyDragToMoveIndicatorFlags,
             null,
+            null,
           ),
         },
       }
@@ -695,6 +695,7 @@ interface EditorCanvasProps {
   builtinDependencies: BuiltInDependencies
   dispatch: EditorDispatch
   updateCanvasSize: (newValueOrUpdater: Size | ((oldValue: Size) => Size)) => void
+  shouldRenderCanvas: boolean
 }
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {
@@ -807,8 +808,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       (event.nativeEvent != null &&
         event.nativeEvent.srcElement != null &&
         (isTargetContextMenu(event.nativeEvent.target as any) ||
-          isTargetInPopup(event.nativeEvent.srcElement as any, this.props.editor.openPopupId) ||
-          isTargetInInsertMenu(event.nativeEvent.target as any))) ||
+          isTargetInPopup(event.nativeEvent.srcElement as any, this.props.editor.openPopupId))) ||
       this.props.editor.modal !== null
     ) {
       return [] // This is a hack implementing a behavior when context menu blocks the UI
@@ -856,6 +856,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     // we round the offset here, so all layers, the canvas, and controls use the same rounded value for positioning
     // instead of letting Chrome do it, because that results in funky artifacts (e.g. while scrolling, the layers don't "jump" pixels at the same time)
 
+    if (!this.props.shouldRenderCanvas) {
+      return <CanvasComponentEntry shouldRenderCanvas={false} />
+    }
+
     const nodeConnectorsDiv = createNodeConnectorsDiv(
       this.props.model.canvasOffset,
       this.props.model.scale,
@@ -872,10 +876,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
     const canvasIsLive = isLiveMode(this.props.editor.mode)
 
-    const canvasControls = React.createElement(NewCanvasControls, {
-      windowToCanvasPosition: this.getPosition,
-      cursor,
-    })
+    const canvasControls = (
+      <NewCanvasControls windowToCanvasPosition={this.getPosition} cursor={cursor} />
+    )
 
     const canvasLiveEditingStyle = canvasIsLive
       ? UtopiaStyles.canvas.live
@@ -1071,9 +1074,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
       },
       nodeConnectorsDiv,
-      React.createElement(CanvasComponentEntry, {}),
+      <CanvasComponentEntry shouldRenderCanvas={true} />,
       canvasControls,
-      React.createElement(CursorComponent, {}),
+      <CursorComponent />,
       <EditorCommon mouseDown={this.handleMouseDown} />,
     )
   }
@@ -1391,7 +1394,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 function isTargetContextMenu(target: HTMLElement): boolean {
   const className = target.className ?? ''
   return (
-    (typeof className === 'string' && className.includes('react-contexify')) ||
+    (typeof className === 'string' && className.includes('contexify')) ||
     (target.parentElement != null && isTargetContextMenu(target.parentElement))
   )
 }
@@ -1403,18 +1406,4 @@ function isTargetInPopup(target: HTMLElement, popupId: string | null): boolean {
     const popupElement = document.getElementById(popupId)
     return popupElement != null && popupElement.contains(target)
   }
-}
-
-function isTargetInInsertMenu(target: HTMLElement | null): boolean {
-  /**
-   * this hack is incredibly sad,
-   * the problem is insertmenu.tsx has non-standard mouse handling.
-   * the real solution would be to rewrite the mouse handling code in the insert menu,
-   * but I don't have the time to do it now
-   *
-   * the way I would change the insert menu is to only start the insert mode if the mouse dragged past a threshold instead of immediately starting it,
-   * plus I would also _enter_ insert mode on click similar to how we enter insert mode from the insert TopMenu
-   */
-  const insertMenu = document.getElementById(InsertMenuId)
-  return insertMenu != null && insertMenu.contains(target)
 }

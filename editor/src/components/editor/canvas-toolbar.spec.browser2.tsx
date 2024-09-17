@@ -4,7 +4,7 @@ import { createTestProjectWithMultipleFiles } from '../../sample-projects/sample
 import {
   selectComponentsForTest,
   expectSingleUndo2Saves,
-  searchInFloatingMenu,
+  searchInComponentPicker,
 } from '../../utils/utils.test-utils'
 import {
   FOR_TESTS_setNextGeneratedUid,
@@ -35,11 +35,13 @@ import {
   CanvasToolbarEditButtonID,
   InsertConditionalButtonTestId,
   InsertMenuButtonTestId,
+  InsertOrEditTextButtonTestId,
   PlayModeButtonTestId,
   WrapInDivButtonTestId,
 } from './canvas-toolbar'
 import { StoryboardFilePath, PlaygroundFilePath, navigatorEntryToKey } from './store/editor-state'
 import { cmdModifier } from '../../utils/modifiers'
+import { getNavigatorTargetsFromEditorState } from '../navigator/navigator-utils'
 
 function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: { x: number; y: number }) {
   // FIXME when running in headless chrome, the result of getBoundingClientRect will be slightly
@@ -80,6 +82,39 @@ describe('canvas toolbar', () => {
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
   })
 
+  it('selecting the edit button clears the text mode and the interaction session that was started', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 57,
+      top: 168,
+      width: 247,
+      height: 402,
+    }}
+    data-uid='container'
+  >
+    <div data-uid='a3d' />
+  </div>`),
+      'await-first-dom-report',
+    )
+    expect(editor.getEditorState().editor.mode.type).toEqual('select')
+
+    const insertOrEditTextButton = editor.renderedDOM.getByTestId(InsertOrEditTextButtonTestId)
+    const insertOrEditTextButtonCenter = getDomRectCenter(
+      insertOrEditTextButton.getBoundingClientRect(),
+    )
+    await mouseClickAtPoint(insertOrEditTextButton, insertOrEditTextButtonCenter)
+    expect(editor.getEditorState().editor.mode.type).toEqual('insert')
+    expect(editor.getEditorState().editor.canvas.interactionSession).not.toBeNull()
+
+    const editButton = editor.renderedDOM.getByTestId(CanvasToolbarEditButtonID)
+    const editButtonCenter = getDomRectCenter(editButton.getBoundingClientRect())
+    await mouseClickAtPoint(editButton, editButtonCenter)
+    expect(editor.getEditorState().editor.mode.type).toEqual('select')
+    expect(editor.getEditorState().editor.canvas.interactionSession).toBeNull()
+  })
   it('can insert conditionals via the canvas toolbar', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -418,7 +453,11 @@ describe('canvas toolbar', () => {
 
     await insertViaAddElementPopup(editor, 'div')
 
-    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+    expect(
+      getNavigatorTargetsFromEditorState(editor.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
       'regular-utopia-storyboard-uid/scene-aaa',
       'regular-utopia-storyboard-uid/scene-aaa/app-entity',
       'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
@@ -870,7 +909,7 @@ export var storyboard = (props) => {
     await selectComponentsForTest(editor, [EP.fromString('sb/scene-1/insert-target')])
 
     await pressKey('a')
-    await searchInFloatingMenu(editor, 'DefaultExportedComp')
+    await searchInComponentPicker(editor, 'DefaultExportedComp')
 
     expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState()))
       .toEqual(`import * as React from 'react'
@@ -1393,7 +1432,7 @@ export var storyboard = (
       const editor = await setup()
 
       await pressKey('w')
-      await searchInFloatingMenu(editor, 'fragm')
+      await searchInComponentPicker(editor, 'fragm')
 
       expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
         .toEqual(`import * as React from 'react'
@@ -1430,7 +1469,7 @@ export var Playground = () => {
       const editor = await setup()
 
       await pressKey('a')
-      await searchInFloatingMenu(editor, 'fragm')
+      await searchInComponentPicker(editor, 'fragm')
 
       expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
         .toEqual(`import * as React from 'react'
@@ -1467,7 +1506,7 @@ export var Playground = () => {
       const editor = await setup()
 
       await pressKey('s')
-      await searchInFloatingMenu(editor, 'fragm')
+      await searchInComponentPicker(editor, 'fragm')
 
       expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
         .toEqual(`import * as React from 'react'
@@ -1488,104 +1527,6 @@ export var Playground = () => {
 `)
     })
   })
-
-  describe('groups', () => {
-    it('can wrap elements in a group', async () => {
-      const editor = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 57,
-              top: 168,
-              width: 247,
-              height: 402,
-            }}
-            data-uid='container'
-          >
-            <div data-uid='target' />
-          </div>
-        `),
-        'await-first-dom-report',
-      )
-
-      await selectComponentsForTest(editor, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/target`),
-      ])
-
-      FOR_TESTS_setNextGeneratedUid('new-group')
-
-      await wrapViaAddElementPopup(editor, 'group')
-
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(`
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 57,
-              top: 168,
-              width: 247,
-              height: 402,
-            }}
-            data-uid='container'
-          >
-            <Group
-              style={{ position: 'absolute', left: 0, top: 0 }}
-              data-uid='new-group'
-            >
-              <div data-uid='target' />
-            </Group>
-          </div>
-      `),
-      )
-    })
-    xit('cannot insert groups because they are not available for insert', async () => {
-      const editor = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 57,
-              top: 168,
-              width: 247,
-              height: 402,
-            }}
-            data-uid='container'
-          >
-            <div data-uid='target' />
-          </div>
-        `),
-        'await-first-dom-report',
-      )
-
-      await selectComponentsForTest(editor, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/target`),
-      ])
-
-      await insertViaAddElementPopup(editor, 'group')
-
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(`
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 57,
-              top: 168,
-              width: 247,
-              height: 402,
-            }}
-            data-uid='container'
-          >
-            <div data-uid='target' />
-          </div>
-      `),
-      )
-    })
-  })
 })
 
 async function clickEmptySlot(editor: EditorRenderResult) {
@@ -1595,15 +1536,10 @@ async function clickEmptySlot(editor: EditorRenderResult) {
 
 async function insertViaAddElementPopup(editor: EditorRenderResult, query: string) {
   await pressKey('a')
-  await searchInFloatingMenu(editor, query)
-}
-
-async function wrapViaAddElementPopup(editor: EditorRenderResult, query: string) {
-  await pressKey('g')
-  await searchInFloatingMenu(editor, query)
+  await searchInComponentPicker(editor, query)
 }
 
 async function convertViaAddElementPopup(editor: EditorRenderResult, query: string) {
   await pressKey('s')
-  await searchInFloatingMenu(editor, query)
+  await searchInComponentPicker(editor, query)
 }

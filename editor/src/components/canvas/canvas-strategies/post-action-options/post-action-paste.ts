@@ -5,7 +5,10 @@ import {
   generateUidWithExistingComponents,
   pathPartsFromJSXElementChild,
 } from '../../../../core/model/element-template-utils'
-import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
+import {
+  getUidMappings,
+  getAllUniqueUidsFromMapping,
+} from '../../../../core/model/get-uid-mappings'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { stripNulls, zip } from '../../../../core/shared/array-utils'
 import type { Either } from '../../../../core/shared/either'
@@ -176,7 +179,9 @@ function pasteChoiceCommon(
   const elementsToInsert: Array<ElementOrPathToInsert> =
     pasteContext.elementPasteWithMetadata.elements.map((elementPaste) => {
       const existingIDs = [
-        ...getAllUniqueUids(editorStateContext.projectContents).allIDs,
+        ...getAllUniqueUidsFromMapping(
+          getUidMappings(editorStateContext.projectContents).filePathToUids,
+        ),
         ...fixedUIDMappingNewUIDS,
       ]
       const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
@@ -312,22 +317,26 @@ export function staticReparentAndUpdatePosition(
           oldPathToNewPathMapping,
         )
 
-        const absolutePositioningCommands =
-          strategy === 'REPARENT_AS_STATIC'
-            ? []
-            : positionElementToCoordinatesCommands(
-                { oldPath: elementToInsert.elementPath, newPath: newPath },
-                pasteContext.originalAllElementProps,
-                {
-                  originalTargetMetadata:
-                    pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
-                  originalPathTrees: pasteContext.targetOriginalPathTrees,
-                  currentMetadata: editor.jsxMetadata,
-                  currentPathTrees: editor.elementPathTree,
-                },
-                elementToInsert.intendedCoordinates,
-                oldPathToNewPathMapping,
-              )
+        function getAbsolutePositioningCommands(targetPath: ElementPath): Array<CanvasCommand> {
+          if (strategy === 'REPARENT_AS_ABSOLUTE') {
+            return positionElementToCoordinatesCommands(
+              { oldPath: elementToInsert.elementPath, newPath: targetPath },
+              pasteContext.originalAllElementProps,
+              {
+                originalTargetMetadata:
+                  pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+                originalPathTrees: pasteContext.targetOriginalPathTrees,
+                currentMetadata: editor.jsxMetadata,
+                currentPathTrees: editor.elementPathTree,
+              },
+              elementToInsert.intendedCoordinates,
+              oldPathToNewPathMapping,
+            )
+          } else {
+            return []
+          }
+        }
+        const absolutePositioningCommands = getAbsolutePositioningCommands(newPath)
 
         const propertyCommands = [...propertyChangeCommands, ...absolutePositioningCommands]
 
@@ -601,6 +610,7 @@ function getTargetParentForPasteHere(
       originalContextElementPathTrees: originalPathTree,
     },
     editor.elementPathTree,
+    editor.propertyControlsInfo,
   )
 
   if (isLeft(target)) {

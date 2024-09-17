@@ -106,7 +106,7 @@ declare module 'utopia-api/layout/flex' {
   export function getMarginProps(props: FlexElementProps, parentProps: FlexParentProps, index: number, siblingsCount: number): Partial<React.CSSProperties>;
   export interface FlexParentProps {
       flexDirection?: FlexDirection;
-      alignContent?: FlexAlignment;
+      alignContent?: FlexJustifyContent;
       alignItems?: FlexAlignment;
       justifyContent?: FlexJustifyContent;
       flexWrap?: FlexWrap;
@@ -253,7 +253,7 @@ declare module 'utopia-api/layout/layout' {
       flexGrow?: number;
       flexShrink?: number;
       flexDirection?: FlexDirection;
-      alignContent?: FlexAlignment;
+      alignContent?: FlexJustifyContent;
       alignItems?: FlexAlignment;
       justifyContent?: FlexJustifyContent;
       wrap?: FlexWrap;
@@ -354,7 +354,7 @@ declare module 'utopia-api/primitives/view' {
 
 }
 declare module 'utopia-api/property-controls/factories' {
-  import { ArrayControlDescription, BasicControlOptions, CheckboxControlDescription, ColorControlDescription, EulerControlDescription, ExpressionControlOption, ExpressionInputControlDescription, ExpressionPopUpListControlDescription, FolderControlDescription, ImportType, Matrix3ControlDescription, Matrix4ControlDescription, NoneControlDescription, NumberInputControlDescription, ObjectControlDescription, PopUpListControlDescription, PropertyControls, RadioControlDescription, RegularControlDescription, StringInputControlDescription, StyleControlsControlDescription, TupleControlDescription, UnionControlDescription, Vector2ControlDescription, Vector3ControlDescription, Vector4ControlDescription } from 'utopia-api/property-controls/property-controls';
+  import { ArrayControlDescription, BasicControlOptions, CheckboxControlDescription, ColorControlDescription, EulerControlDescription, ExpressionControlOption, ExpressionInputControlDescription, ExpressionPopUpListControlDescription, ImportType, Matrix3ControlDescription, Matrix4ControlDescription, NoneControlDescription, NumberInputControlDescription, ObjectControlDescription, PopUpListControlDescription, PropertyControls, RadioControlDescription, RegularControlDescription, StringInputControlDescription, StyleControlsControlDescription, TupleControlDescription, UnionControlDescription, Vector2ControlDescription, Vector3ControlDescription, Vector4ControlDescription } from 'utopia-api/property-controls/property-controls';
   export function checkboxControl(): CheckboxControlDescription;
   export function colorControl(): ColorControlDescription;
   export function expressionControl(): ExpressionInputControlDescription;
@@ -383,7 +383,6 @@ declare module 'utopia-api/property-controls/factories' {
   }): ObjectControlDescription;
   export function tupleControl(propertyControls: RegularControlDescription[]): TupleControlDescription;
   export function unionControl(controls: Array<RegularControlDescription>): UnionControlDescription;
-  export function folderControl(controls: PropertyControls): FolderControlDescription;
 
 }
 declare module 'utopia-api/property-controls/property-controls' {
@@ -530,14 +529,10 @@ declare module 'utopia-api/property-controls/property-controls' {
       visibleByDefault?: boolean;
       propertyControls: RegularControlDescription[];
   }
-  export interface FolderControlDescription {
-      control: 'folder';
-      label?: string;
-      controls: PropertyControls;
-  }
+ 
   export type HigherLevelControlDescription = ArrayControlDescription | ObjectControlDescription | TupleControlDescription | UnionControlDescription;
   export type RegularControlDescription = BaseControlDescription | HigherLevelControlDescription;
-  export type ControlDescription = RegularControlDescription | FolderControlDescription;
+  export type ControlDescription = RegularControlDescription;
   export function isBaseControlDescription(control: ControlDescription): control is BaseControlDescription;
   export function isHigherLevelControlDescription(control: ControlDescription): control is HigherLevelControlDescription;
   export type PropertyControls = {

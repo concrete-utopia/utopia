@@ -52,12 +52,15 @@ import { findJSXElementAtStaticPath } from './element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 import type { ElementPathTrees } from '../shared/element-path-tree'
 import { elementPathTree } from '../shared/element-path-tree'
+import {
+  ComponentDescriptorDefaults,
+  defaultComponentDescriptor,
+} from '../../components/custom-code/code-file'
 
 const TestScenePath = 'scene-aaa'
 
 const testComponentMetadataChild1: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([
     [BakedInStoryboardUID, TestScenePath],
@@ -68,7 +71,7 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -78,7 +81,6 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([
     [BakedInStoryboardUID, TestScenePath],
@@ -89,7 +91,7 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -100,7 +102,6 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
 
 const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([
     [BakedInStoryboardUID, TestScenePath],
@@ -111,7 +112,7 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -126,7 +127,6 @@ const testComponentPropsGrandchild: ElementProps = {
 
 const testComponentMetadataChild3: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([
     [BakedInStoryboardUID, TestScenePath],
@@ -137,7 +137,7 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -148,7 +148,6 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
 
 const testComponentRoot1: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID, TestScenePath], ['View']]),
   element: right(jsxTestElement('View', [], [])),
@@ -156,7 +155,7 @@ const testComponentRoot1: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -167,7 +166,6 @@ const testComponentRoot1: ElementInstanceMetadata = {
 
 const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([
     [BakedInStoryboardUID, TestScenePath, 'Scene-Child'],
@@ -178,7 +176,7 @@ const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -189,7 +187,6 @@ const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
 
 const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([
     [BakedInStoryboardUID, TestScenePath, 'Scene-Child'],
@@ -200,7 +197,7 @@ const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -211,7 +208,6 @@ const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
 
 const testComponentSceneChildElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID, TestScenePath, 'Scene-Child']]),
   element: right(jsxTestElement('View', [], [])),
@@ -219,7 +215,7 @@ const testComponentSceneChildElement: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -230,7 +226,6 @@ const testComponentSceneChildElement: ElementInstanceMetadata = {
 
 const testComponentSceneElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID, TestScenePath]]),
   element: right(jsxTestElement('Scene', [], [])),
@@ -238,7 +233,7 @@ const testComponentSceneElement: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -256,7 +251,6 @@ const testComponentSceneElementProps: ElementProps = {
 
 const testStoryboardGrandChildElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID, 'Child', 'GrandChild']]),
   element: right(jsxTestElement('View', [], [])),
@@ -264,7 +258,7 @@ const testStoryboardGrandChildElement: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -275,7 +269,6 @@ const testStoryboardGrandChildElement: ElementInstanceMetadata = {
 
 const testStoryboardChildElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID, 'Child']]),
   element: right(jsxTestElement('View', [], [])),
@@ -283,7 +276,7 @@ const testStoryboardChildElement: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -294,7 +287,6 @@ const testStoryboardChildElement: ElementInstanceMetadata = {
 
 const testStoryboardElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
-  localFrame: localRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   elementPath: EP.elementPath([[BakedInStoryboardUID]]),
   element: right(jsxTestElement('Storyboard', [], [])),
@@ -302,7 +294,7 @@ const testStoryboardElement: ElementInstanceMetadata = {
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
-  attributeMetadatada: emptyAttributeMetadata,
+  attributeMetadata: emptyAttributeMetadata,
   label: null,
   importInfo: null,
   conditionValue: 'not-a-conditional',
@@ -387,7 +379,6 @@ function dummyInstanceDataForElementType(
 ): ElementInstanceMetadata {
   return {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-    localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
     nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
     elementPath: elementPath,
     element: right(jsxTestElement(elementName, [], children)),
@@ -395,7 +386,7 @@ function dummyInstanceDataForElementType(
     isEmotionOrStyledComponent: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
-    attributeMetadatada: emptyAttributeMetadata,
+    attributeMetadata: emptyAttributeMetadata,
     label: null,
     importInfo: importInfo,
     conditionValue: 'not-a-conditional',
@@ -406,7 +397,7 @@ function dummyInstanceDataForElementType(
 }
 
 function parseResultFromCode(filename: string, code: string): ParsedTextFile {
-  const parseResult = parseCode(filename, code, null, new Set(), 'do-not-apply-steganography')
+  const parseResult = parseCode(filename, [], code, null, new Set(), 'do-not-apply-steganography')
   if (isParseSuccess(parseResult)) {
     return parseResult
   } else {
@@ -426,6 +417,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -439,6 +431,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -454,6 +447,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -468,6 +462,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -481,6 +476,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -511,6 +507,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -526,6 +523,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -543,6 +541,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -558,6 +557,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -596,6 +596,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -609,6 +610,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -624,6 +626,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(true)
   })
@@ -637,6 +640,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(true)
@@ -652,6 +656,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
     )
     expect(actualResult).toEqual(false)
   })
@@ -665,6 +670,7 @@ describe('targetElementSupportsChildren', () => {
       {},
       path,
       { [EP.toString(path)]: element },
+      {},
       {},
     )
     expect(actualResult).toEqual(false)
@@ -711,6 +717,125 @@ export const App = (props) => {
       path,
       { [EP.toString(path)]: element },
       {},
+      {},
+    )
+    expect(actualResult).toEqual(true)
+  })
+  it('returns false for a component with property controls info including supportsChildren false', () => {
+    const storyboardCode = `import React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+export var storyboard = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      data-uid='${TestSceneUID}'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='${TestAppUID}' />
+    </Scene>
+  </Storyboard>
+`
+    const storyboardJS = parseResultFromCode(StoryboardFilePath, storyboardCode)
+    const appCode = `import React from 'react'
+export const App = (props) => {
+  return <div />
+}
+`
+    const appJS = parseResultFromCode('/src/app.js', appCode)
+    const projectContents = contentsToTree({
+      [StoryboardFilePath]: textFile(
+        textFileContents(storyboardCode, storyboardJS, RevisionsState.BothMatch),
+        null,
+        null,
+        0,
+      ),
+      ['/src/app.js']: textFile(
+        textFileContents(appCode, appJS, RevisionsState.BothMatch),
+        null,
+        null,
+        0,
+      ),
+    })
+    const path = EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]])
+    const element = dummyInstanceDataForElementType(jsxElementName('App', []), path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      projectContents,
+      path,
+      { [EP.toString(path)]: element },
+      {},
+      {
+        '/src/app': {
+          App: {
+            ...ComponentDescriptorDefaults,
+            supportsChildren: false,
+            properties: {},
+            emphasis: 'regular',
+            focus: 'default',
+            preferredChildComponents: [],
+            variants: [],
+            source: defaultComponentDescriptor(),
+          },
+        },
+      },
+    )
+    expect(actualResult).toEqual(false)
+  })
+  it('returns true for a component used from a different file that uses props.children (and explicit supportsChildren=true component annotation)', () => {
+    const storyboardCode = `import React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+export var storyboard = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <Scene
+      data-uid='${TestSceneUID}'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='${TestAppUID}' />
+    </Scene>
+  </Storyboard>
+`
+    const storyboardJS = parseResultFromCode(StoryboardFilePath, storyboardCode)
+    const appCode = `import React from 'react'
+export const App = (props) => {
+  return <div>{props.children}</div>
+}
+`
+    const appJS = parseResultFromCode('/src/app.js', appCode)
+    const projectContents = contentsToTree({
+      [StoryboardFilePath]: textFile(
+        textFileContents(storyboardCode, storyboardJS, RevisionsState.BothMatch),
+        null,
+        null,
+        0,
+      ),
+      ['/src/app.js']: textFile(
+        textFileContents(appCode, appJS, RevisionsState.BothMatch),
+        null,
+        null,
+        0,
+      ),
+    })
+    const path = EP.elementPath([[BakedInStoryboardUID, TestScenePath, TestAppUID]])
+    const element = dummyInstanceDataForElementType(jsxElementName('App', []), path)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(
+      projectContents,
+      path,
+      { [EP.toString(path)]: element },
+      {},
+      {
+        '/src/app': {
+          App: {
+            ...ComponentDescriptorDefaults,
+            supportsChildren: true,
+            properties: {},
+            emphasis: 'regular',
+            focus: 'default',
+            preferredChildComponents: [],
+            variants: [],
+            source: defaultComponentDescriptor(),
+          },
+        },
+      },
     )
     expect(actualResult).toEqual(true)
   })
@@ -772,6 +897,7 @@ export const App = (props) => {
         [EP.toString(path)]: element,
       },
       {},
+      {},
     )
     expect(actualResult).toEqual(false)
   })
@@ -824,6 +950,7 @@ export const App = (props) => {
       {
         [EP.toString(path)]: element,
       },
+      {},
       {},
     )
     expect(actualResult).toEqual(false)
@@ -919,7 +1046,6 @@ describe('getElementLabel', () => {
     spanPath,
     right(spanElement),
     zeroRectangle as CanvasRectangle,
-    zeroRectangle as LocalRectangle,
     zeroRectangle as CanvasRectangle,
     false,
     false,
@@ -946,7 +1072,6 @@ describe('getElementLabel', () => {
     divPath,
     right(divElement),
     zeroRectangle as CanvasRectangle,
-    zeroRectangle as LocalRectangle,
     zeroRectangle as CanvasRectangle,
     false,
     false,
@@ -976,6 +1101,7 @@ describe('getElementLabel', () => {
       spanElementMetadata.elementPath,
       EP.toString(spanElementMetadata.elementPath),
       [],
+      [],
     ),
     [EP.toString(divElementMetadata.elementPath)]: elementPathTree(
       divElementMetadata.elementPath,
@@ -985,8 +1111,10 @@ describe('getElementLabel', () => {
           spanElementMetadata.elementPath,
           EP.toString(spanElementMetadata.elementPath),
           [],
+          [],
         ),
       ],
+      [],
     ),
   }
   it('the label of a spin containing text is that text', () => {
@@ -1013,16 +1141,19 @@ describe('getting the root paths', () => {
       testComponentSceneElement.elementPath,
       EP.toString(testComponentSceneElement.elementPath),
       [],
+      [],
     )
     const testStoryboardChildTree = elementPathTree(
       testStoryboardChildElement.elementPath,
       EP.toString(testStoryboardChildElement.elementPath),
+      [],
       [],
     )
     const storyboardTree = elementPathTree(
       EP.elementPath([[BakedInStoryboardUID]]),
       EP.toString(EP.elementPath([[BakedInStoryboardUID]])),
       [testComponentSceneTree, testStoryboardChildTree],
+      [],
     )
     const pathTrees: ElementPathTrees = {
       [EP.toString(EP.elementPath([[BakedInStoryboardUID]]))]: storyboardTree,
@@ -1045,41 +1176,49 @@ describe('getting the root paths', () => {
       testComponentSceneChildElement.elementPath,
       EP.toString(testComponentSceneChildElement.elementPath),
       [],
+      [],
     )
     const testComponentChild1Tree = elementPathTree(
       testComponentMetadataChild1.elementPath,
       EP.toString(testComponentMetadataChild1.elementPath),
+      [],
       [],
     )
     const testComponentChild2Tree = elementPathTree(
       testComponentMetadataChild2.elementPath,
       EP.toString(testComponentMetadataChild2.elementPath),
       [],
+      [],
     )
     const testComponentChild3Tree = elementPathTree(
       testComponentMetadataChild3.elementPath,
       EP.toString(testComponentMetadataChild3.elementPath),
+      [],
       [],
     )
     const testComponentRoot1Tree = elementPathTree(
       testComponentRoot1.elementPath,
       EP.toString(testComponentRoot1.elementPath),
       [testComponentChild1Tree, testComponentChild2Tree, testComponentChild3Tree],
+      [],
     )
     const testComponentSceneTree = elementPathTree(
       testComponentSceneElement.elementPath,
       EP.toString(testComponentSceneElement.elementPath),
       [testComponentSceneChildTree, testComponentRoot1Tree],
+      [],
     )
     const testStoryboardChildTree = elementPathTree(
       testStoryboardChildElement.elementPath,
       EP.toString(testStoryboardChildElement.elementPath),
+      [],
       [],
     )
     const storyboardTree = elementPathTree(
       EP.elementPath([[BakedInStoryboardUID]]),
       EP.toString(EP.elementPath([[BakedInStoryboardUID]])),
       [testComponentSceneChildTree, testStoryboardChildTree],
+      [],
     )
     const pathTrees: ElementPathTrees = {
       [EP.toString(EP.elementPath([[BakedInStoryboardUID]]))]: storyboardTree,

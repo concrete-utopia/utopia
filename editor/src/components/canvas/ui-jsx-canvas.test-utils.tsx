@@ -9,30 +9,21 @@ import { processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
 import type { Either } from '../../core/shared/either'
 import { isRight, left, mapEither, right } from '../../core/shared/either'
 import type { ElementInstanceMetadata } from '../../core/shared/element-template'
+import { clearJSXElementChildUniqueIDs } from '../../core/shared/element-template'
+import type { ProjectContents } from '../../core/shared/project-file-types'
 import {
-  clearJSXElementChildUniqueIDs,
-  TopLevelElement,
-  ArbitraryJSBlock,
-} from '../../core/shared/element-template'
-import { canvasPoint } from '../../core/shared/math-utils'
-import { RequireFn } from '../../core/shared/npm-dependency-types'
-import type { Imports, ProjectContents } from '../../core/shared/project-file-types'
-import {
-  foldParsedTextFile,
-  codeFile,
   textFile,
   textFileContents,
   RevisionsState,
   isParseSuccess,
 } from '../../core/shared/project-file-types'
-import { emptyImports } from '../../core/workers/common/project-file-utils'
 import {
   simplifyJSXElementChildAttributes,
   testParseCode,
 } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { Utils } from '../../uuiui-deps'
 import { normalizeName } from '../custom-code/custom-code-utils'
-import type { ConsoleLog, EditorState } from '../editor/store/editor-state'
+import type { EditorState } from '../editor/store/editor-state'
 import { deriveState } from '../editor/store/editor-state'
 import type {
   UiJsxCanvasProps,
@@ -40,7 +31,12 @@ import type {
   CanvasReactErrorCallback,
   UiJsxCanvasPropsWithErrorCallback,
 } from './ui-jsx-canvas'
-import { emptyUiJsxCanvasContextData, UiJsxCanvasCtxAtom, UiJsxCanvas } from './ui-jsx-canvas'
+import {
+  emptyUiJsxCanvasContextData,
+  UiJsxCanvasCtxAtom,
+  UiJsxCanvas,
+  emptyInvalidatedCanvasData,
+} from './ui-jsx-canvas'
 import { CanvasErrorBoundary } from './canvas-component-entry'
 import { EditorStateContext, OriginalMainEditorStateContext } from '../editor/store/store-hook'
 import { getStoreHook } from '../inspector/common/inspector.test-utils'
@@ -143,14 +139,7 @@ export function renderCanvasReturnResultAndError(
     errorsReported.push({ editedFile: editedFile, error: error, errorInfo: errorInfo })
   }
   const clearErrors: CanvasReactErrorCallback['clearErrors'] = Utils.NO_OP
-  const imports: Imports = foldParsedTextFile(
-    (_) => emptyImports(),
-    (success) => success.imports,
-    (_) => emptyImports(),
-    parsedUIFileCode,
-  )
   let canvasProps: UiJsxCanvasPropsWithErrorCallback
-  let consoleLogs: Array<ConsoleLog> = []
 
   const storeHookForTest = getStoreHook()
   let projectContents: ProjectContents = {
@@ -209,13 +198,6 @@ export function renderCanvasReturnResultAndError(
       ),
     }
   })
-
-  function clearConsoleLogs(): void {
-    consoleLogs = []
-  }
-  function addToConsoleLogs(log: ConsoleLog): void {
-    consoleLogs.push(log)
-  }
   if (possibleProps == null) {
     canvasProps = {
       uiFilePath: UiFilePath,
@@ -228,19 +210,15 @@ export function renderCanvasReturnResultAndError(
       editedTextElement: null,
       mountCount: 0,
       domWalkerInvalidateCount: 0,
-      imports_KILLME: imports,
       canvasIsLive: false,
       shouldIncludeCanvasRootInTheSpy: false,
-      clearConsoleLogs: clearConsoleLogs,
-      addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       focusedElementPath: null,
       projectContents: storeHookForTest.getState().editor.projectContents,
-      propertyControlsInfo: {},
-      dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
       editedText: null,
       autoFocusedPaths: storeHookForTest.getState().derived.autoFocusedPaths,
+      invalidatedCanvasData: emptyInvalidatedCanvasData(),
     }
   } else {
     canvasProps = {
@@ -252,19 +230,15 @@ export function renderCanvasReturnResultAndError(
       clearErrors: clearErrors,
       displayNoneInstances: [],
       domWalkerInvalidateCount: 0,
-      imports_KILLME: imports,
       canvasIsLive: false,
       shouldIncludeCanvasRootInTheSpy: false,
-      clearConsoleLogs: clearConsoleLogs,
-      addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       focusedElementPath: null,
       projectContents: storeHookForTest.getState().editor.projectContents,
-      propertyControlsInfo: {},
-      dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
       editedText: null,
       autoFocusedPaths: storeHookForTest.getState().derived.autoFocusedPaths,
+      invalidatedCanvasData: emptyInvalidatedCanvasData(),
     }
   }
 

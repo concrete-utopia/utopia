@@ -3,7 +3,7 @@
 /** @jsxFrag React.Fragment */
 import { css, jsx, keyframes } from '@emotion/react'
 import { chrome as isChrome } from 'platform-detect'
-import React from 'react'
+import React, { useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
@@ -92,6 +92,11 @@ import {
 } from '../navigator/navigator-item/component-picker-context-menu'
 import { useGithubPolling } from '../../core/shared/github/helpers'
 import { useAtom } from 'jotai'
+import { clearOpenMenuIds } from '../../core/shared/menu-state'
+import {
+  navigatorTargetsSelector,
+  navigatorTargetsSelectorNavigatorTargets,
+} from '../navigator/navigator-utils'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -149,7 +154,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-  const navigatorTargetsRef = useRefEditorState((store) => store.derived.navigatorTargets)
+  const navigatorTargetsRef = useRefEditorState(navigatorTargetsSelectorNavigatorTargets)
   const colorTheme = useColorTheme()
   const onWindowMouseUp = React.useCallback((event: MouseEvent) => {
     return [EditorActions.updateMouseButtonsPressed(null, event.button)]
@@ -233,6 +238,10 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   const showComponentPicker = useCreateCallbackToShowComponentPicker()
 
+  React.useEffect(() => {
+    clearOpenMenuIds()
+  }, [])
+
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
       let actions: Array<EditorAction> = []
@@ -292,6 +301,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           event,
           editorStoreRef.current.editor,
           editorStoreRef.current.userState.loginState,
+          editorStoreRef.current.derived,
           editorStoreRef.current.projectServerState,
           metadataRef,
           navigatorTargetsRef,
@@ -807,6 +817,8 @@ const useClearSelectionOnNavigation = () => {
     .join('-')
 
   React.useEffect(() => {
-    dispatch([EditorActions.clearSelection()])
+    queueMicrotask(() => {
+      dispatch([EditorActions.clearSelection()])
+    })
   }, [dispatch, paths])
 }
