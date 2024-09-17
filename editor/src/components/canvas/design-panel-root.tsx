@@ -171,94 +171,115 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
 
   const allowedToEdit = useAllowedToEditProject()
 
+  const designPanelRef = React.useRef<HTMLDivElement>(null)
+
   if (!isRightMenuExpanded) {
     return null
   }
 
+  const panelWidth = designPanelRef.current?.offsetWidth ?? 0
+  const panelHeight = designPanelRef.current?.offsetHeight ?? 0
+
   return (
-    <FlexColumn
-      style={{
-        flex: 1,
-        overflow: 'hidden',
-        backgroundColor: colorTheme.inspectorBackground.value,
-        borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-        boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
-      }}
-    >
-      <TitleBarUserProfile panelData={props.panelData} />
-      <FlexRow
+    <DesignPanelContext.Provider value={{ panelWidth, panelHeight }}>
+      <FlexColumn
+        ref={designPanelRef}
         style={{
-          marginBottom: 10,
-          gap: 2,
-          alignSelf: 'stretch',
-          flexShrink: 0,
-          overflowX: 'scroll',
-        }}
-        css={undefined}
-      >
-        <MenuTab
-          label={'Inspector'}
-          selected={selectedTab === RightMenuTab.Inspector}
-          onClick={onClickInspectorTab}
-        />
-        {when(
-          allowedToEdit,
-          <>
-            {when(
-              IS_TEST_ENVIRONMENT,
-              <MenuTab
-                label={'Insert'}
-                selected={selectedTab === RightMenuTab.Insert}
-                onClick={onClickInsertTab}
-              />,
-            )}
-          </>,
-        )}
-        {when(
-          canComment,
-          <MenuTab
-            testId='comments-tab'
-            label={'Comments'}
-            selected={selectedTab === RightMenuTab.Comments}
-            onClick={onClickCommentsTab}
-          />,
-        )}
-        <MenuTab
-          label={'Settings'}
-          selected={selectedTab === RightMenuTab.Settings}
-          onClick={onClickSettingsTab}
-        />
-        {when(
-          isFeatureEnabled('Roll Your Own'),
-          <MenuTab
-            label={'RYO'}
-            selected={selectedTab === RightMenuTab.RollYourOwn}
-            onClick={onClickRollYourOwnTab}
-          />,
-        )}
-      </FlexRow>
-      <SimpleFlexRow
-        className='Inspector-entrypoint'
-        id='inspector-root'
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          flexGrow: 1,
-          position: 'relative',
-          color: colorTheme.fg1.value,
-          overflowY: 'scroll',
+          flex: 1,
+          overflow: 'hidden',
           backgroundColor: colorTheme.inspectorBackground.value,
+          borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+          boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
         }}
       >
-        {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
-        {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
-        {when(selectedTab === RightMenuTab.Comments, <CommentsPane />)}
-        {when(selectedTab === RightMenuTab.RollYourOwn, <RollYourOwnFeaturesPane />)}
-      </SimpleFlexRow>
-      <CanvasStrategyInspector />
-    </FlexColumn>
+        <TitleBarUserProfile panelData={props.panelData} />
+        <FlexRow
+          style={{
+            marginBottom: 10,
+            gap: 2,
+            alignSelf: 'stretch',
+            flexShrink: 0,
+            overflowX: 'scroll',
+          }}
+          css={undefined}
+        >
+          <MenuTab
+            label={'Inspector'}
+            selected={selectedTab === RightMenuTab.Inspector}
+            onClick={onClickInspectorTab}
+          />
+          {when(
+            allowedToEdit,
+            <>
+              {when(
+                IS_TEST_ENVIRONMENT,
+                <MenuTab
+                  label={'Insert'}
+                  selected={selectedTab === RightMenuTab.Insert}
+                  onClick={onClickInsertTab}
+                />,
+              )}
+            </>,
+          )}
+          {when(
+            canComment,
+            <MenuTab
+              testId='comments-tab'
+              label={'Comments'}
+              selected={selectedTab === RightMenuTab.Comments}
+              onClick={onClickCommentsTab}
+            />,
+          )}
+          <MenuTab
+            label={'Settings'}
+            selected={selectedTab === RightMenuTab.Settings}
+            onClick={onClickSettingsTab}
+          />
+          {when(
+            isFeatureEnabled('Roll Your Own'),
+            <MenuTab
+              label={'RYO'}
+              selected={selectedTab === RightMenuTab.RollYourOwn}
+              onClick={onClickRollYourOwnTab}
+            />,
+          )}
+        </FlexRow>
+        <SimpleFlexRow
+          className='Inspector-entrypoint'
+          id='inspector-root'
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            flexGrow: 1,
+            position: 'relative',
+            color: colorTheme.fg1.value,
+            overflowY: 'scroll',
+            backgroundColor: colorTheme.inspectorBackground.value,
+          }}
+        >
+          {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
+          {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
+          {when(selectedTab === RightMenuTab.Comments, <CommentsPane />)}
+          {when(selectedTab === RightMenuTab.RollYourOwn, <RollYourOwnFeaturesPane />)}
+        </SimpleFlexRow>
+        <CanvasStrategyInspector />
+      </FlexColumn>
+    </DesignPanelContext.Provider>
   )
 })
+
+// a context provider for the design panel measurements
+export const DesignPanelContext = React.createContext<{
+  panelWidth: number
+  panelHeight: number
+}>({
+  panelWidth: 0,
+  panelHeight: 0,
+})
+
+export const useDesignPanelContext = () => {
+  return React.useContext(DesignPanelContext)
+}
 
 interface CodeEditorPaneProps {
   panelData: StoredPanel

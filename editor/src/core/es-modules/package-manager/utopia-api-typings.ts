@@ -106,7 +106,7 @@ declare module 'utopia-api/layout/flex' {
   export function getMarginProps(props: FlexElementProps, parentProps: FlexParentProps, index: number, siblingsCount: number): Partial<React.CSSProperties>;
   export interface FlexParentProps {
       flexDirection?: FlexDirection;
-      alignContent?: FlexAlignment;
+      alignContent?: FlexJustifyContent;
       alignItems?: FlexAlignment;
       justifyContent?: FlexJustifyContent;
       flexWrap?: FlexWrap;
@@ -253,7 +253,7 @@ declare module 'utopia-api/layout/layout' {
       flexGrow?: number;
       flexShrink?: number;
       flexDirection?: FlexDirection;
-      alignContent?: FlexAlignment;
+      alignContent?: FlexJustifyContent;
       alignItems?: FlexAlignment;
       justifyContent?: FlexJustifyContent;
       wrap?: FlexWrap;

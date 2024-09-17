@@ -6,6 +6,7 @@ import type {
   CanvasRectangle,
   CanvasVector,
   WindowPoint,
+  WindowRectangle,
 } from '../../core/shared/math-utils'
 import {
   boundingRectangleArray,
@@ -14,8 +15,10 @@ import {
   negate,
   offsetPoint,
   roundPointToNearestHalf,
+  scaleRect,
   scaleVector,
   windowPoint,
+  windowRectangle,
 } from '../../core/shared/math-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import * as EP from '../../core/shared/element-path'
@@ -635,4 +638,19 @@ export function canvasPointToWindowPoint(
   } else {
     throw new Error('calling screenToElementCoordinates() before being mounted')
   }
+}
+
+export function canvasRectangleToWindowRectangle(
+  canvasRect: CanvasRectangle,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+): WindowRectangle {
+  const location = canvasPointToWindowPoint(canvasRect, canvasScale, canvasOffset)
+  const scaledRect = scaleRect(canvasRect, canvasScale)
+  return windowRectangle({
+    x: location.x,
+    y: location.y,
+    width: scaledRect.width,
+    height: scaledRect.height,
+  })
 }

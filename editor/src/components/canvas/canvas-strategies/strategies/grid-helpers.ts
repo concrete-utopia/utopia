@@ -26,7 +26,6 @@ import {
   scaleVector,
   windowPoint,
   windowVector,
-  type WindowPoint,
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { absolute } from '../../../../utils/utils'
@@ -42,11 +41,10 @@ import type { DragInteractionData } from '../interaction-state'
 import type { GridCellCoordinates } from './grid-cell-bounds'
 import {
   getCellWindowRect,
-  getGridCellUnderMouse,
-  getGridCellUnderMouseRecursive,
+  getGridCellUnderMouseFromMetadata,
   gridCellCoordinates,
 } from './grid-cell-bounds'
-import type { Sides } from 'utopia-api/core'
+import { memoize } from '../../../../core/shared/memoize'
 
 export function runGridRearrangeMove(
   targetElement: ElementPath,
@@ -56,7 +54,6 @@ export function runGridRearrangeMove(
   canvasScale: number,
   canvasOffset: CanvasVector,
   customState: GridCustomStrategyState,
-  duplicating: boolean,
 ): {
   commands: CanvasCommand[]
   targetCell: TargetGridCellData | null
@@ -74,18 +71,23 @@ export function runGridRearrangeMove(
     }
   }
 
-  const mouseWindowPoint = canvasPointToWindowPoint(
-    offsetPoint(interactionData.dragStart, interactionData.drag),
-    canvasScale,
-    canvasOffset,
-  )
+  const parentGridPath = EP.parentPath(selectedElement)
+  const grid = MetadataUtils.findElementByElementPath(jsxMetadata, parentGridPath)
+
+  if (grid == null) {
+    return {
+      commands: [],
+      targetCell: null,
+      originalRootCell: null,
+      draggingFromCell: null,
+      targetRootCell: null,
+    }
+  }
+
+  const mousePos = offsetPoint(interactionData.dragStart, interactionData.drag)
 
   const targetCellData =
-    getTargetCell(
-      customState.targetCellData?.gridCellCoordinates ?? null,
-      duplicating,
-      mouseWindowPoint,
-    ) ?? customState.targetCellData
+    getGridCellUnderMouseFromMetadata(grid, mousePos) ?? customState.targetCellData
 
   if (targetCellData == null) {
     return {
@@ -347,29 +349,7 @@ export function setGridPropsCommands(
 
 export interface TargetGridCellData {
   gridCellCoordinates: GridCellCoordinates
-  cellWindowRectangle: WindowRectangle
-}
-
-export function getTargetCell(
-  previousTargetCell: GridCellCoordinates | null,
-  duplicating: boolean,
-  mouseWindowPoint: WindowPoint,
-): TargetGridCellData | null {
-  let cell = previousTargetCell ?? null
-  const cellUnderMouse = duplicating
-    ? getGridCellUnderMouseRecursive(mouseWindowPoint)
-    : getGridCellUnderMouse(mouseWindowPoint)
-  if (cellUnderMouse == null) {
-    return null
-  }
-  cell = cellUnderMouse.coordinates
-  if (cell.row < 1 || cell.column < 1) {
-    return null
-  }
-  return {
-    gridCellCoordinates: cell,
-    cellWindowRectangle: cellUnderMouse.cellWindowRectangle,
-  }
+  cellCanvasRectangle: CanvasRectangle
 }
 
 function getElementGridProperties(
@@ -612,23 +592,18 @@ function getGridPositionIndex(props: {
   return (props.row - 1) * props.gridTemplateColumns + props.column - 1
 }
 
-export function getGlobalFramesOfGridCellsFromMetadata(
-  metadata: ElementInstanceMetadata,
-): Array<Array<CanvasRectangle>> | null {
-  return getGlobalFramesOfGridCells(metadata.specialSizeMeasurements)
-}
+export type GridCellGlobalFrames = Array<Array<CanvasRectangle>>
 
-export function getGlobalFramesOfGridCells({
-  containerGridProperties,
-  rowGap,
-  columnGap,
-  padding,
-}: {
-  containerGridProperties: GridContainerProperties
-  rowGap: number | null
-  columnGap: number | null
-  padding: Sides
-}): Array<Array<CanvasRectangle>> | null {
+function getGlobalFramesOfGridCellsInner(
+  metadata: ElementInstanceMetadata,
+): GridCellGlobalFrames | null {
+  const { globalFrame } = metadata
+  if (globalFrame == null || isInfinityRectangle(globalFrame)) {
+    return null
+  }
+
+  const { containerGridProperties, padding, rowGap, columnGap } = metadata.specialSizeMeasurements
+
   const columnWidths = gridTemplateToNumbers(containerGridProperties.gridTemplateColumns)
 
   const rowHeights = gridTemplateToNumbers(containerGridProperties.gridTemplateRows)
@@ -638,9 +613,9 @@ export function getGlobalFramesOfGridCells({
   }
 
   const cellRects: Array<Array<CanvasRectangle>> = []
-  let yOffset = padding.top ?? 0
+  let yOffset = globalFrame.y + (padding.top ?? 0)
   rowHeights.forEach((height) => {
-    let xOffset = padding.left ?? 0
+    let xOffset = globalFrame.x + (padding.left ?? 0)
     const rowRects: CanvasRectangle[] = []
     columnWidths.forEach((width) => {
       const rect = canvasRectangle({ x: xOffset, y: yOffset, width: width, height: height })
@@ -653,6 +628,8 @@ export function getGlobalFramesOfGridCells({
 
   return cellRects
 }
+
+export const getGlobalFramesOfGridCells = memoize(getGlobalFramesOfGridCellsInner)
 
 function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number> | null {
   if (gridTemplate?.type !== 'DIMENSIONS') {

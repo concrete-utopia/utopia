@@ -10,6 +10,12 @@ import {
 } from '../../../../core/shared/math-utils'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import * as EP from '../../../../core/shared/element-path'
+import {
+  getGlobalFramesOfGridCells,
+  type GridCellGlobalFrames,
+  type TargetGridCellData,
+} from './grid-helpers'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
 
 export type GridCellCoordinates = { row: number; column: number }
 
@@ -27,12 +33,35 @@ export function gridCellTargetId(
   return gridCellTargetIdPrefix + `${EP.toString(gridElementPath)}-${row}-${column}`
 }
 
-export function getGridCellUnderMouse(mousePoint: WindowPoint) {
-  return getGridCellAtPoint(mousePoint, false)
+export function getGridCellUnderMouseFromMetadata(
+  grid: ElementInstanceMetadata,
+  canvasPoint: CanvasPoint,
+): TargetGridCellData | null {
+  const gridCellGlobalFrames = getGlobalFramesOfGridCells(grid)
+
+  if (gridCellGlobalFrames == null) {
+    return null
+  }
+
+  return getGridCellUnderPoint(gridCellGlobalFrames, canvasPoint)
 }
 
-export function getGridCellUnderMouseRecursive(mousePoint: WindowPoint) {
-  return getGridCellAtPoint(mousePoint, true)
+// TODO: we could optimize this with binary search, but huge grids are rare
+function getGridCellUnderPoint(
+  gridCellGlobalFrames: GridCellGlobalFrames,
+  canvasPoint: CanvasPoint,
+): TargetGridCellData | null {
+  for (let i = 0; i < gridCellGlobalFrames.length; i++) {
+    for (let j = 0; j < gridCellGlobalFrames[i].length; j++) {
+      if (rectContainsPoint(gridCellGlobalFrames[i][j], canvasPoint)) {
+        return {
+          gridCellCoordinates: gridCellCoordinates(i + 1, j + 1),
+          cellCanvasRectangle: gridCellGlobalFrames[i][j],
+        }
+      }
+    }
+  }
+  return null
 }
 
 function isGridCellTargetId(id: string): boolean {

@@ -183,7 +183,6 @@ function getCommandsAndPatchForGridRearrange(
     canvasState.scale,
     canvasState.canvasOffset,
     customState.grid,
-    false,
   )
 
   return {

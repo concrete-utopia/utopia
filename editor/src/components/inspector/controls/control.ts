@@ -19,6 +19,11 @@ export type OnSubmitValueOrUnknownOrEmpty<T> = (
   transient?: boolean,
 ) => void
 
+export type OnSubmitValueOrUnknownOrEmptyMaybeTransient<T> = (
+  value: UnknownOrEmptyInput<T>,
+  transient: boolean,
+) => void
+
 export interface DEPRECATEDControlProps<T> {
   id: string
   testId: string
@@ -32,6 +37,7 @@ export interface DEPRECATEDControlProps<T> {
   readOnly?: boolean
   selected?: boolean
   options?: ReadonlyArray<SelectOption> | ReadonlyArray<OptionChainOption<T>>
+  onUnsetValues?: () => void
   DEPRECATED_controlOptions?:
     | DEPRECATEDGenericControlOptions
     | DEPRECATEDOptionControlOptions
