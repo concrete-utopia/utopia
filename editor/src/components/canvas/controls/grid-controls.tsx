@@ -152,10 +152,12 @@ export interface GridResizingControlProps {
   fromPropsAxisValues: GridAutoOrTemplateDimensions | null
   padding: number | null
   resizing: 'resize-target' | 'resize-generated' | 'not-resizing'
-  setResizing: (v: number | null) => void
+  setResizingIndex: (v: number | null) => void
 }
 
 export const GridResizingControl = React.memo((props: GridResizingControlProps) => {
+  const { setResizingIndex } = props
+
   const canvasOffset = useEditorState(
     Substores.canvasOffset,
     (store) => store.editor.canvas.roundedCanvasOffset,
@@ -169,12 +171,10 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
-  const { setResizing } = props
-
   const mouseDownHandler = React.useCallback(
     (event: React.MouseEvent): void => {
       function mouseUpHandler() {
-        setResizing(null)
+        setResizingIndex(null)
         window.removeEventListener('mouseup', mouseUpHandler)
       }
       window.addEventListener('mouseup', mouseUpHandler)
@@ -184,7 +184,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         canvasOffset,
         windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
       )
-      setResizing(props.dimensionIndex)
+      setResizingIndex(props.dimensionIndex)
 
       dispatch([
         CanvasActions.createInteractionSession(
@@ -199,7 +199,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
       event.stopPropagation()
       event.preventDefault()
     },
-    [canvasOffset, dispatch, props.axis, props.dimensionIndex, scale, setResizing],
+    [canvasOffset, dispatch, props.axis, props.dimensionIndex, scale, setResizingIndex],
   )
 
   const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
@@ -352,47 +352,60 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
     }
   }, [props.fromPropsAxisValues])
 
-  const [resizing, setResizing] = React.useState<number | null>(null)
-  const coresizing: number[] = React.useMemo(() => {
-    if (props.fromPropsAxisValues?.type !== 'DIMENSIONS' || resizing == null) {
+  const [resizingIndex, setResizingIndex] = React.useState<number | null>(null)
+
+  // These are the indexes of the elements that will resize too alongside the one at the index of
+  // `resizingIndex`.
+  const coresizingIndexes: number[] = React.useMemo(() => {
+    if (props.fromPropsAxisValues?.type !== 'DIMENSIONS' || resizingIndex == null) {
       return []
     }
-    let i = 0
-    let coresizeIndexes: number[][][] = []
+
+    // Build an array of coresizing indexes per element.
+    let coresizeIndexes: number[][][] = [] // This looks scary but it's not! It's just a list of indexes, containing a list of the indexes *per group element*.
+    // For example, 1fr repeat(3, 10px 20px) 1fr, will be represented as:
+    /**
+     * [
+     * 	[ [0] ]
+     *  [ [1, 3] [2, 4]  ]
+     *  [ [5] ]
+     * ]
+     */
+    let elementCount = 0 // basically the expanded index
     for (const dim of props.fromPropsAxisValues.dimensions) {
       if (dim.type === 'REPEAT') {
-        let start = i
-        let ohmy: number[][] = []
-        for (let j = 0; j < dim.value.length; j++) {
-          let localIndexes: number[] = []
-          // for each value push the coresize indexes
-          for (let t = 0; t < dim.times; t++) {
-            localIndexes.push(start + j + t * dim.value.length)
+        let groupIndexes: number[][] = []
+        // for each value push the coresize indexes as many times as the repeats counter
+        for (let valueIndex = 0; valueIndex < dim.value.length; valueIndex++) {
+          let repeatedValueIndexes: number[] = []
+          for (let repeatIndex = 0; repeatIndex < dim.times; repeatIndex++) {
+            repeatedValueIndexes.push(elementCount + valueIndex + repeatIndex * dim.value.length)
           }
-          ohmy.push(localIndexes)
+          groupIndexes.push(repeatedValueIndexes)
         }
-        coresizeIndexes.push(ohmy)
-        i += dim.value.length * dim.times
+        coresizeIndexes.push(groupIndexes)
+        elementCount += dim.value.length * dim.times // advance the counter as many times as the repeated values *combined*
       } else {
-        coresizeIndexes.push([[i]])
-        i++
+        coresizeIndexes.push([[elementCount]])
+        elementCount++
       }
     }
 
+    // Now, expand the indexes calculated above so they "flatten out" to match the generated values
     let expandedCoresizeIndexes: number[][] = []
-    for (let j = 0; j < props.fromPropsAxisValues.dimensions.length; j++) {
-      const dim = props.fromPropsAxisValues.dimensions[j]
+    props.fromPropsAxisValues.dimensions.forEach((dim, dimIndex) => {
       if (dim.type === 'REPEAT') {
-        for (let k = 0; k < dim.times * dim.value.length; k++) {
-          expandedCoresizeIndexes.push(coresizeIndexes[j][k % dim.value.length])
+        for (let repeatIndex = 0; repeatIndex < dim.times * dim.value.length; repeatIndex++) {
+          const indexes = coresizeIndexes[dimIndex][repeatIndex % dim.value.length]
+          expandedCoresizeIndexes.push(indexes)
         }
       } else {
-        expandedCoresizeIndexes.push(coresizeIndexes[j][0])
+        expandedCoresizeIndexes.push(coresizeIndexes[dimIndex][0])
       }
-    }
+    })
 
-    return expandedCoresizeIndexes[resizing] ?? []
-  }, [props.fromPropsAxisValues, resizing])
+    return expandedCoresizeIndexes[resizingIndex] ?? []
+  }, [props.fromPropsAxisValues, resizingIndex])
 
   if (props.axisValues == null) {
     return null
@@ -436,13 +449,13 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
                 axis={props.axis}
                 containingFrame={props.containingFrame}
                 resizing={
-                  resizing === dimensionIndex
+                  resizingIndex === dimensionIndex
                     ? 'resize-target'
-                    : coresizing.includes(dimensionIndex)
+                    : coresizingIndexes.includes(dimensionIndex)
                     ? 'resize-generated'
                     : 'not-resizing'
                 }
-                setResizing={setResizing}
+                setResizingIndex={setResizingIndex}
                 padding={
                   props.padding == null
                     ? 0

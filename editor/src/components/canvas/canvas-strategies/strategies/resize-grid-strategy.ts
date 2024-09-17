@@ -113,11 +113,6 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      type ExpandedGridDimension = GridDimension & {
-        repeated: boolean
-        originalIndex: number
-      }
-
       const expandedOriginalValues = originalValues.dimensions.reduce((acc, cur, index) => {
         if (cur.type === 'REPEAT') {
           let expanded: ExpandedGridDimension[] = []
@@ -166,7 +161,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       const isFractional = isRight(mergedUnit) && mergedUnit.value === 'fr'
       const precision = modifiers.cmd ? 'coarse' : 'precise'
 
-      const newSetting = modify(
+      const resizedDimensions = modify(
         valueOptic,
         (current) =>
           newResizedValue(
@@ -178,36 +173,12 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         mergedValues.dimensions,
       )
 
-      const targetIndex = expandedOriginalValues[control.columnOrRow].originalIndex
-      const targetDimension = originalValues.dimensions[targetIndex]
-
-      const leftChunk = originalValues.dimensions.slice(0, targetIndex)
-      const rightChunk = originalValues.dimensions.slice(targetIndex + 1)
-
-      const midChunkStart = expandedOriginalValues.findIndex((c) => c.originalIndex === targetIndex)
-      const midChunkEnd =
-        midChunkStart + expandedOriginalValues.filter((c) => c.originalIndex === targetIndex).length
-      const midChunkSize = midChunkEnd - midChunkStart
-      let midChunk: GridDimension[] = []
-      if (targetDimension.type === 'REPEAT') {
-        const groupSize = midChunkSize / targetDimension.times
-        const midChunkValues = newSetting.slice(midChunkStart, midChunkStart + groupSize)
-        const targetChunkIndex = (control.columnOrRow - midChunkStart) % groupSize
-
-        const resizedValue = newSetting[control.columnOrRow]
-        const values = midChunkValues.map((v, index) => {
-          if (index % (groupSize * targetDimension.times) === targetChunkIndex) {
-            return resizedValue
-          } else {
-            return v
-          }
-        })
-        midChunk.push(gridCSSRepeat(targetDimension.times, values))
-      } else {
-        midChunk.push(...newSetting.slice(midChunkStart, midChunkEnd))
-      }
-      const newDimensions = [...leftChunk, ...midChunk, ...rightChunk]
-
+      const newDimensions = buildResizedDimensionsArray({
+        expandedOriginalValues: expandedOriginalValues,
+        originalValues: originalValues.dimensions,
+        resizedValues: resizedDimensions,
+        resizedIndex: control.columnOrRow,
+      })
       const propertyValueAsString = printArrayGridDimensions(newDimensions)
 
       const commands = [
@@ -226,6 +197,64 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       return strategyApplicationResult(commands)
     },
   }
+}
+
+type ExpandedGridDimension = GridDimension & {
+  repeated: boolean
+  originalIndex: number
+}
+
+// Reconstruct the final, resized dimensions trying to preserve as much as possible the original CSS.
+// 1. Determine the original index of the targeted dimension, as the one that is found in the original values array
+// 2. Extract the left and right portions of the dimensions from the original values, as they did not change
+// 3. Calculate the "mid chunk" portion of the dimensions, which was affected by the resize.
+//    If the target is part of a repeated dimension, derive the final repeat so that the repeat statement itself
+//    is not denormalized but updated to repeat with the new dimensions
+// 4. Finally build the new dimensions as the concatenation of the left chunk, mid chunk, and right chunk.
+function buildResizedDimensionsArray(params: {
+  expandedOriginalValues: ExpandedGridDimension[]
+  originalValues: GridDimension[]
+  resizedValues: GridDimension[]
+  resizedIndex: number
+}): GridDimension[] {
+  // 1.
+  const targetIndex = params.expandedOriginalValues[params.resizedIndex].originalIndex
+  const targetDimension = params.originalValues[targetIndex]
+
+  // 2.
+  const leftChunk = params.originalValues.slice(0, targetIndex)
+  const rightChunk = params.originalValues.slice(targetIndex + 1)
+
+  // 3.
+  // midChunkStart is the index in the expanded values matching the first occurrence of the target index in the
+  // expanded values.
+  const midChunkStart = params.expandedOriginalValues.findIndex(
+    (c) => c.originalIndex === targetIndex,
+  )
+  // midChunkEnd is the start + the number of repeated elements for this `repeat` function
+  const midChunkEnd =
+    midChunkStart +
+    params.expandedOriginalValues.filter((c) => c.originalIndex === targetIndex).length
+  const midChunkSize = midChunkEnd - midChunkStart
+
+  let midChunk: GridDimension[] = []
+  if (targetDimension.type === 'REPEAT') {
+    const groupSize = midChunkSize / targetDimension.times
+    const midChunkValues = params.resizedValues.slice(midChunkStart, midChunkStart + groupSize)
+    const targetChunkIndex = (params.resizedIndex - midChunkStart) % groupSize // the index *relative to inside* the repeat group
+
+    const resizedValue = params.resizedValues[params.resizedIndex]
+    const values = midChunkValues.map((v, index) => {
+      const valueIsRepeated = index % (groupSize * targetDimension.times) === targetChunkIndex
+      return valueIsRepeated ? resizedValue : v
+    })
+    midChunk.push(gridCSSRepeat(targetDimension.times, values))
+  } else {
+    midChunk.push(...params.resizedValues.slice(midChunkStart, midChunkEnd))
+  }
+
+  // 4.
+  return [...leftChunk, ...midChunk, ...rightChunk]
 }
 
 function getNewDragValue(
