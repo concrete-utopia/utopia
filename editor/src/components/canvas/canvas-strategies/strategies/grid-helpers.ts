@@ -1,6 +1,11 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import * as EP from '../../../../core/shared/element-path'
+import type {
+  ElementInstanceMetadataMap,
+  GridPositionValue,
+  GridTemplate,
+} from '../../../../core/shared/element-template'
 import {
   gridPositionValue,
   type ElementInstanceMetadata,
@@ -8,9 +13,14 @@ import {
   type GridElementProperties,
   type GridPosition,
 } from '../../../../core/shared/element-template'
-import type { CanvasVector, WindowRectangle } from '../../../../core/shared/math-utils'
+import type {
+  CanvasRectangle,
+  CanvasVector,
+  WindowRectangle,
+} from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
+  canvasRectangle,
   isInfinityRectangle,
   offsetPoint,
   scaleVector,
@@ -19,15 +29,16 @@ import {
   type WindowPoint,
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
+import { absolute } from '../../../../utils/utils'
+import { cssNumber, isCSSKeyword } from '../../../inspector/common/css-utils'
 import type { CanvasCommand } from '../../commands/commands'
+import { deleteProperties } from '../../commands/delete-properties-command'
+import { reorderElement } from '../../commands/reorder-element-command'
+import { setCssLengthProperty } from '../../commands/set-css-length-command'
 import { setProperty } from '../../commands/set-property-command'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
-import type { DragInteractionData } from '../interaction-state'
 import type { GridCustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
-import * as EP from '../../../../core/shared/element-path'
-import { deleteProperties } from '../../commands/delete-properties-command'
-import { cssNumber, isCSSKeyword } from '../../../inspector/common/css-utils'
-import { setCssLengthProperty } from '../../commands/set-css-length-command'
+import type { DragInteractionData } from '../interaction-state'
 import type { GridCellCoordinates } from './grid-cell-bounds'
 import {
   getCellWindowRect,
@@ -35,6 +46,8 @@ import {
   getGridCellUnderMouseRecursive,
   gridCellCoordinates,
 } from './grid-cell-bounds'
+import type { Sides } from 'utopia-api/core'
+import { memoize } from '../../../../core/shared/memoize'
 
 export function runGridRearrangeMove(
   targetElement: ElementPath,
@@ -114,7 +127,6 @@ export function runGridRearrangeMove(
       targetRootCell: null,
     }
   }
-
   const gridTemplate = containerMetadata.specialSizeMeasurements.containerGridProperties
 
   const cellGridProperties = getElementGridProperties(originalElementMetadata, targetCellUnderMouse)
@@ -137,20 +149,6 @@ export function runGridRearrangeMove(
     coordsDiff.column,
   )
 
-  const targetRootCell = gridCellCoordinates(row.start, column.start)
-
-  const windowRect = getCellWindowRect(targetRootCell)
-
-  const absoluteMoveCommands =
-    windowRect == null
-      ? []
-      : gridChildAbsoluteMoveCommands(
-          MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
-          windowRect,
-          interactionData,
-          { scale: canvasScale, canvasOffset: canvasOffset },
-        )
-
   const gridCellMoveCommands = setGridPropsCommands(targetElement, gridTemplate, {
     gridColumnStart: gridPositionValue(column.start),
     gridColumnEnd: gridPositionValue(column.end),
@@ -158,12 +156,103 @@ export function runGridRearrangeMove(
     gridRowStart: gridPositionValue(row.start),
   })
 
-  return {
-    commands: [...gridCellMoveCommands, ...absoluteMoveCommands],
-    targetCell: targetCellData ?? customState.targetCellData,
-    originalRootCell: rootCell,
-    draggingFromCell: draggingFromCell,
-    targetRootCell: targetRootCell,
+  const gridTemplateColumns =
+    gridTemplate.gridTemplateColumns?.type === 'DIMENSIONS'
+      ? gridTemplate.gridTemplateColumns.dimensions.length
+      : 1
+
+  // The "pure" index in the grid children for the cell under mouse
+  const possiblyReorderIndex = getGridPositionIndex({
+    row: targetCellUnderMouse.row,
+    column: targetCellUnderMouse.column,
+    gridTemplateColumns: gridTemplateColumns,
+  })
+
+  // The siblings of the grid element being moved
+  const siblings = MetadataUtils.getChildrenUnordered(jsxMetadata, EP.parentPath(selectedElement))
+    .filter((s) => !EP.pathsEqual(s.elementPath, selectedElement))
+    .map(
+      (s, index): SortableGridElementProperties => ({
+        ...s.specialSizeMeasurements.elementGridProperties,
+        index: index,
+        path: s.elementPath,
+      }),
+    )
+
+  // Sort the siblings and the cell under mouse ascending based on their grid coordinates, so that
+  // the indexes grow left-right, top-bottom.
+  const cellsSortedByPosition = siblings
+    .concat({
+      ...{
+        gridColumnStart: gridPositionValue(targetCellUnderMouse.column),
+        gridColumnEnd: gridPositionValue(targetCellUnderMouse.column),
+        gridRowStart: gridPositionValue(targetCellUnderMouse.row),
+        gridRowEnd: gridPositionValue(targetCellUnderMouse.row),
+      },
+      path: selectedElement,
+      index: siblings.length + 1,
+    })
+    .sort(sortElementsByGridPosition(gridTemplateColumns))
+
+  // If rearranging, reorder to the index based on the sorted cells arrays.
+  const indexInSortedCellsForRearrange = cellsSortedByPosition.findIndex((s) =>
+    EP.pathsEqual(selectedElement, s.path),
+  )
+
+  const moveType = getGridMoveType({
+    originalElementMetadata: originalElementMetadata,
+    possiblyReorderIndex: possiblyReorderIndex,
+    cellsSortedByPosition: cellsSortedByPosition,
+  })
+
+  switch (moveType) {
+    case 'rearrange': {
+      const targetRootCell = gridCellCoordinates(row.start, column.start)
+      const windowRect = getCellWindowRect(targetRootCell)
+      const absoluteMoveCommands =
+        windowRect == null
+          ? []
+          : gridChildAbsoluteMoveCommands(
+              MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
+              windowRect,
+              interactionData,
+              { scale: canvasScale, canvasOffset: canvasOffset },
+            )
+      return {
+        commands: [
+          ...gridCellMoveCommands,
+          ...absoluteMoveCommands,
+          reorderElement(
+            'always',
+            selectedElement,
+            absolute(Math.max(indexInSortedCellsForRearrange, 0)),
+          ),
+        ],
+        targetCell: targetCellData ?? customState.targetCellData,
+        originalRootCell: rootCell,
+        draggingFromCell: draggingFromCell,
+        targetRootCell: gridCellCoordinates(row.start, column.start),
+      }
+    }
+    case 'reorder': {
+      return {
+        commands: [
+          reorderElement('always', selectedElement, absolute(possiblyReorderIndex)),
+          deleteProperties('always', selectedElement, [
+            PP.create('style', 'gridColumn'),
+            PP.create('style', 'gridRow'),
+            PP.create('style', 'gridColumnStart'),
+            PP.create('style', 'gridColumnEnd'),
+            PP.create('style', 'gridRowStart'),
+            PP.create('style', 'gridRowEnd'),
+          ]),
+        ],
+        targetCell: targetCellData ?? customState.targetCellData,
+        originalRootCell: rootCell,
+        draggingFromCell: draggingFromCell,
+        targetRootCell: targetCellUnderMouse,
+      }
+    }
   }
 }
 
@@ -260,6 +349,11 @@ export function setGridPropsCommands(
 export interface TargetGridCellData {
   gridCellCoordinates: GridCellCoordinates
   cellWindowRectangle: WindowRectangle
+}
+
+export interface TargetGridCellDataCanvas {
+  gridCellCoordinates: GridCellCoordinates
+  cellCanvasRectangle: CanvasRectangle
 }
 
 export function getTargetCell(
@@ -434,4 +528,148 @@ function gridChildAbsoluteMoveCommands(
       null,
     ),
   ]
+}
+
+type SortableGridElementProperties = GridElementProperties & { path: ElementPath; index: number }
+
+function sortElementsByGridPosition(gridTemplateColumns: number) {
+  return function (a: SortableGridElementProperties, b: SortableGridElementProperties): number {
+    function getPosition(index: number, e: GridElementProperties) {
+      if (
+        e.gridColumnStart == null ||
+        isCSSKeyword(e.gridColumnStart) ||
+        e.gridRowStart == null ||
+        isCSSKeyword(e.gridRowStart)
+      ) {
+        return index
+      }
+
+      const row = e.gridRowStart.numericalPosition ?? 1
+      const column = e.gridColumnStart.numericalPosition ?? 1
+
+      return (row - 1) * gridTemplateColumns + column - 1
+    }
+
+    return getPosition(a.index, a) - getPosition(b.index, b)
+  }
+}
+
+type GridMoveType =
+  | 'reorder' // reorder the element in the code based on the ascending position, and remove explicit positioning props
+  | 'rearrange' // set explicit positioning props, and reorder based on the visual location
+
+function getGridMoveType(params: {
+  originalElementMetadata: ElementInstanceMetadata
+  possiblyReorderIndex: number
+  cellsSortedByPosition: SortableGridElementProperties[]
+}): GridMoveType {
+  // For absolute move, just use rearrange.
+  // TODO: maybe worth reconsidering in the future?
+  if (MetadataUtils.isPositionAbsolute(params.originalElementMetadata)) {
+    return 'rearrange'
+  }
+  if (params.possiblyReorderIndex >= params.cellsSortedByPosition.length) {
+    return 'rearrange'
+  }
+
+  const elementGridProperties =
+    params.originalElementMetadata.specialSizeMeasurements.elementGridProperties
+
+  // The first element is intrinsically in order, so try to adjust for that
+  if (params.possiblyReorderIndex === 0) {
+    const isTheOnlyChild = params.cellsSortedByPosition.length === 1
+    const isAlreadyTheFirstChild = EP.pathsEqual(
+      params.cellsSortedByPosition[0].path,
+      params.originalElementMetadata.elementPath,
+    )
+    const isAlreadyAtOrigin =
+      gridPositionNumberValue(elementGridProperties.gridRowStart) === 1 &&
+      gridPositionNumberValue(elementGridProperties.gridColumnStart) === 1
+    if (isTheOnlyChild || isAlreadyTheFirstChild || isAlreadyAtOrigin) {
+      return 'reorder'
+    }
+  }
+
+  const previousElement = params.cellsSortedByPosition.at(params.possiblyReorderIndex - 1)
+  if (previousElement == null) {
+    return 'rearrange'
+  }
+  const previousElementColumn = previousElement.gridColumnStart ?? null
+  const previousElementRow = previousElement.gridRowStart ?? null
+  return isGridPositionNumericValue(previousElementColumn) &&
+    isGridPositionNumericValue(previousElementRow)
+    ? 'rearrange'
+    : 'reorder'
+}
+
+function isGridPositionNumericValue(p: GridPosition | null): p is GridPositionValue {
+  return p != null && !(isCSSKeyword(p) && p.value === 'auto')
+}
+
+function gridPositionNumberValue(p: GridPosition | null): number | null {
+  return isGridPositionNumericValue(p) ? p.numericalPosition : null
+}
+
+function getGridPositionIndex(props: {
+  row: number
+  column: number
+  gridTemplateColumns: number
+}): number {
+  return (props.row - 1) * props.gridTemplateColumns + props.column - 1
+}
+
+export type GridCellGlobalFrames = Array<Array<CanvasRectangle>>
+
+function getGlobalFramesOfGridCellsInner(
+  metadata: ElementInstanceMetadata,
+): GridCellGlobalFrames | null {
+  const { globalFrame } = metadata
+  if (globalFrame == null || isInfinityRectangle(globalFrame)) {
+    return null
+  }
+
+  const { containerGridProperties, padding, rowGap, columnGap } = metadata.specialSizeMeasurements
+
+  const columnWidths = gridTemplateToNumbers(containerGridProperties.gridTemplateColumns)
+
+  const rowHeights = gridTemplateToNumbers(containerGridProperties.gridTemplateRows)
+
+  if (columnWidths == null || rowHeights == null) {
+    return null
+  }
+
+  const cellRects: Array<Array<CanvasRectangle>> = []
+  let yOffset = globalFrame.y + (padding.top ?? 0)
+  rowHeights.forEach((height) => {
+    let xOffset = globalFrame.x + (padding.left ?? 0)
+    const rowRects: CanvasRectangle[] = []
+    columnWidths.forEach((width) => {
+      const rect = canvasRectangle({ x: xOffset, y: yOffset, width: width, height: height })
+      rowRects.push(rect)
+      xOffset += width + (columnGap ?? 0)
+    })
+    cellRects.push(rowRects)
+    yOffset += height + (rowGap ?? 0)
+  })
+
+  return cellRects
+}
+
+export const getGlobalFramesOfGridCells = memoize(getGlobalFramesOfGridCellsInner)
+
+function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number> | null {
+  if (gridTemplate?.type !== 'DIMENSIONS') {
+    return null
+  }
+
+  const result: Array<number> = []
+
+  for (const dimension of gridTemplate.dimensions) {
+    if (dimension.type !== 'NUMBER') {
+      return null
+    }
+    result.push(dimension.value.value)
+  }
+
+  return result
 }

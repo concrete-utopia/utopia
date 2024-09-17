@@ -1,4 +1,7 @@
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
+import { isJSXElement } from '../../../../core/shared/element-template'
 import {
   getRectCenter,
   localRectangle,
@@ -11,6 +14,7 @@ import { GridCellTestId } from '../../controls/grid-controls'
 import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import type { GridCellCoordinates } from './grid-cell-bounds'
 import { gridCellTargetId } from './grid-cell-bounds'
 
 describe('grid rearrange move strategy', () => {
@@ -454,21 +458,149 @@ export var storyboard = (
       }
     })
   })
+
+  describe('reorder', () => {
+    it('reorders an element without setting positioning (inside contiguous area)', async () => {
+      const editor = await renderTestEditorWithCode(ProjectCodeReorder, 'await-first-dom-report')
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd, cells } =
+        await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 1, column: 3 })
+
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: '',
+        gridColumnStart: '',
+        gridRowEnd: '',
+        gridRowStart: '',
+      })
+
+      expect(cells).toEqual(['pink', 'cyan', 'orange', 'blue'])
+    })
+    it('reorders an element without setting positioning (edge of contiguous area)', async () => {
+      const editor = await renderTestEditorWithCode(ProjectCodeReorder, 'await-first-dom-report')
+
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd, cells } =
+        await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 2, column: 1 })
+
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: '',
+        gridColumnStart: '',
+        gridRowEnd: '',
+        gridRowStart: '',
+      })
+
+      expect(cells).toEqual(['pink', 'cyan', 'blue', 'orange'])
+    })
+    it('reorders an element setting positioning when outside of contiguous area', async () => {
+      const editor = await renderTestEditorWithCode(ProjectCodeReorder, 'await-first-dom-report')
+
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd, cells } =
+        await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 2, column: 2 })
+
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: 'auto',
+        gridColumnStart: '2',
+        gridRowEnd: 'auto',
+        gridRowStart: '2',
+      })
+
+      expect(cells).toEqual(['pink', 'cyan', 'blue', 'orange'])
+    })
+    it('reorders an element setting positioning also relative to other fixed elements', async () => {
+      const editor = await renderTestEditorWithCode(ProjectCodeReorder, 'await-first-dom-report')
+
+      const first = await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 2, column: 2 })
+
+      expect({
+        gridRowStart: first.gridRowStart,
+        gridRowEnd: first.gridRowEnd,
+        gridColumnStart: first.gridColumnStart,
+        gridColumnEnd: first.gridColumnEnd,
+      }).toEqual({
+        gridColumnEnd: 'auto',
+        gridColumnStart: '2',
+        gridRowEnd: 'auto',
+        gridRowStart: '2',
+      })
+
+      expect(first.cells).toEqual(['pink', 'cyan', 'blue', 'orange'])
+
+      const second = await runReorderTest(editor, 'sb/scene/grid', 'pink', { row: 2, column: 3 })
+
+      expect({
+        gridRowStart: second.gridRowStart,
+        gridRowEnd: second.gridRowEnd,
+        gridColumnStart: second.gridColumnStart,
+        gridColumnEnd: second.gridColumnEnd,
+      }).toEqual({
+        gridColumnEnd: 'auto',
+        gridColumnStart: '3',
+        gridRowEnd: 'auto',
+        gridRowStart: '2',
+      })
+
+      expect(second.cells).toEqual(['cyan', 'blue', 'orange', 'pink'])
+    })
+
+    it('reorders and removes positioning when moving back to contiguous', async () => {
+      const editor = await renderTestEditorWithCode(ProjectCodeReorder, 'await-first-dom-report')
+
+      const first = await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 2, column: 2 })
+      expect({
+        gridRowStart: first.gridRowStart,
+        gridRowEnd: first.gridRowEnd,
+        gridColumnStart: first.gridColumnStart,
+        gridColumnEnd: first.gridColumnEnd,
+      }).toEqual({
+        gridColumnEnd: 'auto',
+        gridColumnStart: '2',
+        gridRowEnd: 'auto',
+        gridRowStart: '2',
+      })
+
+      expect(first.cells).toEqual(['pink', 'cyan', 'blue', 'orange'])
+
+      const second = await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 1, column: 1 })
+
+      expect({
+        gridRowStart: second.gridRowStart,
+        gridRowEnd: second.gridRowEnd,
+        gridColumnStart: second.gridColumnStart,
+        gridColumnEnd: second.gridColumnEnd,
+      }).toEqual({
+        gridColumnEnd: '',
+        gridColumnStart: '',
+        gridRowEnd: '',
+        gridRowStart: '',
+      })
+
+      expect(second.cells).toEqual(['orange', 'pink', 'cyan', 'blue'])
+    })
+  })
 })
 
 async function runMoveTest(
   editor: EditorRenderResult,
-  props: { scale: number; pathString: string; testId: string },
+  props: {
+    scale: number
+    pathString: string
+    testId: string
+    targetCell?: GridCellCoordinates
+  },
 ) {
   const elementPathToDrag = EP.fromString(props.pathString)
 
   await selectComponentsForTest(editor, [elementPathToDrag])
 
-  await editor.dispatch([CanvasActions.zoom(props.scale)], true)
+  if (props.scale !== 1) {
+    await editor.dispatch([CanvasActions.zoom(props.scale)], true)
+  }
 
   const sourceGridCell = editor.renderedDOM.getByTestId(GridCellTestId(elementPathToDrag))
   const targetGridCell = editor.renderedDOM.getByTestId(
-    gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 3),
+    gridCellTargetId(
+      EP.fromString('sb/scene/grid'),
+      props.targetCell?.row ?? 2,
+      props.targetCell?.column ?? 3,
+    ),
   )
 
   const sourceRect = sourceGridCell.getBoundingClientRect()
@@ -491,6 +623,39 @@ async function runMoveTest(
   )
 
   return editor.renderedDOM.getByTestId(props.testId).style
+}
+
+async function runReorderTest(
+  editor: EditorRenderResult,
+  gridTestId: string,
+  testId: string,
+  targetCell: GridCellCoordinates,
+) {
+  const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest(editor, {
+    scale: 1,
+    pathString: `${gridTestId}/${testId}`,
+    testId: testId,
+    targetCell: targetCell,
+  })
+
+  const element = editor.getEditorState().editor.jsxMetadata[gridTestId]
+  if (isLeft(element.element) || !isJSXElement(element.element.value)) {
+    throw new Error('expected jsx element')
+  }
+
+  const cells = MetadataUtils.getChildrenOrdered(
+    editor.getEditorState().editor.jsxMetadata,
+    editor.getEditorState().editor.elementPathTree,
+    element.elementPath,
+  )
+
+  return {
+    gridRowStart: gridRowStart,
+    gridRowEnd: gridRowEnd,
+    gridColumnStart: gridColumnStart,
+    gridColumnEnd: gridColumnEnd,
+    cells: cells.map((c) => EP.toUid(c.elementPath)),
+  }
 }
 
 const ProjectCode = `import * as React from 'react'
@@ -566,6 +731,84 @@ export var storyboard = (
             gridRowStart: 3,
           }}
           data-uid='ddd'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+
+const ProjectCodeReorder = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 600,
+        height: 600,
+        position: 'absolute',
+        left: 0,
+        top: 0,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 500,
+          height: 500,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gridTemplateRows: '1fr 1fr 1fr',
+          gridGap: 10,
+          padding: 10,
+        }}
+        data-testid='grid'
+        data-uid='grid'
+      >
+        <div
+          style={{
+            backgroundColor: '#f09',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='pink'
+		  data-testid='pink'
+          data-label='pink'
+        />
+        <div
+          style={{
+            backgroundColor: '#f90',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='orange'
+		  data-testid='orange'
+          data-label='orange'
+        />
+        <div
+          style={{
+            backgroundColor: '#0f9',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='cyan'
+		  data-testid='cyan'
+          data-label='cyan'
+        />
+        <div
+          style={{
+            backgroundColor: '#09f',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='blue'
+		  data-testid='blue'
+          data-label='blue'
         />
       </div>
     </Scene>

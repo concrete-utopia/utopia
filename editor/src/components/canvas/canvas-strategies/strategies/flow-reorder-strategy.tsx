@@ -93,7 +93,6 @@ export function flowReorderStrategy(
         return interactionSession == null
           ? emptyStrategyApplicationResult
           : applyReorderCommon(
-              originalTargets,
               retargetedTargets,
               canvasState,
               interactionSession,

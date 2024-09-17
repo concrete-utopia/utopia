@@ -58,7 +58,7 @@ type prettyLabel =
   | 'Horizontal'
   | 'Vertical'
 
-const PrettyLabel: { [K in uglyLabel]: prettyLabel } = {
+export const PrettyLabel: { [K in uglyLabel]: prettyLabel } = {
   left: 'Left',
   center: 'Center',
   right: 'Right',
@@ -71,7 +71,7 @@ const PrettyLabel: { [K in uglyLabel]: prettyLabel } = {
   vertical: 'Vertical',
 }
 
-interface FlexFieldControlProps<T> {
+export interface FlexFieldControlProps<T> {
   value: T
   controlStatus: ControlStatus
   controlStyles: ControlStyles
