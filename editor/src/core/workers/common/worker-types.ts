@@ -11,6 +11,7 @@ import type {
 import type { SteganographyMode } from '../parser-printer/parser-printer'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import type { FilePathMappings } from './project-file-utils'
+import type { ParserPrinterWorker } from '../workers'
 
 export type FileContent = string | TextFile
 
@@ -173,13 +174,18 @@ export async function getParseResult(
   filePathMappings: FilePathMappings,
   alreadyExistingUIDs: Set<string>,
   applySteganography: SteganographyMode,
-  numWorkers: number = 1,
+  numChunks: number = 1,
 ): Promise<Array<ParseOrPrintResult>> {
-  const chunks = chunkArray(files, numWorkers)
+  const chunks = chunkArray(files, numChunks)
+  // time how long this takes
+  const startTime = performance.now()
   const promises = chunks.map((chunk) =>
     getParseResultSerial(workers, chunk, filePathMappings, alreadyExistingUIDs, applySteganography),
   )
   const results = await Promise.all(promises)
+  const endTime = performance.now()
+  // eslint-disable-next-line no-console
+  console.log(`getParseResult for ${files.length} files took ${endTime - startTime} milliseconds`)
   return results.flat()
 }
 
@@ -192,6 +198,7 @@ export function getParseResultSerial(
 ): Promise<Array<ParseOrPrintResult>> {
   const messageIDForThisRequest = PARSE_PRINT_MESSAGE_COUNTER++
   return new Promise((resolve, reject) => {
+    const availableWorker = workers.getNextParserPrinterWorker()
     const handleMessage = (e: MessageEvent) => {
       const data = e.data as ParsePrintResultMessage
       // Ensure that rapidly fired requests are distinguished between the handlers.
@@ -199,19 +206,19 @@ export function getParseResultSerial(
         switch (data.type) {
           case 'parseprintfilesresult': {
             resolve(data.files)
-            workers.removeParserPrinterEventListener(handleMessage)
+            workers.removeParserPrinterEventListener(handleMessage, availableWorker)
             break
           }
           case 'parseprintfailed': {
             reject()
-            workers.removeParserPrinterEventListener(handleMessage)
+            workers.removeParserPrinterEventListener(handleMessage, availableWorker)
             break
           }
         }
       }
     }
 
-    workers.addParserPrinterEventListener(handleMessage)
+    workers.addParserPrinterEventListener(handleMessage, availableWorker)
     workers.sendParsePrintMessage(
       createParsePrintFilesRequest(
         files,
@@ -220,6 +227,7 @@ export function getParseResultSerial(
         messageIDForThisRequest,
         applySteganography,
       ),
+      availableWorker,
     )
   })
 }
@@ -381,10 +389,17 @@ export function createInitTSWorkerMessage(
 }
 
 export interface UtopiaTsWorkers {
-  sendParsePrintMessage: (request: ParsePrintFilesRequest) => void
+  getNextParserPrinterWorker: () => ParserPrinterWorker
+  sendParsePrintMessage: (request: ParsePrintFilesRequest, worker: ParserPrinterWorker) => void
   sendLinterRequestMessage: (filename: string, content: string) => void
-  addParserPrinterEventListener: (handler: (e: MessageEvent) => void) => void
-  removeParserPrinterEventListener: (handler: (e: MessageEvent) => void) => void
+  addParserPrinterEventListener: (
+    handler: (e: MessageEvent) => void,
+    worker: ParserPrinterWorker,
+  ) => void
+  removeParserPrinterEventListener: (
+    handler: (e: MessageEvent) => void,
+    worker: ParserPrinterWorker,
+  ) => void
   addLinterResultEventListener: (handler: (e: MessageEvent) => void) => void
   removeLinterResultEventListener: (handler: (e: MessageEvent) => void) => void
   initWatchdogWorker(projectID: string): void

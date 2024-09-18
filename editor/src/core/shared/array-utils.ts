@@ -539,10 +539,11 @@ export function matrixGetter<T>(array: T[], width: number): (row: number, column
   }
 }
 
-export function chunkArray<T>(array: T[], chunkSize: number): T[][] {
+export function chunkArray<T>(array: T[], numberOfChunks: number): T[][] {
+  const chunkSize = Math.ceil(array.length / numberOfChunks)
   const chunks = []
   for (let i = 0; i < array.length; i += chunkSize) {
-    chunks.push(array.slice(i, i + chunkSize))
+    chunks.push(array.slice(i, Math.min(i + chunkSize, array.length)))
   }
   return chunks
 }

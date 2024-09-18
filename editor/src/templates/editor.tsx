@@ -139,6 +139,9 @@ import { keysEqualityExhaustive, shallowEqual } from '../core/shared/equality-ut
 import { runDomSampler } from '../components/canvas/dom-sampler'
 import { omitWithPredicate } from '../core/shared/object-utils'
 
+export const NUM_PARSER_PRINTER_WORKERS = 3
+export const NUM_PARSER_CHUNKS = 3
+
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
   webFrame.setVisualZoomLevelLimits(1, 1)
@@ -245,7 +248,9 @@ export class Editor {
       )
 
     const workers = new UtopiaTsWorkersImplementation(
-      new RealParserPrinterWorker(),
+      Array(NUM_PARSER_PRINTER_WORKERS)
+        .fill(null)
+        .map(() => new RealParserPrinterWorker()),
       new RealLinterWorker(),
       watchdogWorker,
     )

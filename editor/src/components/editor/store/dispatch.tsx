@@ -90,6 +90,7 @@ import {
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
 import { getFilePathMappings } from '../../../core/model/project-file-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { NUM_PARSER_CHUNKS } from '../../../templates/editor'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -353,7 +354,7 @@ function maybeRequestModelUpdate(
       getFilePathMappings(projectContents),
       existingUIDs,
       isSteganographyEnabled(),
-      5,
+      NUM_PARSER_CHUNKS,
     )
       .then((parseResult) => {
         const updates = parseResult.map((fileResult) => {
