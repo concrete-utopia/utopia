@@ -30,7 +30,7 @@ import {
   isGridCSSRepeat,
   printArrayGridDimensions,
 } from '../../../../components/inspector/common/css-utils'
-import { modify, toFirst } from '../../../../core/shared/optics/optic-utilities'
+import { toFirst } from '../../../../core/shared/optics/optic-utilities'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import type { Either } from '../../../../core/shared/either'
 import { foldEither, isLeft, isRight } from '../../../../core/shared/either'
@@ -120,28 +120,17 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       // Each element also contains the indexes information to be used later on to build the resized
       // template string.
       const expandedOriginalValues = originalValues.dimensions.reduce((acc, cur, index) => {
-        if (cur.type === 'REPEAT') {
+        if (isGridCSSRepeat(cur)) {
+          const repeatGroup = cur.value.map((dim, repeatedIndex) =>
+            expandedGridDimension(dim, index, repeatedIndex),
+          )
           let expanded: ExpandedGridDimension[] = []
           for (let i = 0; i < cur.times; i++) {
-            expanded.push(
-              ...cur.value.map((v, valueIndex) => ({
-                ...v,
-                indexes: {
-                  originalIndex: index,
-                  repeatedIndex: valueIndex,
-                },
-              })),
-            )
+            expanded.push(...repeatGroup)
           }
-          return acc.concat(expanded)
+          return [...acc, ...expanded]
         } else {
-          return acc.concat({
-            ...cur,
-            indexes: {
-              originalIndex: index,
-              repeatedIndex: 0,
-            },
-          })
+          return [...acc, expandedGridDimension(cur, index)]
         }
       }, [] as ExpandedGridDimension[])
 
@@ -223,25 +212,41 @@ type DimensionIndexes = {
   repeatedIndex: number // the index of this element, if it's generated via a repeat, inside the repeated values array definition
 }
 
-type ExpandedGridDimension = GridDimension & { indexes: DimensionIndexes }
+function expandedGridDimension(
+  dim: GridDimension,
+  originalIndex: number,
+  repeatedIndex: number = 0,
+): ExpandedGridDimension {
+  return {
+    ...dim,
+    indexes: {
+      originalIndex: originalIndex,
+      repeatedIndex: repeatedIndex,
+    },
+  }
+}
+
+type ExpandedGridDimension = GridDimension & {
+  indexes: DimensionIndexes
+}
 
 function buildResizedDimensions(params: {
   newValue: GridDimension
   originalValues: GridDimension[]
   target: ExpandedGridDimension
 }) {
-  return params.originalValues.map((v, index) => {
+  return params.originalValues.map((dim, index) => {
     if (index !== params.target.indexes.originalIndex) {
-      return v
+      return dim
     }
 
-    return isGridCSSRepeat(v)
+    return isGridCSSRepeat(dim)
       ? gridCSSRepeat(
-          v.times,
-          v.value
+          dim.times,
+          dim.value
             .slice(0, params.target.indexes.repeatedIndex)
             .concat(params.newValue)
-            .concat(v.value.slice((params.target.indexes.repeatedIndex ?? 0) + 1)),
+            .concat(dim.value.slice((params.target.indexes.repeatedIndex ?? 0) + 1)),
         )
       : params.newValue
   })

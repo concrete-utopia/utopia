@@ -101,8 +101,8 @@ function getCellsCount(template: GridAutoOrTemplateBase | null): number {
 
   switch (template.type) {
     case 'DIMENSIONS':
-      return template.dimensions.reduce((acc, curr) => {
-        return acc + (curr.type === 'REPEAT' ? curr.times : 1)
+      return template.dimensions.reduce((acc, cur) => {
+        return acc + (cur.type === 'REPEAT' ? cur.times : 1)
       }, 0)
     case 'FALLBACK':
       return 0
