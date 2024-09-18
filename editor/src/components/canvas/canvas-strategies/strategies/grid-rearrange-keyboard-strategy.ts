@@ -54,11 +54,7 @@ export function gridRearrangeResizeKeyboardStrategy(
   }
   const gridTemplate = grid.specialSizeMeasurements.containerGridProperties
 
-  const initialCellBounds = getGridCellBoundsFromCanvas(
-    cell,
-    canvasState.scale,
-    canvasState.canvasOffset,
-  )
+  const initialCellBounds = getGridCellBoundsFromCanvas(cell, grid)
   if (initialCellBounds == null) {
     return null
   }
