@@ -13,19 +13,14 @@ import {
   type GridElementProperties,
   type GridPosition,
 } from '../../../../core/shared/element-template'
-import type {
-  CanvasRectangle,
-  CanvasVector,
-  WindowRectangle,
-} from '../../../../core/shared/math-utils'
+import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
   canvasRectangle,
+  canvasVector,
   isInfinityRectangle,
   offsetPoint,
-  scaleVector,
   windowPoint,
-  windowVector,
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { absolute } from '../../../../utils/utils'
@@ -35,15 +30,10 @@ import { deleteProperties } from '../../commands/delete-properties-command'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { setCssLengthProperty } from '../../commands/set-css-length-command'
 import { setProperty } from '../../commands/set-property-command'
-import { canvasPointToWindowPoint } from '../../dom-lookup'
-import type { GridCustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
+import type { GridCustomStrategyState } from '../canvas-strategy-types'
 import type { DragInteractionData } from '../interaction-state'
 import type { GridCellCoordinates } from './grid-cell-bounds'
-import {
-  getCellWindowRect,
-  getGridCellUnderMouseFromMetadata,
-  gridCellCoordinates,
-} from './grid-cell-bounds'
+import { getGridCellUnderMouseFromMetadata, gridCellCoordinates } from './grid-cell-bounds'
 import { memoize } from '../../../../core/shared/memoize'
 
 export function runGridRearrangeMove(
@@ -51,8 +41,6 @@ export function runGridRearrangeMove(
   selectedElement: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
   interactionData: DragInteractionData,
-  canvasScale: number,
-  canvasOffset: CanvasVector,
   customState: GridCustomStrategyState,
 ): {
   commands: CanvasCommand[]
@@ -209,15 +197,14 @@ export function runGridRearrangeMove(
   switch (moveType) {
     case 'rearrange': {
       const targetRootCell = gridCellCoordinates(row.start, column.start)
-      const windowRect = getCellWindowRect(targetRootCell)
+      const canvasRect = getGlobalFrameOfGridCell(containerMetadata, targetRootCell)
       const absoluteMoveCommands =
-        windowRect == null
+        canvasRect == null
           ? []
           : gridChildAbsoluteMoveCommands(
               MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
-              windowRect,
+              canvasRect,
               interactionData,
-              { scale: canvasScale, canvasOffset: canvasOffset },
             )
       return {
         commands: [
@@ -427,9 +414,8 @@ function asMaybeNamedAreaOrValue(
 
 function gridChildAbsoluteMoveCommands(
   targetMetadata: ElementInstanceMetadata | null,
-  targetCellWindowRect: WindowRectangle,
+  targetCellRect: CanvasRectangle,
   dragInteractionData: DragInteractionData,
-  canvasContext: Pick<InteractionCanvasState, 'scale' | 'canvasOffset'>,
 ): CanvasCommand[] {
   if (
     targetMetadata == null ||
@@ -440,45 +426,20 @@ function gridChildAbsoluteMoveCommands(
     return []
   }
 
-  const targetFrameWindow = canvasPointToWindowPoint(
-    canvasPoint({
-      x: targetMetadata.globalFrame.x,
-      y: targetMetadata.globalFrame.y,
-    }),
-    canvasContext.scale,
-    canvasContext.canvasOffset,
-  )
-
-  const dragStartWindow = canvasPointToWindowPoint(
-    canvasPoint({
-      x: dragInteractionData.originalDragStart.x,
-      y: dragInteractionData.originalDragStart.y,
-    }),
-    canvasContext.scale,
-    canvasContext.canvasOffset,
-  )
-
   const offsetInTarget = windowPoint({
-    x: dragStartWindow.x - targetFrameWindow.x,
-    y: dragStartWindow.y - targetFrameWindow.y,
+    x: dragInteractionData.originalDragStart.x - targetMetadata.globalFrame.x,
+    y: dragInteractionData.originalDragStart.y - targetMetadata.globalFrame.y,
   })
 
-  const dragWindowOffset = canvasPointToWindowPoint(
-    offsetPoint(
-      dragInteractionData.originalDragStart,
-      dragInteractionData.drag ?? canvasPoint({ x: 0, y: 0 }),
-    ),
-    canvasContext.scale,
-    canvasContext.canvasOffset,
+  const dragOffset = offsetPoint(
+    dragInteractionData.originalDragStart,
+    dragInteractionData.drag ?? canvasPoint({ x: 0, y: 0 }),
   )
 
-  const offset = scaleVector(
-    windowVector({
-      x: dragWindowOffset.x - targetCellWindowRect.x - offsetInTarget.x,
-      y: dragWindowOffset.y - targetCellWindowRect.y - offsetInTarget.y,
-    }),
-    1 / canvasContext.scale,
-  )
+  const offset = canvasVector({
+    x: dragOffset.x - targetCellRect.x - offsetInTarget.x,
+    y: dragOffset.y - targetCellRect.y - offsetInTarget.y,
+  })
 
   return [
     deleteProperties('always', targetMetadata.elementPath, [
@@ -630,6 +591,18 @@ function getGlobalFramesOfGridCellsInner(
 }
 
 export const getGlobalFramesOfGridCells = memoize(getGlobalFramesOfGridCellsInner)
+
+export function getGlobalFrameOfGridCell(
+  grid: ElementInstanceMetadata,
+  coords: GridCellCoordinates,
+): CanvasRectangle | null {
+  const gridCellGlobalFrames = getGlobalFramesOfGridCells(grid)
+  if (gridCellGlobalFrames == null) {
+    return null
+  }
+
+  return gridCellGlobalFrames[coords.row - 1][coords.column - 1] ?? null
+}
 
 function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number> | null {
   if (gridTemplate?.type !== 'DIMENSIONS') {
