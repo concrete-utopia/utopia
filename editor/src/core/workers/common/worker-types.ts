@@ -177,15 +177,10 @@ export async function getParseResult(
   numChunks: number = 1,
 ): Promise<Array<ParseOrPrintResult>> {
   const chunks = chunkArray(files, numChunks)
-  // time how long this takes
-  const startTime = performance.now()
   const promises = chunks.map((chunk) =>
     getParseResultSerial(workers, chunk, filePathMappings, alreadyExistingUIDs, applySteganography),
   )
   const results = await Promise.all(promises)
-  const endTime = performance.now()
-  // eslint-disable-next-line no-console
-  console.log(`getParseResult for ${files.length} files took ${endTime - startTime} milliseconds`)
   return results.flat()
 }
 
