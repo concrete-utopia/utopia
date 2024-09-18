@@ -536,7 +536,7 @@ function ensureElementExists({ type, id }: { type: string; id: string }) {
   return tag
 }
 
-async function init(config: Config | null, allCSSFiles: string) {
+async function generateTailwindStyles(config: Config | null, allCSSFiles: string) {
   const tailwindCss = createTailwindcss({ tailwindConfig: config ?? undefined })
 
   const contentElement = document.getElementById(CanvasContainerID)
@@ -580,8 +580,9 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
         tailwindFile == null || tailwindFile.type !== 'TEXT_FILE'
           ? null
           : importDefault(requireFn('/', TailwindConfigPath))
-      void init(rawConfig as Config, allCSSFiles)
+      void generateTailwindStyles(rawConfig as Config, allCSSFiles)
     })
+
     observer.observe(document.getElementById(CanvasContainerID)!, {
       attributes: true,
       childList: true,
