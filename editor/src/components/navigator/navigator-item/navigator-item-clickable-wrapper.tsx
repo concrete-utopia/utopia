@@ -46,21 +46,21 @@ export const NavigatorRowClickableWrapper = React.memo(
       return selectedViews.current.some((view) => EP.pathsEqual(targetPath, view))
     }, [selectedViews, targetPath])
 
-    const getActions = useGetNavigatorClickActions(targetPath, selected, props.row)
+    const getMouseDownActions = useGetNavigatorMouseDownActions(targetPath, selected, props.row)
 
-    const onClick = React.useCallback(
+    const onMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
         e.stopPropagation()
         e.preventDefault()
 
-        const actions = getActions(e)
+        const actions = getMouseDownActions(e)
         dispatch(actions)
       },
-      [dispatch, getActions],
+      [dispatch, getMouseDownActions],
     )
 
     return (
-      <div style={{ display: 'flex', alignItems: 'center', flex: 1 }} onClick={onClick}>
+      <div style={{ display: 'flex', alignItems: 'center', flex: 1 }} onMouseDown={onMouseDown}>
         {props.children}
       </div>
     )
@@ -68,11 +68,11 @@ export const NavigatorRowClickableWrapper = React.memo(
 )
 NavigatorRowClickableWrapper.displayName = 'NavigatorRowClickableWrapper'
 
-export function useGetNavigatorClickActions(
+export function useGetNavigatorMouseDownActions(
   targetPath: ElementPath,
   selected: boolean,
   row: NavigatorRow,
-) {
+): (event: React.MouseEvent) => Array<EditorAction> {
   const navigatorTargets = useRefEditorState(navigatorTargetsSelector)
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const collapsedViews = useRefEditorState((store) => store.editor.navigator.collapsedViews)
