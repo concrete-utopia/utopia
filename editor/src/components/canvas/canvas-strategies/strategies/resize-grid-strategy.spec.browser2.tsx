@@ -255,7 +255,7 @@ export var storyboard = (
         width: 600,
         height: 600,
         gridTemplateColumns: '2.4fr 1fr 1fr',
-        gridTemplateRows: '99px 129px 90px 0px',
+        gridTemplateRows: '99px 129px 90px',
         height: 'max-content',
       }}
     >
@@ -370,7 +370,7 @@ export var storyboard = (
         gap: 10,
         width: 600,
         height: 600,
-        gridTemplateColumns: '1fr 2fr 1fr',
+        gridTemplateColumns: 'repeat(3, 2fr)',
         gridTemplateRows: '99px 109px 90px',
         height: 'max-content',
       }}

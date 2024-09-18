@@ -23,13 +23,17 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import type { GridDimension } from '../../../../components/inspector/common/css-utils'
 import {
+  cssNumber,
+  gridCSSNumber,
+  gridCSSRepeat,
   isGridCSSNumber,
-  printArrayGridDimension,
+  isGridCSSRepeat,
+  printArrayGridDimensions,
 } from '../../../../components/inspector/common/css-utils'
-import { modify, toFirst } from '../../../../core/shared/optics/optic-utilities'
+import { toFirst } from '../../../../core/shared/optics/optic-utilities'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import type { Either } from '../../../../core/shared/either'
-import { foldEither, isRight } from '../../../../core/shared/either'
+import { foldEither, isLeft, isRight } from '../../../../core/shared/either'
 import { roundToNearestWhole } from '../../../../core/shared/math-utils'
 import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-template'
 
@@ -112,11 +116,29 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
+      // Expanded representation of the original values, where repeated elements are serialized.
+      // Each element also contains the indexes information to be used later on to build the resized
+      // template string.
+      const expandedOriginalValues = originalValues.dimensions.reduce((acc, cur, index) => {
+        if (isGridCSSRepeat(cur)) {
+          const repeatGroup = cur.value.map((dim, repeatedIndex) =>
+            expandedGridDimension(dim, index, repeatedIndex),
+          )
+          let expanded: ExpandedGridDimension[] = []
+          for (let i = 0; i < cur.times; i++) {
+            expanded.push(...repeatGroup)
+          }
+          return [...acc, ...expanded]
+        } else {
+          return [...acc, expandedGridDimension(cur, index)]
+        }
+      }, [] as ExpandedGridDimension[])
+
       const mergedValues: GridAutoOrTemplateBase = {
         type: calculatedValues.type,
         dimensions: calculatedValues.dimensions.map((dim, index) => {
-          if (index < originalValues.dimensions.length) {
-            return originalValues.dimensions[index]
+          if (index < expandedOriginalValues.length) {
+            return expandedOriginalValues[index]
           }
           return dim
         }),
@@ -134,22 +156,38 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
 
       const calculatedValue = toFirst(valueOptic, calculatedValues.dimensions)
       const mergedValue = toFirst(valueOptic, mergedValues.dimensions)
+      if (isLeft(mergedValue)) {
+        return emptyStrategyApplicationResult
+      }
       const mergedUnit = toFirst(unitOptic, mergedValues.dimensions)
-      const isFractional = isRight(mergedUnit) && mergedUnit.value === 'fr'
-      const precision = modifiers.cmd ? 'coarse' : 'precise'
+      if (isLeft(mergedUnit)) {
+        return emptyStrategyApplicationResult
+      }
 
-      const newSetting = modify(
-        valueOptic,
-        (current) =>
+      const isFractional = mergedUnit.value === 'fr'
+      const precision = modifiers.cmd ? 'coarse' : 'precise'
+      const areaName = mergedValues.dimensions[control.columnOrRow]?.areaName ?? null
+
+      const newValue = gridCSSNumber(
+        cssNumber(
           newResizedValue(
-            current,
+            mergedValue.value,
             getNewDragValue(dragAmount, isFractional, calculatedValue, mergedValue),
             precision,
             isFractional,
           ),
-        mergedValues.dimensions,
+          mergedUnit.value,
+        ),
+        areaName,
       )
-      const propertyValueAsString = printArrayGridDimension(newSetting)
+
+      const newDimensions = buildResizedDimensions({
+        newValue: newValue,
+        originalValues: originalValues.dimensions,
+        target: expandedOriginalValues[control.columnOrRow],
+      })
+
+      const propertyValueAsString = printArrayGridDimensions(newDimensions)
 
       const commands = [
         setProperty(
@@ -167,6 +205,51 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       return strategyApplicationResult(commands)
     },
   }
+}
+
+type DimensionIndexes = {
+  originalIndex: number // the index of this element in the original values
+  repeatedIndex: number // the index of this element, if it's generated via a repeat, inside the repeated values array definition
+}
+
+function expandedGridDimension(
+  dim: GridDimension,
+  originalIndex: number,
+  repeatedIndex: number = 0,
+): ExpandedGridDimension {
+  return {
+    ...dim,
+    indexes: {
+      originalIndex: originalIndex,
+      repeatedIndex: repeatedIndex,
+    },
+  }
+}
+
+type ExpandedGridDimension = GridDimension & {
+  indexes: DimensionIndexes
+}
+
+function buildResizedDimensions(params: {
+  newValue: GridDimension
+  originalValues: GridDimension[]
+  target: ExpandedGridDimension
+}) {
+  return params.originalValues.map((dim, index) => {
+    if (index !== params.target.indexes.originalIndex) {
+      return dim
+    } else if (isGridCSSRepeat(dim)) {
+      const repeatedIndex = params.target.indexes.repeatedIndex ?? 0
+      const repeatGroup = [
+        ...dim.value.slice(0, repeatedIndex),
+        params.newValue,
+        ...dim.value.slice(repeatedIndex + 1),
+      ]
+      return gridCSSRepeat(dim.times, repeatGroup)
+    } else {
+      return params.newValue
+    }
+  })
 }
 
 function getNewDragValue(

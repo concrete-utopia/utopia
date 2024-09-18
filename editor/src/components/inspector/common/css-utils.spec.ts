@@ -31,7 +31,6 @@ import {
   cssNumber,
   cssPixelLength,
   cssPixelLengthZero,
-  CSSSolidColor,
   cssTransformRotate,
   cssTransformRotateX,
   cssTransformRotateY,
@@ -48,13 +47,11 @@ import {
   cssTransformTranslateY,
   cssTransformTranslateZ,
   cssUnitlessLength,
-  CSSUnknownArrayItem,
   defaultBGSize,
   defaultCSSGradientStops,
   defaultCSSRadialGradientSize,
   defaultCSSRadialOrConicGradientCenter,
   disabledFunctionName,
-  expandRepeatFunctions,
   parseBackgroundColor,
   parseBackgroundImage,
   parseBorderRadius,
@@ -72,7 +69,6 @@ import {
   RegExpLibrary,
   toggleSimple,
   toggleStylePropPath,
-  tokenizeGridTemplate,
 } from './css-utils'
 
 describe('toggleStyleProp', () => {
@@ -1807,59 +1803,5 @@ describe('printBackgroundSize', () => {
         "value": "auto, auto auto, 100px, 100% 100%",
       }
     `)
-  })
-})
-
-describe('tokenizeGridTemplate', () => {
-  it('tokenizes the grid template strings (no units)', async () => {
-    expect(tokenizeGridTemplate('123 456 78 9')).toEqual(['123', '456', '78', '9'])
-  })
-  it('tokenizes the grid template strings (with units)', async () => {
-    expect(tokenizeGridTemplate('123 456px 78 9rem')).toEqual(['123', '456px', '78', '9rem'])
-  })
-  it('tokenizes the grid template strings (with some area names)', async () => {
-    expect(tokenizeGridTemplate('[foo] 123 456px 78 9rem')).toEqual([
-      '[foo] 123',
-      '456px',
-      '78',
-      '9rem',
-    ])
-    expect(tokenizeGridTemplate('123 [foo]456px 78 [bar]       9rem')).toEqual([
-      '123',
-      '[foo] 456px',
-      '78',
-      '[bar] 9rem',
-    ])
-  })
-  it('tokenizes the grid template strings (with all area names)', async () => {
-    expect(tokenizeGridTemplate('[foo] 123 [bar]456px [baz]       78  [QUX]9rem')).toEqual([
-      '[foo] 123',
-      '[bar] 456px',
-      '[baz] 78',
-      '[QUX] 9rem',
-    ])
-  })
-})
-
-describe('expandRepeatFunctions', () => {
-  it('expands repeat', async () => {
-    expect(expandRepeatFunctions('repeat(4, 1fr)')).toEqual('1fr 1fr 1fr 1fr')
-  })
-  it('expands repeat with multiple units', () => {
-    expect(expandRepeatFunctions('repeat(2, 1fr 2fr 3fr)')).toEqual('1fr 2fr 3fr 1fr 2fr 3fr')
-  })
-  it('expands repeat with spacing', () => {
-    expect(expandRepeatFunctions('repeat( 4       , 1fr )')).toEqual('1fr 1fr 1fr 1fr')
-  })
-  it('expands repeat with decimals', () => {
-    expect(expandRepeatFunctions('repeat(4, 1.5fr)')).toEqual('1.5fr 1.5fr 1.5fr 1.5fr')
-  })
-  it('expands nested', () => {
-    expect(expandRepeatFunctions('repeat(2, repeat(3, 1fr))')).toEqual('1fr 1fr 1fr 1fr 1fr 1fr')
-
-    // Note: crazytown, I'm not even sure this is valid CSS *but still*
-    expect(expandRepeatFunctions('repeat(2, repeat(2, 1fr repeat(3, 2fr 4em)))')).toEqual(
-      '1fr 2fr 4em 2fr 4em 2fr 4em 1fr 2fr 4em 2fr 4em 2fr 4em 1fr 2fr 4em 2fr 4em 2fr 4em 1fr 2fr 4em 2fr 4em 2fr 4em',
-    )
   })
 })
