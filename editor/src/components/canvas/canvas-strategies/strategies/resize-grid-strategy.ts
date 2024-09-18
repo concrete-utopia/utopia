@@ -23,6 +23,8 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import type { GridDimension } from '../../../../components/inspector/common/css-utils'
 import {
+  cssNumber,
+  gridCSSNumber,
   gridCSSRepeat,
   isGridCSSNumber,
   isGridCSSRepeat,
@@ -31,7 +33,7 @@ import {
 import { modify, toFirst } from '../../../../core/shared/optics/optic-utilities'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import type { Either } from '../../../../core/shared/either'
-import { foldEither, isRight } from '../../../../core/shared/either'
+import { foldEither, isLeft, isRight } from '../../../../core/shared/either'
 import { roundToNearestWhole } from '../../../../core/shared/math-utils'
 import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-template'
 
@@ -165,21 +167,30 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
 
       const calculatedValue = toFirst(valueOptic, calculatedValues.dimensions)
       const mergedValue = toFirst(valueOptic, mergedValues.dimensions)
+      if (isLeft(mergedValue)) {
+        return emptyStrategyApplicationResult
+      }
       const mergedUnit = toFirst(unitOptic, mergedValues.dimensions)
-      const isFractional = isRight(mergedUnit) && mergedUnit.value === 'fr'
-      const precision = modifiers.cmd ? 'coarse' : 'precise'
+      if (isLeft(mergedUnit)) {
+        return emptyStrategyApplicationResult
+      }
 
-      const newValue = modify(
-        valueOptic,
-        (current) =>
+      const isFractional = mergedUnit.value === 'fr'
+      const precision = modifiers.cmd ? 'coarse' : 'precise'
+      const areaName = mergedValues.dimensions[control.columnOrRow]?.areaName ?? null
+
+      const newValue = gridCSSNumber(
+        cssNumber(
           newResizedValue(
-            current,
+            mergedValue.value,
             getNewDragValue(dragAmount, isFractional, calculatedValue, mergedValue),
             precision,
             isFractional,
           ),
-        mergedValues.dimensions,
-      )[control.columnOrRow]
+          mergedUnit.value,
+        ),
+        areaName,
+      )
 
       const newDimensions = buildResizedDimensions({
         newValue: newValue,
