@@ -238,17 +238,17 @@ function buildResizedDimensions(params: {
   return params.originalValues.map((dim, index) => {
     if (index !== params.target.indexes.originalIndex) {
       return dim
+    } else if (isGridCSSRepeat(dim)) {
+      const repeatedIndex = params.target.indexes.repeatedIndex ?? 0
+      const repeatGroup = [
+        ...dim.value.slice(0, repeatedIndex),
+        params.newValue,
+        ...dim.value.slice(repeatedIndex + 1),
+      ]
+      return gridCSSRepeat(dim.times, repeatGroup)
+    } else {
+      return params.newValue
     }
-
-    return isGridCSSRepeat(dim)
-      ? gridCSSRepeat(
-          dim.times,
-          dim.value
-            .slice(0, params.target.indexes.repeatedIndex)
-            .concat(params.newValue)
-            .concat(dim.value.slice((params.target.indexes.repeatedIndex ?? 0) + 1)),
-        )
-      : params.newValue
   })
 }
 
