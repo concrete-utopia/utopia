@@ -35,6 +35,7 @@ import type {
   CSSKeyword,
   CSSNumber,
   GridAutoFlow,
+  GridCSSKeyword,
   GridDiscreteDimension,
   UnknownOrEmptyInput,
   ValidGridDimensionKeyword,
@@ -176,18 +177,7 @@ export const FlexSection = React.memo(() => {
       }),
     })
 
-    const reduced = merged.reduce((acc, cur) => {
-      if (cur.type === 'REPEAT') {
-        let expanded: GridDiscreteDimension[] = []
-        for (let i = 0; i < cur.times; i++) {
-          expanded.push(...cur.value.filter((v) => v.type !== 'REPEAT'))
-        }
-        return acc.concat(...expanded)
-      }
-      return acc.concat(cur)
-    }, [] as GridDiscreteDimension[])
-
-    return reduced
+    return merged.filter((v) => v.type !== 'REPEAT')
   }, [grid])
 
   const rows = React.useMemo((): GridDiscreteDimension[] => {
@@ -279,13 +269,16 @@ const TemplateDimensionControl = React.memo(
 
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
-    const template = React.useMemo(
-      () =>
+    const template = React.useMemo(() => {
+      const fromProps =
         axis === 'column'
           ? grid.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateColumns
-          : grid.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows,
-      [grid, axis],
-    )
+          : grid.specialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows
+      if (fromProps?.type === 'DIMENSIONS' && fromProps.dimensions.length === 0) {
+        return { type: 'DIMENSIONS', dimensions: values }
+      }
+      return fromProps
+    }, [grid, axis, values])
 
     const expandedTemplate = React.useMemo(() => {
       if (template?.type !== 'DIMENSIONS') {
@@ -1114,7 +1107,10 @@ export function mergeGridTemplateValues({
     const autoValue = autoValues.at(autoValueIndex)
 
     if (isGridCSSKeyword(explicitValue) && explicitValue.value.value === 'auto') {
-      return autoValue ?? explicitValue
+      return {
+        ...(autoValue ?? explicitValue),
+        areaName: explicitValue.areaName ?? autoValue?.areaName ?? null,
+      } as GridCSSKeyword
     }
 
     return explicitValue

@@ -823,14 +823,18 @@ export function printCSSNumber(
 
 export function printGridDimension(dimension: GridDimension): string {
   switch (dimension.type) {
-    case 'KEYWORD':
-      return dimension.value.value
-    case 'NUMBER':
+    case 'KEYWORD': {
+      const areaName = dimension.areaName != null ? `[${dimension.areaName}] ` : ''
+      return `${areaName}${dimension.value.value}`
+    }
+    case 'NUMBER': {
       const printed = printCSSNumber(dimension.value, null)
       const areaName = dimension.areaName != null ? `[${dimension.areaName}] ` : ''
       return `${areaName}${printed}`
-    case 'REPEAT':
+    }
+    case 'REPEAT': {
       return `repeat(${dimension.times}, ${printArrayGridDimensions(dimension.value)})`
+    }
     default:
       assertNever(dimension)
   }
