@@ -44,7 +44,11 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { useDispatch } from '../editor/store/dispatch-context'
 import type { ProjectContentTreeRoot } from '../assets'
-import { getProjectFileByFilePath, packageJsonFileFromProjectContents } from '../assets'
+import {
+  getProjectFileByFilePath,
+  packageJsonFileFromProjectContents,
+  walkContentsTree,
+} from '../assets'
 import { TailwindConfigPath } from '../../core/tailwind/tailwind-config'
 import { importDefault } from '../../core/es-modules/commonjs-interop'
 import type { Config } from 'tailwindcss'
@@ -533,7 +537,7 @@ function ensureElementExists({ type, id }: { type: string; id: string }) {
   return tag
 }
 
-async function init(config: Config | null) {
+async function init(config: Config | null, allCSSFiles: string) {
   const tailwindCss = createTailwindcss({ tailwindConfig: config ?? undefined })
 
   const contentElement = document.getElementById(CanvasContainerID)
@@ -542,14 +546,17 @@ async function init(config: Config | null) {
 
   const style = ensureElementExists({ type: 'style', id: 'utopia-tailwind-jit-styles' })
 
-  style.textContent = await tailwindCss.generateStylesFromContent(
-    `
-  @tailwind base;
-  @tailwind components;
-  @tailwind utilities;
-  `,
-    [content],
-  )
+  style.textContent = await tailwindCss.generateStylesFromContent(allCSSFiles, [content])
+}
+
+function getCssFilesFromProjectContents(projectContents: ProjectContentTreeRoot) {
+  let files: string[] = []
+  walkContentsTree(projectContents, (path, file) => {
+    if (file.type === 'TEXT_FILE' && path.endsWith('.css')) {
+      files.push(file.fileContents.code)
+    }
+  })
+  return files
 }
 
 export const useTailwindConfig = (
@@ -557,19 +564,14 @@ export const useTailwindConfig = (
   requireFn: RequireFn,
 ) => {
   const tailwindFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
+  const allCSSFiles = getCssFilesFromProjectContents(projectContents).join('\n')
   React.useEffect(() => {
     const rawConfig =
       tailwindFile == null || tailwindFile.type !== 'TEXT_FILE'
         ? null
         : importDefault(requireFn('/', TailwindConfigPath))
-    void init(rawConfig as Config)
-  }, [requireFn, tailwindFile])
-}
-
-function mountTailwindConfigToDom(config: Config) {
-  const configTag = ensureElementExists({ type: 'script', id: 'utopia-tailwind-config' })
-  const { content, plugins, ...restOfConfig } = config
-  configTag.innerHTML = `tailwind.config = ${JSON.stringify(restOfConfig)}`
+    void init(rawConfig as Config, allCSSFiles)
+  }, [requireFn, tailwindFile, allCSSFiles])
 }
 
 const GenerateTailwindConfigButton = () => {
@@ -605,8 +607,8 @@ const GenerateTailwindConfigButton = () => {
     const data = await response.json()
     const css = data.css
 
-    const styleTag = ensureElementExists({ type: 'style', id: 'utopia-tailwind-generated-styles' })
-    styleTag.innerHTML = css
+    // const styleTag = ensureElementExists({ type: 'style', id: 'utopia-tailwind-generated-styles' })
+    // styleTag.innerHTML = css
   }, [projectContentsRef])
 
   return (
