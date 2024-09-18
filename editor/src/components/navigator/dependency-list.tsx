@@ -24,7 +24,7 @@ import {
 } from '../editor/npm-dependency/npm-dependency'
 import type { DependencyPackageDetails } from '../editor/store/editor-state'
 import { DefaultPackagesList } from '../editor/store/editor-state'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { DependencyListItems } from './dependency-list-items'
 import { fetchNodeModules } from '../../core/es-modules/package-manager/fetch-packages'
 import {
@@ -557,17 +557,31 @@ function getCssFilesFromProjectContents(projectContents: ProjectContentTreeRoot)
   return files
 }
 
-export const useTailwindCompilation = (
-  projectContents: ProjectContentTreeRoot,
-  requireFn: RequireFn,
-) => {
-  const tailwindFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
-  const allCSSFiles = getCssFilesFromProjectContents(projectContents).join('\n')
+export const useTailwindCompilation = (requireFn: RequireFn) => {
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'useTailwindCompilation projectContents',
+  )
+
   React.useEffect(() => {
-    const rawConfig =
-      tailwindFile == null || tailwindFile.type !== 'TEXT_FILE'
-        ? null
-        : importDefault(requireFn('/', TailwindConfigPath))
-    void init(rawConfig as Config, allCSSFiles)
-  }, [requireFn, tailwindFile, allCSSFiles])
+    const observer = new MutationObserver(() => {
+      const tailwindFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
+      const allCSSFiles = getCssFilesFromProjectContents(projectContents).join('\n')
+      const rawConfig =
+        tailwindFile == null || tailwindFile.type !== 'TEXT_FILE'
+          ? null
+          : importDefault(requireFn('/', TailwindConfigPath))
+      void init(rawConfig as Config, allCSSFiles)
+    })
+    observer.observe(document.getElementById(CanvasContainerID)!, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    })
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [projectContents, requireFn])
 }
