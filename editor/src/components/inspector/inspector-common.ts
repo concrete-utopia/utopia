@@ -34,12 +34,7 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import type { CSSProperties } from 'react'
 import type { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
-import {
-  propertyToDelete,
-  propertyToSet,
-  setProperty,
-  updateBulkProperties,
-} from '../canvas/commands/set-property-command'
+import { setProperty } from '../canvas/commands/set-property-command'
 import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
 import {
   setCssLengthProperty,
@@ -613,6 +608,19 @@ export const nukeAllAbsolutePositioningPropsCommands = (
       PP.create('style', 'right'),
       PP.create('style', 'top'),
       PP.create('style', 'bottom'),
+    ]),
+  ]
+}
+
+export const nukeGridCellPositioningPropsCommands = (path: ElementPath): Array<CanvasCommand> => {
+  return [
+    deleteProperties('always', path, [
+      PP.create('style', 'gridColumn'),
+      PP.create('style', 'gridColumnStart'),
+      PP.create('style', 'gridColumnEnd'),
+      PP.create('style', 'gridRow'),
+      PP.create('style', 'gridRowStart'),
+      PP.create('style', 'gridRowEnd'),
     ]),
   ]
 }
@@ -1235,16 +1243,6 @@ export function toggleAbsolutePositioningCommands(
       return maybeGroupConversionCommands
     }
 
-    const maybeGridElementConversionCommands = gridChildAbsolutePositionConversionCommands(
-      jsxMetadata,
-      elementPathTree,
-      elementPath,
-      canvasContext,
-    )
-    if (maybeGridElementConversionCommands != null) {
-      return maybeGridElementConversionCommands
-    }
-
     const element = MetadataUtils.findElementByElementPath(jsxMetadata, elementPath)
     if (element == null) {
       return []
@@ -1327,6 +1325,7 @@ export function getConvertIndividualElementToAbsoluteCommands(
   // First round the frame so that we don't end up with half pixel values
   const roundedFrame = roundRectangleToNearestWhole(frame)
   return [
+    ...nukeGridCellPositioningPropsCommands(target),
     ...sizeToDimensionsFromFrame(jsxMetadata, elementPathTree, target, roundedFrame),
     ...addPositionAbsoluteTopLeft(target, roundedFrame, parentFlexDirection),
   ]
@@ -1418,117 +1417,117 @@ export function isHuggingParent(element: ElementInstanceMetadata, property: 'wid
   return element.specialSizeMeasurements.computedHugProperty[property] != null
 }
 
-interface ContainedGridPositioning {
-  type: 'contained'
-  gridRow: number
-  gridColumn: number
-}
+// interface ContainedGridPositioning {
+//   type: 'contained'
+//   gridRow: number
+//   gridColumn: number
+// }
 
-interface SpanningGridPositioning {
-  type: 'span'
-  gridRowStart: number
-  gridRowEnd: number
-  gridColumnStart: number
-  gridColumnEnd: number
-}
+// interface SpanningGridPositioning {
+//   type: 'span'
+//   gridRowStart: number
+//   gridRowEnd: number
+//   gridColumnStart: number
+//   gridColumnEnd: number
+// }
 
-type DetectedGridPositioning = ContainedGridPositioning | SpanningGridPositioning
+// type DetectedGridPositioning = ContainedGridPositioning | SpanningGridPositioning
 
-function getGridElementBounds(
-  cell: ElementInstanceMetadata,
-  grid: ElementInstanceMetadata,
-): DetectedGridPositioning | null {
-  const initialCellBounds = getGridCellBoundsFromCanvas(cell, grid)
+// function getGridElementBounds(
+//   cell: ElementInstanceMetadata,
+//   grid: ElementInstanceMetadata,
+// ): DetectedGridPositioning | null {
+//   const initialCellBounds = getGridCellBoundsFromCanvas(cell, grid)
 
-  if (initialCellBounds == null) {
-    return null
-  }
+//   if (initialCellBounds == null) {
+//     return null
+//   }
 
-  if (initialCellBounds.height > 1 || initialCellBounds.width > 1) {
-    return {
-      type: 'span',
-      gridRowStart: initialCellBounds.row,
-      gridRowEnd: initialCellBounds.row + initialCellBounds.height,
-      gridColumnStart: initialCellBounds.column,
-      gridColumnEnd: initialCellBounds.column + initialCellBounds.width,
-    }
-  }
+//   if (initialCellBounds.height > 1 || initialCellBounds.width > 1) {
+//     return {
+//       type: 'span',
+//       gridRowStart: initialCellBounds.row,
+//       gridRowEnd: initialCellBounds.row + initialCellBounds.height,
+//       gridColumnStart: initialCellBounds.column,
+//       gridColumnEnd: initialCellBounds.column + initialCellBounds.width,
+//     }
+//   }
 
-  return {
-    type: 'contained',
-    gridRow: initialCellBounds.row,
-    gridColumn: initialCellBounds.column,
-  }
-}
+//   return {
+//     type: 'contained',
+//     gridRow: initialCellBounds.row,
+//     gridColumn: initialCellBounds.column,
+//   }
+// }
 
-function gridChildAbsolutePositionConversionCommands(
-  jsxMetadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTrees,
-  elementPath: ElementPath,
-  canvasContext: { scale: number; offset: CanvasVector },
-): CanvasCommand[] | null {
-  if (!MetadataUtils.isGridCell(jsxMetadata, elementPath)) {
-    return null
-  }
+// function gridChildAbsolutePositionConversionCommands(
+//   jsxMetadata: ElementInstanceMetadataMap,
+//   elementPathTree: ElementPathTrees,
+//   elementPath: ElementPath,
+//   canvasContext: { scale: number; offset: CanvasVector },
+// ): CanvasCommand[] | null {
+//   if (!MetadataUtils.isGridCell(jsxMetadata, elementPath)) {
+//     return null
+//   }
 
-  const instance = MetadataUtils.findElementByElementPath(jsxMetadata, elementPath)
-  if (instance == null) {
-    return null
-  }
+//   const instance = MetadataUtils.findElementByElementPath(jsxMetadata, elementPath)
+//   if (instance == null) {
+//     return null
+//   }
 
-  const grid = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(elementPath))
-  if (grid == null) {
-    return null
-  }
+//   const grid = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(elementPath))
+//   if (grid == null) {
+//     return null
+//   }
 
-  const cellBounds = getGridElementBounds(instance, grid)
-  if (cellBounds == null) {
-    return null
-  }
+//   const cellBounds = getGridElementBounds(instance, grid)
+//   if (cellBounds == null) {
+//     return null
+//   }
 
-  if (MetadataUtils.isPositionAbsolute(instance)) {
-    const gridPositioningProps =
-      cellBounds.type === 'contained'
-        ? [
-            { prop: PP.create('style', 'gridRow'), value: cellBounds.gridRow },
-            { prop: PP.create('style', 'gridColumn'), value: cellBounds.gridColumn },
-          ]
-        : cellBounds.type === 'span'
-        ? [
-            { prop: PP.create('style', 'gridRowStart'), value: cellBounds.gridRowStart },
-            { prop: PP.create('style', 'gridRowEnd'), value: cellBounds.gridRowEnd },
-            { prop: PP.create('style', 'gridColumnStart'), value: cellBounds.gridColumnStart },
-            { prop: PP.create('style', 'gridColumnEnd'), value: cellBounds.gridColumnEnd },
-          ]
-        : assertNever(cellBounds)
+//   if (MetadataUtils.isPositionAbsolute(instance)) {
+//     const gridPositioningProps =
+//       cellBounds.type === 'contained'
+//         ? [
+//             { prop: PP.create('style', 'gridRow'), value: cellBounds.gridRow },
+//             { prop: PP.create('style', 'gridColumn'), value: cellBounds.gridColumn },
+//           ]
+//         : cellBounds.type === 'span'
+//         ? [
+//             { prop: PP.create('style', 'gridRowStart'), value: cellBounds.gridRowStart },
+//             { prop: PP.create('style', 'gridRowEnd'), value: cellBounds.gridRowEnd },
+//             { prop: PP.create('style', 'gridColumnStart'), value: cellBounds.gridColumnStart },
+//             { prop: PP.create('style', 'gridColumnEnd'), value: cellBounds.gridColumnEnd },
+//           ]
+//         : assertNever(cellBounds)
 
-    return [
-      ...nukeAllAbsolutePositioningPropsCommands(elementPath),
-      updateBulkProperties('always', elementPath, [
-        propertyToDelete(PP.create('style', 'width')),
-        propertyToDelete(PP.create('style', 'height')),
-        ...gridElementProps.map(propertyToDelete),
-        ...gridPositioningProps.map(({ prop, value }) => propertyToSet(prop, value)),
-      ]),
-    ]
-  }
+//     return [
+//       ...nukeAllAbsolutePositioningPropsCommands(elementPath),
+//       updateBulkProperties('always', elementPath, [
+//         propertyToDelete(PP.create('style', 'width')),
+//         propertyToDelete(PP.create('style', 'height')),
+//         ...gridElementProps.map(propertyToDelete),
+//         ...gridPositioningProps.map(({ prop, value }) => propertyToSet(prop, value)),
+//       ]),
+//     ]
+//   }
 
-  const { row, column } =
-    cellBounds.type === 'contained'
-      ? { row: cellBounds.gridRow, column: cellBounds.gridColumn }
-      : cellBounds.type === 'span'
-      ? { row: cellBounds.gridRowStart, column: cellBounds.gridColumnStart }
-      : assertNever(cellBounds)
+//   const { row, column } =
+//     cellBounds.type === 'contained'
+//       ? { row: cellBounds.gridRow, column: cellBounds.gridColumn }
+//       : cellBounds.type === 'span'
+//       ? { row: cellBounds.gridRowStart, column: cellBounds.gridColumnStart }
+//       : assertNever(cellBounds)
 
-  return [
-    ...sizeToVisualDimensions(jsxMetadata, elementPathTree, elementPath),
-    updateBulkProperties('always', elementPath, [
-      ...gridElementProps.map(propertyToDelete),
-      propertyToSet(PP.create('style', 'gridRow'), row),
-      propertyToSet(PP.create('style', 'gridColumn'), column),
-      propertyToSet(PP.create('style', 'position'), 'absolute'),
-      propertyToSet(PP.create('style', 'top'), 0),
-      propertyToSet(PP.create('style', 'left'), 0),
-    ]),
-  ]
-}
+//   return [
+//     ...sizeToVisualDimensions(jsxMetadata, elementPathTree, elementPath),
+//     updateBulkProperties('always', elementPath, [
+//       ...gridElementProps.map(propertyToDelete),
+//       propertyToSet(PP.create('style', 'gridRow'), row),
+//       propertyToSet(PP.create('style', 'gridColumn'), column),
+//       propertyToSet(PP.create('style', 'position'), 'absolute'),
+//       propertyToSet(PP.create('style', 'top'), 0),
+//       propertyToSet(PP.create('style', 'left'), 0),
+//     ]),
+//   ]
+// }
