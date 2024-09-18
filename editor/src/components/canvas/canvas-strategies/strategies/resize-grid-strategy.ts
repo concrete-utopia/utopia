@@ -207,6 +207,13 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
   }
 }
 
+type DimensionIndexes = {
+  originalIndex: number // the index of this element in the original values
+  repeatedIndex: number // the index of this element, if it's generated via a repeat, inside the repeated values array definition
+}
+
+type ExpandedGridDimension = GridDimension & { indexes: DimensionIndexes }
+
 function buildResizedDimensions(params: {
   newValue: GridDimension
   originalValues: GridDimension[]
@@ -228,13 +235,6 @@ function buildResizedDimensions(params: {
       : params.newValue
   })
 }
-
-type DimensionIndexes = {
-  originalIndex: number // the index of this element in the original values
-  repeatedIndex: number // the index of this element, if it's generated via a repeat, inside the repeated values array definition
-}
-
-type ExpandedGridDimension = GridDimension & { indexes: DimensionIndexes }
 
 function getNewDragValue(
   dragAmount: number,
