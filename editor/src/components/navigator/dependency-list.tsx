@@ -50,6 +50,7 @@ import { importDefault } from '../../core/es-modules/commonjs-interop'
 import type { Config } from 'tailwindcss'
 import { CanvasContainerID } from '../canvas/canvas-types'
 import { createTailwindcss } from '@mhsdesign/jit-browser-tailwindcss'
+import { getProjectID } from '../../common/env-vars'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch
@@ -575,6 +576,12 @@ const GenerateTailwindConfigButton = () => {
   const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
 
   const onClick = React.useCallback(async () => {
+    const projectId = getProjectID()
+    if (projectId == null) {
+      console.error('No project ID found')
+      return
+    }
+
     const tailwindConfigContents = getProjectFileByFilePath(
       projectContentsRef.current,
       TailwindConfigPath,
@@ -591,16 +598,12 @@ const GenerateTailwindConfigButton = () => {
       return
     }
 
-    const response = await fetch('/v1/tailwind/generate', {
+    const response = await fetch(`/v1/tailwind/generate/${projectId}`, {
       method: 'POST',
-      body: JSON.stringify({
-        tailwindConfigContents: tailwindConfigContents.fileContents.code,
-        cssContent: cssContent.fileContents.code,
-      }),
     })
 
     const data = await response.json()
-    const css = data.generatedCSS
+    const css = data.css
 
     const styleTag = ensureElementExists({ type: 'style', id: 'utopia-tailwind-generated-styles' })
     styleTag.innerHTML = css
