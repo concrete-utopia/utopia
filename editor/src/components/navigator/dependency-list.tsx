@@ -557,7 +557,7 @@ function getCssFilesFromProjectContents(projectContents: ProjectContentTreeRoot)
   return files
 }
 
-export const useTailwindConfig = (
+export const useTailwindCompilation = (
   projectContents: ProjectContentTreeRoot,
   requireFn: RequireFn,
 ) => {
