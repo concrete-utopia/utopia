@@ -91,17 +91,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
       )
 
       const cellUnderMouse = getGridCellUnderMouseFromMetadata(container, mouseCanvasPoint)
-      const targetCell =
-        cellUnderMouse == null
-          ? customState.grid.targetCellData
-          : {
-              ...cellUnderMouse,
-              cellWindowRectangle: canvasRectangleToWindowRectangle(
-                cellUnderMouse.cellCanvasRectangle,
-                canvasState.scale,
-                canvasState.canvasOffset,
-              ),
-            }
+      const targetCell = cellUnderMouse == null ? customState.grid.targetCellData : cellUnderMouse
 
       if (targetCell == null) {
         return emptyStrategyApplicationResult

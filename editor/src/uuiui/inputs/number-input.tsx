@@ -32,6 +32,7 @@ import type {
   OnSubmitValue,
   OnSubmitValueOrEmpty,
   OnSubmitValueOrUnknownOrEmpty,
+  OnSubmitValueOrUnknownOrEmptyMaybeTransient,
 } from '../../components/inspector/controls/control'
 import type { Either } from '../../core/shared/either'
 import { isLeft, mapEither } from '../../core/shared/either'
@@ -151,9 +152,9 @@ export interface AbstractNumberInputProps<T extends CSSNumber | number>
 }
 
 export interface NumberInputProps extends AbstractNumberInputProps<CSSNumber> {
-  onSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
-  onTransientSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
-  onForcedSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
+  onSubmitValue?: OnSubmitValueOrUnknownOrEmptyMaybeTransient<CSSNumber>
+  onTransientSubmitValue?: OnSubmitValueOrUnknownOrEmptyMaybeTransient<CSSNumber>
+  onForcedSubmitValue?: OnSubmitValueOrUnknownOrEmptyMaybeTransient<CSSNumber>
   setGlobalCursor?: (cursor: CSSCursor | null) => void
   onMouseEnter?: MouseEventHandler
   onMouseLeave?: MouseEventHandler
@@ -282,15 +283,15 @@ export const NumberInput = React.memo<NumberInputProps>(
         const newValue = setCSSNumberValue(value, newNumericValue)
         if (transient) {
           if (onTransientSubmitValue != null) {
-            onTransientSubmitValue(newValue)
+            onTransientSubmitValue(newValue, transient)
           } else if (onSubmitValue != null) {
-            onSubmitValue(newValue)
+            onSubmitValue(newValue, transient)
           }
         } else {
           if (onForcedSubmitValue != null) {
-            onForcedSubmitValue(newValue)
+            onForcedSubmitValue(newValue, transient)
           } else if (onSubmitValue != null) {
-            onSubmitValue(newValue)
+            onSubmitValue(newValue, transient)
           }
         }
         repeatedValueRef.current = newValue
@@ -339,15 +340,15 @@ export const NumberInput = React.memo<NumberInputProps>(
 
           if (transient) {
             if (onTransientSubmitValue != null) {
-              onTransientSubmitValue(newValue)
+              onTransientSubmitValue(newValue, transient)
             } else if (onSubmitValue != null) {
-              onSubmitValue(newValue)
+              onSubmitValue(newValue, transient)
             }
           } else {
             if (onForcedSubmitValue != null) {
-              onForcedSubmitValue(newValue)
+              onForcedSubmitValue(newValue, transient)
             } else if (onSubmitValue != null) {
-              onSubmitValue(newValue)
+              onSubmitValue(newValue, transient)
             }
           }
           updateValue(newValue)
@@ -484,7 +485,7 @@ export const NumberInput = React.memo<NumberInputProps>(
         // todo make sure this isn't doubling up the value submit
         if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && onForcedSubmitValue != null) {
           if (value != null) {
-            onForcedSubmitValue(value)
+            onForcedSubmitValue(value, false)
           }
         }
       },
@@ -519,7 +520,7 @@ export const NumberInput = React.memo<NumberInputProps>(
         if (valueChangedSinceFocus) {
           setValueChangedSinceFocus(false)
           if (onSubmitValue != null) {
-            onSubmitValue(newValue)
+            onSubmitValue(newValue, false)
           }
         }
       },
@@ -565,6 +566,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           repeatedValueRef.current != null
             ? repeatedValueRef.current
             : unknownInputValue(displayValue),
+          false,
         )
       }
 
@@ -611,6 +613,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           repeatedValueRef.current != null
             ? repeatedValueRef.current
             : unknownInputValue(displayValue),
+          false,
         )
       }
 

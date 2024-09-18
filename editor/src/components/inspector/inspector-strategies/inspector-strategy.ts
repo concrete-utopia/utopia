@@ -1,6 +1,7 @@
 import type { CanvasCommand } from '../../canvas/commands/commands'
 import type { EditorDispatch } from '../../editor/action-types'
-import { applyCommandsAction } from '../../editor/actions/action-creators'
+import { applyCommandsAction, transientActions } from '../../editor/actions/action-creators'
+import type { ElementsToRerender } from '../../editor/store/editor-state'
 
 interface CustomInspectorStrategyResultBase {
   commands: Array<CanvasCommand>
@@ -47,11 +48,26 @@ export function commandsForFirstApplicableStrategy(
 
 export function executeFirstApplicableStrategy(
   dispatch: EditorDispatch,
-
   strategies: InspectorStrategy[],
+): void {
+  return executeFirstApplicableStrategyForContinuousInteraction(
+    dispatch,
+    strategies,
+    'rerender-all-elements',
+  )
+}
+
+export function executeFirstApplicableStrategyForContinuousInteraction(
+  dispatch: EditorDispatch,
+  strategies: InspectorStrategy[],
+  elementsToRerenderTransient: ElementsToRerender,
 ): void {
   const commands = commandsForFirstApplicableStrategy(strategies)
   if (commands != null) {
-    dispatch([applyCommandsAction(commands)])
+    if (elementsToRerenderTransient !== 'rerender-all-elements') {
+      dispatch([transientActions([applyCommandsAction(commands)], elementsToRerenderTransient)])
+    } else {
+      dispatch([applyCommandsAction(commands)])
+    }
   }
 }

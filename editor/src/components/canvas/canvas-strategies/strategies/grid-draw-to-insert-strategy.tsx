@@ -21,7 +21,7 @@ import { showGridControls } from '../../commands/show-grid-controls-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { controlsForGridPlaceholders } from '../../controls/grid-controls'
-import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../../dom-lookup'
+import { canvasPointToWindowPoint } from '../../dom-lookup'
 import {
   getWrapperWithGeneratedUid,
   getWrappingCommands,
@@ -43,9 +43,10 @@ import {
   getStyleAttributesForFrameInAbsolutePosition,
   updateInsertionSubjectWithAttributes,
 } from './draw-to-insert-metastrategy'
-import { getTargetCell, setGridPropsCommands } from './grid-helpers'
+import { setGridPropsCommands } from './grid-helpers'
 import { newReparentSubjects } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
+import { getGridCellUnderMouseFromMetadata } from './grid-cell-bounds'
 
 export const gridDrawToInsertText: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -150,11 +151,10 @@ const gridDrawToInsertStrategyInner =
       controlsToRender: [controlsForGridPlaceholders(targetParent)],
       fitness: 5,
       apply: (strategyLifecycle) => {
-        const newTargetCell = getGridCellUnderCursor(
-          interactionData,
-          canvasState,
-          customStrategyState,
-        )
+        const canvasPointToUse =
+          interactionData.type === 'DRAG' ? interactionData.dragStart : interactionData.point
+
+        const newTargetCell = getGridCellUnderMouseFromMetadata(parent, canvasPointToUse)
 
         if (strategyLifecycle === 'mid-interaction' && interactionData.type === 'HOVER') {
           return strategyApplicationResult(
@@ -182,13 +182,7 @@ const gridDrawToInsertStrategyInner =
           return emptyStrategyApplicationResult
         }
 
-        const { gridCellCoordinates, cellWindowRectangle } = newTargetCell
-
-        const cellCanvasOrigin = windowToCanvasCoordinates(
-          canvasState.scale,
-          canvasState.canvasOffset,
-          cellWindowRectangle,
-        ).canvasPositionRounded
+        const { gridCellCoordinates, cellCanvasRectangle } = newTargetCell
 
         const defaultSize =
           interactionData.type === 'DRAG' &&
@@ -200,7 +194,7 @@ const gridDrawToInsertStrategyInner =
         const insertionCommand = getInsertionCommand(
           targetParent,
           insertionSubject,
-          getFrameForInsertion(interactionData, defaultSize, cellCanvasOrigin),
+          getFrameForInsertion(interactionData, defaultSize, cellCanvasRectangle),
         )
 
         const gridTemplate = parent.specialSizeMeasurements.containerGridProperties
@@ -328,25 +322,4 @@ function getInsertionCommand(
   const insertionPath = childInsertionPath(parentPath)
 
   return insertElementInsertionSubject('always', updatedInsertionSubject, insertionPath)
-}
-
-function getGridCellUnderCursor(
-  interactionData: DragInteractionData | HoverInteractionData,
-  canvasState: InteractionCanvasState,
-  customStrategyState: CustomStrategyState,
-) {
-  const windowPointToUse =
-    interactionData.type === 'DRAG' ? interactionData.dragStart : interactionData.point
-
-  const mouseWindowPoint = canvasPointToWindowPoint(
-    windowPointToUse,
-    canvasState.scale,
-    canvasState.canvasOffset,
-  )
-
-  return getTargetCell(
-    customStrategyState.grid.targetCellData?.gridCellCoordinates ?? null,
-    false,
-    mouseWindowPoint,
-  )
 }
