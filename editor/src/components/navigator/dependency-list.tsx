@@ -54,6 +54,7 @@ import { importDefault } from '../../core/es-modules/commonjs-interop'
 import type { Config } from 'tailwindcss'
 import { CanvasContainerID } from '../canvas/canvas-types'
 import { createTailwindcss } from '@mhsdesign/jit-browser-tailwindcss'
+import { interactionSessionIsActive } from '../canvas/canvas-strategies/interaction-state'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch
@@ -564,8 +565,15 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
     'useTailwindCompilation projectContents',
   )
 
+  const isInteractionActiveRef = useRefEditorState((store) =>
+    interactionSessionIsActive(store.editor.canvas.interactionSession),
+  )
+
   React.useEffect(() => {
     const observer = new MutationObserver(() => {
+      if (isInteractionActiveRef.current) {
+        return
+      }
       const tailwindFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
       const allCSSFiles = getCssFilesFromProjectContents(projectContents).join('\n')
       const rawConfig =
@@ -583,5 +591,5 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
     return () => {
       observer.disconnect()
     }
-  }, [projectContents, requireFn])
+  }, [isInteractionActiveRef, projectContents, requireFn])
 }
