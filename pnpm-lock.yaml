@@ -1,17 +1,14 @@
-lockfileVersion: '6.0'
+lockfileVersion: 5.4
 
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
+specifiers:
+  husky: ^7.0.2
 
 devDependencies:
-  husky:
-    specifier: ^7.0.2
-    version: 7.0.2
+  husky: 7.0.2
 
 packages:
 
-  /husky@7.0.2:
+  /husky/7.0.2:
     resolution: {integrity: sha512-8yKEWNX4z2YsofXAMT7KvA1g8p+GxtB1ffV8XtpAEGuXNAbCV5wdNKH+qTpw8SM9fh4aMPDR+yQuKfgnreyZlg==}
     engines: {node: '>=12'}
     hasBin: true

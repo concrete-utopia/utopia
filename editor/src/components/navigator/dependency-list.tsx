@@ -24,7 +24,7 @@ import {
 } from '../editor/npm-dependency/npm-dependency'
 import type { DependencyPackageDetails } from '../editor/store/editor-state'
 import { DefaultPackagesList } from '../editor/store/editor-state'
-import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { DependencyListItems } from './dependency-list-items'
 import { fetchNodeModules } from '../../core/es-modules/package-manager/fetch-packages'
 import {
@@ -54,7 +54,6 @@ import { importDefault } from '../../core/es-modules/commonjs-interop'
 import type { Config } from 'tailwindcss'
 import { CanvasContainerID } from '../canvas/canvas-types'
 import { createTailwindcss } from '@mhsdesign/jit-browser-tailwindcss'
-import { getProjectID } from '../../common/env-vars'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch
@@ -472,7 +471,6 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
               }}
             >
               <AddTailwindButton packagesWithStatus={packagesWithStatus} />
-              <GenerateTailwindConfigButton />
               <DependencyListItems
                 packages={packagesWithStatus}
                 editingLocked={this.state.dependencyLoadingStatus != 'not-loading'}
@@ -572,59 +570,4 @@ export const useTailwindConfig = (
         : importDefault(requireFn('/', TailwindConfigPath))
     void init(rawConfig as Config, allCSSFiles)
   }, [requireFn, tailwindFile, allCSSFiles])
-}
-
-const GenerateTailwindConfigButton = () => {
-  const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
-
-  const onClick = React.useCallback(async () => {
-    const projectId = getProjectID()
-    if (projectId == null) {
-      console.error('No project ID found')
-      return
-    }
-
-    const tailwindConfigContents = getProjectFileByFilePath(
-      projectContentsRef.current,
-      TailwindConfigPath,
-    )
-    const cssContent = getProjectFileByFilePath(projectContentsRef.current, '/app/styles/app.css')
-
-    if (
-      tailwindConfigContents == null ||
-      cssContent == null ||
-      tailwindConfigContents.type !== 'TEXT_FILE' ||
-      cssContent.type !== 'TEXT_FILE'
-    ) {
-      console.error('Failed to generate tailwind config')
-      return
-    }
-
-    const response = await fetch(`/v1/tailwind/generate/${projectId}`, {
-      method: 'POST',
-    })
-
-    const data = await response.json()
-    const css = data.css
-
-    // const styleTag = ensureElementExists({ type: 'style', id: 'utopia-tailwind-generated-styles' })
-    // styleTag.innerHTML = css
-  }, [projectContentsRef])
-
-  return (
-    <Button
-      primary
-      highlight
-      onClick={onClick}
-      style={{
-        margin: 8,
-        height: 24,
-        boxShadow: 'inset 0 0 0 1px rgba(94,94,94,0.20)',
-        color: colorTheme.bg1.value,
-        cursor: 'pointer',
-      }}
-    >
-      Generate Tailwind Config
-    </Button>
-  )
 }

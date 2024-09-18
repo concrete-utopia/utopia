@@ -12,7 +12,7 @@ let
   pkgs = release.pkgs;
   recentPkgs = release.recentPkgs;
   lib = pkgs.lib;
-  node = recentPkgs.nodejs_20;
+  node = pkgs.nodejs-18_x;
   postgres = pkgs.postgresql_13;
   stdenv = pkgs.stdenv;
   pnpm = node.pkgs.pnpm;
@@ -315,8 +315,8 @@ let
 
       expectedToolVersions :: [(String, [String], [String])]
       expectedToolVersions =
-        [ ("node", ["--version"], ["v20.12.2"])
-        , ("pnpm", ["--version"], ["8.15.5"])
+        [ ("node", ["--version"], ["v18.12.1"])
+        , ("pnpm", ["--version"], ["7.14.2"])
         , ("yarn", ["--version"], ["1.22.19"])
         , ("ghc", ["--version"], ["The Glorious Glasgow Haskell Compilation System, version 9.0.2"])
         , ("cabal", ["--version"], ["cabal-install version 3.8.1.0", "compiled using version 3.8.1.0 of the Cabal library "])
