@@ -544,7 +544,6 @@ async function generateTailwindStyles(config: Config | null, allCSSFiles: string
   const content = contentElement?.outerHTML ?? ''
 
   const style = ensureElementExists({ type: 'style', id: 'utopia-tailwind-jit-styles' })
-
   style.textContent = await tailwindCss.generateStylesFromContent(allCSSFiles, [content])
 }
 
@@ -569,19 +568,21 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
     interactionSessionIsActive(store.editor.canvas.interactionSession),
   )
 
+  const observerCallback = React.useCallback(() => {
+    if (isInteractionActiveRef.current) {
+      return
+    }
+    const tailwindFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
+    const allCSSFiles = getCssFilesFromProjectContents(projectContents).join('\n')
+    const rawConfig =
+      tailwindFile == null || tailwindFile.type !== 'TEXT_FILE'
+        ? null
+        : importDefault(requireFn('/', TailwindConfigPath))
+    void generateTailwindStyles(rawConfig as Config, allCSSFiles)
+  }, [isInteractionActiveRef, projectContents, requireFn])
+
   React.useEffect(() => {
-    const observer = new MutationObserver(() => {
-      if (isInteractionActiveRef.current) {
-        return
-      }
-      const tailwindFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
-      const allCSSFiles = getCssFilesFromProjectContents(projectContents).join('\n')
-      const rawConfig =
-        tailwindFile == null || tailwindFile.type !== 'TEXT_FILE'
-          ? null
-          : importDefault(requireFn('/', TailwindConfigPath))
-      void generateTailwindStyles(rawConfig as Config, allCSSFiles)
-    })
+    const observer = new MutationObserver(observerCallback)
 
     observer.observe(document.getElementById(CanvasContainerID)!, {
       attributes: true,
@@ -589,8 +590,10 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
       subtree: true,
     })
 
+    observerCallback()
+
     return () => {
       observer.disconnect()
     }
-  }, [isInteractionActiveRef, projectContents, requireFn])
+  }, [isInteractionActiveRef, observerCallback, projectContents, requireFn])
 }
