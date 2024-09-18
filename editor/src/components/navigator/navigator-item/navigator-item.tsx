@@ -746,11 +746,14 @@ export const NavigatorItem: React.FunctionComponent<
 
   const onMouseDown = React.useCallback(
     (e: React.MouseEvent) => {
-      if (isRenderPropNavigatorEntry(navigatorEntry)) {
-        e.stopPropagation()
-      }
+      // Avoid doing any of this for a right click.
+      if (e.button !== 2) {
+        if (isRenderPropNavigatorEntry(navigatorEntry)) {
+          e.stopPropagation()
+        }
 
-      contextMenu.hideAll()
+        contextMenu.hideAll()
+      }
     },
     [navigatorEntry],
   )
