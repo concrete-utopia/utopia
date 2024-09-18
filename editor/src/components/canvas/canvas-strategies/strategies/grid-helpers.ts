@@ -29,7 +29,13 @@ import {
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { absolute } from '../../../../utils/utils'
-import { cssNumber, isCSSKeyword } from '../../../inspector/common/css-utils'
+import type { GridDimension } from '../../../inspector/common/css-utils'
+import {
+  cssNumber,
+  gridCSSRepeat,
+  isCSSKeyword,
+  isGridCSSRepeat,
+} from '../../../inspector/common/css-utils'
 import type { CanvasCommand } from '../../commands/commands'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { reorderElement } from '../../commands/reorder-element-command'
@@ -45,6 +51,8 @@ import {
   gridCellCoordinates,
 } from './grid-cell-bounds'
 import { memoize } from '../../../../core/shared/memoize'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { assertNever } from '../../../../core/shared/utils'
 
 export function runGridRearrangeMove(
   targetElement: ElementPath,
@@ -646,4 +654,126 @@ function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number>
   }
 
   return result
+}
+
+type DimensionIndexes = {
+  originalIndex: number // the index of this element in the original values
+  repeatedIndex: number // the index of this element, if it's generated via a repeat, inside the repeated values array definition
+}
+
+export type ExpandedGridDimension = GridDimension & {
+  indexes: DimensionIndexes
+}
+
+function expandedGridDimension(
+  dim: GridDimension,
+  originalIndex: number,
+  repeatedIndex: number = 0,
+): ExpandedGridDimension {
+  return {
+    ...dim,
+    indexes: {
+      originalIndex: originalIndex,
+      repeatedIndex: repeatedIndex,
+    },
+  }
+}
+
+export function expandGridDimensions(template: GridDimension[]): ExpandedGridDimension[] {
+  // Expanded representation of the original values, where repeated elements are serialized.
+  // Each element also contains the indexes information to be used later on to build the resized
+  // template string.
+  return template.reduce((acc, cur, index) => {
+    if (isGridCSSRepeat(cur)) {
+      const repeatGroup = cur.value.map((dim, repeatedIndex) =>
+        expandedGridDimension(dim, index, repeatedIndex),
+      )
+      let expanded: ExpandedGridDimension[] = []
+      for (let i = 0; i < cur.times; i++) {
+        expanded.push(...repeatGroup)
+      }
+      return [...acc, ...expanded]
+    } else {
+      return [...acc, expandedGridDimension(cur, index)]
+    }
+  }, [] as ExpandedGridDimension[])
+}
+
+function alterGridDimensions(params: {
+  originalValues: GridDimension[]
+  target: ExpandedGridDimension
+  action: AlterGridTemplateDimensionAction
+}): GridDimension[] {
+  return mapDropNulls((dim, index) => {
+    if (index !== params.target.indexes.originalIndex) {
+      return dim
+    } else if (isGridCSSRepeat(dim)) {
+      const repeatedIndex = params.target.indexes.repeatedIndex ?? 0
+      const before = dim.value.slice(0, repeatedIndex)
+      const after = dim.value.slice(repeatedIndex + 1)
+      switch (params.action.type) {
+        case 'REMOVE':
+          if (before.length + after.length === 0) {
+            return null
+          }
+          return gridCSSRepeat(dim.times, [...before, ...after])
+        case 'REPLACE':
+          return gridCSSRepeat(dim.times, [...before, params.action.newValue, ...after])
+        default:
+          assertNever(params.action)
+      }
+    } else {
+      switch (params.action.type) {
+        case 'REPLACE':
+          return params.action.newValue
+        case 'REMOVE':
+          return null
+        default:
+          assertNever(params.action)
+      }
+    }
+  }, params.originalValues)
+}
+
+export type ReplaceGridDimensionAction = {
+  type: 'REPLACE'
+  newValue: GridDimension
+}
+
+export type RemoveGridDimensionAction = {
+  type: 'REMOVE'
+}
+
+export type AlterGridTemplateDimensionAction =
+  | ReplaceGridDimensionAction
+  | RemoveGridDimensionAction
+
+export function replaceGridTemplateDimensionAtIndex(
+  template: GridDimension[],
+  expanded: ExpandedGridDimension[],
+  index: number,
+  newValue: GridDimension,
+): GridDimension[] {
+  return alterGridDimensions({
+    originalValues: template,
+    target: expanded[index],
+    action: {
+      type: 'REPLACE',
+      newValue: newValue,
+    },
+  })
+}
+
+export function removeGridTemplateDimensionAtIndex(
+  template: GridDimension[],
+  expanded: ExpandedGridDimension[],
+  index: number,
+): GridDimension[] {
+  return alterGridDimensions({
+    originalValues: template,
+    target: expanded[index],
+    action: {
+      type: 'REMOVE',
+    },
+  })
 }
