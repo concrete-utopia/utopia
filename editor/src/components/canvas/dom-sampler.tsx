@@ -156,6 +156,8 @@ function collectMetadataForPaths({
     )
   })
 
+  let domMetadataCollected: { [key: string]: DomElementMetadata } = {}
+
   if (checkExistingMetadata === 'check-existing') {
     // delete all metadata which should be collected now and those which are not in the dom anymore
     Object.keys(metadataToUpdate_MUTATE).forEach((p) => {
@@ -174,20 +176,24 @@ function collectMetadataForPaths({
 
       if (domMetadata == null) {
         delete metadataToUpdate_MUTATE[p]
+      } else {
+        domMetadataCollected[p] = domMetadata
       }
     })
   }
 
   dynamicPathsToCollect.forEach((pathString) => {
     const path = EP.fromString(pathString)
-    const domMetadata = collectMetadataForElementPath(
-      path,
-      validPaths,
-      selectedViews,
-      scale,
-      containerRect,
-      elementCanvasRectangleCache,
-    )
+    const domMetadata =
+      domMetadataCollected[pathString] ??
+      collectMetadataForElementPath(
+        path,
+        validPaths,
+        selectedViews,
+        scale,
+        containerRect,
+        elementCanvasRectangleCache,
+      )
 
     const spyMetadata = spyCollector.current.spyValues.metadata[EP.toString(path)]
     if (spyMetadata == null) {
