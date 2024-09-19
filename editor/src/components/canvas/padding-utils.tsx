@@ -89,7 +89,9 @@ export function simplePaddingFromMetadata(
   const classList = getClassNameAttribute(
     getElementFromProjectContents(elementPath, projectContents),
   )
-  const mapping = getClassNameMapping(classList.value ?? '')
+
+  const classes = typeof classList === 'string' ? classList : ''
+  const mapping = getClassNameMapping(classes)
 
   const padding: CSSPadding | undefined = defaultEither(
     undefined,
