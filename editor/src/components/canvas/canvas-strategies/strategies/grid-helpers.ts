@@ -699,10 +699,10 @@ export function expandGridDimensions(template: GridDimension[]): ExpandedGridDim
   }, [] as ExpandedGridDimension[])
 }
 
-function alterGridDimensions(params: {
+function alterGridTemplateDimensions(params: {
   originalValues: GridDimension[]
   target: ExpandedGridDimension
-  action: AlterGridTemplateDimensionAction
+  patch: AlterGridTemplateDimensionPatch
 }): GridDimension[] {
   return mapDropNulls((dim, index) => {
     if (index !== params.target.indexes.originalIndex) {
@@ -711,42 +711,40 @@ function alterGridDimensions(params: {
       const repeatedIndex = params.target.indexes.repeatedIndex ?? 0
       const before = dim.value.slice(0, repeatedIndex)
       const after = dim.value.slice(repeatedIndex + 1)
-      switch (params.action.type) {
+      switch (params.patch.type) {
         case 'REMOVE':
           if (before.length + after.length === 0) {
             return null
           }
           return gridCSSRepeat(dim.times, [...before, ...after])
         case 'REPLACE':
-          return gridCSSRepeat(dim.times, [...before, params.action.newValue, ...after])
+          return gridCSSRepeat(dim.times, [...before, params.patch.newValue, ...after])
         default:
-          assertNever(params.action)
+          assertNever(params.patch)
       }
     } else {
-      switch (params.action.type) {
+      switch (params.patch.type) {
         case 'REPLACE':
-          return params.action.newValue
+          return params.patch.newValue
         case 'REMOVE':
           return null
         default:
-          assertNever(params.action)
+          assertNever(params.patch)
       }
     }
   }, params.originalValues)
 }
 
-export type ReplaceGridDimensionAction = {
+export type ReplaceGridDimensionPatch = {
   type: 'REPLACE'
   newValue: GridDimension
 }
 
-export type RemoveGridDimensionAction = {
+export type RemoveGridDimensionPatch = {
   type: 'REMOVE'
 }
 
-export type AlterGridTemplateDimensionAction =
-  | ReplaceGridDimensionAction
-  | RemoveGridDimensionAction
+export type AlterGridTemplateDimensionPatch = ReplaceGridDimensionPatch | RemoveGridDimensionPatch
 
 export function replaceGridTemplateDimensionAtIndex(
   template: GridDimension[],
@@ -754,10 +752,10 @@ export function replaceGridTemplateDimensionAtIndex(
   index: number,
   newValue: GridDimension,
 ): GridDimension[] {
-  return alterGridDimensions({
+  return alterGridTemplateDimensions({
     originalValues: template,
     target: expanded[index],
-    action: {
+    patch: {
       type: 'REPLACE',
       newValue: newValue,
     },
@@ -769,10 +767,10 @@ export function removeGridTemplateDimensionAtIndex(
   expanded: ExpandedGridDimension[],
   index: number,
 ): GridDimension[] {
-  return alterGridDimensions({
+  return alterGridTemplateDimensions({
     originalValues: template,
     target: expanded[index],
-    action: {
+    patch: {
       type: 'REMOVE',
     },
   })
