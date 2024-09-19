@@ -55,6 +55,7 @@ import type { Config } from 'tailwindcss'
 import { CanvasContainerID } from '../canvas/canvas-types'
 import { createTailwindcss } from '@mhsdesign/jit-browser-tailwindcss'
 import { interactionSessionIsActive } from '../canvas/canvas-strategies/interaction-state'
+import { rescopeCSSToTargetCanvasOnly } from '../../core/shared/css-utils'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch
@@ -543,8 +544,9 @@ async function generateTailwindStyles(config: Config | null, allCSSFiles: string
 
   const content = contentElement?.outerHTML ?? ''
 
+  const styleString = await tailwindCss.generateStylesFromContent(allCSSFiles, [content])
   const style = ensureElementExists({ type: 'style', id: 'utopia-tailwind-jit-styles' })
-  style.textContent = await tailwindCss.generateStylesFromContent(allCSSFiles, [content])
+  style.textContent = rescopeCSSToTargetCanvasOnly(styleString)
 }
 
 function getCssFilesFromProjectContents(projectContents: ProjectContentTreeRoot) {
