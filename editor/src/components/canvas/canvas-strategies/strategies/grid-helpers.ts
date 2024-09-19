@@ -601,7 +601,7 @@ export function getGlobalFrameOfGridCell(
     return null
   }
 
-  return gridCellGlobalFrames[coords.row - 1][coords.column - 1] ?? null
+  return gridCellGlobalFrames[coords.row - 1]?.[coords.column - 1] ?? null
 }
 
 function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number> | null {
