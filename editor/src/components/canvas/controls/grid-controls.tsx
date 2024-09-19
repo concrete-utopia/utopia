@@ -31,7 +31,6 @@ import {
 import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
-  canvasRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
   nullIfInfinity,
@@ -88,10 +87,7 @@ import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { CanvasLabel } from './select-mode/controls-common'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import type { GridCellCoordinates } from '../canvas-strategies/strategies/grid-cell-bounds'
-import {
-  getGridPlaceholderDomElementFromCoordinates,
-  gridCellTargetId,
-} from '../canvas-strategies/strategies/grid-cell-bounds'
+import { gridCellTargetId } from '../canvas-strategies/strategies/grid-cell-bounds'
 import {
   getGlobalFrameOfGridCell,
   getGridRelatedIndexes,
@@ -920,8 +916,6 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                       position: 'relative',
                       pointerEvents: 'initial',
                     }}
-                    data-grid-row={countedRow}
-                    data-grid-column={countedColumn}
                   >
                     {when(
                       features.Grid.dotgrid,
