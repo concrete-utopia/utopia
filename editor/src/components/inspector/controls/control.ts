@@ -19,6 +19,11 @@ export type OnSubmitValueOrUnknownOrEmpty<T> = (
   transient?: boolean,
 ) => void
 
+export type OnSubmitValueOrUnknownOrEmptyMaybeTransient<T> = (
+  value: UnknownOrEmptyInput<T>,
+  transient: boolean,
+) => void
+
 export interface DEPRECATEDControlProps<T> {
   id: string
   testId: string

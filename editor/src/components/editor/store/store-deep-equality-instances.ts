@@ -265,7 +265,6 @@ import {
   combine9EqualityCalls,
   unionDeepEquality,
   combine11EqualityCalls,
-  combine16EqualityCalls,
   combine15EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
@@ -567,15 +566,15 @@ import type {
   GridCSSNumber,
   GridDimension,
   GridAutoFlow,
+  GridCSSRepeat,
 } from '../../inspector/common/css-utils'
 import {
   cssNumber,
   fontSettings,
   gridCSSKeyword,
   gridCSSNumber,
+  gridCSSRepeat,
   isCSSKeyword,
-  isGridCSSKeyword,
-  isGridCSSNumber,
 } from '../../inspector/common/css-utils'
 import type { ElementPaste, ProjectListing } from '../action-types'
 import { projectListing } from '../action-types'
@@ -1993,13 +1992,38 @@ export const GridCSSKeywordKeepDeepEquality: KeepDeepEqualityCall<GridCSSKeyword
 export const GridDimensionKeepDeepEquality: KeepDeepEqualityCall<GridDimension> =
   combine1EqualityCall(
     (dimension) => dimension,
-    unionDeepEquality(
-      GridCSSNumberKeepDeepEquality,
-      GridCSSKeywordKeepDeepEquality,
-      isGridCSSNumber,
-      isGridCSSKeyword,
-    ),
+    (oldValue: GridDimension, newValue: GridDimension): KeepDeepEqualityResult<GridDimension> => {
+      switch (oldValue.type) {
+        case 'KEYWORD':
+          if (newValue.type === oldValue.type) {
+            return GridCSSKeywordKeepDeepEquality(oldValue, newValue)
+          }
+          break
+        case 'NUMBER':
+          if (newValue.type === oldValue.type) {
+            return GridCSSNumberKeepDeepEquality(oldValue, newValue)
+          }
+          break
+        case 'REPEAT':
+          if (newValue.type === oldValue.type) {
+            return GridCSSRepeatKeepDeepEquality(oldValue, newValue)
+          }
+          break
+        default:
+          assertNever(oldValue)
+      }
+      return keepDeepEqualityResult(newValue, false)
+    },
     (dimension) => dimension,
+  )
+
+export const GridCSSRepeatKeepDeepEquality: KeepDeepEqualityCall<GridCSSRepeat> =
+  combine2EqualityCalls(
+    (p) => p.times,
+    NumberKeepDeepEquality,
+    (p) => p.value,
+    arrayDeepEquality(GridDimensionKeepDeepEquality),
+    gridCSSRepeat,
   )
 
 export const GridAutoOrTemplateDimensionsKeepDeepEquality: KeepDeepEqualityCall<GridAutoOrTemplateDimensions> =

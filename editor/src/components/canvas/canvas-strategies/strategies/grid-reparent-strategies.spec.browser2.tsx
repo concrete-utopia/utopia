@@ -627,7 +627,7 @@ describe('grid reparent strategies', () => {
 
       await selectComponentsForTest(editor, [EP.fromString('sb/grid/dragme')])
 
-      await dragOut(editor, 'grid', EP.fromString('sb/grid/dragme'), { x: 2200, y: 2500 })
+      await dragOut(editor, 'grid', EP.fromString('sb/grid/dragme'), { x: 2200, y: 2200 })
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         formatTestProjectCode(
@@ -804,7 +804,11 @@ async function dragOut(
   const sourceGridCell = renderResult.renderedDOM.getByTestId(GridCellTestId(cell))
   const sourceRect = sourceGridCell.getBoundingClientRect()
 
-  await mouseClickAtPoint(sourceGridCell, sourceRect, { modifiers: cmdModifier })
+  await mouseClickAtPoint(
+    sourceGridCell,
+    { x: sourceRect.x + 5, y: sourceRect.y + 5 },
+    { modifiers: cmdModifier },
+  )
   await mouseDragFromPointToPoint(sourceGridCell, sourceRect, endPoint, {
     modifiers: cmdModifier,
   })

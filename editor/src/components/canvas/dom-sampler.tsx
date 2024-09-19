@@ -44,6 +44,7 @@ import {
 import type { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import type { LimitExecutionCountReset } from '../../core/shared/execution-count'
 import { limitExecutionCount } from '../../core/shared/execution-count'
+import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 
 export function runDomSamplerUnchecked(options: {
   elementsToFocusOn: ElementsToRerender
@@ -69,6 +70,15 @@ export function runDomSamplerUnchecked(options: {
   }
 
   const validPaths = getValidPathsFromCanvasContainer(canvasRootContainer)
+  // Only perform this validation while in a test environment.
+  if (IS_TEST_ENVIRONMENT) {
+    const uniqueValidPaths = new Set(validPaths.map(EP.toString))
+    if (uniqueValidPaths.size !== validPaths.length) {
+      throw new Error(
+        `Duplicate paths in validPaths: ${JSON.stringify(validPaths.map(EP.toString), null, 2)}`,
+      )
+    }
+  }
 
   const spyPaths = Object.keys(options.spyCollector.current.spyValues.metadata)
   if (spyPaths.length === 0 && validPaths.length > 0) {
@@ -177,6 +187,8 @@ function collectMetadataForPaths({
     )
   })
 
+  let domMetadataCollected: { [key: string]: DomElementMetadata | null } = {}
+
   if (checkExistingMetadata === 'check-existing') {
     // delete all metadata which should be collected now and those which are not in the dom anymore
     Object.keys(metadataToUpdate_MUTATE).forEach((p) => {
@@ -196,19 +208,23 @@ function collectMetadataForPaths({
       if (domMetadata == null) {
         delete metadataToUpdate_MUTATE[p]
       }
+      domMetadataCollected[p] = domMetadata
     })
   }
 
   dynamicPathsToCollect.forEach((pathString) => {
     const path = EP.fromString(pathString)
-    const domMetadata = collectMetadataForElementPath(
-      path,
-      validPaths,
-      selectedViews,
-      scale,
-      containerRect,
-      elementCanvasRectangleCache,
-    )
+    const domMetadata =
+      pathString in domMetadataCollected
+        ? domMetadataCollected[pathString]
+        : collectMetadataForElementPath(
+            path,
+            validPaths,
+            selectedViews,
+            scale,
+            containerRect,
+            elementCanvasRectangleCache,
+          )
 
     const spyMetadata = spyCollector.current.spyValues.metadata[EP.toString(path)]
     if (spyMetadata == null) {

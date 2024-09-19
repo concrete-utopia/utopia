@@ -83,10 +83,7 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
         selectedElement,
         canvasState.startingMetadata,
         interactionSession.interactionData,
-        canvasState.scale,
-        canvasState.canvasOffset,
         customState.grid,
-        true,
       )
       if (moveCommands.length === 0) {
         return emptyStrategyApplicationResult
