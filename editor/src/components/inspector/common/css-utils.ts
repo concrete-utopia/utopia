@@ -602,6 +602,12 @@ export type GridCSSRepeat = {
   areaName: null
 }
 
+export type GridCSSMinmax = BaseGridDimension & {
+  type: 'MINMAX'
+  min: GridCSSNumber | GridCSSKeyword
+  max: GridCSSNumber | GridCSSKeyword
+}
+
 export function isGridCSSKeyword(dim: GridDimension): dim is GridCSSKeyword {
   return dim.type === 'KEYWORD'
 }
@@ -634,6 +640,23 @@ export function isGridCSSRepeat(dim: GridDimension): dim is GridCSSRepeat {
   return dim.type === 'REPEAT'
 }
 
+export function isGridCSSMinmax(dim: GridDimension): dim is GridCSSMinmax {
+  return dim.type === 'MINMAX'
+}
+
+export function gridCSSMinmax(
+  min: GridCSSNumber | GridCSSKeyword,
+  max: GridCSSNumber | GridCSSKeyword,
+  areaName: string | null,
+): GridCSSMinmax {
+  return {
+    type: 'MINMAX',
+    min: min,
+    max: max,
+    areaName: areaName,
+  }
+}
+
 export function gridCSSNumber(value: CSSNumber, areaName: string | null): GridCSSNumber {
   return {
     type: 'NUMBER',
@@ -642,7 +665,7 @@ export function gridCSSNumber(value: CSSNumber, areaName: string | null): GridCS
   }
 }
 
-export type GridDiscreteDimension = GridCSSNumber | GridCSSKeyword
+export type GridDiscreteDimension = GridCSSNumber | GridCSSKeyword | GridCSSMinmax
 export type GridDimension = GridDiscreteDimension | GridCSSRepeat
 
 export function printGridCSSNumber(dim: GridDimension): string {
@@ -655,7 +678,9 @@ export function printGridCSSNumber(dim: GridDimension): string {
       if (dim.value.length === 0) {
         return ''
       }
-      return printGridCSSNumber(dim.value[0])
+      return dim.value.map(printGridCSSNumber).join(' ')
+    case 'MINMAX':
+      return `minmax(${printGridCSSNumber(dim.min)}, ${printGridCSSNumber(dim.max)})`
     default:
       assertNever(dim)
   }
@@ -835,6 +860,13 @@ export function printGridDimension(dimension: GridDimension): string {
     case 'REPEAT': {
       return `repeat(${dimension.times}, ${printArrayGridDimensions(dimension.value)})`
     }
+    case 'MINMAX': {
+      const areaName = dimension.areaName != null ? `[${dimension.areaName}] ` : ''
+      return (
+        areaName +
+        `minmax(${printGridDimension(dimension.min)}, ${printGridDimension(dimension.max)})`
+      )
+    }
     default:
       assertNever(dimension)
   }
@@ -931,7 +963,7 @@ const validGridDimensionKeywords = [
   'subgrid',
   'auto-fit',
   'auto-fill',
-  // NOTE: function keywords are omitted as they are treated separately
+  'minmax',
 ] as const
 
 export type ValidGridDimensionKeyword = (typeof validGridDimensionKeywords)[number]
@@ -1117,26 +1149,54 @@ export function parseGridAutoOrTemplateBase(
               break
             }
             case 'Function': {
-              if (child.name.toLowerCase() === 'repeat') {
-                const repeatChildren = child.children.toArray()
-                const times = parseInt(
-                  repeatChildren.find((c) => c.type === 'Number')?.value ?? '0',
-                )
-                const values = new csstree.List<csstree.CssNode>().fromArray(
-                  repeatChildren.filter(
-                    (c) =>
-                      c.type === 'Dimension' ||
-                      c.type === 'Identifier' ||
-                      // We want to support area names too, because they are valid CSS
-                      c.type === 'Brackets',
-                  ),
-                )
-                const parsedDimensions = parseChildren(values)
-                if (isRight(parsedDimensions)) {
-                  dimensions.push(gridCSSRepeat(times, parsedDimensions.value))
-                } else {
-                  return left('Invalid grid CSS repeat values.')
+              const functionName = child.name.toLowerCase()
+              switch (functionName) {
+                case 'repeat': {
+                  const repeatChildren = child.children.toArray()
+                  const times = parseInt(
+                    repeatChildren.find((c) => c.type === 'Number')?.value ?? '0',
+                  )
+                  const values = new csstree.List<csstree.CssNode>().fromArray(
+                    repeatChildren.filter(
+                      (c) =>
+                        c.type === 'Dimension' ||
+                        c.type === 'Identifier' ||
+                        c.type === 'Brackets' ||
+                        c.type === 'Function',
+                    ),
+                  )
+                  const parsedDimensions = parseChildren(values)
+                  if (isRight(parsedDimensions)) {
+                    dimensions.push(gridCSSRepeat(times, parsedDimensions.value))
+                  } else {
+                    return left('Invalid grid CSS repeat values.')
+                  }
+                  break
                 }
+                case 'minmax': {
+                  const values = new csstree.List<csstree.CssNode>().fromArray(
+                    child.children
+                      .toArray()
+                      .filter((c) => c.type === 'Dimension' || c.type === 'Identifier'),
+                  )
+                  const parsedDimensions = parseChildren(values)
+                  if (isRight(parsedDimensions)) {
+                    const min = parsedDimensions.value[0]
+                    const max = parsedDimensions.value[1]
+                    if (
+                      min == null ||
+                      !(min.type === 'NUMBER' || min.type === 'KEYWORD') ||
+                      max == null ||
+                      !(max.type === 'NUMBER' || max.type === 'KEYWORD')
+                    ) {
+                      return left('Invalid minmax arguments.')
+                    }
+                    dimensions.push(gridCSSMinmax(min, max, getAreaName()))
+                  }
+                  break
+                }
+                default:
+                  console.warn(`unknown css grid function ${functionName}`)
               }
               break
             }

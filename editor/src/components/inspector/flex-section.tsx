@@ -607,7 +607,7 @@ function AxisDimensionControl({
         </Subdued>
         <NumberOrKeywordControl
           testId={testId}
-          value={value.value}
+          value={value.type === 'MINMAX' ? cssKeyword('minmax') : value.value}
           keywords={gridDimensionDropdownKeywords}
           keywordTypeCheck={isValidGridDimensionKeyword}
           onSubmitValue={onUpdate(index)}
