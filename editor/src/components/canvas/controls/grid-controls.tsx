@@ -92,7 +92,10 @@ import {
   getGridPlaceholderDomElementFromCoordinates,
   gridCellTargetId,
 } from '../canvas-strategies/strategies/grid-cell-bounds'
-import { getGlobalFrameOfGridCell } from '../canvas-strategies/strategies/grid-helpers'
+import {
+  getGlobalFrameOfGridCell,
+  getGridRelatedIndexes,
+} from '../canvas-strategies/strategies/grid-helpers'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -364,51 +367,10 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
     if (props.fromPropsAxisValues?.type !== 'DIMENSIONS' || resizingIndex == null) {
       return []
     }
-
-    // Build an array of coresizing indexes per element.
-    let coresizeIndexes: number[][][] = [] // This looks scary but it's not! It's just a list of indexes, containing a list of the indexes *per group element*.
-    // For example, 1fr repeat(3, 10px 20px) 1fr, will be represented as:
-    /**
-     * [
-     * 	[ [0] ]
-     *  [ [1, 3] [2, 4]  ]
-     *  [ [5] ]
-     * ]
-     */
-    let elementCount = 0 // basically the expanded index
-    for (const dim of props.fromPropsAxisValues.dimensions) {
-      if (dim.type === 'REPEAT') {
-        let groupIndexes: number[][] = []
-        // for each value push the coresize indexes as many times as the repeats counter
-        for (let valueIndex = 0; valueIndex < dim.value.length; valueIndex++) {
-          let repeatedValueIndexes: number[] = []
-          for (let repeatIndex = 0; repeatIndex < dim.times; repeatIndex++) {
-            repeatedValueIndexes.push(elementCount + valueIndex + repeatIndex * dim.value.length)
-          }
-          groupIndexes.push(repeatedValueIndexes)
-        }
-        coresizeIndexes.push(groupIndexes)
-        elementCount += dim.value.length * dim.times // advance the counter as many times as the repeated values *combined*
-      } else {
-        coresizeIndexes.push([[elementCount]])
-        elementCount++
-      }
-    }
-
-    // Now, expand the indexes calculated above so they "flatten out" to match the generated values
-    let expandedCoresizeIndexes: number[][] = []
-    props.fromPropsAxisValues.dimensions.forEach((dim, dimIndex) => {
-      if (dim.type === 'REPEAT') {
-        for (let repeatIndex = 0; repeatIndex < dim.times * dim.value.length; repeatIndex++) {
-          const indexes = coresizeIndexes[dimIndex][repeatIndex % dim.value.length]
-          expandedCoresizeIndexes.push(indexes)
-        }
-      } else {
-        expandedCoresizeIndexes.push(coresizeIndexes[dimIndex][0])
-      }
+    return getGridRelatedIndexes({
+      template: props.fromPropsAxisValues.dimensions,
+      index: resizingIndex,
     })
-
-    return expandedCoresizeIndexes[resizingIndex] ?? []
   }, [props.fromPropsAxisValues, resizingIndex])
 
   if (props.axisValues == null) {
