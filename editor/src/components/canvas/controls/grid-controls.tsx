@@ -89,6 +89,7 @@ import {
   getGridPlaceholderDomElementFromCoordinates,
   gridCellTargetId,
 } from '../canvas-strategies/strategies/grid-cell-bounds'
+import { getGlobalFrameOfGridCell } from '../canvas-strategies/strategies/grid-helpers'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -1092,61 +1093,31 @@ const AbsoluteDistanceIndicators = React.memo(
   (props: { targetRootCell: GridCellCoordinates | null }) => {
     const colorTheme = useColorTheme()
 
-    const cellFrame = useEditorState(
+    const gridMetadata = useEditorState(
       Substores.metadata,
       (store) => {
         if (store.editor.selectedViews.length !== 1) {
           return null
         }
 
-        const meta = MetadataUtils.findElementByElementPath(
+        return MetadataUtils.findElementByElementPath(
           store.editor.jsxMetadata,
           store.editor.selectedViews[0],
         )
-        if (!MetadataUtils.isPositionAbsolute(meta)) {
-          return null
-        }
-
-        return nullIfInfinity(meta?.globalFrame)
       },
       'AbsoluteDistanceIndicators cellFrame',
     )
-    const canvasScale = useEditorState(
-      Substores.canvasOffset,
-      (store) => store.editor.canvas.scale,
-      'AbsoluteDistanceIndicators canvasScale',
-    )
 
-    const canvasOffset = useEditorState(
-      Substores.canvasOffset,
-      (store) => store.editor.canvas.roundedCanvasOffset,
-      'AbsoluteDistanceIndicators canvasOffset',
-    )
+    const cellFrame = !MetadataUtils.isPositionAbsolute(gridMetadata)
+      ? null
+      : nullIfInfinity(gridMetadata?.globalFrame)
 
     const targetCellBoundingBox = React.useMemo(() => {
-      if (props.targetRootCell == null) {
+      if (gridMetadata == null || props.targetRootCell == null) {
         return null
       }
-      const element = getGridPlaceholderDomElementFromCoordinates(props.targetRootCell)
-      const boundingBox = element?.getBoundingClientRect()
-      if (boundingBox == null) {
-        return null
-      }
-
-      const canvasOrigin = windowToCanvasCoordinates(
-        canvasScale,
-        canvasOffset,
-        windowPoint({ x: boundingBox.left, y: boundingBox.top }),
-      ).canvasPositionRounded
-      const canvasRect = canvasRectangle({
-        x: canvasOrigin.x,
-        y: canvasOrigin.y,
-        width: boundingBox.width * canvasScale,
-        height: boundingBox.height * canvasScale,
-      })
-
-      return canvasRect
-    }, [props.targetRootCell, canvasScale, canvasOffset])
+      return getGlobalFrameOfGridCell(gridMetadata, props.targetRootCell)
+    }, [props.targetRootCell, gridMetadata])
 
     const distanceTop =
       targetCellBoundingBox == null || cellFrame == null ? 0 : cellFrame.y - targetCellBoundingBox.y
@@ -1437,16 +1408,10 @@ function useCellAnimation(params: {
 
   const animate = useCanvasAnimation(selectedViews)
 
-  const canvasScale = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.scale,
-    'useSnapAnimation canvasScale',
-  )
-
-  const canvasOffset = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'useSnapAnimation canvasOffset',
+  const gridMetadata = useEditorState(
+    Substores.metadata,
+    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, gridPath),
+    'useCellAnimation gridMetadata',
   )
 
   const moveFromPoint = React.useMemo(() => {
@@ -1454,22 +1419,12 @@ function useCellAnimation(params: {
   }, [lastSnapPoint, shadowFrame])
 
   const snapPoint = React.useMemo(() => {
-    if (gridPath == null || targetRootCell == null) {
+    if (gridMetadata == null || targetRootCell == null) {
       return null
     }
 
-    const element = document.getElementById(
-      gridCellTargetId(gridPath, targetRootCell.row, targetRootCell.column),
-    )
-    if (element == null) {
-      return null
-    }
-
-    const rect = element.getBoundingClientRect()
-    const point = windowPoint({ x: rect.x, y: rect.y })
-
-    return windowToCanvasCoordinates(canvasScale, canvasOffset, point).canvasPositionRounded
-  }, [canvasScale, canvasOffset, gridPath, targetRootCell])
+    return getGlobalFrameOfGridCell(gridMetadata, targetRootCell)
+  }, [gridMetadata, targetRootCell])
 
   React.useEffect(() => {
     if (disabled) {
