@@ -25,9 +25,7 @@ import type { GridDimension } from '../../../../components/inspector/common/css-
 import {
   cssNumber,
   gridCSSNumber,
-  gridCSSRepeat,
   isGridCSSNumber,
-  isGridCSSRepeat,
   printArrayGridDimensions,
 } from '../../../../components/inspector/common/css-utils'
 import { toFirst } from '../../../../core/shared/optics/optic-utilities'
@@ -36,6 +34,7 @@ import type { Either } from '../../../../core/shared/either'
 import { foldEither, isLeft, isRight } from '../../../../core/shared/either'
 import { roundToNearestWhole } from '../../../../core/shared/math-utils'
 import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-template'
+import { expandGridDimensions, replaceGridTemplateDimensionAtIndex } from './grid-helpers'
 
 export const resizeGridStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -116,24 +115,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      // Expanded representation of the original values, where repeated elements are serialized.
-      // Each element also contains the indexes information to be used later on to build the resized
-      // template string.
-      const expandedOriginalValues = originalValues.dimensions.reduce((acc, cur, index) => {
-        if (isGridCSSRepeat(cur)) {
-          const repeatGroup = cur.value.map((dim, repeatedIndex) =>
-            expandedGridDimension(dim, index, repeatedIndex),
-          )
-          let expanded: ExpandedGridDimension[] = []
-          for (let i = 0; i < cur.times; i++) {
-            expanded.push(...repeatGroup)
-          }
-          return [...acc, ...expanded]
-        } else {
-          return [...acc, expandedGridDimension(cur, index)]
-        }
-      }, [] as ExpandedGridDimension[])
-
+      const expandedOriginalValues = expandGridDimensions(originalValues.dimensions)
       const mergedValues: GridAutoOrTemplateBase = {
         type: calculatedValues.type,
         dimensions: calculatedValues.dimensions.map((dim, index) => {
@@ -181,11 +163,12 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         areaName,
       )
 
-      const newDimensions = buildResizedDimensions({
-        newValue: newValue,
-        originalValues: originalValues.dimensions,
-        target: expandedOriginalValues[control.columnOrRow],
-      })
+      const newDimensions = replaceGridTemplateDimensionAtIndex(
+        originalValues.dimensions,
+        expandedOriginalValues,
+        control.columnOrRow,
+        newValue,
+      )
 
       const propertyValueAsString = printArrayGridDimensions(newDimensions)
 
@@ -205,51 +188,6 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       return strategyApplicationResult(commands)
     },
   }
-}
-
-type DimensionIndexes = {
-  originalIndex: number // the index of this element in the original values
-  repeatedIndex: number // the index of this element, if it's generated via a repeat, inside the repeated values array definition
-}
-
-function expandedGridDimension(
-  dim: GridDimension,
-  originalIndex: number,
-  repeatedIndex: number = 0,
-): ExpandedGridDimension {
-  return {
-    ...dim,
-    indexes: {
-      originalIndex: originalIndex,
-      repeatedIndex: repeatedIndex,
-    },
-  }
-}
-
-type ExpandedGridDimension = GridDimension & {
-  indexes: DimensionIndexes
-}
-
-function buildResizedDimensions(params: {
-  newValue: GridDimension
-  originalValues: GridDimension[]
-  target: ExpandedGridDimension
-}) {
-  return params.originalValues.map((dim, index) => {
-    if (index !== params.target.indexes.originalIndex) {
-      return dim
-    } else if (isGridCSSRepeat(dim)) {
-      const repeatedIndex = params.target.indexes.repeatedIndex ?? 0
-      const repeatGroup = [
-        ...dim.value.slice(0, repeatedIndex),
-        params.newValue,
-        ...dim.value.slice(repeatedIndex + 1),
-      ]
-      return gridCSSRepeat(dim.times, repeatGroup)
-    } else {
-      return params.newValue
-    }
-  })
 }
 
 function getNewDragValue(
