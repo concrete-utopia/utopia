@@ -426,7 +426,7 @@ function gridChildAbsoluteMoveCommands(
     return []
   }
 
-  const offsetInTarget = windowPoint({
+  const offsetInTarget = canvasPoint({
     x: dragInteractionData.originalDragStart.x - targetMetadata.globalFrame.x,
     y: dragInteractionData.originalDragStart.y - targetMetadata.globalFrame.y,
   })
