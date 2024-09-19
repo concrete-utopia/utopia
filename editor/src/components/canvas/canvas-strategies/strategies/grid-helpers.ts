@@ -13,7 +13,7 @@ import {
   type GridElementProperties,
   type GridPosition,
 } from '../../../../core/shared/element-template'
-import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
   canvasRectangle,
@@ -434,7 +434,7 @@ function gridChildAbsoluteMoveCommands(
     return []
   }
 
-  const offsetInTarget = windowPoint({
+  const offsetInTarget = canvasPoint({
     x: dragInteractionData.originalDragStart.x - targetMetadata.globalFrame.x,
     y: dragInteractionData.originalDragStart.y - targetMetadata.globalFrame.y,
   })
@@ -609,7 +609,7 @@ export function getGlobalFrameOfGridCell(
     return null
   }
 
-  return gridCellGlobalFrames[coords.row - 1][coords.column - 1] ?? null
+  return gridCellGlobalFrames[coords.row - 1]?.[coords.column - 1] ?? null
 }
 
 function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number> | null {

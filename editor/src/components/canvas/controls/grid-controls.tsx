@@ -20,7 +20,10 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import { defaultEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import type { GridAutoOrTemplateDimensions } from '../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadata,
+  GridAutoOrTemplateDimensions,
+} from '../../../core/shared/element-template'
 import {
   isGridAutoOrTemplateDimensions,
   type GridAutoOrTemplateBase,
@@ -28,7 +31,6 @@ import {
 import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
-  canvasRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
   nullIfInfinity,
@@ -85,11 +87,11 @@ import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { CanvasLabel } from './select-mode/controls-common'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import type { GridCellCoordinates } from '../canvas-strategies/strategies/grid-cell-bounds'
+import { gridCellTargetId } from '../canvas-strategies/strategies/grid-cell-bounds'
 import {
-  getGridPlaceholderDomElementFromCoordinates,
-  gridCellTargetId,
-} from '../canvas-strategies/strategies/grid-cell-bounds'
-import { getGridRelatedIndexes } from '../canvas-strategies/strategies/grid-helpers'
+  getGlobalFrameOfGridCell,
+  getGridRelatedIndexes,
+} from '../canvas-strategies/strategies/grid-helpers'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -452,6 +454,7 @@ export type GridData = {
   rows: number
   columns: number
   cells: number
+  metadata: ElementInstanceMetadata
 }
 export function useGridData(elementPaths: ElementPath[]): GridData[] {
   const grids = useEditorState(
@@ -495,6 +498,7 @@ export function useGridData(elementPaths: ElementPath[]): GridData[] {
 
         return {
           elementPath: targetGridContainer.elementPath,
+          metadata: targetGridContainer,
           frame: targetGridContainer.globalFrame,
           gridTemplateColumns: gridTemplateColumns,
           gridTemplateRows: gridTemplateRows,
@@ -912,8 +916,6 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                       position: 'relative',
                       pointerEvents: 'initial',
                     }}
-                    data-grid-row={countedRow}
-                    data-grid-column={countedColumn}
                   >
                     {when(
                       features.Grid.dotgrid,
@@ -1052,61 +1054,31 @@ const AbsoluteDistanceIndicators = React.memo(
   (props: { targetRootCell: GridCellCoordinates | null }) => {
     const colorTheme = useColorTheme()
 
-    const cellFrame = useEditorState(
+    const gridMetadata = useEditorState(
       Substores.metadata,
       (store) => {
         if (store.editor.selectedViews.length !== 1) {
           return null
         }
 
-        const meta = MetadataUtils.findElementByElementPath(
+        return MetadataUtils.findElementByElementPath(
           store.editor.jsxMetadata,
           store.editor.selectedViews[0],
         )
-        if (!MetadataUtils.isPositionAbsolute(meta)) {
-          return null
-        }
-
-        return nullIfInfinity(meta?.globalFrame)
       },
       'AbsoluteDistanceIndicators cellFrame',
     )
-    const canvasScale = useEditorState(
-      Substores.canvasOffset,
-      (store) => store.editor.canvas.scale,
-      'AbsoluteDistanceIndicators canvasScale',
-    )
 
-    const canvasOffset = useEditorState(
-      Substores.canvasOffset,
-      (store) => store.editor.canvas.roundedCanvasOffset,
-      'AbsoluteDistanceIndicators canvasOffset',
-    )
+    const cellFrame = !MetadataUtils.isPositionAbsolute(gridMetadata)
+      ? null
+      : nullIfInfinity(gridMetadata?.globalFrame)
 
     const targetCellBoundingBox = React.useMemo(() => {
-      if (props.targetRootCell == null) {
+      if (gridMetadata == null || props.targetRootCell == null) {
         return null
       }
-      const element = getGridPlaceholderDomElementFromCoordinates(props.targetRootCell)
-      const boundingBox = element?.getBoundingClientRect()
-      if (boundingBox == null) {
-        return null
-      }
-
-      const canvasOrigin = windowToCanvasCoordinates(
-        canvasScale,
-        canvasOffset,
-        windowPoint({ x: boundingBox.left, y: boundingBox.top }),
-      ).canvasPositionRounded
-      const canvasRect = canvasRectangle({
-        x: canvasOrigin.x,
-        y: canvasOrigin.y,
-        width: boundingBox.width * canvasScale,
-        height: boundingBox.height * canvasScale,
-      })
-
-      return canvasRect
-    }, [props.targetRootCell, canvasScale, canvasOffset])
+      return getGlobalFrameOfGridCell(gridMetadata, props.targetRootCell)
+    }, [props.targetRootCell, gridMetadata])
 
     const distanceTop =
       targetCellBoundingBox == null || cellFrame == null ? 0 : cellFrame.y - targetCellBoundingBox.y
@@ -1397,16 +1369,10 @@ function useCellAnimation(params: {
 
   const animate = useCanvasAnimation(selectedViews)
 
-  const canvasScale = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.scale,
-    'useSnapAnimation canvasScale',
-  )
-
-  const canvasOffset = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'useSnapAnimation canvasOffset',
+  const gridMetadata = useEditorState(
+    Substores.metadata,
+    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, gridPath),
+    'useCellAnimation gridMetadata',
   )
 
   const moveFromPoint = React.useMemo(() => {
@@ -1414,22 +1380,12 @@ function useCellAnimation(params: {
   }, [lastSnapPoint, shadowFrame])
 
   const snapPoint = React.useMemo(() => {
-    if (gridPath == null || targetRootCell == null) {
+    if (gridMetadata == null || targetRootCell == null) {
       return null
     }
 
-    const element = document.getElementById(
-      gridCellTargetId(gridPath, targetRootCell.row, targetRootCell.column),
-    )
-    if (element == null) {
-      return null
-    }
-
-    const rect = element.getBoundingClientRect()
-    const point = windowPoint({ x: rect.x, y: rect.y })
-
-    return windowToCanvasCoordinates(canvasScale, canvasOffset, point).canvasPositionRounded
-  }, [canvasScale, canvasOffset, gridPath, targetRootCell])
+    return getGlobalFrameOfGridCell(gridMetadata, targetRootCell)
+  }, [gridMetadata, targetRootCell])
 
   React.useEffect(() => {
     if (disabled) {
@@ -1760,10 +1716,6 @@ function gridEdgeToWidthHeight(props: GridResizeEdgeProperties, scale: number): 
 
 function gridKeyFromPath(path: ElementPath): string {
   return `grid-${EP.toString(path)}`
-}
-
-export function getGridPlaceholderDomElement(elementPath: ElementPath): HTMLElement | null {
-  return document.getElementById(gridKeyFromPath(elementPath))
 }
 
 const gridPlaceholderBorder = (color: string) => `2px solid ${color}`
