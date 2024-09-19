@@ -20,7 +20,10 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import { defaultEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import type { GridAutoOrTemplateDimensions } from '../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadata,
+  GridAutoOrTemplateDimensions,
+} from '../../../core/shared/element-template'
 import {
   isGridAutoOrTemplateDimensions,
   type GridAutoOrTemplateBase,
@@ -493,6 +496,7 @@ export type GridData = {
   rows: number
   columns: number
   cells: number
+  metadata: ElementInstanceMetadata
 }
 export function useGridData(elementPaths: ElementPath[]): GridData[] {
   const grids = useEditorState(
@@ -536,6 +540,7 @@ export function useGridData(elementPaths: ElementPath[]): GridData[] {
 
         return {
           elementPath: targetGridContainer.elementPath,
+          metadata: targetGridContainer,
           frame: targetGridContainer.globalFrame,
           gridTemplateColumns: gridTemplateColumns,
           gridTemplateRows: gridTemplateRows,
