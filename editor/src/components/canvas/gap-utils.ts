@@ -229,8 +229,7 @@ export function gridGapControlBoundsFromMetadata(
   if (gridCellBounds == null) {
     return emptyResult
   }
-
-  const cellBounds = canvasRectangle({
+  const allCellsBound = canvasRectangle({
     x: gridCellBounds[0][0].x - parentGridBounds.x,
     y: gridCellBounds[0][0].y - parentGridBounds.y,
     width:
@@ -238,8 +237,8 @@ export function gridGapControlBoundsFromMetadata(
       gridCellBounds[0][gridColumns - 1].width -
       gridCellBounds[0][0].x,
     height:
-      gridCellBounds[gridColumns - 1][0].y +
-      gridCellBounds[gridColumns - 1][0].height -
+      gridCellBounds[gridRows - 1][0].y +
+      gridCellBounds[gridRows - 1][0].height -
       gridCellBounds[0][0].y,
   })
 
@@ -251,9 +250,9 @@ export function gridGapControlBoundsFromMetadata(
     return {
       gapId: `${EP.toString(grid.elementPath)}-row-gap-${i}`,
       bounds: canvasRectangle({
-        x: cellBounds.x,
+        x: allCellsBound.x,
         y: firstChildBounds.y + firstChildBounds.height - parentGridBounds.y,
-        width: cellBounds.width,
+        width: allCellsBound.width,
         height: secondChildBounds.y - firstChildBounds.y - firstChildBounds.height,
       }),
       gap: gapValues.row,
@@ -270,9 +269,9 @@ export function gridGapControlBoundsFromMetadata(
       gapId: `${EP.toString(grid.elementPath)}-column-gap-${i}`,
       bounds: canvasRectangle({
         x: firstChildBounds.x + firstChildBounds.width - parentGridBounds.x,
-        y: cellBounds.y,
+        y: allCellsBound.y,
         width: secondChildBounds.x - firstChildBounds.x - firstChildBounds.width,
-        height: cellBounds.height,
+        height: allCellsBound.height,
       }),
       gap: gapValues.column,
       axis: 'column' as Axis,
@@ -285,7 +284,7 @@ export function gridGapControlBoundsFromMetadata(
     columns: gridColumns,
     gridTemplateRows: gridTemplateRows ?? '',
     gridTemplateColumns: gridTemplateColumns ?? '',
-    cellBounds: cellBounds,
+    cellBounds: allCellsBound,
     gapValues: gapValues,
   }
 }
