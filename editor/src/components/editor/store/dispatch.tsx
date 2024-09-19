@@ -348,7 +348,7 @@ function maybeRequestModelUpdate(
 
   // Should anything need to be sent across, do so here.
   if (filesToUpdate.length > 0) {
-    const startTime = performance.now()
+    performance.mark('parse-start')
     const parseFinished = getParseResult(
       workers,
       filesToUpdate,
@@ -358,9 +358,11 @@ function maybeRequestModelUpdate(
       NUM_PARSER_CHUNKS,
     )
       .then((parseResult) => {
-        const endTime = performance.now()
+        performance.mark('parse-end')
+        performance.measure('parse-duration', 'parse-start', 'parse-end')
+        const duration = performance.getEntriesByName('parse-duration')[0].duration
         // eslint-disable-next-line no-console
-        console.log(`parseFinished for ${filesToUpdate.length} files in ${endTime - startTime}ms`)
+        console.log(`parseFinished for ${filesToUpdate.length} files in ${duration.toFixed(2)}ms`)
         const updates = parseResult.map((fileResult) => {
           return parseResultToWorkerUpdates(fileResult)
         })

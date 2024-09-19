@@ -139,8 +139,8 @@ import { keysEqualityExhaustive, shallowEqual } from '../core/shared/equality-ut
 import { runDomSampler } from '../components/canvas/dom-sampler'
 import { omitWithPredicate } from '../core/shared/object-utils'
 
-export const NUM_PARSER_PRINTER_WORKERS = 5
-export const NUM_PARSER_CHUNKS = 5
+export const NUM_PARSER_PRINTER_WORKERS = 2
+export const NUM_PARSER_CHUNKS = 2
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
