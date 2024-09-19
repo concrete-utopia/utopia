@@ -13,7 +13,7 @@ import {
   type GridElementProperties,
   type GridPosition,
 } from '../../../../core/shared/element-template'
-import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
   canvasRectangle,

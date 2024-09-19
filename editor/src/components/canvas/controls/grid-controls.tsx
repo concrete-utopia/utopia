@@ -1762,10 +1762,6 @@ function gridKeyFromPath(path: ElementPath): string {
   return `grid-${EP.toString(path)}`
 }
 
-export function getGridPlaceholderDomElement(elementPath: ElementPath): HTMLElement | null {
-  return document.getElementById(gridKeyFromPath(elementPath))
-}
-
 const gridPlaceholderBorder = (color: string) => `2px solid ${color}`
 
 export function controlsForGridPlaceholders(gridPath: ElementPath): ControlWithProps<any> {
