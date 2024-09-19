@@ -168,6 +168,7 @@ import { getComponentDescriptorForTarget } from '../../core/property-controls/pr
 import type { PropertyControlsInfo } from '../custom-code/code-file'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { addAll } from '../../core/shared/set-utils'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -1782,7 +1783,10 @@ function getValidElementPathsFromElement(
       ? EP.appendNewElementPath(parentPath, uid)
       : EP.appendToPath(parentPath, uid)
     : parentPath
-  let paths = includeElementInPath ? [path] : []
+  let paths: Set<ElementPath> = new Set()
+  if (includeElementInPath) {
+    paths.add(path)
+  }
   if (isJSXElementLike(element)) {
     const isRemixScene = isRemixSceneElement(element, filePath, projectContents)
     if (isRemixScene) {
@@ -1800,8 +1804,9 @@ function getValidElementPathsFromElement(
             return
           }
 
-          paths.push(
-            ...getValidElementPathsFromElement(
+          addAll(
+            paths,
+            getValidElementPathsFromElement(
               focusedElementPath,
               topLevelElement,
               parentPathInner,
@@ -1834,7 +1839,7 @@ function getValidElementPathsFromElement(
           }
         }
 
-        return paths
+        return Array.from(paths)
       }
     }
 
@@ -1866,7 +1871,7 @@ function getValidElementPathsFromElement(
         resolve,
         getRemixValidPathsGenerationContext,
       )
-      paths.push(...result)
+      addAll(paths, result)
     }
     matchingAutofocusedPathParts.forEach((autofocusedPathPart) => {
       const result = getValidElementPaths(
@@ -1879,13 +1884,14 @@ function getValidElementPathsFromElement(
         resolve,
         getRemixValidPathsGenerationContext,
       )
-      paths.push(...result)
+      addAll(paths, result)
     })
 
     // finally, add children elements
     fastForEach(element.children, (c) =>
-      paths.push(
-        ...getValidElementPathsFromElement(
+      addAll(
+        paths,
+        getValidElementPathsFromElement(
           focusedElementPath,
           c,
           path,
@@ -1907,8 +1913,9 @@ function getValidElementPathsFromElement(
         if (p.type === 'JSX_ATTRIBUTES_ENTRY') {
           const prop = p.value
           if (prop.type === 'JSX_ELEMENT') {
-            paths.push(
-              ...getValidElementPathsFromElement(
+            addAll(
+              paths,
+              getValidElementPathsFromElement(
                 focusedElementPath,
                 prop,
                 path,
@@ -1928,17 +1935,18 @@ function getValidElementPathsFromElement(
       })
     }
 
-    return paths
+    return Array.from(paths)
   } else if (
     (isJSXTextBlock(element) && isFeatureEnabled('Condensed Navigator Entries')) ||
     isJSIdentifier(element) ||
     isJSPropertyAccess(element) ||
     isJSElementAccess(element)
   ) {
-    return paths
+    return Array.from(paths)
   } else if (isJSXMapExpression(element)) {
-    paths.push(
-      ...getValidElementPathsFromElement(
+    addAll(
+      paths,
+      getValidElementPathsFromElement(
         focusedElementPath,
         element.valueToMap,
         path,
@@ -1952,7 +1960,10 @@ function getValidElementPathsFromElement(
         resolve,
         getRemixValidPathsGenerationContext,
       ),
-      ...getValidElementPathsFromElement(
+    )
+    addAll(
+      paths,
+      getValidElementPathsFromElement(
         focusedElementPath,
         element.mapFunction,
         path,
@@ -1967,7 +1978,7 @@ function getValidElementPathsFromElement(
         getRemixValidPathsGenerationContext,
       ),
     )
-    return paths
+    return Array.from(paths)
   } else if (isJSExpressionOtherJavaScript(element)) {
     // FIXME: From investigation of https://github.com/concrete-utopia/utopia/issues/1137
     // The paths this will generate will only be correct if the elements from `elementsWithin`
@@ -1988,8 +1999,9 @@ function getValidElementPathsFromElement(
       // We explicitly prevent auto-focusing generated elements here, because to support it would
       // require using the elementPathTree to determine how many children of a scene were actually
       // generated, creating a chicken and egg situation.
-      paths.push(
-        ...getValidElementPathsFromElement(
+      addAll(
+        paths,
+        getValidElementPathsFromElement(
           focusedElementPath,
           e,
           path,
@@ -2005,11 +2017,12 @@ function getValidElementPathsFromElement(
         ),
       ),
     )
-    return paths
+    return Array.from(paths)
   } else if (isJSXConditionalExpression(element)) {
     fastForEach([element.whenTrue, element.whenFalse], (e) => {
-      paths.push(
-        ...getValidElementPathsFromElement(
+      addAll(
+        paths,
+        getValidElementPathsFromElement(
           focusedElementPath,
           e,
           path,
@@ -2025,7 +2038,7 @@ function getValidElementPathsFromElement(
         ),
       )
     })
-    return paths
+    return Array.from(paths)
   } else {
     return []
   }
