@@ -573,6 +573,14 @@ export const escapeHatch: ContextMenuItem<CanvasData> = {
   },
 }
 
+/**
+ * This is necessary, because all the tailwind classname generator libs I looked at during the spike map look up properties based on tailwind namespaces. Because of this, the `left` prop from CSS has to be mapped to `positionLeft`, `top` has to be mapped to `positionTop`
+ */
+const TailwindNamespaceMapping: Record<string, string> = {
+  left: 'positionLeft',
+  top: 'positionTop',
+}
+
 export const convertToTailwind: ContextMenuItem<CanvasData> = {
   name: 'Convert to Tailwind',
   enabled: true,
@@ -611,7 +619,9 @@ export const convertToTailwind: ContextMenuItem<CanvasData> = {
               : typeof value === 'number'
               ? `${value}px`
               : `${value}`
-          const tailwindClass = classname({ property: key, value: valueString })
+
+          const tailwindNameSpace = TailwindNamespaceMapping[key] ?? key
+          const tailwindClass = classname({ property: tailwindNameSpace, value: valueString })
           if (tailwindClass == null) {
             return null
           }
@@ -623,11 +633,10 @@ export const convertToTailwind: ContextMenuItem<CanvasData> = {
       }, styleProps)
 
       return [
-        deleteProperties(
-          'always',
-          view,
-          stylePropConversions.map(([, prop]) => PP.create('style', prop)),
-        ),
+        deleteProperties('always', view, [
+          ...stylePropConversions.map(([, prop]) => PP.create('style', prop)),
+          PP.create('style'),
+        ]),
         ...stylePropConversions.map(([tailwindClass]) =>
           updateClassListCommand('always', view, UCL.add(tailwindClass)),
         ),
