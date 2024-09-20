@@ -608,6 +608,21 @@ export type GridCSSMinmax = BaseGridDimension & {
   max: GridCSSNumber | GridCSSKeyword
 }
 
+export function parseGridCSSMinmax(input: string): GridCSSMinmax | null {
+  const parsed = csstree.parse(input, { context: 'value' })
+  if (parsed.type === 'Value') {
+    const parsedDimensions = parseGridChildren(parsed.children)
+    if (
+      isRight(parsedDimensions) &&
+      parsedDimensions.value.length === 1 &&
+      parsedDimensions.value[0].type === 'MINMAX'
+    ) {
+      return parsedDimensions.value[0]
+    }
+  }
+  return null
+}
+
 export function isGridCSSKeyword(dim: GridDimension): dim is GridCSSKeyword {
   return dim.type === 'KEYWORD'
 }
@@ -962,7 +977,7 @@ const validGridDimensionKeywords = [
   'subgrid',
   'auto-fit',
   'auto-fill',
-  'minmax', // TODO this should be removed once we have proper editing of grid template expressions!
+  'minmax',
 ] as const
 
 export type ValidGridDimensionKeyword = (typeof validGridDimensionKeywords)[number]

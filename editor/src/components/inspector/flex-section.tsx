@@ -28,6 +28,7 @@ import {
   InspectorSectionIcons,
   NumberInput,
   SquareButton,
+  StringInput,
   Subdued,
   Tooltip,
 } from '../../uuiui'
@@ -36,6 +37,7 @@ import type {
   CSSNumber,
   GridAutoFlow,
   GridCSSKeyword,
+  GridCSSMinmax,
   GridDiscreteDimension,
   UnknownOrEmptyInput,
   ValidGridDimensionKeyword,
@@ -54,7 +56,10 @@ import {
   isGridCSSNumber,
   isGridCSSRepeat,
   isValidGridDimensionKeyword,
+  parseCSSNumber,
+  parseGridCSSMinmax,
   printArrayGridDimensions,
+  printGridDimension,
   type GridDimension,
 } from './common/css-utils'
 import { applyCommandsAction, transientActions } from '../editor/actions/action-creators'
@@ -104,6 +109,7 @@ import {
   useSetHoveredControlsHandlers,
 } from '../canvas/controls/select-mode/select-mode-hooks'
 import type { Axis } from '../canvas/gap-utils'
+import { isRight } from '../../core/shared/either'
 
 const axisDropdownMenuButton = 'axisDropdownMenuButton'
 
@@ -614,16 +620,25 @@ function AxisDimensionControl({
         >
           {value.areaName ?? index + 1}
         </Subdued>
-        <NumberOrKeywordControl
-          testId={testId}
-          value={value.type === 'MINMAX' ? cssKeyword('minmax') : value.value} // TODO: this is just a placeholder for real editing of expressions
-          keywords={gridDimensionDropdownKeywords}
-          keywordTypeCheck={isValidGridDimensionKeyword}
-          onSubmitValue={onUpdateNumberOrKeyword(index)}
-          controlStatus={
-            isGridCSSKeyword(value) && value.value.value === 'auto' ? 'off' : undefined
-          }
-        />
+        {value.type === 'MINMAX' ? (
+          <GridFunctionInput
+            testId={testId}
+            value={value}
+            onUpdateNumberOrKeyword={onUpdateNumberOrKeyword(index)}
+            onUpdateDimension={onUpdateDimension(index)}
+          />
+        ) : (
+          <NumberOrKeywordControl
+            testId={testId}
+            value={value.value}
+            keywords={gridDimensionDropdownKeywords}
+            keywordTypeCheck={isValidGridDimensionKeyword}
+            onSubmitValue={onUpdateNumberOrKeyword(index)}
+            controlStatus={
+              isGridCSSKeyword(value) && value.value.value === 'auto' ? 'off' : undefined
+            }
+          />
+        )}
       </div>
       <SquareButton className={axisDropdownMenuButton}>
         <DropdownMenu align='end' items={items} opener={opener} onOpenChange={onOpenChange} />
@@ -631,6 +646,55 @@ function AxisDimensionControl({
     </div>
   )
 }
+
+const GridFunctionInput = React.memo(
+  ({
+    testId,
+    value,
+    onUpdateNumberOrKeyword,
+    onUpdateDimension,
+  }: {
+    testId: string
+    value: GridCSSMinmax // This can be extended to support more function types
+    onUpdateNumberOrKeyword: (v: CSSNumber | CSSKeyword<ValidGridDimensionKeyword>) => void
+    onUpdateDimension: (v: GridDimension) => void
+  }) => {
+    const [printValue, setPrintValue] = React.useState<string>(printGridDimension(value))
+    React.useEffect(() => setPrintValue(printGridDimension(value)), [value])
+
+    const onChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+      setPrintValue(e.target.value)
+    }, [])
+
+    const onKeyDown = React.useCallback(
+      (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          if (isValidGridDimensionKeyword(printValue)) {
+            return onUpdateNumberOrKeyword(cssKeyword(printValue))
+          }
+
+          const maybeNumber = parseCSSNumber(printValue, 'AnyValid', 'px')
+          if (isRight(maybeNumber)) {
+            return onUpdateNumberOrKeyword(maybeNumber.value)
+          }
+
+          const maybeMinmax = parseGridCSSMinmax(printValue)
+          if (maybeMinmax != null) {
+            return onUpdateDimension({ ...maybeMinmax, areaName: value.areaName })
+          }
+
+          setPrintValue(printGridDimension(value))
+        }
+      },
+      [printValue, onUpdateNumberOrKeyword, onUpdateDimension, value],
+    )
+
+    return (
+      <StringInput testId={testId} value={printValue} onChange={onChange} onKeyDown={onKeyDown} />
+    )
+  },
+)
+GridFunctionInput.displayName = 'GridFunctionInput'
 
 function removeTemplateValueAtIndex(
   original: GridContainerProperties,
