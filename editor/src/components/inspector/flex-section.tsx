@@ -660,6 +660,8 @@ const GridFunctionInput = React.memo(
     onUpdateDimension: (v: GridDimension) => void
   }) => {
     const [printValue, setPrintValue] = React.useState<string>(printGridDimension(value))
+    React.useEffect(() => setPrintValue(printGridDimension(value)), [value])
+
     const onChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       setPrintValue(e.target.value)
     }, [])
