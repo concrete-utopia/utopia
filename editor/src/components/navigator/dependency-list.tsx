@@ -559,6 +559,8 @@ function getCssFilesFromProjectContents(projectContents: ProjectContentTreeRoot)
   return files
 }
 
+export const TAILWIND_CONFIG_SPIKE_STATE: { current: Config | null } = { current: null }
+
 export const useTailwindCompilation = (requireFn: RequireFn) => {
   const projectContents = useEditorState(
     Substores.projectContents,
@@ -580,6 +582,7 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
       tailwindFile == null || tailwindFile.type !== 'TEXT_FILE'
         ? null
         : importDefault(requireFn('/', TailwindConfigPath))
+    TAILWIND_CONFIG_SPIKE_STATE.current = rawConfig as Config
     void generateTailwindStyles(rawConfig as Config, allCSSFiles)
   }, [isInteractionActiveRef, projectContents, requireFn])
 

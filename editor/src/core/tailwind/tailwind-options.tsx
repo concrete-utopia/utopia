@@ -32,6 +32,7 @@ import type { AttributeCategory } from './attribute-categories'
 import { AttributeCategories } from './attribute-categories'
 import { parse } from '@xengine/tailwindcss-class-parser'
 import type { Config } from 'tailwindcss'
+import { TAILWIND_CONFIG_SPIKE_STATE } from '../../components/navigator/dependency-list'
 
 export interface TailWindOption {
   label: string
@@ -136,14 +137,10 @@ export function getClassNameMapping(classString: string): { [key: string]: strin
   const mapping: { [key: string]: string } = {}
   const classParts = classString.split(' ')
   classParts.forEach((part) => {
-    const parsed = parseSafe(
-      part,
-      null /* TODO: pass the tailwind config here as the second argument */,
-    )
+    const parsed = parseSafe(part, TAILWIND_CONFIG_SPIKE_STATE.current)
     if (parsed.kind === 'error') {
       return
     }
-
     mapping[parsed.root] = parsed.value
   })
   return mapping

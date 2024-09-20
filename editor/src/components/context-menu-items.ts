@@ -63,6 +63,7 @@ import { deleteProperties } from './canvas/commands/delete-properties-command'
 import { updateClassListCommand } from './canvas/commands/update-class-list-command'
 import * as UCL from './canvas/commands/update-class-list-command'
 import { mapDropNulls } from '../core/shared/array-utils'
+import { TAILWIND_CONFIG_SPIKE_STATE } from './navigator/dependency-list'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -621,7 +622,10 @@ export const convertToTailwind: ContextMenuItem<CanvasData> = {
               : `${value}`
 
           const tailwindNameSpace = TailwindNamespaceMapping[key] ?? key
-          const tailwindClass = classname({ property: tailwindNameSpace, value: valueString })
+          const tailwindClass = classname(
+            { property: tailwindNameSpace, value: valueString },
+            TAILWIND_CONFIG_SPIKE_STATE.current ?? undefined,
+          )
           if (tailwindClass == null) {
             return null
           }

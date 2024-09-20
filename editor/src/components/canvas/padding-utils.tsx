@@ -88,7 +88,7 @@ export function simplePaddingFromMetadata(
 
   const classList = getClassNameAttribute(
     getElementFromProjectContents(elementPath, projectContents),
-  )
+  )?.value
 
   const classes = typeof classList === 'string' ? classList : ''
   const mapping = getClassNameMapping(classes)
