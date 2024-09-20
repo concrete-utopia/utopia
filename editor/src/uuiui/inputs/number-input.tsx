@@ -499,18 +499,6 @@ export const NumberInput = React.memo<NumberInputProps>(
       [stepSize, incrementBy, clearIncrementTimeouts, onSubmitValue, onForcedSubmitValue],
     )
 
-    const onKeyUp = React.useCallback(
-      (e: React.KeyboardEvent<HTMLInputElement>) => {
-        // todo make sure this isn't doubling up the value submit
-        if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && onForcedSubmitValue != null) {
-          if (value != null) {
-            onForcedSubmitValue(value, false)
-          }
-        }
-      },
-      [onForcedSubmitValue, value],
-    )
-
     const onBlur = React.useCallback(
       (e: React.FocusEvent<HTMLInputElement>) => {
         setIsActuallyFocused(false)
@@ -897,7 +885,6 @@ export const NumberInput = React.memo<NumberInputProps>(
             placeholder={inputProps.placeholder ?? placeholder}
             onFocus={onFocus}
             onKeyDown={onKeyDown}
-            onKeyUp={onKeyUp}
             onBlur={onBlur}
             onChange={onChange}
             autoComplete='off'
