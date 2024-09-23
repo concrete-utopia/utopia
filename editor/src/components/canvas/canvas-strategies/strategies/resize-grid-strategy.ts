@@ -25,6 +25,7 @@ import type { GridDimension } from '../../../../components/inspector/common/css-
 import {
   cssNumber,
   gridCSSNumber,
+  isDynamicGridRepeat,
   isGridCSSNumber,
   printArrayGridDimensions,
 } from '../../../../components/inspector/common/css-utils'
@@ -35,6 +36,8 @@ import { foldEither, isLeft, isRight } from '../../../../core/shared/either'
 import { roundToNearestWhole } from '../../../../core/shared/math-utils'
 import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-template'
 import { expandGridDimensions, replaceGridTemplateDimensionAtIndex } from './grid-helpers'
+import { setCursorCommand } from '../../commands/set-cursor-command'
+import { CSSCursor } from '../../canvas-types'
 
 export const resizeGridStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -113,6 +116,10 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         originalValues.type !== 'DIMENSIONS'
       ) {
         return emptyStrategyApplicationResult
+      }
+
+      if (!canResizeGridTemplate(originalValues)) {
+        return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)])
       }
 
       const expandedOriginalValues = expandGridDimensions(originalValues.dimensions)
@@ -232,4 +239,8 @@ function newResizedValue(
     // 10x steps
     return Math.round(newValue / 10) * 10
   }
+}
+
+export function canResizeGridTemplate(template: GridAutoOrTemplateBase): boolean {
+  return template.type === 'DIMENSIONS' && !template.dimensions.some(isDynamicGridRepeat)
 }
