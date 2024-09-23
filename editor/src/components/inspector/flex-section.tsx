@@ -287,13 +287,35 @@ const TemplateDimensionControl = React.memo(
       return expandGridDimensions(template.dimensions)
     }, [template])
 
-    const onUpdate = React.useCallback(
+    const onUpdateDimension = React.useCallback(
+      (index: number) => (newValue: GridDimension) => {
+        if (template?.type !== 'DIMENSIONS') {
+          return
+        }
+        const newDimensions = replaceGridTemplateDimensionAtIndex(
+          template.dimensions,
+          expandedTemplate,
+          index,
+          newValue,
+        )
+
+        dispatch([
+          applyCommandsAction([
+            setProperty(
+              'always',
+              grid.elementPath,
+              PP.create('style', axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows'),
+              printArrayGridDimensions(newDimensions),
+            ),
+          ]),
+        ])
+      },
+      [template, expandedTemplate, dispatch, axis, grid],
+    )
+
+    const onUpdateNumberOrKeyword = React.useCallback(
       (index: number) =>
         (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<ValidGridDimensionKeyword>>) => {
-          if (template?.type !== 'DIMENSIONS') {
-            return
-          }
-
           function getNewValue() {
             const gridValueAtIndex = values[index]
             if (isCSSNumber(value)) {
@@ -317,25 +339,9 @@ const TemplateDimensionControl = React.memo(
             return
           }
 
-          const newDimensions = replaceGridTemplateDimensionAtIndex(
-            template.dimensions,
-            expandedTemplate,
-            index,
-            newValue,
-          )
-
-          dispatch([
-            applyCommandsAction([
-              setProperty(
-                'always',
-                grid.elementPath,
-                PP.create('style', axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows'),
-                printArrayGridDimensions(newDimensions),
-              ),
-            ]),
-          ])
+          onUpdateDimension(index)(newValue)
         },
-      [grid, values, dispatch, axis, template, expandedTemplate],
+      [values, onUpdateDimension],
     )
 
     const onRemove = React.useCallback(
@@ -545,7 +551,8 @@ const TemplateDimensionControl = React.memo(
             value={value}
             index={index}
             axis={axis}
-            onUpdate={onUpdate}
+            onUpdateNumberOrKeyword={onUpdateNumberOrKeyword}
+            onUpdateDimension={onUpdateDimension}
             items={dropdownMenuItems(index)}
             opener={openDropdown}
           />
@@ -561,16 +568,18 @@ function AxisDimensionControl({
   index,
   items,
   axis,
-  onUpdate,
+  onUpdateNumberOrKeyword,
+  onUpdateDimension,
   opener,
 }: {
   value: GridDiscreteDimension
   index: number
   items: DropdownMenuItem[]
   axis: 'column' | 'row'
-  onUpdate: (
+  onUpdateNumberOrKeyword: (
     index: number,
   ) => (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<ValidGridDimensionKeyword>>) => void
+  onUpdateDimension: (index: number) => (value: GridDimension) => void
   opener: (isOpen: boolean) => React.ReactElement
 }) {
   const testId = `grid-dimension-${axis}-${index}`
@@ -607,10 +616,10 @@ function AxisDimensionControl({
         </Subdued>
         <NumberOrKeywordControl
           testId={testId}
-          value={value.value}
+          value={value.type === 'MINMAX' ? cssKeyword('minmax') : value.value} // TODO: this is just a placeholder for real editing of expressions
           keywords={gridDimensionDropdownKeywords}
           keywordTypeCheck={isValidGridDimensionKeyword}
-          onSubmitValue={onUpdate(index)}
+          onSubmitValue={onUpdateNumberOrKeyword(index)}
           controlStatus={
             isGridCSSKeyword(value) && value.value.value === 'auto' ? 'off' : undefined
           }
