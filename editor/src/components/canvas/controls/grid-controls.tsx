@@ -289,13 +289,13 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
             justifyContent: 'center',
             border: `1px solid ${
               props.resizeLocked
-                ? colorTheme.fg5.value
+                ? colorTheme.brandNeonPink10.value
                 : props.resizing === 'resize-target'
                 ? colorTheme.brandNeonPink.value
                 : colorTheme.brandNeonPink60.value
             }`,
             ...(props.resizeLocked
-              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.fg6.value, scale)
+              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink10.value, scale)
               : props.resizing === 'resize-target'
               ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink60.value, scale)
               : UtopiaStyles.backgrounds.stripedBackground(
@@ -313,7 +313,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
             scale={scale}
             color={
               props.resizeLocked
-                ? colorTheme.fg5.value
+                ? colorTheme.brandNeonPink10.value
                 : props.resizing === 'resize-target'
                 ? colorTheme.brandNeonPink.value
                 : colorTheme.brandNeonPink60.value
