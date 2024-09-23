@@ -76,7 +76,7 @@ import {
   SafeGapSmallElementSize,
   SmallElementSize,
 } from '../../controls/bounding-box-hooks'
-import { act } from 'react-dom/test-utils'
+import { act } from '@testing-library/react'
 import { ComponentsHonouringPropsStylesProject } from './common-projects.test-utils'
 
 // no mouseup here! it starts the interaction and resizes with drag delta

@@ -1,5 +1,5 @@
 import { fireEvent, screen } from '@testing-library/react'
-import { act } from 'react-dom/test-utils'
+import { act } from '@testing-library/react'
 import type { EditorRenderResult } from '../../components/canvas/ui-jsx.test-utils'
 import {
   TestSceneUID,
