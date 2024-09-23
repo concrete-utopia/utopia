@@ -105,6 +105,7 @@ import { isFeatureEnabled } from '../utils/feature-switches'
 import { getCanvasViewportCenter } from './paste-helpers'
 import { DataPasteHandler, isPasteHandler } from '../utils/paste-handler'
 import { ResizeObserver } from '../components/canvas/dom-walker'
+import { isInsideColorPicker } from '../components/inspector/controls/color-picker-utils'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -1163,6 +1164,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   }
 
   handleMouseMove = (event: MouseEvent) => {
+    if (isInsideColorPicker(event.target)) {
+      return
+    }
     let actions: Array<EditorAction> = []
     if (this.canvasSelected()) {
       const canvasPositions = this.getPosition(event)

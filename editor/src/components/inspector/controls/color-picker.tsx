@@ -28,6 +28,8 @@ import {
 } from '../../../uuiui'
 import { pickColorWithEyeDropper } from '../../canvas/canvas-utils'
 import { ColorPickerSwatches } from './color-picker-swatches'
+import { didWeHandleMouseMoveForThisFrame, mouseMoveHandled } from '../../../components/mouse-move'
+import { clearColorPickerElement, setColorPickerElement } from './color-picker-utils'
 
 const checkerboardBackground = UtopiaStyles.backgrounds.checkerboardBackground
 
@@ -243,6 +245,7 @@ export class ColorPickerInner extends React.Component<
   }
 
   componentWillUnmount() {
+    clearColorPickerElement()
     document.removeEventListener('mousemove', this.onSVMouseMove)
     document.removeEventListener('mouseup', this.onSVMouseUp)
     document.removeEventListener('mousemove', this.onHueSliderMouseMove)
@@ -380,7 +383,10 @@ export class ColorPickerInner extends React.Component<
 
   onSVMouseMove = (e: MouseEvent) => {
     e.stopPropagation()
-    this.setSVFromClientPosition(e.clientX, e.clientY, true)
+    if (!didWeHandleMouseMoveForThisFrame) {
+      mouseMoveHandled()
+      this.setSVFromClientPosition(e.clientX, e.clientY, true)
+    }
   }
 
   hexFromHue = (h: number, s: number, v: number, a: number): string => {
@@ -441,7 +447,10 @@ export class ColorPickerInner extends React.Component<
 
   onHueSliderMouseMove = (e: MouseEvent) => {
     e.stopPropagation()
-    this.setHueFromClientX(e.clientX, true)
+    if (!didWeHandleMouseMoveForThisFrame) {
+      mouseMoveHandled()
+      this.setHueFromClientX(e.clientX, true)
+    }
   }
 
   onHueSliderMouseUp = (e: MouseEvent) => {
@@ -482,7 +491,10 @@ export class ColorPickerInner extends React.Component<
 
   onAlphaSliderMouseMove = (e: MouseEvent) => {
     e.stopPropagation()
-    this.setAlphaFromClientX(e.clientX, true)
+    if (!didWeHandleMouseMoveForThisFrame) {
+      mouseMoveHandled()
+      this.setAlphaFromClientX(e.clientX, true)
+    }
   }
 
   onAlphaSliderMouseUp = (e: MouseEvent) => {
@@ -586,7 +598,12 @@ export class ColorPickerInner extends React.Component<
       )`
 
     return (
-      <div style={{ position: 'relative' }}>
+      <div
+        style={{ position: 'relative' }}
+        ref={(node) => {
+          setColorPickerElement(node)
+        }}
+      >
         <div>
           <div
             className='colorPicker-saturation-and-value'
