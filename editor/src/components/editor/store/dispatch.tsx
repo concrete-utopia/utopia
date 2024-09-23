@@ -90,6 +90,7 @@ import {
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
 import { getFilePathMappings } from '../../../core/model/project-file-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -353,6 +354,7 @@ function maybeRequestModelUpdate(
       getFilePathMappings(projectContents),
       existingUIDs,
       isSteganographyEnabled(),
+      getParseCacheOptions(),
     )
       .then((parseResult) => {
         const updates = parseResult.map((fileResult) => {

@@ -15,6 +15,7 @@ import {
 } from '../common/worker-types'
 import localforage from 'localforage'
 import type { FilePathMappings } from '../common/project-file-utils'
+import type { ParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 
 export async function handleMessage(
   workerMessage: ParsePrintFilesRequest,
@@ -36,6 +37,7 @@ export async function handleMessage(
                   file.versionNumber,
                   alreadyExistingUIDs_MUTABLE,
                   workerMessage.applySteganography,
+                  workerMessage.parsingCacheOptions,
                 )
               case 'printandreparsefile':
                 return getPrintAndReparseCodeResult(
@@ -46,6 +48,7 @@ export async function handleMessage(
                   file.versionNumber,
                   alreadyExistingUIDs_MUTABLE,
                   workerMessage.applySteganography,
+                  workerMessage.parsingCacheOptions,
                 )
               default:
                 const _exhaustiveCheck: never = file
@@ -68,6 +71,12 @@ function getCacheKey(filename: string, versionNumber: number): string {
   return `${filename}::${versionNumber}::${devVer}`
 }
 
+function logCacheMessage(message: string, parsingCacheOptions: ParseCacheOptions) {
+  if (parsingCacheOptions.verboseLogCache) {
+    console.info(`[PARSING CACHE] ${message}`)
+  }
+}
+
 export async function getParseFileResultWithCache(
   filename: string,
   filePathMappings: FilePathMappings,
@@ -76,17 +85,17 @@ export async function getParseFileResultWithCache(
   versionNumber: number,
   alreadyExistingUIDs_MUTABLE: Set<string>,
   applySteganography: SteganographyMode,
-  checkCacheFirst: boolean = true,
+  parsingCacheOptions: ParseCacheOptions,
 ): Promise<ParseFileResult> {
-  if (checkCacheFirst) {
+  if (parsingCacheOptions.useParsingCache) {
     //check localforage for cache
     const cachedResult = await getParseResultFromCache(filename, content, versionNumber)
     if (cachedResult != null) {
-      console.info('Cache hit for', filename)
+      logCacheMessage(`Cache hit for ${filename}`, parsingCacheOptions)
       return cachedResult
     }
+    logCacheMessage(`Cache miss for ${filename}`, parsingCacheOptions)
   }
-  console.info('Cache miss for', filename)
 
   const parseResult = getParseFileResult(
     filename,
@@ -96,6 +105,7 @@ export async function getParseFileResultWithCache(
     versionNumber,
     alreadyExistingUIDs_MUTABLE,
     applySteganography,
+    parsingCacheOptions,
   )
 
   return parseResult
@@ -109,6 +119,7 @@ export function getParseFileResult(
   versionNumber: number,
   alreadyExistingUIDs_MUTABLE: Set<string>,
   applySteganography: SteganographyMode,
+  parseCacheOptions: ParseCacheOptions,
 ): ParseFileResult {
   const parseResult = lintAndParse(
     filename,
@@ -120,9 +131,9 @@ export function getParseFileResult(
     applySteganography,
   )
   const result = createParseFileResult(filename, parseResult, versionNumber)
-  if (result.parseResult.type === 'PARSE_SUCCESS') {
+  if (result.parseResult.type === 'PARSE_SUCCESS' && parseCacheOptions.useParsingCache) {
     // non blocking cache write
-    storeParseResultInCache(filename, content, versionNumber, result)
+    storeParseResultInCache(filename, content, versionNumber, result, parseCacheOptions)
   }
 
   return result
@@ -150,9 +161,10 @@ function storeParseResultInCache(
   content: string,
   versionNumber: number,
   result: ParseFileResult,
+  parsingCacheOptions: ParseCacheOptions,
 ) {
   const cacheKey = getCacheKey(filename, versionNumber)
-  console.info('Caching', filename)
+  logCacheMessage(`Caching ${filename}`, parsingCacheOptions)
   void localforage.setItem<CachedParseResult>(cacheKey, {
     [content]: result,
   })
@@ -166,6 +178,7 @@ export function getPrintAndReparseCodeResult(
   versionNumber: number,
   alreadyExistingUIDs: Set<string>,
   applySteganography: SteganographyMode,
+  parseCacheOptions: ParseCacheOptions,
 ): PrintAndReparseResult {
   const printedCode = printCode(
     filename,
@@ -184,6 +197,7 @@ export function getPrintAndReparseCodeResult(
     versionNumber,
     alreadyExistingUIDs,
     applySteganography,
+    parseCacheOptions,
   )
   return createPrintAndReparseResult(filename, parseResult.parseResult, versionNumber, printedCode)
 }

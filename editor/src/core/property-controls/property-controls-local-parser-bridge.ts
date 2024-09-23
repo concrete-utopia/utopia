@@ -2,6 +2,7 @@ import type { ComponentElementToInsert } from '../../components/custom-code/code
 import type { Either } from '../shared/either'
 import { left, right } from '../shared/either'
 import type { ArbitraryJSBlock, UtopiaJSXComponent } from '../shared/element-template'
+import { getParseCacheOptions } from '../shared/parse-cache-utils'
 import type { Imports } from '../shared/project-file-types'
 import { isParseFailure, isParseSuccess } from '../shared/project-file-types'
 import { emptySet } from '../shared/set-utils'
@@ -49,6 +50,7 @@ async function getParseResultForUserStrings(
     [],
     emptySet(),
     isSteganographyEnabled(),
+    getParseCacheOptions(),
   )
 
   if (parseResult[0].type === 'parsefileresult') {

@@ -624,6 +624,7 @@ import { getDefaultedRemixRootDir, getRemixRootDir } from '../store/remix-derive
 import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-item/component-picker-context-menu'
 import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
+import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -4143,6 +4144,7 @@ export const UPDATE_FNS = {
       1,
       existingUIDs,
       isSteganographyEnabled(),
+      getParseCacheOptions(),
     )
 
     // 3. write the new text file
@@ -5010,6 +5012,7 @@ export const UPDATE_FNS = {
           fileToUpdate.versionNumber,
           filesToUpdateResult.existingUIDs,
           isSteganographyEnabled(),
+          getParseCacheOptions(),
         )
         const updateAction = workerCodeAndParsedUpdate(
           printParsedContent.filename,

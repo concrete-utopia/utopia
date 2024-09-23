@@ -1,3 +1,4 @@
+import type { ParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import type { ProjectContentTreeRoot } from '../../../components/assets'
 import type { ErrorMessage } from '../../shared/error-messages'
 import type { TypeDefinitions } from '../../shared/npm-dependency-types'
@@ -145,6 +146,7 @@ export interface ParsePrintFilesRequest extends ParsePrintBase {
   files: Array<ParseOrPrint>
   alreadyExistingUIDs: Set<string>
   applySteganography: SteganographyMode
+  parsingCacheOptions: ParseCacheOptions
 }
 
 export function createParsePrintFilesRequest(
@@ -153,6 +155,7 @@ export function createParsePrintFilesRequest(
   alreadyExistingUIDs: Set<string>,
   messageID: number,
   applySteganography: SteganographyMode,
+  parsingCacheOptions: ParseCacheOptions,
 ): ParsePrintFilesRequest {
   return {
     type: 'parseprintfiles',
@@ -161,6 +164,7 @@ export function createParsePrintFilesRequest(
     alreadyExistingUIDs: alreadyExistingUIDs,
     messageID: messageID,
     applySteganography: applySteganography,
+    parsingCacheOptions: parsingCacheOptions,
   }
 }
 
@@ -172,6 +176,7 @@ export function getParseResult(
   filePathMappings: FilePathMappings,
   alreadyExistingUIDs: Set<string>,
   applySteganography: SteganographyMode,
+  parsingCacheOptions: ParseCacheOptions,
 ): Promise<Array<ParseOrPrintResult>> {
   const messageIDForThisRequest = PARSE_PRINT_MESSAGE_COUNTER++
   return new Promise((resolve, reject) => {
@@ -202,6 +207,7 @@ export function getParseResult(
         alreadyExistingUIDs,
         messageIDForThisRequest,
         applySteganography,
+        parsingCacheOptions,
       ),
     )
   })

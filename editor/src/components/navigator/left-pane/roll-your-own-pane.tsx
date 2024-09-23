@@ -7,7 +7,7 @@ import { atomWithStorage } from 'jotai/utils'
 import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 import { Ellipsis } from './github-pane/github-file-changes-list'
 
-const sections = ['Grid'] as const
+const sections = ['Grid', 'Performance'] as const
 type Section = (typeof sections)[number]
 
 type GridFeatures = {
@@ -23,8 +23,14 @@ type GridFeatures = {
   activeGridBackground: string
 }
 
+type PerformanceFeatures = {
+  parseCache: boolean
+  verboseLogCache: boolean
+}
+
 type RollYourOwnFeaturesTypes = {
   Grid: GridFeatures
+  Performance: PerformanceFeatures
 }
 
 type RollYourOwnFeatures = {
@@ -44,6 +50,10 @@ const defaultRollYourOwnFeatures: RollYourOwnFeatures = {
     inactiveGridColor: '#00000033',
     shadowOpacity: 0.1,
   },
+  Performance: {
+    parseCache: true,
+    verboseLogCache: true,
+  },
 }
 
 const ROLL_YOUR_OWN_FEATURES_KEY: string = 'roll-your-own-features'
@@ -58,6 +68,10 @@ export function useRollYourOwnFeatures() {
     Grid: {
       ...defaultRollYourOwnFeatures.Grid,
       ...features.Grid,
+    },
+    Performance: {
+      ...defaultRollYourOwnFeatures.Performance,
+      ...features.Performance,
     },
   }
   return merged
@@ -115,6 +129,7 @@ export const RollYourOwnFeaturesPane = React.memo(() => {
         </FlexRow>
 
         {when(currentSection === 'Grid', <GridSection />)}
+        {when(currentSection === 'Performance', <PerformanceSection />)}
       </Section>
     </FlexColumn>
   )
@@ -134,29 +149,32 @@ function getNewFeatureValueOrNull(currentValue: any, e: React.ChangeEvent<HTMLIn
   }
 }
 
-const GridSection = React.memo(() => {
+const SimpleFeatureSection = React.memo(({ subsection }: { subsection: Section }) => {
   const features = useRollYourOwnFeatures()
   const setFeatures = useSetAtom(rollYourOwnFeaturesAtom)
 
   const onChange = React.useCallback(
-    (feat: keyof GridFeatures) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = getNewFeatureValueOrNull(features.Grid[feat], e)
+    (feat: keyof RollYourOwnFeaturesTypes[Section]) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = getNewFeatureValueOrNull(features[subsection][feat], e)
       if (newValue != null) {
         setFeatures({
           ...features,
-          Grid: {
-            ...features.Grid,
+          [subsection]: {
+            ...features[subsection],
             [feat]: newValue,
           },
         })
       }
     },
-    [features, setFeatures],
+    [features, setFeatures, subsection],
   )
 
   const resetDefaults = React.useCallback(() => {
-    setFeatures(defaultRollYourOwnFeatures)
-  }, [setFeatures])
+    setFeatures((prevFeatures) => ({
+      ...prevFeatures,
+      [subsection]: defaultRollYourOwnFeatures[subsection],
+    }))
+  }, [setFeatures, subsection])
 
   return (
     <FlexColumn style={{ gap: 10 }}>
@@ -165,9 +183,9 @@ const GridSection = React.memo(() => {
           Reset defaults
         </Button>
       </UIGridRow>
-      {Object.keys(defaultRollYourOwnFeatures.Grid).map((key) => {
-        const feat = key as keyof GridFeatures
-        const value = features.Grid[feat] ?? defaultRollYourOwnFeatures.Grid[feat]
+      {Object.keys(defaultRollYourOwnFeatures[subsection]).map((key) => {
+        const feat = key as keyof RollYourOwnFeaturesTypes[Section]
+        const value = features[subsection][feat] ?? defaultRollYourOwnFeatures[subsection][feat]
         return (
           <UIGridRow padded variant='<----------1fr---------><-auto->' key={`feat-${feat}`}>
             <Ellipsis title={feat}>{feat}</Ellipsis>
@@ -184,4 +202,14 @@ const GridSection = React.memo(() => {
     </FlexColumn>
   )
 })
+SimpleFeatureSection.displayName = 'SimpleFeatureSection'
+
+const GridSection = React.memo(() => {
+  return <SimpleFeatureSection subsection='Grid' />
+})
 GridSection.displayName = 'GridSection'
+
+const PerformanceSection = React.memo(() => {
+  return <SimpleFeatureSection subsection='Performance' />
+})
+PerformanceSection.displayName = 'PerformanceSection'
