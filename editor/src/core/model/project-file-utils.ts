@@ -465,7 +465,7 @@ function getHighlightBoundsForProjectImpl(
       forEachParseSuccess((parsedFile) => {
         const fileHighlightBounds = parsedFile.highlightBounds
         forEachValue((bounds, uid) => {
-          allHighlightBounds[uid] = { ...bounds, filePath: fullPath }
+          allHighlightBounds[uid] = { bounds: bounds, filePath: fullPath }
         }, fileHighlightBounds)
       }, file.fileContents.parsed)
     }
