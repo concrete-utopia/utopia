@@ -338,16 +338,21 @@ export class ColorPickerInner extends React.Component<
   }
 
   submitNewColor = (chromaColor: Chroma.Color, transient: boolean) => {
-    const newValue = toPassedInColorType(
-      chromaColor,
-      this.props.value,
-      this.state.normalisedHuePosition,
-    )
-    if (transient) {
-      this.props.onTransientSubmitValue(newValue)
-    } else {
-      this.props.onSubmitValue(newValue)
+    if (this.updateTimeoutId.current != null) {
+      window.clearTimeout(this.updateTimeoutId.current)
     }
+    this.updateTimeoutId.current = window.setTimeout(() => {
+      const newValue = toPassedInColorType(
+        chromaColor,
+        this.props.value,
+        this.state.normalisedHuePosition,
+      )
+      if (transient) {
+        this.props.onTransientSubmitValue(newValue)
+      } else {
+        this.props.onSubmitValue(newValue)
+      }
+    }, 50)
   }
 
   // Saturation and Value (SV) slider functions
