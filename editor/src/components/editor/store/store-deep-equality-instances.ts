@@ -567,11 +567,13 @@ import type {
   GridDimension,
   GridAutoFlow,
   GridCSSRepeat,
+  GridCSSMinmax,
 } from '../../inspector/common/css-utils'
 import {
   cssNumber,
   fontSettings,
   gridCSSKeyword,
+  gridCSSMinmax,
   gridCSSNumber,
   gridCSSRepeat,
   isCSSKeyword,
@@ -2009,6 +2011,11 @@ export const GridDimensionKeepDeepEquality: KeepDeepEqualityCall<GridDimension> 
             return GridCSSRepeatKeepDeepEquality(oldValue, newValue)
           }
           break
+        case 'MINMAX':
+          if (newValue.type === oldValue.type) {
+            return GridCSSMinmaxKeepDeepEquality(oldValue, newValue)
+          }
+          break
         default:
           assertNever(oldValue)
       }
@@ -2024,6 +2031,40 @@ export const GridCSSRepeatKeepDeepEquality: KeepDeepEqualityCall<GridCSSRepeat> 
     (p) => p.value,
     arrayDeepEquality(GridDimensionKeepDeepEquality),
     gridCSSRepeat,
+  )
+
+const GridCSSNumberOrKeywordKeepDeepEquality: KeepDeepEqualityCall<GridCSSNumber | GridCSSKeyword> =
+  combine1EqualityCall(
+    (dim) => dim,
+    (oldValue, newValue) => {
+      switch (oldValue.type) {
+        case 'KEYWORD':
+          if (newValue.type === oldValue.type) {
+            return GridCSSKeywordKeepDeepEquality(oldValue, newValue)
+          }
+          break
+        case 'NUMBER':
+          if (newValue.type === oldValue.type) {
+            return GridCSSNumberKeepDeepEquality(oldValue, newValue)
+          }
+          break
+        default:
+          assertNever(oldValue)
+      }
+      return keepDeepEqualityResult(newValue, false)
+    },
+    (dim) => dim,
+  )
+
+export const GridCSSMinmaxKeepDeepEquality: KeepDeepEqualityCall<GridCSSMinmax> =
+  combine3EqualityCalls(
+    (p) => p.min,
+    GridCSSNumberOrKeywordKeepDeepEquality,
+    (p) => p.max,
+    GridCSSNumberOrKeywordKeepDeepEquality,
+    (p) => p.areaName,
+    NullableStringKeepDeepEquality,
+    gridCSSMinmax,
   )
 
 export const GridAutoOrTemplateDimensionsKeepDeepEquality: KeepDeepEqualityCall<GridAutoOrTemplateDimensions> =

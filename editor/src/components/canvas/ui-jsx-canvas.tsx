@@ -833,7 +833,7 @@ function useGetStoryboardRoot(
           getRemixValidPathsGenerationContext,
         )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(
-    validPaths[0] ?? EP.emptyElementPath,
+    validPaths.at(0) ?? EP.emptyElementPath,
   )
 
   const rootValidPathsArray = validPaths.map(EP.makeLastPartOfPathStatic)

@@ -1,12 +1,10 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
-import type { WindowPoint, WindowRectangle } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
   isInfinityRectangle,
   offsetPoint,
   rectContainsPoint,
-  windowRectangle,
 } from '../../../../core/shared/math-utils'
 import * as EP from '../../../../core/shared/element-path'
 import {
@@ -101,24 +99,4 @@ export function getGridCellBoundsFromCanvas(
     width: cellWidth,
     height: cellHeight,
   }
-}
-
-export function getGridPlaceholderDomElementFromCoordinates(params: {
-  row: number
-  column: number
-}): HTMLElement | null {
-  return document.querySelector(
-    `[data-grid-row="${params.row}"]` + `[data-grid-column="${params.column}"]`,
-  )
-}
-
-export function getCellWindowRect(coords: GridCellCoordinates): WindowRectangle | null {
-  const element = getGridPlaceholderDomElementFromCoordinates(coords)
-  if (element == null) {
-    return null
-  }
-
-  const domRect = element!.getBoundingClientRect()
-  const windowRect = windowRectangle(domRect)
-  return windowRect
 }

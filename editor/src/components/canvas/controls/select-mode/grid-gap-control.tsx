@@ -154,15 +154,10 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
 
   const gridRowColumnInfo = useGridData([selectedElement])
 
-  const controlBounds = gridGapControlBoundsFromMetadata(
-    selectedElement,
-    gridRowColumnInfo[0],
-    {
-      row: fallbackEmptyValue(gridGapRow),
-      column: fallbackEmptyValue(gridGapColumn),
-    },
-    scale,
-  )
+  const controlBounds = gridGapControlBoundsFromMetadata(gridRowColumnInfo[0], {
+    row: fallbackEmptyValue(gridGapRow),
+    column: fallbackEmptyValue(gridGapColumn),
+  })
 
   return (
     <CanvasOffsetWrapper>

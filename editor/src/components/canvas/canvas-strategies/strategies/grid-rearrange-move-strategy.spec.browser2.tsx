@@ -287,8 +287,8 @@ export var storyboard = (
         expect({ top, left, gridColumn, gridRow }).toEqual({
           gridColumn: '1',
           gridRow: '1',
-          left: '36px',
-          top: '40px',
+          left: '37px',
+          top: '41px',
         })
       }
     })
@@ -329,8 +329,8 @@ export var storyboard = (
         expect({ top, left, gridColumn, gridRow }).toEqual({
           gridColumn: '1',
           gridRow: '1',
-          left: '136.5px',
-          top: '140.5px',
+          left: '137px',
+          top: '141px',
         })
       }
     })
@@ -369,8 +369,8 @@ export var storyboard = (
         expect({ top, left, gridColumn, gridRow }).toEqual({
           gridColumn: '2',
           gridRow: '2',
-          left: '25.5px',
-          top: '36px',
+          left: '26.5px',
+          top: '37px',
         })
       }
     })
@@ -452,8 +452,8 @@ export var storyboard = (
         expect({ top, left, gridColumn, gridRow }).toEqual({
           gridColumn: '1',
           gridRow: '1',
-          left: '60.5px',
-          top: '61px',
+          left: '61.5px',
+          top: '62px',
         })
       }
     })

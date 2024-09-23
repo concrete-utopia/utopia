@@ -13,46 +13,42 @@ import {
   type GridElementProperties,
   type GridPosition,
 } from '../../../../core/shared/element-template'
-import type {
-  CanvasRectangle,
-  CanvasVector,
-  WindowRectangle,
-} from '../../../../core/shared/math-utils'
+import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
   canvasRectangle,
+  canvasVector,
   isInfinityRectangle,
   offsetPoint,
-  scaleVector,
   windowPoint,
-  windowVector,
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { absolute } from '../../../../utils/utils'
-import { cssNumber, isCSSKeyword } from '../../../inspector/common/css-utils'
+import type { GridDimension } from '../../../inspector/common/css-utils'
+import {
+  cssNumber,
+  gridCSSRepeat,
+  isCSSKeyword,
+  isGridCSSRepeat,
+} from '../../../inspector/common/css-utils'
 import type { CanvasCommand } from '../../commands/commands'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { setCssLengthProperty } from '../../commands/set-css-length-command'
 import { setProperty } from '../../commands/set-property-command'
-import { canvasPointToWindowPoint } from '../../dom-lookup'
-import type { GridCustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
+import type { GridCustomStrategyState } from '../canvas-strategy-types'
 import type { DragInteractionData } from '../interaction-state'
 import type { GridCellCoordinates } from './grid-cell-bounds'
-import {
-  getCellWindowRect,
-  getGridCellUnderMouseFromMetadata,
-  gridCellCoordinates,
-} from './grid-cell-bounds'
+import { getGridCellUnderMouseFromMetadata, gridCellCoordinates } from './grid-cell-bounds'
 import { memoize } from '../../../../core/shared/memoize'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { assertNever } from '../../../../core/shared/utils'
 
 export function runGridRearrangeMove(
   targetElement: ElementPath,
   selectedElement: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
   interactionData: DragInteractionData,
-  canvasScale: number,
-  canvasOffset: CanvasVector,
   customState: GridCustomStrategyState,
 ): {
   commands: CanvasCommand[]
@@ -209,15 +205,14 @@ export function runGridRearrangeMove(
   switch (moveType) {
     case 'rearrange': {
       const targetRootCell = gridCellCoordinates(row.start, column.start)
-      const windowRect = getCellWindowRect(targetRootCell)
+      const canvasRect = getGlobalFrameOfGridCell(containerMetadata, targetRootCell)
       const absoluteMoveCommands =
-        windowRect == null
+        canvasRect == null
           ? []
           : gridChildAbsoluteMoveCommands(
               MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
-              windowRect,
+              canvasRect,
               interactionData,
-              { scale: canvasScale, canvasOffset: canvasOffset },
             )
       return {
         commands: [
@@ -427,9 +422,8 @@ function asMaybeNamedAreaOrValue(
 
 function gridChildAbsoluteMoveCommands(
   targetMetadata: ElementInstanceMetadata | null,
-  targetCellWindowRect: WindowRectangle,
+  targetCellRect: CanvasRectangle,
   dragInteractionData: DragInteractionData,
-  canvasContext: Pick<InteractionCanvasState, 'scale' | 'canvasOffset'>,
 ): CanvasCommand[] {
   if (
     targetMetadata == null ||
@@ -440,45 +434,20 @@ function gridChildAbsoluteMoveCommands(
     return []
   }
 
-  const targetFrameWindow = canvasPointToWindowPoint(
-    canvasPoint({
-      x: targetMetadata.globalFrame.x,
-      y: targetMetadata.globalFrame.y,
-    }),
-    canvasContext.scale,
-    canvasContext.canvasOffset,
-  )
-
-  const dragStartWindow = canvasPointToWindowPoint(
-    canvasPoint({
-      x: dragInteractionData.originalDragStart.x,
-      y: dragInteractionData.originalDragStart.y,
-    }),
-    canvasContext.scale,
-    canvasContext.canvasOffset,
-  )
-
-  const offsetInTarget = windowPoint({
-    x: dragStartWindow.x - targetFrameWindow.x,
-    y: dragStartWindow.y - targetFrameWindow.y,
+  const offsetInTarget = canvasPoint({
+    x: dragInteractionData.originalDragStart.x - targetMetadata.globalFrame.x,
+    y: dragInteractionData.originalDragStart.y - targetMetadata.globalFrame.y,
   })
 
-  const dragWindowOffset = canvasPointToWindowPoint(
-    offsetPoint(
-      dragInteractionData.originalDragStart,
-      dragInteractionData.drag ?? canvasPoint({ x: 0, y: 0 }),
-    ),
-    canvasContext.scale,
-    canvasContext.canvasOffset,
+  const dragOffset = offsetPoint(
+    dragInteractionData.originalDragStart,
+    dragInteractionData.drag ?? canvasPoint({ x: 0, y: 0 }),
   )
 
-  const offset = scaleVector(
-    windowVector({
-      x: dragWindowOffset.x - targetCellWindowRect.x - offsetInTarget.x,
-      y: dragWindowOffset.y - targetCellWindowRect.y - offsetInTarget.y,
-    }),
-    1 / canvasContext.scale,
-  )
+  const offset = canvasVector({
+    x: dragOffset.x - targetCellRect.x - offsetInTarget.x,
+    y: dragOffset.y - targetCellRect.y - offsetInTarget.y,
+  })
 
   return [
     deleteProperties('always', targetMetadata.elementPath, [
@@ -631,6 +600,18 @@ function getGlobalFramesOfGridCellsInner(
 
 export const getGlobalFramesOfGridCells = memoize(getGlobalFramesOfGridCellsInner)
 
+export function getGlobalFrameOfGridCell(
+  grid: ElementInstanceMetadata,
+  coords: GridCellCoordinates,
+): CanvasRectangle | null {
+  const gridCellGlobalFrames = getGlobalFramesOfGridCells(grid)
+  if (gridCellGlobalFrames == null) {
+    return null
+  }
+
+  return gridCellGlobalFrames[coords.row - 1]?.[coords.column - 1] ?? null
+}
+
 function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number> | null {
   if (gridTemplate?.type !== 'DIMENSIONS') {
     return null
@@ -646,4 +627,174 @@ function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number>
   }
 
   return result
+}
+
+type DimensionIndexes = {
+  originalIndex: number // the index of this element in the original values
+  repeatedIndex: number // the index of this element, if it's generated via a repeat, inside the repeated values array definition
+}
+
+export type ExpandedGridDimension = GridDimension & {
+  indexes: DimensionIndexes
+}
+
+function expandedGridDimension(
+  dim: GridDimension,
+  originalIndex: number,
+  repeatedIndex: number = 0,
+): ExpandedGridDimension {
+  return {
+    ...dim,
+    indexes: {
+      originalIndex: originalIndex,
+      repeatedIndex: repeatedIndex,
+    },
+  }
+}
+
+export function expandGridDimensions(template: GridDimension[]): ExpandedGridDimension[] {
+  // Expanded representation of the original values, where repeated elements are serialized.
+  // Each element also contains the indexes information to be used later on to build the resized
+  // template string.
+  return template.reduce((acc, cur, index) => {
+    if (isGridCSSRepeat(cur)) {
+      const repeatGroup = cur.value.map((dim, repeatedIndex) =>
+        expandedGridDimension(dim, index, repeatedIndex),
+      )
+      let expanded: ExpandedGridDimension[] = []
+      for (let i = 0; i < cur.times; i++) {
+        expanded.push(...repeatGroup)
+      }
+      return [...acc, ...expanded]
+    } else {
+      return [...acc, expandedGridDimension(cur, index)]
+    }
+  }, [] as ExpandedGridDimension[])
+}
+
+function alterGridTemplateDimensions(params: {
+  originalValues: GridDimension[]
+  target: ExpandedGridDimension
+  patch: AlterGridTemplateDimensionPatch
+}): GridDimension[] {
+  return mapDropNulls((dim, index) => {
+    if (index !== params.target.indexes.originalIndex) {
+      return dim
+    } else if (isGridCSSRepeat(dim)) {
+      const repeatedIndex = params.target.indexes.repeatedIndex ?? 0
+      const before = dim.value.slice(0, repeatedIndex)
+      const after = dim.value.slice(repeatedIndex + 1)
+      switch (params.patch.type) {
+        case 'REMOVE':
+          if (before.length + after.length === 0) {
+            return null
+          }
+          return gridCSSRepeat(dim.times, [...before, ...after])
+        case 'REPLACE':
+          return gridCSSRepeat(dim.times, [...before, params.patch.newValue, ...after])
+        default:
+          assertNever(params.patch)
+      }
+    } else {
+      switch (params.patch.type) {
+        case 'REPLACE':
+          return params.patch.newValue
+        case 'REMOVE':
+          return null
+        default:
+          assertNever(params.patch)
+      }
+    }
+  }, params.originalValues)
+}
+
+export type ReplaceGridDimensionPatch = {
+  type: 'REPLACE'
+  newValue: GridDimension
+}
+
+export type RemoveGridDimensionPatch = {
+  type: 'REMOVE'
+}
+
+export type AlterGridTemplateDimensionPatch = ReplaceGridDimensionPatch | RemoveGridDimensionPatch
+
+export function replaceGridTemplateDimensionAtIndex(
+  template: GridDimension[],
+  expanded: ExpandedGridDimension[],
+  index: number,
+  newValue: GridDimension,
+): GridDimension[] {
+  return alterGridTemplateDimensions({
+    originalValues: template,
+    target: expanded[index],
+    patch: {
+      type: 'REPLACE',
+      newValue: newValue,
+    },
+  })
+}
+
+export function removeGridTemplateDimensionAtIndex(
+  template: GridDimension[],
+  expanded: ExpandedGridDimension[],
+  index: number,
+): GridDimension[] {
+  return alterGridTemplateDimensions({
+    originalValues: template,
+    target: expanded[index],
+    patch: {
+      type: 'REMOVE',
+    },
+  })
+}
+
+// Return an array of related indexes to a given index inside a grid's template dimensions.
+export function getGridRelatedIndexes(params: {
+  template: GridDimension[]
+  index: number
+}): number[] {
+  let relatedIndexes: number[][][] = [] // This looks scary but it's not! It's just a list of indexes, containing a list of the indexes *per group element*.
+  // For example, 1fr repeat(3, 10px 20px) 1fr, will be represented as:
+  /**
+   * [
+   *  [ [0] ]
+   *  [ [1, 3] [2, 4]  ]
+   *  [ [5] ]
+   * ]
+   */
+  let elementCount = 0 // basically the expanded index
+  for (const dim of params.template) {
+    if (dim.type === 'REPEAT') {
+      let groupIndexes: number[][] = []
+      // for each value push the related indexes as many times as the repeats counter
+      for (let valueIndex = 0; valueIndex < dim.value.length; valueIndex++) {
+        let repeatedValueIndexes: number[] = []
+        for (let repeatIndex = 0; repeatIndex < dim.times; repeatIndex++) {
+          repeatedValueIndexes.push(elementCount + valueIndex + repeatIndex * dim.value.length)
+        }
+        groupIndexes.push(repeatedValueIndexes)
+      }
+      relatedIndexes.push(groupIndexes)
+      elementCount += dim.value.length * dim.times // advance the counter as many times as the repeated values *combined*
+    } else {
+      relatedIndexes.push([[elementCount]])
+      elementCount++
+    }
+  }
+
+  // Now, expand the indexes calculated above so they "flatten out" to match the generated values
+  let expandedRelatedIndexes: number[][] = []
+  params.template.forEach((dim, dimIndex) => {
+    if (dim.type === 'REPEAT') {
+      for (let repeatIndex = 0; repeatIndex < dim.times * dim.value.length; repeatIndex++) {
+        const indexes = relatedIndexes[dimIndex][repeatIndex % dim.value.length]
+        expandedRelatedIndexes.push(indexes)
+      }
+    } else {
+      expandedRelatedIndexes.push(relatedIndexes[dimIndex][0])
+    }
+  })
+
+  return expandedRelatedIndexes[params.index] ?? []
 }

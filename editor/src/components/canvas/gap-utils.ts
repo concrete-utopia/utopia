@@ -32,10 +32,8 @@ import * as EP from '../../core/shared/element-path'
 import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragment-like-helpers'
 import type { AllElementProps } from '../editor/store/editor-state'
 import type { GridData } from './controls/grid-controls'
-import {
-  getGridPlaceholderDomElement,
-  getNullableAutoOrTemplateBaseString,
-} from './controls/grid-controls'
+import { getNullableAutoOrTemplateBaseString } from './controls/grid-controls'
+import { getGlobalFramesOfGridCells } from './canvas-strategies/strategies/grid-helpers'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -179,10 +177,8 @@ export function gapControlBoundsFromMetadata(
 }
 
 export function gridGapControlBoundsFromMetadata(
-  parentPath: ElementPath,
   gridRowColumnInfo: GridData,
   gapValues: { row: CSSNumber; column: CSSNumber },
-  scale: number,
 ): {
   gaps: Array<{
     bounds: CanvasRectangle
@@ -206,48 +202,56 @@ export function gridGapControlBoundsFromMetadata(
     gridTemplateRows: '1fr',
     gridTemplateColumns: '1fr',
   }
-  const parentGrid = getGridPlaceholderDomElement(parentPath)
-  if (parentGrid == null) {
+  const grid = gridRowColumnInfo.metadata
+
+  if (grid == null) {
     return emptyResult
   }
-  const parentGridBounds = parentGrid?.getBoundingClientRect()
+
+  const parentGridBounds = grid.globalFrame
+
+  if (parentGridBounds == null || isInfinityRectangle(parentGridBounds)) {
+    return emptyResult
+  }
+
   const gridRows = gridRowColumnInfo.rows
   const gridColumns = gridRowColumnInfo.columns
   const gridTemplateRows = getNullableAutoOrTemplateBaseString(gridRowColumnInfo.gridTemplateRows)
   const gridTemplateColumns = getNullableAutoOrTemplateBaseString(
     gridRowColumnInfo.gridTemplateColumns,
   )
-  const childrenArray = Array.from(parentGrid?.children ?? [])
-  if (childrenArray.length !== gridRows * gridColumns) {
+
+  const gridCellBounds = getGlobalFramesOfGridCells(grid)
+
+  if (gridCellBounds == null) {
     return emptyResult
   }
-  const cell = matrixGetter(childrenArray, gridColumns)
-  // the actual rectangle that surrounds the cell placeholders
-  const cellBounds = canvasRectangle({
-    x: cell(0, 0).getBoundingClientRect().x - parentGridBounds.x,
-    y: cell(0, 0).getBoundingClientRect().y - parentGridBounds.y,
+  const allCellsBound = canvasRectangle({
+    x: gridCellBounds[0][0].x - parentGridBounds.x,
+    y: gridCellBounds[0][0].y - parentGridBounds.y,
     width:
-      cell(0, gridColumns - 1).getBoundingClientRect().right - cell(0, 0).getBoundingClientRect().x,
+      gridCellBounds[0][gridColumns - 1].x +
+      gridCellBounds[0][gridColumns - 1].width -
+      gridCellBounds[0][0].x,
     height:
-      cell(gridRows - 1, 0).getBoundingClientRect().bottom - cell(0, 0).getBoundingClientRect().y,
+      gridCellBounds[gridRows - 1][0].y +
+      gridCellBounds[gridRows - 1][0].height -
+      gridCellBounds[0][0].y,
   })
 
   // row gaps array
   const rowGaps = createArrayWithLength(gridRows - 1, (i) => {
     // cell i represents the gap between child [i * gridColumns] and child [(i+1) * gridColumns]
-    const firstChildBounds = cell(i, 0).getBoundingClientRect()
-    const secondChildBounds = cell(i + 1, 0).getBoundingClientRect()
+    const firstChildBounds = gridCellBounds[i][0]
+    const secondChildBounds = gridCellBounds[i + 1][0]
     return {
-      gapId: `${EP.toString(parentPath)}-row-gap-${i}`,
-      bounds: adjustToScale(
-        canvasRectangle({
-          x: cellBounds.x,
-          y: firstChildBounds.bottom - parentGridBounds.y,
-          width: cellBounds.width,
-          height: secondChildBounds.top - firstChildBounds.bottom,
-        }),
-        scale,
-      ),
+      gapId: `${EP.toString(grid.elementPath)}-row-gap-${i}`,
+      bounds: canvasRectangle({
+        x: allCellsBound.x,
+        y: firstChildBounds.y + firstChildBounds.height - parentGridBounds.y,
+        width: allCellsBound.width,
+        height: secondChildBounds.y - firstChildBounds.y - firstChildBounds.height,
+      }),
       gap: gapValues.row,
       axis: 'row' as Axis,
     }
@@ -256,19 +260,16 @@ export function gridGapControlBoundsFromMetadata(
   // column gaps array
   const columnGaps = createArrayWithLength(gridColumns - 1, (i) => {
     // cell i represents the gap between child [i] and child [i + 1]
-    const firstChildBounds = cell(0, i).getBoundingClientRect()
-    const secondChildBounds = cell(0, i + 1).getBoundingClientRect()
+    const firstChildBounds = gridCellBounds[0][i]
+    const secondChildBounds = gridCellBounds[0][i + 1]
     return {
-      gapId: `${EP.toString(parentPath)}-column-gap-${i}`,
-      bounds: adjustToScale(
-        canvasRectangle({
-          x: firstChildBounds.right - parentGridBounds.x,
-          y: cellBounds.y,
-          width: secondChildBounds.left - firstChildBounds.right,
-          height: cellBounds.height,
-        }),
-        scale,
-      ),
+      gapId: `${EP.toString(grid.elementPath)}-column-gap-${i}`,
+      bounds: canvasRectangle({
+        x: firstChildBounds.x + firstChildBounds.width - parentGridBounds.x,
+        y: allCellsBound.y,
+        width: secondChildBounds.x - firstChildBounds.x - firstChildBounds.width,
+        height: allCellsBound.height,
+      }),
       gap: gapValues.column,
       axis: 'column' as Axis,
     }
@@ -280,18 +281,9 @@ export function gridGapControlBoundsFromMetadata(
     columns: gridColumns,
     gridTemplateRows: gridTemplateRows ?? '',
     gridTemplateColumns: gridTemplateColumns ?? '',
-    cellBounds: cellBounds,
+    cellBounds: allCellsBound,
     gapValues: gapValues,
   }
-}
-
-function adjustToScale(rectangle: CanvasRectangle, scale: number): CanvasRectangle {
-  return canvasRectangle({
-    x: rectangle.x / scale,
-    y: rectangle.y / scale,
-    width: rectangle.width / scale,
-    height: rectangle.height / scale,
-  })
 }
 
 export interface GridGapData {
