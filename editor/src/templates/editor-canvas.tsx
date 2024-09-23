@@ -362,7 +362,6 @@ export function runLocalCanvasAction(
   builtinDependencies: BuiltInDependencies,
   action: CanvasAction,
 ): EditorState {
-  // TODO BB horrorshow performance
   switch (action.action) {
     case 'SCROLL_CANVAS': {
       const newCanvasOffset = Utils.offsetPoint(
@@ -375,6 +374,7 @@ export function runLocalCanvasAction(
           ...model.canvas,
           realCanvasOffset: newCanvasOffset,
           roundedCanvasOffset: roundPointToNearestWhole(newCanvasOffset),
+          elementsToRerender: [], // we set this to [] to maximize the scroll performance, but it needs to be reset after the scroll! Ideally this would be in the patchedEditorState, but scrolling the canvas is not a continuous interaciton
         },
       }
     }
