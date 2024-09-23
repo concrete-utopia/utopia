@@ -81,6 +81,7 @@ import type { ElementPath } from 'utopia-shared/src/types'
 import { reparentSubjectsForInteractionTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
 import { gridRearrangeResizeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
+import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -305,15 +306,15 @@ const getApplicableStrategiesSelector = createSelector(
     interactionSession: InteractionSession | null,
     customStrategyState: CustomStrategyState,
   ): Array<CanvasStrategy> => {
-    if (applicableStrategiesFromStrategyState != null) {
-      return applicableStrategiesFromStrategyState
-    } else {
+    if (applicableStrategiesFromStrategyState == null) {
       return getApplicableStrategies(
         RegisteredCanvasStrategies,
         canvasState,
         interactionSession,
         customStrategyState,
       )
+    } else {
+      return applicableStrategiesFromStrategyState
     }
   },
 )
@@ -613,6 +614,7 @@ function controlPriorityToNumber(prio: ControlWithProps<any>['priority']): numbe
 
 export function useGetApplicableStrategyControls(): Array<ControlWithProps<unknown>> {
   const applicableStrategies = useGetApplicableStrategies()
+  const deeplyKeptApplicableStrategies = useKeepReferenceEqualityIfPossible(applicableStrategies)
   const currentStrategy = useDelayedCurrentStrategy()
   const currentlyInProgress = useEditorState(
     Substores.canvas,
@@ -625,7 +627,7 @@ export function useGetApplicableStrategyControls(): Array<ControlWithProps<unkno
     let applicableControls: Array<ControlWithProps<unknown>> = []
     let isResizable: boolean = false
     // Add the controls for currently applicable strategies.
-    for (const strategy of applicableStrategies) {
+    for (const strategy of deeplyKeptApplicableStrategies) {
       if (isResizableStrategy(strategy)) {
         isResizable = true
       }
@@ -646,7 +648,7 @@ export function useGetApplicableStrategyControls(): Array<ControlWithProps<unkno
     )
 
     return applicableControls
-  }, [applicableStrategies, currentStrategy, currentlyInProgress])
+  }, [deeplyKeptApplicableStrategies, currentStrategy, currentlyInProgress])
 }
 
 export function isStrategyActive(strategyState: StrategyState): boolean {
