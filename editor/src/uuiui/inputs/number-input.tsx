@@ -467,10 +467,10 @@ export const NumberInput = React.memo<NumberInputProps>(
     const onKeyDown = React.useCallback(
       (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'ArrowUp') {
-          updateValue(incrementBy(stepSize, e.shiftKey, false))
+          updateValue(incrementBy(stepSize, e.shiftKey, true))
         } else if (e.key === 'ArrowDown') {
           e.preventDefault()
-          updateValue(incrementBy(-stepSize, e.shiftKey, false))
+          updateValue(incrementBy(-stepSize, e.shiftKey, true))
         } else if (e.key === 'Enter' || e.key === 'Escape') {
           e.nativeEvent.stopImmediatePropagation()
           e.preventDefault()
