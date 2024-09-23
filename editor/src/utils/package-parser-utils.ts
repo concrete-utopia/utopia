@@ -1,8 +1,15 @@
 import type { ParseResult } from './value-parser-utils'
-import { parseString, descriptionParseError, objectKeyParser } from './value-parser-utils'
+import {
+  parseString,
+  descriptionParseError,
+  objectKeyParser,
+  parseObject,
+  objectParser,
+  parseBoolean,
+  optionalProp,
+} from './value-parser-utils'
 import type { AnyJson } from '../missing-types/json'
-import { flatMapEither, right, left, forEachRight } from '../core/shared/either'
-import { isEsCodeFile, NodeModules } from '../core/shared/project-file-types'
+import { flatMapEither, right, left, mapEither, isLeft } from '../core/shared/either'
 
 export function parseStringToJSON(value: unknown): ParseResult<AnyJson> {
   return flatMapEither((jsonText) => {
@@ -21,4 +28,27 @@ export function parseVersionPackageJsonObject(value: unknown): ParseResult<strin
 
 export function parseVersionPackageJsonFile(value: unknown): ParseResult<string> {
   return flatMapEither(parseVersionPackageJsonObject, parseStringToJSON(value))
+}
+
+interface UtopiaConfig {
+  tailwind?: Record<string, unknown>
+}
+
+export function parseUtopiaConfigFromPackageJsonFile(
+  value: unknown,
+): ParseResult<UtopiaConfig | null> {
+  const parser = objectParser(
+    {
+      utopia: optionalProp(
+        objectParser({
+          tailwind: optionalProp(objectParser<Record<string, unknown>>({})),
+        }),
+      ),
+    },
+    { allowUnknownKeys: true },
+  )
+
+  const result = flatMapEither(parser, parseStringToJSON(value))
+
+  return mapEither((parsed) => parsed?.utopia ?? null, result)
 }
