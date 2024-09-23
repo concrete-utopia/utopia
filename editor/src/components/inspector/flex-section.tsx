@@ -225,30 +225,18 @@ const TemplateDimensionControl = React.memo(
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
     const values = React.useMemo((): GridDimension[] => {
+      // TODO: handle gridAutoRows/Cols too
       switch (axis) {
         case 'row': {
-          const { gridAutoRows, gridTemplateRows } =
-            grid.specialSizeMeasurements.containerGridPropertiesFromProps
+          const { gridTemplateRows } = grid.specialSizeMeasurements.containerGridPropertiesFromProps
 
-          const autoRows: GridDimension[] =
-            gridAutoRows?.type === 'DIMENSIONS' ? gridAutoRows.dimensions : []
-
-          const templateRows: GridDimension[] =
-            gridTemplateRows?.type === 'DIMENSIONS' ? gridTemplateRows.dimensions : []
-
-          return templateRows.length === 0 ? autoRows : templateRows
+          return gridTemplateRows?.type === 'DIMENSIONS' ? gridTemplateRows.dimensions : []
         }
         case 'column': {
-          const { gridAutoColumns, gridTemplateColumns } =
+          const { gridTemplateColumns } =
             grid.specialSizeMeasurements.containerGridPropertiesFromProps
 
-          const autoCols: GridDimension[] =
-            gridAutoColumns?.type === 'DIMENSIONS' ? gridAutoColumns.dimensions : []
-
-          const templateCols: GridDimension[] =
-            gridTemplateColumns?.type === 'DIMENSIONS' ? gridTemplateColumns.dimensions : []
-
-          return templateCols.length === 0 ? autoCols : templateCols
+          return gridTemplateColumns?.type === 'DIMENSIONS' ? gridTemplateColumns.dimensions : []
         }
         default:
           assertNever(axis)
