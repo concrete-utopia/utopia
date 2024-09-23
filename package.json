@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/concrete-utopia/utopia/issues"
   },
-  "homepage": "https://utopia.app"
+  "homepage": "https://utopia.app",
+  "dependencies": {
+    "@mhsdesign/jit-browser-tailwindcss": "0.4.1"
+  }
 }
