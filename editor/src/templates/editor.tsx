@@ -346,7 +346,7 @@ export class Editor {
       const projectId = getProjectID()
       startPollingLoginState(this.boundDispatch, loginState)
       this.storedState.userState.loginState = loginState
-      void Promise.all([getUserConfiguration(loginState)]).then(([shortcutConfiguration]) => {
+      void getUserConfiguration(loginState).then((shortcutConfiguration) => {
         const userState = {
           ...this.storedState.userState,
           ...shortcutConfiguration,
