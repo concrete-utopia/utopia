@@ -608,14 +608,14 @@ export type GridCSSMinmax = BaseGridDimension & {
   max: GridCSSNumber | GridCSSKeyword
 }
 
-export function parseGridCSSMinmax(input: string): GridCSSMinmax | null {
+export function parseGridCSSMinmaxOrRepeat(input: string): GridCSSMinmax | GridCSSRepeat | null {
   const parsed = csstree.parse(input, { context: 'value' })
   if (parsed.type === 'Value') {
     const parsedDimensions = parseGridChildren(parsed.children)
     if (
       isRight(parsedDimensions) &&
       parsedDimensions.value.length === 1 &&
-      parsedDimensions.value[0].type === 'MINMAX'
+      (parsedDimensions.value[0].type === 'MINMAX' || parsedDimensions.value[0].type === 'REPEAT')
     ) {
       return parsedDimensions.value[0]
     }
