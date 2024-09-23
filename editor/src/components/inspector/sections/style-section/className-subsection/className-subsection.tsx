@@ -221,7 +221,13 @@ const ClassNameControl = React.memo(() => {
     isFocusedRef.current = true
   }, [])
 
-  const options = useFilteredOptions(filter, 100)
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'ClassNameSubsection projectContents',
+  )
+
+  const options = useFilteredOptions(filter, 100, projectContents, clearFocusedOption)
 
   React.useEffect(() => {
     return function cleanup() {

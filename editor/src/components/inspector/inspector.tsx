@@ -410,6 +410,12 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     setStyleSectionOpen(shouldExpandStyleSection)
   }, [setStyleSectionOpen, shouldExpandStyleSection])
 
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'Inspector projectContents',
+  )
+
   const shouldHideInspectorSections = useShouldHideInspectorSections()
 
   const shouldShowStyleSectionContents = styleSectionOpen && !shouldHideInspectorSections
@@ -417,7 +423,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
 
   const shouldShowAlignmentButtons = !isCodeElement && inspectorPreferences.includes('layout')
   const shouldShowClassNameSubsection =
-    isTailwindEnabled() && inspectorPreferences.includes('visual')
+    isTailwindEnabled(projectContents) && inspectorPreferences.includes('visual')
   const shouldShowTargetSelectorSection = canEdit && inspectorPreferences.includes('visual')
   const shouldShowFlexSection =
     multiselectedContract === 'frame' &&

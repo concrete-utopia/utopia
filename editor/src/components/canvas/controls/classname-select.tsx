@@ -178,7 +178,18 @@ export const ClassNameSelect = React.memo(
       isMenuOpenRef.current = true
     }, [])
 
-    const filteredOptions = useFilteredOptions(input, MaxResults, clearFocusedOption)
+    const projectContents = useEditorState(
+      Substores.projectContents,
+      (store) => store.editor.projectContents,
+      'ClassNameSelect projectContents',
+    )
+
+    const filteredOptions = useFilteredOptions(
+      input,
+      MaxResults,
+      projectContents,
+      clearFocusedOption,
+    )
 
     React.useEffect(() => {
       return function cleanup() {

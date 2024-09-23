@@ -97,6 +97,7 @@ import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 import { listenForReactRouterErrors } from '../../core/shared/runtime-report-logs'
 import { getFilePathMappings } from '../../core/model/project-file-utils'
 import { useInvalidatedCanvasRemount } from './canvas-component-entry'
+import { useTailwindCompilation } from '../../core/tailwind/tailwind-compilation'
 
 applyUIDMonkeyPatch()
 
@@ -496,6 +497,8 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   evaluatedFileNames.current = getListOfEvaluatedFiles()
 
   const executionScope = scope
+
+  useTailwindCompilation(customRequire)
 
   const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
