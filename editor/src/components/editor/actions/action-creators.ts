@@ -239,6 +239,7 @@ import type {
   ToggleDataCanCondense,
   UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
+  SetElementsToRerender,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -259,6 +260,7 @@ import type {
   ColorSwatch,
   PostActionMenuData,
   ErrorBoundaryHandling,
+  ElementsToRerender,
 } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
 import type { TextProp } from '../../text-editor/text-editor'
@@ -1908,5 +1910,12 @@ export function setErrorBoundaryHandling(
   return {
     action: 'SET_ERROR_BOUNDARY_HANDLING',
     errorBoundaryHandling: errorBoundaryHandling,
+  }
+}
+
+export function setElementsToRerender(value: ElementsToRerender): SetElementsToRerender {
+  return {
+    action: 'SET_ELEMENTS_TO_RERENDER',
+    value: value,
   }
 }

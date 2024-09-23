@@ -92,6 +92,7 @@ import type { EditorAction } from '../../editor/action-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { eitherRight, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { modify } from '../../../core/shared/optics/optic-utilities'
+import { setElementsToRerender } from '../../../components/editor/actions/action-creators'
 
 export interface InspectorPropsContextData {
   selectedViews: Array<ElementPath>
@@ -547,7 +548,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
   const controlStatus = calculateControlStatusWithUnknown(propertyStatus, isUnknown)
 
   const {
-    onContextSubmitValue: onSingleSubmitValue,
+    selectedViewsRef,
     onContextUnsetValue: onUnsetValue,
     collectActionsToSubmitValue,
     collectActionsToUnsetValue,
@@ -566,6 +567,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
   const transformedValue = transformValue(values)
 
   const onSubmitValue: (newValue: T, transient?: boolean) => void = useCreateOnSubmitValue<P, T>(
+    selectedViewsRef,
     untransformValue,
     propKeys,
     pathMappingFn,
@@ -597,6 +599,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
 }
 
 function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProperties[P]>(
+  selectedViewsRef: ReadonlyRef<Array<ElementPath>>,
   untransformValue: UntransformInspectorInfo<P, T>,
   propKeys: P[],
   pathMappingFn: PathMappingFn<P>,
@@ -629,17 +632,19 @@ function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProper
           actions.push(...collectActionsToUnsetValue(propertyPath, transient))
         }
       })
+      actions.push(setElementsToRerender(selectedViewsRef.current))
 
       dispatch(actions)
     },
     [
-      collectActionsToSubmitValue,
-      collectActionsToUnsetValue,
       untransformValue,
       propKeys,
+      selectedViewsRef,
+      dispatch,
       pathMappingFn,
       target,
-      dispatch,
+      collectActionsToSubmitValue,
+      collectActionsToUnsetValue,
     ],
   )
 }
