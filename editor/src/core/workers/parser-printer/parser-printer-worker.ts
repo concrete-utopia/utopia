@@ -68,7 +68,7 @@ function getCacheKey(filename: string, versionNumber: number): string {
   return `${filename}::${versionNumber}::${devVer}`
 }
 
-async function getParseFileResultWithCache(
+export async function getParseFileResultWithCache(
   filename: string,
   filePathMappings: FilePathMappings,
   content: string,
@@ -101,7 +101,7 @@ async function getParseFileResultWithCache(
   return parseResult
 }
 
-function getParseFileResult(
+export function getParseFileResult(
   filename: string,
   filePathMappings: FilePathMappings,
   content: string,
