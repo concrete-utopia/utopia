@@ -1,12 +1,20 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "checkPlaceholder"] }] */
 import type { RenderResult } from '@testing-library/react'
-import { render } from '@testing-library/react'
+import { act, fireEvent, render } from '@testing-library/react'
 import React from 'react'
 import {
   getStoreHook,
   TestInspectorContextProvider,
 } from '../../components/inspector/common/inspector.test-utils'
 import { NumberInput } from './number-input'
+import type { CSSNumber, UnknownOrEmptyInput } from '../../components/inspector/common/css-utils'
+import {
+  cssNumber,
+  isEmptyInputValue,
+  isUnknownInputValue,
+} from '../../components/inspector/common/css-utils'
+import keycode from 'keycode'
+import { wait } from '../../utils/utils.test-utils'
 
 describe('NumberInput', () => {
   function checkPlaceholder(renderResult: RenderResult, expectedPlaceholder: string | null): void {
