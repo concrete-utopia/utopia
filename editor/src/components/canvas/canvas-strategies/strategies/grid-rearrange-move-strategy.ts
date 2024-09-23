@@ -180,10 +180,7 @@ function getCommandsAndPatchForGridRearrange(
     selectedElement,
     canvasState.startingMetadata,
     interactionData,
-    canvasState.scale,
-    canvasState.canvasOffset,
     customState.grid,
-    false,
   )
 
   return {

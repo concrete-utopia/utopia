@@ -7,7 +7,10 @@ import type { CSSProperties } from 'react'
 import React from 'react'
 import type { Sides } from 'utopia-api/core'
 import type { ElementPath } from 'utopia-shared/src/types'
-import type { GridDimension } from '../../../components/inspector/common/css-utils'
+import type {
+  GridDimension,
+  GridDiscreteDimension,
+} from '../../../components/inspector/common/css-utils'
 import {
   isCSSKeyword,
   printGridAutoOrTemplateBase,
@@ -17,6 +20,10 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import { defaultEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
+import type {
+  ElementInstanceMetadata,
+  GridAutoOrTemplateDimensions,
+} from '../../../core/shared/element-template'
 import {
   isGridAutoOrTemplateDimensions,
   type GridAutoOrTemplateBase,
@@ -24,7 +31,6 @@ import {
 import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
-  canvasRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
   nullIfInfinity,
@@ -81,10 +87,11 @@ import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { CanvasLabel } from './select-mode/controls-common'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import type { GridCellCoordinates } from '../canvas-strategies/strategies/grid-cell-bounds'
+import { gridCellTargetId } from '../canvas-strategies/strategies/grid-cell-bounds'
 import {
-  getGridPlaceholderDomElementFromCoordinates,
-  gridCellTargetId,
-} from '../canvas-strategies/strategies/grid-cell-bounds'
+  getGlobalFrameOfGridCell,
+  getGridRelatedIndexes,
+} from '../canvas-strategies/strategies/grid-helpers'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -97,7 +104,9 @@ function getCellsCount(template: GridAutoOrTemplateBase | null): number {
 
   switch (template.type) {
     case 'DIMENSIONS':
-      return template.dimensions.length
+      return template.dimensions.reduce((acc, cur) => {
+        return acc + (cur.type === 'REPEAT' ? cur.times : 1)
+      }, 0)
     case 'FALLBACK':
       return 0
     default:
@@ -129,7 +138,7 @@ function gridCSSNumberToLabel(gridCSSNumber: GridDimension): string {
 function getLabelForAxis(
   fromDOM: GridDimension,
   index: number,
-  fromProps: GridAutoOrTemplateBase | null,
+  fromProps: GridAutoOrTemplateDimensions | null,
 ): string {
   const fromPropsAtIndex = toFirst(getFromPropsOptic(index), fromProps)
   return gridCSSNumberToLabel(defaultEither(fromDOM, fromPropsAtIndex))
@@ -143,11 +152,15 @@ export interface GridResizingControlProps {
   dimensionIndex: number
   axis: Axis
   containingFrame: CanvasRectangle
-  fromPropsAxisValues: GridAutoOrTemplateBase | null
+  fromPropsAxisValues: GridAutoOrTemplateDimensions | null
   padding: number | null
+  resizing: 'resize-target' | 'resize-generated' | 'not-resizing'
+  setResizingIndex: (v: number | null) => void
 }
 
 export const GridResizingControl = React.memo((props: GridResizingControlProps) => {
+  const { setResizingIndex } = props
+
   const canvasOffset = useEditorState(
     Substores.canvasOffset,
     (store) => store.editor.canvas.roundedCanvasOffset,
@@ -161,12 +174,10 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
-  const [resizing, setResizing] = React.useState(false)
-
   const mouseDownHandler = React.useCallback(
     (event: React.MouseEvent): void => {
       function mouseUpHandler() {
-        setResizing(false)
+        setResizingIndex(null)
         window.removeEventListener('mouseup', mouseUpHandler)
       }
       window.addEventListener('mouseup', mouseUpHandler)
@@ -176,7 +187,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         canvasOffset,
         windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
       )
-      setResizing(true)
+      setResizingIndex(props.dimensionIndex)
 
       dispatch([
         CanvasActions.createInteractionSession(
@@ -191,7 +202,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
       event.stopPropagation()
       event.preventDefault()
     },
-    [canvasOffset, dispatch, props.axis, props.dimensionIndex, scale],
+    [canvasOffset, dispatch, props.axis, props.dimensionIndex, scale, setResizingIndex],
   )
 
   const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
@@ -221,8 +232,8 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         display: 'flex',
         alignItems: props.axis === 'column' ? 'flex-start' : 'center',
         justifyContent: props.axis === 'column' ? 'center' : 'flex-start',
-        height: props.axis === 'column' && resizing ? shadowSize : '100%',
-        width: props.axis === 'row' && resizing ? shadowSize : '100%',
+        height: props.axis === 'column' && props.resizing !== 'not-resizing' ? shadowSize : '100%',
+        width: props.axis === 'row' && props.resizing !== 'not-resizing' ? shadowSize : '100%',
         position: 'relative',
       }}
     >
@@ -245,7 +256,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           pointerEvents: 'initial',
         }}
         css={{
-          opacity: resizing ? 1 : 0.5,
+          opacity: props.resizing !== 'not-resizing' ? 1 : 0.5,
           ':hover': {
             opacity: 1,
           },
@@ -260,7 +271,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         )}
       </div>
       {when(
-        resizing,
+        props.resizing !== 'not-resizing',
         <div
           style={{
             position: 'absolute',
@@ -271,10 +282,17 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            border: `1px solid ${resizing ? colorTheme.brandNeonPink.value : 'transparent'}`,
-            ...(resizing
+            border: `1px solid ${
+              props.resizing === 'resize-target'
+                ? colorTheme.brandNeonPink.value
+                : colorTheme.brandNeonPink60.value
+            }`,
+            ...(props.resizing === 'resize-target'
               ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink60.value, scale)
-              : {}),
+              : UtopiaStyles.backgrounds.stripedBackground(
+                  colorTheme.brandNeonPink10.value,
+                  scale,
+                )),
           }}
         >
           <CanvasLabel
@@ -284,7 +302,11 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
               props.fromPropsAxisValues,
             )}
             scale={scale}
-            color={colorTheme.brandNeonPink.value}
+            color={
+              props.resizing === 'resize-target'
+                ? colorTheme.brandNeonPink.value
+                : colorTheme.brandNeonPink60.value
+            }
             textColor={colorTheme.white.value}
           />
         </div>,
@@ -309,6 +331,44 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
     (store) => store.editor.canvas.scale,
     'GridResizing canvasScale',
   )
+
+  const fromProps = React.useMemo((): GridAutoOrTemplateDimensions | null => {
+    if (props.fromPropsAxisValues?.type !== 'DIMENSIONS') {
+      return null
+    }
+    return {
+      type: 'DIMENSIONS',
+      dimensions: props.fromPropsAxisValues.dimensions.reduce(
+        (acc, cur): GridDiscreteDimension[] => {
+          if (cur.type === 'REPEAT') {
+            let expanded: GridDiscreteDimension[] = []
+            for (let i = 0; i < cur.times; i++) {
+              expanded.push(...cur.value.filter((v) => v.type !== 'REPEAT'))
+            }
+            return acc.concat(...expanded)
+          } else {
+            return acc.concat(cur)
+          }
+        },
+        [] as GridDiscreteDimension[],
+      ),
+    }
+  }, [props.fromPropsAxisValues])
+
+  const [resizingIndex, setResizingIndex] = React.useState<number | null>(null)
+
+  // These are the indexes of the elements that will resize too alongside the one at the index of
+  // `resizingIndex`.
+  const coresizingIndexes: number[] = React.useMemo(() => {
+    if (props.fromPropsAxisValues?.type !== 'DIMENSIONS' || resizingIndex == null) {
+      return []
+    }
+    return getGridRelatedIndexes({
+      template: props.fromPropsAxisValues.dimensions,
+      index: resizingIndex,
+    })
+  }, [props.fromPropsAxisValues, resizingIndex])
+
   if (props.axisValues == null) {
     return null
   }
@@ -347,9 +407,17 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
                 key={`grid-resizing-control-${dimensionIndex}`}
                 dimensionIndex={dimensionIndex}
                 dimension={dimension}
-                fromPropsAxisValues={props.fromPropsAxisValues}
+                fromPropsAxisValues={fromProps}
                 axis={props.axis}
                 containingFrame={props.containingFrame}
+                resizing={
+                  resizingIndex === dimensionIndex
+                    ? 'resize-target'
+                    : coresizingIndexes.includes(dimensionIndex)
+                    ? 'resize-generated'
+                    : 'not-resizing'
+                }
+                setResizingIndex={setResizingIndex}
                 padding={
                   props.padding == null
                     ? 0
@@ -386,6 +454,7 @@ export type GridData = {
   rows: number
   columns: number
   cells: number
+  metadata: ElementInstanceMetadata
 }
 export function useGridData(elementPaths: ElementPath[]): GridData[] {
   const grids = useEditorState(
@@ -429,6 +498,7 @@ export function useGridData(elementPaths: ElementPath[]): GridData[] {
 
         return {
           elementPath: targetGridContainer.elementPath,
+          metadata: targetGridContainer,
           frame: targetGridContainer.globalFrame,
           gridTemplateColumns: gridTemplateColumns,
           gridTemplateRows: gridTemplateRows,
@@ -846,8 +916,6 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                       position: 'relative',
                       pointerEvents: 'initial',
                     }}
-                    data-grid-row={countedRow}
-                    data-grid-column={countedColumn}
                   >
                     {when(
                       features.Grid.dotgrid,
@@ -986,61 +1054,31 @@ const AbsoluteDistanceIndicators = React.memo(
   (props: { targetRootCell: GridCellCoordinates | null }) => {
     const colorTheme = useColorTheme()
 
-    const cellFrame = useEditorState(
+    const gridMetadata = useEditorState(
       Substores.metadata,
       (store) => {
         if (store.editor.selectedViews.length !== 1) {
           return null
         }
 
-        const meta = MetadataUtils.findElementByElementPath(
+        return MetadataUtils.findElementByElementPath(
           store.editor.jsxMetadata,
           store.editor.selectedViews[0],
         )
-        if (!MetadataUtils.isPositionAbsolute(meta)) {
-          return null
-        }
-
-        return nullIfInfinity(meta?.globalFrame)
       },
       'AbsoluteDistanceIndicators cellFrame',
     )
-    const canvasScale = useEditorState(
-      Substores.canvasOffset,
-      (store) => store.editor.canvas.scale,
-      'AbsoluteDistanceIndicators canvasScale',
-    )
 
-    const canvasOffset = useEditorState(
-      Substores.canvasOffset,
-      (store) => store.editor.canvas.roundedCanvasOffset,
-      'AbsoluteDistanceIndicators canvasOffset',
-    )
+    const cellFrame = !MetadataUtils.isPositionAbsolute(gridMetadata)
+      ? null
+      : nullIfInfinity(gridMetadata?.globalFrame)
 
     const targetCellBoundingBox = React.useMemo(() => {
-      if (props.targetRootCell == null) {
+      if (gridMetadata == null || props.targetRootCell == null) {
         return null
       }
-      const element = getGridPlaceholderDomElementFromCoordinates(props.targetRootCell)
-      const boundingBox = element?.getBoundingClientRect()
-      if (boundingBox == null) {
-        return null
-      }
-
-      const canvasOrigin = windowToCanvasCoordinates(
-        canvasScale,
-        canvasOffset,
-        windowPoint({ x: boundingBox.left, y: boundingBox.top }),
-      ).canvasPositionRounded
-      const canvasRect = canvasRectangle({
-        x: canvasOrigin.x,
-        y: canvasOrigin.y,
-        width: boundingBox.width * canvasScale,
-        height: boundingBox.height * canvasScale,
-      })
-
-      return canvasRect
-    }, [props.targetRootCell, canvasScale, canvasOffset])
+      return getGlobalFrameOfGridCell(gridMetadata, props.targetRootCell)
+    }, [props.targetRootCell, gridMetadata])
 
     const distanceTop =
       targetCellBoundingBox == null || cellFrame == null ? 0 : cellFrame.y - targetCellBoundingBox.y
@@ -1331,16 +1369,10 @@ function useCellAnimation(params: {
 
   const animate = useCanvasAnimation(selectedViews)
 
-  const canvasScale = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.scale,
-    'useSnapAnimation canvasScale',
-  )
-
-  const canvasOffset = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'useSnapAnimation canvasOffset',
+  const gridMetadata = useEditorState(
+    Substores.metadata,
+    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, gridPath),
+    'useCellAnimation gridMetadata',
   )
 
   const moveFromPoint = React.useMemo(() => {
@@ -1348,22 +1380,12 @@ function useCellAnimation(params: {
   }, [lastSnapPoint, shadowFrame])
 
   const snapPoint = React.useMemo(() => {
-    if (gridPath == null || targetRootCell == null) {
+    if (gridMetadata == null || targetRootCell == null) {
       return null
     }
 
-    const element = document.getElementById(
-      gridCellTargetId(gridPath, targetRootCell.row, targetRootCell.column),
-    )
-    if (element == null) {
-      return null
-    }
-
-    const rect = element.getBoundingClientRect()
-    const point = windowPoint({ x: rect.x, y: rect.y })
-
-    return windowToCanvasCoordinates(canvasScale, canvasOffset, point).canvasPositionRounded
-  }, [canvasScale, canvasOffset, gridPath, targetRootCell])
+    return getGlobalFrameOfGridCell(gridMetadata, targetRootCell)
+  }, [gridMetadata, targetRootCell])
 
   React.useEffect(() => {
     if (disabled) {
@@ -1694,10 +1716,6 @@ function gridEdgeToWidthHeight(props: GridResizeEdgeProperties, scale: number): 
 
 function gridKeyFromPath(path: ElementPath): string {
   return `grid-${EP.toString(path)}`
-}
-
-export function getGridPlaceholderDomElement(elementPath: ElementPath): HTMLElement | null {
-  return document.getElementById(gridKeyFromPath(elementPath))
 }
 
 const gridPlaceholderBorder = (color: string) => `2px solid ${color}`
