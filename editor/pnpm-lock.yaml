@@ -84,9 +84,6 @@ specifiers:
   '@testing-library/react': 14.0.0
   '@testing-library/user-event': 14.5.2
   '@tippyjs/react': 4.1.0
-  '@twind/core': 1.1.3
-  '@twind/preset-autoprefix': 1.0.7
-  '@twind/preset-tailwind': 1.1.4
   '@types/babel__traverse': 7.18.3
   '@types/chai': 3.5.1
   '@types/chroma-js': 2.0.0
@@ -382,9 +379,6 @@ dependencies:
   '@svgr/plugin-jsx': 5.5.0
   '@testing-library/user-event': 14.5.2
   '@tippyjs/react': 4.1.0_ef5jwxihqo6n7gxfmzogljlgcm
-  '@twind/core': 1.1.3_typescript@5.5.4
-  '@twind/preset-autoprefix': 1.0.7_gmrgfak3invo7trrvnu65or3fu
-  '@twind/preset-tailwind': 1.1.4_gmrgfak3invo7trrvnu65or3fu
   '@types/fontfaceobserver': 0.0.6
   '@types/lodash.findlastindex': 4.6.7
   '@types/react-syntax-highlighter': 11.0.4
@@ -4916,48 +4910,6 @@ packages:
 
   /@tootallnate/quickjs-emscripten/0.23.0:
     resolution: {integrity: sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==}
-    dev: false
-
-  /@twind/core/1.1.3_typescript@5.5.4:
-    resolution: {integrity: sha512-/B/aNFerMb2IeyjSJy3SJxqVxhrT77gBDknLMiZqXIRr4vNJqiuhx7KqUSRzDCwUmyGuogkamz+aOLzN6MeSLw==}
-    engines: {node: '>=14.15.0'}
-    peerDependencies:
-      typescript: ^4.8.4
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dependencies:
-      csstype: 3.1.2
-      typescript: 5.5.4
-    dev: false
-
-  /@twind/preset-autoprefix/1.0.7_gmrgfak3invo7trrvnu65or3fu:
-    resolution: {integrity: sha512-3wmHO0pG/CVxYBNZUV0tWcL7CP0wD5KpyWAQE/KOalWmOVBj+nH6j3v6Y3I3pRuMFaG5DC78qbYbhA1O11uG3w==}
-    engines: {node: '>=14.15.0'}
-    peerDependencies:
-      '@twind/core': ^1.1.0
-      typescript: ^4.8.4
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dependencies:
-      '@twind/core': 1.1.3_typescript@5.5.4
-      style-vendorizer: 2.2.3
-      typescript: 5.5.4
-    dev: false
-
-  /@twind/preset-tailwind/1.1.4_gmrgfak3invo7trrvnu65or3fu:
-    resolution: {integrity: sha512-zv85wrP/DW4AxgWrLfH7kyGn/KJF3K04FMLVl2AjoxZGYdCaoZDkL8ma3hzaKQ+WGgBFRubuB/Ku2Rtv/wjzVw==}
-    engines: {node: '>=14.15.0'}
-    peerDependencies:
-      '@twind/core': ^1.1.0
-      typescript: ^4.8.4
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dependencies:
-      '@twind/core': 1.1.3_typescript@5.5.4
-      typescript: 5.5.4
     dev: false
 
   /@types/aria-query/5.0.1:
@@ -18351,10 +18303,6 @@ packages:
     resolution: {integrity: sha512-CzFnRRXhzWIdItT3OmF8SQfWyahHhjq3HwcMNCNLn+N7klOOqPjMeG/4JSu77D7ypZdGvSzvkrbyeTMizz2VrA==}
     dependencies:
       inline-style-parser: 0.1.1
-    dev: false
-
-  /style-vendorizer/2.2.3:
-    resolution: {integrity: sha512-/VDRsWvQAgspVy9eATN3z6itKTuyg+jW1q6UoTCQCFRqPDw8bi3E1hXIKnGw5LvXS2AQPuJ7Af4auTLYeBOLEg==}
     dev: false
 
   /stylis/4.0.10:

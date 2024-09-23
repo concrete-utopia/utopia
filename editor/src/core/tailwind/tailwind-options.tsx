@@ -28,9 +28,12 @@ import {
 } from '../shared/jsx-attribute-utils'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
-import { isTwindEnabled } from './tailwind'
 import type { AttributeCategory } from './attribute-categories'
 import { AttributeCategories } from './attribute-categories'
+
+export function isTailwindEnabled() {
+  return false // TODO
+}
 
 export interface TailWindOption {
   label: string
@@ -165,7 +168,7 @@ export function useFilteredOptions(
   onEmptyResults: () => void = NO_OP,
 ): Array<TailWindOption> {
   return React.useMemo(() => {
-    if (isTwindEnabled()) {
+    if (isTailwindEnabled()) {
       const sanitisedFilter = filter.trim().toLowerCase()
       const searchTerms = searchStringToIndividualTerms(sanitisedFilter)
       let results: Array<TailWindOption>

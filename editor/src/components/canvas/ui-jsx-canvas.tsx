@@ -77,7 +77,6 @@ import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import type { RemixValidPathsGenerationContext } from './canvas-utils'
 import { getParseSuccessForFilePath, getValidElementPaths } from './canvas-utils'
 import { arrayEqualsByValue, fastForEach, NO_OP } from '../../core/shared/utils'
-import { useTwind } from '../../core/tailwind/tailwind'
 import {
   AlwaysFalse,
   atomWithPubSub,
@@ -497,8 +496,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   evaluatedFileNames.current = getListOfEvaluatedFiles()
 
   const executionScope = scope
-
-  useTwind(projectContentsForRequireFn, customRequire, '#canvas-container')
 
   const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
