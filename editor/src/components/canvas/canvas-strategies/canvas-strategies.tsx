@@ -19,6 +19,9 @@ import type {
   StrategyApplicationResult,
   InteractionLifecycle,
   CustomStrategyState,
+  UIFrameworkPlugin,
+  PropertyUpdateDescription,
+  AbstractCSSPropertyKey,
 } from './canvas-strategy-types'
 import {
   ControlDelay,
@@ -81,6 +84,14 @@ import type { ElementPath } from 'utopia-shared/src/types'
 import { reparentSubjectsForInteractionTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
 import { gridRearrangeResizeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
+import { deleteProperties, runDeleteProperties } from '../commands/delete-properties-command'
+import { runSetProperty, setProperty } from '../commands/set-property-command'
+import * as PP from '../../../core/shared/property-path'
+import { runUpdateClassList, updateClassListCommand } from '../commands/update-class-list-command'
+import * as UCL from '../commands/update-class-list-command'
+import { getProjectFileByFilePath } from '../../assets'
+import { parseUtopiaConfigFromPackageJsonFile } from '../../../utils/package-parser-utils'
+import { isLeft } from '../../../core/shared/either'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -786,4 +797,147 @@ export function useIsOnlyDoNothingStrategy(): boolean {
     (store) => isOnlyDoNothingStrategy(store.strategyState.sortedApplicableStrategies ?? []),
     'useIsOnlyDoNothingStrategy',
   )
+}
+
+export const InlineStyleUIFrameworkPlugin: UIFrameworkPlugin = {
+  processPropertyUpdates: (
+    editorState: EditorState,
+    propertyUpdates: Array<PropertyUpdateDescription>,
+  ) => {
+    return propertyUpdates.flatMap((update) => {
+      switch (update.type) {
+        case 'PROPERTY_TO_SET':
+          // I'm only reusing `runSetProperty`/`runDeleteProperties` here to make the code shorter.
+          // Once the migration is complete, the
+          // setProperty/deleteProperties/setCSSLengthProperty commands should be
+          // removed, and their implementations should be reused here.
+
+          // Note on setCSSLengthProperty: since processPropertyUpdates knows
+          // about the name of the property, the implementation of
+          // setCSSLengthProperty can be called here
+          return runSetProperty(
+            editorState,
+            setProperty('always', update.elementPath, PP.create('style', update.key), update.value),
+          ).editorStatePatches
+        case 'PROPERTY_TO_REMOVE':
+          return runDeleteProperties(
+            editorState,
+            deleteProperties('always', update.elementPath, [PP.create('style', update.key)]),
+          ).editorStatePatches
+        default:
+          assertNever(update)
+      }
+    })
+  },
+}
+
+function mapAbstractCSSPropertyKeyToTailwindCSS(key: AbstractCSSPropertyKey): string {
+  switch (key) {
+    case 'padding':
+      return 'p'
+    case 'padding-top':
+      return 'pt'
+    case 'padding-left':
+      return 'pl'
+    case 'padding-right':
+      return 'pr'
+    case 'padding-bottom':
+      return 'pb'
+    default:
+      assertNever(key)
+  }
+}
+
+export const TailwindCSSUIFrameworkPlugin: UIFrameworkPlugin = {
+  processPropertyUpdates: (
+    editorState: EditorState,
+    propertyUpdates: Array<PropertyUpdateDescription>,
+  ) => {
+    if (propertyUpdates.length === 0) {
+      return []
+    }
+
+    return propertyUpdates.flatMap((update) => {
+      const tailwindClass = mapAbstractCSSPropertyKeyToTailwindCSS(update.key)
+
+      const updateType =
+        update.type === 'PROPERTY_TO_SET'
+          ? UCL.add(`${tailwindClass}-[${update.value}]`)
+          : update.type === 'PROPERTY_TO_REMOVE'
+          ? UCL.remove(tailwindClass)
+          : assertNever(update)
+      return runUpdateClassList(
+        editorState,
+        updateClassListCommand('always', update.elementPath, updateType),
+      ).editorStatePatches
+    })
+  },
+}
+
+function isTailwindEnabled(editorState: EditorState): boolean {
+  const packageJsonFile = getProjectFileByFilePath(editorState.projectContents, 'package.json')
+  if (packageJsonFile == null || packageJsonFile.type !== 'TEXT_FILE') {
+    return false
+  }
+  const utopiaConfig = parseUtopiaConfigFromPackageJsonFile(packageJsonFile.fileContents.code)
+  if (isLeft(utopiaConfig) || utopiaConfig.value == null) {
+    return false
+  }
+
+  return utopiaConfig.value.tailwind != null
+}
+
+function getPluginToUse(editorState: EditorState): UIFrameworkPlugin {
+  if (isTailwindEnabled(editorState)) {
+    return TailwindCSSUIFrameworkPlugin
+  }
+
+  return InlineStyleUIFrameworkPlugin
+}
+export const SupportedUIFrameworkPlugins: Array<UIFrameworkPlugin> = [
+  InlineStyleUIFrameworkPlugin,
+  TailwindCSSUIFrameworkPlugin,
+]
+
+export function runUIFrameworkPlugins(
+  editorState: EditorState,
+  interactionLifecycle: InteractionLifecycle,
+  propertyUpdates: Array<PropertyUpdateDescription>,
+): Array<EditorStatePatch> {
+  const pluginToUse = getPluginToUse(editorState)
+
+  // TODO: this function doesn't deal with the case when multiple UI frameworks
+  // are mixed and matched. It's possible that a project has both
+  // styled-components, tailwind, and emotion for example. This function should
+  // ensure that if a property is set, it's only set from the preferred UI
+  // framework
+
+  if (interactionLifecycle === 'mid-interaction') {
+    // During an interaction, it's much much faster to only update the inline
+    // styles, instead of the Tailwind/whatever UI frameworks is chosen
+    const removeInterferingStyles = propertyUpdates.map(
+      ({ key, elementPath }): PropertyUpdateDescription => ({
+        type: 'PROPERTY_TO_REMOVE',
+        key: key,
+        elementPath: elementPath,
+      }),
+    )
+
+    const interferingStylesRemoved = pluginToUse.processPropertyUpdates(
+      editorState,
+      removeInterferingStyles,
+    )
+    const setInlineStylesForSpeed = InlineStyleUIFrameworkPlugin.processPropertyUpdates(
+      editorState,
+      propertyUpdates,
+    )
+
+    return [...interferingStylesRemoved, ...setInlineStylesForSpeed]
+  }
+
+  if (interactionLifecycle === 'end-interaction') {
+    return pluginToUse.processPropertyUpdates(editorState, propertyUpdates)
+  }
+
+  assertNever(interactionLifecycle)
 }

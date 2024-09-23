@@ -11,7 +11,6 @@ import { assertNever } from '../../../../core/shared/utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import type { EdgePiece } from '../../canvas-types'
 import { CSSCursor } from '../../canvas-types'
-import { deleteProperties } from '../../commands/delete-properties-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
@@ -27,13 +26,17 @@ import {
   paddingAdjustMode,
   paddingForEdgeSimplePadding,
   paddingPropForEdge,
-  paddingToPaddingString,
   printCssNumberWithDefaultUnit,
   simplePaddingFromMetadata,
 } from '../../padding-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
-import type { InteractionCanvasState, InteractionLifecycle } from '../canvas-strategy-types'
+import type {
+  AbstractCSSPropertyKey,
+  InteractionCanvasState,
+  InteractionLifecycle,
+  PropertyUpdateDescription,
+} from '../canvas-strategy-types'
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
@@ -63,7 +66,6 @@ import {
 } from '../../controls/select-mode/controls-common'
 import type { CanvasCommand } from '../../commands/commands'
 import { foldEither } from '../../../../core/shared/either'
-import { styleStringInArray } from '../../../../utils/common-constants'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
 import type { Axis } from '../../../inspector/inspector-common'
@@ -71,12 +73,8 @@ import { detectFillHugFixedState, isHuggingFixedHugFill } from '../../../inspect
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
-import { updateClassListCommand } from '../../commands/update-class-list-command'
-import * as UCL from '../../commands/update-class-list-command'
 import { stripNulls } from '../../../../core/shared/array-utils'
-import { setProperty } from '../../commands/set-property-command'
 
-const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
   'paddingTop',
   'paddingBottom',
@@ -213,16 +211,6 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         setElementsToRerenderCommand(selectedElements),
       ]
 
-      const nonZeroPropsToAdd = IndividualPaddingProps.flatMap(
-        (p): Array<[CSSPaddingKey, string | number]> => {
-          const value = newPaddingMaxed[p]
-          if (value == null || value.renderedValuePx < 0) {
-            return []
-          }
-          return [[p, printCssNumberWithDefaultUnit(fallbackEmptyValue(value), 'px')]]
-        },
-      )
-
       const combinedXPadding =
         paddingForEdgeSimplePadding('left', newPaddingMaxed) +
         paddingForEdgeSimplePadding('right', newPaddingMaxed)
@@ -273,9 +261,39 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       // all 4 sides present - can be represented via the padding shorthand property
       if (allPaddingPropsDefined != null) {
-        return strategyApplicationResult([
+        return strategyApplicationResult(
+          [
+            ...basicCommands,
+            setActiveFrames(
+              selectedElements.map((path) => ({
+                action: 'set-padding',
+                target: activeFrameTargetPath(path),
+                source: zeroRectIfNullOrInfinity(
+                  MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
+                ),
+              })),
+            ),
+          ],
+          {},
+          'success',
+          getStyleUpdateCommandsAllFourSides(selectedElement, allPaddingPropsDefined),
+        )
+      }
+
+      const nonZeroPropsToAdd: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined> =
+        IndividualPaddingProps.reduce((acc, p) => {
+          const value = newPaddingMaxed[p]
+          if (value == null || value.renderedValuePx < 0) {
+            return acc
+          }
+          acc[p] = value
+          return acc
+        }, {} as CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>)
+
+      // only some sides are present - longhand properties have to be used
+      return strategyApplicationResult(
+        [
           ...basicCommands,
-          ...getStyleUpdateCommandsAllFourSides(selectedElement, lifecycle, allPaddingPropsDefined),
           setActiveFrames(
             selectedElements.map((path) => ({
               action: 'set-padding',
@@ -285,23 +303,11 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
               ),
             })),
           ),
-        ])
-      }
-
-      // only some sides are present - longhand properties have to be used
-      return strategyApplicationResult([
-        ...basicCommands,
-        ...getCommandsForSomeSides(selectedElement, lifecycle, nonZeroPropsToAdd),
-        setActiveFrames(
-          selectedElements.map((path) => ({
-            action: 'set-padding',
-            target: activeFrameTargetPath(path),
-            source: zeroRectIfNullOrInfinity(
-              MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
-            ),
-          })),
-        ),
-      ])
+        ],
+        {},
+        'success',
+        getCommandsForSomeSides(selectedElement, nonZeroPropsToAdd),
+      )
     },
   }
 }
@@ -575,118 +581,82 @@ function calculateAdjustDelta(
   return deltaAdjusted
 }
 
-function paddingValuesToTailwind(
-  elementPath: ElementPath,
-  padding: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>,
-) {
-  return getTailwindClassUpdateCommands(
-    elementPath,
-    stripNulls([
-      padding.paddingBottom == null
-        ? null
-        : [
-            'paddingBottom',
-            printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingBottom), 'px'),
-          ],
-      padding.paddingTop == null
-        ? null
-        : [
-            'paddingTop',
-            printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingTop), 'px'),
-          ],
-      padding.paddingLeft == null
-        ? null
-        : [
-            'paddingLeft',
-            printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingLeft), 'px'),
-          ],
-      padding.paddingRight == null
-        ? null
-        : [
-            'paddingRight',
-            printCssNumberWithDefaultUnit(fallbackEmptyValue(padding.paddingRight), 'px'),
-          ],
-    ]),
-  )
+function printCSSNumberForUpdate(cssNumber: CSSNumberWithRenderedValue): string {
+  const value = printCssNumberWithDefaultUnit(fallbackEmptyValue(cssNumber), 'px')
+  return typeof value === 'number' ? `${value}px` : value
 }
 
-function getTailwindClassUpdateCommands(
-  elementPath: ElementPath,
-  values: Array<[CSSPaddingKey, string | number]>,
-): CanvasCommand[] {
-  return values.map(([prop, value]) => {
-    switch (prop) {
-      case 'paddingBottom':
-        return updateClassListCommand('always', elementPath, UCL.add(`pb-[${value}]`))
-      case 'paddingTop':
-        return updateClassListCommand('always', elementPath, UCL.add(`pt-[${value}]`))
-      case 'paddingLeft':
-        return updateClassListCommand('always', elementPath, UCL.add(`pl-[${value}]`))
-      case 'paddingRight':
-        return updateClassListCommand('always', elementPath, UCL.add(`pr-[${value}]`))
-      default:
-        assertNever(prop)
-    }
-  })
+function paddingValuesToUpdate(
+  padding: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>,
+): Array<{ key: AbstractCSSPropertyKey; value: string }> {
+  return stripNulls([
+    padding.paddingBottom == null
+      ? null
+      : { key: 'padding-bottom', value: printCSSNumberForUpdate(padding.paddingBottom) },
+    padding.paddingTop == null
+      ? null
+      : { key: 'padding-top', value: printCSSNumberForUpdate(padding.paddingTop) },
+    padding.paddingLeft == null
+      ? null
+      : { key: 'padding-left', value: printCSSNumberForUpdate(padding.paddingLeft) },
+    padding.paddingRight == null
+      ? null
+      : { key: 'padding-right', value: printCSSNumberForUpdate(padding.paddingRight) },
+  ])
+}
+
+function cssPaddingKeyToCSSPropertyKey(key: CSSPaddingKey): AbstractCSSPropertyKey {
+  switch (key) {
+    case 'paddingBottom':
+      return 'padding-bottom'
+    case 'paddingTop':
+      return 'padding-top'
+    case 'paddingLeft':
+      return 'padding-left'
+    case 'paddingRight':
+      return 'padding-right'
+    default:
+      assertNever(key)
+  }
 }
 
 function getStyleUpdateCommandsAllFourSides(
   elementPath: ElementPath,
-  lifecycle: InteractionLifecycle,
   allPaddingPropsDefined: CSSPaddingMappedValues<CSSNumberWithRenderedValue>,
-): CanvasCommand[] {
-  if (lifecycle === 'mid-interaction') {
-    const paddingString = paddingToPaddingString(allPaddingPropsDefined)
-    return [
-      deleteProperties('always', elementPath, [StylePaddingProp]),
-      ...IndividualPaddingProps.flatMap((p) => [
-        deleteProperties('always', elementPath, [stylePropPathMappingFn(p, styleStringInArray)]),
-      ]),
-      setProperty('always', elementPath, StylePaddingProp, paddingString),
-    ]
-  }
-
-  if (lifecycle === 'end-interaction') {
-    return [
-      deleteProperties('always', elementPath, [StylePaddingProp]),
-      ...IndividualPaddingProps.flatMap((p) => [
-        deleteProperties('always', elementPath, [stylePropPathMappingFn(p, styleStringInArray)]),
-      ]),
-      updateClassListCommand('always', elementPath, UCL.remove('p')),
-      ...paddingValuesToTailwind(elementPath, allPaddingPropsDefined),
-    ]
-  }
-
-  assertNever(lifecycle)
+): PropertyUpdateDescription[] {
+  return [
+    { type: 'PROPERTY_TO_REMOVE', elementPath: elementPath, key: 'padding' },
+    ...paddingValuesToUpdate(allPaddingPropsDefined).map(
+      ({ key, value }): PropertyUpdateDescription => ({
+        type: 'PROPERTY_TO_SET',
+        elementPath: elementPath,
+        key: key,
+        value: value,
+      }),
+    ),
+  ]
 }
 
 function getCommandsForSomeSides(
   elementPath: ElementPath,
-  lifecycle: InteractionLifecycle,
-  nonZeroPropsToAdd: [CSSPaddingKey, string | number][],
-): CanvasCommand[] {
-  if (lifecycle === 'mid-interaction') {
-    return [
-      deleteProperties('always', elementPath, [StylePaddingProp]),
-      ...IndividualPaddingProps.flatMap((p) => [
-        deleteProperties('always', elementPath, [stylePropPathMappingFn(p, styleStringInArray)]),
-      ]),
-      ...nonZeroPropsToAdd.map(([p, value]) =>
-        setProperty('always', elementPath, stylePropPathMappingFn(p, styleStringInArray), value),
-      ),
-    ]
-  }
-
-  if (lifecycle === 'end-interaction') {
-    return [
-      deleteProperties('always', elementPath, [StylePaddingProp]),
-      ...IndividualPaddingProps.flatMap((p) => [
-        deleteProperties('always', elementPath, [stylePropPathMappingFn(p, styleStringInArray)]),
-      ]),
-      updateClassListCommand('always', elementPath, UCL.remove('p')),
-      ...getTailwindClassUpdateCommands(elementPath, nonZeroPropsToAdd),
-    ]
-  }
-
-  assertNever(lifecycle)
+  nonZeroPropsToAdd: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>,
+): PropertyUpdateDescription[] {
+  return [
+    { type: 'PROPERTY_TO_REMOVE', elementPath: elementPath, key: 'padding' },
+    ...IndividualPaddingProps.map(
+      (p): PropertyUpdateDescription => ({
+        type: 'PROPERTY_TO_REMOVE',
+        elementPath: elementPath,
+        key: cssPaddingKeyToCSSPropertyKey(p),
+      }),
+    ),
+    ...paddingValuesToUpdate(nonZeroPropsToAdd).map(
+      ({ key, value }): PropertyUpdateDescription => ({
+        type: 'PROPERTY_TO_SET',
+        elementPath: elementPath,
+        key: key,
+        value: value,
+      }),
+    ),
+  ]
 }

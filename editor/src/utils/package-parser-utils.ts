@@ -40,9 +40,12 @@ export function parseUtopiaConfigFromPackageJsonFile(
   const parser = objectParser(
     {
       utopia: optionalProp(
-        objectParser({
-          tailwind: optionalProp(objectParser<Record<string, unknown>>({})),
-        }),
+        objectParser(
+          {
+            tailwind: optionalProp(objectParser<Record<string, unknown>>({})),
+          },
+          { allowUnknownKeys: true },
+        ),
       ),
     },
     { allowUnknownKeys: true },

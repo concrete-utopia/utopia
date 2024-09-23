@@ -7,7 +7,11 @@ import type { ElementPath, NodeModules } from '../../../core/shared/project-file
 import type { ProjectContentTreeRoot } from '../../assets'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
 import type { InsertionSubject } from '../../editor/editor-modes'
-import type { AllElementProps } from '../../editor/store/editor-state'
+import type {
+  AllElementProps,
+  EditorState,
+  EditorStatePatch,
+} from '../../editor/store/editor-state'
 import type { CanvasCommand } from '../commands/commands'
 import type { ActiveFrameAction } from '../commands/set-active-frames-command'
 import type { StrategyApplicationStatus } from './interaction-state'
@@ -51,10 +55,40 @@ export function defaultCustomStrategyState(): CustomStrategyState {
   }
 }
 
+export type AbstractCSSPropertyKey =
+  | 'padding'
+  | 'padding-top'
+  | 'padding-left'
+  | 'padding-right'
+  | 'padding-bottom'
+
+export interface PropertyToSet {
+  type: 'PROPERTY_TO_SET'
+  elementPath: ElementPath
+  key: AbstractCSSPropertyKey
+  value: string
+}
+
+export interface PropertyToRemove {
+  type: 'PROPERTY_TO_REMOVE'
+  elementPath: ElementPath
+  key: AbstractCSSPropertyKey
+}
+
+export type PropertyUpdateDescription = PropertyToSet | PropertyToRemove
+
+export interface UIFrameworkPlugin {
+  processPropertyUpdates: (
+    editorState: EditorState,
+    propertyUpdates: Array<PropertyUpdateDescription>,
+  ) => Array<EditorStatePatch>
+}
+
 export interface StrategyApplicationResult {
   commands: Array<CanvasCommand>
   customStatePatch: CustomStrategyStatePatch
   status: StrategyApplicationStatus
+  propertyUpdates?: Array<PropertyUpdateDescription>
 }
 
 export const emptyStrategyApplicationResult: StrategyApplicationResult = {
@@ -67,11 +101,13 @@ export function strategyApplicationResult(
   commands: Array<CanvasCommand>,
   customStatePatch: CustomStrategyStatePatch = {},
   status: StrategyApplicationStatus = 'success',
+  propertyUpdates?: Array<PropertyUpdateDescription>,
 ): StrategyApplicationResult {
   return {
     commands: commands,
     customStatePatch: customStatePatch,
     status: status,
+    propertyUpdates: propertyUpdates,
   }
 }
 
