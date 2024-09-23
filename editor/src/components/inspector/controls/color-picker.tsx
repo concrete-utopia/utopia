@@ -212,8 +212,6 @@ export class ColorPickerInner extends React.Component<
   private AlphaControlIndicatorRef = React.createRef<HTMLDivElement>()
   private AlphaOriginLeft: number = 0
 
-  private updateTimeoutId: React.MutableRefObject<number | null> = React.createRef<number>()
-
   constructor(props: ColorPickerInnerProps) {
     super(props)
     // Color values in different spaces need to be stored in state due to them not mapping 1:1 across color spaces. E.g. HSV(0, 0%, 100%) == HSV(180, 0%, 100%). A fully controlled component would be nice, but alas.
@@ -338,21 +336,16 @@ export class ColorPickerInner extends React.Component<
   }
 
   submitNewColor = (chromaColor: Chroma.Color, transient: boolean) => {
-    if (this.updateTimeoutId.current != null) {
-      window.clearTimeout(this.updateTimeoutId.current)
+    const newValue = toPassedInColorType(
+      chromaColor,
+      this.props.value,
+      this.state.normalisedHuePosition,
+    )
+    if (transient) {
+      this.props.onTransientSubmitValue(newValue)
+    } else {
+      this.props.onSubmitValue(newValue)
     }
-    this.updateTimeoutId.current = window.setTimeout(() => {
-      const newValue = toPassedInColorType(
-        chromaColor,
-        this.props.value,
-        this.state.normalisedHuePosition,
-      )
-      if (transient) {
-        this.props.onTransientSubmitValue(newValue)
-      } else {
-        this.props.onSubmitValue(newValue)
-      }
-    }, 50)
   }
 
   // Saturation and Value (SV) slider functions
