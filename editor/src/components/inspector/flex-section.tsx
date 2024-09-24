@@ -160,7 +160,7 @@ export const FlexSection = React.memo(() => {
                   <GapRowColumnControl />
                   <AutoFlowControl />
                   <TemplateDimensionControl axis={'column'} grid={grid} title='Template Columns' />
-                  <TemplateDimensionControl axis={'row'} grid={grid} title='TemplateRows' />
+                  <TemplateDimensionControl axis={'row'} grid={grid} title='Template Rows' />
                 </div>
               ) : null}
             </UIGridRow>,
