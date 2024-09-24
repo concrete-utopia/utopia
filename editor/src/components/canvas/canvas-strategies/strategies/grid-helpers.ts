@@ -524,8 +524,6 @@ function getGridMoveType(params: {
   possiblyReorderIndex: number
   cellsSortedByPosition: SortableGridElementProperties[]
 }): GridMoveType {
-  // For absolute move, just use rearrange.
-  // TODO: maybe worth reconsidering in the future?
   if (MetadataUtils.isPositionAbsolute(params.originalElementMetadata)) {
     if (hasNoGridCellPositioning(params.originalElementMetadata.specialSizeMeasurements)) {
       return 'absolute'
