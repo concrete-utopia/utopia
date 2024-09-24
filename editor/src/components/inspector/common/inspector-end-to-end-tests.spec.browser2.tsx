@@ -70,6 +70,8 @@ import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strate
 import selectEvent from 'react-select-event'
 import { MixedPlaceholder } from '../../../uuiui/inputs/base-input'
 import { cmdModifier } from '../../../utils/modifiers'
+import type { SinonFakeTimers } from 'sinon'
+import sinon from 'sinon'
 
 async function getControl(
   controlTestId: string,
@@ -163,7 +165,25 @@ async function pressKeyTimes(
   })
 }
 
+function configureSinonSetupTeardown(): { clock: { current: SinonFakeTimers } } {
+  let clock: { current: SinonFakeTimers } = { current: null as any } // it will be non-null thanks to beforeEach
+  beforeEach(function () {
+    // TODO there is something wrong with sinon fake timers here that remotely break other tests that come after these. If your new browser tests are broken, this may be the reason.
+    clock.current = sinon.useFakeTimers({
+      // the timers will tick so the editor is not totally broken, but we can fast-forward time at will
+      // WARNING: the Sinon fake timers will advance in 20ms increments
+      shouldAdvanceTime: true,
+    })
+  })
+  afterEach(function () {
+    clock.current?.restore()
+  })
+  return { clock: clock }
+}
+
 describe('inspector tests with real metadata', () => {
+  const { clock } = configureSinonSetupTeardown()
+
   it('padding controls', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -1731,6 +1751,7 @@ describe('inspector tests with real metadata', () => {
     expect(widthControl.value).toBe('0')
 
     await pressKeyTimes(widthControl, renderResult, ['ArrowUp'])
+    clock.current.tick(700)
     expect(widthControl.value).toBe('1')
 
     await setControlValue('frame-width-number-input', '100', renderResult.renderedDOM)

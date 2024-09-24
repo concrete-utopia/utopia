@@ -1096,7 +1096,14 @@ export function mergeGridTemplateValues({
   autoValues: GridDimension[]
 }): GridDimension[] {
   const expanded = fromProps.flatMap((v) => {
-    return isGridCSSRepeat(v) ? Array(v.times).fill(v.value).flat() : v
+    if (!isGridCSSRepeat(v)) {
+      return v
+    }
+    if (isCSSKeyword(v.times)) {
+      // NOTE: this will be removed soon with https://github.com/concrete-utopia/utopia/pull/6396, so no need to go in detail here
+      return v
+    }
+    return Array(v.times).fill(v.value).flat()
   })
 
   function getExplicitValue(dimension: GridDimension, index: number): GridDimension {

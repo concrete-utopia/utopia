@@ -414,7 +414,8 @@ export function highlightBounds(
 
 export type HighlightBoundsForUids = { [uid: string]: HighlightBounds }
 
-export interface HighlightBoundsWithFile extends HighlightBounds {
+export interface HighlightBoundsWithFile {
+  bounds: HighlightBounds
   filePath: string
 }
 
