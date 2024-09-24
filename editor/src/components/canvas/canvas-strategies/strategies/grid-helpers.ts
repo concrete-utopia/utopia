@@ -20,7 +20,6 @@ import {
   canvasVector,
   isInfinityRectangle,
   offsetPoint,
-  windowPoint,
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { absolute } from '../../../../utils/utils'
@@ -30,6 +29,7 @@ import {
   gridCSSRepeat,
   isCSSKeyword,
   isGridCSSRepeat,
+  isStaticGridRepeat,
 } from '../../../inspector/common/css-utils'
 import type { CanvasCommand } from '../../commands/commands'
 import { deleteProperties } from '../../commands/delete-properties-command'
@@ -657,7 +657,7 @@ export function expandGridDimensions(template: GridDimension[]): ExpandedGridDim
   // Each element also contains the indexes information to be used later on to build the resized
   // template string.
   return template.reduce((acc, cur, index) => {
-    if (isGridCSSRepeat(cur)) {
+    if (isStaticGridRepeat(cur)) {
       const repeatGroup = cur.value.map((dim, repeatedIndex) =>
         expandedGridDimension(dim, index, repeatedIndex),
       )
@@ -765,7 +765,7 @@ export function getGridRelatedIndexes(params: {
    */
   let elementCount = 0 // basically the expanded index
   for (const dim of params.template) {
-    if (dim.type === 'REPEAT') {
+    if (isStaticGridRepeat(dim)) {
       let groupIndexes: number[][] = []
       // for each value push the related indexes as many times as the repeats counter
       for (let valueIndex = 0; valueIndex < dim.value.length; valueIndex++) {
@@ -786,7 +786,7 @@ export function getGridRelatedIndexes(params: {
   // Now, expand the indexes calculated above so they "flatten out" to match the generated values
   let expandedRelatedIndexes: number[][] = []
   params.template.forEach((dim, dimIndex) => {
-    if (dim.type === 'REPEAT') {
+    if (isStaticGridRepeat(dim)) {
       for (let repeatIndex = 0; repeatIndex < dim.times * dim.value.length; repeatIndex++) {
         const indexes = relatedIndexes[dimIndex][repeatIndex % dim.value.length]
         expandedRelatedIndexes.push(indexes)
