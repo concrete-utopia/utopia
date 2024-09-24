@@ -179,6 +179,7 @@ import { exists, toFirst } from '../shared/optics/optic-utilities'
 import { eitherRight, fromField, fromTypeGuard, notNull } from '../shared/optics/optic-creators'
 import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
 import { treatElementAsFragmentLike } from '../../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
+import { hasNoGridCellPositioning } from '../../components/canvas/canvas-strategies/strategies/grid-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -389,6 +390,14 @@ export const MetadataUtils = {
       parent.specialSizeMeasurements.containerGridProperties.gridTemplateColumns != null &&
       parent.specialSizeMeasurements.containerGridProperties.gridTemplateRows != null &&
       MetadataUtils.isGridLayoutedContainer(parent)
+    )
+  },
+  isGridCellWithPositioning(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    return (
+      MetadataUtils.isGridCell(metadata, path) &&
+      element != null &&
+      !hasNoGridCellPositioning(element.specialSizeMeasurements)
     )
   },
   isComponentInstanceFromMetadata(

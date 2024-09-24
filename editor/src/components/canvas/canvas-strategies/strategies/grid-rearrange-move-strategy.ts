@@ -80,6 +80,8 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
     canvasState,
     interactionSession.interactionData,
     parentGridPath,
+    canvasState.startingMetadata,
+    selectedElement,
   )
   if (strategyToApply == null) {
     return null
@@ -358,6 +360,8 @@ function getStrategyToApply(
   canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
   parentGridPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  cell: ElementPath,
 ): StrategyToApply | null {
   if (interactionData.drag == null) {
     return null
@@ -403,9 +407,13 @@ function getStrategyToApply(
     }
   }
 
+  const name = MetadataUtils.isGridCellWithPositioning(jsxMetadata, cell)
+    ? 'Rearrange Grid (Move)'
+    : 'Grid Move (Abs)'
+
   return {
     type: 'GRID_REARRANGE',
-    name: 'Rearrange Grid (Move)',
+    name: name,
     controlsToRender: [controlsForGridPlaceholders(parentGridPath)],
   }
 }

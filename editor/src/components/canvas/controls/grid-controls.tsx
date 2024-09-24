@@ -706,6 +706,15 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     'GridControls anyTargetAbsolute',
   )
 
+  const targetsAreCellsWithPositioning = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.every((elementPath) =>
+        MetadataUtils.isGridCellWithPositioning(store.editor.jsxMetadata, elementPath),
+      ),
+    'GridControls anyTargetAbsolute',
+  )
+
   const gridPath = optionalMap(EP.parentPath, shadow?.elementPath)
 
   const gridFrame = React.useMemo(() => {
@@ -889,9 +898,10 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                   countedColumn === currentHoveredCell?.column &&
                   countedRow === currentHoveredCell?.row
 
-                const borderColor = isActiveCell
-                  ? colorTheme.brandNeonPink.value
-                  : features.Grid.inactiveGridColor
+                const borderColor =
+                  isActiveCell && targetsAreCellsWithPositioning
+                    ? colorTheme.brandNeonPink.value
+                    : features.Grid.inactiveGridColor
 
                 return (
                   <div
