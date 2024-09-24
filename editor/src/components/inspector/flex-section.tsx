@@ -567,7 +567,7 @@ function AxisDimensionControl({
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
         <Subdued
           style={{
-            width: 60,
+            width: 40,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
