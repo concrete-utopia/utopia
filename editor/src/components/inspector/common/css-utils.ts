@@ -601,12 +601,37 @@ type BaseGridCSSRepeat = {
   areaName: null
 }
 
+function baseGridCSSRepeat(value: Array<GridDimension>): BaseGridCSSRepeat {
+  return {
+    type: 'REPEAT',
+    value: value,
+    areaName: null,
+  }
+}
+
 type GridCSSRepeatStatic = BaseGridCSSRepeat & {
   times: number
 }
 
+function gridCSSRepeatStatic(times: number, value: Array<GridDimension>): GridCSSRepeatStatic {
+  return {
+    ...baseGridCSSRepeat(value),
+    times: times,
+  }
+}
+
 type GridCSSRepeatDynamic = BaseGridCSSRepeat & {
   times: CSSKeyword<'auto-fill' | 'auto-fit'>
+}
+
+function gridCSSRepeatDynamic(
+  times: CSSKeyword<'auto-fill' | 'auto-fit'>,
+  value: Array<GridDimension>,
+): GridCSSRepeatDynamic {
+  return {
+    ...baseGridCSSRepeat(value),
+    times: times,
+  }
 }
 
 export type GridCSSRepeat = GridCSSRepeatStatic | GridCSSRepeatDynamic
@@ -643,12 +668,11 @@ export function gridCSSKeyword(
 }
 
 export function gridCSSRepeat(times: GridCSSRepeatTimes, value: GridDimension[]): GridCSSRepeat {
-  return {
-    type: 'REPEAT',
-    times: times,
-    value: value,
-    areaName: null,
-  } as GridCSSRepeat
+  if (typeof times === 'number') {
+    return gridCSSRepeatStatic(times, value)
+  } else {
+    return gridCSSRepeatDynamic(times, value)
+  }
 }
 
 export function isGridCSSNumber(dim: GridDimension): dim is GridCSSNumber {
