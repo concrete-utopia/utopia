@@ -14,7 +14,7 @@ import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { setProperty } from '../../commands/set-property-command'
 import {
   fallbackEmptyValue,
@@ -172,30 +172,33 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
       }
 
       if (shouldTearOffGap) {
-        return strategyApplicationResult([
-          deleteProperties('always', selectedElement, [StyleGapProp]),
-        ])
+        return strategyApplicationResult(
+          [deleteProperties('always', selectedElement, [StyleGapProp])],
+          'rerender-all-elements',
+        )
       }
 
-      return strategyApplicationResult([
-        setProperty(
-          'always',
-          selectedElement,
-          StyleGapProp,
-          printCSSNumber(fallbackEmptyValue(updatedFlexGapMeasurement), null),
-        ),
-        setCursorCommand(cursorFromFlexDirection(flexGap.direction)),
-        setElementsToRerenderCommand([...selectedElements, ...children.map((c) => c.elementPath)]),
-        setActiveFrames([
-          {
-            action: 'set-gap',
-            target: activeFrameTargetPath(selectedElement),
-            source: zeroRectIfNullOrInfinity(
-              MetadataUtils.getFrameInCanvasCoords(selectedElement, canvasState.startingMetadata),
-            ),
-          },
-        ]),
-      ])
+      return strategyApplicationResult(
+        [
+          setProperty(
+            'always',
+            selectedElement,
+            StyleGapProp,
+            printCSSNumber(fallbackEmptyValue(updatedFlexGapMeasurement), null),
+          ),
+          setCursorCommand(cursorFromFlexDirection(flexGap.direction)),
+          setActiveFrames([
+            {
+              action: 'set-gap',
+              target: activeFrameTargetPath(selectedElement),
+              source: zeroRectIfNullOrInfinity(
+                MetadataUtils.getFrameInCanvasCoords(selectedElement, canvasState.startingMetadata),
+              ),
+            },
+          ]),
+        ],
+        [...selectedElements, ...children.map((c) => c.elementPath)],
+      )
     },
   }
 }

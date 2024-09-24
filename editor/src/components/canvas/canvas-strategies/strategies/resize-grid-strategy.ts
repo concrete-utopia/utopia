@@ -30,7 +30,6 @@ import {
   printArrayGridDimensions,
 } from '../../../../components/inspector/common/css-utils'
 import { toFirst } from '../../../../core/shared/optics/optic-utilities'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import type { Either } from '../../../../core/shared/either'
 import { foldEither, isLeft, isRight } from '../../../../core/shared/either'
 import { roundToNearestWhole } from '../../../../core/shared/math-utils'
@@ -119,7 +118,10 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       }
 
       if (!canResizeGridTemplate(originalValues)) {
-        return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)])
+        return strategyApplicationResult(
+          [setCursorCommand(CSSCursor.NotPermitted)],
+          'rerender-all-elements',
+        )
       }
 
       const expandedOriginalValues = expandGridDimensions(originalValues.dimensions)
@@ -189,10 +191,9 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
           ),
           propertyValueAsString,
         ),
-        setElementsToRerenderCommand([gridPath]),
       ]
 
-      return strategyApplicationResult(commands)
+      return strategyApplicationResult(commands, 'rerender-all-elements')
     },
   }
 }

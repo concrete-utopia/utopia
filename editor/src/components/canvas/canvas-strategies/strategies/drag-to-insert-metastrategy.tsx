@@ -216,6 +216,7 @@ function dragToInsertStrategyFactory(
         if (insertionSubjects.length === 0) {
           return strategyApplicationResult(
             [setCursorCommand(CSSCursor.NotPermitted)],
+            [],
             {},
             'failure',
           )
@@ -280,6 +281,7 @@ function dragToInsertStrategyFactory(
               reparentCommand,
               ...optionalWrappingCommand,
             ],
+            'rerender-all-elements',
             {
               strategyGeneratedUidsCache: {
                 [insertionSubjects[0].uid]: maybeWrapperWithUid?.uid,

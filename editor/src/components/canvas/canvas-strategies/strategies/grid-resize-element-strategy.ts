@@ -140,6 +140,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
 
       return strategyApplicationResult(
         setGridPropsCommands(selectedElement, gridTemplate, gridPropsWithDragOver(gridProps)),
+        'rerender-all-elements',
         {
           grid: { ...customState.grid, targetCellData: targetCell },
         },

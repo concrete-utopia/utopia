@@ -165,6 +165,7 @@ const gridDrawToInsertStrategyInner =
               showGridControls('mid-interaction', targetParent),
               updateHighlightedViews('mid-interaction', [targetParent]),
             ],
+            'rerender-all-elements',
             {
               ...customStrategyState,
               grid: {
@@ -258,6 +259,7 @@ const gridDrawToInsertStrategyInner =
                 : null,
             ]),
           ],
+          'rerender-all-elements',
           {
             strategyGeneratedUidsCache: {
               [insertionSubject.uid]: maybeWrapperWithUid?.uid,

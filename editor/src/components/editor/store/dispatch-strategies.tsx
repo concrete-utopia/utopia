@@ -537,7 +537,7 @@ function handleAccumulatingKeypresses(
               strategyState.customStrategyState,
               'mid-interaction',
             )
-          : strategyApplicationResult([])
+          : strategyApplicationResult([], 'rerender-all-elements')
       const commandResult = foldAndApplyCommands(
         updatedEditorState,
         storedEditorState,
@@ -601,7 +601,7 @@ function handleUpdate(
             strategyState.customStrategyState,
             'mid-interaction',
           )
-        : strategyApplicationResult([])
+        : strategyApplicationResult([], 'rerender-all-elements')
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,

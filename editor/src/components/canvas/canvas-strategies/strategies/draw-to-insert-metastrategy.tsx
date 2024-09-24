@@ -303,6 +303,7 @@ export function drawToInsertStrategyFactory(
                   resizeCommand,
                   ...optionalWrappingCommand,
                 ],
+                'rerender-all-elements',
                 {
                   strategyGeneratedUidsCache: {
                     [insertionSubject.uid]: maybeWrapperWithUid?.uid,
@@ -348,6 +349,7 @@ export function drawToInsertStrategyFactory(
 
               return strategyApplicationResult(
                 [insertionCommand.command, reparentCommand, ...optionalWrappingCommand],
+                'rerender-all-elements',
                 {
                   strategyGeneratedUidsCache: {
                     [insertionSubject.uid]: maybeWrapperWithUid?.uid,
@@ -359,11 +361,13 @@ export function drawToInsertStrategyFactory(
             // drag is null, the cursor is not moved yet, but the mousedown already happened
             return strategyApplicationResult(
               getHighlightAndReorderIndicatorCommands(targetParent.intendedParentPath, targetIndex),
+              [],
             )
           }
         } else if (interactionSession.interactionData.type === 'HOVER') {
           return strategyApplicationResult(
             getHighlightAndReorderIndicatorCommands(targetParent.intendedParentPath, targetIndex),
+            [],
           )
         }
       }

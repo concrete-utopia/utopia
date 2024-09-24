@@ -46,7 +46,7 @@ import {
 import { CSSCursor } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { setProperty } from '../../commands/set-property-command'
 import { BorderRadiusControl } from '../../controls/select-mode/border-radius-control'
 import type { CSSNumberWithRenderedValue } from '../../controls/select-mode/controls-common'
@@ -155,21 +155,23 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
       }),
     ],
     apply: () =>
-      strategyApplicationResult([
-        setCursorCommand(CSSCursor.Radius),
-        ...commands(selectedElement),
-        ...getAddOverflowHiddenCommands(selectedElement, canvasState.projectContents),
-        setElementsToRerenderCommand(selectedElements),
-        setActiveFrames(
-          selectedElements.map((path) => ({
-            action: 'set-radius',
-            target: activeFrameTargetPath(path),
-            source: zeroRectIfNullOrInfinity(
-              MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
-            ),
-          })),
-        ),
-      ]),
+      strategyApplicationResult(
+        [
+          setCursorCommand(CSSCursor.Radius),
+          ...commands(selectedElement),
+          ...getAddOverflowHiddenCommands(selectedElement, canvasState.projectContents),
+          setActiveFrames(
+            selectedElements.map((path) => ({
+              action: 'set-radius',
+              target: activeFrameTargetPath(path),
+              source: zeroRectIfNullOrInfinity(
+                MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
+              ),
+            })),
+          ),
+        ],
+        selectedElements,
+      ),
   }
 }
 

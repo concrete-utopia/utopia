@@ -155,6 +155,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
 
       return strategyApplicationResult(
         [...midInteractionCommands, ...onCompleteCommands, ...commands],
+        'rerender-all-elements',
         patch,
       )
     },

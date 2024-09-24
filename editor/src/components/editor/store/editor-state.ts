@@ -852,6 +852,17 @@ export function editorStateCanvasControls(
 
 export type ElementsToRerender = Array<ElementPath> | 'rerender-all-elements'
 
+export function combineElementsToRerender(
+  first: ElementsToRerender,
+  second: ElementsToRerender,
+): ElementsToRerender {
+  if (first === 'rerender-all-elements' || second === 'rerender-all-elements') {
+    return 'rerender-all-elements'
+  } else {
+    return [...first, ...second]
+  }
+}
+
 export interface InternalClipboard {
   styleClipboard: Array<ValueAtPath>
   elements: Array<CopyData>

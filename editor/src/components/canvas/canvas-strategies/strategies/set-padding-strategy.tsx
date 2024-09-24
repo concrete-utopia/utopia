@@ -14,7 +14,7 @@ import type { EdgePiece } from '../../canvas-types'
 import { CSSCursor, isHorizontalEdgePiece, oppositeEdgePiece } from '../../canvas-types'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { setProperty } from '../../commands/set-property-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { isZeroSizedElement } from '../../controls/outline-utils'
@@ -207,7 +207,6 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       const basicCommands: CanvasCommand[] = [
         updateHighlightedViews('mid-interaction', []),
         setCursorCommand(pickCursorFromEdge(edgePiece)),
-        setElementsToRerenderCommand(selectedElements),
       ]
 
       const nonZeroPropsToAdd = IndividualPaddingProps.flatMap(
@@ -246,11 +245,70 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       // "tearing off" padding
       if (newPaddingEdge.renderedValuePx < PaddingTearThreshold) {
-        return strategyApplicationResult([
+        return strategyApplicationResult(
+          [
+            ...basicCommands,
+            deleteProperties('always', selectedElement, [
+              StylePaddingProp,
+              stylePropPathMappingFn(paddingPropInteractedWith, styleStringInArray),
+            ]),
+            ...nonZeroPropsToAdd.map(([p, value]) =>
+              setProperty(
+                'always',
+                selectedElement,
+                stylePropPathMappingFn(p, styleStringInArray),
+                value,
+              ),
+            ),
+            setActiveFrames(
+              selectedElements.map((path) => ({
+                action: 'set-padding',
+                target: activeFrameTargetPath(path),
+                source: zeroRectIfNullOrInfinity(
+                  MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
+                ),
+              })),
+            ),
+          ],
+          'rerender-all-elements',
+        )
+      }
+
+      const allPaddingPropsDefined = maybeFullPadding(newPaddingMaxed)
+
+      // all 4 sides present - can be represented via the padding shorthand property
+      if (allPaddingPropsDefined != null) {
+        const paddingString = paddingToPaddingString(allPaddingPropsDefined)
+        return strategyApplicationResult(
+          [
+            ...basicCommands,
+            ...IndividualPaddingProps.map((p) =>
+              deleteProperties('always', selectedElement, [
+                stylePropPathMappingFn(p, styleStringInArray),
+              ]),
+            ),
+            setProperty('always', selectedElement, StylePaddingProp, paddingString),
+            setActiveFrames(
+              selectedElements.map((path) => ({
+                action: 'set-padding',
+                target: activeFrameTargetPath(path),
+                source: zeroRectIfNullOrInfinity(
+                  MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
+                ),
+              })),
+            ),
+          ],
+          'rerender-all-elements',
+        )
+      }
+
+      // only some sides are present - longhand properties have to be used
+      return strategyApplicationResult(
+        [
           ...basicCommands,
           deleteProperties('always', selectedElement, [
             StylePaddingProp,
-            stylePropPathMappingFn(paddingPropInteractedWith, styleStringInArray),
+            ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, styleStringInArray)),
           ]),
           ...nonZeroPropsToAdd.map(([p, value]) =>
             setProperty(
@@ -269,59 +327,9 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
               ),
             })),
           ),
-        ])
-      }
-
-      const allPaddingPropsDefined = maybeFullPadding(newPaddingMaxed)
-
-      // all 4 sides present - can be represented via the padding shorthand property
-      if (allPaddingPropsDefined != null) {
-        const paddingString = paddingToPaddingString(allPaddingPropsDefined)
-        return strategyApplicationResult([
-          ...basicCommands,
-          ...IndividualPaddingProps.map((p) =>
-            deleteProperties('always', selectedElement, [
-              stylePropPathMappingFn(p, styleStringInArray),
-            ]),
-          ),
-          setProperty('always', selectedElement, StylePaddingProp, paddingString),
-          setActiveFrames(
-            selectedElements.map((path) => ({
-              action: 'set-padding',
-              target: activeFrameTargetPath(path),
-              source: zeroRectIfNullOrInfinity(
-                MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
-              ),
-            })),
-          ),
-        ])
-      }
-
-      // only some sides are present - longhand properties have to be used
-      return strategyApplicationResult([
-        ...basicCommands,
-        deleteProperties('always', selectedElement, [
-          StylePaddingProp,
-          ...IndividualPaddingProps.map((p) => stylePropPathMappingFn(p, styleStringInArray)),
-        ]),
-        ...nonZeroPropsToAdd.map(([p, value]) =>
-          setProperty(
-            'always',
-            selectedElement,
-            stylePropPathMappingFn(p, styleStringInArray),
-            value,
-          ),
-        ),
-        setActiveFrames(
-          selectedElements.map((path) => ({
-            action: 'set-padding',
-            target: activeFrameTargetPath(path),
-            source: zeroRectIfNullOrInfinity(
-              MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
-            ),
-          })),
-        ),
-      ])
+        ],
+        'rerender-all-elements',
+      )
     },
   }
 }

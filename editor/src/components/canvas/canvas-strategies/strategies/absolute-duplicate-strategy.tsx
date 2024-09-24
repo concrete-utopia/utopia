@@ -12,7 +12,7 @@ import type { CanvasCommand } from '../../commands/commands'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { duplicateElement } from '../../commands/duplicate-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
@@ -127,7 +127,6 @@ export function absoluteDuplicateStrategy(
           [
             ...duplicateCommands,
             ...maybeAddContainLayoutCommand(commonParentPath),
-            setElementsToRerenderCommand([commonParentPath, ...selectedElements, ...newPaths]),
             updateSelectedViews('always', selectedElements),
             updateFunctionCommand('always', (editorState, commandLifecycle) =>
               runMoveStrategy(
@@ -140,13 +139,14 @@ export function absoluteDuplicateStrategy(
             ),
             setCursorCommand(CSSCursor.Duplicate),
           ],
+          [commonParentPath, ...selectedElements, ...newPaths],
           {
             duplicatedElementNewUids: duplicatedElementNewUids,
           },
         )
       } else {
         // Fallback for when the checks above are not satisfied.
-        return strategyApplicationResult([setCursorCommand(CSSCursor.Duplicate)])
+        return strategyApplicationResult([setCursorCommand(CSSCursor.Duplicate)], [])
       }
     },
   }

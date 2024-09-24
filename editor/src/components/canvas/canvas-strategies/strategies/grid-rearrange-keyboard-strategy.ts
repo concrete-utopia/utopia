@@ -133,6 +133,7 @@ export function gridRearrangeResizeKeyboardStrategy(
           gridRowStart,
           gridRowEnd,
         }),
+        'rerender-all-elements',
       )
     },
   }

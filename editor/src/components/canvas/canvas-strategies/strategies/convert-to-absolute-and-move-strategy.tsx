@@ -278,10 +278,10 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
             },
           })
 
-          return strategyApplicationResult([
-            ...absoluteMoveApplyResult.commands,
-            strategyIndicatorCommand,
-          ])
+          return strategyApplicationResult(
+            [...absoluteMoveApplyResult.commands, strategyIndicatorCommand],
+            'rerender-all-elements',
+          )
         }
         // Fallback for when the checks above are not satisfied.
         return emptyStrategyApplicationResult

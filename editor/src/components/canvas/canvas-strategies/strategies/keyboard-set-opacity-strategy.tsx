@@ -57,7 +57,7 @@ export function keyboardSetOpacityStrategy(
         setProperty('always', path, PP.create('style', 'opacity'), inputValue),
       )
 
-      return strategyApplicationResult(commands)
+      return strategyApplicationResult(commands, 'rerender-all-elements')
     },
   }
 }

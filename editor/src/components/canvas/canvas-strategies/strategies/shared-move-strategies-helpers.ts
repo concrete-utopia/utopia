@@ -44,7 +44,7 @@ import {
 import type { CanvasCommand } from '../../commands/commands'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import {
@@ -152,17 +152,20 @@ export function applyMoveCommon(
     if (cmdKeyPressed) {
       const commandsForSelectedElements = getMoveCommands(drag)
 
-      return strategyApplicationResult([
-        ...commandsForSelectedElements.commands,
-        pushIntendedBoundsAndUpdateGroups(
-          commandsForSelectedElements.intendedBounds,
-          'starting-metadata',
-        ),
-        updateHighlightedViews('mid-interaction', []),
-        setElementsToRerenderCommand(targets),
-        setCursorCommand(CSSCursor.Select),
-        setActiveFrames(getActiveFrames(commandsForSelectedElements.intendedBounds)),
-      ])
+      return strategyApplicationResult(
+        [
+          ...commandsForSelectedElements.commands,
+          pushIntendedBoundsAndUpdateGroups(
+            commandsForSelectedElements.intendedBounds,
+            'starting-metadata',
+          ),
+          updateHighlightedViews('mid-interaction', []),
+
+          setCursorCommand(CSSCursor.Select),
+          setActiveFrames(getActiveFrames(commandsForSelectedElements.intendedBounds)),
+        ],
+        'rerender-all-elements',
+      )
     } else {
       const constrainedDragAxis =
         shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
@@ -189,18 +192,21 @@ export function applyMoveCommon(
         canvasState.scale,
       )
       const commandsForSelectedElements = getMoveCommands(snappedDragVector)
-      return strategyApplicationResult([
-        ...commandsForSelectedElements.commands,
-        updateHighlightedViews('mid-interaction', []),
-        setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
-        pushIntendedBoundsAndUpdateGroups(
-          commandsForSelectedElements.intendedBounds,
-          'starting-metadata',
-        ),
-        setElementsToRerenderCommand([...targets, ...targetsForSnapping]),
-        setCursorCommand(CSSCursor.Select),
-        setActiveFrames(getActiveFrames(commandsForSelectedElements.intendedBounds)),
-      ])
+      return strategyApplicationResult(
+        [
+          ...commandsForSelectedElements.commands,
+          updateHighlightedViews('mid-interaction', []),
+          setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
+          pushIntendedBoundsAndUpdateGroups(
+            commandsForSelectedElements.intendedBounds,
+            'starting-metadata',
+          ),
+
+          setCursorCommand(CSSCursor.Select),
+          setActiveFrames(getActiveFrames(commandsForSelectedElements.intendedBounds)),
+        ],
+        'rerender-all-elements',
+      )
     }
   } else {
     // Fallback for when the checks above are not satisfied.
@@ -354,7 +360,7 @@ export function moveInspectorStrategy(
         intendedBounds.push(...moveCommandsResult.intendedBounds)
       }
       commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'live-metadata'))
-      commands.push(setElementsToRerenderCommand(selectedElementPaths))
+
       return commands
     },
   }
@@ -385,7 +391,7 @@ export function directMoveInspectorStrategy(
         intendedBounds.push(...moveCommandsResult.intendedBounds)
       }
       commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'live-metadata'))
-      commands.push(setElementsToRerenderCommand(selectedElementPaths))
+
       return commands
     },
   }

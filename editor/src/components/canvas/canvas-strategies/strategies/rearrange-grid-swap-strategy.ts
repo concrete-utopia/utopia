@@ -121,7 +121,7 @@ export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      return strategyApplicationResult(commands)
+      return strategyApplicationResult(commands, 'rerender-all-elements')
     },
   }
 }

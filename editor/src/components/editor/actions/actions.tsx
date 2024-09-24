@@ -485,7 +485,6 @@ import {
 } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import type { CanvasCommand } from '../../canvas/commands/commands'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
-import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { notice } from '../../common/notice'
 import type { ShortcutConfiguration } from '../shortcut-definitions'
@@ -5780,7 +5779,13 @@ export const UPDATE_FNS = {
     }
   },
   SET_ELEMENTS_TO_RERENDER: (action: SetElementsToRerender, editor: EditorModel): EditorModel => {
-    return foldAndApplyCommandsSimple(editor, [setElementsToRerenderCommand(action.value)])
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        elementsToRerender: action.value,
+      },
+    }
   },
   TOGGLE_SELECTION_LOCK: (action: ToggleSelectionLock, editor: EditorModel): EditorModel => {
     const targets = action.targets
