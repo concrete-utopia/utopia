@@ -1,4 +1,4 @@
-import { chunkArray } from '../../../core/shared/array-utils'
+import { chunkArrayEqually } from '../../../core/shared/array-utils'
 import type { ProjectContentTreeRoot } from '../../../components/assets'
 import type { ErrorMessage } from '../../shared/error-messages'
 import type { TypeDefinitions } from '../../shared/npm-dependency-types'
@@ -176,7 +176,13 @@ export async function getParseResult(
   applySteganography: SteganographyMode,
   numChunks: number = 1,
 ): Promise<Array<ParseOrPrintResult>> {
-  const chunks = chunkArray(files, numChunks)
+  const chunks = chunkArrayEqually(files, numChunks, (file) => {
+    if (file.type === 'parsefile') {
+      return file.content.length
+    } else {
+      return 0
+    }
+  })
   const promises = chunks.map((chunk) =>
     getParseResultSerial(workers, chunk, filePathMappings, alreadyExistingUIDs, applySteganography),
   )

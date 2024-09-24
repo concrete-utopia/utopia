@@ -539,11 +539,34 @@ export function matrixGetter<T>(array: T[], width: number): (row: number, column
   }
 }
 
-export function chunkArray<T>(array: T[], numberOfChunks: number): T[][] {
-  const chunkSize = Math.ceil(array.length / numberOfChunks)
-  const chunks = []
-  for (let i = 0; i < array.length; i += chunkSize) {
-    chunks.push(array.slice(i, Math.min(i + chunkSize, array.length)))
+export function chunkArrayEqually<T>(
+  arr: T[],
+  numberOfChunks: number,
+  valueFn: (t: T) => number,
+): T[][] {
+  const sortedArray = [...arr].sort((a, b) => valueFn(b) - valueFn(a))
+
+  // Initialize an array of n empty chunks
+  const chunks: T[][] = Array.from({ length: numberOfChunks }, () => [])
+
+  // Initialize an array to keep track of the sum of each chunk
+  const chunkSums: number[] = Array(numberOfChunks).fill(0)
+
+  // Iterate through the sorted array
+  for (const data of sortedArray) {
+    // Find the chunk with the smallest sum
+    let minIndex = 0
+    for (let i = 1; i < numberOfChunks; i++) {
+      if (chunkSums[i] < chunkSums[minIndex]) {
+        minIndex = i
+      }
+    }
+
+    // Add the current number to the chunk with the smallest sum
+    chunks[minIndex].push(data)
+    // Update the sum of the chosen chunk
+    chunkSums[minIndex] += valueFn(data)
   }
+
   return chunks
 }
