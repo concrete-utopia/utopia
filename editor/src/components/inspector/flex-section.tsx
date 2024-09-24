@@ -655,7 +655,8 @@ const GridFunctionInput = React.memo(
             return onUpdateNumberOrKeyword(cssKeyword(printValue))
           }
 
-          const maybeNumber = parseCSSNumber(printValue, 'AnyValid', 'px')
+          const defaultUnit = isGridCSSNumber(value) ? value.value.unit : 'px'
+          const maybeNumber = parseCSSNumber(printValue, 'AnyValid', defaultUnit)
           if (isRight(maybeNumber)) {
             return onUpdateNumberOrKeyword(maybeNumber.value)
           }
@@ -663,6 +664,10 @@ const GridFunctionInput = React.memo(
           const maybeMinmax = parseGridCSSMinmaxOrRepeat(printValue)
           if (maybeMinmax != null) {
             return onUpdateDimension({ ...maybeMinmax, areaName: value.areaName } as GridDimension)
+          }
+
+          if (printValue === '') {
+            return onUpdateNumberOrKeyword(cssKeyword('auto'))
           }
 
           setPrintValue(printGridDimension(value))
