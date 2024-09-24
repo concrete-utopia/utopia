@@ -2027,7 +2027,7 @@ export const GridDimensionKeepDeepEquality: KeepDeepEqualityCall<GridDimension> 
 export const GridCSSRepeatKeepDeepEquality: KeepDeepEqualityCall<GridCSSRepeat> =
   combine2EqualityCalls(
     (p) => p.times,
-    NumberKeepDeepEquality,
+    createCallWithTripleEquals(),
     (p) => p.value,
     arrayDeepEquality(GridDimensionKeepDeepEquality),
     gridCSSRepeat,

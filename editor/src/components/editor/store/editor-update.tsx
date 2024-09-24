@@ -443,6 +443,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.FORCE_PARSE_FILE(action, state)
     case 'RUN_ESCAPE_HATCH':
       return UPDATE_FNS.RUN_ESCAPE_HATCH(action, state, builtInDependencies)
+    case 'SET_ELEMENTS_TO_RERENDER':
+      return UPDATE_FNS.SET_ELEMENTS_TO_RERENDER(action, state)
     case 'TOGGLE_SELECTION_LOCK':
       return UPDATE_FNS.TOGGLE_SELECTION_LOCK(action, state)
     case 'UPDATE_AGAINST_GITHUB':

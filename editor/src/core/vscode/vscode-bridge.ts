@@ -221,10 +221,10 @@ export function getCodeEditorDecorations(editorState: EditorState): UpdateDecora
         decorationRange(
           rangeType,
           highlightBounds.filePath,
-          highlightBounds.startLine,
-          highlightBounds.startCol,
-          highlightBounds.endLine,
-          highlightBounds.endCol,
+          highlightBounds.bounds.startLine,
+          highlightBounds.bounds.startCol,
+          highlightBounds.bounds.endLine,
+          highlightBounds.bounds.endCol,
         ),
       )
     }
@@ -267,10 +267,10 @@ export function selectedElementChangedMessageFromHighlightBounds(
   return selectedElementChanged(
     boundsInFile(
       highlightBounds.filePath,
-      highlightBounds.startLine,
-      highlightBounds.startCol,
-      highlightBounds.endLine,
-      highlightBounds.endCol,
+      highlightBounds.bounds.startLine,
+      highlightBounds.bounds.startCol,
+      highlightBounds.bounds.endLine,
+      highlightBounds.bounds.endCol,
     ),
     forceNavigation,
   )

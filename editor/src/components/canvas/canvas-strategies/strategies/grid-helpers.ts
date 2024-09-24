@@ -20,7 +20,6 @@ import {
   canvasVector,
   isInfinityRectangle,
   offsetPoint,
-  windowPoint,
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { absolute } from '../../../../utils/utils'
@@ -30,6 +29,7 @@ import {
   gridCSSRepeat,
   isCSSKeyword,
   isGridCSSRepeat,
+  isStaticGridRepeat,
 } from '../../../inspector/common/css-utils'
 import type { CanvasCommand } from '../../commands/commands'
 import { deleteProperties } from '../../commands/delete-properties-command'
@@ -203,6 +203,20 @@ export function runGridRearrangeMove(
   })
 
   switch (moveType) {
+    case 'absolute': {
+      const absoluteMoveCommands = gridChildAbsoluteMoveCommands(
+        MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
+        MetadataUtils.getFrameOrZeroRectInCanvasCoords(grid.elementPath, jsxMetadata),
+        interactionData,
+      )
+      return {
+        commands: absoluteMoveCommands,
+        targetCell: targetCellData ?? customState.targetCellData,
+        originalRootCell: rootCell,
+        draggingFromCell: draggingFromCell,
+        targetRootCell: gridCellCoordinates(row.start, column.start),
+      }
+    }
     case 'rearrange': {
       const targetRootCell = gridCellCoordinates(row.start, column.start)
       const canvasRect = getGlobalFrameOfGridCell(containerMetadata, targetRootCell)
@@ -249,6 +263,8 @@ export function runGridRearrangeMove(
         targetRootCell: targetCellUnderMouse,
       }
     }
+    default:
+      assertNever(moveType)
   }
 }
 
@@ -422,7 +438,7 @@ function asMaybeNamedAreaOrValue(
 
 function gridChildAbsoluteMoveCommands(
   targetMetadata: ElementInstanceMetadata | null,
-  targetCellRect: CanvasRectangle,
+  containingRect: CanvasRectangle,
   dragInteractionData: DragInteractionData,
 ): CanvasCommand[] {
   if (
@@ -445,8 +461,8 @@ function gridChildAbsoluteMoveCommands(
   )
 
   const offset = canvasVector({
-    x: dragOffset.x - targetCellRect.x - offsetInTarget.x,
-    y: dragOffset.y - targetCellRect.y - offsetInTarget.y,
+    x: dragOffset.x - containingRect.x - offsetInTarget.x,
+    y: dragOffset.y - containingRect.y - offsetInTarget.y,
   })
 
   return [
@@ -500,23 +516,24 @@ function sortElementsByGridPosition(gridTemplateColumns: number) {
 type GridMoveType =
   | 'reorder' // reorder the element in the code based on the ascending position, and remove explicit positioning props
   | 'rearrange' // set explicit positioning props, and reorder based on the visual location
+  | 'absolute' // a regular absolute move, relative to the grid
 
 function getGridMoveType(params: {
   originalElementMetadata: ElementInstanceMetadata
   possiblyReorderIndex: number
   cellsSortedByPosition: SortableGridElementProperties[]
 }): GridMoveType {
-  // For absolute move, just use rearrange.
-  // TODO: maybe worth reconsidering in the future?
+  const specialSizeMeasurements = params.originalElementMetadata.specialSizeMeasurements
   if (MetadataUtils.isPositionAbsolute(params.originalElementMetadata)) {
-    return 'rearrange'
+    return MetadataUtils.hasNoGridCellPositioning(specialSizeMeasurements)
+      ? 'absolute'
+      : 'rearrange'
   }
   if (params.possiblyReorderIndex >= params.cellsSortedByPosition.length) {
     return 'rearrange'
   }
 
-  const elementGridProperties =
-    params.originalElementMetadata.specialSizeMeasurements.elementGridProperties
+  const elementGridProperties = specialSizeMeasurements.elementGridProperties
 
   // The first element is intrinsically in order, so try to adjust for that
   if (params.possiblyReorderIndex === 0) {
@@ -657,7 +674,7 @@ export function expandGridDimensions(template: GridDimension[]): ExpandedGridDim
   // Each element also contains the indexes information to be used later on to build the resized
   // template string.
   return template.reduce((acc, cur, index) => {
-    if (isGridCSSRepeat(cur)) {
+    if (isStaticGridRepeat(cur)) {
       const repeatGroup = cur.value.map((dim, repeatedIndex) =>
         expandedGridDimension(dim, index, repeatedIndex),
       )
@@ -765,7 +782,7 @@ export function getGridRelatedIndexes(params: {
    */
   let elementCount = 0 // basically the expanded index
   for (const dim of params.template) {
-    if (dim.type === 'REPEAT') {
+    if (isStaticGridRepeat(dim)) {
       let groupIndexes: number[][] = []
       // for each value push the related indexes as many times as the repeats counter
       for (let valueIndex = 0; valueIndex < dim.value.length; valueIndex++) {
@@ -786,7 +803,7 @@ export function getGridRelatedIndexes(params: {
   // Now, expand the indexes calculated above so they "flatten out" to match the generated values
   let expandedRelatedIndexes: number[][] = []
   params.template.forEach((dim, dimIndex) => {
-    if (dim.type === 'REPEAT') {
+    if (isStaticGridRepeat(dim)) {
       for (let repeatIndex = 0; repeatIndex < dim.times * dim.value.length; repeatIndex++) {
         const indexes = relatedIndexes[dimIndex][repeatIndex % dim.value.length]
         expandedRelatedIndexes.push(indexes)

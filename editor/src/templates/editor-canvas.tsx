@@ -105,6 +105,7 @@ import { isFeatureEnabled } from '../utils/feature-switches'
 import { getCanvasViewportCenter } from './paste-helpers'
 import { DataPasteHandler, isPasteHandler } from '../utils/paste-handler'
 import { ResizeObserver } from '../components/canvas/dom-walker'
+import { isInsideColorPicker } from '../components/inspector/controls/color-picker-utils'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -362,7 +363,6 @@ export function runLocalCanvasAction(
   builtinDependencies: BuiltInDependencies,
   action: CanvasAction,
 ): EditorState {
-  // TODO BB horrorshow performance
   switch (action.action) {
     case 'SCROLL_CANVAS': {
       const newCanvasOffset = Utils.offsetPoint(
@@ -375,6 +375,7 @@ export function runLocalCanvasAction(
           ...model.canvas,
           realCanvasOffset: newCanvasOffset,
           roundedCanvasOffset: roundPointToNearestWhole(newCanvasOffset),
+          elementsToRerender: [], // we set this to [] to maximize the scroll performance, but it needs to be reset after the scroll! Ideally this would be in the patchedEditorState, but scrolling the canvas is not a continuous interaciton
         },
       }
     }
@@ -1163,6 +1164,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   }
 
   handleMouseMove = (event: MouseEvent) => {
+    if (isInsideColorPicker(event.target)) {
+      return
+    }
     let actions: Array<EditorAction> = []
     if (this.canvasSelected()) {
       const canvasPositions = this.getPosition(event)
