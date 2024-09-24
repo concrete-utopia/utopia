@@ -407,9 +407,13 @@ function getStrategyToApply(
     }
   }
 
-  const name = MetadataUtils.isGridCellWithPositioning(jsxMetadata, cell)
-    ? 'Rearrange Grid (Move)'
-    : 'Grid Move (Abs)'
+  const element = MetadataUtils.findElementByElementPath(jsxMetadata, cell)
+
+  const name =
+    MetadataUtils.isPositionAbsolute(element) &&
+    !MetadataUtils.isGridCellWithPositioning(jsxMetadata, cell)
+      ? 'Grid Move (Abs)'
+      : 'Rearrange Grid (Move)'
 
   return {
     type: 'GRID_REARRANGE',
