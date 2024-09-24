@@ -1022,7 +1022,6 @@ const validGridDimensionKeywords = [
   'subgrid',
   'auto-fit',
   'auto-fill',
-  'minmax',
 ] as const
 
 export type ValidGridDimensionKeyword = (typeof validGridDimensionKeywords)[number]

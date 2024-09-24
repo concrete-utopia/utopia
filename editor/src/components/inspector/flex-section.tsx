@@ -497,7 +497,7 @@ const TemplateDimensionControl = React.memo(
       [],
     )
 
-    const controlData = createControlDataFromDimensions(values)
+    const dimensionsWithGeneratedIndexes = useGeneratedIndexesFromGridDimensions(values)
 
     return (
       <div
@@ -513,13 +513,13 @@ const TemplateDimensionControl = React.memo(
             <Icons.SmallPlus onClick={onAppend} />
           </SquareButton>
         </div>
-        {controlData.map((value, index) => (
+        {dimensionsWithGeneratedIndexes.map((value, index) => (
           <AxisDimensionControl
             key={index}
             value={value.dimension}
             index={index}
-            realIndexFrom={value.indexFrom}
-            realIndexTo={value.indexTo}
+            generatedIndexFrom={value.generatedIndexFrom}
+            generatedIndexTo={value.generatedIndexTo}
             axis={axis}
             onUpdateNumberOrKeyword={onUpdateNumberOrKeyword}
             onUpdateDimension={onUpdateDimension}
@@ -536,8 +536,8 @@ TemplateDimensionControl.displayName = 'TemplateDimensionControl'
 function AxisDimensionControl({
   value,
   index,
-  realIndexFrom: indexFrom,
-  realIndexTo: indexTo,
+  generatedIndexFrom: indexFrom,
+  generatedIndexTo: indexTo,
   items,
   axis,
   onUpdateNumberOrKeyword,
@@ -546,8 +546,8 @@ function AxisDimensionControl({
 }: {
   value: GridDimension
   index: number
-  realIndexFrom: number
-  realIndexTo: number
+  generatedIndexFrom: number
+  generatedIndexTo: number
   items: DropdownMenuItem[]
   axis: 'column' | 'row'
   onUpdateNumberOrKeyword: (
@@ -1105,36 +1105,38 @@ const AutoFlowControl = React.memo(() => {
 })
 AutoFlowControl.displayName = 'AutoFlowControl'
 
-interface AxisDimensionControlData {
-  indexFrom: number
-  indexTo: number
+interface GridDimensionWithGeneratedIndexes {
+  generatedIndexFrom: number
+  generatedIndexTo: number
   dimension: GridDimension
 }
 
-function createControlDataFromDimensions(
+function useGeneratedIndexesFromGridDimensions(
   dimensions: Array<GridDimension>,
-): Array<AxisDimensionControlData> {
-  let nextIndexFrom = 1
-  let result: Array<AxisDimensionControlData> = []
+): Array<GridDimensionWithGeneratedIndexes> {
+  return React.useMemo(() => {
+    let nextIndexFrom = 1
+    let result: Array<GridDimensionWithGeneratedIndexes> = []
 
-  dimensions.forEach((dim) => {
-    if (dim.type !== 'REPEAT') {
-      result.push({
-        indexFrom: nextIndexFrom,
-        indexTo: nextIndexFrom,
-        dimension: dim,
-      })
-      nextIndexFrom += 1
-    } else {
-      // TODO: handle auto-fill and auto-fit in value.times
-      const shift = !isCSSKeyword(dim.times) ? dim.times * dim.value.length : dim.value.length
-      result.push({
-        indexFrom: nextIndexFrom,
-        indexTo: nextIndexFrom + shift - 1,
-        dimension: dim,
-      })
-      nextIndexFrom += shift
-    }
-  })
-  return result
+    dimensions.forEach((dim) => {
+      if (dim.type !== 'REPEAT') {
+        result.push({
+          generatedIndexFrom: nextIndexFrom,
+          generatedIndexTo: nextIndexFrom,
+          dimension: dim,
+        })
+        nextIndexFrom += 1
+      } else {
+        // TODO: handle auto-fill and auto-fit in value.times
+        const shift = !isCSSKeyword(dim.times) ? dim.times * dim.value.length : dim.value.length
+        result.push({
+          generatedIndexFrom: nextIndexFrom,
+          generatedIndexTo: nextIndexFrom + shift - 1,
+          dimension: dim,
+        })
+        nextIndexFrom += shift
+      }
+    })
+    return result
+  }, [dimensions])
 }
