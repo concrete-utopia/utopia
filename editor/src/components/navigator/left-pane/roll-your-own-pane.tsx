@@ -8,6 +8,8 @@ import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 import { Ellipsis } from './github-pane/github-file-changes-list'
 import { deleteParseCache } from '../../../core/shared/parse-cache-utils'
 import { useRefEditorState } from '../../../components/editor/store/store-hook'
+import type { FeatureName } from '../../../utils/feature-switches'
+import { isFeatureEnabled, setFeatureEnabled } from '../../../utils/feature-switches'
 
 const sections = ['Grid', 'Performance'] as const
 type Section = (typeof sections)[number]
@@ -39,7 +41,12 @@ type RollYourOwnFeatures = {
   [K in Section]: RollYourOwnFeaturesTypes[K]
 }
 
-const defaultRollYourOwnFeatures: RollYourOwnFeatures = {
+const featureToFeatureFlagMap: Record<keyof Partial<PerformanceFeatures>, FeatureName> = {
+  parseCache: 'Use Parsing Cache',
+  verboseLogCache: 'Verbose Log Cache',
+}
+
+const defaultRollYourOwnFeatures: () => RollYourOwnFeatures = () => ({
   Grid: {
     dragVerbatim: false,
     dragMagnetic: false,
@@ -53,27 +60,38 @@ const defaultRollYourOwnFeatures: RollYourOwnFeatures = {
     shadowOpacity: 0.1,
   },
   Performance: {
-    parseCache: true,
-    verboseLogCache: true,
+    parseCache: getFeatureFlagValue('parseCache', true),
+    verboseLogCache: getFeatureFlagValue('verboseLogCache', true),
   },
-}
+})
 
 const ROLL_YOUR_OWN_FEATURES_KEY: string = 'roll-your-own-features'
 
-const rollYourOwnFeaturesAtom = IS_TEST_ENVIRONMENT
-  ? atom(defaultRollYourOwnFeatures)
-  : atomWithStorage(ROLL_YOUR_OWN_FEATURES_KEY, defaultRollYourOwnFeatures)
+let rollYourOwnFeaturesAtom:
+  | ReturnType<typeof atom<RollYourOwnFeatures>>
+  | ReturnType<typeof atomWithStorage<RollYourOwnFeatures>>
+  | null = null
+
+function getRollYourOwnFeaturesAtom() {
+  if (rollYourOwnFeaturesAtom == null) {
+    rollYourOwnFeaturesAtom = IS_TEST_ENVIRONMENT
+      ? atom(defaultRollYourOwnFeatures())
+      : atomWithStorage(ROLL_YOUR_OWN_FEATURES_KEY, defaultRollYourOwnFeatures())
+  }
+  return rollYourOwnFeaturesAtom
+}
 
 export function useRollYourOwnFeatures() {
-  const [features] = useAtom(rollYourOwnFeaturesAtom)
+  const [features] = useAtom(getRollYourOwnFeaturesAtom())
+  const defaultFeatures = defaultRollYourOwnFeatures()
   const merged: RollYourOwnFeatures = {
     Grid: {
-      ...defaultRollYourOwnFeatures.Grid,
+      ...defaultFeatures.Grid,
       ...features.Grid,
     },
     Performance: {
-      ...defaultRollYourOwnFeatures.Performance,
-      ...features.Performance,
+      ...defaultFeatures.Performance,
+      ...syncWithFeatureFlags(features.Performance),
     },
   }
   return merged
@@ -172,7 +190,6 @@ const PerformanceSection = React.memo(() => {
   }, [workersRef])
   return (
     <FlexColumn style={{ gap: 10 }}>
-      <ResetDefaultsButton subsection='Performance' />
       <SimpleFeatureControls subsection='Performance' />
       <UIGridRow padded variant='<-------------1fr------------->'>
         <Button highlight spotlight onClick={handleDeleteParseCache}>
@@ -187,13 +204,14 @@ PerformanceSection.displayName = 'PerformanceSection'
 /** GENERAL COMPONENTS */
 
 const ResetDefaultsButton = React.memo(({ subsection }: { subsection: Section }) => {
-  const setFeatures = useSetAtom(rollYourOwnFeaturesAtom)
+  const setFeatures = useSetAtom(getRollYourOwnFeaturesAtom())
+  const defaultFeatures = defaultRollYourOwnFeatures()
   const resetDefaults = React.useCallback(() => {
     setFeatures((prevFeatures) => ({
       ...prevFeatures,
-      [subsection]: defaultRollYourOwnFeatures[subsection],
+      [subsection]: defaultFeatures[subsection],
     }))
-  }, [setFeatures, subsection])
+  }, [defaultFeatures, setFeatures, subsection])
   return (
     <UIGridRow padded variant='<-------------1fr------------->'>
       <Button highlight spotlight onClick={resetDefaults}>
@@ -206,7 +224,7 @@ ResetDefaultsButton.displayName = 'ResetDefaultsButton'
 
 const SimpleFeatureControls = React.memo(({ subsection }: { subsection: Section }) => {
   const features = useRollYourOwnFeatures()
-  const setFeatures = useSetAtom(rollYourOwnFeaturesAtom)
+  const setFeatures = useSetAtom(getRollYourOwnFeaturesAtom())
   const onChange = React.useCallback(
     (feat: keyof RollYourOwnFeaturesTypes[Section]) => (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = getNewFeatureValueOrNull(features[subsection][feat], e)
@@ -218,15 +236,19 @@ const SimpleFeatureControls = React.memo(({ subsection }: { subsection: Section 
             [feat]: newValue,
           },
         })
+        if (typeof newValue === 'boolean') {
+          syncFeatureFlagIfExists(feat, newValue)
+        }
       }
     },
     [features, setFeatures, subsection],
   )
+  const defaultFeatures = defaultRollYourOwnFeatures()
   return (
     <React.Fragment>
-      {Object.keys(defaultRollYourOwnFeatures[subsection]).map((key) => {
+      {Object.keys(defaultFeatures[subsection]).map((key) => {
         const feat = key as keyof RollYourOwnFeaturesTypes[Section]
-        const value = features[subsection][feat] ?? defaultRollYourOwnFeatures[subsection][feat]
+        const value = features[subsection][feat] ?? defaultFeatures[subsection][feat]
         return (
           <UIGridRow padded variant='<----------1fr---------><-auto->' key={`feat-${feat}`}>
             <Ellipsis title={feat}>{feat}</Ellipsis>
@@ -244,3 +266,36 @@ const SimpleFeatureControls = React.memo(({ subsection }: { subsection: Section 
   )
 })
 SimpleFeatureControls.displayName = 'SimpleFeatureControls'
+
+function getFeatureFlagValue(
+  featureName: keyof typeof featureToFeatureFlagMap,
+  defaultValue: boolean,
+): boolean {
+  const featureFlag = featureToFeatureFlagMap[featureName]
+  if (featureFlag == null) {
+    return defaultValue
+  }
+  return isFeatureEnabled(featureFlag)
+}
+
+function syncFeatureFlagIfExists(
+  featureName: keyof typeof featureToFeatureFlagMap,
+  value: boolean,
+) {
+  const featureFlag = featureToFeatureFlagMap[featureName]
+  if (featureFlag == null) {
+    return
+  }
+  setFeatureEnabled(featureFlag, value)
+}
+
+function syncWithFeatureFlags(features: Record<string, any>) {
+  return Object.fromEntries(
+    Object.entries(features).map(([key, value]) => {
+      if (typeof value === 'boolean' && key in featureToFeatureFlagMap) {
+        return [key, getFeatureFlagValue(key as keyof typeof featureToFeatureFlagMap, value)]
+      }
+      return [key, value]
+    }),
+  )
+}

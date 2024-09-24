@@ -14,8 +14,7 @@ function isParseCacheEnabled(): boolean {
 }
 
 function isVerboseLogCacheEnabled(): boolean {
-  // TODO: get from jotai store of "Roll Your Own"
-  return isFeatureEnabled('Use Parsing Cache')
+  return isFeatureEnabled('Verbose Log Cache')
 }
 
 export function getParseCacheOptions(): ParseCacheOptions {
