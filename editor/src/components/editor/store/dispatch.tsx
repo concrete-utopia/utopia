@@ -534,7 +534,7 @@ export function editorDispatchClosingOut(
   // START_CHECKPOINT_TIMER likely did.
   const transientOrNoChange = (allTransient || result.nothingChanged) && !anyFinishCheckpointTimer
 
-  const unpatchedEditorState = result.unpatchedEditor
+  const unpatchedEditorState = resetUnpatchedEditorTransientFields(result.unpatchedEditor)
   const patchedEditorState = result.patchedEditor
   const newStrategyState = result.strategyState
   const patchedDerivedState = result.patchedDerived
@@ -1071,6 +1071,17 @@ function filterEditorForFiles(editor: EditorState) {
       buildErrors: pick(allFiles, editor.codeEditorErrors.buildErrors),
       lintErrors: pick(allFiles, editor.codeEditorErrors.lintErrors),
       componentDescriptorErrors: pick(allFiles, editor.codeEditorErrors.componentDescriptorErrors),
+    },
+  }
+}
+
+function resetUnpatchedEditorTransientFields(editor: EditorState): EditorState {
+  // reset all parts of the state which is meant to be "empty" or "default", and mostly expect the non-default values to come from patchedEditor
+  return {
+    ...editor,
+    canvas: {
+      ...editor.canvas,
+      elementsToRerender: 'rerender-all-elements',
     },
   }
 }
