@@ -28,7 +28,6 @@ import {
   InspectorSectionIcons,
   NumberInput,
   SquareButton,
-  StringInput,
   Subdued,
   Tooltip,
 } from '../../uuiui'
@@ -36,9 +35,6 @@ import type {
   CSSKeyword,
   CSSNumber,
   GridAutoFlow,
-  GridCSSKeyword,
-  GridCSSMinmax,
-  GridDiscreteDimension,
   UnknownOrEmptyInput,
   ValidGridDimensionKeyword,
 } from './common/css-utils'
@@ -52,14 +48,8 @@ import {
   isCSSKeyword,
   isCSSNumber,
   isEmptyInputValue,
-  isGridCSSKeyword,
   isGridCSSNumber,
-  isGridCSSRepeat,
-  isValidGridDimensionKeyword,
-  parseCSSNumber,
-  parseGridCSSMinmaxOrRepeat,
   printArrayGridDimensions,
-  printGridDimension,
   type GridDimension,
 } from './common/css-utils'
 import { applyCommandsAction, transientActions } from '../editor/actions/action-creators'
@@ -71,22 +61,13 @@ import {
   setProperty,
 } from '../canvas/commands/set-property-command'
 import * as PP from '../../core/shared/property-path'
-import type {
-  GridAutoOrTemplateBase,
-  GridContainerProperties,
-  GridPosition,
-} from '../../core/shared/element-template'
+import type { GridContainerProperties, GridPosition } from '../../core/shared/element-template'
 import {
   gridPositionValue,
   type ElementInstanceMetadata,
   type GridElementProperties,
 } from '../../core/shared/element-template'
-import {
-  expandGridDimensions,
-  removeGridTemplateDimensionAtIndex,
-  replaceGridTemplateDimensionAtIndex,
-  setGridPropsCommands,
-} from '../canvas/canvas-strategies/strategies/grid-helpers'
+import { setGridPropsCommands } from '../canvas/canvas-strategies/strategies/grid-helpers'
 import { type CanvasCommand } from '../canvas/commands/commands'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import {
@@ -97,7 +78,6 @@ import {
   separatorRadixSelectOption,
 } from '../../uuiui/radix-components'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from './common/property-path-hooks'
-import { NumberOrKeywordControl } from '../../uuiui/inputs/number-or-keyword-control'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { cssNumberEqual } from '../canvas/controls/select-mode/controls-common'
 import type { EditorAction } from '../editor/action-types'
@@ -109,7 +89,7 @@ import {
   useSetHoveredControlsHandlers,
 } from '../canvas/controls/select-mode/select-mode-hooks'
 import type { Axis } from '../canvas/gap-utils'
-import { isRight } from '../../core/shared/either'
+import { GridExpressionInput } from '../../uuiui/inputs/grid-expression-input'
 
 const axisDropdownMenuButton = 'axisDropdownMenuButton'
 
@@ -179,8 +159,8 @@ export const FlexSection = React.memo(() => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <GapRowColumnControl />
                   <AutoFlowControl />
-                  <TemplateDimensionControl axis={'column'} grid={grid} title='Columns' />
-                  <TemplateDimensionControl axis={'row'} grid={grid} title='Rows' />
+                  <TemplateDimensionControl axis={'column'} grid={grid} title='Template Columns' />
+                  <TemplateDimensionControl axis={'row'} grid={grid} title='TemplateRows' />
                 </div>
               ) : null}
             </UIGridRow>,
@@ -596,8 +576,7 @@ function AxisDimensionControl({
         >
           {title}
         </Subdued>
-
-        <GridFunctionInput
+        <GridExpressionInput
           testId={testId}
           value={value}
           onUpdateNumberOrKeyword={onUpdateNumberOrKeyword(index)}
@@ -610,60 +589,6 @@ function AxisDimensionControl({
     </div>
   )
 }
-
-const GridFunctionInput = React.memo(
-  ({
-    testId,
-    value,
-    onUpdateNumberOrKeyword,
-    onUpdateDimension,
-  }: {
-    testId: string
-    value: GridDimension // This can be extended to support more function types
-    onUpdateNumberOrKeyword: (v: CSSNumber | CSSKeyword<ValidGridDimensionKeyword>) => void
-    onUpdateDimension: (v: GridDimension) => void
-  }) => {
-    const [printValue, setPrintValue] = React.useState<string>(printGridDimension(value))
-    React.useEffect(() => setPrintValue(printGridDimension(value)), [value])
-
-    const onChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-      setPrintValue(e.target.value)
-    }, [])
-
-    const onKeyDown = React.useCallback(
-      (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          if (isValidGridDimensionKeyword(printValue)) {
-            return onUpdateNumberOrKeyword(cssKeyword(printValue))
-          }
-
-          const defaultUnit = isGridCSSNumber(value) ? value.value.unit : 'px'
-          const maybeNumber = parseCSSNumber(printValue, 'AnyValid', defaultUnit)
-          if (isRight(maybeNumber)) {
-            return onUpdateNumberOrKeyword(maybeNumber.value)
-          }
-
-          const maybeMinmax = parseGridCSSMinmaxOrRepeat(printValue)
-          if (maybeMinmax != null) {
-            return onUpdateDimension({ ...maybeMinmax, areaName: value.areaName } as GridDimension)
-          }
-
-          if (printValue === '') {
-            return onUpdateNumberOrKeyword(cssKeyword('auto'))
-          }
-
-          setPrintValue(printGridDimension(value))
-        }
-      },
-      [printValue, onUpdateNumberOrKeyword, onUpdateDimension, value],
-    )
-
-    return (
-      <StringInput testId={testId} value={printValue} onChange={onChange} onKeyDown={onKeyDown} />
-    )
-  },
-)
-GridFunctionInput.displayName = 'GridFunctionInput'
 
 function removeTemplateValueAtIndex(
   original: GridContainerProperties,
