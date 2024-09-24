@@ -16,7 +16,7 @@ export type FeatureName =
   | 'Debug – Connections'
   | 'Condensed Navigator Entries'
   | 'Roll Your Own'
-
+  | 'Tooltip Debug'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
@@ -32,6 +32,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Debug – Connections',
   'Condensed Navigator Entries',
   'Roll Your Own',
+  'Tooltip Debug',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -48,6 +49,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug – Connections': false,
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
   'Roll Your Own': false,
+  'Tooltip Debug': false,
 }
 
 export const STEGANOGRAPHY_ENABLED = false

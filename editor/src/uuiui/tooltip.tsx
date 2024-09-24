@@ -7,6 +7,7 @@ import 'tippy.js/dist/tippy.css'
 import React from 'react'
 //TODO: switch to functional component and make use of 'useColorTheme':
 import { colorTheme } from './styles/theme'
+import { isFeatureEnabled } from '../utils/feature-switches'
 
 export interface TooltipProps {
   children?: React.ReactElement<any>
@@ -50,7 +51,9 @@ export const Tooltip: React.FunctionComponent<React.PropsWithChildren<TooltipPro
     [backgroundColor, textColor],
   )
 
-  return (
+  return isFeatureEnabled('Tooltip Debug') ? (
+    <React.Fragment>{props.children}</React.Fragment>
+  ) : (
     <Tippy
       css={css} // TODO we should not use Emotion for this component
       arrow
