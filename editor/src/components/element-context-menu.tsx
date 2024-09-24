@@ -32,6 +32,7 @@ import {
   replace,
   toggleCanCondense,
   convertToTailwind,
+  convertFromTailwind,
 } from './context-menu-items'
 import { ContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState, Substores } from './editor/store/store-hook'
@@ -71,6 +72,7 @@ interface ElementContextMenuProps {
 
 const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   convertToTailwind,
+  convertFromTailwind,
   setAsFocusedElement,
   removeAsFocusedElement,
   scrollToElement,

@@ -133,6 +133,7 @@ function parseSafe(
     return { kind: 'error', message: 'Failed to parse class string' }
   }
 }
+
 export function getClassNameMapping(classString: string): { [key: string]: string } {
   const mapping: { [key: string]: string } = {}
   const classParts = classString.split(' ')
@@ -142,6 +143,19 @@ export function getClassNameMapping(classString: string): { [key: string]: strin
       return
     }
     mapping[parsed.root] = parsed.value
+  })
+  return mapping
+}
+
+export function getStyleMapping(classString: string): { [key: string]: string } {
+  const mapping: { [key: string]: string } = {}
+  const classParts = classString.split(' ')
+  classParts.forEach((part) => {
+    const parsed = parseSafe(part, TAILWIND_CONFIG_SPIKE_STATE.current)
+    if (parsed.kind === 'error') {
+      return
+    }
+    mapping[parsed.property] = parsed.value
   })
   return mapping
 }

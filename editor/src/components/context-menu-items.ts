@@ -36,12 +36,13 @@ import {
   toggleDataCanCondense,
   toggleHidden,
 } from './editor/actions/action-creators'
-import type {
-  LockedElements,
-  AllElementProps,
-  InternalClipboard,
-  NavigatorEntry,
-  PasteHerePostActionMenuData,
+import {
+  type LockedElements,
+  type AllElementProps,
+  type InternalClipboard,
+  type NavigatorEntry,
+  type PasteHerePostActionMenuData,
+  getElementFromProjectContents,
 } from './editor/store/editor-state'
 import type { ElementContextMenuInstance } from './element-context-menu'
 import {
@@ -64,6 +65,8 @@ import { updateClassListCommand } from './canvas/commands/update-class-list-comm
 import * as UCL from './canvas/commands/update-class-list-command'
 import { mapDropNulls } from '../core/shared/array-utils'
 import { TAILWIND_CONFIG_SPIKE_STATE } from './navigator/dependency-list'
+import { getClassNameAttribute, getStyleMapping } from '../core/tailwind/tailwind-options'
+import { setProperty } from './canvas/commands/set-property-command'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -648,6 +651,37 @@ export const convertToTailwind: ContextMenuItem<CanvasData> = {
     })
 
     if (commands.length > 0 && dispatch != null) {
+      dispatch([EditorActions.applyCommandsAction(commands)])
+    }
+  },
+}
+
+export const convertFromTailwind: ContextMenuItem<CanvasData> = {
+  name: 'Convert from Tailwind',
+  enabled: true,
+  action: (data, dispatch) => {
+    if (dispatch == null) {
+      return
+    }
+    const commands: CanvasCommand[] = data.selectedViews.flatMap((elementPath) => {
+      const classList = getClassNameAttribute(
+        getElementFromProjectContents(elementPath, data.projectContents),
+      )?.value
+
+      const classes = typeof classList === 'string' ? classList : ''
+      const mapping = getStyleMapping(classes)
+
+      const commandsForElement = Object.entries(mapping).map(([key, value]) => {
+        return setProperty('always', elementPath, PP.create('style', key), value)
+      })
+
+      return [
+        ...commandsForElement,
+        deleteProperties('always', elementPath, [PP.create('className')]),
+      ]
+    })
+
+    if (commands.length > 0) {
       dispatch([EditorActions.applyCommandsAction(commands)])
     }
   },
