@@ -254,13 +254,6 @@ const TemplateDimensionControl = React.memo(
       return fromProps
     }, [grid, axis, values])
 
-    const expandedTemplate = React.useMemo(() => {
-      if (template?.type !== 'DIMENSIONS') {
-        return []
-      }
-      return expandGridDimensions(template.dimensions)
-    }, [template])
-
     const onUpdateDimension = React.useCallback(
       (index: number) => (newValue: GridDimension) => {
         if (template?.type !== 'DIMENSIONS') {
@@ -322,11 +315,10 @@ const TemplateDimensionControl = React.memo(
           return
         }
 
-        const newValues = removeGridTemplateDimensionAtIndex(
-          template.dimensions,
-          expandedTemplate,
-          index,
-        )
+        const left = template.dimensions.slice(0, index)
+        const right = template.dimensions.slice(index + 1)
+
+        const newValues = [...left, ...right]
 
         let commands: CanvasCommand[] = [
           setProperty(
@@ -339,7 +331,7 @@ const TemplateDimensionControl = React.memo(
 
         // adjust the position of the elements if they need to be moved
         const adjustedGridTemplate = removeTemplateValueAtIndex(
-          grid.specialSizeMeasurements.containerGridProperties,
+          grid.specialSizeMeasurements.containerGridPropertiesFromProps,
           axis,
           index,
         )
@@ -349,7 +341,7 @@ const TemplateDimensionControl = React.memo(
         const children = MetadataUtils.getChildrenUnordered(metadataRef.current, grid.elementPath)
         for (const child of children) {
           let updated: Partial<GridElementProperties> = {
-            ...child.specialSizeMeasurements.elementGridProperties,
+            ...child.specialSizeMeasurements.elementGridPropertiesFromProps,
           }
 
           function needsAdjusting(pos: GridPosition | null, bound: number) {
@@ -361,7 +353,7 @@ const TemplateDimensionControl = React.memo(
               : null
           }
 
-          const position = child.specialSizeMeasurements.elementGridProperties
+          const position = child.specialSizeMeasurements.elementGridPropertiesFromProps
           if (axis === 'column') {
             const adjustColumnStart = needsAdjusting(position.gridColumnStart, gridIndex)
             const adjustColumnEnd = needsAdjusting(position.gridColumnEnd, gridIndex + 1)
@@ -387,7 +379,7 @@ const TemplateDimensionControl = React.memo(
 
         dispatch([applyCommandsAction(commands)])
       },
-      [grid, dispatch, axis, metadataRef, template, expandedTemplate],
+      [grid, dispatch, axis, metadataRef, template],
     )
 
     const onAppend = React.useCallback(() => {
@@ -414,7 +406,7 @@ const TemplateDimensionControl = React.memo(
         if (template?.type !== 'DIMENSIONS') {
           return
         }
-        const container = grid.specialSizeMeasurements.containerGridProperties
+        const container = grid.specialSizeMeasurements.containerGridPropertiesFromProps
         const dimensions =
           axis === 'column' ? container.gridTemplateColumns : container.gridTemplateRows
         if (dimensions?.type !== 'DIMENSIONS') {
@@ -430,12 +422,14 @@ const TemplateDimensionControl = React.memo(
         const newAreaName: string | null =
           rawNewAreaName.length === 0 ? null : sanitizeAreaName(rawNewAreaName)
 
-        const newValues = replaceGridTemplateDimensionAtIndex(
-          template.dimensions,
-          expandedTemplate,
-          index,
+        const left = template.dimensions.slice(0, index)
+        const right = template.dimensions.slice(index + 1)
+
+        const newValues = [
+          ...left,
           { ...values[index], areaName: newAreaName } as GridDimension,
-        )
+          ...right,
+        ]
 
         let commands: CanvasCommand[] = [
           setProperty(
@@ -460,14 +454,14 @@ const TemplateDimensionControl = React.memo(
             ...setGridPropsCommands(
               child.elementPath,
               adjustedGridTemplate,
-              child.specialSizeMeasurements.elementGridProperties,
+              child.specialSizeMeasurements.elementGridPropertiesFromProps,
             ),
           )
         }
 
         dispatch([applyCommandsAction(commands)])
       },
-      [grid, axis, values, dispatch, metadataRef, template, expandedTemplate],
+      [grid, axis, values, dispatch, metadataRef, template],
     )
 
     const dropdownMenuItems = React.useCallback(
@@ -503,6 +497,8 @@ const TemplateDimensionControl = React.memo(
       [],
     )
 
+    const controlData = createControlDataFromDimensions(values)
+
     return (
       <div
         style={{
@@ -517,27 +513,20 @@ const TemplateDimensionControl = React.memo(
             <Icons.SmallPlus onClick={onAppend} />
           </SquareButton>
         </div>
-        {values.map((value, index) => {
-          const shift = values.slice(0, index).reduce((acc, currentValue) => {
-            if (currentValue.type === 'REPEAT') {
-              return acc + currentValue.times - 1
-            }
-            return acc
-          }, 0)
-
-          return (
-            <AxisDimensionControl
-              key={index}
-              value={value}
-              index={index + shift}
-              axis={axis}
-              onUpdateNumberOrKeyword={onUpdateNumberOrKeyword}
-              onUpdateDimension={onUpdateDimension}
-              items={dropdownMenuItems(index)}
-              opener={openDropdown}
-            />
-          )
-        })}
+        {controlData.map((value, index) => (
+          <AxisDimensionControl
+            key={index}
+            value={value.dimension}
+            index={index}
+            realIndexFrom={value.indexFrom}
+            realIndexTo={value.indexTo}
+            axis={axis}
+            onUpdateNumberOrKeyword={onUpdateNumberOrKeyword}
+            onUpdateDimension={onUpdateDimension}
+            items={dropdownMenuItems(index)}
+            opener={openDropdown}
+          />
+        ))}
       </div>
     )
   },
@@ -547,6 +536,8 @@ TemplateDimensionControl.displayName = 'TemplateDimensionControl'
 function AxisDimensionControl({
   value,
   index,
+  realIndexFrom: indexFrom,
+  realIndexTo: indexTo,
   items,
   axis,
   onUpdateNumberOrKeyword,
@@ -555,6 +546,8 @@ function AxisDimensionControl({
 }: {
   value: GridDimension
   index: number
+  realIndexFrom: number
+  realIndexTo: number
   items: DropdownMenuItem[]
   axis: 'column' | 'row'
   onUpdateNumberOrKeyword: (
@@ -570,11 +563,12 @@ function AxisDimensionControl({
   }, [])
 
   const title = React.useMemo(() => {
-    if (value.type !== 'REPEAT') {
-      return value.areaName ?? index + 1
+    if (indexFrom === indexTo) {
+      return value.areaName ?? indexFrom
     }
-    return `${index + 1} → ${index + value.times}`
-  }, [value, index])
+    return value.areaName ?? `${indexFrom} → ${indexTo}`
+  }, [value, indexFrom, indexTo])
+
   return (
     <div
       key={`col-${value}-${index}`}
@@ -609,18 +603,6 @@ function AxisDimensionControl({
           onUpdateNumberOrKeyword={onUpdateNumberOrKeyword(index)}
           onUpdateDimension={onUpdateDimension(index)}
         />
-        {/* ) : (
-          <NumberOrKeywordControl
-            testId={testId}
-            value={value.value}
-            keywords={gridDimensionDropdownKeywords}
-            keywordTypeCheck={isValidGridDimensionKeyword}
-            onSubmitValue={onUpdateNumberOrKeyword(index)}
-            controlStatus={
-              isGridCSSKeyword(value) && value.value.value === 'auto' ? 'off' : undefined
-            }
-          />
-        )} */}
       </div>
       <SquareButton className={axisDropdownMenuButton}>
         <DropdownMenu align='end' items={items} opener={opener} onOpenChange={onOpenChange} />
@@ -1122,3 +1104,37 @@ const AutoFlowControl = React.memo(() => {
   )
 })
 AutoFlowControl.displayName = 'AutoFlowControl'
+
+interface AxisDimensionControlData {
+  indexFrom: number
+  indexTo: number
+  dimension: GridDimension
+}
+
+function createControlDataFromDimensions(
+  dimensions: Array<GridDimension>,
+): Array<AxisDimensionControlData> {
+  let nextIndexFrom = 1
+  let result: Array<AxisDimensionControlData> = []
+
+  dimensions.forEach((dim) => {
+    if (dim.type !== 'REPEAT') {
+      result.push({
+        indexFrom: nextIndexFrom,
+        indexTo: nextIndexFrom,
+        dimension: dim,
+      })
+      nextIndexFrom += 1
+    } else {
+      // TODO: handle auto-fill and auto-fit in value.times
+      const shift = !isCSSKeyword(dim.times) ? dim.times * dim.value.length : dim.value.length
+      result.push({
+        indexFrom: nextIndexFrom,
+        indexTo: nextIndexFrom + shift - 1,
+        dimension: dim,
+      })
+      nextIndexFrom += shift
+    }
+  })
+  return result
+}
