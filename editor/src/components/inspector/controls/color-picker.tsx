@@ -198,8 +198,6 @@ export class ColorPickerInner extends React.Component<
   ColorPickerInnerProps,
   ColorPickerInnerState
 > {
-  private RefFirstControl = React.createRef<HTMLInputElement>()
-
   private fullWidth = colorPickerWidth
   private fullHeight = MetadataEditorModalPreviewHeight
   private paddedWidth = this.fullWidth - inspectorEdgePadding * 2
@@ -237,9 +235,6 @@ export class ColorPickerInner extends React.Component<
   componentDidMount() {
     setTimeout(() => {
       // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
-      if (this.RefFirstControl.current != null) {
-        this.RefFirstControl.current.focus()
-      }
       this.setIndicators()
     }, 0)
   }
@@ -287,9 +282,6 @@ export class ColorPickerInner extends React.Component<
   }
 
   componentDidUpdate(prevProps: ColorPickerInnerProps, prevState: ColorPickerInnerState) {
-    if (this.RefFirstControl.current != null && prevProps.id !== this.props.id) {
-      this.RefFirstControl.current.focus()
-    }
     if (
       this.state.normalisedSaturationPosition !== prevState.normalisedSaturationPosition ||
       this.state.normalisedValuePosition !== prevState.normalisedValuePosition ||
@@ -727,7 +719,6 @@ export class ColorPickerInner extends React.Component<
             }}
           >
             <StringControl
-              ref={this.RefFirstControl}
               key={this.props.id}
               value={chroma.hex('auto').toUpperCase()}
               onSubmitValue={this.onSubmitValueHex}
