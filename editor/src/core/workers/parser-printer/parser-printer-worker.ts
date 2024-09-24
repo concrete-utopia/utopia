@@ -2,6 +2,7 @@ import type { ParseSuccess } from '../../shared/project-file-types'
 import type { SteganographyMode } from './parser-printer'
 import { printCodeOptions, printCode, lintAndParse } from './parser-printer'
 import type {
+  ClearParseCacheMessage,
   ParseFileResult,
   ParsePrintFilesRequest,
   ParsePrintResultMessage,
@@ -15,10 +16,19 @@ import {
 } from '../common/worker-types'
 import localforage from 'localforage'
 import type { FilePathMappings } from '../common/project-file-utils'
-import type { ParseCacheOptions } from '../../../core/shared/parse-cache-utils'
+import {
+  CACHE_DB_NAME,
+  PARSE_CACHE_STORE_NAME,
+  type ParseCacheOptions,
+} from '../../../core/shared/parse-cache-utils'
+
+const parseCache = localforage.createInstance({
+  name: CACHE_DB_NAME,
+  storeName: PARSE_CACHE_STORE_NAME,
+})
 
 export async function handleMessage(
-  workerMessage: ParsePrintFilesRequest,
+  workerMessage: ParsePrintFilesRequest | ClearParseCacheMessage,
   sendMessage: (content: ParsePrintResultMessage) => void,
 ): Promise<void> {
   switch (workerMessage.type) {
@@ -63,12 +73,15 @@ export async function handleMessage(
       }
       break
     }
+    case 'clearparsecache': {
+      await clearParseCache()
+      break
+    }
   }
 }
 
-function getCacheKey(filename: string, versionNumber: number): string {
-  const devVer = 1 // TEMP - use it for hard cache invalidation if needed now as we're developing this feature
-  return `${filename}::${versionNumber}::${devVer}`
+function getCacheKey(filename: string): string {
+  return `PARSE_CACHE::${filename}`
 }
 
 function logCacheMessage(message: string, parsingCacheOptions: ParseCacheOptions) {
@@ -82,14 +95,14 @@ export async function getParseFileResultWithCache(
   filePathMappings: FilePathMappings,
   content: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
-  versionNumber: number,
+  fileVersionNumber: number,
   alreadyExistingUIDs_MUTABLE: Set<string>,
   applySteganography: SteganographyMode,
   parsingCacheOptions: ParseCacheOptions,
 ): Promise<ParseFileResult> {
   if (parsingCacheOptions.useParsingCache) {
     //check localforage for cache
-    const cachedResult = await getParseResultFromCache(filename, content, versionNumber)
+    const cachedResult = await getParseResultFromCache(filename, content)
     if (cachedResult != null) {
       logCacheMessage(`Cache hit for ${filename}`, parsingCacheOptions)
       return cachedResult
@@ -102,7 +115,7 @@ export async function getParseFileResultWithCache(
     filePathMappings,
     content,
     oldParseResultForUIDComparison,
-    versionNumber,
+    fileVersionNumber,
     alreadyExistingUIDs_MUTABLE,
     applySteganography,
     parsingCacheOptions,
@@ -116,7 +129,7 @@ export function getParseFileResult(
   filePathMappings: FilePathMappings,
   content: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
-  versionNumber: number,
+  fileVersionNumber: number,
   alreadyExistingUIDs_MUTABLE: Set<string>,
   applySteganography: SteganographyMode,
   parseCacheOptions: ParseCacheOptions,
@@ -130,10 +143,10 @@ export function getParseFileResult(
     'trim-bounds',
     applySteganography,
   )
-  const result = createParseFileResult(filename, parseResult, versionNumber)
+  const result = createParseFileResult(filename, parseResult, fileVersionNumber)
   if (result.parseResult.type === 'PARSE_SUCCESS' && parseCacheOptions.useParsingCache) {
     // non blocking cache write
-    storeParseResultInCache(filename, content, versionNumber, result, parseCacheOptions)
+    storeParseResultInCache(filename, content, result, parseCacheOptions)
   }
 
   return result
@@ -144,11 +157,10 @@ type CachedParseResult = { [fileContent: string]: ParseFileResult }
 async function getParseResultFromCache(
   filename: string,
   content: string,
-  versionNumber: number,
 ): Promise<ParseFileResult | null> {
-  const cacheKey = getCacheKey(filename, versionNumber)
+  const cacheKey = getCacheKey(filename)
   //check localforage for cache
-  const cachedResult = await localforage.getItem<CachedParseResult>(cacheKey)
+  const cachedResult = await parseCache.getItem<CachedParseResult>(cacheKey)
   const cachedResultForContent = cachedResult?.[content]
   if (cachedResultForContent?.parseResult?.type === 'PARSE_SUCCESS') {
     return cachedResultForContent
@@ -159,15 +171,18 @@ async function getParseResultFromCache(
 function storeParseResultInCache(
   filename: string,
   content: string,
-  versionNumber: number,
   result: ParseFileResult,
   parsingCacheOptions: ParseCacheOptions,
 ) {
-  const cacheKey = getCacheKey(filename, versionNumber)
+  const cacheKey = getCacheKey(filename)
   logCacheMessage(`Caching ${filename}`, parsingCacheOptions)
-  void localforage.setItem<CachedParseResult>(cacheKey, {
+  void parseCache.setItem<CachedParseResult>(cacheKey, {
     [content]: result,
   })
+}
+
+async function clearParseCache() {
+  await parseCache.dropInstance({ name: CACHE_DB_NAME, storeName: PARSE_CACHE_STORE_NAME })
 }
 
 export function getPrintAndReparseCodeResult(
@@ -175,7 +190,7 @@ export function getPrintAndReparseCodeResult(
   filePathMappings: FilePathMappings,
   parseSuccess: ParseSuccess,
   stripUIDs: boolean,
-  versionNumber: number,
+  fileVersionNumber: number,
   alreadyExistingUIDs: Set<string>,
   applySteganography: SteganographyMode,
   parseCacheOptions: ParseCacheOptions,
@@ -194,10 +209,15 @@ export function getPrintAndReparseCodeResult(
     filePathMappings,
     printedCode,
     parseSuccess,
-    versionNumber,
+    fileVersionNumber,
     alreadyExistingUIDs,
     applySteganography,
     parseCacheOptions,
   )
-  return createPrintAndReparseResult(filename, parseResult.parseResult, versionNumber, printedCode)
+  return createPrintAndReparseResult(
+    filename,
+    parseResult.parseResult,
+    fileVersionNumber,
+    printedCode,
+  )
 }

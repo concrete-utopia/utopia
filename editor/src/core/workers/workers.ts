@@ -8,7 +8,12 @@ import {
   DEFAULT_HEARTBEAT_INTERVAL_MS,
   createWatchdogTerminateMessage,
 } from './watchdog-worker'
-import type { UtopiaTsWorkers, FileContent, ParsePrintFilesRequest } from './common/worker-types'
+import {
+  type UtopiaTsWorkers,
+  type FileContent,
+  type ParsePrintFilesRequest,
+  createClearParseCacheMessage,
+} from './common/worker-types'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 
 export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
@@ -24,6 +29,10 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
 
   sendParsePrintMessage(request: ParsePrintFilesRequest): void {
     this.parserPrinterWorker.sendParsePrintMessage(request)
+  }
+
+  sendClearParseCacheMessage(): void {
+    this.parserPrinterWorker.sendClearParseCacheMessage()
   }
 
   addParserPrinterEventListener(handler: (e: MessageEvent) => void): void {
@@ -58,6 +67,8 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
 export interface ParserPrinterWorker {
   sendParsePrintMessage: (request: ParsePrintFilesRequest) => void
 
+  sendClearParseCacheMessage: () => void
+
   addParseFileResultEventListener(handler: (e: MessageEvent) => void): void
 
   removeParseFileResultEventListener(handler: (e: MessageEvent) => void): void
@@ -71,6 +82,10 @@ export class RealParserPrinterWorker implements ParserPrinterWorker {
 
   sendParsePrintMessage(request: ParsePrintFilesRequest): void {
     this.worker.postMessage(request)
+  }
+
+  sendClearParseCacheMessage(): void {
+    this.worker.postMessage(createClearParseCacheMessage())
   }
 
   addParseFileResultEventListener(handler: (e: MessageEvent) => void): void {
@@ -189,6 +204,10 @@ export class MockUtopiaTsWorkers implements UtopiaTsWorkers {
   }
 
   sendParsePrintMessage(request: ParsePrintFilesRequest): void {
+    // empty
+  }
+
+  sendClearParseCacheMessage(): void {
     // empty
   }
 

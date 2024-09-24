@@ -6,6 +6,8 @@ import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { atomWithStorage } from 'jotai/utils'
 import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 import { Ellipsis } from './github-pane/github-file-changes-list'
+import { deleteParseCache } from '../../../core/shared/parse-cache-utils'
+import { useRefEditorState } from '../../../components/editor/store/store-hook'
 
 const sections = ['Grid', 'Performance'] as const
 type Section = (typeof sections)[number]
@@ -149,10 +151,62 @@ function getNewFeatureValueOrNull(currentValue: any, e: React.ChangeEvent<HTMLIn
   }
 }
 
-const SimpleFeatureSection = React.memo(({ subsection }: { subsection: Section }) => {
+/** GRID SECTION */
+const GridSection = React.memo(() => {
+  return (
+    <FlexColumn style={{ gap: 10 }}>
+      <ResetDefaultsButton subsection='Grid' />
+      <SimpleFeatureControls subsection='Grid' />
+    </FlexColumn>
+  )
+})
+GridSection.displayName = 'GridSection'
+
+/** PERFORMANCE SECTION */
+const PerformanceSection = React.memo(() => {
+  const workersRef = useRefEditorState((store) => {
+    return store.workers
+  })
+  const handleDeleteParseCache = React.useCallback(() => {
+    deleteParseCache(workersRef.current)
+  }, [workersRef])
+  return (
+    <FlexColumn style={{ gap: 10 }}>
+      <ResetDefaultsButton subsection='Performance' />
+      <SimpleFeatureControls subsection='Performance' />
+      <UIGridRow padded variant='<-------------1fr------------->'>
+        <Button highlight spotlight onClick={handleDeleteParseCache}>
+          Clear cache
+        </Button>
+      </UIGridRow>
+    </FlexColumn>
+  )
+})
+PerformanceSection.displayName = 'PerformanceSection'
+
+/** GENERAL COMPONENTS */
+
+const ResetDefaultsButton = React.memo(({ subsection }: { subsection: Section }) => {
+  const setFeatures = useSetAtom(rollYourOwnFeaturesAtom)
+  const resetDefaults = React.useCallback(() => {
+    setFeatures((prevFeatures) => ({
+      ...prevFeatures,
+      [subsection]: defaultRollYourOwnFeatures[subsection],
+    }))
+  }, [setFeatures, subsection])
+  return (
+    <UIGridRow padded variant='<-------------1fr------------->'>
+      <Button highlight spotlight onClick={resetDefaults}>
+        Reset defaults
+      </Button>
+    </UIGridRow>
+  )
+})
+ResetDefaultsButton.displayName = 'ResetDefaultsButton'
+
+const SimpleFeatureControls = React.memo(({ subsection }: { subsection: Section }) => {
   const features = useRollYourOwnFeatures()
   const setFeatures = useSetAtom(rollYourOwnFeaturesAtom)
-
   const onChange = React.useCallback(
     (feat: keyof RollYourOwnFeaturesTypes[Section]) => (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = getNewFeatureValueOrNull(features[subsection][feat], e)
@@ -168,21 +222,8 @@ const SimpleFeatureSection = React.memo(({ subsection }: { subsection: Section }
     },
     [features, setFeatures, subsection],
   )
-
-  const resetDefaults = React.useCallback(() => {
-    setFeatures((prevFeatures) => ({
-      ...prevFeatures,
-      [subsection]: defaultRollYourOwnFeatures[subsection],
-    }))
-  }, [setFeatures, subsection])
-
   return (
-    <FlexColumn style={{ gap: 10 }}>
-      <UIGridRow padded variant='<-------------1fr------------->'>
-        <Button highlight spotlight onClick={resetDefaults}>
-          Reset defaults
-        </Button>
-      </UIGridRow>
+    <React.Fragment>
       {Object.keys(defaultRollYourOwnFeatures[subsection]).map((key) => {
         const feat = key as keyof RollYourOwnFeaturesTypes[Section]
         const value = features[subsection][feat] ?? defaultRollYourOwnFeatures[subsection][feat]
@@ -199,17 +240,7 @@ const SimpleFeatureSection = React.memo(({ subsection }: { subsection: Section }
           </UIGridRow>
         )
       })}
-    </FlexColumn>
+    </React.Fragment>
   )
 })
-SimpleFeatureSection.displayName = 'SimpleFeatureSection'
-
-const GridSection = React.memo(() => {
-  return <SimpleFeatureSection subsection='Grid' />
-})
-GridSection.displayName = 'GridSection'
-
-const PerformanceSection = React.memo(() => {
-  return <SimpleFeatureSection subsection='Performance' />
-})
-PerformanceSection.displayName = 'PerformanceSection'
+SimpleFeatureControls.displayName = 'SimpleFeatureControls'

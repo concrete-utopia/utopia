@@ -35,7 +35,7 @@ import { fastForEach } from '../../core/shared/utils'
 import { codeNeedsPrinting, codeNeedsParsing } from '../../core/workers/common/project-file-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { isSteganographyEnabled } from './stegano-text'
-import { getParseCacheOptions, isParseCacheEnabled } from './parse-cache-utils'
+import { getParseCacheOptions } from './parse-cache-utils'
 
 export function parseResultToWorkerUpdates(fileResult: ParseOrPrintResult): WorkerUpdate {
   switch (fileResult.type) {
