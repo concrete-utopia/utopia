@@ -5,7 +5,6 @@ import type {
   ElementInstanceMetadataMap,
   GridPositionValue,
   GridTemplate,
-  SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
 import {
   gridPositionValue,
@@ -21,7 +20,6 @@ import {
   canvasVector,
   isInfinityRectangle,
   offsetPoint,
-  windowPoint,
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { absolute } from '../../../../utils/utils'
@@ -524,18 +522,17 @@ function getGridMoveType(params: {
   possiblyReorderIndex: number
   cellsSortedByPosition: SortableGridElementProperties[]
 }): GridMoveType {
+  const specialSizeMeasurements = params.originalElementMetadata.specialSizeMeasurements
   if (MetadataUtils.isPositionAbsolute(params.originalElementMetadata)) {
-    if (hasNoGridCellPositioning(params.originalElementMetadata.specialSizeMeasurements)) {
-      return 'absolute'
-    }
-    return 'rearrange'
+    return MetadataUtils.hasNoGridCellPositioning(specialSizeMeasurements)
+      ? 'absolute'
+      : 'rearrange'
   }
   if (params.possiblyReorderIndex >= params.cellsSortedByPosition.length) {
     return 'rearrange'
   }
 
-  const elementGridProperties =
-    params.originalElementMetadata.specialSizeMeasurements.elementGridProperties
+  const elementGridProperties = specialSizeMeasurements.elementGridProperties
 
   // The first element is intrinsically in order, so try to adjust for that
   if (params.possiblyReorderIndex === 0) {
@@ -816,13 +813,4 @@ export function getGridRelatedIndexes(params: {
   })
 
   return expandedRelatedIndexes[params.index] ?? []
-}
-
-export function hasNoGridCellPositioning(specialSizeMeasurements: SpecialSizeMeasurements) {
-  return (
-    specialSizeMeasurements.elementGridPropertiesFromProps.gridColumnStart == null &&
-    specialSizeMeasurements.elementGridPropertiesFromProps.gridColumnEnd == null &&
-    specialSizeMeasurements.elementGridPropertiesFromProps.gridRowStart == null &&
-    specialSizeMeasurements.elementGridPropertiesFromProps.gridRowEnd == null
-  )
 }

@@ -46,6 +46,7 @@ import type {
   ConditionValue,
   JSXElementLike,
   JSPropertyAccess,
+  SpecialSizeMeasurements,
 } from '../shared/element-template'
 import {
   getJSXElementNameLastPart,
@@ -179,7 +180,6 @@ import { exists, toFirst } from '../shared/optics/optic-utilities'
 import { eitherRight, fromField, fromTypeGuard, notNull } from '../shared/optics/optic-creators'
 import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
 import { treatElementAsFragmentLike } from '../../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
-import { hasNoGridCellPositioning } from '../../components/canvas/canvas-strategies/strategies/grid-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -397,7 +397,15 @@ export const MetadataUtils = {
     return (
       MetadataUtils.isGridCell(metadata, path) &&
       element != null &&
-      !hasNoGridCellPositioning(element.specialSizeMeasurements)
+      !MetadataUtils.hasNoGridCellPositioning(element.specialSizeMeasurements)
+    )
+  },
+  hasNoGridCellPositioning(specialSizeMeasurements: SpecialSizeMeasurements): boolean {
+    return (
+      specialSizeMeasurements.elementGridPropertiesFromProps.gridColumnStart == null &&
+      specialSizeMeasurements.elementGridPropertiesFromProps.gridColumnEnd == null &&
+      specialSizeMeasurements.elementGridPropertiesFromProps.gridRowStart == null &&
+      specialSizeMeasurements.elementGridPropertiesFromProps.gridRowEnd == null
     )
   },
   isComponentInstanceFromMetadata(
