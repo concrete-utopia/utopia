@@ -74,6 +74,7 @@ import type { ElementPathTrees } from '../../../../core/shared/element-path-tree
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import { stripNulls } from '../../../../core/shared/array-utils'
+import * as CST from '../canvas-strategy-types'
 
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
   'paddingTop',
@@ -625,14 +626,9 @@ function getStyleUpdateCommandsAllFourSides(
   allPaddingPropsDefined: CSSPaddingMappedValues<CSSNumberWithRenderedValue>,
 ): PropertyUpdateDescription[] {
   return [
-    { type: 'PROPERTY_TO_REMOVE', elementPath: elementPath, key: 'padding' },
+    CST.propertyToRemove(elementPath, 'padding'),
     ...paddingValuesToUpdate(allPaddingPropsDefined).map(
-      ({ key, value }): PropertyUpdateDescription => ({
-        type: 'PROPERTY_TO_SET',
-        elementPath: elementPath,
-        key: key,
-        value: value,
-      }),
+      ({ key, value }): PropertyUpdateDescription => CST.propertyToSet(elementPath, key, value),
     ),
   ]
 }
@@ -642,21 +638,13 @@ function getCommandsForSomeSides(
   nonZeroPropsToAdd: CSSPaddingMappedValues<CSSNumberWithRenderedValue | undefined>,
 ): PropertyUpdateDescription[] {
   return [
-    { type: 'PROPERTY_TO_REMOVE', elementPath: elementPath, key: 'padding' },
+    CST.propertyToRemove(elementPath, 'padding'),
     ...IndividualPaddingProps.map(
-      (p): PropertyUpdateDescription => ({
-        type: 'PROPERTY_TO_REMOVE',
-        elementPath: elementPath,
-        key: cssPaddingKeyToCSSPropertyKey(p),
-      }),
+      (p): PropertyUpdateDescription =>
+        CST.propertyToRemove(elementPath, cssPaddingKeyToCSSPropertyKey(p)),
     ),
     ...paddingValuesToUpdate(nonZeroPropsToAdd).map(
-      ({ key, value }): PropertyUpdateDescription => ({
-        type: 'PROPERTY_TO_SET',
-        elementPath: elementPath,
-        key: key,
-        value: value,
-      }),
+      ({ key, value }): PropertyUpdateDescription => CST.propertyToSet(elementPath, key, value),
     ),
   ]
 }

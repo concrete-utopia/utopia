@@ -69,11 +69,31 @@ export interface PropertyToSet {
   value: string
 }
 
+export const propertyToSet = (
+  elementPath: ElementPath,
+  key: AbstractCSSPropertyKey,
+  value: string,
+): PropertyToSet => ({
+  type: 'PROPERTY_TO_SET',
+  elementPath: elementPath,
+  key: key,
+  value: value,
+})
+
 export interface PropertyToRemove {
   type: 'PROPERTY_TO_REMOVE'
   elementPath: ElementPath
   key: AbstractCSSPropertyKey
 }
+
+export const propertyToRemove = (
+  elementPath: ElementPath,
+  key: AbstractCSSPropertyKey,
+): PropertyToRemove => ({
+  type: 'PROPERTY_TO_REMOVE',
+  elementPath: elementPath,
+  key: key,
+})
 
 export type PropertyUpdateDescription = PropertyToSet | PropertyToRemove
 
