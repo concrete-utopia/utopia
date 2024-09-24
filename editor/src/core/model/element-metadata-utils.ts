@@ -46,6 +46,7 @@ import type {
   ConditionValue,
   JSXElementLike,
   JSPropertyAccess,
+  SpecialSizeMeasurements,
 } from '../shared/element-template'
 import {
   getJSXElementNameLastPart,
@@ -389,6 +390,22 @@ export const MetadataUtils = {
       parent.specialSizeMeasurements.containerGridProperties.gridTemplateColumns != null &&
       parent.specialSizeMeasurements.containerGridProperties.gridTemplateRows != null &&
       MetadataUtils.isGridLayoutedContainer(parent)
+    )
+  },
+  isGridCellWithPositioning(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    return (
+      MetadataUtils.isGridCell(metadata, path) &&
+      element != null &&
+      !MetadataUtils.hasNoGridCellPositioning(element.specialSizeMeasurements)
+    )
+  },
+  hasNoGridCellPositioning(specialSizeMeasurements: SpecialSizeMeasurements): boolean {
+    return (
+      specialSizeMeasurements.elementGridPropertiesFromProps.gridColumnStart == null &&
+      specialSizeMeasurements.elementGridPropertiesFromProps.gridColumnEnd == null &&
+      specialSizeMeasurements.elementGridPropertiesFromProps.gridRowStart == null &&
+      specialSizeMeasurements.elementGridPropertiesFromProps.gridRowEnd == null
     )
   },
   isComponentInstanceFromMetadata(
