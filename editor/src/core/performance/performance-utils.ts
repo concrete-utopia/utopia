@@ -25,24 +25,32 @@ export function startPerformanceMeasure(
   { uniqueId }: { uniqueId?: boolean } = {},
 ): { id: string; endMeasure: () => number } {
   const id = uniqueId ? `${measureName}-${Math.random()}` : measureName
-  performance.mark(`${id}-start`)
+  if (PERFORMANCE_MARKS_ALLOWED) {
+    performance.mark(`${id}-start`)
+  }
   return {
     id: id,
     endMeasure: () => {
-      performance.mark(`${id}-end`)
-      performance.measure(`${id}-duration`, `${id}-start`, `${id}-end`)
-      // return the duration of the last measurement
-      const measurements = performance.getEntriesByName(`${id}-duration`)
-      const latestMeasurement = measurements[measurements.length - 1]
-      return latestMeasurement.duration
+      if (PERFORMANCE_MARKS_ALLOWED) {
+        performance.mark(`${id}-end`)
+        performance.measure(`${id}-duration`, `${id}-start`, `${id}-end`)
+        // return the duration of the last measurement
+        const measurements = performance.getEntriesByName(`${id}-duration`)
+        const latestMeasurement = measurements[measurements.length - 1]
+        return latestMeasurement.duration
+      }
+      return 0
     },
   }
 }
 
 export function endPerformanceMeasure(id: string): number {
-  performance.mark(`${id}-end`)
-  performance.measure(`${id}-duration`, `${id}-start`, `${id}-end`)
-  const measurements = performance.getEntriesByName(`${id}-duration`)
-  const latestMeasurement = measurements[measurements.length - 1]
-  return latestMeasurement.duration
+  if (PERFORMANCE_MARKS_ALLOWED) {
+    performance.mark(`${id}-end`)
+    performance.measure(`${id}-duration`, `${id}-start`, `${id}-end`)
+    const measurements = performance.getEntriesByName(`${id}-duration`)
+    const latestMeasurement = measurements[measurements.length - 1]
+    return latestMeasurement.duration
+  }
+  return 0
 }
