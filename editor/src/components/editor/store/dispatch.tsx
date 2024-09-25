@@ -90,7 +90,11 @@ import {
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
 import { getFilePathMappings } from '../../../core/model/project-file-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { NUM_PARSER_CHUNKS } from '../../../templates/editor'
+import {
+  getParserChunkCount,
+  isConcurrencyLoggingEnabled,
+} from '../../../core/workers/common/concurrency-utils'
+import { startPerformanceMeasure } from '../../../core/performance/performance-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -348,21 +352,22 @@ function maybeRequestModelUpdate(
 
   // Should anything need to be sent across, do so here.
   if (filesToUpdate.length > 0) {
-    performance.mark('parse-start')
+    const { endMeasure } = startPerformanceMeasure('file-parse', { uniqueId: true })
     const parseFinished = getParseResult(
       workers,
       filesToUpdate,
       getFilePathMappings(projectContents),
       existingUIDs,
       isSteganographyEnabled(),
-      NUM_PARSER_CHUNKS,
+      getParserChunkCount(),
     )
       .then((parseResult) => {
-        performance.mark('parse-end')
-        performance.measure('parse-duration', 'parse-start', 'parse-end')
-        const duration = performance.getEntriesByName('parse-duration')[0].duration
-        // eslint-disable-next-line no-console
-        console.log(`parseFinished for ${filesToUpdate.length} files in ${duration.toFixed(2)}ms`)
+        const duration = endMeasure()
+        if (isConcurrencyLoggingEnabled()) {
+          console.info(
+            `parse finished for ${filesToUpdate.length} files in ${duration.toFixed(2)}ms`,
+          )
+        }
         const updates = parseResult.map((fileResult) => {
           return parseResultToWorkerUpdates(fileResult)
         })

@@ -106,7 +106,7 @@ import * as EP from '../core/shared/element-path'
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import type { ElementPath } from '../core/shared/project-file-types'
-import { mapDropNulls, uniqBy } from '../core/shared/array-utils'
+import { createArrayWithLength, mapDropNulls, uniqBy } from '../core/shared/array-utils'
 import { updateUserDetailsWhenAuthenticated } from '../core/shared/github/helpers'
 import { DispatchContext } from '../components/editor/store/dispatch-context'
 import {
@@ -138,9 +138,7 @@ import {
 import { keysEqualityExhaustive, shallowEqual } from '../core/shared/equality-utils'
 import { runDomSampler } from '../components/canvas/dom-sampler'
 import { omitWithPredicate } from '../core/shared/object-utils'
-
-export const NUM_PARSER_PRINTER_WORKERS = 3
-export const NUM_PARSER_CHUNKS = 3
+import { getParserWorkerCount } from '../core/workers/common/concurrency-utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -248,9 +246,7 @@ export class Editor {
       )
 
     const workers = new UtopiaTsWorkersImplementation(
-      Array(NUM_PARSER_PRINTER_WORKERS)
-        .fill(null)
-        .map(() => new RealParserPrinterWorker()),
+      createArrayWithLength(getParserWorkerCount(), () => new RealParserPrinterWorker()),
       new RealLinterWorker(),
       watchdogWorker,
     )

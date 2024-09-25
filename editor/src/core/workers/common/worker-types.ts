@@ -12,6 +12,7 @@ import type { SteganographyMode } from '../parser-printer/parser-printer'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import type { FilePathMappings } from './project-file-utils'
 import type { ParserPrinterWorker } from '../workers'
+import { isParseableFile } from '../../../core/shared/file-utils'
 
 export type FileContent = string | TextFile
 
@@ -168,6 +169,9 @@ export function createParsePrintFilesRequest(
 
 let PARSE_PRINT_MESSAGE_COUNTER: number = 0
 
+const valueFn = (file: ParseOrPrint) =>
+  file.type === 'parsefile' && isParseableFile(file.filename) ? file.content.length : 0
+
 export async function getParseResult(
   workers: UtopiaTsWorkers,
   files: Array<ParseOrPrint>,
@@ -176,13 +180,8 @@ export async function getParseResult(
   applySteganography: SteganographyMode,
   numChunks: number = 1,
 ): Promise<Array<ParseOrPrintResult>> {
-  const chunks = chunkArrayEqually(files, numChunks, (file) => {
-    if (file.type === 'parsefile') {
-      return file.content.length
-    } else {
-      return 0
-    }
-  })
+  const chunks = chunkArrayEqually(files, numChunks, valueFn)
+
   const promises = chunks.map((chunk) =>
     getParseResultSerial(workers, chunk, filePathMappings, alreadyExistingUIDs, applySteganography),
   )

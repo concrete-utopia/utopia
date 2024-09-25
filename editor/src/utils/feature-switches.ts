@@ -14,6 +14,7 @@ export type FeatureName =
   | 'Project Thumbnail Generation'
   | 'Debug - Print UIDs'
   | 'Debug – Connections'
+  | 'Parser Concurrency'
   | 'Condensed Navigator Entries'
   | 'Roll Your Own'
 
@@ -30,6 +31,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Project Thumbnail Generation',
   'Debug - Print UIDs',
   'Debug – Connections',
+  'Parser Concurrency',
   'Condensed Navigator Entries',
   'Roll Your Own',
 ]
@@ -46,6 +48,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Project Thumbnail Generation': false,
   'Debug - Print UIDs': false,
   'Debug – Connections': false,
+  'Parser Concurrency': true,
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
   'Roll Your Own': false,
 }

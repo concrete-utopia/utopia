@@ -568,5 +568,5 @@ export function chunkArrayEqually<T>(
     chunkSums[minIndex] += valueFn(data)
   }
 
-  return chunks
+  return chunks.filter((chunk) => chunk.length > 0)
 }
