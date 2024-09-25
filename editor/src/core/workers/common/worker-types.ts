@@ -169,7 +169,7 @@ export function createParsePrintFilesRequest(
 
 let PARSE_PRINT_MESSAGE_COUNTER: number = 0
 
-const valueFn = (file: ParseOrPrint) =>
+const fileParsableLength = (file: ParseOrPrint) =>
   file.type === 'parsefile' && isParseableFile(file.filename) ? file.content.length : 0
 
 export async function getParseResult(
@@ -180,7 +180,7 @@ export async function getParseResult(
   applySteganography: SteganographyMode,
   numChunks: number = 1,
 ): Promise<Array<ParseOrPrintResult>> {
-  const chunks = chunkArrayEqually(files, numChunks, valueFn)
+  const chunks = chunkArrayEqually(files, numChunks, fileParsableLength)
 
   const promises = chunks.map((chunk) =>
     getParseResultSerial(workers, chunk, filePathMappings, alreadyExistingUIDs, applySteganography),
