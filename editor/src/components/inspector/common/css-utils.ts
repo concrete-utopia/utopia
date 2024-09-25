@@ -659,7 +659,7 @@ export function parseGridCSSMinmaxOrRepeat(input: string): GridCSSMinmax | GridC
     if (
       isRight(parsedDimensions) &&
       parsedDimensions.value.length === 1 &&
-      (parsedDimensions.value[0].type === 'MINMAX' || parsedDimensions.value[0].type === 'REPEAT')
+      (isGridCSSMinmax(parsedDimensions.value[0]) || isGridCSSRepeat(parsedDimensions.value[0]))
     ) {
       return parsedDimensions.value[0]
     }

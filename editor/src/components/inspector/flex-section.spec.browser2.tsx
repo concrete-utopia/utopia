@@ -1,4 +1,4 @@
-import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../utils/utils.test-utils'
 import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import * as EP from '../../core/shared/element-path'
 import { act, fireEvent, screen } from '@testing-library/react'
