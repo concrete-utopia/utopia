@@ -1,4 +1,3 @@
-import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { getParseResult } from '../../../core/workers/common/worker-types'
 import { runLocalCanvasAction } from '../../../templates/editor-canvas'
@@ -60,7 +59,6 @@ import {
   getProjectChanges,
   sendVSCodeChanges,
 } from './vscode-changes'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { handleStrategies, updatePostActionState } from './dispatch-strategies'
 
 import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
@@ -95,7 +93,10 @@ import {
   getParserWorkerCount,
   isConcurrencyLoggingEnabled,
 } from '../../../core/workers/common/concurrency-utils'
-import { startPerformanceMeasure } from '../../../core/performance/performance-utils'
+import {
+  canMeasurePerformance,
+  startPerformanceMeasure,
+} from '../../../core/performance/performance-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -855,10 +856,7 @@ function editorDispatchInner(
 ): DispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions), dispatchedActions)
 
-  const MeasureDispatchTime =
-    (isFeatureEnabled('Debug – Performance Marks (Fast)') ||
-      isFeatureEnabled('Debug – Performance Marks (Slow)')) &&
-    PERFORMANCE_MARKS_ALLOWED
+  const MeasureDispatchTime = canMeasurePerformance()
 
   if (MeasureDispatchTime) {
     window.performance.mark('dispatch_begin')

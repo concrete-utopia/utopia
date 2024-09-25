@@ -10,7 +10,6 @@ import { useAtomsDevtools } from 'jotai-devtools'
 import '../utils/vite-hmr-config'
 import {
   getProjectID,
-  PERFORMANCE_MARKS_ALLOWED,
   PROBABLY_ELECTRON,
   PRODUCTION_ENV,
   requireElectron,
@@ -142,6 +141,7 @@ import {
 } from '../components/canvas/dom-sampler'
 import { omitWithPredicate } from '../core/shared/object-utils'
 import { getParserWorkerCount } from '../core/workers/common/concurrency-utils'
+import { canMeasurePerformance } from '../core/performance/performance-utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -440,10 +440,7 @@ export class Editor {
     Measure.logActions(dispatchedActions)
 
     const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
-    const PerformanceMarks =
-      (isFeatureEnabled('Debug – Performance Marks (Slow)') ||
-        isFeatureEnabled('Debug – Performance Marks (Fast)')) &&
-      PERFORMANCE_MARKS_ALLOWED
+    const PerformanceMarks = canMeasurePerformance()
 
     const runDispatch = () => {
       const oldEditorState = this.storedState
