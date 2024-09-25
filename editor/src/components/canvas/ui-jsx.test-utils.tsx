@@ -564,7 +564,7 @@ export async function renderTestEditorWithModel(
   }
 
   const workers = new UtopiaTsWorkersImplementation(
-    new FakeParserPrinterWorker(),
+    [new FakeParserPrinterWorker()],
     new FakeLinterWorker(),
     new FakeWatchdogWorker(),
   )
@@ -1037,7 +1037,7 @@ export function createBuiltinDependenciesWithTestWorkers(
   extraBuiltinDependencies: BuiltInDependencies,
 ): BuiltInDependencies {
   const workers = new UtopiaTsWorkersImplementation(
-    new FakeParserPrinterWorker(),
+    [new FakeParserPrinterWorker()],
     new FakeLinterWorker(),
     new FakeWatchdogWorker(),
   )
