@@ -1,5 +1,5 @@
 import React from 'react'
-import { sides } from 'utopia-api/core'
+import { type Sides, sides } from 'utopia-api/core'
 import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 import * as EP from '../../core/shared/element-path'
 import type {
@@ -11,6 +11,7 @@ import type {
   GridContainerProperties,
   GridElementProperties,
   DomElementMetadata,
+  GridTemplate,
 } from '../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -840,6 +841,18 @@ function getSpecialMeasurements(
   const parentContainerGridProperties = getGridContainerProperties(parentElementStyle)
 
   const containerGridProperties = getGridContainerProperties(elementStyle)
+
+  const paddingValue = isRight(padding)
+    ? padding.value
+    : sides(undefined, undefined, undefined, undefined)
+
+  const gridCellGlobalFrames = getGlobalFramesOfGridCells(
+    containerGridProperties,
+    rowGap,
+    columnGap,
+    paddingValue,
+  )
+
   const containerElementProperties = getGridElementProperties(
     parentContainerGridProperties,
     elementStyle,
@@ -864,7 +877,7 @@ function getSpecialMeasurements(
     elementStyle.display,
     position,
     isRight(margin) ? margin.value : sides(undefined, undefined, undefined, undefined),
-    isRight(padding) ? padding.value : sides(undefined, undefined, undefined, undefined),
+    paddingValue,
     naturalWidth,
     naturalHeight,
     clientWidth,
@@ -901,6 +914,7 @@ function getSpecialMeasurements(
     containerElementPropertiesFromProps,
     rowGap,
     columnGap,
+    gridCellGlobalFrames,
   )
 }
 
@@ -956,4 +970,52 @@ function getClosestOffsetParent(element: HTMLElement): Element | null {
     currentElement = currentElement.parentElement
   }
   return null
+}
+
+function getGlobalFramesOfGridCells(
+  grid: GridContainerProperties,
+  rowGap: number | null,
+  columnGap: number | null,
+  padding: Sides,
+): Array<Array<CanvasRectangle>> | null {
+  const columnWidths = gridTemplateToNumbers(grid.gridTemplateColumns)
+
+  const rowHeights = gridTemplateToNumbers(grid.gridTemplateRows)
+
+  if (columnWidths == null || rowHeights == null) {
+    return null
+  }
+
+  const cellRects: Array<Array<CanvasRectangle>> = []
+  let yOffset = padding.top ?? 0
+  rowHeights.forEach((height) => {
+    let xOffset = padding.left ?? 0
+    const rowRects: CanvasRectangle[] = []
+    columnWidths.forEach((width) => {
+      const rect = canvasRectangle({ x: xOffset, y: yOffset, width: width, height: height })
+      rowRects.push(rect)
+      xOffset += width + (columnGap ?? 0)
+    })
+    cellRects.push(rowRects)
+    yOffset += height + (rowGap ?? 0)
+  })
+
+  return cellRects
+}
+
+function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number> | null {
+  if (gridTemplate?.type !== 'DIMENSIONS') {
+    return null
+  }
+
+  const result: Array<number> = []
+
+  for (const dimension of gridTemplate.dimensions) {
+    if (dimension.type !== 'NUMBER') {
+      return null
+    }
+    result.push(dimension.value.value)
+  }
+
+  return result
 }
