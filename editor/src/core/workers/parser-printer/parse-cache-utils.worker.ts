@@ -1,4 +1,5 @@
-import type { ParseCacheOptions } from '../../shared/parse-cache-utils'
+import { URL_HASH } from '../../../common/env-vars'
+import type { ParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import type { ParseFileResult } from '../common/worker-types'
 import localforage from 'localforage'
 
@@ -29,6 +30,16 @@ function stringIdentifiers(filename: string, content: string): (string | object)
   return [filename]
 }
 
+export function getParseCacheVersion(): string {
+  // currently we're using the commit hash which is pretty aggresive cache-busting
+  // TODO: consider refining cache-busting strategy to change only on ParsedTextFile shape changes
+  return URL_HASH
+}
+
+function getCacheIndexKeyWithVersion(content: string): string {
+  return `${getParseCacheVersion()}::${content}`
+}
+
 export async function getParseResultFromCache(
   filename: string,
   content: string,
@@ -37,10 +48,9 @@ export async function getParseResultFromCache(
   const cacheKey = getCacheKey(filename)
   //check localforage for cache
   const cachedResult = await parseCache.getItem<CachedParseResult>(cacheKey)
-  const cachedResultForContent = cachedResult?.[content]
+  const cachedResultForContent = cachedResult?.[getCacheIndexKeyWithVersion(content)]
   if (cachedResultForContent?.parseResult?.type === 'PARSE_SUCCESS') {
     logCacheMessage(parsingCacheOptions, 'Cache hit for', ...stringIdentifiers(filename, content))
-
     return cachedResultForContent
   }
   logCacheMessage(parsingCacheOptions, 'Cache miss for', ...stringIdentifiers(filename, content))
@@ -66,11 +76,11 @@ export async function storeParseResultInCache(
     }
     void parseCache.setItem<CachedParseResult>(cacheKey, {
       ...cachedResult,
-      [content]: result,
+      [getCacheIndexKeyWithVersion(content)]: result,
     })
   } else {
     void parseCache.setItem<CachedParseResult>(cacheKey, {
-      [content]: result,
+      [getCacheIndexKeyWithVersion(content)]: result,
     })
   }
 }

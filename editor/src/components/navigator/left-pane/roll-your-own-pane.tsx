@@ -10,6 +10,7 @@ import { deleteParseCache } from '../../../core/shared/parse-cache-utils'
 import { useRefEditorState } from '../../../components/editor/store/store-hook'
 import type { FeatureName } from '../../../utils/feature-switches'
 import { isFeatureEnabled, setFeatureEnabled } from '../../../utils/feature-switches'
+import { getParseCacheVersion } from '../../../core/workers/parser-printer/parse-cache-utils.worker'
 
 const sections = ['Grid', 'Performance'] as const
 type Section = (typeof sections)[number]
@@ -191,6 +192,10 @@ const PerformanceSection = React.memo(() => {
   return (
     <FlexColumn style={{ gap: 10 }}>
       <SimpleFeatureControls subsection='Performance' />
+      <UIGridRow padded variant='<--1fr--><--1fr-->' key={`feat-cache-version`}>
+        <Ellipsis title='Cache Version'>Cache Version</Ellipsis>
+        <Ellipsis title={getParseCacheVersion()}>{getParseCacheVersion()}</Ellipsis>
+      </UIGridRow>
       <UIGridRow padded variant='<-------------1fr------------->'>
         <Button highlight spotlight onClick={handleDeleteParseCache}>
           Clear cache
