@@ -1,4 +1,4 @@
-import type { ParseCacheOptions } from '../../../core/shared/parse-cache-utils'
+import type { ParseCacheOptions } from '../../shared/parse-cache-utils'
 import type { ProjectContentTreeRoot } from '../../../components/assets'
 import type { ErrorMessage } from '../../shared/error-messages'
 import type { TypeDefinitions } from '../../shared/npm-dependency-types'
@@ -71,7 +71,6 @@ export interface ParseFileResult {
   filename: string
   parseResult: ParsedTextFile
   versionNumber: number
-  test: string
 }
 
 export function createParseFileResult(
