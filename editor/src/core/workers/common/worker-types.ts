@@ -71,6 +71,7 @@ export interface ParseFileResult {
   filename: string
   parseResult: ParsedTextFile
   versionNumber: number
+  test: string
 }
 
 export function createParseFileResult(
