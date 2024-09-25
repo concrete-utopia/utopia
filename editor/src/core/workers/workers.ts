@@ -10,6 +10,7 @@ import {
 } from './watchdog-worker'
 import type { UtopiaTsWorkers, FileContent, ParsePrintFilesRequest } from './common/worker-types'
 import type { ProjectContentTreeRoot } from '../../components/assets'
+import { FakeParserPrinterWorker } from './test-workers'
 
 export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
   private parserArrayCounter = 0
@@ -190,6 +191,10 @@ export class RealWatchdogWorker implements WatchdogWorker {
 }
 
 export class MockUtopiaTsWorkers implements UtopiaTsWorkers {
+  getNextParserPrinterWorker(): ParserPrinterWorker {
+    return new FakeParserPrinterWorker()
+  }
+
   sendInitMessage(
     _typeDefinitions: TypeDefinitions,
     _projectContents: ProjectContentTreeRoot,
