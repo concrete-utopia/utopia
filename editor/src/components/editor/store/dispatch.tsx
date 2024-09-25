@@ -92,6 +92,7 @@ import { getFilePathMappings } from '../../../core/model/project-file-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   getParserChunkCount,
+  getParserWorkerCount,
   isConcurrencyLoggingEnabled,
 } from '../../../core/workers/common/concurrency-utils'
 import { startPerformanceMeasure } from '../../../core/performance/performance-utils'
@@ -363,9 +364,13 @@ function maybeRequestModelUpdate(
     )
       .then((parseResult) => {
         const duration = endMeasure()
-        if (isConcurrencyLoggingEnabled()) {
+        if (isConcurrencyLoggingEnabled() && filesToUpdate.length > 1) {
           console.info(
-            `parse finished for ${filesToUpdate.length} files in ${duration.toFixed(2)}ms`,
+            `parse finished for ${
+              filesToUpdate.length
+            } files, using ${getParserChunkCount()} chunks and ${getParserWorkerCount()} workers, in ${duration.toFixed(
+              2,
+            )}ms`,
           )
         }
         const updates = parseResult.map((fileResult) => {
