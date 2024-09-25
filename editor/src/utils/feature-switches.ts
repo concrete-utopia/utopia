@@ -51,7 +51,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug - Print UIDs': false,
   'Debug – Connections': false,
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
-  'Use Parsing Cache': true,
+  'Use Parsing Cache': !IS_TEST_ENVIRONMENT,
   'Verbose Log Cache': false,
   'Roll Your Own': false,
 }
