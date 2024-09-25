@@ -349,6 +349,7 @@ import type {
   ToggleDataCanCondense,
   UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
+  NormalizeWithPlugins,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -472,7 +473,10 @@ import {
 import type { MouseButtonsPressed } from '../../../utils/mouse'
 import { addButtonPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
-import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
+import {
+  pickCanvasStateFromEditorState,
+  runNormalizationPlugins,
+} from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import { canCopyElement } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import {
@@ -6140,6 +6144,9 @@ export const UPDATE_FNS = {
         errorBoundaryHandling: action.errorBoundaryHandling,
       },
     }
+  },
+  NORMALIZE_WITH_PLUGINS: (action: NormalizeWithPlugins, editorState: EditorModel): EditorModel => {
+    return runNormalizationPlugins(editorState, action.elementsToNormalize)
   },
 }
 
