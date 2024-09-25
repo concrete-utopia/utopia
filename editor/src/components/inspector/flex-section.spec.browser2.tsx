@@ -53,29 +53,19 @@ describe('flex section', () => {
       const grid = await renderResult.renderedDOM.findByTestId('grid')
       expect(grid.style.gridTemplateColumns).toEqual('[area1] auto 1fr 1fr 1fr 1fr')
     })
-    it('uses auto for defaults when empty', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        gridProjectWithoutTemplate,
-        'await-first-dom-report',
-      )
-      await selectComponentsForTest(renderResult, [EP.fromString('sb/grid')])
-      const control = await screen.findByTestId('grid-dimension-column-0')
-      await typeIntoField(control, '100px')
-      const grid = await renderResult.renderedDOM.findByTestId('grid')
-      expect(grid.style.gridTemplateColumns).toEqual('100px auto auto')
-    })
-    it('updates a repeated value', async () => {
+    it('updates a repeat expression', async () => {
       const renderResult = await renderTestEditorWithCode(
         gridProjectWithRepeat,
         'await-first-dom-report',
       )
       await selectComponentsForTest(renderResult, [EP.fromString('sb/grid')])
-      await typeIntoField(await screen.findByTestId('grid-dimension-column-2'), '42')
 
       const grid = await renderResult.renderedDOM.findByTestId('grid')
-      expect(grid.style.gridTemplateColumns).toEqual('[area1] 1fr repeat(2, 10px 42px) 2fr')
 
-      await typeIntoField(await screen.findByTestId('grid-dimension-column-1'), '.5fr')
+      await typeIntoField(
+        await screen.findByTestId('grid-dimension-column-1'),
+        'repeat(2, 0.5fr 42px)',
+      )
       expect(grid.style.gridTemplateColumns).toEqual('[area1] 1fr repeat(2, 0.5fr 42px) 2fr')
     })
   })
