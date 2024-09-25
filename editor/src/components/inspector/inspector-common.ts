@@ -75,7 +75,6 @@ import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
 import { hugPropertiesFromStyleMap } from '../../core/shared/dom-utils'
 import { setHugContentForAxis } from './inspector-strategies/hug-contents-strategy'
-import { getGridCellBoundsFromCanvas } from '../canvas/canvas-strategies/strategies/grid-cell-bounds'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -101,6 +100,7 @@ export function getFlexJustifyContent(value: string | null): FlexJustifyContent 
 }
 
 export type FlexAlignment = StartCenterEnd | 'auto' | 'stretch'
+export type SelfAlignment = FlexAlignment | 'end' | 'start'
 
 export function getFlexAlignment(value: string | null): FlexAlignment | null {
   switch (value) {
@@ -116,6 +116,17 @@ export function getFlexAlignment(value: string | null): FlexAlignment | null {
       return 'stretch'
     default:
       return null
+  }
+}
+
+export function getSelfAlignment(value: string | null): SelfAlignment | null {
+  switch (value) {
+    case 'end':
+      return 'end'
+    case 'start':
+      return 'start'
+    default:
+      return getFlexAlignment(value)
   }
 }
 

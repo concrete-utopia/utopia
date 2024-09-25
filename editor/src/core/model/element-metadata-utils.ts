@@ -5,15 +5,7 @@ import { getReorderDirection } from '../../components/canvas/controls/select-mod
 import { getImageSize, scaleImageDimensions } from '../../components/images'
 import Utils from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
-import {
-  mapDropNulls,
-  stripNulls,
-  flatMapArray,
-  uniqBy,
-  mapAndFilter,
-  allElemsEqual,
-  pluck,
-} from '../shared/array-utils'
+import { mapDropNulls, stripNulls, flatMapArray, uniqBy, pluck } from '../shared/array-utils'
 import {
   intrinsicHTMLElementNamesThatSupportChildren,
   PossibleTextElements,
@@ -34,7 +26,6 @@ import {
 } from '../shared/either'
 import type {
   ElementInstanceMetadata,
-  ElementsByUID,
   JSXAttributes,
   JSXElement,
   JSXElementChild,
@@ -44,8 +35,6 @@ import type {
   DetectedLayoutSystem,
   JSXConditionalExpression,
   ConditionValue,
-  JSXElementLike,
-  JSPropertyAccess,
   SpecialSizeMeasurements,
 } from '../shared/element-template'
 import {
@@ -61,8 +50,6 @@ import {
   isImportedOrigin,
   isJSXFragment,
   isJSXConditionalExpression,
-  emptyComputedStyle,
-  emptyAttributeMetadata,
   isJSXElementLike,
   isJSExpression,
   hasElementsWithin,
@@ -84,14 +71,10 @@ import type {
   MaybeInfinityCanvasRectangle,
   MaybeInfinityLocalRectangle,
   Size,
-  Rectangle,
-  InfinityRectangle,
-  CoordinateMarker,
 } from '../shared/math-utils'
 import {
   boundingRectangleArray,
   canvasRectangleToLocalRectangle,
-  getLocalRectangleInNewParentContext,
   infinityCanvasRectangle,
   isInfinityRectangle,
   isFiniteRectangle,
@@ -99,11 +82,10 @@ import {
   zeroCanvasRect,
   zeroRectIfNullOrInfinity,
   nullIfInfinity,
-  infinityRectangle,
   infinityLocalRectangle,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
-import type { Imports, PropertyPath, ElementPath, NodeModules } from '../shared/project-file-types'
+import type { Imports, PropertyPath, ElementPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
 import type { ElementSupportsChildren, HonoursPosition } from './element-template-utils'
@@ -125,7 +107,7 @@ import {
   type FilePathMappings,
 } from './project-file-utils'
 import { assertNever, fastForEach } from '../shared/utils'
-import { mapValues, objectMap, objectValues, omit } from '../shared/object-utils'
+import { objectValues } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
 import type {
   AllElementProps,
@@ -143,10 +125,8 @@ import {
   buildTree,
   getSubTree,
   getCanvasRoots,
-  elementPathTree,
   getElementPathTreeChildren,
   forEachElementPathTreeChild,
-  printTree,
 } from '../shared/element-path-tree'
 import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
@@ -156,15 +136,7 @@ import type {
   ForwardOrReverse,
   SimpleFlexDirection,
 } from '../../components/inspector/common/css-utils'
-import {
-  findFirstNonConditionalAncestor,
-  getConditionalActiveCase,
-  getConditionalClausePath,
-  isTextEditableConditional,
-  maybeConditionalActiveBranch,
-  maybeConditionalExpression,
-  reorderConditionalChildPathTrees,
-} from './conditionals'
+import { getConditionalClausePath, isTextEditableConditional } from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
 import type { InsertionPath } from '../../components/editor/store/insertion-path'
 import {
@@ -175,7 +147,6 @@ import {
 } from '../../components/editor/store/insertion-path'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { treatElementAsGroupLikeFromMetadata } from '../../components/canvas/canvas-strategies/strategies/group-helpers'
-import type { RemixRoutingTable } from '../../components/editor/store/remix-derived-data'
 import { exists, toFirst } from '../shared/optics/optic-utilities'
 import { eitherRight, fromField, fromTypeGuard, notNull } from '../shared/optics/optic-creators'
 import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
@@ -629,6 +600,24 @@ export const MetadataUtils = {
     return MetadataUtils.flexDirectionToSimpleFlexDirection(
       MetadataUtils.getFlexDirection(instance),
     )
+  },
+  isFlexOrGridChild: function (jsxMetadata: ElementInstanceMetadataMap, path: ElementPath) {
+    return (
+      MetadataUtils.isFlexLayoutedContainer(
+        MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path)),
+      ) || MetadataUtils.isGridCell(jsxMetadata, path)
+    )
+  },
+  getRelativeAlignJustify: function (
+    jsxMetadata: ElementInstanceMetadataMap,
+    path: ElementPath,
+  ): { align: 'alignSelf' | 'justifySelf'; justify: 'alignSelf' | 'justifySelf' } {
+    const direction = MetadataUtils.getSimpleFlexDirection(
+      MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path)),
+    )
+    const align = direction.direction === 'horizontal' ? 'alignSelf' : 'justifySelf'
+    const justify = direction.direction === 'horizontal' ? 'justifySelf' : 'alignSelf'
+    return { align, justify }
   },
   flexDirectionToSimpleFlexDirection: function (flexDirection: FlexDirection): {
     direction: Direction

@@ -1,12 +1,6 @@
 import React from 'react'
 import { when } from '../../../../../utils/react-conditionals'
-import {
-  FlexColumn,
-  FlexRow,
-  InspectorSubsectionHeader,
-  Tooltip,
-  UtopiaTheme,
-} from '../../../../../uuiui'
+import { FlexColumn, FlexRow, Tooltip, UtopiaTheme } from '../../../../../uuiui'
 import { Link } from '../../../../../uuiui/link'
 import { useConvertWrapperToFrame } from '../../../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { Substores, useEditorState } from '../../../../editor/store/store-hook'
@@ -20,6 +14,9 @@ import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { RadiusRow } from '../../style-section/container-subsection/radius-row'
 import { ClipContentControl } from './clip-content-control'
 import { FrameUpdatingLayoutSection } from './frame-updating-layout-section'
+import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
+import { getInspectorPreferencesForTargets } from '../../../../../core/property-controls/property-controls-utils'
+import { AlignmentButtons } from '../../../alignment-buttons'
 
 export const SimplifiedLayoutSubsection = React.memo(() => {
   const selectedElementContract = useEditorState(
@@ -32,6 +29,38 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
     selectedElementContract === 'frame' || selectedElementContract === 'group'
 
   const showWrapperSectionWarning = selectedElementContract === 'wrapper-div'
+
+  const isCodeElement = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.length > 0 &&
+      store.editor.selectedViews.every(
+        (path) =>
+          MetadataUtils.isConditional(path, store.editor.jsxMetadata) ||
+          MetadataUtils.isExpressionOtherJavascript(path, store.editor.jsxMetadata) ||
+          MetadataUtils.isJSXMapExpression(path, store.editor.jsxMetadata),
+      ),
+    'SimplifiedLayoutSubsection isCodeElement',
+  )
+
+  const inspectorPreferences = useEditorState(
+    Substores.propertyControlsInfo,
+    (store) =>
+      getInspectorPreferencesForTargets(
+        store.editor.selectedViews,
+        store.editor.propertyControlsInfo,
+        store.editor.projectContents,
+      ),
+    'SimplifiedLayoutSubsection inspectorPreferences',
+  )
+
+  const shouldShowAlignmentButtons = !isCodeElement && inspectorPreferences.includes('layout')
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'SimplifiedLayoutSubsection selectedViews',
+  )
 
   return (
     <FlexColumn>
@@ -52,6 +81,10 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
         {when(
           showLayoutSection,
           <>
+            {when(
+              shouldShowAlignmentButtons,
+              <AlignmentButtons numberOfTargets={selectedViews.length} />,
+            )}
             <FrameUpdatingLayoutSection />
             <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
               <FixedHugDropdown dimension='width' />
