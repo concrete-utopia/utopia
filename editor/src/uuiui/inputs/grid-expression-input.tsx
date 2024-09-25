@@ -14,18 +14,24 @@ import {
 import { isRight } from '../../core/shared/either'
 import { StringInput } from './string-input'
 
+interface GridExpressionInputProps {
+  testId: string
+  value: GridDimension
+  onUpdateNumberOrKeyword: (v: CSSNumber | CSSKeyword<ValidGridDimensionKeyword>) => void
+  onUpdateDimension: (v: GridDimension) => void
+  onFocus: () => void
+  onBlur: () => void
+}
+
 export const GridExpressionInput = React.memo(
   ({
     testId,
     value,
     onUpdateNumberOrKeyword,
     onUpdateDimension,
-  }: {
-    testId: string
-    value: GridDimension
-    onUpdateNumberOrKeyword: (v: CSSNumber | CSSKeyword<ValidGridDimensionKeyword>) => void
-    onUpdateDimension: (v: GridDimension) => void
-  }) => {
+    onFocus,
+    onBlur,
+  }: GridExpressionInputProps) => {
     const [printValue, setPrintValue] = React.useState<string>(printGridDimension(value))
     React.useEffect(() => setPrintValue(printGridDimension(value)), [value])
 
@@ -48,7 +54,10 @@ export const GridExpressionInput = React.memo(
 
           const maybeMinmax = parseGridCSSMinmaxOrRepeat(printValue)
           if (maybeMinmax != null) {
-            return onUpdateDimension({ ...maybeMinmax, areaName: value.areaName } as GridDimension)
+            return onUpdateDimension({
+              ...maybeMinmax,
+              areaName: value.areaName,
+            } as GridDimension)
           }
 
           if (printValue === '') {
@@ -62,7 +71,15 @@ export const GridExpressionInput = React.memo(
     )
 
     return (
-      <StringInput testId={testId} value={printValue} onChange={onChange} onKeyDown={onKeyDown} />
+      <StringInput
+        style={{ width: '100%' }}
+        testId={testId}
+        value={printValue}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+        onFocus={onFocus}
+        onBlur={onBlur}
+      />
     )
   },
 )

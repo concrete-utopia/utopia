@@ -4,7 +4,7 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import { createSelector } from 'reselect'
-import { when } from '../../utils/react-conditionals'
+import { unless, when } from '../../utils/react-conditionals'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { AddRemoveLayoutSystemControl } from './add-remove-layout-system-control'
 import { FlexDirectionToggle } from './flex-direction-control'
@@ -549,6 +549,8 @@ function AxisDimensionControl({
     return value.areaName ?? `${indexFrom} → ${indexTo}`
   }, [value, indexFrom, indexTo])
 
+  const gridExpressionInputFocused = useGridExpressionInputFocused()
+
   return (
     <div
       key={`col-${value}-${index}`}
@@ -581,11 +583,16 @@ function AxisDimensionControl({
           value={value}
           onUpdateNumberOrKeyword={onUpdateNumberOrKeyword(index)}
           onUpdateDimension={onUpdateDimension(index)}
+          onFocus={gridExpressionInputFocused.onFocus}
+          onBlur={gridExpressionInputFocused.onBlur}
         />
       </div>
-      <SquareButton className={axisDropdownMenuButton}>
-        <DropdownMenu align='end' items={items} opener={opener} onOpenChange={onOpenChange} />
-      </SquareButton>
+      {unless(
+        gridExpressionInputFocused.focused,
+        <SquareButton className={axisDropdownMenuButton}>
+          <DropdownMenu align='end' items={items} opener={opener} onOpenChange={onOpenChange} />
+        </SquareButton>,
+      )}
     </div>
   )
 }
@@ -1064,4 +1071,11 @@ function useGeneratedIndexesFromGridDimensions(
     })
     return result
   }, [dimensions])
+}
+
+const useGridExpressionInputFocused = () => {
+  const [focused, setFocused] = React.useState(false)
+  const onFocus = React.useCallback(() => setFocused(true), [])
+  const onBlur = React.useCallback(() => setFocused(false), [])
+  return { focused, onFocus, onBlur }
 }
