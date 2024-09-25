@@ -32,6 +32,7 @@ import type {
   OnSubmitValue,
   OnSubmitValueOrEmpty,
   OnSubmitValueOrUnknownOrEmpty,
+  OnSubmitValueOrUnknownOrEmptyMaybeTransient,
 } from '../../components/inspector/controls/control'
 import type { Either } from '../../core/shared/either'
 import { isLeft, mapEither } from '../../core/shared/either'
@@ -124,7 +125,7 @@ function calculateDragDelta(
 
 let incrementTimeout: number | undefined = undefined
 let incrementAnimationFrame: number | undefined = undefined
-const repeatThreshold: number = 500
+const repeatThreshold: number = 600
 
 export interface NumberInputOptions {
   innerLabel?: React.ReactChild
@@ -151,9 +152,9 @@ export interface AbstractNumberInputProps<T extends CSSNumber | number>
 }
 
 export interface NumberInputProps extends AbstractNumberInputProps<CSSNumber> {
-  onSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
-  onTransientSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
-  onForcedSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
+  onSubmitValue?: OnSubmitValueOrUnknownOrEmptyMaybeTransient<CSSNumber>
+  onTransientSubmitValue?: OnSubmitValueOrUnknownOrEmptyMaybeTransient<CSSNumber>
+  onForcedSubmitValue?: OnSubmitValueOrUnknownOrEmptyMaybeTransient<CSSNumber>
   setGlobalCursor?: (cursor: CSSCursor | null) => void
   onMouseEnter?: MouseEventHandler
   onMouseLeave?: MouseEventHandler
@@ -282,15 +283,15 @@ export const NumberInput = React.memo<NumberInputProps>(
         const newValue = setCSSNumberValue(value, newNumericValue)
         if (transient) {
           if (onTransientSubmitValue != null) {
-            onTransientSubmitValue(newValue)
+            onTransientSubmitValue(newValue, transient)
           } else if (onSubmitValue != null) {
-            onSubmitValue(newValue)
+            onSubmitValue(newValue, transient)
           }
         } else {
           if (onForcedSubmitValue != null) {
-            onForcedSubmitValue(newValue)
+            onForcedSubmitValue(newValue, transient)
           } else if (onSubmitValue != null) {
-            onSubmitValue(newValue)
+            onSubmitValue(newValue, transient)
           }
         }
         repeatedValueRef.current = newValue
@@ -339,15 +340,15 @@ export const NumberInput = React.memo<NumberInputProps>(
 
           if (transient) {
             if (onTransientSubmitValue != null) {
-              onTransientSubmitValue(newValue)
+              onTransientSubmitValue(newValue, transient)
             } else if (onSubmitValue != null) {
-              onSubmitValue(newValue)
+              onSubmitValue(newValue, transient)
             }
           } else {
             if (onForcedSubmitValue != null) {
-              onForcedSubmitValue(newValue)
+              onForcedSubmitValue(newValue, transient)
             } else if (onSubmitValue != null) {
-              onSubmitValue(newValue)
+              onSubmitValue(newValue, transient)
             }
           }
           updateValue(newValue)
@@ -463,32 +464,39 @@ export const NumberInput = React.memo<NumberInputProps>(
       [inputProps],
     )
 
+    const clearIncrementTimeouts = React.useCallback(() => {
+      if (incrementTimeout != null) {
+        window.clearTimeout(incrementTimeout)
+        incrementTimeout = undefined
+      }
+      if (incrementAnimationFrame != null) {
+        window.cancelAnimationFrame(incrementAnimationFrame ?? 0)
+        incrementAnimationFrame = undefined
+      }
+    }, [])
+
     const onKeyDown = React.useCallback(
       (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'ArrowUp') {
-          updateValue(incrementBy(stepSize, e.shiftKey, false))
-        } else if (e.key === 'ArrowDown') {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
           e.preventDefault()
-          updateValue(incrementBy(-stepSize, e.shiftKey, false))
+          const shiftKey = e.shiftKey
+          const changeBy = e.key === 'ArrowUp' ? stepSize : -stepSize
+          const newValue = incrementBy(changeBy, shiftKey, true)
+          clearIncrementTimeouts()
+          incrementTimeout = window.setTimeout(() => {
+            if (onSubmitValue != null) {
+              onSubmitValue(newValue, false)
+            } else if (onForcedSubmitValue != null) {
+              onForcedSubmitValue(newValue, false)
+            }
+          }, repeatThreshold)
         } else if (e.key === 'Enter' || e.key === 'Escape') {
           e.nativeEvent.stopImmediatePropagation()
           e.preventDefault()
           ref.current?.blur()
         }
       },
-      [updateValue, incrementBy, stepSize],
-    )
-
-    const onKeyUp = React.useCallback(
-      (e: React.KeyboardEvent<HTMLInputElement>) => {
-        // todo make sure this isn't doubling up the value submit
-        if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && onForcedSubmitValue != null) {
-          if (value != null) {
-            onForcedSubmitValue(value)
-          }
-        }
-      },
-      [onForcedSubmitValue, value],
+      [stepSize, incrementBy, clearIncrementTimeouts, onSubmitValue, onForcedSubmitValue],
     )
 
     const onBlur = React.useCallback(
@@ -519,7 +527,7 @@ export const NumberInput = React.memo<NumberInputProps>(
         if (valueChangedSinceFocus) {
           setValueChangedSinceFocus(false)
           if (onSubmitValue != null) {
-            onSubmitValue(newValue)
+            onSubmitValue(newValue, false)
           }
         }
       },
@@ -565,6 +573,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           repeatedValueRef.current != null
             ? repeatedValueRef.current
             : unknownInputValue(displayValue),
+          false,
         )
       }
 
@@ -611,6 +620,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           repeatedValueRef.current != null
             ? repeatedValueRef.current
             : unknownInputValue(displayValue),
+          false,
         )
       }
 
@@ -630,10 +640,9 @@ export const NumberInput = React.memo<NumberInputProps>(
           window.addEventListener('mouseup', onDecrementMouseUp)
           const shiftKey = e.shiftKey
           const newValue = incrementBy(-stepSize, shiftKey, false)
-          incrementTimeout = window.setTimeout(
-            () => repeatIncrement(newValue, -stepSize, shiftKey, true),
-            repeatThreshold,
-          )
+          incrementTimeout = window.setTimeout(() => {
+            repeatIncrement(newValue, -stepSize, shiftKey, true)
+          }, repeatThreshold)
         }
       },
       [incrementBy, stepSize, repeatIncrement, onDecrementMouseUp, disabled],
@@ -876,7 +885,6 @@ export const NumberInput = React.memo<NumberInputProps>(
             placeholder={inputProps.placeholder ?? placeholder}
             onFocus={onFocus}
             onKeyDown={onKeyDown}
-            onKeyUp={onKeyUp}
             onBlur={onBlur}
             onChange={onChange}
             autoComplete='off'

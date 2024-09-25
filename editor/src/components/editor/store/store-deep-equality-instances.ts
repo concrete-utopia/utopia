@@ -265,7 +265,6 @@ import {
   combine9EqualityCalls,
   unionDeepEquality,
   combine11EqualityCalls,
-  combine16EqualityCalls,
   combine15EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
@@ -567,15 +566,17 @@ import type {
   GridCSSNumber,
   GridDimension,
   GridAutoFlow,
+  GridCSSRepeat,
+  GridCSSMinmax,
 } from '../../inspector/common/css-utils'
 import {
   cssNumber,
   fontSettings,
   gridCSSKeyword,
+  gridCSSMinmax,
   gridCSSNumber,
+  gridCSSRepeat,
   isCSSKeyword,
-  isGridCSSKeyword,
-  isGridCSSNumber,
 } from '../../inspector/common/css-utils'
 import type { ElementPaste, ProjectListing } from '../action-types'
 import { projectListing } from '../action-types'
@@ -1993,13 +1994,77 @@ export const GridCSSKeywordKeepDeepEquality: KeepDeepEqualityCall<GridCSSKeyword
 export const GridDimensionKeepDeepEquality: KeepDeepEqualityCall<GridDimension> =
   combine1EqualityCall(
     (dimension) => dimension,
-    unionDeepEquality(
-      GridCSSNumberKeepDeepEquality,
-      GridCSSKeywordKeepDeepEquality,
-      isGridCSSNumber,
-      isGridCSSKeyword,
-    ),
+    (oldValue: GridDimension, newValue: GridDimension): KeepDeepEqualityResult<GridDimension> => {
+      switch (oldValue.type) {
+        case 'KEYWORD':
+          if (newValue.type === oldValue.type) {
+            return GridCSSKeywordKeepDeepEquality(oldValue, newValue)
+          }
+          break
+        case 'NUMBER':
+          if (newValue.type === oldValue.type) {
+            return GridCSSNumberKeepDeepEquality(oldValue, newValue)
+          }
+          break
+        case 'REPEAT':
+          if (newValue.type === oldValue.type) {
+            return GridCSSRepeatKeepDeepEquality(oldValue, newValue)
+          }
+          break
+        case 'MINMAX':
+          if (newValue.type === oldValue.type) {
+            return GridCSSMinmaxKeepDeepEquality(oldValue, newValue)
+          }
+          break
+        default:
+          assertNever(oldValue)
+      }
+      return keepDeepEqualityResult(newValue, false)
+    },
     (dimension) => dimension,
+  )
+
+export const GridCSSRepeatKeepDeepEquality: KeepDeepEqualityCall<GridCSSRepeat> =
+  combine2EqualityCalls(
+    (p) => p.times,
+    createCallWithTripleEquals(),
+    (p) => p.value,
+    arrayDeepEquality(GridDimensionKeepDeepEquality),
+    gridCSSRepeat,
+  )
+
+const GridCSSNumberOrKeywordKeepDeepEquality: KeepDeepEqualityCall<GridCSSNumber | GridCSSKeyword> =
+  combine1EqualityCall(
+    (dim) => dim,
+    (oldValue, newValue) => {
+      switch (oldValue.type) {
+        case 'KEYWORD':
+          if (newValue.type === oldValue.type) {
+            return GridCSSKeywordKeepDeepEquality(oldValue, newValue)
+          }
+          break
+        case 'NUMBER':
+          if (newValue.type === oldValue.type) {
+            return GridCSSNumberKeepDeepEquality(oldValue, newValue)
+          }
+          break
+        default:
+          assertNever(oldValue)
+      }
+      return keepDeepEqualityResult(newValue, false)
+    },
+    (dim) => dim,
+  )
+
+export const GridCSSMinmaxKeepDeepEquality: KeepDeepEqualityCall<GridCSSMinmax> =
+  combine3EqualityCalls(
+    (p) => p.min,
+    GridCSSNumberOrKeywordKeepDeepEquality,
+    (p) => p.max,
+    GridCSSNumberOrKeywordKeepDeepEquality,
+    (p) => p.areaName,
+    NullableStringKeepDeepEquality,
+    gridCSSMinmax,
   )
 
 export const GridAutoOrTemplateDimensionsKeepDeepEquality: KeepDeepEqualityCall<GridAutoOrTemplateDimensions> =
