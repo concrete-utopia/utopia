@@ -595,17 +595,76 @@ export type GridCSSKeyword = BaseGridDimension & {
   value: CSSKeyword<ValidGridDimensionKeyword>
 }
 
-export type GridCSSRepeat = {
+type BaseGridCSSRepeat = {
   type: 'REPEAT'
-  times: number
   value: Array<GridDimension>
   areaName: null
+}
+
+function baseGridCSSRepeat(value: Array<GridDimension>): BaseGridCSSRepeat {
+  return {
+    type: 'REPEAT',
+    value: value,
+    areaName: null,
+  }
+}
+
+type GridCSSRepeatStatic = BaseGridCSSRepeat & {
+  times: number
+}
+
+function gridCSSRepeatStatic(times: number, value: Array<GridDimension>): GridCSSRepeatStatic {
+  return {
+    ...baseGridCSSRepeat(value),
+    times: times,
+  }
+}
+
+type GridCSSRepeatDynamic = BaseGridCSSRepeat & {
+  times: CSSKeyword<'auto-fill' | 'auto-fit'>
+}
+
+function gridCSSRepeatDynamic(
+  times: CSSKeyword<'auto-fill' | 'auto-fit'>,
+  value: Array<GridDimension>,
+): GridCSSRepeatDynamic {
+  return {
+    ...baseGridCSSRepeat(value),
+    times: times,
+  }
+}
+
+export type GridCSSRepeat = GridCSSRepeatStatic | GridCSSRepeatDynamic
+
+type GridCSSRepeatTimes = GridCSSRepeat['times']
+
+export function isStaticGridRepeat(dim: GridDimension): dim is GridCSSRepeatStatic {
+  return isGridCSSRepeat(dim) && !isCSSKeyword(dim.times)
+}
+
+export function isDynamicGridRepeat(dim: GridDimension): dim is GridCSSRepeatDynamic {
+  return isGridCSSRepeat(dim) && isCSSKeyword(dim.times)
 }
 
 export type GridCSSMinmax = BaseGridDimension & {
   type: 'MINMAX'
   min: GridCSSNumber | GridCSSKeyword
   max: GridCSSNumber | GridCSSKeyword
+}
+
+export function parseGridCSSMinmaxOrRepeat(input: string): GridCSSMinmax | GridCSSRepeat | null {
+  const parsed = csstree.parse(input, { context: 'value' })
+  if (parsed.type === 'Value') {
+    const parsedDimensions = parseGridChildren(parsed.children)
+    if (
+      isRight(parsedDimensions) &&
+      parsedDimensions.value.length === 1 &&
+      (isGridCSSMinmax(parsedDimensions.value[0]) || isGridCSSRepeat(parsedDimensions.value[0]))
+    ) {
+      return parsedDimensions.value[0]
+    }
+  }
+  return null
 }
 
 export function isGridCSSKeyword(dim: GridDimension): dim is GridCSSKeyword {
@@ -623,12 +682,11 @@ export function gridCSSKeyword(
   }
 }
 
-export function gridCSSRepeat(times: number, value: GridDimension[]): GridCSSRepeat {
-  return {
-    type: 'REPEAT',
-    times: times,
-    value: value,
-    areaName: null,
+export function gridCSSRepeat(times: GridCSSRepeatTimes, value: GridDimension[]): GridCSSRepeat {
+  if (typeof times === 'number') {
+    return gridCSSRepeatStatic(times, value)
+  } else {
+    return gridCSSRepeatDynamic(times, value)
   }
 }
 
@@ -858,7 +916,9 @@ export function printGridDimension(dimension: GridDimension, hideAreaName?: bool
       return `${areaName}${printed}`
     }
     case 'REPEAT': {
-      return `repeat(${dimension.times}, ${printArrayGridDimensions(dimension.value)})`
+      return `repeat(${
+        isCSSKeyword(dimension.times) ? dimension.times.value : dimension.times
+      }, ${printArrayGridDimensions(dimension.value)})`
     }
     case 'MINMAX': {
       return (
@@ -962,7 +1022,6 @@ const validGridDimensionKeywords = [
   'subgrid',
   'auto-fit',
   'auto-fill',
-  'minmax', // TODO this should be removed once we have proper editing of grid template expressions!
 ] as const
 
 export type ValidGridDimensionKeyword = (typeof validGridDimensionKeywords)[number]
@@ -1164,10 +1223,14 @@ export function parseGridChildren(
         const functionName = child.name.toLowerCase()
         switch (functionName) {
           case 'repeat': {
-            const repeatChildren = child.children.toArray()
-            const times = parseInt(repeatChildren.find((c) => c.type === 'Number')?.value ?? '0')
+            const [firstChild, ...otherChildren] = child.children.toArray()
+            const times = parseRepeatTimes(firstChild)
+            if (times == null) {
+              return left('Invalid grid CSS repeat times.')
+            }
+
             const values = new csstree.List<csstree.CssNode>().fromArray(
-              repeatChildren.filter(
+              otherChildren.filter(
                 (c) =>
                   c.type === 'Dimension' ||
                   c.type === 'Identifier' ||
@@ -5764,4 +5827,17 @@ export function toggleShadowEnabled(oldValue: CSSBoxShadow): CSSBoxShadow {
   const newValue = { ...oldValue }
   newValue.enabled = !newValue.enabled
   return newValue
+}
+
+function parseRepeatTimes(firstChild: csstree.CssNode) {
+  switch (firstChild.type) {
+    case 'Number':
+      return parseInt(firstChild.value) ?? '0'
+    case 'Identifier':
+      return firstChild.name === 'auto-fill' || firstChild.name === 'auto-fit'
+        ? cssKeyword(firstChild.name)
+        : null
+    default:
+      return null
+  }
 }

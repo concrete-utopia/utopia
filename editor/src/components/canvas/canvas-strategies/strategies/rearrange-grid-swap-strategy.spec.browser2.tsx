@@ -55,6 +55,8 @@ export var storyboard = (
         data-testid='row-1-column-2'
         style={{
           backgroundColor: 'green',
+		  gridRow: 'auto',
+		  gridColumn: 'auto',
         }}
       />
       <div

@@ -25,6 +25,7 @@ import type { GridDimension } from '../../../../components/inspector/common/css-
 import {
   cssNumber,
   gridCSSNumber,
+  isDynamicGridRepeat,
   isGridCSSNumber,
   printArrayGridDimensions,
 } from '../../../../components/inspector/common/css-utils'
@@ -35,6 +36,8 @@ import { foldEither, isLeft, isRight } from '../../../../core/shared/either'
 import { roundToNearestWhole } from '../../../../core/shared/math-utils'
 import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-template'
 import { expandGridDimensions, replaceGridTemplateDimensionAtIndex } from './grid-helpers'
+import { setCursorCommand } from '../../commands/set-cursor-command'
+import { CSSCursor } from '../../canvas-types'
 
 export const resizeGridStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -115,6 +118,10 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
+      if (!canResizeGridTemplate(originalValues)) {
+        return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)])
+      }
+
       const expandedOriginalValues = expandGridDimensions(originalValues.dimensions)
       const mergedValues: GridAutoOrTemplateBase = {
         type: calculatedValues.type,
@@ -150,24 +157,21 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       const precision = modifiers.cmd ? 'coarse' : 'precise'
       const areaName = mergedValues.dimensions[control.columnOrRow]?.areaName ?? null
 
-      const newValue = gridCSSNumber(
-        cssNumber(
-          newResizedValue(
-            mergedValue.value,
-            getNewDragValue(dragAmount, isFractional, calculatedValue, mergedValue),
-            precision,
-            isFractional,
-          ),
-          mergedUnit.value,
+      const newValue = Math.max(
+        0,
+        newResizedValue(
+          mergedValue.value,
+          getNewDragValue(dragAmount, isFractional, calculatedValue, mergedValue),
+          precision,
+          isFractional,
         ),
-        areaName,
       )
 
       const newDimensions = replaceGridTemplateDimensionAtIndex(
         originalValues.dimensions,
         expandedOriginalValues,
         control.columnOrRow,
-        newValue,
+        gridCSSNumber(cssNumber(newValue, mergedUnit.value), areaName),
       )
 
       const propertyValueAsString = printArrayGridDimensions(newDimensions)
@@ -195,7 +199,7 @@ function getNewDragValue(
   isFractional: boolean,
   possibleCalculatedValue: Either<string, number>,
   mergedValue: Either<string, number>,
-) {
+): number {
   if (!isFractional) {
     return dragAmount
   }
@@ -212,8 +216,7 @@ function getNewDragValue(
   const calculatedValue = possibleCalculatedValue.value
   const perPointOne =
     mergedFractionalValue == 0 ? 10 : (calculatedValue / mergedFractionalValue) * 0.1
-  const newValue = roundToNearestWhole((dragAmount / perPointOne) * 10) / 10
-  return newValue
+  return roundToNearestWhole((dragAmount / perPointOne) * 10) / 10
 }
 
 function newResizedValue(
@@ -232,4 +235,8 @@ function newResizedValue(
     // 10x steps
     return Math.round(newValue / 10) * 10
   }
+}
+
+export function canResizeGridTemplate(template: GridAutoOrTemplateBase): boolean {
+  return template.type === 'DIMENSIONS' && !template.dimensions.some(isDynamicGridRepeat)
 }

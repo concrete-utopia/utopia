@@ -13,6 +13,9 @@ import type {
 } from '../../../components/inspector/common/css-utils'
 import {
   isCSSKeyword,
+  isDynamicGridRepeat,
+  isGridCSSRepeat,
+  isStaticGridRepeat,
   printGridAutoOrTemplateBase,
   printGridCSSNumber,
 } from '../../../components/inspector/common/css-utils'
@@ -92,6 +95,7 @@ import {
   getGlobalFrameOfGridCell,
   getGridRelatedIndexes,
 } from '../canvas-strategies/strategies/grid-helpers'
+import { canResizeGridTemplate } from '../canvas-strategies/strategies/resize-grid-strategy'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -105,7 +109,7 @@ function getCellsCount(template: GridAutoOrTemplateBase | null): number {
   switch (template.type) {
     case 'DIMENSIONS':
       return template.dimensions.reduce((acc, cur) => {
-        return acc + (cur.type === 'REPEAT' ? cur.times : 1)
+        return acc + (isStaticGridRepeat(cur) ? cur.times : 1)
       }, 0)
     case 'FALLBACK':
       return 0
@@ -156,6 +160,7 @@ export interface GridResizingControlProps {
   padding: number | null
   resizing: 'resize-target' | 'resize-generated' | 'not-resizing'
   setResizingIndex: (v: number | null) => void
+  resizeLocked: boolean
 }
 
 export const GridResizingControl = React.memo((props: GridResizingControlProps) => {
@@ -283,11 +288,15 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
             alignItems: 'center',
             justifyContent: 'center',
             border: `1px solid ${
-              props.resizing === 'resize-target'
+              props.resizeLocked
+                ? colorTheme.brandNeonPink10.value
+                : props.resizing === 'resize-target'
                 ? colorTheme.brandNeonPink.value
                 : colorTheme.brandNeonPink60.value
             }`,
-            ...(props.resizing === 'resize-target'
+            ...(props.resizeLocked
+              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink10.value, scale)
+              : props.resizing === 'resize-target'
               ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink60.value, scale)
               : UtopiaStyles.backgrounds.stripedBackground(
                   colorTheme.brandNeonPink10.value,
@@ -303,7 +312,9 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
             )}
             scale={scale}
             color={
-              props.resizing === 'resize-target'
+              props.resizeLocked
+                ? colorTheme.brandNeonPink10.value
+                : props.resizing === 'resize-target'
                 ? colorTheme.brandNeonPink.value
                 : colorTheme.brandNeonPink60.value
             }
@@ -336,11 +347,17 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
     if (props.fromPropsAxisValues?.type !== 'DIMENSIONS') {
       return null
     }
+    if (!canResizeGridTemplate(props.fromPropsAxisValues)) {
+      return null
+    }
     return {
       type: 'DIMENSIONS',
       dimensions: props.fromPropsAxisValues.dimensions.reduce(
         (acc, cur): GridDiscreteDimension[] => {
-          if (cur.type === 'REPEAT') {
+          if (isGridCSSRepeat(cur)) {
+            if (isDynamicGridRepeat(cur)) {
+              return acc
+            }
             let expanded: GridDiscreteDimension[] = []
             for (let i = 0; i < cur.times; i++) {
               expanded.push(...cur.value.filter((v) => v.type !== 'REPEAT'))
@@ -354,6 +371,10 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
       ),
     }
   }, [props.fromPropsAxisValues])
+
+  const resizeLocked = React.useMemo(() => {
+    return fromProps == null || !canResizeGridTemplate(fromProps)
+  }, [fromProps])
 
   const [resizingIndex, setResizingIndex] = React.useState<number | null>(null)
 
@@ -417,6 +438,7 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
                     ? 'resize-generated'
                     : 'not-resizing'
                 }
+                resizeLocked={resizeLocked}
                 setResizingIndex={setResizingIndex}
                 padding={
                   props.padding == null
@@ -706,6 +728,15 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     'GridControls anyTargetAbsolute',
   )
 
+  const targetsAreCellsWithPositioning = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.every((elementPath) =>
+        MetadataUtils.isGridCellWithPositioning(store.editor.jsxMetadata, elementPath),
+      ),
+    'GridControls anyTargetAbsolute',
+  )
+
   const gridPath = optionalMap(EP.parentPath, shadow?.elementPath)
 
   const gridFrame = React.useMemo(() => {
@@ -889,9 +920,10 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                   countedColumn === currentHoveredCell?.column &&
                   countedRow === currentHoveredCell?.row
 
-                const borderColor = isActiveCell
-                  ? colorTheme.brandNeonPink.value
-                  : features.Grid.inactiveGridColor
+                const borderColor =
+                  isActiveCell && targetsAreCellsWithPositioning
+                    ? colorTheme.brandNeonPink.value
+                    : features.Grid.inactiveGridColor
 
                 return (
                   <div
