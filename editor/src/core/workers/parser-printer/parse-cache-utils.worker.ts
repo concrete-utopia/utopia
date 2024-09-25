@@ -5,6 +5,7 @@ import localforage from 'localforage'
 export const CACHE_DB_NAME = 'editor-cache'
 export const PARSE_CACHE_STORE_NAME = 'file-parse-cache'
 const ARBITRARY_CODE_FILE_NAME = 'code.tsx'
+const ARBITRARY_CODE_CACHE_KEY_LIMIT = 50
 
 const parseCache = localforage.createInstance({
   name: CACHE_DB_NAME,
@@ -57,6 +58,12 @@ export async function storeParseResultInCache(
   if (filename === ARBITRARY_CODE_FILE_NAME) {
     // for the special filename 'code.tsx', we store multiple contents, so we need to read it first
     const cachedResult = (await parseCache.getItem<CachedParseResult>(cacheKey)) ?? {}
+    // limit the arbitrary code cache keys size
+    // TODO: we can use an LRU cache here, but for now this is good enough
+    if (Object.keys(cachedResult).length >= ARBITRARY_CODE_CACHE_KEY_LIMIT) {
+      const oldestKey = Object.keys(cachedResult)[0]
+      delete cachedResult[oldestKey]
+    }
     void parseCache.setItem<CachedParseResult>(cacheKey, {
       ...cachedResult,
       [content]: result,
