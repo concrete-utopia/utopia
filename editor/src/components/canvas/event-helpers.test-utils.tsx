@@ -56,6 +56,8 @@ export async function mouseDownAtPoint(
       }),
     )
   })
+
+  await new Promise((resolve) => requestAnimationFrame(resolve))
 }
 
 export async function mouseMoveToPoint(
@@ -428,6 +430,7 @@ export async function mouseClickAtPoint(
       }),
     )
   })
+  await new Promise((resolve) => requestAnimationFrame(resolve))
 }
 
 const isRealBrowser =
@@ -726,6 +729,8 @@ export async function mouseDoubleClickAtPoint(
       }),
     )
   })
+
+  await new Promise((resolve) => requestAnimationFrame(resolve))
 }
 
 export function keyDown(
