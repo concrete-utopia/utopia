@@ -1100,7 +1100,7 @@ function parseOtherJavaScript<T extends { uid: string }>(
     }
 
     let parsedElementsWithin: ElementsWithinInPosition = []
-    let highlightBounds_MUTABLE = { ...existingHighlightBounds }
+    let highlightBounds = existingHighlightBounds
 
     function addToParsedElementsWithin(
       currentScope: Array<string>,
@@ -1114,7 +1114,7 @@ function parseOtherJavaScript<T extends { uid: string }>(
         imports,
         topLevelNames,
         propsObjectName,
-        highlightBounds_MUTABLE,
+        highlightBounds,
         alreadyExistingUIDs,
         applySteganography,
       )
@@ -1133,10 +1133,7 @@ function parseOtherJavaScript<T extends { uid: string }>(
                   ? firstChild.startColumn - startColumnShift
                   : firstChild.startColumn,
             })
-            highlightBounds_MUTABLE = mergeHighlightBounds(
-              highlightBounds_MUTABLE,
-              success.highlightBounds,
-            )
+            highlightBounds = mergeHighlightBounds(highlightBounds, success.highlightBounds)
 
             fastForEach(success.definedElsewhere, (val) =>
               pushToDefinedElsewhereIfNotThere(currentScope, val),
@@ -1516,11 +1513,11 @@ function parseOtherJavaScript<T extends { uid: string }>(
 
     return mapEither((created) => {
       // Add in the bounds for the entire value.
-      addToHighlightBoundsMutate(
-        highlightBounds_MUTABLE,
+      highlightBounds = addToHighlightBounds(
+        highlightBounds,
         buildHighlightBoundsForExpressionsAndText(sourceFile, expressionsAndTexts, created.uid),
       )
-      return withParserMetadata(created, highlightBounds_MUTABLE, propsUsed, definedElsewhere)
+      return withParserMetadata(created, highlightBounds, propsUsed, definedElsewhere)
     }, failOnNullResult(create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin, paramsToUse, statements)))
   }
 }
@@ -2998,12 +2995,11 @@ function buildHighlightBoundsForUids(
 function mergeHighlightBounds(
   ...multipleBounds: Array<HighlightBoundsForUids>
 ): Readonly<HighlightBoundsForUids> {
-  return multipleBounds.reduce(function (acc, x) {
-    for (let key in x) {
-      acc[key] = x[key]
-    }
-    return acc
-  }, {})
+  let result: HighlightBoundsForUids = {}
+  for (const bounds of multipleBounds) {
+    Object.assign(result, bounds)
+  }
+  return result
 }
 
 function merge2WithParserMetadata<T1, T2, U>(
@@ -3036,14 +3032,17 @@ function addBoundsIntoWithParser<T>(
   }
 }
 
-function addToHighlightBoundsMutate(
-  existing: HighlightBoundsForUids,
+function addToHighlightBounds(
+  existing: Readonly<HighlightBoundsForUids>,
   toAdd: HighlightBounds | null,
-): HighlightBoundsForUids {
-  if (toAdd != null) {
-    existing[toAdd.uid] = toAdd
+): Readonly<HighlightBoundsForUids> {
+  if (toAdd == null) {
+    return existing
+  } else {
+    let result: HighlightBoundsForUids = { ...existing }
+    result[toAdd.uid] = toAdd
+    return result
   }
-  return existing
 }
 
 interface UpdateUIDResult {
