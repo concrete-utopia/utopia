@@ -5,6 +5,7 @@ import type {
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import {
   applyCanvasStrategy,
+  applyElementsToRerenderFromStrategyResult,
   findCanvasStrategy,
   interactionInProgress,
   pickCanvasStateFromEditorState,
@@ -47,6 +48,7 @@ import type {
   CustomStrategyState,
   CustomStrategyStatePatch,
   InteractionCanvasState,
+  StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { strategyApplicationResult } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
@@ -91,7 +93,7 @@ export function interactionFinished(
       result.strategyState.currentStrategy,
     )
 
-    const strategyResult =
+    const strategyResult: StrategyApplicationResult =
       strategy != null
         ? applyCanvasStrategy(
             strategy.strategy,
@@ -100,9 +102,7 @@ export function interactionFinished(
             result.strategyState.customStrategyState,
             'end-interaction',
           )
-        : {
-            commands: [],
-          }
+        : strategyApplicationResult([], 'rerender-all-elements')
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedState.patchedEditor,
@@ -111,13 +111,16 @@ export function interactionFinished(
       'end-interaction',
     )
 
-    const finalEditor: EditorState = {
-      ...commandResult.editorState,
-      // TODO instead of clearing the metadata, we should save the latest valid metadata here to save a dom-walker run
-      jsxMetadata: {},
-      domMetadata: {},
-      spyMetadata: {},
-    }
+    const finalEditor: EditorState = applyElementsToRerenderFromStrategyResult(
+      {
+        ...commandResult.editorState,
+        // TODO instead of clearing the metadata, we should save the latest valid metadata here to save a dom-walker run
+        jsxMetadata: {},
+        domMetadata: {},
+        spyMetadata: {},
+      },
+      strategyResult,
+    )
 
     return {
       unpatchedEditorState: finalEditor,
@@ -217,7 +220,10 @@ export function interactionHardReset(
 
       return {
         unpatchedEditorState: newEditorState,
-        patchedEditorState: commandResult.editorState,
+        patchedEditorState: applyElementsToRerenderFromStrategyResult(
+          commandResult.editorState,
+          strategyResult,
+        ),
         newStrategyState: newStrategyState,
       }
     } else {
@@ -380,7 +386,10 @@ export function interactionStart(
 
       return {
         unpatchedEditorState: newEditorState,
-        patchedEditorState: commandResult.editorState,
+        patchedEditorState: applyElementsToRerenderFromStrategyResult(
+          commandResult.editorState,
+          strategyResult,
+        ),
         newStrategyState: newStrategyState,
       }
     } else {
@@ -483,7 +492,10 @@ function handleUserChangedStrategy(
 
     return {
       unpatchedEditorState: newEditorState,
-      patchedEditorState: commandResult.editorState,
+      patchedEditorState: applyElementsToRerenderFromStrategyResult(
+        commandResult.editorState,
+        strategyResult,
+      ),
       newStrategyState: newStrategyState,
     }
   } else {
@@ -565,7 +577,10 @@ function handleAccumulatingKeypresses(
 
       return {
         unpatchedEditorState: updatedEditorState,
-        patchedEditorState: commandResult.editorState,
+        patchedEditorState: applyElementsToRerenderFromStrategyResult(
+          commandResult.editorState,
+          strategyResult,
+        ),
         newStrategyState: newStrategyState,
       }
     }
@@ -628,7 +643,10 @@ function handleUpdate(
     }
     return {
       unpatchedEditorState: newEditorState,
-      patchedEditorState: commandResult.editorState,
+      patchedEditorState: applyElementsToRerenderFromStrategyResult(
+        commandResult.editorState,
+        strategyResult,
+      ),
       newStrategyState: newStrategyState,
     }
   } else {
