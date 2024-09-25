@@ -540,12 +540,10 @@ export function matrixGetter<T>(array: T[], width: number): (row: number, column
 }
 
 export function chunkArrayEqually<T>(
-  arr: T[],
+  sortedArray: T[],
   numberOfChunks: number,
   valueFn: (t: T) => number,
 ): T[][] {
-  const sortedArray = [...arr].sort((a, b) => valueFn(b) - valueFn(a))
-
   // Initialize an array of n empty chunks
   const chunks: T[][] = Array.from({ length: numberOfChunks }, () => [])
 
@@ -569,4 +567,22 @@ export function chunkArrayEqually<T>(
   }
 
   return chunks.filter((chunk) => chunk.length > 0)
+}
+
+export function sortArrayByAndReturnPermutation<T>(
+  array: T[],
+  sortFn: (t: T) => number,
+  ascending: boolean = true,
+): { sortedArray: T[]; permutation: number[] } {
+  const permutation = array.map((_, index) => index)
+  permutation.sort((a, b) => {
+    const sortResult = sortFn(array[a]) - sortFn(array[b])
+    return ascending ? sortResult : -sortResult
+  })
+  const sortedArray = permutation.map((index) => array[index])
+  return { sortedArray, permutation }
+}
+
+export function sortArrayByReversePermutation<T>(array: T[], permutation: number[]): T[] {
+  return array.map((_, index) => array[permutation.indexOf(index)])
 }

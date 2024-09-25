@@ -3,6 +3,8 @@ import {
   intersection,
   mapAndFilter,
   possiblyUniqueInArray,
+  sortArrayByAndReturnPermutation,
+  sortArrayByReversePermutation,
   strictEvery,
 } from './array-utils'
 
@@ -50,6 +52,24 @@ describe('aperture', () => {
   it('should return a single element array when the window is larger than the input', () => {
     const actualResult = aperture(20, [1, 2, 3, 4, 5, 6])
     expect(actualResult).toEqual([[1, 2, 3, 4, 5, 6]])
+  })
+})
+
+describe('sortArrayByAndReturnPermutation', () => {
+  it('should sort the array', () => {
+    const { sortedArray } = sortArrayByAndReturnPermutation([3, 1, 2], (a) => a)
+    expect(sortedArray).toEqual([1, 2, 3])
+  })
+  it('should respect the sort order', () => {
+    const { sortedArray } = sortArrayByAndReturnPermutation([3, 1, 2], (a) => a, false)
+    expect(sortedArray).toEqual([3, 2, 1])
+  })
+  it('should return the permutation that reverses the sort', () => {
+    const originalArray = [10, 5, 6, 32, 102, 7, 91]
+    const { sortedArray, permutation } = sortArrayByAndReturnPermutation(originalArray, (a) => a)
+    expect(sortedArray).toEqual([5, 6, 7, 10, 32, 91, 102])
+    const reversedToOriginal = sortArrayByReversePermutation(sortedArray, permutation)
+    expect(reversedToOriginal).toEqual(originalArray)
   })
 })
 

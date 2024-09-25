@@ -1,4 +1,8 @@
-import { chunkArrayEqually } from '../../../core/shared/array-utils'
+import {
+  chunkArrayEqually,
+  sortArrayByAndReturnPermutation,
+  sortArrayByReversePermutation,
+} from '../../../core/shared/array-utils'
 import type { ProjectContentTreeRoot } from '../../../components/assets'
 import type { ErrorMessage } from '../../shared/error-messages'
 import type { TypeDefinitions } from '../../shared/npm-dependency-types'
@@ -180,13 +184,21 @@ export async function getParseResult(
   applySteganography: SteganographyMode,
   numChunks: number = 1,
 ): Promise<Array<ParseOrPrintResult>> {
-  const chunks = chunkArrayEqually(files, numChunks, fileParsableLength)
+  const { sortedArray, permutation } = sortArrayByAndReturnPermutation(
+    [...files],
+    fileParsableLength,
+    false,
+  )
+  const chunks = chunkArrayEqually(sortedArray, numChunks, fileParsableLength)
 
   const promises = chunks.map((chunk) =>
     getParseResultSerial(workers, chunk, filePathMappings, alreadyExistingUIDs, applySteganography),
   )
   const results = await Promise.all(promises)
-  return results.flat()
+  const flattenedResults = results.flat()
+
+  // this is to return the results in the original order
+  return sortArrayByReversePermutation(flattenedResults, permutation)
 }
 
 export function getParseResultSerial(
