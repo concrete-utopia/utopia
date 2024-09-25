@@ -948,6 +948,8 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                       position: 'relative',
                       pointerEvents: 'initial',
                     }}
+                    data-grid-row={countedRow}
+                    data-grid-column={countedColumn}
                   >
                     {when(
                       features.Grid.dotgrid,

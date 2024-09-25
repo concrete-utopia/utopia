@@ -7,11 +7,7 @@ import {
   rectContainsPoint,
 } from '../../../../core/shared/math-utils'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  getGlobalFramesOfGridCells,
-  type GridCellGlobalFrames,
-  type TargetGridCellData,
-} from './grid-helpers'
+import { type GridCellGlobalFrames, type TargetGridCellData } from './grid-helpers'
 import type { CanvasPoint } from '../../../../core/shared/math-utils'
 
 export type GridCellCoordinates = { row: number; column: number }
@@ -34,7 +30,7 @@ export function getGridCellUnderMouseFromMetadata(
   grid: ElementInstanceMetadata,
   point: CanvasPoint,
 ): TargetGridCellData | null {
-  const gridCellGlobalFrames = getGlobalFramesOfGridCells(grid)
+  const gridCellGlobalFrames = grid.specialSizeMeasurements.gridCellGlobalFrames
 
   if (gridCellGlobalFrames == null) {
     return null

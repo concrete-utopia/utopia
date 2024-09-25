@@ -1,20 +1,16 @@
 import React from 'react'
-import { type Sides, sides } from 'utopia-api/core'
+import { sides } from 'utopia-api/core'
 import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 import * as EP from '../../core/shared/element-path'
 import type {
   DetectedLayoutSystem,
-  ComputedStyle,
   SpecialSizeMeasurements,
-  StyleAttributeMetadata,
   ElementInstanceMetadataMap,
   GridContainerProperties,
   GridElementProperties,
   DomElementMetadata,
-  GridTemplate,
 } from '../../core/shared/element-template'
 import {
-  elementInstanceMetadata,
   specialSizeMeasurements,
   gridContainerProperties,
   gridElementProperties,
@@ -48,7 +44,6 @@ import type { CSSNumber, CSSPosition } from '../inspector/common/css-utils'
 import {
   parseCSSLength,
   positionValues,
-  computedStyleKeys,
   parseDirection,
   parseFlexDirection,
   parseCSSPx,
@@ -58,22 +53,24 @@ import {
   parseGridAutoFlow,
   isCSSKeyword,
 } from '../inspector/common/css-utils'
-import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
-import { UTOPIA_SCENE_ID_KEY, UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
+import {
+  UTOPIA_PATH_KEY,
+  UTOPIA_SCENE_ID_KEY,
+  UTOPIA_UID_KEY,
+} from '../../core/model/utopia-constants'
 import { emptySet } from '../../core/shared/set-utils'
-import type { PathWithString } from '../../core/shared/uid-utils'
 import { getDeepestPathOnDomElement, getPathStringsOnDomElement } from '../../core/shared/uid-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import type { EditorState, EditorStorePatched } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
-import { pick } from '../../core/shared/object-utils'
 import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
 import { CanvasContainerOuterId } from './canvas-component-entry'
 import { ElementsToRerenderGLOBAL } from './ui-jsx-canvas'
+import type { GridCellGlobalFrames } from './canvas-strategies/strategies/grid-helpers'
 
 export const ResizeObserver =
   window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -846,12 +843,10 @@ function getSpecialMeasurements(
     ? padding.value
     : sides(undefined, undefined, undefined, undefined)
 
-  const gridCellGlobalFrames = getGlobalFramesOfGridCells(
-    containerGridProperties,
-    rowGap,
-    columnGap,
-    paddingValue,
-  )
+  const gridCellGlobalFrames =
+    layoutSystemForChildren === 'grid'
+      ? getGlobalFramesOfGridCells(element, scale, containerRectLazy, elementCanvasRectangleCache)
+      : null
 
   const containerElementProperties = getGridElementProperties(
     parentContainerGridProperties,
@@ -973,49 +968,45 @@ function getClosestOffsetParent(element: HTMLElement): Element | null {
 }
 
 function getGlobalFramesOfGridCells(
-  grid: GridContainerProperties,
-  rowGap: number | null,
-  columnGap: number | null,
-  padding: Sides,
-): Array<Array<CanvasRectangle>> | null {
-  const columnWidths = gridTemplateToNumbers(grid.gridTemplateColumns)
-
-  const rowHeights = gridTemplateToNumbers(grid.gridTemplateRows)
-
-  if (columnWidths == null || rowHeights == null) {
-    return null
-  }
-
-  const cellRects: Array<Array<CanvasRectangle>> = []
-  let yOffset = padding.top ?? 0
-  rowHeights.forEach((height) => {
-    let xOffset = padding.left ?? 0
-    const rowRects: CanvasRectangle[] = []
-    columnWidths.forEach((width) => {
-      const rect = canvasRectangle({ x: xOffset, y: yOffset, width: width, height: height })
-      rowRects.push(rect)
-      xOffset += width + (columnGap ?? 0)
-    })
-    cellRects.push(rowRects)
-    yOffset += height + (rowGap ?? 0)
-  })
-
-  return cellRects
-}
-
-function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number> | null {
-  if (gridTemplate?.type !== 'DIMENSIONS') {
-    return null
-  }
-
-  const result: Array<number> = []
-
-  for (const dimension of gridTemplate.dimensions) {
-    if (dimension.type !== 'NUMBER') {
-      return null
+  grid: HTMLElement,
+  scale: number,
+  containerRectLazy: CanvasPoint | (() => CanvasPoint),
+  elementCanvasRectangleCache: ElementCanvasRectangleCache,
+): GridCellGlobalFrames | null {
+  const path = grid.getAttribute(UTOPIA_PATH_KEY)
+  let gridCellGlobalFrames: Array<Array<CanvasRectangle>> | null = null
+  if (path != null) {
+    const gridControlElement = document.getElementById(`grid-${path}`)
+    if (gridControlElement != null) {
+      gridCellGlobalFrames = []
+      for (const cell of gridControlElement.children) {
+        if (!(cell instanceof HTMLElement)) {
+          continue
+        }
+        const rowIndexAttr = cell.getAttribute('data-grid-row')
+        const columnIndexAttr = cell.getAttribute('data-grid-column')
+        if (rowIndexAttr == null || columnIndexAttr == null) {
+          continue
+        }
+        const rowIndex = parseInt(rowIndexAttr)
+        const columnIndex = parseInt(columnIndexAttr)
+        if (!isFinite(rowIndex) || !isFinite(columnIndex)) {
+          continue
+        }
+        const row = gridCellGlobalFrames[rowIndex - 1]
+        if (row == null) {
+          gridCellGlobalFrames[rowIndex - 1] = []
+        }
+        gridCellGlobalFrames[rowIndex - 1][columnIndex - 1] = globalFrameForElement(
+          cell,
+          scale,
+          containerRectLazy,
+          'without-text-content',
+          'nearest-half',
+          elementCanvasRectangleCache,
+        )
+      }
     }
-    result.push(dimension.value.value)
   }
-
-  return result
+  return gridCellGlobalFrames
 }
