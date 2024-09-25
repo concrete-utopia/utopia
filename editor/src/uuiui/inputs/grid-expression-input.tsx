@@ -41,31 +41,32 @@ export const GridExpressionInput = React.memo(
 
     const onKeyDown = React.useCallback(
       (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-          if (isValidGridDimensionKeyword(printValue)) {
-            return onUpdateNumberOrKeyword(cssKeyword(printValue))
-          }
-
-          const defaultUnit = isGridCSSNumber(value) ? value.value.unit : 'px'
-          const maybeNumber = parseCSSNumber(printValue, 'AnyValid', defaultUnit)
-          if (isRight(maybeNumber)) {
-            return onUpdateNumberOrKeyword(maybeNumber.value)
-          }
-
-          const maybeMinmax = parseGridCSSMinmaxOrRepeat(printValue)
-          if (maybeMinmax != null) {
-            return onUpdateDimension({
-              ...maybeMinmax,
-              areaName: value.areaName,
-            } as GridDimension)
-          }
-
-          if (printValue === '') {
-            return onUpdateNumberOrKeyword(cssKeyword('auto'))
-          }
-
-          setPrintValue(printGridDimension(value))
+        if (e.key !== 'Enter') {
+          return
         }
+        if (isValidGridDimensionKeyword(printValue)) {
+          return onUpdateNumberOrKeyword(cssKeyword(printValue))
+        }
+
+        const defaultUnit = isGridCSSNumber(value) ? value.value.unit : 'px'
+        const maybeNumber = parseCSSNumber(printValue, 'AnyValid', defaultUnit)
+        if (isRight(maybeNumber)) {
+          return onUpdateNumberOrKeyword(maybeNumber.value)
+        }
+
+        const maybeMinmax = parseGridCSSMinmaxOrRepeat(printValue)
+        if (maybeMinmax != null) {
+          return onUpdateDimension({
+            ...maybeMinmax,
+            areaName: value.areaName,
+          } as GridDimension)
+        }
+
+        if (printValue === '') {
+          return onUpdateNumberOrKeyword(cssKeyword('auto'))
+        }
+
+        setPrintValue(printGridDimension(value))
       },
       [printValue, onUpdateNumberOrKeyword, onUpdateDimension, value],
     )
