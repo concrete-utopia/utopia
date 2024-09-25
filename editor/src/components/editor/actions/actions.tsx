@@ -4,6 +4,8 @@ import localforage from 'localforage'
 import { imagePathURL } from '../../../common/server'
 import { roundAttributeLayoutValues } from '../../../core/layout/layout-utils'
 import {
+  findElementAtPath,
+  findJSXElementAtPath,
   getZIndexOrderedViewsWithoutDirectChildren,
   MetadataUtils,
 } from '../../../core/model/element-metadata-utils'
@@ -155,7 +157,7 @@ import { assertNever, fastForEach, getProjectLockedKey, identity } from '../../.
 import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
-import Utils from '../../../utils/utils'
+import Utils, { absolute } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
 import {
   isProjectContentFile,
@@ -428,7 +430,7 @@ import {
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
 
-import { defaultConfig } from 'utopia-vscode-common'
+import { boundsInFile, defaultConfig } from 'utopia-vscode-common'
 import { reorderElement } from '../../../components/canvas/commands/reorder-element-command'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
@@ -494,6 +496,7 @@ import {
   clearImageFileBlob,
   enableInsertModeForJSXElement,
   finishCheckpointTimer,
+  insertAsChildTarget,
   insertJSXElement,
   openCodeEditorFile,
   replaceMappedElement,
@@ -522,6 +525,7 @@ import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-utils'
 import {
+  getFromPropOrFlagComment,
   isUtopiaPropOrCommentFlag,
   makeUtopiaFlagComment,
   removePropOrFlagComment,
@@ -616,7 +620,7 @@ import {
 import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
 import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 import { nextSelectedTab } from '../../navigator/left-pane/left-pane-utils'
-import { getDefaultedRemixRootDir } from '../store/remix-derived-data'
+import { getDefaultedRemixRootDir, getRemixRootDir } from '../store/remix-derived-data'
 import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-item/component-picker-context-menu'
 import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'

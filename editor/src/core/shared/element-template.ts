@@ -4,7 +4,12 @@ import type {
   StaticElementPathPart,
   ElementPath,
 } from './project-file-types'
-import type { CanvasRectangle, LocalPoint, MaybeInfinityCanvasRectangle } from './math-utils'
+import type {
+  CanvasRectangle,
+  LocalPoint,
+  MaybeInfinityCanvasRectangle,
+  MaybeInfinityLocalRectangle,
+} from './math-utils'
 import { zeroCanvasRect } from './math-utils'
 import type { Either } from './either'
 import { flatMapEither, isRight, left, mapEither, right } from './either'

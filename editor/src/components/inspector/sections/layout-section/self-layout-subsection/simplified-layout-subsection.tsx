@@ -1,6 +1,12 @@
 import React from 'react'
 import { when } from '../../../../../utils/react-conditionals'
-import { FlexColumn, FlexRow, Tooltip, UtopiaTheme } from '../../../../../uuiui'
+import {
+  FlexColumn,
+  FlexRow,
+  InspectorSubsectionHeader,
+  Tooltip,
+  UtopiaTheme,
+} from '../../../../../uuiui'
 import { Link } from '../../../../../uuiui/link'
 import { useConvertWrapperToFrame } from '../../../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { Substores, useEditorState } from '../../../../editor/store/store-hook'

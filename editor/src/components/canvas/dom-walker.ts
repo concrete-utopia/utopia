@@ -4,13 +4,16 @@ import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 import * as EP from '../../core/shared/element-path'
 import type {
   DetectedLayoutSystem,
+  ComputedStyle,
   SpecialSizeMeasurements,
+  StyleAttributeMetadata,
   ElementInstanceMetadataMap,
   GridContainerProperties,
   GridElementProperties,
   DomElementMetadata,
 } from '../../core/shared/element-template'
 import {
+  elementInstanceMetadata,
   specialSizeMeasurements,
   gridContainerProperties,
   gridElementProperties,
@@ -44,6 +47,7 @@ import type { CSSNumber, CSSPosition } from '../inspector/common/css-utils'
 import {
   parseCSSLength,
   positionValues,
+  computedStyleKeys,
   parseDirection,
   parseFlexDirection,
   parseCSSPx,
@@ -53,14 +57,17 @@ import {
   parseGridAutoFlow,
   isCSSKeyword,
 } from '../inspector/common/css-utils'
+import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
 import { UTOPIA_SCENE_ID_KEY, UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
 import { emptySet } from '../../core/shared/set-utils'
+import type { PathWithString } from '../../core/shared/uid-utils'
 import { getDeepestPathOnDomElement, getPathStringsOnDomElement } from '../../core/shared/uid-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import type { EditorState, EditorStorePatched } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
+import { pick } from '../../core/shared/object-utils'
 import {
   getFlexAlignment,
   getFlexJustifyContent,
