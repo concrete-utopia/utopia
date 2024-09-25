@@ -81,6 +81,7 @@ import type { ElementPath } from 'utopia-shared/src/types'
 import { reparentSubjectsForInteractionTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
 import { gridRearrangeResizeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
+import createCachedSelector from 're-reselect'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -197,12 +198,13 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
 ]
 
 export function pickCanvasStateFromEditorState(
+  localSelectedViews: Array<ElementPath>,
   editorState: EditorState,
   builtInDependencies: BuiltInDependencies,
 ): InteractionCanvasState {
   return {
     builtInDependencies: builtInDependencies,
-    interactionTarget: getInteractionTargetFromEditorState(editorState),
+    interactionTarget: getInteractionTargetFromEditorState(editorState, localSelectedViews),
     projectContents: editorState.projectContents,
     nodeModules: editorState.nodeModules.files,
     openFile: editorState.canvas.openFile?.filename,
@@ -216,6 +218,7 @@ export function pickCanvasStateFromEditorState(
 }
 
 export function pickCanvasStateFromEditorStateWithMetadata(
+  localSelectedViews: Array<ElementPath>,
   editorState: EditorState,
   builtInDependencies: BuiltInDependencies,
   metadata: ElementInstanceMetadataMap,
@@ -223,7 +226,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
 ): InteractionCanvasState {
   return {
     builtInDependencies: builtInDependencies,
-    interactionTarget: getInteractionTargetFromEditorState(editorState),
+    interactionTarget: getInteractionTargetFromEditorState(editorState, localSelectedViews),
     projectContents: editorState.projectContents,
     nodeModules: editorState.nodeModules.files,
     openFile: editorState.canvas.openFile?.filename,
@@ -236,7 +239,10 @@ export function pickCanvasStateFromEditorStateWithMetadata(
   }
 }
 
-function getInteractionTargetFromEditorState(editor: EditorState): InteractionTarget {
+function getInteractionTargetFromEditorState(
+  editor: EditorState,
+  localSelectedViews: Array<ElementPath>,
+): InteractionTarget {
   switch (editor.mode.type) {
     case 'insert':
       return insertionSubjects(editor.mode.subjects)
@@ -245,7 +251,7 @@ function getInteractionTargetFromEditorState(editor: EditorState): InteractionTa
     case 'textEdit':
     case 'comment':
     case 'follow':
-      return targetPaths(editor.selectedViews)
+      return targetPaths(localSelectedViews)
     default:
       assertNever(editor.mode)
   }
@@ -288,17 +294,21 @@ export function getApplicableStrategies(
   return strategies.flatMap((s) => s(canvasState, interactionSession, customStrategyState))
 }
 
-const getApplicableStrategiesSelector = createSelector(
-  (store: EditorStorePatched) =>
+const getApplicableStrategiesSelector = createCachedSelector(
+  (store: EditorStorePatched, _) =>
     optionalMap(
       (sas) => sas.map((s) => s.strategy),
       store.strategyState.sortedApplicableStrategies,
     ),
-  (store: EditorStorePatched): InteractionCanvasState => {
-    return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
+  (store: EditorStorePatched, localSelectedViews: Array<ElementPath>): InteractionCanvasState => {
+    return pickCanvasStateFromEditorState(
+      localSelectedViews,
+      store.editor,
+      store.builtInDependencies,
+    )
   },
-  (store: EditorStorePatched) => store.editor.canvas.interactionSession,
-  (store: EditorStorePatched) => store.strategyState.customStrategyState,
+  (store: EditorStorePatched, _) => store.editor.canvas.interactionSession,
+  (store: EditorStorePatched, _) => store.strategyState.customStrategyState,
   (
     applicableStrategiesFromStrategyState: Array<CanvasStrategy> | null,
     canvasState: InteractionCanvasState,
@@ -316,12 +326,12 @@ const getApplicableStrategiesSelector = createSelector(
       )
     }
   },
-)
+)((_, localSelectedViews: Array<ElementPath>) => localSelectedViews.map(EP.toString).join(','))
 
-function useGetApplicableStrategies(): Array<CanvasStrategy> {
+function useGetApplicableStrategies(localSelectedViews: Array<ElementPath>): Array<CanvasStrategy> {
   return useEditorState(
     Substores.fullStore,
-    getApplicableStrategiesSelector,
+    (store) => getApplicableStrategiesSelector(store, localSelectedViews),
     'useGetApplicableStrategies',
     arrayEqualsByReference,
   )
@@ -611,8 +621,10 @@ function controlPriorityToNumber(prio: ControlWithProps<any>['priority']): numbe
   }
 }
 
-export function useGetApplicableStrategyControls(): Array<ControlWithProps<unknown>> {
-  const applicableStrategies = useGetApplicableStrategies()
+export function useGetApplicableStrategyControls(
+  localSelectedViews: Array<ElementPath>,
+): Array<ControlWithProps<unknown>> {
+  const applicableStrategies = useGetApplicableStrategies(localSelectedViews)
   const currentStrategy = useDelayedCurrentStrategy()
   const currentlyInProgress = useEditorState(
     Substores.canvas,

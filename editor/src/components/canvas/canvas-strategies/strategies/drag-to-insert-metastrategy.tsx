@@ -389,6 +389,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
   // because that element is inserted to the storyboard before reparenting to the correct location,
   // so its index amongst its starting siblings isn't relevant.
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
+    editorState.selectedViews,
     editorState,
     builtInDependencies,
     patchedMetadata,

@@ -175,6 +175,7 @@ function dragByPixels(
   const strategyResultCommands =
     convertToAbsoluteAndMoveStrategy(
       pickCanvasStateFromEditorStateWithMetadata(
+        editorState.selectedViews,
         editorState,
         createBuiltInDependenciesList(null),
         metadata,

@@ -1,4 +1,5 @@
 import React from 'react'
+import ReactDOM from 'react-dom'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { uniqBy } from '../../../../core/shared/array-utils'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
@@ -58,6 +59,7 @@ import { getAllLockedElementPaths } from '../../../../core/shared/element-lockin
 import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
 import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks'
 import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
+import { wait } from '../../../../core/model/performance-scripts'
 
 export function isDragInteractionActive(editorState: EditorState): boolean {
   return editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
@@ -640,7 +642,7 @@ function useSelectOrLiveModeSelectAndHover(
     [innerOnMouseMove, editorStoreRef],
   )
   const mouseHandler = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
+    async (event: React.MouseEvent<HTMLDivElement>) => {
       const isLeftClick = event.button === 0
       const isRightClick = event.type === 'contextmenu' && event.detail === 0
       const isCanvasPanIntention =
@@ -774,7 +776,12 @@ function useSelectOrLiveModeSelectAndHover(
 
         if (!foundTargetIsSelected) {
           // first we only set the selected views for the canvas controls
-          setSelectedViewsForCanvasControlsOnly(updatedSelection)
+          ReactDOM.flushSync(() => {
+            setSelectedViewsForCanvasControlsOnly(updatedSelection)
+          })
+
+          await new Promise((resolve) => requestAnimationFrame(resolve))
+          await new Promise((resolve) => requestAnimationFrame(resolve))
 
           // In either case cancel insert mode.
           if (isInsertMode(editorStoreRef.current.editor.mode)) {

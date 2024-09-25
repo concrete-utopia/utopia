@@ -113,6 +113,7 @@ export function baseFlexReparentToAbsoluteStrategy(
                   'always',
                   (editorState, commandLifecycle): Array<EditorStatePatch> => {
                     const updatedCanvasState = pickCanvasStateFromEditorState(
+                      editorState.selectedViews,
                       editorState,
                       canvasState.builtInDependencies,
                     )
