@@ -56,7 +56,10 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Roll Your Own': false,
 }
 
-export const FeaturesHiddenFromMainSettingsPane: FeatureName[] = ['Verbose Log Cache']
+export const FeaturesHiddenFromMainSettingsPane: FeatureName[] = [
+  'Use Parsing Cache',
+  'Verbose Log Cache',
+]
 
 export const STEGANOGRAPHY_ENABLED = false
 
