@@ -14,18 +14,13 @@ import {
   createParsePrintFilesResult,
   createPrintAndReparseResult,
 } from '../common/worker-types'
-import localforage from 'localforage'
 import type { FilePathMappings } from '../common/project-file-utils'
 import {
-  CACHE_DB_NAME,
-  PARSE_CACHE_STORE_NAME,
-  type ParseCacheOptions,
-} from '../../../core/shared/parse-cache-utils'
-
-const parseCache = localforage.createInstance({
-  name: CACHE_DB_NAME,
-  storeName: PARSE_CACHE_STORE_NAME,
-})
+  clearParseCache,
+  getParseResultFromCache,
+  storeParseResultInCache,
+} from './parse-cache-utils.worker'
+import type { ParseCacheOptions } from '../../shared/parse-cache-utils'
 
 export async function handleMessage(
   workerMessage: ParsePrintFilesRequest | ClearParseCacheMessage,
@@ -74,19 +69,9 @@ export async function handleMessage(
       break
     }
     case 'clearparsecache': {
-      await clearParseCache()
+      await clearParseCache(workerMessage.parsingCacheOptions)
       break
     }
-  }
-}
-
-function getCacheKey(filename: string): string {
-  return `PARSE_CACHE::${filename}`
-}
-
-function logCacheMessage(message: string, parsingCacheOptions: ParseCacheOptions) {
-  if (parsingCacheOptions.verboseLogCache) {
-    console.info(`[PARSING CACHE] ${message}`)
   }
 }
 
@@ -102,12 +87,10 @@ export async function getParseFileResultWithCache(
 ): Promise<ParseFileResult> {
   if (parsingCacheOptions.useParsingCache) {
     //check localforage for cache
-    const cachedResult = await getParseResultFromCache(filename, content)
+    const cachedResult = await getParseResultFromCache(filename, content, parsingCacheOptions)
     if (cachedResult != null) {
-      logCacheMessage(`Cache hit for ${filename}`, parsingCacheOptions)
       return cachedResult
     }
-    logCacheMessage(`Cache miss for ${filename}`, parsingCacheOptions)
   }
 
   const parseResult = getParseFileResult(
@@ -146,43 +129,10 @@ export function getParseFileResult(
   const result = createParseFileResult(filename, parseResult, fileVersionNumber)
   if (result.parseResult.type === 'PARSE_SUCCESS' && parseCacheOptions.useParsingCache) {
     // non blocking cache write
-    storeParseResultInCache(filename, content, result, parseCacheOptions)
+    void storeParseResultInCache(filename, content, result, parseCacheOptions)
   }
 
   return result
-}
-
-type CachedParseResult = { [fileContent: string]: ParseFileResult }
-
-async function getParseResultFromCache(
-  filename: string,
-  content: string,
-): Promise<ParseFileResult | null> {
-  const cacheKey = getCacheKey(filename)
-  //check localforage for cache
-  const cachedResult = await parseCache.getItem<CachedParseResult>(cacheKey)
-  const cachedResultForContent = cachedResult?.[content]
-  if (cachedResultForContent?.parseResult?.type === 'PARSE_SUCCESS') {
-    return cachedResultForContent
-  }
-  return null
-}
-
-function storeParseResultInCache(
-  filename: string,
-  content: string,
-  result: ParseFileResult,
-  parsingCacheOptions: ParseCacheOptions,
-) {
-  const cacheKey = getCacheKey(filename)
-  logCacheMessage(`Caching ${filename}`, parsingCacheOptions)
-  void parseCache.setItem<CachedParseResult>(cacheKey, {
-    [content]: result,
-  })
-}
-
-async function clearParseCache() {
-  await parseCache.dropInstance({ name: CACHE_DB_NAME, storeName: PARSE_CACHE_STORE_NAME })
 }
 
 export function getPrintAndReparseCodeResult(

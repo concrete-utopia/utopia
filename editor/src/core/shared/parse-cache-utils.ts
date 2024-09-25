@@ -1,9 +1,6 @@
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { UtopiaTsWorkers } from '../workers/common/worker-types'
 
-export const CACHE_DB_NAME = 'editor-cache'
-export const PARSE_CACHE_STORE_NAME = 'file-parse-cache'
-
 export type ParseCacheOptions = {
   useParsingCache: boolean
   verboseLogCache: boolean
@@ -25,5 +22,5 @@ export function getParseCacheOptions(): ParseCacheOptions {
 }
 
 export function deleteParseCache(workers: UtopiaTsWorkers): void {
-  workers.sendClearParseCacheMessage()
+  workers.sendClearParseCacheMessage(getParseCacheOptions())
 }

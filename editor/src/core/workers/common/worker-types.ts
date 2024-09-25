@@ -142,11 +142,15 @@ export type ParsePrintResultMessage = ParsePrintFilesResult | ParsePrintFailedMe
 
 export interface ClearParseCacheMessage {
   type: 'clearparsecache'
+  parsingCacheOptions: ParseCacheOptions
 }
 
-export function createClearParseCacheMessage(): ClearParseCacheMessage {
+export function createClearParseCacheMessage(
+  parsingCacheOptions: ParseCacheOptions,
+): ClearParseCacheMessage {
   return {
     type: 'clearparsecache',
+    parsingCacheOptions: parsingCacheOptions,
   }
 }
 
@@ -381,7 +385,7 @@ export function createInitTSWorkerMessage(
 
 export interface UtopiaTsWorkers {
   sendParsePrintMessage: (request: ParsePrintFilesRequest) => void
-  sendClearParseCacheMessage: () => void
+  sendClearParseCacheMessage: (parsingCacheOptions: ParseCacheOptions) => void
   sendLinterRequestMessage: (filename: string, content: string) => void
   addParserPrinterEventListener: (handler: (e: MessageEvent) => void) => void
   removeParserPrinterEventListener: (handler: (e: MessageEvent) => void) => void

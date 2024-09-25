@@ -52,7 +52,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug – Connections': false,
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
   'Use Parsing Cache': true,
-  'Verbose Log Cache': true,
+  'Verbose Log Cache': false,
   'Roll Your Own': false,
 }
 
