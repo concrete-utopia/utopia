@@ -12,28 +12,28 @@ import {
   parseAlternative,
   parseObject,
   parseFalse,
+  parseNull,
 } from '../../../utils/value-parser-utils'
 import type { Either } from '../../shared/either'
-import {
-  applicative3Either,
-  applicative4Either,
-  foldEither,
-  isLeft,
-  isRight,
-  left,
-  right,
-} from '../../shared/either'
+import { applicative6Either, foldEither, isLeft, isRight, left, right } from '../../shared/either'
 import { setOptionalProp } from '../../shared/object-utils'
 import type { ProjectContentTreeRoot } from '../../../components/assets'
 import { getContentsTreeFileFromElements } from '../../../components/assets'
 import { dropLast, last } from '../../shared/array-utils'
-import { getPartsFromPath, makePathFromParts, normalizePath } from '../../../utils/path-utils'
+import {
+  getParentDirectory,
+  getPartsFromPath,
+  makePathFromParts,
+  normalizePath,
+  stripTrailingSlash,
+} from '../../../utils/path-utils'
 import type { MapLike } from 'typescript'
 
 import LRU from 'lru-cache'
 import type { BuiltInDependencies } from './built-in-dependencies-list'
 import { getFilePathMappings } from '../../model/project-file-utils'
 import { applyFilePathMappingsToFilePath } from '../../../core/workers/common/project-file-utils'
+import { getFileExtension } from '../../shared/file-utils'
 
 const partialPackageJsonCache: LRU<string, ParseResult<PartialPackageJsonDefinition>> = new LRU({
   max: 20,
@@ -113,62 +113,60 @@ function fileLookupResult(
   }
 }
 
-type FileLookupFn = (path: string[], direct: boolean) => FileLookupResult
+type FileLookupFn = (path: string, importOrigin: string) => FileLookupResult
 
-function fallbackLookup(
-  lookupFn: FileLookupFn,
-  path: Array<string>,
-  direct: boolean,
-): FileLookupResult {
-  const asIsPath = normalizePath(path)
-  const pathToFile = dropLast(asIsPath)
-  const lastPart = last(asIsPath)
-  if (lastPart == null) {
-    return resolveNotPresent
-  } else {
-    const asIsResult = lookupFn(asIsPath, direct)
-    if (isResolveSuccess(asIsResult)) {
-      return asIsResult
-    }
-
-    if (!direct) {
-      const withJs = lastPart + '.js'
-      const withJsResult = lookupFn(pathToFile.concat(withJs), direct)
-      if (isResolveSuccess(withJsResult)) {
-        return withJsResult
-      }
-
-      const withJsx = lastPart + '.jsx'
-      const withJsxResult = lookupFn(pathToFile.concat(withJsx), direct)
-      if (isResolveSuccess(withJsxResult)) {
-        return withJsxResult
-      }
-
-      // TODO this also needs JSON parsing
-      const withJson = lastPart + '.json'
-      const withJsonResult = lookupFn(pathToFile.concat(withJson), direct)
-      if (isResolveSuccess(withJsonResult)) {
-        return withJsonResult
-      }
-    }
-
-    return resolveNotPresent
-  }
+function allNodeModulesPathsForPath(path: string): Array<string> {
+  const pathParts = getPartsFromPath(path)
+  return ['/node_modules/'].concat(
+    pathParts.map((_part, index) =>
+      makePathFromParts(pathParts.slice(0, index + 1).concat('node_modules')),
+    ),
+  )
 }
 
 function nodeModulesFileLookup(
   nodeModules: NodeModules,
-  path: Array<string>,
-  direct: boolean,
+  path: string,
+  originPath: string,
+  lookupFn: FileLookupFn,
 ): FileLookupResult {
-  return fallbackLookup(
-    (innerPath: string[], innerDirect: boolean) => {
-      const filename = makePathFromParts(innerPath)
-      return fileLookupResult(filename, nodeModules[filename])
-    },
-    path,
-    direct,
-  )
+  const nodeModulesPaths = allNodeModulesPathsForPath(originPath).reverse()
+  const targetOrigins = [originPath, ...nodeModulesPaths]
+
+  for (const targetOrigin of targetOrigins) {
+    const packageJsonLookupFn = fileLookupForNodeModules(nodeModules)
+
+    // Load package exports
+    const packageExportsResult = packageExportsLookup(
+      path,
+      targetOrigin,
+      packageJsonLookupFn,
+      lookupFn,
+    )
+    if (isResolveSuccess(packageExportsResult)) {
+      return packageExportsResult
+    }
+
+    const pathForLookup = path.startsWith('/')
+      ? path
+      : `${stripTrailingSlash(targetOrigin)}/${path}`
+    const pathParts = getPartsFromPath(pathForLookup)
+    const normalisedPathParts = normalizePath(pathParts)
+
+    // Load as file
+    const asFileResult = abstractFileLookup(packageJsonLookupFn, normalisedPathParts)
+    if (isResolveSuccess(asFileResult)) {
+      return asFileResult
+    }
+
+    // Load as directory
+    const asDirectoryResult = abstractDirectoryLookup(packageJsonLookupFn, normalisedPathParts)
+    if (isResolveSuccess(asDirectoryResult)) {
+      return asDirectoryResult
+    }
+  }
+
+  return resolveNotPresent
 }
 
 function getProjectFileContentsAsString(file: ProjectFile): string | null {
@@ -187,48 +185,335 @@ function getProjectFileContentsAsString(file: ProjectFile): string | null {
   }
 }
 
-function projectContentsFileLookup(
-  projectContents: ProjectContentTreeRoot,
-  path: Array<string>,
-  direct: boolean,
-): FileLookupResult {
-  return fallbackLookup(
-    (innerPath: string[]) => {
-      const projectFile = getContentsTreeFileFromElements(projectContents, innerPath)
-      if (projectFile == null) {
+type LocalFileLookup = (pathParts: string[]) => FileLookupResult
+function fileLookupForProjectContents(projectContents: ProjectContentTreeRoot): LocalFileLookup {
+  return (pathParts: string[]) => {
+    const projectFile = getContentsTreeFileFromElements(projectContents, pathParts)
+    if (projectFile == null) {
+      return resolveNotPresent
+    } else {
+      const fileContents = getProjectFileContentsAsString(projectFile)
+      if (fileContents == null) {
         return resolveNotPresent
       } else {
-        const fileContents = getProjectFileContentsAsString(projectFile)
-        if (fileContents == null) {
-          return resolveNotPresent
-        } else {
-          const filename = makePathFromParts(innerPath)
-          return fileLookupResult(filename, esCodeFile(fileContents, 'PROJECT_CONTENTS', filename))
-        }
+        const filename = makePathFromParts(pathParts) // TODO Is this still correct?
+        return fileLookupResult(filename, esCodeFile(fileContents, 'PROJECT_CONTENTS', filename))
       }
-    },
-    path,
-    direct,
-  )
+    }
+  }
 }
+
+function fileLookupForNodeModules(nodeModules: NodeModules): LocalFileLookup {
+  return (pathParts: string[]) => {
+    const filename = makePathFromParts(pathParts)
+    const nodeModulesFile = nodeModules[filename]
+    if (nodeModulesFile == null) {
+      return resolveNotPresent
+    } else {
+      return fileLookupResult(filename, nodeModulesFile)
+    }
+  }
+}
+
+function projectContentsFileLookup(
+  projectContents: ProjectContentTreeRoot,
+  pathParts: string[],
+): FileLookupResult {
+  return abstractFileLookup(fileLookupForProjectContents(projectContents), pathParts)
+}
+
+function abstractFileLookup(
+  localFileLookup: LocalFileLookup, // FIXME That's a bad name dawg
+  pathParts: string[],
+): FileLookupResult {
+  const normalisedPathParts = normalizePath(pathParts)
+  const pathToFile = dropLast(normalisedPathParts)
+  const lastPart = last(normalisedPathParts)
+  if (lastPart == null) {
+    return resolveNotPresent
+  }
+
+  // If X is a file, load X as its file extension format
+  const asFileResult = localFileLookup(normalisedPathParts)
+  if (isResolveSuccess(asFileResult)) {
+    return asFileResult
+  } else if (getFileExtension(lastPart) !== '') {
+    return resolveNotPresent
+  }
+
+  // If X.js(x) is a file
+  const withJs = lastPart + '.js'
+  const withJsResult = localFileLookup(pathToFile.concat(withJs))
+  if (isResolveSuccess(withJsResult)) {
+    return withJsResult
+  }
+
+  const withJsx = lastPart + '.jsx'
+  const withJsxResult = localFileLookup(pathToFile.concat(withJsx))
+  if (isResolveSuccess(withJsxResult)) {
+    return withJsxResult
+  }
+
+  // If X.json is a file, load X.json to a JavaScript Object
+  // TODO this also needs JSON parsing
+  const withJson = lastPart + '.json'
+  const withJsonResult = localFileLookup(pathToFile.concat(withJson))
+  if (isResolveSuccess(withJsonResult)) {
+    return withJsonResult
+  }
+
+  return resolveNotPresent
+}
+
+function projectContentsDirectoryLookup(
+  projectContents: ProjectContentTreeRoot,
+  pathParts: string[],
+): FileLookupResult {
+  const innerLookup = fileLookupForProjectContents(projectContents)
+  return abstractDirectoryLookup(innerLookup, pathParts)
+}
+
+function abstractDirectoryLookup(
+  localFileLookup: LocalFileLookup, // FIXME That's a bad name dawg
+  pathParts: string[],
+): FileLookupResult {
+  const normalisedPathParts = normalizePath(pathParts)
+
+  // If X/package.json is a file
+  const jsonFileResult = localFileLookup(normalisedPathParts.concat('package.json'))
+  if (isResolveSuccess(jsonFileResult) && isEsCodeFile(jsonFileResult.success.file)) {
+    // Parse X/package.json, and look for "browser", "main", "module" or "name" field
+    // TODO The spec only includes "browser" and "main" here...
+    const mainEntryPath = processPackageJson(
+      jsonFileResult.success.file.fileContents,
+      normalisedPathParts,
+    )
+
+    if (isResolveSuccess(mainEntryPath)) {
+      // try loading the entry path as a file
+      const mainEntryResult = localFileLookup(mainEntryPath.success)
+      if (isResolveSuccess(mainEntryResult)) {
+        return mainEntryResult
+      }
+
+      // attempt to load it as a folder with an index.js
+      const mainEntryIndexJSResult = localFileLookup(mainEntryPath.success.concat('index.js'))
+      if (isResolveSuccess(mainEntryIndexJSResult)) {
+        return mainEntryIndexJSResult
+      }
+
+      // attempt to load the containing folder as a folder with an index.js (this is deprecated in the spec so maybe we shouldn't)
+      const containingFolderIndexJSResult = localFileLookup(normalisedPathParts.concat('index.js'))
+      if (isResolveSuccess(containingFolderIndexJSResult)) {
+        return containingFolderIndexJSResult
+      }
+    }
+  }
+
+  // no main entry, so attempt to load the containing folder as a folder with an index.js
+  const containingFolderIndexJSResult = localFileLookup(normalisedPathParts.concat('index.js'))
+  if (isResolveSuccess(containingFolderIndexJSResult)) {
+    return containingFolderIndexJSResult
+  }
+
+  return resolveNotPresent
+}
+
+type PackageLookupResult = { packageJsonFileResult: FileLookupResult; packageJsonDir: string }
+function findClosestPackageScopeToPath(
+  path: string,
+  localFileLookup: LocalFileLookup,
+): PackageLookupResult {
+  let originPathPartsToTest = getPartsFromPath(path)
+  let packageJsonFileResult: FileLookupResult = resolveNotPresent
+  while (originPathPartsToTest.length > 0 && packageJsonFileResult === resolveNotPresent) {
+    packageJsonFileResult = localFileLookup(originPathPartsToTest.concat('package.json'))
+    originPathPartsToTest = dropLast(originPathPartsToTest)
+  }
+
+  return {
+    packageJsonFileResult: packageJsonFileResult,
+    packageJsonDir: makePathFromParts(originPathPartsToTest),
+  }
+}
+
+// Loading a module from the imports field mapping https://nodejs.org/api/packages.html#imports
+function packageImportsLookup(
+  path: string,
+  originPath: string,
+  packageJsonLookupFn: LocalFileLookup,
+  lookupFn: FileLookupFn,
+): FileLookupResult {
+  return packageImportsExportsLookup(path, originPath, packageJsonLookupFn, lookupFn, 'imports')
+}
+
+function packageExportsLookup(
+  path: string,
+  originPath: string,
+  packageJsonLookupFn: LocalFileLookup,
+  lookupFn: FileLookupFn,
+): FileLookupResult {
+  return packageImportsExportsLookup(path, originPath, packageJsonLookupFn, lookupFn, 'exports')
+}
+
+function packageSelfLookup(
+  path: string,
+  originPath: string,
+  packageJsonLookupFn: LocalFileLookup,
+  lookupFn: FileLookupFn,
+): FileLookupResult {
+  // Find the closest package scope SCOPE
+  const { packageJsonFileResult, packageJsonDir } = findClosestPackageScopeToPath(
+    originPath,
+    packageJsonLookupFn,
+  )
+
+  if (isResolveSuccess(packageJsonFileResult) && isEsCodeFile(packageJsonFileResult.success.file)) {
+    let possiblePackageJson: ParseResult<PartialPackageJsonDefinition>
+    try {
+      possiblePackageJson = getPartialPackageJson(packageJsonFileResult.success.file.fileContents)
+    } catch {
+      return resolveNotPresent
+    }
+    return foldEither(
+      (_) => resolveNotPresent,
+      (packageJson) => {
+        const nameEntry = packageJson.name
+        if (nameEntry == null || !path.startsWith(nameEntry)) {
+          return resolveNotPresent
+        }
+
+        return innerPackageImportsExportsLookup(
+          packageJson,
+          `.${path.slice(nameEntry.length)}`,
+          packageJsonDir,
+          lookupFn,
+          'exports',
+        )
+      },
+      possiblePackageJson,
+    )
+  }
+
+  return resolveNotPresent
+}
+
+function innerPackageImportsExportsLookup(
+  packageJson: PartialPackageJsonDefinition,
+  path: string,
+  packageJsonDir: string,
+  lookupFn: FileLookupFn,
+  importsOrExportsField: 'imports' | 'exports',
+): FileLookupResult {
+  const importsOrExportsEntry = packageJson[importsOrExportsField]
+  if (importsOrExportsEntry == null) {
+    return resolveNotPresent
+  }
+
+  // FIXME partial path lookup
+  const importsOrExportsResult = importsOrExportsEntry[path]
+  if (importsOrExportsResult == null) {
+    return resolveNotPresent
+  }
+
+  if (typeof importsOrExportsResult === 'string') {
+    // Lookup the import relative to the package.json we have found
+    return lookupFn(importsOrExportsResult, packageJsonDir)
+  }
+
+  // Otherwise importsOrExportsResult is an object, so now we need to check for the specific keys we're interested in
+  const defaultImportsOrExportsEntry = importsOrExportsResult['default']
+  const browserImportsOrExportsEntry = importsOrExportsResult['browser'] // The nodejs algorithm uses `node` here
+  const requireImportsOrExportsEntry = importsOrExportsResult['require']
+
+  if (defaultImportsOrExportsEntry != null) {
+    return lookupFn(defaultImportsOrExportsEntry, packageJsonDir)
+  }
+  if (browserImportsOrExportsEntry != null) {
+    return lookupFn(browserImportsOrExportsEntry, packageJsonDir)
+  }
+  if (requireImportsOrExportsEntry != null) {
+    return lookupFn(requireImportsOrExportsEntry, packageJsonDir)
+  }
+
+  return resolveNotPresent
+}
+
+function packageImportsExportsLookup(
+  path: string,
+  originPath: string,
+  packageJsonLookupFn: LocalFileLookup,
+  lookupFn: FileLookupFn,
+  importsOrExportsField: 'imports' | 'exports',
+): FileLookupResult {
+  // Find the closest package scope SCOPE
+  const { packageJsonFileResult, packageJsonDir } = findClosestPackageScopeToPath(
+    originPath,
+    packageJsonLookupFn,
+  )
+
+  if (isResolveSuccess(packageJsonFileResult) && isEsCodeFile(packageJsonFileResult.success.file)) {
+    let possiblePackageJson: ParseResult<PartialPackageJsonDefinition>
+    try {
+      possiblePackageJson = getPartialPackageJson(packageJsonFileResult.success.file.fileContents)
+    } catch {
+      return resolveNotPresent
+    }
+    return foldEither(
+      (_) => resolveNotPresent,
+      (packageJson) =>
+        innerPackageImportsExportsLookup(
+          packageJson,
+          path,
+          packageJsonDir,
+          lookupFn,
+          importsOrExportsField,
+        ),
+      possiblePackageJson,
+    )
+  }
+
+  return resolveNotPresent
+}
+
+type ImportsExportsField = MapLike<string | MapLike<string | null>>
 
 interface PartialPackageJsonDefinition {
   name?: string
   main?: string
   module?: string
   browser?: string | MapLike<string | false>
+  imports?: ImportsExportsField
+  exports?: ImportsExportsField
 }
+
+const importsExportsParser = parseObject(
+  parseAlternative<string | MapLike<string | null>>(
+    [
+      parseString,
+      parseObject(
+        parseAlternative<string | null>(
+          [parseString, parseNull],
+          `package.imports and package.exports replacement entries must be either string or null`,
+        ),
+      ),
+    ],
+    'package.imports and package.exports field must either be a string or an object with type {[key: string]: string | null}',
+  ),
+)
 
 export function parsePartialPackageJsonDefinition(
   value: unknown,
 ): ParseResult<PartialPackageJsonDefinition> {
-  return applicative4Either(
-    (name, main, module, browser) => {
+  return applicative6Either(
+    (name, main, module, browser, imports, exports) => {
       let result: PartialPackageJsonDefinition = {}
       setOptionalProp(result, 'name', name)
       setOptionalProp(result, 'main', main)
       setOptionalProp(result, 'module', module)
       setOptionalProp(result, 'browser', browser)
+      setOptionalProp(result, 'imports', imports)
+      setOptionalProp(result, 'exports', exports)
       return result
     },
     optionalObjectKeyParser(parseString, 'name')(value),
@@ -245,10 +530,12 @@ export function parsePartialPackageJsonDefinition(
             ),
           ),
         ],
-        'package.browser field must either be a string or an object with type {[key: string]: string}',
+        'package.browser field must either be a string or an object with type {[key: string]: string | false}',
       ),
       'browser',
     )(value),
+    optionalObjectKeyParser(importsExportsParser, 'imports')(value),
+    optionalObjectKeyParser(importsExportsParser, 'exports')(value),
   )
 }
 
@@ -280,8 +567,6 @@ function processPackageJson(
         return resolveSuccess(normalizePath([...containerFolder, ...getPartsFromPath(moduleEntry)]))
       } else if (moduleName != null) {
         return resolveSuccess(normalizePath([...containerFolder, ...getPartsFromPath(moduleName)]))
-      } else if (containerFolder.length > 0) {
-        return resolveSuccess(normalizePath(containerFolder))
       }
 
       return resolveNotPresent
@@ -290,137 +575,21 @@ function processPackageJson(
   )
 }
 
-function resolvePackageJson(
+function findPackageJsonForPath(
   fileLookupFn: FileLookupFn,
-  packageJsonFolder: string[],
+  originPathParts: string[],
 ): FileLookupResult {
-  const normalizedFolderPath = normalizePath(packageJsonFolder)
-  const folderPackageJson = fileLookupFn([...normalizedFolderPath, 'package.json'], true)
-  if (isResolveSuccess(folderPackageJson) && isEsCodeFile(folderPackageJson.success.file)) {
-    const mainEntryPath = processPackageJson(
-      folderPackageJson.success.file.fileContents,
-      normalizedFolderPath,
-    )
-    if (isResolveSuccess(mainEntryPath)) {
-      // try loading the entry path as a file
-      const mainEntryResult = fileLookupFn(mainEntryPath.success, false)
-      if (isResolveSuccess(mainEntryResult)) {
-        return mainEntryResult
-      } else {
-        // fallback to loading it as a folder with an index.js
-        const indexJsPath = [...mainEntryPath.success, 'index']
-        return fileLookupFn(indexJsPath, false)
-      }
-    } else {
-      return resolveNotPresent
-    }
-  }
-  return resolveNotPresent
-}
-
-function findPackageJsonForPath(fileLookupFn: FileLookupFn, origin: string[]): FileLookupResult {
   // 1. look for <origin>/package.json
-  const packageJsonResult = fileLookupFn([...origin, 'package.json'], true)
+  const packageJsonResult = fileLookupFn(`./package.json`, makePathFromParts(originPathParts))
   if (isResolveSuccess(packageJsonResult)) {
     return packageJsonResult
   } else {
     // 2. repeat in the parent folder
-    if (origin.length === 0) {
+    if (originPathParts.length === 0) {
       // we exhausted all folders without success
       return resolveNotPresent
     } else {
-      return findPackageJsonForPath(fileLookupFn, origin.slice(0, -1))
-    }
-  }
-}
-
-function resolveNonRelativeModule(
-  fileLookupFn: FileLookupFn,
-  importOrigin: string[],
-  toImport: string[],
-): FileLookupResult {
-  const pathElements = [...importOrigin, 'node_modules', ...toImport]
-  // 1. look for ./node_modules/<package_name>.js
-  const packageNameResult = fileLookupFn(pathElements, false)
-  if (isResolveSuccess(packageNameResult)) {
-    return packageNameResult
-  } else {
-    // 2. look for ./node_modules/<package_name>/package.json
-    const packageJsonResult = resolvePackageJson(fileLookupFn, pathElements)
-    if (isResolveSuccess(packageJsonResult)) {
-      return packageJsonResult
-    } else {
-      // 3. look for ./node_modules/<package_name>/index.js
-      const indexJsPath = [...pathElements, 'index']
-      const indexJSResult = fileLookupFn(indexJsPath, false)
-      if (isResolveSuccess(indexJSResult)) {
-        return indexJSResult
-      } else {
-        // 4. repeat in the parent folder
-        if (importOrigin.length === 0) {
-          // we exhausted all folders without success
-          return resolveNotPresent
-        } else {
-          return resolveNonRelativeModule(fileLookupFn, importOrigin.slice(0, -1), toImport)
-        }
-      }
-    }
-  }
-}
-
-function resolveRelativeModule(
-  fileLookupFn: FileLookupFn,
-  importOrigin: string[],
-  toImport: string[],
-): FileLookupResult {
-  const pathElements = [...importOrigin, ...toImport]
-  // 1. look for a file named <import_name>
-  const importNameResult = fileLookupFn(pathElements, false)
-  if (isResolveSuccess(importNameResult)) {
-    return importNameResult
-  } else {
-    // 2. look for <import_name>/package.json
-    const packageJsonResult = resolvePackageJson(fileLookupFn, pathElements)
-    if (isResolveSuccess(packageJsonResult)) {
-      return packageJsonResult
-    } else {
-      // 3. look for <import_name>/index.js
-      return fileLookupFn([...pathElements, 'index'], false)
-    }
-  }
-}
-
-// Module resolution logic based on what Node / Typescript does https://www.typescriptlang.org/docs/handbook/module-resolution.html#node
-
-// TODO there's way more module resolution rules here https://parceljs.org/module_resolution.html#module-resolution
-
-// TODO an even more comprehensive writeup https://nodejs.org/api/modules.html#modules_all_together
-
-function resolveModuleInternal(
-  fileLookupFn: FileLookupFn,
-  importOrigin: string,
-  toImport: string,
-): FileLookupResult {
-  if (toImport.startsWith('/')) {
-    // absolute import
-    return resolveRelativeModule(
-      fileLookupFn,
-      [], // this import is relative to the root
-      getPartsFromPath(toImport),
-    )
-  } else {
-    if (toImport.startsWith('.')) {
-      return resolveRelativeModule(
-        fileLookupFn,
-        getPartsFromPath(importOrigin).slice(0, -1),
-        getPartsFromPath(toImport),
-      )
-    } else {
-      return resolveNonRelativeModule(
-        fileLookupFn,
-        getPartsFromPath(importOrigin).slice(0, -1),
-        getPartsFromPath(toImport),
-      )
+      return findPackageJsonForPath(fileLookupFn, originPathParts.slice(0, -1))
     }
   }
 }
@@ -476,15 +645,73 @@ function resolveModuleAndApplySubstitutions(
   importOrigin: string,
   toImport: string,
 ): FileLookupResult {
-  function lookupFn(path: string[], direct: boolean): FileLookupResult {
-    const nodeModulesResult = nodeModulesFileLookup(nodeModules, path, direct)
-    if (isResolveSuccess(nodeModulesResult)) {
-      return nodeModulesResult
-    } else {
-      return projectContentsFileLookup(projectContents, path, direct)
+  // 1 Check if it's a core module - Node JS only
+  // 2 If path begins with /, start searching from file system root
+  // 3 If path begins with /, ./, ../
+  //   3.1 Attempt to load file
+  //   3.2 Attempt to load directory
+  //   3.3 Throw "not found"
+  // 4 If path begins with #
+  //   4.1 Attempt to load package imports
+  // 5 Attempt to load package self
+  // 6 Attempt to load node modules
+  // 7 Throw "not found"
+
+  function lookupFn(path: string, innerImportOrigin: string): FileLookupResult {
+    if (path.startsWith('/') || path.startsWith('./') || path.startsWith('../')) {
+      const pathForLookup = path.startsWith('/')
+        ? path
+        : `${stripTrailingSlash(innerImportOrigin)}/${path}`
+      const pathParts = getPartsFromPath(pathForLookup)
+      const lastPart = last(pathParts)
+      const projectContentsFileLookupResult = projectContentsFileLookup(projectContents, pathParts)
+
+      if (isResolveSuccess(projectContentsFileLookupResult)) {
+        return projectContentsFileLookupResult
+      }
+      if (lastPart == null || getFileExtension(lastPart) === '') {
+        // Don't attempt the directory lookup if the target is an actual file that we failed to find
+        const projectContentsDirectoryLookupResult = projectContentsDirectoryLookup(
+          projectContents,
+          pathParts,
+        )
+        if (isResolveSuccess(projectContentsDirectoryLookupResult)) {
+          return projectContentsDirectoryLookupResult
+        }
+      }
+    } else if (path.startsWith('#')) {
+      // load package imports
+      return packageImportsLookup(
+        path,
+        innerImportOrigin,
+        fileLookupForProjectContents(projectContents),
+        lookupFn,
+      )
     }
+
+    // load package self
+    const packageSelfResult = packageSelfLookup(
+      path,
+      innerImportOrigin,
+      fileLookupForProjectContents(projectContents),
+      lookupFn,
+    )
+
+    if (isResolveSuccess(packageSelfResult)) {
+      return packageSelfResult
+    }
+
+    // finally, load from node modules
+    return nodeModulesFileLookup(
+      nodeModules,
+      path,
+      innerImportOrigin.startsWith('/node_modules') ? innerImportOrigin : '/node_modules',
+      lookupFn,
+    )
   }
 
+  // We first need to check for the presence of a `browser` field in the current module's package.json, as that
+  // can suggest an alternative mapping to use for modules it is importing https://github.com/defunctzombie/package-browser-field-spec
   const substitutedImport: Either<boolean, string> = findSubstitutionsForImport(
     lookupFn,
     importOrigin,
@@ -499,7 +726,8 @@ function resolveModuleAndApplySubstitutions(
       substitutedImport.value,
       filePathMappings,
     )
-    return resolveModuleInternal(lookupFn, importOrigin, unAliasedImport)
+
+    return lookupFn(unAliasedImport, getParentDirectory(importOrigin))
   }
 }
 
