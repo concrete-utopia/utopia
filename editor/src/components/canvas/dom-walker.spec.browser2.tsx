@@ -33,8 +33,26 @@ import { mouseClickAtPoint, mouseDownAtPoint, mouseMoveToPoint } from './event-h
 import { EditorModes } from '../editor/editor-modes'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
+import type { SinonFakeTimers } from 'sinon'
+import sinon from 'sinon'
 
 disableStoredStateforTests()
+
+function configureSetupTeardown(): { clock: { current: SinonFakeTimers } } {
+  let clock: { current: SinonFakeTimers } = { current: null as any } // it will be non-null thanks to beforeEach
+  beforeEach(function () {
+    // TODO there is something wrong with sinon fake timers here that remotely break other tests that come after these. If your new browser tests are broken, this may be the reason.
+    clock.current = sinon.useFakeTimers({
+      // the timers will tick so the editor is not totally broken, but we can fast-forward time at will
+      // WARNING: the Sinon fake timers will advance in 20ms increments
+      shouldAdvanceTime: true,
+    })
+  })
+  afterEach(function () {
+    clock.current?.restore()
+  })
+  return { clock: clock }
+}
 
 describe('DOM Walker', () => {
   it('Test Project metadata contains entry for all elements', async () => {
@@ -413,6 +431,7 @@ describe('Capturing closest offset parent', () => {
 })
 
 describe('Observing runtime changes', () => {
+  const { clock } = configureSetupTeardown()
   const changingProjectCode = `
     import * as React from 'react'
     import { Scene, Storyboard } from 'utopia-api'
@@ -512,14 +531,17 @@ describe('Observing runtime changes', () => {
     }
 
     await mouseClickAtPoint(buttonToClick, clickPoint)
-    await wait(20)
+    clock.current.tick(10)
     await renderResult.getDispatchFollowUpActionsFinished()
+    clock.current.tick(10)
 
     const recordedActionsAfter = [...renderResult.getRecordedActions()]
     const recordedActionsDuring = recordedActionsAfter.slice(recordedActionsBefore.length)
 
     const runDomWalkerActions = recordedActionsDuring.filter((a) => a.action === 'RUN_DOM_WALKER')
-    expect(runDomWalkerActions.length).toEqual(2) // Both the resize observer and mutation observer will fire
+    // Both the observers might fire, but they should only result in a single DOM walker run because of
+    // the shared functionality that fires the DOM walker with a timeout.
+    expect(runDomWalkerActions.length).toEqual(2)
 
     // Check there is metadata for the target at the end
     const metadataAfter = MetadataUtils.findElementByElementPath(
