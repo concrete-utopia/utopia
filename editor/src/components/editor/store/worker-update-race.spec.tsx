@@ -10,6 +10,7 @@ import { renderTestEditorWithModel } from '../../canvas/ui-jsx.test-utils'
 import { updateFile } from '../actions/action-creators'
 import { StoryboardFilePath } from './editor-state'
 import type { ParseCacheOptions } from '../../../core/shared/parse-cache-utils'
+import type { FilePathMappings } from '../../../core/model/project-file-utils'
 
 // We have to prefix all of these with "mock" otherwise Jest won't allow us to use them below
 const mockDefer = defer
@@ -23,6 +24,7 @@ jest.mock('../../../core/workers/common/worker-types', () => ({
   async getParseResult(
     workers: any,
     files: Array<ParseOrPrint>,
+    filePathMappings: FilePathMappings,
     alreadyExistingUIDs: Set<string>,
     applySteganography: SteganographyMode,
     parsingCacheOptions: ParseCacheOptions,
@@ -30,7 +32,14 @@ jest.mock('../../../core/workers/common/worker-types', () => ({
     mockParseStartedCount++
     const result = await jest
       .requireActual('../../../core/workers/common/worker-types')
-      .getParseResult(workers, files, alreadyExistingUIDs, applySteganography, parsingCacheOptions)
+      .getParseResult(
+        workers,
+        files,
+        filePathMappings,
+        alreadyExistingUIDs,
+        applySteganography,
+        parsingCacheOptions,
+      )
     mockLock2.resolve()
     await mockLock1
     mockLock1 = mockDefer()
