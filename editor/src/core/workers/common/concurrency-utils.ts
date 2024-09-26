@@ -18,5 +18,5 @@ export function getParserChunkCount() {
 
 // TODO: this will be configurable from the RYO menu
 export function isConcurrencyLoggingEnabled() {
-  return true
+  return isConcurrencyEnabled()
 }

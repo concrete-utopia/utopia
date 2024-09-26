@@ -7,6 +7,7 @@ import { assertNever } from '../../../core/shared/utils'
 import {
   expectNoAction,
   expectSingleUndo2Saves,
+  expectSingleUndoNSaves,
   selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
 } from '../../../utils/utils.test-utils'
@@ -1373,7 +1374,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       const control = editor.renderedDOM.getByTestId('frame-width-number-input')
       await mouseClickAtPoint(control, { x: 5, y: 5 })
-      await expectSingleUndo2Saves(editor, async () => {
+      await expectSingleUndoNSaves(editor, 1, async () => {
         act(() => {
           fireEvent.change(control, { target: { value: '300' } })
           fireEvent.blur(control)
@@ -1462,7 +1463,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       const control = editor.renderedDOM.getByTestId('frame-left-number-input')
       await mouseClickAtPoint(control, { x: 5, y: 5 })
-      await expectSingleUndo2Saves(editor, async () => {
+      await expectSingleUndoNSaves(editor, 1, async () => {
         act(() => {
           fireEvent.change(control, { target: { value: '-50' } })
           fireEvent.blur(control)
@@ -1551,7 +1552,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       const control = editor.renderedDOM.getByTestId('frame-height-number-input')
       await mouseClickAtPoint(control, { x: 5, y: 5 })
-      await expectSingleUndo2Saves(editor, async () => {
+      await expectSingleUndoNSaves(editor, 1, async () => {
         act(() => {
           fireEvent.change(control, { target: { value: '150' } })
           fireEvent.blur(control)
@@ -1640,7 +1641,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       const control = editor.renderedDOM.getByTestId('frame-width-number-input')
       await mouseClickAtPoint(control, { x: 5, y: 5 })
-      await expectSingleUndo2Saves(editor, async () => {
+      await expectSingleUndoNSaves(editor, 1, async () => {
         act(() => {
           fireEvent.change(control, { target: { value: '200' } })
           fireEvent.blur(control)
@@ -1811,7 +1812,7 @@ describe('Fixed / Fill / Hug control', () => {
       const control = editor.renderedDOM.getByTestId('frame-width-number-input')
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
-      await expectSingleUndo2Saves(editor, async () => {
+      await expectSingleUndoNSaves(editor, 1, async () => {
         act(() => {
           fireEvent.change(control, { target: { value: '110' } })
           fireEvent.blur(control)

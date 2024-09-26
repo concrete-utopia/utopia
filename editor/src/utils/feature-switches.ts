@@ -48,7 +48,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Project Thumbnail Generation': false,
   'Debug - Print UIDs': false,
   'Debug – Connections': false,
-  'Parser Concurrency': true,
+  'Parser Concurrency': !IS_TEST_ENVIRONMENT,
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
   'Roll Your Own': false,
 }
