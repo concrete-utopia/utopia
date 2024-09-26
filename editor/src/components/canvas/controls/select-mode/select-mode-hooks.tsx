@@ -58,6 +58,7 @@ import { getAllLockedElementPaths } from '../../../../core/shared/element-lockin
 import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
 import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks'
 import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
+import { handleMouseUp } from '../../../../templates/global-handlers'
 
 export function isDragInteractionActive(editorState: EditorState): boolean {
   return editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
@@ -662,10 +663,14 @@ function useSelectOrLiveModeSelectAndHover(
         (!hadInteractionSessionThatWasCancelled || !draggedOverThreshold.current) &&
         (activeControl == null || activeControl.type === 'BOUNDING_AREA')
 
+      let editorActions: Array<EditorAction> = []
+
       if (event.type === 'mousedown') {
         didWeHandleMouseDown.current = true
       }
       if (event.type === 'mouseup') {
+        const handleMouseUpActions = handleMouseUp(event.nativeEvent)
+        editorActions.push(...handleMouseUpActions)
         // Clear the interaction session tracking flag
         interactionSessionHappened.current = false
         // didWeHandleMouseDown is used to avoid selecting when closing text editing
@@ -673,6 +678,7 @@ function useSelectOrLiveModeSelectAndHover(
         draggedOverThreshold.current = false
 
         if (!mouseUpSelectionAllowed) {
+          dispatch(editorActions)
           // We should skip this mouseup
           return
         }
@@ -684,6 +690,7 @@ function useSelectOrLiveModeSelectAndHover(
         !active ||
         !(isLeftClick || isRightClick)
       ) {
+        dispatch(editorActions)
         // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction, or the hook is not active
         return
       }
@@ -704,7 +711,6 @@ function useSelectOrLiveModeSelectAndHover(
 
       const isMultiselect = event.shiftKey
       const isDeselect = foundTarget == null && !isMultiselect
-      let editorActions: Array<EditorAction> = []
 
       if (foundTarget != null || isDeselect) {
         if (
