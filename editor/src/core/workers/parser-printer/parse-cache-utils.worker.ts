@@ -37,6 +37,10 @@ function stringIdentifiers(filename: string, content: string): (string | object)
   return [filename]
 }
 
+function shouldSkipCacheForFile(filename: string, parsingCacheOptions: ParseCacheOptions): boolean {
+  return filename === ARBITRARY_CODE_FILE_NAME && !parsingCacheOptions.cacheArbitraryCode
+}
+
 export function getParseCacheVersion(): string {
   // currently we're using the commit hash which is pretty aggresive cache-busting
   // TODO: consider refining cache-busting strategy to change only on ParsedTextFile shape changes
@@ -52,7 +56,7 @@ export async function getParseResultFromCache(
   content: string,
   parsingCacheOptions: ParseCacheOptions,
 ): Promise<ParseFileResult | null> {
-  if (filename === ARBITRARY_CODE_FILE_NAME && !parsingCacheOptions.cacheArbitraryCode) {
+  if (shouldSkipCacheForFile(filename, parsingCacheOptions)) {
     return null
   }
   const cacheKey = getCacheKey(filename)
@@ -72,13 +76,13 @@ export async function storeParseResultInCache(
   content: string,
   result: ParseFileResult,
   parsingCacheOptions: ParseCacheOptions,
-) {
+): Promise<void> {
+  if (shouldSkipCacheForFile(filename, parsingCacheOptions)) {
+    return
+  }
   logCacheMessage(parsingCacheOptions, 'Caching', ...stringIdentifiers(filename, content))
   const cacheKey = getCacheKey(filename)
   if (filename === ARBITRARY_CODE_FILE_NAME) {
-    if (!parsingCacheOptions.cacheArbitraryCode) {
-      return
-    }
     // for the special filename 'code.tsx', we store multiple contents, so we need to read it first
     const cachedResult = (await getParseCacheStore().getItem<CachedParseResult>(cacheKey)) ?? {}
     // limit the arbitrary code cache keys size
