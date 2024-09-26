@@ -171,7 +171,7 @@ export function doNothingStrategy(canvasState: InteractionCanvasState): CanvasSt
           }),
           setCursorCommand(CSSCursor.NotPermitted),
         ],
-        'rerender-all-elements',
+        [],
       )
     },
   }

@@ -129,9 +129,7 @@ export function ancestorMetaStrategy(
       return nextAncestorResult.map((s) => ({
         ...s,
         fitness: fitness(s),
-        apply: appendElementsToRerenderToApplyResult(appendCommandsToApplyResult(s.apply, [], []), [
-          target,
-        ]),
+        apply: appendElementsToRerenderToApplyResult(s.apply, [target]),
       }))
     } else {
       // Otherwise we should stop at this ancestor and return the strategies for this ancestor

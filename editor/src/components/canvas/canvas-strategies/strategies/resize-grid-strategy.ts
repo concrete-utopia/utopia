@@ -190,7 +190,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         ),
       ]
 
-      return strategyApplicationResult(commands, 'rerender-all-elements')
+      return strategyApplicationResult(commands, [gridPath])
     },
   }
 }

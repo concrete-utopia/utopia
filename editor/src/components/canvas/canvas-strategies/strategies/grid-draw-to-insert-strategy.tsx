@@ -165,7 +165,7 @@ const gridDrawToInsertStrategyInner =
               showGridControls('mid-interaction', targetParent),
               updateHighlightedViews('mid-interaction', [targetParent]),
             ],
-            'rerender-all-elements',
+            [],
             {
               ...customStrategyState,
               grid: {

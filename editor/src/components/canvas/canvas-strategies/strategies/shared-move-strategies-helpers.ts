@@ -164,7 +164,7 @@ export function applyMoveCommon(
           setCursorCommand(CSSCursor.Select),
           setActiveFrames(getActiveFrames(commandsForSelectedElements.intendedBounds)),
         ],
-        'rerender-all-elements',
+        targets,
       )
     } else {
       const constrainedDragAxis =
@@ -205,7 +205,7 @@ export function applyMoveCommon(
           setCursorCommand(CSSCursor.Select),
           setActiveFrames(getActiveFrames(commandsForSelectedElements.intendedBounds)),
         ],
-        'rerender-all-elements',
+        [...targets, ...targetsForSnapping],
       )
     }
   } else {

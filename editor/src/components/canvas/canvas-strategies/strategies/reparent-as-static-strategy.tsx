@@ -347,7 +347,7 @@ export function applyStaticReparent(
 
             return {
               commands: [...midInteractionCommands, ...interactionFinishCommands],
-              elementsToRerender: 'rerender-all-elements',
+              elementsToRerender: elementsToRerender,
               customStatePatch: { duplicatedElementNewUids, elementsToRerender },
               status: 'success',
             }

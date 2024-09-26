@@ -141,7 +141,7 @@ export function absoluteResizeBoundingBoxStrategy(
       }),
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'RESIZE_HANDLE', 1),
-    apply: () => {
+    apply: (lifecycle) => {
       if (
         interactionSession != null &&
         interactionSession.interactionData.type === 'DRAG' &&
@@ -296,7 +296,7 @@ export function absoluteResizeBoundingBoxStrategy(
                 updateHighlightedViews('mid-interaction', []),
                 setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
               ],
-              'rerender-all-elements',
+              lifecycle === 'mid-interaction' ? retargetedTargets : 'rerender-all-elements',
             )
           }
         } else {
