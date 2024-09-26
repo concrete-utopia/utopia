@@ -5,6 +5,7 @@ import {
   isInfinityRectangle,
   offsetPoint,
   rectContainsPoint,
+  rectContainsPointInclusive,
 } from '../../../../core/shared/math-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { type GridCellGlobalFrames, type TargetGridCellData } from './grid-helpers'
@@ -46,7 +47,7 @@ function getGridCellUnderPoint(
 ): TargetGridCellData | null {
   for (let i = 0; i < gridCellGlobalFrames.length; i++) {
     for (let j = 0; j < gridCellGlobalFrames[i].length; j++) {
-      if (rectContainsPoint(gridCellGlobalFrames[i][j], point)) {
+      if (rectContainsPointInclusive(gridCellGlobalFrames[i][j], point)) {
         return {
           gridCellCoordinates: gridCellCoordinates(i + 1, j + 1),
           cellCanvasRectangle: gridCellGlobalFrames[i][j],
