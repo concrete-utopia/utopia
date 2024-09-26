@@ -324,16 +324,28 @@ function findClosestPackageScopeToPath(
   path: string,
   localFileLookup: LocalFileLookup,
 ): PackageLookupResult {
-  let originPathPartsToTest = getPartsFromPath(path)
-  let packageJsonFileResult: FileLookupResult = resolveNotPresent
-  while (originPathPartsToTest.length > 0 && packageJsonFileResult === resolveNotPresent) {
-    packageJsonFileResult = localFileLookup(originPathPartsToTest.concat('package.json'))
-    originPathPartsToTest = dropLast(originPathPartsToTest)
+  const originPathPartsToTest = getPartsFromPath(path)
+  const allPossiblePackageJsonPaths = [['package.json']]
+    .concat(
+      originPathPartsToTest.map((_part, index) =>
+        originPathPartsToTest.slice(0, index + 1).concat('package.json'),
+      ),
+    )
+    .reverse()
+
+  for (const possiblePath of allPossiblePackageJsonPaths) {
+    const packageJsonFileResult = localFileLookup(possiblePath)
+    if (isResolveSuccess(packageJsonFileResult)) {
+      return {
+        packageJsonFileResult: packageJsonFileResult,
+        packageJsonDir: makePathFromParts(possiblePath.slice(0, -1)),
+      }
+    }
   }
 
   return {
-    packageJsonFileResult: packageJsonFileResult,
-    packageJsonDir: makePathFromParts(originPathPartsToTest),
+    packageJsonFileResult: resolveNotPresent,
+    packageJsonDir: '',
   }
 }
 
@@ -353,6 +365,7 @@ function packageExportsLookup(
   packageJsonLookupFn: LocalFileLookup,
   lookupFn: FileLookupFn,
 ): FileLookupResult {
+  // FIXME we need to be including the path and originPath in the package lookup
   return packageImportsExportsLookup(path, originPath, packageJsonLookupFn, lookupFn, 'exports')
 }
 

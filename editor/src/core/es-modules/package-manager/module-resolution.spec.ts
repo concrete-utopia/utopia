@@ -33,6 +33,34 @@ const sampleProjectContents: ProjectContentTreeRoot = contentsToTree({
     null,
     0,
   ),
+  '/package.json': textFile(
+    textFileContents(
+      `
+    {
+      "name": "sample-project",
+      "exports": {
+        "./exported-module": "./exported-module-main.js"
+      },
+      "imports": {
+        "#dep-object": {
+          "default": "./src/dep-object.js"
+        },
+        "#dep-simple": "./src/dep-simple.js"
+      }
+    }`,
+      unparsed,
+      RevisionsState.CodeAhead,
+    ),
+    null,
+    null,
+    0,
+  ),
+  '/exported-module-main.js': textFile(
+    textFileContents('export const ExportedModuleMain = 1', unparsed, RevisionsState.CodeAhead),
+    null,
+    null,
+    0,
+  ),
   '/a/some/nested/file.js': textFile(
     textFileContents('export const Cake = "tasty"', unparsed, RevisionsState.CodeAhead),
     null,
@@ -47,6 +75,18 @@ const sampleProjectContents: ProjectContentTreeRoot = contentsToTree({
   ),
   '/src/thing.js': textFile(
     textFileContents('export const Thing = 1', unparsed, RevisionsState.CodeAhead),
+    null,
+    null,
+    0,
+  ),
+  '/src/dep-object.js': textFile(
+    textFileContents('export const DepObject = 1', unparsed, RevisionsState.CodeAhead),
+    null,
+    null,
+    0,
+  ),
+  '/src/dep-simple.js': textFile(
+    textFileContents('export const DepSimple = 1', unparsed, RevisionsState.CodeAhead),
     null,
     null,
     0,
@@ -242,6 +282,46 @@ describe('ES Package Manager Module Resolution', () => {
       'some-module',
     )
     expect(resolveResult.type).toEqual('RESOLVE_SUCCESS_IGNORE_MODULE')
+  })
+
+  it('resolves package exports for local package', () => {
+    expect(resolve('/src/app.js', 'sample-project/exported-module')).toEqual(
+      '/exported-module-main.js',
+    )
+  })
+
+  it('resolves package imports simple for local package', () => {
+    expect(resolve('/src/app.js', '#dep-simple')).toEqual('/src/dep-simple.js')
+  })
+  it('resolves package imports object for local package', () => {
+    expect(resolve('/src/app.js', '#dep-object')).toEqual('/src/dep-object.js')
+  })
+
+  it('resolves package exports main entry for node module', () => {
+    expect(resolve('/src/app.js', 'module-with-exports-and-imports')).toEqual(
+      '/node_modules/module-with-exports-and-imports/index.main.js',
+    )
+  })
+  it('resolves package exports object main entry for node module', () => {
+    expect(resolve('/src/app.js', 'module-with-exports-and-imports-object')).toEqual(
+      '/node_modules/module-with-exports-and-imports-object/index.main.js',
+    )
+  })
+  it('resolves package exports object submodule export for node module', () => {
+    expect(resolve('/src/app.js', 'module-with-exports-and-imports-object/submodule.js')).toEqual(
+      '/node_modules/module-with-exports-and-imports-object/src/submodule.js',
+    )
+  })
+
+  it('resolves package imports for node module', () => {
+    expect(
+      resolve('/node_modules/module-with-exports-and-imports/src/something.js', '#dep'),
+    ).toEqual('/node_modules/module-with-exports-and-imports/dep.js')
+  })
+  it('resolves package imports object for node module', () => {
+    expect(
+      resolve('/node_modules/module-with-exports-and-imports-object/src/something.js', '#dep'),
+    ).toEqual('/node_modules/module-with-exports-and-imports-object/dep.js')
   })
 
   // it('loads self references', () => {
