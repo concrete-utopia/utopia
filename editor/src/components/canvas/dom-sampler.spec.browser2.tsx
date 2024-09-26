@@ -5,6 +5,7 @@ import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
 import { objectMap } from '../../core/shared/object-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
+import { selectComponentsForTest } from '../../utils/utils.test-utils'
 import { runDOMWalker, setFocusedElement } from '../editor/actions/action-creators'
 import { navigatorEntryToKey } from '../editor/store/editor-state'
 import { getNavigatorTargetsFromEditorState } from '../navigator/navigator-utils'
@@ -461,248 +462,272 @@ function makeTestProjectCodeWithStoryboard(codeForComponents: string): string {
 describe('Grid dom sampler tests', () => {
   it('gridCellGlobalFrames calculated correctly', async () => {
     const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`<div
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid={'storyboard'}>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
       style={{
-        backgroundColor: '#fff',
+        width: 700,
+        height: 759,
         position: 'absolute',
-        left: 127,
-        top: 84,
-        width: 519,
-        height: 443,
-        display: 'grid',
-        gridTemplateColumns: '150px min-content 1fr 1fr',
-        gridTemplateRows: 'min-content 1fr 1fr 1fr 1fr',
-        gridGap: 10,
-        padding: 10,
+        left: 212,
+        top: 128,
       }}
-      data-uid={'grid'}
+      data-label='Playground'
+      data-uid={'scene'}
     >
       <div
         style={{
-          backgroundColor: '#09f',
-          width: '100%',
-          height: '100%',
-          gridColumn: 1,
-          gridRow: 1,
-          borderRadius: 10,
+          backgroundColor: '#fff',
+          position: 'absolute',
+          left: 46,
+          top: 36,
+          width: 553,
+          height: 499,
+          display: 'grid',
+          gridTemplateColumns: '150px min-content 1fr 1fr',
+          gridTemplateRows: 'min-content 1fr 1fr 1fr 1fr',
+          gridGap: 20,
+          padding: 10,
+          justifyContent: 'space-between',
+          justifyItems: 'space-evenly',
         }}
-        data-uid={'child'}
-      />
-      <div
-        style={{
-          backgroundColor: '#9f0',
-          width: 80,
-          height: 50,
-          gridColumn: 2,
-          gridRow: 1,
-          borderTopLeftRadius: 10,
-          borderTopRightRadius: 10,
-          borderBottomRightRadius: 10,
-          borderBottomLeftRadius: 10,
-        }}
-      />
-      <div
-        style={{
-          backgroundColor: '#f09',
-          width: '100%',
-          height: '100%',
-          gridColumn: 1,
-          gridRowStart: 2,
-          gridRowEnd: 6,
-          borderTopLeftRadius: 10,
-          borderTopRightRadius: 10,
-          borderBottomRightRadius: 10,
-          borderBottomLeftRadius: 10,
-        }}
-      />
-      <div
-        style={{
-          backgroundColor: '#f90',
-          width: '100%',
-          height: '100%',
-          gridColumn: 2,
-          gridRow: 3,
-          borderRadius: 10,
-        }}
-      />
-      <div
-        style={{
-          backgroundColor: '#f90',
-          width: '100%',
-          height: '100%',
-          gridColumn: 2,
-          gridRow: 3,
-          borderRadius: 10,
-        }}
-      />
-      <div
-        style={{
-          backgroundColor: '#90f',
-          width: '100%',
-          height: '100%',
-          gridColumn: 2,
-          gridRow: 4,
-          borderRadius: 10,
-        }}
-      />
-      <div
-        style={{
-          backgroundColor: '#0f9',
-          width: 39,
-          height: 39,
-          alignSelf: 'center',
-          justifySelf: 'center',
-          gridColumn: 2,
-          gridRow: 5,
-          borderRadius: 10,
-        }}
-      />
-    </div>`),
+        data-uid='grid'
+      >
+        <div
+          style={{
+            backgroundColor: '#09f',
+            width: '100%',
+            height: '100%',
+            gridColumn: 1,
+            gridRow: 1,
+            borderRadius: 10,
+          }}
+          data-uid='child'
+        />
+        <div
+          style={{
+            backgroundColor: '#9f0',
+            width: 80,
+            height: 50,
+            gridColumn: 2,
+            gridRow: 1,
+            borderTopLeftRadius: 10,
+            borderTopRightRadius: 10,
+            borderBottomRightRadius: 10,
+            borderBottomLeftRadius: 10,
+          }}
+        />
+        <div
+          style={{
+            backgroundColor: '#f09',
+            width: '100%',
+            height: '100%',
+            gridColumn: 1,
+            gridRowStart: 2,
+            gridRowEnd: 6,
+            borderTopLeftRadius: 10,
+            borderTopRightRadius: 10,
+            borderBottomRightRadius: 10,
+            borderBottomLeftRadius: 10,
+          }}
+        />
+        <div
+          style={{
+            backgroundColor: '#f90',
+            width: '100%',
+            height: '100%',
+            gridColumn: 2,
+            gridRow: 3,
+            borderRadius: 10,
+          }}
+        />
+        <div
+          style={{
+            backgroundColor: '#f90',
+            width: '100%',
+            height: '100%',
+            gridColumn: 2,
+            gridRow: 3,
+            borderRadius: 10,
+          }}
+        />
+        <div
+          style={{
+            backgroundColor: '#90f',
+            width: '100%',
+            height: '100%',
+            gridColumn: 2,
+            gridRow: 4,
+            borderRadius: 10,
+          }}
+        />
+        <div
+          style={{
+            backgroundColor: '#0f9',
+            width: 39,
+            height: 39,
+            alignSelf: 'center',
+            justifySelf: 'center',
+            gridColumn: 2,
+            gridRow: 5,
+            borderRadius: 10,
+          }}
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`,
       'await-first-dom-report',
     )
 
+    await selectComponentsForTest(editor, [EP.fromString('storyboard/scene/grid')])
     await editor.dispatch([runDOMWalker()], true)
 
     // non-grids don't have cell measurements:
     expect(
-      editor.getEditorState().editor.jsxMetadata[
-        'utopia-storyboard-uid/scene-aaa/app-entity:grid/child'
-      ].specialSizeMeasurements.gridCellGlobalFrames,
+      editor.getEditorState().editor.jsxMetadata['storyboard/scene/grid/child']
+        .specialSizeMeasurements.gridCellGlobalFrames,
     ).toBeNull()
 
     // grids have cell measurements:
     matchInlineSnapshotBrowser(
-      editor.getEditorState().editor.jsxMetadata['utopia-storyboard-uid/scene-aaa/app-entity:grid']
-        .specialSizeMeasurements.gridCellGlobalFrames,
+      editor.getEditorState().editor.jsxMetadata['storyboard/scene/grid'].specialSizeMeasurements
+        .gridCellGlobalFrames,
       `Array [
   Array [
     Object {
       \"height\": 50,
       \"width\": 150,
-      \"x\": 10,
-      \"y\": 10,
+      \"x\": 268,
+      \"y\": 174,
     },
     Object {
       \"height\": 50,
       \"width\": 80,
-      \"x\": 170,
-      \"y\": 10,
+      \"x\": 438,
+      \"y\": 174,
     },
     Object {
       \"height\": 50,
-      \"width\": 119.5,
-      \"x\": 260,
-      \"y\": 10,
+      \"width\": 121.5,
+      \"x\": 538,
+      \"y\": 174,
     },
     Object {
       \"height\": 50,
-      \"width\": 119.5,
-      \"x\": 389.5,
-      \"y\": 10,
+      \"width\": 121.5,
+      \"x\": 679.5,
+      \"y\": 174,
     },
   ],
   Array [
     Object {
-      \"height\": 83.25,
+      \"height\": 87.5,
       \"width\": 150,
-      \"x\": 10,
-      \"y\": 70,
+      \"x\": 268,
+      \"y\": 244,
     },
     Object {
-      \"height\": 83.25,
+      \"height\": 87.5,
       \"width\": 80,
-      \"x\": 170,
-      \"y\": 70,
+      \"x\": 438,
+      \"y\": 244,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 260,
-      \"y\": 70,
+      \"height\": 87.5,
+      \"width\": 121.5,
+      \"x\": 538,
+      \"y\": 244,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 389.5,
-      \"y\": 70,
+      \"height\": 87.5,
+      \"width\": 121.5,
+      \"x\": 679.5,
+      \"y\": 244,
     },
   ],
   Array [
     Object {
-      \"height\": 83.25,
+      \"height\": 87.5,
       \"width\": 150,
-      \"x\": 10,
-      \"y\": 163.25,
+      \"x\": 268,
+      \"y\": 351.5,
     },
     Object {
-      \"height\": 83.25,
+      \"height\": 87.5,
       \"width\": 80,
-      \"x\": 170,
-      \"y\": 163.25,
+      \"x\": 438,
+      \"y\": 351.5,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 260,
-      \"y\": 163.25,
+      \"height\": 87.5,
+      \"width\": 121.5,
+      \"x\": 538,
+      \"y\": 351.5,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 389.5,
-      \"y\": 163.25,
+      \"height\": 87.5,
+      \"width\": 121.5,
+      \"x\": 679.5,
+      \"y\": 351.5,
     },
   ],
   Array [
     Object {
-      \"height\": 83.25,
+      \"height\": 87.5,
       \"width\": 150,
-      \"x\": 10,
-      \"y\": 256.5,
+      \"x\": 268,
+      \"y\": 458.5,
     },
     Object {
-      \"height\": 83.25,
+      \"height\": 87.5,
       \"width\": 80,
-      \"x\": 170,
-      \"y\": 256.5,
+      \"x\": 438,
+      \"y\": 458.5,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 260,
-      \"y\": 256.5,
+      \"height\": 87.5,
+      \"width\": 121.5,
+      \"x\": 538,
+      \"y\": 458.5,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 389.5,
-      \"y\": 256.5,
+      \"height\": 87.5,
+      \"width\": 121.5,
+      \"x\": 679.5,
+      \"y\": 458.5,
     },
   ],
   Array [
     Object {
-      \"height\": 83.25,
+      \"height\": 87.5,
       \"width\": 150,
-      \"x\": 10,
-      \"y\": 349.75,
+      \"x\": 268,
+      \"y\": 566,
     },
     Object {
-      \"height\": 83.25,
+      \"height\": 87.5,
       \"width\": 80,
-      \"x\": 170,
-      \"y\": 349.75,
+      \"x\": 438,
+      \"y\": 566,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 260,
-      \"y\": 349.75,
+      \"height\": 87.5,
+      \"width\": 121.5,
+      \"x\": 538,
+      \"y\": 566,
     },
     Object {
-      \"height\": 83.25,
-      \"width\": 119.5,
-      \"x\": 389.5,
-      \"y\": 349.75,
+      \"height\": 87.5,
+      \"width\": 121.5,
+      \"x\": 679.5,
+      \"y\": 566,
     },
   ],
 ]`,
