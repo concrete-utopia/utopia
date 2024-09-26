@@ -2,38 +2,37 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import type { Alignment, Distribution, EditorAction } from '../editor/action-types'
-import {
-  alignSelectedViews,
-  distributeSelectedViews,
-  unsetProperty,
-} from '../editor/actions/action-creators'
-
-import { Button, FlexRow, Icn, Icons, SquareButton, colorTheme } from '../../uuiui'
-import { useDispatch } from '../editor/store/dispatch-context'
-import { UIGridRow } from './widgets/ui-grid-row'
-import { Substores, useEditorState } from '../editor/store/store-hook'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../core/shared/array-utils'
 import * as EP from '../../core/shared/element-path'
 import { zeroRectangle, zeroRectIfNullOrInfinity } from '../../core/shared/math-utils'
+import * as PP from '../../core/shared/property-path'
+import { assertNever } from '../../core/shared/utils'
+import { Button, Icn, Icons, SquareButton } from '../../uuiui'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import {
   DropdownMenu,
   regularDropdownMenuItem,
   separatorDropdownMenuItem,
 } from '../../uuiui/radix-components'
-import * as PP from '../../core/shared/property-path'
-import { assertNever } from '../../core/shared/utils'
-import type { ElementPath } from 'utopia-shared/src/types'
-import { mapDropNulls } from '../../core/shared/array-utils'
-import { OptionChainControl } from './controls/option-chain-control'
+import type { Alignment, Distribution, EditorAction } from '../editor/action-types'
+import {
+  alignSelectedViews,
+  distributeSelectedViews,
+  unsetProperty,
+} from '../editor/actions/action-creators'
+import { useDispatch } from '../editor/store/dispatch-context'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 import { getControlStyles } from './common/control-styles'
+import { OptionChainControl } from './controls/option-chain-control'
+import { UIGridRow } from './widgets/ui-grid-row'
+
+type ActiveAlignments = { [key in Alignment]: boolean }
 
 export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
   const dispatch = useDispatch()
 
   const disableAlign = props.numberOfTargets === 0
-  const multipleTargets = props.numberOfTargets > 1
 
   const selectedViews = useEditorState(
     Substores.metadata,
@@ -47,10 +46,8 @@ export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) 
     'AlignmentButtons jsxMetadata',
   )
 
-  type ActiveToggles = { [key in Alignment]: boolean }
-
-  const activeToggles: ActiveToggles = React.useMemo(() => {
-    function isActive(toggle: 'left' | 'hcenter' | 'right' | 'top' | 'vcenter' | 'bottom') {
+  const activeAlignments: ActiveAlignments = React.useMemo(() => {
+    function isActive(alignment: 'left' | 'hcenter' | 'right' | 'top' | 'vcenter' | 'bottom') {
       return (
         selectedViews.length > 0 &&
         selectedViews.every((view) => {
@@ -62,11 +59,12 @@ export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) 
           }
 
           const { align, justify } = MetadataUtils.getRelativeAlignJustify(jsxMetadata, view)
+
           const parent = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(view))
           const parentFrame =
             parent != null ? zeroRectIfNullOrInfinity(parent.globalFrame) : zeroRectangle
 
-          switch (toggle) {
+          switch (alignment) {
             case 'bottom':
               return isFlexOrGridChild
                 ? meta.specialSizeMeasurements[align] === 'flex-end' ||
@@ -108,7 +106,7 @@ export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) 
                         parentFrame.height / 2 - meta.specialSizeMeasurements.clientHeight / 2,
                       )
             default:
-              assertNever(toggle)
+              assertNever(alignment)
               return false
           }
         })
@@ -130,11 +128,14 @@ export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) 
     },
     [dispatch],
   )
+
   const disableDistribute = props.numberOfTargets < 3
+
   const distributeHorizontal = React.useCallback(
     () => distributeSelected('horizontal'),
     [distributeSelected],
   )
+
   const distributeVertical = React.useCallback(
     () => distributeSelected('vertical'),
     [distributeSelected],
@@ -148,87 +149,77 @@ export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) 
     )
   }, [])
 
-  const activeTogglesList = React.useMemo(() => {
-    return Object.entries(activeToggles).reduce((acc, [key, set]) => {
+  const activeAlignmentsList = React.useMemo(() => {
+    return Object.entries(activeAlignments).reduce((acc, [key, set]) => {
       if (set) {
         return acc.concat(key as Alignment)
       }
       return acc
     }, [] as Alignment[])
-  }, [activeToggles])
+  }, [activeAlignments])
 
-  const hasToggles = React.useMemo(() => {
-    return activeTogglesList.length > 0
-  }, [activeTogglesList])
+  const hasActiveAlignments = React.useMemo(() => {
+    return activeAlignmentsList.length > 0
+  }, [activeAlignmentsList])
 
-  const unsetToggle = React.useCallback(
-    (path: ElementPath) => {
-      let actions: { toggles: string[]; action: EditorAction }[] = []
+  const getUnsetAlignmentsActions = React.useCallback(() => {
+    return mapDropNulls((path) => {
+      let actions: { alignments: string[]; action: EditorAction }[] = []
+
       const isFlexOrGridChild = MetadataUtils.isFlexOrGridChild(jsxMetadata, path)
       const { align, justify } = MetadataUtils.getRelativeAlignJustify(jsxMetadata, path)
-      if (activeToggles.left || activeToggles.hcenter || activeToggles.right) {
-        const toggles = activeTogglesList.filter(
-          (t) => t === 'left' || t === 'hcenter' || t === 'right',
+
+      if (activeAlignments.left || activeAlignments.hcenter || activeAlignments.right) {
+        const alignments = activeAlignmentsList.filter(
+          (alignment) => alignment === 'left' || alignment === 'hcenter' || alignment === 'right',
         )
         actions.push({
           action: unsetProperty(path, PP.create('style', isFlexOrGridChild ? justify : 'left')),
-          toggles: toggles,
+          alignments: alignments,
         })
       }
-      if (activeToggles.top || activeToggles.vcenter || activeToggles.bottom) {
-        const toggles = activeTogglesList.filter(
-          (t) => t === 'top' || t === 'vcenter' || t === 'bottom',
+
+      if (activeAlignments.top || activeAlignments.vcenter || activeAlignments.bottom) {
+        const alignments = activeAlignmentsList.filter(
+          (alignment) => alignment === 'top' || alignment === 'vcenter' || alignment === 'bottom',
         )
         actions.push({
           action: unsetProperty(path, PP.create('style', isFlexOrGridChild ? align : 'top')),
-          toggles: toggles,
+          alignments: alignments,
         })
       }
-      return actions
-    },
-    [jsxMetadata, activeToggles, activeTogglesList],
-  )
 
-  const unsetToggles = React.useCallback(() => {
-    dispatch(
-      mapDropNulls(unsetToggle, selectedViews)
-        .flat()
-        .map((a) => a.action),
-    )
-  }, [selectedViews, dispatch, unsetToggle])
+      return actions
+    }, selectedViews).flat()
+  }, [jsxMetadata, activeAlignments, activeAlignmentsList, selectedViews])
+
+  const unsetAllAlignments = React.useCallback(() => {
+    dispatch(getUnsetAlignmentsActions().map((a) => a.action))
+  }, [dispatch, getUnsetAlignmentsActions])
 
   const alignSelected = React.useCallback(
     (alignment: Alignment) => {
-      if (activeToggles[alignment]) {
-        dispatch(
-          mapDropNulls(unsetToggle, selectedViews)
-            .flat()
-            .filter((a) => a.toggles.includes(alignment))
-            .map((a) => a.action),
-        )
+      if (activeAlignments[alignment]) {
+        const unsetAlignment = getUnsetAlignmentsActions()
+          .filter((a) => a.alignments.includes(alignment))
+          .map((a) => a.action)
+        dispatch(unsetAlignment)
       } else {
         dispatch([alignSelectedViews(alignment)], 'everyone')
       }
     },
-    [dispatch, activeToggles, selectedViews, unsetToggle],
+    [dispatch, activeAlignments, getUnsetAlignmentsActions],
   )
-
-  const alignLeft = React.useCallback(() => alignSelected('left'), [alignSelected])
-  const alignHCenter = React.useCallback(() => alignSelected('hcenter'), [alignSelected])
-  const alignRight = React.useCallback(() => alignSelected('right'), [alignSelected])
-  const alignTop = React.useCallback(() => alignSelected('top'), [alignSelected])
-  const alignVCenter = React.useCallback(() => alignSelected('vcenter'), [alignSelected])
-  const alignBottom = React.useCallback(() => alignSelected('bottom'), [alignSelected])
 
   const dropdownItems = React.useMemo(() => {
     let items: DropdownMenuItem[] = []
 
-    if (hasToggles) {
+    if (hasActiveAlignments) {
       items.push(
         regularDropdownMenuItem({
           id: 'unset',
           label: 'Unset',
-          onSelect: unsetToggles,
+          onSelect: unsetAllAlignments,
         }),
         separatorDropdownMenuItem('sep'),
       )
@@ -268,27 +259,33 @@ export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) 
     )
 
     return items
-  }, [disableDistribute, distributeHorizontal, distributeVertical, hasToggles, unsetToggles])
+  }, [
+    disableDistribute,
+    distributeHorizontal,
+    distributeVertical,
+    hasActiveAlignments,
+    unsetAllAlignments,
+  ])
 
   const chainValueJustify = React.useMemo(() => {
-    return activeToggles.left
+    return activeAlignments.left
       ? 'left'
-      : activeToggles.hcenter
+      : activeAlignments.hcenter
       ? 'hcenter'
-      : activeToggles.right
+      : activeAlignments.right
       ? 'right'
       : null
-  }, [activeToggles])
+  }, [activeAlignments])
 
   const chainValueAlign = React.useMemo(() => {
-    return activeToggles.top
+    return activeAlignments.top
       ? 'top'
-      : activeToggles.vcenter
+      : activeAlignments.vcenter
       ? 'vcenter'
-      : activeToggles.bottom
+      : activeAlignments.bottom
       ? 'bottom'
       : null
-  }, [activeToggles])
+  }, [activeAlignments])
 
   return (
     <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
@@ -305,16 +302,19 @@ export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) 
             value: 'left',
             icon: { category: 'inspector', type: 'justifySelf-start' },
             forceCallOnSubmitValue: true,
+            disabled: disableAlign,
           },
           {
             value: 'hcenter',
             icon: { category: 'inspector', type: 'justifySelf-center' },
             forceCallOnSubmitValue: true,
+            disabled: disableAlign,
           },
           {
             value: 'right',
             icon: { category: 'inspector', type: 'justifySelf-end' },
             forceCallOnSubmitValue: true,
+            disabled: disableAlign,
           },
         ]}
       />
@@ -331,16 +331,19 @@ export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) 
             value: 'top',
             icon: { category: 'inspector', type: 'alignSelf-start' },
             forceCallOnSubmitValue: true,
+            disabled: disableAlign,
           },
           {
             value: 'vcenter',
             icon: { category: 'inspector', type: 'alignSelf-center' },
             forceCallOnSubmitValue: true,
+            disabled: disableAlign,
           },
           {
             value: 'bottom',
             icon: { category: 'inspector', type: 'alignSelf-end' },
             forceCallOnSubmitValue: true,
+            disabled: disableAlign,
           },
         ]}
       />
