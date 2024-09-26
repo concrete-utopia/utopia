@@ -1,7 +1,9 @@
+import type { ElementPath } from 'utopia-shared/src/types'
 import type { CanvasCommand } from '../../canvas/commands/commands'
 import type { EditorDispatch } from '../../editor/action-types'
 import { applyCommandsAction, transientActions } from '../../editor/actions/action-creators'
 import type { ElementsToRerender } from '../../editor/store/editor-state'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 
 interface CustomInspectorStrategyResultBase {
   commands: Array<CanvasCommand>
@@ -57,6 +59,19 @@ export function executeFirstApplicableStrategy(
   )
 }
 
+function getAffectedElement(command: CanvasCommand): ElementPath | null {
+  switch (command.type) {
+    case 'SET_PROPERTY':
+      return command.element
+    case 'UPDATE_BULK_PROPERTIES':
+      return command.element
+    case 'SET_CSS_LENGTH_PROPERTY':
+      return command.target
+    default:
+      return null
+  }
+}
+
 export function executeFirstApplicableStrategyForContinuousInteraction(
   dispatch: EditorDispatch,
   strategies: InspectorStrategy[],
@@ -67,7 +82,11 @@ export function executeFirstApplicableStrategyForContinuousInteraction(
     if (elementsToRerenderTransient !== 'rerender-all-elements') {
       dispatch([transientActions([applyCommandsAction(commands)], elementsToRerenderTransient)])
     } else {
-      dispatch([applyCommandsAction(commands)])
+      const elementsToNormalize = mapDropNulls(getAffectedElement, commands)
+      dispatch([
+        applyCommandsAction(commands),
+        { action: 'NORMALIZE_WITH_PLUGINS', elementsToNormalize: elementsToNormalize },
+      ])
     }
   }
 }
