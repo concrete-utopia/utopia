@@ -100,6 +100,7 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
         ],
         {
           grid: {
+            ...customState.grid,
             targetCellData: targetGridCellData,
             draggingFromCell: draggingFromCell,
             originalRootCell: originalRootCell,

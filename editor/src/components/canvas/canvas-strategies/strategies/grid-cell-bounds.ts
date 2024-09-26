@@ -4,7 +4,6 @@ import {
   canvasPoint,
   isInfinityRectangle,
   offsetPoint,
-  rectContainsPoint,
   rectContainsPointInclusive,
 } from '../../../../core/shared/math-utils'
 import * as EP from '../../../../core/shared/element-path'

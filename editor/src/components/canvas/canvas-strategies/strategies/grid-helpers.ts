@@ -34,7 +34,11 @@ import { deleteProperties } from '../../commands/delete-properties-command'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { setCssLengthProperty } from '../../commands/set-css-length-command'
 import { setProperty } from '../../commands/set-property-command'
-import type { GridCustomStrategyState } from '../canvas-strategy-types'
+import type {
+  CustomStrategyState,
+  CustomStrategyStatePatch,
+  GridCustomStrategyState,
+} from '../canvas-strategy-types'
 import type { DragInteractionData } from '../interaction-state'
 import type { GridCellCoordinates } from './grid-cell-bounds'
 import { getGridCellUnderMouseFromMetadata, gridCellCoordinates } from './grid-cell-bounds'
@@ -757,4 +761,52 @@ export function getGridRelatedIndexes(params: {
   })
 
   return expandedRelatedIndexes[params.index] ?? []
+}
+
+export function getMetadataWithGridCellBounds(
+  path: ElementPath | null | undefined,
+  startingMetadata: ElementInstanceMetadataMap,
+  latestMetadata: ElementInstanceMetadataMap,
+  customStrategyState: CustomStrategyState,
+): {
+  metadata: ElementInstanceMetadata | null
+  foundIn: 'startingMetadata' | 'latestMetadata' | 'strategyState' | null
+} {
+  if (path == null) {
+    return {
+      metadata: null,
+      foundIn: null,
+    }
+  }
+
+  const fromStartingMetadata = MetadataUtils.findElementByElementPath(startingMetadata, path)
+
+  if (fromStartingMetadata?.specialSizeMeasurements.gridCellGlobalFrames != null) {
+    return {
+      metadata: fromStartingMetadata,
+      foundIn: 'startingMetadata',
+    }
+  }
+
+  // const fromStrategyState = customStrategyState.grid.metadataCacheForGrids[EP.toString(path)]
+  // if (fromStrategyState != null) {
+  //   return {
+  //     metadata: fromStrategyState,
+  //     foundIn: 'strategyState',
+  //   }
+  // }
+
+  const fromLatestMetadata = MetadataUtils.findElementByElementPath(latestMetadata, path)
+
+  if (fromLatestMetadata?.specialSizeMeasurements.gridCellGlobalFrames != null) {
+    return {
+      metadata: fromLatestMetadata,
+      foundIn: 'latestMetadata',
+    }
+  }
+
+  return {
+    metadata: fromStartingMetadata,
+    foundIn: 'startingMetadata',
+  }
 }
