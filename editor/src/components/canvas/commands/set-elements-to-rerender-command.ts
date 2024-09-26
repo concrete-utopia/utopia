@@ -17,7 +17,7 @@ export function setElementsToRerenderCommand(
   const uniqueValues = value === 'rerender-all-elements' ? value : EP.uniqueElementPaths(value)
   return {
     type: 'SET_ELEMENTS_TO_RERENDER_COMMAND',
-    whenToRun: 'mid-interaction',
+    whenToRun: 'always',
     value: uniqueValues,
   }
 }

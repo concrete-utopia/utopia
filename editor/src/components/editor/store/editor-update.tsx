@@ -497,6 +497,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.REPLACE_ELEMENT_IN_SCOPE(action, state)
     case 'SET_ERROR_BOUNDARY_HANDLING':
       return UPDATE_FNS.SET_ERROR_BOUNDARY_HANDLING(action, state)
+    case 'NORMALIZE_WITH_PLUGINS':
+      return UPDATE_FNS.NORMALIZE_WITH_PLUGINS(action, state)
     default:
       return state
   }

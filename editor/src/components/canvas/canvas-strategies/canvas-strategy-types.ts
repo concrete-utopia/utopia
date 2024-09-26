@@ -7,7 +7,7 @@ import type { ElementPath, NodeModules } from '../../../core/shared/project-file
 import type { ProjectContentTreeRoot } from '../../assets'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
 import type { InsertionSubject } from '../../editor/editor-modes'
-import type { AllElementProps } from '../../editor/store/editor-state'
+import type { AllElementProps, EditorState } from '../../editor/store/editor-state'
 import type { CanvasCommand } from '../commands/commands'
 import type { ActiveFrameAction } from '../commands/set-active-frames-command'
 import type { StrategyApplicationStatus } from './interaction-state'
@@ -200,3 +200,11 @@ export interface CanvasStrategy {
 }
 
 export const ControlDelay = 600
+
+export interface UIFrameworkPlugin {
+  id: string
+  normalizeFromInlineStyles: (
+    editorState: EditorState,
+    elementsToTarget: Array<ElementPath>,
+  ) => EditorState
+}

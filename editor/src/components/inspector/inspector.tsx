@@ -889,11 +889,16 @@ export const InspectorContextProvider = React.memo<{
 
   const collectActionsToSubmitValue = React.useCallback(
     (path: PropertyPath, transient: boolean, newValuePrinter: () => any): Array<EditorAction> => {
-      const actionsArray = [
+      const actionsArray: Array<EditorAction> = [
         ...refElementsToTargetForUpdates.current.map((elem) => {
           return setProp_UNSAFE(elem, path, newValuePrinter())
         }),
+        {
+          action: 'NORMALIZE_WITH_PLUGINS',
+          elementsToNormalize: refElementsToTargetForUpdates.current,
+        },
       ]
+
       return transient
         ? [transientActions(actionsArray, refElementsToTargetForUpdates.current)]
         : actionsArray

@@ -8,6 +8,7 @@ import {
   findCanvasStrategy,
   interactionInProgress,
   pickCanvasStateFromEditorState,
+  runNormalizationPlugins,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import type {
   InteractionSession,
@@ -111,8 +112,19 @@ export function interactionFinished(
       'end-interaction',
     )
 
+    const elementsToNormalize =
+      commandResult.editorState.canvas.elementsToRerender === 'rerender-all-elements'
+        ? [] // TODO: we need to figure out which elements to normalize
+        : commandResult.editorState.canvas.elementsToRerender
+
+    const editorState = runNormalizationPlugins(commandResult.editorState, elementsToNormalize)
+
     const finalEditor: EditorState = {
-      ...commandResult.editorState,
+      ...editorState,
+      canvas: {
+        ...editorState.canvas,
+        elementsToRerender: 'rerender-all-elements',
+      },
       // TODO instead of clearing the metadata, we should save the latest valid metadata here to save a dom-walker run
       jsxMetadata: {},
       domMetadata: {},

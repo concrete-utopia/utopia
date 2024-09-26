@@ -3,11 +3,12 @@ import { createSelector } from 'reselect'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
-import type {
-  AllElementProps,
-  EditorState,
-  EditorStatePatch,
-  EditorStorePatched,
+import {
+  getJSXElementFromProjectContents,
+  type AllElementProps,
+  type EditorState,
+  type EditorStatePatch,
+  type EditorStorePatched,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import type {
@@ -19,6 +20,7 @@ import type {
   StrategyApplicationResult,
   InteractionLifecycle,
   CustomStrategyState,
+  UIFrameworkPlugin,
 } from './canvas-strategy-types'
 import {
   ControlDelay,
@@ -74,13 +76,25 @@ import { gridResizeElementStrategy } from './strategies/grid-resize-element-stra
 import { gridRearrangeMoveDuplicateStrategy } from './strategies/grid-rearrange-move-duplicate-strategy'
 import { setGridGapStrategy } from './strategies/set-grid-gap-strategy'
 import type { CanvasCommand } from '../commands/commands'
-import { foldAndApplyCommandsInner } from '../commands/commands'
+import {
+  foldAndApplyCommandsInner,
+  foldAndApplyCommandsSimple,
+  runCanvasCommand,
+} from '../commands/commands'
 import { updateFunctionCommand } from '../commands/update-function-command'
 import { wrapInContainerCommand } from '../commands/wrap-in-container-command'
-import type { ElementPath } from 'utopia-shared/src/types'
+import type {
+  ElementPath,
+  JSXAttributesEntry,
+  ProjectContentsTree,
+  PropertyPath,
+} from 'utopia-shared/src/types'
 import { reparentSubjectsForInteractionTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
 import { gridRearrangeResizeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
+import { deleteProperties } from '../commands/delete-properties-command'
+import * as PP from '../../../core/shared/property-path'
+import { propertyToSet, setProperty, updateBulkProperties } from '../commands/set-property-command'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -786,4 +800,85 @@ export function useIsOnlyDoNothingStrategy(): boolean {
     (store) => isOnlyDoNothingStrategy(store.strategyState.sortedApplicableStrategies ?? []),
     'useIsOnlyDoNothingStrategy',
   )
+}
+
+const InlineStyleNormalizationPlugin: UIFrameworkPlugin = {
+  id: 'INLINE_STYLE_NORMALIZATION',
+  normalizeFromInlineStyles: (editorState) => {
+    return editorState // nothing needs to be changed
+  },
+}
+
+function getInlineStylePropsFromElement(
+  projectContents: EditorState['projectContents'],
+  view: ElementPath,
+) {
+  const element = getJSXElementFromProjectContents(view, projectContents)
+  if (element == null) {
+    return []
+  }
+
+  const styleAttribute = element.props.find(
+    (prop) => prop.type === 'JSX_ATTRIBUTES_ENTRY' && prop.key === 'style',
+  ) as JSXAttributesEntry | undefined
+  if (styleAttribute == null) {
+    return []
+  }
+  const styleValue = styleAttribute.value
+  if (styleValue.type !== 'ATTRIBUTE_NESTED_OBJECT') {
+    return []
+  }
+  const styleProps = mapDropNulls(
+    (c) =>
+      c.type === 'PROPERTY_ASSIGNMENT' && c.value.type === 'ATTRIBUTE_VALUE'
+        ? { key: c.key, value: c.value.value }
+        : null,
+    styleValue.content,
+  )
+
+  return styleProps
+}
+
+const EmotionNormalizationPlugin: UIFrameworkPlugin = {
+  id: 'EMOTION_NORMALIZATION',
+  normalizeFromInlineStyles: (editorState: EditorState, elementsToTarget: Array<ElementPath>) => {
+    const commands = elementsToTarget.flatMap((elementPath) => {
+      const inlineStyleProps = getInlineStylePropsFromElement(
+        editorState.projectContents,
+        elementPath,
+      )
+
+      return [
+        updateBulkProperties(
+          'always',
+          elementPath,
+          inlineStyleProps.map(({ key, value }) =>
+            propertyToSet(PP.create('css', '&:hover', key.toString()), value as string | number),
+          ),
+        ),
+        deleteProperties('always', elementPath, [
+          ...inlineStyleProps.map(({ key }) => PP.create('style', key)),
+          PP.create('style'),
+        ]),
+      ]
+    })
+
+    if (commands.length === 0) {
+      return editorState
+    }
+
+    return foldAndApplyCommandsSimple(editorState, commands)
+  },
+}
+
+export function runNormalizationPlugins(
+  editorState: EditorState,
+  elementsToNormalize: Array<ElementPath>,
+): EditorState {
+  const plugins: Array<UIFrameworkPlugin> = [
+    EmotionNormalizationPlugin,
+    InlineStyleNormalizationPlugin,
+  ]
+  const chosenPlugin = plugins[0]
+  return chosenPlugin.normalizeFromInlineStyles(editorState, elementsToNormalize)
 }
