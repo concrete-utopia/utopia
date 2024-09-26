@@ -17,6 +17,7 @@ export type FeatureName =
   | 'Condensed Navigator Entries'
   | 'Use Parsing Cache'
   | 'Verbose Log Cache'
+  | 'Arbitrary Code Cache'
   | 'Roll Your Own'
 
 export const AllFeatureNames: FeatureName[] = [
@@ -35,6 +36,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Condensed Navigator Entries',
   'Use Parsing Cache',
   'Verbose Log Cache',
+  'Arbitrary Code Cache',
   'Roll Your Own',
 ]
 
@@ -53,12 +55,14 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
   'Use Parsing Cache': !IS_TEST_ENVIRONMENT,
   'Verbose Log Cache': false,
+  'Arbitrary Code Cache': false,
   'Roll Your Own': false,
 }
 
 export const FeaturesHiddenFromMainSettingsPane: FeatureName[] = [
   'Use Parsing Cache',
   'Verbose Log Cache',
+  'Arbitrary Code Cache',
 ]
 
 export const STEGANOGRAPHY_ENABLED = false

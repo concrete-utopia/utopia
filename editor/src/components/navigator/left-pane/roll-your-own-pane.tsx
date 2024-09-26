@@ -31,6 +31,7 @@ type GridFeatures = {
 type PerformanceFeatures = {
   parseCache: boolean
   verboseLogCache: boolean
+  cacheArbitraryCode: boolean
 }
 
 type RollYourOwnFeaturesTypes = {
@@ -45,6 +46,7 @@ type RollYourOwnFeatures = {
 const featureToFeatureFlagMap: Record<keyof Partial<PerformanceFeatures>, FeatureName> = {
   parseCache: 'Use Parsing Cache',
   verboseLogCache: 'Verbose Log Cache',
+  cacheArbitraryCode: 'Arbitrary Code Cache',
 }
 
 const defaultRollYourOwnFeatures: () => RollYourOwnFeatures = () => ({
@@ -61,8 +63,9 @@ const defaultRollYourOwnFeatures: () => RollYourOwnFeatures = () => ({
     shadowOpacity: 0.1,
   },
   Performance: {
-    parseCache: getFeatureFlagValue('parseCache', true),
-    verboseLogCache: getFeatureFlagValue('verboseLogCache', true),
+    parseCache: getFeatureFlagValue('parseCache'),
+    verboseLogCache: getFeatureFlagValue('verboseLogCache'),
+    cacheArbitraryCode: getFeatureFlagValue('cacheArbitraryCode'),
   },
 })
 
@@ -272,14 +275,8 @@ const SimpleFeatureControls = React.memo(({ subsection }: { subsection: Section 
 })
 SimpleFeatureControls.displayName = 'SimpleFeatureControls'
 
-function getFeatureFlagValue(
-  featureName: keyof typeof featureToFeatureFlagMap,
-  defaultValue: boolean,
-): boolean {
+function getFeatureFlagValue(featureName: keyof typeof featureToFeatureFlagMap): boolean {
   const featureFlag = featureToFeatureFlagMap[featureName]
-  if (featureFlag == null) {
-    return defaultValue
-  }
   return isFeatureEnabled(featureFlag)
 }
 
@@ -298,7 +295,7 @@ function syncWithFeatureFlags(features: Record<string, any>) {
   return Object.fromEntries(
     Object.entries(features).map(([key, value]) => {
       if (typeof value === 'boolean' && key in featureToFeatureFlagMap) {
-        return [key, getFeatureFlagValue(key as keyof typeof featureToFeatureFlagMap, value)]
+        return [key, getFeatureFlagValue(key as keyof typeof featureToFeatureFlagMap)]
       }
       return [key, value]
     }),

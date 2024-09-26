@@ -52,6 +52,9 @@ export async function getParseResultFromCache(
   content: string,
   parsingCacheOptions: ParseCacheOptions,
 ): Promise<ParseFileResult | null> {
+  if (filename === ARBITRARY_CODE_FILE_NAME && !parsingCacheOptions.cacheArbitraryCode) {
+    return null
+  }
   const cacheKey = getCacheKey(filename)
   //check localforage for cache
   const cachedResult = await getParseCacheStore().getItem<CachedParseResult>(cacheKey)
@@ -73,6 +76,9 @@ export async function storeParseResultInCache(
   logCacheMessage(parsingCacheOptions, 'Caching', ...stringIdentifiers(filename, content))
   const cacheKey = getCacheKey(filename)
   if (filename === ARBITRARY_CODE_FILE_NAME) {
+    if (!parsingCacheOptions.cacheArbitraryCode) {
+      return
+    }
     // for the special filename 'code.tsx', we store multiple contents, so we need to read it first
     const cachedResult = (await getParseCacheStore().getItem<CachedParseResult>(cacheKey)) ?? {}
     // limit the arbitrary code cache keys size
