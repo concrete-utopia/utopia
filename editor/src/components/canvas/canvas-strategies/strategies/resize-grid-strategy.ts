@@ -159,24 +159,21 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       const precision = modifiers.cmd ? 'coarse' : 'precise'
       const areaName = mergedValues.dimensions[control.columnOrRow]?.areaName ?? null
 
-      const newValue = gridCSSNumber(
-        cssNumber(
-          newResizedValue(
-            mergedValue.value,
-            getNewDragValue(dragAmount, isFractional, calculatedValue, mergedValue),
-            precision,
-            isFractional,
-          ),
-          mergedUnit.value,
+      const newValue = Math.max(
+        0,
+        newResizedValue(
+          mergedValue.value,
+          getNewDragValue(dragAmount, isFractional, calculatedValue, mergedValue),
+          precision,
+          isFractional,
         ),
-        areaName,
       )
 
       const newDimensions = replaceGridTemplateDimensionAtIndex(
         originalValues.dimensions,
         expandedOriginalValues,
         control.columnOrRow,
-        newValue,
+        gridCSSNumber(cssNumber(newValue, mergedUnit.value), areaName),
       )
 
       const propertyValueAsString = printArrayGridDimensions(newDimensions)
@@ -203,7 +200,7 @@ function getNewDragValue(
   isFractional: boolean,
   possibleCalculatedValue: Either<string, number>,
   mergedValue: Either<string, number>,
-) {
+): number {
   if (!isFractional) {
     return dragAmount
   }
@@ -220,8 +217,7 @@ function getNewDragValue(
   const calculatedValue = possibleCalculatedValue.value
   const perPointOne =
     mergedFractionalValue == 0 ? 10 : (calculatedValue / mergedFractionalValue) * 0.1
-  const newValue = roundToNearestWhole((dragAmount / perPointOne) * 10) / 10
-  return newValue
+  return roundToNearestWhole((dragAmount / perPointOne) * 10) / 10
 }
 
 function newResizedValue(

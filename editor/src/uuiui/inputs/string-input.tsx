@@ -183,7 +183,7 @@ export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessSt
       pasteHandler,
       ...otherProps
     } = props
-    const { disabled, onKeyDown, onFocus } = otherProps
+    const { disabled, onKeyDown, onFocus, onBlur } = otherProps
 
     const ref = React.useRef<HTMLInputElement>(null)
 
@@ -237,6 +237,7 @@ export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessSt
         disabled={disabled}
         onKeyDown={handleOnKeyDown}
         onFocus={handleOnFocus}
+        onBlur={onBlur}
         onChange={onChange}
         style={{
           ...style,
