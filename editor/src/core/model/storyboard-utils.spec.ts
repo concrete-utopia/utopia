@@ -36,8 +36,6 @@ export var App = (props) => {
     StoryboardFilePath,
     [],
     appFile,
-    null,
-    emptySet(),
     'trim-bounds',
     'do-not-apply-steganography',
   ) as ParsedTextFile

@@ -15,8 +15,6 @@ export function appJSFilePreParsed(): TextFile {
     '/src/app.js',
     [],
     appFile.fileContents.code,
-    null,
-    emptySet(),
     'trim-bounds',
     'do-not-apply-steganography',
   )
@@ -34,8 +32,6 @@ export function getDefaultUIJsFilePreParsed(): TextFile {
     'code.tsx',
     [],
     uijsFile.fileContents.code,
-    null,
-    emptySet(),
     'trim-bounds',
     'do-not-apply-steganography',
   )

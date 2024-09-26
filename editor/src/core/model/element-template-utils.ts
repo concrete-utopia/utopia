@@ -124,7 +124,7 @@ export function guaranteeUniqueUids(
   let mappings: UIDMappings = []
   let value: Array<JSXElementChild> = []
   for (const element of elements) {
-    const fixElementWithMappings = fixUtopiaElement(element, existingIDsMutable)
+    const fixElementWithMappings = fixUtopiaElement(element)
     mappings.push(...fixElementWithMappings.mappings)
     value.push(fixElementWithMappings.value)
   }

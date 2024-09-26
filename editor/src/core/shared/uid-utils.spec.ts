@@ -2,15 +2,13 @@ import type { HighlightBoundsForUids } from './project-file-types'
 import type { UIDMappings } from './uid-utils'
 import { generateConsistentUID, nextTestUID, updateHighlightBounds } from './uid-utils'
 
-let someExistingIDs: Set<string> = new Set(['aaa', 'pqr', 'bbb', 'bbc'])
-
 describe('generateConsistentUID', () => {
   it('if the starting value is unused return it', () => {
-    const actualResult = generateConsistentUID('xyz', someExistingIDs)
+    const actualResult = generateConsistentUID('xyz')
     expect(actualResult).toBe('xyz')
   })
   it('if the starting value is used generate another', () => {
-    const actualResult = generateConsistentUID('pqr', someExistingIDs)
+    const actualResult = generateConsistentUID('pqr')
     expect(actualResult).toBe('aab')
   })
 })

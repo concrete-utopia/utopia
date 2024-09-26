@@ -188,11 +188,11 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
         getAllUniqueUidsFromMapping(getUidMappings(projectContentsRef.current).filePathToUids),
       )
 
-      const wrappedUid = generateConsistentUID('wrapper', allElementUids)
+      const wrappedUid = generateConsistentUID('wrapper')
 
       allElementUids.add(wrappedUid)
 
-      const elementUid = generateConsistentUID('element', allElementUids)
+      const elementUid = generateConsistentUID('element')
 
       const element = elementToReparent(
         fixUtopiaElement(
@@ -201,7 +201,6 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
             elementUid,
             elementToInsert.value.defaultSize ?? undefined,
           ),
-          allElementUids,
         ).value,
         elementToInsert.value.importsToAdd,
       )

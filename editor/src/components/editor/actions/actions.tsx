@@ -617,8 +617,6 @@ import {
   renameRemixFile,
   removeFeaturedRouteFromPackageJson,
 } from '../../canvas/remix/remix-utils'
-import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
-import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 import { nextSelectedTab } from '../../navigator/left-pane/left-pane-utils'
 import { getDefaultedRemixRootDir, getRemixRootDir } from '../store/remix-derived-data'
 import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-item/component-picker-context-menu'
@@ -4133,16 +4131,11 @@ export const UPDATE_FNS = {
     )
 
     // 2. Parse the file upfront.
-    const existingUIDs = new Set(
-      getAllUniqueUidsFromMapping(getUidMappings(editor.projectContents).filePathToUids),
-    )
     const parsedResult = getParseFileResult(
       newFileName,
       getFilePathMappings(editor.projectContents),
       templateFile.fileContents.code,
-      null,
       1,
-      existingUIDs,
       isSteganographyEnabled(),
     )
 
@@ -5009,7 +5002,6 @@ export const UPDATE_FNS = {
           fileToUpdate.parseSuccess,
           fileToUpdate.stripUIDs,
           fileToUpdate.versionNumber,
-          filesToUpdateResult.existingUIDs,
           isSteganographyEnabled(),
         )
         const updateAction = workerCodeAndParsedUpdate(
@@ -5393,11 +5385,7 @@ export const UPDATE_FNS = {
         newSelectedViews.push(newPath)
       }
 
-      const existingUids = new Set(
-        getAllUniqueUidsFromMapping(getUidMappings(editor.projectContents).filePathToUids),
-      )
-
-      const newUID = generateConsistentUID('new', existingUids)
+      const newUID = generateConsistentUID('new')
 
       const newPath = EP.appendToPath(action.insertionPath.intendedParentPath, newUID)
 
@@ -5455,7 +5443,6 @@ export const UPDATE_FNS = {
             insertedElementChildren.push(...element.children)
             const fixedElement = fixUtopiaElement(
               jsxElement(insertedElementName, newUID, props, insertedElementChildren),
-              existingUids,
             ).value
 
             withInsertedElement = insertJSXElementChildren(
@@ -5477,7 +5464,6 @@ export const UPDATE_FNS = {
                 element.whenFalse,
                 element.comments,
               ),
-              existingUids,
             ).value
 
             withInsertedElement = insertJSXElementChildren(
@@ -5501,7 +5487,7 @@ export const UPDATE_FNS = {
 
             addNewSelectedView(newUID)
           } else if (element.type === 'JSX_MAP_EXPRESSION') {
-            const fixedElement = fixUtopiaElement({ ...element, uid: newUID }, existingUids).value
+            const fixedElement = fixUtopiaElement({ ...element, uid: newUID }).value
 
             withInsertedElement = insertJSXElementChildren(
               insertionPath,
@@ -5929,25 +5915,9 @@ export const UPDATE_FNS = {
           if (newTopLevelElementsDeepEquals.areEqual) {
             return parsed
           } else {
-            const alreadyExistingUIDs = getAllUniqueUidsFromMapping(
-              getUidMappings(removeFromProjectContents(editor.projectContents, action.fullPath))
-                .filePathToUids,
-            )
-            const fixUIDsState: FixUIDsState = {
-              mutableAllNewUIDs: new Set(alreadyExistingUIDs),
-              uidsExpectedToBeSeen: new Set(),
-              mappings: [],
-              uidUpdateMethod: 'copy-uids-fix-duplicates',
-            }
-            const fixedUpTopLevelElements = fixTopLevelElementsUIDs(
-              parsed.topLevelElements,
-              newTopLevelElementsDeepEquals.value,
-              fixUIDsState,
-            )
-
             return {
               ...parsed,
-              topLevelElements: fixedUpTopLevelElements,
+              topLevelElements: parsed.topLevelElements,
             }
           }
         },

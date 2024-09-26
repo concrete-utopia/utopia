@@ -178,13 +178,7 @@ function pasteChoiceCommon(
   let oldPathToNewPathMapping: OldPathToNewPathMapping = {}
   const elementsToInsert: Array<ElementOrPathToInsert> =
     pasteContext.elementPasteWithMetadata.elements.map((elementPaste) => {
-      const existingIDs = [
-        ...getAllUniqueUidsFromMapping(
-          getUidMappings(editorStateContext.projectContents).filePathToUids,
-        ),
-        ...fixedUIDMappingNewUIDS,
-      ]
-      const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
+      const elementWithUID = fixUtopiaElement(elementPaste.element)
       fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
 
       const intendedCoordinates = findIntendedCoordinates(

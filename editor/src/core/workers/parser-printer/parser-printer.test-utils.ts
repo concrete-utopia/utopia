@@ -206,15 +206,7 @@ export function testParseCode(
   alreadyExistingUIDs: Set<string> = emptySet(),
 ): ParsedTextFile {
   const filename = 'code.tsx'
-  const result = lintAndParse(
-    filename,
-    [],
-    contents,
-    null,
-    alreadyExistingUIDs,
-    'trim-bounds',
-    'do-not-apply-steganography',
-  )
+  const result = lintAndParse(filename, [], contents, 'trim-bounds', 'do-not-apply-steganography')
   // Ensure that elements have valid unique IDs if the parse is successful.
   forEachParseSuccess((success) => {
     let uids: Array<string> = []

@@ -288,8 +288,6 @@ describe('jsxElementChildToText', () => {
       'test.js',
       [],
       `const TestComponent = (props) => <div>{something()?.[another().property?.deeperProperty]}</div>`,
-      null,
-      emptySet(),
       'do-not-trim-bounds',
       'do-not-apply-steganography',
     )

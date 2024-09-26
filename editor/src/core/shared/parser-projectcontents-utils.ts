@@ -134,7 +134,6 @@ export function processWorkerUpdates(
 export interface GetFilesToUpdateResult {
   filesToUpdate: Array<ParseOrPrint>
   forciblyParsedFiles: Array<string>
-  existingUIDs: Set<string>
 }
 
 export function getFilesToUpdate(
@@ -144,7 +143,6 @@ export function getFilesToUpdate(
   // Walk the project contents to see if anything needs to be sent across.
   let filesToUpdate: Array<ParseOrPrint> = []
   let forciblyParsedFiles: Array<string> = []
-  let existingUIDs: Set<string> = emptySet()
   const shouldStripUids = PRODUCTION_ENV || !isFeatureEnabled('Debug - Print UIDs')
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
@@ -175,9 +173,6 @@ export function getFilesToUpdate(
         filesToUpdate.push(
           createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.versionNumber),
         )
-      } else if (isParseSuccess(file.fileContents.parsed)) {
-        const uidsFromFile = Object.keys(file.fileContents.parsed.fullHighlightBounds)
-        fastForEach(uidsFromFile, (uid) => existingUIDs.add(uid))
       }
     }
   })
@@ -185,7 +180,6 @@ export function getFilesToUpdate(
   return {
     filesToUpdate: filesToUpdate,
     forciblyParsedFiles: forciblyParsedFiles,
-    existingUIDs: existingUIDs,
   }
 }
 
@@ -194,14 +188,13 @@ export async function updateProjectContentsWithParseResults(
   projectContents: ProjectContentTreeRoot,
 ): Promise<ProjectContentTreeRoot> {
   // Determine what files need updating.
-  const { filesToUpdate, existingUIDs } = getFilesToUpdate(projectContents, [])
+  const { filesToUpdate } = getFilesToUpdate(projectContents, [])
 
   // Get the result of parsing or printing the files.
   const parseResult = await getParseResult(
     workers,
     filesToUpdate,
     getFilePathMappings(projectContents),
-    existingUIDs,
     isSteganographyEnabled(),
   )
 

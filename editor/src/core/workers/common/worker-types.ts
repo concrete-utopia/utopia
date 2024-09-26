@@ -143,14 +143,12 @@ export interface ParsePrintFilesRequest extends ParsePrintBase {
   type: 'parseprintfiles'
   filePathMappings: FilePathMappings
   files: Array<ParseOrPrint>
-  alreadyExistingUIDs: Set<string>
   applySteganography: SteganographyMode
 }
 
 export function createParsePrintFilesRequest(
   files: Array<ParseOrPrint>,
   filePathMappings: FilePathMappings,
-  alreadyExistingUIDs: Set<string>,
   messageID: number,
   applySteganography: SteganographyMode,
 ): ParsePrintFilesRequest {
@@ -158,7 +156,6 @@ export function createParsePrintFilesRequest(
     type: 'parseprintfiles',
     files: files,
     filePathMappings: filePathMappings,
-    alreadyExistingUIDs: alreadyExistingUIDs,
     messageID: messageID,
     applySteganography: applySteganography,
   }
@@ -170,7 +167,6 @@ export function getParseResult(
   workers: UtopiaTsWorkers,
   files: Array<ParseOrPrint>,
   filePathMappings: FilePathMappings,
-  alreadyExistingUIDs: Set<string>,
   applySteganography: SteganographyMode,
 ): Promise<Array<ParseOrPrintResult>> {
   const messageIDForThisRequest = PARSE_PRINT_MESSAGE_COUNTER++
@@ -199,7 +195,6 @@ export function getParseResult(
       createParsePrintFilesRequest(
         files,
         filePathMappings,
-        alreadyExistingUIDs,
         messageIDForThisRequest,
         applySteganography,
       ),
