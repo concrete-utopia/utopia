@@ -26,6 +26,8 @@ import * as PP from '../../core/shared/property-path'
 import { assertNever } from '../../core/shared/utils'
 import type { ElementPath } from 'utopia-shared/src/types'
 import { mapDropNulls } from '../../core/shared/array-utils'
+import { OptionChainControl } from './controls/option-chain-control'
+import { getControlStyles } from './common/control-styles'
 
 export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
   const dispatch = useDispatch()
@@ -268,84 +270,81 @@ export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) 
     return items
   }, [disableDistribute, distributeHorizontal, distributeVertical, hasToggles, unsetToggles])
 
+  const chainValueJustify = React.useMemo(() => {
+    return activeToggles.left
+      ? 'left'
+      : activeToggles.hcenter
+      ? 'hcenter'
+      : activeToggles.right
+      ? 'right'
+      : null
+  }, [activeToggles])
+
+  const chainValueAlign = React.useMemo(() => {
+    return activeToggles.top
+      ? 'top'
+      : activeToggles.vcenter
+      ? 'vcenter'
+      : activeToggles.bottom
+      ? 'bottom'
+      : null
+  }, [activeToggles])
+
   return (
     <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
-      <FlexRow
-        style={{
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexShrink: 0,
-          borderRadius: 4,
-          padding: 1,
-          flex: 1,
-        }}
-        css={{
-          border: `1px solid ${colorTheme.border0.value}`,
-          ':hover': {
-            border: `1px solid ${colorTheme.border3.value}`,
+      <OptionChainControl
+        id='left'
+        testId='left'
+        key='left'
+        onSubmitValue={alignSelected}
+        value={chainValueJustify}
+        controlStatus='controlled'
+        controlStyles={getControlStyles('controlled')}
+        options={[
+          {
+            value: 'left',
+            icon: { category: 'inspector', type: 'justifySelf-start' },
+            forceCallOnSubmitValue: true,
           },
-        }}
-      >
-        <AlignDistributeButton
-          onClick={alignLeft}
-          toolTip={`Align to left of ${multipleTargets ? 'selection' : 'parent'}`}
-          iconType='justifySelf-start'
-          disabled={disableAlign}
-          active={activeToggles.left}
-        />
-        <AlignDistributeButton
-          onClick={alignHCenter}
-          toolTip={`Align to horizontal center of ${multipleTargets ? 'selection' : 'parent'}`}
-          iconType='justifySelf-center'
-          disabled={disableAlign}
-          active={activeToggles.hcenter}
-        />
-        <AlignDistributeButton
-          onClick={alignRight}
-          toolTip={`Align to right of ${multipleTargets ? 'selection' : 'parent'}`}
-          iconType='justifySelf-end'
-          disabled={disableAlign}
-          active={activeToggles.right}
-        />
-      </FlexRow>
-      <FlexRow
-        style={{
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexShrink: 0,
-          borderRadius: 4,
-          padding: 1,
-          flex: 1,
-        }}
-        css={{
-          border: `1px solid ${colorTheme.border0.value}`,
-          ':hover': {
-            border: `1px solid ${colorTheme.border3.value}`,
+          {
+            value: 'hcenter',
+            icon: { category: 'inspector', type: 'justifySelf-center' },
+            forceCallOnSubmitValue: true,
           },
-        }}
-      >
-        <AlignDistributeButton
-          onClick={alignTop}
-          toolTip={`Align to top of ${multipleTargets ? 'selection' : 'parent'}`}
-          iconType='alignSelf-start'
-          disabled={disableAlign}
-          active={activeToggles.top}
-        />
-        <AlignDistributeButton
-          onClick={alignVCenter}
-          toolTip={`Align to vertical center of ${multipleTargets ? 'selection' : 'parent'}`}
-          iconType='alignSelf-center'
-          disabled={disableAlign}
-          active={activeToggles.vcenter}
-        />
-        <AlignDistributeButton
-          onClick={alignBottom}
-          toolTip={`Align to bottom of ${multipleTargets ? 'selection' : 'parent'}`}
-          iconType='alignSelf-end'
-          disabled={disableAlign}
-          active={activeToggles.bottom}
-        />
-      </FlexRow>
+          {
+            value: 'right',
+            icon: { category: 'inspector', type: 'justifySelf-end' },
+            forceCallOnSubmitValue: true,
+          },
+        ]}
+      />
+      <OptionChainControl
+        id='left'
+        testId='left'
+        key='left'
+        onSubmitValue={alignSelected}
+        value={chainValueAlign}
+        controlStatus='controlled'
+        controlStyles={getControlStyles('controlled')}
+        options={[
+          {
+            value: 'top',
+            icon: { category: 'inspector', type: 'alignSelf-start' },
+            forceCallOnSubmitValue: true,
+          },
+          {
+            value: 'vcenter',
+            icon: { category: 'inspector', type: 'alignSelf-center' },
+            forceCallOnSubmitValue: true,
+          },
+          {
+            value: 'bottom',
+            icon: { category: 'inspector', type: 'alignSelf-end' },
+            forceCallOnSubmitValue: true,
+          },
+        ]}
+      />
+
       <DropdownMenu align='end' items={dropdownItems} opener={dropdownOpener} />
     </UIGridRow>
   )
