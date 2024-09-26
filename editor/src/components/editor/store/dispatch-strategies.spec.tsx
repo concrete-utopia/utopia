@@ -200,6 +200,7 @@ describe('interactionStart', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
@@ -268,6 +269,7 @@ describe('interactionStart', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
@@ -356,6 +358,7 @@ describe('interactionUpdate', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
@@ -444,6 +447,7 @@ describe('interactionUpdate', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
@@ -526,6 +530,7 @@ describe('interactionHardReset', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
@@ -616,6 +621,7 @@ describe('interactionHardReset', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
@@ -712,6 +718,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
@@ -803,6 +810,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
