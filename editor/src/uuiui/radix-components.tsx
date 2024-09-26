@@ -151,6 +151,7 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
                 key={item.id}
                 onSelect={item.onSelect}
                 css={{
+                  opacity: item.disabled ? 0.5 : 1,
                   ':hover': {
                     backgroundColor: item.danger
                       ? colorTheme.errorForeground.value

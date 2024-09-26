@@ -350,7 +350,7 @@ import type {
   UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
 } from '../action-types'
-import { isLoggedIn } from '../action-types'
+import { isAlignment, isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
 import { isCommentMode, isFollowMode, isTextEditMode } from '../editor-modes'
 import { EditorModes, isLiveMode, isSelectMode } from '../editor-modes'
@@ -625,6 +625,7 @@ import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-i
 import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
+import { applyValuesAtPath } from '../../canvas/commands/adjust-number-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -6183,59 +6184,32 @@ export function alignOrDistributeSelectedViews(
       .map(trueUpGroupElementChanged),
   ]
 
-  if (selectedViews.length > 0) {
-    // this array of canvasFrames excludes the non-layoutables. it means in a multiselect, they will not be considered
-    const canvasFrames: Array<{
-      target: ElementPath
-      frame: CanvasRectangle
-    }> = Utils.stripNulls(
-      selectedViews.map((target) => {
-        const instanceGlobalFrame = MetadataUtils.getFrameInCanvasCoords(target, editor.jsxMetadata)
-        if (instanceGlobalFrame == null || isInfinityRectangle(instanceGlobalFrame)) {
-          return null
-        } else {
-          return {
-            target: target,
-            frame: instanceGlobalFrame,
-          }
-        }
-      }),
+  let workingEditorState = { ...editor }
+
+  const targetAlignment = isAlignment(alignmentOrDistribution)
+  if (targetAlignment) {
+    workingEditorState = alignFlexOrGridChildren(
+      workingEditorState,
+      selectedViews.filter((v) =>
+        MetadataUtils.isFlexOrGridChild(workingEditorState.jsxMetadata, v),
+      ),
+      alignmentOrDistribution,
     )
-
-    if (canvasFrames.length > 0) {
-      const parentPath = EP.parentPath(selectedViews[0])
-      const sourceIsParent = selectedViews.length === 1 && parentPath != null
-      let source: CanvasRectangle
-      if (sourceIsParent) {
-        const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, editor.jsxMetadata)
-
-        // if the parent frame is null, that means we probably ran into some error state,
-        // as it means the child's globalFrame should also be null, so we shouldn't be in this branch
-        const maybeSource = Utils.forceNotNull(
-          `found no parent global frame for ${EP.toComponentId(parentPath!)}`,
-          parentFrame,
-        )
-
-        // If the parent frame is infinite, fall back to using the selected element's frame
-        source = isInfinityRectangle(maybeSource) ? canvasFrames[0].frame : maybeSource
-      } else {
-        source = Utils.boundingRectangleArray(Utils.pluck(canvasFrames, 'frame'))! // I know this can't be null because we checked the canvasFrames array is non-empty
-      }
-      const updatedCanvasFrames = alignOrDistributeCanvasRects(
-        editor.jsxMetadata,
-        canvasFrames,
-        source,
-        alignmentOrDistribution,
-        sourceIsParent,
-      )
-      return {
-        ...setCanvasFramesInnerNew(editor, updatedCanvasFrames, null),
-        trueUpElementsAfterDomWalkerRuns: groupTrueUps,
-      }
-    }
   }
 
-  return editor
+  workingEditorState = alignFlowChildren(
+    workingEditorState,
+    selectedViews.filter(
+      (v) =>
+        !targetAlignment || !MetadataUtils.isFlexOrGridChild(workingEditorState.jsxMetadata, v),
+    ),
+    alignmentOrDistribution,
+  )
+
+  return {
+    ...workingEditorState,
+    trueUpElementsAfterDomWalkerRuns: groupTrueUps,
+  }
 }
 
 function alignOrDistributeCanvasRects(
@@ -6345,8 +6319,7 @@ function alignOrDistributeCanvasRects(
       break
     }
     default:
-      const _exhaustiveCheck: never = alignmentOrDistribution
-      throw new Error('Something went really wrong.')
+      assertNever(alignmentOrDistribution)
   }
 
   return results
@@ -6609,4 +6582,110 @@ function removeErrorMessagesForFile(editor: EditorState, filename: string): Edit
       ),
     ),
   )
+}
+
+function alignFlexOrGridChildren(editor: EditorState, views: ElementPath[], alignment: Alignment) {
+  let workingEditorState = { ...editor }
+  for (const view of views) {
+    function apply(prop: 'alignSelf' | 'justifySelf', value: string) {
+      return applyValuesAtPath(workingEditorState, view, [
+        { path: PP.create('style', prop), value: jsExpressionValue(value, emptyComments) },
+      ]).editorStateWithChanges
+    }
+
+    const { align, justify } = MetadataUtils.getRelativeAlignJustify(
+      workingEditorState.jsxMetadata,
+      view,
+    )
+
+    switch (alignment) {
+      case 'bottom':
+        workingEditorState = apply(align, 'end')
+        break
+      case 'top':
+        workingEditorState = apply(align, 'start')
+        break
+      case 'vcenter':
+        workingEditorState = apply(align, 'center')
+        break
+      case 'hcenter':
+        workingEditorState = apply(justify, 'center')
+        break
+      case 'left':
+        workingEditorState = apply(justify, 'start')
+        break
+      case 'right':
+        workingEditorState = apply(justify, 'end')
+        break
+      default:
+        assertNever(alignment)
+    }
+  }
+  return workingEditorState
+}
+
+function alignFlowChildren(
+  editor: EditorState,
+  views: ElementPath[],
+  alignmentOrDistribution: Alignment | Distribution,
+) {
+  let workingEditorState = { ...editor }
+
+  if (views.length > 0) {
+    // this array of canvasFrames excludes the non-layoutables. it means in a multiselect, they will not be considered
+    const canvasFrames: Array<{
+      target: ElementPath
+      frame: CanvasRectangle
+    }> = Utils.stripNulls(
+      views.map((target) => {
+        const instanceGlobalFrame = MetadataUtils.getFrameInCanvasCoords(
+          target,
+          workingEditorState.jsxMetadata,
+        )
+        if (instanceGlobalFrame == null || isInfinityRectangle(instanceGlobalFrame)) {
+          return null
+        } else {
+          return {
+            target: target,
+            frame: instanceGlobalFrame,
+          }
+        }
+      }),
+    )
+
+    if (canvasFrames.length > 0) {
+      const parentPath = EP.parentPath(views[0])
+      const sourceIsParent = views.length === 1 && parentPath != null
+      let source: CanvasRectangle
+      if (sourceIsParent) {
+        const parentFrame = MetadataUtils.getFrameInCanvasCoords(
+          parentPath,
+          workingEditorState.jsxMetadata,
+        )
+
+        // if the parent frame is null, that means we probably ran into some error state,
+        // as it means the child's globalFrame should also be null, so we shouldn't be in this branch
+        const maybeSource = Utils.forceNotNull(
+          `found no parent global frame for ${EP.toComponentId(parentPath!)}`,
+          parentFrame,
+        )
+
+        // If the parent frame is infinite, fall back to using the selected element's frame
+        source = isInfinityRectangle(maybeSource) ? canvasFrames[0].frame : maybeSource
+      } else {
+        source = Utils.boundingRectangleArray(Utils.pluck(canvasFrames, 'frame'))! // I know this can't be null because we checked the canvasFrames array is non-empty
+      }
+      const updatedCanvasFrames = alignOrDistributeCanvasRects(
+        workingEditorState.jsxMetadata,
+        canvasFrames,
+        source,
+        alignmentOrDistribution,
+        sourceIsParent,
+      )
+      workingEditorState = {
+        ...setCanvasFramesInnerNew(workingEditorState, updatedCanvasFrames, null),
+      }
+    }
+  }
+  return workingEditorState
 }
