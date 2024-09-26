@@ -529,9 +529,9 @@ describe('Observing runtime changes', () => {
     }
 
     await mouseClickAtPoint(buttonToClick, clickPoint)
-    clock.current.tick(10)
+    clock.current.tick(100)
     await renderResult.getDispatchFollowUpActionsFinished()
-    clock.current.tick(10)
+    clock.current.tick(100)
 
     // Check there is metadata for the target at the end
     const metadataAfter = MetadataUtils.findElementByElementPath(
