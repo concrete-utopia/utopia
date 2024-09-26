@@ -9,6 +9,7 @@ import { getProjectFileByFilePath } from '../../assets'
 import { renderTestEditorWithModel } from '../../canvas/ui-jsx.test-utils'
 import { updateFile } from '../actions/action-creators'
 import { StoryboardFilePath } from './editor-state'
+import type { FilePathMappings } from '../../../core/model/project-file-utils'
 
 // We have to prefix all of these with "mock" otherwise Jest won't allow us to use them below
 const mockDefer = defer
@@ -22,13 +23,22 @@ jest.mock('../../../core/workers/common/worker-types', () => ({
   async getParseResult(
     workers: any,
     files: Array<ParseOrPrint>,
+    filePathMappings: FilePathMappings,
     alreadyExistingUIDs: Set<string>,
     applySteganography: SteganographyMode,
+    parserChunkCount: number,
   ): Promise<Array<ParseOrPrintResult>> {
     mockParseStartedCount++
     const result = await jest
       .requireActual('../../../core/workers/common/worker-types')
-      .getParseResult(workers, files, alreadyExistingUIDs, applySteganography)
+      .getParseResult(
+        workers,
+        files,
+        filePathMappings,
+        alreadyExistingUIDs,
+        applySteganography,
+        parserChunkCount,
+      )
     mockLock2.resolve()
     await mockLock1
     mockLock1 = mockDefer()

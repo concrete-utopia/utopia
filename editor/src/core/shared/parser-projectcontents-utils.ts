@@ -35,6 +35,7 @@ import { fastForEach } from '../../core/shared/utils'
 import { codeNeedsPrinting, codeNeedsParsing } from '../../core/workers/common/project-file-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { isSteganographyEnabled } from './stegano-text'
+import { getParserChunkCount } from '../workers/common/concurrency-utils'
 
 export function parseResultToWorkerUpdates(fileResult: ParseOrPrintResult): WorkerUpdate {
   switch (fileResult.type) {
@@ -203,6 +204,7 @@ export async function updateProjectContentsWithParseResults(
     getFilePathMappings(projectContents),
     existingUIDs,
     isSteganographyEnabled(),
+    getParserChunkCount(),
   )
 
   // Convert those results into updates.
