@@ -16,6 +16,7 @@ export interface OptionChainOption<T> {
   label?: string
   tooltip?: string
   forceCallOnSubmitValue?: boolean // Call the onSubmitValue again even when the control is already on that value
+  disabled?: boolean
 }
 
 export function getOptionControlTestId(testIdPrefix: string, postfix: string): string {
@@ -93,6 +94,9 @@ export const OptionChainControl: React.FunctionComponent<
             value={props.value === option.value}
             // eslint-disable-next-line react/jsx-no-bind
             onSubmitValue={(isChecked: boolean) => {
+              if (option.disabled === true) {
+                return
+              }
               if (isChecked || option.forceCallOnSubmitValue) {
                 props.onSubmitValue(option.value)
               } else {

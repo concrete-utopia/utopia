@@ -323,6 +323,8 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     rowGap: null,
     columnGap: null,
     gridCellGlobalFrames: null,
+    justifySelf: null,
+    alignSelf: null,
   }
 
   const newDifferentValue: SpecialSizeMeasurements = {
@@ -443,6 +445,8 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     rowGap: null,
     columnGap: null,
     gridCellGlobalFrames: null,
+    justifySelf: null,
+    alignSelf: null,
   }
 
   it('same reference returns the same reference', () => {
@@ -618,6 +622,8 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       rowGap: null,
       columnGap: null,
       gridCellGlobalFrames: null,
+      justifySelf: null,
+      alignSelf: null,
     },
     computedStyle: {
       a: 'a',
@@ -770,6 +776,8 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       rowGap: null,
       columnGap: null,
       gridCellGlobalFrames: null,
+      justifySelf: null,
+      alignSelf: null,
     },
     computedStyle: {
       a: 'a',
@@ -947,6 +955,8 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         rowGap: null,
         columnGap: null,
         gridCellGlobalFrames: null,
+        justifySelf: null,
+        alignSelf: null,
       },
       computedStyle: {
         a: 'a',
@@ -1101,6 +1111,8 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         rowGap: null,
         columnGap: null,
         gridCellGlobalFrames: null,
+        justifySelf: null,
+        alignSelf: null,
       },
       computedStyle: {
         a: 'a',
@@ -1255,6 +1267,8 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         rowGap: null,
         columnGap: null,
         gridCellGlobalFrames: null,
+        justifySelf: null,
+        alignSelf: null,
       },
       computedStyle: {
         a: 'a',

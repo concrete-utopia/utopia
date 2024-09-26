@@ -86,6 +86,7 @@ import type { Bounds } from 'utopia-vscode-common'
 import type { Optic } from '../../core/shared/optics/optics'
 import { makeOptic } from '../../core/shared/optics/optics'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import { assertNever } from '../../core/shared/utils'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -1472,3 +1473,22 @@ export const usingDispatch = (
 
 export type Alignment = 'left' | 'hcenter' | 'right' | 'top' | 'vcenter' | 'bottom'
 export type Distribution = 'horizontal' | 'vertical'
+
+export function isAlignment(
+  alignmentOrDistribution: Alignment | Distribution,
+): alignmentOrDistribution is Alignment {
+  switch (alignmentOrDistribution) {
+    case 'bottom':
+    case 'hcenter':
+    case 'left':
+    case 'right':
+    case 'top':
+    case 'vcenter':
+      return true
+    case 'horizontal':
+    case 'vertical':
+      return false
+    default:
+      assertNever(alignmentOrDistribution)
+  }
+}

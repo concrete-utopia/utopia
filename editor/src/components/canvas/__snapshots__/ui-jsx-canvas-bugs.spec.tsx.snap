@@ -160,6 +160,7 @@ Object {
     "specialSizeMeasurements": Object {
       "alignContent": null,
       "alignItems": null,
+      "alignSelf": null,
       "borderRadius": null,
       "clientHeight": 0,
       "clientWidth": 0,
@@ -220,6 +221,7 @@ Object {
       },
       "immediateParentProvidesLayout": true,
       "justifyContent": null,
+      "justifySelf": null,
       "layoutSystemForChildren": null,
       "margin": Object {},
       "naturalHeight": null,
@@ -308,6 +310,7 @@ Object {
     "specialSizeMeasurements": Object {
       "alignContent": null,
       "alignItems": null,
+      "alignSelf": null,
       "borderRadius": null,
       "clientHeight": 0,
       "clientWidth": 0,
@@ -368,6 +371,7 @@ Object {
       },
       "immediateParentProvidesLayout": true,
       "justifyContent": null,
+      "justifySelf": null,
       "layoutSystemForChildren": null,
       "margin": Object {},
       "naturalHeight": null,

@@ -630,6 +630,24 @@ export const MetadataUtils = {
       MetadataUtils.getFlexDirection(instance),
     )
   },
+  isFlexOrGridChild: function (jsxMetadata: ElementInstanceMetadataMap, path: ElementPath) {
+    return (
+      MetadataUtils.isFlexLayoutedContainer(
+        MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path)),
+      ) || MetadataUtils.isGridCell(jsxMetadata, path)
+    )
+  },
+  getRelativeAlignJustify: function (
+    jsxMetadata: ElementInstanceMetadataMap,
+    path: ElementPath,
+  ): { align: 'alignSelf' | 'justifySelf'; justify: 'alignSelf' | 'justifySelf' } {
+    const direction = MetadataUtils.getSimpleFlexDirection(
+      MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path)),
+    )
+    const align = direction.direction === 'horizontal' ? 'alignSelf' : 'justifySelf'
+    const justify = direction.direction === 'horizontal' ? 'justifySelf' : 'alignSelf'
+    return { align, justify }
+  },
   flexDirectionToSimpleFlexDirection: function (flexDirection: FlexDirection): {
     direction: Direction
     forwardOrReverse: ForwardOrReverse
