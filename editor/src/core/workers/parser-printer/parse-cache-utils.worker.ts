@@ -1,5 +1,5 @@
 import { URL_HASH } from '../../../common/env-vars'
-import type { ParseCacheOptions } from '../../../core/shared/parse-cache-utils'
+import { type ParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import type { ParseFileResult } from '../common/worker-types'
 import localforage from 'localforage'
 
@@ -8,10 +8,17 @@ export const PARSE_CACHE_STORE_NAME = 'file-parse-cache'
 const ARBITRARY_CODE_FILE_NAME = 'code.tsx'
 const ARBITRARY_CODE_CACHE_KEY_LIMIT = 50
 
-const parseCache = localforage.createInstance({
-  name: CACHE_DB_NAME,
-  storeName: PARSE_CACHE_STORE_NAME,
-})
+let parseCacheStore: LocalForage | undefined
+
+function getParseCacheStore(): LocalForage {
+  if (parseCacheStore === undefined) {
+    parseCacheStore = localforage.createInstance({
+      name: CACHE_DB_NAME,
+      storeName: PARSE_CACHE_STORE_NAME,
+    })
+  }
+  return parseCacheStore
+}
 
 function getCacheKey(filename: string): string {
   return `PARSE_CACHE::${filename}`
@@ -47,7 +54,7 @@ export async function getParseResultFromCache(
 ): Promise<ParseFileResult | null> {
   const cacheKey = getCacheKey(filename)
   //check localforage for cache
-  const cachedResult = await parseCache.getItem<CachedParseResult>(cacheKey)
+  const cachedResult = await getParseCacheStore().getItem<CachedParseResult>(cacheKey)
   const cachedResultForContent = cachedResult?.[getCacheIndexKeyWithVersion(content)]
   if (cachedResultForContent?.parseResult?.type === 'PARSE_SUCCESS') {
     logCacheMessage(parsingCacheOptions, 'Cache hit for', ...stringIdentifiers(filename, content))
@@ -67,19 +74,19 @@ export async function storeParseResultInCache(
   const cacheKey = getCacheKey(filename)
   if (filename === ARBITRARY_CODE_FILE_NAME) {
     // for the special filename 'code.tsx', we store multiple contents, so we need to read it first
-    const cachedResult = (await parseCache.getItem<CachedParseResult>(cacheKey)) ?? {}
+    const cachedResult = (await getParseCacheStore().getItem<CachedParseResult>(cacheKey)) ?? {}
     // limit the arbitrary code cache keys size
     // TODO: we can use an LRU cache here, but for now this is good enough
     if (Object.keys(cachedResult).length >= ARBITRARY_CODE_CACHE_KEY_LIMIT) {
       const oldestKey = Object.keys(cachedResult)[0]
       delete cachedResult[oldestKey]
     }
-    void parseCache.setItem<CachedParseResult>(cacheKey, {
+    void getParseCacheStore().setItem<CachedParseResult>(cacheKey, {
       ...cachedResult,
       [getCacheIndexKeyWithVersion(content)]: result,
     })
   } else {
-    void parseCache.setItem<CachedParseResult>(cacheKey, {
+    void getParseCacheStore().setItem<CachedParseResult>(cacheKey, {
       [getCacheIndexKeyWithVersion(content)]: result,
     })
   }
@@ -87,7 +94,10 @@ export async function storeParseResultInCache(
 
 export async function clearParseCache(parsingCacheOptions: ParseCacheOptions) {
   logCacheMessage(parsingCacheOptions, 'Clearing cache')
-  await parseCache.dropInstance({ name: CACHE_DB_NAME, storeName: PARSE_CACHE_STORE_NAME })
+  await getParseCacheStore().dropInstance({
+    name: CACHE_DB_NAME,
+    storeName: PARSE_CACHE_STORE_NAME,
+  })
 }
 
 type CachedParseResult = { [fileContent: string]: ParseFileResult }
