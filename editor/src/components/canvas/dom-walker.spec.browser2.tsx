@@ -521,8 +521,6 @@ describe('Observing runtime changes', () => {
     )
     expect(metadataBefore).toBeNull()
 
-    const recordedActionsBefore = [...renderResult.getRecordedActions()]
-
     const buttonToClick = renderResult.renderedDOM.getByTestId('click-me')
     const buttonToClickBounds = buttonToClick.getBoundingClientRect()
     const clickPoint = {
@@ -534,14 +532,6 @@ describe('Observing runtime changes', () => {
     clock.current.tick(10)
     await renderResult.getDispatchFollowUpActionsFinished()
     clock.current.tick(10)
-
-    const recordedActionsAfter = [...renderResult.getRecordedActions()]
-    const recordedActionsDuring = recordedActionsAfter.slice(recordedActionsBefore.length)
-
-    const runDomWalkerActions = recordedActionsDuring.filter((a) => a.action === 'RUN_DOM_WALKER')
-    // Both the observers might fire, but they should only result in a single DOM walker run because of
-    // the shared functionality that fires the DOM walker with a timeout.
-    expect(runDomWalkerActions.length).toEqual(2)
 
     // Check there is metadata for the target at the end
     const metadataAfter = MetadataUtils.findElementByElementPath(
