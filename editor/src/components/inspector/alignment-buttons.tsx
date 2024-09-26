@@ -34,8 +34,8 @@ export const AlignmentButtons = React.memo(() => {
 
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
 
-  const disableAlign = React.useMemo(() => selectedViews.current.length === 0, [selectedViews])
-  const disableDistribute = React.useMemo(() => selectedViews.current.length < 3, [selectedViews])
+  const disableAlign = selectedViews.current.length === 0
+  const disableDistribute = selectedViews.current.length < 3
 
   const activeAlignments = useActiveAlignments()
   const hasActiveAlignments = React.useMemo(() => {

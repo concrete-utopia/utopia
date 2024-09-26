@@ -350,7 +350,7 @@ import type {
   UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
 } from '../action-types'
-import { isLoggedIn } from '../action-types'
+import { isAlignment, isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
 import { isCommentMode, isFollowMode, isTextEditMode } from '../editor-modes'
 import { EditorModes, isLiveMode, isSelectMode } from '../editor-modes'
@@ -6183,16 +6183,22 @@ export function alignOrDistributeSelectedViews(
 
   let workingEditorState = { ...editor }
 
-  workingEditorState = alignFlexOrGridChildren(
-    workingEditorState,
-    selectedViews.filter((v) => MetadataUtils.isFlexOrGridChild(workingEditorState.jsxMetadata, v)),
-    alignmentOrDistribution,
-  )
+  const targetAlignment = isAlignment(alignmentOrDistribution)
+  if (targetAlignment) {
+    workingEditorState = alignFlexOrGridChildren(
+      workingEditorState,
+      selectedViews.filter((v) =>
+        MetadataUtils.isFlexOrGridChild(workingEditorState.jsxMetadata, v),
+      ),
+      alignmentOrDistribution,
+    )
+  }
 
   workingEditorState = alignFlowChildren(
     workingEditorState,
     selectedViews.filter(
-      (v) => !MetadataUtils.isFlexOrGridChild(workingEditorState.jsxMetadata, v),
+      (v) =>
+        !targetAlignment || !MetadataUtils.isFlexOrGridChild(workingEditorState.jsxMetadata, v),
     ),
     alignmentOrDistribution,
   )
@@ -6575,11 +6581,7 @@ function removeErrorMessagesForFile(editor: EditorState, filename: string): Edit
   )
 }
 
-function alignFlexOrGridChildren(
-  editor: EditorState,
-  views: ElementPath[],
-  alignmentOrDistribution: Alignment | Distribution,
-) {
+function alignFlexOrGridChildren(editor: EditorState, views: ElementPath[], alignment: Alignment) {
   let workingEditorState = { ...editor }
   for (const view of views) {
     function apply(prop: 'alignSelf' | 'justifySelf', value: string) {
@@ -6593,7 +6595,7 @@ function alignFlexOrGridChildren(
       view,
     )
 
-    switch (alignmentOrDistribution) {
+    switch (alignment) {
       case 'bottom':
         workingEditorState = apply(align, 'end')
         break
@@ -6612,11 +6614,8 @@ function alignFlexOrGridChildren(
       case 'right':
         workingEditorState = apply(justify, 'end')
         break
-      case 'horizontal':
-      case 'vertical':
-        break
       default:
-        assertNever(alignmentOrDistribution)
+        assertNever(alignment)
     }
   }
   return workingEditorState
