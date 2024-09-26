@@ -111,8 +111,6 @@ async function renderTestProject() {
       modifiedFilename,
       [],
       exampleFiles[modifiedFilename],
-      null,
-      emptySet(),
       'trim-bounds',
       'do-not-apply-steganography',
     ) as ParsedTextFile

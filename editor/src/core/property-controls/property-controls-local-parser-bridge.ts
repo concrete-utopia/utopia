@@ -47,7 +47,6 @@ async function getParseResultForUserStrings(
     workers,
     [createParseFile('code.tsx', codeToParse, null, Date.now())],
     [],
-    emptySet(),
     isSteganographyEnabled(),
   )
 

@@ -345,13 +345,8 @@ export function wrapElementInsertions(
   const staticTarget =
     optionalMap(childInsertionPath, targetThatIsRootElementOfCommonParent) ?? parentPath
 
-  const existingIDsMutable = new Set(
-    getAllUniqueUidsFromMapping(getUidMappings(editor.projectContents).filePathToUids),
-  )
-  const elementToInsert = fixUtopiaElementGeneric<typeof rawElementToInsert>(
-    rawElementToInsert,
-    existingIDsMutable,
-  ).value
+  const elementToInsert =
+    fixUtopiaElementGeneric<typeof rawElementToInsert>(rawElementToInsert).value
 
   const newPath = anyTargetIsARootElement
     ? EP.appendNewElementPath(getElementPathFromInsertionPath(parentPath), elementToInsert.uid)

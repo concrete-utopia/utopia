@@ -114,7 +114,6 @@ import {
 import { jsonToExpression } from './json-to-expression'
 import { difference } from '../../shared/set-utils'
 import { addCommentsToNode } from './parser-printer-comments'
-import { fixParseSuccessUIDs } from './uid-fix'
 import { applyPrettier } from 'utopia-vscode-common'
 import { stripExtension } from '../../../components/custom-code/custom-code-utils'
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
@@ -1207,7 +1206,6 @@ export function looksLikeCanvasElements(
   topLevelNames: Array<string>,
   propsObjectName: string | null,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  alreadyExistingUIDs: Set<string>,
   applySteganography: SteganographyMode,
 ): Either<TS.Node, PossibleCanvasContents> {
   if (TS.isVariableStatement(node)) {
@@ -1232,7 +1230,6 @@ export function looksLikeCanvasElements(
               propsObjectName,
               currentNode.expression,
               existingHighlightBounds,
-              alreadyExistingUIDs,
               [],
               applySteganography,
               'outermost-expression',
@@ -1426,11 +1423,8 @@ export function parseCode(
   filePath: string,
   filePathMappings: FilePathMappings,
   sourceText: string,
-  oldParseResultForUIDComparison: ParseSuccess | null,
-  alreadyExistingUIDs_MUTABLE: Set<string>,
   applySteganography: SteganographyMode,
 ): ParsedTextFile {
-  const originalAlreadyExistingUIDs_MUTABLE: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
   const sourceFile = TS.createSourceFile(filePath, sourceText, TS.ScriptTarget.ES3)
 
   const topLevelNodes = flatMapArray(
@@ -1449,18 +1443,16 @@ export function parseCode(
     // existing further ahead.
     let highlightBounds: HighlightBoundsForUids = {}
 
-    interface NodeAndUIDs {
+    interface Node {
       node: TS.Node
-      uidsBeforeParse: Set<string>
     }
-    let allArbitraryNodes: Array<NodeAndUIDs> = []
+    let allArbitraryNodes: Array<Node> = []
 
     // Account for exported components.
     let detailOfExports: ExportsDetail = EmptyExportsDetail
 
     function pushArbitraryNode(node: TS.Node): void {
       if (node.kind !== TS.SyntaxKind.EndOfFileToken) {
-        const uidsBeforeParse: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
         const nodeParseResult = parseArbitraryNodes(
           sourceFile,
           sourceText,
@@ -1470,7 +1462,6 @@ export function parseCode(
           topLevelNames,
           null,
           highlightBounds,
-          alreadyExistingUIDs_MUTABLE,
           true,
           '',
           false,
@@ -1489,7 +1480,6 @@ export function parseCode(
           ...allArbitraryNodes,
           {
             node: node,
-            uidsBeforeParse: uidsBeforeParse,
           },
         ]
       }
@@ -1624,7 +1614,6 @@ export function parseCode(
           topLevelNames,
           null,
           highlightBounds,
-          alreadyExistingUIDs_MUTABLE,
           applySteganography,
         )
         if (isRight(possibleDeclaration)) {
@@ -1648,7 +1637,6 @@ export function parseCode(
               imports,
               topLevelNames,
               highlightBounds,
-              alreadyExistingUIDs_MUTABLE,
               applySteganography,
             )
             parsedFunctionParams = notNullParsedFunctionParams
@@ -1673,7 +1661,6 @@ export function parseCode(
                 propsObjectName,
                 body,
                 params?.highlightBounds ?? {},
-                alreadyExistingUIDs_MUTABLE,
                 applySteganography,
               )
             })
@@ -1690,7 +1677,6 @@ export function parseCode(
                 topLevelNames,
                 null,
                 highlightBounds,
-                alreadyExistingUIDs_MUTABLE,
                 applySteganography,
               ),
             )
@@ -1849,10 +1835,6 @@ export function parseCode(
         topLevelNames,
         null,
         highlightBounds,
-        // FIXME: This is using the first `uidsBeforeParse` value so that
-        // this parse should not find duplicate UIDs which will potentially
-        // attempt to pull mocked UIDs to replace those fake duplicates.
-        new Set(allArbitraryNodes[0].uidsBeforeParse),
         true,
         '',
         true,
@@ -1893,7 +1875,7 @@ export function parseCode(
     }
 
     // Create the basic success result from the values we have so far.
-    const unfixedParseSuccess = parseSuccess(
+    const parseSuccessResult = parseSuccess(
       imports,
       realTopLevelElements,
       highlightBounds,
@@ -1903,31 +1885,8 @@ export function parseCode(
       highlightBounds,
     )
 
-    // Determine what new UIDs were generated during this parse.
-    const fixParseSuccessExistingUIDs = new Set(originalAlreadyExistingUIDs_MUTABLE)
-    const newlyCreatedUIDs = difference(alreadyExistingUIDs_MUTABLE, fixParseSuccessExistingUIDs)
-
-    // Fix the `ParseSuccess` instance by copying over UIDs where possible from the previous
-    // parse result while also deduplicating UIDs found in the result.
-    const fixedParseSuccess = fixParseSuccessUIDs(
-      oldParseResultForUIDComparison,
-      unfixedParseSuccess,
-      fixParseSuccessExistingUIDs,
-      newlyCreatedUIDs,
-    )
-
-    // Find the UIDs created from the above `fixParseSuccessUIDs` invocation and include them
-    // in the mutable already existing UIDs as that is used outside this function.
-    const newlyCreatedUIDsFromFix = difference(
-      fixParseSuccessExistingUIDs,
-      originalAlreadyExistingUIDs_MUTABLE,
-    )
-    newlyCreatedUIDsFromFix.forEach((newlyCreatedUID) =>
-      alreadyExistingUIDs_MUTABLE.add(newlyCreatedUID),
-    )
-
     // Return the corrected result.
-    return fixedParseSuccess
+    return parseSuccessResult
   }
 }
 
@@ -2039,8 +1998,6 @@ export function lintAndParse(
   filename: string,
   filePathMappings: FilePathMappings,
   content: string,
-  oldParseResultForUIDComparison: ParseSuccess | null,
-  alreadyExistingUIDs_MUTABLE: Set<string>,
   shouldTrimBounds: 'trim-bounds' | 'do-not-trim-bounds',
   applySteganography: SteganographyMode,
 ): ParsedTextFile {
@@ -2051,14 +2008,7 @@ export function lintAndParse(
   const lintResult = lintCode(filename, content)
   // Only fatal or error messages should bounce the parse.
   if (lintResult.filter(messageisFatal).length === 0) {
-    const result = parseCode(
-      filename,
-      filePathMappings,
-      content,
-      oldParseResultForUIDComparison,
-      alreadyExistingUIDs_MUTABLE,
-      applySteganography,
-    )
+    const result = parseCode(filename, filePathMappings, content, applySteganography)
     if (isParseSuccess(result) && shouldTrimBounds === 'trim-bounds') {
       return trimHighlightBounds(result)
     } else {

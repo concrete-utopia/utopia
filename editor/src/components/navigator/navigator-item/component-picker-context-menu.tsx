@@ -537,9 +537,9 @@ export function insertComponentPickerItem(
         }
       }
 
-      const uid = generateConsistentUID('prop', uniqueIds)
+      const uid = generateConsistentUID('prop')
       const element = jsxElementFromJSXElementWithoutUID(elementWithoutUID, uid)
-      const fixedElement = fixUtopiaElement(element, uniqueIds).value
+      const fixedElement = fixUtopiaElement(element).value
 
       if (fixedElement.type !== 'JSX_ELEMENT') {
         throw new Error('JSXElementWithoutUid is not converted to JSXElement')
@@ -722,10 +722,7 @@ function insertPreferredChild(
   dispatch: EditorDispatch,
   insertionTarget: InsertionTarget,
 ) {
-  const uniqueIds = new Set(
-    getAllUniqueUidsFromMapping(getUidMappings(projectContents).filePathToUids),
-  )
-  const uid = generateConsistentUID('prop', uniqueIds)
+  const uid = generateConsistentUID('prop')
   const toInsert = elementToInsertToInsertableComponent(
     preferredChildToInsert,
     uid,

@@ -27,8 +27,6 @@ async function printOutParseResult(
         javascriptFilePath,
         [],
         initialPrettifiedContents,
-        null,
-        emptySet(),
         'do-not-apply-steganography',
       )
       switch (command) {

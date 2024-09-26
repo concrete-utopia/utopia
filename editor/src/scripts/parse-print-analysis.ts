@@ -31,8 +31,6 @@ async function processFile(
     javascriptFilePath,
     [],
     initialPrettifiedContents,
-    null,
-    emptySet(),
     'do-not-apply-steganography',
   )
   const printedContents = foldParsedTextFile(

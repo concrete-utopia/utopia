@@ -25,14 +25,7 @@ export var Whatever = (props) => {
     <div />
   )
 }`
-    const parseResult = parseCode(
-      '/src/index.js',
-      [],
-      codeForFile,
-      null,
-      emptySet(),
-      'do-not-apply-steganography',
-    )
+    const parseResult = parseCode('/src/index.js', [], codeForFile, 'do-not-apply-steganography')
     expect(isParseSuccess(parseResult)).toEqual(true)
 
     const actualResult = getExportedComponentImports(
@@ -64,14 +57,7 @@ export var Whatever = (props) => {
   it('returns exported non-component if it has property controls info', () => {
     const codeForFile = `import React from "react";
 export var Whatever = 'something'`
-    const parseResult = parseCode(
-      '/src/index.js',
-      [],
-      codeForFile,
-      null,
-      emptySet(),
-      'do-not-apply-steganography',
-    )
+    const parseResult = parseCode('/src/index.js', [], codeForFile, 'do-not-apply-steganography')
     expect(isParseSuccess(parseResult)).toEqual(true)
 
     const propertyControlsInfo = {
@@ -115,14 +101,7 @@ export var Whatever = 'something'`
   it('doesnt return exported non-component when it doesnt have property controls info', () => {
     const codeForFile = `import React from "react";
 export var Whatever = 'something'`
-    const parseResult = parseCode(
-      '/src/index.js',
-      [],
-      codeForFile,
-      null,
-      emptySet(),
-      'do-not-apply-steganography',
-    )
+    const parseResult = parseCode('/src/index.js', [], codeForFile, 'do-not-apply-steganography')
     expect(isParseSuccess(parseResult)).toEqual(true)
 
     const actualResult = getExportedComponentImports(
