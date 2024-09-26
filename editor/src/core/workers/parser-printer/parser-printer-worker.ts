@@ -3,9 +3,11 @@ import type { SteganographyMode } from './parser-printer'
 import { printCodeOptions, printCode, lintAndParse } from './parser-printer'
 import type {
   ClearParseCacheMessage,
+  ParseFile,
   ParseFileResult,
   ParsePrintFilesRequest,
   ParsePrintResultMessage,
+  PrintAndReparseFile,
   PrintAndReparseResult,
 } from '../common/worker-types'
 import {
@@ -22,6 +24,8 @@ import {
 } from './parse-cache-utils.worker'
 import type { ParseCacheOptions } from '../../shared/parse-cache-utils'
 
+type ParseOrPrintResults = (ParseFileResult | PrintAndReparseResult)[]
+
 export async function handleMessage(
   workerMessage: ParsePrintFilesRequest | ClearParseCacheMessage,
   sendMessage: (content: ParsePrintResultMessage) => void,
@@ -30,37 +34,27 @@ export async function handleMessage(
     case 'parseprintfiles': {
       try {
         const alreadyExistingUIDs_MUTABLE: Set<string> = new Set(workerMessage.alreadyExistingUIDs)
-        const results = await Promise.all(
-          workerMessage.files.map(async (file) => {
-            switch (file.type) {
-              case 'parsefile':
-                return getParseFileResultWithCache(
-                  file.filename,
-                  workerMessage.filePathMappings,
-                  file.content,
-                  file.previousParsed,
-                  file.versionNumber,
-                  alreadyExistingUIDs_MUTABLE,
-                  workerMessage.applySteganography,
-                  workerMessage.parsingCacheOptions,
-                )
-              case 'printandreparsefile':
-                return getPrintAndReparseCodeResult(
-                  file.filename,
-                  workerMessage.filePathMappings,
-                  file.parseSuccess,
-                  file.stripUIDs,
-                  file.versionNumber,
-                  alreadyExistingUIDs_MUTABLE,
-                  workerMessage.applySteganography,
-                  workerMessage.parsingCacheOptions,
-                )
-              default:
-                const _exhaustiveCheck: never = file
-                throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
-            }
-          }),
-        )
+        const { useParsingCache } = workerMessage.parsingCacheOptions
+
+        const fileParseResults = workerMessage.files.map((file) => {
+          switch (file.type) {
+            case 'parsefile':
+              return useParsingCache
+                ? handleParseFileWithCache(file, workerMessage, alreadyExistingUIDs_MUTABLE)
+                : handleParseFile(file, workerMessage, alreadyExistingUIDs_MUTABLE)
+            case 'printandreparsefile':
+              return handlePrintAndReparseFile(file, workerMessage, alreadyExistingUIDs_MUTABLE)
+            default:
+              const _exhaustiveCheck: never = file
+              throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
+          }
+        })
+
+        // this separation is to make sure that we will Promise.all only if the cache is used
+        const results = useParsingCache
+          ? await Promise.all(fileParseResults)
+          : asSyncResults(fileParseResults)
+
         sendMessage(createParsePrintFilesResult(results, workerMessage.messageID))
       } catch (e) {
         sendMessage(createParsePrintFailedMessage(workerMessage.messageID))
@@ -75,36 +69,56 @@ export async function handleMessage(
   }
 }
 
-export async function getParseFileResultWithCache(
-  filename: string,
-  filePathMappings: FilePathMappings,
-  content: string,
-  oldParseResultForUIDComparison: ParseSuccess | null,
-  fileVersionNumber: number,
+async function handleParseFileWithCache(
+  file: ParseFile,
+  workerMessage: ParsePrintFilesRequest,
   alreadyExistingUIDs_MUTABLE: Set<string>,
-  applySteganography: SteganographyMode,
-  parsingCacheOptions: ParseCacheOptions,
 ): Promise<ParseFileResult> {
-  if (parsingCacheOptions.useParsingCache) {
-    //check localforage for cache
-    const cachedResult = await getParseResultFromCache(filename, content, parsingCacheOptions)
-    if (cachedResult != null) {
-      return cachedResult
-    }
+  const cachedResult = await getParseResultFromCache(
+    file.filename,
+    file.content,
+    workerMessage.parsingCacheOptions,
+  )
+  if (cachedResult != null) {
+    return cachedResult
   }
 
-  const parseResult = getParseFileResult(
-    filename,
-    filePathMappings,
-    content,
-    oldParseResultForUIDComparison,
-    fileVersionNumber,
-    alreadyExistingUIDs_MUTABLE,
-    applySteganography,
-    parsingCacheOptions,
-  )
+  // if not in cache, parse the file as usual
+  return handleParseFile(file, workerMessage, alreadyExistingUIDs_MUTABLE)
+}
 
-  return parseResult
+function handleParseFile(
+  file: ParseFile,
+  workerMessage: ParsePrintFilesRequest,
+  alreadyExistingUIDs_MUTABLE: Set<string>,
+): ParseFileResult {
+  return getParseFileResult(
+    file.filename,
+    workerMessage.filePathMappings,
+    file.content,
+    file.previousParsed,
+    file.versionNumber,
+    alreadyExistingUIDs_MUTABLE,
+    workerMessage.applySteganography,
+    workerMessage.parsingCacheOptions,
+  )
+}
+
+function handlePrintAndReparseFile(
+  file: PrintAndReparseFile,
+  workerMessage: ParsePrintFilesRequest,
+  alreadyExistingUIDs_MUTABLE: Set<string>,
+): PrintAndReparseResult {
+  return getPrintAndReparseCodeResult(
+    file.filename,
+    workerMessage.filePathMappings,
+    file.parseSuccess,
+    file.stripUIDs,
+    file.versionNumber,
+    alreadyExistingUIDs_MUTABLE,
+    workerMessage.applySteganography,
+    workerMessage.parsingCacheOptions,
+  )
 }
 
 export function getParseFileResult(
@@ -170,4 +184,10 @@ export function getPrintAndReparseCodeResult(
     fileVersionNumber,
     printedCode,
   )
+}
+
+function asSyncResults(
+  results: (ParseFileResult | Promise<ParseFileResult> | PrintAndReparseResult)[],
+): ParseOrPrintResults {
+  return results as ParseOrPrintResults
 }
