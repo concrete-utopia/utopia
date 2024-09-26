@@ -155,7 +155,12 @@ import {
 import * as PP from '../../../core/shared/property-path'
 import { assertNever, fastForEach, getProjectLockedKey, identity } from '../../../core/shared/utils'
 import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
-import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
+import {
+  createParseAndPrintOptions,
+  createParseFile,
+  createPrintAndReparseFile,
+  type UtopiaTsWorkers,
+} from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils, { absolute } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
@@ -4138,14 +4143,13 @@ export const UPDATE_FNS = {
       getAllUniqueUidsFromMapping(getUidMappings(editor.projectContents).filePathToUids),
     )
     const parsedResult = getParseFileResult(
-      newFileName,
-      getFilePathMappings(editor.projectContents),
-      templateFile.fileContents.code,
-      null,
-      1,
-      existingUIDs,
-      isSteganographyEnabled(),
-      getParseCacheOptions(),
+      createParseFile(newFileName, templateFile.fileContents.code, null, 1),
+      createParseAndPrintOptions(
+        getFilePathMappings(editor.projectContents),
+        existingUIDs,
+        isSteganographyEnabled(),
+        getParseCacheOptions(),
+      ),
     )
 
     // 3. write the new text file
@@ -5006,14 +5010,18 @@ export const UPDATE_FNS = {
     const workerUpdates = filesToUpdateResult.filesToUpdate.flatMap((fileToUpdate) => {
       if (fileToUpdate.type === 'printandreparsefile') {
         const printParsedContent = getPrintAndReparseCodeResult(
-          fileToUpdate.filename,
-          filePathMappings,
-          fileToUpdate.parseSuccess,
-          fileToUpdate.stripUIDs,
-          fileToUpdate.versionNumber,
-          filesToUpdateResult.existingUIDs,
-          isSteganographyEnabled(),
-          getParseCacheOptions(),
+          createPrintAndReparseFile(
+            fileToUpdate.filename,
+            fileToUpdate.parseSuccess,
+            fileToUpdate.stripUIDs,
+            fileToUpdate.versionNumber,
+          ),
+          createParseAndPrintOptions(
+            filePathMappings,
+            filesToUpdateResult.existingUIDs,
+            isSteganographyEnabled(),
+            getParseCacheOptions(),
+          ),
         )
         const updateAction = workerCodeAndParsedUpdate(
           printParsedContent.filename,

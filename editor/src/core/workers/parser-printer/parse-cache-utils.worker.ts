@@ -1,6 +1,6 @@
 import { URL_HASH } from '../../../common/env-vars'
 import { type ParseCacheOptions } from '../../../core/shared/parse-cache-utils'
-import type { ParseFileResult } from '../common/worker-types'
+import type { ParseFile, ParseFileResult } from '../common/worker-types'
 import localforage from 'localforage'
 
 export const CACHE_DB_NAME = 'editor-cache'
@@ -52,10 +52,10 @@ function getCacheIndexKeyWithVersion(content: string): string {
 }
 
 export async function getParseResultFromCache(
-  filename: string,
-  content: string,
+  file: ParseFile,
   parsingCacheOptions: ParseCacheOptions,
 ): Promise<ParseFileResult | null> {
+  const { filename, content } = file
   if (shouldSkipCacheForFile(filename, parsingCacheOptions)) {
     return null
   }
@@ -72,11 +72,11 @@ export async function getParseResultFromCache(
 }
 
 export async function storeParseResultInCache(
-  filename: string,
-  content: string,
+  file: ParseFile,
   result: ParseFileResult,
   parsingCacheOptions: ParseCacheOptions,
 ): Promise<void> {
+  const { filename, content } = file
   if (shouldSkipCacheForFile(filename, parsingCacheOptions)) {
     return
   }

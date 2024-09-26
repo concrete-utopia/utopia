@@ -37,6 +37,27 @@ export function createParseFile(
   }
 }
 
+export interface ParseAndPrintOptions {
+  filePathMappings: FilePathMappings
+  alreadyExistingUIDs_MUTABLE: Set<string>
+  applySteganography: SteganographyMode
+  parsingCacheOptions: ParseCacheOptions
+}
+
+export function createParseAndPrintOptions(
+  filePathMappings: FilePathMappings,
+  alreadyExistingUIDs_MUTABLE: Set<string>,
+  applySteganography: SteganographyMode,
+  parsingCacheOptions: ParseCacheOptions,
+): ParseAndPrintOptions {
+  return {
+    filePathMappings: filePathMappings,
+    alreadyExistingUIDs_MUTABLE: alreadyExistingUIDs_MUTABLE,
+    applySteganography: applySteganography,
+    parsingCacheOptions: parsingCacheOptions,
+  }
+}
+
 export interface PrintAndReparseFile {
   type: 'printandreparsefile'
   filename: string
