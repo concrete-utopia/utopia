@@ -24,25 +24,14 @@ import {
 } from '../../uuiui/radix-components'
 import * as PP from '../../core/shared/property-path'
 import { assertNever } from '../../core/shared/utils'
+import type { ElementPath } from 'utopia-shared/src/types'
+import { mapDropNulls } from '../../core/shared/array-utils'
 
 export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
   const dispatch = useDispatch()
-  const alignSelected = React.useCallback(
-    (alignment: Alignment) => {
-      dispatch([alignSelectedViews(alignment)], 'everyone')
-    },
-    [dispatch],
-  )
 
   const disableAlign = props.numberOfTargets === 0
   const multipleTargets = props.numberOfTargets > 1
-
-  const alignLeft = React.useCallback(() => alignSelected('left'), [alignSelected])
-  const alignHCenter = React.useCallback(() => alignSelected('hcenter'), [alignSelected])
-  const alignRight = React.useCallback(() => alignSelected('right'), [alignSelected])
-  const alignTop = React.useCallback(() => alignSelected('top'), [alignSelected])
-  const alignVCenter = React.useCallback(() => alignSelected('vcenter'), [alignSelected])
-  const alignBottom = React.useCallback(() => alignSelected('bottom'), [alignSelected])
 
   const selectedViews = useEditorState(
     Substores.metadata,
@@ -56,7 +45,9 @@ export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) 
     'AlignmentButtons jsxMetadata',
   )
 
-  const activeToggles = React.useMemo(() => {
+  type ActiveToggles = { [key in Alignment]: boolean }
+
+  const activeToggles: ActiveToggles = React.useMemo(() => {
     function isActive(toggle: 'left' | 'hcenter' | 'right' | 'top' | 'vcenter' | 'bottom') {
       return (
         selectedViews.length > 0 &&
@@ -131,17 +122,6 @@ export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) 
     }
   }, [jsxMetadata, selectedViews])
 
-  const hasToggles = React.useMemo(() => {
-    return (
-      activeToggles.left ||
-      activeToggles.hcenter ||
-      activeToggles.right ||
-      activeToggles.top ||
-      activeToggles.vcenter ||
-      activeToggles.bottom
-    )
-  }, [activeToggles])
-
   const distributeSelected = React.useCallback(
     (distribution: Distribution) => {
       dispatch([distributeSelectedViews(distribution)], 'everyone')
@@ -166,22 +146,77 @@ export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) 
     )
   }, [])
 
-  const unsetToggles = React.useCallback(() => {
-    let actions: EditorAction[] = []
-    for (const view of selectedViews) {
-      const isFlexOrGridChild = MetadataUtils.isFlexOrGridChild(jsxMetadata, view)
-      const { align, justify } = MetadataUtils.getRelativeAlignJustify(jsxMetadata, view)
+  const activeTogglesList = React.useMemo(() => {
+    return Object.entries(activeToggles).reduce((acc, [key, set]) => {
+      if (set) {
+        return acc.concat(key as Alignment)
+      }
+      return acc
+    }, [] as Alignment[])
+  }, [activeToggles])
 
+  const hasToggles = React.useMemo(() => {
+    return activeTogglesList.length > 0
+  }, [activeTogglesList])
+
+  const unsetToggle = React.useCallback(
+    (path: ElementPath) => {
+      let actions: { toggles: string[]; action: EditorAction }[] = []
+      const isFlexOrGridChild = MetadataUtils.isFlexOrGridChild(jsxMetadata, path)
+      const { align, justify } = MetadataUtils.getRelativeAlignJustify(jsxMetadata, path)
       if (activeToggles.left || activeToggles.hcenter || activeToggles.right) {
-        actions.push(unsetProperty(view, PP.create('style', isFlexOrGridChild ? justify : 'left')))
+        const toggles = activeTogglesList.filter(
+          (t) => t === 'left' || t === 'hcenter' || t === 'right',
+        )
+        actions.push({
+          action: unsetProperty(path, PP.create('style', isFlexOrGridChild ? justify : 'left')),
+          toggles: toggles,
+        })
       }
       if (activeToggles.top || activeToggles.vcenter || activeToggles.bottom) {
-        actions.push(unsetProperty(view, PP.create('style', isFlexOrGridChild ? align : 'top')))
+        const toggles = activeTogglesList.filter(
+          (t) => t === 'top' || t === 'vcenter' || t === 'bottom',
+        )
+        actions.push({
+          action: unsetProperty(path, PP.create('style', isFlexOrGridChild ? align : 'top')),
+          toggles: toggles,
+        })
       }
-    }
+      return actions
+    },
+    [jsxMetadata, activeToggles, activeTogglesList],
+  )
 
-    dispatch(actions)
-  }, [selectedViews, dispatch, jsxMetadata, activeToggles])
+  const unsetToggles = React.useCallback(() => {
+    dispatch(
+      mapDropNulls(unsetToggle, selectedViews)
+        .flat()
+        .map((a) => a.action),
+    )
+  }, [selectedViews, dispatch, unsetToggle])
+
+  const alignSelected = React.useCallback(
+    (alignment: Alignment) => {
+      if (activeToggles[alignment]) {
+        dispatch(
+          mapDropNulls(unsetToggle, selectedViews)
+            .flat()
+            .filter((a) => a.toggles.includes(alignment))
+            .map((a) => a.action),
+        )
+      } else {
+        dispatch([alignSelectedViews(alignment)], 'everyone')
+      }
+    },
+    [dispatch, activeToggles, selectedViews, unsetToggle],
+  )
+
+  const alignLeft = React.useCallback(() => alignSelected('left'), [alignSelected])
+  const alignHCenter = React.useCallback(() => alignSelected('hcenter'), [alignSelected])
+  const alignRight = React.useCallback(() => alignSelected('right'), [alignSelected])
+  const alignTop = React.useCallback(() => alignSelected('top'), [alignSelected])
+  const alignVCenter = React.useCallback(() => alignSelected('vcenter'), [alignSelected])
+  const alignBottom = React.useCallback(() => alignSelected('bottom'), [alignSelected])
 
   const dropdownItems = React.useMemo(() => {
     let items: DropdownMenuItem[] = []
@@ -252,21 +287,21 @@ export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) 
         }}
       >
         <AlignDistributeButton
-          onMouseUp={alignLeft}
+          onClick={alignLeft}
           toolTip={`Align to left of ${multipleTargets ? 'selection' : 'parent'}`}
           iconType='justifySelf-start'
           disabled={disableAlign}
           active={activeToggles.left}
         />
         <AlignDistributeButton
-          onMouseUp={alignHCenter}
+          onClick={alignHCenter}
           toolTip={`Align to horizontal center of ${multipleTargets ? 'selection' : 'parent'}`}
           iconType='justifySelf-center'
           disabled={disableAlign}
           active={activeToggles.hcenter}
         />
         <AlignDistributeButton
-          onMouseUp={alignRight}
+          onClick={alignRight}
           toolTip={`Align to right of ${multipleTargets ? 'selection' : 'parent'}`}
           iconType='justifySelf-end'
           disabled={disableAlign}
@@ -290,21 +325,21 @@ export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) 
         }}
       >
         <AlignDistributeButton
-          onMouseUp={alignTop}
+          onClick={alignTop}
           toolTip={`Align to top of ${multipleTargets ? 'selection' : 'parent'}`}
           iconType='alignSelf-start'
           disabled={disableAlign}
           active={activeToggles.top}
         />
         <AlignDistributeButton
-          onMouseUp={alignVCenter}
+          onClick={alignVCenter}
           toolTip={`Align to vertical center of ${multipleTargets ? 'selection' : 'parent'}`}
           iconType='alignSelf-center'
           disabled={disableAlign}
           active={activeToggles.vcenter}
         />
         <AlignDistributeButton
-          onMouseUp={alignBottom}
+          onClick={alignBottom}
           toolTip={`Align to bottom of ${multipleTargets ? 'selection' : 'parent'}`}
           iconType='alignSelf-end'
           disabled={disableAlign}
@@ -318,7 +353,7 @@ export const AlignmentButtons = React.memo((props: { numberOfTargets: number }) 
 AlignmentButtons.displayName = 'AlignmentButtons'
 
 interface AlignDistributeButtonProps {
-  onMouseUp: () => void
+  onClick: () => void
   toolTip: string
   iconType: string
   disabled: boolean
@@ -331,7 +366,7 @@ const AlignDistributeButton = React.memo<AlignDistributeButtonProps>(
       <SquareButton
         highlight
         disabled={props.disabled}
-        onMouseUp={props.onMouseUp}
+        onClick={props.onClick}
         spotlight={props.active}
       >
         <Icn
