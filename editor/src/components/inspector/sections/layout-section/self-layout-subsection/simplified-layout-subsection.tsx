@@ -62,12 +62,6 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
 
   const shouldShowAlignmentButtons = !isCodeElement && inspectorPreferences.includes('layout')
 
-  const selectedViews = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews,
-    'SimplifiedLayoutSubsection selectedViews',
-  )
-
   return (
     <FlexColumn>
       <FlexRow
@@ -87,10 +81,7 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
         {when(
           showLayoutSection,
           <>
-            {when(
-              shouldShowAlignmentButtons,
-              <AlignmentButtons numberOfTargets={selectedViews.length} />,
-            )}
+            {when(shouldShowAlignmentButtons, <AlignmentButtons />)}
             <FrameUpdatingLayoutSection />
             <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
               <FixedHugDropdown dimension='width' />
