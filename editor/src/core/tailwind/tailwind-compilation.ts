@@ -66,10 +66,6 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
     if (isInteractionActiveRef.current) {
       return
     }
-    const tailwindConfigFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
-    if (tailwindConfigFile == null || tailwindConfigFile.type !== 'TEXT_FILE') {
-      return // we consider tailwind to be enabled if there's a tailwind config file in the project
-    }
     const allCSSFiles = getCssFilesFromProjectContents(projectContents).join('\n')
     const rawConfig = importDefault(requireFn('/', TailwindConfigPath))
     const tailwindCss = createTailwindcss({ tailwindConfig: rawConfig as TailwindConfig })
@@ -78,6 +74,10 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
   }, [isInteractionActiveRef, projectContents, requireFn])
 
   React.useEffect(() => {
+    const tailwindConfigFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
+    if (tailwindConfigFile == null || tailwindConfigFile.type !== 'TEXT_FILE') {
+      return // we consider tailwind to be enabled if there's a tailwind config file in the project
+    }
     const observer = new MutationObserver(observerCallback)
 
     observer.observe(document.getElementById(CanvasContainerID)!, {
