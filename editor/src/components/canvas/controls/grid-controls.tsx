@@ -854,7 +854,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
   }
 
   return (
-    <React.Fragment>
+    <div id={'grid-controls'}>
       <CanvasOffsetWrapper>
         {/* grid lines */}
         {grids.map((grid) => {
@@ -905,6 +905,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
             <div
               key={gridKeyFromPath(grid.elementPath)}
               id={gridKeyFromPath(grid.elementPath)}
+              data-grid-path={EP.toString(grid.elementPath)}
               style={style}
             >
               {placeholders.map((cell) => {
@@ -1078,7 +1079,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
         ) : null}
         <AbsoluteDistanceIndicators targetRootCell={targetRootCell} />
       </CanvasOffsetWrapper>
-    </React.Fragment>
+    </div>
   )
 })
 

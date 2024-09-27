@@ -262,6 +262,7 @@ export interface DomWalkerMutableStateData {
   initComplete: boolean
   mutationObserver: MutationObserver
   resizeObserver: ResizeObserver
+  gridControlObserver: MutationObserver
 }
 
 export function createDomWalkerMutableState(
@@ -274,12 +275,13 @@ export function createDomWalkerMutableState(
     initComplete: true,
     mutationObserver: null as any,
     resizeObserver: null as any,
+    gridControlObserver: null as any,
   }
 
   const observers = initDomWalkerObservers(mutableData, editorStoreApi, dispatch)
   mutableData.mutationObserver = observers.mutationObserver
   mutableData.resizeObserver = observers.resizeObserver
-
+  mutableData.gridControlObserver = observers.gridControlObserver
   return mutableData
 }
 
@@ -294,8 +296,10 @@ function useDomWalkerMutableStateContext() {
 export function resubscribeObservers(domWalkerMutableState: {
   mutationObserver: MutationObserver
   resizeObserver: ResizeObserver
+  gridControlObserver: MutationObserver
 }) {
   const canvasRootContainer = document.getElementById(CanvasContainerOuterId)
+  const gridControls = document.getElementById('grid-controls')
 
   if (
     ObserversAvailable &&
@@ -307,6 +311,9 @@ export function resubscribeObservers(domWalkerMutableState: {
       domWalkerMutableState.resizeObserver.observe(elem)
     })
     domWalkerMutableState.mutationObserver.observe(canvasRootContainer, MutationObserverConfig)
+    if (gridControls != null) {
+      domWalkerMutableState.gridControlObserver.observe(gridControls, MutationObserverConfig)
+    }
   }
 }
 
@@ -319,7 +326,11 @@ export function initDomWalkerObservers(
   domWalkerMutableState: DomWalkerMutableStateData,
   editorStore: UtopiaStoreAPI,
   dispatch: EditorDispatch,
-): { resizeObserver: ResizeObserver; mutationObserver: MutationObserver } {
+): {
+  resizeObserver: ResizeObserver
+  mutationObserver: MutationObserver
+  gridControlObserver: MutationObserver
+} {
   // Warning: I modified this code so it runs in all modes, not just in live mode. We still don't trigger
   // the DOM walker during canvas interactions, so the performance impact doesn't seem that bad. But it is
   // necessary, because after remix navigation, and after dynamic changes coming from loaders sometimes the
@@ -387,7 +398,25 @@ export function initDomWalkerObservers(
     }
   })
 
-  return { resizeObserver, mutationObserver }
+  const gridControlObserver = new window.MutationObserver((mutations: MutationRecord[]) => {
+    let shouldRunDOMWalker = false
+    mutations.forEach((mutation) => {
+      if (mutation.target instanceof HTMLElement) {
+        for (const child of mutation.target.children) {
+          const gridPath = child.getAttribute('data-grid-path')
+          if (gridPath != null) {
+            shouldRunDOMWalker = true
+            domWalkerMutableState.invalidatedPaths.add(gridPath)
+          }
+        }
+      }
+    })
+    if (shouldRunDOMWalker) {
+      dispatch([runDOMWalker()])
+    }
+  })
+
+  return { resizeObserver, mutationObserver, gridControlObserver }
 }
 
 export function invalidateDomWalkerIfNecessary(
