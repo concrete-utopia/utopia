@@ -6,6 +6,7 @@ import type {
   RequestedNpmDependency,
   PackageStatusMap,
   PackageStatus,
+  RequireFn,
 } from '../../core/shared/npm-dependency-types'
 import { requestedNpmDependency } from '../../core/shared/npm-dependency-types'
 import type { ProjectFile } from '../../core/shared/project-file-types'
@@ -23,7 +24,7 @@ import {
 } from '../editor/npm-dependency/npm-dependency'
 import type { DependencyPackageDetails } from '../editor/store/editor-state'
 import { DefaultPackagesList } from '../editor/store/editor-state'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { DependencyListItems } from './dependency-list-items'
 import { fetchNodeModules } from '../../core/es-modules/package-manager/fetch-packages'
 import {
@@ -42,7 +43,19 @@ import { notice } from '../common/notice'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { packageJsonFileFromProjectContents } from '../assets'
+import type { ProjectContentTreeRoot } from '../assets'
+import {
+  getProjectFileByFilePath,
+  packageJsonFileFromProjectContents,
+  walkContentsTree,
+} from '../assets'
+import { TailwindConfigPath } from '../../core/tailwind/tailwind-config'
+import { importDefault } from '../../core/es-modules/commonjs-interop'
+import type { Config } from 'tailwindcss'
+import { CanvasContainerID } from '../canvas/canvas-types'
+import { createTailwindcss } from '@mhsdesign/jit-browser-tailwindcss'
+import { interactionSessionIsActive } from '../canvas/canvas-strategies/interaction-state'
+import { rescopeCSSToTargetCanvasOnly } from '../../core/shared/css-utils'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch
@@ -512,4 +525,80 @@ const AddTailwindButton = (props: AddTailwindButtonProps) => {
       Add &nbsp;<b>Tailwind</b>&nbsp; To Project
     </Button>
   )
+}
+
+function ensureElementExists({ type, id }: { type: string; id: string }) {
+  let tag = document.getElementById(id)
+  if (tag == null) {
+    tag = document.createElement(type)
+    tag.id = id
+    document.head.appendChild(tag)
+  }
+  return tag
+}
+
+async function generateTailwindStyles(config: Config | null, allCSSFiles: string) {
+  const tailwindCss = createTailwindcss({ tailwindConfig: config ?? undefined })
+
+  const contentElement = document.getElementById(CanvasContainerID)
+
+  const content = contentElement?.outerHTML ?? ''
+
+  const styleString = await tailwindCss.generateStylesFromContent(allCSSFiles, [content])
+  const style = ensureElementExists({ type: 'style', id: 'utopia-tailwind-jit-styles' })
+  style.textContent = rescopeCSSToTargetCanvasOnly(styleString)
+}
+
+function getCssFilesFromProjectContents(projectContents: ProjectContentTreeRoot) {
+  let files: string[] = []
+  walkContentsTree(projectContents, (path, file) => {
+    if (file.type === 'TEXT_FILE' && path.endsWith('.css')) {
+      files.push(file.fileContents.code)
+    }
+  })
+  return files
+}
+
+export const TAILWIND_CONFIG_SPIKE_STATE: { current: Config | null } = { current: null }
+
+export const useTailwindCompilation = (requireFn: RequireFn) => {
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'useTailwindCompilation projectContents',
+  )
+
+  const isInteractionActiveRef = useRefEditorState((store) =>
+    interactionSessionIsActive(store.editor.canvas.interactionSession),
+  )
+
+  const observerCallback = React.useCallback(() => {
+    if (isInteractionActiveRef.current) {
+      return
+    }
+    const tailwindFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
+    const allCSSFiles = getCssFilesFromProjectContents(projectContents).join('\n')
+    const rawConfig =
+      tailwindFile == null || tailwindFile.type !== 'TEXT_FILE'
+        ? null
+        : importDefault(requireFn('/', TailwindConfigPath))
+    TAILWIND_CONFIG_SPIKE_STATE.current = rawConfig as Config
+    void generateTailwindStyles(rawConfig as Config, allCSSFiles)
+  }, [isInteractionActiveRef, projectContents, requireFn])
+
+  React.useEffect(() => {
+    const observer = new MutationObserver(observerCallback)
+
+    observer.observe(document.getElementById(CanvasContainerID)!, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    })
+
+    observerCallback()
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [isInteractionActiveRef, observerCallback, projectContents, requireFn])
 }

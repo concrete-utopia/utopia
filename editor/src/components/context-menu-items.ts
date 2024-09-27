@@ -6,7 +6,10 @@ import type { Either } from '../core/shared/either'
 import { isRight } from '../core/shared/either'
 import * as EP from '../core/shared/element-path'
 import type { ElementPathTrees } from '../core/shared/element-path-tree'
-import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
+import type {
+  ElementInstanceMetadataMap,
+  JSXAttributesEntry,
+} from '../core/shared/element-template'
 import { isIntrinsicElement, isJSXElementLike } from '../core/shared/element-template'
 import type { CanvasPoint, WindowPoint } from '../core/shared/math-utils'
 import type { ElementPath } from '../core/shared/project-file-types'
@@ -33,12 +36,13 @@ import {
   toggleDataCanCondense,
   toggleHidden,
 } from './editor/actions/action-creators'
-import type {
-  LockedElements,
-  AllElementProps,
-  InternalClipboard,
-  NavigatorEntry,
-  PasteHerePostActionMenuData,
+import {
+  type LockedElements,
+  type AllElementProps,
+  type InternalClipboard,
+  type NavigatorEntry,
+  type PasteHerePostActionMenuData,
+  getElementFromProjectContents,
 } from './editor/store/editor-state'
 import type { ElementContextMenuInstance } from './element-context-menu'
 import {
@@ -54,6 +58,15 @@ import {
   type ShowComponentPickerContextMenuCallback,
   renderPropTarget,
 } from './navigator/navigator-item/component-picker-context-menu'
+import type { CanvasCommand } from './canvas/commands/commands'
+import { classname } from '@xengine/tailwindcss-class-parser'
+import { deleteProperties } from './canvas/commands/delete-properties-command'
+import { updateClassListCommand } from './canvas/commands/update-class-list-command'
+import * as UCL from './canvas/commands/update-class-list-command'
+import { mapDropNulls } from '../core/shared/array-utils'
+import { TAILWIND_CONFIG_SPIKE_STATE } from './navigator/dependency-list'
+import { getClassNameAttribute, getStyleMapping } from '../core/tailwind/tailwind-options'
+import { setProperty } from './canvas/commands/set-property-command'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -560,6 +573,116 @@ export const escapeHatch: ContextMenuItem<CanvasData> = {
         [EditorActions.runEscapeHatch(data.selectedViews, 'set-hugging-parent-to-fixed')],
         'everyone',
       )
+    }
+  },
+}
+
+/**
+ * This is necessary, because all the tailwind classname generator libs I looked at during the spike map look up properties based on tailwind namespaces. Because of this, the `left` prop from CSS has to be mapped to `positionLeft`, `top` has to be mapped to `positionTop`
+ */
+const TailwindNamespaceMapping: Record<string, string> = {
+  left: 'positionLeft',
+  top: 'positionTop',
+}
+
+export const convertToTailwind: ContextMenuItem<CanvasData> = {
+  name: 'Convert to Tailwind',
+  enabled: true,
+  action: (data, dispatch) => {
+    const commands: CanvasCommand[] = data.selectedViews.flatMap((view) => {
+      const element = MetadataUtils.getJSXElementFromMetadata(data.jsxMetadata, view)
+      if (element == null) {
+        return []
+      }
+
+      const styleAttribute = element.props.find(
+        (prop) => prop.type === 'JSX_ATTRIBUTES_ENTRY' && prop.key === 'style',
+      ) as JSXAttributesEntry | undefined
+      if (styleAttribute == null) {
+        return []
+      }
+
+      const styleValue = styleAttribute.value
+      if (styleValue.type !== 'ATTRIBUTE_NESTED_OBJECT') {
+        return []
+      }
+
+      const styleProps = mapDropNulls(
+        (c) =>
+          c.type === 'PROPERTY_ASSIGNMENT' && c.value.type === 'ATTRIBUTE_VALUE'
+            ? [c.key, c.value.value]
+            : null,
+        styleValue.content,
+      )
+
+      const stylePropConversions = mapDropNulls(([key, value]) => {
+        try {
+          const valueString =
+            typeof value === 'string'
+              ? value
+              : typeof value === 'number'
+              ? `${value}px`
+              : `${value}`
+
+          const tailwindNameSpace = TailwindNamespaceMapping[key] ?? key
+          const tailwindClass = classname(
+            { property: tailwindNameSpace, value: valueString },
+            TAILWIND_CONFIG_SPIKE_STATE.current ?? undefined,
+          )
+          if (tailwindClass == null) {
+            return null
+          }
+          return [tailwindClass, key]
+        } catch {
+          console.error('Tailwind class conversion', key, 'is not supported')
+          return null
+        }
+      }, styleProps)
+
+      return [
+        deleteProperties('always', view, [
+          ...stylePropConversions.map(([, prop]) => PP.create('style', prop)),
+          PP.create('style'),
+        ]),
+        ...stylePropConversions.map(([tailwindClass]) =>
+          updateClassListCommand('always', view, UCL.add(tailwindClass)),
+        ),
+      ]
+    })
+
+    if (commands.length > 0 && dispatch != null) {
+      dispatch([EditorActions.applyCommandsAction(commands)])
+    }
+  },
+}
+
+export const convertFromTailwind: ContextMenuItem<CanvasData> = {
+  name: 'Convert from Tailwind',
+  enabled: true,
+  action: (data, dispatch) => {
+    if (dispatch == null) {
+      return
+    }
+    const commands: CanvasCommand[] = data.selectedViews.flatMap((elementPath) => {
+      const classList = getClassNameAttribute(
+        getElementFromProjectContents(elementPath, data.projectContents),
+      )?.value
+
+      const classes = typeof classList === 'string' ? classList : ''
+      const mapping = getStyleMapping(classes)
+
+      const commandsForElement = Object.entries(mapping).map(([key, value]) => {
+        return setProperty('always', elementPath, PP.create('style', key), value)
+      })
+
+      return [
+        ...commandsForElement,
+        deleteProperties('always', elementPath, [PP.create('className')]),
+      ]
+    })
+
+    if (commands.length > 0) {
+      dispatch([EditorActions.applyCommandsAction(commands)])
     }
   },
 }

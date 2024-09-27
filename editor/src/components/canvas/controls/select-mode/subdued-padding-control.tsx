@@ -19,6 +19,12 @@ export const SubduedPaddingControl = React.memo<SubduedPaddingControlProps>((pro
     'SubduedPaddingControl selectedViews',
   )
 
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'SubduedPaddingControl projectContents',
+  )
+
   const elementMetadata = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const isHorizontalPadding = side === 'left' || side === 'right'
@@ -27,7 +33,7 @@ export const SubduedPaddingControl = React.memo<SubduedPaddingControlProps>((pro
 
   // TODO Multiselect
   const sideRef = useBoundingBox(targets, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata.current, targets[0])
+    const padding = simplePaddingFromMetadata(projectContents, elementMetadata.current, targets[0])
     const paddingValue = padding[paddingKey]?.renderedValuePx ?? 0
 
     const { x, y, width, height } = boundingBox

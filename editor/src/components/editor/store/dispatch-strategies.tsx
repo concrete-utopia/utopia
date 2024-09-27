@@ -8,6 +8,7 @@ import {
   findCanvasStrategy,
   interactionInProgress,
   pickCanvasStateFromEditorState,
+  runUIFrameworkPlugins,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import type {
   InteractionSession,
@@ -21,7 +22,7 @@ import {
   isKeyboardInteractionData,
   isNotYetStartedDragInteraction,
 } from '../../canvas/canvas-strategies/interaction-state'
-import { foldAndApplyCommands } from '../../canvas/commands/commands'
+import { foldAndApplyCommands, updateEditorStateWithPatches } from '../../canvas/commands/commands'
 import { strategySwitched } from '../../canvas/commands/strategy-switched-command'
 import type {
   EditorAction,
@@ -47,6 +48,7 @@ import type {
   CustomStrategyState,
   CustomStrategyStatePatch,
   InteractionCanvasState,
+  StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { strategyApplicationResult } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
@@ -91,7 +93,7 @@ export function interactionFinished(
       result.strategyState.currentStrategy,
     )
 
-    const strategyResult =
+    const strategyResult: Pick<StrategyApplicationResult, 'commands' | 'propertyUpdates'> =
       strategy != null
         ? applyCanvasStrategy(
             strategy.strategy,
@@ -103,7 +105,8 @@ export function interactionFinished(
         : {
             commands: [],
           }
-    const commandResult = foldAndApplyCommands(
+
+    const { editorState } = foldAndApplyCommands(
       newEditorState,
       storedState.patchedEditor,
       [],
@@ -111,8 +114,17 @@ export function interactionFinished(
       'end-interaction',
     )
 
+    const uiFrameworkResult =
+      strategyResult.propertyUpdates == null
+        ? []
+        : runUIFrameworkPlugins(editorState, 'end-interaction', strategyResult.propertyUpdates)
+    const editorStateWithUIFrameworkChanges = updateEditorStateWithPatches(
+      editorState,
+      uiFrameworkResult,
+    )
+
     const finalEditor: EditorState = {
-      ...commandResult.editorState,
+      ...editorStateWithUIFrameworkChanges,
       // TODO instead of clearing the metadata, we should save the latest valid metadata here to save a dom-walker run
       jsxMetadata: {},
       domMetadata: {},
@@ -352,12 +364,21 @@ export function interactionStart(
         withClearedSession.customStrategyState,
         'mid-interaction',
       )
-      const commandResult = foldAndApplyCommands(
+      const { editorState, commandDescriptions } = foldAndApplyCommands(
         newEditorState,
         storedState.patchedEditor,
         [],
         strategyResult.commands,
         'mid-interaction',
+      )
+
+      const uiFrameworkResult =
+        strategyResult.propertyUpdates == null
+          ? []
+          : runUIFrameworkPlugins(editorState, 'mid-interaction', strategyResult.propertyUpdates)
+      const editorStateWithUIFrameworkChanges = updateEditorStateWithPatches(
+        editorState,
+        uiFrameworkResult,
       )
 
       const newStrategyState: StrategyState = {
@@ -366,7 +387,7 @@ export function interactionStart(
         currentStrategyDescriptiveLabel: strategy.strategy.descriptiveLabel,
         currentStrategyIcon: strategy.strategy.icon,
         currentStrategyCommands: strategyResult.commands,
-        commandDescriptions: commandResult.commandDescriptions,
+        commandDescriptions: commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
         status: strategyResult.status,
         startingMetadata: newEditorState.canvas.interactionSession.latestMetadata,
@@ -380,7 +401,7 @@ export function interactionStart(
 
       return {
         unpatchedEditorState: newEditorState,
-        patchedEditorState: commandResult.editorState,
+        patchedEditorState: editorStateWithUIFrameworkChanges,
         newStrategyState: newStrategyState,
       }
     } else {
@@ -602,20 +623,30 @@ function handleUpdate(
             'mid-interaction',
           )
         : strategyApplicationResult([])
-    const commandResult = foldAndApplyCommands(
+    const { editorState, commandDescriptions } = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
       [],
       strategyResult.commands,
       'mid-interaction',
     )
+
+    const uiFrameworkResult =
+      strategyResult.propertyUpdates == null
+        ? []
+        : runUIFrameworkPlugins(editorState, 'mid-interaction', strategyResult.propertyUpdates)
+    const editorStateWithUIFrameworkChanges = updateEditorStateWithPatches(
+      editorState,
+      uiFrameworkResult,
+    )
+
     const newStrategyState: StrategyState = {
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
       currentStrategyDescriptiveLabel: strategy?.strategy.descriptiveLabel ?? null,
       currentStrategyIcon: strategy?.strategy.icon ?? null,
       currentStrategyCommands: strategyResult.commands,
-      commandDescriptions: commandResult.commandDescriptions,
+      commandDescriptions: commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
       status: strategyResult.status,
       startingMetadata: strategyState.startingMetadata,
@@ -628,7 +659,7 @@ function handleUpdate(
     }
     return {
       unpatchedEditorState: newEditorState,
-      patchedEditorState: commandResult.editorState,
+      patchedEditorState: editorStateWithUIFrameworkChanges,
       newStrategyState: newStrategyState,
     }
   } else {

@@ -9,6 +9,22 @@ import type { ParsedCSSProperties } from '../../components/inspector/common/css-
 import { cssParsers } from '../../components/inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../components/inspector/common/property-path-hooks'
 
+export function applyParserToValue<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(
+  layoutProp: P,
+  value: unknown,
+) {
+  const parser = cssParsers[layoutProp] as (value: unknown) => Either<string, T>
+  function applyParser(v: any): Either<string, T | undefined> {
+    if (v === undefined) {
+      return right(undefined)
+    } else {
+      return parser(v)
+    }
+  }
+
+  return applyParser(value)
+}
+
 export function getLayoutProperty<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(
   layoutProp: P,
   propsOrAttributes: PropsOrJSXAttributes,
