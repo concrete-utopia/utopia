@@ -30,15 +30,7 @@ import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
 import type { AttributeCategory } from './attribute-categories'
 import { AttributeCategories } from './attribute-categories'
-import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
-import { TailwindConfigPath } from './tailwind-config'
-import { getProjectFileByFilePath } from '../../components/assets'
-
-// we consider tailwind to be enabled if there's a tailwind config file in the project
-export function isTailwindEnabled(projectContents: ProjectContentTreeRoot): boolean {
-  const tailwindConfig = getProjectFileByFilePath(projectContents, TailwindConfigPath)
-  return tailwindConfig != null
-}
+import { isTailwindEnabled } from './tailwind-compilation'
 
 export interface TailWindOption {
   label: string
@@ -170,11 +162,10 @@ function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: num
 export function useFilteredOptions(
   filter: string,
   maxResults: number,
-  projectContents: ProjectContentTreeRoot,
   onEmptyResults: () => void = NO_OP,
 ): Array<TailWindOption> {
   return React.useMemo(() => {
-    if (isTailwindEnabled(projectContents)) {
+    if (isTailwindEnabled()) {
       const sanitisedFilter = filter.trim().toLowerCase()
       const searchTerms = searchStringToIndividualTerms(sanitisedFilter)
       let results: Array<TailWindOption>
@@ -228,7 +219,7 @@ export function useFilteredOptions(
     } else {
       return []
     }
-  }, [filter, maxResults, onEmptyResults, projectContents])
+  }, [filter, maxResults, onEmptyResults])
 }
 
 function getClassNameAttribute(element: JSXElementChild | null): {

@@ -1,5 +1,5 @@
 import React from 'react'
-import type { TailwindConfig } from '@mhsdesign/jit-browser-tailwindcss'
+import type { TailwindConfig, Tailwindcss } from '@mhsdesign/jit-browser-tailwindcss'
 import { createTailwindcss } from '@mhsdesign/jit-browser-tailwindcss'
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import { getProjectFileByFilePath, walkContentsTree } from '../../components/assets'
@@ -14,7 +14,12 @@ import { importDefault } from '../es-modules/commonjs-interop'
 import { rescopeCSSToTargetCanvasOnly } from '../shared/css-utils'
 import type { RequireFn } from '../shared/npm-dependency-types'
 import { TailwindConfigPath } from './tailwind-config'
-import { isTailwindEnabled } from './tailwind-options'
+
+const TAILWIND_INSTANCE: { current: Tailwindcss | null } = { current: null }
+
+export function isTailwindEnabled(): boolean {
+  return TAILWIND_INSTANCE.current != null
+}
 
 function ensureElementExists({ type, id }: { type: string; id: string }) {
   let tag = document.getElementById(id)
@@ -26,9 +31,7 @@ function ensureElementExists({ type, id }: { type: string; id: string }) {
   return tag
 }
 
-async function generateTailwindStyles(config: TailwindConfig | null, allCSSFiles: string) {
-  const tailwindCss = createTailwindcss({ tailwindConfig: config ?? undefined })
-
+async function generateTailwindStyles(tailwindCss: Tailwindcss, allCSSFiles: string) {
   const contentElement = document.getElementById(CanvasContainerID)
 
   const content = contentElement?.outerHTML ?? ''
@@ -60,19 +63,18 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
   )
 
   const observerCallback = React.useCallback(() => {
-    if (!isTailwindEnabled(projectContents)) {
-      return
-    }
     if (isInteractionActiveRef.current) {
       return
     }
-    const tailwindFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
+    const tailwindConfigFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
+    if (tailwindConfigFile == null || tailwindConfigFile.type !== 'TEXT_FILE') {
+      return // we consider tailwind to be enabled if there's a tailwind config file in the project
+    }
     const allCSSFiles = getCssFilesFromProjectContents(projectContents).join('\n')
-    const rawConfig =
-      tailwindFile == null || tailwindFile.type !== 'TEXT_FILE'
-        ? null
-        : importDefault(requireFn('/', TailwindConfigPath))
-    void generateTailwindStyles(rawConfig as TailwindConfig, allCSSFiles)
+    const rawConfig = importDefault(requireFn('/', TailwindConfigPath))
+    const tailwindCss = createTailwindcss({ tailwindConfig: rawConfig as TailwindConfig })
+    TAILWIND_INSTANCE.current = tailwindCss
+    void generateTailwindStyles(tailwindCss, allCSSFiles)
   }, [isInteractionActiveRef, projectContents, requireFn])
 
   React.useEffect(() => {

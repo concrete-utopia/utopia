@@ -89,7 +89,7 @@ import {
 import { InspectorSectionHeader } from './section-header'
 import { GridPlacementSubsection } from './sections/style-section/container-subsection/grid-cell-subsection'
 import { ContainerSubsection } from './sections/style-section/container-subsection/container-subsection'
-import { isTailwindEnabled } from '../../core/tailwind/tailwind-options'
+import { isTailwindEnabled } from '../../core/tailwind/tailwind-compilation'
 
 export interface ElementPathElement {
   name?: string
@@ -281,19 +281,13 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     setStyleSectionOpen(shouldExpandStyleSection)
   }, [setStyleSectionOpen, shouldExpandStyleSection])
 
-  const projectContents = useEditorState(
-    Substores.projectContents,
-    (store) => store.editor.projectContents,
-    'Inspector projectContents',
-  )
-
   const shouldHideInspectorSections = useShouldHideInspectorSections()
 
   const shouldShowStyleSectionContents = styleSectionOpen && !shouldHideInspectorSections
   const shouldShowAdvancedSectionContents = advancedSectionOpen && !shouldHideInspectorSections
 
   const shouldShowClassNameSubsection =
-    isTailwindEnabled(projectContents) && inspectorPreferences.includes('visual')
+    isTailwindEnabled() && inspectorPreferences.includes('visual')
   const shouldShowTargetSelectorSection = canEdit && inspectorPreferences.includes('visual')
   const shouldShowFlexSection =
     multiselectedContract === 'frame' &&
