@@ -15,6 +15,7 @@ export type FeatureName =
   | 'Debug - Print UIDs'
   | 'Debug – Connections'
   | 'Condensed Navigator Entries'
+  | 'Canvas Fast Selection Hack'
   | 'Roll Your Own'
 
 export const AllFeatureNames: FeatureName[] = [
@@ -31,6 +32,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Debug - Print UIDs',
   'Debug – Connections',
   'Condensed Navigator Entries',
+  'Canvas Fast Selection Hack',
   'Roll Your Own',
 ]
 
@@ -47,6 +49,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug - Print UIDs': false,
   'Debug – Connections': false,
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
+  'Canvas Fast Selection Hack': true,
   'Roll Your Own': false,
 }
 

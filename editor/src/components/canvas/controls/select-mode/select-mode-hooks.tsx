@@ -61,6 +61,7 @@ import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks
 import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
 import { wait } from '../../../../core/model/performance-scripts'
 import { IS_TEST_ENVIRONMENT } from '../../../../common/env-vars'
+import { isFeatureEnabled } from '../../../../utils/feature-switches'
 
 export function isDragInteractionActive(editorState: EditorState): boolean {
   return editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
@@ -781,7 +782,11 @@ function useSelectOrLiveModeSelectAndHover(
             setSelectedViewsForCanvasControlsOnly(updatedSelection)
           })
 
-          if (event.detail === 1 && !IS_TEST_ENVIRONMENT) {
+          if (
+            event.detail === 1 &&
+            !IS_TEST_ENVIRONMENT &&
+            isFeatureEnabled('Canvas Fast Selection Hack')
+          ) {
             // If event.detail is 1 that means this is a first click, where it is safe to delay dispatching actions
             // to allow the localSelectedViews to be updated.
             // For subsequent clicks, we want to dispatch immediately to avoid the event handler clashing with the focus system and the strategy event handlers
