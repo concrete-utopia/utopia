@@ -136,10 +136,14 @@ function nodeModulesFileLookup(
   for (const targetOrigin of targetOrigins) {
     const packageJsonLookupFn = fileLookupForNodeModules(nodeModules)
 
+    const pathForLookup = path.startsWith('/')
+      ? path
+      : `${stripTrailingSlash(targetOrigin)}/${path}`
+
     // Load package exports
     const packageExportsResult = packageExportsLookup(
       path,
-      targetOrigin,
+      pathForLookup,
       packageJsonLookupFn,
       lookupFn,
     )
@@ -147,9 +151,6 @@ function nodeModulesFileLookup(
       return packageExportsResult
     }
 
-    const pathForLookup = path.startsWith('/')
-      ? path
-      : `${stripTrailingSlash(targetOrigin)}/${path}`
     const pathParts = getPartsFromPath(pathForLookup)
     const normalisedPathParts = normalizePath(pathParts)
 
@@ -237,8 +238,6 @@ function abstractFileLookup(
   const asFileResult = localFileLookup(normalisedPathParts)
   if (isResolveSuccess(asFileResult)) {
     return asFileResult
-  } else if (getFileExtension(lastPart) !== '') {
-    return resolveNotPresent
   }
 
   // If X.js(x) is a file
@@ -365,16 +364,6 @@ function packageExportsLookup(
   packageJsonLookupFn: LocalFileLookup,
   lookupFn: FileLookupFn,
 ): FileLookupResult {
-  // FIXME we need to be including the path and originPath in the package lookup
-  return packageImportsExportsLookup(path, originPath, packageJsonLookupFn, lookupFn, 'exports')
-}
-
-function packageSelfLookup(
-  path: string,
-  originPath: string,
-  packageJsonLookupFn: LocalFileLookup,
-  lookupFn: FileLookupFn,
-): FileLookupResult {
   // Find the closest package scope SCOPE
   const { packageJsonFileResult, packageJsonDir } = findClosestPackageScopeToPath(
     originPath,
@@ -424,7 +413,8 @@ function innerPackageImportsExportsLookup(
   }
 
   // FIXME partial path lookup
-  const importsOrExportsResult = importsOrExportsEntry[path]
+  const importsOrExportsResult =
+    typeof importsOrExportsEntry === 'string' ? importsOrExportsEntry : importsOrExportsEntry[path]
   if (importsOrExportsResult == null) {
     return resolveNotPresent
   }
@@ -440,13 +430,31 @@ function innerPackageImportsExportsLookup(
   const requireImportsOrExportsEntry = importsOrExportsResult['require']
 
   if (defaultImportsOrExportsEntry != null) {
-    return lookupFn(defaultImportsOrExportsEntry, packageJsonDir)
+    const fileToLookup =
+      typeof defaultImportsOrExportsEntry === 'string'
+        ? defaultImportsOrExportsEntry
+        : defaultImportsOrExportsEntry['default']
+    if (fileToLookup != null) {
+      return lookupFn(fileToLookup, packageJsonDir)
+    }
   }
   if (browserImportsOrExportsEntry != null) {
-    return lookupFn(browserImportsOrExportsEntry, packageJsonDir)
+    const fileToLookup =
+      typeof browserImportsOrExportsEntry === 'string'
+        ? browserImportsOrExportsEntry
+        : browserImportsOrExportsEntry['default']
+    if (fileToLookup != null) {
+      return lookupFn(fileToLookup, packageJsonDir)
+    }
   }
   if (requireImportsOrExportsEntry != null) {
-    return lookupFn(requireImportsOrExportsEntry, packageJsonDir)
+    const fileToLookup =
+      typeof requireImportsOrExportsEntry === 'string'
+        ? requireImportsOrExportsEntry
+        : requireImportsOrExportsEntry['default']
+    if (fileToLookup != null) {
+      return lookupFn(fileToLookup, packageJsonDir)
+    }
   }
 
   return resolveNotPresent
@@ -489,30 +497,45 @@ function packageImportsExportsLookup(
   return resolveNotPresent
 }
 
-type ImportsExportsField = MapLike<string | MapLike<string | null>>
+type ImportsExportsObjectField = MapLike<string | MapLike<string | null | MapLike<string | null>>>
+type ExportsField = string | ImportsExportsObjectField
 
 interface PartialPackageJsonDefinition {
   name?: string
   main?: string
   module?: string
   browser?: string | MapLike<string | false>
-  imports?: ImportsExportsField
-  exports?: ImportsExportsField
+  imports?: ImportsExportsObjectField
+  exports?: ExportsField
 }
 
-const importsExportsParser = parseObject(
-  parseAlternative<string | MapLike<string | null>>(
+const importsExportsObjectParser = parseObject(
+  parseAlternative<string | MapLike<string | null | MapLike<string | null>>>(
     [
       parseString,
       parseObject(
-        parseAlternative<string | null>(
-          [parseString, parseNull],
+        parseAlternative<string | null | MapLike<string | null>>(
+          [
+            parseString,
+            parseNull,
+            parseObject(
+              parseAlternative<string | null>(
+                [parseString, parseNull],
+                `package.imports and package.exports replacement entries must be either string or null`,
+              ),
+            ),
+          ],
           `package.imports and package.exports replacement entries must be either string or null`,
         ),
       ),
     ],
-    'package.imports and package.exports field must either be a string or an object with type {[key: string]: string | null}',
+    'package.imports and package.exports object must be an object with type {[key: string]: string | null}',
   ),
+)
+
+const exportsParser = parseAlternative<string | ImportsExportsObjectField>(
+  [parseString, importsExportsObjectParser],
+  'package.imports and package.exports field must either be a string or an object with type {[key: string]: string | null}',
 )
 
 export function parsePartialPackageJsonDefinition(
@@ -547,8 +570,8 @@ export function parsePartialPackageJsonDefinition(
       ),
       'browser',
     )(value),
-    optionalObjectKeyParser(importsExportsParser, 'imports')(value),
-    optionalObjectKeyParser(importsExportsParser, 'exports')(value),
+    optionalObjectKeyParser(importsExportsObjectParser, 'imports')(value),
+    optionalObjectKeyParser(exportsParser, 'exports')(value),
   )
 }
 
@@ -697,21 +720,23 @@ function resolveModuleAndApplySubstitutions(
       return packageImportsLookup(
         path,
         innerImportOrigin,
-        fileLookupForProjectContents(projectContents),
+        innerImportOrigin.startsWith('/node_modules')
+          ? fileLookupForNodeModules(nodeModules)
+          : fileLookupForProjectContents(projectContents),
         lookupFn,
       )
     }
 
     // load package self
-    const packageSelfResult = packageSelfLookup(
+    const packageExportsResult = packageExportsLookup(
       path,
       innerImportOrigin,
       fileLookupForProjectContents(projectContents),
       lookupFn,
     )
 
-    if (isResolveSuccess(packageSelfResult)) {
-      return packageSelfResult
+    if (isResolveSuccess(packageExportsResult)) {
+      return packageExportsResult
     }
 
     // finally, load from node modules

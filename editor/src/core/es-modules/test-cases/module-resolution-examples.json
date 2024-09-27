@@ -231,7 +231,7 @@
       "requires": []
     },
     "/node_modules/module-with-exports-and-imports/package.json": {
-      "content": "{\"name\": \"module-with-exports-and-imports\", \"exports\": \"index.main.js\", \"imports\": {\"#dep\": \"./dep.js\"}",
+      "content": "{\"name\": \"module-with-exports-and-imports\", \"exports\": \"index.main.js\", \"imports\": {\"#dep\": \"./dep.js\"}}",
       "isModule": false,
       "requires": []
     },
@@ -246,7 +246,7 @@
       "requires": []
     },
     "/node_modules/module-with-exports-and-imports-objects/package.json": {
-      "content": "{\"name\": \"module-with-exports-and-imports-objects\", \"exports\": {\".\": \"index.main.js\", \"./submodule.js\": \"./src/submodule.js\"}, \"imports\": {\"#dep\": {\"default\": \"./dep.js\"}}",
+      "content": "{\"name\": \"module-with-exports-and-imports-objects\", \"exports\": {\".\": \"index.main.js\", \"./submodule.js\": \"./src/submodule.js\"}, \"imports\": {\"#dep\": {\"default\": \"./dep.js\"}}}",
       "isModule": false,
       "requires": []
     },
@@ -265,23 +265,33 @@
       "isModule": false,
       "requires": []
     },
-    "my-package-with-package-root/src/deep-folder/moduleA.js": {
+    "/node_modules/my-package-with-package-root/src/deep-folder/moduleA.js": {
       "content": "exports.cica = 'kitten';",
       "isModule": false,
       "requires": []
     },
-    "my-package-with-package-root/src/other-folder/moduleB.js": {
+    "/node_modules/my-package-with-package-root/src/other-folder/moduleB.js": {
       "content": "exports.cica = 'kitten';",
       "isModule": false,
       "requires": []
     },
-    "my-package-with-package-root/index.js": {
+    "/node_modules/my-package-with-package-root/index.js": {
       "content": "exports.cica = 'kitten';",
       "isModule": false,
       "requires": []
     },
-    "my-package-with-package-root/package.json": {
+    "/node_modules/my-package-with-package-root/package.json": {
       "content": "{\"name\": \"my-package-with-package-root\", \"main\": \".index.js\"}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/clsx/package.json": {
+      "content": "{\"name\": \"clsx\", \"main\": \"dist/clsx.js\", \"exports\": {\".\": {\"default\": { \"default\": \"./dist/clsx.js\"}}}}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/clsx/dist/clsx.js": {
+      "content": "exports.cica = 'kitten';",
       "isModule": false,
       "requires": []
     }
