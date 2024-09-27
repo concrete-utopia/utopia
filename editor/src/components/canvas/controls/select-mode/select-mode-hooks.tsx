@@ -18,6 +18,7 @@ import {
   selectComponents,
   setHoveredView,
   clearHoveredViews,
+  runDOMWalker,
 } from '../../../editor/actions/action-creators'
 import { cancelInsertModeActions } from '../../../editor/actions/meta-actions'
 import {
@@ -777,22 +778,10 @@ function useSelectOrLiveModeSelectAndHover(
         }
 
         if (!foundTargetIsSelected) {
-          // first we only set the selected views for the canvas controls
+          // first we only set the selected views for the canvas controls. however this will be clumped together with the dispatch, unless we wait asynchronously before we dispatch
           ReactDOM.flushSync(() => {
             setSelectedViewsForCanvasControlsOnly(updatedSelection)
           })
-
-          if (
-            event.detail === 1 &&
-            !IS_TEST_ENVIRONMENT &&
-            isFeatureEnabled('Canvas Fast Selection Hack')
-          ) {
-            // If event.detail is 1 that means this is a first click, where it is safe to delay dispatching actions
-            // to allow the localSelectedViews to be updated.
-            // For subsequent clicks, we want to dispatch immediately to avoid the event handler clashing with the focus system and the strategy event handlers
-            await new Promise((resolve) => requestAnimationFrame(resolve))
-            await new Promise((resolve) => requestAnimationFrame(resolve))
-          }
 
           // In either case cancel insert mode.
           if (isInsertMode(editorStoreRef.current.editor.mode)) {
@@ -807,7 +796,19 @@ function useSelectOrLiveModeSelectAndHover(
           }
         }
       }
-      dispatch(editorActions)
+
+      if (event.detail === 1 && isFeatureEnabled('Canvas Fast Selection Hack')) {
+        // If event.detail is 1 that means this is a first click, where it is safe to delay dispatching actions
+        // to allow the localSelectedViews to be updated.
+        // For subsequent clicks, we want to dispatch immediately to avoid out of sync event handlers queueing up
+
+        dispatch(editorActions, 'canvas-fast-selection-hack') // first we dispatch only to update the editor state, but not run the expensive parts
+        await new Promise((resolve) => requestAnimationFrame(resolve)) // the first requestAnimationFrame fires in the same animation frame we are in, so we need to wait one more
+        await new Promise((resolve) => requestAnimationFrame(resolve)) // the second requestAnimationFrame is fired in the next actual animation frame, at which point it is safe to run the expensive parts
+        dispatch([runDOMWalker()], 'resume-canvas-fast-selection-hack') // then we dispatch to run the expensive parts
+      } else {
+        dispatch(editorActions)
+      }
     },
     [
       dispatch,
