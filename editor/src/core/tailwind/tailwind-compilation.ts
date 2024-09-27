@@ -14,6 +14,10 @@ import { importDefault } from '../es-modules/commonjs-interop'
 import { rescopeCSSToTargetCanvasOnly } from '../shared/css-utils'
 import type { RequireFn } from '../shared/npm-dependency-types'
 import { TailwindConfigPath } from './tailwind-config'
+import { memoize } from '../shared/memoize'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import { PERFORMANCE_MARKS_ALLOWED } from '../../common/env-vars'
+import { equalityFnForProjectContents } from '../shared/project-contents-utils'
 
 const TAILWIND_INSTANCE: { current: Tailwindcss | null } = { current: null }
 
@@ -32,13 +36,31 @@ function ensureElementExists({ type, id }: { type: string; id: string }) {
 }
 
 async function generateTailwindStyles(tailwindCss: Tailwindcss, allCSSFiles: string) {
+  const MeasureTailwindGenerationTime =
+    (isFeatureEnabled('Debug – Performance Marks (Fast)') ||
+      isFeatureEnabled('Debug – Performance Marks (Slow)')) &&
+    PERFORMANCE_MARKS_ALLOWED
+
+  if (MeasureTailwindGenerationTime) {
+    window.performance.mark('tailwind_generation_begin')
+  }
+
   const contentElement = document.getElementById(CanvasContainerID)
-
-  const content = contentElement?.outerHTML ?? ''
-
+  if (contentElement == null) {
+    return
+  }
+  const content = contentElement.outerHTML
   const styleString = await tailwindCss.generateStylesFromContent(allCSSFiles, [content])
   const style = ensureElementExists({ type: 'style', id: 'utopia-tailwind-jit-styles' })
   style.textContent = rescopeCSSToTargetCanvasOnly(styleString)
+  if (MeasureTailwindGenerationTime) {
+    window.performance.mark('tailwind_generation_end')
+    window.performance.measure(
+      'Tailwind class generation',
+      'tailwind_generation_begin',
+      'tailwind_generation_end',
+    )
+  }
 }
 
 function getCssFilesFromProjectContents(projectContents: ProjectContentTreeRoot) {
@@ -50,6 +72,22 @@ function getCssFilesFromProjectContents(projectContents: ProjectContentTreeRoot)
   })
   return files
 }
+
+function generateTailwindClassesInner(
+  projectContents: ProjectContentTreeRoot,
+  requireFn: RequireFn,
+) {
+  const allCSSFiles = getCssFilesFromProjectContents(projectContents).join('\n')
+  const rawConfig = importDefault(requireFn('/', TailwindConfigPath))
+  const tailwindCss = createTailwindcss({ tailwindConfig: rawConfig as TailwindConfig })
+  TAILWIND_INSTANCE.current = tailwindCss
+  void generateTailwindStyles(tailwindCss, allCSSFiles)
+}
+
+const generateTailwindClasses = memoize(generateTailwindClassesInner, {
+  maxSize: 1,
+  matchesArg: equalityFnForProjectContents,
+})
 
 export const useTailwindCompilation = (requireFn: RequireFn) => {
   const projectContents = useEditorState(
@@ -66,11 +104,7 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
     if (isInteractionActiveRef.current) {
       return
     }
-    const allCSSFiles = getCssFilesFromProjectContents(projectContents).join('\n')
-    const rawConfig = importDefault(requireFn('/', TailwindConfigPath))
-    const tailwindCss = createTailwindcss({ tailwindConfig: rawConfig as TailwindConfig })
-    TAILWIND_INSTANCE.current = tailwindCss
-    void generateTailwindStyles(tailwindCss, allCSSFiles)
+    generateTailwindClasses(projectContents, requireFn)
   }, [isInteractionActiveRef, projectContents, requireFn])
 
   React.useEffect(() => {

@@ -1,11 +1,15 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
-import { getProjectFileByFilePath } from '../../components/assets'
+import {
+  getProjectFileByFilePath,
+  isProjectContentDirectory,
+  isProjectContentFile,
+} from '../../components/assets'
 import { objectKeyParser, parseString } from '../../utils/value-parser-utils'
-import { defaultEither, eitherToMaybe, isLeft } from './either'
-import { is } from './equality-utils'
+import { eitherToMaybe } from './either'
+import { is, shallowEqual } from './equality-utils'
 import { memoize } from './memoize'
 import type { ProjectFile } from './project-file-types'
-import { isTextFile, ProjectContents } from './project-file-types'
+import { isTextFile } from './project-file-types'
 
 function parsePackageJsonInner(
   packageJson: ProjectFile | undefined | null,
@@ -67,4 +71,21 @@ export function getMainHTMLFilename(projectContents: ProjectContentTreeRoot): st
 export function getMainJSFilename(projectContents: ProjectContentTreeRoot): string {
   const setValue = getUtopiaSpecificStringSetting('js', projectContents)
   return setValue ?? 'src/index.js'
+}
+
+function isProjectContentTreeRoot(v: unknown): v is ProjectContentTreeRoot {
+  if (v != null && typeof v === 'object' && !Array.isArray(v)) {
+    const firstValue = Object.values(v)[0]
+    return isProjectContentDirectory(firstValue) || isProjectContentFile(firstValue)
+  }
+
+  return false
+}
+
+export function equalityFnForProjectContents(l: unknown, r: unknown): boolean {
+  if (isProjectContentTreeRoot(l) && isProjectContentTreeRoot(r)) {
+    return shallowEqual(l, r)
+  }
+
+  return l === r
 }
