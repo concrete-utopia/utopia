@@ -62,6 +62,7 @@ interface NamedComponentToImport {
   path: string
   possibleMainComponentName: boolean
   toImport: string
+  toImportAlias?: string
 }
 
 interface UnexportedRenderedComponent {
@@ -81,12 +82,14 @@ function namedComponentToImport(
   path: string,
   possibleMainComponentName: boolean,
   toImport: string,
+  toImportAlias?: string,
 ): NamedComponentToImport {
   return {
     type: 'NAMED_COMPONENT_TO_IMPORT',
     path: path,
     possibleMainComponentName: possibleMainComponentName,
     toImport: toImport,
+    toImportAlias: toImportAlias,
   }
 }
 
@@ -234,7 +237,12 @@ export function addStoryboardFileToProject(
                     exportDetail.name,
                   )
                   updateCandidate(
-                    namedComponentToImport(fullPath, possibleMainComponentName, exportDetail.name),
+                    namedComponentToImport(
+                      fullPath,
+                      possibleMainComponentName,
+                      'default',
+                      exportDetail.name,
+                    ),
                   )
                 }
                 break
@@ -295,7 +303,7 @@ function addStoryboardFileForComponent(
     case 'NAMED_COMPONENT_TO_IMPORT':
       sceneElement = createSceneFromComponent(
         StoryboardFilePath,
-        createFileWithComponent.toImport,
+        createFileWithComponent.toImportAlias ?? createFileWithComponent.toImport,
         'scene-1',
       )
       importsResolution = addImport(
@@ -303,7 +311,7 @@ function addStoryboardFileForComponent(
         [],
         createFileWithComponent.path,
         null,
-        [importAlias(createFileWithComponent.toImport)],
+        [importAlias(createFileWithComponent.toImport, createFileWithComponent.toImportAlias)],
         null,
         importsResolution.imports,
       )
