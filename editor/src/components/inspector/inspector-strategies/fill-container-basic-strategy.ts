@@ -14,6 +14,7 @@ import {
   nukeSizingPropsForAxisCommand,
   nullOrNonEmpty,
   setParentToFixedIfHugCommands,
+  removeAlignJustifySelf,
 } from '../inspector-common'
 import type { InspectorStrategy } from './inspector-strategy'
 import {
@@ -102,6 +103,8 @@ export const fillContainerStrategyFlexParent = (
     }
 
     const commands = elements.flatMap((path) => {
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+
       const flexDirection =
         overrides.forceFlexDirectionForParent ?? detectParentFlexDirection(metadata, path) ?? 'row'
 
@@ -113,6 +116,7 @@ export const fillContainerStrategyFlexParent = (
           value === 'default' ? cssNumber(100, '%') : cssNumber(clamp(0, 100, value), '%')
         return [
           ...setParentToFixedIfHugCommands(axis, metadata, path),
+          ...removeAlignJustifySelf(axis, elementMetadata),
           setCssLengthProperty(
             'always',
             path,
@@ -128,6 +132,7 @@ export const fillContainerStrategyFlexParent = (
 
       return [
         ...nukeAllAbsolutePositioningPropsCommands(path),
+        ...removeAlignJustifySelf(axis, elementMetadata),
         ...setParentToFixedIfHugCommands(axis, metadata, path),
         nukeSizingPropsForAxisCommand(axis, path),
         setProperty(
@@ -135,6 +140,39 @@ export const fillContainerStrategyFlexParent = (
           path,
           PP.create('style', 'flexGrow'),
           printCSSNumber(checkedValue, null),
+        ),
+      ]
+    })
+
+    return nullOrNonEmpty(commands)
+  },
+})
+
+export const fillContainerStrategyGridParent = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+  axis: Axis,
+): InspectorStrategy => ({
+  name: 'Set to Fill Container, in grid layout',
+  strategy: () => {
+    const elements = elementPaths.filter(
+      (path) => fillContainerApplicable(metadata, path) && MetadataUtils.isGridCell(metadata, path),
+    )
+
+    if (elements.length === 0) {
+      return null
+    }
+
+    const commands = elements.flatMap((path) => {
+      return [
+        ...nukeAllAbsolutePositioningPropsCommands(path),
+        ...setParentToFixedIfHugCommands(axis, metadata, path),
+        nukeSizingPropsForAxisCommand(axis, path),
+        setProperty(
+          'always',
+          path,
+          PP.create('style', axis === 'horizontal' ? 'alignSelf' : 'justifySelf'),
+          'stretch',
         ),
       ]
     })
