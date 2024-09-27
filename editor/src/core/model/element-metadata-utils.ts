@@ -46,6 +46,7 @@ import type {
   ConditionValue,
   JSXElementLike,
   JSPropertyAccess,
+  SpecialSizeMeasurements,
 } from '../shared/element-template'
 import {
   getJSXElementNameLastPart,
@@ -391,6 +392,22 @@ export const MetadataUtils = {
       MetadataUtils.isGridLayoutedContainer(parent)
     )
   },
+  isGridCellWithPositioning(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    return (
+      MetadataUtils.isGridCell(metadata, path) &&
+      element != null &&
+      !MetadataUtils.hasNoGridCellPositioning(element.specialSizeMeasurements)
+    )
+  },
+  hasNoGridCellPositioning(specialSizeMeasurements: SpecialSizeMeasurements): boolean {
+    return (
+      specialSizeMeasurements.elementGridPropertiesFromProps.gridColumnStart == null &&
+      specialSizeMeasurements.elementGridPropertiesFromProps.gridColumnEnd == null &&
+      specialSizeMeasurements.elementGridPropertiesFromProps.gridRowStart == null &&
+      specialSizeMeasurements.elementGridPropertiesFromProps.gridRowEnd == null
+    )
+  },
   isComponentInstanceFromMetadata(
     metadata: ElementInstanceMetadataMap,
     path: ElementPath,
@@ -612,6 +629,24 @@ export const MetadataUtils = {
     return MetadataUtils.flexDirectionToSimpleFlexDirection(
       MetadataUtils.getFlexDirection(instance),
     )
+  },
+  isFlexOrGridChild: function (jsxMetadata: ElementInstanceMetadataMap, path: ElementPath) {
+    return (
+      MetadataUtils.isFlexLayoutedContainer(
+        MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path)),
+      ) || MetadataUtils.isGridCell(jsxMetadata, path)
+    )
+  },
+  getRelativeAlignJustify: function (
+    jsxMetadata: ElementInstanceMetadataMap,
+    path: ElementPath,
+  ): { align: 'alignSelf' | 'justifySelf'; justify: 'alignSelf' | 'justifySelf' } {
+    const direction = MetadataUtils.getSimpleFlexDirection(
+      MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path)),
+    )
+    const align = direction.direction === 'horizontal' ? 'alignSelf' : 'justifySelf'
+    const justify = direction.direction === 'horizontal' ? 'justifySelf' : 'alignSelf'
+    return { align, justify }
   },
   flexDirectionToSimpleFlexDirection: function (flexDirection: FlexDirection): {
     direction: Direction

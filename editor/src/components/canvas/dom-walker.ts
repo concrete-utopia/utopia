@@ -68,7 +68,12 @@ import { fastForEach } from '../../core/shared/utils'
 import type { EditorState, EditorStorePatched } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
 import { pick } from '../../core/shared/object-utils'
-import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
+import {
+  getFlexAlignment,
+  getFlexJustifyContent,
+  getSelfAlignment,
+  MaxContent,
+} from '../inspector/inspector-common'
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
 import { CanvasContainerOuterId } from './canvas-component-entry'
@@ -684,6 +689,8 @@ function getSpecialMeasurements(
   const justifyContent = getFlexJustifyContent(elementStyle.justifyContent)
   const alignContent = getFlexJustifyContent(elementStyle.alignContent)
   const alignItems = getFlexAlignment(elementStyle.alignItems)
+  const alignSelf = getSelfAlignment(elementStyle.alignSelf)
+  const justifySelf = getSelfAlignment(elementStyle.justifySelf)
 
   const margin = applicative4Either(
     applicativeSidesPxTransform,
@@ -901,6 +908,8 @@ function getSpecialMeasurements(
     containerElementPropertiesFromProps,
     rowGap,
     columnGap,
+    justifySelf,
+    alignSelf,
   )
 }
 

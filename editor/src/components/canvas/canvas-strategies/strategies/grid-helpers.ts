@@ -203,6 +203,20 @@ export function runGridRearrangeMove(
   })
 
   switch (moveType) {
+    case 'absolute': {
+      const absoluteMoveCommands = gridChildAbsoluteMoveCommands(
+        MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
+        MetadataUtils.getFrameOrZeroRectInCanvasCoords(grid.elementPath, jsxMetadata),
+        interactionData,
+      )
+      return {
+        commands: absoluteMoveCommands,
+        targetCell: targetCellData ?? customState.targetCellData,
+        originalRootCell: rootCell,
+        draggingFromCell: draggingFromCell,
+        targetRootCell: gridCellCoordinates(row.start, column.start),
+      }
+    }
     case 'rearrange': {
       const targetRootCell = gridCellCoordinates(row.start, column.start)
       const canvasRect = getGlobalFrameOfGridCell(containerMetadata, targetRootCell)
@@ -249,6 +263,8 @@ export function runGridRearrangeMove(
         targetRootCell: targetCellUnderMouse,
       }
     }
+    default:
+      assertNever(moveType)
   }
 }
 
@@ -422,7 +438,7 @@ function asMaybeNamedAreaOrValue(
 
 function gridChildAbsoluteMoveCommands(
   targetMetadata: ElementInstanceMetadata | null,
-  targetCellRect: CanvasRectangle,
+  containingRect: CanvasRectangle,
   dragInteractionData: DragInteractionData,
 ): CanvasCommand[] {
   if (
@@ -445,8 +461,8 @@ function gridChildAbsoluteMoveCommands(
   )
 
   const offset = canvasVector({
-    x: dragOffset.x - targetCellRect.x - offsetInTarget.x,
-    y: dragOffset.y - targetCellRect.y - offsetInTarget.y,
+    x: dragOffset.x - containingRect.x - offsetInTarget.x,
+    y: dragOffset.y - containingRect.y - offsetInTarget.y,
   })
 
   return [
@@ -500,23 +516,24 @@ function sortElementsByGridPosition(gridTemplateColumns: number) {
 type GridMoveType =
   | 'reorder' // reorder the element in the code based on the ascending position, and remove explicit positioning props
   | 'rearrange' // set explicit positioning props, and reorder based on the visual location
+  | 'absolute' // a regular absolute move, relative to the grid
 
 function getGridMoveType(params: {
   originalElementMetadata: ElementInstanceMetadata
   possiblyReorderIndex: number
   cellsSortedByPosition: SortableGridElementProperties[]
 }): GridMoveType {
-  // For absolute move, just use rearrange.
-  // TODO: maybe worth reconsidering in the future?
+  const specialSizeMeasurements = params.originalElementMetadata.specialSizeMeasurements
   if (MetadataUtils.isPositionAbsolute(params.originalElementMetadata)) {
-    return 'rearrange'
+    return MetadataUtils.hasNoGridCellPositioning(specialSizeMeasurements)
+      ? 'absolute'
+      : 'rearrange'
   }
   if (params.possiblyReorderIndex >= params.cellsSortedByPosition.length) {
     return 'rearrange'
   }
 
-  const elementGridProperties =
-    params.originalElementMetadata.specialSizeMeasurements.elementGridProperties
+  const elementGridProperties = specialSizeMeasurements.elementGridProperties
 
   // The first element is intrinsically in order, so try to adjust for that
   if (params.possiblyReorderIndex === 0) {

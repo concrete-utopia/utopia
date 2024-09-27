@@ -46,7 +46,7 @@ export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
 
   const selectedElement = selectedElements[0]
 
-  if (!MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)) {
+  if (!MetadataUtils.isGridCellWithPositioning(canvasState.startingMetadata, selectedElement)) {
     return null
   }
 
