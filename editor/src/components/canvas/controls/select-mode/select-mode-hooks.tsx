@@ -60,6 +60,7 @@ import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/grou
 import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks'
 import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
 import { wait } from '../../../../core/model/performance-scripts'
+import { IS_TEST_ENVIRONMENT } from '../../../../common/env-vars'
 
 export function isDragInteractionActive(editorState: EditorState): boolean {
   return editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
@@ -780,8 +781,13 @@ function useSelectOrLiveModeSelectAndHover(
             setSelectedViewsForCanvasControlsOnly(updatedSelection)
           })
 
-          await new Promise((resolve) => requestAnimationFrame(resolve))
-          await new Promise((resolve) => requestAnimationFrame(resolve))
+          if (event.detail === 1 && !IS_TEST_ENVIRONMENT) {
+            // If event.detail is 1 that means this is a first click, where it is safe to delay dispatching actions
+            // to allow the localSelectedViews to be updated.
+            // For subsequent clicks, we want to dispatch immediately to avoid the event handler clashing with the focus system and the strategy event handlers
+            await new Promise((resolve) => requestAnimationFrame(resolve))
+            await new Promise((resolve) => requestAnimationFrame(resolve))
+          }
 
           // In either case cancel insert mode.
           if (isInsertMode(editorStoreRef.current.editor.mode)) {
