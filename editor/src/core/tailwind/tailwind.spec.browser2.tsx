@@ -213,6 +213,4 @@ describe('rendering tailwind projects in the editor', () => {
       })
     }
   })
-
-  // project with custom plugin in the tailwind config
 })
