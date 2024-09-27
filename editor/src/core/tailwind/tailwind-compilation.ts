@@ -14,6 +14,7 @@ import { importDefault } from '../es-modules/commonjs-interop'
 import { rescopeCSSToTargetCanvasOnly } from '../shared/css-utils'
 import type { RequireFn } from '../shared/npm-dependency-types'
 import { TailwindConfigPath } from './tailwind-config'
+import { isTailwindEnabled } from './tailwind-options'
 
 function ensureElementExists({ type, id }: { type: string; id: string }) {
   let tag = document.getElementById(id)
@@ -59,6 +60,9 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
   )
 
   const observerCallback = React.useCallback(() => {
+    if (!isTailwindEnabled(projectContents)) {
+      return
+    }
     if (isInteractionActiveRef.current) {
       return
     }
