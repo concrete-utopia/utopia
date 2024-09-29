@@ -2998,12 +2998,13 @@ function buildHighlightBoundsForUids(
 function mergeHighlightBounds(
   ...multipleBounds: Array<HighlightBoundsForUids>
 ): Readonly<HighlightBoundsForUids> {
-  return multipleBounds.reduce(function (acc, x) {
-    for (let key in x) {
-      acc[key] = x[key]
+  const acc: HighlightBoundsForUids = {}
+  for (const bounds of multipleBounds) {
+    for (const key in bounds) {
+      acc[key] = bounds[key]
     }
-    return acc
-  }, {})
+  }
+  return acc
 }
 
 function merge2WithParserMetadata<T1, T2, U>(
