@@ -153,6 +153,14 @@ export function importDetailsEquals(first: ImportDetails, second: ImportDetails)
   )
 }
 
+export function isEmptyImportDetails(details: ImportDetails): boolean {
+  return (
+    details.importedWithName == null &&
+    details.importedFromWithin.length === 0 &&
+    details.importedAs == null
+  )
+}
+
 export type Imports = { [importSource: string]: ImportDetails }
 
 export type ImportsMergeResolution = {
@@ -630,6 +638,13 @@ export function codeFile(
 
 export function isTextFile(projectFile: ProjectFile): projectFile is TextFile {
   return projectFile.type === 'TEXT_FILE'
+}
+
+export function asTextFile(projectFile: ProjectFile): TextFile | null {
+  if (isTextFile(projectFile)) {
+    return projectFile
+  }
+  return null
 }
 
 export function isParsedTextFile(projectFile: ProjectFile | null): projectFile is TextFile {

@@ -114,7 +114,7 @@ export function convertScenesToUtopiaCanvasComponent(
   return utopiaJSXComponent(
     BakedInStoryboardVariableName,
     false,
-    'var',
+    'const',
     'block',
     [],
     null,
