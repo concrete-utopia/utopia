@@ -176,7 +176,36 @@ let PARSE_PRINT_MESSAGE_COUNTER: number = 0
 const fileParsableLength = (file: ParseOrPrint) =>
   file.type === 'parsefile' && isParseableFile(file.filename) ? file.content.length : 0
 
-export async function getParseResult(
+export function getParseResult(
+  workers: UtopiaTsWorkers,
+  files: Array<ParseOrPrint>,
+  filePathMappings: FilePathMappings,
+  alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
+  numChunks: number = 1,
+): Promise<Array<ParseOrPrintResult>> {
+  // this is to eliminate unnecessary overhead when numChunks is 1
+  if (numChunks === 1) {
+    return getParseResultSerial(
+      workers,
+      files,
+      filePathMappings,
+      alreadyExistingUIDs,
+      applySteganography,
+    )
+  } else {
+    return getParseResultChunked(
+      workers,
+      files,
+      filePathMappings,
+      alreadyExistingUIDs,
+      applySteganography,
+      numChunks,
+    )
+  }
+}
+
+export async function getParseResultChunked(
   workers: UtopiaTsWorkers,
   files: Array<ParseOrPrint>,
   filePathMappings: FilePathMappings,
