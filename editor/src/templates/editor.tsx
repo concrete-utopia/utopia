@@ -33,7 +33,6 @@ import {
 import {
   getLoginState,
   getUserConfiguration,
-  getUserPermissions,
   startPollingLoginState,
 } from '../components/editor/server'
 import type { DispatchResult } from '../components/editor/store/dispatch'
@@ -348,10 +347,7 @@ export class Editor {
       const projectId = getProjectID()
       startPollingLoginState(this.boundDispatch, loginState)
       this.storedState.userState.loginState = loginState
-      void Promise.all([
-        getUserConfiguration(loginState),
-        getUserPermissions(loginState, projectId),
-      ]).then(([shortcutConfiguration, permissions]) => {
+      void getUserConfiguration(loginState).then((shortcutConfiguration) => {
         const userState = {
           ...this.storedState.userState,
           ...shortcutConfiguration,

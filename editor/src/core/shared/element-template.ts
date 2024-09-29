@@ -34,7 +34,11 @@ import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
-import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
+import type {
+  FlexAlignment,
+  FlexJustifyContent,
+  SelfAlignment,
+} from '../../components/inspector/inspector-common'
 import { allComments } from './utopia-flags'
 import type { Optic } from './optics/optics'
 import { fromField } from './optics/optic-creators'
@@ -2812,6 +2816,8 @@ export interface SpecialSizeMeasurements {
   justifyContent: FlexJustifyContent | null
   alignContent: FlexJustifyContent | null
   alignItems: FlexAlignment | null
+  alignSelf: SelfAlignment | null
+  justifySelf: SelfAlignment | null
   htmlElementName: string
   renderedChildrenCount: number
   globalContentBoxForChildren: MaybeInfinityCanvasRectangle | null
@@ -2882,6 +2888,8 @@ export function specialSizeMeasurements(
   elementGridPropertiesFromProps: GridElementProperties,
   rowGap: number | null,
   columnGap: number | null,
+  justifySelf: SelfAlignment | null,
+  alignSelf: SelfAlignment | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -2932,6 +2940,8 @@ export function specialSizeMeasurements(
     elementGridPropertiesFromProps,
     rowGap,
     columnGap,
+    justifySelf,
+    alignSelf,
   }
 }
 
@@ -3007,6 +3017,8 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     gridRowStart: null,
     gridRowEnd: null,
   },
+  null,
+  null,
   null,
   null,
 )
