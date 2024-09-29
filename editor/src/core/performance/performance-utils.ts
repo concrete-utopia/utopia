@@ -30,17 +30,7 @@ export function startPerformanceMeasure(
   }
   return {
     id: id,
-    endMeasure: () => {
-      if (PERFORMANCE_MARKS_ALLOWED) {
-        performance.mark(`${id}-end`)
-        performance.measure(`${id}-duration`, `${id}-start`, `${id}-end`)
-        // return the duration of the last measurement
-        const measurements = performance.getEntriesByName(`${id}-duration`)
-        const latestMeasurement = measurements[measurements.length - 1]
-        return latestMeasurement.duration
-      }
-      return 0
-    },
+    endMeasure: () => endPerformanceMeasure(id),
   }
 }
 
@@ -50,7 +40,9 @@ export function endPerformanceMeasure(id: string): number {
     performance.measure(`${id}-duration`, `${id}-start`, `${id}-end`)
     const measurements = performance.getEntriesByName(`${id}-duration`)
     const latestMeasurement = measurements[measurements.length - 1]
-    return latestMeasurement.duration
+    if (latestMeasurement != null) {
+      return latestMeasurement.duration
+    }
   }
   return 0
 }
