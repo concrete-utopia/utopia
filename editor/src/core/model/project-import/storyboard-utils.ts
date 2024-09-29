@@ -101,7 +101,7 @@ type StoryboardCreationData = {
   storyboardClassName: string
 }
 
-function craeteStoryboardCreationData(
+function createStoryboardCreationData(
   componentToImport: ComponentToImport,
   imports: Imports,
   storyboardClassName: string,
@@ -290,7 +290,7 @@ export function addStoryboardFileToProject(
       return null
     } else {
       return addStoryboardFile(
-        craeteStoryboardCreationData(currentImportCandidate, imports, 'storyboard'),
+        createStoryboardCreationData(currentImportCandidate, imports, 'storyboard'),
         projectContents,
       )
     }
