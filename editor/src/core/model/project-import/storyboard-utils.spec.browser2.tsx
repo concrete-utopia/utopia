@@ -1,24 +1,24 @@
-import { getProjectFileByFilePath } from '../../components/assets'
-import { mouseClickAtPoint } from '../../components/canvas/event-helpers.test-utils'
-import type { EditorRenderResult } from '../../components/canvas/ui-jsx.test-utils'
+import { getProjectFileByFilePath } from '../../../components/assets'
+import { mouseClickAtPoint } from '../../../components/canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../../../components/canvas/ui-jsx.test-utils'
 import {
   makeTestProjectCodeWithSnippet,
   optOutFromCheckFileTimestamps,
   renderTestEditorWithCode,
   renderTestEditorWithModel,
-} from '../../components/canvas/ui-jsx.test-utils'
-import { StoryboardFilePath } from '../../components/editor/store/editor-state'
-import { emptyDefaultProject } from '../../sample-projects/sample-project-utils'
-import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
-import { GithubEndpoints } from '../shared/github/endpoints'
-import type { GetGithubUserSuccess, GetBranchContentResponse } from '../shared/github/helpers'
+} from '../../../components/canvas/ui-jsx.test-utils'
+import { StoryboardFilePath } from '../../../components/editor/store/editor-state'
+import { emptyDefaultProject } from '../../../sample-projects/sample-project-utils'
+import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
+import { GithubEndpoints } from '../../shared/github/endpoints'
+import type { GetGithubUserSuccess, GetBranchContentResponse } from '../../shared/github/helpers'
 import {
   MockGithubOperations,
   fakeResponse,
   loginUserToGithubForTests,
-} from '../shared/github/operations/github-operations.test-utils'
-import type { GetBranchesSuccess } from '../shared/github/operations/list-branches'
-import type { GetUsersPublicRepositoriesSuccess } from '../shared/github/operations/load-repositories'
+} from '../../shared/github/operations/github-operations.test-utils'
+import type { GetBranchesSuccess } from '../../shared/github/operations/list-branches'
+import type { GetUsersPublicRepositoriesSuccess } from '../../shared/github/operations/load-repositories'
 
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectStoryboardFileExists"] }] */
 

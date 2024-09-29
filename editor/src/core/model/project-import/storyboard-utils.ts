@@ -1,31 +1,31 @@
-import type { ProjectContentTreeRoot } from '../../components/assets'
+import type { ProjectContentTreeRoot } from '../../../components/assets'
 import {
   addFileToProjectContents,
   getProjectFileByFilePath,
   walkContentsTree,
-} from '../../components/assets'
-import type { EditorModel } from '../../components/editor/action-types'
-import type { EditorState } from '../../components/editor/store/editor-state'
-import { StoryboardFilePath } from '../../components/editor/store/editor-state'
-import type { Compare } from '../../utils/compare'
+} from '../../../components/assets'
+import type { EditorModel } from '../../../components/editor/action-types'
+import type { EditorState } from '../../../components/editor/store/editor-state'
+import { StoryboardFilePath } from '../../../components/editor/store/editor-state'
+import type { Compare } from '../../../utils/compare'
 import {
   compareCompose,
   compareField,
   compareIfIs,
   compareOn,
   comparePrimitive,
-} from '../../utils/compare'
-import type { JSXElement } from '../shared/element-template'
+} from '../../../utils/compare'
+import type { JSXElement } from '../../shared/element-template'
 import {
   emptyComments,
   isUtopiaJSXComponent,
   unparsedCode,
   UtopiaJSXComponent,
   utopiaJSXComponent,
-} from '../shared/element-template'
-import { forEachValue } from '../shared/object-utils'
-import { forceNotNull } from '../shared/optional-utils'
-import type { ParseSuccess } from '../shared/project-file-types'
+} from '../../shared/element-template'
+import { forEachValue } from '../../shared/object-utils'
+import { forceNotNull } from '../../shared/optional-utils'
+import type { ParseSuccess } from '../../shared/project-file-types'
 import {
   EmptyExportsDetail,
   ExportDetail,
@@ -41,14 +41,14 @@ import {
   RevisionsState,
   textFile,
   textFileContents,
-} from '../shared/project-file-types'
-import { addImport } from '../workers/common/project-file-utils'
+} from '../../shared/project-file-types'
+import { addImport } from '../../workers/common/project-file-utils'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
   createSceneFromComponent,
   createStoryboardElement,
-} from './scene-utils'
+} from '../scene-utils'
 
 const PossiblyMainComponentNames: Array<string> = ['App', 'Application', 'Main']
 
