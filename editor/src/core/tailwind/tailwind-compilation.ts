@@ -14,8 +14,8 @@ import { importDefault } from '../es-modules/commonjs-interop'
 import { rescopeCSSToTargetCanvasOnly } from '../shared/css-utils'
 import type { RequireFn } from '../shared/npm-dependency-types'
 import { TailwindConfigPath } from './tailwind-config'
-import { memoize } from '../shared/memoize'
-import { equalityFnForProjectContents } from '../shared/project-contents-utils'
+import { createSelector } from 'reselect'
+import type { ProjectContentSubstate } from '../../components/editor/store/store-hook-substore-types'
 
 const TAILWIND_INSTANCE: { current: Tailwindcss | null } = { current: null }
 
@@ -54,10 +54,7 @@ function getCssFilesFromProjectContents(projectContents: ProjectContentTreeRoot)
   return files
 }
 
-function generateTailwindClassesInner(
-  projectContents: ProjectContentTreeRoot,
-  requireFn: RequireFn,
-) {
+function generateTailwindClasses(projectContents: ProjectContentTreeRoot, requireFn: RequireFn) {
   const allCSSFiles = getCssFilesFromProjectContents(projectContents).join('\n')
   const rawConfig = importDefault(requireFn('/', TailwindConfigPath))
   const tailwindCss = createTailwindcss({ tailwindConfig: rawConfig as TailwindConfig })
@@ -65,15 +62,15 @@ function generateTailwindClassesInner(
   void generateTailwindStyles(tailwindCss, allCSSFiles)
 }
 
-const generateTailwindClasses = memoize(generateTailwindClassesInner, {
-  maxSize: 1,
-  matchesArg: equalityFnForProjectContents,
-})
+const projectContentsSelector = createSelector(
+  (store: ProjectContentSubstate) => store.editor.projectContents,
+  (projectContents: ProjectContentTreeRoot) => projectContents,
+)
 
 export const useTailwindCompilation = (requireFn: RequireFn) => {
   const projectContents = useEditorState(
     Substores.projectContents,
-    (store) => store.editor.projectContents,
+    projectContentsSelector,
     'useTailwindCompilation projectContents',
   )
 

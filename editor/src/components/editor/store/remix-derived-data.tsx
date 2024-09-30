@@ -7,7 +7,11 @@ import type { MutableUtopiaCtxRefData } from '../../canvas/ui-jsx-canvas-rendere
 import type { MapLike } from 'typescript'
 import type { ComponentRendererComponent } from '../../canvas/ui-jsx-canvas-renderer/component-renderer-component'
 import type { DataRouteObject } from 'react-router'
-import { getProjectFileByFilePath } from '../../assets'
+import {
+  getProjectFileByFilePath,
+  isProjectContentDirectory,
+  isProjectContentFile,
+} from '../../assets'
 import type { ProjectContentTreeRoot } from '../../assets'
 import type {
   RouteIdsToModuleCreators,
@@ -22,6 +26,8 @@ import {
 } from '../../canvas/remix/remix-utils'
 import type { CurriedUtopiaRequireFn, CurriedResolveFn } from '../../custom-code/code-file'
 import { memoize } from '../../../core/shared/memoize'
+import { shallowEqual } from '../../../core/shared/equality-utils'
+import { evaluator } from '../../../core/es-modules/evaluator/evaluator'
 import type { EditorRemixConfig } from './editor-state'
 import type { Either } from '../../../core/shared/either'
 import { defaultEither, foldEither, left, mapEither, right } from '../../../core/shared/either'
@@ -36,7 +42,6 @@ import { toFirst } from '../../../core/shared/optics/optic-utilities'
 import { applyBlockReturnFunctions } from '../../../core/shared/dom-utils'
 import type { FancyError } from '../../../core/shared/code-exec-utils'
 import { processErrorWithSourceMap } from '../../../core/shared/code-exec-utils'
-import { equalityFnForProjectContents } from '../../../core/shared/project-contents-utils'
 
 export interface RemixRoutingTable {
   [rootElementUid: string]: string /* file path */
@@ -166,14 +171,31 @@ export function createRemixDerivedData(
   }, possibleRootDir)
 }
 
+function isProjectContentTreeRoot(v: unknown): v is ProjectContentTreeRoot {
+  if (v != null && typeof v === 'object' && !Array.isArray(v)) {
+    const firstValue = Object.values(v)[0]
+    return isProjectContentDirectory(firstValue) || isProjectContentFile(firstValue)
+  }
+
+  return false
+}
+
+function paramsEqualityFn(l: unknown, r: unknown): boolean {
+  if (isProjectContentTreeRoot(l) && isProjectContentTreeRoot(r)) {
+    return shallowEqual(l, r)
+  }
+
+  return l === r
+}
+
 export const patchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, {
   maxSize: 1,
-  matchesArg: equalityFnForProjectContents,
+  matchesArg: paramsEqualityFn,
 })
 
 export const unpatchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, {
   maxSize: 1,
-  matchesArg: equalityFnForProjectContents,
+  matchesArg: paramsEqualityFn,
 })
 
 export type RemixDerivedDataFactory = typeof createRemixDerivedData
