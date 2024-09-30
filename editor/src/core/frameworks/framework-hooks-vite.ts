@@ -5,14 +5,8 @@ import type { Imports } from '../shared/project-file-types'
 import { forEachParseSuccess, isEmptyImportDetails, isTextFile } from '../shared/project-file-types'
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import { getFilePathMappings } from '../model/project-file-utils'
-import type {
-  ComponentToImport,
-  CreationDataFromProject,
-} from '../model/project-import/storyboard-utils'
-import {
-  namedComponentToImport,
-  PossiblyMainComponentNames,
-} from '../model/project-import/storyboard-utils'
+import type { ComponentToImport, CreationDataFromProject } from '../model/storyboard-utils'
+import { namedComponentToImport, PossiblyMainComponentNames } from '../model/storyboard-utils'
 import { mergeImports } from '../workers/common/project-file-utils'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
 import type { FileLookupResult } from '../es-modules/package-manager/module-resolution'

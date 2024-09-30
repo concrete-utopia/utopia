@@ -2,15 +2,15 @@ import {
   addFileToProjectContents,
   getProjectFileByFilePath,
   removeFromProjectContents,
-} from '../../../components/assets'
-import type { EditorState } from '../../../components/editor/store/editor-state'
+} from '../../components/assets'
+import type { EditorState } from '../../components/editor/store/editor-state'
 import {
   editorModelFromPersistentModel,
   StoryboardFilePath,
-} from '../../../components/editor/store/editor-state'
-import { complexDefaultProject } from '../../../sample-projects/sample-project-utils'
-import { clearTopLevelElementUniqueIDs } from '../../shared/element-template'
-import type { ParsedTextFile } from '../../shared/project-file-types'
+} from '../../components/editor/store/editor-state'
+import { complexDefaultProject } from '../../sample-projects/sample-project-utils'
+import { clearTopLevelElementUniqueIDs } from '../shared/element-template'
+import type { ParsedTextFile } from '../shared/project-file-types'
 import {
   foldParsedTextFile,
   isParseSuccess,
@@ -19,10 +19,10 @@ import {
   textFile,
   textFileContents,
   unparsed,
-} from '../../shared/project-file-types'
-import { emptySet } from '../../shared/set-utils'
-import { NO_OP } from '../../shared/utils'
-import { lintAndParse } from '../../workers/parser-printer/parser-printer'
+} from '../shared/project-file-types'
+import { emptySet } from '../shared/set-utils'
+import { NO_OP } from '../shared/utils'
+import { lintAndParse } from '../workers/parser-printer/parser-printer'
 import { addStoryboardFileToProject } from './storyboard-utils'
 
 function createTestProjectLackingStoryboardFile(): EditorState {

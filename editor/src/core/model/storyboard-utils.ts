@@ -1,28 +1,28 @@
-import { getFrameworkHooks } from '../../frameworks/framework-hooks'
-import type { ProjectContentTreeRoot } from '../../../components/assets'
+import { getFrameworkHooks } from '../frameworks/framework-hooks'
+import type { ProjectContentTreeRoot } from '../../components/assets'
 import {
   addFileToProjectContents,
   getProjectFileByFilePath,
   walkContentsTree,
-} from '../../../components/assets'
-import { StoryboardFilePath } from '../../../components/editor/store/editor-state'
-import type { Compare } from '../../../utils/compare'
+} from '../../components/assets'
+import { StoryboardFilePath } from '../../components/editor/store/editor-state'
+import type { Compare } from '../../utils/compare'
 import {
   compareCompose,
   compareField,
   compareIfIs,
   compareOn,
   comparePrimitive,
-} from '../../../utils/compare'
-import type { JSExpression, JSXElement } from '../../shared/element-template'
+} from '../../utils/compare'
+import type { JSExpression, JSXElement } from '../shared/element-template'
 import {
   emptyComments,
   jsExpressionValue,
   unparsedCode,
   utopiaJSXComponent,
-} from '../../shared/element-template'
-import { forceNotNull } from '../../shared/optional-utils'
-import type { Imports, ParseSuccess } from '../../shared/project-file-types'
+} from '../shared/element-template'
+import { forceNotNull } from '../shared/optional-utils'
+import type { Imports, ParseSuccess } from '../shared/project-file-types'
 import {
   exportVariable,
   exportVariables,
@@ -36,14 +36,14 @@ import {
   RevisionsState,
   textFile,
   textFileContents,
-} from '../../shared/project-file-types'
-import { addImport, mergeImports } from '../../workers/common/project-file-utils'
+} from '../shared/project-file-types'
+import { addImport, mergeImports } from '../workers/common/project-file-utils'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
   createSceneFromComponent,
   createStoryboardElement,
-} from '../scene-utils'
+} from './scene-utils'
 import type { MapLike } from 'typescript'
 
 export const PossiblyMainComponentNames: Array<string> = ['App', 'Application', 'Main']

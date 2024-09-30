@@ -1,5 +1,5 @@
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
-import type { CreationDataFromProject } from '../model/project-import/project-import-utils'
+import type { CreationDataFromProject } from '../model/storyboard-utils'
 import type { NodeModules } from '../shared/project-file-types'
 import { ViteFrameworkHooks } from './framework-hooks-vite'
 import { DefaultFrameworkHooks } from './framework-hooks-default'

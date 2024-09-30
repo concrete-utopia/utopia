@@ -435,7 +435,7 @@ import { reorderElement } from '../../../components/canvas/commands/reorder-elem
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
-import { addStoryboardFileToProject } from '../../../core/model/project-import/storyboard-utils'
+import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
 import type { TreeConflicts } from '../../../core/shared/github/helpers'
