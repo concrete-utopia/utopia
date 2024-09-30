@@ -647,6 +647,7 @@ export type FixedHugFill =
   | { type: 'computed'; value: CSSNumber }
   | { type: 'detected'; value: CSSNumber }
   | { type: 'scaled'; value: CSSNumber }
+  | { type: 'stretch' }
 
 export type FixedHugFillMode = FixedHugFill['type']
 
@@ -664,6 +665,30 @@ export function detectFillHugFixedState(
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
     return { fixedHugFill: null, controlStatus: 'off' }
+  }
+
+  const width = foldEither(
+    () => null,
+    (value) => defaultEither(null, parseCSSNumber(value, 'Unitless')),
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'width')),
+  )
+  const height = foldEither(
+    () => null,
+    (value) => defaultEither(null, parseCSSNumber(value, 'Unitless')),
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'height')),
+  )
+
+  if (MetadataUtils.isGridCell(metadata, elementPath)) {
+    if (
+      (element.specialSizeMeasurements.alignSelf === 'stretch' &&
+        axis === 'horizontal' &&
+        width == null) ||
+      (element.specialSizeMeasurements.justifySelf === 'stretch' &&
+        axis === 'vertical' &&
+        height == null)
+    ) {
+      return { fixedHugFill: { type: 'stretch' }, controlStatus: 'detected' }
+    }
   }
 
   const flexGrowLonghand = foldEither(
@@ -1071,7 +1096,11 @@ export function getFixedFillHugOptionsForElement(
       (!isGroup && basicHugContentsApplicableForContainer(metadata, pathTrees, selectedView))
         ? 'hug'
         : null,
-      fillContainerApplicable(metadata, selectedView) ? 'fill' : null,
+      fillContainerApplicable(metadata, selectedView)
+        ? MetadataUtils.isGridCell(metadata, selectedView)
+          ? 'stretch'
+          : 'fill'
+        : null,
     ]),
   )
 }
@@ -1198,6 +1227,20 @@ export function removeExtraPinsWhenSettingSize(
   )
 }
 
+export function removeAlignJustifySelf(
+  axis: Axis,
+  elementMetadata: ElementInstanceMetadata | null,
+): Array<CanvasCommand> {
+  if (elementMetadata == null) {
+    return []
+  }
+  return [
+    deleteProperties('always', elementMetadata.elementPath, [
+      styleP(axis === 'horizontal' ? 'alignSelf' : 'justifySelf'),
+    ]),
+  ]
+}
+
 export function isFixedHugFillEqual(
   a: { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus },
   b: { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus },
@@ -1230,9 +1273,10 @@ export function isFixedHugFillEqual(
         a.fixedHugFill.value.value === b.fixedHugFill.value.value &&
         a.fixedHugFill.value.unit === b.fixedHugFill.value.unit
       )
+    case 'stretch':
+      return a.fixedHugFill.type === b.fixedHugFill.type
     default:
-      const _exhaustiveCheck: never = a.fixedHugFill
-      throw new Error(`Unknown type in FixedHugFill ${JSON.stringify(a.fixedHugFill)}`)
+      assertNever(a.fixedHugFill)
   }
 }
 
