@@ -17,6 +17,7 @@ import { TailwindConfigPath } from './tailwind-config'
 import { createSelector } from 'reselect'
 import type { ProjectContentSubstate } from '../../components/editor/store/store-hook-substore-types'
 import { ElementsToRerenderGLOBAL } from '../../components/canvas/ui-jsx-canvas'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 const TAILWIND_INSTANCE: { current: Tailwindcss | null } = { current: null }
 
@@ -82,7 +83,8 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
   const observerCallback = React.useCallback(() => {
     if (
       isInteractionActiveRef.current ||
-      ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' // implies that an
+      ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' || // implies that an interaction is in progress
+      !isFeatureEnabled('Tailwind')
     ) {
       return
     }
