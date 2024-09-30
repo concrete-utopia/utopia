@@ -68,7 +68,12 @@ import { fastForEach } from '../../core/shared/utils'
 import type { EditorState, EditorStorePatched } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
 import { pick } from '../../core/shared/object-utils'
-import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
+import {
+  getFlexAlignment,
+  getFlexJustifyContent,
+  getSelfAlignment,
+  MaxContent,
+} from '../inspector/inspector-common'
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
 import { CanvasContainerOuterId } from './canvas-component-entry'
@@ -317,6 +322,16 @@ export function initDomWalkerObservers(
   editorStore: UtopiaStoreAPI,
   dispatch: EditorDispatch,
 ): { resizeObserver: ResizeObserver; mutationObserver: MutationObserver } {
+  let domWalkerTimeoutID: number | null = null
+  function queueUpDomWalker(): void {
+    if (domWalkerTimeoutID == null) {
+      domWalkerTimeoutID = window.setTimeout(() => {
+        dispatch([runDOMWalker()])
+        domWalkerTimeoutID = null
+      })
+    }
+  }
+
   // Warning: I modified this code so it runs in all modes, not just in live mode. We still don't trigger
   // the DOM walker during canvas interactions, so the performance impact doesn't seem that bad. But it is
   // necessary, because after remix navigation, and after dynamic changes coming from loaders sometimes the
@@ -347,7 +362,7 @@ export function initDomWalkerObservers(
         }
       }
       if (shouldRunDOMWalker) {
-        dispatch([runDOMWalker()])
+        queueUpDomWalker()
       }
     }
   })
@@ -379,7 +394,7 @@ export function initDomWalkerObservers(
         }
       }
       if (shouldRunDOMWalker) {
-        dispatch([runDOMWalker()])
+        queueUpDomWalker()
       }
     }
   })
@@ -684,6 +699,8 @@ function getSpecialMeasurements(
   const justifyContent = getFlexJustifyContent(elementStyle.justifyContent)
   const alignContent = getFlexJustifyContent(elementStyle.alignContent)
   const alignItems = getFlexAlignment(elementStyle.alignItems)
+  const alignSelf = getSelfAlignment(elementStyle.alignSelf)
+  const justifySelf = getSelfAlignment(elementStyle.justifySelf)
 
   const margin = applicative4Either(
     applicativeSidesPxTransform,
@@ -901,6 +918,8 @@ function getSpecialMeasurements(
     containerElementPropertiesFromProps,
     rowGap,
     columnGap,
+    justifySelf,
+    alignSelf,
   )
 }
 

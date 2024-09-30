@@ -87,7 +87,7 @@ export const drawToInsertTextMetaStrategy: MetaCanvasStrategy = (
           ['hasOnlyTextChildren', 'supportsChildren'],
         )
         if (applicableReparentFactories.length < 1) {
-          return strategyApplicationResult([])
+          return strategyApplicationResult([], [])
         }
 
         const factory = applicableReparentFactories[0]
@@ -107,24 +107,30 @@ export const drawToInsertTextMetaStrategy: MetaCanvasStrategy = (
         const isRoot = targetParentPathParts === 1
         const isClick = s === 'end-interaction' && interactionSession.interactionData.drag == null
         if (!isRoot && textEditableAndHasText && isClick) {
-          return strategyApplicationResult([
-            updateSelectedViews('on-complete', [targetParent.intendedParentPath]),
-            setCursorCommand(CSSCursor.Select),
-            wildcardPatch('on-complete', {
-              mode: {
-                $set: EditorModes.textEditMode(
-                  targetParent.intendedParentPath,
-                  canvasPointToWindowPoint(
-                    pointOnCanvas,
-                    canvasState.scale,
-                    canvasState.canvasOffset,
+          return strategyApplicationResult(
+            [
+              updateSelectedViews('on-complete', [targetParent.intendedParentPath]),
+              setCursorCommand(CSSCursor.Select),
+              wildcardPatch('on-complete', {
+                mode: {
+                  $set: EditorModes.textEditMode(
+                    targetParent.intendedParentPath,
+                    canvasPointToWindowPoint(
+                      pointOnCanvas,
+                      canvasState.scale,
+                      canvasState.canvasOffset,
+                    ),
+                    'existing',
+                    'no-text-selection',
                   ),
-                  'existing',
-                  'no-text-selection',
-                ),
-              },
-            }),
-          ])
+                },
+              }),
+            ],
+            // FIXME: This was added as a default value in https://github.com/concrete-utopia/utopia/pull/6408
+            // This was to maintain the existing behaviour, but it should be replaced with a more specific value
+            // appropriate to this particular case.
+            'rerender-all-elements',
+          )
         }
 
         const strategy = drawToInsertStrategyFactory(
@@ -138,7 +144,7 @@ export const drawToInsertTextMetaStrategy: MetaCanvasStrategy = (
           factory.targetIndex,
         )
         if (strategy == null) {
-          return strategyApplicationResult([])
+          return strategyApplicationResult([], [])
         }
 
         const targetElement = EP.appendToPath(targetParent.intendedParentPath, insertionSubject.uid)

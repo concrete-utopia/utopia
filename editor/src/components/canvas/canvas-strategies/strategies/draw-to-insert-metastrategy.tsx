@@ -303,6 +303,10 @@ export function drawToInsertStrategyFactory(
                   resizeCommand,
                   ...optionalWrappingCommand,
                 ],
+                // FIXME: This was added as a default value in https://github.com/concrete-utopia/utopia/pull/6408
+                // This was to maintain the existing behaviour, but it should be replaced with a more specific value
+                // appropriate to this particular case.
+                'rerender-all-elements',
                 {
                   strategyGeneratedUidsCache: {
                     [insertionSubject.uid]: maybeWrapperWithUid?.uid,
@@ -348,6 +352,10 @@ export function drawToInsertStrategyFactory(
 
               return strategyApplicationResult(
                 [insertionCommand.command, reparentCommand, ...optionalWrappingCommand],
+                // FIXME: This was added as a default value in https://github.com/concrete-utopia/utopia/pull/6408
+                // This was to maintain the existing behaviour, but it should be replaced with a more specific value
+                // appropriate to this particular case.
+                'rerender-all-elements',
                 {
                   strategyGeneratedUidsCache: {
                     [insertionSubject.uid]: maybeWrapperWithUid?.uid,
@@ -359,11 +367,13 @@ export function drawToInsertStrategyFactory(
             // drag is null, the cursor is not moved yet, but the mousedown already happened
             return strategyApplicationResult(
               getHighlightAndReorderIndicatorCommands(targetParent.intendedParentPath, targetIndex),
+              [],
             )
           }
         } else if (interactionSession.interactionData.type === 'HOVER') {
           return strategyApplicationResult(
             getHighlightAndReorderIndicatorCommands(targetParent.intendedParentPath, targetIndex),
+            [],
           )
         }
       }

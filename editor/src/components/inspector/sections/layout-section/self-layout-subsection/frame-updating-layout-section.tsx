@@ -93,8 +93,6 @@ interface LTWHPixelValues {
 export const FrameUpdatingLayoutSection = React.memo(() => {
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
-  const allElementsPropsRef = useRefEditorState((store) => store.editor.allElementProps)
-  const pathTreesRef = useRefEditorState((store) => store.editor.elementPathTree)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const originalGlobalFrame: CanvasRectangle = useEditorState(
@@ -292,14 +290,14 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
       <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
         <FrameUpdatingLayoutControl
           property='left'
-          label='L'
+          label='X'
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.left}
           invalid={invalidPins.left || invalidPins.right} // currently showing red for BOTH directions
         />
         <FrameUpdatingLayoutControl
           property='top'
-          label='T'
+          label='Y'
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.top}
           invalid={invalidPins.top || invalidPins.bottom} // currently showing red for BOTH directions

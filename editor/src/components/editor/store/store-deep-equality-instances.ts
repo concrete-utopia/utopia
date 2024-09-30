@@ -2263,6 +2263,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       newSize.columnGap,
     ).areEqual
 
+    const justifySelfEquals = oldSize.justifySelf === newSize.justifySelf
+    const alignSelfEquals = oldSize.alignSelf === newSize.alignSelf
+
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -2310,7 +2313,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       gridContainerPropertiesFromPropsEqual &&
       gridElementPropertiesFromPropsEqual &&
       rowGapEquals &&
-      columnGapEquals
+      columnGapEquals &&
+      justifySelfEquals &&
+      alignSelfEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -2363,6 +2368,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.elementGridPropertiesFromProps,
         newSize.rowGap,
         newSize.columnGap,
+        newSize.justifySelf,
+        newSize.alignSelf,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
