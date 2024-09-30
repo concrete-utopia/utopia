@@ -5,6 +5,7 @@ import type {
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import {
   applyCanvasStrategy,
+  applyElementsToRerenderFromStrategyResult,
   findCanvasStrategy,
   interactionInProgress,
   pickCanvasStateFromEditorState,
@@ -47,6 +48,7 @@ import type {
   CustomStrategyState,
   CustomStrategyStatePatch,
   InteractionCanvasState,
+  StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { strategyApplicationResult } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { last } from '../../../core/shared/array-utils'
@@ -76,6 +78,7 @@ export function interactionFinished(
       newEditorState.elementPathTree,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState.selectedViews,
     newEditorState,
     result.builtInDependencies,
   )
@@ -90,7 +93,7 @@ export function interactionFinished(
       result.strategyState.currentStrategy,
     )
 
-    const strategyResult =
+    const strategyResult: StrategyApplicationResult =
       strategy != null
         ? applyCanvasStrategy(
             strategy.strategy,
@@ -99,9 +102,7 @@ export function interactionFinished(
             result.strategyState.customStrategyState,
             'end-interaction',
           )
-        : {
-            commands: [],
-          }
+        : strategyApplicationResult([], 'rerender-all-elements')
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedState.patchedEditor,
@@ -110,13 +111,16 @@ export function interactionFinished(
       'end-interaction',
     )
 
-    const finalEditor: EditorState = {
-      ...commandResult.editorState,
-      // TODO instead of clearing the metadata, we should save the latest valid metadata here to save a dom-walker run
-      jsxMetadata: {},
-      domMetadata: {},
-      spyMetadata: {},
-    }
+    const finalEditor: EditorState = applyElementsToRerenderFromStrategyResult(
+      {
+        ...commandResult.editorState,
+        // TODO instead of clearing the metadata, we should save the latest valid metadata here to save a dom-walker run
+        jsxMetadata: {},
+        domMetadata: {},
+        spyMetadata: {},
+      },
+      strategyResult,
+    )
 
     return {
       unpatchedEditorState: finalEditor,
@@ -152,6 +156,7 @@ export function interactionHardReset(
     startingMetadata: storedState.unpatchedEditor.jsxMetadata,
   }
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState.selectedViews,
     newEditorState,
     result.builtInDependencies,
   )
@@ -216,7 +221,10 @@ export function interactionHardReset(
 
       return {
         unpatchedEditorState: newEditorState,
-        patchedEditorState: commandResult.editorState,
+        patchedEditorState: applyElementsToRerenderFromStrategyResult(
+          commandResult.editorState,
+          strategyResult,
+        ),
         newStrategyState: newStrategyState,
       }
     } else {
@@ -237,6 +245,7 @@ export function interactionUpdate(
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState.selectedViews,
     newEditorState,
     result.builtInDependencies,
   )
@@ -319,6 +328,7 @@ export function interactionStart(
       newEditorState.elementPathTree,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState.selectedViews,
     newEditorState,
     result.builtInDependencies,
   )
@@ -379,7 +389,10 @@ export function interactionStart(
 
       return {
         unpatchedEditorState: newEditorState,
-        patchedEditorState: commandResult.editorState,
+        patchedEditorState: applyElementsToRerenderFromStrategyResult(
+          commandResult.editorState,
+          strategyResult,
+        ),
         newStrategyState: newStrategyState,
       }
     } else {
@@ -427,6 +440,7 @@ function handleUserChangedStrategy(
   sortedApplicableStrategies: Array<ApplicableStrategy>,
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState.selectedViews,
     newEditorState,
     builtInDependencies,
   )
@@ -482,7 +496,10 @@ function handleUserChangedStrategy(
 
     return {
       unpatchedEditorState: newEditorState,
-      patchedEditorState: commandResult.editorState,
+      patchedEditorState: applyElementsToRerenderFromStrategyResult(
+        commandResult.editorState,
+        strategyResult,
+      ),
       newStrategyState: newStrategyState,
     }
   } else {
@@ -504,6 +521,7 @@ function handleAccumulatingKeypresses(
   sortedApplicableStrategies: Array<ApplicableStrategy>,
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState.selectedViews,
     newEditorState,
     builtInDependencies,
   )
@@ -536,7 +554,7 @@ function handleAccumulatingKeypresses(
               strategyState.customStrategyState,
               'mid-interaction',
             )
-          : strategyApplicationResult([])
+          : strategyApplicationResult([], 'rerender-all-elements')
       const commandResult = foldAndApplyCommands(
         updatedEditorState,
         storedEditorState,
@@ -564,7 +582,10 @@ function handleAccumulatingKeypresses(
 
       return {
         unpatchedEditorState: updatedEditorState,
-        patchedEditorState: commandResult.editorState,
+        patchedEditorState: applyElementsToRerenderFromStrategyResult(
+          commandResult.editorState,
+          strategyResult,
+        ),
         newStrategyState: newStrategyState,
       }
     }
@@ -586,6 +607,7 @@ function handleUpdate(
   sortedApplicableStrategies: Array<ApplicableStrategy>,
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
+    newEditorState.selectedViews,
     newEditorState,
     builtInDependencies,
   )
@@ -600,7 +622,7 @@ function handleUpdate(
             strategyState.customStrategyState,
             'mid-interaction',
           )
-        : strategyApplicationResult([])
+        : strategyApplicationResult([], 'rerender-all-elements')
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,
@@ -627,7 +649,10 @@ function handleUpdate(
     }
     return {
       unpatchedEditorState: newEditorState,
-      patchedEditorState: commandResult.editorState,
+      patchedEditorState: applyElementsToRerenderFromStrategyResult(
+        commandResult.editorState,
+        strategyResult,
+      ),
       newStrategyState: newStrategyState,
     }
   } else {

@@ -16,7 +16,9 @@ export type FeatureName =
   | 'Debug – Connections'
   | 'Parser Concurrency'
   | 'Condensed Navigator Entries'
+  | 'Canvas Fast Selection Hack'
   | 'Roll Your Own'
+  | 'Tailwind'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -33,7 +35,9 @@ export const AllFeatureNames: FeatureName[] = [
   'Debug – Connections',
   'Parser Concurrency',
   'Condensed Navigator Entries',
+  'Canvas Fast Selection Hack',
   'Roll Your Own',
+  'Tailwind',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -49,7 +53,9 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug - Print UIDs': false,
   'Debug – Connections': false,
   'Parser Concurrency': !IS_TEST_ENVIRONMENT,
+  Tailwind: false,
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
+  'Canvas Fast Selection Hack': true,
   'Roll Your Own': false,
 }
 

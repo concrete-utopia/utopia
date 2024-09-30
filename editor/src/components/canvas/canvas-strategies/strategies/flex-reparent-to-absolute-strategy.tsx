@@ -1,7 +1,7 @@
 import { canvasPoint } from '../../../../core/shared/math-utils'
 import type { EditorStatePatch } from '../../../editor/store/editor-state'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
@@ -105,14 +105,11 @@ export function baseFlexReparentToAbsoluteStrategy(
               [
                 ...placeholderCommands.commands,
                 ...escapeHatchCommands,
-                setElementsToRerenderCommand([
-                  newParent.intendedParentPath,
-                  ...filteredSelectedElements,
-                ]),
                 updateFunctionCommand(
                   'always',
                   (editorState, commandLifecycle): Array<EditorStatePatch> => {
                     const updatedCanvasState = pickCanvasStateFromEditorState(
+                      editorState.selectedViews,
                       editorState,
                       canvasState.builtInDependencies,
                     )
@@ -137,6 +134,7 @@ export function baseFlexReparentToAbsoluteStrategy(
                   },
                 ),
               ],
+              [newParent.intendedParentPath, ...filteredSelectedElements],
               {
                 duplicatedElementNewUids: placeholderCommands.duplicatedElementNewUids,
               },
