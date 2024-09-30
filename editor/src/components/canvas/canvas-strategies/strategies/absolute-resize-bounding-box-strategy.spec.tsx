@@ -52,6 +52,7 @@ function multiselectResizeElements(
 
   const strategyResult = absoluteResizeBoundingBoxStrategy(
     pickCanvasStateFromEditorStateWithMetadata(
+      initialEditor.selectedViews,
       initialEditor,
       createBuiltInDependenciesList(null),
       metadata,

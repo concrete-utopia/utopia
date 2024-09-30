@@ -112,6 +112,8 @@ module.exports = {
         'react-dnd-html5-backend': '<rootDir>/test/jest/__mocks__/react-dnd-html5-backend.js',
         '^react$': '<rootDir>/node_modules/react/index.js',
         '^react-dom$': '<rootDir>/node_modules/react-dom/index.js',
+        '^@mhsdesign/jit-browser-tailwindcss$':
+          '<rootDir>/src/utils/__mocks__/jit-browser-tailwindcss.js',
         '\\.(jpg|ico|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
           '<rootDir>/test/jest/__mocks__/styleMock.js',
       },

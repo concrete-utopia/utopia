@@ -11,6 +11,7 @@ import {
   isInfinityRectangle,
   offsetPoint,
 } from '../../../../core/shared/math-utils'
+import * as PP from '../../../../core/shared/property-path'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
@@ -20,6 +21,7 @@ import { oppositeEdgePosition } from '../../canvas-types'
 import {
   isEdgePositionACorner,
   isEdgePositionAHorizontalEdge,
+  isEdgePositionAVerticalEdge,
   pickPointOnRect,
 } from '../../canvas-utils'
 import type { LengthPropertyToAdjust } from '../../commands/adjust-css-length-command'
@@ -27,6 +29,8 @@ import {
   adjustCssLengthProperties,
   lengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
+import type { CanvasCommand } from '../../commands/commands'
+import { deleteProperties } from '../../commands/delete-properties-command'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
@@ -219,21 +223,31 @@ export function basicResizeStrategy(
 
           const elementsToRerender = [...selectedElements, ...gridsToRerender]
 
-          return strategyApplicationResult(
-            [
-              adjustCssLengthProperties('always', selectedElement, null, resizeProperties),
-              updateHighlightedViews('mid-interaction', []),
-              setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-              pushIntendedBoundsAndUpdateGroups(
-                [{ target: selectedElement, frame: resizedBounds }],
-                'starting-metadata',
-              ),
-              ...groupChildren.map((c) =>
-                queueTrueUpElement([trueUpGroupElementChanged(c.elementPath)]),
-              ),
-            ],
-            elementsToRerender,
-          )
+          let commands: CanvasCommand[] = [
+            adjustCssLengthProperties('always', selectedElement, null, resizeProperties),
+            updateHighlightedViews('mid-interaction', []),
+            setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
+            pushIntendedBoundsAndUpdateGroups(
+              [{ target: selectedElement, frame: resizedBounds }],
+              'starting-metadata',
+            ),
+            ...groupChildren.map((c) =>
+              queueTrueUpElement([trueUpGroupElementChanged(c.elementPath)]),
+            ),
+          ]
+
+          if (isEdgePositionAHorizontalEdge(edgePosition)) {
+            commands.push(
+              deleteProperties('always', selectedElement, [PP.create('style', 'justifySelf')]),
+            )
+          }
+          if (isEdgePositionAVerticalEdge(edgePosition)) {
+            commands.push(
+              deleteProperties('always', selectedElement, [PP.create('style', 'alignSelf')]),
+            )
+          }
+
+          return strategyApplicationResult(commands, elementsToRerender)
         } else {
           return strategyApplicationResult(
             [
