@@ -322,6 +322,16 @@ export function initDomWalkerObservers(
   editorStore: UtopiaStoreAPI,
   dispatch: EditorDispatch,
 ): { resizeObserver: ResizeObserver; mutationObserver: MutationObserver } {
+  let domWalkerTimeoutID: number | null = null
+  function queueUpDomWalker(): void {
+    if (domWalkerTimeoutID == null) {
+      domWalkerTimeoutID = window.setTimeout(() => {
+        dispatch([runDOMWalker()])
+        domWalkerTimeoutID = null
+      })
+    }
+  }
+
   // Warning: I modified this code so it runs in all modes, not just in live mode. We still don't trigger
   // the DOM walker during canvas interactions, so the performance impact doesn't seem that bad. But it is
   // necessary, because after remix navigation, and after dynamic changes coming from loaders sometimes the
@@ -352,7 +362,7 @@ export function initDomWalkerObservers(
         }
       }
       if (shouldRunDOMWalker) {
-        dispatch([runDOMWalker()])
+        queueUpDomWalker()
       }
     }
   })
@@ -384,7 +394,7 @@ export function initDomWalkerObservers(
         }
       }
       if (shouldRunDOMWalker) {
-        dispatch([runDOMWalker()])
+        queueUpDomWalker()
       }
     }
   })

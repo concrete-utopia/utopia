@@ -176,6 +176,7 @@ describe('Strategy Fitness', () => {
     const canvasStrategy = findCanvasStrategy(
       RegisteredCanvasStrategies,
       pickCanvasStateFromEditorState(
+        renderResult.getEditorState().editor.selectedViews,
         renderResult.getEditorState().editor,
         renderResult.getEditorState().builtInDependencies,
       ),
@@ -226,6 +227,7 @@ describe('Strategy Fitness', () => {
     const canvasStrategy = findCanvasStrategy(
       RegisteredCanvasStrategies,
       pickCanvasStateFromEditorState(
+        renderResult.getEditorState().editor.selectedViews,
         renderResult.getEditorState().editor,
         renderResult.getEditorState().builtInDependencies,
       ),
@@ -313,6 +315,7 @@ describe('Strategy Fitness', () => {
     const canvasStrategy = findCanvasStrategy(
       RegisteredCanvasStrategies,
       pickCanvasStateFromEditorState(
+        renderResult.getEditorState().editor.selectedViews,
         renderResult.getEditorState().editor,
         renderResult.getEditorState().builtInDependencies,
       ),
@@ -363,6 +366,7 @@ describe('Strategy Fitness', () => {
     const canvasStrategy = findCanvasStrategy(
       RegisteredCanvasStrategies,
       pickCanvasStateFromEditorState(
+        renderResult.getEditorState().editor.selectedViews,
         renderResult.getEditorState().editor,
         renderResult.getEditorState().builtInDependencies,
       ),

@@ -274,9 +274,16 @@ interface NewCanvasControlsInnerProps {
 }
 
 const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
+  const {
+    localSelectedViews,
+    localHighlightedViews,
+    setLocalSelectedViews,
+    setLocalHighlightedViews,
+  } = props
+
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
-  const strategyControls = useGetApplicableStrategyControls()
+  const strategyControls = useGetApplicableStrategyControls(localSelectedViews)
   const [inspectorHoveredControls] = useAtom(InspectorHoveredCanvasControls)
   const [inspectorFocusedControls] = useAtom(InspectorFocusedCanvasControls)
 
@@ -331,12 +338,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     'NewCanvasControlsInner',
   )
 
-  const {
-    localSelectedViews,
-    localHighlightedViews,
-    setLocalSelectedViews,
-    setLocalHighlightedViews,
-  } = props
   const cmdKeyPressed = keysPressed['cmd'] ?? false
 
   const contextMenuEnabled = !isLiveMode(editorMode)

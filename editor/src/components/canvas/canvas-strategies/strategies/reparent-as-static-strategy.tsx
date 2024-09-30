@@ -14,7 +14,6 @@ import type { CanvasCommand } from '../../commands/commands'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { activeFrameTargetRect, setActiveFrames } from '../../commands/set-active-frames-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { showReorderIndicator } from '../../commands/show-reorder-indicator-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
@@ -229,7 +228,7 @@ export function applyStaticReparent(
 
             const commandsAfterReorder = [
               ...propertyChangeCommands,
-              setElementsToRerenderCommand(elementsToRerender),
+
               updateHighlightedViews('mid-interaction', []),
               setCursorCommand(CSSCursor.Move),
             ]
@@ -348,6 +347,7 @@ export function applyStaticReparent(
 
             return {
               commands: [...midInteractionCommands, ...interactionFinishCommands],
+              elementsToRerender: elementsToRerender,
               customStatePatch: { duplicatedElementNewUids, elementsToRerender },
               status: 'success',
             }

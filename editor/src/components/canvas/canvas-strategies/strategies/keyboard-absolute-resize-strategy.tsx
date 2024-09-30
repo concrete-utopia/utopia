@@ -12,7 +12,7 @@ import type { CanvasFrameAndTarget, EdgePosition } from '../../canvas-types'
 import { EdgePositionBottom, EdgePositionRight } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
 import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
@@ -225,8 +225,7 @@ export function keyboardAbsoluteResizeStrategy(
         const guidelines = getKeyboardStrategyGuidelines(snapTargets, interactionSession, newFrame)
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
         commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata'))
-        commands.push(setElementsToRerenderCommand(selectedElements))
-        return strategyApplicationResult(commands)
+        return strategyApplicationResult(commands, selectedElements)
       } else {
         return emptyStrategyApplicationResult
       }

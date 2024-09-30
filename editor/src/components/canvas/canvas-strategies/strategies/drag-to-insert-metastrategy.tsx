@@ -216,6 +216,7 @@ function dragToInsertStrategyFactory(
         if (insertionSubjects.length === 0) {
           return strategyApplicationResult(
             [setCursorCommand(CSSCursor.NotPermitted)],
+            [],
             {},
             'failure',
           )
@@ -280,6 +281,10 @@ function dragToInsertStrategyFactory(
               reparentCommand,
               ...optionalWrappingCommand,
             ],
+            // FIXME: This was added as a default value in https://github.com/concrete-utopia/utopia/pull/6408
+            // This was to maintain the existing behaviour, but it should be replaced with a more specific value
+            // appropriate to this particular case.
+            'rerender-all-elements',
             {
               strategyGeneratedUidsCache: {
                 [insertionSubjects[0].uid]: maybeWrapperWithUid?.uid,
@@ -389,6 +394,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
   // because that element is inserted to the storyboard before reparenting to the correct location,
   // so its index amongst its starting siblings isn't relevant.
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
+    editorState.selectedViews,
     editorState,
     builtInDependencies,
     patchedMetadata,
