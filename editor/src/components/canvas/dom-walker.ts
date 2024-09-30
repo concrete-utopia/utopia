@@ -332,7 +332,7 @@ export function initDomWalkerObservers(
   gridControlObserver: MutationObserver
 } {
   let domWalkerTimeoutID: number | null = null
-  function queueUpDomWalker(restrictToElements?: Array<ElementPath> | null): void {
+  function queueUpDomWalker(restrictToElements: Array<ElementPath> | null): void {
     if (domWalkerTimeoutID == null) {
       domWalkerTimeoutID = window.setTimeout(() => {
         dispatch([runDOMWalker(restrictToElements)])
@@ -371,7 +371,7 @@ export function initDomWalkerObservers(
         }
       }
       if (shouldRunDOMWalker) {
-        queueUpDomWalker()
+        queueUpDomWalker(null)
       }
     }
   })
@@ -403,7 +403,7 @@ export function initDomWalkerObservers(
         }
       }
       if (shouldRunDOMWalker) {
-        queueUpDomWalker()
+        queueUpDomWalker(null)
       }
     }
   })
