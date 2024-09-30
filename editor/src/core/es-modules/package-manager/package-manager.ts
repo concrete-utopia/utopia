@@ -185,7 +185,6 @@ export function getRequireFn(
         throw createResolvingRemoteDependencyError(toImport)
       }
     } else if (isResolveNotPresent(resolveResult)) {
-      // try with '/public' prefix, only if it doesnt include it already
       if (!isInPublicFolder(toImport)) {
         const publicResolveResult = resolveModuleFromPublic(
           projectContents,
