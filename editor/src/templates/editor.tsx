@@ -492,9 +492,9 @@ export class Editor {
         })
       }
 
-      const runDomWalker =
-        shouldRunDOMWalker(dispatchedActions, oldEditorState, this.storedState) &&
-        !this.temporarilyDisableStoreUpdates
+      const runDomWalker = this.temporarilyDisableStoreUpdates
+        ? 'dont-run'
+        : shouldRunDOMWalker(dispatchedActions, oldEditorState, this.storedState)
 
       // run the dom-walker
       if (runDomWalker !== 'dont-run') {
