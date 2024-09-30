@@ -32,7 +32,7 @@ const BestStrategy: CanvasStrategy = {
   icon: { category: 'tools', type: 'pointer' },
   controlsToRender: [],
   fitness: 10,
-  apply: () => strategyApplicationResult([]),
+  apply: () => strategyApplicationResult([], 'rerender-all-elements'),
 }
 
 const AverageStrategy: CanvasStrategy = {
@@ -42,7 +42,7 @@ const AverageStrategy: CanvasStrategy = {
   icon: { category: 'tools', type: 'pointer' },
   controlsToRender: [],
   fitness: 5,
-  apply: () => strategyApplicationResult([]),
+  apply: () => strategyApplicationResult([], 'rerender-all-elements'),
 }
 
 const WorstStrategy: CanvasStrategy = {
@@ -52,7 +52,7 @@ const WorstStrategy: CanvasStrategy = {
   icon: { category: 'tools', type: 'pointer' },
   controlsToRender: [],
   fitness: 1,
-  apply: () => strategyApplicationResult([]),
+  apply: () => strategyApplicationResult([], 'rerender-all-elements'),
 }
 
 const UnfitStrategy: CanvasStrategy = {
@@ -62,7 +62,7 @@ const UnfitStrategy: CanvasStrategy = {
   icon: { category: 'tools', type: 'pointer' },
   controlsToRender: [],
   fitness: 0,
-  apply: () => strategyApplicationResult([]),
+  apply: () => strategyApplicationResult([], 'rerender-all-elements'),
 }
 
 // Deliberately not in sorted order

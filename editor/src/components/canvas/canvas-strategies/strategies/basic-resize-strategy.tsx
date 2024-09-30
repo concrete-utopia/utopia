@@ -34,7 +34,7 @@ import { deleteProperties } from '../../commands/delete-properties-command'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { controlsForGridPlaceholders } from '../../controls/grid-controls'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
@@ -227,7 +227,6 @@ export function basicResizeStrategy(
             adjustCssLengthProperties('always', selectedElement, null, resizeProperties),
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-            setElementsToRerenderCommand(elementsToRerender),
             pushIntendedBoundsAndUpdateGroups(
               [{ target: selectedElement, frame: resizedBounds }],
               'starting-metadata',
@@ -248,12 +247,15 @@ export function basicResizeStrategy(
             )
           }
 
-          return strategyApplicationResult(commands)
+          return strategyApplicationResult(commands, elementsToRerender)
         } else {
-          return strategyApplicationResult([
-            updateHighlightedViews('mid-interaction', []),
-            setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-          ])
+          return strategyApplicationResult(
+            [
+              updateHighlightedViews('mid-interaction', []),
+              setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
+            ],
+            [],
+          )
         }
       }
       // Fallback for when the checks above are not satisfied.

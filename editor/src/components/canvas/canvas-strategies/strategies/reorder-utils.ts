@@ -13,7 +13,7 @@ import { absolute } from '../../../../utils/utils'
 import { CSSCursor } from '../../canvas-types'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import type {
   CustomStrategyState,
@@ -60,7 +60,12 @@ export function applyReorderCommon(
     const siblingsAndParent = siblings.concat(EP.parentPath(target))
 
     if (!isReorderAllowed(siblings)) {
-      return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)], {}, 'failure')
+      return strategyApplicationResult(
+        [setCursorCommand(CSSCursor.NotPermitted)],
+        [],
+        {},
+        'failure',
+      )
     }
 
     const pointOnCanvas = offsetPoint(
@@ -100,9 +105,9 @@ export function applyReorderCommon(
             { action: 'reorder', target: activeFrameTargetRect(targetFrame), source: sourceFrame },
           ]),
           updateHighlightedViews('mid-interaction', []),
-          setElementsToRerenderCommand(siblingsAndParent),
           setCursorCommand(CSSCursor.Move),
         ],
+        siblingsAndParent,
         {
           lastReorderIdx: newResultOrLastIndex,
         },
@@ -114,10 +119,10 @@ export function applyReorderCommon(
             { action: 'reorder', target: activeFrameTargetRect(targetFrame), source: sourceFrame },
           ]),
           reorderElement('always', target, absolute(newResultOrLastIndex)),
-          setElementsToRerenderCommand(siblingsAndParent),
           updateHighlightedViews('mid-interaction', []),
           setCursorCommand(CSSCursor.Move),
         ],
+        siblingsAndParent,
         {
           lastReorderIdx: newResultOrLastIndex,
         },
@@ -125,7 +130,7 @@ export function applyReorderCommon(
     }
   } else {
     // Fallback for when the checks above are not satisfied.
-    return strategyApplicationResult([setCursorCommand(CSSCursor.Move)])
+    return strategyApplicationResult([setCursorCommand(CSSCursor.Move)], 'rerender-all-elements')
   }
 }
 

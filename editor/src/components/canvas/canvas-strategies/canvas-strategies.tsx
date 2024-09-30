@@ -465,6 +465,19 @@ export function applyCanvasStrategy(
   return strategy.apply(strategyLifecycle)
 }
 
+export function applyElementsToRerenderFromStrategyResult(
+  editorState: EditorState,
+  strategyResult: StrategyApplicationResult,
+): EditorState {
+  return {
+    ...editorState,
+    canvas: {
+      ...editorState.canvas,
+      elementsToRerender: strategyResult.elementsToRerender,
+    },
+  }
+}
+
 export function useDelayedEditorState<T>(
   selector: StateSelector<EditorStorePatched, T | null>,
   selectorName: string,

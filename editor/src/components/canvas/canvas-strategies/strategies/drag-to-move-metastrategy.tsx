@@ -153,23 +153,26 @@ export function doNothingStrategy(canvasState: InteractionCanvasState): CanvasSt
     ],
     fitness: DoNothingFitness,
     apply: () => {
-      return strategyApplicationResult([
-        wildcardPatch('mid-interaction', {
-          canvas: {
-            controls: {
-              dragToMoveIndicatorFlags: {
-                $set: {
-                  showIndicator: true,
-                  dragType: 'none',
-                  reparent: 'none',
-                  ancestor: false,
+      return strategyApplicationResult(
+        [
+          wildcardPatch('mid-interaction', {
+            canvas: {
+              controls: {
+                dragToMoveIndicatorFlags: {
+                  $set: {
+                    showIndicator: true,
+                    dragType: 'none',
+                    reparent: 'none',
+                    ancestor: false,
+                  },
                 },
               },
             },
-          },
-        }),
-        setCursorCommand(CSSCursor.NotPermitted),
-      ])
+          }),
+          setCursorCommand(CSSCursor.NotPermitted),
+        ],
+        [],
+      )
     },
   }
 }

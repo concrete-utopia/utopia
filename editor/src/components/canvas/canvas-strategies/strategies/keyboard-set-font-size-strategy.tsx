@@ -79,7 +79,7 @@ export function keyboardSetFontSizeStrategy(
         ),
       )
 
-      return strategyApplicationResult(commands)
+      return strategyApplicationResult(commands, 'rerender-all-elements')
     },
   }
 }
