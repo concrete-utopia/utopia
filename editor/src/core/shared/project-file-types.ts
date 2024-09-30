@@ -640,13 +640,6 @@ export function isTextFile(projectFile: ProjectFile): projectFile is TextFile {
   return projectFile.type === 'TEXT_FILE'
 }
 
-export function asTextFile(projectFile: ProjectFile): TextFile | null {
-  if (isTextFile(projectFile)) {
-    return projectFile
-  }
-  return null
-}
-
 export function isParsedTextFile(projectFile: ProjectFile | null): projectFile is TextFile {
   return (
     projectFile != null && isTextFile(projectFile) && !isUnparsed(projectFile.fileContents.parsed)
