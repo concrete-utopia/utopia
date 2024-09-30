@@ -1,5 +1,6 @@
 import { renderTestEditorWithModel } from '../../components/canvas/ui-jsx.test-utils'
 import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
+import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../utils/utils.test-utils'
 import { wait } from '../model/performance-scripts'
 
 const Project = createModifiedProject({
@@ -84,6 +85,7 @@ export default Tailwind
 })
 
 describe('rendering tailwind projects in the editor', () => {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Tailwind', true)
   it('can render absolute positioning classes', async () => {
     const editor = await renderTestEditorWithModel(Project, 'await-first-dom-report')
 
