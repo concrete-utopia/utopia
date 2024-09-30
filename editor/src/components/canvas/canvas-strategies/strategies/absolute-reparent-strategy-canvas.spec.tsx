@@ -151,15 +151,11 @@ function reparentElement(
   expect(strategyResult.customStatePatch).toEqual({})
   expect(strategyResult.status).toEqual('success')
 
-  // Check if there are set SetElementsToRerenderCommands with the new parent path
   expect(
-    strategyResult.commands.find(
-      (c) =>
-        c.type === 'SET_ELEMENTS_TO_RERENDER_COMMAND' &&
-        c.value !== 'rerender-all-elements' &&
-        c.value.every((p) => EP.pathsEqual(EP.parentPath(p), newParent)),
-    ),
-  ).not.toBeNull()
+    strategyResult.elementsToRerender === 'rerender-all-elements'
+      ? []
+      : strategyResult.elementsToRerender.map(EP.parentPath),
+  ).toEqual([newParent])
 
   const finalEditor = foldAndApplyCommands(
     editorState,

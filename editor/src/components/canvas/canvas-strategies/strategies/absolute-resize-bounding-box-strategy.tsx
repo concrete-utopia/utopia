@@ -29,7 +29,7 @@ import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { activeFrameTargetRect, setActiveFrames } from '../../commands/set-active-frames-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { gatherParentAndSiblingTargets } from '../../controls/guideline-helpers'
@@ -141,7 +141,7 @@ export function absoluteResizeBoundingBoxStrategy(
       }),
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'RESIZE_HANDLE', 1),
-    apply: () => {
+    apply: (lifecycle) => {
       if (
         interactionSession != null &&
         interactionSession.interactionData.type === 'DRAG' &&
@@ -289,19 +289,24 @@ export function absoluteResizeBoundingBoxStrategy(
               ]
             })
 
-            return strategyApplicationResult([
-              ...commandsForSelectedElements,
-              setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
-              updateHighlightedViews('mid-interaction', []),
-              setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-              setElementsToRerenderCommand(retargetedTargets),
-            ])
+            return strategyApplicationResult(
+              [
+                ...commandsForSelectedElements,
+                setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
+                updateHighlightedViews('mid-interaction', []),
+                setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
+              ],
+              lifecycle === 'mid-interaction' ? retargetedTargets : 'rerender-all-elements',
+            )
           }
         } else {
-          return strategyApplicationResult([
-            setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
-            updateHighlightedViews('mid-interaction', []),
-          ])
+          return strategyApplicationResult(
+            [
+              setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
+              updateHighlightedViews('mid-interaction', []),
+            ],
+            [],
+          )
         }
       }
       // Fallback for when the checks above are not satisfied.
