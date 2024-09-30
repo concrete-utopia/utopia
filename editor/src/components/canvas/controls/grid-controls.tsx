@@ -1566,7 +1566,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
     const element = useEditorState(
       Substores.metadata,
       (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
-      'GridCellResizeControls element',
+      'GridResizeControls element',
     )
 
     const dispatch = useDispatch()
@@ -1574,7 +1574,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
     const scale = useEditorState(
       Substores.canvas,
       (store) => store.editor.canvas.scale,
-      'GridCellResizeControls scale',
+      'GridResizeControls scale',
     )
 
     const resizeControlRef = useRefEditorState((store) =>
