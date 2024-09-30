@@ -405,12 +405,25 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
     })
   }, [props.fromPropsAxisValues, resizingIndex])
 
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'GridResizing scale',
+  )
+
   if (props.axisValues == null) {
     return null
   }
   switch (props.axisValues.type) {
     case 'DIMENSIONS':
       const size = GRID_RESIZE_HANDLE_CONTAINER_SIZE / canvasScale
+      const dimensions = props.axisValues.dimensions
+
+      const hideControls = dimensions.some((dim) => {
+        const scaledSize = (dim.type === 'NUMBER' ? dim.value.value : 0) * scale
+        return scaledSize < GRID_RESIZE_HANDLE_SIZE
+      })
+
       return (
         <div
           style={{
@@ -422,11 +435,11 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
             display: 'grid',
             gridTemplateColumns:
               props.axis === 'column'
-                ? props.axisValues.dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
+                ? dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
                 : undefined,
             gridTemplateRows:
               props.axis === 'row'
-                ? props.axisValues.dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
+                ? dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
                 : undefined,
             gap: props.gap ?? 0,
             paddingLeft:
@@ -435,9 +448,10 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
                 : undefined,
             paddingTop:
               props.axis === 'row' && props.padding != null ? `${props.padding.top}px` : undefined,
+            visibility: hideControls ? 'hidden' : 'visible',
           }}
         >
-          {props.axisValues.dimensions.flatMap((dimension, dimensionIndex) => {
+          {dimensions.flatMap((dimension, dimensionIndex) => {
             return (
               <GridResizingControl
                 key={`grid-resizing-control-${dimensionIndex}`}
@@ -1552,7 +1566,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
     const element = useEditorState(
       Substores.metadata,
       (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
-      'GridResizeShadow element',
+      'GridCellResizeControls element',
     )
 
     const dispatch = useDispatch()
@@ -1560,7 +1574,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
     const scale = useEditorState(
       Substores.canvas,
       (store) => store.editor.canvas.scale,
-      'GridResizingControl scale',
+      'GridCellResizeControls scale',
     )
 
     const resizeControlRef = useRefEditorState((store) =>
