@@ -767,7 +767,6 @@ export function getMetadataWithGridCellBounds(
   path: ElementPath | null | undefined,
   startingMetadata: ElementInstanceMetadataMap,
   latestMetadata: ElementInstanceMetadataMap,
-  customStrategyState: CustomStrategyState,
 ): {
   metadata: ElementInstanceMetadata | null
   foundIn: 'startingMetadata' | 'latestMetadata' | 'strategyState' | null
@@ -787,14 +786,6 @@ export function getMetadataWithGridCellBounds(
       foundIn: 'startingMetadata',
     }
   }
-
-  // const fromStrategyState = customStrategyState.grid.metadataCacheForGrids[EP.toString(path)]
-  // if (fromStrategyState != null) {
-  //   return {
-  //     metadata: fromStrategyState,
-  //     foundIn: 'strategyState',
-  //   }
-  // }
 
   const fromLatestMetadata = MetadataUtils.findElementByElementPath(latestMetadata, path)
 
