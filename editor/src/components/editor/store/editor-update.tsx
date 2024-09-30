@@ -262,14 +262,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_PROJECT_NAME(action, state)
     case 'SET_PROJECT_DESCRIPTION':
       return UPDATE_FNS.SET_PROJECT_DESCRIPTION(action, state)
-    case 'UPDATE_PREVIEW_CONNECTED':
-      return UPDATE_FNS.UPDATE_PREVIEW_CONNECTED(action, state)
     case 'SHOW_CONTEXT_MENU':
       return UPDATE_FNS.SHOW_CONTEXT_MENU(action, state)
     case 'DUPLICATE_SPECIFIC_ELEMENTS':
       return UPDATE_FNS.DUPLICATE_SPECIFIC_ELEMENTS(action, state, dispatch)
-    case 'SEND_PREVIEW_MODEL':
-      return UPDATE_FNS.SEND_PREVIEW_MODEL(action, state)
     case 'UPDATE_FILE_PATH':
       return UPDATE_FNS.UPDATE_FILE_PATH(action, state, userState)
     case 'UPDATE_REMIX_ROUTE':
