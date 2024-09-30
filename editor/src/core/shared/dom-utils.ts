@@ -481,3 +481,32 @@ function hugPropertyFromStyleValue(
   }
   return hugProp
 }
+
+export function parseHtml(html: string): Document | null {
+  try {
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+    return doc
+  } catch (e) {
+    return null
+  }
+}
+
+export function getRootElement(doc: Document): Element | null {
+  const body = doc.body
+  if (body != null) {
+    return body.firstElementChild
+  }
+  return null
+}
+
+export function getMainScriptElement(doc: Document): Element | null {
+  const body = doc.body
+  if (body != null) {
+    const scriptElement = body.querySelector('script[type="module"]')
+    if (scriptElement != null) {
+      return scriptElement
+    }
+  }
+  return null
+}

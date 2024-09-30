@@ -1,22 +1,58 @@
-import { getProjectFileByFilePath, isProjectContentFile } from '../../../components/assets'
-import type { Imports } from '../../../core/shared/project-file-types'
-import {
-  forEachParseSuccess,
-  isEmptyImportDetails,
-  isTextFile,
-} from '../../../core/shared/project-file-types'
+import type { NodeModules } from '../shared/project-file-types'
+import type { FrameworkHooks } from './framework-hooks'
+import { getProjectFileByFilePath, isProjectContentFile } from '../../components/assets'
+import type { Imports } from '../shared/project-file-types'
+import { forEachParseSuccess, isEmptyImportDetails, isTextFile } from '../shared/project-file-types'
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
-import { getFilePathMappings } from '../project-file-utils'
-import type { ComponentToImport } from './storyboard-utils'
-import { namedComponentToImport, PossiblyMainComponentNames } from './storyboard-utils'
-import { mergeImports } from '../../../core/workers/common/project-file-utils'
-import { absolutePathFromRelativePath } from '../../../utils/path-utils'
+import { getFilePathMappings } from '../model/project-file-utils'
+import type {
+  ComponentToImport,
+  CreationDataFromProject,
+} from '../model/project-import/storyboard-utils'
+import {
+  namedComponentToImport,
+  PossiblyMainComponentNames,
+} from '../model/project-import/storyboard-utils'
+import { mergeImports } from '../workers/common/project-file-utils'
+import { absolutePathFromRelativePath } from '../../utils/path-utils'
+import type { FileLookupResult } from '../es-modules/package-manager/module-resolution'
+import { isResolveSuccess, resolveModule } from '../es-modules/package-manager/module-resolution'
+import { getMainScriptElement, getRootElement, parseHtml } from '../shared/dom-utils'
 
-export interface CreationDataFromProject {
-  maybeRootElementId?: string
-  maybeRootElementClass?: string
-  componentsToImport: ComponentToImport[]
-  extraImports: Imports
+export class ViteFrameworkHooks implements FrameworkHooks {
+  detect(projectContents: ProjectContentTreeRoot): boolean {
+    return hasViteConfig(projectContents)
+  }
+
+  onProjectImport(projectContents: ProjectContentTreeRoot): CreationDataFromProject | null {
+    return getCreationDataFromProject(projectContents)
+  }
+
+  onResolveModuleNotPresent(
+    projectContents: ProjectContentTreeRoot,
+    nodeModules: NodeModules,
+    importOrigin: string,
+    toImport: string,
+  ): string | null {
+    if (isInRootPath(toImport)) {
+      const publicResolveResult = resolveModuleFromPublicDir(
+        projectContents,
+        nodeModules,
+        importOrigin,
+        toImport,
+      )
+      if (isResolveSuccess(publicResolveResult)) {
+        return publicResolveResult.success.path
+      }
+    }
+    return null
+  }
+}
+
+const configFileNames = ['vite.config.ts', 'vite.config.js', 'vite.config.mjs']
+
+function hasViteConfig(projectContents: ProjectContentTreeRoot): boolean {
+  return configFileNames.some((fileName) => projectContents[fileName] != null)
 }
 
 export function getCreationDataFromProject(
@@ -24,7 +60,7 @@ export function getCreationDataFromProject(
 ): CreationDataFromProject {
   const componentsToImport: ComponentToImport[] = []
   let extraImports: Imports = {}
-  const creationDataFromHtml = getCreationDataFromIndexHtmlFile(projectContents)
+  const creationDataFromHtml = extractCreationDataFromMainHtmlFile(projectContents)
   if (creationDataFromHtml.maybeMainScriptFilePath != null) {
     const mainScriptFile = getProjectFileByFilePath(
       projectContents,
@@ -95,12 +131,15 @@ export function getCreationDataFromProject(
   }
 }
 
-function getCreationDataFromIndexHtmlFile(projectContents: ProjectContentTreeRoot): {
+// TODO: read from vite config
+const MAIN_HTML_FILE_NAME = 'index.html'
+
+function extractCreationDataFromMainHtmlFile(projectContents: ProjectContentTreeRoot): {
   maybeRootElementId?: string
   maybeRootElementClass?: string
   maybeMainScriptFilePath?: string
 } {
-  const indexHtmlFile = projectContents['index.html']
+  const indexHtmlFile = projectContents[MAIN_HTML_FILE_NAME]
   if (
     indexHtmlFile != null &&
     isProjectContentFile(indexHtmlFile) &&
@@ -121,31 +160,20 @@ function getCreationDataFromIndexHtmlFile(projectContents: ProjectContentTreeRoo
   return {}
 }
 
-function parseHtml(html: string): Document | null {
-  try {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(html, 'text/html')
-    return doc
-  } catch (e) {
-    return null
-  }
+// TODO: read from vite config
+const PUBLIC_FOLDER_PATH = 'public'
+
+function isInRootPath(toImport: string, publicDir: string = PUBLIC_FOLDER_PATH): boolean {
+  return toImport.startsWith('/') && !toImport.startsWith(`/${publicDir}/`)
 }
 
-function getRootElement(doc: Document): Element | null {
-  const body = doc.body
-  if (body != null) {
-    return body.firstElementChild
-  }
-  return null
-}
-
-function getMainScriptElement(doc: Document): Element | null {
-  const body = doc.body
-  if (body != null) {
-    const scriptElements = body.querySelectorAll('script[type="module"]')
-    if (scriptElements.length > 0) {
-      return scriptElements[0]
-    }
-  }
-  return null
+function resolveModuleFromPublicDir(
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  importOrigin: string,
+  toImport: string,
+  publicDir: string = PUBLIC_FOLDER_PATH,
+): FileLookupResult {
+  const publicPath = `/${publicDir}/${toImport}`.replace('//', '/').replace('/./', '/')
+  return resolveModule(projectContents, nodeModules, importOrigin, publicPath)
 }

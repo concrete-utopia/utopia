@@ -103,7 +103,7 @@ interface FoundFile {
   file: ESCodeFile | ESRemoteDependencyPlaceholder
 }
 
-type FileLookupResult = ResolveResult<FoundFile>
+export type FileLookupResult = ResolveResult<FoundFile>
 
 function fileLookupResult(
   path: string,
@@ -546,24 +546,4 @@ export function resolveModulePathIncludingBuiltIns(
     }
   }
   return resolveModulePath(projectContents, nodeModules, importOrigin, toImport)
-}
-
-const PUBLIC_FOLDER_PATH = 'public'
-
-export function isInPublicFolder(
-  toImport: string,
-  publicDir: string = PUBLIC_FOLDER_PATH,
-): boolean {
-  return toImport.startsWith(`/${publicDir}/`)
-}
-
-export function resolveModuleFromPublic(
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  importOrigin: string,
-  toImport: string,
-  publicDir: string = PUBLIC_FOLDER_PATH,
-): FileLookupResult {
-  const publicPath = `/${publicDir}/${toImport}`.replace('//', '/').replace('/./', '/')
-  return resolveModule(projectContents, nodeModules, importOrigin, publicPath)
 }

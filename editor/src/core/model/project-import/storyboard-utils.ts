@@ -1,3 +1,4 @@
+import { getFrameworkHooks } from '../../frameworks/framework-hooks'
 import type { ProjectContentTreeRoot } from '../../../components/assets'
 import {
   addFileToProjectContents,
@@ -13,8 +14,13 @@ import {
   compareOn,
   comparePrimitive,
 } from '../../../utils/compare'
-import type { JSXElement } from '../../shared/element-template'
-import { emptyComments, unparsedCode, utopiaJSXComponent } from '../../shared/element-template'
+import type { JSExpression, JSXElement } from '../../shared/element-template'
+import {
+  emptyComments,
+  jsExpressionValue,
+  unparsedCode,
+  utopiaJSXComponent,
+} from '../../shared/element-template'
 import { forceNotNull } from '../../shared/optional-utils'
 import type { Imports, ParseSuccess } from '../../shared/project-file-types'
 import {
@@ -38,8 +44,7 @@ import {
   createSceneFromComponent,
   createStoryboardElement,
 } from '../scene-utils'
-import type { CreationDataFromProject } from './project-import-utils'
-import { getCreationDataFromProject } from './project-import-utils'
+import type { MapLike } from 'typescript'
 
 export const PossiblyMainComponentNames: Array<string> = ['App', 'Application', 'Main']
 
@@ -98,18 +103,28 @@ function unexportedRenderedComponent(
 type StoryboardCreationData = {
   componentToImport: ComponentToImport
   imports: Imports
-  storyboardClassName: string
+  sceneClassName?: string
+  sceneId?: string
+}
+
+export interface CreationDataFromProject {
+  maybeRootElementId?: string
+  maybeRootElementClass?: string
+  componentsToImport: ComponentToImport[]
+  extraImports: Imports
 }
 
 function createStoryboardCreationData(
   componentToImport: ComponentToImport,
   imports: Imports,
-  storyboardClassName: string,
+  sceneClassName?: string,
+  sceneId?: string,
 ): StoryboardCreationData {
   return {
     componentToImport: componentToImport,
     imports: imports,
-    storyboardClassName: storyboardClassName,
+    sceneClassName: sceneClassName,
+    sceneId: sceneId,
   }
 }
 
@@ -173,6 +188,7 @@ const compareComponentToImport: Compare<ComponentToImport> = compareCompose(
 export function addStoryboardFileToProject(
   projectContents: ProjectContentTreeRoot,
 ): ProjectContentTreeRoot | null {
+  const frameworkHooks = getFrameworkHooks(projectContents)
   const storyboardFile = getProjectFileByFilePath(projectContents, StoryboardFilePath)
   if (storyboardFile == null) {
     let currentImportCandidate: ComponentToImport | null = null
@@ -186,11 +202,14 @@ export function addStoryboardFileToProject(
         }
       }
     }
-    const creationData: CreationDataFromProject = getCreationDataFromProject(projectContents)
-    creationData.componentsToImport.forEach((componentToImport) => {
-      updateCandidate(componentToImport)
-    })
-    imports = mergeImports(StoryboardFilePath, [], imports, creationData.extraImports).imports
+    const creationData: CreationDataFromProject | null =
+      frameworkHooks.onProjectImport(projectContents)
+    if (creationData != null) {
+      creationData.componentsToImport.forEach((componentToImport) => {
+        updateCandidate(componentToImport)
+      })
+      imports = mergeImports(StoryboardFilePath, [], imports, creationData.extraImports).imports
+    }
     walkContentsTree(projectContents, (fullPath, file) => {
       if (isParsedTextFile(file)) {
         // For those successfully parsed files, we want to search all of the components.
@@ -290,7 +309,12 @@ export function addStoryboardFileToProject(
       return null
     } else {
       return addStoryboardFile(
-        createStoryboardCreationData(currentImportCandidate, imports, 'storyboard'),
+        createStoryboardCreationData(
+          currentImportCandidate,
+          imports,
+          creationData?.maybeRootElementClass,
+          creationData?.maybeRootElementId,
+        ),
         projectContents,
       )
     }
@@ -318,12 +342,20 @@ function addStoryboardFile(
   // Create the storyboard variable.
   let sceneElement: JSXElement
   let updatedProjectContents: ProjectContentTreeRoot = projectContents
+  const sceneId = storyboardCreationData.sceneId
+  const sceneAttributes: MapLike<JSExpression> =
+    sceneId != null
+      ? {
+          id: jsExpressionValue(sceneId, emptyComments),
+        }
+      : {}
   switch (componentToImport.type) {
     case 'NAMED_COMPONENT_TO_IMPORT':
       sceneElement = createSceneFromComponent(
         StoryboardFilePath,
         componentToImport.toImportAlias ?? componentToImport.toImport,
         'scene-1',
+        sceneAttributes,
       )
       importsResolution = addImport(
         StoryboardFilePath,
@@ -336,7 +368,12 @@ function addStoryboardFile(
       )
       break
     case 'DEFAULT_COMPONENT_TO_IMPORT':
-      sceneElement = createSceneFromComponent(StoryboardFilePath, 'StoryboardComponent', 'scene-1')
+      sceneElement = createSceneFromComponent(
+        StoryboardFilePath,
+        'StoryboardComponent',
+        'scene-1',
+        sceneAttributes,
+      )
       importsResolution = addImport(
         StoryboardFilePath,
         [],
@@ -352,6 +389,7 @@ function addStoryboardFile(
         StoryboardFilePath,
         componentToImport.elementName,
         'scene-1',
+        sceneAttributes,
       )
       importsResolution = addImport(
         StoryboardFilePath,
