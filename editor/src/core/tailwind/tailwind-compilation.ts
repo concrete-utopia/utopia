@@ -14,8 +14,6 @@ import { importDefault } from '../es-modules/commonjs-interop'
 import { rescopeCSSToTargetCanvasOnly } from '../shared/css-utils'
 import type { RequireFn } from '../shared/npm-dependency-types'
 import { TailwindConfigPath } from './tailwind-config'
-import { createSelector } from 'reselect'
-import type { ProjectContentSubstate } from '../../components/editor/store/store-hook-substore-types'
 import { ElementsToRerenderGLOBAL } from '../../components/canvas/ui-jsx-canvas'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
@@ -64,15 +62,10 @@ function generateTailwindClasses(projectContents: ProjectContentTreeRoot, requir
   void generateTailwindStyles(tailwindCss, allCSSFiles)
 }
 
-const projectContentsSelector = createSelector(
-  (store: ProjectContentSubstate) => store.editor.projectContents,
-  (projectContents: ProjectContentTreeRoot) => projectContents,
-)
-
 export const useTailwindCompilation = (requireFn: RequireFn) => {
   const projectContents = useEditorState(
     Substores.projectContents,
-    projectContentsSelector,
+    (store) => store.editor.projectContents,
     'useTailwindCompilation projectContents',
   )
 
