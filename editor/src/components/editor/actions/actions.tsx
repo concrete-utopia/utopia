@@ -6591,6 +6591,9 @@ function removeErrorMessagesForFile(editor: EditorState, filename: string): Edit
 function alignFlexOrGridChildren(editor: EditorState, views: ElementPath[], alignment: Alignment) {
   let workingEditorState = { ...editor }
   for (const view of views) {
+    // When updating alongside the given alignment, also update the opposite one so that it makes sense:
+    // For example, if alignment is 'alignSelf', delete the 'justifySelf' if currently set to stretch and, if so,
+    // set the explicit height of the element (and vice versa for 'justifySelf').
     function updateOpposite(
       editorState: EditorState,
       frame: MaybeInfinityCanvasRectangle | null,
