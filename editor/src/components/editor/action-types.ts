@@ -295,7 +295,7 @@ export type SetZIndex = {
 export type TransientActions = {
   action: 'TRANSIENT_ACTIONS'
   transientActions: Array<EditorAction>
-  elementsToRerender: Array<ElementPath> | 'rerender-all-elements'
+  elementsToRerender: Array<ElementPath>
 }
 
 // This is a wrapper action which changes the undo behavior for the included actions.
