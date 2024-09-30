@@ -445,7 +445,7 @@ function reducerToSplitToActionGroups(
       [[]],
     )
     const wrappedTransientActionGroups = transientActionGroups.map((actionGroup) => [
-      EditorActions.transientActions(actionGroup),
+      EditorActions.transientActions(actionGroup, currentAction.elementsToRerender),
     ])
     return [...actionGroups, ...wrappedTransientActionGroups]
   } else if (i > 0 && actions[i - 1].action === 'CLEAR_INTERACTION_SESSION') {
