@@ -5767,7 +5767,11 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const canvasState = pickCanvasStateFromEditorState(editor, builtInDependencies)
+    const canvasState = pickCanvasStateFromEditorState(
+      editor.selectedViews,
+      editor,
+      builtInDependencies,
+    )
     if (areAllSelectedElementsNonAbsolute(action.targets, editor.jsxMetadata)) {
       const commands = getEscapeHatchCommands(
         action.targets,

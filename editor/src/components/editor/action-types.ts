@@ -1446,6 +1446,9 @@ export type DispatchPriority =
   | 'topmenu'
   | 'contextmenu'
   | 'noone'
+  | 'canvas-fast-selection-hack'
+  | 'resume-canvas-fast-selection-hack'
+
 export type EditorDispatch = (
   actions: ReadonlyArray<EditorAction>,
   priority?: DispatchPriority,

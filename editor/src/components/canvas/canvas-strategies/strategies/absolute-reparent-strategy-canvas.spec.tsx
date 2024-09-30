@@ -133,6 +133,7 @@ function reparentElement(
   }
 
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
+    editorState.selectedViews,
     editorState,
     createBuiltInDependenciesList(null),
     startingMetadata,

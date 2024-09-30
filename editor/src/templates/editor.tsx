@@ -424,12 +424,24 @@ export class Editor {
     )
   }
 
+  // This is used to temporarily disable updates to the store, for example when we are in the middle of a fast selection hack
+  temporarilyDisableStoreUpdates = false
+
   boundDispatch = (
     dispatchedActions: readonly EditorAction[],
     priority?: DispatchPriority,
   ): {
     entireUpdateFinished: Promise<any>
   } => {
+    if (
+      priority === 'canvas-fast-selection-hack' &&
+      isFeatureEnabled('Canvas Fast Selection Hack')
+    ) {
+      this.temporarilyDisableStoreUpdates = true
+    } else if (priority === 'resume-canvas-fast-selection-hack') {
+      this.temporarilyDisableStoreUpdates = false
+    }
+
     resetDomSamplerExecutionCounts()
     const Measure = createPerformanceMeasure()
     Measure.logActions(dispatchedActions)
@@ -463,7 +475,8 @@ export class Editor {
 
       const shouldUpdateCanvasStore =
         !dispatchResult.nothingChanged &&
-        !anyCodeAhead(dispatchResult.unpatchedEditor.projectContents)
+        !anyCodeAhead(dispatchResult.unpatchedEditor.projectContents) &&
+        !this.temporarilyDisableStoreUpdates
 
       const updateId = canvasUpdateId++
       if (shouldUpdateCanvasStore) {
@@ -482,7 +495,9 @@ export class Editor {
         })
       }
 
-      const runDomWalker = shouldRunDOMWalker(dispatchedActions, oldEditorState, this.storedState)
+      const runDomWalker =
+        shouldRunDOMWalker(dispatchedActions, oldEditorState, this.storedState) &&
+        !this.temporarilyDisableStoreUpdates
 
       // run the dom-walker
       if (runDomWalker) {
@@ -603,7 +618,8 @@ export class Editor {
               shouldUpdateLowPriorityUI(
                 this.storedState.strategyState,
                 ElementsToRerenderGLOBAL.current,
-              )
+              ) &&
+              !this.temporarilyDisableStoreUpdates
             ) {
               Measure.taskTime(`Update Low Prio Store ${updateId}`, () => {
                 this.lowPriorityStore.setState(
