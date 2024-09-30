@@ -16,6 +16,7 @@ import type { RequireFn } from '../shared/npm-dependency-types'
 import { TailwindConfigPath } from './tailwind-config'
 import { createSelector } from 'reselect'
 import type { ProjectContentSubstate } from '../../components/editor/store/store-hook-substore-types'
+import { ElementsToRerenderGLOBAL } from '../../components/canvas/ui-jsx-canvas'
 
 const TAILWIND_INSTANCE: { current: Tailwindcss | null } = { current: null }
 
@@ -79,7 +80,10 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
   )
 
   const observerCallback = React.useCallback(() => {
-    if (isInteractionActiveRef.current) {
+    if (
+      isInteractionActiveRef.current ||
+      ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' // implies that an
+    ) {
       return
     }
     generateTailwindClasses(projectContents, requireFn)
