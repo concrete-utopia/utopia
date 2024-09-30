@@ -46,7 +46,6 @@ import type { ReparentTarget } from './reparent-helpers/reparent-strategy-helper
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { flattenSelection } from './shared-move-strategies-helpers'
 import { getGridCellUnderMouseFromMetadata, type GridCellCoordinates } from './grid-cell-bounds'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 
 export function gridReparentStrategy(
   reparentTarget: ReparentTarget,
@@ -270,8 +269,8 @@ export function applyGridReparent(
             updateSelectedViews('always', newPaths),
             setCursorCommand(CSSCursor.Reparent),
             showGridControls('mid-interaction', reparentTarget.newParent.intendedParentPath),
-            setElementsToRerenderCommand(elementsToRerender),
           ],
+          elementsToRerender,
           customStrategyStatePatch,
         )
       },

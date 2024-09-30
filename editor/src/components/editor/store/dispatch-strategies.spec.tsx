@@ -157,9 +157,10 @@ const testStrategy: MetaCanvasStrategy = (
     controlsToRender: [],
     fitness: 10,
     apply: function (): StrategyApplicationResult {
-      return strategyApplicationResult([
-        wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
-      ])
+      return strategyApplicationResult(
+        [wildcardPatch('always', { canvas: { scale: { $set: 100 } } })],
+        'rerender-all-elements',
+      )
     },
     descriptiveLabel: 'A Test Strategy',
     icon: {
@@ -992,7 +993,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
             },
             apply: function (): StrategyApplicationResult {
               if (interactionSession == null) {
-                return strategyApplicationResult([])
+                return strategyApplicationResult([], 'rerender-all-elements')
               }
               expect(canvasState.startingMetadata).not.toBe(interactionSession.latestMetadata)
               expect(canvasState.startingAllElementProps).not.toBe(
@@ -1019,7 +1020,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
                   .backgroundColor,
               ).toBeDefined()
               testStrategyRan = true
-              return strategyApplicationResult([])
+              return strategyApplicationResult([], 'rerender-all-elements')
             },
           },
         ],

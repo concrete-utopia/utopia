@@ -4,7 +4,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { CSSCursor } from '../../../../uuiui-deps'
 import { duplicateElement } from '../../commands/duplicate-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { controlsForGridPlaceholders } from '../../controls/grid-controls'
@@ -93,11 +93,11 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
         [
           duplicateElement('always', selectedElement, newUid),
           ...moveCommands,
-          setElementsToRerenderCommand([...selectedElements, targetElement]),
           updateSelectedViews('always', [targetElement]),
           updateHighlightedViews('always', [targetElement]),
           setCursorCommand(CSSCursor.Duplicate),
         ],
+        [...selectedElements, targetElement],
         {
           grid: {
             ...customState.grid,

@@ -249,7 +249,12 @@ export function ifAllowedToReparent(
   if (allowed) {
     return ifAllowed()
   } else {
-    return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)], {}, 'failure')
+    return strategyApplicationResult(
+      [setCursorCommand(CSSCursor.NotPermitted)],
+      'rerender-all-elements',
+      {},
+      'failure',
+    )
   }
 }
 

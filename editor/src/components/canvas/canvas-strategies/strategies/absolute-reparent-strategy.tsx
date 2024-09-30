@@ -13,7 +13,7 @@ import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { CSSCursor } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { setProperty } from '../../commands/set-property-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { ParentBounds } from '../../controls/parent-bounds'
@@ -217,7 +217,6 @@ export function applyAbsoluteReparent(
               ...moveCommands,
               ...commands.flatMap((c) => c.commands),
               updateSelectedViews('always', newPaths),
-              setElementsToRerenderCommand(elementsToRerender),
               ...maybeAddContainLayout(
                 canvasState.startingMetadata,
                 canvasState.startingAllElementProps,
@@ -226,6 +225,7 @@ export function applyAbsoluteReparent(
               ),
               setCursorCommand(CSSCursor.Reparent),
             ],
+            elementsToRerender,
             {
               elementsToRerender,
             },
@@ -236,7 +236,7 @@ export function applyAbsoluteReparent(
               ...defaultCustomStrategyState(),
               action: 'reparent',
             })?.strategy.apply(strategyLifecycle).commands ?? []
-          return strategyApplicationResult(moveCommands)
+          return strategyApplicationResult(moveCommands, 'rerender-all-elements')
         }
       },
     )
