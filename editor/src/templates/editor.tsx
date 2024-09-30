@@ -479,20 +479,29 @@ export class Editor {
         !this.temporarilyDisableStoreUpdates
 
       const updateId = canvasUpdateId++
+      const currentElementsToRender = fixElementsToRerender(
+        this.storedState.patchedEditor.canvas.elementsToRerender,
+        dispatchedActions,
+      )
       if (shouldUpdateCanvasStore) {
         // this will re-render the canvas root and potentially the canvas contents itself
-        Measure.taskTime(`update canvas ${updateId}`, () => {
-          const currentElementsToRender = fixElementsToRerender(
-            this.storedState.patchedEditor.canvas.elementsToRerender,
-            dispatchedActions,
-          )
-          ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
-          ReactDOM.flushSync(() => {
-            ReactDOM.unstable_batchedUpdates(() => {
-              this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
+        Measure.taskTime(
+          `update canvas ${updateId} - elementsToRerender ${
+            currentElementsToRender === 'rerender-all-elements'
+              ? 'rerender-all-elements'
+              : currentElementsToRender.length
+          }`,
+          () => {
+            ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
+            ReactDOM.flushSync(() => {
+              ReactDOM.unstable_batchedUpdates(() => {
+                this.canvasStore.setState(
+                  patchedStoreFromFullStore(this.storedState, 'canvas-store'),
+                )
+              })
             })
-          })
-        })
+          },
+        )
       }
 
       const runDomWalker =
@@ -605,47 +614,54 @@ export class Editor {
         reactRouterErrorPreviouslyLogged,
       )
 
-      Measure.taskTime(`Update Editor ${updateId}`, () => {
-        ReactDOM.flushSync(() => {
-          ReactDOM.unstable_batchedUpdates(() => {
-            Measure.taskTime(`Update Main Store ${updateId}`, () => {
-              this.utopiaStoreHook.setState(
-                patchedStoreFromFullStore(this.storedState, 'editor-store'),
-              )
-            })
-
-            if (
-              shouldUpdateLowPriorityUI(
-                this.storedState.strategyState,
-                ElementsToRerenderGLOBAL.current,
-              ) &&
-              !this.temporarilyDisableStoreUpdates
-            ) {
-              Measure.taskTime(`Update Low Prio Store ${updateId}`, () => {
-                this.lowPriorityStore.setState(
-                  patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
+      Measure.taskTime(
+        `Update Editor ${updateId} - elementsToRerender ${
+          currentElementsToRender === 'rerender-all-elements'
+            ? 'rerender-all-elements'
+            : currentElementsToRender.length
+        }`,
+        () => {
+          ReactDOM.flushSync(() => {
+            ReactDOM.unstable_batchedUpdates(() => {
+              Measure.taskTime(`Update Main Store ${updateId}`, () => {
+                this.utopiaStoreHook.setState(
+                  patchedStoreFromFullStore(this.storedState, 'editor-store'),
                 )
               })
-            }
-            if (MeasureSelectors) {
-              logSelectorTimings('store update phase')
-            }
-            if (PerformanceMarks) {
-              performance.mark(`react wrap up ${updateId}`)
-            }
 
-            // reset selector timings right before the end of flushSync means we'll capture the re-render related selector data with a clean slate
-            resetSelectorTimings()
+              if (
+                shouldUpdateLowPriorityUI(
+                  this.storedState.strategyState,
+                  ElementsToRerenderGLOBAL.current,
+                ) &&
+                !this.temporarilyDisableStoreUpdates
+              ) {
+                Measure.taskTime(`Update Low Prio Store ${updateId}`, () => {
+                  this.lowPriorityStore.setState(
+                    patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
+                  )
+                })
+              }
+              if (MeasureSelectors) {
+                logSelectorTimings('store update phase')
+              }
+              if (PerformanceMarks) {
+                performance.mark(`react wrap up ${updateId}`)
+              }
 
-            if (PerformanceMarks) {
-              performance.measure(
-                `Our Components Rendering + React Doing Stuff`,
-                `react wrap up ${updateId}`,
-              )
-            }
+              // reset selector timings right before the end of flushSync means we'll capture the re-render related selector data with a clean slate
+              resetSelectorTimings()
+
+              if (PerformanceMarks) {
+                performance.measure(
+                  `Our Components Rendering + React Doing Stuff`,
+                  `react wrap up ${updateId}`,
+                )
+              }
+            })
           })
-        })
-      })
+        },
+      )
 
       return {
         entireUpdateFinished: entireUpdateFinished,
