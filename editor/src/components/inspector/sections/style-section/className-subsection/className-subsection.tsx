@@ -221,7 +221,7 @@ const ClassNameControl = React.memo(() => {
     isFocusedRef.current = true
   }, [])
 
-  const options = useFilteredOptions(filter, 100, clearFocusedOption)
+  const options = useFilteredOptions(filter, 100)
 
   React.useEffect(() => {
     return function cleanup() {

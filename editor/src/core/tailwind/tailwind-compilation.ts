@@ -15,8 +15,6 @@ import { rescopeCSSToTargetCanvasOnly } from '../shared/css-utils'
 import type { RequireFn } from '../shared/npm-dependency-types'
 import { TailwindConfigPath } from './tailwind-config'
 import { memoize } from '../shared/memoize'
-import { isFeatureEnabled } from '../../utils/feature-switches'
-import { PERFORMANCE_MARKS_ALLOWED } from '../../common/env-vars'
 import { equalityFnForProjectContents } from '../shared/project-contents-utils'
 
 const TAILWIND_INSTANCE: { current: Tailwindcss | null } = { current: null }
