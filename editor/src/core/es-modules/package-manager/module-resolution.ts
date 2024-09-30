@@ -92,6 +92,12 @@ export function isResolveSuccess<T>(
   return resolveResult.type === 'RESOLVE_SUCCESS'
 }
 
+export function isResolveNotPresent<T>(
+  resolveResult: ResolveResult<T>,
+): resolveResult is ResolveNotPresent {
+  return resolveResult.type === 'RESOLVE_NOT_PRESENT'
+}
+
 interface FoundFile {
   path: string
   file: ESCodeFile | ESRemoteDependencyPlaceholder
@@ -540,4 +546,24 @@ export function resolveModulePathIncludingBuiltIns(
     }
   }
   return resolveModulePath(projectContents, nodeModules, importOrigin, toImport)
+}
+
+const PUBLIC_FOLDER_PATH = 'public'
+
+export function isInPublicFolder(
+  toImport: string,
+  publicDir: string = PUBLIC_FOLDER_PATH,
+): boolean {
+  return toImport.startsWith(`/${publicDir}/`)
+}
+
+export function resolveModuleFromPublic(
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  importOrigin: string,
+  toImport: string,
+  publicDir: string = PUBLIC_FOLDER_PATH,
+): FileLookupResult {
+  const publicPath = `/${publicDir}/${toImport}`.replace('//', '/').replace('/./', '/')
+  return resolveModule(projectContents, nodeModules, importOrigin, publicPath)
 }

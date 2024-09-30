@@ -2,9 +2,12 @@ import type { NodeModules, ESCodeFile } from '../../shared/project-file-types'
 import { isEsCodeFile, isEsRemoteDependencyPlaceholder } from '../../shared/project-file-types'
 import type { RequireFn, TypeDefinitions } from '../../shared/npm-dependency-types'
 import {
+  isInPublicFolder,
+  isResolveNotPresent,
   isResolveSuccess,
   isResolveSuccessIgnoreModule,
   resolveModule,
+  resolveModuleFromPublic,
   resolveModulePath,
 } from './module-resolution'
 import { evaluator } from '../evaluator/evaluator'
@@ -180,6 +183,19 @@ export function getRequireFn(
         }
 
         throw createResolvingRemoteDependencyError(toImport)
+      }
+    } else if (isResolveNotPresent(resolveResult)) {
+      // try with '/public' prefix, only if it doesnt include it already
+      if (!isInPublicFolder(toImport)) {
+        const publicResolveResult = resolveModuleFromPublic(
+          projectContents,
+          nodeModules,
+          importOrigin,
+          toImport,
+        )
+        if (isResolveSuccess(publicResolveResult)) {
+          return require(importOrigin, publicResolveResult.success.path)
+        }
       }
     }
     throw createDependencyNotFoundError(importOrigin, toImport)
