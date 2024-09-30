@@ -7,7 +7,7 @@ import { StoryboardFilePath } from '../../editor/store/editor-state'
 
 async function renderRemixProject(project: PersistentModel) {
   const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
-  await renderResult.dispatch([runDOMWalker()], true)
+  await renderResult.dispatch([runDOMWalker(null)], true)
   return renderResult
 }
 

@@ -1261,9 +1261,10 @@ export function updateMetadataInEditorState(
   }
 }
 
-export function runDOMWalker(): RunDOMWalker {
+export function runDOMWalker(restrictToElements: Array<ElementPath> | null): RunDOMWalker {
   return {
     action: 'RUN_DOM_WALKER',
+    restrictToElements: restrictToElements,
   }
 }
 

@@ -83,7 +83,7 @@ export var Playground = ({ style }) => {
       'await-first-dom-report',
     )
 
-    await editor.dispatch([runDOMWalker()], true)
+    await editor.dispatch([runDOMWalker(null)], true)
 
     matchInlineSnapshotBrowser(
       Object.keys(editor.getEditorState().editor.jsxMetadata),
@@ -587,7 +587,7 @@ export var storyboard = (
     )
 
     await selectComponentsForTest(editor, [EP.fromString('storyboard/scene/grid')])
-    await editor.dispatch([runDOMWalker()], true)
+    await editor.dispatch([runDOMWalker(null)], true)
 
     // non-grids don't have cell measurements:
     expect(

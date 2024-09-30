@@ -332,10 +332,10 @@ export function initDomWalkerObservers(
   gridControlObserver: MutationObserver
 } {
   let domWalkerTimeoutID: number | null = null
-  function queueUpDomWalker(): void {
+  function queueUpDomWalker(restrictToElements?: Array<ElementPath> | null): void {
     if (domWalkerTimeoutID == null) {
       domWalkerTimeoutID = window.setTimeout(() => {
-        dispatch([runDOMWalker()])
+        dispatch([runDOMWalker(restrictToElements)])
         domWalkerTimeoutID = null
       })
     }
@@ -409,20 +409,19 @@ export function initDomWalkerObservers(
   })
 
   const gridControlObserver = new window.MutationObserver((mutations: MutationRecord[]) => {
-    let shouldRunDOMWalker = false
+    let shouldRunDOMWalkerOnPath = null
     mutations.forEach((mutation) => {
       if (mutation.target instanceof HTMLElement) {
         for (const child of mutation.target.children) {
           const gridPath = child.getAttribute('data-grid-path')
           if (gridPath != null) {
-            shouldRunDOMWalker = true
-            domWalkerMutableState.invalidatedPaths.add(gridPath)
+            shouldRunDOMWalkerOnPath = EP.fromString(gridPath)
           }
         }
       }
     })
-    if (shouldRunDOMWalker) {
-      queueUpDomWalker()
+    if (shouldRunDOMWalkerOnPath != null) {
+      queueUpDomWalker([shouldRunDOMWalkerOnPath])
     }
   })
 
@@ -891,7 +890,12 @@ function getSpecialMeasurements(
 
   const gridCellGlobalFrames =
     layoutSystemForChildren === 'grid'
-      ? getGlobalFramesOfGridCells(element, scale, containerRectLazy, elementCanvasRectangleCache)
+      ? measureGlobalFramesOfGridCellsFromControl(
+          element,
+          scale,
+          containerRectLazy,
+          elementCanvasRectangleCache,
+        )
       : null
 
   const containerElementProperties = getGridElementProperties(
@@ -1015,7 +1019,7 @@ function getClosestOffsetParent(element: HTMLElement): Element | null {
   return null
 }
 
-function getGlobalFramesOfGridCells(
+function measureGlobalFramesOfGridCellsFromControl(
   grid: HTMLElement,
   scale: number,
   containerRectLazy: CanvasPoint | (() => CanvasPoint),

@@ -21,6 +21,7 @@ import type {
   DispatchPriority,
   EditorAction,
   EditorDispatch,
+  RunDOMWalker,
 } from '../components/editor/action-types'
 import { actionActionsOptic, isLoggedIn } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
@@ -105,7 +106,7 @@ import * as EP from '../core/shared/element-path'
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import type { ElementPath } from '../core/shared/project-file-types'
-import { mapDropNulls, uniqBy } from '../core/shared/array-utils'
+import { uniq, uniqBy } from '../core/shared/array-utils'
 import { updateUserDetailsWhenAuthenticated } from '../core/shared/github/helpers'
 import { DispatchContext } from '../components/editor/store/dispatch-context'
 import {
@@ -128,12 +129,8 @@ import { InitialOnlineState, startOnlineStatusPolling } from '../components/edit
 import { useAnimate } from 'framer-motion'
 import { AnimationContext } from '../components/canvas/ui-jsx-canvas-renderer/animation-context'
 import { anyCodeAhead } from '../components/assets'
-import { anyBy, toArrayOf } from '../core/shared/optics/optic-utilities'
-import {
-  fromField,
-  traverseArray,
-  traverseReadOnlyArray,
-} from '../core/shared/optics/optic-creators'
+import { toArrayOf } from '../core/shared/optics/optic-utilities'
+import { fromTypeGuard, traverseReadOnlyArray } from '../core/shared/optics/optic-creators'
 import { keysEqualityExhaustive, shallowEqual } from '../core/shared/equality-utils'
 import {
   resetDomSamplerExecutionCounts,
@@ -485,12 +482,13 @@ export class Editor {
       const runDomWalker = shouldRunDOMWalker(dispatchedActions, oldEditorState, this.storedState)
 
       // run the dom-walker
-      if (runDomWalker) {
+      if (runDomWalker !== 'dont-run') {
         const metadataUpdateDispatchResult = runDomSamplerAndSaveResults(
           this.boundDispatch,
           this.storedState,
           this.domWalkerMutableState,
           this.spyCollector,
+          runDomWalker,
         )
 
         this.storedState = metadataUpdateDispatchResult
@@ -854,7 +852,12 @@ export function shouldRunDOMWalker(
   dispatchedActions: ReadonlyArray<EditorAction>,
   storeBefore: EditorStoreFull,
   storeAfter: EditorStoreFull,
-): boolean {
+):
+  | 'dont-run'
+  | 'run-full'
+  | {
+      restrictToElements: Array<ElementPath>
+    } {
   const patchedEditorBefore = storeBefore.patchedEditor
   const patchedEditorAfter = storeAfter.patchedEditor
   const patchedEditorChanged =
@@ -896,10 +899,46 @@ export function shouldRunDOMWalker(
     patchedDerivedBefore.remixData !== patchedDerivedAfter.remixData
 
   const storeChanged = patchedEditorChanged || patchedDerivedChanged
-  const actionsIndicateDOMWalkerShouldRun = anyBy(
-    traverseReadOnlyArray<EditorAction>().compose(actionActionsOptic),
-    (action) => action.action === 'RUN_DOM_WALKER',
+
+  // if the store changed run the dom walker
+  if (storeChanged) {
+    return 'run-full'
+  }
+
+  // if there are runDomWalker actions, run the dom walker, and merge their restrictToElements
+  const runDomWalkerActions = toArrayOf(
+    traverseReadOnlyArray<EditorAction>()
+      .compose(actionActionsOptic)
+      .compose(
+        fromTypeGuard((action): action is RunDOMWalker => action.action === 'RUN_DOM_WALKER'),
+      ),
     dispatchedActions,
   )
-  return storeChanged || actionsIndicateDOMWalkerShouldRun
+
+  if (runDomWalkerActions.length === 0) {
+    return 'dont-run'
+  }
+
+  const restrictToElements = runDomWalkerActions.reduce<Array<ElementPath> | null>(
+    (acc, action) => {
+      if (action.restrictToElements != null) {
+        if (acc == null) {
+          return action.restrictToElements
+        }
+        return [...acc, ...action.restrictToElements]
+      }
+      return acc
+    },
+    null,
+  )
+
+  if (restrictToElements == null) {
+    return 'run-full'
+  }
+
+  const uniqRestrictToElements = uniq(restrictToElements.map(EP.toString)).map(EP.fromString)
+
+  return {
+    restrictToElements: uniqRestrictToElements,
+  }
 }

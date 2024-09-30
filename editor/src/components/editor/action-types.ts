@@ -797,6 +797,7 @@ export interface UpdateMetadataInEditorState {
 
 export interface RunDOMWalker {
   action: 'RUN_DOM_WALKER'
+  restrictToElements: Array<ElementPath> | null
 }
 
 export interface TrueUpElements {

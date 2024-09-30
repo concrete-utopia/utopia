@@ -1,3 +1,4 @@
+import type { ElementPath } from 'utopia-shared/src/types'
 import type { EditorDispatch } from '../editor/action-types'
 import { updateMetadataInEditorState } from '../editor/actions/action-creators'
 import type { DispatchResult } from '../editor/store/dispatch'
@@ -32,9 +33,17 @@ export function runDomSamplerAndSaveResults(
     gridControlObserver: MutationObserver
   },
   spyCollector: UiJsxCanvasContextData,
+  restrictToElements:
+    | 'run-full'
+    | {
+        restrictToElements: Array<ElementPath>
+      },
 ) {
   const metadataResult = runDomSamplerRegular({
-    elementsToFocusOn: ElementsToRerenderGLOBAL.current,
+    elementsToFocusOn:
+      restrictToElements === 'run-full'
+        ? ElementsToRerenderGLOBAL.current
+        : restrictToElements.restrictToElements,
     domWalkerAdditionalElementsToFocusOn:
       storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
     scale: storedState.patchedEditor.canvas.scale,
