@@ -12,7 +12,7 @@ import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { setProperty } from '../../commands/set-property-command'
 import {
   fallbackEmptyValue,
@@ -171,30 +171,36 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
         axis === 'row' ? updatedGridGapMeasurement.row : updatedGridGapMeasurement.column
 
       if (shouldTearOffGapByAxis) {
-        return strategyApplicationResult([
-          deleteProperties('always', selectedElement, [axisStyleProp]),
-        ])
+        return strategyApplicationResult(
+          [deleteProperties('always', selectedElement, [axisStyleProp])],
+          // FIXME: This was added as a default value in https://github.com/concrete-utopia/utopia/pull/6408
+          // This was to maintain the existing behaviour, but it should be replaced with a more specific value
+          // appropriate to this particular case.
+          'rerender-all-elements',
+        )
       }
 
-      return strategyApplicationResult([
-        setProperty(
-          'always',
-          selectedElement,
-          axisStyleProp,
-          printCSSNumber(fallbackEmptyValue(gridGapMeasurement), null),
-        ),
-        setCursorCommand(cursorFromAxis(axis)),
-        setElementsToRerenderCommand([...selectedElements, ...children.map((c) => c.elementPath)]),
-        setActiveFrames([
-          {
-            action: 'set-gap',
-            target: activeFrameTargetPath(selectedElement),
-            source: zeroRectIfNullOrInfinity(
-              MetadataUtils.getFrameInCanvasCoords(selectedElement, canvasState.startingMetadata),
-            ),
-          },
-        ]),
-      ])
+      return strategyApplicationResult(
+        [
+          setProperty(
+            'always',
+            selectedElement,
+            axisStyleProp,
+            printCSSNumber(fallbackEmptyValue(gridGapMeasurement), null),
+          ),
+          setCursorCommand(cursorFromAxis(axis)),
+          setActiveFrames([
+            {
+              action: 'set-gap',
+              target: activeFrameTargetPath(selectedElement),
+              source: zeroRectIfNullOrInfinity(
+                MetadataUtils.getFrameInCanvasCoords(selectedElement, canvasState.startingMetadata),
+              ),
+            },
+          ]),
+        ],
+        [...selectedElements, ...children.map((c) => c.elementPath)],
+      )
     },
   }
 }

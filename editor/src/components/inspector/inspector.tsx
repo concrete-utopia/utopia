@@ -48,7 +48,6 @@ import {
 import { getElementsToTarget } from './common/inspector-utils'
 import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { unless, when } from '../../utils/react-conditionals'
-import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import {
   isKeyboardAbsoluteStrategy,
   isKeyboardReorderStrategy,
@@ -90,6 +89,7 @@ import {
 import { InspectorSectionHeader } from './section-header'
 import { GridPlacementSubsection } from './sections/style-section/container-subsection/grid-cell-subsection'
 import { ContainerSubsection } from './sections/style-section/container-subsection/container-subsection'
+import { isTailwindEnabled } from '../../core/tailwind/tailwind-compilation'
 
 export interface ElementPathElement {
   name?: string
@@ -286,7 +286,8 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const shouldShowStyleSectionContents = styleSectionOpen && !shouldHideInspectorSections
   const shouldShowAdvancedSectionContents = advancedSectionOpen && !shouldHideInspectorSections
 
-  const shouldShowClassNameSubsection = isTwindEnabled() && inspectorPreferences.includes('visual')
+  const shouldShowClassNameSubsection =
+    isTailwindEnabled() && inspectorPreferences.includes('visual')
   const shouldShowTargetSelectorSection = canEdit && inspectorPreferences.includes('visual')
   const shouldShowFlexSection =
     multiselectedContract === 'frame' &&

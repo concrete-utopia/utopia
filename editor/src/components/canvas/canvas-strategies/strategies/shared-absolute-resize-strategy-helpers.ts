@@ -57,7 +57,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { addOrMergeIntendedBounds } from './shared-keyboard-strategy-helpers'
 import type { InspectorStrategy } from '../../../../components/inspector/inspector-strategies/inspector-strategy'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
-import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+
 import { withUnderlyingTarget } from '../../../../components/editor/store/editor-state'
 import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
 import {
@@ -416,7 +416,7 @@ export function resizeInspectorStrategy(
       commands.push(
         pushIntendedBoundsAndUpdateGroups(changeBoundsResult.intendedBounds, 'live-metadata'),
       )
-      commands.push(setElementsToRerenderCommand(selectedElements))
+
       return commands
     },
   }
@@ -460,7 +460,7 @@ export function directResizeInspectorStrategy(
           pushIntendedBoundsAndUpdateGroups(changeBoundsResult.intendedBounds, 'live-metadata'),
         )
       }
-      commands.push(setElementsToRerenderCommand(selectedElements))
+
       return commands
     },
   }

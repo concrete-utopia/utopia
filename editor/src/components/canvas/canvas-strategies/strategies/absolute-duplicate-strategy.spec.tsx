@@ -74,6 +74,7 @@ function dragByPixelsIsApplicable(
   return (
     absoluteDuplicateStrategy(
       pickCanvasStateFromEditorStateWithMetadata(
+        editorState.selectedViews,
         editorState,
         createBuiltInDependenciesList(null),
         metadata,
