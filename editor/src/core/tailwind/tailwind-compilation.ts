@@ -36,15 +36,6 @@ function ensureElementExists({ type, id }: { type: string; id: string }) {
 }
 
 async function generateTailwindStyles(tailwindCss: Tailwindcss, allCSSFiles: string) {
-  const MeasureTailwindGenerationTime =
-    (isFeatureEnabled('Debug – Performance Marks (Fast)') ||
-      isFeatureEnabled('Debug – Performance Marks (Slow)')) &&
-    PERFORMANCE_MARKS_ALLOWED
-
-  if (MeasureTailwindGenerationTime) {
-    window.performance.mark('tailwind_generation_begin')
-  }
-
   const contentElement = document.getElementById(CanvasContainerID)
   if (contentElement == null) {
     return
@@ -53,14 +44,6 @@ async function generateTailwindStyles(tailwindCss: Tailwindcss, allCSSFiles: str
   const styleString = await tailwindCss.generateStylesFromContent(allCSSFiles, [content])
   const style = ensureElementExists({ type: 'style', id: 'utopia-tailwind-jit-styles' })
   style.textContent = rescopeCSSToTargetCanvasOnly(styleString)
-  if (MeasureTailwindGenerationTime) {
-    window.performance.mark('tailwind_generation_end')
-    window.performance.measure(
-      'Tailwind class generation',
-      'tailwind_generation_begin',
-      'tailwind_generation_end',
-    )
-  }
 }
 
 function getCssFilesFromProjectContents(projectContents: ProjectContentTreeRoot) {
