@@ -28,13 +28,28 @@ export function rescopeCSSToTargetCanvasOnly(input: string): string {
 
   let ast = csstree.parse(scopedInput)
 
-  csstree.walk(ast, (node, item, list) => {
+  csstree.walk(ast, function (node, item, list) {
     // As we are wrapping in an @scope, we need to redirect certain selectors to :scope
     if (isSelectorToChange(node) && list != null) {
       list.insertData(scopePseudoClassSelector(), item)
       list.remove(item)
+      // we need to remove dimensions since they now apply to our canvas
+      removeDimensionsFromCssRule(this.rule)
     }
   })
 
   return csstree.generate(ast)
+}
+
+const propertiesToRemove = ['width', 'height', 'max-width', 'max-height', 'min-width', 'min-height']
+function removeDimensionsFromCssRule(rule: csstree.Rule | null): void {
+  if (rule != null) {
+    csstree.walk(rule, (node, item, list) => {
+      if (node.type === 'Declaration' && list != null) {
+        if (propertiesToRemove.includes(node.property)) {
+          list.remove(item)
+        }
+      }
+    })
+  }
 }
