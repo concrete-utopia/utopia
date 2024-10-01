@@ -169,6 +169,7 @@ export function applyGridReparent(
           newParent.intendedParentPath,
           canvasState.startingMetadata,
           interactionSession.latestMetadata,
+          customStrategyState,
         )
 
         if (grid == null) {

@@ -135,6 +135,7 @@ const gridDrawToInsertStrategyInner =
       targetParent,
       canvasState.startingMetadata,
       interactionSession.latestMetadata,
+      customStrategyState,
     )
 
     if (targetParent == null || parent == null || !MetadataUtils.isGridLayoutedContainer(parent)) {
