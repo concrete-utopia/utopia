@@ -340,6 +340,26 @@ export var storyboard = (
       }
     })
   })
+
+  it('also works for stretching cells', async () => {
+    const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
+
+    await runCellResizeTest(
+      editor,
+      'column-end',
+      gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 10),
+      EP.fromString('sb/scene/grid/eee'),
+    )
+
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+      editor.renderedDOM.getByTestId('grid-child-stretch').style
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnEnd: '11',
+      gridColumnStart: '4',
+      gridRowStart: '4',
+      gridRowEnd: 'auto',
+    })
+  })
 })
 
 const ProjectCode = `import * as React from 'react'
@@ -424,6 +444,17 @@ export var storyboard = (
           }}
           data-uid='ddd'
           data-testid='grid-child'
+        />
+        <div
+          style={{
+            backgroundColor: '#9f0',
+            alignSelf: 'stretch',
+            justifySelf: 'stretch',
+            gridColumn: 4,
+            gridRow: 4,
+          }}
+          data-uid='eee'
+          data-testid='grid-child-stretch'
         />
       </div>
     </Scene>

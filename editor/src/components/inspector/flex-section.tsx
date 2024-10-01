@@ -887,6 +887,8 @@ const GapRowColumnControl = React.memo(() => {
           <NumberInput
             value={columnGap.value}
             numberType={'Length'}
+            minimum={0}
+            clampOnSubmitValue={true}
             onSubmitValue={onSubmitUnifiedValue}
             onTransientSubmitValue={onSubmitUnifiedValue}
             onForcedSubmitValue={onSubmitUnifiedValue}
@@ -903,6 +905,8 @@ const GapRowColumnControl = React.memo(() => {
           <NumberInput
             value={columnGap.value}
             numberType={'Length'}
+            minimum={0}
+            clampOnSubmitValue={true}
             onSubmitValue={onSubmitSplitValue('columnGap')}
             onTransientSubmitValue={onSubmitSplitValue('columnGap')}
             onForcedSubmitValue={onSubmitSplitValue('columnGap')}
@@ -916,6 +920,8 @@ const GapRowColumnControl = React.memo(() => {
           <NumberInput
             value={rowGap.value}
             numberType={'Length'}
+            minimum={0}
+            clampOnSubmitValue={true}
             onSubmitValue={onSubmitSplitValue('rowGap')}
             onTransientSubmitValue={onSubmitSplitValue('rowGap')}
             onForcedSubmitValue={onSubmitSplitValue('rowGap')}

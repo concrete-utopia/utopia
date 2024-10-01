@@ -4,8 +4,7 @@ import localforage from 'localforage'
 import { imagePathURL } from '../../../common/server'
 import { roundAttributeLayoutValues } from '../../../core/layout/layout-utils'
 import {
-  findElementAtPath,
-  findJSXElementAtPath,
+  getSimpleAttributeAtPath,
   getZIndexOrderedViewsWithoutDirectChildren,
   MetadataUtils,
 } from '../../../core/model/element-metadata-utils'
@@ -102,6 +101,7 @@ import type {
   LocalRectangle,
   Size,
   CanvasVector,
+  MaybeInfinityCanvasRectangle,
 } from '../../../core/shared/math-utils'
 import {
   canvasRectangle,
@@ -157,7 +157,7 @@ import { assertNever, fastForEach, getProjectLockedKey, identity } from '../../.
 import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
-import Utils, { absolute } from '../../../utils/utils'
+import Utils from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
 import {
   isProjectContentFile,
@@ -428,7 +428,7 @@ import {
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
 
-import { boundsInFile, defaultConfig } from 'utopia-vscode-common'
+import { defaultConfig } from 'utopia-vscode-common'
 import { reorderElement } from '../../../components/canvas/commands/reorder-element-command'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
@@ -493,7 +493,6 @@ import {
   clearImageFileBlob,
   enableInsertModeForJSXElement,
   finishCheckpointTimer,
-  insertAsChildTarget,
   insertJSXElement,
   openCodeEditorFile,
   replaceMappedElement,
@@ -522,7 +521,6 @@ import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-utils'
 import {
-  getFromPropOrFlagComment,
   isUtopiaPropOrCommentFlag,
   makeUtopiaFlagComment,
   removePropOrFlagComment,
@@ -541,7 +539,10 @@ import {
   replaceWithElementsWrappedInFragmentBehaviour,
 } from '../store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
-import { deleteProperties } from '../../canvas/commands/delete-properties-command'
+import {
+  deleteProperties,
+  deleteValuesAtPath,
+} from '../../canvas/commands/delete-properties-command'
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   fixParentContainingBlockSettings,
@@ -617,11 +618,12 @@ import {
 import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
 import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 import { nextSelectedTab } from '../../navigator/left-pane/left-pane-utils'
-import { getDefaultedRemixRootDir, getRemixRootDir } from '../store/remix-derived-data'
+import { getDefaultedRemixRootDir } from '../store/remix-derived-data'
 import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-item/component-picker-context-menu'
 import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 import { applyValuesAtPath } from '../../canvas/commands/adjust-number-command'
+import { styleP } from '../../inspector/inspector-common'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -5734,7 +5736,11 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const canvasState = pickCanvasStateFromEditorState(editor, builtInDependencies)
+    const canvasState = pickCanvasStateFromEditorState(
+      editor.selectedViews,
+      editor,
+      builtInDependencies,
+    )
     if (areAllSelectedElementsNonAbsolute(action.targets, editor.jsxMetadata)) {
       const commands = getEscapeHatchCommands(
         action.targets,
@@ -6554,10 +6560,54 @@ function removeErrorMessagesForFile(editor: EditorState, filename: string): Edit
 function alignFlexOrGridChildren(editor: EditorState, views: ElementPath[], alignment: Alignment) {
   let workingEditorState = { ...editor }
   for (const view of views) {
-    function apply(prop: 'alignSelf' | 'justifySelf', value: string) {
-      return applyValuesAtPath(workingEditorState, view, [
+    // When updating alongside the given alignment, also update the opposite one so that it makes sense:
+    // For example, if alignment is 'alignSelf', delete the 'justifySelf' if currently set to stretch and, if so,
+    // set the explicit height of the element (and vice versa for 'justifySelf').
+    function updateOpposite(
+      editorState: EditorState,
+      frame: MaybeInfinityCanvasRectangle | null,
+      target: 'alignSelf' | 'justifySelf',
+      dimension: 'width' | 'height',
+    ) {
+      let working = { ...editorState }
+
+      working = deleteValuesAtPath(working, view, [styleP(target)]).editorStateWithChanges
+
+      working = applyValuesAtPath(working, view, [
+        {
+          path: styleP(dimension),
+          value: jsExpressionValue(zeroRectIfNullOrInfinity(frame)[dimension], emptyComments),
+        },
+      ]).editorStateWithChanges
+
+      return working
+    }
+
+    function apply(editorState: EditorState, prop: 'alignSelf' | 'justifySelf', value: string) {
+      const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, view)
+      if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
+        return workingEditorState
+      }
+
+      let working = editorState
+
+      working = applyValuesAtPath(working, view, [
         { path: PP.create('style', prop), value: jsExpressionValue(value, emptyComments) },
       ]).editorStateWithChanges
+
+      const alignSelfStretch =
+        getSimpleAttributeAtPath(right(element.element.value.props), styleP('alignSelf')).value ===
+        'stretch'
+      const justifySelfStretch =
+        getSimpleAttributeAtPath(right(element.element.value.props), styleP('justifySelf'))
+          .value === 'stretch'
+
+      if (prop === 'alignSelf' && justifySelfStretch) {
+        working = updateOpposite(working, element.globalFrame, 'justifySelf', 'height')
+      } else if (prop === 'justifySelf' && alignSelfStretch) {
+        working = updateOpposite(working, element.globalFrame, 'alignSelf', 'width')
+      }
+      return working
     }
 
     const { align, justify } = MetadataUtils.getRelativeAlignJustify(
@@ -6567,27 +6617,28 @@ function alignFlexOrGridChildren(editor: EditorState, views: ElementPath[], alig
 
     switch (alignment) {
       case 'bottom':
-        workingEditorState = apply(align, 'end')
+        workingEditorState = apply(workingEditorState, align, 'end')
         break
       case 'top':
-        workingEditorState = apply(align, 'start')
+        workingEditorState = apply(workingEditorState, align, 'start')
         break
       case 'vcenter':
-        workingEditorState = apply(align, 'center')
+        workingEditorState = apply(workingEditorState, align, 'center')
         break
       case 'hcenter':
-        workingEditorState = apply(justify, 'center')
+        workingEditorState = apply(workingEditorState, justify, 'center')
         break
       case 'left':
-        workingEditorState = apply(justify, 'start')
+        workingEditorState = apply(workingEditorState, justify, 'start')
         break
       case 'right':
-        workingEditorState = apply(justify, 'end')
+        workingEditorState = apply(workingEditorState, justify, 'end')
         break
       default:
         assertNever(alignment)
     }
   }
+
   return workingEditorState
 }
 

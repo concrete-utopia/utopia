@@ -40,6 +40,7 @@ function checkGroupSuitability(
       // Do not let a group be the target of a resize to fit operation.
       return !treatElementAsGroupLike(metadata, target)
     case 'fill':
+    case 'stretch':
       // Neither a group or the child of a group should be eligible for a resize to fill operation.
       return !(
         treatElementAsGroupLike(metadata, target) || treatElementAsGroupLike(metadata, parentPath)
