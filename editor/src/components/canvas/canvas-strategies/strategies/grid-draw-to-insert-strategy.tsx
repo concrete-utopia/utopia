@@ -47,6 +47,7 @@ import { setGridPropsCommands } from './grid-helpers'
 import { newReparentSubjects } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
 import { getGridCellUnderMouseFromMetadata } from './grid-cell-bounds'
+import { nukeAllAbsolutePositioningPropsCommands } from '../../../inspector/inspector-common'
 
 export const gridDrawToInsertText: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -211,25 +212,10 @@ const gridDrawToInsertStrategyInner =
             ? []
             : getWrappingCommands(insertedElementPath, maybeWrapperWithUid)
 
-        const isClick = interactionData.type === 'DRAG' && interactionData.drag == null
-
-        // for click-to-insert, don't use absolute positioning
-        const clickToInsertCommands = isClick
-          ? [
-              deleteProperties('always', insertedElementPath, [
-                PP.create('style', 'position'),
-                PP.create('style', 'top'),
-                PP.create('style', 'left'),
-                PP.create('style', 'bottom'),
-                PP.create('style', 'right'),
-              ]),
-            ]
-          : []
-
         return strategyApplicationResult(
           [
             insertionCommand,
-            ...clickToInsertCommands,
+            ...nukeAllAbsolutePositioningPropsCommands(insertedElementPath), // do not use absolute positioning in grid cells
             ...setGridPropsCommands(insertedElementPath, gridTemplate, {
               gridRowStart: { numericalPosition: gridCellCoordinates.row },
               gridColumnStart: { numericalPosition: gridCellCoordinates.column },
