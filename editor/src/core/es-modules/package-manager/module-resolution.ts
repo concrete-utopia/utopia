@@ -290,19 +290,25 @@ function abstractDirectoryLookup(
 
     if (isResolveSuccess(mainEntryPath)) {
       // try loading the entry path as a file
-      const mainEntryResult = localFileLookup(mainEntryPath.success)
+      const mainEntryResult = abstractFileLookup(localFileLookup, mainEntryPath.success)
       if (isResolveSuccess(mainEntryResult)) {
         return mainEntryResult
       }
 
       // attempt to load it as a folder with an index.js
-      const mainEntryIndexJSResult = localFileLookup(mainEntryPath.success.concat('index.js'))
+      const mainEntryIndexJSResult = abstractFileLookup(
+        localFileLookup,
+        mainEntryPath.success.concat('index.js'),
+      )
       if (isResolveSuccess(mainEntryIndexJSResult)) {
         return mainEntryIndexJSResult
       }
 
       // attempt to load the containing folder as a folder with an index.js (this is deprecated in the spec so maybe we shouldn't)
-      const containingFolderIndexJSResult = localFileLookup(normalisedPathParts.concat('index.js'))
+      const containingFolderIndexJSResult = abstractFileLookup(
+        localFileLookup,
+        normalisedPathParts.concat('index.js'),
+      )
       if (isResolveSuccess(containingFolderIndexJSResult)) {
         return containingFolderIndexJSResult
       }
@@ -310,7 +316,10 @@ function abstractDirectoryLookup(
   }
 
   // no main entry, so attempt to load the containing folder as a folder with an index.js
-  const containingFolderIndexJSResult = localFileLookup(normalisedPathParts.concat('index.js'))
+  const containingFolderIndexJSResult = abstractFileLookup(
+    localFileLookup,
+    normalisedPathParts.concat('index.js'),
+  )
   if (isResolveSuccess(containingFolderIndexJSResult)) {
     return containingFolderIndexJSResult
   }
@@ -323,7 +332,7 @@ function findClosestPackageScopeToPath(
   path: string,
   localFileLookup: LocalFileLookup,
 ): PackageLookupResult {
-  const originPathPartsToTest = getPartsFromPath(path)
+  const originPathPartsToTest = normalizePath(getPartsFromPath(path))
   const allPossiblePackageJsonPaths = [['package.json']]
     .concat(
       originPathPartsToTest.map((_part, index) =>
@@ -769,13 +778,22 @@ function resolveModuleAndApplySubstitutions(
   }
 }
 
+let resolvedFiles: { [key: string]: FileLookupResult } = {}
+
 export function resolveModule(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   importOrigin: string,
   toImport: string,
 ): FileLookupResult {
-  return resolveModuleAndApplySubstitutions(projectContents, nodeModules, importOrigin, toImport)
+  const result = resolveModuleAndApplySubstitutions(
+    projectContents,
+    nodeModules,
+    importOrigin,
+    toImport,
+  )
+  resolvedFiles[`${importOrigin}/${toImport}`] = result
+  return result
 }
 
 export function resolveModulePath(
