@@ -173,10 +173,7 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
       if (shouldTearOffGapByAxis) {
         return strategyApplicationResult(
           [deleteProperties('always', selectedElement, [axisStyleProp])],
-          // FIXME: This was added as a default value in https://github.com/concrete-utopia/utopia/pull/6408
-          // This was to maintain the existing behaviour, but it should be replaced with a more specific value
-          // appropriate to this particular case.
-          'rerender-all-elements',
+          selectedElements,
         )
       }
 
@@ -199,7 +196,7 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
             },
           ]),
         ],
-        [...selectedElements, ...children.map((c) => c.elementPath)],
+        selectedElements,
       )
     },
   }
