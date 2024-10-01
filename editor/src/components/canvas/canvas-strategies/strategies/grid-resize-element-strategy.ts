@@ -38,10 +38,10 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const isFillContainer =
+  const isFillOrStretchContainer =
     isFixedHugFillModeApplied(canvasState.startingMetadata, selectedElement, 'fill') ||
     isFixedHugFillModeApplied(canvasState.startingMetadata, selectedElement, 'stretch')
-  if (!isFillContainer) {
+  if (!isFillOrStretchContainer) {
     return null
   }
 
