@@ -10,9 +10,11 @@ import {
   roundRectangleToNearestWhole,
   size,
 } from '../../../../core/shared/math-utils'
+import * as PP from '../../../../core/shared/property-path'
 import { assertNever } from '../../../../core/shared/utils'
 import { EditorModes, type InsertionSubject } from '../../../editor/editor-modes'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
+import { deleteProperties } from '../../commands/delete-properties-command'
 import type { InsertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
 import { insertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
 import { showGridControls } from '../../commands/show-grid-controls-command'
@@ -37,14 +39,14 @@ import type {
   HoverInteractionData,
   InteractionSession,
 } from '../interaction-state'
-import { updateInsertionSubjectWithAttributes } from './draw-to-insert-metastrategy'
+import {
+  getStyleAttributesForFrameInAbsolutePosition,
+  updateInsertionSubjectWithAttributes,
+} from './draw-to-insert-metastrategy'
 import { setGridPropsCommands } from './grid-helpers'
 import { newReparentSubjects } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
 import { getGridCellUnderMouseFromMetadata } from './grid-cell-bounds'
-import { foldEither } from '../../../../core/shared/either'
-import { PinLayoutHelpers } from '../../../../core/layout/layout-helpers'
-import { styleStringInArray } from '../../../../utils/common-constants'
 
 export const gridDrawToInsertText: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -209,9 +211,25 @@ const gridDrawToInsertStrategyInner =
             ? []
             : getWrappingCommands(insertedElementPath, maybeWrapperWithUid)
 
+        const isClick = interactionData.type === 'DRAG' && interactionData.drag == null
+
+        // for click-to-insert, don't use absolute positioning
+        const clickToInsertCommands = isClick
+          ? [
+              deleteProperties('always', insertedElementPath, [
+                PP.create('style', 'position'),
+                PP.create('style', 'top'),
+                PP.create('style', 'left'),
+                PP.create('style', 'bottom'),
+                PP.create('style', 'right'),
+              ]),
+            ]
+          : []
+
         return strategyApplicationResult(
           [
             insertionCommand,
+            ...clickToInsertCommands,
             ...setGridPropsCommands(insertedElementPath, gridTemplate, {
               gridRowStart: { numericalPosition: gridCellCoordinates.row },
               gridColumnStart: { numericalPosition: gridCellCoordinates.column },
@@ -299,7 +317,7 @@ function getInsertionCommand(
   subject: InsertionSubject,
   frame: CanvasRectangle,
 ): InsertElementInsertionSubject {
-  const updatedAttributesWithPosition = getStyleAttributesForFrameWithoutPositioning(subject, frame)
+  const updatedAttributesWithPosition = getStyleAttributesForFrameInAbsolutePosition(subject, frame)
 
   const updatedInsertionSubject = updateInsertionSubjectWithAttributes(
     subject,
@@ -309,24 +327,4 @@ function getInsertionCommand(
   const insertionPath = childInsertionPath(parentPath)
 
   return insertElementInsertionSubject('always', updatedInsertionSubject, insertionPath)
-}
-
-export function getStyleAttributesForFrameWithoutPositioning(
-  subject: InsertionSubject,
-  frame: CanvasRectangle,
-) {
-  return foldEither(
-    (_) => {
-      throw new Error(`Problem setting drag frame on an element we just created.`)
-    },
-    (attr) => attr,
-    PinLayoutHelpers.setLayoutPropsToPinsWithFrame(
-      subject.element.props,
-      {
-        width: frame.width,
-        height: frame.height,
-      },
-      styleStringInArray,
-    ),
-  )
 }
