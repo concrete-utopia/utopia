@@ -157,10 +157,11 @@ export interface GridResizingControlProps {
   axis: Axis
   containingFrame: CanvasRectangle
   fromPropsAxisValues: GridAutoOrTemplateDimensions | null
-  padding: number | null
+  padding: number
   resizing: 'resize-target' | 'resize-generated' | 'not-resizing'
   setResizingIndex: (v: number | null) => void
   resizeLocked: boolean
+  stripedAreaLength: number | null
 }
 
 export const GridResizingControl = React.memo((props: GridResizingControlProps) => {
@@ -229,6 +230,11 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
       : props.containingFrame.width + GRID_RESIZE_HANDLE_CONTAINER_SIZE
   }, [props.containingFrame, props.axis])
 
+  const stripedAreaSkew = React.useMemo(
+    () => GRID_RESIZE_HANDLE_CONTAINER_SIZE / scale + props.padding,
+    [scale, props.padding],
+  )
+
   return (
     <div
       key={containerId}
@@ -280,10 +286,18 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         <div
           style={{
             position: 'absolute',
-            top: props.axis === 'column' ? GRID_RESIZE_HANDLE_CONTAINER_SIZE : 0,
-            left: props.axis === 'row' ? GRID_RESIZE_HANDLE_CONTAINER_SIZE : 0,
-            right: 0,
-            bottom: 0,
+            top: props.axis === 'column' ? stripedAreaSkew : 0,
+            left: props.axis === 'row' ? stripedAreaSkew : 0,
+            right: props.axis === 'row' || props.stripedAreaLength == null ? undefined : 0,
+            width:
+              props.axis === 'row' && props.stripedAreaLength != null
+                ? props.stripedAreaLength
+                : undefined,
+            bottom: props.axis === 'column' || props.stripedAreaLength == null ? undefined : 0,
+            height:
+              props.axis === 'column' && props.stripedAreaLength != null
+                ? props.stripedAreaLength
+                : undefined,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -330,6 +344,7 @@ GridResizingControl.displayName = 'GridResizingControl'
 export interface GridResizingProps {
   axisValues: GridAutoOrTemplateBase | null
   fromPropsAxisValues: GridAutoOrTemplateBase | null
+  stripedAreaLength: number | null
   containingFrame: CanvasRectangle
   axis: Axis
   gap: number | null
@@ -390,12 +405,25 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
     })
   }, [props.fromPropsAxisValues, resizingIndex])
 
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'GridResizing scale',
+  )
+
   if (props.axisValues == null) {
     return null
   }
   switch (props.axisValues.type) {
     case 'DIMENSIONS':
       const size = GRID_RESIZE_HANDLE_CONTAINER_SIZE / canvasScale
+      const dimensions = props.axisValues.dimensions
+
+      const hideControls = dimensions.some((dim) => {
+        const scaledSize = (dim.type === 'NUMBER' ? dim.value.value : 0) * scale
+        return scaledSize < GRID_RESIZE_HANDLE_SIZE
+      })
+
       return (
         <div
           style={{
@@ -407,11 +435,11 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
             display: 'grid',
             gridTemplateColumns:
               props.axis === 'column'
-                ? props.axisValues.dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
+                ? dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
                 : undefined,
             gridTemplateRows:
               props.axis === 'row'
-                ? props.axisValues.dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
+                ? dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
                 : undefined,
             gap: props.gap ?? 0,
             paddingLeft:
@@ -420,15 +448,17 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
                 : undefined,
             paddingTop:
               props.axis === 'row' && props.padding != null ? `${props.padding.top}px` : undefined,
+            visibility: hideControls ? 'hidden' : 'visible',
           }}
         >
-          {props.axisValues.dimensions.flatMap((dimension, dimensionIndex) => {
+          {dimensions.flatMap((dimension, dimensionIndex) => {
             return (
               <GridResizingControl
                 key={`grid-resizing-control-${dimensionIndex}`}
                 dimensionIndex={dimensionIndex}
                 dimension={dimension}
                 fromPropsAxisValues={fromProps}
+                stripedAreaLength={props.stripedAreaLength}
                 axis={props.axis}
                 containingFrame={props.containingFrame}
                 resizing={
@@ -444,8 +474,8 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
                   props.padding == null
                     ? 0
                     : props.axis === 'column'
-                    ? props.padding.left ?? 0
-                    : props.padding.top ?? 0
+                    ? props.padding.top ?? 0
+                    : props.padding.left ?? 0
                 }
               />
             )
@@ -552,6 +582,18 @@ export const GridRowColumnResizingControls =
   controlForStrategyMemoized<GridRowColumnResizingControlsProps>(({ target }) => {
     const grids = useGridData([target])
 
+    function getStripedAreaLength(template: GridAutoOrTemplateBase | null, gap: number) {
+      if (template?.type !== 'DIMENSIONS') {
+        return null
+      }
+      return template.dimensions.reduce((acc, curr, index) => {
+        if (curr.type === 'NUMBER') {
+          return acc + curr.value.value + (index > 0 ? gap : 0)
+        }
+        return acc
+      }, 0)
+    }
+
     return (
       <CanvasOffsetWrapper>
         {grids.flatMap((grid) => {
@@ -564,6 +606,7 @@ export const GridRowColumnResizingControls =
               axis={'column'}
               gap={grid.columnGap ?? grid.gap}
               padding={grid.padding}
+              stripedAreaLength={getStripedAreaLength(grid.gridTemplateRows, grid.gap ?? 0)}
             />
           )
         })}
@@ -577,6 +620,7 @@ export const GridRowColumnResizingControls =
               axis={'row'}
               gap={grid.rowGap ?? grid.gap}
               padding={grid.padding}
+              stripedAreaLength={getStripedAreaLength(grid.gridTemplateColumns, grid.gap ?? 0)}
             />
           )
         })}
@@ -1522,7 +1566,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
     const element = useEditorState(
       Substores.metadata,
       (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
-      'GridResizeShadow element',
+      'GridResizeControls element',
     )
 
     const dispatch = useDispatch()
@@ -1530,7 +1574,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
     const scale = useEditorState(
       Substores.canvas,
       (store) => store.editor.canvas.scale,
-      'GridResizingControl scale',
+      'GridResizeControls scale',
     )
 
     const resizeControlRef = useRefEditorState((store) =>

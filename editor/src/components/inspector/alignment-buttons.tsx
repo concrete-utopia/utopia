@@ -174,9 +174,9 @@ export const AlignmentButtons = React.memo(() => {
   return (
     <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
       <OptionChainControl
-        id='left'
-        testId='left'
-        key='left'
+        id='alignment-chain-control-justify'
+        testId='alignment-chain-control-justify'
+        key='alignment-chain-control-justify'
         onSubmitValue={alignSelected}
         value={chainValueJustify}
         controlStatus='controlled'
@@ -203,9 +203,9 @@ export const AlignmentButtons = React.memo(() => {
         ]}
       />
       <OptionChainControl
-        id='left'
-        testId='left'
-        key='left'
+        id='alignment-chain-control-align'
+        testId='alignment-chain-control-align'
+        key='alignment-chain-control-align'
         onSubmitValue={alignSelected}
         value={chainValueAlign}
         controlStatus='controlled'

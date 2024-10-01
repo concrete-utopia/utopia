@@ -117,9 +117,9 @@ export const SolidBackgroundLayer = React.memo<SolidBackgroundLayerProps>((props
           onMouseDown={stopPropagation}
         />
         <BackgroundSolidOrGradientThumbnailControl
-          id={`background-layer-gradient-${props.index}`}
-          key={`background-layer-gradient-${props.index}`}
-          testId={`background-layer-gradient-${props.index}`}
+          id={`background-layer-solid-or-gradient-${props.index}`}
+          key={`background-layer-solid-or-gradient-${props.index}`}
+          testId={`background-layer-solid-or-gradient-${props.index}`}
           value={props.value}
           backgroundIndex={props.index}
           useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
@@ -132,9 +132,9 @@ export const SolidBackgroundLayer = React.memo<SolidBackgroundLayerProps>((props
           setOpenPopup={props.setOpenPopup}
         />
         <StringBackgroundColorControl
-          id={`background-layer-gradient-${props.index}`}
-          key={`background-layer-gradient-${props.index}`}
-          testId={`background-layer-gradient-${props.index}`}
+          id={`background-layer-string-${props.index}`}
+          key={`background-layer-string-${props.index}`}
+          testId={`background-layer-string-${props.index}`}
           value={props.value}
           backgroundIndex={props.index}
           useSubmitValueFactory={props.useSubmitTransformedValuesFactory}

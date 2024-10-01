@@ -38,12 +38,10 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const isFillContainer = isFixedHugFillModeApplied(
-    canvasState.startingMetadata,
-    selectedElement,
-    'fill',
-  )
-  if (!isFillContainer) {
+  const isFillOrStretchContainer =
+    isFixedHugFillModeApplied(canvasState.startingMetadata, selectedElement, 'fill') ||
+    isFixedHugFillModeApplied(canvasState.startingMetadata, selectedElement, 'stretch')
+  if (!isFillOrStretchContainer) {
     return null
   }
 
@@ -140,6 +138,10 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
 
       return strategyApplicationResult(
         setGridPropsCommands(selectedElement, gridTemplate, gridPropsWithDragOver(gridProps)),
+        // FIXME: This was added as a default value in https://github.com/concrete-utopia/utopia/pull/6408
+        // This was to maintain the existing behaviour, but it should be replaced with a more specific value
+        // appropriate to this particular case.
+        'rerender-all-elements',
         {
           grid: { ...customState.grid, targetCellData: targetCell },
         },

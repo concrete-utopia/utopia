@@ -26,6 +26,7 @@ import {
 import {
   fillContainerStrategyFlexParent,
   fillContainerStrategyFlow,
+  fillContainerStrategyGridParent,
 } from './fill-container-basic-strategy'
 import { setSpacingModePacked, setSpacingModeSpaceBetween } from './spacing-mode-strategies'
 import { convertLayoutToFlexCommands } from '../../common/shared-strategies/convert-to-flex-strategy'
@@ -226,6 +227,7 @@ export const setPropFillStrategies = (
   value: 'default' | number,
   otherAxisSetToFill: boolean,
 ): Array<InspectorStrategy> => [
+  fillContainerStrategyGridParent(metadata, elementPaths, axis),
   fillContainerStrategyFlexParent(metadata, elementPaths, axis, value),
   fillContainerStrategyFlow(metadata, elementPaths, axis, value, otherAxisSetToFill),
 ]

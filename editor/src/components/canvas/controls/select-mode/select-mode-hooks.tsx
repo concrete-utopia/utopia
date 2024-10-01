@@ -1,4 +1,5 @@
 import React from 'react'
+import ReactDOM from 'react-dom'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { uniqBy } from '../../../../core/shared/array-utils'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
@@ -17,6 +18,7 @@ import {
   selectComponents,
   setHoveredView,
   clearHoveredViews,
+  runDOMWalker,
 } from '../../../editor/actions/action-creators'
 import { cancelInsertModeActions } from '../../../editor/actions/meta-actions'
 import {
@@ -59,6 +61,9 @@ import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/grou
 import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks'
 import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
 import { handleMouseUp } from '../../../../templates/global-handlers'
+import { wait } from '../../../../core/model/performance-scripts'
+import { IS_TEST_ENVIRONMENT } from '../../../../common/env-vars'
+import { isFeatureEnabled } from '../../../../utils/feature-switches'
 
 export function isDragInteractionActive(editorState: EditorState): boolean {
   return editorState.canvas.interactionSession?.interactionData.type === 'DRAG'
@@ -641,7 +646,7 @@ function useSelectOrLiveModeSelectAndHover(
     [innerOnMouseMove, editorStoreRef],
   )
   const mouseHandler = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
+    async (event: React.MouseEvent<HTMLDivElement>) => {
       const isLeftClick = event.button === 0
       const isRightClick = event.type === 'contextmenu' && event.detail === 0
       const isCanvasPanIntention =
@@ -779,8 +784,10 @@ function useSelectOrLiveModeSelectAndHover(
         }
 
         if (!foundTargetIsSelected) {
-          // first we only set the selected views for the canvas controls
-          setSelectedViewsForCanvasControlsOnly(updatedSelection)
+          // first we only set the selected views for the canvas controls. however this will be clumped together with the dispatch, unless we wait asynchronously before we dispatch
+          ReactDOM.flushSync(() => {
+            setSelectedViewsForCanvasControlsOnly(updatedSelection)
+          })
 
           // In either case cancel insert mode.
           if (isInsertMode(editorStoreRef.current.editor.mode)) {
@@ -795,7 +802,19 @@ function useSelectOrLiveModeSelectAndHover(
           }
         }
       }
-      dispatch(editorActions)
+
+      if (event.detail === 1 && isFeatureEnabled('Canvas Fast Selection Hack')) {
+        // If event.detail is 1 that means this is a first click, where it is safe to delay dispatching actions
+        // to allow the localSelectedViews to be updated.
+        // For subsequent clicks, we want to dispatch immediately to avoid out of sync event handlers queueing up
+
+        dispatch(editorActions, 'canvas-fast-selection-hack') // first we dispatch only to update the editor state, but not run the expensive parts
+        await new Promise((resolve) => requestAnimationFrame(resolve)) // the first requestAnimationFrame fires in the same animation frame we are in, so we need to wait one more
+        await new Promise((resolve) => requestAnimationFrame(resolve)) // the second requestAnimationFrame is fired in the next actual animation frame, at which point it is safe to run the expensive parts
+        dispatch([runDOMWalker()], 'resume-canvas-fast-selection-hack') // then we dispatch to run the expensive parts
+      } else {
+        dispatch(editorActions)
+      }
     },
     [
       dispatch,

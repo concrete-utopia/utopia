@@ -1,4 +1,8 @@
 import {
+  combineElementsToRerender,
+  type ElementsToRerender,
+} from '../../../../components/editor/store/editor-state'
+import {
   getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../../../core/model/element-metadata-utils'
@@ -9,20 +13,20 @@ import { CSSCursor } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
 import { highlightElementsCommand } from '../../commands/highlight-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
-import { appendElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { onlyFitWhenThisControlIsActive, type MetaCanvasStrategy } from '../canvas-strategies'
 import type {
   CanvasStrategy,
   InteractionCanvasState,
   InteractionLifecycle,
+  StrategyApplicationResult,
 } from '../canvas-strategy-types'
 import { getTargetPathsFromInteractionTarget, targetPaths } from '../canvas-strategy-types'
 import { DoNothingStrategyID } from './drag-to-move-metastrategy'
-import {
-  retargetStrategyToChildrenOfFragmentLikeElements,
-  treatElementAsFragmentLike,
-} from './fragment-like-helpers'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
+import type { Optic } from '../../../../core/shared/optics/optics'
+import { filtered, fromField } from '../../../../core/shared/optics/optic-creators'
+import { modify } from '../../../../core/shared/optics/optic-utilities'
 
 const ANCESTOR_INCOMPATIBLE_STRATEGIES = [DoNothingStrategyID]
 
@@ -125,11 +129,7 @@ export function ancestorMetaStrategy(
       return nextAncestorResult.map((s) => ({
         ...s,
         fitness: fitness(s),
-        apply: appendCommandsToApplyResult(
-          s.apply,
-          [appendElementsToRerenderCommand([target])],
-          [],
-        ),
+        apply: appendElementsToRerenderToApplyResult(s.apply, [target]),
       }))
     } else {
       // Otherwise we should stop at this ancestor and return the strategies for this ancestor
@@ -150,22 +150,21 @@ export function ancestorMetaStrategy(
             id: `${s.id}_ANCESTOR_${level}`,
             name: applyLevelSuffix(s.name, level),
             fitness: fitness(s),
-            apply: appendCommandsToApplyResult(
-              s.apply,
-              [
-                appendElementsToRerenderCommand([target]),
-                highlightElementsCommand([parentPath]),
-                setCursorCommand(CSSCursor.MovingMagic),
-              ],
-              [
-                wildcardPatch('mid-interaction', {
-                  canvas: {
-                    controls: {
-                      dragToMoveIndicatorFlags: { ancestor: { $set: true } },
+            apply: appendElementsToRerenderToApplyResult(
+              appendCommandsToApplyResult(
+                s.apply,
+                [highlightElementsCommand([parentPath]), setCursorCommand(CSSCursor.MovingMagic)],
+                [
+                  wildcardPatch('mid-interaction', {
+                    canvas: {
+                      controls: {
+                        dragToMoveIndicatorFlags: { ancestor: { $set: true } },
+                      },
                     },
-                  },
-                }),
-              ],
+                  }),
+                ],
+              ),
+              [target],
             ),
           }
         }),
@@ -175,6 +174,7 @@ export function ancestorMetaStrategy(
 }
 
 type ApplyFn = CanvasStrategy['apply']
+
 export function appendCommandsToApplyResult(
   applyFn: ApplyFn,
   commandsToAppendToExtendResult: Array<CanvasCommand>,
@@ -201,6 +201,27 @@ export function appendCommandsToApplyResult(
     } else {
       return result
     }
+  }
+}
+
+const strategyResultElementsToRerenderOptic: Optic<StrategyApplicationResult, ElementsToRerender> =
+  filtered<StrategyApplicationResult>((result) => result.status === 'success').compose(
+    fromField('elementsToRerender'),
+  )
+
+export function appendElementsToRerenderToApplyResult(
+  applyFn: ApplyFn,
+  additionalElementsToRerender: ElementsToRerender,
+): ApplyFn {
+  return (strategyLifecycle: InteractionLifecycle) => {
+    const result = applyFn(strategyLifecycle)
+    return modify(
+      strategyResultElementsToRerenderOptic,
+      (toRerender) => {
+        return combineElementsToRerender(toRerender, additionalElementsToRerender)
+      },
+      result,
+    )
   }
 }
 
