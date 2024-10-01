@@ -308,38 +308,6 @@ describe('action TOGGLE_PANE', () => {
     )
     chaiExpect(updatedEditor2.inspector.visible).to.not.equal(updatedEditor.inspector.visible)
   })
-
-  it('can toggle preview visibility', () => {
-    const { editor, derivedState, dispatch } = createEditorStates()
-    const action = togglePanel('preview')
-    const updatedEditor = runLocalEditorAction(
-      editor,
-      derivedState,
-      defaultUserState,
-      workers,
-      action,
-      History.init(editor, derivedState),
-      dispatch,
-      emptyUiJsxCanvasContextData(),
-      builtInDependencies,
-      emptyCollaborativeEditingSupport(),
-      emptyProjectServerState(),
-    )
-    const updatedEditor2 = runLocalEditorAction(
-      updatedEditor,
-      derivedState,
-      defaultUserState,
-      workers,
-      action,
-      History.init(editor, derivedState),
-      dispatch,
-      emptyUiJsxCanvasContextData(),
-      builtInDependencies,
-      emptyCollaborativeEditingSupport(),
-      emptyProjectServerState(),
-    )
-    chaiExpect(updatedEditor2.preview.visible).to.not.equal(updatedEditor.preview.visible)
-  })
 })
 
 describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {

@@ -124,10 +124,6 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
     formulaBarMode: 'content',
     formulaBarFocusCounter: 0,
   },
-  preview: {
-    visible: false,
-    connected: false,
-  },
   home: {
     visible: false,
   },

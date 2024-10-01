@@ -602,11 +602,6 @@ export interface SetProjectDescription {
   description: string
 }
 
-export interface UpdatePreviewConnected {
-  action: 'UPDATE_PREVIEW_CONNECTED'
-  connected: boolean
-}
-
 export interface AlignSelectedViews {
   action: 'ALIGN_SELECTED_VIEWS'
   alignment: Alignment
@@ -626,10 +621,6 @@ export interface ShowContextMenu {
 export interface SetCursorOverlay {
   action: 'SET_CURSOR_OVERLAY'
   cursor: CSSCursor | null
-}
-
-export interface SendPreviewModel {
-  action: 'SEND_PREVIEW_MODEL'
 }
 
 export interface UpdateFilePath {
@@ -1278,13 +1269,11 @@ export type EditorAction =
   | OpenCodeEditor
   | SetProjectName
   | SetProjectDescription
-  | UpdatePreviewConnected
   | AlignSelectedViews
   | DistributeSelectedViews
   | SetCursorOverlay
   | DuplicateSpecificElements
   | UpdateDuplicationState
-  | SendPreviewModel
   | UpdateFilePath
   | UpdateRemixRoute
   | OpenCodeEditorFile

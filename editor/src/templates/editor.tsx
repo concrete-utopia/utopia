@@ -27,11 +27,6 @@ import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'
 import {
-  InternalPreviewTimeout,
-  previewIsAlive,
-  startPreviewConnectedMonitoring,
-} from '../components/editor/preview-report-handler'
-import {
   getLoginState,
   getUserConfiguration,
   startPollingLoginState,
@@ -83,7 +78,7 @@ import {
 } from '../components/canvas/ui-jsx-canvas'
 import { foldEither } from '../core/shared/either'
 import { getURLImportDetails, reuploadAssets } from '../core/model/project-import'
-import { isSendPreviewModel, load } from '../components/editor/actions/actions'
+import { load } from '../components/editor/actions/actions'
 import { UtopiaStyles } from '../uuiui'
 import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
 import type { LoginState } from '../common/user'
@@ -216,8 +211,6 @@ export class Editor {
   domWalkerMutableState: DomWalkerMutableStateData
 
   constructor() {
-    startPreviewConnectedMonitoring(this.boundDispatch)
-
     let emptyEditorState = createEditorState(this.boundDispatch)
     const derivedState = deriveState(
       emptyEditorState,
@@ -231,8 +224,6 @@ export class Editor {
     const history = History.init(emptyEditorState, derivedState)
 
     window.addEventListener('blur', this.resetStateOnBlur)
-
-    window.addEventListener('message', this.onMessage)
 
     const watchdogWorker = new RealWatchdogWorker()
 
@@ -401,14 +392,6 @@ export class Editor {
         })
       })
     })
-  }
-
-  onMessage = (event: MessageEvent): void => {
-    const eventData = event.data
-    if (isSendPreviewModel(eventData)) {
-      previewIsAlive(InternalPreviewTimeout)
-      this.boundDispatch([eventData], 'noone')
-    }
   }
 
   resetStateOnBlur = (): void => {

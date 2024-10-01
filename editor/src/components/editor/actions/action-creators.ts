@@ -92,7 +92,6 @@ import type {
   SaveImageSwitchMode,
   SelectAllSiblings,
   SelectComponents,
-  SendPreviewModel,
   SetAspectRatioLock,
   SetCanvasFrames,
   SetCodeEditorBuildErrors,
@@ -144,7 +143,6 @@ import type {
   UpdateKeysPressed,
   UpdateNodeModulesContents,
   UpdatePackageJson,
-  UpdatePreviewConnected,
   UpdatePropertyControlsInfo,
   CloseDesignerFile,
   SetFocusedElement,
@@ -974,13 +972,6 @@ export function setProjectDescription(projectDescription: string): SetProjectDes
   }
 }
 
-export function updatePreviewConnected(connected: boolean): UpdatePreviewConnected {
-  return {
-    action: 'UPDATE_PREVIEW_CONNECTED',
-    connected: connected,
-  }
-}
-
 export function alignSelectedViews(alignment: Alignment): AlignSelectedViews {
   return {
     action: 'ALIGN_SELECTED_VIEWS',
@@ -1003,12 +994,6 @@ export function showContextMenu(
     action: 'SHOW_CONTEXT_MENU',
     menuName: menuName,
     event: event,
-  }
-}
-
-export function sendPreviewModel(): SendPreviewModel {
-  return {
-    action: 'SEND_PREVIEW_MODEL',
   }
 }
 
