@@ -140,6 +140,7 @@ export interface NumberInputOptions {
   pasteHandler?: boolean
   descriptionLabel?: string
   disableScrubbing?: boolean
+  clampOnSubmitValue?: boolean
 }
 
 export interface AbstractNumberInputProps<T extends CSSNumber | number>
@@ -189,6 +190,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     invalid,
     pasteHandler,
     disableScrubbing = false,
+    clampOnSubmitValue,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const colorTheme = useColorTheme()
@@ -510,11 +512,12 @@ export const NumberInput = React.memo<NumberInputProps>(
           if (isLeft(parsed)) {
             return unknownInputValue(displayValue)
           }
-          const clamped = {
-            ...parsed.value,
-            value: clampValue(parsed.value.value, minimum, maximum),
-          }
-          return clamped
+          return clampOnSubmitValue
+            ? {
+                ...parsed.value,
+                value: clampValue(parsed.value.value, minimum, maximum),
+              }
+            : parsed.value
         }
 
         const newValue = getNewValue()
@@ -545,6 +548,7 @@ export const NumberInput = React.memo<NumberInputProps>(
         displayValue,
         minimum,
         maximum,
+        clampOnSubmitValue,
       ],
     )
 

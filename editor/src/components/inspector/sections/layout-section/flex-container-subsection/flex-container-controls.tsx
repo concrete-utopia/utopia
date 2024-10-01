@@ -329,6 +329,7 @@ export const FlexGapControl = React.memo(() => {
           key='flex.container.gap'
           value={value}
           minimum={0}
+          clampOnSubmitValue={true}
           onSubmitValue={wrappedOnSubmitValue}
           onTransientSubmitValue={wrappedOnTransientSubmitValue}
           onForcedSubmitValue={wrappedOnSubmitValue}
