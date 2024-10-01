@@ -445,13 +445,13 @@ export var storyboard = (
           data-uid='ddd'
           data-testid='grid-child'
         />
-		<div
+        <div
           style={{
             backgroundColor: '#9f0',
-			alignSelf: 'stretch',
-			justifySelf: 'stretch',
-			gridColumn: 4,
-			gridRow: 4,
+            alignSelf: 'stretch',
+            justifySelf: 'stretch',
+            gridColumn: 4,
+            gridRow: 4,
           }}
           data-uid='eee'
           data-testid='grid-child-stretch'
