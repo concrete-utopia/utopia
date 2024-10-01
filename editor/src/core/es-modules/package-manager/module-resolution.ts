@@ -134,7 +134,7 @@ function nodeModulesFileLookup(
   const targetOrigins = [originPath, ...nodeModulesPaths]
 
   for (const targetOrigin of targetOrigins) {
-    const packageJsonLookupFn = fileLookupForNodeModules(nodeModules)
+    const packageJsonLookupFn = nodeModulesFileForPathParts(nodeModules)
 
     const pathForLookup = path.startsWith('/')
       ? path
@@ -186,8 +186,10 @@ function getProjectFileContentsAsString(file: ProjectFile): string | null {
   }
 }
 
-type LocalFileLookup = (pathParts: string[]) => FileLookupResult
-function fileLookupForProjectContents(projectContents: ProjectContentTreeRoot): LocalFileLookup {
+type FileForPathParts = (pathParts: string[]) => FileLookupResult
+function projectContentsFileForPathParts(
+  projectContents: ProjectContentTreeRoot,
+): FileForPathParts {
   return (pathParts: string[]) => {
     const projectFile = getContentsTreeFileFromElements(projectContents, pathParts)
     if (projectFile == null) {
@@ -197,14 +199,14 @@ function fileLookupForProjectContents(projectContents: ProjectContentTreeRoot): 
       if (fileContents == null) {
         return resolveNotPresent
       } else {
-        const filename = makePathFromParts(pathParts) // TODO Is this still correct?
+        const filename = makePathFromParts(pathParts)
         return fileLookupResult(filename, esCodeFile(fileContents, 'PROJECT_CONTENTS', filename))
       }
     }
   }
 }
 
-function fileLookupForNodeModules(nodeModules: NodeModules): LocalFileLookup {
+function nodeModulesFileForPathParts(nodeModules: NodeModules): FileForPathParts {
   return (pathParts: string[]) => {
     const filename = makePathFromParts(pathParts)
     const nodeModulesFile = nodeModules[filename]
@@ -220,11 +222,11 @@ function projectContentsFileLookup(
   projectContents: ProjectContentTreeRoot,
   pathParts: string[],
 ): FileLookupResult {
-  return abstractFileLookup(fileLookupForProjectContents(projectContents), pathParts)
+  return abstractFileLookup(projectContentsFileForPathParts(projectContents), pathParts)
 }
 
 function abstractFileLookup(
-  localFileLookup: LocalFileLookup, // FIXME That's a bad name dawg
+  fileForPathParts: FileForPathParts,
   pathParts: string[],
 ): FileLookupResult {
   const normalisedPathParts = normalizePath(pathParts)
@@ -235,28 +237,27 @@ function abstractFileLookup(
   }
 
   // If X is a file, load X as its file extension format
-  const asFileResult = localFileLookup(normalisedPathParts)
+  const asFileResult = fileForPathParts(normalisedPathParts)
   if (isResolveSuccess(asFileResult)) {
     return asFileResult
   }
 
   // If X.js(x) is a file
   const withJs = lastPart + '.js'
-  const withJsResult = localFileLookup(pathToFile.concat(withJs))
+  const withJsResult = fileForPathParts(pathToFile.concat(withJs))
   if (isResolveSuccess(withJsResult)) {
     return withJsResult
   }
 
   const withJsx = lastPart + '.jsx'
-  const withJsxResult = localFileLookup(pathToFile.concat(withJsx))
+  const withJsxResult = fileForPathParts(pathToFile.concat(withJsx))
   if (isResolveSuccess(withJsxResult)) {
     return withJsxResult
   }
 
   // If X.json is a file, load X.json to a JavaScript Object
-  // TODO this also needs JSON parsing
   const withJson = lastPart + '.json'
-  const withJsonResult = localFileLookup(pathToFile.concat(withJson))
+  const withJsonResult = fileForPathParts(pathToFile.concat(withJson))
   if (isResolveSuccess(withJsonResult)) {
     return withJsonResult
   }
@@ -268,21 +269,20 @@ function projectContentsDirectoryLookup(
   projectContents: ProjectContentTreeRoot,
   pathParts: string[],
 ): FileLookupResult {
-  const innerLookup = fileLookupForProjectContents(projectContents)
+  const innerLookup = projectContentsFileForPathParts(projectContents)
   return abstractDirectoryLookup(innerLookup, pathParts)
 }
 
 function abstractDirectoryLookup(
-  localFileLookup: LocalFileLookup, // FIXME That's a bad name dawg
+  fileForPathParts: FileForPathParts,
   pathParts: string[],
 ): FileLookupResult {
   const normalisedPathParts = normalizePath(pathParts)
 
   // If X/package.json is a file
-  const jsonFileResult = localFileLookup(normalisedPathParts.concat('package.json'))
+  const jsonFileResult = fileForPathParts(normalisedPathParts.concat('package.json'))
   if (isResolveSuccess(jsonFileResult) && isEsCodeFile(jsonFileResult.success.file)) {
     // Parse X/package.json, and look for "browser", "main", "module" or "name" field
-    // TODO The spec only includes "browser" and "main" here...
     const mainEntryPath = processPackageJson(
       jsonFileResult.success.file.fileContents,
       normalisedPathParts,
@@ -290,14 +290,14 @@ function abstractDirectoryLookup(
 
     if (isResolveSuccess(mainEntryPath)) {
       // try loading the entry path as a file
-      const mainEntryResult = abstractFileLookup(localFileLookup, mainEntryPath.success)
+      const mainEntryResult = abstractFileLookup(fileForPathParts, mainEntryPath.success)
       if (isResolveSuccess(mainEntryResult)) {
         return mainEntryResult
       }
 
       // attempt to load it as a folder with an index.js
       const mainEntryIndexJSResult = abstractFileLookup(
-        localFileLookup,
+        fileForPathParts,
         mainEntryPath.success.concat('index.js'),
       )
       if (isResolveSuccess(mainEntryIndexJSResult)) {
@@ -306,7 +306,7 @@ function abstractDirectoryLookup(
 
       // attempt to load the containing folder as a folder with an index.js (this is deprecated in the spec so maybe we shouldn't)
       const containingFolderIndexJSResult = abstractFileLookup(
-        localFileLookup,
+        fileForPathParts,
         normalisedPathParts.concat('index.js'),
       )
       if (isResolveSuccess(containingFolderIndexJSResult)) {
@@ -317,7 +317,7 @@ function abstractDirectoryLookup(
 
   // no main entry, so attempt to load the containing folder as a folder with an index.js
   const containingFolderIndexJSResult = abstractFileLookup(
-    localFileLookup,
+    fileForPathParts,
     normalisedPathParts.concat('index.js'),
   )
   if (isResolveSuccess(containingFolderIndexJSResult)) {
@@ -330,7 +330,7 @@ function abstractDirectoryLookup(
 type PackageLookupResult = { packageJsonFileResult: FileLookupResult; packageJsonDir: string }
 function findClosestPackageScopeToPath(
   path: string,
-  localFileLookup: LocalFileLookup,
+  localFileLookup: FileForPathParts,
 ): PackageLookupResult {
   const originPathPartsToTest = normalizePath(getPartsFromPath(path))
   const allPossiblePackageJsonPaths = [['package.json']]
@@ -361,7 +361,7 @@ function findClosestPackageScopeToPath(
 function packageImportsLookup(
   path: string,
   originPath: string,
-  packageJsonLookupFn: LocalFileLookup,
+  packageJsonLookupFn: FileForPathParts,
   lookupFn: FileLookupFn,
 ): FileLookupResult {
   return packageImportsExportsLookup(path, originPath, packageJsonLookupFn, lookupFn, 'imports')
@@ -370,7 +370,7 @@ function packageImportsLookup(
 function packageExportsLookup(
   path: string,
   originPath: string,
-  packageJsonLookupFn: LocalFileLookup,
+  packageJsonLookupFn: FileForPathParts,
   lookupFn: FileLookupFn,
 ): FileLookupResult {
   // Find the closest package scope SCOPE
@@ -421,7 +421,8 @@ function innerPackageImportsExportsLookup(
     return resolveNotPresent
   }
 
-  // FIXME partial path lookup
+  // FIXME partial path lookup because the exports field could be along the lines of `{ '@thing': { stuff: { ... }} }`
+  // in which case we would want to match that against the import `@thing/stuff`
   const importsOrExportsResult =
     typeof importsOrExportsEntry === 'string' ? importsOrExportsEntry : importsOrExportsEntry[path]
   if (importsOrExportsResult == null) {
@@ -472,7 +473,7 @@ function innerPackageImportsExportsLookup(
 function packageImportsExportsLookup(
   path: string,
   originPath: string,
-  packageJsonLookupFn: LocalFileLookup,
+  packageJsonLookupFn: FileForPathParts,
   lookupFn: FileLookupFn,
   importsOrExportsField: 'imports' | 'exports',
 ): FileLookupResult {
@@ -730,8 +731,8 @@ function resolveModuleAndApplySubstitutions(
         path,
         innerImportOrigin,
         innerImportOrigin.startsWith('/node_modules')
-          ? fileLookupForNodeModules(nodeModules)
-          : fileLookupForProjectContents(projectContents),
+          ? nodeModulesFileForPathParts(nodeModules)
+          : projectContentsFileForPathParts(projectContents),
         lookupFn,
       )
     }
@@ -740,7 +741,7 @@ function resolveModuleAndApplySubstitutions(
     const packageExportsResult = packageExportsLookup(
       path,
       innerImportOrigin,
-      fileLookupForProjectContents(projectContents),
+      projectContentsFileForPathParts(projectContents),
       lookupFn,
     )
 
