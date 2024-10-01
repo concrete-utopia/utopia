@@ -679,14 +679,23 @@ export function detectFillHugFixedState(
   )
 
   if (MetadataUtils.isGridCell(metadata, elementPath)) {
-    if (
+    const isStretchingExplicitly =
       (element.specialSizeMeasurements.alignSelf === 'stretch' &&
         axis === 'horizontal' &&
         width == null) ||
       (element.specialSizeMeasurements.justifySelf === 'stretch' &&
         axis === 'vertical' &&
         height == null)
-    ) {
+
+    const isStretchingImplicitly =
+      width == null &&
+      height == null &&
+      (element.specialSizeMeasurements.alignSelf == null ||
+        element.specialSizeMeasurements.alignSelf === 'auto') &&
+      (element.specialSizeMeasurements.justifySelf == null ||
+        element.specialSizeMeasurements.justifySelf === 'auto')
+
+    if (isStretchingExplicitly || isStretchingImplicitly) {
       return { fixedHugFill: { type: 'stretch' }, controlStatus: 'detected' }
     }
   }
