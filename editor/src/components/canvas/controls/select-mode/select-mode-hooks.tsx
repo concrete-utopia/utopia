@@ -60,7 +60,7 @@ import { getAllLockedElementPaths } from '../../../../core/shared/element-lockin
 import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
 import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks'
 import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
-import { handleMouseUp } from '../../../../templates/global-handlers'
+import { handleGlobalMouseUp } from '../../../../templates/global-handlers'
 import { wait } from '../../../../core/model/performance-scripts'
 import { IS_TEST_ENVIRONMENT } from '../../../../common/env-vars'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
@@ -674,7 +674,7 @@ function useSelectOrLiveModeSelectAndHover(
         didWeHandleMouseDown.current = true
       }
       if (event.type === 'mouseup') {
-        const handleMouseUpActions = handleMouseUp(event.nativeEvent)
+        const handleMouseUpActions = handleGlobalMouseUp(event.nativeEvent)
         editorActions.push(...handleMouseUpActions)
         // Clear the interaction session tracking flag
         interactionSessionHappened.current = false

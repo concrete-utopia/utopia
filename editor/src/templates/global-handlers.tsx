@@ -12,7 +12,7 @@ export function removeMouseUpHandler(handler: MouseHandler): void {
   mouseUpHandlers = mouseUpHandlers.filter((mouseUpHandler) => mouseUpHandler !== handler)
 }
 
-export function handleMouseUp(event: MouseEvent): Array<EditorAction> {
+export function handleGlobalMouseUp(event: MouseEvent): Array<EditorAction> {
   let result: Array<EditorAction> = []
   for (const handler of mouseUpHandlers) {
     result.push(...handler(event))
