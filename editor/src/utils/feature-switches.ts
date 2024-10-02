@@ -15,6 +15,7 @@ export type FeatureName =
   | 'Debug - Print UIDs'
   | 'Debug – Connections'
   | 'Parser Concurrency'
+  | 'Log Concurrency Timings'
   | 'Condensed Navigator Entries'
   | 'Canvas Fast Selection Hack'
   | 'Roll Your Own'
@@ -34,6 +35,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Debug - Print UIDs',
   'Debug – Connections',
   'Parser Concurrency',
+  'Log Concurrency Timings',
   'Condensed Navigator Entries',
   'Canvas Fast Selection Hack',
   'Roll Your Own',
@@ -53,6 +55,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug - Print UIDs': false,
   'Debug – Connections': false,
   'Parser Concurrency': !IS_TEST_ENVIRONMENT,
+  'Log Concurrency Timings': false,
   Tailwind: false,
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
   'Canvas Fast Selection Hack': true,
