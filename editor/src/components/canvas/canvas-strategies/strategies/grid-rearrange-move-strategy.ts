@@ -112,11 +112,11 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         updateBulkProperties('mid-interaction', parentGridPath, [
           propertyToSet(
             PP.create('style', 'gridTemplateColumns'),
-            printGridAutoOrTemplateBase(initialTemplates.calculated.columns, 'show-area-name'),
+            printGridAutoOrTemplateBase(initialTemplates.calculated.columns),
           ),
           propertyToSet(
             PP.create('style', 'gridTemplateRows'),
-            printGridAutoOrTemplateBase(initialTemplates.calculated.rows, 'show-area-name'),
+            printGridAutoOrTemplateBase(initialTemplates.calculated.rows),
           ),
         ]),
       ]
@@ -293,8 +293,8 @@ function restoreGridTemplateFromProps(params: {
   rows: GridAutoOrTemplateBase
 }): PropertyToUpdate[] {
   let properties: PropertyToUpdate[] = []
-  const newCols = printGridAutoOrTemplateBase(params.columns, 'show-area-name')
-  const newRows = printGridAutoOrTemplateBase(params.rows, 'show-area-name')
+  const newCols = printGridAutoOrTemplateBase(params.columns)
+  const newRows = printGridAutoOrTemplateBase(params.rows)
   if (newCols === '') {
     properties.push(propertyToDelete(PP.create('style', 'gridTemplateColumns')))
   } else {

@@ -250,7 +250,7 @@ const TemplateDimensionControl = React.memo(
               'always',
               grid.elementPath,
               PP.create('style', axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows'),
-              printArrayGridDimensions(newDimensions, 'show-area-name'),
+              printArrayGridDimensions(newDimensions),
             ),
           ]),
         ])
@@ -305,7 +305,7 @@ const TemplateDimensionControl = React.memo(
             'always',
             grid.elementPath,
             PP.create('style', axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows'),
-            printArrayGridDimensions(newValues, 'show-area-name'),
+            printArrayGridDimensions(newValues),
           ),
         ]
 
@@ -375,7 +375,7 @@ const TemplateDimensionControl = React.memo(
             'always',
             grid.elementPath,
             PP.create('style', axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows'),
-            printArrayGridDimensions(newValues, 'show-area-name'),
+            printArrayGridDimensions(newValues),
           ),
         ]),
       ])
@@ -416,7 +416,7 @@ const TemplateDimensionControl = React.memo(
             'always',
             grid.elementPath,
             PP.create('style', axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows'),
-            printArrayGridDimensions(newValues, 'show-area-name'),
+            printArrayGridDimensions(newValues),
           ),
         ]
 

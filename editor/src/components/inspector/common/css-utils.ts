@@ -904,57 +904,42 @@ export function printCSSNumber(
   }
 }
 
-export type ShowOrHideAreaName = 'show-area-name' | 'hide-area-name'
+export function printGridDimension(dimension: GridDimension): string {
+  const areaName = dimension.areaName != null ? `[${dimension.areaName}] ` : ''
+  return areaName + stringifyGridDimension(dimension)
+}
 
-export function printGridDimension(
-  dimension: GridDimension,
-  showAreaName: ShowOrHideAreaName,
-): string {
-  const areaName =
-    dimension.areaName != null && showAreaName === 'show-area-name'
-      ? `[${dimension.areaName}] `
-      : ''
+export function stringifyGridDimension(dimension: GridDimension): string {
   switch (dimension.type) {
     case 'KEYWORD': {
-      return `${areaName}${dimension.value.value}`
+      return dimension.value.value
     }
     case 'NUMBER': {
-      const printed = printCSSNumber(dimension.value, null)
-      return `${areaName}${printed}`
+      return `${printCSSNumber(dimension.value, null)}`
     }
     case 'REPEAT': {
-      return `repeat(${
-        isCSSKeyword(dimension.times) ? dimension.times.value : dimension.times
-      }, ${printArrayGridDimensions(dimension.value, 'show-area-name')})`
+      const times = isCSSKeyword(dimension.times) ? dimension.times.value : dimension.times
+      const values = dimension.value.map(printGridDimension).join(' ')
+      return `repeat(${times}, ${values})`
     }
     case 'MINMAX': {
-      return (
-        areaName +
-        `minmax(${printGridDimension(dimension.min, 'show-area-name')}, ${printGridDimension(
-          dimension.max,
-          showAreaName,
-        )})`
-      )
+      const min = stringifyGridDimension(dimension.min)
+      const max = stringifyGridDimension(dimension.max)
+      return `minmax(${min}, ${max})`
     }
     default:
       assertNever(dimension)
   }
 }
 
-export function printArrayGridDimensions(
-  array: Array<GridDimension>,
-  showOrHideAreaName: ShowOrHideAreaName,
-): string {
-  return array.map((v) => printGridDimension(v, showOrHideAreaName)).join(' ')
+export function printArrayGridDimensions(array: Array<GridDimension>): string {
+  return array.map(printGridDimension).join(' ')
 }
 
-export function printGridAutoOrTemplateBase(
-  input: GridAutoOrTemplateBase,
-  showAreaName: ShowOrHideAreaName,
-): string {
+export function printGridAutoOrTemplateBase(input: GridAutoOrTemplateBase): string {
   switch (input.type) {
     case 'DIMENSIONS':
-      return printArrayGridDimensions(input.dimensions, showAreaName)
+      return printArrayGridDimensions(input.dimensions)
     case 'FALLBACK':
       return input.value
     default:
