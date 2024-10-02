@@ -155,7 +155,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
 
 function getNewGridPropsFromResizeBox(
   resizeBoundingBox: CanvasRectangle,
-  selectedElementGridProps: GridElementProperties | null,
+  gridProps: GridElementProperties | null,
   allCellBounds: CanvasRectangle[][],
 ) {
   const gridPositionToNumber = (
@@ -164,10 +164,10 @@ function getNewGridPropsFromResizeBox(
   ): number => {
     return p == null || isCSSKeyword(p) ? defaultValue : p.numericalPosition ?? defaultValue
   }
-  let newRowStart = gridPositionToNumber(selectedElementGridProps?.gridRowStart, Infinity)
-  let newRowEnd = gridPositionToNumber(selectedElementGridProps?.gridRowEnd, -Infinity)
-  let newColumnStart = gridPositionToNumber(selectedElementGridProps?.gridColumnStart, Infinity)
-  let newColumnEnd = gridPositionToNumber(selectedElementGridProps?.gridColumnEnd, -Infinity)
+  let newRowStart = gridPositionToNumber(gridProps?.gridRowStart, Infinity)
+  let newRowEnd = gridPositionToNumber(gridProps?.gridRowEnd, -Infinity)
+  let newColumnStart = gridPositionToNumber(gridProps?.gridColumnStart, Infinity)
+  let newColumnEnd = gridPositionToNumber(gridProps?.gridColumnEnd, -Infinity)
 
   for (let rowIdx = 0; rowIdx < allCellBounds.length; rowIdx++) {
     for (let colIdx = 0; colIdx < allCellBounds[rowIdx].length; colIdx++) {
