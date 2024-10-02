@@ -164,10 +164,10 @@ function getNewGridPropsFromResizeBox(
   ): number => {
     return p == null || isCSSKeyword(p) ? defaultValue : p.numericalPosition ?? defaultValue
   }
-  let newRowStart = gridPositionToNumber(gridProps?.gridRowStart, Infinity)
-  let newRowEnd = gridPositionToNumber(gridProps?.gridRowEnd, -Infinity)
-  let newColumnStart = gridPositionToNumber(gridProps?.gridColumnStart, Infinity)
-  let newColumnEnd = gridPositionToNumber(gridProps?.gridColumnEnd, -Infinity)
+  let newRowStart = Infinity
+  let newRowEnd = -Infinity
+  let newColumnStart = Infinity
+  let newColumnEnd = -Infinity
 
   for (let rowIdx = 0; rowIdx < allCellBounds.length; rowIdx++) {
     for (let colIdx = 0; colIdx < allCellBounds[rowIdx].length; colIdx++) {
