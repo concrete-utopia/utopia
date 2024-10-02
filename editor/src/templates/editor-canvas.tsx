@@ -106,6 +106,7 @@ import { getCanvasViewportCenter } from './paste-helpers'
 import { DataPasteHandler, isPasteHandler } from '../utils/paste-handler'
 import { ResizeObserver } from '../components/canvas/dom-walker'
 import { isInsideColorPicker } from '../components/inspector/controls/color-picker-utils'
+import { addMouseUpHandler, removeMouseUpHandler } from './global-handlers'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -1372,14 +1373,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     }
   }
 
-  handleWindowMouseUp = (event: any) => {
-    this.props.dispatch(this.handleMouseUp(event))
-  }
-
   setupWindowListeners() {
     window.addEventListener('mousemove', this.handleMouseMove, { capture: true }) // we use this event in the capture phase because size-box.ts calls stopPropagation() on mouseMove
     window.addEventListener('mouseleave', this.handleMouseLeave)
-    window.addEventListener('mouseup', this.handleWindowMouseUp, { capture: true })
+    addMouseUpHandler(this.handleMouseUp)
     window.addEventListener('click', this.handleClick)
     window.addEventListener('dblclick', this.handleDoubleClick)
     ;(window as any).addEventListener('paste', this.handlePaste)
@@ -1388,7 +1385,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   removeEventListeners() {
     window.removeEventListener('mousemove', this.handleMouseMove, { capture: true })
     window.removeEventListener('mouseleave', this.handleMouseLeave)
-    window.removeEventListener('mouseup', this.handleWindowMouseUp, { capture: true })
+    removeMouseUpHandler(this.handleMouseUp)
     window.removeEventListener('click', this.handleClick)
     window.removeEventListener('dblclick', this.handleDoubleClick)
     ;(window as any).removeEventListener('paste', this.handlePaste)

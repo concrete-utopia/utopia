@@ -24,12 +24,7 @@ export const GridPanelsNumberOfRows = 12
 export type Menu = 'inspector' | 'navigator'
 export type Pane = 'code-editor'
 
-export const allMenusAndPanels: Array<Menu | Pane> = [
-  'navigator',
-  'code-editor',
-  'inspector',
-  // 'preview', // Does this exist?
-]
+export const allMenusAndPanels: Array<Menu | Pane> = ['navigator', 'code-editor', 'inspector']
 
 export interface GridPanelData {
   panel: StoredPanel

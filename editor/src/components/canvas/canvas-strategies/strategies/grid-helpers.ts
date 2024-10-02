@@ -4,7 +4,6 @@ import * as EP from '../../../../core/shared/element-path'
 import type {
   ElementInstanceMetadataMap,
   GridPositionValue,
-  GridTemplate,
 } from '../../../../core/shared/element-template'
 import {
   gridPositionValue,
@@ -16,7 +15,6 @@ import {
 import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
-  canvasRectangle,
   canvasVector,
   isInfinityRectangle,
   offsetPoint,
@@ -36,11 +34,14 @@ import { deleteProperties } from '../../commands/delete-properties-command'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { setCssLengthProperty } from '../../commands/set-css-length-command'
 import { setProperty } from '../../commands/set-property-command'
-import type { GridCustomStrategyState } from '../canvas-strategy-types'
+import type {
+  CustomStrategyState,
+  CustomStrategyStatePatch,
+  GridCustomStrategyState,
+} from '../canvas-strategy-types'
 import type { DragInteractionData } from '../interaction-state'
 import type { GridCellCoordinates } from './grid-cell-bounds'
 import { getGridCellUnderMouseFromMetadata, gridCellCoordinates } from './grid-cell-bounds'
-import { memoize } from '../../../../core/shared/memoize'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { assertNever } from '../../../../core/shared/utils'
 
@@ -580,70 +581,16 @@ function getGridPositionIndex(props: {
 
 export type GridCellGlobalFrames = Array<Array<CanvasRectangle>>
 
-function getGlobalFramesOfGridCellsInner(
-  metadata: ElementInstanceMetadata,
-): GridCellGlobalFrames | null {
-  const { globalFrame } = metadata
-  if (globalFrame == null || isInfinityRectangle(globalFrame)) {
-    return null
-  }
-
-  const { containerGridProperties, padding, rowGap, columnGap } = metadata.specialSizeMeasurements
-
-  const columnWidths = gridTemplateToNumbers(containerGridProperties.gridTemplateColumns)
-
-  const rowHeights = gridTemplateToNumbers(containerGridProperties.gridTemplateRows)
-
-  if (columnWidths == null || rowHeights == null) {
-    return null
-  }
-
-  const cellRects: Array<Array<CanvasRectangle>> = []
-  let yOffset = globalFrame.y + (padding.top ?? 0)
-  rowHeights.forEach((height) => {
-    let xOffset = globalFrame.x + (padding.left ?? 0)
-    const rowRects: CanvasRectangle[] = []
-    columnWidths.forEach((width) => {
-      const rect = canvasRectangle({ x: xOffset, y: yOffset, width: width, height: height })
-      rowRects.push(rect)
-      xOffset += width + (columnGap ?? 0)
-    })
-    cellRects.push(rowRects)
-    yOffset += height + (rowGap ?? 0)
-  })
-
-  return cellRects
-}
-
-export const getGlobalFramesOfGridCells = memoize(getGlobalFramesOfGridCellsInner)
-
 export function getGlobalFrameOfGridCell(
   grid: ElementInstanceMetadata,
   coords: GridCellCoordinates,
 ): CanvasRectangle | null {
-  const gridCellGlobalFrames = getGlobalFramesOfGridCells(grid)
+  const gridCellGlobalFrames = grid.specialSizeMeasurements.gridCellGlobalFrames
   if (gridCellGlobalFrames == null) {
     return null
   }
 
   return gridCellGlobalFrames[coords.row - 1]?.[coords.column - 1] ?? null
-}
-
-function gridTemplateToNumbers(gridTemplate: GridTemplate | null): Array<number> | null {
-  if (gridTemplate?.type !== 'DIMENSIONS') {
-    return null
-  }
-
-  const result: Array<number> = []
-
-  for (const dimension of gridTemplate.dimensions) {
-    if (dimension.type !== 'NUMBER') {
-      return null
-    }
-    result.push(dimension.value.value)
-  }
-
-  return result
 }
 
 type DimensionIndexes = {
@@ -814,4 +761,51 @@ export function getGridRelatedIndexes(params: {
   })
 
   return expandedRelatedIndexes[params.index] ?? []
+}
+
+export function getMetadataWithGridCellBounds(
+  path: ElementPath | null | undefined,
+  startingMetadata: ElementInstanceMetadataMap,
+  latestMetadata: ElementInstanceMetadataMap,
+  customStrategyState: CustomStrategyState,
+): {
+  metadata: ElementInstanceMetadata | null
+  foundIn: 'startingMetadata' | 'latestMetadata' | 'strategyState' | null
+} {
+  if (path == null) {
+    return {
+      metadata: null,
+      foundIn: null,
+    }
+  }
+
+  const fromStartingMetadata = MetadataUtils.findElementByElementPath(startingMetadata, path)
+
+  if (fromStartingMetadata?.specialSizeMeasurements.gridCellGlobalFrames != null) {
+    return {
+      metadata: fromStartingMetadata,
+      foundIn: 'startingMetadata',
+    }
+  }
+
+  const fromStrategyState = customStrategyState.grid.metadataCacheForGrids[EP.toString(path)]
+  if (fromStrategyState != null) {
+    return {
+      metadata: fromStrategyState,
+      foundIn: 'strategyState',
+    }
+  }
+
+  const fromLatestMetadata = MetadataUtils.findElementByElementPath(latestMetadata, path)
+  if (fromLatestMetadata?.specialSizeMeasurements.gridCellGlobalFrames != null) {
+    return {
+      metadata: fromLatestMetadata,
+      foundIn: 'latestMetadata',
+    }
+  }
+
+  return {
+    metadata: fromStartingMetadata,
+    foundIn: 'startingMetadata',
+  }
 }

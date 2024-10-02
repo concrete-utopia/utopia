@@ -411,6 +411,8 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
   switch (props.axisValues.type) {
     case 'DIMENSIONS':
       const size = GRID_RESIZE_HANDLE_CONTAINER_SIZE / canvasScale
+      const dimensions = props.axisValues.dimensions
+
       return (
         <div
           style={{
@@ -422,11 +424,11 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
             display: 'grid',
             gridTemplateColumns:
               props.axis === 'column'
-                ? props.axisValues.dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
+                ? dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
                 : undefined,
             gridTemplateRows:
               props.axis === 'row'
-                ? props.axisValues.dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
+                ? dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
                 : undefined,
             gap: props.gap ?? 0,
             paddingLeft:
@@ -437,7 +439,7 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
               props.axis === 'row' && props.padding != null ? `${props.padding.top}px` : undefined,
           }}
         >
-          {props.axisValues.dimensions.flatMap((dimension, dimensionIndex) => {
+          {dimensions.flatMap((dimension, dimensionIndex) => {
             return (
               <GridResizingControl
                 key={`grid-resizing-control-${dimensionIndex}`}
@@ -580,9 +582,47 @@ export const GridRowColumnResizingControls =
       }, 0)
     }
 
+    const scale = useEditorState(
+      Substores.canvas,
+      (store) => store.editor.canvas.scale,
+      'GridRowColumnResizingControls scale',
+    )
+
+    const gridsWithVisibleResizeControls = React.useMemo(() => {
+      return grids.filter((grid) => {
+        if (
+          grid.gridTemplateColumns?.type !== 'DIMENSIONS' ||
+          grid.gridTemplateRows?.type !== 'DIMENSIONS'
+        ) {
+          return false
+        }
+
+        // returns whether the rendered dimensions are too crowded, as in there are two cols/rows that are closer than the handle sizes
+        function tooCrowded(dimensions: GridDimension[]): boolean {
+          const visualSizes = dimensions.map(
+            (dim) => (dim.type === 'NUMBER' ? dim.value.value : 0) * scale,
+          )
+          return visualSizes.some((dim, index) => {
+            if (index < visualSizes.length - 1) {
+              const next = visualSizes[index + 1]
+              if (dim + next < GRID_RESIZE_HANDLE_SIZE * 2) {
+                return true
+              }
+            }
+            return false
+          })
+        }
+
+        return (
+          !tooCrowded(grid.gridTemplateColumns.dimensions) &&
+          !tooCrowded(grid.gridTemplateRows.dimensions)
+        )
+      })
+    }, [scale, grids])
+
     return (
       <CanvasOffsetWrapper>
-        {grids.flatMap((grid) => {
+        {gridsWithVisibleResizeControls.flatMap((grid) => {
           return (
             <GridResizing
               key={`grid-resizing-column-${EP.toString(grid.elementPath)}`}
@@ -596,7 +636,7 @@ export const GridRowColumnResizingControls =
             />
           )
         })}
-        {grids.flatMap((grid) => {
+        {gridsWithVisibleResizeControls.flatMap((grid) => {
           return (
             <GridResizing
               key={`grid-resizing-row-${EP.toString(grid.elementPath)}`}
@@ -627,7 +667,11 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
   const features = useRollYourOwnFeatures()
 
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-  const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'GridControls scale',
+  )
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const activelyDraggingOrResizingCell = useEditorState(
@@ -797,7 +841,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
         setInitialShadowFrame(params.frame)
 
         const start = windowToCanvasCoordinates(
-          scaleRef.current,
+          scale,
           canvasOffsetRef.current,
           windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
         )
@@ -813,7 +857,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
           ),
         ])
       },
-    [canvasOffsetRef, dispatch, scaleRef],
+    [canvasOffsetRef, dispatch, scale],
   )
 
   // NOTE: this stuff is meant to be temporary, until we settle on the set of interaction pieces we like.
@@ -884,7 +928,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
   }
 
   return (
-    <React.Fragment>
+    <div id={'grid-controls'}>
       <CanvasOffsetWrapper>
         {/* grid lines */}
         {grids.map((grid) => {
@@ -935,6 +979,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
             <div
               key={gridKeyFromPath(grid.elementPath)}
               id={gridKeyFromPath(grid.elementPath)}
+              data-grid-path={EP.toString(grid.elementPath)}
               style={style}
             >
               {placeholders.map((cell) => {
@@ -961,23 +1006,25 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                     id={id}
                     data-testid={id}
                     style={{
-                      borderTop: gridPlaceholderBorder(borderColor),
-                      borderLeft: gridPlaceholderBorder(borderColor),
+                      borderTop: gridPlaceholderBorder(borderColor, scale),
+                      borderLeft: gridPlaceholderBorder(borderColor, scale),
                       borderBottom:
                         isActiveCell ||
                         countedRow >= grid.rows ||
                         (grid.rowGap != null && grid.rowGap > 0)
-                          ? gridPlaceholderBorder(borderColor)
+                          ? gridPlaceholderBorder(borderColor, scale)
                           : undefined,
                       borderRight:
                         isActiveCell ||
                         countedColumn >= grid.columns ||
                         (grid.columnGap != null && grid.columnGap > 0)
-                          ? gridPlaceholderBorder(borderColor)
+                          ? gridPlaceholderBorder(borderColor, scale)
                           : undefined,
                       position: 'relative',
                       pointerEvents: 'initial',
                     }}
+                    data-grid-row={countedRow}
+                    data-grid-column={countedColumn}
                   >
                     {when(
                       features.Grid.dotgrid,
@@ -1106,7 +1153,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
         ) : null}
         <AbsoluteDistanceIndicators targetRootCell={targetRootCell} />
       </CanvasOffsetWrapper>
-    </React.Fragment>
+    </div>
   )
 })
 
@@ -1552,7 +1599,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
     const element = useEditorState(
       Substores.metadata,
       (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
-      'GridResizeShadow element',
+      'GridResizeControls element',
     )
 
     const dispatch = useDispatch()
@@ -1560,7 +1607,7 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
     const scale = useEditorState(
       Substores.canvas,
       (store) => store.editor.canvas.scale,
-      'GridResizingControl scale',
+      'GridResizeControls scale',
     )
 
     const resizeControlRef = useRefEditorState((store) =>
@@ -1780,7 +1827,7 @@ function gridKeyFromPath(path: ElementPath): string {
   return `grid-${EP.toString(path)}`
 }
 
-const gridPlaceholderBorder = (color: string) => `2px solid ${color}`
+const gridPlaceholderBorder = (color: string, scale: number) => `${2 / scale}px solid ${color}`
 
 export function controlsForGridPlaceholders(gridPath: ElementPath): ControlWithProps<any> {
   return {
