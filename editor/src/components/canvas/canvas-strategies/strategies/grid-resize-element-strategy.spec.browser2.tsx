@@ -14,7 +14,7 @@ import {
   localRectangle,
   offsetPoint,
 } from '../../../../core/shared/math-utils'
-import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { GridResizeEdgeTestId } from '../../controls/grid-controls'
 import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
