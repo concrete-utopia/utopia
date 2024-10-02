@@ -904,7 +904,7 @@ export function printCSSNumber(
   }
 }
 
-export function printGridDimension(dimension: GridDimension): string {
+export function printGridDimensionCSS(dimension: GridDimension): string {
   const areaName = dimension.areaName != null ? `[${dimension.areaName}] ` : ''
   return areaName + stringifyGridDimension(dimension)
 }
@@ -919,7 +919,7 @@ export function stringifyGridDimension(dimension: GridDimension): string {
     }
     case 'REPEAT': {
       const times = isCSSKeyword(dimension.times) ? dimension.times.value : dimension.times
-      const values = dimension.value.map(printGridDimension).join(' ')
+      const values = dimension.value.map(printGridDimensionCSS).join(' ')
       return `repeat(${times}, ${values})`
     }
     case 'MINMAX': {
@@ -933,7 +933,7 @@ export function stringifyGridDimension(dimension: GridDimension): string {
 }
 
 export function printArrayGridDimensions(array: Array<GridDimension>): string {
-  return array.map(printGridDimension).join(' ')
+  return array.map(printGridDimensionCSS).join(' ')
 }
 
 export function printGridAutoOrTemplateBase(input: GridAutoOrTemplateBase): string {
