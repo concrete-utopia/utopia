@@ -158,12 +158,6 @@ function getNewGridPropsFromResizeBox(
   gridProps: GridElementProperties | null,
   allCellBounds: CanvasRectangle[][],
 ) {
-  const gridPositionToNumber = (
-    p: GridPosition | null | undefined,
-    defaultValue: number,
-  ): number => {
-    return p == null || isCSSKeyword(p) ? defaultValue : p.numericalPosition ?? defaultValue
-  }
   let newRowStart = Infinity
   let newRowEnd = -Infinity
   let newColumnStart = Infinity
