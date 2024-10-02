@@ -602,14 +602,15 @@ export const GridRowColumnResizingControls =
           const visualSizes = dimensions.map(
             (dim) => (dim.type === 'NUMBER' ? dim.value.value : 0) * scale,
           )
-          for (let i = 0; i < visualSizes.length - 1; i++) {
-            const curr = visualSizes[i]
-            const next = visualSizes[i + 1]
-            if (curr + next < GRID_RESIZE_HANDLE_SIZE * 2) {
-              return true
+          return visualSizes.some((dim, index) => {
+            if (index < visualSizes.length - 1) {
+              const next = visualSizes[index + 1]
+              if (dim + next < GRID_RESIZE_HANDLE_SIZE * 2) {
+                return true
+              }
             }
-          }
-          return false
+            return false
+          })
         }
 
         return (
