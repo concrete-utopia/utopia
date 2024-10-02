@@ -349,7 +349,7 @@ export function drawToInsertStrategyFactory(
 
               return strategyApplicationResult(
                 [insertionCommand.command, reparentCommand, ...optionalWrappingCommand],
-                [], // TODO: check
+                [targetParent.intendedParentPath],
                 {
                   strategyGeneratedUidsCache: {
                     [insertionSubject.uid]: maybeWrapperWithUid?.uid,
