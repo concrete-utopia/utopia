@@ -231,12 +231,12 @@ export function applyAbsoluteReparent(
             },
           )
         } else {
-          const moveCommands =
+          return (
             absoluteMoveStrategy(canvasState, interactionSession, {
               ...defaultCustomStrategyState(),
               action: 'reparent',
-            })?.strategy.apply(strategyLifecycle).commands ?? []
-          return strategyApplicationResult(moveCommands, 'rerender-all-elements')
+            })?.strategy.apply(strategyLifecycle) ?? emptyStrategyApplicationResult
+          )
         }
       },
     )
