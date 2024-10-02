@@ -196,7 +196,7 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
             },
           ]),
         ],
-        [...selectedElements, ...children.map((c) => c.elementPath)],
+        selectedElements,
       )
     },
   }
