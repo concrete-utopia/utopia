@@ -904,27 +904,28 @@ export function printCSSNumber(
   }
 }
 
-export function printGridDimension(dimension: GridDimension, hideAreaName?: boolean): string {
-  const areaName =
-    dimension.areaName != null && hideAreaName !== true ? `[${dimension.areaName}] ` : ''
+export function printGridDimensionCSS(dimension: GridDimension): string {
+  const areaName = dimension.areaName != null ? `[${dimension.areaName}] ` : ''
+  return areaName + stringifyGridDimension(dimension)
+}
+
+export function stringifyGridDimension(dimension: GridDimension): string {
   switch (dimension.type) {
     case 'KEYWORD': {
-      return `${areaName}${dimension.value.value}`
+      return dimension.value.value
     }
     case 'NUMBER': {
-      const printed = printCSSNumber(dimension.value, null)
-      return `${areaName}${printed}`
+      return `${printCSSNumber(dimension.value, null)}`
     }
     case 'REPEAT': {
-      return `repeat(${
-        isCSSKeyword(dimension.times) ? dimension.times.value : dimension.times
-      }, ${printArrayGridDimensions(dimension.value)})`
+      const times = isCSSKeyword(dimension.times) ? dimension.times.value : dimension.times
+      const values = dimension.value.map(printGridDimensionCSS).join(' ')
+      return `repeat(${times}, ${values})`
     }
     case 'MINMAX': {
-      return (
-        areaName +
-        `minmax(${printGridDimension(dimension.min)}, ${printGridDimension(dimension.max)})`
-      )
+      const min = stringifyGridDimension(dimension.min)
+      const max = stringifyGridDimension(dimension.max)
+      return `minmax(${min}, ${max})`
     }
     default:
       assertNever(dimension)
@@ -932,7 +933,7 @@ export function printGridDimension(dimension: GridDimension, hideAreaName?: bool
 }
 
 export function printArrayGridDimensions(array: Array<GridDimension>): string {
-  return array.map((v) => printGridDimension(v)).join(' ')
+  return array.map(printGridDimensionCSS).join(' ')
 }
 
 export function printGridAutoOrTemplateBase(input: GridAutoOrTemplateBase): string {

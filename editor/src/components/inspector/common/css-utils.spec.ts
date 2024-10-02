@@ -52,6 +52,10 @@ import {
   defaultCSSRadialGradientSize,
   defaultCSSRadialOrConicGradientCenter,
   disabledFunctionName,
+  gridCSSKeyword,
+  gridCSSMinmax,
+  gridCSSNumber,
+  gridCSSRepeat,
   parseBackgroundColor,
   parseBackgroundImage,
   parseBorderRadius,
@@ -66,7 +70,9 @@ import {
   parseTransform,
   printBackgroundImage,
   printBackgroundSize,
+  printGridDimensionCSS,
   RegExpLibrary,
+  stringifyGridDimension,
   toggleSimple,
   toggleStylePropPath,
 } from './css-utils'
@@ -1803,5 +1809,155 @@ describe('printBackgroundSize', () => {
         "value": "auto, auto auto, 100px, 100% 100%",
       }
     `)
+  })
+})
+
+describe('stringifyGridDimension', () => {
+  it('keyword', async () => {
+    expect(stringifyGridDimension(gridCSSKeyword(cssKeyword('auto'), null))).toBe('auto')
+    expect(stringifyGridDimension(gridCSSKeyword(cssKeyword('auto'), 'the-area'))).toBe('auto')
+  })
+
+  it('number', async () => {
+    expect(stringifyGridDimension(gridCSSNumber(cssNumber(123), null))).toBe('123')
+    expect(stringifyGridDimension(gridCSSNumber(cssNumber(123, 'px'), null))).toBe('123px')
+    expect(stringifyGridDimension(gridCSSNumber(cssNumber(123), 'the-area'))).toBe('123')
+  })
+
+  it('repeat', async () => {
+    expect(
+      stringifyGridDimension(
+        gridCSSRepeat(3, [
+          gridCSSKeyword(cssKeyword('auto'), null),
+          gridCSSKeyword(cssKeyword('min-content'), null),
+          gridCSSNumber(cssNumber(123, 'px'), null),
+        ]),
+      ),
+    ).toBe(`repeat(3, auto min-content 123px)`)
+
+    expect(
+      stringifyGridDimension(
+        gridCSSRepeat(3, [
+          gridCSSKeyword(cssKeyword('auto'), 'foo'),
+          gridCSSKeyword(cssKeyword('min-content'), 'bar'),
+          gridCSSNumber(cssNumber(123, 'px'), null),
+        ]),
+      ),
+    ).toBe(`repeat(3, [foo] auto [bar] min-content 123px)`)
+
+    expect(
+      stringifyGridDimension(
+        gridCSSRepeat(cssKeyword('auto-fit'), [
+          gridCSSMinmax(
+            gridCSSNumber(cssNumber(400, 'px'), null),
+            gridCSSNumber(cssNumber(1, 'fr'), null),
+            null,
+          ),
+        ]),
+      ),
+    ).toBe(`repeat(auto-fit, minmax(400px, 1fr))`)
+  })
+
+  it('minmax', async () => {
+    expect(
+      stringifyGridDimension(
+        gridCSSMinmax(
+          gridCSSKeyword(cssKeyword('auto'), null),
+          gridCSSKeyword(cssKeyword('min-content'), null),
+          null,
+        ),
+      ),
+    ).toBe('minmax(auto, min-content)')
+
+    expect(
+      stringifyGridDimension(
+        gridCSSMinmax(
+          gridCSSKeyword(cssKeyword('auto'), null),
+          gridCSSKeyword(cssKeyword('min-content'), null),
+          'the-area',
+        ),
+      ),
+    ).toBe('minmax(auto, min-content)')
+  })
+})
+
+describe('printGridDimensionCSS', () => {
+  it('keyword', async () => {
+    expect(printGridDimensionCSS(gridCSSKeyword(cssKeyword('auto'), null))).toBe('auto')
+    expect(printGridDimensionCSS(gridCSSKeyword(cssKeyword('auto'), 'the-area'))).toBe(
+      '[the-area] auto',
+    )
+  })
+
+  it('number', async () => {
+    expect(printGridDimensionCSS(gridCSSNumber(cssNumber(123), null))).toBe('123')
+    expect(printGridDimensionCSS(gridCSSNumber(cssNumber(123, 'px'), null))).toBe('123px')
+    expect(printGridDimensionCSS(gridCSSNumber(cssNumber(123), 'the-area'))).toBe('[the-area] 123')
+  })
+
+  it('repeat', async () => {
+    expect(
+      printGridDimensionCSS(
+        gridCSSRepeat(3, [
+          gridCSSKeyword(cssKeyword('auto'), null),
+          gridCSSKeyword(cssKeyword('min-content'), null),
+          gridCSSNumber(cssNumber(123, 'px'), null),
+        ]),
+      ),
+    ).toBe(`repeat(3, auto min-content 123px)`)
+
+    expect(
+      printGridDimensionCSS(
+        gridCSSRepeat(3, [
+          gridCSSKeyword(cssKeyword('auto'), 'foo'),
+          gridCSSKeyword(cssKeyword('min-content'), 'bar'),
+          gridCSSNumber(cssNumber(123, 'px'), null),
+        ]),
+      ),
+    ).toBe(`repeat(3, [foo] auto [bar] min-content 123px)`)
+
+    expect(
+      printGridDimensionCSS(
+        gridCSSRepeat(cssKeyword('auto-fit'), [
+          gridCSSMinmax(
+            gridCSSNumber(cssNumber(400, 'px'), null),
+            gridCSSNumber(cssNumber(1, 'fr'), null),
+            null,
+          ),
+        ]),
+      ),
+    ).toBe(`repeat(auto-fit, minmax(400px, 1fr))`)
+  })
+
+  it('minmax', async () => {
+    expect(
+      printGridDimensionCSS(
+        gridCSSMinmax(
+          gridCSSKeyword(cssKeyword('auto'), null),
+          gridCSSKeyword(cssKeyword('min-content'), null),
+          null,
+        ),
+      ),
+    ).toBe('minmax(auto, min-content)')
+
+    expect(
+      printGridDimensionCSS(
+        gridCSSMinmax(
+          gridCSSKeyword(cssKeyword('auto'), null),
+          gridCSSKeyword(cssKeyword('min-content'), null),
+          'the-area',
+        ),
+      ),
+    ).toBe('[the-area] minmax(auto, min-content)')
+
+    expect(
+      printGridDimensionCSS(
+        gridCSSMinmax(
+          gridCSSKeyword(cssKeyword('auto'), 'foo'),
+          gridCSSKeyword(cssKeyword('min-content'), 'bar'),
+          'the-area',
+        ),
+      ),
+    ).toBe('[the-area] minmax(auto, min-content)')
   })
 })
