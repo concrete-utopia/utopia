@@ -1730,7 +1730,7 @@ export function getValidElementPaths(
       const { topLevelElements: resolvedTopLevelElements, exportsDetail } =
         getParseSuccessForFilePath(resolvedFilePath, projectContents)
       // Handle default exports as they may actually be named.
-      if (originTopLevelName == null) {
+      if (originTopLevelName == null || originTopLevelName === 'default') {
         for (const exportDetail of exportsDetail) {
           if (isExportDefault(exportDetail)) {
             originTopLevelName = exportDetail.name
