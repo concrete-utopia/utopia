@@ -32,8 +32,10 @@ export const GridExpressionInput = React.memo(
     onFocus,
     onBlur,
   }: GridExpressionInputProps) => {
-    const [printValue, setPrintValue] = React.useState<string>(printGridDimension(value))
-    React.useEffect(() => setPrintValue(printGridDimension(value)), [value])
+    const [printValue, setPrintValue] = React.useState<string>(
+      printGridDimension(value, 'hide-area-name'),
+    )
+    React.useEffect(() => setPrintValue(printGridDimension(value, 'hide-area-name')), [value])
 
     const onChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       setPrintValue(e.target.value)
@@ -66,7 +68,7 @@ export const GridExpressionInput = React.memo(
           return onUpdateNumberOrKeyword(cssKeyword('auto'))
         }
 
-        setPrintValue(printGridDimension(value))
+        setPrintValue(printGridDimension(value, 'hide-area-name'))
       },
       [printValue, onUpdateNumberOrKeyword, onUpdateDimension, value],
     )

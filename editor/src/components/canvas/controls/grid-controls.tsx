@@ -124,7 +124,7 @@ export function getNullableAutoOrTemplateBaseString(
   if (template == null) {
     return undefined
   } else {
-    return printGridAutoOrTemplateBase(template)
+    return printGridAutoOrTemplateBase(template, 'show-area-name')
   }
 }
 

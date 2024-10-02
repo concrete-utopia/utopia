@@ -904,9 +904,16 @@ export function printCSSNumber(
   }
 }
 
-export function printGridDimension(dimension: GridDimension, hideAreaName?: boolean): string {
+export type ShowOrHideAreaName = 'show-area-name' | 'hide-area-name'
+
+export function printGridDimension(
+  dimension: GridDimension,
+  showAreaName: ShowOrHideAreaName,
+): string {
   const areaName =
-    dimension.areaName != null && hideAreaName !== true ? `[${dimension.areaName}] ` : ''
+    dimension.areaName != null && showAreaName === 'show-area-name'
+      ? `[${dimension.areaName}] `
+      : ''
   switch (dimension.type) {
     case 'KEYWORD': {
       return `${areaName}${dimension.value.value}`
@@ -918,12 +925,15 @@ export function printGridDimension(dimension: GridDimension, hideAreaName?: bool
     case 'REPEAT': {
       return `repeat(${
         isCSSKeyword(dimension.times) ? dimension.times.value : dimension.times
-      }, ${printArrayGridDimensions(dimension.value)})`
+      }, ${printArrayGridDimensions(dimension.value, showAreaName)})`
     }
     case 'MINMAX': {
       return (
         areaName +
-        `minmax(${printGridDimension(dimension.min)}, ${printGridDimension(dimension.max)})`
+        `minmax(${printGridDimension(dimension.min, showAreaName)}, ${printGridDimension(
+          dimension.max,
+          showAreaName,
+        )})`
       )
     }
     default:
@@ -931,14 +941,20 @@ export function printGridDimension(dimension: GridDimension, hideAreaName?: bool
   }
 }
 
-export function printArrayGridDimensions(array: Array<GridDimension>): string {
-  return array.map((v) => printGridDimension(v)).join(' ')
+export function printArrayGridDimensions(
+  array: Array<GridDimension>,
+  showOrHideAreaName: ShowOrHideAreaName,
+): string {
+  return array.map((v) => printGridDimension(v, showOrHideAreaName)).join(' ')
 }
 
-export function printGridAutoOrTemplateBase(input: GridAutoOrTemplateBase): string {
+export function printGridAutoOrTemplateBase(
+  input: GridAutoOrTemplateBase,
+  showAreaName: ShowOrHideAreaName,
+): string {
   switch (input.type) {
     case 'DIMENSIONS':
-      return printArrayGridDimensions(input.dimensions)
+      return printArrayGridDimensions(input.dimensions, showAreaName)
     case 'FALLBACK':
       return input.value
     default:

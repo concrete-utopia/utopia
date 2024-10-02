@@ -173,7 +173,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         gridCSSNumber(cssNumber(newValue, mergedUnit.value), areaName),
       )
 
-      const propertyValueAsString = printArrayGridDimensions(newDimensions)
+      const propertyValueAsString = printArrayGridDimensions(newDimensions, 'show-area-name')
 
       const commands = [
         setProperty(
