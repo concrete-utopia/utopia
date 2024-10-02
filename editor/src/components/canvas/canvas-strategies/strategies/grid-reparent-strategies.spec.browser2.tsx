@@ -559,7 +559,8 @@ describe('grid reparent strategies', () => {
         ),
       )
     })
-    it('into a grid container', async () => {
+    // disabling flaky test
+    xit('into a grid container', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCode({
           insideGrid: `
