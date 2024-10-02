@@ -153,6 +153,7 @@ function getNewGridPropsFromResizeBox(
   let newColumnStart = Infinity
   let newColumnEnd = -Infinity
 
+  // those cells should be occupied by the element which has an intersection with the resize box
   for (let rowIdx = 0; rowIdx < allCellBounds.length; rowIdx++) {
     for (let colIdx = 0; colIdx < allCellBounds[rowIdx].length; colIdx++) {
       if (rectangleIntersection(resizeBoundingBox, allCellBounds[rowIdx][colIdx]) != null) {
