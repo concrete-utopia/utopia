@@ -89,12 +89,13 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      const { metadata: container, foundIn } = getMetadataWithGridCellBounds(
-        EP.parentPath(selectedElement),
-        canvasState.startingMetadata,
-        interactionSession.latestMetadata,
-        customState,
-      )
+      const { metadata: container, customStrategyState: updatedCustomState } =
+        getMetadataWithGridCellBounds(
+          EP.parentPath(selectedElement),
+          canvasState.startingMetadata,
+          interactionSession.latestMetadata,
+          customState,
+        )
 
       if (container == null) {
         return emptyStrategyApplicationResult
@@ -122,23 +123,10 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
 
       const gridTemplate = container.specialSizeMeasurements.containerGridProperties
 
-      const customStatePatch =
-        foundIn === 'latestMetadata'
-          ? {
-              ...customState,
-              grid: {
-                ...customState.grid,
-                metadataCacheForGrids: {
-                  ...customState.grid.metadataCacheForGrids,
-                  [EP.toString(container.elementPath)]: container,
-                },
-              },
-            }
-          : {}
       return strategyApplicationResult(
         setGridPropsCommands(selectedElement, gridTemplate, gridProps),
         [parentGridPath],
-        customStatePatch,
+        updatedCustomState ?? undefined,
       )
     },
   }
