@@ -114,16 +114,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         null,
       )
 
-      const selectedElementGridProps = MetadataUtils.findElementByElementPath(
-        canvasState.startingMetadata,
-        selectedElement,
-      )?.specialSizeMeasurements.elementGridProperties
-
-      const gridProps = getNewGridPropsFromResizeBox(
-        resizeBoundingBox,
-        selectedElementGridProps ?? null,
-        allCellBounds,
-      )
+      const gridProps = getNewGridPropsFromResizeBox(resizeBoundingBox, allCellBounds)
 
       if (gridProps == null) {
         return emptyStrategyApplicationResult
@@ -155,7 +146,6 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
 
 function getNewGridPropsFromResizeBox(
   resizeBoundingBox: CanvasRectangle,
-  gridProps: GridElementProperties | null,
   allCellBounds: CanvasRectangle[][],
 ) {
   let newRowStart = Infinity
