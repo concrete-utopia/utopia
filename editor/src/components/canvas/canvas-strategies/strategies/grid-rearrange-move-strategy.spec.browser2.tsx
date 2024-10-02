@@ -187,6 +187,9 @@ export var storyboard = (
             height: targetRect.height,
           }),
         ),
+        {
+          moveBeforeMouseDown: true,
+        },
       )
 
       const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
@@ -281,6 +284,9 @@ export var storyboard = (
           editor.renderedDOM.getByTestId(GridCellTestId(EP.fromString('sb/scene/grid/child'))),
           childCenter,
           offsetPoint(childCenter, windowPoint({ x: 20, y: 20 })),
+          {
+            moveBeforeMouseDown: true,
+          },
         )
 
         {
@@ -323,6 +329,9 @@ export var storyboard = (
           editor.renderedDOM.getByTestId(GridCellTestId(EP.fromString('sb/scene/grid/child'))),
           childCenter,
           offsetPoint(childCenter, windowPoint({ x: 240, y: 240 })),
+          {
+            moveBeforeMouseDown: true,
+          },
         )
 
         {
@@ -363,6 +372,9 @@ export var storyboard = (
           editor.renderedDOM.getByTestId(GridCellTestId(EP.fromString('sb/scene/grid/child'))),
           childCenter,
           offsetPoint(childCenter, windowPoint({ x: 240, y: 240 })),
+          {
+            moveBeforeMouseDown: true,
+          },
         )
 
         {
@@ -446,6 +458,9 @@ export var storyboard = (
           editor.renderedDOM.getByTestId(GridCellTestId(EP.fromString('sb/scene/grid/child'))),
           startPoint,
           offsetPoint(startPoint, windowPoint({ x: -100, y: -100 })),
+          {
+            moveBeforeMouseDown: true,
+          },
         )
 
         {
@@ -536,6 +551,9 @@ export var storyboard = (
           editor.renderedDOM.getByTestId(GridCellTestId(EP.fromString('sb/scene/grid/child'))),
           childCenter,
           offsetPoint(childCenter, windowPoint({ x: 280, y: 120 })),
+          {
+            moveBeforeMouseDown: true,
+          },
         )
 
         {
@@ -712,6 +730,9 @@ async function runMoveTest(
         height: targetRect.height,
       }),
     ),
+    {
+      moveBeforeMouseDown: true,
+    },
   )
 
   return editor.renderedDOM.getByTestId(props.testId).style

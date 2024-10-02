@@ -81,7 +81,7 @@ async function renderRemixProject(
     undefined,
     strategiesToUse,
   )
-  await renderResult.dispatch([runDOMWalker()], true)
+  await renderResult.dispatch([runDOMWalker(null)], true)
   return renderResult
 }
 
@@ -1765,7 +1765,7 @@ export default function Index() {
   it('flex reorder elements inside Remix', async () => {
     const renderResult = await renderRemixProject(remixProjectForEditingTests)
 
-    await renderResult.dispatch([runDOMWalker()], true)
+    await renderResult.dispatch([runDOMWalker(null)], true)
 
     expect(
       getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
@@ -1871,7 +1871,7 @@ export default function Index() {
   it('draw to insert into Remix', async () => {
     const renderResult = await renderRemixProject(remixProjectForEditingTests)
 
-    await renderResult.dispatch([runDOMWalker()], true)
+    await renderResult.dispatch([runDOMWalker(null)], true)
 
     expect(
       getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(

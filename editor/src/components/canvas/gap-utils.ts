@@ -33,7 +33,6 @@ import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragm
 import type { AllElementProps } from '../editor/store/editor-state'
 import type { GridData } from './controls/grid-controls'
 import { getNullableAutoOrTemplateBaseString } from './controls/grid-controls'
-import { getGlobalFramesOfGridCells } from './canvas-strategies/strategies/grid-helpers'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -221,7 +220,7 @@ export function gridGapControlBoundsFromMetadata(
     gridRowColumnInfo.gridTemplateColumns,
   )
 
-  const gridCellBounds = getGlobalFramesOfGridCells(grid)
+  const gridCellBounds = grid.specialSizeMeasurements.gridCellGlobalFrames
 
   if (gridCellBounds == null) {
     return emptyResult

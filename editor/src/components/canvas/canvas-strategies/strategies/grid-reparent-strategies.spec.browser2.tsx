@@ -649,17 +649,15 @@ describe('grid reparent strategies', () => {
 
       await selectComponentsForTest(editor, [EP.fromString('sb/grid/dragme')])
 
-      const fooElement = editor.renderedDOM.getByTestId('foo')
-      const fooRect = fooElement.getBoundingClientRect()
-      const barElement = editor.renderedDOM.getByTestId('bar')
-      const barRect = barElement.getBoundingClientRect()
-      const endPoint = {
-        x: fooRect.x + fooRect.width / 2,
-        y: barRect.y + barRect.height / 2,
-      }
-
-      await dragOut(editor, EP.fromString('sb/grid/dragme'), endPoint)
-
+      await dragOutToAnotherGrid(
+        editor,
+        'another-grid',
+        {
+          x: 10,
+          y: 180,
+        },
+        EP.fromString('sb/grid/dragme'),
+      )
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         formatTestProjectCode(
           makeTestProjectCode({
@@ -862,4 +860,52 @@ async function dragOut(
   await mouseUpAtPoint(renderResult.renderedDOM.getByTestId(CanvasControlsContainerID), endPoint, {
     modifiers: cmdModifier,
   })
+}
+
+async function dragOutToAnotherGrid(
+  renderResult: EditorRenderResult,
+  anotherGridTestId: string,
+  offsetInAnotherGrid: Point,
+  cell: ElementPath,
+) {
+  const sourceGridCell = renderResult.renderedDOM.getByTestId(GridCellTestId(cell))
+  const sourceRect = sourceGridCell.getBoundingClientRect()
+
+  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const anotherGrid = renderResult.renderedDOM.getByTestId(anotherGridTestId)
+  const anotherGridRect = anotherGrid.getBoundingClientRect()
+
+  // selecting the cell
+  await mouseClickAtPoint(
+    sourceGridCell,
+    { x: sourceRect.x + 5, y: sourceRect.y + 5 },
+    { modifiers: cmdModifier },
+  )
+
+  // starting the drag
+  await mouseDownAtPoint(
+    sourceGridCell,
+    { x: sourceRect.x + 5, y: sourceRect.y + 5 },
+    { modifiers: cmdModifier },
+  )
+
+  // first move over target grid hovers the grid controls, so the dom sampler can run
+  await mouseMoveToPoint(
+    canvasControlsLayer,
+    { x: anotherGridRect.x + offsetInAnotherGrid.x, y: anotherGridRect.y + offsetInAnotherGrid.y },
+    { modifiers: cmdModifier },
+  )
+
+  // second move runs the strategy for the first time with cell metadata
+  await mouseMoveToPoint(
+    canvasControlsLayer,
+    { x: anotherGridRect.x + offsetInAnotherGrid.x, y: anotherGridRect.y + offsetInAnotherGrid.y },
+    { modifiers: cmdModifier },
+  )
+
+  await mouseUpAtPoint(
+    canvasControlsLayer,
+    { x: anotherGridRect.x + offsetInAnotherGrid.x, y: anotherGridRect.y + offsetInAnotherGrid.y },
+    { modifiers: cmdModifier },
+  )
 }

@@ -252,6 +252,14 @@ function useActiveAlignments(): ActiveAlignments {
       if (selectedViews.current.length === 0) {
         return false
       }
+
+      // Only flex/grid children can have active alignments, because they would mean nothing for flow elements.
+      if (
+        !selectedViews.current.every((view) => MetadataUtils.isFlexOrGridChild(jsxMetadata, view))
+      ) {
+        return false
+      }
+
       return selectedViews.current.every((view) => {
         const isFlexOrGridChild = MetadataUtils.isFlexOrGridChild(jsxMetadata, view)
         const { align, justify } = MetadataUtils.getRelativeAlignJustify(jsxMetadata, view)

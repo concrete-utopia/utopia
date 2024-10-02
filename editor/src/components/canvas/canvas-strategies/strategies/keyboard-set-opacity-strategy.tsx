@@ -57,13 +57,7 @@ export function keyboardSetOpacityStrategy(
         setProperty('always', path, PP.create('style', 'opacity'), inputValue),
       )
 
-      return strategyApplicationResult(
-        commands,
-        // FIXME: This was added as a default value in https://github.com/concrete-utopia/utopia/pull/6408
-        // This was to maintain the existing behaviour, but it should be replaced with a more specific value
-        // appropriate to this particular case.
-        'rerender-all-elements',
-      )
+      return strategyApplicationResult(commands, selectedElements)
     },
   }
 }
