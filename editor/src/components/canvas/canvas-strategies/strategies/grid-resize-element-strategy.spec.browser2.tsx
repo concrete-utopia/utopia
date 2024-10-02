@@ -41,6 +41,9 @@ async function runCellResizeTest(
         height: targetGridCell.getBoundingClientRect().height,
       }),
     ),
+    {
+      moveBeforeMouseDown: true,
+    },
   )
 }
 

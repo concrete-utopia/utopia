@@ -10,6 +10,8 @@ describe('rescopeCSSToTargetCanvasOnly', () => {
     const input = `
       body {
         font-family: San Francisco, SF UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        width: 100%;
+        height: 100%;
       }
 
       @font-face {

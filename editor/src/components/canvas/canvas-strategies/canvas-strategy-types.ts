@@ -1,7 +1,10 @@
 import React from 'react'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../../core/shared/element-template'
 import type { CanvasVector } from '../../../core/shared/math-utils'
 import type { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../../assets'
@@ -30,6 +33,7 @@ export type GridCustomStrategyState = {
   draggingFromCell: GridCellCoordinates | null
   originalRootCell: GridCellCoordinates | null
   currentRootCell: GridCellCoordinates | null
+  metadataCacheForGrids: { [gridPath: string]: ElementInstanceMetadata }
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -47,6 +51,7 @@ export function defaultCustomStrategyState(): CustomStrategyState {
       draggingFromCell: null,
       originalRootCell: null,
       currentRootCell: null,
+      metadataCacheForGrids: {},
     },
   }
 }
