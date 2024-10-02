@@ -641,7 +641,11 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
   const features = useRollYourOwnFeatures()
 
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-  const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'GridControls scale',
+  )
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const activelyDraggingOrResizingCell = useEditorState(
@@ -811,7 +815,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
         setInitialShadowFrame(params.frame)
 
         const start = windowToCanvasCoordinates(
-          scaleRef.current,
+          scale,
           canvasOffsetRef.current,
           windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
         )
@@ -827,7 +831,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
           ),
         ])
       },
-    [canvasOffsetRef, dispatch, scaleRef],
+    [canvasOffsetRef, dispatch, scale],
   )
 
   // NOTE: this stuff is meant to be temporary, until we settle on the set of interaction pieces we like.
@@ -976,19 +980,19 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
                     id={id}
                     data-testid={id}
                     style={{
-                      borderTop: gridPlaceholderBorder(borderColor),
-                      borderLeft: gridPlaceholderBorder(borderColor),
+                      borderTop: gridPlaceholderBorder(borderColor, scale),
+                      borderLeft: gridPlaceholderBorder(borderColor, scale),
                       borderBottom:
                         isActiveCell ||
                         countedRow >= grid.rows ||
                         (grid.rowGap != null && grid.rowGap > 0)
-                          ? gridPlaceholderBorder(borderColor)
+                          ? gridPlaceholderBorder(borderColor, scale)
                           : undefined,
                       borderRight:
                         isActiveCell ||
                         countedColumn >= grid.columns ||
                         (grid.columnGap != null && grid.columnGap > 0)
-                          ? gridPlaceholderBorder(borderColor)
+                          ? gridPlaceholderBorder(borderColor, scale)
                           : undefined,
                       position: 'relative',
                       pointerEvents: 'initial',
@@ -1797,7 +1801,7 @@ function gridKeyFromPath(path: ElementPath): string {
   return `grid-${EP.toString(path)}`
 }
 
-const gridPlaceholderBorder = (color: string) => `2px solid ${color}`
+const gridPlaceholderBorder = (color: string, scale: number) => `${2 / scale}px solid ${color}`
 
 export function controlsForGridPlaceholders(gridPath: ElementPath): ControlWithProps<any> {
   return {
