@@ -925,12 +925,12 @@ export function printGridDimension(
     case 'REPEAT': {
       return `repeat(${
         isCSSKeyword(dimension.times) ? dimension.times.value : dimension.times
-      }, ${printArrayGridDimensions(dimension.value, showAreaName)})`
+      }, ${printArrayGridDimensions(dimension.value, 'show-area-name')})`
     }
     case 'MINMAX': {
       return (
         areaName +
-        `minmax(${printGridDimension(dimension.min, showAreaName)}, ${printGridDimension(
+        `minmax(${printGridDimension(dimension.min, 'show-area-name')}, ${printGridDimension(
           dimension.max,
           showAreaName,
         )})`
