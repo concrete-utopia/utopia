@@ -190,6 +190,7 @@ function getCommandsAndPatchForGridRearrange(
     commands: commands,
     patch: {
       grid: {
+        ...customState.grid,
         targetCellData: targetGridCell,
         draggingFromCell: draggingFromCell,
         originalRootCell: originalRootCell,
@@ -229,6 +230,7 @@ function getCommandsAndPatchForReparent(
         return applyGridReparent(
           canvasState,
           interactionData,
+          interactionSession,
           customState,
           strategy.target,
           [targetElement],

@@ -25,7 +25,7 @@ export async function renderRemixProject(project: PersistentModel) {
     notLoggedIn,
     false,
   )
-  await renderResult.dispatch([runDOMWalker()], true)
+  await renderResult.dispatch([runDOMWalker(null)], true)
   return renderResult
 }
 
