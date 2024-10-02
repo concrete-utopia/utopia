@@ -151,9 +151,7 @@ function collectElementsToRerenderForTransientActions(
   action: EditorAction,
 ): Array<ElementPath> {
   if (action.action === 'TRANSIENT_ACTIONS') {
-    if (action.elementsToRerender != null) {
-      working.push(...action.elementsToRerender)
-    }
+    working.push(...action.elementsToRerender)
     working.push(
       ...action.transientActions.reduce(collectElementsToRerenderForTransientActions, working),
     )

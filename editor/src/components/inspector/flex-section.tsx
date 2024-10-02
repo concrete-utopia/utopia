@@ -834,7 +834,7 @@ const GapRowColumnControl = React.memo(() => {
       }
 
       const transientWrapper = (actions: EditorAction[]) =>
-        transient ? [transientActions(actions)] : actions
+        transient ? [transientActions(actions, [grid.elementPath])] : actions
 
       dispatch(
         transientWrapper([
