@@ -598,14 +598,17 @@ export type GridCSSKeyword = BaseGridDimension & {
 type BaseGridCSSRepeat = {
   type: 'REPEAT'
   value: Array<GridDimension>
-  areaName: null
+  areaName: string | null
 }
 
-function baseGridCSSRepeat(value: Array<GridDimension>): BaseGridCSSRepeat {
+function baseGridCSSRepeat(
+  value: Array<GridDimension>,
+  areaName: string | null,
+): BaseGridCSSRepeat {
   return {
     type: 'REPEAT',
     value: value,
-    areaName: null,
+    areaName: areaName,
   }
 }
 
@@ -613,9 +616,13 @@ type GridCSSRepeatStatic = BaseGridCSSRepeat & {
   times: number
 }
 
-function gridCSSRepeatStatic(times: number, value: Array<GridDimension>): GridCSSRepeatStatic {
+function gridCSSRepeatStatic(
+  times: number,
+  value: Array<GridDimension>,
+  areaName: string | null,
+): GridCSSRepeatStatic {
   return {
-    ...baseGridCSSRepeat(value),
+    ...baseGridCSSRepeat(value, areaName),
     times: times,
   }
 }
@@ -627,9 +634,10 @@ type GridCSSRepeatDynamic = BaseGridCSSRepeat & {
 function gridCSSRepeatDynamic(
   times: CSSKeyword<'auto-fill' | 'auto-fit'>,
   value: Array<GridDimension>,
+  areaName: string | null,
 ): GridCSSRepeatDynamic {
   return {
-    ...baseGridCSSRepeat(value),
+    ...baseGridCSSRepeat(value, areaName),
     times: times,
   }
 }
@@ -682,11 +690,15 @@ export function gridCSSKeyword(
   }
 }
 
-export function gridCSSRepeat(times: GridCSSRepeatTimes, value: GridDimension[]): GridCSSRepeat {
+export function gridCSSRepeat(
+  times: GridCSSRepeatTimes,
+  value: GridDimension[],
+  areaName: string | null,
+): GridCSSRepeat {
   if (typeof times === 'number') {
-    return gridCSSRepeatStatic(times, value)
+    return gridCSSRepeatStatic(times, value, areaName)
   } else {
-    return gridCSSRepeatDynamic(times, value)
+    return gridCSSRepeatDynamic(times, value, areaName)
   }
 }
 
@@ -1230,6 +1242,8 @@ export function parseGridChildren(
               return left('Invalid grid CSS repeat times.')
             }
 
+            const areaName = getAreaName()
+
             const values = new csstree.List<csstree.CssNode>().fromArray(
               otherChildren.filter(
                 (c) =>
@@ -1241,7 +1255,7 @@ export function parseGridChildren(
             )
             const parsedDimensions = parseGridChildren(values)
             if (isRight(parsedDimensions)) {
-              dimensions.push(gridCSSRepeat(times, parsedDimensions.value))
+              dimensions.push(gridCSSRepeat(times, parsedDimensions.value, areaName))
             } else {
               return left('Invalid grid CSS repeat values.')
             }
