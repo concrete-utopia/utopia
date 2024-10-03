@@ -165,11 +165,27 @@ function collectElementsToRerenderForTransientActions(
 // for this pass use a union of the two arrays, to make sure we clear a previously focused element from the metadata
 // and let the canvas re-render components that may have a missing child now.
 let lastElementsToRerender: ElementsToRerender = 'rerender-all-elements'
-function fixElementsToRerender(
-  currentElementsToRerender: ElementsToRerender,
+function fixElementsToRerender(elementsToRerender: ElementsToRerender): ElementsToRerender {
+  let fixedElementsToRerender: ElementsToRerender = elementsToRerender
+  if (
+    elementsToRerender !== 'rerender-all-elements' &&
+    lastElementsToRerender !== 'rerender-all-elements'
+  ) {
+    // if the current elements to rerender array doesn't match the previous elements to rerender array, for a single frame let's use the union of the two arrays
+    fixedElementsToRerender = EP.uniqueElementPaths([
+      ...lastElementsToRerender,
+      ...elementsToRerender,
+    ])
+  }
+
+  lastElementsToRerender = fixedElementsToRerender
+  return fixedElementsToRerender
+}
+
+export function collectElementsToRerender(
+  editorStore: EditorStoreFull,
   dispatchedActions: readonly EditorAction[],
 ): ElementsToRerender {
-  // while running transient actions there is an optional elementsToRerender
   const elementsToRerenderTransient = uniqBy<ElementPath>(
     dispatchedActions.reduce(
       collectElementsToRerenderForTransientActions,
@@ -178,22 +194,12 @@ function fixElementsToRerender(
     EP.pathsEqual,
   )
 
-  const currentOrTransientElementsToRerender =
-    elementsToRerenderTransient.length > 0 ? elementsToRerenderTransient : currentElementsToRerender
+  const elementsToRerender =
+    elementsToRerenderTransient.length > 0
+      ? elementsToRerenderTransient
+      : editorStore.patchedEditor.canvas.elementsToRerender
 
-  let fixedElementsToRerender: ElementsToRerender = currentOrTransientElementsToRerender
-  if (
-    currentOrTransientElementsToRerender !== 'rerender-all-elements' &&
-    lastElementsToRerender !== 'rerender-all-elements'
-  ) {
-    // if the current elements to rerender array doesn't match the previous elements to rerender array, for a single frame let's use the union of the two arrays
-    fixedElementsToRerender = EP.uniqueElementPaths([
-      ...lastElementsToRerender,
-      ...currentOrTransientElementsToRerender,
-    ])
-  }
-
-  lastElementsToRerender = currentOrTransientElementsToRerender
+  const fixedElementsToRerender = fixElementsToRerender(elementsToRerender)
   return fixedElementsToRerender
 }
 
@@ -460,8 +466,8 @@ export class Editor {
       if (shouldUpdateCanvasStore) {
         // this will re-render the canvas root and potentially the canvas contents itself
         Measure.taskTime(`update canvas ${updateId}`, () => {
-          const currentElementsToRender = fixElementsToRerender(
-            this.storedState.patchedEditor.canvas.elementsToRerender,
+          const currentElementsToRender = collectElementsToRerender(
+            this.storedState,
             dispatchedActions,
           )
           ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
@@ -521,10 +527,11 @@ export class Editor {
 
           // re-render the canvas
           Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
-            ElementsToRerenderGLOBAL.current = fixElementsToRerender(
-              this.storedState.patchedEditor.canvas.elementsToRerender,
+            const currentElementsToRender = collectElementsToRerender(
+              this.storedState,
               dispatchedActions,
-            ) // Mutation!
+            )
+            ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
 
             ReactDOM.flushSync(() => {
               ReactDOM.unstable_batchedUpdates(() => {
