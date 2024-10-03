@@ -19,7 +19,7 @@ export function InspectorSectionHeader({
         padding: 8,
         cursor: 'pointer',
       }}
-      onMouseDown={toggle}
+      onClick={toggle}
       data-testid={`section-header-${title}`}
     >
       <div

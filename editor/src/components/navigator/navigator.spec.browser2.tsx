@@ -29,7 +29,6 @@ import {
   dragElementWithDNDEvents,
   mouseClickAtPoint,
   mouseDoubleClickAtPoint,
-  mouseDownAtPoint,
   pressKey,
 } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
@@ -5227,7 +5226,7 @@ describe('Navigator', () => {
         'toggle-render-prop-NavigatorItemTestId-slot_sb/scene/pg:dbc/78c/prop_label_header',
       )
 
-      await mouseDownAtPoint(slotElement, { x: 3, y: 3 })
+      await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
 
       const renderPropOptionElement = await waitFor(() =>
         renderResult.renderedDOM.getByText('(empty)'),
@@ -5273,7 +5272,7 @@ describe('Navigator', () => {
         'toggle-render-prop-NavigatorItemTestId-slot_sb/scene/pg:dbc/78c/prop_label_header',
       )
 
-      await mouseDownAtPoint(slotElement, { x: 3, y: 3 })
+      await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
 
       const renderPropOptionElement = await waitFor(() =>
         renderResult.renderedDOM.getByText('Span with Title'),
@@ -5309,7 +5308,7 @@ describe('Navigator', () => {
         'regular-sb/scene/pg:dbc/78c/d93',
       ])
     })
-    it('can insert a third-party component into render prop', async () => {
+    it('can insert an third-party component into render prop', async () => {
       const renderResult = await renderTestEditorWithModel(
         projectWithThirdPartyRenderProp(''), // <- no render prop
         'await-first-dom-report',
@@ -5319,7 +5318,7 @@ describe('Navigator', () => {
         'toggle-render-prop-NavigatorItemTestId-slot_sb/scene/pg:dbc/78c/prop_label_header',
       )
 
-      await mouseDownAtPoint(slotElement, { x: 3, y: 3 })
+      await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
 
       const renderPropOptionElement = await waitFor(() =>
         renderResult.renderedDOM.getByText('Heading with Title'),
