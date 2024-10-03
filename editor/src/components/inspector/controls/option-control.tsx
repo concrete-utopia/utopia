@@ -102,8 +102,8 @@ export const OptionControl: React.FunctionComponent<
               isChecked && props.controlStatus === 'overridden'
                 ? colorTheme.brandNeonPink.value
                 : colorTheme.fg1.value,
-            filter: props.controlStatus == 'disabled' ? 'grayscale(0)' : undefined,
-            opacity: props.controlStatus == 'disabled' ? undefined : isChecked ? 1 : 0.7,
+            filter: props.controlStatus === 'disabled' ? 'grayscale(0)' : undefined,
+            opacity: props.controlStatus === 'disabled' ? undefined : isChecked ? 1 : 0.7,
             // If part of a option chain control:
             '.option-chain-control-container &': {
               boxShadow: 'none !important',
@@ -118,7 +118,7 @@ export const OptionControl: React.FunctionComponent<
               },
             },
             '&:hover': {
-              opacity: props.controlStatus == 'disabled' ? undefined : 1,
+              opacity: props.controlStatus === 'disabled' ? undefined : 1,
             },
             '.control-option-icon-component': {
               opacity: 0.7,
