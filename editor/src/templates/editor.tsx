@@ -213,6 +213,7 @@ export function collectElementsToRerender(
   const fixedElementsToRerender = fixElementsToRerender(elementsToRerender, (paths) =>
     getChildGroupsForNonGroupParents(editorStore.patchedEditor.jsxMetadata, paths),
   )
+  ElementsToRerenderGLOBAL.current = fixedElementsToRerender // Mutation!
   return fixedElementsToRerender
 }
 
@@ -479,11 +480,7 @@ export class Editor {
       if (shouldUpdateCanvasStore) {
         // this will re-render the canvas root and potentially the canvas contents itself
         Measure.taskTime(`update canvas ${updateId}`, () => {
-          const currentElementsToRender = collectElementsToRerender(
-            this.storedState,
-            dispatchedActions,
-          )
-          ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
+          collectElementsToRerender(this.storedState, dispatchedActions)
           ReactDOM.flushSync(() => {
             ReactDOM.unstable_batchedUpdates(() => {
               this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
@@ -540,11 +537,7 @@ export class Editor {
 
           // re-render the canvas
           Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
-            const currentElementsToRerender = collectElementsToRerender(
-              this.storedState,
-              dispatchedActions,
-            ) // Mutation!
-            ElementsToRerenderGLOBAL.current = currentElementsToRerender
+            collectElementsToRerender(this.storedState, dispatchedActions) // Mutation!
             ReactDOM.flushSync(() => {
               ReactDOM.unstable_batchedUpdates(() => {
                 this.canvasStore.setState(
