@@ -296,10 +296,7 @@ export function absoluteResizeBoundingBoxStrategy(
                 updateHighlightedViews('mid-interaction', []),
                 setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
               ],
-              [
-                ...retargetedTargets,
-                // ...childGroups, // removing this will break group size true-ups
-              ],
+              retargetedTargets,
             )
           }
         } else {

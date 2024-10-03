@@ -164,15 +164,10 @@ function collectElementsToRerenderForTransientActions(
   }
 }
 
-// If the elements to re-render have specific paths in 2 consecutive passes, but those paths differ, then
-// for this pass use a union of the two arrays, to make sure we clear a previously focused element from the metadata
-// and let the canvas re-render components that may have a missing child now.
-let lastElementsToRerender: ElementsToRerender = 'rerender-all-elements'
-function fixElementsToRerender(
-  currentElementsToRerender: ElementsToRerender,
+export function getElementsToRerender(
+  editorStore: EditorStoreFull,
   dispatchedActions: readonly EditorAction[],
 ): ElementsToRerender {
-  // while running transient actions there is an optional elementsToRerender
   const elementsToRerenderTransient = uniqBy<ElementPath>(
     dispatchedActions.reduce(
       collectElementsToRerenderForTransientActions,
@@ -181,23 +176,51 @@ function fixElementsToRerender(
     EP.pathsEqual,
   )
 
-  const currentOrTransientElementsToRerender =
-    elementsToRerenderTransient.length > 0 ? elementsToRerenderTransient : currentElementsToRerender
+  const storeToUse =
+    editorStore.strategyState.currentStrategy == null
+      ? editorStore.unpatchedEditor
+      : editorStore.patchedEditor
 
-  let fixedElementsToRerender: ElementsToRerender = currentOrTransientElementsToRerender
+  const elementsToRerender =
+    elementsToRerenderTransient.length > 0
+      ? elementsToRerenderTransient
+      : ElementsToRerenderGLOBAL.current
+
+  const fixedElementsToRerender = fixElementsToRerender(elementsToRerender, (paths) =>
+    getChildGroupsForNonGroupParents(storeToUse.jsxMetadata, paths),
+  )
+
+  ElementsToRerenderGLOBAL.current = fixedElementsToRerender
+  return fixedElementsToRerender
+}
+
+// If the elements to re-render have specific paths in 2 consecutive passes, but those paths differ, then
+// for this pass use a union of the two arrays, to make sure we clear a previously focused element from the metadata
+// and let the canvas re-render components that may have a missing child now.
+let lastElementsToRerender: ElementsToRerender = 'rerender-all-elements'
+function fixElementsToRerender(
+  elementsToRerender: ElementsToRerender,
+  getChildGroups: (parentElementPaths: ElementPath[]) => ElementPath[],
+): ElementsToRerender {
+  let fixedElementsToRerender: ElementsToRerender = elementsToRerender
   if (
-    currentOrTransientElementsToRerender !== 'rerender-all-elements' &&
+    elementsToRerender !== 'rerender-all-elements' &&
     lastElementsToRerender !== 'rerender-all-elements'
   ) {
     // if the current elements to rerender array doesn't match the previous elements to rerender array, for a single frame let's use the union of the two arrays
     fixedElementsToRerender = EP.uniqueElementPaths([
       ...lastElementsToRerender,
-      ...currentOrTransientElementsToRerender,
+      ...elementsToRerender,
     ])
   }
 
-  lastElementsToRerender = currentOrTransientElementsToRerender
-  return fixedElementsToRerender
+  const elementsWithChildGroups =
+    fixedElementsToRerender === 'rerender-all-elements'
+      ? fixedElementsToRerender
+      : [...fixedElementsToRerender, ...getChildGroups(fixedElementsToRerender)]
+
+  lastElementsToRerender = elementsWithChildGroups
+  return elementsWithChildGroups
 }
 
 export class Editor {
@@ -460,28 +483,10 @@ export class Editor {
         !this.temporarilyDisableStoreUpdates
 
       const updateId = canvasUpdateId++
+      const currentElementsToRerender = getElementsToRerender(this.storedState, dispatchedActions)
       if (shouldUpdateCanvasStore) {
         // this will re-render the canvas root and potentially the canvas contents itself
         Measure.taskTime(`update canvas ${updateId}`, () => {
-          const currentElementsToRender = fixElementsToRerender(
-            this.storedState.patchedEditor.canvas.elementsToRerender,
-            dispatchedActions,
-          )
-
-          const childGroups =
-            currentElementsToRender === 'rerender-all-elements'
-              ? []
-              : getChildGroupsForNonGroupParents(
-                  this.storedState.strategyState.startingMetadata,
-                  currentElementsToRender,
-                )
-
-          const zzzz =
-            currentElementsToRender === 'rerender-all-elements'
-              ? currentElementsToRender
-              : [...currentElementsToRender, ...childGroups]
-
-          ElementsToRerenderGLOBAL.current = zzzz // Mutation!
           ReactDOM.flushSync(() => {
             ReactDOM.unstable_batchedUpdates(() => {
               this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
@@ -538,11 +543,6 @@ export class Editor {
 
           // re-render the canvas
           Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
-            ElementsToRerenderGLOBAL.current = fixElementsToRerender(
-              this.storedState.patchedEditor.canvas.elementsToRerender,
-              dispatchedActions,
-            ) // Mutation!
-
             ReactDOM.flushSync(() => {
               ReactDOM.unstable_batchedUpdates(() => {
                 this.canvasStore.setState(
@@ -555,7 +555,7 @@ export class Editor {
           // re-run the dom-sampler
           Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
             const metadataResult = runDomSamplerGroups({
-              elementsToFocusOn: ElementsToRerenderGLOBAL.current,
+              elementsToFocusOn: currentElementsToRerender,
               domWalkerAdditionalElementsToFocusOn:
                 this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
               scale: this.storedState.patchedEditor.canvas.scale,

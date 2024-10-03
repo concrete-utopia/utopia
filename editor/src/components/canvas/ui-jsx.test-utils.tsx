@@ -59,7 +59,7 @@ import {
   FakeWatchdogWorker,
 } from '../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
-import { EditorRoot } from '../../templates/editor'
+import { EditorRoot, getElementsToRerender } from '../../templates/editor'
 import Utils from '../../utils/utils'
 import { getNamedPath } from '../../utils/react-helpers'
 import type {
@@ -433,10 +433,12 @@ export async function renderTestEditorWithModel(
     // run dom SAMPLER
 
     {
+      const elementsToFocusOn = getElementsToRerender(workingEditorState, actions)
+
       resubscribeObservers(domWalkerMutableState)
 
       const metadataResult = runDomSamplerRegular({
-        elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+        elementsToFocusOn: elementsToFocusOn,
         domWalkerAdditionalElementsToFocusOn:
           workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
         scale: workingEditorState.patchedEditor.canvas.scale,
@@ -495,8 +497,6 @@ export async function renderTestEditorWithModel(
 
         // re-render the canvas
         {
-          // TODO run fixElementsToRerender and set ElementsToRerenderGLOBAL
-
           flushSync(() => {
             canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
           })
@@ -507,8 +507,10 @@ export async function renderTestEditorWithModel(
         {
           resubscribeObservers(domWalkerMutableState)
 
+          const elementsToFocusOn = getElementsToRerender(workingEditorState, actions)
+
           const metadataResult = runDomSamplerGroups({
-            elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+            elementsToFocusOn: elementsToFocusOn,
             domWalkerAdditionalElementsToFocusOn:
               workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
             scale: workingEditorState.patchedEditor.canvas.scale,

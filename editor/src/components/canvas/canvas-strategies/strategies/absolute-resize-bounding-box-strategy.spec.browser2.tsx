@@ -640,7 +640,6 @@ export var storyboard = (
 
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectElementWithTestIdNotToBeRendered", "expectElementWithTestIdToBeRendered"] }] */
 
-// describe.only('Absolute Resize Strategy', () => {
 describe('Absolute Resize Strategy', () => {
   it('the size label is not shown when an empty fragment is selected', async () => {
     const editor = await renderTestEditorWithCode(projectWithFragment, 'await-first-dom-report')
