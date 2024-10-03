@@ -20,8 +20,8 @@ export function useDisableAlignment(
       return true
     }
 
-    return selectedViews.some((path) => {
-      return isAlignmentGroupDisabled(jsxMetadata, path, orientation)
+    return selectedViews.some((path, _, array) => {
+      return isAlignmentGroupDisabled(jsxMetadata, path, orientation, array)
     })
   }, [selectedViews, jsxMetadata, orientation])
 }
@@ -30,6 +30,7 @@ export function isAlignmentGroupDisabled(
   jsxMetadata: ElementInstanceMetadataMap,
   path: ElementPath,
   orientation: 'horizontal' | 'vertical',
+  selection: ElementPath[],
 ): boolean {
   // grid cells have all alignments available
   const isGridCell = MetadataUtils.isGridCell(jsxMetadata, path)
@@ -50,10 +51,12 @@ export function isAlignmentGroupDisabled(
       : orientation === 'horizontal'
   }
 
-  // absolute elements have all alignments available, unless they are storyboard children
+  // absolute elements have all alignments available, unless they are storyboard children or all
+  // selected elements are storyboard children
   if (
     MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(jsxMetadata, path)) &&
-    !EP.isStoryboardChild(path)
+    (!EP.isStoryboardChild(path) ||
+      (selection.length > 1 && selection.every((other) => EP.isStoryboardChild(other))))
   ) {
     return false
   }

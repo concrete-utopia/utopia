@@ -8,7 +8,7 @@ describe('alignment buttons', () => {
       const renderResult = await renderTestEditorWithCode(projectCode, 'await-first-dom-report')
       const metadata = renderResult.getEditorState().editor.jsxMetadata
       expect(
-        isAlignmentGroupDisabled(metadata, EP.fromString('sb/grid/grid-child'), 'horizontal'),
+        isAlignmentGroupDisabled(metadata, EP.fromString('sb/grid/grid-child'), 'horizontal', []),
       ).toBe(false)
     })
     it('enables buttons for flex only in the opposite direction', async () => {
@@ -22,6 +22,7 @@ describe('alignment buttons', () => {
             metadata,
             EP.fromString('sb/flex-horiz/flex-horiz-child'),
             'vertical',
+            [],
           ),
         ).toBe(false)
         expect(
@@ -29,6 +30,7 @@ describe('alignment buttons', () => {
             metadata,
             EP.fromString('sb/flex-horiz/flex-horiz-child'),
             'horizontal',
+            [],
           ),
         ).toBe(true)
       }
@@ -40,6 +42,7 @@ describe('alignment buttons', () => {
             metadata,
             EP.fromString('sb/flex-vert/flex-vert-child'),
             'horizontal',
+            [],
           ),
         ).toBe(false)
         expect(
@@ -47,6 +50,7 @@ describe('alignment buttons', () => {
             metadata,
             EP.fromString('sb/flex-vert/flex-vert-child'),
             'vertical',
+            [],
           ),
         ).toBe(true)
       }
@@ -60,10 +64,20 @@ describe('alignment buttons', () => {
           metadata,
           EP.fromString('sb/flow/flow-child-absolute'),
           'horizontal',
+          [],
         ),
       ).toBe(false)
 
-      expect(isAlignmentGroupDisabled(metadata, EP.fromString('sb/flow'), 'horizontal')).toBe(true)
+      expect(isAlignmentGroupDisabled(metadata, EP.fromString('sb/flow'), 'horizontal', [])).toBe(
+        true,
+      )
+
+      expect(
+        isAlignmentGroupDisabled(metadata, EP.fromString('sb/flow'), 'horizontal', [
+          EP.fromString('sb/flow'),
+          EP.fromString('sb/grid'),
+        ]),
+      ).toBe(false)
     })
     it('disables buttons for flow', async () => {
       const renderResult = await renderTestEditorWithCode(projectCode, 'await-first-dom-report')
@@ -74,6 +88,7 @@ describe('alignment buttons', () => {
           metadata,
           EP.fromString('sb/flow/flow-child-relative'),
           'horizontal',
+          [],
         ),
       ).toBe(true)
     })
