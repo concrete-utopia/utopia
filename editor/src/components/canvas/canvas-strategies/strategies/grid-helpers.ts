@@ -653,9 +653,13 @@ function alterGridTemplateDimensions(params: {
           if (before.length + after.length === 0) {
             return null
           }
-          return gridCSSRepeat(dim.times, [...before, ...after])
+          return gridCSSRepeat(dim.times, [...before, ...after], dim.areaName)
         case 'REPLACE':
-          return gridCSSRepeat(dim.times, [...before, params.patch.newValue, ...after])
+          return gridCSSRepeat(
+            dim.times,
+            [...before, params.patch.newValue, ...after],
+            dim.areaName,
+          )
         default:
           assertNever(params.patch)
       }

@@ -2023,11 +2023,13 @@ export const GridDimensionKeepDeepEquality: KeepDeepEqualityCall<GridDimension> 
   )
 
 export const GridCSSRepeatKeepDeepEquality: KeepDeepEqualityCall<GridCSSRepeat> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (p) => p.times,
     createCallWithTripleEquals(),
     (p) => p.value,
     arrayDeepEquality(GridDimensionKeepDeepEquality),
+    (p) => p.areaName,
+    NullableStringKeepDeepEquality,
     gridCSSRepeat,
   )
 
