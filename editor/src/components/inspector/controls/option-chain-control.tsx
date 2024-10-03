@@ -90,6 +90,7 @@ export const OptionChainControl: React.FunctionComponent<
               icon: option.icon,
               iconComponent: option.iconComponent,
               labelInner: option.label,
+              disabled: option.disabled,
             }}
             value={props.value === option.value}
             // eslint-disable-next-line react/jsx-no-bind

@@ -184,19 +184,19 @@ export const AlignmentButtons = React.memo(() => {
         options={[
           {
             value: 'left',
-            icon: { category: 'inspector', type: 'justifySelf-start' },
+            icon: { category: 'inspector', type: 'justify-start' },
             forceCallOnSubmitValue: true,
             disabled: disableAlign,
           },
           {
             value: 'hcenter',
-            icon: { category: 'inspector', type: 'justifySelf-center' },
+            icon: { category: 'inspector', type: 'justify-center' },
             forceCallOnSubmitValue: true,
             disabled: disableAlign,
           },
           {
             value: 'right',
-            icon: { category: 'inspector', type: 'justifySelf-end' },
+            icon: { category: 'inspector', type: 'justify-end' },
             forceCallOnSubmitValue: true,
             disabled: disableAlign,
           },
@@ -213,19 +213,19 @@ export const AlignmentButtons = React.memo(() => {
         options={[
           {
             value: 'top',
-            icon: { category: 'inspector', type: 'alignSelf-start' },
+            icon: { category: 'inspector', type: 'align-start' },
             forceCallOnSubmitValue: true,
             disabled: disableAlign,
           },
           {
             value: 'vcenter',
-            icon: { category: 'inspector', type: 'alignSelf-center' },
+            icon: { category: 'inspector', type: 'align-center' },
             forceCallOnSubmitValue: true,
             disabled: disableAlign,
           },
           {
             value: 'bottom',
-            icon: { category: 'inspector', type: 'alignSelf-end' },
+            icon: { category: 'inspector', type: 'align-end' },
             forceCallOnSubmitValue: true,
             disabled: disableAlign,
           },

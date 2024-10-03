@@ -15,6 +15,7 @@ export interface DEPRECATEDOptionControlOptions extends DEPRECATEDGenericControl
   tooltip?: string
   width?: number
   height?: number
+  disabled?: boolean
 }
 
 export const OptionControl: React.FunctionComponent<
@@ -101,15 +102,15 @@ export const OptionControl: React.FunctionComponent<
               isChecked && props.controlStatus === 'overridden'
                 ? colorTheme.brandNeonPink.value
                 : colorTheme.fg1.value,
-            filter: props.controlStatus == 'disabled' ? 'grayscale(0)' : undefined,
-            opacity: props.controlStatus == 'disabled' ? undefined : isChecked ? 1 : 0.4,
+            filter: props.controlStatus === 'disabled' ? 'grayscale(0)' : undefined,
+            opacity: props.controlStatus === 'disabled' ? undefined : isChecked ? 1 : 0.7,
             // If part of a option chain control:
             '.option-chain-control-container &': {
               boxShadow: 'none !important',
               borderRadius: 2,
-              opacity: isChecked ? 1 : 0.4,
+              opacity: controlOptions.disabled ? 0.2 : isChecked ? 1 : 0.7,
               '&:hover': {
-                opacity: props.controlStatus == 'disabled' ? undefined : 1,
+                opacity: controlOptions.disabled ? undefined : 1,
                 color:
                   isChecked && props.controlStatus === 'overridden'
                     ? colorTheme.brandNeonPink.value
@@ -117,10 +118,10 @@ export const OptionControl: React.FunctionComponent<
               },
             },
             '&:hover': {
-              opacity: props.controlStatus == 'disabled' ? undefined : 1,
+              opacity: props.controlStatus === 'disabled' ? undefined : 1,
             },
             '.control-option-icon-component': {
-              opacity: 0.4,
+              opacity: 0.7,
             },
             '&:hover .control-option-icon-component': {
               opacity: 1,
