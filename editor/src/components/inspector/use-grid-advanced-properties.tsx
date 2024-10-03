@@ -5,6 +5,16 @@ import { isLeft, isRight, right } from '../../core/shared/either'
 import { isJSXElement } from '../../core/shared/element-template'
 import { styleP } from './inspector-common'
 
+/**
+ * These should match the props managed by the Advanced menu of the Grid inspector section.
+ */
+const advancedGridProps = [
+  styleP('justifyContent'),
+  styleP('alignContent'),
+  styleP('justifyItems'),
+  styleP('alignItems'),
+]
+
 export function useGridAdvancedPropertiesCount(): number {
   const grid = useEditorState(
     Substores.metadata,
@@ -21,19 +31,6 @@ export function useGridAdvancedPropertiesCount(): number {
     'useGridAdvancedProperties grids',
   )
 
-  /**
-   * These should match the props managed by the Advanced menu of the Grid inspector section.
-   */
-  const advancedGridProps = React.useMemo(
-    () => [
-      styleP('justifyContent'),
-      styleP('alignContent'),
-      styleP('justifyItems'),
-      styleP('alignItems'),
-    ],
-    [],
-  )
-
   return React.useMemo(() => {
     if (grid == null || isLeft(grid.element) || !isJSXElement(grid.element.value)) {
       return 0
@@ -45,5 +42,5 @@ export function useGridAdvancedPropertiesCount(): number {
       const attr = getSimpleAttributeAtPath(props, curr)
       return isRight(attr) && attr.value != null ? acc + 1 : acc
     }, 0)
-  }, [grid, advancedGridProps])
+  }, [grid])
 }
