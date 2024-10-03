@@ -1,3 +1,4 @@
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import * as EP from '../../core/shared/element-path'
 import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import { isAlignmentGroupDisabled } from './use-disable-alignment'
@@ -7,8 +8,14 @@ describe('alignment buttons', () => {
     it('enables buttons for grid cells', async () => {
       const renderResult = await renderTestEditorWithCode(projectCode, 'await-first-dom-report')
       const metadata = renderResult.getEditorState().editor.jsxMetadata
+
       expect(
-        isAlignmentGroupDisabled(metadata, EP.fromString('sb/grid/grid-child'), 'horizontal', []),
+        isAlignmentGroupDisabled(
+          MetadataUtils.findElementByElementPath(metadata, EP.fromString('sb/grid/grid-child')),
+          MetadataUtils.findElementByElementPath(metadata, EP.fromString('sb/grid')),
+          'horizontal',
+          [],
+        ),
       ).toBe(false)
     })
     it('enables buttons for flex only in the opposite direction', async () => {
@@ -19,16 +26,22 @@ describe('alignment buttons', () => {
       {
         expect(
           isAlignmentGroupDisabled(
-            metadata,
-            EP.fromString('sb/flex-horiz/flex-horiz-child'),
+            MetadataUtils.findElementByElementPath(
+              metadata,
+              EP.fromString('sb/flex-horiz/flex-horiz-child'),
+            ),
+            MetadataUtils.findElementByElementPath(metadata, EP.fromString('sb/flex-horiz')),
             'vertical',
             [],
           ),
         ).toBe(false)
         expect(
           isAlignmentGroupDisabled(
-            metadata,
-            EP.fromString('sb/flex-horiz/flex-horiz-child'),
+            MetadataUtils.findElementByElementPath(
+              metadata,
+              EP.fromString('sb/flex-horiz/flex-horiz-child'),
+            ),
+            MetadataUtils.findElementByElementPath(metadata, EP.fromString('sb/flex-horiz')),
             'horizontal',
             [],
           ),
@@ -39,16 +52,22 @@ describe('alignment buttons', () => {
       {
         expect(
           isAlignmentGroupDisabled(
-            metadata,
-            EP.fromString('sb/flex-vert/flex-vert-child'),
+            MetadataUtils.findElementByElementPath(
+              metadata,
+              EP.fromString('sb/flex-vert/flex-vert-child'),
+            ),
+            MetadataUtils.findElementByElementPath(metadata, EP.fromString('sb/flex-vert')),
             'horizontal',
             [],
           ),
         ).toBe(false)
         expect(
           isAlignmentGroupDisabled(
-            metadata,
-            EP.fromString('sb/flex-vert/flex-vert-child'),
+            MetadataUtils.findElementByElementPath(
+              metadata,
+              EP.fromString('sb/flex-vert/flex-vert-child'),
+            ),
+            MetadataUtils.findElementByElementPath(metadata, EP.fromString('sb/flex-vert')),
             'vertical',
             [],
           ),
@@ -61,22 +80,32 @@ describe('alignment buttons', () => {
 
       expect(
         isAlignmentGroupDisabled(
-          metadata,
-          EP.fromString('sb/flow/flow-child-absolute'),
+          MetadataUtils.findElementByElementPath(
+            metadata,
+            EP.fromString('sb/flow/flow-child-absolute'),
+          ),
+          MetadataUtils.findElementByElementPath(metadata, EP.fromString('sb/flow')),
           'horizontal',
           [],
         ),
       ).toBe(false)
 
-      expect(isAlignmentGroupDisabled(metadata, EP.fromString('sb/flow'), 'horizontal', [])).toBe(
-        true,
-      )
+      expect(
+        isAlignmentGroupDisabled(
+          MetadataUtils.findElementByElementPath(metadata, EP.fromString('sb/flow')),
+          MetadataUtils.findElementByElementPath(metadata, EP.fromString('sb')),
+          'horizontal',
+          [],
+        ),
+      ).toBe(true)
 
       expect(
-        isAlignmentGroupDisabled(metadata, EP.fromString('sb/flow'), 'horizontal', [
-          EP.fromString('sb/flow'),
-          EP.fromString('sb/grid'),
-        ]),
+        isAlignmentGroupDisabled(
+          MetadataUtils.findElementByElementPath(metadata, EP.fromString('sb/flow')),
+          MetadataUtils.findElementByElementPath(metadata, EP.fromString('sb')),
+          'horizontal',
+          [EP.fromString('sb/flow'), EP.fromString('sb/grid')],
+        ),
       ).toBe(false)
     })
     it('disables buttons for flow', async () => {
@@ -85,8 +114,11 @@ describe('alignment buttons', () => {
 
       expect(
         isAlignmentGroupDisabled(
-          metadata,
-          EP.fromString('sb/flow/flow-child-relative'),
+          MetadataUtils.findElementByElementPath(
+            metadata,
+            EP.fromString('sb/flow/flow-child-relative'),
+          ),
+          MetadataUtils.findElementByElementPath(metadata, EP.fromString('sb/flow')),
           'horizontal',
           [],
         ),
