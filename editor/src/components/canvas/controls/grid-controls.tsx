@@ -508,6 +508,7 @@ export type GridData = {
   cells: number
   metadata: ElementInstanceMetadata
 }
+
 export function useGridData(elementPaths: ElementPath[]): GridData[] {
   const grids = useEditorState(
     Substores.metadata,
@@ -630,23 +631,35 @@ export const GridRowColumnResizingControls =
 
 export const GridControlsKey = (gridPath: ElementPath) => `grid-controls-${EP.toString(gridPath)}`
 
-export interface GridControlsProps {
-  targets: ElementPath[]
+export interface GridControlProps {
+  grid: GridData
 }
 
-export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ targets }) => {
+export const GridControl = React.memo<GridControlProps>(({ grid }) => {
   const dispatch = useDispatch()
   const controls = useAnimationControls()
   const colorTheme = useColorTheme()
   const features = useRollYourOwnFeatures()
 
-  const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-  const scale = useEditorState(
-    Substores.canvas,
-    (store) => store.editor.canvas.scale,
-    'GridControls scale',
+  const editorMetadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'GridControl editorMetadata',
   )
-  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+
+  const interactionLatestMetadata = useEditorState(
+    Substores.canvas,
+    (store) =>
+      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG'
+        ? store.editor.canvas.interactionSession.latestMetadata
+        : null,
+    'GridControl interactionLatestMetadata',
+  )
+
+  const jsxMetadata = React.useMemo(
+    () => interactionLatestMetadata ?? editorMetadata,
+    [interactionLatestMetadata, editorMetadata],
+  )
 
   const activelyDraggingOrResizingCell = useEditorState(
     Substores.canvas,
@@ -658,111 +671,23 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
       store.editor.canvas.interactionSession?.interactionData.drag != null
         ? store.editor.canvas.interactionSession.activeControl.id
         : null,
-    'GridControls activelyDraggingOrResizingCell',
-  )
-
-  const { hoveringStart, mouseCanvasPosition } = useMouseMove(activelyDraggingOrResizingCell)
-
-  const targetRootCell = useEditorState(
-    Substores.restOfStore,
-    (store) => store.strategyState.customStrategyState.grid.currentRootCell,
-    'GridControls targetRootCell',
+    'GridControl activelyDraggingOrResizingCell',
   )
 
   const currentHoveredCell = useEditorState(
     Substores.restOfStore,
     (store) =>
       store.strategyState.customStrategyState.grid.targetCellData?.gridCellCoordinates ?? null,
-    'GridControls currentHoveredCell',
+    'GridControl currentHoveredCell',
   )
 
-  const dragging = useEditorState(
-    Substores.canvas,
-    (store) =>
-      store.editor.canvas.interactionSession != null &&
-      store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE'
-        ? store.editor.canvas.interactionSession.activeControl.id
-        : null,
-    'GridControls dragging',
-  )
-
-  const interactionData = useEditorState(
-    Substores.canvas,
-    (store) =>
-      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG'
-        ? store.editor.canvas.interactionSession.interactionData
-        : null,
-    'GridControls interactionData',
-  )
-
-  const interactionLatestMetadata = useEditorState(
-    Substores.canvas,
-    (store) =>
-      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG'
-        ? store.editor.canvas.interactionSession.latestMetadata
-        : null,
-    'GridControls interactionLatestMetadata',
-  )
-
-  const editorMetadata = useEditorState(
+  const targetsAreCellsWithPositioning = useEditorState(
     Substores.metadata,
-    (store) => store.editor.jsxMetadata,
-    'GridControls editorMetadata',
-  )
-
-  const jsxMetadata = React.useMemo(
-    () => interactionLatestMetadata ?? editorMetadata,
-    [interactionLatestMetadata, editorMetadata],
-  )
-
-  const hoveredGrids = useEditorState(
-    Substores.canvas,
-    (store) => stripNulls([store.editor.canvas.controls.gridControls]),
-    'FlexReparentTargetIndicator lines',
-  )
-
-  const grids = useGridData([...targets, ...hoveredGrids])
-
-  const cells = React.useMemo(() => {
-    return grids.flatMap((grid) => {
-      const children = MetadataUtils.getChildrenUnordered(jsxMetadata, grid.elementPath)
-      return mapDropNulls((cell, index) => {
-        if (cell == null || cell.globalFrame == null || !isFiniteRectangle(cell.globalFrame)) {
-          return null
-        }
-        const countedRow = Math.floor(index / grid.columns) + 1
-        const countedColumn = Math.floor(index % grid.columns) + 1
-
-        const columnFromProps = cell.specialSizeMeasurements.elementGridProperties.gridColumnStart
-        const rowFromProps = cell.specialSizeMeasurements.elementGridProperties.gridRowStart
-        return {
-          elementPath: cell.elementPath,
-          globalFrame: cell.globalFrame,
-          borderRadius: cell.specialSizeMeasurements.borderRadius,
-          column:
-            columnFromProps == null
-              ? countedColumn
-              : isCSSKeyword(columnFromProps)
-              ? countedColumn
-              : columnFromProps.numericalPosition ?? countedColumn,
-          row:
-            rowFromProps == null
-              ? countedRow
-              : isCSSKeyword(rowFromProps)
-              ? countedRow
-              : rowFromProps.numericalPosition ?? countedRow,
-          index: index,
-        }
-      }, children)
-    })
-  }, [grids, jsxMetadata])
-
-  const shadow = React.useMemo(() => {
-    return cells.find((cell) => EP.toUid(cell.elementPath) === dragging) ?? null
-  }, [cells, dragging])
-
-  const [initialShadowFrame, setInitialShadowFrame] = React.useState<CanvasRectangle | null>(
-    shadow?.globalFrame ?? null,
+    (store) =>
+      store.editor.selectedViews.every((elementPath) =>
+        MetadataUtils.isGridCellWithPositioning(store.editor.jsxMetadata, elementPath),
+      ),
+    'GridControl targetsAreCellsWithPositioning',
   )
 
   const anyTargetAbsolute = useEditorState(
@@ -773,41 +698,16 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
           MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath),
         ),
       ),
-    'GridControls anyTargetAbsolute',
+    'GridControl anyTargetAbsolute',
   )
 
-  const targetsAreCellsWithPositioning = useEditorState(
-    Substores.metadata,
-    (store) =>
-      store.editor.selectedViews.every((elementPath) =>
-        MetadataUtils.isGridCellWithPositioning(store.editor.jsxMetadata, elementPath),
-      ),
-    'GridControls anyTargetAbsolute',
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'GridControl scale',
   )
 
-  const gridPath = optionalMap(EP.parentPath, shadow?.elementPath)
-
-  const gridFrame = React.useMemo(() => {
-    if (gridPath == null) {
-      return zeroRectangle
-    }
-    const maybeGridFrame = MetadataUtils.findElementByElementPath(
-      metadataRef.current,
-      gridPath,
-    )?.globalFrame
-    if (maybeGridFrame == null || !isFiniteRectangle(maybeGridFrame)) {
-      return zeroRectangle
-    }
-    return maybeGridFrame
-  }, [gridPath, metadataRef])
-
-  useCellAnimation({
-    disabled: anyTargetAbsolute,
-    targetRootCell: targetRootCell,
-    controls: controls,
-    shadowFrame: initialShadowFrame,
-    gridPath: gridPath,
-  })
+  const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
   const startInteractionWithUid = React.useCallback(
     (params: { uid: string; row: number; column: number; frame: CanvasRectangle }) =>
@@ -833,6 +733,67 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
       },
     [canvasOffsetRef, dispatch, scale],
   )
+
+  const cells = React.useMemo(() => {
+    const children = MetadataUtils.getChildrenUnordered(jsxMetadata, grid.elementPath)
+    return mapDropNulls((cell, index) => {
+      if (cell == null || cell.globalFrame == null || !isFiniteRectangle(cell.globalFrame)) {
+        return null
+      }
+      const countedRow = Math.floor(index / grid.columns) + 1
+      const countedColumn = Math.floor(index % grid.columns) + 1
+
+      const columnFromProps = cell.specialSizeMeasurements.elementGridProperties.gridColumnStart
+      const rowFromProps = cell.specialSizeMeasurements.elementGridProperties.gridRowStart
+      return {
+        elementPath: cell.elementPath,
+        globalFrame: cell.globalFrame,
+        borderRadius: cell.specialSizeMeasurements.borderRadius,
+        column:
+          columnFromProps == null
+            ? countedColumn
+            : isCSSKeyword(columnFromProps)
+            ? countedColumn
+            : columnFromProps.numericalPosition ?? countedColumn,
+        row:
+          rowFromProps == null
+            ? countedRow
+            : isCSSKeyword(rowFromProps)
+            ? countedRow
+            : rowFromProps.numericalPosition ?? countedRow,
+        index: index,
+      }
+    }, children)
+  }, [grid, jsxMetadata])
+
+  const dragging = useEditorState(
+    Substores.canvas,
+    (store) =>
+      store.editor.canvas.interactionSession != null &&
+      store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE'
+        ? store.editor.canvas.interactionSession.activeControl.id
+        : null,
+    'GridControl dragging',
+  )
+
+  const shadow = React.useMemo(() => {
+    return cells.find((cell) => EP.toUid(cell.elementPath) === dragging) ?? null
+  }, [cells, dragging])
+
+  const [initialShadowFrame, setInitialShadowFrame] = React.useState<CanvasRectangle | null>(
+    shadow?.globalFrame ?? null,
+  )
+
+  const interactionData = useEditorState(
+    Substores.canvas,
+    (store) =>
+      store.editor.canvas.interactionSession?.interactionData.type === 'DRAG'
+        ? store.editor.canvas.interactionSession.interactionData
+        : null,
+    'GridControl interactionData',
+  )
+
+  const { hoveringStart, mouseCanvasPosition } = useMouseMove(activelyDraggingOrResizingCell)
 
   // NOTE: this stuff is meant to be temporary, until we settle on the set of interaction pieces we like.
   // After that, we should get rid of this.
@@ -876,26 +837,300 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     return {
       x: wrapCoord(
         getCoord('x', 'width') ?? 0,
-        gridFrame.x,
-        gridFrame.x + gridFrame.width,
+        grid.frame.x,
+        grid.frame.x + grid.frame.width,
         shadow.globalFrame.width,
       ),
       y: wrapCoord(
         getCoord('y', 'height') ?? 0,
-        gridFrame.y,
-        gridFrame.y + gridFrame.height,
+        grid.frame.y,
+        grid.frame.y + grid.frame.height,
         shadow.globalFrame.height,
       ),
     }
   }, [
-    features,
-    initialShadowFrame,
     interactionData,
-    shadow,
+    initialShadowFrame,
     hoveringStart,
+    shadow,
+    grid.frame.x,
+    grid.frame.width,
+    grid.frame.y,
+    grid.frame.height,
+    features.Grid.dragVerbatim,
+    features.Grid.dragMagnetic,
+    features.Grid.dragRatio,
     mouseCanvasPosition,
-    gridFrame,
   ])
+
+  const gridPath = optionalMap(EP.parentPath, shadow?.elementPath)
+
+  const targetRootCell = useEditorState(
+    Substores.restOfStore,
+    (store) => store.strategyState.customStrategyState.grid.currentRootCell,
+    'GridControl targetRootCell',
+  )
+
+  useCellAnimation({
+    disabled: anyTargetAbsolute,
+    targetRootCell: targetRootCell,
+    controls: controls,
+    shadowFrame: initialShadowFrame,
+    gridPath: gridPath,
+  })
+
+  const placeholders = Array.from(Array(grid.cells).keys())
+  let style: CSSProperties = {
+    position: 'absolute',
+    top: grid.frame.y - 1, // account for border!
+    left: grid.frame.x - 1, // account for border!
+    width: grid.frame.width,
+    height: grid.frame.height,
+    display: 'grid',
+    gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
+    gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
+    backgroundColor:
+      activelyDraggingOrResizingCell != null ? features.Grid.activeGridBackground : 'transparent',
+    border: `1px solid ${
+      activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
+    }`,
+    justifyContent: grid.justifyContent ?? 'initial',
+    alignContent: grid.alignContent ?? 'initial',
+    pointerEvents: 'none',
+    padding:
+      grid.padding == null
+        ? 0
+        : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
+  }
+
+  // Gap needs to be set only if the other two are not present or we'll have rendering issues
+  // due to how measurements are calculated.
+  if (grid.rowGap != null && grid.columnGap != null) {
+    style.rowGap = grid.rowGap
+    style.columnGap = grid.columnGap
+  } else {
+    if (grid.gap != null) {
+      style.gap = grid.gap
+    }
+    if (grid.rowGap != null) {
+      style.rowGap = grid.rowGap
+    }
+    if (grid.columnGap != null) {
+      style.columnGap = grid.columnGap
+    }
+  }
+
+  return (
+    <React.Fragment>
+      {/* grid lines */}
+      <div
+        key={gridKeyFromPath(grid.elementPath)}
+        id={gridKeyFromPath(grid.elementPath)}
+        data-grid-path={EP.toString(grid.elementPath)}
+        style={style}
+      >
+        {placeholders.map((cell) => {
+          const countedRow = Math.floor(cell / grid.columns) + 1
+          const countedColumn = Math.floor(cell % grid.columns) + 1
+          const id = gridCellTargetId(grid.elementPath, countedRow, countedColumn)
+          const borderID = `${id}-border`
+          const dotgridColor =
+            activelyDraggingOrResizingCell != null ? features.Grid.dotgridColor : 'transparent'
+
+          const isActiveCell =
+            countedColumn === currentHoveredCell?.column && countedRow === currentHoveredCell?.row
+
+          const borderColor =
+            isActiveCell && targetsAreCellsWithPositioning
+              ? colorTheme.brandNeonPink.value
+              : features.Grid.inactiveGridColor
+          return (
+            <div
+              key={id}
+              id={id}
+              data-testid={id}
+              data-wtf={`data-wtf`}
+              style={{
+                position: 'relative',
+                pointerEvents: 'initial',
+              }}
+              data-grid-row={countedRow}
+              data-grid-column={countedColumn}
+            >
+              <React.Fragment>
+                <div
+                  key={borderID}
+                  id={borderID}
+                  data-testid={borderID}
+                  style={{
+                    position: 'relative',
+                    left: gridPlaceholderTopOrLeftPosition(scale),
+                    top: gridPlaceholderTopOrLeftPosition(scale),
+                    width: gridPlaceholderWidthOrHeight(scale),
+                    height: gridPlaceholderWidthOrHeight(scale),
+                    borderTop: gridPlaceholderBorder(borderColor, scale),
+                    borderLeft: gridPlaceholderBorder(borderColor, scale),
+                    borderBottom:
+                      isActiveCell ||
+                      countedRow >= grid.rows ||
+                      (grid.rowGap != null && grid.rowGap > 0)
+                        ? gridPlaceholderBorder(borderColor, scale)
+                        : undefined,
+                    borderRight:
+                      isActiveCell ||
+                      countedColumn >= grid.columns ||
+                      (grid.columnGap != null && grid.columnGap > 0)
+                        ? gridPlaceholderBorder(borderColor, scale)
+                        : undefined,
+                  }}
+                />
+                {when(
+                  features.Grid.dotgrid,
+                  <React.Fragment>
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: -1,
+                        bottom: -1,
+                        left: -1,
+                        right: -1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <div style={{ width: 2, height: 2, backgroundColor: dotgridColor }} />
+                    </div>
+                    <div
+                      style={{
+                        width: 2,
+                        height: 2,
+                        backgroundColor: dotgridColor,
+                        position: 'absolute',
+                        top: -1,
+                        left: -1,
+                      }}
+                    />
+                    <div
+                      style={{
+                        width: 2,
+                        height: 2,
+                        backgroundColor: dotgridColor,
+                        position: 'absolute',
+                        bottom: -1,
+                        left: -1,
+                      }}
+                    />
+                    <div
+                      style={{
+                        width: 2,
+                        height: 2,
+                        backgroundColor: dotgridColor,
+                        position: 'absolute',
+                        top: -1,
+                        right: -1,
+                      }}
+                    />
+                    <div
+                      style={{
+                        width: 2,
+                        height: 2,
+                        backgroundColor: dotgridColor,
+                        position: 'absolute',
+                        bottom: -1,
+                        right: -1,
+                      }}
+                    />
+                  </React.Fragment>,
+                )}
+              </React.Fragment>
+            </div>
+          )
+        })}
+      </div>
+      {/* cell targets */}
+      {cells.map((cell) => {
+        return (
+          <div
+            onMouseDown={startInteractionWithUid({
+              uid: EP.toUid(cell.elementPath),
+              frame: cell.globalFrame,
+              row: cell.row,
+              column: cell.column,
+            })}
+            key={GridCellTestId(cell.elementPath)}
+            data-testid={GridCellTestId(cell.elementPath)}
+            style={{
+              position: 'absolute',
+              top: cell.globalFrame.y,
+              left: cell.globalFrame.x,
+              width: cell.globalFrame.width,
+              height: cell.globalFrame.height,
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'flex-end',
+              backgroundColor:
+                activelyDraggingOrResizingCell != null &&
+                EP.toUid(cell.elementPath) !== activelyDraggingOrResizingCell
+                  ? '#ffffff66'
+                  : 'transparent',
+              borderRadius:
+                cell.borderRadius != null
+                  ? `${cell.borderRadius.top}px ${cell.borderRadius.right}px ${cell.borderRadius.bottom}px ${cell.borderRadius.left}px`
+                  : 0,
+            }}
+          />
+        )
+      })}
+      {/* shadow */}
+      {features.Grid.shadow &&
+      !anyTargetAbsolute &&
+      shadow != null &&
+      initialShadowFrame != null &&
+      interactionData?.dragStart != null &&
+      interactionData?.drag != null &&
+      hoveringStart != null ? (
+        <motion.div
+          style={{
+            pointerEvents: 'none',
+            position: 'absolute',
+            width: shadow.globalFrame.width,
+            height: shadow.globalFrame.height,
+            borderRadius:
+              shadow.borderRadius != null
+                ? `${shadow.borderRadius.top}px ${shadow.borderRadius.right}px ${shadow.borderRadius.bottom}px ${shadow.borderRadius.left}px`
+                : 0,
+            backgroundColor: 'black',
+            opacity: features.Grid.shadowOpacity,
+            border: '1px solid white',
+            top: shadowPosition?.y,
+            left: shadowPosition?.x,
+          }}
+        />
+      ) : null}
+    </React.Fragment>
+  )
+})
+GridControl.displayName = 'GridControl'
+
+export interface GridControlsProps {
+  targets: ElementPath[]
+}
+
+export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ targets }) => {
+  const targetRootCell = useEditorState(
+    Substores.restOfStore,
+    (store) => store.strategyState.customStrategyState.grid.currentRootCell,
+    'GridControls targetRootCell',
+  )
+
+  const hoveredGrids = useEditorState(
+    Substores.canvas,
+    (store) => stripNulls([store.editor.canvas.controls.gridControls]),
+    'GridControls hoveredGrids',
+  )
+
+  const grids = useGridData([...targets, ...hoveredGrids])
 
   if (grids.length === 0) {
     return null
@@ -904,227 +1139,9 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
   return (
     <div id={'grid-controls'}>
       <CanvasOffsetWrapper>
-        {/* grid lines */}
         {grids.map((grid) => {
-          const placeholders = Array.from(Array(grid.cells).keys())
-          let style: CSSProperties = {
-            position: 'absolute',
-            top: grid.frame.y - 1, // account for border!
-            left: grid.frame.x - 1, // account for border!
-            width: grid.frame.width,
-            height: grid.frame.height,
-            display: 'grid',
-            gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
-            gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
-            backgroundColor:
-              activelyDraggingOrResizingCell != null
-                ? features.Grid.activeGridBackground
-                : 'transparent',
-            border: `1px solid ${
-              activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
-            }`,
-            justifyContent: grid.justifyContent ?? 'initial',
-            alignContent: grid.alignContent ?? 'initial',
-            pointerEvents: 'none',
-            padding:
-              grid.padding == null
-                ? 0
-                : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
-          }
-
-          // Gap needs to be set only if the other two are not present or we'll have rendering issues
-          // due to how measurements are calculated.
-          if (grid.rowGap != null && grid.columnGap != null) {
-            style.rowGap = grid.rowGap
-            style.columnGap = grid.columnGap
-          } else {
-            if (grid.gap != null) {
-              style.gap = grid.gap
-            }
-            if (grid.rowGap != null) {
-              style.rowGap = grid.rowGap
-            }
-            if (grid.columnGap != null) {
-              style.columnGap = grid.columnGap
-            }
-          }
-
-          return (
-            <div
-              key={gridKeyFromPath(grid.elementPath)}
-              id={gridKeyFromPath(grid.elementPath)}
-              data-grid-path={EP.toString(grid.elementPath)}
-              style={style}
-            >
-              {placeholders.map((cell) => {
-                const countedRow = Math.floor(cell / grid.columns) + 1
-                const countedColumn = Math.floor(cell % grid.columns) + 1
-                const id = gridCellTargetId(grid.elementPath, countedRow, countedColumn)
-                const dotgridColor =
-                  activelyDraggingOrResizingCell != null
-                    ? features.Grid.dotgridColor
-                    : 'transparent'
-
-                const isActiveCell =
-                  countedColumn === currentHoveredCell?.column &&
-                  countedRow === currentHoveredCell?.row
-
-                const borderColor =
-                  isActiveCell && targetsAreCellsWithPositioning
-                    ? colorTheme.brandNeonPink.value
-                    : features.Grid.inactiveGridColor
-
-                return (
-                  <div
-                    key={id}
-                    id={id}
-                    data-testid={id}
-                    style={{
-                      borderTop: gridPlaceholderBorder(borderColor, scale),
-                      borderLeft: gridPlaceholderBorder(borderColor, scale),
-                      borderBottom:
-                        isActiveCell ||
-                        countedRow >= grid.rows ||
-                        (grid.rowGap != null && grid.rowGap > 0)
-                          ? gridPlaceholderBorder(borderColor, scale)
-                          : undefined,
-                      borderRight:
-                        isActiveCell ||
-                        countedColumn >= grid.columns ||
-                        (grid.columnGap != null && grid.columnGap > 0)
-                          ? gridPlaceholderBorder(borderColor, scale)
-                          : undefined,
-                      position: 'relative',
-                      pointerEvents: 'initial',
-                    }}
-                    data-grid-row={countedRow}
-                    data-grid-column={countedColumn}
-                  >
-                    {when(
-                      features.Grid.dotgrid,
-                      <React.Fragment>
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: -1,
-                            bottom: -1,
-                            left: -1,
-                            right: -1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <div style={{ width: 2, height: 2, backgroundColor: dotgridColor }} />
-                        </div>
-                        <div
-                          style={{
-                            width: 2,
-                            height: 2,
-                            backgroundColor: dotgridColor,
-                            position: 'absolute',
-                            top: -1,
-                            left: -1,
-                          }}
-                        />
-                        <div
-                          style={{
-                            width: 2,
-                            height: 2,
-                            backgroundColor: dotgridColor,
-                            position: 'absolute',
-                            bottom: -1,
-                            left: -1,
-                          }}
-                        />
-                        <div
-                          style={{
-                            width: 2,
-                            height: 2,
-                            backgroundColor: dotgridColor,
-                            position: 'absolute',
-                            top: -1,
-                            right: -1,
-                          }}
-                        />
-                        <div
-                          style={{
-                            width: 2,
-                            height: 2,
-                            backgroundColor: dotgridColor,
-                            position: 'absolute',
-                            bottom: -1,
-                            right: -1,
-                          }}
-                        />
-                      </React.Fragment>,
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          )
+          return <GridControl key={`grid-control-${EP.toString(grid.elementPath)}`} grid={grid} />
         })}
-        {/* cell targets */}
-        {cells.map((cell) => {
-          return (
-            <div
-              onMouseDown={startInteractionWithUid({
-                uid: EP.toUid(cell.elementPath),
-                frame: cell.globalFrame,
-                row: cell.row,
-                column: cell.column,
-              })}
-              key={GridCellTestId(cell.elementPath)}
-              data-testid={GridCellTestId(cell.elementPath)}
-              style={{
-                position: 'absolute',
-                top: cell.globalFrame.y,
-                left: cell.globalFrame.x,
-                width: cell.globalFrame.width,
-                height: cell.globalFrame.height,
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'flex-end',
-                backgroundColor:
-                  activelyDraggingOrResizingCell != null &&
-                  EP.toUid(cell.elementPath) !== activelyDraggingOrResizingCell
-                    ? '#ffffff66'
-                    : 'transparent',
-                borderRadius:
-                  cell.borderRadius != null
-                    ? `${cell.borderRadius.top}px ${cell.borderRadius.right}px ${cell.borderRadius.bottom}px ${cell.borderRadius.left}px`
-                    : 0,
-              }}
-            />
-          )
-        })}
-        {/* shadow */}
-        {features.Grid.shadow &&
-        !anyTargetAbsolute &&
-        shadow != null &&
-        initialShadowFrame != null &&
-        interactionData?.dragStart != null &&
-        interactionData?.drag != null &&
-        hoveringStart != null ? (
-          <motion.div
-            style={{
-              pointerEvents: 'none',
-              position: 'absolute',
-              width: shadow.globalFrame.width,
-              height: shadow.globalFrame.height,
-              borderRadius:
-                shadow.borderRadius != null
-                  ? `${shadow.borderRadius.top}px ${shadow.borderRadius.right}px ${shadow.borderRadius.bottom}px ${shadow.borderRadius.left}px`
-                  : 0,
-              backgroundColor: 'black',
-              opacity: features.Grid.shadowOpacity,
-              border: '1px solid white',
-              top: shadowPosition?.y,
-              left: shadowPosition?.x,
-            }}
-          />
-        ) : null}
         <AbsoluteDistanceIndicators targetRootCell={targetRootCell} />
       </CanvasOffsetWrapper>
     </div>
@@ -1801,7 +1818,19 @@ function gridKeyFromPath(path: ElementPath): string {
   return `grid-${EP.toString(path)}`
 }
 
-const gridPlaceholderBorder = (color: string, scale: number) => `${2 / scale}px solid ${color}`
+const placeholderBorderBaseWidth = 2
+
+function gridPlaceholderBorder(color: string, scale: number): string {
+  return `${placeholderBorderBaseWidth / scale}px solid ${color}`
+}
+
+function gridPlaceholderTopOrLeftPosition(scale: number): string {
+  return `${-placeholderBorderBaseWidth / scale}px`
+}
+
+function gridPlaceholderWidthOrHeight(scale: number): string {
+  return `calc(100% + ${(placeholderBorderBaseWidth * 2) / scale}px)`
+}
 
 export function controlsForGridPlaceholders(gridPath: ElementPath): ControlWithProps<any> {
   return {
