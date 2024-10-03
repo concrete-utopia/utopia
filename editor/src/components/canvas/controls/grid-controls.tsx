@@ -405,12 +405,6 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
     })
   }, [props.fromPropsAxisValues, resizingIndex])
 
-  const scale = useEditorState(
-    Substores.canvas,
-    (store) => store.editor.canvas.scale,
-    'GridResizing scale',
-  )
-
   if (props.axisValues == null) {
     return null
   }
@@ -418,11 +412,6 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
     case 'DIMENSIONS':
       const size = GRID_RESIZE_HANDLE_CONTAINER_SIZE / canvasScale
       const dimensions = props.axisValues.dimensions
-
-      const hideControls = dimensions.some((dim) => {
-        const scaledSize = (dim.type === 'NUMBER' ? dim.value.value : 0) * scale
-        return scaledSize < GRID_RESIZE_HANDLE_SIZE
-      })
 
       return (
         <div
@@ -448,7 +437,6 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
                 : undefined,
             paddingTop:
               props.axis === 'row' && props.padding != null ? `${props.padding.top}px` : undefined,
-            visibility: hideControls ? 'hidden' : 'visible',
           }}
         >
           {dimensions.flatMap((dimension, dimensionIndex) => {
@@ -594,9 +582,47 @@ export const GridRowColumnResizingControls =
       }, 0)
     }
 
+    const scale = useEditorState(
+      Substores.canvas,
+      (store) => store.editor.canvas.scale,
+      'GridRowColumnResizingControls scale',
+    )
+
+    const gridsWithVisibleResizeControls = React.useMemo(() => {
+      return grids.filter((grid) => {
+        if (
+          grid.gridTemplateColumns?.type !== 'DIMENSIONS' ||
+          grid.gridTemplateRows?.type !== 'DIMENSIONS'
+        ) {
+          return false
+        }
+
+        // returns whether the rendered dimensions are too crowded, as in there are two cols/rows that are closer than the handle sizes
+        function tooCrowded(dimensions: GridDimension[]): boolean {
+          const visualSizes = dimensions.map(
+            (dim) => (dim.type === 'NUMBER' ? dim.value.value : 0) * scale,
+          )
+          return visualSizes.some((dim, index) => {
+            if (index < visualSizes.length - 1) {
+              const next = visualSizes[index + 1]
+              if (dim + next < GRID_RESIZE_HANDLE_SIZE * 2) {
+                return true
+              }
+            }
+            return false
+          })
+        }
+
+        return (
+          !tooCrowded(grid.gridTemplateColumns.dimensions) &&
+          !tooCrowded(grid.gridTemplateRows.dimensions)
+        )
+      })
+    }, [scale, grids])
+
     return (
       <CanvasOffsetWrapper>
-        {grids.flatMap((grid) => {
+        {gridsWithVisibleResizeControls.flatMap((grid) => {
           return (
             <GridResizing
               key={`grid-resizing-column-${EP.toString(grid.elementPath)}`}
@@ -610,7 +636,7 @@ export const GridRowColumnResizingControls =
             />
           )
         })}
-        {grids.flatMap((grid) => {
+        {gridsWithVisibleResizeControls.flatMap((grid) => {
           return (
             <GridResizing
               key={`grid-resizing-row-${EP.toString(grid.elementPath)}`}
@@ -1606,7 +1632,6 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
       if (startingBounds == null) {
         return
       }
-
       setBounds(
         resizeBoundingBoxFromSide(
           startingBounds,
@@ -1758,7 +1783,7 @@ const GRID_RESIZE_HANDLE_SIZES = {
   short: 4,
 }
 
-function gridEdgeToEdgePosition(edge: GridResizeEdge): EdgePosition {
+export function gridEdgeToEdgePosition(edge: GridResizeEdge): EdgePosition {
   switch (edge) {
     case 'column-end':
       return EdgePositionRight

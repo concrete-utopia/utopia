@@ -59,7 +59,7 @@ import {
   FakeWatchdogWorker,
 } from '../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
-import { EditorRoot, collectElementsToRerender } from '../../templates/editor'
+import { collectElementsToRerender, EditorRoot } from '../../templates/editor'
 import Utils from '../../utils/utils'
 import { getNamedPath } from '../../utils/react-helpers'
 import type {
@@ -433,10 +433,9 @@ export async function renderTestEditorWithModel(
     // run dom SAMPLER
 
     {
-      const elementsToFocusOn = collectElementsToRerender(workingEditorState, actions)
-
       resubscribeObservers(domWalkerMutableState)
 
+      const elementsToFocusOn = collectElementsToRerender(workingEditorState, actions)
       const metadataResult = runDomSamplerRegular({
         elementsToFocusOn: elementsToFocusOn,
         domWalkerAdditionalElementsToFocusOn:
@@ -507,8 +506,12 @@ export async function renderTestEditorWithModel(
         {
           resubscribeObservers(domWalkerMutableState)
 
+          // TODO: The real dispatch updates ElementsToRerenderGLOBAL.current,
+          // while the fake one doesn't. Ideally this behaviour would be the
+          // same, but solving this was out of scope for the PR that introduced
+          // collectElementsToRerender
+          // (https://github.com/concrete-utopia/utopia/pull/6465)
           const elementsToFocusOn = collectElementsToRerender(workingEditorState, actions)
-
           const metadataResult = runDomSamplerGroups({
             elementsToFocusOn: elementsToFocusOn,
             domWalkerAdditionalElementsToFocusOn:

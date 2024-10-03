@@ -152,9 +152,7 @@ function collectElementsToRerenderForTransientActions(
   action: EditorAction,
 ): Array<ElementPath> {
   if (action.action === 'TRANSIENT_ACTIONS') {
-    if (action.elementsToRerender != null) {
-      working.push(...action.elementsToRerender)
-    }
+    working.push(...action.elementsToRerender)
     working.push(
       ...action.transientActions.reduce(collectElementsToRerenderForTransientActions, working),
     )
@@ -168,10 +166,7 @@ function collectElementsToRerenderForTransientActions(
 // for this pass use a union of the two arrays, to make sure we clear a previously focused element from the metadata
 // and let the canvas re-render components that may have a missing child now.
 let lastElementsToRerender: ElementsToRerender = 'rerender-all-elements'
-function fixElementsToRerender(
-  elementsToRerender: ElementsToRerender,
-  getChildGroups: (parentElementPaths: ElementPath[]) => ElementPath[],
-): ElementsToRerender {
+function fixElementsToRerender(elementsToRerender: ElementsToRerender): ElementsToRerender {
   let fixedElementsToRerender: ElementsToRerender = elementsToRerender
   if (
     elementsToRerender !== 'rerender-all-elements' &&
@@ -184,13 +179,8 @@ function fixElementsToRerender(
     ])
   }
 
-  const elementsWithChildGroups =
-    fixedElementsToRerender === 'rerender-all-elements'
-      ? fixedElementsToRerender
-      : [...fixedElementsToRerender, ...getChildGroups(fixedElementsToRerender)]
-
-  lastElementsToRerender = elementsWithChildGroups
-  return elementsWithChildGroups
+  lastElementsToRerender = fixedElementsToRerender
+  return fixedElementsToRerender
 }
 
 export function collectElementsToRerender(
@@ -210,10 +200,18 @@ export function collectElementsToRerender(
       ? elementsToRerenderTransient
       : editorStore.patchedEditor.canvas.elementsToRerender
 
-  const fixedElementsToRerender = fixElementsToRerender(elementsToRerender, (paths) =>
-    getChildGroupsForNonGroupParents(editorStore.patchedEditor.jsxMetadata, paths),
-  )
-  return fixedElementsToRerender
+  const fixedElementsToRerender = fixElementsToRerender(elementsToRerender)
+  const fixedElementsWithChildGroups =
+    fixedElementsToRerender === 'rerender-all-elements'
+      ? fixedElementsToRerender
+      : [
+          ...fixedElementsToRerender,
+          ...getChildGroupsForNonGroupParents(
+            editorStore.patchedEditor.jsxMetadata,
+            fixedElementsToRerender,
+          ),
+        ]
+  return fixedElementsWithChildGroups
 }
 
 export class Editor {
@@ -540,11 +538,12 @@ export class Editor {
 
           // re-render the canvas
           Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
-            const currentElementsToRerender = collectElementsToRerender(
+            const currentElementsToRender = collectElementsToRerender(
               this.storedState,
               dispatchedActions,
-            ) // Mutation!
-            ElementsToRerenderGLOBAL.current = currentElementsToRerender
+            )
+            ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
+
             ReactDOM.flushSync(() => {
               ReactDOM.unstable_batchedUpdates(() => {
                 this.canvasStore.setState(
