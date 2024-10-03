@@ -1,11 +1,9 @@
 import React from 'react'
-import type { PropsOrJSXAttributes } from '../../core/model/element-metadata-utils'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { isLeft, isRight, right } from '../../core/shared/either'
 import { isJSXElement } from '../../core/shared/element-template'
 import { styleP } from './inspector-common'
-import type { PropertyPath } from 'utopia-shared/src/types'
 
 export function useGridAdvancedPropertiesCount(): number {
   const grid = useEditorState(
@@ -23,21 +21,29 @@ export function useGridAdvancedPropertiesCount(): number {
     'useGridAdvancedProperties grids',
   )
 
+  /**
+   * These should match the props managed by the Advanced menu of the Grid inspector section.
+   */
+  const advancedGridProps = React.useMemo(
+    () => [
+      styleP('justifyContent'),
+      styleP('alignContent'),
+      styleP('justifyItems'),
+      styleP('alignItems'),
+    ],
+    [],
+  )
+
   return React.useMemo(() => {
     if (grid == null || isLeft(grid.element) || !isJSXElement(grid.element.value)) {
       return 0
     }
 
-    function countIfPropertySet(props: PropsOrJSXAttributes, path: PropertyPath): number {
-      const attr = getSimpleAttributeAtPath(props, path)
-      return isRight(attr) && attr.value != null ? 1 : 0
-    }
+    const props = right(grid.element.value.props)
 
-    return (
-      countIfPropertySet(right(grid.element.value.props), styleP('justifyContent')) +
-      countIfPropertySet(right(grid.element.value.props), styleP('alignContent')) +
-      countIfPropertySet(right(grid.element.value.props), styleP('justifyItems')) +
-      countIfPropertySet(right(grid.element.value.props), styleP('alignItems'))
-    )
-  }, [grid])
+    return advancedGridProps.reduce((acc, curr) => {
+      const attr = getSimpleAttributeAtPath(props, curr)
+      return isRight(attr) && attr.value != null ? acc + 1 : acc
+    }, 0)
+  }, [grid, advancedGridProps])
 }

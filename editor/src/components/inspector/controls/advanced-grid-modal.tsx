@@ -46,6 +46,10 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
     }
   }, [dropdownOpen, props])
 
+  /**
+   * If you edit/add/remove props here, remember to update the same values in useGridAdvancedPropertiesCount
+   * to keep the counter badge up to date displayed in the advanced menu up to date.
+   */
   const alignItemsLayoutInfo = useInspectorLayoutInfo('alignItems')
   const justifyItemsLayoutInfo = useInspectorLayoutInfo('justifyItems')
   const alignContentLayoutInfo = useInspectorLayoutInfo('alignContent')
