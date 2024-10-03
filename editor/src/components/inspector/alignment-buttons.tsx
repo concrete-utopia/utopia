@@ -26,7 +26,7 @@ import { Substores, useEditorState, useRefEditorState } from '../editor/store/st
 import { getControlStyles } from './common/control-styles'
 import { OptionChainControl } from './controls/option-chain-control'
 import { UIGridRow } from './widgets/ui-grid-row'
-import type { ElementPath } from 'utopia-shared/src/types'
+import { useDisableAlignment } from './use-disable-alignment'
 
 type ActiveAlignments = { [key in Alignment]: boolean }
 
@@ -171,8 +171,8 @@ export const AlignmentButtons = React.memo(() => {
       : null
   }, [activeAlignments])
 
-  const disableAlign = useDisableAlignment(selectedViews.current, 'horizontal')
-  const disableJustify = useDisableAlignment(selectedViews.current, 'vertical')
+  const disableJustify = useDisableAlignment(selectedViews.current, 'horizontal')
+  const disableAlign = useDisableAlignment(selectedViews.current, 'vertical')
 
   return (
     <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
@@ -387,51 +387,4 @@ function useGetUnsetAlignmentsActions(activeAlignments: ActiveAlignments) {
       return actions
     }, selectedViews.current).flat()
   }, [activeAlignments, selectedViews, jsxMetadata])
-}
-
-function useDisableAlignment(selectedViews: ElementPath[], orientation: 'horizontal' | 'vertical') {
-  const jsxMetadata = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.jsxMetadata,
-    'useDisableAlignment jsxMetadata',
-  )
-
-  return React.useMemo(() => {
-    if (selectedViews.length === 0) {
-      return true
-    }
-
-    return selectedViews.some((path) => {
-      // grid cells have all alignments available
-      const isGridCell = MetadataUtils.isGridCell(jsxMetadata, path)
-      if (isGridCell) {
-        return false
-      }
-
-      // flex children have alignment enabled on the opposite orientation to their parent's flex direction
-      const isFlexChild = MetadataUtils.isFlexLayoutedContainer(
-        MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path)),
-      )
-      if (isFlexChild) {
-        const flexDirection = MetadataUtils.getFlexDirection(
-          MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path)),
-        )
-        return flexDirection === 'column' || flexDirection === 'column-reverse'
-          ? orientation === 'horizontal'
-          : orientation === 'vertical'
-      }
-
-      // absolute elements have all alignments available, unless they are storyboard children
-      if (
-        MetadataUtils.isPositionAbsolute(
-          MetadataUtils.findElementByElementPath(jsxMetadata, path),
-        ) &&
-        !EP.isStoryboardChild(path)
-      ) {
-        return false
-      }
-
-      return true
-    })
-  }, [selectedViews, jsxMetadata, orientation])
 }
