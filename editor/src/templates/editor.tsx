@@ -164,36 +164,6 @@ function collectElementsToRerenderForTransientActions(
   }
 }
 
-export function getElementsToRerender(
-  editorStore: EditorStoreFull,
-  dispatchedActions: readonly EditorAction[],
-): ElementsToRerender {
-  const elementsToRerenderTransient = uniqBy<ElementPath>(
-    dispatchedActions.reduce(
-      collectElementsToRerenderForTransientActions,
-      [] as Array<ElementPath>,
-    ),
-    EP.pathsEqual,
-  )
-
-  const storeToUse =
-    editorStore.strategyState.currentStrategy == null
-      ? editorStore.unpatchedEditor
-      : editorStore.patchedEditor
-
-  const elementsToRerender =
-    elementsToRerenderTransient.length > 0
-      ? elementsToRerenderTransient
-      : ElementsToRerenderGLOBAL.current
-
-  const fixedElementsToRerender = fixElementsToRerender(elementsToRerender, (paths) =>
-    getChildGroupsForNonGroupParents(storeToUse.jsxMetadata, paths),
-  )
-
-  ElementsToRerenderGLOBAL.current = fixedElementsToRerender
-  return fixedElementsToRerender
-}
-
 // If the elements to re-render have specific paths in 2 consecutive passes, but those paths differ, then
 // for this pass use a union of the two arrays, to make sure we clear a previously focused element from the metadata
 // and let the canvas re-render components that may have a missing child now.
@@ -221,6 +191,29 @@ function fixElementsToRerender(
 
   lastElementsToRerender = elementsWithChildGroups
   return elementsWithChildGroups
+}
+
+export function collectElementsToRerender(
+  editorStore: EditorStoreFull,
+  dispatchedActions: readonly EditorAction[],
+): ElementsToRerender {
+  const elementsToRerenderTransient = uniqBy<ElementPath>(
+    dispatchedActions.reduce(
+      collectElementsToRerenderForTransientActions,
+      [] as Array<ElementPath>,
+    ),
+    EP.pathsEqual,
+  )
+
+  const elementsToRerender =
+    elementsToRerenderTransient.length > 0
+      ? elementsToRerenderTransient
+      : editorStore.patchedEditor.canvas.elementsToRerender
+
+  const fixedElementsToRerender = fixElementsToRerender(elementsToRerender, (paths) =>
+    getChildGroupsForNonGroupParents(editorStore.patchedEditor.jsxMetadata, paths),
+  )
+  return fixedElementsToRerender
 }
 
 export class Editor {
@@ -483,10 +476,14 @@ export class Editor {
         !this.temporarilyDisableStoreUpdates
 
       const updateId = canvasUpdateId++
-      const currentElementsToRerender = getElementsToRerender(this.storedState, dispatchedActions)
       if (shouldUpdateCanvasStore) {
         // this will re-render the canvas root and potentially the canvas contents itself
         Measure.taskTime(`update canvas ${updateId}`, () => {
+          const currentElementsToRender = collectElementsToRerender(
+            this.storedState,
+            dispatchedActions,
+          )
+          ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
           ReactDOM.flushSync(() => {
             ReactDOM.unstable_batchedUpdates(() => {
               this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
@@ -543,6 +540,11 @@ export class Editor {
 
           // re-render the canvas
           Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
+            const currentElementsToRerender = collectElementsToRerender(
+              this.storedState,
+              dispatchedActions,
+            ) // Mutation!
+            ElementsToRerenderGLOBAL.current = currentElementsToRerender
             ReactDOM.flushSync(() => {
               ReactDOM.unstable_batchedUpdates(() => {
                 this.canvasStore.setState(
@@ -555,7 +557,7 @@ export class Editor {
           // re-run the dom-sampler
           Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
             const metadataResult = runDomSamplerGroups({
-              elementsToFocusOn: currentElementsToRerender,
+              elementsToFocusOn: ElementsToRerenderGLOBAL.current,
               domWalkerAdditionalElementsToFocusOn:
                 this.storedState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
               scale: this.storedState.patchedEditor.canvas.scale,

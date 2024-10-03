@@ -59,7 +59,7 @@ import {
   FakeWatchdogWorker,
 } from '../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
-import { EditorRoot, getElementsToRerender } from '../../templates/editor'
+import { EditorRoot, collectElementsToRerender } from '../../templates/editor'
 import Utils from '../../utils/utils'
 import { getNamedPath } from '../../utils/react-helpers'
 import type {
@@ -433,7 +433,7 @@ export async function renderTestEditorWithModel(
     // run dom SAMPLER
 
     {
-      const elementsToFocusOn = getElementsToRerender(workingEditorState, actions)
+      const elementsToFocusOn = collectElementsToRerender(workingEditorState, actions)
 
       resubscribeObservers(domWalkerMutableState)
 
@@ -507,7 +507,7 @@ export async function renderTestEditorWithModel(
         {
           resubscribeObservers(domWalkerMutableState)
 
-          const elementsToFocusOn = getElementsToRerender(workingEditorState, actions)
+          const elementsToFocusOn = collectElementsToRerender(workingEditorState, actions)
 
           const metadataResult = runDomSamplerGroups({
             elementsToFocusOn: elementsToFocusOn,
