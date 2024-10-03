@@ -132,6 +132,7 @@ import {
   runDomSamplerGroups,
 } from '../components/canvas/dom-sampler'
 import { omitWithPredicate } from '../core/shared/object-utils'
+import { getChildGroupsForNonGroupParents } from '../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -165,7 +166,10 @@ function collectElementsToRerenderForTransientActions(
 // for this pass use a union of the two arrays, to make sure we clear a previously focused element from the metadata
 // and let the canvas re-render components that may have a missing child now.
 let lastElementsToRerender: ElementsToRerender = 'rerender-all-elements'
-function fixElementsToRerender(elementsToRerender: ElementsToRerender): ElementsToRerender {
+function fixElementsToRerender(
+  elementsToRerender: ElementsToRerender,
+  getChildGroups: (parentElementPaths: ElementPath[]) => ElementPath[],
+): ElementsToRerender {
   let fixedElementsToRerender: ElementsToRerender = elementsToRerender
   if (
     elementsToRerender !== 'rerender-all-elements' &&
@@ -178,8 +182,13 @@ function fixElementsToRerender(elementsToRerender: ElementsToRerender): Elements
     ])
   }
 
-  lastElementsToRerender = fixedElementsToRerender
-  return fixedElementsToRerender
+  const elementsWithChildGroups =
+    fixedElementsToRerender === 'rerender-all-elements'
+      ? fixedElementsToRerender
+      : [...fixedElementsToRerender, ...getChildGroups(fixedElementsToRerender)]
+
+  lastElementsToRerender = elementsWithChildGroups
+  return elementsWithChildGroups
 }
 
 export function collectElementsToRerender(
@@ -199,7 +208,10 @@ export function collectElementsToRerender(
       ? elementsToRerenderTransient
       : editorStore.patchedEditor.canvas.elementsToRerender
 
-  const fixedElementsToRerender = fixElementsToRerender(elementsToRerender)
+  const fixedElementsToRerender = fixElementsToRerender(elementsToRerender, (paths) =>
+    getChildGroupsForNonGroupParents(editorStore.patchedEditor.jsxMetadata, paths),
+  )
+  ElementsToRerenderGLOBAL.current = fixedElementsToRerender // Mutation!
   return fixedElementsToRerender
 }
 
