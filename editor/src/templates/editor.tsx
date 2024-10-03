@@ -183,6 +183,8 @@ function fixElementsToRerender(elementsToRerender: ElementsToRerender): Elements
   return fixedElementsToRerender
 }
 
+let c = 1
+
 export function collectElementsToRerender(
   editorStore: EditorStoreFull,
   dispatchedActions: readonly EditorAction[],
@@ -195,23 +197,50 @@ export function collectElementsToRerender(
     EP.pathsEqual,
   )
 
-  const elementsToRerender =
+  let elementsToRerender: ElementsToRerender =
     elementsToRerenderTransient.length > 0
       ? elementsToRerenderTransient
       : editorStore.patchedEditor.canvas.elementsToRerender
 
-  const fixedElementsToRerender = fixElementsToRerender(elementsToRerender)
-  const fixedElementsWithChildGroups =
-    fixedElementsToRerender === 'rerender-all-elements'
-      ? fixedElementsToRerender
+  // console.log(
+  //   `${c} elementsToRerender before`,
+  //   elementsToRerender === 'rerender-all-elements'
+  //     ? elementsToRerender
+  //     : elementsToRerender.map(EP.toString),
+  // )
+  // c += 1
+
+  elementsToRerender =
+    elementsToRerender === 'rerender-all-elements'
+      ? elementsToRerender
       : [
-          ...fixedElementsToRerender,
+          ...elementsToRerender,
           ...getChildGroupsForNonGroupParents(
             editorStore.patchedEditor.jsxMetadata,
-            fixedElementsToRerender,
+            elementsToRerender,
           ),
         ]
-  return fixedElementsWithChildGroups
+  elementsToRerender = fixElementsToRerender(elementsToRerender)
+  // elementsToRerender =
+  //   elementsToRerender === 'rerender-all-elements'
+  //     ? elementsToRerender
+  //     : [
+  //         ...elementsToRerender,
+  //         ...getChildGroupsForNonGroupParents(
+  //           editorStore.patchedEditor.jsxMetadata,
+  //           elementsToRerender,
+  //         ),
+  //       ]
+
+  // console.log(
+  //   `${c} elementsToRerender after`,
+  //   elementsToRerender === 'rerender-all-elements'
+  //     ? elementsToRerender
+  //     : elementsToRerender.map(EP.toString),
+  // )
+  // c += 1
+
+  return elementsToRerender
 }
 
 export class Editor {
