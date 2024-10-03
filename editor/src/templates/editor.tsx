@@ -132,6 +132,7 @@ import {
   runDomSamplerGroups,
 } from '../components/canvas/dom-sampler'
 import { omitWithPredicate } from '../core/shared/object-utils'
+import { getChildGroupsForNonGroupParents } from '../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -466,7 +467,21 @@ export class Editor {
             this.storedState.patchedEditor.canvas.elementsToRerender,
             dispatchedActions,
           )
-          ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
+
+          const childGroups =
+            currentElementsToRender === 'rerender-all-elements'
+              ? []
+              : getChildGroupsForNonGroupParents(
+                  this.storedState.strategyState.startingMetadata,
+                  currentElementsToRender,
+                )
+
+          const zzzz =
+            currentElementsToRender === 'rerender-all-elements'
+              ? currentElementsToRender
+              : [...currentElementsToRender, ...childGroups]
+
+          ElementsToRerenderGLOBAL.current = zzzz // Mutation!
           ReactDOM.flushSync(() => {
             ReactDOM.unstable_batchedUpdates(() => {
               this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))

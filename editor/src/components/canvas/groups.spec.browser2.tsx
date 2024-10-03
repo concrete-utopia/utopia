@@ -43,6 +43,7 @@ function getElementGlobalFrame(renderResult: EditorRenderResult, path: string): 
   return unsafeGet(notNullFiniteCanvasRectangleOptic, targetMetadata.globalFrame)
 }
 
+// describe.only('Groups', () => {
 describe('Groups', () => {
   describe('removes padding and margin appropriately', () => {
     const paddingAndMarginSnippet = `
