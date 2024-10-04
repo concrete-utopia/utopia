@@ -5,7 +5,7 @@ import {
   isValidGridDimensionKeyword,
   parseCSSNumber,
   parseGridCSSMinmaxOrRepeat,
-  printGridDimension,
+  stringifyGridDimension,
   type CSSKeyword,
   type CSSNumber,
   type GridDimension,
@@ -32,8 +32,8 @@ export const GridExpressionInput = React.memo(
     onFocus,
     onBlur,
   }: GridExpressionInputProps) => {
-    const [printValue, setPrintValue] = React.useState<string>(printGridDimension(value))
-    React.useEffect(() => setPrintValue(printGridDimension(value)), [value])
+    const [printValue, setPrintValue] = React.useState<string>(stringifyGridDimension(value))
+    React.useEffect(() => setPrintValue(stringifyGridDimension(value)), [value])
 
     const onChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       setPrintValue(e.target.value)
@@ -66,7 +66,7 @@ export const GridExpressionInput = React.memo(
           return onUpdateNumberOrKeyword(cssKeyword('auto'))
         }
 
-        setPrintValue(printGridDimension(value))
+        setPrintValue(stringifyGridDimension(value))
       },
       [printValue, onUpdateNumberOrKeyword, onUpdateDimension, value],
     )

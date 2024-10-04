@@ -48,7 +48,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
 
   const dispatch = useDispatch()
 
-  const onMouseDownTab = React.useCallback(
+  const onClickTab = React.useCallback(
     (menuTab: LeftMenuTab) => {
       let actions: Array<EditorAction> = []
       actions.push(setLeftMenuTab(menuTab))
@@ -57,21 +57,21 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
     [dispatch],
   )
 
-  const onMouseDownPagesTab = React.useCallback(() => {
-    onMouseDownTab(LeftMenuTab.Pages)
-  }, [onMouseDownTab])
+  const onClickPagesTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.Pages)
+  }, [onClickTab])
 
-  const onMouseDownProjectTab = React.useCallback(() => {
-    onMouseDownTab(LeftMenuTab.Project)
-  }, [onMouseDownTab])
+  const onClickProjectTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.Project)
+  }, [onClickTab])
 
-  const onMouseDownNavigatorTab = React.useCallback(() => {
-    onMouseDownTab(LeftMenuTab.Navigator)
-  }, [onMouseDownTab])
+  const onClickNavigatorTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.Navigator)
+  }, [onClickTab])
 
-  const onMouseDownGithubTab = React.useCallback(() => {
-    onMouseDownTab(LeftMenuTab.Github)
-  }, [onMouseDownTab])
+  const onClickGithubTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.Github)
+  }, [onClickTab])
 
   const isMyProject = useIsMyProject()
 
@@ -126,23 +126,23 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
                 <MenuTab
                   label={'Pages'}
                   selected={selectedTab === LeftMenuTab.Pages}
-                  onMouseDown={onMouseDownPagesTab}
+                  onClick={onClickPagesTab}
                 />,
               )}
               <MenuTab
                 label={'Navigator'}
                 selected={selectedTab === LeftMenuTab.Navigator}
-                onMouseDown={onMouseDownNavigatorTab}
+                onClick={onClickNavigatorTab}
               />
               <MenuTab
                 label={'Project'}
                 selected={selectedTab === LeftMenuTab.Project}
-                onMouseDown={onMouseDownProjectTab}
+                onClick={onClickProjectTab}
               />
               <MenuTab
                 label={'Github'}
                 selected={selectedTab === LeftMenuTab.Github}
-                onMouseDown={onMouseDownGithubTab}
+                onClick={onClickGithubTab}
               />
             </FlexRow>,
           )}

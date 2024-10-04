@@ -103,7 +103,7 @@ export function interactionFinished(
             result.strategyState.customStrategyState,
             'end-interaction',
           )
-        : strategyApplicationResult([], 'rerender-all-elements')
+        : strategyApplicationResult([], [])
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedState.patchedEditor,
@@ -555,7 +555,7 @@ function handleAccumulatingKeypresses(
               strategyState.customStrategyState,
               'mid-interaction',
             )
-          : strategyApplicationResult([], 'rerender-all-elements')
+          : strategyApplicationResult([], [])
       const commandResult = foldAndApplyCommands(
         updatedEditorState,
         storedEditorState,
@@ -623,7 +623,7 @@ function handleUpdate(
             strategyState.customStrategyState,
             'mid-interaction',
           )
-        : strategyApplicationResult([], 'rerender-all-elements')
+        : strategyApplicationResult([], [])
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedEditorState,

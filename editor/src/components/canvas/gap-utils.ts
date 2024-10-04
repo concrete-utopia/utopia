@@ -229,17 +229,17 @@ export function gridGapControlBoundsFromMetadata(
     x: gridCellBounds[0][0].x - parentGridBounds.x,
     y: gridCellBounds[0][0].y - parentGridBounds.y,
     width:
-      gridCellBounds[0][gridColumns - 1].x +
-      gridCellBounds[0][gridColumns - 1].width -
+      gridCellBounds[0][gridCellBounds[0].length - 1].x +
+      gridCellBounds[0][gridCellBounds[0].length - 1].width -
       gridCellBounds[0][0].x,
     height:
-      gridCellBounds[gridRows - 1][0].y +
-      gridCellBounds[gridRows - 1][0].height -
+      gridCellBounds[gridCellBounds.length - 1][0].y +
+      gridCellBounds[gridCellBounds.length - 1][0].height -
       gridCellBounds[0][0].y,
   })
 
   // row gaps array
-  const rowGaps = createArrayWithLength(gridRows - 1, (i) => {
+  const rowGaps = createArrayWithLength(gridCellBounds.length - 1, (i) => {
     // cell i represents the gap between child [i * gridColumns] and child [(i+1) * gridColumns]
     const firstChildBounds = gridCellBounds[i][0]
     const secondChildBounds = gridCellBounds[i + 1][0]
@@ -257,7 +257,7 @@ export function gridGapControlBoundsFromMetadata(
   })
 
   // column gaps array
-  const columnGaps = createArrayWithLength(gridColumns - 1, (i) => {
+  const columnGaps = createArrayWithLength(gridCellBounds[0].length - 1, (i) => {
     // cell i represents the gap between child [i] and child [i + 1]
     const firstChildBounds = gridCellBounds[0][i]
     const secondChildBounds = gridCellBounds[0][i + 1]

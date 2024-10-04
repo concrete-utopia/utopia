@@ -375,7 +375,7 @@ export function toggleDataCanCondense(targets: Array<ElementPath>): ToggleDataCa
 
 export function transientActions(
   actions: Array<EditorAction>,
-  elementsToRerender: Array<ElementPath> | null = null,
+  elementsToRerender: Array<ElementPath>,
 ): TransientActions {
   return {
     action: 'TRANSIENT_ACTIONS',
