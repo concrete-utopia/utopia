@@ -8,6 +8,7 @@ import type {
   EditorState,
   EditorStatePatch,
   EditorStorePatched,
+  ElementsToRerender,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import type {
@@ -477,13 +478,13 @@ export function applyCanvasStrategy(
 
 export function applyElementsToRerenderFromStrategyResult(
   editorState: EditorState,
-  strategyResult: StrategyApplicationResult,
+  elementsToRerender: ElementsToRerender,
 ): EditorState {
   return {
     ...editorState,
     canvas: {
       ...editorState.canvas,
-      elementsToRerender: strategyResult.elementsToRerender,
+      elementsToRerender: elementsToRerender,
     },
   }
 }
