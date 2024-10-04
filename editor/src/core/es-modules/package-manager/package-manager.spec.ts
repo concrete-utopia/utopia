@@ -236,7 +236,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
         // our CSS side effect code ran by now, so we should be able to find the relevant style tag on the JSDOM
         const styleTag = document.getElementById('/node_modules/antd/dist/antd.css')
         expect(styleTag).toBeDefined()
-        expect(spyEvaluator).toHaveBeenCalledTimes(939)
+        expect(spyEvaluator).toHaveBeenCalledTimes(940)
         expect(innerOnRemoteModuleDownload).toBeCalledTimes(0)
 
         done()

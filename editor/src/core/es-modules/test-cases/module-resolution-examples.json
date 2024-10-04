@@ -231,7 +231,7 @@
       "requires": []
     },
     "/node_modules/module-with-exports-and-imports/package.json": {
-      "content": "{\"name\": \"module-with-exports-and-imports\", \"exports\": \"index.main.js\", \"imports\": {\"#dep\": \"./dep.js\"}}",
+      "content": "{\"name\": \"module-with-exports-and-imports\", \"main\": \"index.main.js\", \"exports\": \"index.exports.js\", \"imports\": {\"#dep\": \"./dep.js\"}}",
       "isModule": false,
       "requires": []
     },
@@ -246,7 +246,7 @@
       "requires": []
     },
     "/node_modules/module-with-exports-and-imports-objects/package.json": {
-      "content": "{\"name\": \"module-with-exports-and-imports-objects\", \"exports\": {\".\": \"index.main.js\", \"./submodule.js\": \"./src/submodule.js\"}, \"imports\": {\"#dep\": {\"default\": \"./dep.js\"}}}",
+      "content": "{\"name\": \"module-with-exports-and-imports-objects\", \"main\": \"index.main.js\", \"exports\": {\".\": \"index.exports.js\", \"./submodule\": \"./src/submodule.js\"}, \"imports\": {\"#dep\": {\"default\": \"./dep.js\"}}}",
       "isModule": false,
       "requires": []
     },

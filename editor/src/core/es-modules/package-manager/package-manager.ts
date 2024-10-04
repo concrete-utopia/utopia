@@ -1,12 +1,7 @@
 import type { NodeModules, ESCodeFile } from '../../shared/project-file-types'
 import { isEsCodeFile, isEsRemoteDependencyPlaceholder } from '../../shared/project-file-types'
 import type { RequireFn, TypeDefinitions } from '../../shared/npm-dependency-types'
-import {
-  isResolveSuccess,
-  isResolveSuccessIgnoreModule,
-  resolveModule,
-  resolveModulePath,
-} from './module-resolution'
+import { resolveModule } from './module-resolution'
 import { evaluator } from '../evaluator/evaluator'
 import { fetchMissingFileDependency } from './fetch-packages'
 import type { EditorDispatch } from '../../../components/editor/action-types'
@@ -17,10 +12,9 @@ import { utopiaApiTypings } from './utopia-api-typings'
 import { resolveBuiltInDependency } from './built-in-dependencies'
 import type { ProjectContentTreeRoot } from '../../../components/assets'
 import { applyLoaders } from '../../webpack-loaders/loaders'
-import { string } from 'prop-types'
-import { Either } from '../../shared/either'
 import type { CurriedUtopiaRequireFn } from '../../../components/custom-code/code-file'
 import type { BuiltInDependencies } from './built-in-dependencies-list'
+import { isResolveSuccess, isResolveSuccessIgnoreModule } from './module-resolution-utils'
 
 export interface FileEvaluationCache {
   exports: any

@@ -7,7 +7,8 @@ import {
   unparsed,
 } from '../../shared/project-file-types'
 import * as moduleResolutionExamples from '../test-cases/module-resolution-examples.json'
-import { isResolveSuccess, resolveModule } from './module-resolution'
+import { resolveModule } from './module-resolution'
+import { isResolveSuccess } from './module-resolution-utils'
 import { createNodeModules } from './test-utils'
 
 const sampleProjectContents: ProjectContentTreeRoot = contentsToTree({
@@ -303,18 +304,19 @@ describe('ES Package Manager Module Resolution', () => {
     expect(resolve('/src/app.js', '#dep-object')).toEqual('/src/dep-object.js')
   })
 
-  it('resolves package exports main entry for node module', () => {
+  it('resolves package main entry for node module with exports with no subpath', () => {
     expect(resolve('/src/app.js', 'module-with-exports-and-imports')).toEqual(
       '/node_modules/module-with-exports-and-imports/index.main.js',
     )
   })
+
   it('resolves package exports object main entry for node module', () => {
     expect(resolve('/src/app.js', 'module-with-exports-and-imports-objects')).toEqual(
       '/node_modules/module-with-exports-and-imports-objects/index.main.js',
     )
   })
   it('resolves package exports object submodule export for node module', () => {
-    expect(resolve('/src/app.js', 'module-with-exports-and-imports-objects/submodule.js')).toEqual(
+    expect(resolve('/src/app.js', 'module-with-exports-and-imports-objects/submodule')).toEqual(
       '/node_modules/module-with-exports-and-imports-objects/src/submodule.js',
     )
   })
