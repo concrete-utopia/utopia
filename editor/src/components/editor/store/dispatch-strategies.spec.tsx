@@ -200,7 +200,6 @@ describe('interactionStart', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
@@ -269,7 +268,6 @@ describe('interactionStart', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
@@ -358,7 +356,6 @@ describe('interactionUpdate', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
@@ -447,7 +444,6 @@ describe('interactionUpdate', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
@@ -530,7 +526,6 @@ describe('interactionHardReset', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
@@ -621,7 +616,6 @@ describe('interactionHardReset', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
@@ -718,7 +712,6 @@ describe('interactionUpdate with user changed strategy', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
@@ -810,7 +803,6 @@ describe('interactionUpdate with user changed strategy', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
