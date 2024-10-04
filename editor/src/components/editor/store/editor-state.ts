@@ -852,17 +852,6 @@ export function editorStateCanvasControls(
 
 export type ElementsToRerender = Array<ElementPath> | 'rerender-all-elements'
 
-export function combineElementsToRerender(
-  first: ElementsToRerender,
-  second: ElementsToRerender,
-): ElementsToRerender {
-  if (first === 'rerender-all-elements' || second === 'rerender-all-elements') {
-    return 'rerender-all-elements'
-  } else {
-    return [...first, ...second]
-  }
-}
-
 export interface InternalClipboard {
   styleClipboard: Array<ValueAtPath>
   elements: Array<CopyData>
@@ -1086,18 +1075,6 @@ export function editorStateTopMenu(
   return {
     formulaBarMode: formulaBarMode,
     formulaBarFocusCounter: formulaBarFocusCounter,
-  }
-}
-
-export interface EditorStatePreview {
-  visible: boolean
-  connected: boolean
-}
-
-export function editorStatePreview(visible: boolean, connected: boolean): EditorStatePreview {
-  return {
-    visible: visible,
-    connected: connected,
   }
 }
 
@@ -1446,7 +1423,6 @@ export interface EditorState {
   projectSettings: EditorStateProjectSettings
   navigator: NavigatorState
   topmenu: EditorStateTopMenu
-  preview: EditorStatePreview
   home: EditorStateHome
   lastUsedFont: FontSettings | null
   modal: ModalDialog | null
@@ -1530,7 +1506,6 @@ export function editorState(
   projectSettings: EditorStateProjectSettings,
   editorStateNavigator: NavigatorState,
   topmenu: EditorStateTopMenu,
-  preview: EditorStatePreview,
   home: EditorStateHome,
   lastUsedFont: FontSettings | null,
   modal: ModalDialog | null,
@@ -1615,7 +1590,6 @@ export function editorState(
     projectSettings: projectSettings,
     navigator: editorStateNavigator,
     topmenu: topmenu,
-    preview: preview,
     home: home,
     lastUsedFont: lastUsedFont,
     modal: modal,
@@ -2687,10 +2661,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       formulaBarMode: 'content',
       formulaBarFocusCounter: 0,
     },
-    preview: {
-      visible: false,
-      connected: false,
-    },
     home: {
       visible: false,
     },
@@ -3048,10 +3018,6 @@ export function editorModelFromPersistentModel(
     topmenu: {
       formulaBarMode: 'content',
       formulaBarFocusCounter: 0,
-    },
-    preview: {
-      visible: false,
-      connected: false,
     },
     home: {
       visible: false,

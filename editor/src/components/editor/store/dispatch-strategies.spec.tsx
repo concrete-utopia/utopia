@@ -159,7 +159,7 @@ const testStrategy: MetaCanvasStrategy = (
     apply: function (): StrategyApplicationResult {
       return strategyApplicationResult(
         [wildcardPatch('always', { canvas: { scale: { $set: 100 } } })],
-        'rerender-all-elements',
+        [],
       )
     },
     descriptiveLabel: 'A Test Strategy',
@@ -201,6 +201,7 @@ describe('interactionStart', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
@@ -269,6 +270,7 @@ describe('interactionStart', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
@@ -357,6 +359,7 @@ describe('interactionUpdate', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
@@ -445,6 +448,7 @@ describe('interactionUpdate', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
@@ -527,6 +531,7 @@ describe('interactionHardReset', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
@@ -617,6 +622,7 @@ describe('interactionHardReset', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
@@ -713,6 +719,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
@@ -804,6 +811,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "grid": Object {
             "currentRootCell": null,
             "draggingFromCell": null,
+            "metadataCacheForGrids": Object {},
             "originalRootCell": null,
             "targetCellData": null,
           },
@@ -985,7 +993,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
             },
             apply: function (): StrategyApplicationResult {
               if (interactionSession == null) {
-                return strategyApplicationResult([], 'rerender-all-elements')
+                return strategyApplicationResult([], [])
               }
               expect(canvasState.startingMetadata).not.toBe(interactionSession.latestMetadata)
               expect(canvasState.startingAllElementProps).not.toBe(
@@ -1012,7 +1020,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
                   .backgroundColor,
               ).toBeDefined()
               testStrategyRan = true
-              return strategyApplicationResult([], 'rerender-all-elements')
+              return strategyApplicationResult([], [])
             },
           },
         ],

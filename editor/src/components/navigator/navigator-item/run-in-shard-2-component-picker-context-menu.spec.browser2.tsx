@@ -19,7 +19,6 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import {
   mouseClickAtPoint,
-  mouseDownAtPoint,
   mouseMoveToPoint,
   pressKey,
 } from '../../canvas/event-helpers.test-utils'
@@ -545,7 +544,7 @@ describe('The navigator component picker context menu', () => {
     const emptySlot = editor.renderedDOM.getByTestId(
       'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
-    await mouseDownAtPoint(emptySlot, { x: 2, y: 2 })
+    await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
     const flexRowRow = editor.renderedDOM.queryByTestId(
       labelTestIdForComponentIcon('FlexRow', '/src/utils', 'row'),
@@ -719,7 +718,7 @@ describe('The navigator component picker context menu', () => {
     const emptySlot = editor.renderedDOM.getByTestId(
       'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
-    await mouseDownAtPoint(emptySlot, { x: 2, y: 2 })
+    await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
     const menuButton = await waitFor(() => editor.renderedDOM.getByText('FlexCol'))
     await mouseClickAtPoint(menuButton, { x: 3, y: 3 })
@@ -898,7 +897,7 @@ describe('The navigator component picker context menu', () => {
     const emptySlot = editor.renderedDOM.getByTestId(
       'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
-    await mouseDownAtPoint(emptySlot, { x: 2, y: 2 })
+    await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
     const submenuButton = await waitFor(() => editor.renderedDOM.getByText('FlexRow'))
     await mouseMoveToPoint(submenuButton, { x: 3, y: 3 })
@@ -1198,7 +1197,7 @@ describe('The navigator component picker context menu', () => {
     const emptySlot = editor.renderedDOM.getByTestId(
       'toggle-render-prop-NavigatorItemTestId-slot_sb/scene/pg:pg_root/card/prop_label_title',
     )
-    await mouseDownAtPoint(emptySlot, { x: 2, y: 2 })
+    await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
     await editor.getDispatchFollowUpActionsFinished()
 
     const menuButton = await waitFor(() => editor.renderedDOM.getByText('Flex Hello'))

@@ -1189,7 +1189,7 @@ interface ObjectIndicatorProps {
 const ObjectIndicator = (props: ObjectIndicatorProps) => {
   return (
     <div
-      onMouseDown={props.toggle}
+      onClick={props.toggle}
       style={{
         border: `1px solid ${colorTheme.bg3.value}`,
         paddingLeft: 2,
@@ -1579,7 +1579,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
             <span onClick={openInstanceFile}>Component</span>
           )}
         </FlexRow>
-        <SquareButton highlight onMouseDown={toggleSection}>
+        <SquareButton highlight onClick={toggleSection}>
           <ExpandableIndicator
             testId='component-section-expand'
             visible

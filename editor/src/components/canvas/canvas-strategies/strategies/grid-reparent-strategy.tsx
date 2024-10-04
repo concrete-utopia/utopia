@@ -8,7 +8,7 @@ import {
   gridPositionValue,
   type ElementInstanceMetadataMap,
 } from '../../../../core/shared/element-template'
-import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import { canvasVector, isInfinityRectangle, offsetPoint } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
@@ -39,7 +39,7 @@ import {
 import type { DragInteractionData, InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { honoursPropsPosition, shouldKeepMovingDraggedGroupChildren } from './absolute-utils'
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
-import { setGridPropsCommands } from './grid-helpers'
+import { getMetadataWithGridCellBounds, setGridPropsCommands } from './grid-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { removeAbsolutePositioningProps } from './reparent-helpers/reparent-property-changes'
 import type { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
@@ -105,6 +105,7 @@ export function gridReparentStrategy(
       apply: applyGridReparent(
         canvasState,
         dragInteractionData,
+        interactionSession,
         customStrategyState,
         reparentTarget,
         filteredSelectedElements,
@@ -141,6 +142,7 @@ export function controlsForGridReparent(reparentTarget: ReparentTarget): Control
 export function applyGridReparent(
   canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
+  interactionSession: InteractionSession,
   customStrategyState: CustomStrategyState,
   reparentTarget: ReparentTarget,
   selectedElements: ElementPath[],
@@ -163,13 +165,16 @@ export function applyGridReparent(
           return emptyStrategyApplicationResult
         }
 
-        const grid = MetadataUtils.findElementByElementPath(
-          canvasState.startingMetadata,
-          newParent.intendedParentPath,
-        )
+        const { metadata: grid, customStrategyState: updatedCustomState } =
+          getMetadataWithGridCellBounds(
+            newParent.intendedParentPath,
+            canvasState.startingMetadata,
+            interactionSession.latestMetadata,
+            customStrategyState,
+          )
 
         if (grid == null) {
-          return emptyStrategyApplicationResult
+          return strategyApplicationResult([], [newParent.intendedParentPath])
         }
 
         const allowedToReparent = selectedElements.every((selectedElement) => {
@@ -195,7 +200,7 @@ export function applyGridReparent(
           customStrategyState.grid.targetCellData
 
         if (targetCellData == null) {
-          return emptyStrategyApplicationResult
+          return strategyApplicationResult([], [newParent.intendedParentPath])
         }
         const outcomes = mapDropNulls(
           (selectedElement) =>
@@ -235,7 +240,18 @@ export function applyGridReparent(
           ...newPaths,
           ...newPaths.map(EP.parentPath),
           ...selectedElements.map(EP.parentPath),
+          newParent.intendedParentPath,
         ])
+
+        const baseCustomState = updatedCustomState ?? customStrategyState
+        const customStrategyStatePatch = {
+          ...baseCustomState,
+          elementsToRerender: elementsToRerender,
+          grid: {
+            ...baseCustomState.grid,
+            targetCellData: targetCellData,
+          },
+        }
 
         return strategyApplicationResult(
           [
@@ -246,13 +262,7 @@ export function applyGridReparent(
             showGridControls('mid-interaction', reparentTarget.newParent.intendedParentPath),
           ],
           elementsToRerender,
-          {
-            elementsToRerender: elementsToRerender,
-            grid: {
-              ...customStrategyState.grid,
-              targetCellData: targetCellData,
-            },
-          },
+          customStrategyStatePatch,
         )
       },
     )

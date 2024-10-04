@@ -36,11 +36,10 @@ import type {
 } from '../../components/inspector/controls/control'
 import type { Either } from '../../core/shared/either'
 import { isLeft, mapEither } from '../../core/shared/either'
-import { clampValue, point } from '../../core/shared/math-utils'
+import { clampValue } from '../../core/shared/math-utils'
 import { memoize } from '../../core/shared/memoize'
 import type { ControlStyles } from '../../uuiui-deps'
 import { getControlStyles, CSSCursor } from '../../uuiui-deps'
-import type { IcnProps } from '../icn'
 import { Icn } from '../icn'
 import { useColorTheme, UtopiaTheme } from '../styles/theme'
 import { FlexRow } from '../widgets/layout/flex-row'
@@ -141,6 +140,7 @@ export interface NumberInputOptions {
   pasteHandler?: boolean
   descriptionLabel?: string
   disableScrubbing?: boolean
+  clampOnSubmitValue?: boolean
 }
 
 export interface AbstractNumberInputProps<T extends CSSNumber | number>
@@ -190,6 +190,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     invalid,
     pasteHandler,
     disableScrubbing = false,
+    clampOnSubmitValue,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const colorTheme = useColorTheme()
@@ -511,7 +512,12 @@ export const NumberInput = React.memo<NumberInputProps>(
           if (isLeft(parsed)) {
             return unknownInputValue(displayValue)
           }
-          return parsed.value
+          return clampOnSubmitValue
+            ? {
+                ...parsed.value,
+                value: clampValue(parsed.value.value, minimum, maximum),
+              }
+            : parsed.value
         }
 
         const newValue = getNewValue()
@@ -540,6 +546,9 @@ export const NumberInput = React.memo<NumberInputProps>(
         updateValue,
         value,
         displayValue,
+        minimum,
+        maximum,
+        clampOnSubmitValue,
       ],
     )
 

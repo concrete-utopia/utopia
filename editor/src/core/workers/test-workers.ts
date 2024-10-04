@@ -25,7 +25,11 @@ export class FakeParserPrinterWorker implements ParserPrinterWorker {
   }
 
   sendParsePrintMessage = (request: ParsePrintFilesRequest): void => {
-    handleParserPrinterMessage(request, this.receiveMessage)
+    void handleParserPrinterMessage(request, this.receiveMessage)
+  }
+
+  sendClearParseCacheMessage = (): void => {
+    // empty
   }
 }
 

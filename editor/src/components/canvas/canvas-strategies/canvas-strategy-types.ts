@@ -1,13 +1,16 @@
 import React from 'react'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../../core/shared/element-template'
 import type { CanvasVector } from '../../../core/shared/math-utils'
 import type { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../../assets'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
 import type { InsertionSubject } from '../../editor/editor-modes'
-import type { AllElementProps, ElementsToRerender } from '../../editor/store/editor-state'
+import type { AllElementProps } from '../../editor/store/editor-state'
 import type { CanvasCommand } from '../commands/commands'
 import type { ActiveFrameAction } from '../commands/set-active-frames-command'
 import type { StrategyApplicationStatus } from './interaction-state'
@@ -30,6 +33,7 @@ export type GridCustomStrategyState = {
   draggingFromCell: GridCellCoordinates | null
   originalRootCell: GridCellCoordinates | null
   currentRootCell: GridCellCoordinates | null
+  metadataCacheForGrids: { [gridPath: string]: ElementInstanceMetadata }
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -47,27 +51,28 @@ export function defaultCustomStrategyState(): CustomStrategyState {
       draggingFromCell: null,
       originalRootCell: null,
       currentRootCell: null,
+      metadataCacheForGrids: {},
     },
   }
 }
 
 export interface StrategyApplicationResult {
   commands: Array<CanvasCommand>
-  elementsToRerender: ElementsToRerender
+  elementsToRerender: ElementPath[]
   customStatePatch: CustomStrategyStatePatch
   status: StrategyApplicationStatus
 }
 
 export const emptyStrategyApplicationResult: StrategyApplicationResult = {
   commands: [],
-  elementsToRerender: 'rerender-all-elements',
+  elementsToRerender: [],
   customStatePatch: {},
   status: 'success',
 }
 
 export function strategyApplicationResult(
   commands: Array<CanvasCommand>,
-  elementsToRerender: ElementsToRerender,
+  elementsToRerender: ElementPath[],
   customStatePatch: CustomStrategyStatePatch = {},
   status: StrategyApplicationStatus = 'success',
 ): StrategyApplicationResult {

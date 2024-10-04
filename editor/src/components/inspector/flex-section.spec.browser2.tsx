@@ -61,12 +61,18 @@ describe('flex section', () => {
       await selectComponentsForTest(renderResult, [EP.fromString('sb/grid')])
 
       const grid = await renderResult.renderedDOM.findByTestId('grid')
-
-      await typeIntoField(
-        await screen.findByTestId('grid-dimension-column-1'),
-        'repeat(2, 0.5fr 42px)',
-      )
+      const input: HTMLInputElement = await screen.findByTestId('grid-dimension-column-1')
+      await typeIntoField(input, 'repeat(2, 0.5fr 42px)')
       expect(grid.style.gridTemplateColumns).toEqual('[area1] 1fr repeat(2, 0.5fr 42px) 2fr')
+      expect(input.value).toBe('repeat(2, 0.5fr 42px)')
+    })
+    it('does not show area names in the input', async () => {
+      const renderResult = await renderTestEditorWithCode(gridProject, 'await-first-dom-report')
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/grid')])
+      const control: HTMLInputElement = await screen.findByTestId('grid-dimension-column-0')
+      const grid = await renderResult.renderedDOM.findByTestId('grid')
+      expect(grid.style.gridTemplateColumns).toEqual('[area1] 1fr 1fr 1fr 1fr 1fr')
+      expect(control.value).toBe('1fr')
     })
   })
 })

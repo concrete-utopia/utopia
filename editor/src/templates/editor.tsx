@@ -21,16 +21,12 @@ import type {
   DispatchPriority,
   EditorAction,
   EditorDispatch,
+  RunDOMWalker,
 } from '../components/editor/action-types'
 import { actionActionsOptic, isLoggedIn } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'
-import {
-  InternalPreviewTimeout,
-  previewIsAlive,
-  startPreviewConnectedMonitoring,
-} from '../components/editor/preview-report-handler'
 import {
   getLoginState,
   getUserConfiguration,
@@ -83,7 +79,7 @@ import {
 } from '../components/canvas/ui-jsx-canvas'
 import { foldEither } from '../core/shared/either'
 import { getURLImportDetails, reuploadAssets } from '../core/model/project-import'
-import { isSendPreviewModel, load } from '../components/editor/actions/actions'
+import { load } from '../components/editor/actions/actions'
 import { UtopiaStyles } from '../uuiui'
 import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
 import type { LoginState } from '../common/user'
@@ -105,7 +101,7 @@ import * as EP from '../core/shared/element-path'
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import type { ElementPath } from '../core/shared/project-file-types'
-import { mapDropNulls, uniqBy } from '../core/shared/array-utils'
+import { uniq, uniqBy } from '../core/shared/array-utils'
 import { updateUserDetailsWhenAuthenticated } from '../core/shared/github/helpers'
 import { DispatchContext } from '../components/editor/store/dispatch-context'
 import {
@@ -128,18 +124,15 @@ import { InitialOnlineState, startOnlineStatusPolling } from '../components/edit
 import { useAnimate } from 'framer-motion'
 import { AnimationContext } from '../components/canvas/ui-jsx-canvas-renderer/animation-context'
 import { anyCodeAhead } from '../components/assets'
-import { anyBy, toArrayOf } from '../core/shared/optics/optic-utilities'
-import {
-  fromField,
-  traverseArray,
-  traverseReadOnlyArray,
-} from '../core/shared/optics/optic-creators'
+import { toArrayOf } from '../core/shared/optics/optic-utilities'
+import { fromTypeGuard, traverseReadOnlyArray } from '../core/shared/optics/optic-creators'
 import { keysEqualityExhaustive, shallowEqual } from '../core/shared/equality-utils'
 import {
   resetDomSamplerExecutionCounts,
   runDomSamplerGroups,
 } from '../components/canvas/dom-sampler'
 import { omitWithPredicate } from '../core/shared/object-utils'
+import { getChildGroupsForNonGroupParents } from '../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -159,9 +152,7 @@ function collectElementsToRerenderForTransientActions(
   action: EditorAction,
 ): Array<ElementPath> {
   if (action.action === 'TRANSIENT_ACTIONS') {
-    if (action.elementsToRerender != null) {
-      working.push(...action.elementsToRerender)
-    }
+    working.push(...action.elementsToRerender)
     working.push(
       ...action.transientActions.reduce(collectElementsToRerenderForTransientActions, working),
     )
@@ -175,11 +166,27 @@ function collectElementsToRerenderForTransientActions(
 // for this pass use a union of the two arrays, to make sure we clear a previously focused element from the metadata
 // and let the canvas re-render components that may have a missing child now.
 let lastElementsToRerender: ElementsToRerender = 'rerender-all-elements'
-function fixElementsToRerender(
-  currentElementsToRerender: ElementsToRerender,
+function fixElementsToRerender(elementsToRerender: ElementsToRerender): ElementsToRerender {
+  let fixedElementsToRerender: ElementsToRerender = elementsToRerender
+  if (
+    elementsToRerender !== 'rerender-all-elements' &&
+    lastElementsToRerender !== 'rerender-all-elements'
+  ) {
+    // if the current elements to rerender array doesn't match the previous elements to rerender array, for a single frame let's use the union of the two arrays
+    fixedElementsToRerender = EP.uniqueElementPaths([
+      ...lastElementsToRerender,
+      ...elementsToRerender,
+    ])
+  }
+
+  lastElementsToRerender = fixedElementsToRerender
+  return fixedElementsToRerender
+}
+
+export function collectElementsToRerender(
+  editorStore: EditorStoreFull,
   dispatchedActions: readonly EditorAction[],
 ): ElementsToRerender {
-  // while running transient actions there is an optional elementsToRerender
   const elementsToRerenderTransient = uniqBy<ElementPath>(
     dispatchedActions.reduce(
       collectElementsToRerenderForTransientActions,
@@ -188,22 +195,22 @@ function fixElementsToRerender(
     EP.pathsEqual,
   )
 
-  const currentOrTransientElementsToRerender =
-    elementsToRerenderTransient.length > 0 ? elementsToRerenderTransient : currentElementsToRerender
+  const elementsToRerender =
+    elementsToRerenderTransient.length > 0
+      ? elementsToRerenderTransient
+      : editorStore.patchedEditor.canvas.elementsToRerender
 
-  let fixedElementsToRerender: ElementsToRerender = currentOrTransientElementsToRerender
-  if (
-    currentOrTransientElementsToRerender !== 'rerender-all-elements' &&
-    lastElementsToRerender !== 'rerender-all-elements'
-  ) {
-    // if the current elements to rerender array doesn't match the previous elements to rerender array, for a single frame let's use the union of the two arrays
-    fixedElementsToRerender = EP.uniqueElementPaths([
-      ...lastElementsToRerender,
-      ...currentOrTransientElementsToRerender,
-    ])
-  }
-
-  lastElementsToRerender = currentOrTransientElementsToRerender
+  const fixedElementsWithChildGroups =
+    elementsToRerender === 'rerender-all-elements'
+      ? elementsToRerender
+      : [
+          ...elementsToRerender,
+          ...getChildGroupsForNonGroupParents(
+            editorStore.patchedEditor.jsxMetadata,
+            elementsToRerender,
+          ),
+        ]
+  const fixedElementsToRerender = fixElementsToRerender(fixedElementsWithChildGroups)
   return fixedElementsToRerender
 }
 
@@ -216,8 +223,6 @@ export class Editor {
   domWalkerMutableState: DomWalkerMutableStateData
 
   constructor() {
-    startPreviewConnectedMonitoring(this.boundDispatch)
-
     let emptyEditorState = createEditorState(this.boundDispatch)
     const derivedState = deriveState(
       emptyEditorState,
@@ -231,8 +236,6 @@ export class Editor {
     const history = History.init(emptyEditorState, derivedState)
 
     window.addEventListener('blur', this.resetStateOnBlur)
-
-    window.addEventListener('message', this.onMessage)
 
     const watchdogWorker = new RealWatchdogWorker()
 
@@ -403,14 +406,6 @@ export class Editor {
     })
   }
 
-  onMessage = (event: MessageEvent): void => {
-    const eventData = event.data
-    if (isSendPreviewModel(eventData)) {
-      previewIsAlive(InternalPreviewTimeout)
-      this.boundDispatch([eventData], 'noone')
-    }
-  }
-
   resetStateOnBlur = (): void => {
     this.boundDispatch(
       [
@@ -424,12 +419,24 @@ export class Editor {
     )
   }
 
+  // This is used to temporarily disable updates to the store, for example when we are in the middle of a fast selection hack
+  temporarilyDisableStoreUpdates = false
+
   boundDispatch = (
     dispatchedActions: readonly EditorAction[],
     priority?: DispatchPriority,
   ): {
     entireUpdateFinished: Promise<any>
   } => {
+    if (
+      priority === 'canvas-fast-selection-hack' &&
+      isFeatureEnabled('Canvas Fast Selection Hack')
+    ) {
+      this.temporarilyDisableStoreUpdates = true
+    } else if (priority === 'resume-canvas-fast-selection-hack') {
+      this.temporarilyDisableStoreUpdates = false
+    }
+
     resetDomSamplerExecutionCounts()
     const Measure = createPerformanceMeasure()
     Measure.logActions(dispatchedActions)
@@ -463,14 +470,15 @@ export class Editor {
 
       const shouldUpdateCanvasStore =
         !dispatchResult.nothingChanged &&
-        !anyCodeAhead(dispatchResult.unpatchedEditor.projectContents)
+        !anyCodeAhead(dispatchResult.unpatchedEditor.projectContents) &&
+        !this.temporarilyDisableStoreUpdates
 
       const updateId = canvasUpdateId++
       if (shouldUpdateCanvasStore) {
         // this will re-render the canvas root and potentially the canvas contents itself
         Measure.taskTime(`update canvas ${updateId}`, () => {
-          const currentElementsToRender = fixElementsToRerender(
-            this.storedState.patchedEditor.canvas.elementsToRerender,
+          const currentElementsToRender = collectElementsToRerender(
+            this.storedState,
             dispatchedActions,
           )
           ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
@@ -482,15 +490,18 @@ export class Editor {
         })
       }
 
-      const runDomWalker = shouldRunDOMWalker(dispatchedActions, oldEditorState, this.storedState)
+      const runDomWalker = this.temporarilyDisableStoreUpdates
+        ? 'dont-run'
+        : shouldRunDOMWalker(dispatchedActions, oldEditorState, this.storedState)
 
       // run the dom-walker
-      if (runDomWalker) {
+      if (runDomWalker !== 'dont-run') {
         const metadataUpdateDispatchResult = runDomSamplerAndSaveResults(
           this.boundDispatch,
           this.storedState,
           this.domWalkerMutableState,
           this.spyCollector,
+          runDomWalker,
         )
 
         this.storedState = metadataUpdateDispatchResult
@@ -527,10 +538,11 @@ export class Editor {
 
           // re-render the canvas
           Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
-            ElementsToRerenderGLOBAL.current = fixElementsToRerender(
-              this.storedState.patchedEditor.canvas.elementsToRerender,
+            const currentElementsToRender = collectElementsToRerender(
+              this.storedState,
               dispatchedActions,
-            ) // Mutation!
+            )
+            ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
 
             ReactDOM.flushSync(() => {
               ReactDOM.unstable_batchedUpdates(() => {
@@ -603,7 +615,8 @@ export class Editor {
               shouldUpdateLowPriorityUI(
                 this.storedState.strategyState,
                 ElementsToRerenderGLOBAL.current,
-              )
+              ) &&
+              !this.temporarilyDisableStoreUpdates
             ) {
               Measure.taskTime(`Update Low Prio Store ${updateId}`, () => {
                 this.lowPriorityStore.setState(
@@ -854,7 +867,12 @@ export function shouldRunDOMWalker(
   dispatchedActions: ReadonlyArray<EditorAction>,
   storeBefore: EditorStoreFull,
   storeAfter: EditorStoreFull,
-): boolean {
+):
+  | 'dont-run'
+  | 'run-full'
+  | {
+      restrictToElements: Array<ElementPath>
+    } {
   const patchedEditorBefore = storeBefore.patchedEditor
   const patchedEditorAfter = storeAfter.patchedEditor
   const patchedEditorChanged =
@@ -896,10 +914,46 @@ export function shouldRunDOMWalker(
     patchedDerivedBefore.remixData !== patchedDerivedAfter.remixData
 
   const storeChanged = patchedEditorChanged || patchedDerivedChanged
-  const actionsIndicateDOMWalkerShouldRun = anyBy(
-    traverseReadOnlyArray<EditorAction>().compose(actionActionsOptic),
-    (action) => action.action === 'RUN_DOM_WALKER',
+
+  // if the store changed run the dom walker
+  if (storeChanged) {
+    return 'run-full'
+  }
+
+  // if there are runDomWalker actions, run the dom walker, and merge their restrictToElements
+  const runDomWalkerActions = toArrayOf(
+    traverseReadOnlyArray<EditorAction>()
+      .compose(actionActionsOptic)
+      .compose(
+        fromTypeGuard((action): action is RunDOMWalker => action.action === 'RUN_DOM_WALKER'),
+      ),
     dispatchedActions,
   )
-  return storeChanged || actionsIndicateDOMWalkerShouldRun
+
+  if (runDomWalkerActions.length === 0) {
+    return 'dont-run'
+  }
+
+  const restrictToElements = runDomWalkerActions.reduce<Array<ElementPath> | null>(
+    (acc, action) => {
+      if (action.restrictToElements != null) {
+        if (acc == null) {
+          return action.restrictToElements
+        }
+        return [...acc, ...action.restrictToElements]
+      }
+      return acc
+    },
+    null,
+  )
+
+  if (restrictToElements == null) {
+    return 'run-full'
+  }
+
+  const uniqRestrictToElements = uniq(restrictToElements.map(EP.toString)).map(EP.fromString)
+
+  return {
+    restrictToElements: uniqRestrictToElements,
+  }
 }

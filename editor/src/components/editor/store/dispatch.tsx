@@ -6,7 +6,6 @@ import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
 import type { CanvasAction } from '../../canvas/canvas-types'
 import type { LocalNavigatorAction } from '../../navigator/actions'
-import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
 import type { EditorAction, EditorDispatch, UpdateMetadataInEditorState } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import {
@@ -46,7 +45,7 @@ import { isBrowserEnvironment } from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { ProjectContentTreeRoot } from '../../assets'
 import { treeToContents } from '../../assets'
-import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
+import { restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import { getTransitiveReverseDependencies } from '../../../core/shared/project-contents-dependencies'
 import {
   reduxDevtoolsSendActions,
@@ -90,6 +89,7 @@ import {
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
 import { getFilePathMappings } from '../../../core/model/project-file-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -309,26 +309,6 @@ function processActions(
   }, working)
 }
 
-export function updateEmbeddedPreview(
-  modelId: string | null,
-  projectContents: ProjectContentTreeRoot,
-): void {
-  const embeddedPreviewElement = document.getElementById(PreviewIframeId)
-  if (embeddedPreviewElement != null) {
-    const embeddedPreviewIframe = embeddedPreviewElement as any as HTMLIFrameElement
-    const contentWindow = embeddedPreviewIframe.contentWindow
-    if (contentWindow != null) {
-      try {
-        contentWindow.postMessage(projectContentsUpdateMessage(projectContents), '*')
-      } catch (exception) {
-        // Don't nuke the editor if there's an exception posting the message.
-        // This can happen if a value can't be cloned when posted.
-        console.error('Error updating preview.', exception)
-      }
-    }
-  }
-}
-
 function maybeRequestModelUpdate(
   projectContents: ProjectContentTreeRoot,
   workers: UtopiaTsWorkers,
@@ -353,6 +333,7 @@ function maybeRequestModelUpdate(
       getFilePathMappings(projectContents),
       existingUIDs,
       isSteganographyEnabled(),
+      getParseCacheOptions(),
     )
       .then((parseResult) => {
         const updates = parseResult.map((fileResult) => {
@@ -445,7 +426,7 @@ function reducerToSplitToActionGroups(
       [[]],
     )
     const wrappedTransientActionGroups = transientActionGroups.map((actionGroup) => [
-      EditorActions.transientActions(actionGroup),
+      EditorActions.transientActions(actionGroup, currentAction.elementsToRerender),
     ])
     return [...actionGroups, ...wrappedTransientActionGroups]
   } else if (i > 0 && actions[i - 1].action === 'CLEAR_INTERACTION_SESSION') {
@@ -525,7 +506,6 @@ export function editorDispatchClosingOut(
   })
   const anyWorkerUpdates = checkAnyWorkerUpdates(dispatchedActions)
   const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
-  const anySendPreviewModel = dispatchedActions.some(isSendPreviewModel)
 
   // The FINISH_CHECKPOINT_TIMER action effectively overrides the case where nothing changed,
   // as it's likely that action on it's own didn't change anything, but the actions that paired with
@@ -721,13 +701,6 @@ export function editorDispatchClosingOut(
         filesModifiedByAnotherUser: updatedFilesModifiedByElsewhere,
       },
     }
-  }
-
-  const shouldUpdatePreview =
-    anySendPreviewModel ||
-    frozenEditorState.projectContents !== storedState.unpatchedEditor.projectContents
-  if (shouldUpdatePreview) {
-    updateEmbeddedPreview(frozenEditorState.id, frozenEditorState.projectContents)
   }
 
   if (frozenEditorState.id != null && frozenEditorState.id != storedState.unpatchedEditor.id) {

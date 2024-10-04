@@ -2,7 +2,14 @@
 /** @jsx jsx */
 import React from 'react'
 import { jsx } from '@emotion/react'
-import { Icons, FlexRow, SquareButton, InspectorSectionHeader, useColorTheme } from '../../uuiui'
+import {
+  Icons,
+  FlexRow,
+  SquareButton,
+  InspectorSectionHeader,
+  useColorTheme,
+  Button,
+} from '../../uuiui'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
@@ -25,6 +32,7 @@ import { layoutSystemSelector } from './flex-section'
 import { AdvancedGridModal } from './controls/advanced-grid-modal'
 import { when } from '../../utils/react-conditionals'
 import { useDesignPanelContext } from '../canvas/design-panel-root'
+import { useGridAdvancedPropertiesCount } from './use-grid-advanced-properties'
 
 export const AddRemoveLayoutSystemControlTestId = (): string => 'AddRemoveLayoutSystemControlTestId'
 export const AddFlexLayoutOptionId = 'add-flex-layout'
@@ -117,12 +125,15 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
     )
   }, [layoutSystem, popupOpen])
 
+  const numberOfGridPropsSet = useGridAdvancedPropertiesCount()
+
   const addLayoutSystemMenuDropdownItems = React.useMemo((): DropdownMenuItem[] => {
     const gridItems: DropdownMenuItem[] = [
       regularDropdownMenuItem({
         id: 'more-settings',
         label: 'Advanced',
         onSelect: openPopup,
+        badge: numberOfGridPropsSet > 0 ? `+${numberOfGridPropsSet}` : null,
       }),
       regularDropdownMenuItem({
         id: AddFlexLayoutOptionId,
@@ -169,7 +180,14 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
     return stripNulls(
       layoutSystem === 'grid' ? gridItems : layoutSystem === 'flex' ? flexItems : noLayoutItems,
     )
-  }, [addFlexLayoutSystem, addGridLayoutSystem, layoutSystem, removeLayoutSystem, openPopup])
+  }, [
+    addFlexLayoutSystem,
+    addGridLayoutSystem,
+    layoutSystem,
+    removeLayoutSystem,
+    openPopup,
+    numberOfGridPropsSet,
+  ])
 
   const label = () => {
     switch (layoutSystem) {
@@ -190,6 +208,8 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
     const y = -1 * Y_OFFSET
     return { x: x, y: y }
   }, [panelWidth])
+
+  const [menuOpen, setMenuOpen] = React.useState(false)
 
   return (
     <InspectorSectionHeader
@@ -223,13 +243,26 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
           />,
         )}
       </FlexRow>
-      <div data-testid={AddRemoveLayoutSystemControlTestId()}>
+      <FlexRow data-testid={AddRemoveLayoutSystemControlTestId()} style={{ gap: 2 }}>
+        {when(
+          numberOfGridPropsSet > 0 && !menuOpen && !popupOpen,
+          <Button
+            style={{
+              color: colorTheme.secondaryBlue.value,
+              background: colorTheme.bg3.value,
+              minWidth: 22,
+            }}
+          >
+            +{numberOfGridPropsSet}
+          </Button>,
+        )}
         <DropdownMenu
           align='end'
           items={addLayoutSystemMenuDropdownItems}
           opener={addLayoutSystemOpenerButton}
+          onOpenChange={setMenuOpen}
         />
-      </div>
+      </FlexRow>
     </InspectorSectionHeader>
   )
 })

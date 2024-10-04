@@ -4,8 +4,7 @@ import localforage from 'localforage'
 import { imagePathURL } from '../../../common/server'
 import { roundAttributeLayoutValues } from '../../../core/layout/layout-utils'
 import {
-  findElementAtPath,
-  findJSXElementAtPath,
+  getSimpleAttributeAtPath,
   getZIndexOrderedViewsWithoutDirectChildren,
   MetadataUtils,
 } from '../../../core/model/element-metadata-utils'
@@ -102,6 +101,7 @@ import type {
   LocalRectangle,
   Size,
   CanvasVector,
+  MaybeInfinityCanvasRectangle,
 } from '../../../core/shared/math-utils'
 import {
   canvasRectangle,
@@ -155,9 +155,14 @@ import {
 import * as PP from '../../../core/shared/property-path'
 import { assertNever, fastForEach, getProjectLockedKey, identity } from '../../../core/shared/utils'
 import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
-import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
+import {
+  createParseAndPrintOptions,
+  createParseFile,
+  createPrintAndReparseFile,
+  type UtopiaTsWorkers,
+} from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
-import Utils, { absolute } from '../../../utils/utils'
+import Utils from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
 import {
   isProjectContentFile,
@@ -239,7 +244,6 @@ import type {
   ScrollToElement,
   SelectAllSiblings,
   SelectComponents,
-  SendPreviewModel,
   SetAspectRatioLock,
   SetCanvasFrames,
   SetCodeEditorBuildErrors,
@@ -304,7 +308,6 @@ import type {
   UpdateMouseButtonsPressed,
   UpdateNodeModulesContents,
   UpdatePackageJson,
-  UpdatePreviewConnected,
   UpdateProjectContents,
   UpdatePropertyControlsInfo,
   WrapInElement,
@@ -430,7 +433,7 @@ import {
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
 
-import { boundsInFile, defaultConfig } from 'utopia-vscode-common'
+import { defaultConfig } from 'utopia-vscode-common'
 import { reorderElement } from '../../../components/canvas/commands/reorder-element-command'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
@@ -495,7 +498,6 @@ import {
   clearImageFileBlob,
   enableInsertModeForJSXElement,
   finishCheckpointTimer,
-  insertAsChildTarget,
   insertJSXElement,
   openCodeEditorFile,
   replaceMappedElement,
@@ -524,7 +526,6 @@ import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-utils'
 import {
-  getFromPropOrFlagComment,
   isUtopiaPropOrCommentFlag,
   makeUtopiaFlagComment,
   removePropOrFlagComment,
@@ -543,7 +544,10 @@ import {
   replaceWithElementsWrappedInFragmentBehaviour,
 } from '../store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
-import { deleteProperties } from '../../canvas/commands/delete-properties-command'
+import {
+  deleteProperties,
+  deleteValuesAtPath,
+} from '../../canvas/commands/delete-properties-command'
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   fixParentContainingBlockSettings,
@@ -619,11 +623,13 @@ import {
 import type { FixUIDsState } from '../../../core/workers/parser-printer/uid-fix'
 import { fixTopLevelElementsUIDs } from '../../../core/workers/parser-printer/uid-fix'
 import { nextSelectedTab } from '../../navigator/left-pane/left-pane-utils'
-import { getDefaultedRemixRootDir, getRemixRootDir } from '../store/remix-derived-data'
+import { getDefaultedRemixRootDir } from '../store/remix-derived-data'
 import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-item/component-picker-context-menu'
 import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
+import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { applyValuesAtPath } from '../../canvas/commands/adjust-number-command'
+import { styleP } from '../../inspector/inspector-common'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -997,10 +1003,6 @@ export function restoreEditorState(
     topmenu: {
       formulaBarMode: desiredEditor.topmenu.formulaBarMode,
       formulaBarFocusCounter: currentEditor.topmenu.formulaBarFocusCounter,
-    },
-    preview: {
-      visible: currentEditor.preview.visible,
-      connected: currentEditor.preview.connected,
     },
     home: {
       visible: currentEditor.home.visible,
@@ -2964,14 +2966,6 @@ export const UPDATE_FNS = {
             visible: action.visible,
           },
         }
-      case 'preview':
-        return {
-          ...editor,
-          preview: {
-            ...editor.preview,
-            visible: action.visible,
-          },
-        }
       case 'codeEditor':
         return {
           ...editor,
@@ -3065,14 +3059,6 @@ export const UPDATE_FNS = {
           inspector: {
             ...editor.inspector,
             visible: !editor.inspector.visible,
-          },
-        }
-      case 'preview':
-        return {
-          ...editor,
-          preview: {
-            ...editor.preview,
-            visible: !editor.preview.visible,
           },
         }
       case 'projectsettings':
@@ -3741,12 +3727,6 @@ export const UPDATE_FNS = {
       projectDescription: action.description,
     }
   },
-
-  UPDATE_PREVIEW_CONNECTED: (action: UpdatePreviewConnected, editor: EditorModel): EditorModel => {
-    return produce(editor, (editorState) => {
-      editorState.preview.connected = action.connected
-    })
-  },
   ALIGN_SELECTED_VIEWS: (action: AlignSelectedViews, editor: EditorModel): EditorModel => {
     return alignOrDistributeSelectedViews(editor, action.alignment)
   },
@@ -3759,9 +3739,6 @@ export const UPDATE_FNS = {
   SHOW_CONTEXT_MENU: (action: ShowContextMenu, editor: EditorModel): EditorModel => {
     // side effect!
     openMenu(action.menuName, action.event)
-    return editor
-  },
-  SEND_PREVIEW_MODEL: (action: SendPreviewModel, editor: EditorModel): EditorModel => {
     return editor
   },
   UPDATE_FILE_PATH: (
@@ -4136,13 +4113,13 @@ export const UPDATE_FNS = {
       getAllUniqueUidsFromMapping(getUidMappings(editor.projectContents).filePathToUids),
     )
     const parsedResult = getParseFileResult(
-      newFileName,
-      getFilePathMappings(editor.projectContents),
-      templateFile.fileContents.code,
-      null,
-      1,
-      existingUIDs,
-      isSteganographyEnabled(),
+      createParseFile(newFileName, templateFile.fileContents.code, null, 1),
+      createParseAndPrintOptions(
+        getFilePathMappings(editor.projectContents),
+        existingUIDs,
+        isSteganographyEnabled(),
+        getParseCacheOptions(),
+      ),
     )
 
     // 3. write the new text file
@@ -5003,13 +4980,18 @@ export const UPDATE_FNS = {
     const workerUpdates = filesToUpdateResult.filesToUpdate.flatMap((fileToUpdate) => {
       if (fileToUpdate.type === 'printandreparsefile') {
         const printParsedContent = getPrintAndReparseCodeResult(
-          fileToUpdate.filename,
-          filePathMappings,
-          fileToUpdate.parseSuccess,
-          fileToUpdate.stripUIDs,
-          fileToUpdate.versionNumber,
-          filesToUpdateResult.existingUIDs,
-          isSteganographyEnabled(),
+          createPrintAndReparseFile(
+            fileToUpdate.filename,
+            fileToUpdate.parseSuccess,
+            fileToUpdate.stripUIDs,
+            fileToUpdate.versionNumber,
+          ),
+          createParseAndPrintOptions(
+            filePathMappings,
+            filesToUpdateResult.existingUIDs,
+            isSteganographyEnabled(),
+            getParseCacheOptions(),
+          ),
         )
         const updateAction = workerCodeAndParsedUpdate(
           printParsedContent.filename,
@@ -5765,7 +5747,11 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const canvasState = pickCanvasStateFromEditorState(editor, builtInDependencies)
+    const canvasState = pickCanvasStateFromEditorState(
+      editor.selectedViews,
+      editor,
+      builtInDependencies,
+    )
     if (areAllSelectedElementsNonAbsolute(action.targets, editor.jsxMetadata)) {
       const commands = getEscapeHatchCommands(
         action.targets,
@@ -6392,10 +6378,6 @@ export async function load(
   )
 }
 
-export function isSendPreviewModel(action: any): action is SendPreviewModel {
-  return action != null && (action as SendPreviewModel).action === 'SEND_PREVIEW_MODEL'
-}
-
 function saveFileInProjectContents(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
@@ -6589,10 +6571,54 @@ function removeErrorMessagesForFile(editor: EditorState, filename: string): Edit
 function alignFlexOrGridChildren(editor: EditorState, views: ElementPath[], alignment: Alignment) {
   let workingEditorState = { ...editor }
   for (const view of views) {
-    function apply(prop: 'alignSelf' | 'justifySelf', value: string) {
-      return applyValuesAtPath(workingEditorState, view, [
+    // When updating alongside the given alignment, also update the opposite one so that it makes sense:
+    // For example, if alignment is 'alignSelf', delete the 'justifySelf' if currently set to stretch and, if so,
+    // set the explicit height of the element (and vice versa for 'justifySelf').
+    function updateOpposite(
+      editorState: EditorState,
+      frame: MaybeInfinityCanvasRectangle | null,
+      target: 'alignSelf' | 'justifySelf',
+      dimension: 'width' | 'height',
+    ) {
+      let working = { ...editorState }
+
+      working = deleteValuesAtPath(working, view, [styleP(target)]).editorStateWithChanges
+
+      working = applyValuesAtPath(working, view, [
+        {
+          path: styleP(dimension),
+          value: jsExpressionValue(zeroRectIfNullOrInfinity(frame)[dimension], emptyComments),
+        },
+      ]).editorStateWithChanges
+
+      return working
+    }
+
+    function apply(editorState: EditorState, prop: 'alignSelf' | 'justifySelf', value: string) {
+      const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, view)
+      if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
+        return workingEditorState
+      }
+
+      let working = editorState
+
+      working = applyValuesAtPath(working, view, [
         { path: PP.create('style', prop), value: jsExpressionValue(value, emptyComments) },
       ]).editorStateWithChanges
+
+      const alignSelfStretch =
+        getSimpleAttributeAtPath(right(element.element.value.props), styleP('alignSelf')).value ===
+        'stretch'
+      const justifySelfStretch =
+        getSimpleAttributeAtPath(right(element.element.value.props), styleP('justifySelf'))
+          .value === 'stretch'
+
+      if (prop === 'alignSelf' && justifySelfStretch) {
+        working = updateOpposite(working, element.globalFrame, 'justifySelf', 'height')
+      } else if (prop === 'justifySelf' && alignSelfStretch) {
+        working = updateOpposite(working, element.globalFrame, 'alignSelf', 'width')
+      }
+      return working
     }
 
     const { align, justify } = MetadataUtils.getRelativeAlignJustify(
@@ -6602,27 +6628,28 @@ function alignFlexOrGridChildren(editor: EditorState, views: ElementPath[], alig
 
     switch (alignment) {
       case 'bottom':
-        workingEditorState = apply(align, 'end')
+        workingEditorState = apply(workingEditorState, align, 'end')
         break
       case 'top':
-        workingEditorState = apply(align, 'start')
+        workingEditorState = apply(workingEditorState, align, 'start')
         break
       case 'vcenter':
-        workingEditorState = apply(align, 'center')
+        workingEditorState = apply(workingEditorState, align, 'center')
         break
       case 'hcenter':
-        workingEditorState = apply(justify, 'center')
+        workingEditorState = apply(workingEditorState, justify, 'center')
         break
       case 'left':
-        workingEditorState = apply(justify, 'start')
+        workingEditorState = apply(workingEditorState, justify, 'start')
         break
       case 'right':
-        workingEditorState = apply(justify, 'end')
+        workingEditorState = apply(workingEditorState, justify, 'end')
         break
       default:
         assertNever(alignment)
     }
   }
+
   return workingEditorState
 }
 

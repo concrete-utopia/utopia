@@ -542,12 +542,20 @@ function AxisDimensionControl({
     setIsOpen(isDropdownOpen)
   }, [])
 
+  const isDynamic = React.useMemo(() => {
+    return indexFrom !== indexTo
+  }, [indexFrom, indexTo])
+
+  const dynamicIndexTitle = React.useMemo(() => {
+    return `${indexFrom} → ${indexTo}`
+  }, [indexFrom, indexTo])
+
   const title = React.useMemo(() => {
-    if (indexFrom === indexTo) {
-      return value.areaName ?? indexFrom
+    if (isDynamic) {
+      return value.areaName ?? dynamicIndexTitle
     }
-    return value.areaName ?? `${indexFrom} → ${indexTo}`
-  }, [value, indexFrom, indexTo])
+    return value.areaName ?? indexFrom
+  }, [value, indexFrom, isDynamic, dynamicIndexTitle])
 
   const gridExpressionInputFocused = useGridExpressionInputFocused()
 
@@ -574,7 +582,7 @@ function AxisDimensionControl({
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
           }}
-          title={value.areaName ?? undefined}
+          title={isDynamic ? dynamicIndexTitle : undefined}
         >
           {title}
         </Subdued>
@@ -834,7 +842,7 @@ const GapRowColumnControl = React.memo(() => {
       }
 
       const transientWrapper = (actions: EditorAction[]) =>
-        transient ? [transientActions(actions)] : actions
+        transient ? [transientActions(actions, [grid.elementPath])] : actions
 
       dispatch(
         transientWrapper([
@@ -887,6 +895,8 @@ const GapRowColumnControl = React.memo(() => {
           <NumberInput
             value={columnGap.value}
             numberType={'Length'}
+            minimum={0}
+            clampOnSubmitValue={true}
             onSubmitValue={onSubmitUnifiedValue}
             onTransientSubmitValue={onSubmitUnifiedValue}
             onForcedSubmitValue={onSubmitUnifiedValue}
@@ -903,6 +913,8 @@ const GapRowColumnControl = React.memo(() => {
           <NumberInput
             value={columnGap.value}
             numberType={'Length'}
+            minimum={0}
+            clampOnSubmitValue={true}
             onSubmitValue={onSubmitSplitValue('columnGap')}
             onTransientSubmitValue={onSubmitSplitValue('columnGap')}
             onForcedSubmitValue={onSubmitSplitValue('columnGap')}
@@ -916,6 +928,8 @@ const GapRowColumnControl = React.memo(() => {
           <NumberInput
             value={rowGap.value}
             numberType={'Length'}
+            minimum={0}
+            clampOnSubmitValue={true}
             onSubmitValue={onSubmitSplitValue('rowGap')}
             onTransientSubmitValue={onSubmitSplitValue('rowGap')}
             onForcedSubmitValue={onSubmitSplitValue('rowGap')}

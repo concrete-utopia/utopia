@@ -295,7 +295,7 @@ export type SetZIndex = {
 export type TransientActions = {
   action: 'TRANSIENT_ACTIONS'
   transientActions: Array<EditorAction>
-  elementsToRerender: Array<ElementPath> | null
+  elementsToRerender: Array<ElementPath>
 }
 
 // This is a wrapper action which changes the undo behavior for the included actions.
@@ -602,11 +602,6 @@ export interface SetProjectDescription {
   description: string
 }
 
-export interface UpdatePreviewConnected {
-  action: 'UPDATE_PREVIEW_CONNECTED'
-  connected: boolean
-}
-
 export interface AlignSelectedViews {
   action: 'ALIGN_SELECTED_VIEWS'
   alignment: Alignment
@@ -626,10 +621,6 @@ export interface ShowContextMenu {
 export interface SetCursorOverlay {
   action: 'SET_CURSOR_OVERLAY'
   cursor: CSSCursor | null
-}
-
-export interface SendPreviewModel {
-  action: 'SEND_PREVIEW_MODEL'
 }
 
 export interface UpdateFilePath {
@@ -797,6 +788,7 @@ export interface UpdateMetadataInEditorState {
 
 export interface RunDOMWalker {
   action: 'RUN_DOM_WALKER'
+  restrictToElements: Array<ElementPath> | null
 }
 
 export interface TrueUpElements {
@@ -1278,13 +1270,11 @@ export type EditorAction =
   | OpenCodeEditor
   | SetProjectName
   | SetProjectDescription
-  | UpdatePreviewConnected
   | AlignSelectedViews
   | DistributeSelectedViews
   | SetCursorOverlay
   | DuplicateSpecificElements
   | UpdateDuplicationState
-  | SendPreviewModel
   | UpdateFilePath
   | UpdateRemixRoute
   | OpenCodeEditorFile
@@ -1446,6 +1436,9 @@ export type DispatchPriority =
   | 'topmenu'
   | 'contextmenu'
   | 'noone'
+  | 'canvas-fast-selection-hack'
+  | 'resume-canvas-fast-selection-hack'
+
 export type EditorDispatch = (
   actions: ReadonlyArray<EditorAction>,
   priority?: DispatchPriority,

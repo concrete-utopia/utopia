@@ -303,10 +303,7 @@ export function drawToInsertStrategyFactory(
                   resizeCommand,
                   ...optionalWrappingCommand,
                 ],
-                // FIXME: This was added as a default value in https://github.com/concrete-utopia/utopia/pull/6408
-                // This was to maintain the existing behaviour, but it should be replaced with a more specific value
-                // appropriate to this particular case.
-                'rerender-all-elements',
+                [targetParent.intendedParentPath],
                 {
                   strategyGeneratedUidsCache: {
                     [insertionSubject.uid]: maybeWrapperWithUid?.uid,
@@ -352,10 +349,7 @@ export function drawToInsertStrategyFactory(
 
               return strategyApplicationResult(
                 [insertionCommand.command, reparentCommand, ...optionalWrappingCommand],
-                // FIXME: This was added as a default value in https://github.com/concrete-utopia/utopia/pull/6408
-                // This was to maintain the existing behaviour, but it should be replaced with a more specific value
-                // appropriate to this particular case.
-                'rerender-all-elements',
+                [targetParent.intendedParentPath],
                 {
                   strategyGeneratedUidsCache: {
                     [insertionSubject.uid]: maybeWrapperWithUid?.uid,
@@ -590,7 +584,11 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   strategyLifecycle: InteractionLifecycle,
   startingMetadata: ElementInstanceMetadataMap,
 ): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
+  const canvasState = pickCanvasStateFromEditorState(
+    editorState.selectedViews,
+    editorState,
+    builtInDependencies,
+  )
 
   const rootPath = getRootPath(startingMetadata)
   if (rootPath == null) {
@@ -679,6 +677,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   // when actually applying the strategies. If we ever need to pick a resize strategy based on the target
   // element's index, we will need to update the elementPathTree with the new element and pass it in here.
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
+    editorState.selectedViews,
     editorState,
     builtInDependencies,
     patchedMetadata,
