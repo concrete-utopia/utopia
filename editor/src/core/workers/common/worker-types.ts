@@ -12,6 +12,8 @@ import type { SteganographyMode } from '../parser-printer/parser-printer'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import type { FilePathMappings } from './project-file-utils'
 
+export const ARBITRARY_CODE_FILE_NAME = 'code.tsx'
+
 export type FileContent = string | TextFile
 
 export interface ParseFile {

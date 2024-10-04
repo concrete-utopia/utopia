@@ -9,6 +9,7 @@ import { emptySet } from '../shared/set-utils'
 import { isSteganographyEnabled } from '../shared/stegano-text'
 import type { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { createParseFile, getParseResult } from '../workers/common/worker-types'
+import { ARBITRARY_CODE_FILE_NAME } from '../workers/common/worker-types'
 
 type ProcessedParseResult = Either<
   string,
@@ -46,7 +47,7 @@ async function getParseResultForUserStrings(
     }`
   const parseResult = await getParseResult(
     workers,
-    [createParseFile('code.tsx', codeToParse, null, Date.now())],
+    [createParseFile(ARBITRARY_CODE_FILE_NAME, codeToParse, null, Date.now())],
     [],
     emptySet(),
     isSteganographyEnabled(),

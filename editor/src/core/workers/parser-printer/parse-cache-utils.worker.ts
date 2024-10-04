@@ -1,11 +1,14 @@
 import { URL_HASH } from '../../../common/env-vars'
 import { type ParseCacheOptions } from '../../../core/shared/parse-cache-utils'
-import type { ParseFile, ParseFileResult } from '../common/worker-types'
+import {
+  ARBITRARY_CODE_FILE_NAME,
+  type ParseFile,
+  type ParseFileResult,
+} from '../common/worker-types'
 import localforage from 'localforage'
 
 export const CACHE_DB_NAME = 'editor-cache'
 export const PARSE_CACHE_STORE_NAME = 'file-parse-cache'
-const ARBITRARY_CODE_FILE_NAME = 'code.tsx'
 const ARBITRARY_CODE_CACHE_KEY_LIMIT = 50
 
 let parseCacheStore: LocalForage | undefined
