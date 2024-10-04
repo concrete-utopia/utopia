@@ -227,7 +227,7 @@ export function getParseResult(
   parsingCacheOptions: ParseCacheOptions,
 ): Promise<Array<ParseOrPrintResult>> {
   // this is to eliminate unnecessary overhead when numChunks is 1
-  if (numChunks === 1) {
+  if (numChunks === 1 || files.length === 1) {
     return getParseResultSerial(
       workers,
       files,

@@ -30,10 +30,10 @@ type GridFeatures = {
 
 type PerformanceFeatures = {
   parseCache: boolean
-  verboseLogCache: boolean
+  parallelParsing: boolean
   cacheArbitraryCode: boolean
-  parserConcurrency: boolean
-  logConcurrencyTimings: boolean
+  verboseLogCache: boolean
+  logParseTimings: boolean
 }
 
 type RollYourOwnFeaturesTypes = {
@@ -49,8 +49,8 @@ const featureToFeatureFlagMap: Record<keyof Partial<PerformanceFeatures>, Featur
   parseCache: 'Use Parsing Cache',
   verboseLogCache: 'Verbose Log Cache',
   cacheArbitraryCode: 'Arbitrary Code Cache',
-  parserConcurrency: 'Parser Concurrency',
-  logConcurrencyTimings: 'Log Concurrency Timings',
+  parallelParsing: 'Parallel Parsing',
+  logParseTimings: 'Log Parse Timings',
 }
 
 const defaultRollYourOwnFeatures: () => RollYourOwnFeatures = () => ({
@@ -68,10 +68,10 @@ const defaultRollYourOwnFeatures: () => RollYourOwnFeatures = () => ({
   },
   Performance: {
     parseCache: getFeatureFlagValue('parseCache'),
-    verboseLogCache: getFeatureFlagValue('verboseLogCache'),
+    parallelParsing: getFeatureFlagValue('parallelParsing'),
     cacheArbitraryCode: getFeatureFlagValue('cacheArbitraryCode'),
-    parserConcurrency: getFeatureFlagValue('parserConcurrency'),
-    logConcurrencyTimings: getFeatureFlagValue('logConcurrencyTimings'),
+    logParseTimings: getFeatureFlagValue('logParseTimings'),
+    verboseLogCache: getFeatureFlagValue('verboseLogCache'),
   },
 })
 
@@ -262,10 +262,15 @@ const SimpleFeatureControls = React.memo(({ subsection }: { subsection: Section 
     <React.Fragment>
       {Object.keys(defaultFeatures[subsection]).map((key) => {
         const feat = key as keyof RollYourOwnFeaturesTypes[Section]
+        const featName = Object.keys(featureToFeatureFlagMap).includes(
+          feat as keyof typeof featureToFeatureFlagMap,
+        )
+          ? featureToFeatureFlagMap[feat as keyof typeof featureToFeatureFlagMap]
+          : feat
         const value = features[subsection][feat] ?? defaultFeatures[subsection][feat]
         return (
           <UIGridRow padded variant='<----------1fr---------><-auto->' key={`feat-${feat}`}>
-            <Ellipsis title={feat}>{feat}</Ellipsis>
+            <Ellipsis title={featName}>{featName}</Ellipsis>
             {typeof value === 'boolean' ? (
               <input type='checkbox' checked={value} onChange={onChange(feat)} />
             ) : typeof value === 'string' ? (
