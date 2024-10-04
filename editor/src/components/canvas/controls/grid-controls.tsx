@@ -255,10 +255,9 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           width: GRID_RESIZE_HANDLE_SIZE,
           height: GRID_RESIZE_HANDLE_SIZE,
           borderRadius: '100%',
-          border: `1px solid ${colorTheme.border0.value}`,
-          boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
-              1px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px 1px 2px 2px`,
-          background: colorTheme.white.value,
+          border: `1px solid ${colorTheme.white.value}`,
+          background: colorTheme.primary.value,
+          color: colorTheme.white.value,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -303,19 +302,16 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
             justifyContent: 'center',
             border: `1px solid ${
               props.resizeLocked
-                ? colorTheme.brandNeonPink10.value
+                ? colorTheme.primary10.value
                 : props.resizing === 'resize-target'
-                ? colorTheme.brandNeonPink.value
-                : colorTheme.brandNeonPink60.value
+                ? colorTheme.primary.value
+                : colorTheme.primary50.value
             }`,
             ...(props.resizeLocked
-              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink10.value, scale)
+              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.primary10.value, scale)
               : props.resizing === 'resize-target'
-              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink60.value, scale)
-              : UtopiaStyles.backgrounds.stripedBackground(
-                  colorTheme.brandNeonPink10.value,
-                  scale,
-                )),
+              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.primary50.value, scale)
+              : UtopiaStyles.backgrounds.stripedBackground(colorTheme.primary10.value, scale)),
           }}
         >
           <CanvasLabel
@@ -327,10 +323,10 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
             scale={scale}
             color={
               props.resizeLocked
-                ? colorTheme.brandNeonPink10.value
+                ? colorTheme.primary10.value
                 : props.resizing === 'resize-target'
-                ? colorTheme.brandNeonPink.value
-                : colorTheme.brandNeonPink60.value
+                ? colorTheme.primary.value
+                : colorTheme.primary50.value
             }
             textColor={colorTheme.white.value}
           />
@@ -968,7 +964,7 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
 
           const borderColor =
             isActiveCell && targetsAreCellsWithPositioning
-              ? colorTheme.brandNeonPink.value
+              ? colorTheme.primary.value
               : features.Grid.inactiveGridColor
           return (
             <div
@@ -1352,7 +1348,7 @@ const AbsoluteDistanceIndicators = React.memo(
       return null
     }
 
-    const backgroundColor = colorTheme.brandNeonPink.value
+    const backgroundColor = colorTheme.primary.value
     const dashedBorder = `1px dashed ${backgroundColor}`
 
     return (
