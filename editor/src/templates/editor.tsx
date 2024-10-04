@@ -183,8 +183,6 @@ function fixElementsToRerender(elementsToRerender: ElementsToRerender): Elements
   return fixedElementsToRerender
 }
 
-let c = 1
-
 export function collectElementsToRerender(
   editorStore: EditorStoreFull,
   dispatchedActions: readonly EditorAction[],
@@ -197,20 +195,12 @@ export function collectElementsToRerender(
     EP.pathsEqual,
   )
 
-  let elementsToRerender: ElementsToRerender =
+  const elementsToRerender: ElementsToRerender =
     elementsToRerenderTransient.length > 0
       ? elementsToRerenderTransient
       : editorStore.patchedEditor.canvas.elementsToRerender
 
-  // console.log(
-  //   `${c} elementsToRerender before`,
-  //   elementsToRerender === 'rerender-all-elements'
-  //     ? elementsToRerender
-  //     : elementsToRerender.map(EP.toString),
-  // )
-  // c += 1
-
-  elementsToRerender =
+  const elementsToRerenderWithChildGroups =
     elementsToRerender === 'rerender-all-elements'
       ? elementsToRerender
       : [
@@ -220,27 +210,9 @@ export function collectElementsToRerender(
             elementsToRerender,
           ),
         ]
-  elementsToRerender = fixElementsToRerender(elementsToRerender)
-  // elementsToRerender =
-  //   elementsToRerender === 'rerender-all-elements'
-  //     ? elementsToRerender
-  //     : [
-  //         ...elementsToRerender,
-  //         ...getChildGroupsForNonGroupParents(
-  //           editorStore.patchedEditor.jsxMetadata,
-  //           elementsToRerender,
-  //         ),
-  //       ]
 
-  // console.log(
-  //   `${c} elementsToRerender after`,
-  //   elementsToRerender === 'rerender-all-elements'
-  //     ? elementsToRerender
-  //     : elementsToRerender.map(EP.toString),
-  // )
-  // c += 1
-
-  return elementsToRerender
+  const fixedElementsToRerender = fixElementsToRerender(elementsToRerenderWithChildGroups)
+  return fixedElementsToRerender
 }
 
 export class Editor {
