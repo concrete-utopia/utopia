@@ -59,7 +59,7 @@ import {
   FakeWatchdogWorker,
 } from '../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
-import { EditorRoot } from '../../templates/editor'
+import { collectElementsToRerender, EditorRoot } from '../../templates/editor'
 import Utils from '../../utils/utils'
 import { getNamedPath } from '../../utils/react-helpers'
 import type {
@@ -435,8 +435,9 @@ export async function renderTestEditorWithModel(
     {
       resubscribeObservers(domWalkerMutableState)
 
+      const elementsToFocusOn = collectElementsToRerender(workingEditorState, actions)
       const metadataResult = runDomSamplerRegular({
-        elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+        elementsToFocusOn: elementsToFocusOn,
         domWalkerAdditionalElementsToFocusOn:
           workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
         scale: workingEditorState.patchedEditor.canvas.scale,
@@ -495,8 +496,6 @@ export async function renderTestEditorWithModel(
 
         // re-render the canvas
         {
-          // TODO run fixElementsToRerender and set ElementsToRerenderGLOBAL
-
           flushSync(() => {
             canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
           })
@@ -507,8 +506,14 @@ export async function renderTestEditorWithModel(
         {
           resubscribeObservers(domWalkerMutableState)
 
+          // TODO: The real dispatch updates ElementsToRerenderGLOBAL.current,
+          // while the fake one doesn't. Ideally this behaviour would be the
+          // same, but solving this was out of scope for the PR that introduced
+          // collectElementsToRerender
+          // (https://github.com/concrete-utopia/utopia/pull/6465)
+          const elementsToFocusOn = collectElementsToRerender(workingEditorState, actions)
           const metadataResult = runDomSamplerGroups({
-            elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+            elementsToFocusOn: elementsToFocusOn,
             domWalkerAdditionalElementsToFocusOn:
               workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
             scale: workingEditorState.patchedEditor.canvas.scale,

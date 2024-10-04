@@ -136,7 +136,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
   )
   const dispatch = useDispatch()
 
-  const onMouseDownTab = React.useCallback(
+  const onClickTab = React.useCallback(
     (menuTab: RightMenuTab) => {
       const actions: Array<EditorAction> = [EditorActions.setRightMenuTab(menuTab)]
       if (isCommentMode(editorModeRef.current) && menuTab !== RightMenuTab.Comments) {
@@ -147,25 +147,25 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
     [dispatch, editorModeRef],
   )
 
-  const onMouseDownInsertTab = React.useCallback(() => {
-    onMouseDownTab(RightMenuTab.Insert)
-  }, [onMouseDownTab])
+  const onClickInsertTab = React.useCallback(() => {
+    onClickTab(RightMenuTab.Insert)
+  }, [onClickTab])
 
-  const onMouseDownCommentsTab = React.useCallback(() => {
-    onMouseDownTab(RightMenuTab.Comments)
-  }, [onMouseDownTab])
+  const onClickCommentsTab = React.useCallback(() => {
+    onClickTab(RightMenuTab.Comments)
+  }, [onClickTab])
 
-  const onMouseDownInspectorTab = React.useCallback(() => {
-    onMouseDownTab(RightMenuTab.Inspector)
-  }, [onMouseDownTab])
+  const onClickInspectorTab = React.useCallback(() => {
+    onClickTab(RightMenuTab.Inspector)
+  }, [onClickTab])
 
-  const onMouseDownSettingsTab = React.useCallback(() => {
-    onMouseDownTab(RightMenuTab.Settings)
-  }, [onMouseDownTab])
+  const onClickSettingsTab = React.useCallback(() => {
+    onClickTab(RightMenuTab.Settings)
+  }, [onClickTab])
 
-  const onMouseDownRollYourOwnTab = React.useCallback(() => {
-    onMouseDownTab(RightMenuTab.RollYourOwn)
-  }, [onMouseDownTab])
+  const onClickRollYourOwnTab = React.useCallback(() => {
+    onClickTab(RightMenuTab.RollYourOwn)
+  }, [onClickTab])
 
   const canComment = useCanComment()
 
@@ -206,7 +206,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
           <MenuTab
             label={'Inspector'}
             selected={selectedTab === RightMenuTab.Inspector}
-            onMouseDown={onMouseDownInspectorTab}
+            onClick={onClickInspectorTab}
           />
           {when(
             allowedToEdit,
@@ -216,7 +216,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
                 <MenuTab
                   label={'Insert'}
                   selected={selectedTab === RightMenuTab.Insert}
-                  onMouseDown={onMouseDownInsertTab}
+                  onClick={onClickInsertTab}
                 />,
               )}
             </>,
@@ -227,20 +227,20 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
               testId='comments-tab'
               label={'Comments'}
               selected={selectedTab === RightMenuTab.Comments}
-              onMouseDown={onMouseDownCommentsTab}
+              onClick={onClickCommentsTab}
             />,
           )}
           <MenuTab
             label={'Settings'}
             selected={selectedTab === RightMenuTab.Settings}
-            onMouseDown={onMouseDownSettingsTab}
+            onClick={onClickSettingsTab}
           />
           {when(
             isFeatureEnabled('Roll Your Own'),
             <MenuTab
               label={'RYO'}
               selected={selectedTab === RightMenuTab.RollYourOwn}
-              onMouseDown={onMouseDownRollYourOwnTab}
+              onClick={onClickRollYourOwnTab}
             />,
           )}
         </FlexRow>

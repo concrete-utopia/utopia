@@ -26,6 +26,7 @@ import { Substores, useEditorState, useRefEditorState } from '../editor/store/st
 import { getControlStyles } from './common/control-styles'
 import { OptionChainControl } from './controls/option-chain-control'
 import { UIGridRow } from './widgets/ui-grid-row'
+import { useDisableAlignment } from './use-disable-alignment'
 
 type ActiveAlignments = { [key in Alignment]: boolean }
 
@@ -34,7 +35,6 @@ export const AlignmentButtons = React.memo(() => {
 
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
 
-  const disableAlign = selectedViews.current.length === 0
   const disableDistribute = selectedViews.current.length < 3
 
   const activeAlignments = useActiveAlignments()
@@ -171,6 +171,9 @@ export const AlignmentButtons = React.memo(() => {
       : null
   }, [activeAlignments])
 
+  const disableJustify = useDisableAlignment(selectedViews.current, 'horizontal')
+  const disableAlign = useDisableAlignment(selectedViews.current, 'vertical')
+
   return (
     <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
       <OptionChainControl
@@ -184,21 +187,21 @@ export const AlignmentButtons = React.memo(() => {
         options={[
           {
             value: 'left',
-            icon: { category: 'inspector', type: 'justifySelf-start' },
+            icon: { category: 'inspector', type: 'justify-start' },
             forceCallOnSubmitValue: true,
-            disabled: disableAlign,
+            disabled: disableJustify,
           },
           {
             value: 'hcenter',
-            icon: { category: 'inspector', type: 'justifySelf-center' },
+            icon: { category: 'inspector', type: 'justify-center' },
             forceCallOnSubmitValue: true,
-            disabled: disableAlign,
+            disabled: disableJustify,
           },
           {
             value: 'right',
-            icon: { category: 'inspector', type: 'justifySelf-end' },
+            icon: { category: 'inspector', type: 'justify-end' },
             forceCallOnSubmitValue: true,
-            disabled: disableAlign,
+            disabled: disableJustify,
           },
         ]}
       />
@@ -213,19 +216,19 @@ export const AlignmentButtons = React.memo(() => {
         options={[
           {
             value: 'top',
-            icon: { category: 'inspector', type: 'alignSelf-start' },
+            icon: { category: 'inspector', type: 'align-start' },
             forceCallOnSubmitValue: true,
             disabled: disableAlign,
           },
           {
             value: 'vcenter',
-            icon: { category: 'inspector', type: 'alignSelf-center' },
+            icon: { category: 'inspector', type: 'align-center' },
             forceCallOnSubmitValue: true,
             disabled: disableAlign,
           },
           {
             value: 'bottom',
-            icon: { category: 'inspector', type: 'alignSelf-end' },
+            icon: { category: 'inspector', type: 'align-end' },
             forceCallOnSubmitValue: true,
             disabled: disableAlign,
           },

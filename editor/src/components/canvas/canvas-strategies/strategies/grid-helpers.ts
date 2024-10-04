@@ -653,9 +653,13 @@ function alterGridTemplateDimensions(params: {
           if (before.length + after.length === 0) {
             return null
           }
-          return gridCSSRepeat(dim.times, [...before, ...after])
+          return gridCSSRepeat(dim.times, [...before, ...after], dim.areaName)
         case 'REPLACE':
-          return gridCSSRepeat(dim.times, [...before, params.patch.newValue, ...after])
+          return gridCSSRepeat(
+            dim.times,
+            [...before, params.patch.newValue, ...after],
+            dim.areaName,
+          )
         default:
           assertNever(params.patch)
       }
@@ -770,12 +774,12 @@ export function getMetadataWithGridCellBounds(
   customStrategyState: CustomStrategyState,
 ): {
   metadata: ElementInstanceMetadata | null
-  foundIn: 'startingMetadata' | 'latestMetadata' | 'strategyState' | null
+  customStrategyState: CustomStrategyState | null
 } {
   if (path == null) {
     return {
       metadata: null,
-      foundIn: null,
+      customStrategyState: null,
     }
   }
 
@@ -784,7 +788,7 @@ export function getMetadataWithGridCellBounds(
   if (fromStartingMetadata?.specialSizeMeasurements.gridCellGlobalFrames != null) {
     return {
       metadata: fromStartingMetadata,
-      foundIn: 'startingMetadata',
+      customStrategyState: null,
     }
   }
 
@@ -792,7 +796,7 @@ export function getMetadataWithGridCellBounds(
   if (fromStrategyState != null) {
     return {
       metadata: fromStrategyState,
-      foundIn: 'strategyState',
+      customStrategyState: null,
     }
   }
 
@@ -800,12 +804,21 @@ export function getMetadataWithGridCellBounds(
   if (fromLatestMetadata?.specialSizeMeasurements.gridCellGlobalFrames != null) {
     return {
       metadata: fromLatestMetadata,
-      foundIn: 'latestMetadata',
+      customStrategyState: {
+        ...customStrategyState,
+        grid: {
+          ...customStrategyState.grid,
+          metadataCacheForGrids: {
+            ...customStrategyState.grid.metadataCacheForGrids,
+            [EP.toString(path)]: fromLatestMetadata,
+          },
+        },
+      },
     }
   }
 
   return {
     metadata: fromStartingMetadata,
-    foundIn: 'startingMetadata',
+    customStrategyState: null,
   }
 }
