@@ -175,7 +175,6 @@ function getCommandsAndPatchForGridRearrange(
   const {
     commands,
     targetCell: targetGridCell,
-    draggingFromCell,
     originalRootCell,
     targetRootCell,
   } = runGridRearrangeMove(
@@ -192,7 +191,6 @@ function getCommandsAndPatchForGridRearrange(
       grid: {
         ...customState.grid,
         targetCellData: targetGridCell,
-        draggingFromCell: draggingFromCell,
         originalRootCell: originalRootCell,
         currentRootCell: targetRootCell,
       },
