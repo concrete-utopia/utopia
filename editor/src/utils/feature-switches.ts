@@ -75,6 +75,8 @@ export const FeaturesHiddenFromMainSettingsPane: FeatureName[] = [
   'Use Parsing Cache',
   'Verbose Log Cache',
   'Arbitrary Code Cache',
+  'Parser Concurrency',
+  'Log Concurrency Timings',
 ]
 
 export const STEGANOGRAPHY_ENABLED = false

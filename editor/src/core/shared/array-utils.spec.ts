@@ -4,7 +4,7 @@ import {
   mapAndFilter,
   possiblyUniqueInArray,
   sortArrayByAndReturnPermutation,
-  sortArrayByReversePermutation,
+  revertArrayOrder,
   strictEvery,
 } from './array-utils'
 
@@ -68,7 +68,7 @@ describe('sortArrayByAndReturnPermutation', () => {
     const originalArray = [10, 5, 6, 32, 102, 7, 91]
     const { sortedArray, permutation } = sortArrayByAndReturnPermutation(originalArray, (a) => a)
     expect(sortedArray).toEqual([5, 6, 7, 10, 32, 91, 102])
-    const reversedToOriginal = sortArrayByReversePermutation(sortedArray, permutation)
+    const reversedToOriginal = revertArrayOrder(sortedArray, permutation)
     expect(reversedToOriginal).toEqual(originalArray)
   })
 })

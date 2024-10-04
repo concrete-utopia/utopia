@@ -1,7 +1,7 @@
 import {
   chunkArrayEqually,
   sortArrayByAndReturnPermutation,
-  sortArrayByReversePermutation,
+  revertArrayOrder,
 } from '../../../core/shared/array-utils'
 import type { ParseCacheOptions } from '../../shared/parse-cache-utils'
 import type { ProjectContentTreeRoot } from '../../../components/assets'
@@ -279,7 +279,7 @@ export async function getParseResultChunked(
   const flattenedResults = results.flat()
 
   // this is to return the results in the original order
-  return sortArrayByReversePermutation(flattenedResults, permutation)
+  return revertArrayOrder(flattenedResults, permutation)
 }
 
 export function getParseResultSerial(

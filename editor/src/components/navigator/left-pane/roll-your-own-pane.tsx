@@ -32,6 +32,8 @@ type PerformanceFeatures = {
   parseCache: boolean
   verboseLogCache: boolean
   cacheArbitraryCode: boolean
+  parserConcurrency: boolean
+  logConcurrencyTimings: boolean
 }
 
 type RollYourOwnFeaturesTypes = {
@@ -47,6 +49,8 @@ const featureToFeatureFlagMap: Record<keyof Partial<PerformanceFeatures>, Featur
   parseCache: 'Use Parsing Cache',
   verboseLogCache: 'Verbose Log Cache',
   cacheArbitraryCode: 'Arbitrary Code Cache',
+  parserConcurrency: 'Parser Concurrency',
+  logConcurrencyTimings: 'Log Concurrency Timings',
 }
 
 const defaultRollYourOwnFeatures: () => RollYourOwnFeatures = () => ({
@@ -66,6 +70,8 @@ const defaultRollYourOwnFeatures: () => RollYourOwnFeatures = () => ({
     parseCache: getFeatureFlagValue('parseCache'),
     verboseLogCache: getFeatureFlagValue('verboseLogCache'),
     cacheArbitraryCode: getFeatureFlagValue('cacheArbitraryCode'),
+    parserConcurrency: getFeatureFlagValue('parserConcurrency'),
+    logConcurrencyTimings: getFeatureFlagValue('logConcurrencyTimings'),
   },
 })
 
