@@ -8,7 +8,6 @@ import type {
   EditorState,
   EditorStatePatch,
   EditorStorePatched,
-  ElementsToRerender,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import type {
