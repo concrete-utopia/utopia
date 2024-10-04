@@ -1,9 +1,10 @@
 import React from 'react'
-import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { Substores, useEditorState } from '../editor/store/store-hook'
-import { isLeft, isRight, right } from '../../core/shared/either'
+import { isLeft, right } from '../../core/shared/either'
 import { isJSXElement } from '../../core/shared/element-template'
 import { styleP } from './inspector-common'
+import { countSetProperties } from '../../core/shared/array-utils'
 
 /**
  * These should match the props managed by the Advanced menu of the Grid inspector section.
@@ -36,11 +37,6 @@ export function useGridAdvancedPropertiesCount(): number {
       return 0
     }
 
-    const props = right(grid.element.value.props)
-
-    return advancedGridProps.reduce((acc, curr) => {
-      const attr = getSimpleAttributeAtPath(props, curr)
-      return isRight(attr) && attr.value != null ? acc + 1 : acc
-    }, 0)
+    return countSetProperties(advancedGridProps, right(grid.element.value.props))
   }, [grid])
 }

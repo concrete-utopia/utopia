@@ -2,6 +2,10 @@ import type { MapLike } from 'typescript'
 import { is, shallowEqual } from './equality-utils'
 import { clamp } from './math-utils'
 import { fastForEach } from './utils'
+import type { PropertyPath } from 'utopia-shared/src/types'
+import type { PropsOrJSXAttributes } from '../model/element-metadata-utils'
+import { getSimpleAttributeAtPath } from '../model/element-metadata-utils'
+import { isRight } from './either'
 
 export function stripNulls<T>(array: Array<T | null | undefined>): Array<T> {
   var workingArray: Array<T> = []
@@ -537,4 +541,14 @@ export function matrixGetter<T>(array: T[], width: number): (row: number, column
   return (row, column) => {
     return array[row * width + column]
   }
+}
+
+export function countSetProperties(
+  targets: PropertyPath[],
+  elementProps: PropsOrJSXAttributes,
+): number {
+  return targets.filter((curr) => {
+    const attr = getSimpleAttributeAtPath(elementProps, curr)
+    return isRight(attr) && attr.value != null
+  }, 0).length
 }
