@@ -20,7 +20,7 @@ import {
   printGridCSSNumber,
 } from '../../../components/inspector/common/css-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
+import { mapDropNulls, stripNulls, uniqBy } from '../../../core/shared/array-utils'
 import { defaultEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import type {
@@ -747,7 +747,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     'FlexReparentTargetIndicator lines',
   )
 
-  const grids = useGridData([...targets, ...hoveredGrids])
+  const grids = useGridData(uniqBy([...targets, ...hoveredGrids], (a, b) => EP.pathsEqual(a, b)))
 
   const cells = React.useMemo(() => {
     return grids.flatMap((grid) => {
