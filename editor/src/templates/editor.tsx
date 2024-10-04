@@ -195,7 +195,7 @@ export function collectElementsToRerender(
     EP.pathsEqual,
   )
 
-  const elementsToRerender: ElementsToRerender =
+  const elementsToRerender =
     elementsToRerenderTransient.length > 0
       ? elementsToRerenderTransient
       : editorStore.patchedEditor.canvas.elementsToRerender
