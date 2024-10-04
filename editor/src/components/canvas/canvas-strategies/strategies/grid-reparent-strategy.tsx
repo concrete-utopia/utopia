@@ -165,12 +165,13 @@ export function applyGridReparent(
           return emptyStrategyApplicationResult
         }
 
-        const { metadata: grid, foundIn } = getMetadataWithGridCellBounds(
-          newParent.intendedParentPath,
-          canvasState.startingMetadata,
-          interactionSession.latestMetadata,
-          customStrategyState,
-        )
+        const { metadata: grid, customStrategyState: updatedCustomState } =
+          getMetadataWithGridCellBounds(
+            newParent.intendedParentPath,
+            canvasState.startingMetadata,
+            interactionSession.latestMetadata,
+            customStrategyState,
+          )
 
         if (grid == null) {
           return emptyStrategyApplicationResult
@@ -241,26 +242,15 @@ export function applyGridReparent(
           ...selectedElements.map(EP.parentPath),
         ])
 
-        const customStrategyStatePatch =
-          foundIn === 'latestMetadata'
-            ? {
-                elementsToRerender: elementsToRerender,
-                grid: {
-                  ...customStrategyState.grid,
-                  targetCellData: targetCellData,
-                  metadataCacheForGrids: {
-                    ...customStrategyState.grid.metadataCacheForGrids,
-                    [EP.toString(newParent.intendedParentPath)]: grid,
-                  },
-                },
-              }
-            : {
-                elementsToRerender: elementsToRerender,
-                grid: {
-                  ...customStrategyState.grid,
-                  targetCellData: targetCellData,
-                },
-              }
+        const baseCustomState = updatedCustomState ?? customStrategyState
+        const customStrategyStatePatch = {
+          ...baseCustomState,
+          elementsToRerender: elementsToRerender,
+          grid: {
+            ...baseCustomState.grid,
+            targetCellData: targetCellData,
+          },
+        }
 
         return strategyApplicationResult(
           [

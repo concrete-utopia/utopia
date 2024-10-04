@@ -1632,7 +1632,6 @@ export const GridResizeControls = controlForStrategyMemoized<GridResizeControlPr
       if (startingBounds == null) {
         return
       }
-
       setBounds(
         resizeBoundingBoxFromSide(
           startingBounds,
@@ -1784,7 +1783,7 @@ const GRID_RESIZE_HANDLE_SIZES = {
   short: 4,
 }
 
-function gridEdgeToEdgePosition(edge: GridResizeEdge): EdgePosition {
+export function gridEdgeToEdgePosition(edge: GridResizeEdge): EdgePosition {
   switch (edge) {
     case 'column-end':
       return EdgePositionRight
