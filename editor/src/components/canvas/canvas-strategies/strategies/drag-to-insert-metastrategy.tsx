@@ -281,7 +281,7 @@ function dragToInsertStrategyFactory(
               reparentCommand,
               ...optionalWrappingCommand,
             ],
-            [targetParent.intendedParentPath], // TODO: check elements to rerender here
+            [targetParent.intendedParentPath],
             {
               strategyGeneratedUidsCache: {
                 [insertionSubjects[0].uid]: maybeWrapperWithUid?.uid,
