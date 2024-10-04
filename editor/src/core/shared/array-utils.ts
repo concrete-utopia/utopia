@@ -573,6 +573,6 @@ export function sortArrayByAndReturnPermutation<T>(
   return { sortedArray, permutation }
 }
 
-export function sortArrayByReversePermutation<T>(array: T[], permutation: number[]): T[] {
+export function revertArrayOrder<T>(array: T[], permutation: number[]): T[] {
   return array.map((_, index) => array[permutation.indexOf(index)])
 }
