@@ -174,7 +174,7 @@ export function applyGridReparent(
           )
 
         if (grid == null) {
-          return emptyStrategyApplicationResult
+          return strategyApplicationResult([], [newParent.intendedParentPath])
         }
 
         const allowedToReparent = selectedElements.every((selectedElement) => {
@@ -200,7 +200,7 @@ export function applyGridReparent(
           customStrategyState.grid.targetCellData
 
         if (targetCellData == null) {
-          return emptyStrategyApplicationResult
+          return strategyApplicationResult([], [newParent.intendedParentPath])
         }
         const outcomes = mapDropNulls(
           (selectedElement) =>
@@ -240,6 +240,7 @@ export function applyGridReparent(
           ...newPaths,
           ...newPaths.map(EP.parentPath),
           ...selectedElements.map(EP.parentPath),
+          newParent.intendedParentPath,
         ])
 
         const baseCustomState = updatedCustomState ?? customStrategyState
