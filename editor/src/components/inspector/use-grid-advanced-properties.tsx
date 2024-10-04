@@ -1,10 +1,9 @@
 import React from 'react'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { countSetProperties, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { isLeft, right } from '../../core/shared/either'
 import { isJSXElement } from '../../core/shared/element-template'
 import { styleP } from './inspector-common'
-import { countSetProperties } from '../../core/shared/array-utils'
 
 /**
  * These should match the props managed by the Advanced menu of the Grid inspector section.
