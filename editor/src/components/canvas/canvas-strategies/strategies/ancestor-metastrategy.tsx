@@ -1,8 +1,4 @@
 import {
-  combineElementsToRerender,
-  type ElementsToRerender,
-} from '../../../../components/editor/store/editor-state'
-import {
   getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../../../core/model/element-metadata-utils'
@@ -27,6 +23,7 @@ import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-lik
 import type { Optic } from '../../../../core/shared/optics/optics'
 import { filtered, fromField } from '../../../../core/shared/optics/optic-creators'
 import { modify } from '../../../../core/shared/optics/optic-utilities'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 
 const ANCESTOR_INCOMPATIBLE_STRATEGIES = [DoNothingStrategyID]
 
@@ -204,21 +201,21 @@ export function appendCommandsToApplyResult(
   }
 }
 
-const strategyResultElementsToRerenderOptic: Optic<StrategyApplicationResult, ElementsToRerender> =
+const strategyResultElementsToRerenderOptic: Optic<StrategyApplicationResult, ElementPath[]> =
   filtered<StrategyApplicationResult>((result) => result.status === 'success').compose(
     fromField('elementsToRerender'),
   )
 
 export function appendElementsToRerenderToApplyResult(
   applyFn: ApplyFn,
-  additionalElementsToRerender: ElementsToRerender,
+  additionalElementsToRerender: ElementPath[],
 ): ApplyFn {
   return (strategyLifecycle: InteractionLifecycle) => {
     const result = applyFn(strategyLifecycle)
     return modify(
       strategyResultElementsToRerenderOptic,
       (toRerender) => {
-        return combineElementsToRerender(toRerender, additionalElementsToRerender)
+        return [...toRerender, ...additionalElementsToRerender]
       },
       result,
     )

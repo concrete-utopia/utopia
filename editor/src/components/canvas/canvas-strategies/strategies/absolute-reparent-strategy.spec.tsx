@@ -223,11 +223,7 @@ function reparentElement(
     expect(strategyResult.customStatePatch).toEqual({})
     expect(strategyResult.status).toEqual('success')
 
-    expect(
-      strategyResult.elementsToRerender === 'rerender-all-elements'
-        ? []
-        : strategyResult.elementsToRerender.map(EP.parentPath),
-    ).toEqual([newParent])
+    expect(strategyResult.elementsToRerender.map(EP.parentPath)).toEqual([newParent])
 
     return foldAndApplyCommands(
       editorState,
