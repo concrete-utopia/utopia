@@ -285,6 +285,12 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
     [dispatch, metadataRef, originalGlobalFrame, projectContentsRef, selectedViewsRef],
   )
 
+  const disableXYControls = React.useMemo(() => {
+    return selectedViewsRef.current.some((view) =>
+      MetadataUtils.isFlexOrGridChild(metadataRef.current, view),
+    )
+  }, [selectedViewsRef, metadataRef])
+
   return (
     <>
       <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
@@ -294,6 +300,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.left}
           invalid={invalidPins.left || invalidPins.right} // currently showing red for BOTH directions
+          disabled={disableXYControls}
         />
         <FrameUpdatingLayoutControl
           property='top'
@@ -301,6 +308,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.top}
           invalid={invalidPins.top || invalidPins.bottom} // currently showing red for BOTH directions
+          disabled={disableXYControls}
         />
       </UIGridRow>
       <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
@@ -363,6 +371,7 @@ interface LayoutPinPropertyControlProps {
   currentValues: Array<number>
   updateFrame: (frameUpdate: FrameUpdate, transient: boolean) => void
   invalid?: boolean
+  disabled?: boolean
 }
 
 function getSingleCommonValue(currentValues: Array<number>): number | null {
@@ -449,6 +458,7 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
         defaultUnitToHide={'px'}
         stepSize={1}
         innerLabel={props.label}
+        style={{ opacity: props.disabled ? 0.5 : 1 }}
       />
     </InspectorContextMenuWrapper>
   )

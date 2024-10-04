@@ -118,10 +118,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       }
 
       if (!canResizeGridTemplate(originalValues)) {
-        return strategyApplicationResult(
-          [setCursorCommand(CSSCursor.NotPermitted)],
-          'rerender-all-elements',
-        )
+        return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)], [])
       }
 
       const expandedOriginalValues = expandGridDimensions(originalValues.dimensions)

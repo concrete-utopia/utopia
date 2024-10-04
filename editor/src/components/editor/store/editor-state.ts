@@ -1089,18 +1089,6 @@ export function editorStateTopMenu(
   }
 }
 
-export interface EditorStatePreview {
-  visible: boolean
-  connected: boolean
-}
-
-export function editorStatePreview(visible: boolean, connected: boolean): EditorStatePreview {
-  return {
-    visible: visible,
-    connected: connected,
-  }
-}
-
 export interface EditorStateHome {
   visible: boolean
 }
@@ -1446,7 +1434,6 @@ export interface EditorState {
   projectSettings: EditorStateProjectSettings
   navigator: NavigatorState
   topmenu: EditorStateTopMenu
-  preview: EditorStatePreview
   home: EditorStateHome
   lastUsedFont: FontSettings | null
   modal: ModalDialog | null
@@ -1530,7 +1517,6 @@ export function editorState(
   projectSettings: EditorStateProjectSettings,
   editorStateNavigator: NavigatorState,
   topmenu: EditorStateTopMenu,
-  preview: EditorStatePreview,
   home: EditorStateHome,
   lastUsedFont: FontSettings | null,
   modal: ModalDialog | null,
@@ -1615,7 +1601,6 @@ export function editorState(
     projectSettings: projectSettings,
     navigator: editorStateNavigator,
     topmenu: topmenu,
-    preview: preview,
     home: home,
     lastUsedFont: lastUsedFont,
     modal: modal,
@@ -2687,10 +2672,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       formulaBarMode: 'content',
       formulaBarFocusCounter: 0,
     },
-    preview: {
-      visible: false,
-      connected: false,
-    },
     home: {
       visible: false,
     },
@@ -3048,10 +3029,6 @@ export function editorModelFromPersistentModel(
     topmenu: {
       formulaBarMode: 'content',
       formulaBarFocusCounter: 0,
-    },
-    preview: {
-      visible: false,
-      connected: false,
     },
     home: {
       visible: false,

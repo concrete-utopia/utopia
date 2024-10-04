@@ -4,14 +4,10 @@ import {
   canvasPoint,
   isInfinityRectangle,
   offsetPoint,
-  rectContainsPoint,
+  rectContainsPointInclusive,
 } from '../../../../core/shared/math-utils'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  getGlobalFramesOfGridCells,
-  type GridCellGlobalFrames,
-  type TargetGridCellData,
-} from './grid-helpers'
+import { type GridCellGlobalFrames, type TargetGridCellData } from './grid-helpers'
 import type { CanvasPoint } from '../../../../core/shared/math-utils'
 
 export type GridCellCoordinates = { row: number; column: number }
@@ -34,7 +30,7 @@ export function getGridCellUnderMouseFromMetadata(
   grid: ElementInstanceMetadata,
   point: CanvasPoint,
 ): TargetGridCellData | null {
-  const gridCellGlobalFrames = getGlobalFramesOfGridCells(grid)
+  const gridCellGlobalFrames = grid.specialSizeMeasurements.gridCellGlobalFrames
 
   if (gridCellGlobalFrames == null) {
     return null
@@ -50,7 +46,7 @@ function getGridCellUnderPoint(
 ): TargetGridCellData | null {
   for (let i = 0; i < gridCellGlobalFrames.length; i++) {
     for (let j = 0; j < gridCellGlobalFrames[i].length; j++) {
-      if (rectContainsPoint(gridCellGlobalFrames[i][j], point)) {
+      if (rectContainsPointInclusive(gridCellGlobalFrames[i][j], point)) {
         return {
           gridCellCoordinates: gridCellCoordinates(i + 1, j + 1),
           cellCanvasRectangle: gridCellGlobalFrames[i][j],

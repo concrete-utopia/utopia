@@ -60,6 +60,7 @@ import { getAllLockedElementPaths } from '../../../../core/shared/element-lockin
 import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
 import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks'
 import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
+import { handleGlobalMouseUp } from '../../../../templates/global-handlers'
 import { wait } from '../../../../core/model/performance-scripts'
 import { IS_TEST_ENVIRONMENT } from '../../../../common/env-vars'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
@@ -667,10 +668,14 @@ function useSelectOrLiveModeSelectAndHover(
         (!hadInteractionSessionThatWasCancelled || !draggedOverThreshold.current) &&
         (activeControl == null || activeControl.type === 'BOUNDING_AREA')
 
+      let editorActions: Array<EditorAction> = []
+
       if (event.type === 'mousedown') {
         didWeHandleMouseDown.current = true
       }
       if (event.type === 'mouseup') {
+        const handleMouseUpActions = handleGlobalMouseUp(event.nativeEvent)
+        editorActions.push(...handleMouseUpActions)
         // Clear the interaction session tracking flag
         interactionSessionHappened.current = false
         // didWeHandleMouseDown is used to avoid selecting when closing text editing
@@ -678,6 +683,7 @@ function useSelectOrLiveModeSelectAndHover(
         draggedOverThreshold.current = false
 
         if (!mouseUpSelectionAllowed) {
+          dispatch(editorActions)
           // We should skip this mouseup
           return
         }
@@ -689,6 +695,7 @@ function useSelectOrLiveModeSelectAndHover(
         !active ||
         !(isLeftClick || isRightClick)
       ) {
+        dispatch(editorActions)
         // Skip all of this handling if 'space' is pressed or a mousemove happened in an interaction, or the hook is not active
         return
       }
@@ -709,7 +716,6 @@ function useSelectOrLiveModeSelectAndHover(
 
       const isMultiselect = event.shiftKey
       const isDeselect = foundTarget == null && !isMultiselect
-      let editorActions: Array<EditorAction> = []
 
       if (foundTarget != null || isDeselect) {
         if (
@@ -805,7 +811,7 @@ function useSelectOrLiveModeSelectAndHover(
         dispatch(editorActions, 'canvas-fast-selection-hack') // first we dispatch only to update the editor state, but not run the expensive parts
         await new Promise((resolve) => requestAnimationFrame(resolve)) // the first requestAnimationFrame fires in the same animation frame we are in, so we need to wait one more
         await new Promise((resolve) => requestAnimationFrame(resolve)) // the second requestAnimationFrame is fired in the next actual animation frame, at which point it is safe to run the expensive parts
-        dispatch([runDOMWalker()], 'resume-canvas-fast-selection-hack') // then we dispatch to run the expensive parts
+        dispatch([runDOMWalker(null)], 'resume-canvas-fast-selection-hack') // then we dispatch to run the expensive parts
       } else {
         dispatch(editorActions)
       }
