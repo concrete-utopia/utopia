@@ -24,7 +24,6 @@ import type { Optic } from '../../../../core/shared/optics/optics'
 import { filtered, fromField } from '../../../../core/shared/optics/optic-creators'
 import { modify } from '../../../../core/shared/optics/optic-utilities'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import type { ElementsToRerender } from '../../../editor/store/editor-state'
 
 const ANCESTOR_INCOMPATIBLE_STRATEGIES = [DoNothingStrategyID]
 
@@ -127,13 +126,7 @@ export function ancestorMetaStrategy(
       return nextAncestorResult.map((s) => ({
         ...s,
         fitness: fitness(s),
-        apply: (...args) => {
-          const result = s.apply(...args)
-          return {
-            ...result,
-            elementsToRerender: mapEP(result.elementsToRerender, (er) => [...er, target]),
-          }
-        },
+        apply: appendElementsToRerenderToApplyResult(s.apply, [target]),
       }))
     } else {
       // Otherwise we should stop at this ancestor and return the strategies for this ancestor
@@ -154,13 +147,11 @@ export function ancestorMetaStrategy(
             id: `${s.id}_ANCESTOR_${level}`,
             name: applyLevelSuffix(s.name, level),
             fitness: fitness(s),
-            apply: (...args) => {
-              const result = s.apply(...args)
-              return {
-                ...result,
-                elementsToRerender: mapEP(result.elementsToRerender, (er) => [...er, target]),
-                commands: [
-                  ...result.commands,
+            apply: appendElementsToRerenderToApplyResult(
+              appendCommandsToApplyResult(
+                s.apply,
+                [highlightElementsCommand([parentPath]), setCursorCommand(CSSCursor.MovingMagic)],
+                [
                   wildcardPatch('mid-interaction', {
                     canvas: {
                       controls: {
@@ -168,31 +159,15 @@ export function ancestorMetaStrategy(
                       },
                     },
                   }),
-                  ...(result.status !== 'success'
-                    ? []
-                    : [
-                        highlightElementsCommand([parentPath]),
-                        setCursorCommand(CSSCursor.MovingMagic),
-                      ]),
                 ],
-              }
-            },
+              ),
+              [target],
+            ),
           }
         }),
       )
     }
   }
-}
-
-function mapEP(er: ElementPath[], f: (ep: ElementPath[]) => ElementPath[]) {
-  return f(er)
-}
-
-function mapER(er: ElementsToRerender, f: (ep: ElementPath[]) => ElementPath[]) {
-  if (er === 'rerender-all-elements') {
-    return er
-  }
-  return f(er)
 }
 
 type ApplyFn = CanvasStrategy['apply']
@@ -223,6 +198,27 @@ export function appendCommandsToApplyResult(
     } else {
       return result
     }
+  }
+}
+
+const strategyResultElementsToRerenderOptic: Optic<StrategyApplicationResult, ElementPath[]> =
+  filtered<StrategyApplicationResult>((result) => result.status === 'success').compose(
+    fromField('elementsToRerender'),
+  )
+
+export function appendElementsToRerenderToApplyResult(
+  applyFn: ApplyFn,
+  additionalElementsToRerender: ElementPath[],
+): ApplyFn {
+  return (strategyLifecycle: InteractionLifecycle) => {
+    const result = applyFn(strategyLifecycle)
+    return modify(
+      strategyResultElementsToRerenderOptic,
+      (toRerender) => {
+        return [...toRerender, ...additionalElementsToRerender]
+      },
+      result,
+    )
   }
 }
 
