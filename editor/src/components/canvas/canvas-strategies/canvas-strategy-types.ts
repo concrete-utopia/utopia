@@ -30,7 +30,6 @@ export interface CustomStrategyState {
 
 export type GridCustomStrategyState = {
   targetCellData: TargetGridCellData | null
-  originalRootCell: GridCellCoordinates | null
   currentRootCell: GridCellCoordinates | null
   metadataCacheForGrids: { [gridPath: string]: ElementInstanceMetadata }
 }
@@ -47,7 +46,6 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     action: null,
     grid: {
       targetCellData: null,
-      originalRootCell: null,
       currentRootCell: null,
       metadataCacheForGrids: {},
     },

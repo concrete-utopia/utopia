@@ -201,7 +201,6 @@ describe('interactionStart', () => {
           "grid": Object {
             "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
@@ -269,7 +268,6 @@ describe('interactionStart', () => {
           "grid": Object {
             "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
@@ -357,7 +355,6 @@ describe('interactionUpdate', () => {
           "grid": Object {
             "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
@@ -445,7 +442,6 @@ describe('interactionUpdate', () => {
           "grid": Object {
             "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
@@ -527,7 +523,6 @@ describe('interactionHardReset', () => {
           "grid": Object {
             "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
@@ -617,7 +612,6 @@ describe('interactionHardReset', () => {
           "grid": Object {
             "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
@@ -713,7 +707,6 @@ describe('interactionUpdate with user changed strategy', () => {
           "grid": Object {
             "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
@@ -804,7 +797,6 @@ describe('interactionUpdate with user changed strategy', () => {
           "grid": Object {
             "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
