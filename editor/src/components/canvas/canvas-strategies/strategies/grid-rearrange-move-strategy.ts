@@ -130,7 +130,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         ),
       ]
 
-      const { commands, patch } =
+      const { commands, patch, elementsToRerender } =
         strategyToApply.type === 'GRID_REARRANGE'
           ? getCommandsAndPatchForGridRearrange(
               canvasState,
@@ -155,7 +155,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
 
       return strategyApplicationResult(
         [...midInteractionCommands, ...onCompleteCommands, ...commands],
-        [parentGridPath],
+        elementsToRerender,
         patch,
       )
     },
@@ -167,9 +167,13 @@ function getCommandsAndPatchForGridRearrange(
   interactionData: DragInteractionData,
   customState: CustomStrategyState,
   selectedElement: ElementPath,
-): { commands: CanvasCommand[]; patch: CustomStrategyStatePatch } {
+): {
+  commands: CanvasCommand[]
+  patch: CustomStrategyStatePatch
+  elementsToRerender: ElementPath[]
+} {
   if (interactionData.drag == null) {
-    return { commands: [], patch: {} }
+    return { commands: [], patch: {}, elementsToRerender: [] }
   }
 
   const { commands, targetRootCell } = runGridRearrangeMove(
@@ -187,6 +191,7 @@ function getCommandsAndPatchForGridRearrange(
         currentRootCell: targetRootCell,
       },
     },
+    elementsToRerender: [EP.parentPath(selectedElement)],
   }
 }
 
@@ -199,9 +204,13 @@ function getCommandsAndPatchForReparent(
   targetElement: ElementPath,
   strategyLifecycle: InteractionLifecycle,
   gridFrame: CanvasRectangle,
-): { commands: CanvasCommand[]; patch: CustomStrategyStatePatch } {
+): {
+  commands: CanvasCommand[]
+  patch: CustomStrategyStatePatch
+  elementsToRerender: ElementPath[]
+} {
   if (interactionData.drag == null) {
-    return { commands: [], patch: {} }
+    return { commands: [], patch: {}, elementsToRerender: [] }
   }
 
   function applyReparent() {
@@ -275,6 +284,10 @@ function getCommandsAndPatchForReparent(
   return {
     commands: commands,
     patch: result.customStatePatch,
+    elementsToRerender: [
+      EP.parentPath(targetElement),
+      strategy.target.newParent.intendedParentPath,
+    ],
   }
 }
 

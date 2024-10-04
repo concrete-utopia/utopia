@@ -200,18 +200,18 @@ export function collectElementsToRerender(
       ? elementsToRerenderTransient
       : editorStore.patchedEditor.canvas.elementsToRerender
 
-  const fixedElementsToRerender = fixElementsToRerender(elementsToRerender)
   const fixedElementsWithChildGroups =
-    fixedElementsToRerender === 'rerender-all-elements'
-      ? fixedElementsToRerender
+    elementsToRerender === 'rerender-all-elements'
+      ? elementsToRerender
       : [
-          ...fixedElementsToRerender,
+          ...elementsToRerender,
           ...getChildGroupsForNonGroupParents(
             editorStore.patchedEditor.jsxMetadata,
-            fixedElementsToRerender,
+            elementsToRerender,
           ),
         ]
-  return fixedElementsWithChildGroups
+  const fixedElementsToRerender = fixElementsToRerender(fixedElementsWithChildGroups)
+  return fixedElementsToRerender
 }
 
 export class Editor {
