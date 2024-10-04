@@ -9,6 +9,7 @@ import { getProjectFileByFilePath } from '../../assets'
 import { renderTestEditorWithModel } from '../../canvas/ui-jsx.test-utils'
 import { updateFile } from '../actions/action-creators'
 import { StoryboardFilePath } from './editor-state'
+import type { ParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import type { FilePathMappings } from '../../../core/model/project-file-utils'
 
 // We have to prefix all of these with "mock" otherwise Jest won't allow us to use them below
@@ -27,6 +28,7 @@ jest.mock('../../../core/workers/common/worker-types', () => ({
     alreadyExistingUIDs: Set<string>,
     applySteganography: SteganographyMode,
     parserChunkCount: number,
+    parsingCacheOptions: ParseCacheOptions,
   ): Promise<Array<ParseOrPrintResult>> {
     mockParseStartedCount++
     const result = await jest
@@ -38,6 +40,7 @@ jest.mock('../../../core/workers/common/worker-types', () => ({
         alreadyExistingUIDs,
         applySteganography,
         parserChunkCount,
+        parsingCacheOptions,
       )
     mockLock2.resolve()
     await mockLock1

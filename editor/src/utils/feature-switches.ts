@@ -17,6 +17,9 @@ export type FeatureName =
   | 'Parser Concurrency'
   | 'Log Concurrency Timings'
   | 'Condensed Navigator Entries'
+  | 'Use Parsing Cache'
+  | 'Verbose Log Cache'
+  | 'Arbitrary Code Cache'
   | 'Canvas Fast Selection Hack'
   | 'Roll Your Own'
   | 'Tailwind'
@@ -37,6 +40,9 @@ export const AllFeatureNames: FeatureName[] = [
   'Parser Concurrency',
   'Log Concurrency Timings',
   'Condensed Navigator Entries',
+  'Use Parsing Cache',
+  'Verbose Log Cache',
+  'Arbitrary Code Cache',
   'Canvas Fast Selection Hack',
   'Roll Your Own',
   'Tailwind',
@@ -58,9 +64,18 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Log Concurrency Timings': false,
   Tailwind: false,
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
+  'Use Parsing Cache': !IS_TEST_ENVIRONMENT,
+  'Verbose Log Cache': false,
+  'Arbitrary Code Cache': false,
   'Canvas Fast Selection Hack': true,
   'Roll Your Own': false,
 }
+
+export const FeaturesHiddenFromMainSettingsPane: FeatureName[] = [
+  'Use Parsing Cache',
+  'Verbose Log Cache',
+  'Arbitrary Code Cache',
+]
 
 export const STEGANOGRAPHY_ENABLED = false
 

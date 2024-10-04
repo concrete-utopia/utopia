@@ -96,6 +96,7 @@ import {
   canMeasurePerformance,
   startPerformanceMeasure,
 } from '../../../core/performance/performance-utils'
+import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -341,6 +342,7 @@ function maybeRequestModelUpdate(
       existingUIDs,
       isSteganographyEnabled(),
       getParserChunkCount(),
+      getParseCacheOptions(),
     )
       .then((parseResult) => {
         const duration = endMeasure()
