@@ -200,7 +200,7 @@ export function collectElementsToRerender(
       ? elementsToRerenderTransient
       : editorStore.patchedEditor.canvas.elementsToRerender
 
-  const elementsToRerenderWithChildGroups =
+  const fixedElementsWithChildGroups =
     elementsToRerender === 'rerender-all-elements'
       ? elementsToRerender
       : [
@@ -210,8 +210,7 @@ export function collectElementsToRerender(
             elementsToRerender,
           ),
         ]
-
-  const fixedElementsToRerender = fixElementsToRerender(elementsToRerenderWithChildGroups)
+  const fixedElementsToRerender = fixElementsToRerender(fixedElementsWithChildGroups)
   return fixedElementsToRerender
 }
 

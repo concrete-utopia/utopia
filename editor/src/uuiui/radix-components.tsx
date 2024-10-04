@@ -53,6 +53,7 @@ type RegularDropdownMenuItem = BaseDropdownMenuItem & {
   label: React.ReactNode
   onSelect: () => void
   disabled?: boolean
+  badge?: string | null
 }
 
 export function regularDropdownMenuItem(
@@ -158,11 +159,24 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
                       : item.disabled
                       ? 'inherit'
                       : undefined,
+                    [`.item-badge-${item.id}`]: {
+                      color: 'inherit',
+                    },
                   },
                   cursor: item.disabled ? 'default' : undefined,
+                  [`.item-badge-${item.id}`]: {
+                    color: colorTheme.secondaryBlue.value,
+                  },
                 }}
               >
-                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 4,
+                    alignItems: 'center',
+                    width: '100%',
+                  }}
+                >
                   {when(
                     shouldShowCheckboxes,
                     <div style={{ opacity: item.checked ? 1 : 0 }}>
@@ -173,9 +187,13 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
                     shouldShowIcons,
                     <div style={{ opacity: item.icon == null ? 0 : 1 }}>{item.icon}</div>,
                   )}
-                  <span>{item.label}</span>
+                  <span style={{ flex: 1 }}>{item.label}</span>
+                  {when(
+                    item.badge != null,
+                    <span className={`item-badge-${item.id}`}>{item.badge}</span>,
+                  )}
                 </div>
-                <span style={{ opacity: 0.5 }}>{item.shortcut}</span>
+                {when(item.shortcut != null, <span style={{ opacity: 0.5 }}>{item.shortcut}</span>)}
               </RadixItemContainer>
             )
           })}
