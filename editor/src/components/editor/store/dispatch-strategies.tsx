@@ -58,7 +58,6 @@ import type { BuiltInDependencies } from '../../../core/es-modules/package-manag
 import { isInsertMode } from '../editor-modes'
 import { patchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 import { allowedToEditProject } from './collaborative-editing'
-import { optionalMap } from '../../../core/shared/optional-utils'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -95,23 +94,21 @@ export function interactionFinished(
       result.strategyState.currentStrategy,
     )
 
-    const strategyResult = optionalMap(
-      (s) =>
-        applyCanvasStrategy(
-          s.strategy,
-          canvasState,
-          interactionSession,
-          result.strategyState.customStrategyState,
-          'end-interaction',
-        ),
-      strategy,
-    )
-
+    const strategyResult: StrategyApplicationResult =
+      strategy != null
+        ? applyCanvasStrategy(
+            strategy.strategy,
+            canvasState,
+            interactionSession,
+            result.strategyState.customStrategyState,
+            'end-interaction',
+          )
+        : strategyApplicationResult([], [])
     const commandResult = foldAndApplyCommands(
       newEditorState,
       storedState.patchedEditor,
       [],
-      strategyResult?.commands ?? [],
+      strategyResult.commands,
       'end-interaction',
     )
 
@@ -123,7 +120,7 @@ export function interactionFinished(
         domMetadata: {},
         spyMetadata: {},
       },
-      strategyResult?.elementsToRerender ?? 'rerender-all-elements',
+      strategyResult,
     )
 
     return {
@@ -227,7 +224,7 @@ export function interactionHardReset(
         unpatchedEditorState: newEditorState,
         patchedEditorState: applyElementsToRerenderFromStrategyResult(
           commandResult.editorState,
-          strategyResult.elementsToRerender,
+          strategyResult,
         ),
         newStrategyState: newStrategyState,
       }
@@ -395,7 +392,7 @@ export function interactionStart(
         unpatchedEditorState: newEditorState,
         patchedEditorState: applyElementsToRerenderFromStrategyResult(
           commandResult.editorState,
-          strategyResult.elementsToRerender,
+          strategyResult,
         ),
         newStrategyState: newStrategyState,
       }
@@ -502,7 +499,7 @@ function handleUserChangedStrategy(
       unpatchedEditorState: newEditorState,
       patchedEditorState: applyElementsToRerenderFromStrategyResult(
         commandResult.editorState,
-        strategyResult.elementsToRerender,
+        strategyResult,
       ),
       newStrategyState: newStrategyState,
     }
@@ -588,7 +585,7 @@ function handleAccumulatingKeypresses(
         unpatchedEditorState: updatedEditorState,
         patchedEditorState: applyElementsToRerenderFromStrategyResult(
           commandResult.editorState,
-          strategyResult.elementsToRerender,
+          strategyResult,
         ),
         newStrategyState: newStrategyState,
       }
@@ -655,7 +652,7 @@ function handleUpdate(
       unpatchedEditorState: newEditorState,
       patchedEditorState: applyElementsToRerenderFromStrategyResult(
         commandResult.editorState,
-        strategyResult.elementsToRerender,
+        strategyResult,
       ),
       newStrategyState: newStrategyState,
     }

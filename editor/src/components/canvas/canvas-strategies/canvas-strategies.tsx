@@ -478,13 +478,13 @@ export function applyCanvasStrategy(
 
 export function applyElementsToRerenderFromStrategyResult(
   editorState: EditorState,
-  elementsToRerender: ElementsToRerender,
+  strategyResult: StrategyApplicationResult,
 ): EditorState {
   return {
     ...editorState,
     canvas: {
       ...editorState.canvas,
-      elementsToRerender: elementsToRerender,
+      elementsToRerender: strategyResult.elementsToRerender,
     },
   }
 }
