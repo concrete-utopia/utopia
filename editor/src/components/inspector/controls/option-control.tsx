@@ -118,7 +118,8 @@ export const OptionControl: React.FunctionComponent<
               },
             },
             '&:hover': {
-              opacity: props.controlStatus === 'disabled' ? undefined : 1,
+              opacity:
+                controlOptions.disabled || props.controlStatus === 'disabled' ? undefined : 1,
             },
             '.control-option-icon-component': {
               opacity: 0.7,
