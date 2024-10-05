@@ -37,6 +37,13 @@ import type {
   TextFile,
   ParsedJSONSuccess,
   ParsedJSONFailure,
+  ESCodeFile,
+  ESCodeFileOrigin,
+  ProjectFile,
+  ProjectFileType,
+  NodeModules,
+  ProjectContents,
+  NodeModuleFile,
 } from 'utopia-shared/src/types'
 import {
   imageFile,
@@ -76,6 +83,13 @@ export type {
   TextFile,
   ParsedJSONSuccess,
   ParsedJSONFailure,
+  ESCodeFile,
+  ESCodeFileOrigin,
+  ProjectFile,
+  ProjectFileType,
+  NodeModules,
+  ProjectContents,
+  NodeModuleFile,
 }
 export { imageFile, assetFile, RevisionsState, unparsed, EmptyExportsDetail }
 
@@ -545,15 +559,6 @@ interface EvalResult {
   }
 }
 
-export type ESCodeFileOrigin = 'PROJECT_CONTENTS' | 'NODE_MODULES'
-
-export interface ESCodeFile {
-  type: 'ES_CODE_FILE'
-  fileContents: string
-  origin: ESCodeFileOrigin
-  fullPath: string
-}
-
 export function esCodeFile(
   fileContents: string,
   origin: ESCodeFileOrigin,
@@ -615,16 +620,3 @@ export function directory(): Directory {
 export function isDirectory(projectFile: ProjectFile): projectFile is Directory {
   return projectFile.type === 'DIRECTORY'
 }
-
-export type ProjectFile = TextFile | ImageFile | Directory | AssetFile
-
-export type ProjectFileType = ProjectFile['type']
-
-export type NodeModuleFile = ESCodeFile | ESRemoteDependencyPlaceholder // TODO maybe ESCodeFile is too strict, eventually we want to have ProjectFile here
-
-export type NodeModules = {
-  [filepath: string]: NodeModuleFile
-}
-
-// Key here is the full filename.
-export type ProjectContents = { [filepath: string]: ProjectFile }
