@@ -10,7 +10,6 @@ import { useAtomsDevtools } from 'jotai-devtools'
 import '../utils/vite-hmr-config'
 import {
   getProjectID,
-  PERFORMANCE_MARKS_ALLOWED,
   PROBABLY_ELECTRON,
   PRODUCTION_ENV,
   requireElectron,
@@ -101,7 +100,7 @@ import * as EP from '../core/shared/element-path'
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import type { ElementPath } from '../core/shared/project-file-types'
-import { uniq, uniqBy } from '../core/shared/array-utils'
+import { createArrayWithLength, uniq, uniqBy } from '../core/shared/array-utils'
 import { updateUserDetailsWhenAuthenticated } from '../core/shared/github/helpers'
 import { DispatchContext } from '../components/editor/store/dispatch-context'
 import {
@@ -132,6 +131,8 @@ import {
   runDomSamplerGroups,
 } from '../components/canvas/dom-sampler'
 import { omitWithPredicate } from '../core/shared/object-utils'
+import { getParserWorkerCount } from '../core/workers/common/concurrency-utils'
+import { canMeasurePerformance } from '../core/performance/performance-utils'
 import { getChildGroupsForNonGroupParents } from '../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
 
 if (PROBABLY_ELECTRON) {
@@ -250,7 +251,7 @@ export class Editor {
       )
 
     const workers = new UtopiaTsWorkersImplementation(
-      new RealParserPrinterWorker(),
+      createArrayWithLength(getParserWorkerCount(), () => new RealParserPrinterWorker()),
       new RealLinterWorker(),
       watchdogWorker,
     )
@@ -442,10 +443,7 @@ export class Editor {
     Measure.logActions(dispatchedActions)
 
     const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
-    const PerformanceMarks =
-      (isFeatureEnabled('Debug – Performance Marks (Slow)') ||
-        isFeatureEnabled('Debug – Performance Marks (Fast)')) &&
-      PERFORMANCE_MARKS_ALLOWED
+    const PerformanceMarks = canMeasurePerformance()
 
     const runDispatch = () => {
       const oldEditorState = this.storedState

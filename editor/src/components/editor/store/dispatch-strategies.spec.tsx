@@ -105,7 +105,7 @@ function createEditorStore(
       },
     },
     workers: new UtopiaTsWorkersImplementation(
-      new FakeParserPrinterWorker(),
+      [new FakeParserPrinterWorker()],
       new FakeLinterWorker(),
       new FakeWatchdogWorker(),
     ),

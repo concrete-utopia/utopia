@@ -27,6 +27,7 @@ jest.mock('../../../core/workers/common/worker-types', () => ({
     filePathMappings: FilePathMappings,
     alreadyExistingUIDs: Set<string>,
     applySteganography: SteganographyMode,
+    parserChunkCount: number,
     parsingCacheOptions: ParseCacheOptions,
   ): Promise<Array<ParseOrPrintResult>> {
     mockParseStartedCount++
@@ -38,6 +39,7 @@ jest.mock('../../../core/workers/common/worker-types', () => ({
         filePathMappings,
         alreadyExistingUIDs,
         applySteganography,
+        parserChunkCount,
         parsingCacheOptions,
       )
     mockLock2.resolve()

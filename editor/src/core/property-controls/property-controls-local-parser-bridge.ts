@@ -7,6 +7,7 @@ import type { Imports } from '../shared/project-file-types'
 import { isParseFailure, isParseSuccess } from '../shared/project-file-types'
 import { emptySet } from '../shared/set-utils'
 import { isSteganographyEnabled } from '../shared/stegano-text'
+import { getParserChunkCount } from '../workers/common/concurrency-utils'
 import type { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { createParseFile, getParseResult } from '../workers/common/worker-types'
 import { ARBITRARY_CODE_FILE_NAME } from '../workers/common/worker-types'
@@ -51,6 +52,7 @@ async function getParseResultForUserStrings(
     [],
     emptySet(),
     isSteganographyEnabled(),
+    getParserChunkCount(),
     getParseCacheOptions(),
   )
 

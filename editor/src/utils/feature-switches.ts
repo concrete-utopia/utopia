@@ -14,6 +14,8 @@ export type FeatureName =
   | 'Project Thumbnail Generation'
   | 'Debug - Print UIDs'
   | 'Debug – Connections'
+  | 'Parallel Parsing'
+  | 'Log Parse Timings'
   | 'Condensed Navigator Entries'
   | 'Use Parsing Cache'
   | 'Verbose Log Cache'
@@ -35,6 +37,8 @@ export const AllFeatureNames: FeatureName[] = [
   'Project Thumbnail Generation',
   'Debug - Print UIDs',
   'Debug – Connections',
+  'Parallel Parsing',
+  'Log Parse Timings',
   'Condensed Navigator Entries',
   'Use Parsing Cache',
   'Verbose Log Cache',
@@ -56,6 +60,8 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Project Thumbnail Generation': false,
   'Debug - Print UIDs': false,
   'Debug – Connections': false,
+  'Parallel Parsing': !IS_TEST_ENVIRONMENT,
+  'Log Parse Timings': false,
   Tailwind: false,
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
   'Use Parsing Cache': !IS_TEST_ENVIRONMENT,
@@ -69,6 +75,8 @@ export const FeaturesHiddenFromMainSettingsPane: FeatureName[] = [
   'Use Parsing Cache',
   'Verbose Log Cache',
   'Arbitrary Code Cache',
+  'Parallel Parsing',
+  'Log Parse Timings',
 ]
 
 export const STEGANOGRAPHY_ENABLED = false
