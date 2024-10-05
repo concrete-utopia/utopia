@@ -1,5 +1,6 @@
 const Prettier = jest != null ? require('prettier') : require('prettier/standalone') // TODO split these files, standalone prettier is not working in unit tests
 import React from 'react'
+import pathParse from 'path-parse'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 applyUIDMonkeyPatch()
 import * as ReactDOMServer from 'react-dom/server'
@@ -62,11 +63,10 @@ export interface PartialCanvasProps {
 export const dumbResolveFn = (filenames: Array<string>): CurriedResolveFn => {
   return (_: ProjectContentTreeRoot) => (importOrigin: string, toImport: string) => {
     const result = resolveTestFiles(filenames, importOrigin, toImport)
-    if (isRight(result)) {
-      return result
-    } else {
-      throw new Error(result.value)
+    if (!isRight(result)) {
+      console.error(result.value)
     }
+    return result
   }
 }
 
@@ -78,7 +78,8 @@ function resolveTestFiles(
   let normalizedName = normalizeName(importOrigin, toImport)
   // Partly restoring what `normalizeName` strips away.
   if (toImport.startsWith('.')) {
-    normalizedName = path.normalize(`${importOrigin}/${normalizedName}`)
+    const parsedOrigin = pathParse(importOrigin)
+    normalizedName = path.normalize(`${parsedOrigin.dir}/${normalizedName}`)
   } else if (toImport.startsWith('/')) {
     normalizedName = `/${normalizedName}`
   }
