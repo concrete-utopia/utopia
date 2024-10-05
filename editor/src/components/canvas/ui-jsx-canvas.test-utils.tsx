@@ -65,6 +65,9 @@ export const dumbResolveFn = (filenames: Array<string>): CurriedResolveFn => {
     const result = resolveTestFiles(filenames, importOrigin, toImport)
     if (!isRight(result)) {
       console.error(result.value)
+      if (toImport.startsWith('.') || toImport.startsWith('/')) {
+        throw new Error(result.value)
+      }
     }
     return result
   }
