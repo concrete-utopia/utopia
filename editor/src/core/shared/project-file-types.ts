@@ -44,6 +44,18 @@ import type {
   NodeModules,
   ProjectContents,
   NodeModuleFile,
+  PackageType,
+  BaseTemplateName,
+  SvgTemplateName,
+  Dependencies,
+  id,
+  StaticElementPathPart,
+  ElementPathPart,
+  StaticElementPath,
+  ElementPath,
+  PropertyPathPart,
+  PropertyPath,
+  ElementPropertyPath,
 } from 'utopia-shared/src/types'
 import {
   imageFile,
@@ -51,6 +63,7 @@ import {
   RevisionsState,
   unparsed,
   EmptyExportsDetail,
+  PinType,
 } from 'utopia-shared/src/types'
 
 export type {
@@ -90,56 +103,20 @@ export type {
   NodeModules,
   ProjectContents,
   NodeModuleFile,
+  PackageType,
+  BaseTemplateName,
+  SvgTemplateName,
+  Dependencies,
+  id,
+  StaticElementPathPart,
+  ElementPathPart,
+  StaticElementPath,
+  ElementPath,
+  PropertyPathPart,
+  PropertyPath,
+  ElementPropertyPath,
 }
-export { imageFile, assetFile, RevisionsState, unparsed, EmptyExportsDetail }
-
-export type id = string
-enum StaticModifier {}
-
-export type StaticElementPathPart = StaticModifier & Array<id>
-export type ElementPathPart = Array<id> | StaticElementPathPart
-
-export interface StaticElementPath {
-  type: 'elementpath'
-  parts: Array<StaticElementPathPart>
-}
-
-export interface ElementPath {
-  type: 'elementpath'
-  parts: Array<ElementPathPart>
-}
-
-export type PropertyPathPart = string | number
-
-export type PropertyPath<T extends Array<PropertyPathPart> = Array<PropertyPathPart>> = {
-  propertyElements: T
-}
-
-export type PackageType = 'base' | 'svg' | 'app'
-export type BaseTemplateName =
-  | 'output'
-  | 'view'
-  | 'multi-generator'
-  | 'placeholder'
-  | 'image'
-  | 'text'
-  | 'rectangle'
-  | 'ellipse'
-  | 'custom-code'
-  | 'code-component'
-export type SvgTemplateName = 'arc' | 'circle' | 'ellipse' | 'path' | 'polygon' | 'rect'
-
-export type ElementPropertyPath = {
-  elementPath: ElementPath
-  propertyPath: PropertyPath
-}
-
-export type Dependencies = { [key: string]: ElementPropertyPath }
-
-export enum PinType {
-  Absolute = 'absolute',
-  Relative = 'relative',
-}
+export { imageFile, assetFile, RevisionsState, unparsed, EmptyExportsDetail, PinType }
 
 export interface SceneMetadata {
   uid: string
