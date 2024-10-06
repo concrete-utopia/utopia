@@ -107,100 +107,110 @@ export const TestMenu = React.memo(() => {
         bottom: 6,
         boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
         borderRadius: '15px',
-        padding: 8,
-        width: 64,
+
         alignItems: 'center',
         justifyContent: 'center',
         background: colorTheme.bg2.value,
-        overflow: 'scroll',
+        overflow: 'hidden',
         color: '#95D4FF',
         fontSize: 6,
         fontWeight: 600,
         pointerEvents: 'initial',
+        padding: 8,
       }}
       css={{
-        height: 30,
-        '&:hover': {
+        '&:hover > div': {
           height: 120,
+          overflow: 'scroll',
         },
-        transition: 'height 0.1s ease-in-out',
       }}
     >
-      <div style={{ fontWeight: 800, textAlign: 'center', width: '100%' }}>DEVELOPMENT</div>
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8,
-          width: '100%',
+          width: 48,
+        }}
+        css={{
+          height: 14,
+          overflow: 'visible',
+          transition: 'all 0.1s ease-in-out',
         }}
       >
-        {perfTestTriggersEnabled ? (
-          <React.Fragment>
+        <div style={{ fontWeight: 800, textAlign: 'center', width: '100%' }}>DEVELOPMENT</div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            width: '100%',
+          }}
+        >
+          {perfTestTriggersEnabled ? (
+            <React.Fragment>
+              <Tile style={{ cursor: 'pointer' }} size='large'>
+                <a onClick={printEditorState} title='Print Editor State'>
+                  PPP
+                </a>
+              </Tile>
+              <Tile style={{ cursor: 'pointer' }} size='large'>
+                <a onClick={printElementPathTree} title='Print Element Path Tree'>
+                  PT
+                </a>
+              </Tile>
+              <Tile style={{ cursor: 'pointer' }} size='large'>
+                <a onClick={onTriggerScrollTest} title='Performance Scroll'>
+                  P S
+                </a>
+              </Tile>
+              <Tile style={{ cursor: 'pointer' }} size='large'>
+                <a onClick={onTriggerRegularHighlightTest} title='Performance Regular Highlight'>
+                  PRH
+                </a>
+              </Tile>
+              <Tile style={{ cursor: 'pointer' }} size='large'>
+                <a
+                  onClick={onTriggerAllElementsHighlightTest}
+                  title='Performance All Elements Highlight'
+                >
+                  PAH
+                </a>
+              </Tile>
+              <Tile style={{ cursor: 'pointer' }} size='large'>
+                <a onClick={onTriggerSelectionTest} title='Performance Elements'>
+                  P E
+                </a>
+              </Tile>
+              <Tile style={{ cursor: 'pointer' }} size='large'>
+                <a onClick={onTriggerAbsoluteMoveLargeTest} title='Performance Absolute Move Large'>
+                  PAML
+                </a>
+              </Tile>
+              <Tile style={{ cursor: 'pointer' }} size='large'>
+                <a onClick={onTriggerAbsoluteMoveSmallTest} title='Performance Absolute Move Small'>
+                  PAMS
+                </a>
+              </Tile>
+              <Tile style={{ cursor: 'pointer' }} size='large'>
+                <a onClick={onTriggerSelectionChangeTest} title='Performance Selection Change'>
+                  PSC
+                </a>
+              </Tile>
+              <Tile style={{ cursor: 'pointer' }} size='large'>
+                <a onClick={onRequestVSCodeStatus} title='VS Code Status'>
+                  VSC
+                </a>
+              </Tile>
+            </React.Fragment>
+          ) : null}
+          {reParseProjectButtonEnabled ? (
             <Tile style={{ cursor: 'pointer' }} size='large'>
-              <a onClick={printEditorState} title='Print Editor State'>
-                PPP
+              <a onClick={onReparseClick} title='Reparse Project'>
+                R
               </a>
             </Tile>
-            <Tile style={{ cursor: 'pointer' }} size='large'>
-              <a onClick={printElementPathTree} title='Print Element Path Tree'>
-                PT
-              </a>
-            </Tile>
-            <Tile style={{ cursor: 'pointer' }} size='large'>
-              <a onClick={onTriggerScrollTest} title='Performance Scroll'>
-                P S
-              </a>
-            </Tile>
-            <Tile style={{ cursor: 'pointer' }} size='large'>
-              <a onClick={onTriggerRegularHighlightTest} title='Performance Regular Highlight'>
-                PRH
-              </a>
-            </Tile>
-            <Tile style={{ cursor: 'pointer' }} size='large'>
-              <a
-                onClick={onTriggerAllElementsHighlightTest}
-                title='Performance All Elements Highlight'
-              >
-                PAH
-              </a>
-            </Tile>
-            <Tile style={{ cursor: 'pointer' }} size='large'>
-              <a onClick={onTriggerSelectionTest} title='Performance Elements'>
-                P E
-              </a>
-            </Tile>
-            <Tile style={{ cursor: 'pointer' }} size='large'>
-              <a onClick={onTriggerAbsoluteMoveLargeTest} title='Performance Absolute Move Large'>
-                PAML
-              </a>
-            </Tile>
-            <Tile style={{ cursor: 'pointer' }} size='large'>
-              <a onClick={onTriggerAbsoluteMoveSmallTest} title='Performance Absolute Move Small'>
-                PAMS
-              </a>
-            </Tile>
-            <Tile style={{ cursor: 'pointer' }} size='large'>
-              <a onClick={onTriggerSelectionChangeTest} title='Performance Selection Change'>
-                PSC
-              </a>
-            </Tile>
-            <Tile style={{ cursor: 'pointer' }} size='large'>
-              <a onClick={onRequestVSCodeStatus} title='VS Code Status'>
-                VSC
-              </a>
-            </Tile>
-          </React.Fragment>
-        ) : null}
-        {reParseProjectButtonEnabled ? (
-          <Tile style={{ cursor: 'pointer' }} size='large'>
-            <a onClick={onReparseClick} title='Reparse Project'>
-              R
-            </a>
-          </Tile>
-        ) : null}
+          ) : null}
+        </div>
       </div>
     </div>
   )
