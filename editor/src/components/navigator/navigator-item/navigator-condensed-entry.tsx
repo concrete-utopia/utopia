@@ -20,7 +20,7 @@ import { LayoutIcon } from './layout-icon'
 import { DataReferenceCartoucheControl } from '../../inspector/sections/component-section/data-reference-cartouche'
 import {
   NavigatorRowClickableWrapper,
-  useGetNavigatorMouseDownActions,
+  useGetNavigatorClickActions,
 } from './navigator-item-clickable-wrapper'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { useNavigatorSelectionBoundsForEntry } from './use-navigator-selection-bounds-for-entry'
@@ -341,18 +341,18 @@ const CondensedEntryItemContent = React.memo(
       ])
     }, [props.entry, dispatch, highlightedViews])
 
-    const getMouseDownActions = useGetNavigatorMouseDownActions(
+    const getClickActions = useGetNavigatorClickActions(
       props.entry.elementPath,
       props.selected,
       condensedNavigatorRow([props.entry], 'leaf', props.indentation),
     )
 
-    const onMouseDown = React.useCallback(
+    const onClick = React.useCallback(
       (e: React.MouseEvent) => {
         e.stopPropagation()
-        dispatch(getMouseDownActions(e))
+        dispatch(getClickActions(e))
       },
-      [dispatch, getMouseDownActions],
+      [dispatch, getClickActions],
     )
 
     return (
@@ -374,7 +374,7 @@ const CondensedEntryItemContent = React.memo(
         }}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
-        onMouseDown={onMouseDown}
+        onClick={onClick}
       >
         <div
           style={{

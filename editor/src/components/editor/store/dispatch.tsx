@@ -1,4 +1,3 @@
-import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { getParseResult } from '../../../core/workers/common/worker-types'
 import { runLocalCanvasAction } from '../../../templates/editor-canvas'
@@ -59,7 +58,6 @@ import {
   getProjectChanges,
   sendVSCodeChanges,
 } from './vscode-changes'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { handleStrategies, updatePostActionState } from './dispatch-strategies'
 
 import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
@@ -89,6 +87,16 @@ import {
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
 import { getFilePathMappings } from '../../../core/model/project-file-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import {
+  getParserChunkCount,
+  getParserWorkerCount,
+  isConcurrencyLoggingEnabled,
+} from '../../../core/workers/common/concurrency-utils'
+import {
+  canMeasurePerformance,
+  startPerformanceMeasure,
+} from '../../../core/performance/performance-utils'
+import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -326,14 +334,27 @@ function maybeRequestModelUpdate(
 
   // Should anything need to be sent across, do so here.
   if (filesToUpdate.length > 0) {
+    const { endMeasure } = startPerformanceMeasure('file-parse', { uniqueId: true })
     const parseFinished = getParseResult(
       workers,
       filesToUpdate,
       getFilePathMappings(projectContents),
       existingUIDs,
       isSteganographyEnabled(),
+      getParserChunkCount(),
+      getParseCacheOptions(),
     )
       .then((parseResult) => {
+        const duration = endMeasure()
+        if (isConcurrencyLoggingEnabled() && filesToUpdate.length > 1) {
+          console.info(
+            `parse finished for ${
+              filesToUpdate.length
+            } files, using ${getParserChunkCount()} chunks and ${getParserWorkerCount()} workers, in ${duration.toFixed(
+              2,
+            )}ms`,
+          )
+        }
         const updates = parseResult.map((fileResult) => {
           return parseResultToWorkerUpdates(fileResult)
         })
@@ -424,7 +445,7 @@ function reducerToSplitToActionGroups(
       [[]],
     )
     const wrappedTransientActionGroups = transientActionGroups.map((actionGroup) => [
-      EditorActions.transientActions(actionGroup),
+      EditorActions.transientActions(actionGroup, currentAction.elementsToRerender),
     ])
     return [...actionGroups, ...wrappedTransientActionGroups]
   } else if (i > 0 && actions[i - 1].action === 'CLEAR_INTERACTION_SESSION') {
@@ -808,10 +829,7 @@ function editorDispatchInner(
 ): DispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions), dispatchedActions)
 
-  const MeasureDispatchTime =
-    (isFeatureEnabled('Debug – Performance Marks (Fast)') ||
-      isFeatureEnabled('Debug – Performance Marks (Slow)')) &&
-    PERFORMANCE_MARKS_ALLOWED
+  const MeasureDispatchTime = canMeasurePerformance()
 
   if (MeasureDispatchTime) {
     window.performance.mark('dispatch_begin')

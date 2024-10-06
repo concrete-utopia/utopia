@@ -165,15 +165,16 @@ export function applyGridReparent(
           return emptyStrategyApplicationResult
         }
 
-        const { metadata: grid, foundIn } = getMetadataWithGridCellBounds(
-          newParent.intendedParentPath,
-          canvasState.startingMetadata,
-          interactionSession.latestMetadata,
-          customStrategyState,
-        )
+        const { metadata: grid, customStrategyState: updatedCustomState } =
+          getMetadataWithGridCellBounds(
+            newParent.intendedParentPath,
+            canvasState.startingMetadata,
+            interactionSession.latestMetadata,
+            customStrategyState,
+          )
 
         if (grid == null) {
-          return emptyStrategyApplicationResult
+          return strategyApplicationResult([], [newParent.intendedParentPath])
         }
 
         const allowedToReparent = selectedElements.every((selectedElement) => {
@@ -199,7 +200,7 @@ export function applyGridReparent(
           customStrategyState.grid.targetCellData
 
         if (targetCellData == null) {
-          return emptyStrategyApplicationResult
+          return strategyApplicationResult([], [newParent.intendedParentPath])
         }
         const outcomes = mapDropNulls(
           (selectedElement) =>
@@ -239,28 +240,18 @@ export function applyGridReparent(
           ...newPaths,
           ...newPaths.map(EP.parentPath),
           ...selectedElements.map(EP.parentPath),
+          newParent.intendedParentPath,
         ])
 
-        const customStrategyStatePatch =
-          foundIn === 'latestMetadata'
-            ? {
-                elementsToRerender: elementsToRerender,
-                grid: {
-                  ...customStrategyState.grid,
-                  targetCellData: targetCellData,
-                  metadataCacheForGrids: {
-                    ...customStrategyState.grid.metadataCacheForGrids,
-                    [EP.toString(newParent.intendedParentPath)]: grid,
-                  },
-                },
-              }
-            : {
-                elementsToRerender: elementsToRerender,
-                grid: {
-                  ...customStrategyState.grid,
-                  targetCellData: targetCellData,
-                },
-              }
+        const baseCustomState = updatedCustomState ?? customStrategyState
+        const customStrategyStatePatch = {
+          ...baseCustomState,
+          elementsToRerender: elementsToRerender,
+          grid: {
+            ...baseCustomState.grid,
+            targetCellData: targetCellData,
+          },
+        }
 
         return strategyApplicationResult(
           [

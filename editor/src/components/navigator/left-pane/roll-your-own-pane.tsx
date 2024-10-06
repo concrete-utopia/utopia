@@ -6,8 +6,13 @@ import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { atomWithStorage } from 'jotai/utils'
 import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 import { Ellipsis } from './github-pane/github-file-changes-list'
+import { deleteParseCache } from '../../../core/shared/parse-cache-utils'
+import { useRefEditorState } from '../../../components/editor/store/store-hook'
+import type { FeatureName } from '../../../utils/feature-switches'
+import { isFeatureEnabled, setFeatureEnabled } from '../../../utils/feature-switches'
+import { getParseCacheVersion } from '../../../core/workers/parser-printer/parse-cache-utils.worker'
 
-const sections = ['Grid'] as const
+const sections = ['Grid', 'Performance'] as const
 type Section = (typeof sections)[number]
 
 type GridFeatures = {
@@ -23,15 +28,32 @@ type GridFeatures = {
   activeGridBackground: string
 }
 
+type PerformanceFeatures = {
+  parseCache: boolean
+  parallelParsing: boolean
+  cacheArbitraryCode: boolean
+  verboseLogCache: boolean
+  logParseTimings: boolean
+}
+
 type RollYourOwnFeaturesTypes = {
   Grid: GridFeatures
+  Performance: PerformanceFeatures
 }
 
 type RollYourOwnFeatures = {
   [K in Section]: RollYourOwnFeaturesTypes[K]
 }
 
-const defaultRollYourOwnFeatures: RollYourOwnFeatures = {
+const featureToFeatureFlagMap: Record<keyof Partial<PerformanceFeatures>, FeatureName> = {
+  parseCache: 'Use Parsing Cache',
+  verboseLogCache: 'Verbose Log Cache',
+  cacheArbitraryCode: 'Arbitrary Code Cache',
+  parallelParsing: 'Parallel Parsing',
+  logParseTimings: 'Log Parse Timings',
+}
+
+const defaultRollYourOwnFeatures: () => RollYourOwnFeatures = () => ({
   Grid: {
     dragVerbatim: false,
     dragMagnetic: false,
@@ -44,20 +66,42 @@ const defaultRollYourOwnFeatures: RollYourOwnFeatures = {
     inactiveGridColor: '#00000033',
     shadowOpacity: 0.1,
   },
-}
+  Performance: {
+    parseCache: getFeatureFlagValue('parseCache'),
+    parallelParsing: getFeatureFlagValue('parallelParsing'),
+    cacheArbitraryCode: getFeatureFlagValue('cacheArbitraryCode'),
+    logParseTimings: getFeatureFlagValue('logParseTimings'),
+    verboseLogCache: getFeatureFlagValue('verboseLogCache'),
+  },
+})
 
 const ROLL_YOUR_OWN_FEATURES_KEY: string = 'roll-your-own-features'
 
-const rollYourOwnFeaturesAtom = IS_TEST_ENVIRONMENT
-  ? atom(defaultRollYourOwnFeatures)
-  : atomWithStorage(ROLL_YOUR_OWN_FEATURES_KEY, defaultRollYourOwnFeatures)
+let rollYourOwnFeaturesAtom:
+  | ReturnType<typeof atom<RollYourOwnFeatures>>
+  | ReturnType<typeof atomWithStorage<RollYourOwnFeatures>>
+  | null = null
+
+function getRollYourOwnFeaturesAtom() {
+  if (rollYourOwnFeaturesAtom == null) {
+    rollYourOwnFeaturesAtom = IS_TEST_ENVIRONMENT
+      ? atom(defaultRollYourOwnFeatures())
+      : atomWithStorage(ROLL_YOUR_OWN_FEATURES_KEY, defaultRollYourOwnFeatures())
+  }
+  return rollYourOwnFeaturesAtom
+}
 
 export function useRollYourOwnFeatures() {
-  const [features] = useAtom(rollYourOwnFeaturesAtom)
+  const [features] = useAtom(getRollYourOwnFeaturesAtom())
+  const defaultFeatures = defaultRollYourOwnFeatures()
   const merged: RollYourOwnFeatures = {
     Grid: {
-      ...defaultRollYourOwnFeatures.Grid,
+      ...defaultFeatures.Grid,
       ...features.Grid,
+    },
+    Performance: {
+      ...defaultFeatures.Performance,
+      ...syncWithFeatureFlags(features.Performance),
     },
   }
   return merged
@@ -115,6 +159,7 @@ export const RollYourOwnFeaturesPane = React.memo(() => {
         </FlexRow>
 
         {when(currentSection === 'Grid', <GridSection />)}
+        {when(currentSection === 'Performance', <PerformanceSection />)}
       </Section>
     </FlexColumn>
   )
@@ -134,43 +179,98 @@ function getNewFeatureValueOrNull(currentValue: any, e: React.ChangeEvent<HTMLIn
   }
 }
 
+/** GRID SECTION */
 const GridSection = React.memo(() => {
-  const features = useRollYourOwnFeatures()
-  const setFeatures = useSetAtom(rollYourOwnFeaturesAtom)
+  return (
+    <FlexColumn style={{ gap: 10 }}>
+      <ResetDefaultsButton subsection='Grid' />
+      <SimpleFeatureControls subsection='Grid' />
+    </FlexColumn>
+  )
+})
+GridSection.displayName = 'GridSection'
 
+/** PERFORMANCE SECTION */
+const PerformanceSection = React.memo(() => {
+  const workersRef = useRefEditorState((store) => {
+    return store.workers
+  })
+  const handleDeleteParseCache = React.useCallback(() => {
+    deleteParseCache(workersRef.current)
+  }, [workersRef])
+  return (
+    <FlexColumn style={{ gap: 10 }}>
+      <SimpleFeatureControls subsection='Performance' />
+      <UIGridRow padded variant='<--1fr--><--1fr-->' key={`feat-cache-version`}>
+        <Ellipsis title='Cache Version'>Cache Version</Ellipsis>
+        <Ellipsis title={getParseCacheVersion()}>{getParseCacheVersion()}</Ellipsis>
+      </UIGridRow>
+      <UIGridRow padded variant='<-------------1fr------------->'>
+        <Button highlight spotlight onClick={handleDeleteParseCache}>
+          Clear cache
+        </Button>
+      </UIGridRow>
+    </FlexColumn>
+  )
+})
+PerformanceSection.displayName = 'PerformanceSection'
+
+/** GENERAL COMPONENTS */
+
+const ResetDefaultsButton = React.memo(({ subsection }: { subsection: Section }) => {
+  const setFeatures = useSetAtom(getRollYourOwnFeaturesAtom())
+  const defaultFeatures = defaultRollYourOwnFeatures()
+  const resetDefaults = React.useCallback(() => {
+    setFeatures((prevFeatures) => ({
+      ...prevFeatures,
+      [subsection]: defaultFeatures[subsection],
+    }))
+  }, [defaultFeatures, setFeatures, subsection])
+  return (
+    <UIGridRow padded variant='<-------------1fr------------->'>
+      <Button highlight spotlight onClick={resetDefaults}>
+        Reset defaults
+      </Button>
+    </UIGridRow>
+  )
+})
+ResetDefaultsButton.displayName = 'ResetDefaultsButton'
+
+const SimpleFeatureControls = React.memo(({ subsection }: { subsection: Section }) => {
+  const features = useRollYourOwnFeatures()
+  const setFeatures = useSetAtom(getRollYourOwnFeaturesAtom())
   const onChange = React.useCallback(
-    (feat: keyof GridFeatures) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = getNewFeatureValueOrNull(features.Grid[feat], e)
+    (feat: keyof RollYourOwnFeaturesTypes[Section]) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = getNewFeatureValueOrNull(features[subsection][feat], e)
       if (newValue != null) {
         setFeatures({
           ...features,
-          Grid: {
-            ...features.Grid,
+          [subsection]: {
+            ...features[subsection],
             [feat]: newValue,
           },
         })
+        if (typeof newValue === 'boolean') {
+          syncFeatureFlagIfExists(feat, newValue)
+        }
       }
     },
-    [features, setFeatures],
+    [features, setFeatures, subsection],
   )
-
-  const resetDefaults = React.useCallback(() => {
-    setFeatures(defaultRollYourOwnFeatures)
-  }, [setFeatures])
-
+  const defaultFeatures = defaultRollYourOwnFeatures()
   return (
-    <FlexColumn style={{ gap: 10 }}>
-      <UIGridRow padded variant='<-------------1fr------------->'>
-        <Button highlight spotlight onClick={resetDefaults}>
-          Reset defaults
-        </Button>
-      </UIGridRow>
-      {Object.keys(defaultRollYourOwnFeatures.Grid).map((key) => {
-        const feat = key as keyof GridFeatures
-        const value = features.Grid[feat] ?? defaultRollYourOwnFeatures.Grid[feat]
+    <React.Fragment>
+      {Object.keys(defaultFeatures[subsection]).map((key) => {
+        const feat = key as keyof RollYourOwnFeaturesTypes[Section]
+        const featName = Object.keys(featureToFeatureFlagMap).includes(
+          feat as keyof typeof featureToFeatureFlagMap,
+        )
+          ? featureToFeatureFlagMap[feat as keyof typeof featureToFeatureFlagMap]
+          : feat
+        const value = features[subsection][feat] ?? defaultFeatures[subsection][feat]
         return (
           <UIGridRow padded variant='<----------1fr---------><-auto->' key={`feat-${feat}`}>
-            <Ellipsis title={feat}>{feat}</Ellipsis>
+            <Ellipsis title={featName}>{featName}</Ellipsis>
             {typeof value === 'boolean' ? (
               <input type='checkbox' checked={value} onChange={onChange(feat)} />
             ) : typeof value === 'string' ? (
@@ -181,7 +281,34 @@ const GridSection = React.memo(() => {
           </UIGridRow>
         )
       })}
-    </FlexColumn>
+    </React.Fragment>
   )
 })
-GridSection.displayName = 'GridSection'
+SimpleFeatureControls.displayName = 'SimpleFeatureControls'
+
+function getFeatureFlagValue(featureName: keyof typeof featureToFeatureFlagMap): boolean {
+  const featureFlag = featureToFeatureFlagMap[featureName]
+  return isFeatureEnabled(featureFlag)
+}
+
+function syncFeatureFlagIfExists(
+  featureName: keyof typeof featureToFeatureFlagMap,
+  value: boolean,
+) {
+  const featureFlag = featureToFeatureFlagMap[featureName]
+  if (featureFlag == null) {
+    return
+  }
+  setFeatureEnabled(featureFlag, value)
+}
+
+function syncWithFeatureFlags(features: Record<string, any>) {
+  return Object.fromEntries(
+    Object.entries(features).map(([key, value]) => {
+      if (typeof value === 'boolean' && key in featureToFeatureFlagMap) {
+        return [key, getFeatureFlagValue(key as keyof typeof featureToFeatureFlagMap)]
+      }
+      return [key, value]
+    }),
+  )
+}

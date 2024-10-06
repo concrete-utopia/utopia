@@ -443,7 +443,7 @@ export const longhandShorthandEventHandler = (
     }
 
     if (isTransient) {
-      dispatch([transientActions(actions)])
+      dispatch([transientActions(actions, selectedViewsRef.current)])
     } else {
       dispatch(actions)
     }

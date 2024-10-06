@@ -137,13 +137,11 @@ export const RemixNavigationBar = React.memo(() => {
     <FlexRow
       style={{
         gap: 10,
-        alignSelf: 'stretch',
-        alignItems: 'center',
-        justifyContent: 'center',
         pointerEvents: 'initial',
         userSelect: 'none',
         padding: '0 8px',
         height: 32,
+        width: '100%',
       }}
       onMouseDown={stopPropagation}
       onClick={stopPropagation}
@@ -201,8 +199,10 @@ export const RemixNavigationBar = React.memo(() => {
           padding: '2px 2px 2px 6px',
           fontSize: 11,
           minWidth: 150,
+          flexGrow: 1,
           height: 20,
           alignItems: 'center',
+          justifyContent: 'space-between',
         }}
       >
         <StringInput
