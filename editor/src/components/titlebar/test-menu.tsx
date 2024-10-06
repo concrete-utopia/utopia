@@ -107,61 +107,101 @@ export const TestMenu = React.memo(() => {
         bottom: 6,
         boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
         borderRadius: '15px',
-        paddingLeft: 8,
-        paddingRight: 8,
-        height: 25,
-        width: 84,
-        display: 'flex',
+        padding: 8,
+        width: 64,
         alignItems: 'center',
+        justifyContent: 'center',
         background: colorTheme.bg2.value,
         overflow: 'scroll',
         color: '#95D4FF',
-        fontSize: 8,
+        fontSize: 6,
         fontWeight: 600,
-        gap: 8,
         pointerEvents: 'initial',
       }}
+      css={{
+        height: 30,
+        '&:hover': {
+          height: 120,
+        },
+        transition: 'height 0.1s ease-in-out',
+      }}
     >
-      <span style={{ fontWeight: 800 }}>DEVELOPMENT</span>
-      {perfTestTriggersEnabled ? (
-        <React.Fragment>
-          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
-            <a onClick={printEditorState}>PPP</a>
+      <div style={{ fontWeight: 800, textAlign: 'center', width: '100%' }}>DEVELOPMENT</div>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          width: '100%',
+        }}
+      >
+        {perfTestTriggersEnabled ? (
+          <React.Fragment>
+            <Tile style={{ cursor: 'pointer' }} size='large'>
+              <a onClick={printEditorState} title='Print Editor State'>
+                PPP
+              </a>
+            </Tile>
+            <Tile style={{ cursor: 'pointer' }} size='large'>
+              <a onClick={printElementPathTree} title='Print Element Path Tree'>
+                PT
+              </a>
+            </Tile>
+            <Tile style={{ cursor: 'pointer' }} size='large'>
+              <a onClick={onTriggerScrollTest} title='Performance Scroll'>
+                P S
+              </a>
+            </Tile>
+            <Tile style={{ cursor: 'pointer' }} size='large'>
+              <a onClick={onTriggerRegularHighlightTest} title='Performance Regular Highlight'>
+                PRH
+              </a>
+            </Tile>
+            <Tile style={{ cursor: 'pointer' }} size='large'>
+              <a
+                onClick={onTriggerAllElementsHighlightTest}
+                title='Performance All Elements Highlight'
+              >
+                PAH
+              </a>
+            </Tile>
+            <Tile style={{ cursor: 'pointer' }} size='large'>
+              <a onClick={onTriggerSelectionTest} title='Performance Elements'>
+                P E
+              </a>
+            </Tile>
+            <Tile style={{ cursor: 'pointer' }} size='large'>
+              <a onClick={onTriggerAbsoluteMoveLargeTest} title='Performance Absolute Move Large'>
+                PAML
+              </a>
+            </Tile>
+            <Tile style={{ cursor: 'pointer' }} size='large'>
+              <a onClick={onTriggerAbsoluteMoveSmallTest} title='Performance Absolute Move Small'>
+                PAMS
+              </a>
+            </Tile>
+            <Tile style={{ cursor: 'pointer' }} size='large'>
+              <a onClick={onTriggerSelectionChangeTest} title='Performance Selection Change'>
+                PSC
+              </a>
+            </Tile>
+            <Tile style={{ cursor: 'pointer' }} size='large'>
+              <a onClick={onRequestVSCodeStatus} title='VS Code Status'>
+                VSC
+              </a>
+            </Tile>
+          </React.Fragment>
+        ) : null}
+        {reParseProjectButtonEnabled ? (
+          <Tile style={{ cursor: 'pointer' }} size='large'>
+            <a onClick={onReparseClick} title='Reparse Project'>
+              R
+            </a>
           </Tile>
-          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
-            <a onClick={printElementPathTree}>PT</a>
-          </Tile>
-          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
-            <a onClick={onTriggerScrollTest}>P S</a>
-          </Tile>
-          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
-            <a onClick={onTriggerRegularHighlightTest}>PRH</a>
-          </Tile>
-          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
-            <a onClick={onTriggerAllElementsHighlightTest}>PAH</a>
-          </Tile>
-          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
-            <a onClick={onTriggerSelectionTest}>P E</a>
-          </Tile>
-          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
-            <a onClick={onTriggerAbsoluteMoveLargeTest}>PAML</a>
-          </Tile>
-          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
-            <a onClick={onTriggerAbsoluteMoveSmallTest}>PAMS</a>
-          </Tile>
-          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
-            <a onClick={onTriggerSelectionChangeTest}>PSC</a>
-          </Tile>
-          <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
-            <a onClick={onRequestVSCodeStatus}>VSC</a>
-          </Tile>
-        </React.Fragment>
-      ) : null}
-      {reParseProjectButtonEnabled ? (
-        <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
-          <a onClick={onReparseClick}>R</a>
-        </Tile>
-      ) : null}
+        ) : null}
+      </div>
     </div>
   )
 })
