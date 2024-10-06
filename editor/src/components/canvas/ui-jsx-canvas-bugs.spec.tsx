@@ -132,7 +132,7 @@ export var storyboard = (
 )
 `,
       {
-        'app.js': `
+        '/app.js': `
 import React from 'react'
 export default function App(props) {
   return <div data-uid='app-outer-div'>
@@ -240,7 +240,7 @@ export var storyboard = (
 )
 `,
       {
-        'app.js': `
+        '/app.js': `
 import React from 'react'
 export default function App(props) {
   return <div data-uid='app-outer-div'>
