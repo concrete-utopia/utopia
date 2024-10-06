@@ -194,7 +194,7 @@ import Utopia, {
   Scene,
   Storyboard,
 } from 'utopia-api'
-import {default as Appy} from './app'
+import {default as Appy} from '/app'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
@@ -208,7 +208,7 @@ export var storyboard = (
 )
 `,
       {
-        'app.js': `
+        '/app.js': `
 import React from 'react'
 function App(props) {
   return <div data-uid='app-outer-div'>
@@ -225,7 +225,7 @@ export default App`,
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"sb sb/scene sb/scene/app\\"
+          data-utopia-valid-paths=\\"sb sb/scene sb/scene/app sb/scene/app:app-outer-div sb/scene/app:app-outer-div/inner-div\\"
           data-utopia-root-element-path=\\"sb\\"
         >
           <div
@@ -252,8 +252,13 @@ export default App`,
             \\"
             data-uid=\\"scene\\"
           >
-            <div data-uid=\\"app-outer-div\\" data-path=\\"sb/scene/app\\">
-              <div data-uid=\\"inner-div\\">hello</div>
+            <div data-uid=\\"app-outer-div\\" data-path=\\"sb/scene/app:app-outer-div\\">
+              <div
+                data-uid=\\"inner-div\\"
+                data-path=\\"sb/scene/app:app-outer-div/inner-div\\"
+              >
+                hello
+              </div>
             </div>
           </div>
         </div>
