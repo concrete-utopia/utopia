@@ -10,6 +10,7 @@ import { useAtomsDevtools } from 'jotai-devtools'
 import '../utils/vite-hmr-config'
 import {
   getProjectID,
+  IS_TEST_ENVIRONMENT,
   PROBABLY_ELECTRON,
   PRODUCTION_ENV,
   requireElectron,
@@ -709,7 +710,7 @@ export class Editor {
 let canvasUpdateId: number = 0
 
 const AtomsDevtools = (props: { children: React.ReactNode }) => {
-  if (!PRODUCTION_ENV) {
+  if (!PRODUCTION_ENV && !IS_TEST_ENVIRONMENT) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useAtomsDevtools(`Utopia Jotai Atoms Debug Store`)
   }
