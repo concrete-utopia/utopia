@@ -47,6 +47,7 @@ import { assertNever } from '../../../../core/shared/utils'
 
 const emptyGridRearrangeMoveResult = {
   commands: [],
+  targetCell: null,
   targetRootCell: null,
 }
 
@@ -57,6 +58,7 @@ export function runGridRearrangeMove(
   interactionData: DragInteractionData,
 ): {
   commands: CanvasCommand[]
+  targetCell: TargetGridCellData | null
   targetRootCell: GridCellCoordinates | null
 } {
   if (interactionData.drag == null) {
@@ -187,6 +189,7 @@ export function runGridRearrangeMove(
       )
       return {
         commands: absoluteMoveCommands,
+        targetCell: targetCellData,
         targetRootCell: gridCellCoordinates(row, column),
       }
     }
@@ -211,6 +214,7 @@ export function runGridRearrangeMove(
             absolute(Math.max(indexInSortedCellsForRearrange, 0)),
           ),
         ],
+        targetCell: targetCellData,
         targetRootCell: gridCellCoordinates(row, column),
       }
     }
@@ -227,6 +231,7 @@ export function runGridRearrangeMove(
             PP.create('style', 'gridRowEnd'),
           ]),
         ],
+        targetCell: targetCellData,
         targetRootCell: targetCellCoords,
       }
     }
