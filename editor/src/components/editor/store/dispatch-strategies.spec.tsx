@@ -200,9 +200,7 @@ describe('interactionStart', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
@@ -269,9 +267,7 @@ describe('interactionStart', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
@@ -358,9 +354,7 @@ describe('interactionUpdate', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
@@ -447,9 +441,7 @@ describe('interactionUpdate', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
@@ -530,9 +522,7 @@ describe('interactionHardReset', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
@@ -621,9 +611,7 @@ describe('interactionHardReset', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
@@ -718,9 +706,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
@@ -810,9 +796,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "escapeHatchActivated": false,
           "grid": Object {
             "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
             "targetCellData": null,
           },
           "lastReorderIdx": null,
