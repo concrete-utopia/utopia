@@ -94,7 +94,7 @@ import {
   getGridRelatedIndexes,
 } from '../canvas-strategies/strategies/grid-helpers'
 import { canResizeGridTemplate } from '../canvas-strategies/strategies/resize-grid-strategy'
-import { SceneLabelTestID } from './select-mode/scene-label'
+import { SCENE_LABEL_HEIGHT } from './select-mode/scene-label'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -1859,7 +1859,6 @@ export function controlsForGridPlaceholders(gridPath: ElementPath): ControlWithP
 }
 
 function sceneTopOffset(canvasScale: number) {
-  const labelHeight = document.getElementById(SceneLabelTestID)?.getBoundingClientRect().height ?? 0
   const borderSkew = 5
-  return (labelHeight + borderSkew) / canvasScale
+  return (SCENE_LABEL_HEIGHT + borderSkew) / canvasScale
 }

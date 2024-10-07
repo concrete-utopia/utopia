@@ -28,6 +28,7 @@ import { MultiplayerWrapper } from '../../../../utils/multiplayer-wrapper'
 import { getIdOfScene } from '../comment-mode/comment-mode-hooks'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { defaultEither } from '../../../../core/shared/either'
+import { SCENE_LABEL_HEIGHT } from './scene-label'
 
 export const RemixSceneLabelPathTestId = (path: ElementPath): string =>
   `${EP.toString(path)}-remix-scene-label-path`
@@ -318,6 +319,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           textOverflow: 'ellipsis',
           borderRadius: borderRadius,
           justifyContent: 'space-between',
+          height: SCENE_LABEL_HEIGHT / scale,
         }}
       >
         <FlexRow style={{ gap: paddingX }}>

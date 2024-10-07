@@ -20,6 +20,8 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isCommentMode, isSelectModeWithArea } from '../../../editor/editor-modes'
 import { getElementPathTreeChildren, getSubTree } from '../../../../core/shared/element-path-tree'
 
+export const SCENE_LABEL_HEIGHT = 28 //px
+
 interface SceneLabelControlProps {
   maybeHighlightOnHover: (target: ElementPath) => void
   maybeClearHighlightsOnHoverEnd: () => void
@@ -220,7 +222,6 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
           onMouseDown={labelSelectable ? onMouseDown : NO_OP}
           onMouseMove={labelSelectable ? onMouseMove : NO_OP}
           data-testid={SceneLabelTestID}
-          id={SceneLabelTestID}
           className='roleComponentName'
           style={{
             pointerEvents: labelSelectable ? 'initial' : 'none',
@@ -240,6 +241,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             borderRadius: borderRadius,
             textOverflow: 'ellipsis',
             gap: 20,
+            height: SCENE_LABEL_HEIGHT / scale,
           }}
         >
           <div
