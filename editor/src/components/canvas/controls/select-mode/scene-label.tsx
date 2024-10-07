@@ -220,6 +220,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
           onMouseDown={labelSelectable ? onMouseDown : NO_OP}
           onMouseMove={labelSelectable ? onMouseMove : NO_OP}
           data-testid={SceneLabelTestID}
+          id={SceneLabelTestID}
           className='roleComponentName'
           style={{
             pointerEvents: labelSelectable ? 'initial' : 'none',

@@ -40,7 +40,6 @@ import {
   pointsEqual,
   scaleRect,
   windowPoint,
-  zeroRectangle,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import {
@@ -58,7 +57,6 @@ import { when } from '../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { useRollYourOwnFeatures } from '../../navigator/left-pane/roll-your-own-pane'
 import CanvasActions from '../canvas-actions'
 import type { ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
@@ -96,6 +94,7 @@ import {
   getGridRelatedIndexes,
 } from '../canvas-strategies/strategies/grid-helpers'
 import { canResizeGridTemplate } from '../canvas-strategies/strategies/resize-grid-strategy'
+import { SceneLabelTestID } from './select-mode/scene-label'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -349,6 +348,7 @@ export interface GridResizingProps {
   axis: Axis
   gap: number | null
   padding: Sides | null
+  isScene: boolean
 }
 
 export const GridResizing = React.memo((props: GridResizingProps) => {
@@ -413,11 +413,14 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
       const size = GRID_RESIZE_HANDLE_CONTAINER_SIZE / canvasScale
       const dimensions = props.axisValues.dimensions
 
+      const maybeSceneTopOffset = props.isScene ? sceneTopOffset(canvasScale) : 0
+
       return (
         <div
           style={{
             position: 'absolute',
-            top: props.containingFrame.y - (props.axis === 'column' ? size : 0),
+            top:
+              props.containingFrame.y - (props.axis === 'column' ? size + maybeSceneTopOffset : 0),
             left: props.containingFrame.x - (props.axis === 'row' ? size : 0),
             width: props.axis === 'column' ? props.containingFrame.width : size,
             height: props.axis === 'row' ? props.containingFrame.height : size,
@@ -621,6 +624,13 @@ export const GridRowColumnResizingControls =
       })
     }, [scale, grids])
 
+    function isScene(grid: GridData) {
+      return (
+        MetadataUtils.isProbablySceneFromMetadata(grid.metadata) ||
+        MetadataUtils.isProbablyRemixSceneFromMetadata(grid.metadata)
+      )
+    }
+
     return (
       <CanvasOffsetWrapper>
         {gridsWithVisibleResizeControls.flatMap((grid) => {
@@ -634,6 +644,7 @@ export const GridRowColumnResizingControls =
               gap={grid.columnGap ?? grid.gap}
               padding={grid.padding}
               stripedAreaLength={getStripedAreaLength(grid.gridTemplateRows, grid.gap ?? 0)}
+              isScene={isScene(grid)}
             />
           )
         })}
@@ -648,6 +659,7 @@ export const GridRowColumnResizingControls =
               gap={grid.rowGap ?? grid.gap}
               padding={grid.padding}
               stripedAreaLength={getStripedAreaLength(grid.gridTemplateColumns, grid.gap ?? 0)}
+              isScene={isScene(grid)}
             />
           )
         })}
@@ -1847,4 +1859,10 @@ export function controlsForGridPlaceholders(gridPath: ElementPath): ControlWithP
     show: 'always-visible',
     priority: 'bottom',
   }
+}
+
+function sceneTopOffset(canvasScale: number) {
+  const labelHeight = document.getElementById(SceneLabelTestID)?.getBoundingClientRect().height ?? 0
+  const borderSkew = 5
+  return (labelHeight + borderSkew) / canvasScale
 }
