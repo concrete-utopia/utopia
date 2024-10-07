@@ -63,7 +63,7 @@ import type {
   HighlightBoundsForUids,
   ExportsDetail,
 } from '../../core/shared/project-file-types'
-import { isParseSuccess, isTextFile } from '../../core/shared/project-file-types'
+import { isExportDefault, isParseSuccess, isTextFile } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
   getDefaultExportedTopLevelElement,
@@ -1730,9 +1730,9 @@ export function getValidElementPaths(
       const { topLevelElements: resolvedTopLevelElements, exportsDetail } =
         getParseSuccessForFilePath(resolvedFilePath, projectContents)
       // Handle default exports as they may actually be named.
-      if (originTopLevelName == null) {
+      if (originTopLevelName == null || originTopLevelName === 'default') {
         for (const exportDetail of exportsDetail) {
-          if (exportDetail.type === 'EXPORT_DEFAULT_FUNCTION_OR_CLASS') {
+          if (isExportDefault(exportDetail)) {
             originTopLevelName = exportDetail.name
           }
         }

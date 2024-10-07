@@ -190,6 +190,88 @@ export default function App(props) {
     `)
   })
 
+  it('Handles importing default exports declared separately', () => {
+    const result = testCanvasRenderInlineMultifile(
+      null,
+      `
+import React from 'react'
+import Utopia, {
+  Scene,
+  Storyboard,
+} from 'utopia-api'
+import {default as Appy} from '/app'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <Appy data-uid='app' />
+    </Scene>
+  </Storyboard>
+)
+`,
+      {
+        '/app.js': `
+import React from 'react'
+function App(props) {
+  return <div data-uid='app-outer-div'>
+    <div data-uid='inner-div'>hello</div>
+  </div>
+}
+export default App`,
+      },
+    )
+
+    expect(result).toMatchInlineSnapshot(`
+      "<div style=\\"all: initial\\">
+        <div
+          id=\\"canvas-container\\"
+          data-testid=\\"canvas-container\\"
+          style=\\"position: absolute\\"
+          data-utopia-valid-paths=\\"sb sb/scene sb/scene/app sb/scene/app:app-outer-div sb/scene/app:app-outer-div/inner-div\\"
+          data-utopia-root-element-path=\\"sb\\"
+        >
+          <div
+            data-utopia-scene-id=\\"sb/scene\\"
+            data-path=\\"sb/scene\\"
+            style=\\"
+              overflow: hidden;
+              position: absolute;
+              background-color: var(--utopitheme-emphasizedBackground);
+              box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+                0px 2px 4px -1px var(--utopitheme-shadow50);
+              background-image: conic-gradient(
+                var(--utopitheme-checkerboardLight) 0.25turn,
+                var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+                var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+                var(--utopitheme-checkerboardDark) 0.75turn
+              );
+              background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+              background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
+              left: 0;
+              top: 0;
+              width: 375px;
+              height: 812px;
+            \\"
+            data-uid=\\"scene\\"
+          >
+            <div data-uid=\\"app-outer-div\\" data-path=\\"sb/scene/app:app-outer-div\\">
+              <div
+                data-uid=\\"inner-div\\"
+                data-path=\\"sb/scene/app:app-outer-div/inner-div\\"
+              >
+                hello
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
   it('#1717 - Works with user components called Scene', () => {
     const result = testCanvasRenderInlineMultifile(
       null,
