@@ -699,9 +699,8 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
   )
 
   const currentHoveredCell = useEditorState(
-    Substores.restOfStore,
-    (store) =>
-      store.strategyState.customStrategyState.grid.targetCellData?.gridCellCoordinates ?? null,
+    Substores.canvas,
+    (store) => store.editor.canvas.controls.gridControlData?.targetCell ?? null,
     'GridControl currentHoveredCell',
   )
 
@@ -878,8 +877,8 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
   const gridPath = optionalMap(EP.parentPath, shadow?.elementPath)
 
   const targetRootCell = useEditorState(
-    Substores.restOfStore,
-    (store) => store.strategyState.customStrategyState.grid.currentRootCell,
+    Substores.canvas,
+    (store) => store.editor.canvas.controls.gridControlData?.rootCell ?? null,
     'GridControl targetRootCell',
   )
 
@@ -1126,14 +1125,14 @@ export interface GridControlsProps {
 
 export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ targets }) => {
   const targetRootCell = useEditorState(
-    Substores.restOfStore,
-    (store) => store.strategyState.customStrategyState.grid.currentRootCell,
+    Substores.canvas,
+    (store) => store.editor.canvas.controls.gridControlData?.rootCell ?? null,
     'GridControls targetRootCell',
   )
 
   const hoveredGrids = useEditorState(
     Substores.canvas,
-    (store) => stripNulls([store.editor.canvas.controls.gridControls]),
+    (store) => stripNulls([store.editor.canvas.controls.gridControlData?.grid]),
     'GridControls hoveredGrids',
   )
 
