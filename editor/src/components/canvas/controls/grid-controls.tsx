@@ -1156,7 +1156,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     'GridControls hoveredGrids',
   )
 
-  const grids = useGridData([...targets, ...hoveredGrids])
+  const grids = useGridData(uniqBy([...targets, ...hoveredGrids], (a, b) => EP.pathsEqual(a, b)))
 
   if (grids.length === 0) {
     return null
