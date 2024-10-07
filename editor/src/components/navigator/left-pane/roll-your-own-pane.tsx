@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, colorTheme, FlexColumn, FlexRow, Section } from '../../../uuiui'
+import { Button, FlexColumn, FlexRow, Section } from '../../../uuiui'
 import { when } from '../../../utils/react-conditionals'
 import { atom, useAtom, useSetAtom } from 'jotai'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
@@ -12,21 +12,8 @@ import type { FeatureName } from '../../../utils/feature-switches'
 import { isFeatureEnabled, setFeatureEnabled } from '../../../utils/feature-switches'
 import { getParseCacheVersion } from '../../../core/workers/parser-printer/parse-cache-utils.worker'
 
-const sections = ['Grid', 'Performance'] as const
+const sections = ['Performance'] as const
 type Section = (typeof sections)[number]
-
-type GridFeatures = {
-  dragVerbatim: boolean
-  dragMagnetic: boolean
-  dragRatio: boolean
-  dotgrid: boolean
-  shadow: boolean
-  activeGridColor: string
-  dotgridColor: string
-  inactiveGridColor: string
-  shadowOpacity: number
-  activeGridBackground: string
-}
 
 type PerformanceFeatures = {
   parseCache: boolean
@@ -37,7 +24,6 @@ type PerformanceFeatures = {
 }
 
 type RollYourOwnFeaturesTypes = {
-  Grid: GridFeatures
   Performance: PerformanceFeatures
 }
 
@@ -54,18 +40,6 @@ const featureToFeatureFlagMap: Record<keyof Partial<PerformanceFeatures>, Featur
 }
 
 const defaultRollYourOwnFeatures: () => RollYourOwnFeatures = () => ({
-  Grid: {
-    dragVerbatim: false,
-    dragMagnetic: false,
-    dragRatio: true,
-    dotgrid: true,
-    shadow: true,
-    activeGridColor: '#0099ff77',
-    activeGridBackground: colorTheme.primary10.value,
-    dotgridColor: '#0099ffaa',
-    inactiveGridColor: '#00000033',
-    shadowOpacity: 0.1,
-  },
   Performance: {
     parseCache: getFeatureFlagValue('parseCache'),
     parallelParsing: getFeatureFlagValue('parallelParsing'),
@@ -95,10 +69,6 @@ export function useRollYourOwnFeatures() {
   const [features] = useAtom(getRollYourOwnFeaturesAtom())
   const defaultFeatures = defaultRollYourOwnFeatures()
   const merged: RollYourOwnFeatures = {
-    Grid: {
-      ...defaultFeatures.Grid,
-      ...features.Grid,
-    },
     Performance: {
       ...defaultFeatures.Performance,
       ...syncWithFeatureFlags(features.Performance),
@@ -158,7 +128,6 @@ export const RollYourOwnFeaturesPane = React.memo(() => {
           </select>
         </FlexRow>
 
-        {when(currentSection === 'Grid', <GridSection />)}
         {when(currentSection === 'Performance', <PerformanceSection />)}
       </Section>
     </FlexColumn>
@@ -178,17 +147,6 @@ function getNewFeatureValueOrNull(currentValue: any, e: React.ChangeEvent<HTMLIn
       return null
   }
 }
-
-/** GRID SECTION */
-const GridSection = React.memo(() => {
-  return (
-    <FlexColumn style={{ gap: 10 }}>
-      <ResetDefaultsButton subsection='Grid' />
-      <SimpleFeatureControls subsection='Grid' />
-    </FlexColumn>
-  )
-})
-GridSection.displayName = 'GridSection'
 
 /** PERFORMANCE SECTION */
 const PerformanceSection = React.memo(() => {
@@ -302,7 +260,10 @@ function syncFeatureFlagIfExists(
   setFeatureEnabled(featureFlag, value)
 }
 
-function syncWithFeatureFlags(features: Record<string, any>) {
+function syncWithFeatureFlags(features: Record<string, any> | undefined) {
+  if (features == null) {
+    return {}
+  }
   return Object.fromEntries(
     Object.entries(features).map(([key, value]) => {
       if (typeof value === 'boolean' && key in featureToFeatureFlagMap) {
