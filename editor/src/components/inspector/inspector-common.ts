@@ -75,7 +75,6 @@ import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
 import { hugPropertiesFromStyleMap } from '../../core/shared/dom-utils'
 import { setHugContentForAxis } from './inspector-strategies/hug-contents-strategy'
-import { getGridChildCellCoordBoundsFromCanvas } from '../canvas/canvas-strategies/strategies/grid-cell-bounds'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
