@@ -262,24 +262,12 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
           alignItems: 'center',
           justifyContent: 'center',
           cursor: gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start'),
-          // fontSize: 8,
           pointerEvents: 'initial',
         }}
-        // css={{
-        //   opacity: props.resizing !== 'not-resizing' ? 1 : 0.5,
-        //   ':hover': {
-        //     opacity: 1,
-        //   },
-        // }}
         onMouseDown={mouseDownHandler}
         onMouseMove={onMouseMove}
       >
-        {/* {props.axis === 'row' ? '↕' : '↔'} */}
         {getLabelForAxis(props.dimension, props.dimensionIndex, props.fromPropsAxisValues)}
-        {when(
-          props.dimension.areaName != null,
-          <span style={{ position: 'absolute', top: 12 }}>{props.dimension.areaName}</span>,
-        )}
       </div>
       {when(
         props.resizing !== 'not-resizing',
@@ -315,22 +303,22 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
               : UtopiaStyles.backgrounds.stripedBackground(colorTheme.primary10.value, scale)),
           }}
         >
-          {/* <CanvasLabel
-            value={getLabelForAxis(
-              props.dimension,
-              props.dimensionIndex,
-              props.fromPropsAxisValues,
-            )}
-            scale={scale}
-            color={
-              props.resizeLocked
-                ? colorTheme.primary10.value
-                : props.resizing === 'resize-target'
-                ? colorTheme.primary.value
-                : colorTheme.primary50.value
-            }
-            textColor={colorTheme.white.value}
-          /> */}
+          {when(
+            props.dimension.areaName != null,
+            <div
+              style={{
+                position: 'absolute',
+                color: colorTheme.primary.value,
+                background: colorTheme.white.value,
+                top: 0,
+                left: 0,
+                padding: '0 4px',
+                borderRadius: '0 0 3px 0',
+              }}
+            >
+              {props.dimension.areaName}
+            </div>,
+          )}
         </div>,
       )}
     </div>
