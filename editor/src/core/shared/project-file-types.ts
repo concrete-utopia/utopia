@@ -199,6 +199,14 @@ export function importDetailsEquals(first: ImportDetails, second: ImportDetails)
   )
 }
 
+export function isEmptyImportDetails(details: ImportDetails): boolean {
+  return (
+    details.importedWithName == null &&
+    details.importedFromWithin.length === 0 &&
+    details.importedAs == null
+  )
+}
+
 export type ImportsMergeResolution = {
   imports: Imports
   duplicateNameMapping: Map<string, string>
