@@ -20,6 +20,7 @@ const lightBase = {
   brandNeonPink10: createUtopiColor('oklch(72.53% 0.353 331.69 / 10%)'),
   brandNeonPink60: createUtopiColor('oklch(72.53% 0.353 331.69 / 30%)'),
   brandNeonGreen: createUtopiColor('oklch(86.6% 0.27 158.6)'),
+  brandNeonOrange: createUtopiColor('oklch(79% 0.19 70)'),
   green: createUtopiColor('oklch(64.6% 0.17 150.6)'),
   green10: createUtopiColor('oklch(64.6% 0.17 150.6 / 10%)'),
   green20: createUtopiColor('oklch(64.6% 0.17 150.6 / 20%)'),
@@ -266,7 +267,7 @@ const lightTheme = {
   codeEditorGrid: createUtopiColor('#6d705b'),
 
   // Gap controls
-  gapControlsBg: createUtopiColor('#FFA500'),
+  gapControlsBg: lightBase.brandNeonOrange,
 }
 
 // all values in light must be of the type UtopiColor! This will break if you made a mistake.

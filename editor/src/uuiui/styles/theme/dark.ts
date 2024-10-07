@@ -20,6 +20,7 @@ const darkBase = {
   brandNeonPink10: createUtopiColor('oklch(78.64% 0.237 327.81 / 10%)'),
   brandNeonPink60: createUtopiColor('oklch(78.64% 0.237 327.81 / 50%)'),
   brandNeonGreen: createUtopiColor('oklch(86.6% 0.27 158.6)'),
+  brandNeonOrange: createUtopiColor('oklch(79% 0.19 70)'),
   green: createUtopiColor('oklch(88% 0.2535 150)'),
   green10: createUtopiColor('oklch(88% 0.2535 150 / 10%)'),
   green20: createUtopiColor('oklch(88% 0.2535 150 / 20%)'),
@@ -266,7 +267,7 @@ const darkTheme: typeof light = {
   codeEditorGrid: createUtopiColor('#6d705b'),
 
   // Gap controls
-  gapControlsBg: darkBase.brandNeonGreen,
+  gapControlsBg: darkBase.brandNeonOrange,
 }
 
 export const dark = enforceUtopiColorTheme(darkTheme)

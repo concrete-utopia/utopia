@@ -252,29 +252,31 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         data-testid={labelId}
         style={{
           zoom: 1 / scale,
-          width: GRID_RESIZE_HANDLE_SIZE,
+          // width: GRID_RESIZE_HANDLE_SIZE,
           height: GRID_RESIZE_HANDLE_SIZE,
-          borderRadius: '100%',
-          border: `1px solid ${colorTheme.white.value}`,
+          borderRadius: 3,
+          padding: '0 4px',
+          border: `.1px solid ${colorTheme.white.value}`,
           background: colorTheme.primary.value,
           color: colorTheme.white.value,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start'),
-          fontSize: 8,
+          // fontSize: 8,
           pointerEvents: 'initial',
         }}
-        css={{
-          opacity: props.resizing !== 'not-resizing' ? 1 : 0.5,
-          ':hover': {
-            opacity: 1,
-          },
-        }}
+        // css={{
+        //   opacity: props.resizing !== 'not-resizing' ? 1 : 0.5,
+        //   ':hover': {
+        //     opacity: 1,
+        //   },
+        // }}
         onMouseDown={mouseDownHandler}
         onMouseMove={onMouseMove}
       >
-        {props.axis === 'row' ? '↕' : '↔'}
+        {/* {props.axis === 'row' ? '↕' : '↔'} */}
+        {getLabelForAxis(props.dimension, props.dimensionIndex, props.fromPropsAxisValues)}
         {when(
           props.dimension.areaName != null,
           <span style={{ position: 'absolute', top: 12 }}>{props.dimension.areaName}</span>,
@@ -314,7 +316,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
               : UtopiaStyles.backgrounds.stripedBackground(colorTheme.primary10.value, scale)),
           }}
         >
-          <CanvasLabel
+          {/* <CanvasLabel
             value={getLabelForAxis(
               props.dimension,
               props.dimensionIndex,
@@ -329,7 +331,7 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
                 : colorTheme.primary50.value
             }
             textColor={colorTheme.white.value}
-          />
+          /> */}
         </div>,
       )}
     </div>

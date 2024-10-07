@@ -452,7 +452,7 @@ function GridGapHandle({
           <CanvasLabel
             value={printCSSNumber(gapValue, null)}
             scale={scale}
-            color={colorTheme.componentOrange.value}
+            color={colorTheme.brandNeonOrange.value}
             textColor={colorTheme.white.value}
           />,
         )}
@@ -460,7 +460,7 @@ function GridGapHandle({
       <PillHandle
         width={width}
         height={height}
-        pillColor={colorTheme.componentOrange.value}
+        pillColor={colorTheme.brandNeonOrange.value}
         borderWidth={borderWidth}
       />
     </div>
