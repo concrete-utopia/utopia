@@ -302,7 +302,10 @@ function syncFeatureFlagIfExists(
   setFeatureEnabled(featureFlag, value)
 }
 
-function syncWithFeatureFlags(features: Record<string, any>) {
+function syncWithFeatureFlags(features: Record<string, any> | undefined) {
+  if (features == null) {
+    return {}
+  }
   return Object.fromEntries(
     Object.entries(features).map(([key, value]) => {
       if (typeof value === 'boolean' && key in featureToFeatureFlagMap) {
