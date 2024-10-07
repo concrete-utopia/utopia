@@ -39,10 +39,10 @@ export const AllFeatureNames: FeatureName[] = [
   'Debug – Connections',
   'Parallel Parsing',
   'Log Parse Timings',
-  'Condensed Navigator Entries',
   'Use Parsing Cache',
   'Verbose Log Cache',
   'Arbitrary Code Cache',
+  'Condensed Navigator Entries',
   'Canvas Fast Selection Hack',
   'Roll Your Own',
   'Tailwind',
@@ -72,10 +72,8 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
 }
 
 export const FeaturesHiddenFromMainSettingsPane: FeatureName[] = [
-  'Use Parsing Cache',
   'Verbose Log Cache',
   'Arbitrary Code Cache',
-  'Parallel Parsing',
   'Log Parse Timings',
 ]
 
