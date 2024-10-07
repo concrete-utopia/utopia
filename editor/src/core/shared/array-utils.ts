@@ -538,3 +538,11 @@ export function matrixGetter<T>(array: T[], width: number): (row: number, column
     return array[row * width + column]
   }
 }
+
+export function range(start: number, end: number): Array<number> {
+  let result: Array<number> = []
+  for (let i = start; i < end; i++) {
+    result.push(i)
+  }
+  return result
+}

@@ -20,7 +20,7 @@ import {
   printGridCSSNumber,
 } from '../../../components/inspector/common/css-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
+import { mapDropNulls, range, stripNulls } from '../../../core/shared/array-utils'
 import { defaultEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import type {
@@ -349,6 +349,8 @@ export interface GridResizingProps {
   axis: Axis
   gap: number | null
   padding: Sides | null
+  justifyContent: string | null
+  alignContent: string | null
 }
 
 export const GridResizing = React.memo((props: GridResizingProps) => {
@@ -437,6 +439,16 @@ export const GridResizing = React.memo((props: GridResizingProps) => {
                 : undefined,
             paddingTop:
               props.axis === 'row' && props.padding != null ? `${props.padding.top}px` : undefined,
+            paddingRight:
+              props.axis === 'column' && props.padding != null
+                ? `${props.padding.right}px`
+                : undefined,
+            paddingBottom:
+              props.axis === 'row' && props.padding != null
+                ? `${props.padding.bottom}px`
+                : undefined,
+            justifyContent: props.justifyContent ?? undefined,
+            alignContent: props.alignContent ?? undefined,
           }}
         >
           {dimensions.flatMap((dimension, dimensionIndex) => {
@@ -634,6 +646,8 @@ export const GridRowColumnResizingControls =
               gap={grid.columnGap ?? grid.gap}
               padding={grid.padding}
               stripedAreaLength={getStripedAreaLength(grid.gridTemplateRows, grid.gap ?? 0)}
+              alignContent={grid.justifyContent}
+              justifyContent={grid.alignContent}
             />
           )
         })}
@@ -648,6 +662,8 @@ export const GridRowColumnResizingControls =
               gap={grid.rowGap ?? grid.gap}
               padding={grid.padding}
               stripedAreaLength={getStripedAreaLength(grid.gridTemplateColumns, grid.gap ?? 0)}
+              alignContent={grid.alignContent}
+              justifyContent={grid.justifyContent}
             />
           )
         })}
@@ -905,11 +921,11 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
     gridPath: gridPath,
   })
 
-  const placeholders = Array.from(Array(grid.cells).keys())
+  const placeholders = range(0, grid.cells)
   let style: CSSProperties = {
     position: 'absolute',
-    top: grid.frame.y - 1, // account for border!
-    left: grid.frame.x - 1, // account for border!
+    top: grid.frame.y,
+    left: grid.frame.x,
     width: grid.frame.width,
     height: grid.frame.height,
     display: 'grid',
@@ -917,7 +933,7 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
     gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
     backgroundColor:
       activelyDraggingOrResizingCell != null ? features.Grid.activeGridBackground : 'transparent',
-    border: `1px solid ${
+    outline: `1px solid ${
       activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
     }`,
     justifyContent: grid.justifyContent ?? 'initial',

@@ -723,7 +723,7 @@ function getSpecialMeasurements(
   const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
   const justifyContent = getFlexJustifyContent(elementStyle.justifyContent)
-  const alignContent = getFlexJustifyContent(elementStyle.alignContent)
+  const alignContent = elementStyle.alignContent
   const alignItems = getFlexAlignment(elementStyle.alignItems)
   const alignSelf = getSelfAlignment(elementStyle.alignSelf)
   const justifySelf = getSelfAlignment(elementStyle.justifySelf)
