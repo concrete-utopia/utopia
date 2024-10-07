@@ -3,7 +3,7 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 // TODO: this will be configurable from the RYO menu
 export const PARSE_CONCURRENCY = 3
 const PARSER_CONCURRENCY_FEATURE = 'Parallel Parsing'
-const LOG_CONCURRENCY_TIMINGS_FEATURE = 'Log Parse Timings'
+const LOG_CONCURRENCY_TIMINGS_FEATURE = 'Debug - Log Parse Timings'
 
 export function isConcurrencyEnabled() {
   return isFeatureEnabled(PARSER_CONCURRENCY_FEATURE)
