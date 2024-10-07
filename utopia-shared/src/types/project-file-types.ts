@@ -74,6 +74,7 @@ export interface ExportVariablesWithModifier {
   variables: Array<string>
 }
 
+// export function functionName(){...}
 export interface ExportFunction {
   type: 'EXPORT_FUNCTION'
   functionName: string
