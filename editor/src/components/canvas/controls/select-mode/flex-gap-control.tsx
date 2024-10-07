@@ -24,7 +24,7 @@ import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategie
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import {
   cursorFromFlexDirection,
-  maybeFlexGapData,
+  getFlexData,
   gapControlBoundsFromMetadata,
   recurseIntoChildrenOfMapOrFragment,
 } from '../../gap-utils'
@@ -46,6 +46,7 @@ import {
   reverseJustifyContent,
 } from '../../../../core/model/flex-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
+import { InlineStylePlugin } from '../../plugins/inline-style-plugin'
 
 interface FlexGapControlProps {
   selectedElement: ElementPath
@@ -130,7 +131,18 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     elementPathTrees,
     selectedElement,
   )
-  const flexGap = maybeFlexGapData(metadata, selectedElement)
+  const flexGap = useEditorState(
+    Substores.fullStore,
+    (store) =>
+      getFlexData(
+        InlineStylePlugin.styleInfoFactory({
+          projectContents: store.editor.projectContents,
+          metadata: metadata,
+          elementPathTree: store.editor.elementPathTree,
+        })(selectedElement),
+      ),
+    'FlexGapControl flexGap',
+  )
   if (flexGap == null) {
     return null
   }

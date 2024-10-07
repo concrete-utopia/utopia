@@ -82,6 +82,7 @@ import { reparentSubjectsForInteractionTarget } from './strategies/reparent-help
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
 import { gridRearrangeResizeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
 import createCachedSelector from 're-reselect'
+import { getActivePlugin } from '../plugins/style-plugins'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -202,6 +203,7 @@ export function pickCanvasStateFromEditorState(
   editorState: EditorState,
   builtInDependencies: BuiltInDependencies,
 ): InteractionCanvasState {
+  const activePlugin = getActivePlugin(editorState)
   return {
     builtInDependencies: builtInDependencies,
     interactionTarget: getInteractionTargetFromEditorState(editorState, localSelectedViews),
@@ -214,6 +216,11 @@ export function pickCanvasStateFromEditorState(
     startingElementPathTree: editorState.elementPathTree,
     startingAllElementProps: editorState.allElementProps,
     propertyControlsInfo: editorState.propertyControlsInfo,
+    styleInfoReader: activePlugin.styleInfoFactory({
+      projectContents: editorState.projectContents,
+      metadata: editorState.jsxMetadata,
+      elementPathTree: editorState.elementPathTree,
+    }),
   }
 }
 
@@ -224,6 +231,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
   metadata: ElementInstanceMetadataMap,
   allElementProps?: AllElementProps,
 ): InteractionCanvasState {
+  const activePlugin = getActivePlugin(editorState)
   return {
     builtInDependencies: builtInDependencies,
     interactionTarget: getInteractionTargetFromEditorState(editorState, localSelectedViews),
@@ -236,6 +244,11 @@ export function pickCanvasStateFromEditorStateWithMetadata(
     startingElementPathTree: editorState.elementPathTree, // IMPORTANT! This isn't based on the passed in metadata
     startingAllElementProps: allElementProps ?? editorState.allElementProps,
     propertyControlsInfo: editorState.propertyControlsInfo,
+    styleInfoReader: activePlugin.styleInfoFactory({
+      projectContents: editorState.projectContents,
+      metadata: metadata,
+      elementPathTree: editorState.elementPathTree,
+    }),
   }
 }
 

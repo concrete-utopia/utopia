@@ -16,6 +16,7 @@ import type { CanvasRectangle, CanvasVector, Size } from '../../core/shared/math
 import { canvasRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
+import type { FlexDirectionInfo, FlexGapInfo, StyleInfo, StyleProperty } from './canvas-types'
 import { CSSCursor } from './canvas-types'
 import type { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
 import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
@@ -328,39 +329,17 @@ export interface FlexGapData {
   direction: FlexDirection
 }
 
-export function maybeFlexGapData(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-): FlexGapData | null {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (
-    element == null ||
-    element.specialSizeMeasurements.display !== 'flex' ||
-    isLeft(element.element) ||
-    !isJSXElement(element.element.value)
-  ) {
+export function getFlexData(info: StyleInfo): FlexGapData | null {
+  const gap = info.find((prop): prop is StyleProperty<FlexGapInfo> => prop.value.name === 'gap')
+  if (gap == null) {
     return null
   }
-
-  if (element.specialSizeMeasurements.justifyContent?.startsWith('space')) {
-    return null
-  }
-
-  const gap = element.specialSizeMeasurements.gap ?? 0
-
-  const gapFromProps: CSSNumber | undefined = defaultEither(
-    undefined,
-    getLayoutProperty('gap', right(element.element.value.props), styleStringInArray),
+  const direction = info.find(
+    (prop): prop is StyleProperty<FlexDirectionInfo> => prop.value.name === 'flexDirection',
   )
-
-  const flexDirection = element.specialSizeMeasurements.flexDirection ?? 'row'
-
   return {
-    value: {
-      renderedValuePx: gap,
-      value: gapFromProps ?? null,
-    },
-    direction: flexDirection,
+    value: gap.value.gap,
+    direction: direction?.value.flexDirection ?? 'row',
   }
 }
 

@@ -150,6 +150,7 @@ specifiers:
   '@vercel/stega': 0.1.0
   '@vitejs/plugin-react': 4.0.4
   '@welldone-software/why-did-you-render': 5.0.0-rc.1
+  '@xengine/tailwindcss-class-parser': 1.1.17
   ajv: 6.4.0
   anser: 2.1.0
   antd: 4.3.5
@@ -387,6 +388,7 @@ dependencies:
   '@types/w3c-css-typed-object-model-level-1': 20180410.0.5
   '@use-it/interval': 0.1.3_react@18.1.0
   '@vercel/stega': 0.1.0
+  '@xengine/tailwindcss-class-parser': 1.1.17
   ajv: 6.4.0
   anser: 2.1.0
   antd: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
@@ -5997,6 +5999,14 @@ packages:
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: true
 
+  /@xengine/tailwindcss-class-parser/1.1.17:
+    resolution: {integrity: sha512-LRod5tEDSpr3T2I8R3U0bRH4O18MDfAdybxQRLSbcIta4AboQEeIUrNVsz6wRmJcsrBXtQYbwP4k9zsE+QnKAg==}
+    peerDependencies:
+      tailwindcss: '*'
+    dependencies:
+      colord: 2.9.3
+    dev: false
+
   /@xstate/fsm/2.1.0:
     resolution: {integrity: sha512-oJlc0iD0qZvAM7If/KlyJyqUt7wVI8ocpsnlWzAPl97evguPbd+oJbRM9R4A1vYJffYH96+Bx44nLDE6qS8jQg==}
     dev: false
@@ -7889,6 +7899,10 @@ packages:
     dependencies:
       color-convert: 1.9.3
       color-string: 1.9.1
+    dev: false
+
+  /colord/2.9.3:
+    resolution: {integrity: sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==}
     dev: false
 
   /colorette/2.0.20:
