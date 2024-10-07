@@ -35,8 +35,6 @@ import { EditorModes, isCommentMode } from '../editor/editor-modes'
 import { useAllowedToEditProject } from '../editor/store/collaborative-editing'
 import { useCanComment } from '../../core/commenting/comment-hooks'
 import { ElementsOutsideVisibleAreaIndicator } from '../editor/elements-outside-visible-area-indicator'
-import { isFeatureEnabled } from '../../utils/feature-switches'
-import { RollYourOwnFeaturesPane } from '../navigator/left-pane/roll-your-own-pane'
 import { AnimationContext } from './ui-jsx-canvas-renderer/animation-context'
 
 function isCodeEditorEnabled(): boolean {
@@ -163,10 +161,6 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
     onClickTab(RightMenuTab.Settings)
   }, [onClickTab])
 
-  const onClickRollYourOwnTab = React.useCallback(() => {
-    onClickTab(RightMenuTab.RollYourOwn)
-  }, [onClickTab])
-
   const canComment = useCanComment()
 
   const allowedToEdit = useAllowedToEditProject()
@@ -235,14 +229,6 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
             selected={selectedTab === RightMenuTab.Settings}
             onClick={onClickSettingsTab}
           />
-          {when(
-            isFeatureEnabled('Roll Your Own'),
-            <MenuTab
-              label={'RYO'}
-              selected={selectedTab === RightMenuTab.RollYourOwn}
-              onClick={onClickRollYourOwnTab}
-            />,
-          )}
         </FlexRow>
         <SimpleFlexRow
           className='Inspector-entrypoint'
@@ -260,7 +246,6 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
           {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
           {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
           {when(selectedTab === RightMenuTab.Comments, <CommentsPane />)}
-          {when(selectedTab === RightMenuTab.RollYourOwn, <RollYourOwnFeaturesPane />)}
         </SimpleFlexRow>
         <CanvasStrategyInspector />
       </FlexColumn>

@@ -176,18 +176,11 @@ function getCommandsAndPatchForGridRearrange(
     return { commands: [], patch: {}, elementsToRerender: [] }
   }
 
-  const {
-    commands,
-    targetCell: targetGridCell,
-    draggingFromCell,
-    originalRootCell,
-    targetRootCell,
-  } = runGridRearrangeMove(
+  const { commands, targetCell, targetRootCell } = runGridRearrangeMove(
     selectedElement,
     selectedElement,
     canvasState.startingMetadata,
     interactionData,
-    customState.grid,
   )
 
   return {
@@ -195,9 +188,7 @@ function getCommandsAndPatchForGridRearrange(
     patch: {
       grid: {
         ...customState.grid,
-        targetCellData: targetGridCell,
-        draggingFromCell: draggingFromCell,
-        originalRootCell: originalRootCell,
+        targetCellData: targetCell,
         currentRootCell: targetRootCell,
       },
     },

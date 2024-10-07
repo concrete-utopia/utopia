@@ -14,33 +14,37 @@ export type FeatureName =
   | 'Project Thumbnail Generation'
   | 'Debug - Print UIDs'
   | 'Debug – Connections'
+  | 'Parallel Parsing'
+  | 'Debug - Log Parse Timings'
   | 'Condensed Navigator Entries'
   | 'Use Parsing Cache'
-  | 'Verbose Log Cache'
-  | 'Arbitrary Code Cache'
+  | 'Debug - Verbose Log Cache'
+  | 'Debug - Arbitrary Code Cache'
   | 'Canvas Fast Selection Hack'
-  | 'Roll Your Own'
   | 'Tailwind'
+  | 'Show Debug Features'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
+  'Show Debug Features',
   'Debug – Redux Devtools',
   'Debug – Performance Marks (Slow)',
   'Debug – Performance Marks (Fast)',
   'Debug – Measure Selectors',
+  'Debug – Connections',
+  'Debug - Log Parse Timings',
+  'Debug - Verbose Log Cache',
+  'Debug - Arbitrary Code Cache',
+  'Debug - Print UIDs',
   'Re-parse Project Button',
   'Performance Test Triggers',
   'Canvas Strategies Debug Panel',
   'Project Thumbnail Generation',
-  'Debug - Print UIDs',
-  'Debug – Connections',
-  'Condensed Navigator Entries',
+  'Parallel Parsing',
   'Use Parsing Cache',
-  'Verbose Log Cache',
-  'Arbitrary Code Cache',
+  'Condensed Navigator Entries',
   'Canvas Fast Selection Hack',
-  'Roll Your Own',
   'Tailwind',
 ]
 
@@ -49,27 +53,23 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug – Performance Marks (Slow)': false,
   'Debug – Performance Marks (Fast)': false,
   'Debug – Measure Selectors': false,
+  'Debug – Connections': false,
+  'Debug - Verbose Log Cache': false,
+  'Debug - Arbitrary Code Cache': false,
   'Dragging Reparents By Default': false,
   'Re-parse Project Button': !(PRODUCTION_CONFIG as boolean),
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
   'Debug - Print UIDs': false,
-  'Debug – Connections': false,
+  'Parallel Parsing': !IS_TEST_ENVIRONMENT,
+  'Debug - Log Parse Timings': false,
   Tailwind: false,
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
   'Use Parsing Cache': !IS_TEST_ENVIRONMENT,
-  'Verbose Log Cache': false,
-  'Arbitrary Code Cache': false,
   'Canvas Fast Selection Hack': true,
-  'Roll Your Own': false,
+  'Show Debug Features': false,
 }
-
-export const FeaturesHiddenFromMainSettingsPane: FeatureName[] = [
-  'Use Parsing Cache',
-  'Verbose Log Cache',
-  'Arbitrary Code Cache',
-]
 
 export const STEGANOGRAPHY_ENABLED = false
 
@@ -133,17 +133,26 @@ export function isFeatureEnabled(featureName: FeatureName): boolean {
   return FeatureSwitches[featureName] ?? false
 }
 
-export function toggleFeatureEnabled(featureName: FeatureName): void {
+export function toggleFeatureEnabled(featureName: FeatureName): boolean {
   const newValue = !isFeatureEnabled(featureName)
   FeatureSwitches[featureName] = newValue
   if (isBrowserEnvironment) {
     void localforage.setItem(settingKeyForName(featureName), newValue)
   }
+  return newValue
 }
 
 export function setFeatureEnabled(featureName: FeatureName, newValue: boolean): void {
   FeatureSwitches[featureName] = newValue
   if (isBrowserEnvironment) {
     void localforage.setItem(settingKeyForName(featureName), newValue)
+  }
+}
+
+export function getFeaturesToDisplay(): FeatureName[] {
+  if (isFeatureEnabled('Show Debug Features')) {
+    return AllFeatureNames
+  } else {
+    return AllFeatureNames.filter((name) => !name.startsWith('Debug'))
   }
 }
