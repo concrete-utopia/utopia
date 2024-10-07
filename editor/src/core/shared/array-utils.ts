@@ -546,3 +546,41 @@ export function range(start: number, end: number): Array<number> {
   }
   return result
 }
+
+export function chunkArrayEqually<T>(
+  sortedArray: T[],
+  numberOfChunks: number,
+  valueFn: (t: T) => number,
+): T[][] {
+  const chunks: T[][] = Array.from({ length: numberOfChunks }, () => [])
+  const chunkSums: number[] = Array(numberOfChunks).fill(0)
+  for (const data of sortedArray) {
+    let minIndex = 0
+    for (let i = 1; i < numberOfChunks; i++) {
+      if (chunkSums[i] < chunkSums[minIndex]) {
+        minIndex = i
+      }
+    }
+    chunks[minIndex].push(data)
+    chunkSums[minIndex] += valueFn(data)
+  }
+  return chunks.filter((chunk) => chunk.length > 0)
+}
+
+export function sortArrayByAndReturnPermutation<T>(
+  array: T[],
+  sortFn: (t: T) => number,
+  ascending: boolean = true,
+): { sortedArray: T[]; permutation: number[] } {
+  const permutation = array.map((_, index) => index)
+  permutation.sort((a, b) => {
+    const sortResult = sortFn(array[a]) - sortFn(array[b])
+    return ascending ? sortResult : -sortResult
+  })
+  const sortedArray = permutation.map((index) => array[index])
+  return { sortedArray, permutation }
+}
+
+export function revertArrayOrder<T>(array: T[], permutation: number[]): T[] {
+  return array.map((_, index) => array[permutation.indexOf(index)])
+}

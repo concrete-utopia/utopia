@@ -155,7 +155,12 @@ import {
 import * as PP from '../../../core/shared/property-path'
 import { assertNever, fastForEach, getProjectLockedKey, identity } from '../../../core/shared/utils'
 import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
-import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
+import {
+  createParseAndPrintOptions,
+  createParseFile,
+  createPrintAndReparseFile,
+  type UtopiaTsWorkers,
+} from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
@@ -622,6 +627,7 @@ import { getDefaultedRemixRootDir } from '../store/remix-derived-data'
 import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-item/component-picker-context-menu'
 import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
+import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { applyValuesAtPath } from '../../canvas/commands/adjust-number-command'
 import { styleP } from '../../inspector/inspector-common'
 
@@ -4107,13 +4113,13 @@ export const UPDATE_FNS = {
       getAllUniqueUidsFromMapping(getUidMappings(editor.projectContents).filePathToUids),
     )
     const parsedResult = getParseFileResult(
-      newFileName,
-      getFilePathMappings(editor.projectContents),
-      templateFile.fileContents.code,
-      null,
-      1,
-      existingUIDs,
-      isSteganographyEnabled(),
+      createParseFile(newFileName, templateFile.fileContents.code, null, 1),
+      createParseAndPrintOptions(
+        getFilePathMappings(editor.projectContents),
+        existingUIDs,
+        isSteganographyEnabled(),
+        getParseCacheOptions(),
+      ),
     )
 
     // 3. write the new text file
@@ -4974,13 +4980,18 @@ export const UPDATE_FNS = {
     const workerUpdates = filesToUpdateResult.filesToUpdate.flatMap((fileToUpdate) => {
       if (fileToUpdate.type === 'printandreparsefile') {
         const printParsedContent = getPrintAndReparseCodeResult(
-          fileToUpdate.filename,
-          filePathMappings,
-          fileToUpdate.parseSuccess,
-          fileToUpdate.stripUIDs,
-          fileToUpdate.versionNumber,
-          filesToUpdateResult.existingUIDs,
-          isSteganographyEnabled(),
+          createPrintAndReparseFile(
+            fileToUpdate.filename,
+            fileToUpdate.parseSuccess,
+            fileToUpdate.stripUIDs,
+            fileToUpdate.versionNumber,
+          ),
+          createParseAndPrintOptions(
+            filePathMappings,
+            filesToUpdateResult.existingUIDs,
+            isSteganographyEnabled(),
+            getParseCacheOptions(),
+          ),
         )
         const updateAction = workerCodeAndParsedUpdate(
           printParsedContent.filename,

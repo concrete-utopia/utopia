@@ -28,6 +28,7 @@ import {
   toggleFeatureEnabled,
   isFeatureEnabled,
   AllFeatureNames,
+  FeaturesHiddenFromMainSettingsPane,
 } from '../../../utils/feature-switches'
 import json5 from 'json5'
 import { load } from '../../../components/editor/actions/actions'
@@ -59,13 +60,17 @@ const themeOptions = [
 const defaultTheme = themeOptions[0]
 
 export const FeatureSwitchesSection = React.memo(() => {
-  if (AllFeatureNames.length > 0) {
+  const featuresToDisplay = React.useMemo(
+    () => AllFeatureNames.filter((name) => !FeaturesHiddenFromMainSettingsPane.includes(name)),
+    [],
+  )
+  if (featuresToDisplay.length > 0) {
     return (
       <Section>
         <UIGridRow padded variant='<---1fr--->|------172px-------|'>
           <H2>Experimental Toggle Features</H2>
         </UIGridRow>
-        {AllFeatureNames.map((name) => (
+        {featuresToDisplay.map((name) => (
           <FeatureSwitchRow key={`feature-switch-${name}`} name={name} />
         ))}
       </Section>
