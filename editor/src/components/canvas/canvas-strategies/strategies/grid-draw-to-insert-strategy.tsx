@@ -180,7 +180,7 @@ const gridDrawToInsertStrategyInner =
               showGridControls('mid-interaction', targetParent),
               updateHighlightedViews('mid-interaction', [targetParent]),
             ],
-            [],
+            [targetParent],
             customStatePatch,
           )
         }
