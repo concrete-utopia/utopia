@@ -74,16 +74,13 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
 
       const {
         commands: moveCommands,
-        targetCell: targetGridCellData,
-        draggingFromCell,
-        originalRootCell,
+        targetCell,
         targetRootCell,
       } = runGridRearrangeMove(
         targetElement,
         selectedElement,
         canvasState.startingMetadata,
         interactionSession.interactionData,
-        customState.grid,
       )
       if (moveCommands.length === 0) {
         return emptyStrategyApplicationResult
@@ -100,9 +97,8 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
         [...selectedElements, targetElement],
         {
           grid: {
-            targetCellData: targetGridCellData,
-            draggingFromCell: draggingFromCell,
-            originalRootCell: originalRootCell,
+            ...customState.grid,
+            targetCellData: targetCell,
             currentRootCell: targetRootCell,
           },
           duplicatedElementNewUids: duplicatedElementNewUids,

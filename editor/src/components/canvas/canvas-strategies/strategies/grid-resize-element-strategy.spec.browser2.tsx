@@ -7,7 +7,13 @@ import type {
 } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { getRectCenter, localRectangle } from '../../../../core/shared/math-utils'
+import {
+  getRectCenter,
+  localPoint,
+  type LocalPoint,
+  localRectangle,
+  offsetPoint,
+} from '../../../../core/shared/math-utils'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { GridResizeEdgeTestId } from '../../controls/grid-controls'
 import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
@@ -41,6 +47,37 @@ async function runCellResizeTest(
         height: targetGridCell.getBoundingClientRect().height,
       }),
     ),
+    {
+      moveBeforeMouseDown: true,
+    },
+  )
+}
+
+async function runCellResizeTestWithDragVector(
+  editor: EditorRenderResult,
+  edge: GridResizeEdge,
+  dragVector: LocalPoint,
+  elementPathToDrag: ElementPath = EP.fromString('sb/scene/grid/ddd'),
+) {
+  await selectComponentsForTest(editor, [elementPathToDrag])
+
+  const resizeControl = editor.renderedDOM.getByTestId(GridResizeEdgeTestId(edge))
+
+  const resizeControlCenter = getRectCenter(
+    localRectangle({
+      x: resizeControl.getBoundingClientRect().x,
+      y: resizeControl.getBoundingClientRect().y,
+      width: resizeControl.getBoundingClientRect().width,
+      height: resizeControl.getBoundingClientRect().height,
+    }),
+  )
+  await mouseDragFromPointToPoint(
+    resizeControl,
+    resizeControlCenter,
+    offsetPoint(resizeControlCenter, dragVector),
+    {
+      moveBeforeMouseDown: true,
+    },
   )
 }
 
@@ -210,6 +247,47 @@ describe('grid resize element strategy', () => {
         })
       }
     })
+  })
+
+  it('can resize element with mouse move outside of grid cells', async () => {
+    const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
+    await runCellResizeTest(
+      editor,
+      'column-end',
+      gridCellTargetId(EP.fromString('sb/scene/grid'), 1, 8),
+    )
+
+    {
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+        editor.renderedDOM.getByTestId('grid-child').style
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: '9',
+        gridColumnStart: '7',
+        gridRowEnd: 'auto',
+        gridRowStart: '2',
+      })
+    }
+
+    {
+      // moving a 2 cell wide element in the middle, over the gap between 2 cells
+      await runCellResizeTestWithDragVector(
+        editor,
+        'row-start',
+        localPoint({
+          x: 0,
+          y: -50,
+        }),
+      )
+
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+        editor.renderedDOM.getByTestId('grid-child').style
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: '9',
+        gridColumnStart: '7',
+        gridRowEnd: '3',
+        gridRowStart: '1',
+      })
+    }
   })
 
   it('removes the grid-area prop on resize', async () => {

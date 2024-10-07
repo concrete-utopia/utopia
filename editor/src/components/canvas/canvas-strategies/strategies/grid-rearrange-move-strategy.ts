@@ -130,7 +130,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         ),
       ]
 
-      const { commands, patch } =
+      const { commands, patch, elementsToRerender } =
         strategyToApply.type === 'GRID_REARRANGE'
           ? getCommandsAndPatchForGridRearrange(
               canvasState,
@@ -155,10 +155,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
 
       return strategyApplicationResult(
         [...midInteractionCommands, ...onCompleteCommands, ...commands],
-        // FIXME: This was added as a default value in https://github.com/concrete-utopia/utopia/pull/6408
-        // This was to maintain the existing behaviour, but it should be replaced with a more specific value
-        // appropriate to this particular case.
-        'rerender-all-elements',
+        elementsToRerender,
         patch,
       )
     },
@@ -170,35 +167,32 @@ function getCommandsAndPatchForGridRearrange(
   interactionData: DragInteractionData,
   customState: CustomStrategyState,
   selectedElement: ElementPath,
-): { commands: CanvasCommand[]; patch: CustomStrategyStatePatch } {
+): {
+  commands: CanvasCommand[]
+  patch: CustomStrategyStatePatch
+  elementsToRerender: ElementPath[]
+} {
   if (interactionData.drag == null) {
-    return { commands: [], patch: {} }
+    return { commands: [], patch: {}, elementsToRerender: [] }
   }
 
-  const {
-    commands,
-    targetCell: targetGridCell,
-    draggingFromCell,
-    originalRootCell,
-    targetRootCell,
-  } = runGridRearrangeMove(
+  const { commands, targetCell, targetRootCell } = runGridRearrangeMove(
     selectedElement,
     selectedElement,
     canvasState.startingMetadata,
     interactionData,
-    customState.grid,
   )
 
   return {
     commands: commands,
     patch: {
       grid: {
-        targetCellData: targetGridCell,
-        draggingFromCell: draggingFromCell,
-        originalRootCell: originalRootCell,
+        ...customState.grid,
+        targetCellData: targetCell,
         currentRootCell: targetRootCell,
       },
     },
+    elementsToRerender: [EP.parentPath(selectedElement)],
   }
 }
 
@@ -211,9 +205,13 @@ function getCommandsAndPatchForReparent(
   targetElement: ElementPath,
   strategyLifecycle: InteractionLifecycle,
   gridFrame: CanvasRectangle,
-): { commands: CanvasCommand[]; patch: CustomStrategyStatePatch } {
+): {
+  commands: CanvasCommand[]
+  patch: CustomStrategyStatePatch
+  elementsToRerender: ElementPath[]
+} {
   if (interactionData.drag == null) {
-    return { commands: [], patch: {} }
+    return { commands: [], patch: {}, elementsToRerender: [] }
   }
 
   function applyReparent() {
@@ -232,6 +230,7 @@ function getCommandsAndPatchForReparent(
         return applyGridReparent(
           canvasState,
           interactionData,
+          interactionSession,
           customState,
           strategy.target,
           [targetElement],
@@ -286,6 +285,10 @@ function getCommandsAndPatchForReparent(
   return {
     commands: commands,
     patch: result.customStatePatch,
+    elementsToRerender: [
+      EP.parentPath(targetElement),
+      strategy.target.newParent.intendedParentPath,
+    ],
   }
 }
 

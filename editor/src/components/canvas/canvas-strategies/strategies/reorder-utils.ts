@@ -130,7 +130,7 @@ export function applyReorderCommon(
     }
   } else {
     // Fallback for when the checks above are not satisfied.
-    return strategyApplicationResult([setCursorCommand(CSSCursor.Move)], 'rerender-all-elements')
+    return strategyApplicationResult([setCursorCommand(CSSCursor.Move)], [])
   }
 }
 

@@ -13,7 +13,7 @@ import {
 import { fileTypeFromFileName } from './project-file-utils'
 import { assetResultForBase64, getFileExtension, imageResultForBase64 } from '../shared/file-utils'
 import type { ProjectContentTreeRoot } from '../../components/assets'
-import { gitBlobChecksumFromBuffer } from '../../components/assets'
+import { gitBlobChecksumFromBuffer } from '../shared/file-utils'
 import { addFileToProjectContents, walkContentsTreeAsync } from '../../components/assets'
 import type { Either } from '../shared/either'
 import { isRight, left, right } from '../shared/either'

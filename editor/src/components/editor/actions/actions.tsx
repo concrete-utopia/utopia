@@ -155,7 +155,12 @@ import {
 import * as PP from '../../../core/shared/property-path'
 import { assertNever, fastForEach, getProjectLockedKey, identity } from '../../../core/shared/utils'
 import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
-import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
+import {
+  createParseAndPrintOptions,
+  createParseFile,
+  createPrintAndReparseFile,
+  type UtopiaTsWorkers,
+} from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
@@ -239,7 +244,6 @@ import type {
   ScrollToElement,
   SelectAllSiblings,
   SelectComponents,
-  SendPreviewModel,
   SetAspectRatioLock,
   SetCanvasFrames,
   SetCodeEditorBuildErrors,
@@ -304,7 +308,6 @@ import type {
   UpdateMouseButtonsPressed,
   UpdateNodeModulesContents,
   UpdatePackageJson,
-  UpdatePreviewConnected,
   UpdateProjectContents,
   UpdatePropertyControlsInfo,
   WrapInElement,
@@ -624,6 +627,7 @@ import { getDefaultedRemixRootDir } from '../store/remix-derived-data'
 import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-item/component-picker-context-menu'
 import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
+import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { applyValuesAtPath } from '../../canvas/commands/adjust-number-command'
 import { styleP } from '../../inspector/inspector-common'
 
@@ -999,10 +1003,6 @@ export function restoreEditorState(
     topmenu: {
       formulaBarMode: desiredEditor.topmenu.formulaBarMode,
       formulaBarFocusCounter: currentEditor.topmenu.formulaBarFocusCounter,
-    },
-    preview: {
-      visible: currentEditor.preview.visible,
-      connected: currentEditor.preview.connected,
     },
     home: {
       visible: currentEditor.home.visible,
@@ -2966,14 +2966,6 @@ export const UPDATE_FNS = {
             visible: action.visible,
           },
         }
-      case 'preview':
-        return {
-          ...editor,
-          preview: {
-            ...editor.preview,
-            visible: action.visible,
-          },
-        }
       case 'codeEditor':
         return {
           ...editor,
@@ -3067,14 +3059,6 @@ export const UPDATE_FNS = {
           inspector: {
             ...editor.inspector,
             visible: !editor.inspector.visible,
-          },
-        }
-      case 'preview':
-        return {
-          ...editor,
-          preview: {
-            ...editor.preview,
-            visible: !editor.preview.visible,
           },
         }
       case 'projectsettings':
@@ -3743,12 +3727,6 @@ export const UPDATE_FNS = {
       projectDescription: action.description,
     }
   },
-
-  UPDATE_PREVIEW_CONNECTED: (action: UpdatePreviewConnected, editor: EditorModel): EditorModel => {
-    return produce(editor, (editorState) => {
-      editorState.preview.connected = action.connected
-    })
-  },
   ALIGN_SELECTED_VIEWS: (action: AlignSelectedViews, editor: EditorModel): EditorModel => {
     return alignOrDistributeSelectedViews(editor, action.alignment)
   },
@@ -3761,9 +3739,6 @@ export const UPDATE_FNS = {
   SHOW_CONTEXT_MENU: (action: ShowContextMenu, editor: EditorModel): EditorModel => {
     // side effect!
     openMenu(action.menuName, action.event)
-    return editor
-  },
-  SEND_PREVIEW_MODEL: (action: SendPreviewModel, editor: EditorModel): EditorModel => {
     return editor
   },
   UPDATE_FILE_PATH: (
@@ -4138,13 +4113,13 @@ export const UPDATE_FNS = {
       getAllUniqueUidsFromMapping(getUidMappings(editor.projectContents).filePathToUids),
     )
     const parsedResult = getParseFileResult(
-      newFileName,
-      getFilePathMappings(editor.projectContents),
-      templateFile.fileContents.code,
-      null,
-      1,
-      existingUIDs,
-      isSteganographyEnabled(),
+      createParseFile(newFileName, templateFile.fileContents.code, null, 1),
+      createParseAndPrintOptions(
+        getFilePathMappings(editor.projectContents),
+        existingUIDs,
+        isSteganographyEnabled(),
+        getParseCacheOptions(),
+      ),
     )
 
     // 3. write the new text file
@@ -5005,13 +4980,18 @@ export const UPDATE_FNS = {
     const workerUpdates = filesToUpdateResult.filesToUpdate.flatMap((fileToUpdate) => {
       if (fileToUpdate.type === 'printandreparsefile') {
         const printParsedContent = getPrintAndReparseCodeResult(
-          fileToUpdate.filename,
-          filePathMappings,
-          fileToUpdate.parseSuccess,
-          fileToUpdate.stripUIDs,
-          fileToUpdate.versionNumber,
-          filesToUpdateResult.existingUIDs,
-          isSteganographyEnabled(),
+          createPrintAndReparseFile(
+            fileToUpdate.filename,
+            fileToUpdate.parseSuccess,
+            fileToUpdate.stripUIDs,
+            fileToUpdate.versionNumber,
+          ),
+          createParseAndPrintOptions(
+            filePathMappings,
+            filesToUpdateResult.existingUIDs,
+            isSteganographyEnabled(),
+            getParseCacheOptions(),
+          ),
         )
         const updateAction = workerCodeAndParsedUpdate(
           printParsedContent.filename,
@@ -6396,10 +6376,6 @@ export async function load(
     ],
     'everyone',
   )
-}
-
-export function isSendPreviewModel(action: any): action is SendPreviewModel {
-  return action != null && (action as SendPreviewModel).action === 'SEND_PREVIEW_MODEL'
 }
 
 function saveFileInProjectContents(

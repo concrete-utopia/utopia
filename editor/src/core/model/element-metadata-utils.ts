@@ -2924,3 +2924,13 @@ export function getZIndexOrderedViewsWithoutDirectChildren(
   })
   return filteredTargets
 }
+
+export function countSetProperties(
+  targets: PropertyPath[],
+  elementProps: PropsOrJSXAttributes,
+): number {
+  return targets.filter((curr) => {
+    const attr = getSimpleAttributeAtPath(elementProps, curr)
+    return isRight(attr) && attr.value != null
+  }, 0).length
+}

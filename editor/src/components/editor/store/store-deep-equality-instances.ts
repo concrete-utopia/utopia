@@ -313,7 +313,6 @@ import type {
   EditorStateGoogleFontsResources,
   EditorStateProjectSettings,
   EditorStateTopMenu,
-  EditorStatePreview,
   EditorStateHome,
   FileDeleteModal,
   ModalDialog,
@@ -398,7 +397,6 @@ import {
   editorStateGoogleFontsResources,
   editorStateProjectSettings,
   editorStateTopMenu,
-  editorStatePreview,
   editorStateHome,
   fileDeleteModal,
   fileOverwriteModal,
@@ -2025,11 +2023,13 @@ export const GridDimensionKeepDeepEquality: KeepDeepEqualityCall<GridDimension> 
   )
 
 export const GridCSSRepeatKeepDeepEquality: KeepDeepEqualityCall<GridCSSRepeat> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (p) => p.times,
     createCallWithTripleEquals(),
     (p) => p.value,
     arrayDeepEquality(GridDimensionKeepDeepEquality),
+    (p) => p.areaName,
+    NullableStringKeepDeepEquality,
     gridCSSRepeat,
   )
 
@@ -2368,6 +2368,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.elementGridPropertiesFromProps,
         newSize.rowGap,
         newSize.columnGap,
+        newSize.gridCellGlobalFrames,
         newSize.justifySelf,
         newSize.alignSelf,
       )
@@ -4397,15 +4398,6 @@ export const EditorStateTopMenuKeepDeepEquality: KeepDeepEqualityCall<EditorStat
     editorStateTopMenu,
   )
 
-export const EditorStatePreviewKeepDeepEquality: KeepDeepEqualityCall<EditorStatePreview> =
-  combine2EqualityCalls(
-    (preview) => preview.visible,
-    BooleanKeepDeepEquality,
-    (preview) => preview.connected,
-    BooleanKeepDeepEquality,
-    editorStatePreview,
-  )
-
 export const EditorStateHomeKeepDeepEquality: KeepDeepEqualityCall<EditorStateHome> =
   combine1EqualityCall((preview) => preview.visible, BooleanKeepDeepEquality, editorStateHome)
 
@@ -5241,7 +5233,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   )
   const navigatorResults = NavigatorStateKeepDeepEquality(oldValue.navigator, newValue.navigator)
   const topmenuResults = EditorStateTopMenuKeepDeepEquality(oldValue.topmenu, newValue.topmenu)
-  const previewResults = EditorStatePreviewKeepDeepEquality(oldValue.preview, newValue.preview)
   const homeResults = EditorStateHomeKeepDeepEquality(oldValue.home, newValue.home)
   const lastUsedFontResults = nullableDeepEquality(FontSettingsKeepDeepEquality)(
     oldValue.lastUsedFont,
@@ -5436,7 +5427,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     projectSettingsResults.areEqual &&
     navigatorResults.areEqual &&
     topmenuResults.areEqual &&
-    previewResults.areEqual &&
     homeResults.areEqual &&
     lastUsedFontResults.areEqual &&
     modalResults.areEqual &&
@@ -5522,7 +5512,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       projectSettingsResults.value,
       navigatorResults.value,
       topmenuResults.value,
-      previewResults.value,
       homeResults.value,
       lastUsedFontResults.value,
       modalResults.value,

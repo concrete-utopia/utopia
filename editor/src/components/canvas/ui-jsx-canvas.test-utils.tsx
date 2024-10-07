@@ -60,8 +60,13 @@ export interface PartialCanvasProps {
 }
 
 export const dumbResolveFn = (filenames: Array<string>): CurriedResolveFn => {
-  return (_: ProjectContentTreeRoot) => (importOrigin: string, toImport: string) =>
-    resolveTestFiles(filenames, importOrigin, toImport)
+  return (_: ProjectContentTreeRoot) => (importOrigin: string, toImport: string) => {
+    const result = resolveTestFiles(filenames, importOrigin, toImport)
+    if (!isRight(result)) {
+      console.error(result.value)
+    }
+    return result
+  }
 }
 
 function resolveTestFiles(
@@ -72,7 +77,8 @@ function resolveTestFiles(
   let normalizedName = normalizeName(importOrigin, toImport)
   // Partly restoring what `normalizeName` strips away.
   if (toImport.startsWith('.')) {
-    normalizedName = path.normalize(`${importOrigin}/${normalizedName}`)
+    const parsedOrigin = path.parse(importOrigin)
+    normalizedName = path.normalize(`${parsedOrigin.dir}/${normalizedName}`)
   } else if (toImport.startsWith('/')) {
     normalizedName = `/${normalizedName}`
   }
@@ -92,7 +98,9 @@ function resolveTestFiles(
     case UiFilePath:
       return right(UiFilePath)
     default:
-      return left(`Test error, the dumbResolveFn did not know about this file: ${toImport}`)
+      return left(
+        `Test error, the dumbResolveFn did not know about this file: ${toImport}, got ${normalizedName}`,
+      )
   }
 }
 

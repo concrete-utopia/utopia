@@ -15,7 +15,7 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { setGridPropsCommands } from './grid-helpers'
-import { getGridCellBoundsFromCanvas } from './grid-cell-bounds'
+import { getGridChildCellCoordBoundsFromCanvas } from './grid-cell-bounds'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 
 export function gridRearrangeResizeKeyboardStrategy(
@@ -54,7 +54,7 @@ export function gridRearrangeResizeKeyboardStrategy(
   }
   const gridTemplate = grid.specialSizeMeasurements.containerGridProperties
 
-  const initialCellBounds = getGridCellBoundsFromCanvas(cell, grid)
+  const initialCellBounds = getGridChildCellCoordBoundsFromCanvas(cell, grid)
   if (initialCellBounds == null) {
     return null
   }
@@ -133,10 +133,7 @@ export function gridRearrangeResizeKeyboardStrategy(
           gridRowStart,
           gridRowEnd,
         }),
-        // FIXME: This was added as a default value in https://github.com/concrete-utopia/utopia/pull/6408
-        // This was to maintain the existing behaviour, but it should be replaced with a more specific value
-        // appropriate to this particular case.
-        'rerender-all-elements',
+        [parentGridPath],
       )
     },
   }

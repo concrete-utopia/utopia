@@ -43,10 +43,11 @@ import {
   getStyleAttributesForFrameInAbsolutePosition,
   updateInsertionSubjectWithAttributes,
 } from './draw-to-insert-metastrategy'
-import { setGridPropsCommands } from './grid-helpers'
+import { getMetadataWithGridCellBounds, setGridPropsCommands } from './grid-helpers'
 import { newReparentSubjects } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
 import { getGridCellUnderMouseFromMetadata } from './grid-cell-bounds'
+import { nukeAllAbsolutePositioningPropsCommands } from '../../../inspector/inspector-common'
 
 export const gridDrawToInsertText: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -131,10 +132,13 @@ const gridDrawToInsertStrategyInner =
       canvasState.propertyControlsInfo,
     )?.newParent.intendedParentPath
 
-    const parent = MetadataUtils.findElementByElementPath(
-      canvasState.startingMetadata,
-      targetParent,
-    )
+    const { metadata: parent, customStrategyState: updatedCustomState } =
+      getMetadataWithGridCellBounds(
+        targetParent,
+        canvasState.startingMetadata,
+        interactionSession.latestMetadata,
+        customStrategyState,
+      )
 
     if (targetParent == null || parent == null || !MetadataUtils.isGridLayoutedContainer(parent)) {
       return null
@@ -157,6 +161,17 @@ const gridDrawToInsertStrategyInner =
         const newTargetCell = getGridCellUnderMouseFromMetadata(parent, canvasPointToUse)
 
         if (strategyLifecycle === 'mid-interaction' && interactionData.type === 'HOVER') {
+          const baseCustomState = updatedCustomState ?? customStrategyState
+          const customStatePatch = {
+            ...baseCustomState,
+            grid: {
+              ...baseCustomState.grid,
+              // this is added here during the hover interaction so that
+              // `GridControls` can render the hover highlight based on the
+              // coordinates in `targetCellData`
+              targetCellData: newTargetCell ?? customStrategyState.grid.targetCellData,
+            },
+          }
           return strategyApplicationResult(
             [
               wildcardPatch('mid-interaction', {
@@ -165,17 +180,8 @@ const gridDrawToInsertStrategyInner =
               showGridControls('mid-interaction', targetParent),
               updateHighlightedViews('mid-interaction', [targetParent]),
             ],
-            [],
-            {
-              ...customStrategyState,
-              grid: {
-                ...customStrategyState.grid,
-                // this is added here during the hover interaction so that
-                // `GridControls` can render the hover highlight based on the
-                // coordinates in `targetCellData`
-                targetCellData: newTargetCell ?? customStrategyState.grid.targetCellData,
-              },
-            },
+            [targetParent],
+            customStatePatch,
           )
         }
 
@@ -211,25 +217,10 @@ const gridDrawToInsertStrategyInner =
             ? []
             : getWrappingCommands(insertedElementPath, maybeWrapperWithUid)
 
-        const isClick = interactionData.type === 'DRAG' && interactionData.drag == null
-
-        // for click-to-insert, don't use absolute positioning
-        const clickToInsertCommands = isClick
-          ? [
-              deleteProperties('always', insertedElementPath, [
-                PP.create('style', 'position'),
-                PP.create('style', 'top'),
-                PP.create('style', 'left'),
-                PP.create('style', 'bottom'),
-                PP.create('style', 'right'),
-              ]),
-            ]
-          : []
-
         return strategyApplicationResult(
           [
             insertionCommand,
-            ...clickToInsertCommands,
+            ...nukeAllAbsolutePositioningPropsCommands(insertedElementPath), // do not use absolute positioning in grid cells
             ...setGridPropsCommands(insertedElementPath, gridTemplate, {
               gridRowStart: { numericalPosition: gridCellCoordinates.row },
               gridColumnStart: { numericalPosition: gridCellCoordinates.column },
@@ -259,10 +250,7 @@ const gridDrawToInsertStrategyInner =
                 : null,
             ]),
           ],
-          // FIXME: This was added as a default value in https://github.com/concrete-utopia/utopia/pull/6408
-          // This was to maintain the existing behaviour, but it should be replaced with a more specific value
-          // appropriate to this particular case.
-          'rerender-all-elements',
+          [targetParent],
           {
             strategyGeneratedUidsCache: {
               [insertionSubject.uid]: maybeWrapperWithUid?.uid,

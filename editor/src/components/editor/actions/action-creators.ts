@@ -92,7 +92,6 @@ import type {
   SaveImageSwitchMode,
   SelectAllSiblings,
   SelectComponents,
-  SendPreviewModel,
   SetAspectRatioLock,
   SetCanvasFrames,
   SetCodeEditorBuildErrors,
@@ -144,7 +143,6 @@ import type {
   UpdateKeysPressed,
   UpdateNodeModulesContents,
   UpdatePackageJson,
-  UpdatePreviewConnected,
   UpdatePropertyControlsInfo,
   CloseDesignerFile,
   SetFocusedElement,
@@ -377,7 +375,7 @@ export function toggleDataCanCondense(targets: Array<ElementPath>): ToggleDataCa
 
 export function transientActions(
   actions: Array<EditorAction>,
-  elementsToRerender: Array<ElementPath> | null = null,
+  elementsToRerender: Array<ElementPath>,
 ): TransientActions {
   return {
     action: 'TRANSIENT_ACTIONS',
@@ -974,13 +972,6 @@ export function setProjectDescription(projectDescription: string): SetProjectDes
   }
 }
 
-export function updatePreviewConnected(connected: boolean): UpdatePreviewConnected {
-  return {
-    action: 'UPDATE_PREVIEW_CONNECTED',
-    connected: connected,
-  }
-}
-
 export function alignSelectedViews(alignment: Alignment): AlignSelectedViews {
   return {
     action: 'ALIGN_SELECTED_VIEWS',
@@ -1003,12 +994,6 @@ export function showContextMenu(
     action: 'SHOW_CONTEXT_MENU',
     menuName: menuName,
     event: event,
-  }
-}
-
-export function sendPreviewModel(): SendPreviewModel {
-  return {
-    action: 'SEND_PREVIEW_MODEL',
   }
 }
 
@@ -1261,9 +1246,10 @@ export function updateMetadataInEditorState(
   }
 }
 
-export function runDOMWalker(): RunDOMWalker {
+export function runDOMWalker(restrictToElements: Array<ElementPath> | null): RunDOMWalker {
   return {
     action: 'RUN_DOM_WALKER',
+    restrictToElements: restrictToElements,
   }
 }
 
