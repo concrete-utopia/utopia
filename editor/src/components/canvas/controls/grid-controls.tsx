@@ -498,6 +498,7 @@ export type GridData = {
   columns: number
   cells: number
   metadata: ElementInstanceMetadata
+  isScene: boolean
 }
 
 export function useGridData(elementPaths: ElementPath[]): GridData[] {
@@ -557,6 +558,9 @@ export function useGridData(elementPaths: ElementPath[]): GridData[] {
           rows: rows,
           columns: columns,
           cells: rows * columns,
+          isScene:
+            MetadataUtils.isProbablySceneFromMetadata(targetGridContainer) ||
+            MetadataUtils.isProbablyRemixSceneFromMetadata(targetGridContainer),
         }
       }, elementPaths)
     },
@@ -624,13 +628,6 @@ export const GridRowColumnResizingControls =
       })
     }, [scale, grids])
 
-    function isScene(grid: GridData) {
-      return (
-        MetadataUtils.isProbablySceneFromMetadata(grid.metadata) ||
-        MetadataUtils.isProbablyRemixSceneFromMetadata(grid.metadata)
-      )
-    }
-
     return (
       <CanvasOffsetWrapper>
         {gridsWithVisibleResizeControls.flatMap((grid) => {
@@ -644,7 +641,7 @@ export const GridRowColumnResizingControls =
               gap={grid.columnGap ?? grid.gap}
               padding={grid.padding}
               stripedAreaLength={getStripedAreaLength(grid.gridTemplateRows, grid.gap ?? 0)}
-              isScene={isScene(grid)}
+              isScene={grid.isScene}
             />
           )
         })}
@@ -659,7 +656,7 @@ export const GridRowColumnResizingControls =
               gap={grid.rowGap ?? grid.gap}
               padding={grid.padding}
               stripedAreaLength={getStripedAreaLength(grid.gridTemplateColumns, grid.gap ?? 0)}
-              isScene={isScene(grid)}
+              isScene={grid.isScene}
             />
           )
         })}
