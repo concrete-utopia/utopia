@@ -26,6 +26,8 @@ import type {
 import { InteractionSession } from './canvas-strategies/interaction-state'
 import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import type { MouseButtonsPressed } from '../../utils/mouse'
+import type { FlexDirection } from '../inspector/common/css-utils'
+import type { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -533,3 +535,47 @@ export const EdgePositionBottomRight: EdgePosition = { x: 1, y: 1 }
 export const EdgePositionTopRight: EdgePosition = { x: 1, y: 0 }
 
 export type SelectionLocked = 'locked' | 'locked-hierarchy' | 'selectable'
+
+export type PropertyTag = { type: 'hover' } | { type: 'breakpoint'; name: string }
+
+export interface FlexGapInfo {
+  name: 'gap'
+  gap: CSSNumberWithRenderedValue
+}
+
+export const flexGapInfo = (gap: CSSNumberWithRenderedValue): FlexGapInfo => ({
+  name: 'gap',
+  gap: gap,
+})
+
+export interface FlexDirectionInfo {
+  name: 'flexDirection'
+  flexDirection: FlexDirection
+}
+
+export const flexDirectionInfo = (flexDirection: FlexDirection): FlexDirectionInfo => ({
+  name: 'flexDirection',
+  flexDirection: flexDirection,
+})
+
+export type StylePropInfo = FlexGapInfo | FlexDirectionInfo
+
+export interface StyleProperty<T extends StylePropInfo> {
+  tags: PropertyTag[]
+  value: T
+}
+
+export const stylePropertyWithTags = <T extends StylePropInfo>(
+  tags: PropertyTag[],
+  value: T,
+): StyleProperty<T> => ({
+  tags: tags,
+  value: value,
+})
+
+export const styleProperty = <T extends StylePropInfo>(value: T): StyleProperty<T> => ({
+  tags: [],
+  value: value,
+})
+
+export type StyleInfo = Array<StyleProperty<StylePropInfo>>
