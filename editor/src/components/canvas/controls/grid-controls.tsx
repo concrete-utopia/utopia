@@ -665,7 +665,6 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
   const dispatch = useDispatch()
   const controls = useAnimationControls()
   const colorTheme = useColorTheme()
-  const features = useRollYourOwnFeatures()
 
   const editorMetadata = useEditorState(
     Substores.metadata,
@@ -819,7 +818,7 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
     'GridControl interactionData',
   )
 
-  const { hoveringStart, mouseCanvasPosition } = useMouseMove(activelyDraggingOrResizingCell)
+  const { hoveringStart } = useMouseMove(activelyDraggingOrResizingCell)
 
   // NOTE: this stuff is meant to be temporary, until we settle on the set of interaction pieces we like.
   // After that, we should get rid of this.
@@ -838,21 +837,13 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
     }
 
     const getCoord = (axis: 'x' | 'y', dimension: 'width' | 'height') => {
-      if (features.Grid.dragVerbatim) {
-        return initialShadowFrame[axis] + drag[axis]
-      } else if (features.Grid.dragMagnetic) {
-        return shadow.globalFrame[axis] + (mouseCanvasPosition[axis] - hoveringStart.point[axis])
-      } else if (features.Grid.dragRatio) {
-        return (
-          shadow.globalFrame[axis] +
-          drag[axis] -
-          (shadow.globalFrame[axis] - dragStart[axis]) -
-          shadow.globalFrame[dimension] *
-            ((dragStart[axis] - initialShadowFrame[axis]) / initialShadowFrame[dimension])
-        )
-      } else {
-        return undefined
-      }
+      return (
+        shadow.globalFrame[axis] +
+        drag[axis] -
+        (shadow.globalFrame[axis] - dragStart[axis]) -
+        shadow.globalFrame[dimension] *
+          ((dragStart[axis] - initialShadowFrame[axis]) / initialShadowFrame[dimension])
+      )
     }
 
     // make sure the shadow is displayed only inside the grid container bounds
@@ -883,10 +874,6 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
     grid.frame.width,
     grid.frame.y,
     grid.frame.height,
-    features.Grid.dragVerbatim,
-    features.Grid.dragMagnetic,
-    features.Grid.dragRatio,
-    mouseCanvasPosition,
   ])
 
   const gridPath = optionalMap(EP.parentPath, shadow?.elementPath)
@@ -916,7 +903,7 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
     gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
     gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
     backgroundColor:
-      activelyDraggingOrResizingCell != null ? features.Grid.activeGridBackground : 'transparent',
+      activelyDraggingOrResizingCell != null ? colorTheme.primary10.value : 'transparent',
     border: `1px solid ${
       activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
     }`,
@@ -960,8 +947,7 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
           const countedColumn = Math.floor(cell % grid.columns) + 1
           const id = gridCellTargetId(grid.elementPath, countedRow, countedColumn)
           const borderID = `${id}-border`
-          const dotgridColor =
-            activelyDraggingOrResizingCell != null ? features.Grid.dotgridColor : 'transparent'
+          const dotgridColor = activelyDraggingOrResizingCell != null ? `#00000033` : 'transparent'
 
           const isActiveCell =
             countedColumn === currentHoveredCell?.column && countedRow === currentHoveredCell?.row
@@ -969,7 +955,7 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
           const borderColor =
             isActiveCell && targetsAreCellsWithPositioning
               ? colorTheme.brandNeonPink.value
-              : features.Grid.inactiveGridColor
+              : `#00000033`
           return (
             <div
               key={id}
@@ -1010,65 +996,62 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
                         : undefined,
                   }}
                 />
-                {when(
-                  features.Grid.dotgrid,
-                  <React.Fragment>
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: -1,
-                        bottom: -1,
-                        left: -1,
-                        right: -1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <div style={{ width: 2, height: 2, backgroundColor: dotgridColor }} />
-                    </div>
-                    <div
-                      style={{
-                        width: 2,
-                        height: 2,
-                        backgroundColor: dotgridColor,
-                        position: 'absolute',
-                        top: -1,
-                        left: -1,
-                      }}
-                    />
-                    <div
-                      style={{
-                        width: 2,
-                        height: 2,
-                        backgroundColor: dotgridColor,
-                        position: 'absolute',
-                        bottom: -1,
-                        left: -1,
-                      }}
-                    />
-                    <div
-                      style={{
-                        width: 2,
-                        height: 2,
-                        backgroundColor: dotgridColor,
-                        position: 'absolute',
-                        top: -1,
-                        right: -1,
-                      }}
-                    />
-                    <div
-                      style={{
-                        width: 2,
-                        height: 2,
-                        backgroundColor: dotgridColor,
-                        position: 'absolute',
-                        bottom: -1,
-                        right: -1,
-                      }}
-                    />
-                  </React.Fragment>,
-                )}
+                <React.Fragment>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: -1,
+                      bottom: -1,
+                      left: -1,
+                      right: -1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <div style={{ width: 2, height: 2, backgroundColor: dotgridColor }} />
+                  </div>
+                  <div
+                    style={{
+                      width: 2,
+                      height: 2,
+                      backgroundColor: dotgridColor,
+                      position: 'absolute',
+                      top: -1,
+                      left: -1,
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: 2,
+                      height: 2,
+                      backgroundColor: dotgridColor,
+                      position: 'absolute',
+                      bottom: -1,
+                      left: -1,
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: 2,
+                      height: 2,
+                      backgroundColor: dotgridColor,
+                      position: 'absolute',
+                      top: -1,
+                      right: -1,
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: 2,
+                      height: 2,
+                      backgroundColor: dotgridColor,
+                      position: 'absolute',
+                      bottom: -1,
+                      right: -1,
+                    }}
+                  />
+                </React.Fragment>
               </React.Fragment>
             </div>
           )
@@ -1109,8 +1092,7 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
         )
       })}
       {/* shadow */}
-      {features.Grid.shadow &&
-      !anyTargetAbsolute &&
+      {!anyTargetAbsolute &&
       shadow != null &&
       initialShadowFrame != null &&
       interactionData?.dragStart != null &&
@@ -1127,7 +1109,7 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
                 ? `${shadow.borderRadius.top}px ${shadow.borderRadius.right}px ${shadow.borderRadius.bottom}px ${shadow.borderRadius.left}px`
                 : 0,
             backgroundColor: 'black',
-            opacity: features.Grid.shadowOpacity,
+            opacity: 0.1,
             border: '1px solid white',
             top: shadowPosition?.y,
             left: shadowPosition?.x,
