@@ -66,6 +66,7 @@ import { fastForEach } from '../../core/shared/utils'
 import type { EditorState, EditorStorePatched } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
 import {
+  getAlignContent,
   getFlexAlignment,
   getFlexJustifyContent,
   getSelfAlignment,
@@ -723,7 +724,7 @@ function getSpecialMeasurements(
   const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
   const justifyContent = getFlexJustifyContent(elementStyle.justifyContent)
-  const alignContent = elementStyle.alignContent
+  const alignContent = getAlignContent(elementStyle.alignContent)
   const alignItems = getFlexAlignment(elementStyle.alignItems)
   const alignSelf = getSelfAlignment(elementStyle.alignSelf)
   const justifySelf = getSelfAlignment(elementStyle.justifySelf)

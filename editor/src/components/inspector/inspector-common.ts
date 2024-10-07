@@ -99,6 +99,75 @@ export function getFlexJustifyContent(value: string | null): FlexJustifyContent 
   }
 }
 
+export type AlignContent =
+  | 'normal'
+  | 'start'
+  | 'center'
+  | 'end'
+  | 'flex-start'
+  | 'flex-end'
+  | 'baseline'
+  | 'first baseline'
+  | 'last baseline'
+  | 'space-between'
+  | 'space-around'
+  | 'space-evenly'
+  | 'stretch'
+  | 'safe center'
+  | 'unsafe center'
+  | 'inherit'
+  | 'initial'
+  | 'revert'
+  | 'revert-layer'
+  | 'unset'
+
+export function getAlignContent(value: string | null): AlignContent | null {
+  switch (value) {
+    case 'normal':
+      return 'normal'
+    case 'start':
+      return 'start'
+    case 'center':
+      return 'center'
+    case 'end':
+      return 'end'
+    case 'flex-start':
+      return 'flex-start'
+    case 'flex-end':
+      return 'flex-end'
+    case 'baseline':
+      return 'baseline'
+    case 'first baseline':
+      return 'first baseline'
+    case 'last baseline':
+      return 'last baseline'
+    case 'space-between':
+      return 'space-between'
+    case 'space-around':
+      return 'space-around'
+    case 'space-evenly':
+      return 'space-evenly'
+    case 'stretch':
+      return 'stretch'
+    case 'safe center':
+      return 'safe center'
+    case 'unsafe center':
+      return 'unsafe center'
+    case 'inherit':
+      return 'inherit'
+    case 'initial':
+      return 'initial'
+    case 'revert':
+      return 'revert'
+    case 'revert-layer':
+      return 'revert-layer'
+    case 'unset':
+      return 'unset'
+    default:
+      return null
+  }
+}
+
 export type FlexAlignment = StartCenterEnd | 'auto' | 'stretch'
 export type SelfAlignment = FlexAlignment | 'end' | 'start'
 
