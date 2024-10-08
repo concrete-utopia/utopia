@@ -161,27 +161,21 @@ const gridDrawToInsertStrategyInner =
         const newTargetCell = getGridCellUnderMouseFromMetadata(parent, canvasPointToUse)
 
         if (strategyLifecycle === 'mid-interaction' && interactionData.type === 'HOVER') {
-          const baseCustomState = updatedCustomState ?? customStrategyState
-          const customStatePatch = {
-            ...baseCustomState,
-            grid: {
-              ...baseCustomState.grid,
-              // this is added here during the hover interaction so that
-              // `GridControls` can render the hover highlight based on the
-              // coordinates in `targetCellData`
-              targetCellData: newTargetCell ?? customStrategyState.grid.targetCellData,
-            },
-          }
           return strategyApplicationResult(
             [
               wildcardPatch('mid-interaction', {
                 selectedViews: { $set: [] },
               }),
-              showGridControls('mid-interaction', targetParent),
+              showGridControls(
+                'mid-interaction',
+                targetParent,
+                newTargetCell?.gridCellCoordinates ?? null,
+                null,
+              ),
               updateHighlightedViews('mid-interaction', [targetParent]),
             ],
             [targetParent],
-            customStatePatch,
+            updatedCustomState ?? undefined,
           )
         }
 

@@ -44,45 +44,36 @@ import {
 } from './grid-cell-bounds'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { assertNever } from '../../../../core/shared/utils'
-
-const emptyGridRearrangeMoveResult = {
-  commands: [],
-  targetCell: null,
-  targetRootCell: null,
-}
+import { showGridControls } from '../../commands/show-grid-controls-command'
 
 export function runGridRearrangeMove(
   targetElement: ElementPath,
   selectedElement: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
   interactionData: DragInteractionData,
-): {
-  commands: CanvasCommand[]
-  targetCell: TargetGridCellData | null
-  targetRootCell: GridCellCoordinates | null
-} {
+): CanvasCommand[] {
   if (interactionData.drag == null) {
-    return emptyGridRearrangeMoveResult
+    return []
   }
 
   const parentGridPath = EP.parentPath(selectedElement)
   const grid = MetadataUtils.findElementByElementPath(jsxMetadata, parentGridPath)
 
   if (grid == null) {
-    return emptyGridRearrangeMoveResult
+    return []
   }
 
   const { gridCellGlobalFrames, containerGridProperties: gridTemplate } =
     grid.specialSizeMeasurements
   if (gridCellGlobalFrames == null) {
-    return emptyGridRearrangeMoveResult
+    return []
   }
 
   const mousePos = offsetPoint(interactionData.dragStart, interactionData.drag)
   const targetCellData = getClosestGridCellToPoint(gridCellGlobalFrames, mousePos)
   const targetCellCoords = targetCellData?.gridCellCoordinates
   if (targetCellCoords == null) {
-    return emptyGridRearrangeMoveResult
+    return []
   }
 
   const draggingFromCellCoords = getClosestGridCellToPoint(
@@ -90,7 +81,7 @@ export function runGridRearrangeMove(
     interactionData.dragStart,
   )?.gridCellCoordinates
   if (draggingFromCellCoords == null) {
-    return emptyGridRearrangeMoveResult
+    return []
   }
 
   const originalElementMetadata = MetadataUtils.findElementByElementPath(
@@ -98,7 +89,7 @@ export function runGridRearrangeMove(
     selectedElement,
   )
   if (originalElementMetadata == null) {
-    return emptyGridRearrangeMoveResult
+    return []
   }
 
   // measured cell coord bounds on the canvas, this is the default when the cell position is not explicitly set
@@ -180,6 +171,13 @@ export function runGridRearrangeMove(
     cellsSortedByPosition: cellsSortedByPosition,
   })
 
+  const updateGridControlsCommand = showGridControls(
+    'mid-interaction',
+    parentGridPath,
+    targetCellData?.gridCellCoordinates ?? null,
+    gridCellCoordinates(row, column),
+  )
+
   switch (moveType) {
     case 'absolute': {
       const absoluteMoveCommands = gridChildAbsoluteMoveCommands(
@@ -187,11 +185,7 @@ export function runGridRearrangeMove(
         MetadataUtils.getFrameOrZeroRectInCanvasCoords(grid.elementPath, jsxMetadata),
         interactionData,
       )
-      return {
-        commands: absoluteMoveCommands,
-        targetCell: targetCellData,
-        targetRootCell: gridCellCoordinates(row, column),
-      }
+      return [...absoluteMoveCommands, updateGridControlsCommand]
     }
     case 'rearrange': {
       const targetRootCell = gridCellCoordinates(row, column)
@@ -204,36 +198,30 @@ export function runGridRearrangeMove(
               canvasRect,
               interactionData,
             )
-      return {
-        commands: [
-          ...gridCellMoveCommands,
-          ...absoluteMoveCommands,
-          reorderElement(
-            'always',
-            selectedElement,
-            absolute(Math.max(indexInSortedCellsForRearrange, 0)),
-          ),
-        ],
-        targetCell: targetCellData,
-        targetRootCell: gridCellCoordinates(row, column),
-      }
+      return [
+        ...gridCellMoveCommands,
+        ...absoluteMoveCommands,
+        reorderElement(
+          'always',
+          selectedElement,
+          absolute(Math.max(indexInSortedCellsForRearrange, 0)),
+        ),
+        updateGridControlsCommand,
+      ]
     }
     case 'reorder': {
-      return {
-        commands: [
-          reorderElement('always', selectedElement, absolute(possiblyReorderIndex)),
-          deleteProperties('always', selectedElement, [
-            PP.create('style', 'gridColumn'),
-            PP.create('style', 'gridRow'),
-            PP.create('style', 'gridColumnStart'),
-            PP.create('style', 'gridColumnEnd'),
-            PP.create('style', 'gridRowStart'),
-            PP.create('style', 'gridRowEnd'),
-          ]),
-        ],
-        targetCell: targetCellData,
-        targetRootCell: targetCellCoords,
-      }
+      return [
+        reorderElement('always', selectedElement, absolute(possiblyReorderIndex)),
+        deleteProperties('always', selectedElement, [
+          PP.create('style', 'gridColumn'),
+          PP.create('style', 'gridRow'),
+          PP.create('style', 'gridColumnStart'),
+          PP.create('style', 'gridColumnEnd'),
+          PP.create('style', 'gridRowStart'),
+          PP.create('style', 'gridRowEnd'),
+        ]),
+        updateGridControlsCommand,
+      ]
     }
     default:
       assertNever(moveType)

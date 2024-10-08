@@ -20,7 +20,7 @@ import {
   printGridCSSNumber,
 } from '../../../components/inspector/common/css-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
+import { mapDropNulls, stripNulls, uniqBy } from '../../../core/shared/array-utils'
 import { defaultEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import type {
@@ -685,9 +685,8 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
   )
 
   const currentHoveredCell = useEditorState(
-    Substores.restOfStore,
-    (store) =>
-      store.strategyState.customStrategyState.grid.targetCellData?.gridCellCoordinates ?? null,
+    Substores.canvas,
+    (store) => store.editor.canvas.controls.gridControlData?.targetCell ?? null,
     'GridControl currentHoveredCell',
   )
 
@@ -864,8 +863,8 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
   const gridPath = optionalMap(EP.parentPath, shadow?.elementPath)
 
   const targetRootCell = useEditorState(
-    Substores.restOfStore,
-    (store) => store.strategyState.customStrategyState.grid.currentRootCell,
+    Substores.canvas,
+    (store) => store.editor.canvas.controls.gridControlData?.rootCell ?? null,
     'GridControl targetRootCell',
   )
 
@@ -1112,18 +1111,18 @@ export interface GridControlsProps {
 
 export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ targets }) => {
   const targetRootCell = useEditorState(
-    Substores.restOfStore,
-    (store) => store.strategyState.customStrategyState.grid.currentRootCell,
+    Substores.canvas,
+    (store) => store.editor.canvas.controls.gridControlData?.rootCell ?? null,
     'GridControls targetRootCell',
   )
 
   const hoveredGrids = useEditorState(
     Substores.canvas,
-    (store) => stripNulls([store.editor.canvas.controls.gridControls]),
+    (store) => stripNulls([store.editor.canvas.controls.gridControlData?.grid]),
     'GridControls hoveredGrids',
   )
 
-  const grids = useGridData([...targets, ...hoveredGrids])
+  const grids = useGridData(uniqBy([...targets, ...hoveredGrids], (a, b) => EP.pathsEqual(a, b)))
 
   if (grids.length === 0) {
     return null
