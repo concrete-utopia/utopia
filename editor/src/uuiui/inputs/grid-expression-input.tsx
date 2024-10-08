@@ -21,7 +21,7 @@ import {
 } from '../radix-components'
 import { Icons, SmallerIcons } from '../icons'
 import { NO_OP } from '../../core/shared/utils'
-import type { ControlStatus } from '../../uuiui-deps'
+import { unless } from '../../utils/react-conditionals'
 
 interface GridExpressionInputProps {
   testId: string
@@ -134,6 +134,18 @@ export const GridExpressionInput = React.memo(
       return items
     }, [keywords, printValue, onUpdateNumberOrKeyword])
 
+    const [inputFocused, setInputFocused] = React.useState(false)
+
+    const inputOnFocus = React.useCallback(() => {
+      setInputFocused(true)
+      onFocus()
+    }, [onFocus])
+
+    const inputOnBlur = React.useCallback(() => {
+      setInputFocused(false)
+      onBlur()
+    }, [onBlur])
+
     return (
       <div
         style={{
@@ -141,6 +153,7 @@ export const GridExpressionInput = React.memo(
           borderRadius: 2,
           display: 'flex',
           alignItems: 'center',
+          flexGrow: 1,
         }}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
@@ -151,30 +164,34 @@ export const GridExpressionInput = React.memo(
           value={printValue}
           onChange={onChange}
           onKeyDown={onKeyDown}
-          onFocus={onFocus}
-          onBlur={onBlur}
+          onFocus={inputOnFocus}
+          onBlur={inputOnBlur}
+          showBorder={dropdownOpen ? true : undefined}
         />
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            right: 0,
-          }}
-        >
-          <DropdownMenu
-            align='end'
-            items={dropdownItems}
-            opener={dropdownButton}
-            onOpenChange={setDropdownOpen}
+        {unless(
+          inputFocused,
+          <div
             style={{
-              marginTop: 8,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              right: 0,
             }}
-          />
-        </div>
+          >
+            <DropdownMenu
+              align='end'
+              items={dropdownItems}
+              opener={dropdownButton}
+              onOpenChange={setDropdownOpen}
+              style={{
+                marginTop: 8,
+              }}
+            />
+          </div>,
+        )}
       </div>
     )
   },
