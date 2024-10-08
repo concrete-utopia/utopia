@@ -106,7 +106,7 @@ export function controlWithProps<P>(value: ControlWithProps<P>): ControlWithProp
   return value
 }
 
-export type StyleInfoReader = (elementPath: ElementPath) => StyleInfo
+export type StyleInfoReader = (elementPath: ElementPath) => StyleInfo | null
 
 export type StyleInfoFactory = (context: {
   projectContents: ProjectContentTreeRoot

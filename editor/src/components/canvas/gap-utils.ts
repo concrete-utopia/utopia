@@ -16,9 +16,12 @@ import type { CanvasRectangle, CanvasVector, Size } from '../../core/shared/math
 import { canvasRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
-import type { FlexDirectionInfo, FlexGapInfo, StyleInfo, StyleProperty } from './canvas-types'
+import type { FlexDirectionInfo, FlexGapInfo, StyleInfo } from './canvas-types'
 import { CSSCursor } from './canvas-types'
-import type { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
+import {
+  cssNumberWithRenderedValue,
+  type CSSNumberWithRenderedValue,
+} from './controls/select-mode/controls-common'
 import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
 import type { Sides } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'
@@ -329,17 +332,23 @@ export interface FlexGapData {
   direction: FlexDirection
 }
 
-export function getFlexData(info: StyleInfo): FlexGapData | null {
-  const gap = info.find((prop): prop is StyleProperty<FlexGapInfo> => prop.value.name === 'gap')
-  if (gap == null) {
+export function getFlexGapData(
+  info: StyleInfo | null,
+  instance: ElementInstanceMetadata | null,
+): FlexGapData | null {
+  if (instance == null || info == null) {
     return null
   }
-  const direction = info.find(
-    (prop): prop is StyleProperty<FlexDirectionInfo> => prop.value.name === 'flexDirection',
-  )
+
+  const gap = info.gap?.value
+  const renderedValuePx = instance.specialSizeMeasurements.gap
+  if (gap == null || renderedValuePx == null) {
+    return null
+  }
+
   return {
-    value: gap.value.gap,
-    direction: direction?.value.flexDirection ?? 'row',
+    value: cssNumberWithRenderedValue(gap, renderedValuePx),
+    direction: info.flexDirection?.value ?? 'row',
   }
 }
 

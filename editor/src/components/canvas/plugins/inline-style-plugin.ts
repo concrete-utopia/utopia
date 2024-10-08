@@ -1,51 +1,22 @@
-import type { ElementPath } from 'utopia-shared/src/types'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
+import type { StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { defaultEither, isLeft, right } from '../../../core/shared/either'
-import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { defaultEither, isLeft, mapEither, right } from '../../../core/shared/either'
+import type { JSXElement } from '../../../core/shared/element-template'
 import { isJSXElement } from '../../../core/shared/element-template'
 import { styleStringInArray } from '../../../utils/common-constants'
-import type { CSSNumber } from '../../inspector/common/css-utils'
-import type { FlexGapData } from '../gap-utils'
+import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
+import { withPropertyTag, type WithPropertyTag } from '../canvas-types'
 import type { StylePlugin } from './style-plugins'
-import { stripNulls } from '../../../core/shared/array-utils'
-import { optionalMap } from '../../../core/shared/optional-utils'
-import { flexDirectionInfo, flexGapInfo, styleProperty } from '../canvas-types'
 
-function maybeFlexGapData(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-): FlexGapData | null {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (
-    element == null ||
-    element.specialSizeMeasurements.display !== 'flex' ||
-    isLeft(element.element) ||
-    !isJSXElement(element.element.value)
-  ) {
-    return null
-  }
-
-  if (element.specialSizeMeasurements.justifyContent?.startsWith('space')) {
-    return null
-  }
-
-  const gap = element.specialSizeMeasurements.gap ?? 0
-
-  const gapFromProps: CSSNumber | undefined = defaultEither(
-    undefined,
-    getLayoutProperty('gap', right(element.element.value.props), styleStringInArray),
-  )
-
-  const flexDirection = element.specialSizeMeasurements.flexDirection ?? 'row'
-
-  return {
-    value: {
-      renderedValuePx: gap,
-      value: gapFromProps ?? null,
-    },
-    direction: flexDirection,
-  }
+function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(
+  prop: P,
+  element: JSXElement,
+): WithPropertyTag<T> | null {
+  return defaultEither(
+    null,
+    mapEither(withPropertyTag, getLayoutProperty(prop, right(element.props), styleStringInArray)),
+  ) as WithPropertyTag<T> | null
 }
 
 export const InlineStylePlugin: StylePlugin = {
@@ -53,14 +24,18 @@ export const InlineStylePlugin: StylePlugin = {
   styleInfoFactory:
     ({ metadata }) =>
     (elementPath) => {
-      const flexGapData = maybeFlexGapData(metadata, elementPath)
-      return stripNulls([
-        optionalMap((gap) => styleProperty(flexGapInfo(gap)), flexGapData?.value),
-        optionalMap(
-          (direction) => styleProperty(flexDirectionInfo(direction)),
-          flexGapData?.direction,
-        ),
-      ])
+      const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
+      if (instance == null || isLeft(instance.element) || !isJSXElement(instance.element.value)) {
+        return null
+      }
+
+      const gap = getPropertyFromInstance('gap', instance.element.value)
+      const flexDirection = getPropertyFromInstance('flexDirection', instance.element.value)
+
+      return {
+        gap: gap,
+        flexDirection: flexDirection,
+      }
     },
   normalizeFromInlineStyle: (editor) => editor,
 }

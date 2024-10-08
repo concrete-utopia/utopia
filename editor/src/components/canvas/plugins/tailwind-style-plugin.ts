@@ -1,16 +1,12 @@
 import * as TailwindClassParser from '@xengine/tailwindcss-class-parser'
-import type { ElementPath, JSXAttributesEntry } from 'utopia-shared/src/types'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isLeft } from '../../../core/shared/either'
-import type {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-} from '../../../core/shared/element-template'
+import type { JSXAttributesEntry } from 'utopia-shared/src/types'
+import { Either, isLeft } from '../../../core/shared/either'
 import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
 import {
   getElementFromProjectContents,
   getJSXElementFromProjectContents,
 } from '../../editor/store/editor-state'
+import type { Parser } from '../../inspector/common/css-utils'
 import { cssParsers } from '../../inspector/common/css-utils'
 import { foldAndApplyCommandsSimple } from './../commands/commands'
 import { mapDropNulls } from '../../../core/shared/array-utils'
@@ -19,65 +15,16 @@ import * as PP from '../../../core/shared/property-path'
 import { updateClassListCommand } from './../commands/update-class-list-command'
 import * as UCL from './../commands/update-class-list-command'
 import type { StylePlugin } from './style-plugins'
-import type { FlexDirectionInfo, FlexGapInfo, StyleProperty, StylePropInfo } from '../canvas-types'
-import { flexDirectionInfo, flexGapInfo, styleProperty } from '../canvas-types'
-import { cssNumberWithRenderedValue } from '../controls/select-mode/controls-common'
+import type { WithPropertyTag } from '../canvas-types'
+import { withPropertyTag } from '../canvas-types'
 import type { Config } from 'tailwindcss/types/config'
 
-function parseTailwindGap(
-  gapValue: string | null,
-  instanceMetadata: ElementInstanceMetadata | null,
-): StyleProperty<FlexGapInfo> | null {
-  if (
-    instanceMetadata == null ||
-    instanceMetadata.specialSizeMeasurements.gap == null ||
-    gapValue == null
-  ) {
-    return null
-  }
-
-  const parsedGapValue = cssParsers.gap(gapValue, null)
-  if (isLeft(parsedGapValue)) {
-    return null
-  }
-
-  return styleProperty(
-    flexGapInfo(
-      cssNumberWithRenderedValue(
-        parsedGapValue.value,
-        instanceMetadata.specialSizeMeasurements.gap,
-      ),
-    ),
-  )
-}
-
-function parseTailwindFlexDirection(
-  directionValue: string | null,
-): StyleProperty<FlexDirectionInfo> | null {
-  if (directionValue == null) {
-    return null
-  }
-  const parsed = cssParsers.flexDirection(directionValue, null)
+function parseTailwindProperty<T>(value: unknown, parse: Parser<T>): WithPropertyTag<T> | null {
+  const parsed = parse(value, null)
   if (isLeft(parsed)) {
     return null
   }
-
-  return styleProperty(flexDirectionInfo(parsed.value))
-}
-
-function parseTailwindClass(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-  { property, value }: { property: string; value: string },
-): StyleProperty<StylePropInfo> | null {
-  switch (property) {
-    case 'gap':
-      return parseTailwindGap(value, MetadataUtils.findElementByElementPath(metadata, elementPath))
-    case 'flexDirection':
-      return parseTailwindFlexDirection(value)
-    default:
-      return null
-  }
+  return withPropertyTag(parsed.value)
 }
 
 const TailwindPropertyMapping = {
@@ -100,34 +47,40 @@ function stringifiedStylePropValue(value: unknown): string | null {
   return null
 }
 
+function getTailwindClassMapping(classes: string[], config: Config | null) {
+  const mapping: Record<string, string> = {}
+  classes.forEach((className) => {
+    const parsed = TailwindClassParser.parse(className, config ?? undefined)
+    if (parsed.kind === 'error' || !isSupportedTailwindProperty(parsed.property)) {
+      return
+    }
+    mapping[parsed.property] = parsed.value
+  })
+  return mapping
+}
+
 export const TailwindPlugin = (config: Config | null): StylePlugin => ({
   name: 'Tailwind',
   styleInfoFactory:
-    ({ metadata, projectContents }) =>
+    ({ projectContents }) =>
     (elementPath) => {
       const classList = getClassNameAttribute(
         getElementFromProjectContents(elementPath, projectContents),
       )?.value
 
       if (classList == null || typeof classList !== 'string') {
-        return []
+        return null
       }
 
-      const classes = classList.split(' ')
+      const mapping = getTailwindClassMapping(classList.split(' '), config)
 
-      const styleProps = mapDropNulls((tailwindClass) => {
-        const parsed = TailwindClassParser.parse(tailwindClass, config ?? undefined)
-        if (parsed.kind === 'error' || !isSupportedTailwindProperty(parsed.property)) {
-          return null
-        }
-
-        return parseTailwindClass(metadata, elementPath, {
-          property: parsed.property,
-          value: parsed.value,
-        })
-      }, classes)
-
-      return styleProps
+      return {
+        gap: parseTailwindProperty(mapping[TailwindPropertyMapping.gap], cssParsers.gap),
+        flexDirection: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.flexDirection],
+          cssParsers.flexDirection,
+        ),
+      }
     },
   normalizeFromInlineStyle: (editorState, elementsToNormalize) => {
     const commands = elementsToNormalize.flatMap((elementPath) => {

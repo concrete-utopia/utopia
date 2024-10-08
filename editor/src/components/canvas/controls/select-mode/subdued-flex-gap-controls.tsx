@@ -6,12 +6,13 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { FlexGapData, PathWithBounds } from '../../gap-utils'
 import {
   gapControlBoundsFromMetadata,
-  getFlexData,
+  getFlexGapData,
   recurseIntoChildrenOfMapOrFragment,
 } from '../../gap-utils'
 import type { ElementPath } from 'utopia-shared/src/types'
 import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import { getActivePlugin } from '../../plugins/style-plugins'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 export interface SubduedFlexGapControlProps {
   hoveredOrFocused: 'hovered' | 'focused'
@@ -39,12 +40,13 @@ export const SubduedFlexGapControl = React.memo<SubduedFlexGapControlProps>((pro
   const flexGap = useEditorState(
     Substores.fullStore,
     (store) =>
-      getFlexData(
+      getFlexGapData(
         getActivePlugin(store.editor).styleInfoFactory({
           projectContents: store.editor.projectContents,
           metadata: store.editor.jsxMetadata,
           elementPathTree: store.editor.elementPathTree,
         })(selectedElement),
+        MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, selectedElement),
       ),
     'FlexGapControl flexGap',
   )

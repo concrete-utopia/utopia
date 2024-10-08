@@ -26,7 +26,7 @@ import type {
 import { InteractionSession } from './canvas-strategies/interaction-state'
 import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import type { MouseButtonsPressed } from '../../utils/mouse'
-import type { FlexDirection } from '../inspector/common/css-utils'
+import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
 import type { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
 
 export const CanvasContainerID = 'canvas-container'
@@ -538,44 +538,21 @@ export type SelectionLocked = 'locked' | 'locked-hierarchy' | 'selectable'
 
 export type PropertyTag = { type: 'hover' } | { type: 'breakpoint'; name: string }
 
-export interface FlexGapInfo {
-  name: 'gap'
-  gap: CSSNumberWithRenderedValue
-}
-
-export const flexGapInfo = (gap: CSSNumberWithRenderedValue): FlexGapInfo => ({
-  name: 'gap',
-  gap: gap,
-})
-
-export interface FlexDirectionInfo {
-  name: 'flexDirection'
-  flexDirection: FlexDirection
-}
-
-export const flexDirectionInfo = (flexDirection: FlexDirection): FlexDirectionInfo => ({
-  name: 'flexDirection',
-  flexDirection: flexDirection,
-})
-
-export type StylePropInfo = FlexGapInfo | FlexDirectionInfo
-
-export interface StyleProperty<T extends StylePropInfo> {
-  tags: PropertyTag[]
+export interface WithPropertyTag<T> {
+  tag: PropertyTag | null
   value: T
 }
 
-export const stylePropertyWithTags = <T extends StylePropInfo>(
-  tags: PropertyTag[],
-  value: T,
-): StyleProperty<T> => ({
-  tags: tags,
+export const withPropertyTag = <T>(value: T): WithPropertyTag<T> => ({
+  tag: null,
   value: value,
 })
 
-export const styleProperty = <T extends StylePropInfo>(value: T): StyleProperty<T> => ({
-  tags: [],
-  value: value,
-})
+export type FlexGapInfo = WithPropertyTag<CSSNumber>
 
-export type StyleInfo = Array<StyleProperty<StylePropInfo>>
+export type FlexDirectionInfo = WithPropertyTag<FlexDirection>
+
+export interface StyleInfo {
+  gap: FlexGapInfo | null
+  flexDirection: FlexDirectionInfo | null
+}
