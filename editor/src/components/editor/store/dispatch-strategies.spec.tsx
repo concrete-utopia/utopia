@@ -199,9 +199,7 @@ describe('interactionStart', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -266,9 +264,7 @@ describe('interactionStart', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -353,9 +349,7 @@ describe('interactionUpdate', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -440,9 +434,7 @@ describe('interactionUpdate', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -521,9 +513,7 @@ describe('interactionHardReset', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -610,9 +600,7 @@ describe('interactionHardReset', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -705,9 +693,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -795,9 +781,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
             "metadataCacheForGrids": Object {},
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},

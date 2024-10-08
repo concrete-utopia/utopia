@@ -361,6 +361,7 @@ import type {
   RenderedAt,
   EditorRemixConfig,
   ErrorBoundaryHandling,
+  GridControlData,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -641,6 +642,7 @@ import type {
   ComponentDescriptorPropertiesBounds,
 } from '../../../core/property-controls/component-descriptor-parser'
 import type { Axis } from '../../../components/canvas/gap-utils'
+import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -2718,6 +2720,30 @@ export const DragToMoveIndicatorFlagsKeepDeepEquality: KeepDeepEqualityCall<Drag
     dragToMoveIndicatorFlags,
   )
 
+export const GridCellCoordinatesKeepDeepEquality: KeepDeepEqualityCall<GridCellCoordinates> =
+  combine2EqualityCalls(
+    (data) => data.row,
+    createCallWithTripleEquals(),
+    (data) => data.column,
+    createCallWithTripleEquals(),
+    (row, column) => ({ row, column }),
+  )
+
+export const GridControlDataKeepDeepEquality: KeepDeepEqualityCall<GridControlData> =
+  combine3EqualityCalls(
+    (data) => data.grid,
+    ElementPathKeepDeepEquality,
+    (data) => data.targetCell,
+    nullableDeepEquality(GridCellCoordinatesKeepDeepEquality),
+    (data) => data.rootCell,
+    nullableDeepEquality(GridCellCoordinatesKeepDeepEquality),
+    (grid, targetCell, rootCell) => ({
+      grid,
+      targetCell,
+      rootCell,
+    }),
+  )
+
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
   combine9EqualityCalls(
     (controls) => controls.snappingGuidelines,
@@ -2736,8 +2762,8 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     DragToMoveIndicatorFlagsKeepDeepEquality,
     (controls) => controls.parentOutlineHighlight,
     nullableDeepEquality(ElementPathKeepDeepEquality),
-    (controls) => controls.gridControls,
-    nullableDeepEquality(ElementPathKeepDeepEquality),
+    (controls) => controls.gridControlData,
+    nullableDeepEquality(GridControlDataKeepDeepEquality),
     editorStateCanvasControls,
   )
 
