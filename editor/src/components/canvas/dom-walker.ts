@@ -931,16 +931,8 @@ function getSpecialMeasurements(
 
   const containerGridPropertiesFromProps = getGridContainerProperties(element.style)
   const containerGridProperties = getGridContainerProperties(elementStyle, {
-    dynamicCols:
-      containerGridPropertiesFromProps.gridTemplateColumns?.type === 'DIMENSIONS' &&
-      containerGridPropertiesFromProps.gridTemplateColumns.dimensions.some((d) =>
-        isDynamicGridRepeat(d),
-      ),
-    dynamicRows:
-      containerGridPropertiesFromProps.gridTemplateRows?.type === 'DIMENSIONS' &&
-      containerGridPropertiesFromProps.gridTemplateRows.dimensions.some((d) =>
-        isDynamicGridRepeat(d),
-      ),
+    dynamicCols: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateColumns),
+    dynamicRows: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateRows),
   })
 
   const containerElementPropertiesFromProps = getGridElementProperties(
@@ -1007,6 +999,10 @@ function getSpecialMeasurements(
     justifySelf,
     alignSelf,
   )
+}
+
+function isDynamicGridTemplate(template: GridAutoOrTemplateBase | null) {
+  return template?.type === 'DIMENSIONS' && template.dimensions.some((d) => isDynamicGridRepeat(d))
 }
 
 function elementContainsOnlyText(element: HTMLElement): boolean {
