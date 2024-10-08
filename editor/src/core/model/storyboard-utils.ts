@@ -1,11 +1,10 @@
+import { getFrameworkHooks } from '../frameworks/framework-hooks'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import {
   addFileToProjectContents,
   getProjectFileByFilePath,
   walkContentsTree,
 } from '../../components/assets'
-import type { EditorModel } from '../../components/editor/action-types'
-import type { EditorState } from '../../components/editor/store/editor-state'
 import { StoryboardFilePath } from '../../components/editor/store/editor-state'
 import type { Compare } from '../../utils/compare'
 import {
@@ -15,20 +14,16 @@ import {
   compareOn,
   comparePrimitive,
 } from '../../utils/compare'
-import type { JSXElement } from '../shared/element-template'
+import type { JSExpression, JSXElement } from '../shared/element-template'
 import {
   emptyComments,
-  isUtopiaJSXComponent,
+  jsExpressionValue,
   unparsedCode,
-  UtopiaJSXComponent,
   utopiaJSXComponent,
 } from '../shared/element-template'
-import { forEachValue } from '../shared/object-utils'
 import { forceNotNull } from '../shared/optional-utils'
-import type { ParseSuccess } from '../shared/project-file-types'
+import type { Imports, ParseSuccess } from '../shared/project-file-types'
 import {
-  EmptyExportsDetail,
-  ExportDetail,
   exportVariable,
   exportVariables,
   forEachParseSuccess,
@@ -42,15 +37,16 @@ import {
   textFile,
   textFileContents,
 } from '../shared/project-file-types'
-import { addImport } from '../workers/common/project-file-utils'
+import { addImport, mergeImports } from '../workers/common/project-file-utils'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
   createSceneFromComponent,
   createStoryboardElement,
 } from './scene-utils'
+import type { MapLike } from 'typescript'
 
-const PossiblyMainComponentNames: Array<string> = ['App', 'Application', 'Main']
+export const PossiblyMainComponentNames: Array<string> = ['App', 'Application', 'Main']
 
 interface DefaultComponentToImport {
   type: 'DEFAULT_COMPONENT_TO_IMPORT'
@@ -62,6 +58,7 @@ interface NamedComponentToImport {
   path: string
   possibleMainComponentName: boolean
   toImport: string
+  toImportAlias?: string
 }
 
 interface UnexportedRenderedComponent {
@@ -70,23 +67,25 @@ interface UnexportedRenderedComponent {
   elementName: string
 }
 
-function defaultComponentToImport(path: string): DefaultComponentToImport {
+export function defaultComponentToImport(path: string): DefaultComponentToImport {
   return {
     type: 'DEFAULT_COMPONENT_TO_IMPORT',
     path: path,
   }
 }
 
-function namedComponentToImport(
+export function namedComponentToImport(
   path: string,
   possibleMainComponentName: boolean,
   toImport: string,
+  toImportAlias?: string,
 ): NamedComponentToImport {
   return {
     type: 'NAMED_COMPONENT_TO_IMPORT',
     path: path,
     possibleMainComponentName: possibleMainComponentName,
     toImport: toImport,
+    toImportAlias: toImportAlias,
   }
 }
 
@@ -101,7 +100,35 @@ function unexportedRenderedComponent(
   }
 }
 
-type ComponentToImport =
+type StoryboardCreationData = {
+  componentToImport: ComponentToImport
+  imports: Imports
+  sceneClassName?: string
+  sceneId?: string
+}
+
+export interface CreationDataFromProject {
+  maybeRootElementId?: string
+  maybeRootElementClass?: string
+  componentsToImport: ComponentToImport[]
+  extraImports: Imports
+}
+
+function createStoryboardCreationData(
+  componentToImport: ComponentToImport,
+  imports: Imports,
+  sceneClassName?: string,
+  sceneId?: string,
+): StoryboardCreationData {
+  return {
+    componentToImport: componentToImport,
+    imports: imports,
+    sceneClassName: sceneClassName,
+    sceneId: sceneId,
+  }
+}
+
+export type ComponentToImport =
   | DefaultComponentToImport
   | NamedComponentToImport
   | UnexportedRenderedComponent
@@ -161,9 +188,11 @@ const compareComponentToImport: Compare<ComponentToImport> = compareCompose(
 export function addStoryboardFileToProject(
   projectContents: ProjectContentTreeRoot,
 ): ProjectContentTreeRoot | null {
+  const frameworkHooks = getFrameworkHooks(projectContents)
   const storyboardFile = getProjectFileByFilePath(projectContents, StoryboardFilePath)
   if (storyboardFile == null) {
     let currentImportCandidate: ComponentToImport | null = null
+    let imports: Imports = {}
     function updateCandidate(importCandidate: ComponentToImport): void {
       if (currentImportCandidate == null) {
         currentImportCandidate = importCandidate
@@ -172,6 +201,14 @@ export function addStoryboardFileToProject(
           currentImportCandidate = importCandidate
         }
       }
+    }
+    const creationData: CreationDataFromProject | null =
+      frameworkHooks.onProjectImport(projectContents)
+    if (creationData != null) {
+      creationData.componentsToImport.forEach((componentToImport) => {
+        updateCandidate(componentToImport)
+      })
+      imports = mergeImports(StoryboardFilePath, [], imports, creationData.extraImports).imports
     }
     walkContentsTree(projectContents, (fullPath, file) => {
       if (isParsedTextFile(file)) {
@@ -234,7 +271,12 @@ export function addStoryboardFileToProject(
                     exportDetail.name,
                   )
                   updateCandidate(
-                    namedComponentToImport(fullPath, possibleMainComponentName, exportDetail.name),
+                    namedComponentToImport(
+                      fullPath,
+                      possibleMainComponentName,
+                      'default',
+                      exportDetail.name,
+                    ),
                   )
                 }
                 break
@@ -266,19 +308,28 @@ export function addStoryboardFileToProject(
     if (currentImportCandidate == null) {
       return null
     } else {
-      return addStoryboardFileForComponent(currentImportCandidate, projectContents)
+      return addStoryboardFile(
+        createStoryboardCreationData(
+          currentImportCandidate,
+          imports,
+          creationData?.maybeRootElementClass,
+          creationData?.maybeRootElementId,
+        ),
+        projectContents,
+      )
     }
   } else {
     return null
   }
 }
 
-function addStoryboardFileForComponent(
-  createFileWithComponent: ComponentToImport,
+function addStoryboardFile(
+  storyboardCreationData: StoryboardCreationData,
   projectContents: ProjectContentTreeRoot,
 ): ProjectContentTreeRoot {
+  const { componentToImport, imports } = storyboardCreationData
   // Add import of storyboard and scene components.
-  let importsResolution = addImport(StoryboardFilePath, [], 'react', null, [], 'React', {})
+  let importsResolution = addImport(StoryboardFilePath, [], 'react', null, [], 'React', imports)
   importsResolution = addImport(
     StoryboardFilePath,
     [],
@@ -291,29 +342,42 @@ function addStoryboardFileForComponent(
   // Create the storyboard variable.
   let sceneElement: JSXElement
   let updatedProjectContents: ProjectContentTreeRoot = projectContents
-  switch (createFileWithComponent.type) {
+  const sceneId = storyboardCreationData.sceneId
+  const sceneAttributes: MapLike<JSExpression> =
+    sceneId != null
+      ? {
+          id: jsExpressionValue(sceneId, emptyComments),
+        }
+      : {}
+  switch (componentToImport.type) {
     case 'NAMED_COMPONENT_TO_IMPORT':
       sceneElement = createSceneFromComponent(
         StoryboardFilePath,
-        createFileWithComponent.toImport,
+        componentToImport.toImportAlias ?? componentToImport.toImport,
         'scene-1',
+        sceneAttributes,
       )
       importsResolution = addImport(
         StoryboardFilePath,
         [],
-        createFileWithComponent.path,
+        componentToImport.path,
         null,
-        [importAlias(createFileWithComponent.toImport)],
+        [importAlias(componentToImport.toImport, componentToImport.toImportAlias)],
         null,
         importsResolution.imports,
       )
       break
     case 'DEFAULT_COMPONENT_TO_IMPORT':
-      sceneElement = createSceneFromComponent(StoryboardFilePath, 'StoryboardComponent', 'scene-1')
+      sceneElement = createSceneFromComponent(
+        StoryboardFilePath,
+        'StoryboardComponent',
+        'scene-1',
+        sceneAttributes,
+      )
       importsResolution = addImport(
         StoryboardFilePath,
         [],
-        createFileWithComponent.path,
+        componentToImport.path,
         'StoryboardComponent',
         [],
         null,
@@ -323,28 +387,29 @@ function addStoryboardFileForComponent(
     case 'UNEXPORTED_RENDERED_COMPONENT':
       sceneElement = createSceneFromComponent(
         StoryboardFilePath,
-        createFileWithComponent.elementName,
+        componentToImport.elementName,
         'scene-1',
+        sceneAttributes,
       )
       importsResolution = addImport(
         StoryboardFilePath,
         [],
-        createFileWithComponent.path,
+        componentToImport.path,
         null,
-        [importAlias(createFileWithComponent.elementName)],
+        [importAlias(componentToImport.elementName)],
         null,
         importsResolution.imports,
       )
       // Modify the targeted file to export the component we're interested in.
       const fileToModify = forceNotNull(
-        `Unable to find file at ${createFileWithComponent.path}`,
-        getProjectFileByFilePath(updatedProjectContents, createFileWithComponent.path),
+        `Unable to find file at ${componentToImport.path}`,
+        getProjectFileByFilePath(updatedProjectContents, componentToImport.path),
       )
       if (isTextFile(fileToModify)) {
         if (isParseSuccess(fileToModify.fileContents.parsed)) {
           const currentSuccess: ParseSuccess = fileToModify.fileContents.parsed
           const updatedExports = mergeExportsDetail(currentSuccess.exportsDetail, [
-            exportVariables([exportVariable(createFileWithComponent.elementName, null)]),
+            exportVariables([exportVariable(componentToImport.elementName, null)]),
           ])
           const updatedParseSuccess = parseSuccess(
             currentSuccess.imports,
@@ -368,25 +433,25 @@ function addStoryboardFileForComponent(
           )
           updatedProjectContents = addFileToProjectContents(
             updatedProjectContents,
-            createFileWithComponent.path,
+            componentToImport.path,
             updatedTextFile,
           )
         } else {
-          throw new Error(`Unexpectedly ${createFileWithComponent.path} is not a parse success.`)
+          throw new Error(`Unexpectedly ${componentToImport.path} is not a parse success.`)
         }
       } else {
-        throw new Error(`${createFileWithComponent.path} was not a text file as expected.`)
+        throw new Error(`${componentToImport.path} was not a text file as expected.`)
       }
       break
     default:
-      const _exhaustiveCheck: never = createFileWithComponent
-      throw new Error(`Unhandled type ${JSON.stringify(createFileWithComponent)}`)
+      const _exhaustiveCheck: never = componentToImport
+      throw new Error(`Unhandled type ${JSON.stringify(componentToImport)}`)
   }
   const storyboardElement = createStoryboardElement([sceneElement], BakedInStoryboardUID)
   const storyboardComponent = utopiaJSXComponent(
     BakedInStoryboardVariableName,
     false,
-    'var',
+    'const',
     'block',
     [],
     null,

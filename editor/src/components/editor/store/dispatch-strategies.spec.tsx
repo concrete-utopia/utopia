@@ -105,7 +105,7 @@ function createEditorStore(
       },
     },
     workers: new UtopiaTsWorkersImplementation(
-      new FakeParserPrinterWorker(),
+      [new FakeParserPrinterWorker()],
       new FakeLinterWorker(),
       new FakeWatchdogWorker(),
     ),
@@ -159,7 +159,7 @@ const testStrategy: MetaCanvasStrategy = (
     apply: function (): StrategyApplicationResult {
       return strategyApplicationResult(
         [wildcardPatch('always', { canvas: { scale: { $set: 100 } } })],
-        'rerender-all-elements',
+        [],
       )
     },
     descriptiveLabel: 'A Test Strategy',
@@ -199,11 +199,7 @@ describe('interactionStart', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -268,11 +264,7 @@ describe('interactionStart', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -357,11 +349,7 @@ describe('interactionUpdate', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -446,11 +434,7 @@ describe('interactionUpdate', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -529,11 +513,7 @@ describe('interactionHardReset', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -620,11 +600,7 @@ describe('interactionHardReset', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -717,11 +693,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -809,11 +781,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "grid": Object {
-            "currentRootCell": null,
-            "draggingFromCell": null,
             "metadataCacheForGrids": Object {},
-            "originalRootCell": null,
-            "targetCellData": null,
           },
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -993,7 +961,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
             },
             apply: function (): StrategyApplicationResult {
               if (interactionSession == null) {
-                return strategyApplicationResult([], 'rerender-all-elements')
+                return strategyApplicationResult([], [])
               }
               expect(canvasState.startingMetadata).not.toBe(interactionSession.latestMetadata)
               expect(canvasState.startingAllElementProps).not.toBe(
@@ -1020,7 +988,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
                   .backgroundColor,
               ).toBeDefined()
               testStrategyRan = true
-              return strategyApplicationResult([], 'rerender-all-elements')
+              return strategyApplicationResult([], [])
             },
           },
         ],

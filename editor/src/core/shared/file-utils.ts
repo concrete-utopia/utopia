@@ -1,4 +1,5 @@
-import { gitBlobChecksumFromBuffer } from '../../components/assets'
+import { memoize } from './memoize'
+import { sha1 } from 'sha.js'
 import stringHash from 'string-hash'
 import type { Size } from './math-utils'
 import { size } from './math-utils'
@@ -263,3 +264,25 @@ export function isJsOrTsFile(filename: string): boolean {
 export function isParseableFile(filename: string): boolean {
   return isJsOrTsFile(filename)
 }
+
+export function gitBlobChecksumFromBuffer(buffer: Buffer): string {
+  // This function returns the same SHA1 checksum string that git would return for the same contents.
+  // Given the contents in the buffer variable, the final checksum is calculated by hashing
+  // a string built as "<prefix><contents>". The prefix looks like "blob <contents_length_in_bytes><null_character>".
+  // Ref: https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
+  const prefix = Buffer.from(`blob ${buffer.byteLength}\0`)
+  const wrapped = Buffer.concat([prefix, buffer])
+  return getSHA1Checksum(wrapped)
+}
+
+function getSHA1ChecksumInner(contents: string | Buffer): string {
+  return new sha1().update(contents).digest('hex')
+}
+
+// Memoized because it can be called for the same piece of code more than once before the
+// checksum gets cached. For example in the canvas strategies and the regular dispatch flow, which don't share
+// those cached checksum objects.
+export const getSHA1Checksum = memoize(getSHA1ChecksumInner, {
+  maxSize: 10,
+  matchesArg: (first, second) => first === second,
+})

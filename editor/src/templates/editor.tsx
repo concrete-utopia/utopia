@@ -10,7 +10,7 @@ import { useAtomsDevtools } from 'jotai-devtools'
 import '../utils/vite-hmr-config'
 import {
   getProjectID,
-  PERFORMANCE_MARKS_ALLOWED,
+  IS_TEST_ENVIRONMENT,
   PROBABLY_ELECTRON,
   PRODUCTION_ENV,
   requireElectron,
@@ -101,7 +101,7 @@ import * as EP from '../core/shared/element-path'
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import type { ElementPath } from '../core/shared/project-file-types'
-import { uniq, uniqBy } from '../core/shared/array-utils'
+import { createArrayWithLength, uniq, uniqBy } from '../core/shared/array-utils'
 import { updateUserDetailsWhenAuthenticated } from '../core/shared/github/helpers'
 import { DispatchContext } from '../components/editor/store/dispatch-context'
 import {
@@ -132,6 +132,9 @@ import {
   runDomSamplerGroups,
 } from '../components/canvas/dom-sampler'
 import { omitWithPredicate } from '../core/shared/object-utils'
+import { getParserWorkerCount } from '../core/workers/common/concurrency-utils'
+import { canMeasurePerformance } from '../core/performance/performance-utils'
+import { getChildGroupsForNonGroupParents } from '../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -165,11 +168,27 @@ function collectElementsToRerenderForTransientActions(
 // for this pass use a union of the two arrays, to make sure we clear a previously focused element from the metadata
 // and let the canvas re-render components that may have a missing child now.
 let lastElementsToRerender: ElementsToRerender = 'rerender-all-elements'
-function fixElementsToRerender(
-  currentElementsToRerender: ElementsToRerender,
+function fixElementsToRerender(elementsToRerender: ElementsToRerender): ElementsToRerender {
+  let fixedElementsToRerender: ElementsToRerender = elementsToRerender
+  if (
+    elementsToRerender !== 'rerender-all-elements' &&
+    lastElementsToRerender !== 'rerender-all-elements'
+  ) {
+    // if the current elements to rerender array doesn't match the previous elements to rerender array, for a single frame let's use the union of the two arrays
+    fixedElementsToRerender = EP.uniqueElementPaths([
+      ...lastElementsToRerender,
+      ...elementsToRerender,
+    ])
+  }
+
+  lastElementsToRerender = fixedElementsToRerender
+  return fixedElementsToRerender
+}
+
+export function collectElementsToRerender(
+  editorStore: EditorStoreFull,
   dispatchedActions: readonly EditorAction[],
 ): ElementsToRerender {
-  // while running transient actions there is an optional elementsToRerender
   const elementsToRerenderTransient = uniqBy<ElementPath>(
     dispatchedActions.reduce(
       collectElementsToRerenderForTransientActions,
@@ -178,22 +197,22 @@ function fixElementsToRerender(
     EP.pathsEqual,
   )
 
-  const currentOrTransientElementsToRerender =
-    elementsToRerenderTransient.length > 0 ? elementsToRerenderTransient : currentElementsToRerender
+  const elementsToRerender =
+    elementsToRerenderTransient.length > 0
+      ? elementsToRerenderTransient
+      : editorStore.patchedEditor.canvas.elementsToRerender
 
-  let fixedElementsToRerender: ElementsToRerender = currentOrTransientElementsToRerender
-  if (
-    currentOrTransientElementsToRerender !== 'rerender-all-elements' &&
-    lastElementsToRerender !== 'rerender-all-elements'
-  ) {
-    // if the current elements to rerender array doesn't match the previous elements to rerender array, for a single frame let's use the union of the two arrays
-    fixedElementsToRerender = EP.uniqueElementPaths([
-      ...lastElementsToRerender,
-      ...currentOrTransientElementsToRerender,
-    ])
-  }
-
-  lastElementsToRerender = currentOrTransientElementsToRerender
+  const fixedElementsWithChildGroups =
+    elementsToRerender === 'rerender-all-elements'
+      ? elementsToRerender
+      : [
+          ...elementsToRerender,
+          ...getChildGroupsForNonGroupParents(
+            editorStore.patchedEditor.jsxMetadata,
+            elementsToRerender,
+          ),
+        ]
+  const fixedElementsToRerender = fixElementsToRerender(fixedElementsWithChildGroups)
   return fixedElementsToRerender
 }
 
@@ -233,7 +252,7 @@ export class Editor {
       )
 
     const workers = new UtopiaTsWorkersImplementation(
-      new RealParserPrinterWorker(),
+      createArrayWithLength(getParserWorkerCount(), () => new RealParserPrinterWorker()),
       new RealLinterWorker(),
       watchdogWorker,
     )
@@ -425,10 +444,7 @@ export class Editor {
     Measure.logActions(dispatchedActions)
 
     const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
-    const PerformanceMarks =
-      (isFeatureEnabled('Debug – Performance Marks (Slow)') ||
-        isFeatureEnabled('Debug – Performance Marks (Fast)')) &&
-      PERFORMANCE_MARKS_ALLOWED
+    const PerformanceMarks = canMeasurePerformance()
 
     const runDispatch = () => {
       const oldEditorState = this.storedState
@@ -460,8 +476,8 @@ export class Editor {
       if (shouldUpdateCanvasStore) {
         // this will re-render the canvas root and potentially the canvas contents itself
         Measure.taskTime(`update canvas ${updateId}`, () => {
-          const currentElementsToRender = fixElementsToRerender(
-            this.storedState.patchedEditor.canvas.elementsToRerender,
+          const currentElementsToRender = collectElementsToRerender(
+            this.storedState,
             dispatchedActions,
           )
           ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
@@ -521,10 +537,11 @@ export class Editor {
 
           // re-render the canvas
           Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
-            ElementsToRerenderGLOBAL.current = fixElementsToRerender(
-              this.storedState.patchedEditor.canvas.elementsToRerender,
+            const currentElementsToRender = collectElementsToRerender(
+              this.storedState,
               dispatchedActions,
-            ) // Mutation!
+            )
+            ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
 
             ReactDOM.flushSync(() => {
               ReactDOM.unstable_batchedUpdates(() => {
@@ -693,7 +710,7 @@ export class Editor {
 let canvasUpdateId: number = 0
 
 const AtomsDevtools = (props: { children: React.ReactNode }) => {
-  if (!PRODUCTION_ENV) {
+  if (!PRODUCTION_ENV && !IS_TEST_ENVIRONMENT) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useAtomsDevtools(`Utopia Jotai Atoms Debug Store`)
   }

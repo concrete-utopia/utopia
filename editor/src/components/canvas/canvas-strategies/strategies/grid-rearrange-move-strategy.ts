@@ -130,12 +130,11 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         ),
       ]
 
-      const { commands, patch } =
+      const { commands, patch, elementsToRerender } =
         strategyToApply.type === 'GRID_REARRANGE'
           ? getCommandsAndPatchForGridRearrange(
               canvasState,
               interactionSession.interactionData,
-              customState,
               selectedElement,
             )
           : getCommandsAndPatchForReparent(
@@ -155,7 +154,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
 
       return strategyApplicationResult(
         [...midInteractionCommands, ...onCompleteCommands, ...commands],
-        [parentGridPath],
+        elementsToRerender,
         patch,
       )
     },
@@ -165,38 +164,27 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
 function getCommandsAndPatchForGridRearrange(
   canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
-  customState: CustomStrategyState,
   selectedElement: ElementPath,
-): { commands: CanvasCommand[]; patch: CustomStrategyStatePatch } {
+): {
+  commands: CanvasCommand[]
+  patch: CustomStrategyStatePatch
+  elementsToRerender: ElementPath[]
+} {
   if (interactionData.drag == null) {
-    return { commands: [], patch: {} }
+    return { commands: [], patch: {}, elementsToRerender: [] }
   }
 
-  const {
-    commands,
-    targetCell: targetGridCell,
-    draggingFromCell,
-    originalRootCell,
-    targetRootCell,
-  } = runGridRearrangeMove(
+  const commands = runGridRearrangeMove(
     selectedElement,
     selectedElement,
     canvasState.startingMetadata,
     interactionData,
-    customState.grid,
   )
 
   return {
     commands: commands,
-    patch: {
-      grid: {
-        ...customState.grid,
-        targetCellData: targetGridCell,
-        draggingFromCell: draggingFromCell,
-        originalRootCell: originalRootCell,
-        currentRootCell: targetRootCell,
-      },
-    },
+    patch: {},
+    elementsToRerender: [EP.parentPath(selectedElement)],
   }
 }
 
@@ -209,9 +197,13 @@ function getCommandsAndPatchForReparent(
   targetElement: ElementPath,
   strategyLifecycle: InteractionLifecycle,
   gridFrame: CanvasRectangle,
-): { commands: CanvasCommand[]; patch: CustomStrategyStatePatch } {
+): {
+  commands: CanvasCommand[]
+  patch: CustomStrategyStatePatch
+  elementsToRerender: ElementPath[]
+} {
   if (interactionData.drag == null) {
-    return { commands: [], patch: {} }
+    return { commands: [], patch: {}, elementsToRerender: [] }
   }
 
   function applyReparent() {
@@ -285,6 +277,10 @@ function getCommandsAndPatchForReparent(
   return {
     commands: commands,
     patch: result.customStatePatch,
+    elementsToRerender: [
+      EP.parentPath(targetElement),
+      strategy.target.newParent.intendedParentPath,
+    ],
   }
 }
 
