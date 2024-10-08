@@ -59,7 +59,10 @@ import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import CanvasActions from '../canvas-actions'
-import type { ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
+import type {
+  ControlWithProps,
+  WhenToShowControl,
+} from '../canvas-strategies/canvas-strategy-types'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import type {
   GridResizeEdge,
@@ -1837,12 +1840,15 @@ function gridPlaceholderWidthOrHeight(scale: number): string {
   return `calc(100% + ${(placeholderBorderBaseWidth * 2) / scale}px)`
 }
 
-export function controlsForGridPlaceholders(gridPath: ElementPath): ControlWithProps<any> {
+export function controlsForGridPlaceholders(
+  gridPath: ElementPath,
+  whenToShow: WhenToShowControl = 'always-visible',
+): ControlWithProps<any> {
   return {
     control: GridControls,
     props: { targets: [gridPath] },
     key: GridControlsKey(gridPath),
-    show: 'always-visible',
+    show: whenToShow,
     priority: 'bottom',
   }
 }

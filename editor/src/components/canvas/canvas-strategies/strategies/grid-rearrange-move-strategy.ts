@@ -77,7 +77,6 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
   }
 
   const strategyToApply = getStrategyToApply(
-    canvasState,
     interactionSession.interactionData,
     parentGridPath,
     canvasState.startingMetadata,
@@ -356,7 +355,6 @@ type StrategyToApply =
     }
 
 function getStrategyToApply(
-  canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
   parentGridPath: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
@@ -364,46 +362,6 @@ function getStrategyToApply(
 ): StrategyToApply | null {
   if (interactionData.drag == null) {
     return null
-  }
-
-  const shouldReparent = interactionData.modifiers.cmd
-  if (shouldReparent) {
-    const pointOnCanvas = offsetPoint(interactionData.originalDragStart, interactionData.drag)
-    const reparentStrategies = findReparentStrategies(
-      canvasState,
-      true,
-      pointOnCanvas,
-      'allow-smaller-parent',
-    )
-
-    const strategy = reparentStrategies[0]
-    if (strategy != null) {
-      switch (strategy.strategy) {
-        case 'REPARENT_AS_ABSOLUTE':
-          return {
-            type: 'REPARENT',
-            name: 'Reparent (Abs)',
-            controlsToRender: controlsForAbsoluteReparent(strategy.target),
-            strategy: strategy,
-          }
-        case 'REPARENT_AS_STATIC':
-          return {
-            type: 'REPARENT',
-            name: 'Reparent (Flex)',
-            controlsToRender: controlsForStaticReparent(strategy.target),
-            strategy: strategy,
-          }
-        case 'REPARENT_INTO_GRID':
-          return {
-            type: 'REPARENT',
-            name: 'Reparent (Grid)',
-            controlsToRender: controlsForGridReparent(strategy.target),
-            strategy: strategy,
-          }
-        default:
-          assertNever(strategy.strategy)
-      }
-    }
   }
 
   const element = MetadataUtils.findElementByElementPath(jsxMetadata, cell)
@@ -417,6 +375,6 @@ function getStrategyToApply(
   return {
     type: 'GRID_REARRANGE',
     name: name,
-    controlsToRender: [controlsForGridPlaceholders(parentGridPath)],
+    controlsToRender: [controlsForGridPlaceholders(parentGridPath, 'visible-only-while-active')],
   }
 }
