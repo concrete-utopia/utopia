@@ -623,6 +623,7 @@ import {
   isComponentDescriptorFile,
   createModuleEvaluator,
   maybeUpdatePropertyControls,
+  createRequireFn,
 } from '../../../core/property-controls/property-controls-local'
 import {
   addNewFeaturedRouteToPackageJson,
@@ -4840,60 +4841,8 @@ export const UPDATE_FNS = {
     ) {
       return editor
     }
-    let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
-    let topLevelComponentRendererComponents: {
-      current: MapLike<MapLike<ComponentRendererComponent>>
-    } = { current: {} }
 
-    let resolvedFiles: MapLike<MapLike<any>> = {}
-    let resolvedFileNames: Array<string> = [TailwindConfigPath]
-
-    const requireFn = editor.codeResultCache.curriedRequireFn(editor.projectContents)
-    const resolve = editor.codeResultCache.curriedResolveFn(editor.projectContents)
-
-    const customRequire = (importOrigin: string, toImport: string) => {
-      if (resolvedFiles[importOrigin] == null) {
-        resolvedFiles[importOrigin] = []
-      }
-      let resolvedFromThisOrigin = resolvedFiles[importOrigin]
-
-      const alreadyResolved = resolvedFromThisOrigin[toImport] !== undefined
-      const filePathResolveResult = alreadyResolved
-        ? left<string, string>('Already resolved')
-        : resolve(importOrigin, toImport)
-
-      forEachRight(filePathResolveResult, (filepath) => resolvedFileNames.push(filepath))
-
-      const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
-        resolvedFromThisOrigin,
-        toImport,
-        editor.projectContents,
-        customRequire,
-        mutableContextRef,
-        topLevelComponentRendererComponents,
-        TailwindConfigPath,
-        editor.canvas.base64Blobs,
-        editor.hiddenInstances,
-        editor.displayNoneInstances,
-        emptyUiJsxCanvasContextData(),
-        NO_OP,
-        false,
-        filePathResolveResult,
-        null,
-      )
-      return foldEither(
-        () => {
-          // We did not find a ParseSuccess, fallback to standard require Fn
-          return requireFn(importOrigin, toImport, false)
-        },
-        (scope) => {
-          // Return an artificial exports object that contains our ComponentRendererComponents
-          return scope
-        },
-        resolvedParseSuccess,
-      )
-    }
-
+    const { customRequire } = createRequireFn(editor, TailwindConfigPath)
     const rawConfig = importDefault(customRequire('/', TailwindConfigPath))
 
     return {
