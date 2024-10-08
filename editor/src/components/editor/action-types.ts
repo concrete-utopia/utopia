@@ -936,6 +936,10 @@ export interface UpdatePropertyControlsInfo {
   propertyControlsInfo: PropertyControlsInfo
 }
 
+export interface UpdateTailwindConfig {
+  action: 'UPDATE_TAILWIND_CONFIG'
+}
+
 export interface UpdateText {
   action: 'UPDATE_TEXT'
   target: ElementPath
@@ -1325,6 +1329,7 @@ export type EditorAction =
   | SetPackageStatus
   | SetShortcut
   | UpdatePropertyControlsInfo
+  | UpdateTailwindConfig
   | UpdateText
   | SetFocusedElement
   | ScrollToElement

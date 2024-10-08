@@ -40,6 +40,7 @@ import {
   eitherToMaybe,
   foldEither,
   forceRight,
+  forEachRight,
   isLeft,
   isRight,
   left,
@@ -153,7 +154,13 @@ import {
   unparsed,
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { assertNever, fastForEach, getProjectLockedKey, identity } from '../../../core/shared/utils'
+import {
+  assertNever,
+  fastForEach,
+  getProjectLockedKey,
+  identity,
+  NO_OP,
+} from '../../../core/shared/utils'
 import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
 import {
   createParseAndPrintOptions,
@@ -352,6 +359,7 @@ import type {
   ToggleDataCanCondense,
   UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
+  UpdateTailwindConfig,
 } from '../action-types'
 import { isAlignment, isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -488,7 +496,11 @@ import {
 } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import type { CanvasCommand } from '../../canvas/commands/commands'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
-import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import {
+  attemptToResolveParsedComponents,
+  emptyUiJsxCanvasContextData,
+  type UiJsxCanvasContextData,
+} from '../../canvas/ui-jsx-canvas'
 import { notice } from '../../common/notice'
 import type { ShortcutConfiguration } from '../shortcut-definitions'
 import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
@@ -630,6 +642,11 @@ import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-ut
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { applyValuesAtPath } from '../../canvas/commands/adjust-number-command'
 import { styleP } from '../../inspector/inspector-common'
+import type { MapLike } from 'typescript'
+import type { ComponentRendererComponent } from '../../canvas/ui-jsx-canvas-renderer/component-renderer-component'
+import type { MutableUtopiaCtxRefData } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
+import { importDefault } from '../../../core/es-modules/commonjs-interop'
+import type { Config } from 'tailwindcss/types/config'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -920,6 +937,7 @@ export function restoreEditorState(
     nodeModules: currentEditor.nodeModules,
     codeResultCache: currentEditor.codeResultCache,
     propertyControlsInfo: currentEditor.propertyControlsInfo,
+    tailwindConfig: desiredEditor.tailwindConfig,
     selectedViews: desiredEditor.selectedViews,
     highlightedViews: currentEditor.highlightedViews,
     hoveredViews: currentEditor.hoveredViews,
@@ -4809,6 +4827,78 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       propertyControlsInfo: action.propertyControlsInfo,
+    }
+  },
+  UPDATE_TAILWIND_CONFIG: (_: UpdateTailwindConfig, editor: EditorState): EditorState => {
+    const tailwindConfigFromProjectContents = getProjectFileByFilePath(
+      editor.projectContents,
+      TailwindConfigPath,
+    )
+    if (
+      tailwindConfigFromProjectContents == null ||
+      tailwindConfigFromProjectContents.type !== 'TEXT_FILE'
+    ) {
+      return editor
+    }
+    let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
+    let topLevelComponentRendererComponents: {
+      current: MapLike<MapLike<ComponentRendererComponent>>
+    } = { current: {} }
+
+    let resolvedFiles: MapLike<MapLike<any>> = {}
+    let resolvedFileNames: Array<string> = [TailwindConfigPath]
+
+    const requireFn = editor.codeResultCache.curriedRequireFn(editor.projectContents)
+    const resolve = editor.codeResultCache.curriedResolveFn(editor.projectContents)
+
+    const customRequire = (importOrigin: string, toImport: string) => {
+      if (resolvedFiles[importOrigin] == null) {
+        resolvedFiles[importOrigin] = []
+      }
+      let resolvedFromThisOrigin = resolvedFiles[importOrigin]
+
+      const alreadyResolved = resolvedFromThisOrigin[toImport] !== undefined
+      const filePathResolveResult = alreadyResolved
+        ? left<string, string>('Already resolved')
+        : resolve(importOrigin, toImport)
+
+      forEachRight(filePathResolveResult, (filepath) => resolvedFileNames.push(filepath))
+
+      const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
+        resolvedFromThisOrigin,
+        toImport,
+        editor.projectContents,
+        customRequire,
+        mutableContextRef,
+        topLevelComponentRendererComponents,
+        TailwindConfigPath,
+        editor.canvas.base64Blobs,
+        editor.hiddenInstances,
+        editor.displayNoneInstances,
+        emptyUiJsxCanvasContextData(),
+        NO_OP,
+        false,
+        filePathResolveResult,
+        null,
+      )
+      return foldEither(
+        () => {
+          // We did not find a ParseSuccess, fallback to standard require Fn
+          return requireFn(importOrigin, toImport, false)
+        },
+        (scope) => {
+          // Return an artificial exports object that contains our ComponentRendererComponents
+          return scope
+        },
+        resolvedParseSuccess,
+      )
+    }
+
+    const rawConfig = importDefault(customRequire('/', TailwindConfigPath))
+
+    return {
+      ...editor,
+      tailwindConfig: rawConfig as Config,
     }
   },
   UPDATE_TEXT: (action: UpdateText, editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {

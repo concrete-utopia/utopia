@@ -13,6 +13,7 @@ import {
   truncateHistory,
   updateBranchContents,
   updateProjectContents,
+  updateTailwindConfig,
 } from '../../../../components/editor/actions/action-creators'
 import type {
   GithubData,
@@ -207,6 +208,7 @@ export const updateProjectWithBranchContent =
               .finally(() => {
                 dispatch(
                   [
+                    updateTailwindConfig(),
                     extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles),
                     showToast(
                       notice(

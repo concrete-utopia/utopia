@@ -29,6 +29,7 @@ import {
   updateGithubOperations,
   updateGithubSettings,
   updateProjectContents,
+  updateTailwindConfig,
 } from '../../../components/editor/actions/action-creators'
 import type {
   EditorStorePatched,
@@ -73,6 +74,7 @@ import React from 'react'
 import { useDispatch } from '../../../components/editor/store/dispatch-context'
 import type { ExistingAsset } from '../../../components/editor/server'
 import { getBranchProjectContents } from '../../../components/editor/server'
+import { TailwindConfigPath } from '../../tailwind/tailwind-config'
 
 export function dispatchPromiseActions(
   dispatch: EditorDispatch,
@@ -515,6 +517,7 @@ export async function revertAllGithubFiles(
     const componentDescriptorFiles = getAllComponentDescriptorFilePaths(parsedBranchContents)
     actions.push(updateProjectContents(parsedBranchContents))
     actions.push(extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles))
+    actions.push(updateTailwindConfig())
   }
   return actions
 }
@@ -544,6 +547,9 @@ export async function revertGithubFile(
           const componentDescriptorFiles = getAllComponentDescriptorFilePaths(newTree)
           actions.push(updateProjectContents(newTree))
           actions.push(extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles))
+          if (filename === TailwindConfigPath) {
+            actions.push(updateTailwindConfig())
+          }
         }
         break
     }
