@@ -746,8 +746,8 @@ export const NavigatorItem: React.FunctionComponent<
 
   const onMouseDown = React.useCallback(
     (e: React.MouseEvent) => {
-      // Avoid doing any of this for a right click.
-      if (e.button !== 2) {
+      // Only do this for a left mouse down.
+      if (e.button === 0) {
         if (isRenderPropNavigatorEntry(navigatorEntry)) {
           e.stopPropagation()
         }
