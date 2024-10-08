@@ -76,7 +76,7 @@ export async function getParseResultFromCache(
   //check localforage for cache
   const cachedResult = await getParseCacheStore().getItem<CachedParseResult>(cacheKey)
   const cachedResultForContent = cachedResult?.[getCacheIndexKeyWithVersion(content)]
-  if (cachedResultForContent != null) {
+  if (cachedResultForContent?.type === 'PARSE_SUCCESS') {
     logCacheMessage(parsingCacheOptions, 'Cache hit for', ...stringIdentifiers(filename, content))
     return createParseFileResult(filename, cachedResultForContent, versionNumber)
   }
