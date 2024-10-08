@@ -97,6 +97,7 @@ import {
   startPerformanceMeasure,
 } from '../../../core/performance/performance-utils'
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
+import { TailwindConfigPath } from '../../../core/tailwind/tailwind-config'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -370,6 +371,10 @@ function maybeRequestModelUpdate(
               propertyDescriptorFilesToUpdate.map((r) => r.filename),
             ),
           )
+        }
+
+        if (parseResult.some((result) => result.filename === TailwindConfigPath)) {
+          actionsToDispatch.push(EditorActions.updateTailwindConfig())
         }
 
         dispatch([EditorActions.mergeWithPrevUndo(actionsToDispatch)])

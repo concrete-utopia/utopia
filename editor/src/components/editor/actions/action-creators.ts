@@ -237,6 +237,7 @@ import type {
   ToggleDataCanCondense,
   UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
+  UpdateTailwindConfig,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1481,6 +1482,12 @@ export function updatePropertyControlsInfo(
   return {
     action: 'UPDATE_PROPERTY_CONTROLS_INFO',
     propertyControlsInfo: propertyControlsInfo,
+  }
+}
+
+export function updateTailwindConfig(): UpdateTailwindConfig {
+  return {
+    action: 'UPDATE_TAILWIND_CONFIG',
   }
 }
 

@@ -16,6 +16,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   projectContents: {},
   codeResultCache: null as any,
   propertyControlsInfo: null as any,
+  tailwindConfig: null,
   nodeModules: {
     skipDeepFreeze: true,
     files: {},

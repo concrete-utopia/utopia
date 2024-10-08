@@ -57,6 +57,7 @@ import { isInsertMode } from '../editor-modes'
 import { patchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 import { allowedToEditProject } from './collaborative-editing'
 import { canMeasurePerformance } from '../../../core/performance/performance-utils'
+import { getActivePlugin } from '../../canvas/plugins/style-plugins'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -103,7 +104,8 @@ export function interactionFinished(
             'end-interaction',
           )
         : strategyApplicationResult([], [])
-    const commandResult = foldAndApplyCommands(
+
+    const { editorState } = foldAndApplyCommands(
       newEditorState,
       storedState.patchedEditor,
       [],
@@ -111,9 +113,14 @@ export function interactionFinished(
       'end-interaction',
     )
 
+    const normalizedEditor = getActivePlugin(editorState).normalizeFromInlineStyle(
+      editorState,
+      strategyResult.elementsToRerender,
+    )
+
     const finalEditor: EditorState = applyElementsToRerenderFromStrategyResult(
       {
-        ...commandResult.editorState,
+        ...normalizedEditor,
         // TODO instead of clearing the metadata, we should save the latest valid metadata here to save a dom-walker run
         jsxMetadata: {},
         domMetadata: {},

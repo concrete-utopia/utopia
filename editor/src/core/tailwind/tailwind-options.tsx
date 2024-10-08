@@ -222,7 +222,7 @@ export function useFilteredOptions(
   }, [filter, maxResults, onEmptyResults])
 }
 
-function getClassNameAttribute(element: JSXElementChild | null): {
+export function getClassNameAttribute(element: JSXElementChild | null): {
   value: string | null
   isSettable: boolean
 } {

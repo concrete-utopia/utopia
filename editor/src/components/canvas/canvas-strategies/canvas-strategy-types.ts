@@ -14,6 +14,7 @@ import type { AllElementProps } from '../../editor/store/editor-state'
 import type { CanvasCommand } from '../commands/commands'
 import type { ActiveFrameAction } from '../commands/set-active-frames-command'
 import type { StrategyApplicationStatus } from './interaction-state'
+import type { StyleInfo } from '../canvas-types'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
@@ -105,6 +106,14 @@ export function controlWithProps<P>(value: ControlWithProps<P>): ControlWithProp
   return value
 }
 
+export type StyleInfoReader = (elementPath: ElementPath) => StyleInfo | null
+
+export type StyleInfoFactory = (context: {
+  projectContents: ProjectContentTreeRoot
+  metadata: ElementInstanceMetadataMap
+  elementPathTree: ElementPathTrees
+}) => StyleInfoReader
+
 export interface InteractionCanvasState {
   interactionTarget: InteractionTarget
   projectContents: ProjectContentTreeRoot
@@ -117,6 +126,7 @@ export interface InteractionCanvasState {
   startingElementPathTree: ElementPathTrees
   startingAllElementProps: AllElementProps
   propertyControlsInfo: PropertyControlsInfo
+  styleInfoReader: StyleInfoReader
 }
 
 export type InteractionTarget = TargetPaths | InsertionSubjects
