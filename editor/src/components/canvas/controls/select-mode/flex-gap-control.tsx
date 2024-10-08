@@ -47,6 +47,7 @@ import {
 } from '../../../../core/model/flex-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { InlineStylePlugin } from '../../plugins/inline-style-plugin'
+import { getActivePlugin } from '../../plugins/style-plugins'
 
 interface FlexGapControlProps {
   selectedElement: ElementPath
@@ -135,7 +136,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     Substores.fullStore,
     (store) =>
       getFlexData(
-        InlineStylePlugin.styleInfoFactory({
+        getActivePlugin(store.editor).styleInfoFactory({
           projectContents: store.editor.projectContents,
           metadata: metadata,
           elementPathTree: store.editor.elementPathTree,

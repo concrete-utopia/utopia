@@ -22,6 +22,7 @@ import type { StylePlugin } from './style-plugins'
 import type { FlexDirectionInfo, FlexGapInfo, StyleProperty, StylePropInfo } from '../canvas-types'
 import { flexDirectionInfo, flexGapInfo, styleProperty } from '../canvas-types'
 import { cssNumberWithRenderedValue } from '../controls/select-mode/controls-common'
+import type { Config } from 'tailwindcss/types/config'
 
 function parseTailwindGap(
   gapValue: string | null,
@@ -99,8 +100,7 @@ function stringifiedStylePropValue(value: unknown): string | null {
   return null
 }
 
-// TODO: pass down the tailwind config
-export const TailwindPlugin: StylePlugin = {
+export const TailwindPlugin = (config: Config | null): StylePlugin => ({
   name: 'Tailwind',
   styleInfoFactory:
     ({ metadata, projectContents }) =>
@@ -116,9 +116,7 @@ export const TailwindPlugin: StylePlugin = {
       const classes = classList.split(' ')
 
       const styleProps = mapDropNulls((tailwindClass) => {
-        const parsed = TailwindClassParser.parse(
-          tailwindClass /* TODO pass the tailwind config here */,
-        )
+        const parsed = TailwindClassParser.parse(tailwindClass, config ?? undefined)
         if (parsed.kind === 'error' || !isSupportedTailwindProperty(parsed.property)) {
           return null
         }
@@ -169,7 +167,7 @@ export const TailwindPlugin: StylePlugin = {
 
         const tailwindClass = TailwindClassParser.classname(
           { property: TailwindPropertyMapping[key], value: valueString },
-          /* TODO pass the tailwind config here */
+          config ?? undefined,
         )
         if (tailwindClass == null) {
           return null
@@ -194,4 +192,4 @@ export const TailwindPlugin: StylePlugin = {
 
     return foldAndApplyCommandsSimple(editorState, commands)
   },
-}
+})

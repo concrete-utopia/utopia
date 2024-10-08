@@ -19,14 +19,9 @@ export const Plugins = {
   Tailwind: TailwindPlugin,
 } as const
 
-export function getActivePlugin(
-  // The `_editorState` is not used now because `isTailwindEnabled` reads a
-  // global behind the scenes, it's still passed to make it easy to add new
-  // cases here without a big refactor
-  _editorState: EditorState,
-): StylePlugin {
+export function getActivePlugin(editorState: EditorState): StylePlugin {
   if (isTailwindEnabled()) {
-    return TailwindPlugin
+    return TailwindPlugin(editorState.tailwindConfig)
   }
   return InlineStylePlugin
 }

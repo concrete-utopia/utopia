@@ -383,6 +383,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_PACKAGE_STATUS(action, state)
     case 'UPDATE_PROPERTY_CONTROLS_INFO':
       return UPDATE_FNS.UPDATE_PROPERTY_CONTROLS_INFO(action, state)
+    case 'UPDATE_TAILWIND_CONFIG':
+      return UPDATE_FNS.UPDATE_TAILWIND_CONFIG(action, state)
     case 'SELECT_FROM_FILE_AND_POSITION':
       return UPDATE_FNS.SELECT_FROM_FILE_AND_POSITION(action, state, dispatch)
     case 'SEND_LINTER_REQUEST_MESSAGE':

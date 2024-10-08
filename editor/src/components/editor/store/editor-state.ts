@@ -192,6 +192,7 @@ import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { OnlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
 import type { FancyError } from '../../../core/shared/code-exec-utils'
+import type { Config } from 'tailwindcss/types/config'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1396,6 +1397,7 @@ export interface EditorState {
   branchOriginContents: ProjectContentTreeRoot | null // The contents from the branch at the origin commit.
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
+  tailwindConfig: Config | null
   nodeModules: EditorStateNodeModules
   selectedViews: Array<ElementPath>
   highlightedViews: Array<ElementPath>
@@ -1479,6 +1481,7 @@ export function editorState(
   projectContents: ProjectContentTreeRoot,
   codeResultCache: CodeResultCache,
   propertyControlsInfo: PropertyControlsInfo,
+  tailwindConfig: Config | null,
   nodeModules: EditorStateNodeModules,
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
@@ -1563,6 +1566,7 @@ export function editorState(
     branchOriginContents: branchOriginContents,
     codeResultCache: codeResultCache,
     propertyControlsInfo: propertyControlsInfo,
+    tailwindConfig: tailwindConfig,
     nodeModules: nodeModules,
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
@@ -2551,6 +2555,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     jsxMetadata: emptyJsxMetadata,
     elementPathTree: {},
     projectContents: {},
+    tailwindConfig: null,
     codeResultCache: generateCodeResultCache({}, {}, [], {}, dispatch, {}, []),
     propertyControlsInfo: { ...DefaultThirdPartyControlDefinitions },
     nodeModules: {
@@ -2928,6 +2933,7 @@ export function editorModelFromPersistentModel(
     ),
     projectContents: persistentModel.projectContents,
     propertyControlsInfo: { ...DefaultThirdPartyControlDefinitions },
+    tailwindConfig: null,
     nodeModules: {
       skipDeepFreeze: true,
       files: {},

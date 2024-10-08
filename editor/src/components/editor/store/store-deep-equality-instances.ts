@@ -641,6 +641,7 @@ import type {
   ComponentDescriptorPropertiesBounds,
 } from '../../../core/property-controls/component-descriptor-parser'
 import type { Axis } from '../../../components/canvas/gap-utils'
+import type { Config } from 'tailwindcss/types/config'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -5137,6 +5138,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.propertyControlsInfo,
     newValue.propertyControlsInfo,
   )
+  const tailwindConfigResult = nullableDeepEquality(createCallWithTripleEquals<Config>())(
+    oldValue.tailwindConfig,
+    newValue.tailwindConfig,
+  )
   const nodeModulesResult = EditorStateNodeModulesKeepDeepEquality(
     oldValue.nodeModules,
     newValue.nodeModules,
@@ -5400,6 +5405,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     projectContentsResult.areEqual &&
     codeResultCacheResult.areEqual &&
     propertyControlsInfoResult.areEqual &&
+    tailwindConfigResult.areEqual &&
     nodeModulesResult.areEqual &&
     selectedViewsResult.areEqual &&
     highlightedViewsResult.areEqual &&
@@ -5485,6 +5491,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       projectContentsResult.value,
       codeResultCacheResult.value,
       propertyControlsInfoResult.value,
+      tailwindConfigResult.value,
       nodeModulesResult.value,
       selectedViewsResult.value,
       highlightedViewsResult.value,
