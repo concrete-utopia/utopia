@@ -930,7 +930,8 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
           const countedColumn = Math.floor(cell % grid.columns) + 1
           const id = gridCellTargetId(grid.elementPath, countedRow, countedColumn)
           const borderID = `${id}-border`
-          const dotgridColor = activelyDraggingOrResizingCell != null ? `#00000033` : 'transparent'
+          const dotgridColor =
+            activelyDraggingOrResizingCell != null ? colorTheme.blackOpacity35.value : 'transparent'
 
           const isActiveCell =
             countedColumn === currentHoveredCell?.column && countedRow === currentHoveredCell?.row
@@ -938,7 +939,7 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
           const borderColor =
             isActiveCell && targetsAreCellsWithPositioning
               ? colorTheme.brandNeonPink.value
-              : `#00000033`
+              : colorTheme.blackOpacity35.value
           return (
             <div
               key={id}
