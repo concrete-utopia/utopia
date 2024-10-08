@@ -352,6 +352,8 @@ import type {
   ToggleDataCanCondense,
   UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
+  SetImportWizardOpen,
+  UpdateImportOperations,
 } from '../action-types'
 import { isAlignment, isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -1033,6 +1035,7 @@ export function restoreEditorState(
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
+    importOperations: currentEditor.importOperations,
     branchOriginContents: currentEditor.branchOriginContents,
     githubData: currentEditor.githubData,
     refreshingDependencies: currentEditor.refreshingDependencies,
@@ -1044,6 +1047,7 @@ export function restoreEditorState(
     forking: currentEditor.forking,
     collaborators: currentEditor.collaborators,
     sharingDialogOpen: currentEditor.sharingDialogOpen,
+    importWizardOpen: currentEditor.importWizardOpen,
     editorRemixConfig: currentEditor.editorRemixConfig,
   }
 }
@@ -2230,6 +2234,48 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       githubOperations: operations,
+    }
+  },
+  UPDATE_IMPORT_OPERATIONS: (action: UpdateImportOperations, editor: EditorModel): EditorModel => {
+    const operations = [...editor.importOperations]
+    switch (action.type) {
+      case 'add':
+        action.operations.forEach((operation) => {
+          operations.push(operation)
+        })
+        break
+      case 'remove':
+        // remove according to name
+        action.operations.forEach((operation) => {
+          const idx = operations.findIndex((op) => op.name === operation.name)
+          if (idx >= 0) {
+            operations.splice(idx, 1)
+          }
+        })
+        break
+      case 'update':
+        // update fields according to name
+        action.operations.forEach((operation) => {
+          const idx = operations.findIndex((op) => op.name === operation.name)
+          if (idx >= 0) {
+            operations[idx] = {
+              ...operations[idx],
+              ...operation,
+            }
+          }
+          // if not found, add it
+          if (idx === -1) {
+            operations.push(operation)
+          }
+        })
+        break
+      default:
+        const _exhaustiveCheck: never = action.type
+        throw new Error('Unknown operation type.')
+    }
+    return {
+      ...editor,
+      importOperations: operations,
     }
   },
   SET_REFRESHING_DEPENDENCIES: (
@@ -6119,6 +6165,12 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       sharingDialogOpen: action.open,
+    }
+  },
+  SET_IMPORT_WIZARD_OPEN: (action: SetImportWizardOpen, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      importWizardOpen: action.open,
     }
   },
   SET_ERROR_BOUNDARY_HANDLING: (

@@ -174,7 +174,12 @@ export interface ThemeSubstate {
 }
 
 // GithubSubstate
-export const githubSubstateKeys = ['githubSettings', 'githubOperations', 'githubData'] as const
+export const githubSubstateKeys = [
+  'githubSettings',
+  'githubOperations',
+  'githubData',
+  'importOperations',
+] as const
 export const emptyGithubSubstate = {
   editor: pick(githubSubstateKeys, EmptyEditorStateForKeysOnly),
 } as const

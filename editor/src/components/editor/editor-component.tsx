@@ -96,6 +96,7 @@ import {
   navigatorTargetsSelector,
   navigatorTargetsSelectorNavigatorTargets,
 } from '../navigator/navigator-utils'
+import { ImportWizard } from './import-wizard/import-wizard'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -520,6 +521,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         <ProjectForkFlow />
         <LockedOverlay />
         <SharingDialog />
+        <ImportWizard />
       </SimpleFlexRow>
       {portalTarget != null
         ? ReactDOM.createPortal(<ComponentPickerContextMenu />, portalTarget)

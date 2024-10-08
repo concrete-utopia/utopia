@@ -157,6 +157,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   githubSettings: null as any,
   imageDragSessionState: null as any,
   githubOperations: [],
+  importOperations: [],
   branchOriginContents: null,
   githubData: null as any,
   refreshingDependencies: false,
@@ -171,6 +172,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   forking: false,
   collaborators: [],
   sharingDialogOpen: false,
+  importWizardOpen: false,
   editorRemixConfig: {
     errorBoundaryHandling: 'ignore-error-boundaries',
   },

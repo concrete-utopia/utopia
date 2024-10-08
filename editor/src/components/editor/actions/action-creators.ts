@@ -237,6 +237,8 @@ import type {
   ToggleDataCanCondense,
   UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
+  SetImportWizardOpen,
+  UpdateImportOperations,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -268,6 +270,7 @@ import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { PageTemplate } from '../../canvas/remix/remix-utils'
 import type { Bounds } from 'utopia-vscode-common'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { ImportOperation, ImportOperationType } from '../import-wizard/import-wizard-service'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1591,6 +1594,17 @@ export function resetCanvas(): ResetCanvas {
   }
 }
 
+export function updateImportOperations(
+  operations: ImportOperation[],
+  type: ImportOperationType,
+): UpdateImportOperations {
+  return {
+    action: 'UPDATE_IMPORT_OPERATIONS',
+    operations: operations,
+    type: type,
+  }
+}
+
 export function setFilebrowserDropTarget(target: string | null): SetFilebrowserDropTarget {
   return {
     action: 'SET_FILEBROWSER_DROPTARGET',
@@ -1872,6 +1886,13 @@ export function extractPropertyControlsFromDescriptorFiles(
 export function setSharingDialogOpen(open: boolean): SetSharingDialogOpen {
   return {
     action: 'SET_SHARING_DIALOG_OPEN',
+    open: open,
+  }
+}
+
+export function setImportWizardOpen(open: boolean): SetImportWizardOpen {
+  return {
+    action: 'SET_IMPORT_WIZARD_OPEN',
     open: open,
   }
 }

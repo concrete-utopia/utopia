@@ -189,6 +189,7 @@ import type { OnlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
 import type { FancyError } from '../../../core/shared/code-exec-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
+import type { ImportOperation } from '../import-wizard/import-wizard-service'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1452,6 +1453,7 @@ export interface EditorState {
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
+  importOperations: Array<ImportOperation>
   githubData: GithubData
   refreshingDependencies: boolean
   colorSwatches: Array<ColorSwatch>
@@ -1462,6 +1464,7 @@ export interface EditorState {
   forking: boolean
   collaborators: Collaborator[]
   sharingDialogOpen: boolean
+  importWizardOpen: boolean
   editorRemixConfig: EditorRemixConfig
 }
 
@@ -1535,6 +1538,7 @@ export function editorState(
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
+  importOperations: Array<ImportOperation>,
   branchOriginContents: ProjectContentTreeRoot | null,
   githubData: GithubData,
   refreshingDependencies: boolean,
@@ -1546,6 +1550,7 @@ export function editorState(
   forking: boolean,
   collaborators: Collaborator[],
   sharingDialogOpen: boolean,
+  importWizardOpen: boolean,
   remixConfig: EditorRemixConfig,
 ): EditorState {
   return {
@@ -1619,6 +1624,7 @@ export function editorState(
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
+    importOperations: importOperations,
     githubData: githubData,
     refreshingDependencies: refreshingDependencies,
     colorSwatches: colorSwatches,
@@ -1629,6 +1635,7 @@ export function editorState(
     forking: forking,
     collaborators: collaborators,
     sharingDialogOpen: sharingDialogOpen,
+    importWizardOpen: importWizardOpen,
     editorRemixConfig: remixConfig,
   }
 }
@@ -2696,6 +2703,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
+    importOperations: [],
     branchOriginContents: null,
     githubData: emptyGithubData(),
     refreshingDependencies: false,
@@ -2710,6 +2718,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     forking: false,
     collaborators: [],
     sharingDialogOpen: false,
+    importWizardOpen: false,
     editorRemixConfig: {
       errorBoundaryHandling: 'ignore-error-boundaries',
     },
@@ -3063,6 +3072,7 @@ export function editorModelFromPersistentModel(
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
     githubOperations: [],
+    importOperations: [],
     refreshingDependencies: false,
     branchOriginContents: null,
     githubData: emptyGithubData(),
@@ -3077,6 +3087,7 @@ export function editorModelFromPersistentModel(
     forking: false,
     collaborators: [],
     sharingDialogOpen: false,
+    importWizardOpen: false,
     editorRemixConfig: {
       errorBoundaryHandling: 'ignore-error-boundaries',
     },

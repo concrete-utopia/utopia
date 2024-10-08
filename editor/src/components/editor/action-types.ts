@@ -87,6 +87,7 @@ import type { Optic } from '../../core/shared/optics/optics'
 import { makeOptic } from '../../core/shared/optics/optics'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { assertNever } from '../../core/shared/utils'
+import type { ImportOperation, ImportOperationType } from './import-wizard/import-wizard-service'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -997,6 +998,12 @@ export interface UpdateGithubOperations {
   type: GithubOperationType
 }
 
+export interface UpdateImportOperations {
+  action: 'UPDATE_IMPORT_OPERATIONS'
+  operations: ImportOperation[]
+  type: ImportOperationType
+}
+
 export interface SetRefreshingDependencies {
   action: 'SET_REFRESHING_DEPENDENCIES'
   value: boolean
@@ -1178,6 +1185,11 @@ export interface SetSharingDialogOpen {
   open: boolean
 }
 
+export interface SetImportWizardOpen {
+  action: 'SET_IMPORT_WIZARD_OPEN'
+  open: boolean
+}
+
 export interface ResetOnlineState {
   action: 'RESET_ONLINE_STATE'
 }
@@ -1354,6 +1366,7 @@ export type EditorAction =
   | UpdateAgainstGithub
   | SetImageDragSessionState
   | UpdateGithubOperations
+  | UpdateImportOperations
   | UpdateBranchContents
   | SetRefreshingDependencies
   | ApplyCommandsAction
@@ -1377,6 +1390,7 @@ export type EditorAction =
   | SetCollaborators
   | ExtractPropertyControlsFromDescriptorFiles
   | SetSharingDialogOpen
+  | SetImportWizardOpen
   | ResetOnlineState
   | IncreaseOnlineStateFailureCount
   | SetErrorBoundaryHandling

@@ -643,6 +643,7 @@ import type {
 } from '../../../core/property-controls/component-descriptor-parser'
 import type { Axis } from '../../../components/canvas/gap-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
+import type { ImportOperation } from '../import-wizard/import-wizard-service'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -4825,8 +4826,21 @@ export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperati
   return keepDeepEqualityResult(oldValue, true)
 }
 
+export const ImportOperationKeepDeepEquality: KeepDeepEqualityCall<ImportOperation> = (
+  oldValue,
+  newValue,
+) => {
+  if (oldValue.name !== newValue.name) {
+    return keepDeepEqualityResult(newValue, false)
+  }
+  return keepDeepEqualityResult(oldValue, true)
+}
+
 export const GithubOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<GithubOperation>> =
   arrayDeepEquality(GithubOperationKeepDeepEquality)
+
+export const ImportOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<ImportOperation>> =
+  arrayDeepEquality(ImportOperationKeepDeepEquality)
 
 export const ColorSwatchDeepEquality: KeepDeepEqualityCall<ColorSwatch> = combine2EqualityCalls(
   (c) => c.id,
@@ -5358,6 +5372,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubOperations,
   )
 
+  const importOperationsResults = arrayDeepEquality(ImportOperationKeepDeepEquality)(
+    oldValue.importOperations,
+    newValue.importOperations,
+  )
+
   const branchContentsResults = nullableDeepEquality(ProjectContentTreeRootKeepDeepEquality())(
     oldValue.branchOriginContents,
     newValue.branchOriginContents,
@@ -5403,6 +5422,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   const sharingDialogOpenResults = BooleanKeepDeepEquality(
     oldValue.sharingDialogOpen,
     newValue.sharingDialogOpen,
+  )
+
+  const importWizardOpenResults = BooleanKeepDeepEquality(
+    oldValue.importWizardOpen,
+    newValue.importWizardOpen,
   )
 
   const remixConfigResults = RemixConfigKeepDeepEquality(
@@ -5479,6 +5503,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubSettingsResults.areEqual &&
     imageDragSessionStateEqual.areEqual &&
     githubOperationsResults.areEqual &&
+    importOperationsResults.areEqual &&
     branchContentsResults.areEqual &&
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
@@ -5490,6 +5515,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     forkingResults.areEqual &&
     collaboratorsResults.areEqual &&
     sharingDialogOpenResults.areEqual &&
+    importWizardOpenResults.areEqual &&
     remixConfigResults.areEqual
 
   if (areEqual) {
@@ -5565,6 +5591,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,
+      importOperationsResults.value,
       branchContentsResults.value,
       githubDataResults.value,
       refreshingDependenciesResults.value,
@@ -5576,6 +5603,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       forkingResults.value,
       collaboratorsResults.value,
       sharingDialogOpenResults.value,
+      importWizardOpenResults.value,
       remixConfigResults.value,
     )
 

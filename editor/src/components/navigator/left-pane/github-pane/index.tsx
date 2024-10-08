@@ -55,6 +55,10 @@ import { GithubOperations } from '../../../../core/shared/github/operations'
 import { useOnClickAuthenticateWithGithub } from '../../../../utils/github-auth-hooks'
 import { setFocus } from '../../../common/actions'
 import { OperationContext } from '../../../../core/shared/github/operations/github-operation-context'
+import {
+  showImportWizard,
+  startImportWizard,
+} from '../../../../components/editor/import-wizard/import-wizard-service'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`
@@ -931,6 +935,7 @@ const BranchNotLoadedBlock = () => {
 
   const loadFromBranch = React.useCallback(() => {
     if (githubRepo != null && branchName != null && githubUserDetails != null) {
+      startImportWizard(dispatch)
       void GithubOperations.updateProjectWithBranchContent(
         workersRef.current,
         dispatch,

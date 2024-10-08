@@ -39,6 +39,10 @@ import type { ExistingAsset } from '../../../../components/editor/server'
 import { GithubOperations } from '.'
 import { assertNever } from '../../utils'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
+import {
+  notifyOperationFinished,
+  notifyOperationStarted,
+} from '../../../../components/editor/import-wizard/import-wizard-service'
 
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
@@ -115,6 +119,11 @@ export const updateProjectWithBranchContent =
     currentProjectContents: ProjectContentTreeRoot,
     initiator: GithubOperationSource,
   ): Promise<void> => {
+    notifyOperationStarted(dispatch, {
+      name: 'loadBranch',
+      branchName: branchName,
+      githubRepo: githubRepo,
+    })
     await runGithubOperation(
       {
         name: 'loadBranch',
@@ -147,6 +156,16 @@ export const updateProjectWithBranchContent =
             if (resetBranches) {
               newGithubData.branches = null
             }
+
+            notifyOperationFinished(
+              dispatch,
+              {
+                name: 'loadBranch',
+                branchName: branchName,
+                githubRepo: githubRepo,
+              },
+              'success',
+            )
 
             // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
             // So that it will override any existing files that might already exist in the project when sending them to VS Code.
