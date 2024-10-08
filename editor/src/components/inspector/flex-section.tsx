@@ -513,6 +513,12 @@ const TemplateDimensionControl = React.memo(
 )
 TemplateDimensionControl.displayName = 'TemplateDimensionControl'
 
+const gridDimensionDropdownKeywords = [
+  { label: 'Auto', value: cssKeyword('auto') },
+  { label: 'Min-Content', value: cssKeyword('min-content') },
+  { label: 'Max-Content', value: cssKeyword('max-content') },
+]
+
 function AxisDimensionControl({
   value,
   index,
@@ -593,6 +599,7 @@ function AxisDimensionControl({
           onUpdateDimension={onUpdateDimension(index)}
           onFocus={gridExpressionInputFocused.onFocus}
           onBlur={gridExpressionInputFocused.onBlur}
+          keywords={gridDimensionDropdownKeywords}
         />
       </div>
       {unless(
