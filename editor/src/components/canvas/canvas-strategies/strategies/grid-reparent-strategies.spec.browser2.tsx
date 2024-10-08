@@ -311,8 +311,8 @@ describe('grid reparent strategies', () => {
             width: 79,
             height: 86,
             position: 'absolute',
-            top: 934,
             left: 1627,
+            top: 934,
           }}
           data-uid='dragme'
           data-testid='dragme'
@@ -755,11 +755,11 @@ describe('grid reparent strategies', () => {
         <div
           style={{
             backgroundColor: '#f0f',
-            position: 'absolute',
-            top: 934,
-            left: 1627,
-            width: 86.5,
+            width: 87,
             height: 135,
+            position: 'absolute',
+            left: 1627,
+            top: 934,
           }}
           data-uid='dragme'
           data-testid='dragme'
