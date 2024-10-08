@@ -14,7 +14,13 @@ import type { ProjectContentTreeRoot } from '../../../components/assets'
 import { applyLoaders } from '../../webpack-loaders/loaders'
 import type { CurriedUtopiaRequireFn } from '../../../components/custom-code/code-file'
 import type { BuiltInDependencies } from './built-in-dependencies-list'
-import { isResolveSuccess, isResolveSuccessIgnoreModule } from './module-resolution-utils'
+import {
+  isResolveNotPresent,
+  isResolveSuccess,
+  isResolveSuccessIgnoreModule,
+} from './module-resolution-utils'
+import type { FrameworkHooks } from '../../frameworks/framework-hooks'
+import { getFrameworkHooks } from '../../frameworks/framework-hooks'
 
 export interface FileEvaluationCache {
   exports: any
@@ -90,6 +96,7 @@ export function getRequireFn(
   builtInDependencies: BuiltInDependencies,
   injectedEvaluator = evaluator,
 ): RequireFn {
+  const frameworkHooks: FrameworkHooks = getFrameworkHooks(projectContents)
   return function require(importOrigin, toImport): unknown {
     const builtInDependency = resolveBuiltInDependency(builtInDependencies, toImport)
     if (builtInDependency != null) {
@@ -174,6 +181,16 @@ export function getRequireFn(
         }
 
         throw createResolvingRemoteDependencyError(toImport)
+      }
+    } else if (isResolveNotPresent(resolveResult)) {
+      const frameworkLookupPath = frameworkHooks.onResolveModuleNotPresent(
+        projectContents,
+        nodeModules,
+        importOrigin,
+        toImport,
+      )
+      if (frameworkLookupPath != null) {
+        return require(importOrigin, frameworkLookupPath)
       }
     }
     throw createDependencyNotFoundError(importOrigin, toImport)

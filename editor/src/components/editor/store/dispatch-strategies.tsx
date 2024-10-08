@@ -51,13 +51,12 @@ import type {
   StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { strategyApplicationResult } from '../../canvas/canvas-strategies/canvas-strategy-types'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import { last } from '../../../core/shared/array-utils'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { isInsertMode } from '../editor-modes'
 import { patchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 import { allowedToEditProject } from './collaborative-editing'
+import { canMeasurePerformance } from '../../../core/performance/performance-utils'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -672,10 +671,7 @@ export function handleStrategies(
   result: EditorStoreUnpatched,
   oldDerivedState: DerivedState,
 ): HandleStrategiesResult & { patchedDerivedState: DerivedState } {
-  const MeasureDispatchTime =
-    (isFeatureEnabled('Debug – Performance Marks (Fast)') ||
-      isFeatureEnabled('Debug – Performance Marks (Slow)')) &&
-    PERFORMANCE_MARKS_ALLOWED
+  const MeasureDispatchTime = canMeasurePerformance()
 
   if (MeasureDispatchTime) {
     window.performance.mark('strategies_begin')

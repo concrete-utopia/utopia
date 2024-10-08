@@ -840,7 +840,7 @@ export function getDefaultExportedTopLevelElement(file: TextFile): JSXElementChi
   }
 
   const defaultExportName =
-    file.fileContents.parsed.exportsDetail.find(isExportDefaultFunctionOrClass)?.name ?? null
+    file.fileContents.parsed.exportsDetail.find(isExportDefault)?.name ?? null
 
   if (defaultExportName == null) {
     return null

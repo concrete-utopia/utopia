@@ -1,3 +1,4 @@
+import { isParseableFile } from '../../../core/shared/file-utils'
 import { URL_HASH } from '../../../common/env-vars'
 import { type ParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import {
@@ -33,15 +34,22 @@ function logCacheMessage(parsingCacheOptions: ParseCacheOptions, ...messages: (s
   }
 }
 
+function isArbitraryCodeFile(filename: string): boolean {
+  return filename === ARBITRARY_CODE_FILE_NAME
+}
+
 function stringIdentifiers(filename: string, content: string): (string | object)[] {
-  if (filename === ARBITRARY_CODE_FILE_NAME) {
+  if (isArbitraryCodeFile(filename)) {
     return ['code', [{ content: content }]]
   }
   return [filename]
 }
 
-function shouldSkipCacheForFile(filename: string, parsingCacheOptions: ParseCacheOptions): boolean {
-  return filename === ARBITRARY_CODE_FILE_NAME && !parsingCacheOptions.cacheArbitraryCode
+function shouldUseCacheForFile(filename: string, parsingCacheOptions: ParseCacheOptions): boolean {
+  return (
+    isParseableFile(filename) &&
+    (!isArbitraryCodeFile(filename) || parsingCacheOptions.cacheArbitraryCode)
+  )
 }
 
 export function getParseCacheVersion(): string {
@@ -59,7 +67,7 @@ export async function getParseResultFromCache(
   parsingCacheOptions: ParseCacheOptions,
 ): Promise<ParseFileResult | null> {
   const { filename, content } = file
-  if (shouldSkipCacheForFile(filename, parsingCacheOptions)) {
+  if (!shouldUseCacheForFile(filename, parsingCacheOptions)) {
     return null
   }
   const cacheKey = getCacheKey(filename)
@@ -80,12 +88,12 @@ export async function storeParseResultInCache(
   parsingCacheOptions: ParseCacheOptions,
 ): Promise<void> {
   const { filename, content } = file
-  if (shouldSkipCacheForFile(filename, parsingCacheOptions)) {
+  if (!shouldUseCacheForFile(filename, parsingCacheOptions)) {
     return
   }
   logCacheMessage(parsingCacheOptions, 'Caching', ...stringIdentifiers(filename, content))
   const cacheKey = getCacheKey(filename)
-  if (filename === ARBITRARY_CODE_FILE_NAME) {
+  if (isArbitraryCodeFile(filename)) {
     // for the special filename 'code.tsx', we store multiple contents, so we need to read it first
     const cachedResult = (await getParseCacheStore().getItem<CachedParseResult>(cacheKey)) ?? {}
     // limit the arbitrary code cache keys size

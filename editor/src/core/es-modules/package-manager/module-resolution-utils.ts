@@ -86,6 +86,12 @@ export function isResolveSuccess<T>(
   return resolveResult.type === 'RESOLVE_SUCCESS'
 }
 
+export function isResolveNotPresent<T>(
+  resolveResult: ResolveResult<T>,
+): resolveResult is ResolveNotPresent {
+  return resolveResult.type === 'RESOLVE_NOT_PRESENT'
+}
+
 export interface FoundFile {
   path: string
   file: ESCodeFile | ESRemoteDependencyPlaceholder

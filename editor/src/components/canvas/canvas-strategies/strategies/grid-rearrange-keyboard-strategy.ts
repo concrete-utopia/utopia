@@ -15,7 +15,7 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { setGridPropsCommands } from './grid-helpers'
-import { getGridCellBoundsFromCanvas } from './grid-cell-bounds'
+import { getGridChildCellCoordBoundsFromCanvas } from './grid-cell-bounds'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 
 export function gridRearrangeResizeKeyboardStrategy(
@@ -54,7 +54,7 @@ export function gridRearrangeResizeKeyboardStrategy(
   }
   const gridTemplate = grid.specialSizeMeasurements.containerGridProperties
 
-  const initialCellBounds = getGridCellBoundsFromCanvas(cell, grid)
+  const initialCellBounds = getGridChildCellCoordBoundsFromCanvas(cell, grid)
   if (initialCellBounds == null) {
     return null
   }
