@@ -251,7 +251,6 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         data-testid={labelId}
         style={{
           zoom: 1 / scale,
-          // width: GRID_RESIZE_HANDLE_SIZE,
           height: GRID_RESIZE_HANDLE_SIZE,
           borderRadius: 3,
           padding: '0 4px',
