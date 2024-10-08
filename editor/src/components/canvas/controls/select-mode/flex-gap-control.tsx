@@ -46,7 +46,6 @@ import {
   reverseJustifyContent,
 } from '../../../../core/model/flex-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { InlineStylePlugin } from '../../plugins/inline-style-plugin'
 import { getActivePlugin } from '../../plugins/style-plugins'
 
 interface FlexGapControlProps {
