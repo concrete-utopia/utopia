@@ -62,11 +62,11 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
   'Debug - Print UIDs': false,
-  'Parallel Parsing': !IS_TEST_ENVIRONMENT,
+  'Parallel Parsing': false,
   'Debug - Log Parse Timings': false,
   Tailwind: false,
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
-  'Use Parsing Cache': !IS_TEST_ENVIRONMENT,
+  'Use Parsing Cache': false,
   'Canvas Fast Selection Hack': true,
   'Show Debug Features': false,
 }
