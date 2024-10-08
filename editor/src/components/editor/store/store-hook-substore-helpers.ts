@@ -89,7 +89,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
       reparentedToPaths: [],
       dragToMoveIndicatorFlags: null as any,
       parentOutlineHighlight: null,
-      gridControls: null,
+      gridControlData: null,
     },
   },
   inspector: {

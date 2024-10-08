@@ -135,7 +135,6 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
           ? getCommandsAndPatchForGridRearrange(
               canvasState,
               interactionSession.interactionData,
-              customState,
               selectedElement,
             )
           : getCommandsAndPatchForReparent(
@@ -165,7 +164,6 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
 function getCommandsAndPatchForGridRearrange(
   canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
-  customState: CustomStrategyState,
   selectedElement: ElementPath,
 ): {
   commands: CanvasCommand[]
@@ -176,31 +174,16 @@ function getCommandsAndPatchForGridRearrange(
     return { commands: [], patch: {}, elementsToRerender: [] }
   }
 
-  const {
-    commands,
-    targetCell: targetGridCell,
-    draggingFromCell,
-    originalRootCell,
-    targetRootCell,
-  } = runGridRearrangeMove(
+  const commands = runGridRearrangeMove(
     selectedElement,
     selectedElement,
     canvasState.startingMetadata,
     interactionData,
-    customState.grid,
   )
 
   return {
     commands: commands,
-    patch: {
-      grid: {
-        ...customState.grid,
-        targetCellData: targetGridCell,
-        draggingFromCell: draggingFromCell,
-        originalRootCell: originalRootCell,
-        currentRootCell: targetRootCell,
-      },
-    },
+    patch: {},
     elementsToRerender: [EP.parentPath(selectedElement)],
   }
 }

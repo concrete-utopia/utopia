@@ -408,6 +408,32 @@ export function distance<C extends CoordinateMarker>(from: Point<C>, to: Point<C
   return magnitude({ x: from.x - to.x, y: from.y - to.y } as Vector<C>)
 }
 
+export function distanceFromPointToRectangle<C extends CoordinateMarker>(
+  p: Point<C>,
+  rectangle: Rectangle<C>,
+): number {
+  // Normalize the rectangle to ensure positive width and height
+  const normalizedRect = normalizeRect(rectangle)
+
+  // Calculate the nearest point on the rectangle to the given point
+  const nearestX = Math.max(
+    normalizedRect.x,
+    Math.min(p.x, normalizedRect.x + normalizedRect.width),
+  )
+  const nearestY = Math.max(
+    normalizedRect.y,
+    Math.min(p.y, normalizedRect.y + normalizedRect.height),
+  )
+
+  // If the nearest point is the same as the given point, it's inside or on the edge of the rectangle
+  if (nearestX === p.x && nearestY === p.y) {
+    return 0
+  }
+
+  // Calculate the distance between the nearest point and the given point
+  return distance(p, { x: nearestX, y: nearestY } as Point<C>)
+}
+
 export function product<C extends CoordinateMarker>(a: Point<C>, b: Point<C>): number {
   return a.x * b.x + a.y * b.y
 }
