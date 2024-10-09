@@ -14,6 +14,7 @@ import {
   mouseDragFromPointToPoint,
   mouseMoveToPoint,
   mouseUpAtPoint,
+  pressKey,
 } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
@@ -451,7 +452,7 @@ describe('grid reparent strategies', () => {
         ),
       )
     })
-    it('into a flow element', async () => {
+    it('into a flow element with flow strategy selected', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCode({
           insideGrid: `
@@ -519,7 +520,9 @@ describe('grid reparent strategies', () => {
         y: fooRect.y + fooRect.height / 2,
       }
 
-      await dragOut(editor, EP.fromString('sb/grid/dragme'), endPoint)
+      await dragOut(editor, EP.fromString('sb/grid/dragme'), endPoint, async () => {
+        await pressKey('3', { modifiers: cmdModifier }) // this should select the Reparent (Flow) strategy
+      })
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         formatTestProjectCode(
@@ -827,6 +830,7 @@ async function dragOut(
   renderResult: EditorRenderResult,
   cell: ElementPath,
   endPoint: Point,
+  midDragCallback?: () => Promise<void>,
 ): Promise<void> {
   const sourceGridCell = renderResult.renderedDOM.getByTestId(GridCellTestId(cell))
   const sourceRect = sourceGridCell.getBoundingClientRect()
@@ -857,6 +861,9 @@ async function dragOut(
     },
     modifiers: cmdModifier,
   })
+  if (midDragCallback != null) {
+    await midDragCallback()
+  }
   await mouseUpAtPoint(renderResult.renderedDOM.getByTestId(CanvasControlsContainerID), endPoint, {
     modifiers: cmdModifier,
   })
