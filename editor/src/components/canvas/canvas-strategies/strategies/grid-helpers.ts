@@ -57,7 +57,7 @@ export function runGridRearrangeMove(
     return []
   }
 
-  const isReparent = !EP.pathsEqual(EP.parentPath(selectedElement), grid.elementPath)
+  const isReparent = !EP.isParentOf(grid.elementPath, selectedElement)
 
   const { gridCellGlobalFrames, containerGridProperties: gridTemplate } =
     grid.specialSizeMeasurements
