@@ -51,17 +51,13 @@ export function runGridRearrangeMove(
   selectedElement: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
   interactionData: DragInteractionData,
+  grid: ElementInstanceMetadata,
 ): CanvasCommand[] {
   if (interactionData.drag == null) {
     return []
   }
 
-  const parentGridPath = EP.parentPath(selectedElement)
-  const grid = MetadataUtils.findElementByElementPath(jsxMetadata, parentGridPath)
-
-  if (grid == null) {
-    return []
-  }
+  const isReparent = !EP.pathsEqual(EP.parentPath(selectedElement), grid.elementPath)
 
   const { gridCellGlobalFrames, containerGridProperties: gridTemplate } =
     grid.specialSizeMeasurements
@@ -76,39 +72,25 @@ export function runGridRearrangeMove(
     return []
   }
 
-  const draggingFromCellCoords = getClosestGridCellToPoint(
-    gridCellGlobalFrames,
-    interactionData.dragStart,
-  )?.gridCellCoordinates
-  if (draggingFromCellCoords == null) {
+  const originalElementGridConfiguration = isReparent
+    ? {
+        originalElementMetadata: null,
+        originalCellBounds: { width: 1, height: 1 }, //when reparenting, we just put it in a single cell
+        mouseCellPosInOriginalElement: { row: 0, column: 0 },
+      }
+    : getOriginalElementGridConfiguration(
+        gridCellGlobalFrames,
+        interactionData,
+        jsxMetadata,
+        selectedElement,
+        grid,
+      )
+  if (originalElementGridConfiguration == null) {
     return []
   }
 
-  const originalElementMetadata = MetadataUtils.findElementByElementPath(
-    jsxMetadata,
-    selectedElement,
-  )
-  if (originalElementMetadata == null) {
-    return []
-  }
-
-  // measured cell coord bounds on the canvas, this is the default when the cell position is not explicitly set
-  const originalElementCellCoordsOnCanvas = getGridChildCellCoordBoundsFromCanvas(
-    originalElementMetadata,
-    grid,
-  )
-
-  // get the bounds from the props, or the canvas, or just default to the cell of the starting mouse position
-  const originalCellBounds = getGridChildCellCoordBoundsFromProps(
-    originalElementMetadata,
-    originalElementCellCoordsOnCanvas ?? draggingFromCellCoords,
-  )
-
-  // the cell position of the mouse relative to the original element (we have to keep this offset while dragging)
-  const mouseCellPosInOriginalElement = getCellCoordsDelta(
-    draggingFromCellCoords,
-    originalCellBounds,
-  )
+  const { originalElementMetadata, originalCellBounds, mouseCellPosInOriginalElement } =
+    originalElementGridConfiguration
 
   // get the new adjusted row
   const row = targetCellCoords.row - mouseCellPosInOriginalElement.row
@@ -135,7 +117,7 @@ export function runGridRearrangeMove(
   })
 
   // The siblings of the grid element being moved
-  const siblings = MetadataUtils.getChildrenUnordered(jsxMetadata, EP.parentPath(selectedElement))
+  const siblings = MetadataUtils.getChildrenUnordered(jsxMetadata, grid.elementPath)
     .filter((s) => !EP.pathsEqual(s.elementPath, selectedElement))
     .map(
       (s, index): SortableGridElementProperties => ({
@@ -165,15 +147,18 @@ export function runGridRearrangeMove(
     EP.pathsEqual(selectedElement, s.path),
   )
 
-  const moveType = getGridMoveType({
-    originalElementMetadata: originalElementMetadata,
-    possiblyReorderIndex: possiblyReorderIndex,
-    cellsSortedByPosition: cellsSortedByPosition,
-  })
+  const moveType =
+    originalElementMetadata == null
+      ? 'rearrange'
+      : getGridMoveType({
+          originalElementMetadata: originalElementMetadata,
+          possiblyReorderIndex: possiblyReorderIndex,
+          cellsSortedByPosition: cellsSortedByPosition,
+        })
 
   const updateGridControlsCommand = showGridControls(
     'mid-interaction',
-    parentGridPath,
+    grid.elementPath,
     targetCellData?.gridCellCoordinates ?? null,
     gridCellCoordinates(row, column),
   )
@@ -766,5 +751,53 @@ export function getMetadataWithGridCellBounds(
   return {
     metadata: fromStartingMetadata,
     customStrategyState: null,
+  }
+}
+
+function getOriginalElementGridConfiguration(
+  gridCellGlobalFrames: GridCellGlobalFrames,
+  interactionData: DragInteractionData,
+  jsxMetadata: ElementInstanceMetadataMap,
+  selectedElement: ElementPath,
+  grid: ElementInstanceMetadata,
+) {
+  const draggingFromCellCoords = getClosestGridCellToPoint(
+    gridCellGlobalFrames,
+    interactionData.dragStart,
+  )?.gridCellCoordinates
+  if (draggingFromCellCoords == null) {
+    return null
+  }
+
+  const originalElementMetadata = MetadataUtils.findElementByElementPath(
+    jsxMetadata,
+    selectedElement,
+  )
+  if (originalElementMetadata == null) {
+    return null
+  }
+
+  // measured cell coord bounds on the canvas, this is the default when the cell position is not explicitly set
+  const originalElementCellCoordsOnCanvas = getGridChildCellCoordBoundsFromCanvas(
+    originalElementMetadata,
+    grid,
+  )
+
+  // get the bounds from the props, or the canvas, or just default to the cell of the starting mouse position
+  const originalCellBounds = getGridChildCellCoordBoundsFromProps(
+    originalElementMetadata,
+    originalElementCellCoordsOnCanvas ?? draggingFromCellCoords,
+  )
+
+  // the cell position of the mouse relative to the original element (we have to keep this offset while dragging)
+  const mouseCellPosInOriginalElement = getCellCoordsDelta(
+    draggingFromCellCoords,
+    originalCellBounds,
+  )
+
+  return {
+    originalElementMetadata,
+    originalCellBounds,
+    mouseCellPosInOriginalElement,
   }
 }

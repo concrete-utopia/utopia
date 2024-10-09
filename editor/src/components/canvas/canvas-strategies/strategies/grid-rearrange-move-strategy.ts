@@ -16,13 +16,7 @@ import {
 } from '../../commands/set-property-command'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
-import type {
-  ControlWithProps,
-  CustomStrategyState,
-  CustomStrategyStatePatch,
-  InteractionCanvasState,
-  InteractionLifecycle,
-} from '../canvas-strategy-types'
+import type { ControlWithProps, InteractionCanvasState } from '../canvas-strategy-types'
 import {
   getTargetPathsFromInteractionTarget,
   emptyStrategyApplicationResult,
@@ -30,20 +24,12 @@ import {
 } from '../canvas-strategy-types'
 import type { DragInteractionData, InteractionSession } from '../interaction-state'
 import { runGridRearrangeMove } from './grid-helpers'
-import type { CanvasRectangle } from '../../../../core/shared/math-utils'
-import { isInfinityRectangle, offsetPoint } from '../../../../core/shared/math-utils'
-import { findReparentStrategies } from './reparent-helpers/reparent-strategy-helpers'
-import { applyAbsoluteReparent, controlsForAbsoluteReparent } from './absolute-reparent-strategy'
+import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import type { CanvasCommand } from '../../commands/commands'
-import { applyStaticReparent, controlsForStaticReparent } from './reparent-as-static-strategy'
-import type { FindReparentStrategyResult } from './reparent-helpers/reparent-strategy-parent-lookup'
-import { applyGridReparent, controlsForGridReparent } from './grid-reparent-strategy'
-import { assertNever } from '../../../../core/shared/utils'
 
 export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
-  customState: CustomStrategyState,
 ) => {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (
@@ -129,7 +115,7 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         ),
       ]
 
-      const { commands, patch, elementsToRerender } = getCommandsAndPatchForGridRearrange(
+      const { commands, elementsToRerender } = getCommandsAndPatchForGridRearrange(
         canvasState,
         interactionSession.interactionData,
         selectedElement,
@@ -142,7 +128,6 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
       return strategyApplicationResult(
         [...midInteractionCommands, ...onCompleteCommands, ...commands],
         elementsToRerender,
-        patch,
       )
     },
   }
@@ -154,11 +139,18 @@ function getCommandsAndPatchForGridRearrange(
   selectedElement: ElementPath,
 ): {
   commands: CanvasCommand[]
-  patch: CustomStrategyStatePatch
   elementsToRerender: ElementPath[]
 } {
   if (interactionData.drag == null) {
-    return { commands: [], patch: {}, elementsToRerender: [] }
+    return { commands: [], elementsToRerender: [] }
+  }
+
+  const grid = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    EP.parentPath(selectedElement),
+  )
+  if (grid == null) {
+    return { commands: [], elementsToRerender: [] }
   }
 
   const commands = runGridRearrangeMove(
@@ -166,11 +158,11 @@ function getCommandsAndPatchForGridRearrange(
     selectedElement,
     canvasState.startingMetadata,
     interactionData,
+    grid,
   )
 
   return {
     commands: commands,
-    patch: {},
     elementsToRerender: [EP.parentPath(selectedElement)],
   }
 }
