@@ -21,7 +21,7 @@ import type { EditorState } from '../../components/editor/store/editor-state'
 import { createRequireFn } from '../property-controls/property-controls-local'
 
 const LatestConfig: { current: { code: string; config: Config } | null } = { current: null }
-export function getTailwindConfig(editorState: EditorState): Config | null {
+export function getTailwindConfigCached(editorState: EditorState): Config | null {
   const tailwindConfig = getProjectFileByFilePath(editorState.projectContents, TailwindConfigPath)
   if (tailwindConfig == null || tailwindConfig.type !== 'TEXT_FILE') {
     return null

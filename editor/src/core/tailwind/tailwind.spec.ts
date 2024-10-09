@@ -2,13 +2,13 @@ import { Project, TailwindConfigFileContents } from './tailwind.test-utils'
 import { renderTestEditorWithModel } from '../../components/canvas/ui-jsx.test-utils'
 import { TailwindConfigPath } from './tailwind-config'
 import { updateFromCodeEditor } from '../../components/editor/actions/actions-from-vscode'
-import { getTailwindConfig } from './tailwind-compilation'
+import { getTailwindConfigCached } from './tailwind-compilation'
 
 describe('tailwind config file in the editor', () => {
   it('is set during editor load', async () => {
     const editor = await renderTestEditorWithModel(Project, 'await-first-dom-report')
 
-    expect(getTailwindConfig(editor.getEditorState().editor)).toMatchInlineSnapshot(`
+    expect(getTailwindConfigCached(editor.getEditorState().editor)).toMatchInlineSnapshot(`
       Object {
         "plugins": Array [
           [Function],
@@ -56,7 +56,7 @@ const Tailwind = {
       true,
     )
 
-    expect(getTailwindConfig(editor.getEditorState().editor)).toMatchInlineSnapshot(`
+    expect(getTailwindConfigCached(editor.getEditorState().editor)).toMatchInlineSnapshot(`
       Object {
         "plugins": Array [],
         "theme": Object {
