@@ -104,7 +104,7 @@ interface CanvasLabelProps {
   scale: number
   color: string
   textColor: string
-  value: string | number
+  value: string | number | null
   onMouseDown?: React.MouseEventHandler
   testId?: string
 }

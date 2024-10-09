@@ -58,7 +58,8 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
     selectedElements.length === 0 ||
     selectedElements.some(EP.isRootElementOfInstance) ||
     interactionSession == null ||
-    interactionSession.activeControl.type !== 'BOUNDING_AREA' ||
+    (interactionSession.activeControl.type !== 'BOUNDING_AREA' &&
+      interactionSession.activeControl.type !== 'GRID_CELL_HANDLE') ||
     interactionSession.interactionData.type !== 'DRAG' ||
     interactionSession.interactionData.modifiers.alt
   ) {

@@ -143,7 +143,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
         control: FloatingIndicator,
         props: {
           ...props,
-          color: colorTheme.brandNeonPink.value,
+          color: colorTheme.brandNeonOrange.value,
         },
         key: 'padding-value-indicator-control',
         show: 'visible-except-when-other-strategy-is-active',

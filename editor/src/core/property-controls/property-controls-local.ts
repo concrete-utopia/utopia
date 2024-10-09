@@ -76,7 +76,7 @@ import {
   right,
   sequenceEither,
 } from '../shared/either'
-import { assertNever } from '../shared/utils'
+import { assertNever, identity } from '../shared/utils'
 import type {
   Imports,
   ParsedTextFile,
@@ -157,73 +157,93 @@ function extendExportsWithInfo(exports: any, toImport: string): any {
   return exports
 }
 
+export const createRequireFn = (
+  editor: EditorState,
+  moduleName: string,
+  transform: (result: any, absoluteFilenameOrPackage: string) => any = identity,
+) => {
+  let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
+  let topLevelComponentRendererComponents: {
+    current: MapLike<MapLike<ComponentRendererComponent>>
+  } = { current: {} }
+  const emptyMetadataContext: UiJsxCanvasContextData = {
+    current: {
+      spyValues: {
+        allElementProps: {},
+        metadata: {},
+        variablesInScope: {},
+      },
+    },
+  }
+
+  let resolvedFiles: MapLike<MapLike<any>> = {}
+  let resolvedFileNames: Array<string> = [moduleName]
+
+  const requireFn = editor.codeResultCache.curriedRequireFn(editor.projectContents)
+  const resolve = editor.codeResultCache.curriedResolveFn(editor.projectContents)
+
+  const customRequire = (importOrigin: string, toImport: string) => {
+    if (resolvedFiles[importOrigin] == null) {
+      resolvedFiles[importOrigin] = []
+    }
+    let resolvedFromThisOrigin = resolvedFiles[importOrigin]
+
+    const alreadyResolved = resolvedFromThisOrigin[toImport] !== undefined
+    const filePathResolveResult = alreadyResolved
+      ? left<string, string>('Already resolved')
+      : resolve(importOrigin, toImport)
+
+    forEachRight(filePathResolveResult, (filepath) => resolvedFileNames.push(filepath))
+
+    const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
+      resolvedFromThisOrigin,
+      toImport,
+      editor.projectContents,
+      customRequire,
+      mutableContextRef,
+      topLevelComponentRendererComponents,
+      moduleName,
+      editor.canvas.base64Blobs,
+      editor.hiddenInstances,
+      editor.displayNoneInstances,
+      emptyMetadataContext,
+      NO_OP,
+      false,
+      filePathResolveResult,
+      null,
+    )
+    const result = foldEither(
+      () => {
+        // We did not find a ParseSuccess, fallback to standard require Fn
+        return requireFn(importOrigin, toImport, false)
+      },
+      (scope) => {
+        // Return an artificial exports object that contains our ComponentRendererComponents
+        return scope
+      },
+      resolvedParseSuccess,
+    )
+    const absoluteFilenameOrPackage = defaultEither(toImport, filePathResolveResult)
+    return transform(result, absoluteFilenameOrPackage)
+  }
+
+  return {
+    customRequire,
+    emptyMetadataContext,
+    mutableContextRef,
+    topLevelComponentRendererComponents,
+  }
+}
+
 export type ModuleEvaluator = (moduleName: string) => any
 export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
   return (moduleName: string) => {
-    let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
-    let topLevelComponentRendererComponents: {
-      current: MapLike<MapLike<ComponentRendererComponent>>
-    } = { current: {} }
-    const emptyMetadataContext: UiJsxCanvasContextData = {
-      current: {
-        spyValues: {
-          allElementProps: {},
-          metadata: {},
-          variablesInScope: {},
-        },
-      },
-    }
-
-    let resolvedFiles: MapLike<MapLike<any>> = {}
-    let resolvedFileNames: Array<string> = [moduleName]
-
-    const requireFn = editor.codeResultCache.curriedRequireFn(editor.projectContents)
-    const resolve = editor.codeResultCache.curriedResolveFn(editor.projectContents)
-
-    const customRequire = (importOrigin: string, toImport: string) => {
-      if (resolvedFiles[importOrigin] == null) {
-        resolvedFiles[importOrigin] = []
-      }
-      let resolvedFromThisOrigin = resolvedFiles[importOrigin]
-
-      const alreadyResolved = resolvedFromThisOrigin[toImport] !== undefined
-      const filePathResolveResult = alreadyResolved
-        ? left<string, string>('Already resolved')
-        : resolve(importOrigin, toImport)
-
-      forEachRight(filePathResolveResult, (filepath) => resolvedFileNames.push(filepath))
-
-      const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
-        resolvedFromThisOrigin,
-        toImport,
-        editor.projectContents,
-        customRequire,
-        mutableContextRef,
-        topLevelComponentRendererComponents,
-        moduleName,
-        editor.canvas.base64Blobs,
-        editor.hiddenInstances,
-        editor.displayNoneInstances,
-        emptyMetadataContext,
-        NO_OP,
-        false,
-        filePathResolveResult,
-        null,
-      )
-      const result = foldEither(
-        () => {
-          // We did not find a ParseSuccess, fallback to standard require Fn
-          return requireFn(importOrigin, toImport, false)
-        },
-        (scope) => {
-          // Return an artificial exports object that contains our ComponentRendererComponents
-          return scope
-        },
-        resolvedParseSuccess,
-      )
-      const absoluteFilenameOrPackage = defaultEither(toImport, filePathResolveResult)
-      return extendExportsWithInfo(result, absoluteFilenameOrPackage)
-    }
+    const {
+      customRequire,
+      emptyMetadataContext,
+      mutableContextRef,
+      topLevelComponentRendererComponents,
+    } = createRequireFn(editor, moduleName, extendExportsWithInfo)
     return createExecutionScope(
       moduleName,
       customRequire,
