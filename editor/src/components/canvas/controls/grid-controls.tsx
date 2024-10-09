@@ -98,6 +98,7 @@ import {
   getGridRelatedIndexes,
 } from '../canvas-strategies/strategies/grid-helpers'
 import { canResizeGridTemplate } from '../canvas-strategies/strategies/resize-grid-strategy'
+import { GridControlsRuler } from './grid-controls-ruler'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -150,8 +151,8 @@ function getLabelForAxis(
   return gridCSSNumberToLabel(defaultEither(fromDOM, fromPropsAtIndex))
 }
 
-const GRID_RESIZE_HANDLE_CONTAINER_SIZE = 30 // px
-const GRID_RESIZE_HANDLE_SIZE = 15 // px
+export const GRID_RESIZE_HANDLE_CONTAINER_SIZE = 30 // px
+export const GRID_RESIZE_HANDLE_SIZE = 15 // px
 
 export interface GridResizingControlProps {
   dimension: GridDimension
@@ -1133,6 +1134,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
 
   return (
     <div id={'grid-controls'}>
+      <GridControlsRuler />
       <CanvasOffsetWrapper>
         {grids.map((grid) => {
           return <GridControl key={`grid-control-${EP.toString(grid.elementPath)}`} grid={grid} />
@@ -1784,7 +1786,7 @@ export function gridEdgeToEdgePosition(edge: GridResizeEdge): EdgePosition {
   }
 }
 
-function gridEdgeToCSSCursor(edge: GridResizeEdge): CSSCursor {
+export function gridEdgeToCSSCursor(edge: GridResizeEdge): CSSCursor {
   switch (edge) {
     case 'column-end':
     case 'column-start':
@@ -1797,7 +1799,10 @@ function gridEdgeToCSSCursor(edge: GridResizeEdge): CSSCursor {
   }
 }
 
-function gridEdgeToWidthHeight(props: GridResizeEdgeProperties, scale: number): CSSProperties {
+export function gridEdgeToWidthHeight(
+  props: GridResizeEdgeProperties,
+  scale: number,
+): CSSProperties {
   return {
     width: props.isColumn ? (GRID_RESIZE_HANDLE_SIZES.short * 4) / scale : '100%',
     height: props.isRow ? (GRID_RESIZE_HANDLE_SIZES.short * 4) / scale : '100%',

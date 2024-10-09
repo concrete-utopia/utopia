@@ -83,7 +83,7 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
     clearRuntimeErrors()
   }, [clearRuntimeErrors])
 
-  const containerRef = useApplyCanvasOffsetToStyle(true)
+  const containerRef = useApplyCanvasOffsetToStyle(true, 'xy')
 
   return (
     <>

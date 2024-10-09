@@ -10,8 +10,11 @@ import { isFollowMode } from '../../editor/editor-modes'
 import { liveblocksThrottle } from '../../../../liveblocks.config'
 
 export const CanvasOffsetWrapper = React.memo(
-  (props: { children?: React.ReactNode; setScaleToo?: boolean }) => {
-    const elementRef = useApplyCanvasOffsetToStyle(props.setScaleToo ?? false)
+  (props: { children?: React.ReactNode; setScaleToo?: boolean; limitAxis?: 'x' | 'y' | 'xy' }) => {
+    const elementRef = useApplyCanvasOffsetToStyle(
+      props.setScaleToo ?? false,
+      props.limitAxis ?? 'xy',
+    )
 
     return (
       <div ref={elementRef} style={{ position: 'absolute' }}>
@@ -21,7 +24,10 @@ export const CanvasOffsetWrapper = React.memo(
   },
 )
 
-export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObject<HTMLDivElement> {
+export function useApplyCanvasOffsetToStyle(
+  setScaleToo: boolean,
+  limitAxis: 'x' | 'y' | 'xy',
+): React.RefObject<HTMLDivElement> {
   const elementRef = React.useRef<HTMLDivElement>(null)
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
@@ -37,11 +43,18 @@ export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObje
 
   const applyCanvasOffset = React.useCallback(
     (roundedCanvasOffset: CanvasVector) => {
+      const limitedCanvasOffset =
+        limitAxis === 'x'
+          ? { x: roundedCanvasOffset.x, y: 0 }
+          : limitAxis === 'y'
+          ? { x: 0, y: roundedCanvasOffset.y }
+          : roundedCanvasOffset
+
       if (elementRef.current != null) {
         elementRef.current.style.setProperty(
           'transform',
           (setScaleToo && scaleRef.current < 1 ? `scale(${scaleRef.current})` : '') +
-            ` translate3d(${roundedCanvasOffset.x}px, ${roundedCanvasOffset.y}px, 0)`,
+            ` translate3d(${limitedCanvasOffset.x}px, ${limitedCanvasOffset.y}px, 0)`,
         )
         elementRef.current.style.setProperty(
           'zoom',
@@ -56,7 +69,7 @@ export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObje
         }
       }
     },
-    [setScaleToo, scaleRef, isScrollAnimationActiveRef, mode],
+    [setScaleToo, scaleRef, isScrollAnimationActiveRef, mode, limitAxis],
   )
 
   useSelectorWithCallback(
