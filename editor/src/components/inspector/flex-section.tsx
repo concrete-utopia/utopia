@@ -967,7 +967,7 @@ function selectOption(value: GridAutoFlow) {
 }
 
 const unsetSelectOption = regularRadixSelectOption({
-  label: (isOpen) => (isOpen ? 'unset' : 'auto'),
+  label: (isOpen, currentValue) => (isOpen && currentValue !== 'auto' ? 'unset' : 'auto'),
   value: 'auto',
   placeholder: true,
 })

@@ -228,7 +228,7 @@ Separator.displayName = 'Separator'
 type RegularRadixSelectOption = {
   type: 'REGULAR'
   value: string
-  label: string | ((isOpen: boolean) => string)
+  label: string | ((isOpen: boolean, currentValue: string | null) => string)
   icon?: IcnProps
   placeholder?: boolean
 }
@@ -257,12 +257,13 @@ export type RadixSelectOption = RegularRadixSelectOption | Separator
 function optionLabelToString(
   option: RegularRadixSelectOption | null,
   isOpen: boolean,
+  currentValue: string | null,
 ): string | null {
   if (option == null) {
     return null
   }
 
-  const label = typeof option.label === 'string' ? option.label : option.label(isOpen)
+  const label = typeof option.label === 'string' ? option.label : option.label(isOpen, currentValue)
 
   return `${label.charAt(0).toUpperCase()}${label.slice(1)}`
 }
@@ -293,7 +294,7 @@ export const RadixSelect = React.memo(
       [propsOnOpenChange],
     )
 
-    const valueLabel = optionLabelToString(props.value ?? null, isOpen)
+    const valueLabel = optionLabelToString(props.value ?? null, isOpen, props.value?.value ?? null)
 
     return (
       <Select.Root
@@ -365,7 +366,7 @@ export const RadixSelect = React.memo(
                   )
                 }
 
-                const label = optionLabelToString(option, isOpen)
+                const label = optionLabelToString(option, isOpen, props.value?.value ?? null)
                 return (
                   <Select.Item
                     key={`select-option-${props.id}-${index}`}
