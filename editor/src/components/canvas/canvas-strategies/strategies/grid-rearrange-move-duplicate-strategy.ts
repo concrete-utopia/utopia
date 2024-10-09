@@ -72,11 +72,20 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
 
       const targetElement = EP.appendToPath(EP.parentPath(selectedElement), newUid)
 
+      const grid = MetadataUtils.findElementByElementPath(
+        canvasState.startingMetadata,
+        EP.parentPath(selectedElement),
+      )
+      if (grid == null) {
+        return emptyStrategyApplicationResult
+      }
+
       const moveCommands = runGridRearrangeMove(
         targetElement,
         selectedElement,
         canvasState.startingMetadata,
         interactionSession.interactionData,
+        grid,
       )
       if (moveCommands.length === 0) {
         return emptyStrategyApplicationResult
