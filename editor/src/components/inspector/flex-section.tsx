@@ -967,8 +967,8 @@ function selectOption(value: GridAutoFlow) {
 }
 
 const unsetSelectOption = regularRadixSelectOption({
-  label: 'unset',
-  value: 'unset',
+  label: (isOpen, currentValue) => (isOpen && currentValue !== 'auto' ? 'unset' : 'auto'),
+  value: 'auto',
   placeholder: true,
 })
 
@@ -1026,7 +1026,7 @@ const AutoFlowControl = React.memo(() => {
         selectededViewsRef.current.map((path) =>
           applyCommandsAction([
             updateBulkProperties('always', path, [
-              value === 'unset'
+              value === 'auto'
                 ? propertyToDelete(PP.create('style', 'gridAutoFlow'))
                 : propertyToSet(PP.create('style', 'gridAutoFlow'), value),
             ]),

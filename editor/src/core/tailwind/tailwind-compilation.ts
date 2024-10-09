@@ -1,7 +1,7 @@
 import React from 'react'
 import type { TailwindConfig, Tailwindcss } from '@mhsdesign/jit-browser-tailwindcss'
 import { createTailwindcss } from '@mhsdesign/jit-browser-tailwindcss'
-import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
+import type { ProjectContentTreeRoot, TextFile, TextFileContents } from 'utopia-shared/src/types'
 import { getProjectFileByFilePath, walkContentsTree } from '../../components/assets'
 import { interactionSessionIsActive } from '../../components/canvas/canvas-strategies/interaction-state'
 import { CanvasContainerID } from '../../components/canvas/canvas-types'
@@ -16,6 +16,31 @@ import type { RequireFn } from '../shared/npm-dependency-types'
 import { TailwindConfigPath } from './tailwind-config'
 import { ElementsToRerenderGLOBAL } from '../../components/canvas/ui-jsx-canvas'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import type { Config } from 'tailwindcss/types/config'
+import type { EditorState } from '../../components/editor/store/editor-state'
+import { createRequireFn } from '../property-controls/property-controls-local'
+
+const LatestConfig: { current: { code: string; config: Config } | null } = { current: null }
+export function getTailwindConfigCached(editorState: EditorState): Config | null {
+  const tailwindConfig = getProjectFileByFilePath(editorState.projectContents, TailwindConfigPath)
+  if (tailwindConfig == null || tailwindConfig.type !== 'TEXT_FILE') {
+    return null
+  }
+  const cached =
+    LatestConfig.current == null || LatestConfig.current.code !== tailwindConfig.fileContents.code
+      ? null
+      : LatestConfig.current.config
+
+  if (cached != null) {
+    return cached
+  }
+  // FIXME this should use a shared long-lived require function instead of creating a brand new one
+  const { customRequire } = createRequireFn(editorState, TailwindConfigPath)
+  const config = importDefault(customRequire('/', TailwindConfigPath)) as Config
+  LatestConfig.current = { code: tailwindConfig.fileContents.code, config: config }
+
+  return config
+}
 
 const TAILWIND_INSTANCE: { current: Tailwindcss | null } = { current: null }
 

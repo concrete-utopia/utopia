@@ -383,7 +383,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
               <CanvasLabel
                 value={printCSSNumber(gapValue, null)}
                 scale={scale}
-                color={colorTheme.brandNeonPink.value}
+                color={colorTheme.brandNeonOrange.value}
                 textColor={colorTheme.white.value}
               />,
             )}
@@ -391,7 +391,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
           <PillHandle
             width={width}
             height={height}
-            pillColor={colorTheme.brandNeonPink.value}
+            pillColor={colorTheme.brandNeonOrange.value}
             borderWidth={borderWidth}
           />
         </div>
