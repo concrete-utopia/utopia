@@ -93,9 +93,9 @@ export function runGridRearrangeMove(
     originalElementGridConfiguration
 
   // get the new adjusted row
-  const row = targetCellCoords.row - mouseCellPosInOriginalElement.row
+  const row = Math.max(targetCellCoords.row - mouseCellPosInOriginalElement.row, 1)
   // get the new adjusted column
-  const column = targetCellCoords.column - mouseCellPosInOriginalElement.column
+  const column = Math.max(targetCellCoords.column - mouseCellPosInOriginalElement.column, 1)
 
   const gridCellMoveCommands = setGridPropsCommands(targetElement, gridTemplate, {
     gridColumnStart: gridPositionValue(column),
@@ -466,6 +466,18 @@ function getGridMoveType(params: {
   }
 
   const elementGridProperties = specialSizeMeasurements.elementGridProperties
+  const gridRowStart = gridPositionNumberValue(elementGridProperties.gridRowStart)
+  const gridColumnStart = gridPositionNumberValue(elementGridProperties.gridColumnStart)
+  const gridRowEnd = gridPositionNumberValue(elementGridProperties.gridRowEnd)
+  const gridColumnEnd = gridPositionNumberValue(elementGridProperties.gridColumnEnd)
+
+  const isMultiCellChild =
+    (gridRowEnd != null && gridRowStart != null && gridRowEnd > gridRowStart + 1) ||
+    (gridColumnEnd != null && gridColumnStart != null && gridColumnEnd > gridColumnStart + 1)
+
+  if (isMultiCellChild) {
+    return 'rearrange'
+  }
 
   // The first element is intrinsically in order, so try to adjust for that
   if (params.possiblyReorderIndex === 0) {
@@ -474,9 +486,9 @@ function getGridMoveType(params: {
       params.cellsSortedByPosition[0].path,
       params.originalElementMetadata.elementPath,
     )
-    const isAlreadyAtOrigin =
-      gridPositionNumberValue(elementGridProperties.gridRowStart) === 1 &&
-      gridPositionNumberValue(elementGridProperties.gridColumnStart) === 1
+
+    const isAlreadyAtOrigin = gridRowStart === 1 && gridColumnStart === 1
+
     if (isTheOnlyChild || isAlreadyTheFirstChild || isAlreadyAtOrigin) {
       return 'reorder'
     }
