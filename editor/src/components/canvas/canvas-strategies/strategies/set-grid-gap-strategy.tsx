@@ -132,7 +132,7 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
         control: FloatingIndicator,
         props: {
           ...maybeIndicatorProps,
-          color: colorTheme.brandNeonPink.value,
+          color: colorTheme.brandNeonOrange.value,
         },
         key: 'padding-value-indicator-control',
         show: 'visible-except-when-other-strategy-is-active',
