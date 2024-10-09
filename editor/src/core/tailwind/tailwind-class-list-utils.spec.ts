@@ -128,7 +128,8 @@ describe('tailwind class list utils', () => {
     })
 
     it('stringifying a parsed class list yields the same class list string', () => {
-      const startingClassList = 'p-4 m-2 w-4 flex flex-row fancy-button'
+      const startingClassList =
+        'p-4 m-2 w-4 lg:w-8 text-black hover:text-red-200 flex flex-row fancy-button'
       const classList = getClassListFromParsedClassList(
         getParsedClassList(startingClassList, null),
         null,
