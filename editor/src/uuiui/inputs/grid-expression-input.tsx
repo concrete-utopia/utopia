@@ -1,3 +1,7 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
+import type { CSSProperties } from 'react'
 import React from 'react'
 import {
   cssKeyword,
@@ -22,6 +26,7 @@ import {
 import { Icons, SmallerIcons } from '../icons'
 import { NO_OP } from '../../core/shared/utils'
 import { unless } from '../../utils/react-conditionals'
+import { useColorTheme } from '../styles/theme'
 
 interface GridExpressionInputProps {
   testId: string
@@ -31,7 +36,10 @@ interface GridExpressionInputProps {
   onFocus: () => void
   onBlur: () => void
   keywords: Array<{ label: string; value: CSSKeyword<any> }>
+  style?: CSSProperties
 }
+
+const DropdownWidth = 25
 
 export const GridExpressionInput = React.memo(
   ({
@@ -42,7 +50,10 @@ export const GridExpressionInput = React.memo(
     onFocus,
     onBlur,
     keywords,
+    style = {},
   }: GridExpressionInputProps) => {
+    const colorTheme = useColorTheme()
+
     const [printValue, setPrintValue] = React.useState<string>(stringifyGridDimension(value))
     React.useEffect(() => setPrintValue(stringifyGridDimension(value)), [value])
 
@@ -148,25 +159,37 @@ export const GridExpressionInput = React.memo(
 
     return (
       <div
-        style={{
-          position: 'relative',
+        style={style}
+        css={{
           borderRadius: 2,
           display: 'flex',
           alignItems: 'center',
           flexGrow: 1,
+          flexDirection: 'row',
+          '&:hover': {
+            boxShadow: `inset 0px 0px 0px 1px ${
+              dropdownOpen ? colorTheme.dynamicBlue.value : colorTheme.fg7.value
+            }`,
+          },
+          '&:focus-within': {
+            boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
+          },
         }}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
       >
         <StringInput
-          style={{ width: '100%' }}
           testId={testId}
           value={printValue}
           onChange={onChange}
           onKeyDown={onKeyDown}
           onFocus={inputOnFocus}
           onBlur={inputOnBlur}
-          showBorder={dropdownOpen ? true : undefined}
+          showBorder={false}
+          includeBoxShadow={false}
+          style={{
+            width: inputFocused ? '100%' : `calc(100% - ${DropdownWidth}px)`,
+          }}
         />
         {unless(
           inputFocused,
@@ -175,10 +198,7 @@ export const GridExpressionInput = React.memo(
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              right: 0,
+              width: `${DropdownWidth}px`,
             }}
           >
             <DropdownMenu
@@ -186,9 +206,6 @@ export const GridExpressionInput = React.memo(
               items={dropdownItems}
               opener={dropdownButton}
               onOpenChange={setDropdownOpen}
-              style={{
-                marginTop: 8,
-              }}
             />
           </div>,
         )}

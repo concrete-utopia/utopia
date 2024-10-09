@@ -30,6 +30,7 @@ import {
   SquareButton,
   Subdued,
   Tooltip,
+  UtopiaTheme,
 } from '../../uuiui'
 import type {
   CSSKeyword,
@@ -580,10 +581,21 @@ function AxisDimensionControl({
         },
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridAutoFlow: 'column',
+          alignItems: 'center',
+          gap: 6,
+          gridTemplateColumns: gridExpressionInputFocused.focused
+            ? `40px auto`
+            : `40px auto ${UtopiaTheme.layout.inputHeight.default}px`,
+          gridTemplateRows: '1fr',
+          width: `100%`,
+        }}
+      >
         <Subdued
           style={{
-            width: 40,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
@@ -601,13 +613,13 @@ function AxisDimensionControl({
           onBlur={gridExpressionInputFocused.onBlur}
           keywords={gridDimensionDropdownKeywords}
         />
+        {unless(
+          gridExpressionInputFocused.focused,
+          <SquareButton className={axisDropdownMenuButton}>
+            <DropdownMenu align='end' items={items} opener={opener} onOpenChange={onOpenChange} />
+          </SquareButton>,
+        )}
       </div>
-      {unless(
-        gridExpressionInputFocused.focused,
-        <SquareButton className={axisDropdownMenuButton}>
-          <DropdownMenu align='end' items={items} opener={opener} onOpenChange={onOpenChange} />
-        </SquareButton>,
-      )}
     </div>
   )
 }
