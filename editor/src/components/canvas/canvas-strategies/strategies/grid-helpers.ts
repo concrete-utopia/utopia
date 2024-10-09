@@ -326,9 +326,9 @@ function getGridChildCellCoordBoundsFromProps(
     return propValue.numericalPosition ?? innerFallback
   }
   const column = getGridProperty('gridColumnStart', fallback.column)
-  const height = getGridProperty('gridColumnEnd', fallback.column + (fallback.height ?? 1)) - column
+  const height = getGridProperty('gridColumnEnd', fallback.column + (fallback.width ?? 1)) - column
   const row = getGridProperty('gridRowStart', fallback.row)
-  const width = getGridProperty('gridRowEnd', fallback.row + (fallback.width ?? 1)) - row
+  const width = getGridProperty('gridRowEnd', fallback.row + (fallback.height ?? 1)) - row
 
   return {
     row,
