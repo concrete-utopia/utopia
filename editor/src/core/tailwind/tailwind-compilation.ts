@@ -34,6 +34,7 @@ export function getTailwindConfig(editorState: EditorState): Config | null {
   if (cached != null) {
     return cached
   }
+  // FIXME this should use a shared long-lived require function instead of creating a brand new one
   const { customRequire } = createRequireFn(editorState, TailwindConfigPath)
   const config = importDefault(customRequire('/', TailwindConfigPath)) as Config
   LatestConfig.current = { code: tailwindConfig.fileContents.code, config: config }
