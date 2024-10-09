@@ -20,7 +20,7 @@ import type { Config } from 'tailwindcss/types/config'
 import type { EditorState } from '../../components/editor/store/editor-state'
 import { createRequireFn } from '../property-controls/property-controls-local'
 
-const TailwindConfigCache: WeakMap<TextFile, Config> = new Map()
+const TailwindConfigCache: WeakMap<TextFile, Config> = new WeakMap()
 export function getTailwindConfig(editorState: EditorState): Config | null {
   const tailwindConfig = getProjectFileByFilePath(editorState.projectContents, TailwindConfigPath)
   if (tailwindConfig == null || tailwindConfig.type !== 'TEXT_FILE') {
