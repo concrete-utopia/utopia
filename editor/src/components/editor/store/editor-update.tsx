@@ -220,6 +220,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_REFRESHING_DEPENDENCIES(action, state)
     case 'UPDATE_GITHUB_OPERATIONS':
       return UPDATE_FNS.UPDATE_GITHUB_OPERATIONS(action, state)
+    case 'UPDATE_IMPORT_OPERATIONS':
+      return UPDATE_FNS.UPDATE_IMPORT_OPERATIONS(action, state)
     case 'SET_IMPORT_WIZARD_OPEN':
       return UPDATE_FNS.SET_IMPORT_WIZARD_OPEN(action, state)
     case 'REMOVE_TOAST':

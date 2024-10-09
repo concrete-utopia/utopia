@@ -4830,7 +4830,9 @@ export const ImportOperationKeepDeepEquality: KeepDeepEqualityCall<ImportOperati
   oldValue,
   newValue,
 ) => {
-  if (oldValue.name !== newValue.name) {
+  if (oldValue.type !== newValue.type) {
+    return keepDeepEqualityResult(newValue, false)
+  } else if (oldValue.id !== newValue.id) {
     return keepDeepEqualityResult(newValue, false)
   }
   return keepDeepEqualityResult(oldValue, true)

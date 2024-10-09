@@ -349,14 +349,15 @@ export type GithubOperation =
   | GithubSearchRepository
 
 export function githubOperationLocksEditor(op: GithubOperation): boolean {
-  switch (op.name) {
-    case 'listBranches':
-    case 'loadRepositories':
-    case 'listPullRequestsForBranch':
-      return false
-    default:
-      return true
-  }
+  return false
+  // switch (op.name) {
+  //   case 'listBranches':
+  //   case 'loadRepositories':
+  //   case 'listPullRequestsForBranch':
+  //     return false
+  //   default:
+  //     return true
+  // }
 }
 
 export function isGithubLoadingBranch(

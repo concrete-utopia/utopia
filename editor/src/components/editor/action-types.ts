@@ -87,7 +87,7 @@ import type { Optic } from '../../core/shared/optics/optics'
 import { makeOptic } from '../../core/shared/optics/optics'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { assertNever } from '../../core/shared/utils'
-import type { ImportOperation, ImportOperationType } from './import-wizard/import-wizard-service'
+import type { ImportOperation, ImportOperationAction } from './import-wizard/import-wizard-service'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -1001,7 +1001,7 @@ export interface UpdateGithubOperations {
 export interface UpdateImportOperations {
   action: 'UPDATE_IMPORT_OPERATIONS'
   operations: ImportOperation[]
-  type: ImportOperationType
+  type: ImportOperationAction
 }
 
 export interface SetRefreshingDependencies {

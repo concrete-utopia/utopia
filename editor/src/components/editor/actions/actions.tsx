@@ -632,6 +632,7 @@ import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-ut
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { applyValuesAtPath } from '../../canvas/commands/adjust-number-command'
 import { styleP } from '../../inspector/inspector-common'
+import { getUpdateOperationResult } from '../import-wizard/import-wizard-service'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2237,45 +2238,14 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_IMPORT_OPERATIONS: (action: UpdateImportOperations, editor: EditorModel): EditorModel => {
-    const operations = [...editor.importOperations]
-    switch (action.type) {
-      case 'add':
-        action.operations.forEach((operation) => {
-          operations.push(operation)
-        })
-        break
-      case 'remove':
-        // remove according to name
-        action.operations.forEach((operation) => {
-          const idx = operations.findIndex((op) => op.name === operation.name)
-          if (idx >= 0) {
-            operations.splice(idx, 1)
-          }
-        })
-        break
-      case 'update':
-        // update fields according to name
-        action.operations.forEach((operation) => {
-          const idx = operations.findIndex((op) => op.name === operation.name)
-          if (idx >= 0) {
-            operations[idx] = {
-              ...operations[idx],
-              ...operation,
-            }
-          }
-          // if not found, add it
-          if (idx === -1) {
-            operations.push(operation)
-          }
-        })
-        break
-      default:
-        const _exhaustiveCheck: never = action.type
-        throw new Error('Unknown operation type.')
-    }
+    const resultImportOperations = getUpdateOperationResult(
+      editor.importOperations,
+      action.operations,
+      action.type,
+    )
     return {
       ...editor,
-      importOperations: operations,
+      importOperations: resultImportOperations,
     }
   },
   SET_REFRESHING_DEPENDENCIES: (

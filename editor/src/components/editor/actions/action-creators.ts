@@ -270,7 +270,7 @@ import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { PageTemplate } from '../../canvas/remix/remix-utils'
 import type { Bounds } from 'utopia-vscode-common'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import type { ImportOperation, ImportOperationType } from '../import-wizard/import-wizard-service'
+import type { ImportOperation, ImportOperationAction } from '../import-wizard/import-wizard-service'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1596,7 +1596,7 @@ export function resetCanvas(): ResetCanvas {
 
 export function updateImportOperations(
   operations: ImportOperation[],
-  type: ImportOperationType,
+  type: ImportOperationAction,
 ): UpdateImportOperations {
   return {
     action: 'UPDATE_IMPORT_OPERATIONS',

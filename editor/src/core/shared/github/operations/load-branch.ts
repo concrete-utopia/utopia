@@ -42,6 +42,7 @@ import { updateProjectContentsWithParseResults } from '../../parser-projectconte
 import {
   notifyOperationFinished,
   notifyOperationStarted,
+  startImportWizard,
 } from '../../../../components/editor/import-wizard/import-wizard-service'
 
 export const saveAssetsToProject =
@@ -119,8 +120,9 @@ export const updateProjectWithBranchContent =
     currentProjectContents: ProjectContentTreeRoot,
     initiator: GithubOperationSource,
   ): Promise<void> => {
-    notifyOperationStarted(dispatch, {
-      name: 'loadBranch',
+    startImportWizard(dispatch)
+    notifyOperationStarted({
+      type: 'loadBranch',
       branchName: branchName,
       githubRepo: githubRepo,
     })
@@ -157,22 +159,44 @@ export const updateProjectWithBranchContent =
               newGithubData.branches = null
             }
 
-            notifyOperationFinished(
-              dispatch,
-              {
-                name: 'loadBranch',
-                branchName: branchName,
-                githubRepo: githubRepo,
-              },
-              'success',
-            )
+            notifyOperationFinished({ type: 'loadBranch' }, 'success')
+
+            notifyOperationStarted({ type: 'parseFiles' })
 
             // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
             // So that it will override any existing files that might already exist in the project when sending them to VS Code.
+            const parseResults = await updateProjectContentsWithParseResults(
+              workers,
+              responseBody.branch.content,
+            )
+
+            notifyOperationFinished({ type: 'parseFiles' }, 'success')
+
+            notifyOperationStarted({ type: 'checkUtopiaRequirements' })
+            notifyOperationStarted({
+              type: 'createStoryboard',
+              parentOperationType: 'checkUtopiaRequirements',
+            })
+
             const parsedProjectContents = createStoryboardFileIfNecessary(
-              await updateProjectContentsWithParseResults(workers, responseBody.branch.content),
+              parseResults,
               'create-placeholder',
             )
+
+            notifyOperationFinished(
+              { type: 'createStoryboard', parentOperationType: 'checkUtopiaRequirements' },
+              'success',
+            )
+            notifyOperationStarted({
+              type: 'createPackageJsonEntry',
+              parentOperationType: 'checkUtopiaRequirements',
+            })
+            // here will be the code to create package.json entry
+            notifyOperationFinished(
+              { type: 'createPackageJsonEntry', parentOperationType: 'checkUtopiaRequirements' },
+              'success',
+            )
+            notifyOperationFinished({ type: 'checkUtopiaRequirements' }, 'success')
 
             // Update the editor with everything so that if anything else fails past this point
             // there's no loss of data from the user's perspective.
@@ -199,13 +223,16 @@ export const updateProjectWithBranchContent =
             let dependenciesPromise: Promise<void> = Promise.resolve()
             const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
             if (packageJson != null && isTextFile(packageJson)) {
+              notifyOperationStarted({ type: 'refreshDependencies' })
               dependenciesPromise = refreshDependencies(
                 dispatch,
                 packageJson.fileContents.code,
                 currentDeps,
                 builtInDependencies,
                 {},
-              ).then(() => {})
+              ).then(() => {
+                notifyOperationFinished({ type: 'refreshDependencies' }, 'success')
+              })
             }
 
             // When the dependencies update has gone through, then indicate that the project was imported.

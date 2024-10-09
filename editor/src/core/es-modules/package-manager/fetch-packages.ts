@@ -47,6 +47,10 @@ import { isBuiltInDependency } from './built-in-dependencies'
 import type { BuiltInDependencies } from './built-in-dependencies-list'
 import { mangleNodeModulePaths, mergeNodeModules } from './merge-modules'
 import { getJsDelivrFileUrl, getPackagerUrl } from './packager-url'
+import {
+  notifyOperationFinished,
+  notifyOperationStarted,
+} from '../../../components/editor/import-wizard/import-wizard-service'
 
 let depPackagerCache: { [key: string]: PackagerServerResponse } = {}
 
@@ -287,13 +291,33 @@ export async function fetchNodeModules(
   const nodeModulesArr = await Promise.all(
     dependenciesToDownload.map(
       async (newDep): Promise<Either<DependencyFetchError, NodeModules>> => {
+        function notifyEnd(result: 'success' | 'error') {
+          notifyOperationFinished(
+            {
+              type: 'fetchDependency',
+              id: `${newDep.name}@${newDep.version}`,
+              parentOperationType: 'refreshDependencies',
+              dependencyName: newDep.name,
+              dependencyVersion: newDep.version,
+            },
+            result,
+          )
+        }
         try {
+          notifyOperationStarted({
+            type: 'fetchDependency',
+            id: `${newDep.name}@${newDep.version}`,
+            parentOperationType: 'refreshDependencies',
+            dependencyName: newDep.name,
+            dependencyVersion: newDep.version,
+          })
           const matchingVersionResponse = await findMatchingVersion(
             newDep.name,
             newDep.version,
             'skipFetch',
           )
           if (isPackageNotFound(matchingVersionResponse)) {
+            notifyEnd('error')
             return left(failNotFound(newDep))
           }
 
@@ -323,12 +347,15 @@ export async function fetchNodeModules(
              * the real nice solution would be to apply npm's module resolution logic that
              * pulls up shared transitive dependencies to the main /node_modules/ folder.
              */
+            notifyEnd('success')
             return right(mangleNodeModulePaths(newDep.name, packagerResponse))
           } else {
+            notifyEnd('error')
             return left(failError(newDep))
           }
         } catch (e) {
           // TODO: proper error handling, now we don't show error for a missing package. The error will be visible when you try to import
+          notifyEnd('error')
           return left(failError(newDep))
         }
       },
