@@ -228,7 +228,7 @@ Separator.displayName = 'Separator'
 type RegularRadixSelectOption = {
   type: 'REGULAR'
   value: string
-  label: string
+  label: string | ((isOpen: boolean) => string)
   icon?: IcnProps
   placeholder?: boolean
 }
@@ -254,6 +254,19 @@ export function separatorRadixSelectOption(): Separator {
 
 export type RadixSelectOption = RegularRadixSelectOption | Separator
 
+function optionLabelToString(
+  option: RegularRadixSelectOption | null,
+  isOpen: boolean,
+): string | null {
+  if (option == null) {
+    return null
+  }
+
+  const label = typeof option.label === 'string' ? option.label : option.label(isOpen)
+
+  return `${label.charAt(0).toUpperCase()}${label.slice(1)}`
+}
+
 export const RadixSelect = React.memo(
   (props: {
     id: string
@@ -269,11 +282,24 @@ export const RadixSelect = React.memo(
       e.stopPropagation()
     }, [])
 
+    const { onOpenChange: propsOnOpenChange } = props
+
+    const [isOpen, setIsOpen] = React.useState(false)
+    const onOpenChange = React.useCallback(
+      (open: boolean) => {
+        setIsOpen(open)
+        propsOnOpenChange?.(open)
+      },
+      [propsOnOpenChange],
+    )
+
+    const valueLabel = optionLabelToString(props.value ?? null, isOpen)
+
     return (
       <Select.Root
         value={props.value?.value}
         onValueChange={props.onValueChange}
-        onOpenChange={props.onOpenChange}
+        onOpenChange={onOpenChange}
       >
         <Select.Trigger
           style={{
@@ -297,7 +323,7 @@ export const RadixSelect = React.memo(
             },
           }}
         >
-          <Select.Value placeholder={props.value?.label} />
+          <Select.Value placeholder={valueLabel} />
           <Select.Icon style={{ width: 12, height: 12 }}>
             <SmallerIcons.ExpansionArrowDown />
           </Select.Icon>
@@ -339,7 +365,7 @@ export const RadixSelect = React.memo(
                   )
                 }
 
-                const label = `${option.label.charAt(0).toUpperCase()}${option.label.slice(1)}`
+                const label = optionLabelToString(option, isOpen)
                 return (
                   <Select.Item
                     key={`select-option-${props.id}-${index}`}
