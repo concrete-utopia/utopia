@@ -73,6 +73,12 @@ const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'top'),
   PP.create('style', 'right'),
   PP.create('style', 'bottom'),
+  PP.create('style', 'gridRow'),
+  PP.create('style', 'gridColumn'),
+  PP.create('style', 'gridRowStart'),
+  PP.create('style', 'gridRowEnd'),
+  PP.create('style', 'gridColumnStart'),
+  PP.create('style', 'gridColumnEnd'),
 ]
 
 export type ForcePins = 'force-pins' | 'do-not-force-pins'

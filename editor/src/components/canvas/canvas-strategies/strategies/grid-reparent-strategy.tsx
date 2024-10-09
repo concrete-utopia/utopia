@@ -45,11 +45,7 @@ import { removeAbsolutePositioningProps } from './reparent-helpers/reparent-prop
 import type { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { flattenSelection } from './shared-move-strategies-helpers'
-import {
-  getClosestGridCellToPointFromMetadata,
-  getGridCellUnderMouseFromMetadata,
-  type GridCellCoordinates,
-} from './grid-cell-bounds'
+import { getClosestGridCellToPointFromMetadata, type GridCellCoordinates } from './grid-cell-bounds'
 
 export function gridReparentStrategy(
   reparentTarget: ReparentTarget,
