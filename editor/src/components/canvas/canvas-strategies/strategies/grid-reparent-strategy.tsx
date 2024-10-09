@@ -45,7 +45,7 @@ import { removeAbsolutePositioningProps } from './reparent-helpers/reparent-prop
 import type { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { flattenSelection } from './shared-move-strategies-helpers'
-import { getGridCellUnderMouseFromMetadata, type GridCellCoordinates } from './grid-cell-bounds'
+import { getClosestGridCellToPointFromMetadata, type GridCellCoordinates } from './grid-cell-bounds'
 
 export function gridReparentStrategy(
   reparentTarget: ReparentTarget,
@@ -195,9 +195,7 @@ export function applyGridReparent(
           interactionData.drag ?? canvasVector({ x: 0, y: 0 }),
         )
 
-        const targetCellData =
-          getGridCellUnderMouseFromMetadata(grid, mousePos) ??
-          customStrategyState.grid.targetCellData
+        const targetCellData = getClosestGridCellToPointFromMetadata(grid, mousePos)
 
         if (targetCellData == null) {
           return strategyApplicationResult([], [newParent.intendedParentPath])
@@ -247,10 +245,6 @@ export function applyGridReparent(
         const customStrategyStatePatch = {
           ...baseCustomState,
           elementsToRerender: elementsToRerender,
-          grid: {
-            ...baseCustomState.grid,
-            targetCellData: targetCellData,
-          },
         }
 
         return strategyApplicationResult(
@@ -259,7 +253,12 @@ export function applyGridReparent(
             gridContainerCommands,
             updateSelectedViews('always', newPaths),
             setCursorCommand(CSSCursor.Reparent),
-            showGridControls('mid-interaction', reparentTarget.newParent.intendedParentPath),
+            showGridControls(
+              'mid-interaction',
+              reparentTarget.newParent.intendedParentPath,
+              targetCellData.gridCellCoordinates,
+              null,
+            ),
           ],
           elementsToRerender,
           customStrategyStatePatch,

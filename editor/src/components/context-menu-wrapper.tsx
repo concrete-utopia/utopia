@@ -155,8 +155,18 @@ export const ContextMenu = <T,>({ dispatch, getData, id, items }: ContextMenuPro
     [getData, dispatch, isDisabled, isHidden],
   )
 
+  const onMouseDown = React.useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    event.stopPropagation()
+  }, [])
+
   return (
-    <Menu key={id} id={id} animation={false} onVisibilityChange={onVisibilityChange}>
+    <Menu
+      key={id}
+      id={id}
+      animation={false}
+      onVisibilityChange={onVisibilityChange}
+      onMouseDown={onMouseDown}
+    >
       {splitItems.map((item, index) => {
         if (item?.type === 'submenu') {
           return (

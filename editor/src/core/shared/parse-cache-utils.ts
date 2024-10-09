@@ -12,11 +12,11 @@ function isParseCacheEnabled(): boolean {
 }
 
 function isVerboseLogCacheEnabled(): boolean {
-  return isFeatureEnabled('Verbose Log Cache')
+  return isFeatureEnabled('Debug - Verbose Log Cache')
 }
 
 function isArbitraryCodeCacheEnabled(): boolean {
-  return isFeatureEnabled('Arbitrary Code Cache')
+  return isFeatureEnabled('Debug - Arbitrary Code Cache')
 }
 
 export function getParseCacheOptions(): ParseCacheOptions {

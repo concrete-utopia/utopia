@@ -20,7 +20,7 @@ import {
   printGridCSSNumber,
 } from '../../../components/inspector/common/css-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { mapDropNulls, range, stripNulls } from '../../../core/shared/array-utils'
+import { mapDropNulls, range, stripNulls, uniqBy } from '../../../core/shared/array-utils'
 import { defaultEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import type {
@@ -58,9 +58,11 @@ import { when } from '../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { useRollYourOwnFeatures } from '../../navigator/left-pane/roll-your-own-pane'
 import CanvasActions from '../canvas-actions'
-import type { ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
+import type {
+  ControlWithProps,
+  WhenToShowControl,
+} from '../canvas-strategies/canvas-strategy-types'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import type {
   GridResizeEdge,
@@ -252,34 +254,22 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
         data-testid={labelId}
         style={{
           zoom: 1 / scale,
-          width: GRID_RESIZE_HANDLE_SIZE,
           height: GRID_RESIZE_HANDLE_SIZE,
-          borderRadius: '100%',
-          border: `1px solid ${colorTheme.border0.value}`,
-          boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
-              1px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px 1px 2px 2px`,
-          background: colorTheme.white.value,
+          borderRadius: 3,
+          padding: '0 4px',
+          border: `.1px solid ${colorTheme.white.value}`,
+          background: colorTheme.primary.value,
+          color: colorTheme.white.value,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start'),
-          fontSize: 8,
           pointerEvents: 'initial',
-        }}
-        css={{
-          opacity: props.resizing !== 'not-resizing' ? 1 : 0.5,
-          ':hover': {
-            opacity: 1,
-          },
         }}
         onMouseDown={mouseDownHandler}
         onMouseMove={onMouseMove}
       >
-        {props.axis === 'row' ? '↕' : '↔'}
-        {when(
-          props.dimension.areaName != null,
-          <span style={{ position: 'absolute', top: 12 }}>{props.dimension.areaName}</span>,
-        )}
+        {getLabelForAxis(props.dimension, props.dimensionIndex, props.fromPropsAxisValues)}
       </div>
       {when(
         props.resizing !== 'not-resizing',
@@ -303,37 +293,34 @@ export const GridResizingControl = React.memo((props: GridResizingControlProps) 
             justifyContent: 'center',
             border: `1px solid ${
               props.resizeLocked
-                ? colorTheme.brandNeonPink10.value
+                ? colorTheme.primary10.value
                 : props.resizing === 'resize-target'
-                ? colorTheme.brandNeonPink.value
-                : colorTheme.brandNeonPink60.value
+                ? colorTheme.primary.value
+                : colorTheme.primary50.value
             }`,
             ...(props.resizeLocked
-              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink10.value, scale)
+              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.primary10.value, scale)
               : props.resizing === 'resize-target'
-              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.brandNeonPink60.value, scale)
-              : UtopiaStyles.backgrounds.stripedBackground(
-                  colorTheme.brandNeonPink10.value,
-                  scale,
-                )),
+              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.primary50.value, scale)
+              : UtopiaStyles.backgrounds.stripedBackground(colorTheme.primary10.value, scale)),
           }}
         >
-          <CanvasLabel
-            value={getLabelForAxis(
-              props.dimension,
-              props.dimensionIndex,
-              props.fromPropsAxisValues,
-            )}
-            scale={scale}
-            color={
-              props.resizeLocked
-                ? colorTheme.brandNeonPink10.value
-                : props.resizing === 'resize-target'
-                ? colorTheme.brandNeonPink.value
-                : colorTheme.brandNeonPink60.value
-            }
-            textColor={colorTheme.white.value}
-          />
+          {when(
+            props.dimension.areaName != null,
+            <div
+              style={{
+                position: 'absolute',
+                color: colorTheme.primary.value,
+                background: colorTheme.white.value,
+                top: 0,
+                left: 0,
+                padding: '0 4px',
+                borderRadius: '0 0 3px 0',
+              }}
+            >
+              {props.dimension.areaName}
+            </div>,
+          )}
         </div>,
       )}
     </div>
@@ -716,9 +703,8 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
   )
 
   const currentHoveredCell = useEditorState(
-    Substores.restOfStore,
-    (store) =>
-      store.strategyState.customStrategyState.grid.targetCellData?.gridCellCoordinates ?? null,
+    Substores.canvas,
+    (store) => store.editor.canvas.controls.gridControlData?.targetCell ?? null,
     'GridControl currentHoveredCell',
   )
 
@@ -895,8 +881,8 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
   const gridPath = optionalMap(EP.parentPath, shadow?.elementPath)
 
   const targetRootCell = useEditorState(
-    Substores.restOfStore,
-    (store) => store.strategyState.customStrategyState.grid.currentRootCell,
+    Substores.canvas,
+    (store) => store.editor.canvas.controls.gridControlData?.rootCell ?? null,
     'GridControl targetRootCell',
   )
 
@@ -963,7 +949,8 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
           const countedColumn = Math.floor(cell % grid.columns) + 1
           const id = gridCellTargetId(grid.elementPath, countedRow, countedColumn)
           const borderID = `${id}-border`
-          const dotgridColor = activelyDraggingOrResizingCell != null ? `#00000033` : 'transparent'
+          const dotgridColor =
+            activelyDraggingOrResizingCell != null ? colorTheme.blackOpacity35.value : 'transparent'
 
           const isActiveCell =
             countedColumn === currentHoveredCell?.column && countedRow === currentHoveredCell?.row
@@ -971,7 +958,7 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
           const borderColor =
             isActiveCell && targetsAreCellsWithPositioning
               ? colorTheme.brandNeonPink.value
-              : `#00000033`
+              : colorTheme.blackOpacity35.value
           return (
             <div
               key={id}
@@ -1143,18 +1130,18 @@ export interface GridControlsProps {
 
 export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ targets }) => {
   const targetRootCell = useEditorState(
-    Substores.restOfStore,
-    (store) => store.strategyState.customStrategyState.grid.currentRootCell,
+    Substores.canvas,
+    (store) => store.editor.canvas.controls.gridControlData?.rootCell ?? null,
     'GridControls targetRootCell',
   )
 
   const hoveredGrids = useEditorState(
     Substores.canvas,
-    (store) => stripNulls([store.editor.canvas.controls.gridControls]),
+    (store) => stripNulls([store.editor.canvas.controls.gridControlData?.grid]),
     'GridControls hoveredGrids',
   )
 
-  const grids = useGridData([...targets, ...hoveredGrids])
+  const grids = useGridData(uniqBy([...targets, ...hoveredGrids], (a, b) => EP.pathsEqual(a, b)))
 
   if (grids.length === 0) {
     return null
@@ -1350,7 +1337,7 @@ const AbsoluteDistanceIndicators = React.memo(
       return null
     }
 
-    const backgroundColor = colorTheme.brandNeonPink.value
+    const backgroundColor = colorTheme.primary.value
     const dashedBorder = `1px dashed ${backgroundColor}`
 
     return (
@@ -1855,12 +1842,15 @@ function gridPlaceholderWidthOrHeight(scale: number): string {
   return `calc(100% + ${(placeholderBorderBaseWidth * 2) / scale}px)`
 }
 
-export function controlsForGridPlaceholders(gridPath: ElementPath): ControlWithProps<any> {
+export function controlsForGridPlaceholders(
+  gridPath: ElementPath,
+  whenToShow: WhenToShowControl = 'always-visible',
+): ControlWithProps<any> {
   return {
     control: GridControls,
     props: { targets: [gridPath] },
     key: GridControlsKey(gridPath),
-    show: 'always-visible',
+    show: whenToShow,
     priority: 'bottom',
   }
 }

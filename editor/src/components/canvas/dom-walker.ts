@@ -9,6 +9,7 @@ import type {
   GridContainerProperties,
   GridElementProperties,
   DomElementMetadata,
+  GridAutoOrTemplateBase,
 } from '../../core/shared/element-template'
 import {
   specialSizeMeasurements,
@@ -16,6 +17,7 @@ import {
   gridElementProperties,
   gridAutoOrTemplateFallback,
   domElementMetadata,
+  gridAutoOrTemplateDimensions,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import type { ElementCanvasRectangleCache } from '../../core/shared/dom-utils'
@@ -52,6 +54,7 @@ import {
   parseGridAutoOrTemplateBase,
   parseGridAutoFlow,
   isCSSKeyword,
+  isDynamicGridRepeat,
 } from '../inspector/common/css-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
 import {
@@ -556,6 +559,10 @@ export function collectDomElementMetadataForElement(
 
 function getGridContainerProperties(
   elementStyle: CSSStyleDeclaration | null,
+  options?: {
+    dynamicCols: boolean
+    dynamicRows: boolean
+  },
 ): GridContainerProperties {
   if (elementStyle == null) {
     return {
@@ -566,14 +573,23 @@ function getGridContainerProperties(
       gridAutoFlow: null,
     }
   }
-  const gridTemplateColumns = defaultEither(
-    gridAutoOrTemplateFallback(elementStyle.gridTemplateColumns),
-    parseGridAutoOrTemplateBase(elementStyle.gridTemplateColumns),
+
+  const gridTemplateColumns = trimDynamicEmptyDimensions(
+    defaultEither(
+      gridAutoOrTemplateFallback(elementStyle.gridTemplateColumns),
+      parseGridAutoOrTemplateBase(elementStyle.gridTemplateColumns),
+    ),
+    options?.dynamicCols === true,
   )
-  const gridTemplateRows = defaultEither(
-    gridAutoOrTemplateFallback(elementStyle.gridTemplateRows),
-    parseGridAutoOrTemplateBase(elementStyle.gridTemplateRows),
+
+  const gridTemplateRows = trimDynamicEmptyDimensions(
+    defaultEither(
+      gridAutoOrTemplateFallback(elementStyle.gridTemplateRows),
+      parseGridAutoOrTemplateBase(elementStyle.gridTemplateRows),
+    ),
+    options?.dynamicRows === true,
   )
+
   const gridAutoColumns = defaultEither(
     gridAutoOrTemplateFallback(elementStyle.gridAutoColumns),
     parseGridAutoOrTemplateBase(elementStyle.gridAutoColumns),
@@ -589,6 +605,23 @@ function getGridContainerProperties(
     gridAutoRows,
     parseGridAutoFlow(elementStyle.gridAutoFlow),
   )
+}
+
+function trimDynamicEmptyDimensions(
+  template: GridAutoOrTemplateBase,
+  isDynamic: boolean,
+): GridAutoOrTemplateBase {
+  if (!isDynamic) {
+    return template
+  }
+  if (template.type !== 'DIMENSIONS') {
+    return template
+  }
+
+  const lastNonEmptyColumn = template.dimensions.findLastIndex(
+    (d) => d.type === 'KEYWORD' || (d.type === 'NUMBER' && d.value.value !== 0),
+  )
+  return gridAutoOrTemplateDimensions(template.dimensions.slice(0, lastNonEmptyColumn + 1))
 }
 
 function getGridElementProperties(
@@ -883,8 +916,6 @@ function getSpecialMeasurements(
 
   const parentContainerGridProperties = getGridContainerProperties(parentElementStyle)
 
-  const containerGridProperties = getGridContainerProperties(elementStyle)
-
   const paddingValue = isRight(padding)
     ? padding.value
     : sides(undefined, undefined, undefined, undefined)
@@ -899,14 +930,19 @@ function getSpecialMeasurements(
         )
       : null
 
-  const containerElementProperties = getGridElementProperties(
-    parentContainerGridProperties,
-    elementStyle,
-  )
   const containerGridPropertiesFromProps = getGridContainerProperties(element.style)
+  const containerGridProperties = getGridContainerProperties(elementStyle, {
+    dynamicCols: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateColumns),
+    dynamicRows: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateRows),
+  })
+
   const containerElementPropertiesFromProps = getGridElementProperties(
     parentContainerGridProperties,
     element.style,
+  )
+  const containerElementProperties = getGridElementProperties(
+    parentContainerGridProperties,
+    elementStyle,
   )
 
   return specialSizeMeasurements(
@@ -964,6 +1000,10 @@ function getSpecialMeasurements(
     justifySelf,
     alignSelf,
   )
+}
+
+function isDynamicGridTemplate(template: GridAutoOrTemplateBase | null) {
+  return template?.type === 'DIMENSIONS' && template.dimensions.some((d) => isDynamicGridRepeat(d))
 }
 
 function elementContainsOnlyText(element: HTMLElement): boolean {

@@ -650,7 +650,7 @@ export const NavigatorItem: React.FunctionComponent<
     return elementWarnings.invalidGroup != null || elementWarnings.invalidGroupChild != null
   }, [elementWarnings])
 
-  const collapse = React.useCallback(
+  const toggleCollapse = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       collapseItem(dispatch, navigatorEntry.elementPath, event)
       event.stopPropagation()
@@ -744,13 +744,16 @@ export const NavigatorItem: React.FunctionComponent<
 
   const currentlyRenaming = EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)
 
-  const onClick = React.useCallback(
+  const onMouseDown = React.useCallback(
     (e: React.MouseEvent) => {
-      if (isRenderPropNavigatorEntry(navigatorEntry)) {
-        e.stopPropagation()
-      }
+      // Only do this for a left mouse down.
+      if (e.button === 0) {
+        if (isRenderPropNavigatorEntry(navigatorEntry)) {
+          e.stopPropagation()
+        }
 
-      contextMenu.hideAll()
+        contextMenu.hideAll()
+      }
     },
     [navigatorEntry],
   )
@@ -771,7 +774,7 @@ export const NavigatorItem: React.FunctionComponent<
       row={regularNavigatorRow(props.navigatorEntry, props.indentation)}
     >
       <div
-        onClick={onClick}
+        onMouseDown={onMouseDown}
         style={{
           flex: 1,
           borderRadius: 5,
@@ -859,7 +862,7 @@ export const NavigatorItem: React.FunctionComponent<
                     visible={canBeExpanded}
                     collapsed={collapsed}
                     selected={selected && !isInsideComponent}
-                    onClick={collapse}
+                    onMouseDown={toggleCollapse}
                     style={{
                       opacity: 'var(--paneHoverOpacity)',
                     }}
@@ -935,7 +938,7 @@ const RenderPropSlot = React.memo((props: RenderPropSlotProps) => {
       label={label}
       parentOutline={parentOutline}
       cursor={'pointer'}
-      onClick={showComponentPickerContextMenu}
+      onMouseDown={showComponentPickerContextMenu}
       testId={`toggle-render-prop-${NavigatorItemTestId(
         varSafeNavigatorEntryToKey(navigatorEntry),
       )}`}
@@ -964,7 +967,7 @@ const ConditionalBranchSlot = React.memo((props: ConditionalBranchSlotProps) => 
       label={label}
       parentOutline={parentOutline}
       cursor={'pointer'}
-      onClick={showComponentPickerContextMenu}
+      onMouseDown={showComponentPickerContextMenu}
       testId={`toggle-render-prop-${NavigatorItemTestId(
         varSafeNavigatorEntryToKey(navigatorEntry),
       )}`}
@@ -977,17 +980,17 @@ interface PlaceholderSlotProps {
   parentOutline: ParentOutline
   cursor?: 'pointer' | 'inherit'
   testId?: string
-  onClick?: React.MouseEventHandler
+  onMouseDown?: React.MouseEventHandler
 }
 
 const PlaceholderSlot = React.memo((props: PlaceholderSlotProps) => {
-  const { label, parentOutline, cursor, testId, onClick } = props
+  const { label, parentOutline, cursor, testId, onMouseDown } = props
   const colorTheme = useColorTheme()
 
   return (
     <div
       key={`label-${label}-slot`}
-      onClick={onClick}
+      onMouseDown={onMouseDown}
       style={{
         width: 140,
         height: 19,

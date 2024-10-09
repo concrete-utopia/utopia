@@ -383,9 +383,7 @@ export const NumberInput = React.memo<NumberInputProps>(
 
     const cancelPointerLock = React.useCallback(
       (revertChanges: 'revert-nothing' | 'revert-changes') => {
-        if (document.pointerLockElement === pointerOriginRef.current) {
-          document.exitPointerLock()
-        }
+        document.exitPointerLock()
         if (
           revertChanges === 'revert-changes' &&
           onSubmitValue != null &&

@@ -77,7 +77,6 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
   }
 
   const strategyToApply = getStrategyToApply(
-    canvasState,
     interactionSession.interactionData,
     parentGridPath,
     canvasState.startingMetadata,
@@ -130,24 +129,11 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
         ),
       ]
 
-      const { commands, patch, elementsToRerender } =
-        strategyToApply.type === 'GRID_REARRANGE'
-          ? getCommandsAndPatchForGridRearrange(
-              canvasState,
-              interactionSession.interactionData,
-              customState,
-              selectedElement,
-            )
-          : getCommandsAndPatchForReparent(
-              strategyToApply.strategy,
-              canvasState,
-              interactionSession.interactionData,
-              interactionSession,
-              customState,
-              selectedElement,
-              strategyLifecycle,
-              gridFrame,
-            )
+      const { commands, patch, elementsToRerender } = getCommandsAndPatchForGridRearrange(
+        canvasState,
+        interactionSession.interactionData,
+        selectedElement,
+      )
 
       if (commands.length === 0) {
         return emptyStrategyApplicationResult
@@ -165,7 +151,6 @@ export const gridRearrangeMoveStrategy: CanvasStrategyFactory = (
 function getCommandsAndPatchForGridRearrange(
   canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
-  customState: CustomStrategyState,
   selectedElement: ElementPath,
 ): {
   commands: CanvasCommand[]
@@ -176,7 +161,7 @@ function getCommandsAndPatchForGridRearrange(
     return { commands: [], patch: {}, elementsToRerender: [] }
   }
 
-  const { commands, targetCell, targetRootCell } = runGridRearrangeMove(
+  const commands = runGridRearrangeMove(
     selectedElement,
     selectedElement,
     canvasState.startingMetadata,
@@ -185,110 +170,8 @@ function getCommandsAndPatchForGridRearrange(
 
   return {
     commands: commands,
-    patch: {
-      grid: {
-        ...customState.grid,
-        targetCellData: targetCell,
-        currentRootCell: targetRootCell,
-      },
-    },
+    patch: {},
     elementsToRerender: [EP.parentPath(selectedElement)],
-  }
-}
-
-function getCommandsAndPatchForReparent(
-  strategy: FindReparentStrategyResult,
-  canvasState: InteractionCanvasState,
-  interactionData: DragInteractionData,
-  interactionSession: InteractionSession,
-  customState: CustomStrategyState,
-  targetElement: ElementPath,
-  strategyLifecycle: InteractionLifecycle,
-  gridFrame: CanvasRectangle,
-): {
-  commands: CanvasCommand[]
-  patch: CustomStrategyStatePatch
-  elementsToRerender: ElementPath[]
-} {
-  if (interactionData.drag == null) {
-    return { commands: [], patch: {}, elementsToRerender: [] }
-  }
-
-  function applyReparent() {
-    switch (strategy.strategy) {
-      case 'REPARENT_AS_ABSOLUTE':
-        return applyAbsoluteReparent(
-          canvasState,
-          interactionSession,
-          customState,
-          strategy.target,
-          [targetElement],
-        )(strategyLifecycle)
-      case 'REPARENT_AS_STATIC':
-        return applyStaticReparent(canvasState, interactionSession, customState, strategy.target)
-      case 'REPARENT_INTO_GRID':
-        return applyGridReparent(
-          canvasState,
-          interactionData,
-          interactionSession,
-          customState,
-          strategy.target,
-          [targetElement],
-          gridFrame,
-        )()
-      default:
-        assertNever(strategy.strategy)
-    }
-  }
-  const result = applyReparent()
-
-  let commands: CanvasCommand[] = []
-
-  const frame = MetadataUtils.getFrameOrZeroRect(targetElement, canvasState.startingMetadata)
-
-  if (strategy.strategy === 'REPARENT_AS_ABSOLUTE') {
-    // for absolute reparents, set positioning and size props
-    commands.push(
-      updateBulkProperties('always', targetElement, [
-        propertyToSet(PP.create('style', 'position'), 'absolute'),
-        propertyToSet(PP.create('style', 'top'), frame.y + interactionData.drag.y),
-        propertyToSet(PP.create('style', 'left'), frame.x + interactionData.drag.x),
-        propertyToSet(PP.create('style', 'width'), frame.width),
-        propertyToSet(PP.create('style', 'height'), frame.height),
-      ]),
-    )
-  } else if (strategy.strategy === 'REPARENT_AS_STATIC') {
-    // for static reparents, set size props
-    commands.push(
-      updateBulkProperties('always', targetElement, [
-        propertyToSet(PP.create('style', 'width'), frame.width),
-        propertyToSet(PP.create('style', 'height'), frame.height),
-      ]),
-    )
-  }
-
-  // for absolute, static, or non-same-grid reparents, remove cell placement props
-  if (
-    strategy.strategy !== 'REPARENT_INTO_GRID' ||
-    !EP.pathsEqual(strategy.target.newParent.intendedParentPath, EP.parentPath(targetElement))
-  ) {
-    commands.push(
-      updateBulkProperties('on-complete', targetElement, [
-        propertyToDelete(PP.create('style', 'gridRow')),
-        propertyToDelete(PP.create('style', 'gridColumn')),
-      ]),
-    )
-  }
-
-  commands.push(...result.commands)
-
-  return {
-    commands: commands,
-    patch: result.customStatePatch,
-    elementsToRerender: [
-      EP.parentPath(targetElement),
-      strategy.target.newParent.intendedParentPath,
-    ],
   }
 }
 
@@ -350,21 +233,12 @@ function getGridTemplates(jsxMetadata: ElementInstanceMetadataMap, gridPath: Ele
   }
 }
 
-type StrategyToApply =
-  | {
-      type: 'GRID_REARRANGE'
-      controlsToRender: ControlWithProps<any>[]
-      name: string
-    }
-  | {
-      type: 'REPARENT'
-      controlsToRender: ControlWithProps<any>[]
-      name: string
-      strategy: FindReparentStrategyResult
-    }
+type StrategyToApply = {
+  controlsToRender: ControlWithProps<any>[]
+  name: string
+}
 
 function getStrategyToApply(
-  canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
   parentGridPath: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
@@ -372,46 +246,6 @@ function getStrategyToApply(
 ): StrategyToApply | null {
   if (interactionData.drag == null) {
     return null
-  }
-
-  const shouldReparent = interactionData.modifiers.cmd
-  if (shouldReparent) {
-    const pointOnCanvas = offsetPoint(interactionData.originalDragStart, interactionData.drag)
-    const reparentStrategies = findReparentStrategies(
-      canvasState,
-      true,
-      pointOnCanvas,
-      'allow-smaller-parent',
-    )
-
-    const strategy = reparentStrategies[0]
-    if (strategy != null) {
-      switch (strategy.strategy) {
-        case 'REPARENT_AS_ABSOLUTE':
-          return {
-            type: 'REPARENT',
-            name: 'Reparent (Abs)',
-            controlsToRender: controlsForAbsoluteReparent(strategy.target),
-            strategy: strategy,
-          }
-        case 'REPARENT_AS_STATIC':
-          return {
-            type: 'REPARENT',
-            name: 'Reparent (Flex)',
-            controlsToRender: controlsForStaticReparent(strategy.target),
-            strategy: strategy,
-          }
-        case 'REPARENT_INTO_GRID':
-          return {
-            type: 'REPARENT',
-            name: 'Reparent (Grid)',
-            controlsToRender: controlsForGridReparent(strategy.target),
-            strategy: strategy,
-          }
-        default:
-          assertNever(strategy.strategy)
-      }
-    }
   }
 
   const element = MetadataUtils.findElementByElementPath(jsxMetadata, cell)
@@ -423,8 +257,7 @@ function getStrategyToApply(
       : 'Rearrange Grid (Move)'
 
   return {
-    type: 'GRID_REARRANGE',
     name: name,
-    controlsToRender: [controlsForGridPlaceholders(parentGridPath)],
+    controlsToRender: [controlsForGridPlaceholders(parentGridPath, 'visible-only-while-active')],
   }
 }
