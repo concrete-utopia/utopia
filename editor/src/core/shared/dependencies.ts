@@ -13,11 +13,12 @@ import {
 import type { EditorStorePatched } from '../../components/editor/store/editor-state'
 import type { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../es-modules/package-manager/fetch-packages'
-import type { RequestedNpmDependency } from './npm-dependency-types'
+import type { PackageStatusMap, RequestedNpmDependency } from './npm-dependency-types'
 import { objectFilter } from './object-utils'
 import type { NodeModules } from './project-file-types'
 import { isTextFile } from './project-file-types'
 import { fastForEach } from './utils'
+import { notifyOperationFinished } from '../../components/editor/import-wizard/import-wizard-service'
 
 export function removeModulesFromNodeModules(
   modulesToRemove: Array<string>,
@@ -91,6 +92,11 @@ export async function refreshDependencies(
       updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
     ])
 
+    notifyOperationFinished(
+      { type: 'refreshDependencies' },
+      getDependenciesStatus(loadedPackagesStatus),
+    )
+
     return updatedNodeModulesFiles
   }
 
@@ -98,6 +104,18 @@ export async function refreshDependencies(
   return doRefresh().finally(() => {
     dispatch([setRefreshingDependencies(false)], 'everyone')
   })
+}
+
+function getDependenciesStatus(loadedPackagesStatus: PackageStatusMap) {
+  return Object.entries(loadedPackagesStatus).some(
+    ([_, status]) => status.status === 'error' || status.status === 'not-found',
+  )
+    ? Object.entries(loadedPackagesStatus).every(
+        ([_, status]) => status.status === 'error' || status.status === 'not-found',
+      )
+      ? 'error'
+      : 'partial'
+    : 'success'
 }
 
 export const projectDependenciesSelector = createSelector(

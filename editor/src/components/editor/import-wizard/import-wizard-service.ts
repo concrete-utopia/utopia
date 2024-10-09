@@ -53,14 +53,16 @@ export function notifyOperationStarted(operation: ImportOperation) {
   const operationWithTime = {
     ...operation,
     timeStarted: Date.now(),
+    timeDone: null,
   }
   editorDispatch?.([updateImportOperations([operationWithTime], 'update')])
 }
 
 export function notifyOperationFinished(operation: ImportOperation, result: ImportOperationResult) {
+  const timeDone = Date.now()
   const operationWithTime = {
     ...operation,
-    timeDone: Date.now(),
+    timeDone: timeDone,
     result: result,
   }
   editorDispatch?.([updateImportOperations([operationWithTime], 'update')])
@@ -75,8 +77,8 @@ export function areSameOperation(existing: ImportOperation, incoming: ImportOper
 
 type ImportOperationData = {
   id?: string | null
-  timeStarted?: number
-  timeDone?: number
+  timeStarted?: number | null
+  timeDone?: number | null
   result?: ImportOperationResult
   error?: string
   parentOperationType?: ImportOperationType
@@ -129,27 +131,6 @@ export type ImportOperation =
 type ImportOperationType = ImportOperation['type']
 
 export type ImportOperationAction = 'add' | 'remove' | 'update' | 'replace'
-
-export function getImportOperationText(operation: ImportOperation) {
-  switch (operation.type) {
-    case 'loadBranch':
-      return `Loading branch ${operation.githubRepo?.owner}/${operation.githubRepo?.repository}@${operation.branchName}`
-    case 'fetchDependency':
-      return `Fetching ${operation.dependencyName}@${operation.dependencyVersion}`
-    case 'parseFiles':
-      return 'Parsing files'
-    case 'createStoryboard':
-      return 'Creating storyboard file'
-    case 'refreshDependencies':
-      return 'Fetching dependencies'
-    case 'createPackageJsonEntry':
-      return 'Creating package.json entry'
-    case 'checkUtopiaRequirements':
-      return 'Checking Utopia requirements'
-    default:
-      assertNever(operation)
-  }
-}
 
 function getParentArray(root: ImportOperation[], operation: ImportOperation): ImportOperation[] {
   if (operation.parentOperationType == null) {

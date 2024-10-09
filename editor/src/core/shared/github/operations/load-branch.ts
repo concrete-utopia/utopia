@@ -230,9 +230,7 @@ export const updateProjectWithBranchContent =
                 currentDeps,
                 builtInDependencies,
                 {},
-              ).then(() => {
-                notifyOperationFinished({ type: 'refreshDependencies' }, 'success')
-              })
+              ).then(() => {})
             }
 
             // When the dependencies update has gone through, then indicate that the project was imported.

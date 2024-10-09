@@ -935,7 +935,6 @@ const BranchNotLoadedBlock = () => {
 
   const loadFromBranch = React.useCallback(() => {
     if (githubRepo != null && branchName != null && githubUserDetails != null) {
-      startImportWizard(dispatch)
       void GithubOperations.updateProjectWithBranchContent(
         workersRef.current,
         dispatch,
