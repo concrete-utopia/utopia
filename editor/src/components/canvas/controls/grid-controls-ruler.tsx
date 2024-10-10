@@ -118,31 +118,7 @@ export const GridControlsRuler = React.memo(() => {
   if (selectedElement == null) {
     return null
   }
-  return (
-    <div>
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: 20,
-          backgroundColor: 'white',
-        }}
-      ></div>
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          height: '100%',
-          width: 20,
-          backgroundColor: 'white',
-        }}
-      ></div>
-      <GridRowColumnResizingControls.control target={selectedElement} />
-    </div>
-  )
+  return <div>{/* <GridRowColumnResizingControls.control target={selectedElement} /> */}</div>
 })
 
 interface GridRowColumnResizingControlsProps {
@@ -205,6 +181,26 @@ export const GridRowColumnResizingControls =
 
     return (
       <React.Fragment>
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: 20,
+            backgroundColor: 'white',
+          }}
+        ></div>
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            height: '100%',
+            width: 20,
+            backgroundColor: 'white',
+          }}
+        ></div>
         <CanvasOffsetWrapper limitAxis='x'>
           {gridsWithVisibleResizeControls.flatMap((grid) => {
             return (

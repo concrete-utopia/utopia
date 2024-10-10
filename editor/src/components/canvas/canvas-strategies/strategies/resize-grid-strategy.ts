@@ -8,10 +8,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import * as PP from '../../../../core/shared/property-path'
 import { setProperty } from '../../commands/set-property-command'
-import {
-  controlsForGridPlaceholders,
-  GridRowColumnResizingControls,
-} from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -37,6 +34,7 @@ import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-tem
 import { expandGridDimensions, replaceGridTemplateDimensionAtIndex } from './grid-helpers'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { CSSCursor } from '../../canvas-types'
+import { GridRowColumnResizingControls } from '../../controls/grid-controls-ruler'
 
 export const resizeGridStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -70,13 +68,13 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       type: 'pointer',
     },
     controlsToRender: [
-      // {
-      //   control: GridRowColumnResizingControls,
-      //   props: { target: gridPath },
-      //   key: `grid-row-col-resize-controls-${EP.toString(gridPath)}`,
-      //   show: 'always-visible',
-      //   priority: 'top',
-      // },
+      {
+        control: GridRowColumnResizingControls,
+        props: { target: gridPath },
+        key: `grid-row-col-resize-controls-${EP.toString(gridPath)}`,
+        show: 'always-visible',
+        priority: 'top',
+      },
       controlsForGridPlaceholders(gridPath),
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_AXIS_HANDLE', 1),
