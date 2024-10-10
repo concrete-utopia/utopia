@@ -49,7 +49,6 @@ export const ImportWizard = React.memo(() => {
         justifyContent: 'center',
         backgroundColor: importWizardOpen ? '#00000033' : 'transparent',
       }}
-      onClick={handleDismiss}
     >
       {when(
         importWizardOpen,
