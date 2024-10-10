@@ -43,11 +43,11 @@ export const ImportWizard = React.memo(() => {
         left: 0,
         bottom: 0,
         right: 0,
-        pointerEvents: !importWizardOpen ? 'none' : 'all',
+        pointerEvents: importWizardOpen ? 'all' : 'none',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: !importWizardOpen ? 'transparent' : '#00000033',
+        backgroundColor: importWizardOpen ? '#00000033' : 'transparent',
       }}
       onClick={handleDismiss}
     >

@@ -680,11 +680,17 @@ const LockedOverlay = React.memo(() => {
   const editorLocked = React.useMemo(() => githubOperations.length > 0, [githubOperations])
 
   const refreshingDependencies = false
-  // useEditorState(
-  //   Substores.restOfEditor,
-  //   (store) => store.editor.refreshingDependencies,
-  //   'LockedOverlay refreshingDependencies',
-  // )
+  useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.refreshingDependencies,
+    'LockedOverlay refreshingDependencies',
+  )
+
+  const importWizardOpen = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.importWizardOpen,
+    'LockedOverlay importWizardOpen',
+  )
 
   const forking = useEditorState(
     Substores.restOfEditor,
@@ -702,8 +708,8 @@ const LockedOverlay = React.memo(() => {
   `
 
   const locked = React.useMemo(() => {
-    return editorLocked || refreshingDependencies || forking
-  }, [editorLocked, refreshingDependencies, forking])
+    return (editorLocked || refreshingDependencies || forking) && !importWizardOpen
+  }, [editorLocked, refreshingDependencies, forking, importWizardOpen])
 
   const dialogContent = React.useMemo((): string | null => {
     if (refreshingDependencies) {
