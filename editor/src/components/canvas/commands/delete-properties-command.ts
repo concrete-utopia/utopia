@@ -16,7 +16,6 @@ import type { BaseCommand, CommandFunctionResult, WhenToRun } from './commands'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { patchParseSuccessAtElementPath } from './patch-utils'
-import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { applyValuesAtPath } from './adjust-number-command'
 
@@ -102,10 +101,10 @@ export const runDeleteProperties = (
     command.properties,
   )
 
-  const propertiesToUnsetPatch = getPropertiesToUnsetPatches(editorState, command)
+  const propertiesToUnsetPatches = getPropertiesToUnsetPatches(editorState, command)
 
   return {
-    editorStatePatches: [propertyUpdatePatch, ...propertiesToUnsetPatch],
+    editorStatePatches: [propertyUpdatePatch, ...propertiesToUnsetPatches],
     commandDescription: `Delete Properties ${command.properties
       .map(PP.toString)
       .join(',')} on ${EP.toUid(command.element)}`,

@@ -152,14 +152,20 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
 
       return [
         deleteProperties(
-          'always',
+          'on-complete',
           elementPath,
           Object.keys(TailwindPropertyMapping).map((prop) => PP.create('style', prop)),
         ),
-        updateClassListCommand('always', elementPath, [
-          ...stylePropConversions.map(({ property, value }) => UCL.add({ property, value })),
-          ...getRemoveUpdates(editorState.canvas.propertiesToUnset),
-        ]),
+        updateClassListCommand(
+          'always',
+          elementPath,
+          stylePropConversions.map(({ property, value }) => UCL.add({ property, value })),
+        ),
+        updateClassListCommand(
+          'always',
+          elementPath,
+          getRemoveUpdates(editorState.canvas.propertiesToUnset),
+        ),
       ]
     })
     if (commands.length === 0) {
