@@ -96,9 +96,9 @@ export function updateRequirements(
 
   const aggregatedDoneStatus = getAggregatedStatus(result)
   if (aggregatedDoneStatus != null) {
-    setTimeout(() => {
+    requestIdleCallback(() => {
       notifyOperationFinished({ type: 'checkRequirements' }, aggregatedDoneStatus)
-    }, 0)
+    })
   }
 
   return result

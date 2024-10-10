@@ -2,7 +2,11 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
+import type {
+  ImportCheckRequirementAndFix,
+  ImportFetchDependency,
+  ImportOperation,
+} from '../../../core/shared/import/import-operation-types'
 import { ImportOperationResult } from '../../../core/shared/import/import-operation-types'
 import { assertNever } from '../../../core/shared/utils'
 import { Icons } from '../../../uuiui'
@@ -40,6 +44,9 @@ export function OperationLine({ operation }: { operation: ImportOperation }) {
 }
 
 function OperationChildrenList({ operation }: { operation: ImportOperation }) {
+  if (operation.type !== 'checkRequirements' && operation.type !== 'refreshDependencies') {
+    return null
+  }
   if (operation.children == null || operation.children.length === 0) {
     return null
   }
@@ -53,34 +60,47 @@ function OperationChildrenList({ operation }: { operation: ImportOperation }) {
       }}
     >
       {operation.type === 'refreshDependencies' ? (
-        <DependenciesStatus
-          dependenciesOperations={operation.children}
-          parentOperation={operation}
+        <AggregatedChildrenStatus
+          childOperations={operation.children}
+          successFn={dependenciesSuccessFn}
+          successTextFn={dependenciesSuccessTextFn}
         />
-      ) : (
-        operation.children.map((child) => (
-          <OperationLine key={child.id ?? child.type} operation={child} />
-        ))
-      )}
+      ) : operation.type === 'checkRequirements' ? (
+        <AggregatedChildrenStatus
+          childOperations={operation.children}
+          successFn={requirementsSuccessFn}
+          successTextFn={requirementsSuccessTextFn}
+        />
+      ) : null}
     </div>
   )
 }
+const dependenciesSuccessFn = (op: ImportFetchDependency) =>
+  op.result === ImportOperationResult.Success
+const dependenciesSuccessTextFn = (successCount: number) =>
+  `${successCount} dependencies fetched successfully`
+const requirementsSuccessFn = (op: ImportCheckRequirementAndFix) =>
+  op.resolution === RequirementResolutionResult.Found
+const requirementsSuccessTextFn = (successCount: number) => `${successCount} requirements met`
 
-function DependenciesStatus({
-  dependenciesOperations,
+function AggregatedChildrenStatus<T extends ImportOperation>({
+  childOperations,
+  successFn,
+  successTextFn,
 }: {
-  dependenciesOperations: ImportOperation[]
-  parentOperation: ImportOperation
+  childOperations: T[]
+  successFn: (operation: T) => boolean
+  successTextFn: (successCount: number) => string
 }) {
-  const doneDependencies = dependenciesOperations.filter((op) => op.result === 'success')
-  const restOfDependencies = dependenciesOperations.filter((op) => op.result !== 'success')
+  const doneDependencies = childOperations.filter(successFn)
+  const restOfDependencies = childOperations.filter((op) => !successFn(op))
   return (
     <React.Fragment>
       {doneDependencies.length > 0 ? (
         <OperationLineWrapper className='operation-done'>
           <OperationLineContent textColor='green'>
             <Icons.Checkmark />
-            <div>{`${doneDependencies.length} dependencies fetched successfully`}</div>
+            <div>{successTextFn(doneDependencies.length)}</div>
           </OperationLineContent>
         </OperationLineWrapper>
       ) : null}

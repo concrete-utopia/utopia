@@ -9,7 +9,6 @@ type ImportOperationData = {
   result?: ImportOperationResult
   error?: string
   parentOperationType?: ImportOperationType
-  children?: ImportOperation[]
 }
 
 export enum ImportOperationResult {
@@ -24,11 +23,12 @@ type ImportLoadBranch = {
   githubRepo?: GithubRepo
 } & ImportOperationData
 
-type ImportRefreshDependencies = {
+type ImportRefreshDependencies = ImportOperationData & {
   type: 'refreshDependencies'
-} & ImportOperationData
+  children?: ImportFetchDependency[]
+}
 
-type ImportFetchDependency = ImportOperationData & {
+export type ImportFetchDependency = ImportOperationData & {
   type: 'fetchDependency'
   dependencyName: string
   dependencyVersion: string
@@ -39,7 +39,7 @@ type ImportParseFiles = {
   type: 'parseFiles'
 } & ImportOperationData
 
-type ImportCheckRequirementAndFix = ImportOperationData & {
+export type ImportCheckRequirementAndFix = ImportOperationData & {
   type: 'checkRequirementAndFix'
   resolution?: RequirementResolutionResult
   text: string
@@ -57,9 +57,10 @@ export function importCheckRequirementAndFix(
   }
 }
 
-type ImportCheckRequirements = {
+type ImportCheckRequirements = ImportOperationData & {
   type: 'checkRequirements'
-} & ImportOperationData
+  children?: ImportCheckRequirementAndFix[]
+}
 
 export type ImportOperation =
   | ImportLoadBranch
