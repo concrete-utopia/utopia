@@ -63,6 +63,7 @@ import { intrinsicHTMLElementNamesThatSupportChildren } from '../../core/shared/
 import { getTopLevelElementByExportsDetail } from '../../core/model/project-file-utils'
 import { type Icon } from 'utopia-api'
 import type { FileRootPath } from '../canvas/ui-jsx-canvas'
+import type { CSSProperties } from 'react'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
 
@@ -474,6 +475,16 @@ const divComponentGroup = {
   ),
 }
 
+export function insertableGridStyle(): CSSProperties {
+  return {
+    position: 'absolute',
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr 1fr',
+    gridTemplateRows: '1fr 1fr 1fr',
+    gap: 10,
+  }
+}
+
 const gridComponentGroup: ComponentDescriptorsForFile = {
   grid: {
     properties: {},
@@ -489,13 +500,9 @@ const gridComponentGroup: ComponentDescriptorsForFile = {
             jsxAttributesFromMap({
               style: jsExpressionValue(
                 {
-                  display: 'grid',
-                  gridTemplateRows: '1fr 1fr 1fr',
-                  gridTemplateColumns: '1fr 1fr 1fr',
-                  gap: 10,
-                  position: 'absolute',
-                  width: 200,
-                  height: 200,
+                  ...insertableGridStyle(),
+                  width: 150,
+                  height: 150,
                 },
                 emptyComments,
               ),

@@ -12,7 +12,7 @@ import {
   simpleAttribute,
 } from '../../core/shared/element-template'
 import type { NormalisedFrame } from 'utopia-api/core'
-import { defaultImageAttributes } from '../shared/project-components'
+import { defaultImageAttributes, insertableGridStyle } from '../shared/project-components'
 
 export function defaultSceneElement(
   uid: string,
@@ -177,16 +177,7 @@ export function defaultGridElement(uid: string): JSXElement {
     uid,
     jsxAttributesFromMap({
       'data-uid': jsExpressionValue(uid, emptyComments),
-      style: jsExpressionValue(
-        {
-          position: 'absolute',
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
-          gridTemplateRows: '1fr 1fr 1fr',
-          gap: 10,
-        },
-        emptyComments,
-      ),
+      style: jsExpressionValue(insertableGridStyle(), emptyComments),
     }),
     [],
   )
