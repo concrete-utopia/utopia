@@ -61,7 +61,7 @@ function getTailwindClassMapping(classes: string[], config: Config | null) {
   return mapping
 }
 
-function getStylPropContents(
+function getStylePropContents(
   styleProp: JSExpression,
 ): Array<{ key: string; value: unknown }> | null {
   if (styleProp.type === 'ATTRIBUTE_NESTED_OBJECT') {
@@ -130,7 +130,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         return []
       }
 
-      const styleValue = getStylPropContents(styleAttribute.value)
+      const styleValue = getStylePropContents(styleAttribute.value)
       if (styleValue == null) {
         return []
       }
@@ -150,20 +150,16 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         return { property: TailwindPropertyMapping[key], value: valueString }
       }, styleProps)
 
-      const remo = getRemoveUpdates(editorState.canvas.propertiesToUnset)
-
       return [
         deleteProperties(
-          'on-complete',
+          'always',
           elementPath,
           Object.keys(TailwindPropertyMapping).map((prop) => PP.create('style', prop)),
         ),
-        updateClassListCommand(
-          'always',
-          elementPath,
-          stylePropConversions.map(({ property, value }) => UCL.add({ property, value })),
-        ),
-        updateClassListCommand('always', elementPath, remo),
+        updateClassListCommand('always', elementPath, [
+          ...stylePropConversions.map(({ property, value }) => UCL.add({ property, value })),
+          ...getRemoveUpdates(editorState.canvas.propertiesToUnset),
+        ]),
       ]
     })
     if (commands.length === 0) {

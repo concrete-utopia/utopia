@@ -29,7 +29,7 @@ import type { FlexGapData } from '../../gap-utils'
 import {
   cursorFromFlexDirection,
   dragDeltaForOrientation,
-  getFlexGapData,
+  maybeFlexGapData,
   recurseIntoChildrenOfMapOrFragment,
 } from '../../gap-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
@@ -95,7 +95,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const flexGap = getFlexGapData(
+  const flexGap = maybeFlexGapData(
     canvasState.styleInfoReader(selectedElement),
     MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement),
   )

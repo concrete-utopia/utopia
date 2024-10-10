@@ -332,16 +332,16 @@ export interface FlexGapData {
   direction: FlexDirection
 }
 
-export function getFlexGapData(
+export function maybeFlexGapData(
   info: StyleInfo | null,
-  instance: ElementInstanceMetadata | null,
+  element: ElementInstanceMetadata | null,
 ): FlexGapData | null {
-  if (instance == null || info == null) {
+  if (element == null || info == null) {
     return null
   }
 
   const gap = info.gap?.value
-  const renderedValuePx = instance.specialSizeMeasurements.gap
+  const renderedValuePx = element.specialSizeMeasurements.gap
   if (gap == null || renderedValuePx == null) {
     return null
   }

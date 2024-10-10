@@ -6,7 +6,7 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { FlexGapData, PathWithBounds } from '../../gap-utils'
 import {
   gapControlBoundsFromMetadata,
-  getFlexGapData,
+  maybeFlexGapData,
   recurseIntoChildrenOfMapOrFragment,
 } from '../../gap-utils'
 import type { ElementPath } from 'utopia-shared/src/types'
@@ -40,7 +40,7 @@ export const SubduedFlexGapControl = React.memo<SubduedFlexGapControlProps>((pro
   const flexGap = useEditorState(
     Substores.fullStore,
     (store) =>
-      getFlexGapData(
+      maybeFlexGapData(
         getActivePlugin(store.editor).styleInfoFactory({
           projectContents: store.editor.projectContents,
           metadata: store.editor.jsxMetadata,
