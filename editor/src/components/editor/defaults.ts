@@ -184,7 +184,6 @@ export function defaultGridElement(uid: string): JSXElement {
           gridTemplateColumns: '1fr 1fr 1fr',
           gridTemplateRows: '1fr 1fr 1fr',
           gap: 10,
-          padding: 10,
         },
         emptyComments,
       ),
