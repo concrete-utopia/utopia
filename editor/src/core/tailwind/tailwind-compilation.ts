@@ -18,7 +18,6 @@ import { ElementsToRerenderGLOBAL } from '../../components/canvas/ui-jsx-canvas'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { Config } from 'tailwindcss/types/config'
 import type { EditorState } from '../../components/editor/store/editor-state'
-import { createRequireFn } from '../property-controls/property-controls-local'
 
 const LatestConfig: { current: { code: string; config: Config } | null } = { current: null }
 export function getTailwindConfigCached(editorState: EditorState): Config | null {
@@ -34,8 +33,9 @@ export function getTailwindConfigCached(editorState: EditorState): Config | null
   if (cached != null) {
     return cached
   }
-  // FIXME this should use a shared long-lived require function instead of creating a brand new one
-  const { customRequire } = createRequireFn(editorState, TailwindConfigPath)
+  const requireFn = editorState.codeResultCache.curriedRequireFn(editorState.projectContents)
+  const customRequire = (importOrigin: string, toImport: string) =>
+    requireFn(importOrigin, toImport, false)
   const config = importDefault(customRequire('/', TailwindConfigPath)) as Config
   LatestConfig.current = { code: tailwindConfig.fileContents.code, config: config }
 
