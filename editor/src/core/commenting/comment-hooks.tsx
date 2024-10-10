@@ -40,7 +40,6 @@ import { foldEither } from '../shared/either'
 import { isCanvasThreadMetadata, liveblocksThreadMetadataToUtopia } from './comment-types'
 import type { Collaborator } from '../shared/multiplayer'
 import { normalizeMultiplayerName } from '../shared/multiplayer'
-import { isBackendBFF } from '../../common/env-vars'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -198,53 +197,6 @@ export function useMyUserAndPresence(): {
     presence: me,
     user: myUser ?? placeholderUserMeta(me),
   }
-}
-
-/**
- * TODO: remove this once the BFF is on.
- * @deprecated This relies on the LB storage for collaborators, which is being sunset.
- */
-export function useAddMyselfToCollaborators_DEPRECATED() {
-  const loginState = useEditorState(
-    Substores.userState,
-    (store) => store.userState.loginState,
-    'useAddMyselfToCollaborators loginState',
-  )
-
-  const projectId = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.id,
-    'useAddMyselfToCollaborators projectId',
-  )
-
-  const addMyselfToCollaborators = useMutation(
-    ({ storage, self }) => {
-      if (!isLoggedIn(loginState) || isBackendBFF()) {
-        return
-      }
-      const collaborators = storage.get('collaborators')
-
-      if (collaborators.get(self.id) == null) {
-        collaborators.set(
-          self.id,
-          new LiveObject({
-            id: loginState.user.userId,
-            name: normalizeMultiplayerName(loginState.user.name),
-            avatar: loginState.user.picture,
-          }),
-        )
-      }
-    },
-    [loginState],
-  )
-
-  const collabs = useStorage((store) => store.collaborators)
-
-  React.useEffect(() => {
-    if (collabs != null) {
-      addMyselfToCollaborators()
-    }
-  }, [addMyselfToCollaborators, collabs, projectId])
 }
 
 export function useCollaborators() {
