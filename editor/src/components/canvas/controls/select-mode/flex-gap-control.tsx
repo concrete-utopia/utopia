@@ -144,7 +144,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
         })(selectedElement),
         MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, selectedElement),
       ),
-    'FlexGapControl flexGap',
+    'FlexGapControl flexGapFromEditor',
   )
 
   const flexGap: FlexGapData | null = optionalMap(
