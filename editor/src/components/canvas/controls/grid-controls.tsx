@@ -1157,7 +1157,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(
               <GridControl
                 key={`grid-control-${EP.toString(grid.elementPath)}`}
                 grid={grid}
-                visible={visible ?? 'visible'}
+                visible={visible}
               />
             )
           })}
