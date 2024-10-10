@@ -32,6 +32,7 @@ import { TailwindConfigPath } from '../../../../core/tailwind/tailwind-config'
 
 const DivTestId = 'mydiv'
 
+// describe.only('Flex gap strategy', () => {
 describe('Flex gap strategy', () => {
   it('gap controls are not present when element has no children', async () => {
     const editor = await renderTestEditorWithCode(
@@ -771,6 +772,14 @@ export var storyboard = (
       await doGapResize(editor, canvasPoint({ x: 10, y: 0 }))
       const div = editor.renderedDOM.getByTestId(DivTestId)
       expect(div.className).toEqual('top-10 left-10 absolute flex flex-row gap-16')
+    })
+
+    it('can remove tailwind gap by dragging past threshold', async () => {
+      const editor = await renderTestEditorWithModel(Project, 'await-first-dom-report')
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/div')])
+      await doGapResize(editor, canvasPoint({ x: -100, y: 0 }))
+      const div = editor.renderedDOM.getByTestId(DivTestId)
+      expect(div.className).toEqual('top-10 left-10 absolute flex flex-row')
     })
   })
 })

@@ -903,6 +903,7 @@ export function shouldRunDOMWalker(
         'selectionControlsVisible',
         'snappingThreshold',
         'textEditor',
+        'propertiesToUnset',
       ],
     })(patchedEditorBefore.canvas, patchedEditorAfter.canvas)
 

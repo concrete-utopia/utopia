@@ -362,6 +362,7 @@ import type {
   EditorRemixConfig,
   ErrorBoundaryHandling,
   GridControlData,
+  PropertiesToUnset,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -2767,6 +2768,13 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     editorStateCanvasControls,
   )
 
+export const PropertiesToUnsetKeepDeepEquality: KeepDeepEqualityCall<PropertiesToUnset> =
+  combine1EqualityCall(
+    (p) => p.gap,
+    undefinableDeepEquality(createCallWithTripleEquals()),
+    (gap) => ({ gap }),
+  )
+
 export const ModifiersKeepDeepEquality: KeepDeepEqualityCall<Modifiers> = combine4EqualityCalls(
   (modifiers) => modifiers.alt,
   createCallWithTripleEquals(),
@@ -3262,6 +3270,11 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
     newValue.controls,
   )
 
+  const propertiesToUnsetResult = PropertiesToUnsetKeepDeepEquality(
+    oldValue.propertiesToUnset,
+    newValue.propertiesToUnset,
+  )
+
   const areEqual =
     elementsToRerenderResult.areEqual &&
     interactionSessionResult.areEqual &&
@@ -3282,7 +3295,8 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
     transientPropertiesResult.areEqual &&
     resizeOptionsResult.areEqual &&
     domWalkerAdditionalElementsToUpdateResult.areEqual &&
-    controlsResult.areEqual
+    controlsResult.areEqual &&
+    propertiesToUnsetResult.areEqual
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
   } else {
@@ -3307,6 +3321,7 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
       resizeOptionsResult.value,
       domWalkerAdditionalElementsToUpdateResult.value,
       controlsResult.value,
+      propertiesToUnsetResult.value,
     )
     return keepDeepEqualityResult(newDeepValue, false)
   }

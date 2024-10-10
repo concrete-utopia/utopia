@@ -294,3 +294,7 @@ export function objectContainsAllKeys<T extends MapLike<any>>(
 ): boolean {
   return keys.every((key) => objectContainsKey(obj, key))
 }
+
+export function typedObjectKeys<T extends object>(obj: T): Array<keyof T> {
+  return Object.keys(obj) as Array<keyof T>
+}

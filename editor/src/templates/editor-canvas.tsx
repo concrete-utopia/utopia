@@ -468,6 +468,7 @@ export function runLocalCanvasAction(
             null,
             null,
           ),
+          propertiesToUnset: {},
         },
       }
     case 'UPDATE_INTERACTION_SESSION':
