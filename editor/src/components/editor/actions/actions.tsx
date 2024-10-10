@@ -634,8 +634,9 @@ import { applyValuesAtPath } from '../../canvas/commands/adjust-number-command'
 import { styleP } from '../../inspector/inspector-common'
 import { getUpdateOperationResult } from '../../../core/shared/import/import-operation-service'
 import {
-  notifyCheckingUtopiaRequirement,
-  notifyResolveUtopiaRequirement,
+  notifyCheckingRequirement,
+  notifyResolveRequirement,
+  RequirementResolutionResult,
 } from '../../../core/shared/import/utopia-requirements-service'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
@@ -1642,10 +1643,10 @@ export function createStoryboardFileIfNecessary(
   projectContents: ProjectContentTreeRoot,
   createPlaceholder: 'create-placeholder' | 'skip-creating-placeholder',
 ): ProjectContentTreeRoot {
-  notifyCheckingUtopiaRequirement('storyboard', 'Checking for storyboard.js')
+  notifyCheckingRequirement('storyboard', 'Checking for storyboard.js')
   const storyboardFile = getProjectFileByFilePath(projectContents, StoryboardFilePath)
   if (storyboardFile != null) {
-    notifyResolveUtopiaRequirement('storyboard', 'found', 'Storyboard.js found')
+    notifyResolveRequirement('storyboard', RequirementResolutionResult.Found, 'Storyboard.js found')
     return projectContents
   }
 
@@ -1655,9 +1656,17 @@ export function createStoryboardFileIfNecessary(
     createStoryboardFileWithPlaceholderContents(projectContents, createPlaceholder)
 
   if (result == projectContents) {
-    notifyResolveUtopiaRequirement('storyboard', 'partial', 'Storyboard.js skipped')
+    notifyResolveRequirement(
+      'storyboard',
+      RequirementResolutionResult.Partial,
+      'Storyboard.js skipped',
+    )
   } else {
-    notifyResolveUtopiaRequirement('storyboard', 'fixed', 'Storyboard.js created')
+    notifyResolveRequirement(
+      'storyboard',
+      RequirementResolutionResult.Fixed,
+      'Storyboard.js created',
+    )
   }
 
   return result

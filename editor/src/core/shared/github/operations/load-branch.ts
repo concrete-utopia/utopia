@@ -44,10 +44,9 @@ import {
   notifyOperationStarted,
   startImportWizard,
 } from '../../import/import-operation-service'
-import {
-  checkAndFixUtopiaRequirements,
-  resetUtopiaRequirementsResolutions,
-} from '../../import/utopia-requirements-service'
+import { resetRequirementsResolutions } from '../../import/utopia-requirements-service'
+import { checkAndFixUtopiaRequirements } from '../../import/proejct-health-check/check-utopia-requirements'
+import { ImportOperationResult } from '../../import/import-operation-types'
 
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
@@ -162,7 +161,7 @@ export const updateProjectWithBranchContent =
             if (resetBranches) {
               newGithubData.branches = null
             }
-            notifyOperationFinished({ type: 'loadBranch' }, 'success')
+            notifyOperationFinished({ type: 'loadBranch' }, ImportOperationResult.Success)
 
             notifyOperationStarted({ type: 'parseFiles' })
             // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
@@ -171,15 +170,17 @@ export const updateProjectWithBranchContent =
               workers,
               responseBody.branch.content,
             )
-            notifyOperationFinished({ type: 'parseFiles' }, 'success')
+            notifyOperationFinished({ type: 'parseFiles' }, ImportOperationResult.Success)
 
-            resetUtopiaRequirementsResolutions()
-            const parsedProjectContents = createStoryboardFileIfNecessary(
+            resetRequirementsResolutions()
+            const parsedProjectContentsInitial = createStoryboardFileIfNecessary(
               parseResults,
               'create-placeholder',
             )
 
-            const fixedParsedProjectContents = checkAndFixUtopiaRequirements(parsedProjectContents)
+            const parsedProjectContents = checkAndFixUtopiaRequirements(
+              parsedProjectContentsInitial,
+            )
 
             // Update the editor with everything so that if anything else fails past this point
             // there's no loss of data from the user's perspective.

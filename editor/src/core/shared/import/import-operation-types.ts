@@ -1,4 +1,5 @@
 import type { GithubRepo } from '../../../components/editor/store/editor-state'
+import type { RequirementResolutionResult } from './utopia-requirements-service'
 
 type ImportOperationData = {
   text?: string
@@ -11,9 +12,11 @@ type ImportOperationData = {
   children?: ImportOperation[]
 }
 
-type UtopiaRequirementResolution = 'found' | 'fixed' | 'critical' | 'partial'
-
-export type ImportOperationResult = 'success' | 'error' | 'warn'
+export enum ImportOperationResult {
+  Success = 'success',
+  Error = 'error',
+  Warn = 'warn',
+}
 
 type ImportLoadBranch = {
   type: 'loadBranch'
@@ -36,26 +39,26 @@ type ImportParseFiles = {
   type: 'parseFiles'
 } & ImportOperationData
 
-type ImportCheckUtopiaRequirementAndFix = ImportOperationData & {
-  type: 'checkUtopiaRequirementAndFix'
-  resolution?: UtopiaRequirementResolution
+type ImportCheckRequirementAndFix = ImportOperationData & {
+  type: 'checkRequirementAndFix'
+  resolution?: RequirementResolutionResult
   text: string
   id: string
 }
 
-export function importCheckUtopiaRequirementAndFix(
+export function importCheckRequirementAndFix(
   id: string,
   text: string,
-): ImportCheckUtopiaRequirementAndFix {
+): ImportCheckRequirementAndFix {
   return {
-    type: 'checkUtopiaRequirementAndFix',
+    type: 'checkRequirementAndFix',
     text: text,
     id: id,
   }
 }
 
-type ImportCheckUtopiaRequirements = {
-  type: 'checkUtopiaRequirements'
+type ImportCheckRequirements = {
+  type: 'checkRequirements'
 } & ImportOperationData
 
 export type ImportOperation =
@@ -63,9 +66,14 @@ export type ImportOperation =
   | ImportRefreshDependencies
   | ImportParseFiles
   | ImportFetchDependency
-  | ImportCheckUtopiaRequirementAndFix
-  | ImportCheckUtopiaRequirements
+  | ImportCheckRequirementAndFix
+  | ImportCheckRequirements
 
 export type ImportOperationType = ImportOperation['type']
 
-export type ImportOperationAction = 'add' | 'remove' | 'update' | 'replace'
+export enum ImportOperationAction {
+  Add = 'add',
+  Remove = 'remove',
+  Update = 'update',
+  Replace = 'replace',
+}

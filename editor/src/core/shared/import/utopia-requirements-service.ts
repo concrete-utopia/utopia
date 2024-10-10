@@ -1,224 +1,112 @@
-import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
-import {
-  importCheckUtopiaRequirementAndFix,
-  type ImportOperationResult,
-} from './import-operation-types'
+import { importCheckRequirementAndFix, ImportOperationResult } from './import-operation-types'
 import { notifyOperationFinished, notifyOperationStarted } from './import-operation-service'
-import {
-  addFileToProjectContents,
-  packageJsonFileFromProjectContents,
-} from '../../../components/assets'
-import { codeFile, isTextFile, RevisionsState } from '../project-file-types'
-import { applyToAllUIJSFiles } from '../../model/project-file-utils'
 
-let utopiaRequirementsResolutions: Record<string, UtopiaRequirementResolution> = {
+let requirementsResolutions: Record<string, RequirementResolution> = {
   storyboard: initialResolution(),
   packageJsonEntries: initialResolution(),
   language: initialResolution(),
   reactVersion: initialResolution(),
 }
 
-type UtopiaRequirement = keyof typeof utopiaRequirementsResolutions
+type Requirement = keyof typeof requirementsResolutions
 
-const initialTexts: Record<UtopiaRequirement, string> = {
+const initialTexts: Record<Requirement, string> = {
   storyboard: 'Checking storyboard.js',
   packageJsonEntries: 'Checking package.json',
   language: 'Checking project language',
   reactVersion: 'Checking React version',
 }
 
-function initialResolution(): UtopiaRequirementResolution {
+function initialResolution(): RequirementResolution {
   return {
-    status: 'not-started',
+    status: RequirementResolutionStatus.NotStarted,
   }
 }
 
-export function resetUtopiaRequirementsResolutions() {
-  utopiaRequirementsResolutions = Object.fromEntries(
-    Object.keys(utopiaRequirementsResolutions).map((key) => [key, initialResolution()]),
-  ) as Record<UtopiaRequirement, UtopiaRequirementResolution>
+export function resetRequirementsResolutions() {
+  requirementsResolutions = Object.fromEntries(
+    Object.keys(requirementsResolutions).map((key) => [key, initialResolution()]),
+  ) as Record<Requirement, RequirementResolution>
   notifyOperationStarted({
-    type: 'checkUtopiaRequirements',
-    children: Object.keys(utopiaRequirementsResolutions).map((key) =>
-      importCheckUtopiaRequirementAndFix(
-        key as UtopiaRequirement,
-        initialTexts[key as UtopiaRequirement],
-      ),
+    type: 'checkRequirements',
+    children: Object.keys(requirementsResolutions).map((key) =>
+      importCheckRequirementAndFix(key as Requirement, initialTexts[key as Requirement]),
     ),
   })
 }
 
-export function notifyCheckingUtopiaRequirement(requirement: UtopiaRequirement, text: string) {
-  utopiaRequirementsResolutions[requirement].status = 'pending'
+export function notifyCheckingRequirement(requirement: Requirement, text: string) {
+  requirementsResolutions[requirement].status = RequirementResolutionStatus.Pending
   notifyOperationStarted({
-    type: 'checkUtopiaRequirementAndFix',
+    type: 'checkRequirementAndFix',
     id: requirement,
     text: text,
   })
 }
 
-export function notifyResolveUtopiaRequirement(
-  requirementName: UtopiaRequirement,
-  resolution: UtopiaRequirementResolutionResult,
+export function notifyResolveRequirement(
+  requirementName: Requirement,
+  resolution: RequirementResolutionResult,
   text: string,
   value?: string,
 ) {
-  utopiaRequirementsResolutions[requirementName] = {
-    status: 'done',
+  requirementsResolutions[requirementName] = {
+    status: RequirementResolutionStatus.Done,
     resolution: resolution,
     value: value,
   }
   const result =
-    resolution === 'found' || resolution === 'fixed'
-      ? 'success'
-      : resolution === 'partial'
-      ? 'warn'
-      : 'error'
+    resolution === RequirementResolutionResult.Found ||
+    resolution === RequirementResolutionResult.Fixed
+      ? ImportOperationResult.Success
+      : resolution === RequirementResolutionResult.Partial
+      ? ImportOperationResult.Warn
+      : ImportOperationResult.Error
   notifyOperationFinished(
     {
-      type: 'checkUtopiaRequirementAndFix',
+      type: 'checkRequirementAndFix',
       id: requirementName,
       text: text,
       resolution: resolution,
     },
     result,
   )
-  const aggregatedStatus = getAggregatedStatus()
-  if (aggregatedStatus != 'pending') {
-    notifyOperationFinished({ type: 'checkUtopiaRequirements' }, aggregatedStatus)
+  const aggregatedDoneStatus = getAggregatedStatus()
+  if (aggregatedDoneStatus != null) {
+    notifyOperationFinished({ type: 'checkRequirements' }, aggregatedDoneStatus)
   }
 }
 
-function getAggregatedStatus(): ImportOperationResult | 'pending' {
-  for (const resolution of Object.values(utopiaRequirementsResolutions)) {
-    if (resolution.status != 'done') {
-      return 'pending'
+function getAggregatedStatus(): ImportOperationResult | null {
+  for (const resolution of Object.values(requirementsResolutions)) {
+    if (resolution.status != RequirementResolutionStatus.Done) {
+      return null
     }
-    if (resolution.resolution == 'critical') {
-      return 'error'
+    if (resolution.resolution == RequirementResolutionResult.Critical) {
+      return ImportOperationResult.Error
     }
-    if (resolution.resolution == 'partial') {
-      return 'warn'
+    if (resolution.resolution == RequirementResolutionResult.Partial) {
+      return ImportOperationResult.Warn
     }
   }
-  return 'success'
+  return ImportOperationResult.Success
 }
 
-type UtopiaRequirementResolutionStatus = 'not-started' | 'pending' | 'done'
-type UtopiaRequirementResolutionResult = 'found' | 'fixed' | 'partial' | 'critical'
+enum RequirementResolutionStatus {
+  NotStarted = 'not-started',
+  Pending = 'pending',
+  Done = 'done',
+}
 
-type UtopiaRequirementResolution = {
-  status: UtopiaRequirementResolutionStatus
+export enum RequirementResolutionResult {
+  Found = 'found',
+  Fixed = 'fixed',
+  Partial = 'partial',
+  Critical = 'critical',
+}
+
+type RequirementResolution = {
+  status: RequirementResolutionStatus
   value?: string
-  resolution?: UtopiaRequirementResolutionResult
-}
-
-export function checkAndFixUtopiaRequirements(
-  parsedProjectContents: ProjectContentTreeRoot,
-): ProjectContentTreeRoot {
-  let projectContents = parsedProjectContents
-  // check package.json
-  projectContents = checkAndFixPackageJson(projectContents)
-  // check language
-  projectContents = checkProjectLanguage(projectContents)
-  // check react version
-  checkReactVersion(projectContents)
-  return projectContents
-}
-
-function getPackageJson(
-  projectContents: ProjectContentTreeRoot,
-): { utopia?: Record<string, string>; dependencies?: Record<string, string> } | null {
-  const packageJson = packageJsonFileFromProjectContents(projectContents)
-  if (packageJson != null && isTextFile(packageJson)) {
-    return JSON.parse(packageJson.fileContents.code)
-  }
-  return null
-}
-
-function checkAndFixPackageJson(projectContents: ProjectContentTreeRoot): ProjectContentTreeRoot {
-  notifyCheckingUtopiaRequirement('packageJsonEntries', 'Checking package.json')
-  const parsedPackageJson = getPackageJson(projectContents)
-  if (parsedPackageJson == null) {
-    notifyResolveUtopiaRequirement(
-      'packageJsonEntries',
-      'critical',
-      'The file package.json was not found',
-    )
-    return projectContents
-  }
-  if (parsedPackageJson.utopia == null) {
-    parsedPackageJson.utopia = {
-      'main-ui': 'utopia/storyboard.js',
-    }
-    const result = addFileToProjectContents(
-      projectContents,
-      '/package.json',
-      codeFile(
-        JSON.stringify(parsedPackageJson, null, 2),
-        null,
-        0,
-        RevisionsState.CodeAheadButPleaseTellVSCodeAboutIt,
-      ),
-    )
-    notifyResolveUtopiaRequirement(
-      'packageJsonEntries',
-      'fixed',
-      'Fixed utopia entry in package.json',
-    )
-    return result
-  } else {
-    notifyResolveUtopiaRequirement('packageJsonEntries', 'found', 'Valid package.json found')
-  }
-
-  return projectContents
-}
-
-function checkProjectLanguage(projectContents: ProjectContentTreeRoot): ProjectContentTreeRoot {
-  notifyCheckingUtopiaRequirement('language', 'Checking project language')
-  let jsCount = 0
-  let tsCount = 0
-  applyToAllUIJSFiles(projectContents, (filename, uiJSFile) => {
-    if (filename.endsWith('.ts') || filename.endsWith('.tsx')) {
-      tsCount++
-    } else if (filename.endsWith('.js') || filename.endsWith('.jsx')) {
-      jsCount++
-    }
-    return uiJSFile
-  })
-  if (tsCount > jsCount) {
-    notifyResolveUtopiaRequirement(
-      'language',
-      'critical',
-      'Majority of project files are in TS/TSX',
-      'typescript',
-    )
-  } else {
-    notifyResolveUtopiaRequirement('language', 'found', 'Project uses JS/JSX', 'javascript')
-  }
-  return projectContents
-}
-
-function checkReactVersion(projectContents: ProjectContentTreeRoot): void {
-  notifyCheckingUtopiaRequirement('reactVersion', 'Checking React version')
-  const parsedPackageJson = getPackageJson(projectContents)
-  if (
-    parsedPackageJson == null ||
-    parsedPackageJson.dependencies == null ||
-    parsedPackageJson.dependencies.react == null
-  ) {
-    return notifyResolveUtopiaRequirement(
-      'reactVersion',
-      'critical',
-      'React is not in dependencies',
-    )
-  }
-  const reactVersion = parsedPackageJson.dependencies.react
-  // TODO: check react version
-  return notifyResolveUtopiaRequirement(
-    'reactVersion',
-    'found',
-    'React version is ok',
-    reactVersion,
-  )
+  resolution?: RequirementResolutionResult
 }

@@ -2,13 +2,12 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import type {
-  ImportOperation,
-  ImportOperationResult,
-} from '../../../core/shared/import/import-operation-types'
+import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
+import { ImportOperationResult } from '../../../core/shared/import/import-operation-types'
 import { assertNever } from '../../../core/shared/utils'
 import { Icons } from '../../../uuiui'
 import { GithubSpinner } from '../../../components/navigator/left-pane/github-pane/github-spinner'
+import { RequirementResolutionResult } from '../../../core/shared/import/utopia-requirements-service'
 
 export function OperationLine({ operation }: { operation: ImportOperation }) {
   const operationRunningStatus = React.useMemo(() => {
@@ -19,24 +18,11 @@ export function OperationLine({ operation }: { operation: ImportOperation }) {
       : 'done'
   }, [operation.timeStarted, operation.timeDone])
 
-  const textColor = React.useMemo(() => {
-    if (operationRunningStatus === 'waiting') {
-      return 'gray'
-    } else if (operationRunningStatus === 'running') {
-      return 'black'
-    } else if (
-      operation.type === 'checkUtopiaRequirementAndFix' &&
-      operation.resolution === 'fixed'
-    ) {
-      return 'var(--utopitheme-primary)'
-    } else if (operation.result === 'success') {
-      return 'green'
-    } else if (operation.result === 'warn') {
-      return 'orange'
-    } else {
-      return 'var(--utopitheme-errorForeground)'
-    }
-  }, [operationRunningStatus, operation])
+  const textColor = React.useMemo(
+    () => getTextColor(operationRunningStatus, operation),
+    [operationRunningStatus, operation],
+  )
+
   return (
     <OperationLineWrapper
       className={operationRunningStatus == 'done' ? 'operation-done' : 'operation-pending'}
@@ -228,11 +214,33 @@ function getImportOperationText(operation: ImportOperation): React.ReactNode {
       return 'Parsing files'
     case 'refreshDependencies':
       return 'Fetching dependencies'
-    case 'checkUtopiaRequirements':
+    case 'checkRequirements':
       return 'Checking Utopia requirements'
-    case 'checkUtopiaRequirementAndFix':
+    case 'checkRequirementAndFix':
       return operation.text
     default:
       assertNever(operation)
+  }
+}
+
+function getTextColor(
+  operationRunningStatus: 'waiting' | 'running' | 'done',
+  operation: ImportOperation,
+) {
+  if (operationRunningStatus === 'waiting') {
+    return 'gray'
+  } else if (operationRunningStatus === 'running') {
+    return 'black'
+  } else if (
+    operation.type === 'checkRequirementAndFix' &&
+    operation.resolution === RequirementResolutionResult.Fixed
+  ) {
+    return 'var(--utopitheme-primary)'
+  } else if (operation.result === ImportOperationResult.Success) {
+    return 'green'
+  } else if (operation.result === ImportOperationResult.Warn) {
+    return 'orange'
+  } else {
+    return 'var(--utopitheme-errorForeground)'
   }
 }

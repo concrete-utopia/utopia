@@ -13,12 +13,17 @@ import {
 import type { EditorStorePatched } from '../../components/editor/store/editor-state'
 import type { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../es-modules/package-manager/fetch-packages'
-import type { PackageStatusMap, RequestedNpmDependency } from './npm-dependency-types'
+import type {
+  PackageDetails,
+  PackageStatusMap,
+  RequestedNpmDependency,
+} from './npm-dependency-types'
 import { objectFilter } from './object-utils'
 import type { NodeModules } from './project-file-types'
 import { isTextFile } from './project-file-types'
 import { fastForEach } from './utils'
 import { notifyOperationFinished } from './import/import-operation-service'
+import { ImportOperationResult } from './import/import-operation-types'
 
 export function removeModulesFromNodeModules(
   modulesToRemove: Array<string>,
@@ -106,16 +111,18 @@ export async function refreshDependencies(
   })
 }
 
-function getDependenciesStatus(loadedPackagesStatus: PackageStatusMap) {
-  return Object.entries(loadedPackagesStatus).some(
-    ([_, status]) => status.status === 'error' || status.status === 'not-found',
-  )
-    ? Object.entries(loadedPackagesStatus).every(
-        ([_, status]) => status.status === 'error' || status.status === 'not-found',
-      )
-      ? 'error'
-      : 'warn'
-    : 'success'
+function isPackageMissing(status: PackageDetails): boolean {
+  return status.status === 'error' || status.status === 'not-found'
+}
+
+function getDependenciesStatus(loadedPackagesStatus: PackageStatusMap): ImportOperationResult {
+  if (Object.values(loadedPackagesStatus).every(isPackageMissing)) {
+    return ImportOperationResult.Error
+  }
+  if (Object.values(loadedPackagesStatus).some(isPackageMissing)) {
+    return ImportOperationResult.Warn
+  }
+  return ImportOperationResult.Success
 }
 
 export const projectDependenciesSelector = createSelector(

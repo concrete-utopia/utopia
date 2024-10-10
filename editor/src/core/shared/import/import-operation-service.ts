@@ -4,9 +4,9 @@ import {
   setImportWizardOpen,
   updateImportOperations,
 } from '../../../components/editor/actions/action-creators'
+import { ImportOperationAction } from './import-operation-types'
 import type {
   ImportOperation,
-  ImportOperationAction,
   ImportOperationResult,
   ImportOperationType,
 } from './import-operation-types'
@@ -21,10 +21,10 @@ export function startImportWizard(dispatch: EditorDispatch) {
       [
         { type: 'loadBranch' },
         { type: 'parseFiles' },
-        { type: 'checkUtopiaRequirements' },
+        { type: 'checkRequirements' },
         { type: 'refreshDependencies' },
       ],
-      'replace',
+      ImportOperationAction.Replace,
     ),
   ])
 }
@@ -38,7 +38,7 @@ export function hideImportWizard() {
 }
 
 export function dispatchUpdateOperation(operation: ImportOperation) {
-  editorDispatch?.([updateImportOperations([operation], 'update')])
+  editorDispatch?.([updateImportOperations([operation], ImportOperationAction.Update)])
 }
 
 export function notifyOperationStarted(operation: ImportOperation) {
@@ -47,7 +47,7 @@ export function notifyOperationStarted(operation: ImportOperation) {
     timeStarted: Date.now(),
     timeDone: null,
   }
-  editorDispatch?.([updateImportOperations([operationWithTime], 'update')])
+  editorDispatch?.([updateImportOperations([operationWithTime], ImportOperationAction.Update)])
 }
 
 export function notifyOperationFinished(operation: ImportOperation, result: ImportOperationResult) {
@@ -57,7 +57,7 @@ export function notifyOperationFinished(operation: ImportOperation, result: Impo
     timeDone: timeDone,
     result: result,
   }
-  editorDispatch?.([updateImportOperations([operationWithTime], 'update')])
+  editorDispatch?.([updateImportOperations([operationWithTime], ImportOperationAction.Update)])
 }
 
 export function areSameOperation(existing: ImportOperation, incoming: ImportOperation): boolean {
@@ -68,7 +68,7 @@ export function areSameOperation(existing: ImportOperation, incoming: ImportOper
 }
 
 export const defaultParentTypes: Partial<Record<ImportOperationType, ImportOperationType>> = {
-  checkUtopiaRequirementAndFix: 'checkUtopiaRequirements',
+  checkRequirementAndFix: 'checkRequirements',
   fetchDependency: 'refreshDependencies',
 }
 
@@ -101,13 +101,13 @@ export function getUpdateOperationResult(
     children: [...(operation.children ?? [])],
   }))
   switch (type) {
-    case 'add':
+    case ImportOperationAction.Add:
       incomingOperations.forEach((operation) => {
         const parent = getParentArray(operations, operation)
         parent.push(operation)
       })
       break
-    case 'remove':
+    case ImportOperationAction.Remove:
       incomingOperations.forEach((operation) => {
         const parent = getParentArray(operations, operation)
         const idx = parent.findIndex((op) => areSameOperation(op, operation))
@@ -116,7 +116,7 @@ export function getUpdateOperationResult(
         }
       })
       break
-    case 'update':
+    case ImportOperationAction.Update:
       incomingOperations.forEach((operation) => {
         const parent = getParentArray(operations, operation)
         const idx = parent.findIndex((op) => areSameOperation(op, operation))
@@ -132,7 +132,7 @@ export function getUpdateOperationResult(
         }
       })
       break
-    case 'replace':
+    case ImportOperationAction.Replace:
       operations = [...incomingOperations]
       break
     default:

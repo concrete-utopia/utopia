@@ -51,6 +51,7 @@ import {
   notifyOperationFinished,
   notifyOperationStarted,
 } from '../../shared/import/import-operation-service'
+import { ImportOperationResult } from '../../shared/import/import-operation-types'
 
 let depPackagerCache: { [key: string]: PackagerServerResponse } = {}
 
@@ -291,7 +292,7 @@ export async function fetchNodeModules(
   const nodeModulesArr = await Promise.all(
     dependenciesToDownload.map(
       async (newDep): Promise<Either<DependencyFetchError, NodeModules>> => {
-        function notifyEnd(result: 'success' | 'error') {
+        function notifyFetchEnd(result: ImportOperationResult) {
           notifyOperationFinished(
             {
               type: 'fetchDependency',
@@ -315,7 +316,7 @@ export async function fetchNodeModules(
             'skipFetch',
           )
           if (isPackageNotFound(matchingVersionResponse)) {
-            notifyEnd('error')
+            notifyFetchEnd(ImportOperationResult.Error)
             return left(failNotFound(newDep))
           }
 
@@ -345,15 +346,15 @@ export async function fetchNodeModules(
              * the real nice solution would be to apply npm's module resolution logic that
              * pulls up shared transitive dependencies to the main /node_modules/ folder.
              */
-            notifyEnd('success')
+            notifyFetchEnd(ImportOperationResult.Success)
             return right(mangleNodeModulePaths(newDep.name, packagerResponse))
           } else {
-            notifyEnd('error')
+            notifyFetchEnd(ImportOperationResult.Error)
             return left(failError(newDep))
           }
         } catch (e) {
           // TODO: proper error handling, now we don't show error for a missing package. The error will be visible when you try to import
-          notifyEnd('error')
+          notifyFetchEnd(ImportOperationResult.Error)
           return left(failError(newDep))
         }
       },
