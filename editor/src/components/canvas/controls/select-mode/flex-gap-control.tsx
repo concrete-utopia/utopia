@@ -26,7 +26,7 @@ import type { FlexGapData } from '../../gap-utils'
 import {
   cursorFromFlexDirection,
   gapControlBoundsFromMetadata,
-  getFlexGapData,
+  maybeFlexGapData,
   recurseIntoChildrenOfMapOrFragment,
 } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -136,7 +136,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
   const flexGapFromEditor = useEditorState(
     Substores.fullStore,
     (store) =>
-      getFlexGapData(
+      maybeFlexGapData(
         getActivePlugin(store.editor).styleInfoFactory({
           projectContents: store.editor.projectContents,
           metadata: metadata,

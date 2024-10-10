@@ -332,23 +332,35 @@ export interface FlexGapData {
   direction: FlexDirection
 }
 
-export function getFlexGapData(
+export function maybeFlexGapData(
   info: StyleInfo | null,
-  instance: ElementInstanceMetadata | null,
+  element: ElementInstanceMetadata | null,
 ): FlexGapData | null {
-  if (instance == null || info == null) {
+  if (
+    element == null ||
+    element.specialSizeMeasurements.display !== 'flex' ||
+    isLeft(element.element) ||
+    !isJSXElement(element.element.value) ||
+    info == null
+  ) {
     return null
   }
 
-  const gap = info.gap?.value
-  const renderedValuePx = instance.specialSizeMeasurements.gap
-  if (gap == null || renderedValuePx == null) {
+  if (element.specialSizeMeasurements.justifyContent?.startsWith('space')) {
     return null
   }
+
+  const gap = element.specialSizeMeasurements.gap ?? 0
+  const gapFromReader = info.gap?.value
+
+  const flexDirection = element.specialSizeMeasurements.flexDirection ?? 'row'
 
   return {
-    value: cssNumberWithRenderedValue(gap, renderedValuePx),
-    direction: info.flexDirection?.value ?? 'row',
+    value: {
+      renderedValuePx: gap,
+      value: gapFromReader ?? null,
+    },
+    direction: flexDirection,
   }
 }
 
