@@ -4,9 +4,13 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { defaultEither, isLeft, mapEither, right } from '../../../core/shared/either'
 import type { JSXElement } from '../../../core/shared/element-template'
 import { isJSXElement } from '../../../core/shared/element-template'
+import { typedObjectKeys } from '../../../core/shared/object-utils'
+import * as PP from '../../../core/shared/property-path'
 import { styleStringInArray } from '../../../utils/common-constants'
 import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { withPropertyTag, type WithPropertyTag } from '../canvas-types'
+import { foldAndApplyCommandsSimple } from '../commands/commands'
+import { deleteProperties } from '../commands/delete-properties-command'
 import type { StylePlugin } from './style-plugins'
 
 function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(
@@ -37,5 +41,16 @@ export const InlineStylePlugin: StylePlugin = {
         flexDirection: flexDirection,
       }
     },
-  normalizeFromInlineStyle: (editor) => editor,
+  normalizeFromInlineStyle: (editor, elementsToNormalize) => {
+    return foldAndApplyCommandsSimple(
+      editor,
+      elementsToNormalize.map((element) =>
+        deleteProperties(
+          'on-complete',
+          element,
+          typedObjectKeys(editor.canvas.propertiesToUnset).map((p) => PP.create('style', p)),
+        ),
+      ),
+    )
+  },
 }
