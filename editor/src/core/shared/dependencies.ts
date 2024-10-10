@@ -18,7 +18,7 @@ import { objectFilter } from './object-utils'
 import type { NodeModules } from './project-file-types'
 import { isTextFile } from './project-file-types'
 import { fastForEach } from './utils'
-import { notifyOperationFinished } from '../../components/editor/import-wizard/import-wizard-service'
+import { notifyOperationFinished } from './import/import-operation-service'
 
 export function removeModulesFromNodeModules(
   modulesToRemove: Array<string>,

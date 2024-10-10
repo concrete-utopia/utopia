@@ -632,11 +632,11 @@ import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-ut
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { applyValuesAtPath } from '../../canvas/commands/adjust-number-command'
 import { styleP } from '../../inspector/inspector-common'
-import { getUpdateOperationResult } from '../import-wizard/import-wizard-service'
+import { getUpdateOperationResult } from '../../../core/shared/import/import-operation-service'
 import {
   notifyCheckingUtopiaRequirement,
   notifyResolveUtopiaRequirement,
-} from '../import-wizard/utopia-requirements-service'
+} from '../../../core/shared/import/utopia-requirements-service'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 

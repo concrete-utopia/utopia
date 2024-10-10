@@ -1,16 +1,15 @@
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
-import type { ImportOperationResult } from './import-wizard-service'
 import {
   importCheckUtopiaRequirementAndFix,
-  notifyOperationFinished,
-  notifyOperationStarted,
-} from './import-wizard-service'
+  type ImportOperationResult,
+} from './import-operation-types'
+import { notifyOperationFinished, notifyOperationStarted } from './import-operation-service'
 import {
   addFileToProjectContents,
   packageJsonFileFromProjectContents,
 } from '../../../components/assets'
-import { codeFile, isTextFile, RevisionsState } from '../../../core/shared/project-file-types'
-import { applyToAllUIJSFiles } from '../../../core/model/project-file-utils'
+import { codeFile, isTextFile, RevisionsState } from '../project-file-types'
+import { applyToAllUIJSFiles } from '../../model/project-file-utils'
 
 let utopiaRequirementsResolutions: Record<string, UtopiaRequirementResolution> = {
   storyboard: initialResolution(),

@@ -189,7 +189,7 @@ import type { OnlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
 import type { FancyError } from '../../../core/shared/code-exec-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
-import type { ImportOperation } from '../import-wizard/import-wizard-service'
+import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
 
 const ObjectPathImmutable: any = OPI
 

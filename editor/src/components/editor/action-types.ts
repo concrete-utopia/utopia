@@ -87,7 +87,10 @@ import type { Optic } from '../../core/shared/optics/optics'
 import { makeOptic } from '../../core/shared/optics/optics'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { assertNever } from '../../core/shared/utils'
-import type { ImportOperation, ImportOperationAction } from './import-wizard/import-wizard-service'
+import type {
+  ImportOperation,
+  ImportOperationAction,
+} from '../../core/shared/import/import-operation-types'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 

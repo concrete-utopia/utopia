@@ -643,7 +643,7 @@ import type {
 } from '../../../core/property-controls/component-descriptor-parser'
 import type { Axis } from '../../../components/canvas/gap-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
-import type { ImportOperation } from '../import-wizard/import-wizard-service'
+import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(

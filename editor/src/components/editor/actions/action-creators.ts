@@ -270,7 +270,10 @@ import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { PageTemplate } from '../../canvas/remix/remix-utils'
 import type { Bounds } from 'utopia-vscode-common'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import type { ImportOperation, ImportOperationAction } from '../import-wizard/import-wizard-service'
+import type {
+  ImportOperation,
+  ImportOperationAction,
+} from '../../../core/shared/import/import-operation-types'
 
 export function clearSelection(): EditorAction {
   return {

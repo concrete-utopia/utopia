@@ -50,7 +50,7 @@ import { getJsDelivrFileUrl, getPackagerUrl } from './packager-url'
 import {
   notifyOperationFinished,
   notifyOperationStarted,
-} from '../../../components/editor/import-wizard/import-wizard-service'
+} from '../../shared/import/import-operation-service'
 
 let depPackagerCache: { [key: string]: PackagerServerResponse } = {}
 

@@ -58,7 +58,7 @@ import { OperationContext } from '../../../../core/shared/github/operations/gith
 import {
   showImportWizard,
   startImportWizard,
-} from '../../../../components/editor/import-wizard/import-wizard-service'
+} from '../../../../core/shared/import/import-operation-service'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`

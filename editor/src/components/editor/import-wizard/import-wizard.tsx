@@ -3,7 +3,7 @@ import { getProjectID } from '../../../common/env-vars'
 import { Button, Icons, useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { useEditorState, Substores } from '../store/store-hook'
 import { when } from '../../../utils/react-conditionals'
-import { hideImportWizard } from './import-wizard-service'
+import { hideImportWizard } from '../../../core/shared/import/import-operation-service'
 import { OperationLine } from './components'
 
 export const ImportWizard = React.memo(() => {

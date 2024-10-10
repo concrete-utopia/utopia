@@ -1,7 +1,15 @@
-import { assertNever } from '../../../core/shared/utils'
-import type { EditorDispatch } from '../action-types'
-import { setImportWizardOpen, updateImportOperations } from '../actions/action-creators'
-import type { GithubRepo } from '../store/editor-state'
+import { assertNever } from '../utils'
+import type { EditorDispatch } from '../../../components/editor/action-types'
+import {
+  setImportWizardOpen,
+  updateImportOperations,
+} from '../../../components/editor/actions/action-creators'
+import type {
+  ImportOperation,
+  ImportOperationAction,
+  ImportOperationResult,
+  ImportOperationType,
+} from './import-operation-types'
 
 let editorDispatch: EditorDispatch | null = null
 
@@ -11,18 +19,10 @@ export function startImportWizard(dispatch: EditorDispatch) {
     setImportWizardOpen(true),
     updateImportOperations(
       [
-        {
-          type: 'loadBranch',
-        },
-        {
-          type: 'parseFiles',
-        },
-        {
-          type: 'checkUtopiaRequirements',
-        },
-        {
-          type: 'refreshDependencies',
-        },
+        { type: 'loadBranch' },
+        { type: 'parseFiles' },
+        { type: 'checkUtopiaRequirements' },
+        { type: 'refreshDependencies' },
       ],
       'replace',
     ),
@@ -66,76 +66,6 @@ export function areSameOperation(existing: ImportOperation, incoming: ImportOper
   }
   return existing.id === incoming.id
 }
-
-type ImportOperationData = {
-  text?: string
-  id?: string | null
-  timeStarted?: number | null
-  timeDone?: number | null
-  result?: ImportOperationResult
-  error?: string
-  parentOperationType?: ImportOperationType
-  children?: ImportOperation[]
-}
-
-type UtopiaRequirementResolution = 'found' | 'fixed' | 'critical' | 'partial'
-
-export type ImportOperationResult = 'success' | 'error' | 'warn'
-
-type ImportLoadBranch = {
-  type: 'loadBranch'
-  branchName?: string
-  githubRepo?: GithubRepo
-} & ImportOperationData
-
-type ImportRefreshDependencies = {
-  type: 'refreshDependencies'
-} & ImportOperationData
-
-type ImportFetchDependency = ImportOperationData & {
-  type: 'fetchDependency'
-  dependencyName: string
-  dependencyVersion: string
-  id: string
-}
-
-type ImportParseFiles = {
-  type: 'parseFiles'
-} & ImportOperationData
-
-type ImportCheckUtopiaRequirementAndFix = ImportOperationData & {
-  type: 'checkUtopiaRequirementAndFix'
-  resolution?: UtopiaRequirementResolution
-  text: string
-  id: string
-}
-
-export function importCheckUtopiaRequirementAndFix(
-  id: string,
-  text: string,
-): ImportCheckUtopiaRequirementAndFix {
-  return {
-    type: 'checkUtopiaRequirementAndFix',
-    text: text,
-    id: id,
-  }
-}
-
-type ImportCheckUtopiaRequirements = {
-  type: 'checkUtopiaRequirements'
-} & ImportOperationData
-
-export type ImportOperation =
-  | ImportLoadBranch
-  | ImportRefreshDependencies
-  | ImportParseFiles
-  | ImportFetchDependency
-  | ImportCheckUtopiaRequirementAndFix
-  | ImportCheckUtopiaRequirements
-
-type ImportOperationType = ImportOperation['type']
-
-export type ImportOperationAction = 'add' | 'remove' | 'update' | 'replace'
 
 export const defaultParentTypes: Partial<Record<ImportOperationType, ImportOperationType>> = {
   checkUtopiaRequirementAndFix: 'checkUtopiaRequirements',

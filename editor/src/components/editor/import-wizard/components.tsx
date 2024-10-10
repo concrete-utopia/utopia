@@ -2,7 +2,10 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import type { ImportOperation, ImportOperationResult } from './import-wizard-service'
+import type {
+  ImportOperation,
+  ImportOperationResult,
+} from '../../../core/shared/import/import-operation-types'
 import { assertNever } from '../../../core/shared/utils'
 import { Icons } from '../../../uuiui'
 import { GithubSpinner } from '../../../components/navigator/left-pane/github-pane/github-spinner'

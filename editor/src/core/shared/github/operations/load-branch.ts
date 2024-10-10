@@ -43,11 +43,11 @@ import {
   notifyOperationFinished,
   notifyOperationStarted,
   startImportWizard,
-} from '../../../../components/editor/import-wizard/import-wizard-service'
+} from '../../import/import-operation-service'
 import {
   checkAndFixUtopiaRequirements,
   resetUtopiaRequirementsResolutions,
-} from '../../../../components/editor/import-wizard/utopia-requirements-service'
+} from '../../import/utopia-requirements-service'
 
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
