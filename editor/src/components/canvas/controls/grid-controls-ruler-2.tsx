@@ -392,6 +392,7 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
   return (
     <React.Fragment>
       {/* grid lines */}
+      <GridTrackIndicators grid={grid} />
       <CanvasOffsetWrapper>
         <div
           key={gridKeyFromPath(grid.elementPath)}
@@ -733,3 +734,82 @@ function useMouseMove(activelyDraggingOrResizingCell: string | null) {
 
   return { hoveringStart, mouseCanvasPosition }
 }
+
+export const GridTrackIndicators = React.memo(({ grid }: { grid: GridData }) => {
+  const targetPath = grid.elementPath
+  const metadata = useEditorState(
+    Substores.metadata,
+    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, targetPath),
+    'GridTrackIndicators metadata',
+  )
+  const columnPositions = mapDropNulls(
+    (cell) => ({ start: cell.x, length: cell.width }),
+    metadata?.specialSizeMeasurements.gridCellGlobalFrames?.[0] ?? [], // this is the first row
+  )
+  const rowPositions = mapDropNulls(
+    (row) => ({ start: row[0].y, length: row[0].height }), // this is the first column
+    metadata?.specialSizeMeasurements.gridCellGlobalFrames ?? [],
+  )
+
+  return (
+    <React.Fragment>
+      <CanvasOffsetWrapper limitAxis='x'>
+        {columnPositions.map((column, i) => {
+          return (
+            <React.Fragment key={`column-${i}`}>
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: column.start,
+                  width: 1,
+                  height: 20,
+                  backgroundColor: '#999',
+                }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: column.start + column.length,
+                  width: 1,
+                  height: 20,
+                  backgroundColor: '#999',
+                }}
+              />
+            </React.Fragment>
+          )
+        })}
+      </CanvasOffsetWrapper>
+      <CanvasOffsetWrapper limitAxis='y'>
+        {rowPositions.map((row, i) => {
+          return (
+            <React.Fragment key={`row-${i}`}>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: row.start,
+                  height: 1,
+                  width: 20,
+                  backgroundColor: '#999',
+                }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: row.start + row.length,
+                  height: 1,
+                  width: 20,
+                  backgroundColor: '#999',
+                }}
+              />
+            </React.Fragment>
+          )
+        })}
+      </CanvasOffsetWrapper>
+    </React.Fragment>
+  )
+})
+GridTrackIndicators.displayName = 'GridTrackIndicators'
