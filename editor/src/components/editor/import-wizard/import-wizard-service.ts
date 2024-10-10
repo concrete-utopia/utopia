@@ -37,16 +37,8 @@ export function hideImportWizard() {
   editorDispatch?.([setImportWizardOpen(false)])
 }
 
-export function updateOperation(operation: ImportOperation) {
+export function dispatchUpdateOperation(operation: ImportOperation) {
   editorDispatch?.([updateImportOperations([operation], 'update')])
-}
-
-export function addOperation(operation: ImportOperation) {
-  editorDispatch?.([updateImportOperations([operation], 'add')])
-}
-
-export function removeOperation(operation: ImportOperation) {
-  editorDispatch?.([updateImportOperations([operation], 'remove')])
 }
 
 export function notifyOperationStarted(operation: ImportOperation) {
@@ -76,6 +68,7 @@ export function areSameOperation(existing: ImportOperation, incoming: ImportOper
 }
 
 type ImportOperationData = {
+  text?: string
   id?: string | null
   timeStarted?: number | null
   timeDone?: number | null
@@ -85,7 +78,9 @@ type ImportOperationData = {
   children?: ImportOperation[]
 }
 
-type ImportOperationResult = 'success' | 'error' | 'partial'
+type UtopiaRequirementResolution = 'found' | 'fixed' | 'critical' | 'partial'
+
+export type ImportOperationResult = 'success' | 'error' | 'warn'
 
 type ImportLoadBranch = {
   type: 'loadBranch'
@@ -97,23 +92,34 @@ type ImportRefreshDependencies = {
   type: 'refreshDependencies'
 } & ImportOperationData
 
-type ImportFetchDependency = {
+type ImportFetchDependency = ImportOperationData & {
   type: 'fetchDependency'
   dependencyName: string
   dependencyVersion: string
-} & ImportOperationData
+  id: string
+}
 
 type ImportParseFiles = {
   type: 'parseFiles'
 } & ImportOperationData
 
-type ImportCreateStoryboard = {
-  type: 'createStoryboard'
-} & ImportOperationData
+type ImportCheckUtopiaRequirementAndFix = ImportOperationData & {
+  type: 'checkUtopiaRequirementAndFix'
+  resolution?: UtopiaRequirementResolution
+  text: string
+  id: string
+}
 
-type ImportCreatePackageJsonEntry = {
-  type: 'createPackageJsonEntry'
-} & ImportOperationData
+export function importCheckUtopiaRequirementAndFix(
+  id: string,
+  text: string,
+): ImportCheckUtopiaRequirementAndFix {
+  return {
+    type: 'checkUtopiaRequirementAndFix',
+    text: text,
+    id: id,
+  }
+}
 
 type ImportCheckUtopiaRequirements = {
   type: 'checkUtopiaRequirements'
@@ -123,20 +129,25 @@ export type ImportOperation =
   | ImportLoadBranch
   | ImportRefreshDependencies
   | ImportParseFiles
-  | ImportCreateStoryboard
   | ImportFetchDependency
-  | ImportCreatePackageJsonEntry
+  | ImportCheckUtopiaRequirementAndFix
   | ImportCheckUtopiaRequirements
 
 type ImportOperationType = ImportOperation['type']
 
 export type ImportOperationAction = 'add' | 'remove' | 'update' | 'replace'
 
+export const defaultParentTypes: Partial<Record<ImportOperationType, ImportOperationType>> = {
+  checkUtopiaRequirementAndFix: 'checkUtopiaRequirements',
+  fetchDependency: 'refreshDependencies',
+}
+
 function getParentArray(root: ImportOperation[], operation: ImportOperation): ImportOperation[] {
-  if (operation.parentOperationType == null) {
+  const parentOperationType = operation.parentOperationType ?? defaultParentTypes[operation.type]
+  if (parentOperationType == null) {
     return root
   }
-  const parentIndex = root.findIndex((op) => op.type === operation.parentOperationType)
+  const parentIndex = root.findIndex((op) => op.type === parentOperationType)
   if (parentIndex === -1) {
     return root
   }

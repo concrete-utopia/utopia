@@ -633,6 +633,10 @@ import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { applyValuesAtPath } from '../../canvas/commands/adjust-number-command'
 import { styleP } from '../../inspector/inspector-common'
 import { getUpdateOperationResult } from '../import-wizard/import-wizard-service'
+import {
+  notifyCheckingUtopiaRequirement,
+  notifyResolveUtopiaRequirement,
+} from '../import-wizard/utopia-requirements-service'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1638,16 +1642,25 @@ export function createStoryboardFileIfNecessary(
   projectContents: ProjectContentTreeRoot,
   createPlaceholder: 'create-placeholder' | 'skip-creating-placeholder',
 ): ProjectContentTreeRoot {
+  notifyCheckingUtopiaRequirement('storyboard', 'Checking for storyboard.js')
   const storyboardFile = getProjectFileByFilePath(projectContents, StoryboardFilePath)
   if (storyboardFile != null) {
+    notifyResolveUtopiaRequirement('storyboard', 'found', 'Storyboard.js found')
     return projectContents
   }
 
-  return (
+  const result =
     createStoryboardFileIfRemixProject(projectContents) ??
     createStoryboardFileIfMainComponentPresent(projectContents) ??
     createStoryboardFileWithPlaceholderContents(projectContents, createPlaceholder)
-  )
+
+  if (result == projectContents) {
+    notifyResolveUtopiaRequirement('storyboard', 'partial', 'Storyboard.js skipped')
+  } else {
+    notifyResolveUtopiaRequirement('storyboard', 'fixed', 'Storyboard.js created')
+  }
+
+  return result
 }
 
 // JS Editor Actions:

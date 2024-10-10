@@ -296,7 +296,6 @@ export async function fetchNodeModules(
             {
               type: 'fetchDependency',
               id: `${newDep.name}@${newDep.version}`,
-              parentOperationType: 'refreshDependencies',
               dependencyName: newDep.name,
               dependencyVersion: newDep.version,
             },
@@ -307,7 +306,6 @@ export async function fetchNodeModules(
           notifyOperationStarted({
             type: 'fetchDependency',
             id: `${newDep.name}@${newDep.version}`,
-            parentOperationType: 'refreshDependencies',
             dependencyName: newDep.name,
             dependencyVersion: newDep.version,
           })

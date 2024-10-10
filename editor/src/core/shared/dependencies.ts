@@ -114,7 +114,7 @@ function getDependenciesStatus(loadedPackagesStatus: PackageStatusMap) {
         ([_, status]) => status.status === 'error' || status.status === 'not-found',
       )
       ? 'error'
-      : 'partial'
+      : 'warn'
     : 'success'
 }
 

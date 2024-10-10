@@ -44,6 +44,10 @@ import {
   notifyOperationStarted,
   startImportWizard,
 } from '../../../../components/editor/import-wizard/import-wizard-service'
+import {
+  checkAndFixUtopiaRequirements,
+  resetUtopiaRequirementsResolutions,
+} from '../../../../components/editor/import-wizard/utopia-requirements-service'
 
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
@@ -158,45 +162,24 @@ export const updateProjectWithBranchContent =
             if (resetBranches) {
               newGithubData.branches = null
             }
-
             notifyOperationFinished({ type: 'loadBranch' }, 'success')
 
             notifyOperationStarted({ type: 'parseFiles' })
-
             // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
             // So that it will override any existing files that might already exist in the project when sending them to VS Code.
             const parseResults = await updateProjectContentsWithParseResults(
               workers,
               responseBody.branch.content,
             )
-
             notifyOperationFinished({ type: 'parseFiles' }, 'success')
 
-            notifyOperationStarted({ type: 'checkUtopiaRequirements' })
-            notifyOperationStarted({
-              type: 'createStoryboard',
-              parentOperationType: 'checkUtopiaRequirements',
-            })
-
+            resetUtopiaRequirementsResolutions()
             const parsedProjectContents = createStoryboardFileIfNecessary(
               parseResults,
               'create-placeholder',
             )
 
-            notifyOperationFinished(
-              { type: 'createStoryboard', parentOperationType: 'checkUtopiaRequirements' },
-              'success',
-            )
-            notifyOperationStarted({
-              type: 'createPackageJsonEntry',
-              parentOperationType: 'checkUtopiaRequirements',
-            })
-            // here will be the code to create package.json entry
-            notifyOperationFinished(
-              { type: 'createPackageJsonEntry', parentOperationType: 'checkUtopiaRequirements' },
-              'success',
-            )
-            notifyOperationFinished({ type: 'checkUtopiaRequirements' }, 'success')
+            const fixedParsedProjectContents = checkAndFixUtopiaRequirements(parsedProjectContents)
 
             // Update the editor with everything so that if anything else fails past this point
             // there's no loss of data from the user's perspective.
