@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import type { CanvasRectangle, CanvasVector, Size } from '../../../../core/shared/math-utils'
-import { size, windowPoint } from '../../../../core/shared/math-utils'
+import { canvasRectangle, size, windowPoint } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
@@ -25,6 +25,7 @@ import { useBoundingBox } from '../bounding-box-hooks'
 import { isZeroSizedElement } from '../outline-utils'
 import { createArrayWithLength } from '../../../../core/shared/array-utils'
 import { useGridData } from '../grid-controls'
+import { x } from 'tar'
 
 export interface GridGapControlProps {
   selectedElement: ElementPath
@@ -147,10 +148,16 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
   return (
     <div data-testid={GridGapControlTestId} style={{ pointerEvents: 'none', position: 'absolute' }}>
       {controlBounds.gaps.map(({ gap, bounds, axis, gapId }) => {
+        const boundsFixed = canvasRectangle({
+          x: axis === 'row' ? 0 : bounds.x,
+          y: axis === 'row' ? bounds.y : 0,
+          width: axis === 'row' ? 20 : bounds.width,
+          height: axis === 'row' ? bounds.height : 20,
+        })
         const gapControlProps = {
           mouseDownHandler: axisMouseDownHandler,
           gapId: gapId,
-          bounds: bounds,
+          bounds: boundsFixed,
           accentColor: accentColor,
           scale: scale,
           isDragging: isDragging,
@@ -309,8 +316,8 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
       style={{
         pointerEvents: 'all',
         position: 'absolute',
-        left: axis === 'row' ? 0 : bounds.x,
-        top: axis === 'row' ? bounds.y : 0,
+        left: bounds.x,
+        top: bounds.y,
         width: bounds.width,
         height: bounds.height,
         display: 'flex',
@@ -330,12 +337,10 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
           justifyContent: 'center',
           placeItems: 'center',
           gap: internalGrid.gap.value,
-          gridTemplateColumns: axis === 'row' ? internalGrid.gridTemplateColumns : '1fr',
-          gridTemplateRows: axis === 'column' ? internalGrid.gridTemplateRows : '1fr',
           position: 'relative',
         }}
       >
-        {createArrayWithLength(handles, (i) => (
+        {createArrayWithLength(1, (i) => (
           <GridGapHandle
             key={i}
             index={i}
