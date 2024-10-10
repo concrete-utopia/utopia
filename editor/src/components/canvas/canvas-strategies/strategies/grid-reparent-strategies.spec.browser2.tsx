@@ -23,6 +23,7 @@ import {
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
 
+// describe.only('grid reparent strategies', () => {
 describe('grid reparent strategies', () => {
   describe('reparent into a grid', () => {
     it('from the storyboard', async () => {

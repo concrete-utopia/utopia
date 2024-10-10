@@ -23,18 +23,21 @@ export interface DeleteProperties extends BaseCommand {
   type: 'DELETE_PROPERTIES'
   element: ElementPath
   properties: Array<PropertyPath>
+  propertiesToUnsetBehaviour: 'note-unset-properties' | 'remove-properties'
 }
 
 export function deleteProperties(
   whenToRun: WhenToRun,
   element: ElementPath,
   properties: Array<PropertyPath>,
+  propertiesToUnsetBehaviour: 'note-unset-properties' | 'remove-properties' = 'remove-properties',
 ): DeleteProperties {
   return {
     type: 'DELETE_PROPERTIES',
     whenToRun: whenToRun,
     element: element,
     properties: properties,
+    propertiesToUnsetBehaviour: propertiesToUnsetBehaviour,
   }
 }
 
@@ -71,7 +74,10 @@ function getPropertiesToUnsetPatches(
   editorState: EditorState,
   command: DeleteProperties,
 ): EditorStatePatch[] {
-  if (command.whenToRun === 'on-complete') {
+  if (
+    command.whenToRun === 'on-complete' ||
+    command.propertiesToUnsetBehaviour === 'remove-properties'
+  ) {
     return []
   }
 

@@ -18,10 +18,7 @@ import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import type { StyleInfo } from './canvas-types'
 import { CSSCursor } from './canvas-types'
-import {
-  cssNumberWithRenderedValue,
-  type CSSNumberWithRenderedValue,
-} from './controls/select-mode/controls-common'
+import type { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
 import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
 import type { Sides } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'

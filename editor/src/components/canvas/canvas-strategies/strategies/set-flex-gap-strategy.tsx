@@ -177,7 +177,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
 
       if (shouldTearOffGap) {
         return strategyApplicationResult(
-          [deleteProperties('always', selectedElement, [StyleGapProp])],
+          [deleteProperties('always', selectedElement, [StyleGapProp], 'note-unset-properties')],
           selectedElements,
         )
       }

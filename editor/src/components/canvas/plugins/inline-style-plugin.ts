@@ -42,6 +42,7 @@ export const InlineStylePlugin: StylePlugin = {
       }
     },
   normalizeFromInlineStyle: (editor, elementsToNormalize) => {
+    return editor
     return foldAndApplyCommandsSimple(
       editor,
       elementsToNormalize.map((element) =>
