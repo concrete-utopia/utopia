@@ -39,6 +39,14 @@ import type { ExistingAsset } from '../../../../components/editor/server'
 import { GithubOperations } from '.'
 import { assertNever } from '../../utils'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
+import {
+  notifyOperationFinished,
+  notifyOperationStarted,
+  startImportWizard,
+} from '../../import/import-operation-service'
+import { resetRequirementsResolutions } from '../../import/utopia-requirements-service'
+import { checkAndFixUtopiaRequirements } from '../../import/proejct-health-check/check-utopia-requirements'
+import { ImportOperationResult } from '../../import/import-operation-types'
 
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
@@ -115,6 +123,12 @@ export const updateProjectWithBranchContent =
     currentProjectContents: ProjectContentTreeRoot,
     initiator: GithubOperationSource,
   ): Promise<void> => {
+    startImportWizard(dispatch)
+    notifyOperationStarted({
+      type: 'loadBranch',
+      branchName: branchName,
+      githubRepo: githubRepo,
+    })
     await runGithubOperation(
       {
         name: 'loadBranch',
@@ -147,12 +161,25 @@ export const updateProjectWithBranchContent =
             if (resetBranches) {
               newGithubData.branches = null
             }
+            notifyOperationFinished({ type: 'loadBranch' }, ImportOperationResult.Success)
 
+            notifyOperationStarted({ type: 'parseFiles' })
             // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
             // So that it will override any existing files that might already exist in the project when sending them to VS Code.
-            const parsedProjectContents = createStoryboardFileIfNecessary(
-              await updateProjectContentsWithParseResults(workers, responseBody.branch.content),
+            const parseResults = await updateProjectContentsWithParseResults(
+              workers,
+              responseBody.branch.content,
+            )
+            notifyOperationFinished({ type: 'parseFiles' }, ImportOperationResult.Success)
+
+            resetRequirementsResolutions(dispatch)
+            const parsedProjectContentsInitial = createStoryboardFileIfNecessary(
+              parseResults,
               'create-placeholder',
+            )
+
+            const parsedProjectContents = checkAndFixUtopiaRequirements(
+              parsedProjectContentsInitial,
             )
 
             // Update the editor with everything so that if anything else fails past this point
@@ -180,6 +207,7 @@ export const updateProjectWithBranchContent =
             let dependenciesPromise: Promise<void> = Promise.resolve()
             const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
             if (packageJson != null && isTextFile(packageJson)) {
+              notifyOperationStarted({ type: 'refreshDependencies' })
               dependenciesPromise = refreshDependencies(
                 dispatch,
                 packageJson.fileContents.code,

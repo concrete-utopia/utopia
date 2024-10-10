@@ -1,4 +1,4 @@
-import type { EditorState } from './editor-state'
+import { emptyProjectRequirements, type EditorState } from './editor-state'
 
 export const EmptyEditorStateForKeysOnly: EditorState = {
   id: null,
@@ -157,6 +157,9 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   githubSettings: null as any,
   imageDragSessionState: null as any,
   githubOperations: [],
+  importOperations: [],
+  importWizardOpen: false,
+  projectRequirements: emptyProjectRequirements(),
   branchOriginContents: null,
   githubData: null as any,
   refreshingDependencies: false,

@@ -237,6 +237,9 @@ import type {
   ToggleDataCanCondense,
   UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
+  SetImportWizardOpen,
+  UpdateImportOperations,
+  UpdateProjectRequirements,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -257,6 +260,7 @@ import type {
   ColorSwatch,
   PostActionMenuData,
   ErrorBoundaryHandling,
+  ProjectRequirements,
 } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
 import type { TextProp } from '../../text-editor/text-editor'
@@ -268,6 +272,10 @@ import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { PageTemplate } from '../../canvas/remix/remix-utils'
 import type { Bounds } from 'utopia-vscode-common'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type {
+  ImportOperation,
+  ImportOperationAction,
+} from '../../../core/shared/import/import-operation-types'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1588,6 +1596,33 @@ export function setRefreshingDependencies(value: boolean): SetRefreshingDependen
 export function resetCanvas(): ResetCanvas {
   return {
     action: 'RESET_CANVAS',
+  }
+}
+
+export function updateImportOperations(
+  operations: ImportOperation[],
+  type: ImportOperationAction,
+): UpdateImportOperations {
+  return {
+    action: 'UPDATE_IMPORT_OPERATIONS',
+    operations: operations,
+    type: type,
+  }
+}
+
+export function updateProjectRequirements(
+  requirements: Partial<ProjectRequirements>,
+): UpdateProjectRequirements {
+  return {
+    action: 'UPDATE_PROJECT_REQUIREMENTS',
+    requirements: requirements,
+  }
+}
+
+export function setImportWizardOpen(open: boolean): SetImportWizardOpen {
+  return {
+    action: 'SET_IMPORT_WIZARD_OPEN',
+    open: open,
   }
 }
 

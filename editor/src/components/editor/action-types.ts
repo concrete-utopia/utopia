@@ -63,6 +63,7 @@ import type {
   ColorSwatch,
   PostActionMenuData,
   ErrorBoundaryHandling,
+  ProjectRequirements,
 } from './store/editor-state'
 import type { Notice } from '../common/notice'
 import type { LoginState } from '../../common/user'
@@ -87,6 +88,10 @@ import type { Optic } from '../../core/shared/optics/optics'
 import { makeOptic } from '../../core/shared/optics/optics'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { assertNever } from '../../core/shared/utils'
+import type {
+  ImportOperation,
+  ImportOperationAction,
+} from '../../core/shared/import/import-operation-types'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -997,6 +1002,22 @@ export interface UpdateGithubOperations {
   type: GithubOperationType
 }
 
+export interface UpdateImportOperations {
+  action: 'UPDATE_IMPORT_OPERATIONS'
+  operations: ImportOperation[]
+  type: ImportOperationAction
+}
+
+export interface UpdateProjectRequirements {
+  action: 'UPDATE_PROJECT_REQUIREMENTS'
+  requirements: Partial<ProjectRequirements>
+}
+
+export interface SetImportWizardOpen {
+  action: 'SET_IMPORT_WIZARD_OPEN'
+  open: boolean
+}
+
 export interface SetRefreshingDependencies {
   action: 'SET_REFRESHING_DEPENDENCIES'
   value: boolean
@@ -1354,6 +1375,9 @@ export type EditorAction =
   | UpdateAgainstGithub
   | SetImageDragSessionState
   | UpdateGithubOperations
+  | UpdateImportOperations
+  | UpdateProjectRequirements
+  | SetImportWizardOpen
   | UpdateBranchContents
   | SetRefreshingDependencies
   | ApplyCommandsAction
