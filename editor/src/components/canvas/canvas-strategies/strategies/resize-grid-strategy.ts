@@ -70,13 +70,13 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       type: 'pointer',
     },
     controlsToRender: [
-      {
-        control: GridRowColumnResizingControls,
-        props: { target: gridPath },
-        key: `grid-row-col-resize-controls-${EP.toString(gridPath)}`,
-        show: 'always-visible',
-        priority: 'top',
-      },
+      // {
+      //   control: GridRowColumnResizingControls,
+      //   props: { target: gridPath },
+      //   key: `grid-row-col-resize-controls-${EP.toString(gridPath)}`,
+      //   show: 'always-visible',
+      //   priority: 'top',
+      // },
       controlsForGridPlaceholders(gridPath),
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_AXIS_HANDLE', 1),

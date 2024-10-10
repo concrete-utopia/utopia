@@ -106,9 +106,9 @@ export const GridPanelsContainer = React.memo(() => {
         gridTemplateColumns: `[col] ${columnWidths[0]}px [col] ${columnWidths[1]}px [canvas] 1fr [col] ${columnWidths[2]}px [col] ${columnWidths[3]}px [end]`,
         gridTemplateRows: 'repeat(12, 1fr)',
         gridAutoFlow: 'dense',
-        paddingTop: GridPanelVerticalGapHalf + GridVerticalExtraPadding,
+        paddingTop: GridPanelVerticalGapHalf + GridVerticalExtraPadding + 20,
         paddingBottom: GridPanelVerticalGapHalf + GridVerticalExtraPadding,
-        paddingLeft: GridPanelHorizontalGapHalf + GridHorizontalExtraPadding,
+        paddingLeft: GridPanelHorizontalGapHalf + GridHorizontalExtraPadding + 20,
         paddingRight: GridPanelHorizontalGapHalf + GridHorizontalExtraPadding,
       }}
     >
