@@ -1854,10 +1854,10 @@ function gridPlaceholderWidthOrHeight(scale: number): string {
 export function controlsForGridPlaceholders(
   gridPath: ElementPath,
   whenToShow: WhenToShowControl = 'always-visible',
-): ControlWithProps<any> {
+): ControlWithProps<GridControlsProps> {
   return {
     control: GridControls,
-    props: { targets: [gridPath] },
+    props: { targets: [gridPath], visible: 'visible' },
     key: GridControlsKey(gridPath),
     show: whenToShow,
     priority: 'bottom',
