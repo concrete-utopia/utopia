@@ -230,23 +230,68 @@
       "isModule": false,
       "requires": []
     },
-    "my-package-with-package-root/src/deep-folder/moduleA.js": {
+    "/node_modules/module-with-exports-and-imports/package.json": {
+      "content": "{\"name\": \"module-with-exports-and-imports\", \"main\": \"index.main.js\", \"exports\": \"index.exports.js\", \"imports\": {\"#dep\": \"./dep.js\"}}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/module-with-exports-and-imports/index.main.js": {
       "content": "exports.cica = 'kitten';",
       "isModule": false,
       "requires": []
     },
-    "my-package-with-package-root/src/other-folder/moduleB.js": {
+    "/node_modules/module-with-exports-and-imports/dep.js": {
       "content": "exports.cica = 'kitten';",
       "isModule": false,
       "requires": []
     },
-    "my-package-with-package-root/index.js": {
+    "/node_modules/module-with-exports-and-imports-objects/package.json": {
+      "content": "{\"name\": \"module-with-exports-and-imports-objects\", \"main\": \"index.main.js\", \"exports\": {\".\": \"index.exports.js\", \"./submodule\": \"./src/submodule.js\"}, \"imports\": {\"#dep\": {\"default\": \"./dep.js\"}}}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/module-with-exports-and-imports-objects/index.main.js": {
       "content": "exports.cica = 'kitten';",
       "isModule": false,
       "requires": []
     },
-    "my-package-with-package-root/package.json": {
+    "/node_modules/module-with-exports-and-imports-objects/dep.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/module-with-exports-and-imports-objects/src/submodule.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/my-package-with-package-root/src/deep-folder/moduleA.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/my-package-with-package-root/src/other-folder/moduleB.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/my-package-with-package-root/index.js": {
+      "content": "exports.cica = 'kitten';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/my-package-with-package-root/package.json": {
       "content": "{\"name\": \"my-package-with-package-root\", \"main\": \".index.js\"}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/clsx/package.json": {
+      "content": "{\"name\": \"clsx\", \"main\": \"dist/clsx.js\", \"exports\": {\".\": {\"default\": { \"default\": \"./dist/clsx.js\"}}}}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/clsx/dist/clsx.js": {
+      "content": "exports.cica = 'kitten';",
       "isModule": false,
       "requires": []
     }
