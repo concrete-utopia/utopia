@@ -1069,6 +1069,7 @@ function resetUnpatchedEditorTransientFields(editor: EditorState): EditorState {
     canvas: {
       ...editor.canvas,
       elementsToRerender: 'rerender-all-elements',
+      propertiesToUnset: {},
     },
   }
 }
