@@ -40,7 +40,7 @@ export function getClassListFromParsedClassList(
         config ?? undefined,
       )
     })
-    .filter((part) => part != null && part?.length > 0)
+    .filter((part) => part != null && part.length > 0)
     .join(' ')
 }
 
