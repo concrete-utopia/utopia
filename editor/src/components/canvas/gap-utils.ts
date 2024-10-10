@@ -336,19 +336,31 @@ export function maybeFlexGapData(
   info: StyleInfo | null,
   element: ElementInstanceMetadata | null,
 ): FlexGapData | null {
-  if (element == null || info == null) {
+  if (
+    element == null ||
+    element.specialSizeMeasurements.display !== 'flex' ||
+    isLeft(element.element) ||
+    !isJSXElement(element.element.value) ||
+    info == null
+  ) {
     return null
   }
 
-  const gap = info.gap?.value
-  const renderedValuePx = element.specialSizeMeasurements.gap
-  if (gap == null || renderedValuePx == null) {
+  if (element.specialSizeMeasurements.justifyContent?.startsWith('space')) {
     return null
   }
+
+  const gap = element.specialSizeMeasurements.gap ?? 0
+  const gapFromReader = info.gap?.value
+
+  const flexDirection = element.specialSizeMeasurements.flexDirection ?? 'row'
 
   return {
-    value: cssNumberWithRenderedValue(gap, renderedValuePx),
-    direction: info.flexDirection?.value ?? 'row',
+    value: {
+      renderedValuePx: gap,
+      value: gapFromReader ?? null,
+    },
+    direction: flexDirection,
   }
 }
 
