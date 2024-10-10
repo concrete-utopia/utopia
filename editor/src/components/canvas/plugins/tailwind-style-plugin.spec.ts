@@ -4,7 +4,7 @@ import {
   getJSXElementFromProjectContents,
   StoryboardFilePath,
 } from '../../editor/store/editor-state'
-import { renderTestEditorWithCode, renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { TailwindPlugin } from './tailwind-style-plugin'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { TailwindConfigPath } from '../../../core/tailwind/tailwind-config'
