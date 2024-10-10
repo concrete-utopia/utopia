@@ -970,6 +970,7 @@ export function restoreEditorState(
       resizeOptions: currentEditor.canvas.resizeOptions,
       domWalkerAdditionalElementsToUpdate: currentEditor.canvas.domWalkerAdditionalElementsToUpdate,
       controls: currentEditor.canvas.controls,
+      propertiesToUnset: currentEditor.canvas.propertiesToUnset,
     },
     inspector: {
       visible: currentEditor.inspector.visible,

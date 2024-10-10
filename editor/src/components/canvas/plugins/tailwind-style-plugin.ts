@@ -1,7 +1,8 @@
 import * as TailwindClassParser from '@xengine/tailwindcss-class-parser'
-import type { JSXAttributesEntry } from 'utopia-shared/src/types'
+import type { JSExpression, JSXAttributesEntry } from 'utopia-shared/src/types'
 import { isLeft } from '../../../core/shared/either'
 import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
+import type { PropertiesToUnset } from '../../editor/store/editor-state'
 import {
   getElementFromProjectContents,
   getJSXElementFromProjectContents,
@@ -18,6 +19,7 @@ import type { StylePlugin } from './style-plugins'
 import type { WithPropertyTag } from '../canvas-types'
 import { withPropertyTag } from '../canvas-types'
 import type { Config } from 'tailwindcss/types/config'
+import { typedObjectKeys } from '../../../core/shared/object-utils'
 
 function parseTailwindProperty<T>(value: unknown, parse: Parser<T>): WithPropertyTag<T> | null {
   const parsed = parse(value, null)
@@ -59,6 +61,37 @@ function getTailwindClassMapping(classes: string[], config: Config | null) {
   return mapping
 }
 
+function getStylPropContents(
+  styleProp: JSExpression,
+): Array<{ key: string; value: unknown }> | null {
+  if (styleProp.type === 'ATTRIBUTE_NESTED_OBJECT') {
+    return mapDropNulls(
+      (c): { key: string; value: unknown } | null =>
+        c.type === 'PROPERTY_ASSIGNMENT' &&
+        c.value.type === 'ATTRIBUTE_VALUE' &&
+        typeof c.key === 'string'
+          ? { key: c.key, value: c.value.value }
+          : null,
+      styleProp.content,
+    )
+  }
+
+  if (styleProp.type === 'ATTRIBUTE_VALUE' && typeof styleProp.value === 'object') {
+    return mapDropNulls(
+      ([key, value]) => (typeof key !== 'object' ? null : { key, value }),
+      Object.entries(styleProp.value),
+    )
+  }
+
+  return null
+}
+
+function getRemoveUpdates(propertiesToUnset: PropertiesToUnset): UCL.ClassListUpdate[] {
+  return typedObjectKeys(propertiesToUnset).map((property) =>
+    UCL.remove(TailwindPropertyMapping[property]),
+  )
+}
+
 export const TailwindPlugin = (config: Config | null): StylePlugin => ({
   name: 'Tailwind',
   styleInfoFactory:
@@ -97,19 +130,15 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         return []
       }
 
-      const styleValue = styleAttribute.value
-      if (styleValue.type !== 'ATTRIBUTE_NESTED_OBJECT') {
+      const styleValue = getStylPropContents(styleAttribute.value)
+      if (styleValue == null) {
         return []
       }
 
       const styleProps = mapDropNulls(
         (c): { key: keyof typeof TailwindPropertyMapping; value: unknown } | null =>
-          c.type === 'PROPERTY_ASSIGNMENT' &&
-          c.value.type === 'ATTRIBUTE_VALUE' &&
-          isSupportedTailwindProperty(c.key)
-            ? { key: c.key, value: c.value.value }
-            : null,
-        styleValue.content,
+          isSupportedTailwindProperty(c.key) ? { key: c.key, value: c.value } : null,
+        styleValue,
       )
 
       const stylePropConversions = mapDropNulls(({ key, value }) => {
@@ -121,9 +150,11 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         return { property: TailwindPropertyMapping[key], value: valueString }
       }, styleProps)
 
+      const remo = getRemoveUpdates(editorState.canvas.propertiesToUnset)
+
       return [
         deleteProperties(
-          'always',
+          'on-complete',
           elementPath,
           Object.keys(TailwindPropertyMapping).map((prop) => PP.create('style', prop)),
         ),
@@ -132,6 +163,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
           elementPath,
           stylePropConversions.map(({ property, value }) => UCL.add({ property, value })),
         ),
+        updateClassListCommand('always', elementPath, remo),
       ]
     })
     if (commands.length === 0) {

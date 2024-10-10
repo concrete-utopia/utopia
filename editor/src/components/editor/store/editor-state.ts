@@ -869,6 +869,10 @@ export function internalClipboard(
   }
 }
 
+export interface PropertiesToUnset {
+  gap?: '0px'
+}
+
 export interface EditorStateCanvas {
   elementsToRerender: ElementsToRerender
   interactionSession: InteractionSession | null
@@ -890,6 +894,7 @@ export interface EditorStateCanvas {
   resizeOptions: ResizeOptions
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
   controls: EditorStateCanvasControls
+  propertiesToUnset: PropertiesToUnset
 }
 
 export function editorStateCanvas(
@@ -913,6 +918,7 @@ export function editorStateCanvas(
   resizeOpts: ResizeOptions,
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>,
   controls: EditorStateCanvasControls,
+  propertiesToUnset: Partial<PropertiesToUnset>,
 ): EditorStateCanvas {
   return {
     elementsToRerender: elementsToRerender,
@@ -935,6 +941,7 @@ export function editorStateCanvas(
     resizeOptions: resizeOpts,
     domWalkerAdditionalElementsToUpdate: domWalkerAdditionalElementsToUpdate,
     controls: controls,
+    propertiesToUnset: propertiesToUnset,
   }
 }
 
@@ -2629,6 +2636,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         parentOutlineHighlight: null,
         gridControlData: null,
       },
+      propertiesToUnset: {},
     },
     inspector: {
       visible: true,
@@ -3004,6 +3012,7 @@ export function editorModelFromPersistentModel(
         parentOutlineHighlight: null,
         gridControlData: null,
       },
+      propertiesToUnset: {},
     },
     inspector: {
       visible: true,

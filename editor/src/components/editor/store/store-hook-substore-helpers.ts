@@ -90,6 +90,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
       parentOutlineHighlight: null,
       gridControlData: null,
     },
+    propertiesToUnset: {},
   },
   inspector: {
     visible: true,
