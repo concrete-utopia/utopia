@@ -172,7 +172,7 @@ export const updateProjectWithBranchContent =
             )
             notifyOperationFinished({ type: 'parseFiles' }, ImportOperationResult.Success)
 
-            resetRequirementsResolutions()
+            resetRequirementsResolutions(dispatch)
             const parsedProjectContentsInitial = createStoryboardFileIfNecessary(
               parseResults,
               'create-placeholder',

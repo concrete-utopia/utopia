@@ -1,42 +1,46 @@
 import { importCheckRequirementAndFix, ImportOperationResult } from './import-operation-types'
 import { notifyOperationFinished, notifyOperationStarted } from './import-operation-service'
+import type { ProjectRequirements } from '../../../components/editor/store/editor-state'
+import {
+  emptyProjectRequirements,
+  RequirementResolutionStatus,
+  type ProjectRequirement,
+} from '../../../components/editor/store/editor-state'
+import type { EditorDispatch } from '../../../components/editor/action-types'
+import { updateProjectRequirements } from '../../../components/editor/actions/action-creators'
 
-let requirementsResolutions: Record<string, RequirementResolution> = {
-  storyboard: initialResolution(),
-  packageJsonEntries: initialResolution(),
-  language: initialResolution(),
-  reactVersion: initialResolution(),
-}
+let editorDispatch: EditorDispatch | null = null
 
-type Requirement = keyof typeof requirementsResolutions
-
-const initialTexts: Record<Requirement, string> = {
+const initialTexts: Record<ProjectRequirement, string> = {
   storyboard: 'Checking storyboard.js',
   packageJsonEntries: 'Checking package.json',
   language: 'Checking project language',
   reactVersion: 'Checking React version',
 }
 
-function initialResolution(): RequirementResolution {
-  return {
-    status: RequirementResolutionStatus.NotStarted,
-  }
-}
-
-export function resetRequirementsResolutions() {
-  requirementsResolutions = Object.fromEntries(
-    Object.keys(requirementsResolutions).map((key) => [key, initialResolution()]),
-  ) as Record<Requirement, RequirementResolution>
+export function resetRequirementsResolutions(dispatch: EditorDispatch) {
+  editorDispatch = dispatch
+  let projectRequirements = emptyProjectRequirements()
+  editorDispatch?.([updateProjectRequirements(projectRequirements)])
   notifyOperationStarted({
     type: 'checkRequirements',
-    children: Object.keys(requirementsResolutions).map((key) =>
-      importCheckRequirementAndFix(key as Requirement, initialTexts[key as Requirement]),
+    children: Object.keys(projectRequirements).map((key) =>
+      importCheckRequirementAndFix(
+        key as ProjectRequirement,
+        initialTexts[key as ProjectRequirement],
+      ),
     ),
   })
 }
 
-export function notifyCheckingRequirement(requirement: Requirement, text: string) {
-  requirementsResolutions[requirement].status = RequirementResolutionStatus.Pending
+export function notifyCheckingRequirement(requirement: ProjectRequirement, text: string) {
+  editorDispatch?.([
+    updateProjectRequirements({
+      [requirement]: {
+        status: RequirementResolutionStatus.Pending,
+      },
+    }),
+  ])
   notifyOperationStarted({
     type: 'checkRequirementAndFix',
     id: requirement,
@@ -45,16 +49,20 @@ export function notifyCheckingRequirement(requirement: Requirement, text: string
 }
 
 export function notifyResolveRequirement(
-  requirementName: Requirement,
+  requirementName: ProjectRequirement,
   resolution: RequirementResolutionResult,
   text: string,
   value?: string,
 ) {
-  requirementsResolutions[requirementName] = {
-    status: RequirementResolutionStatus.Done,
-    resolution: resolution,
-    value: value,
-  }
+  editorDispatch?.([
+    updateProjectRequirements({
+      [requirementName]: {
+        status: RequirementResolutionStatus.Done,
+        resolution: resolution,
+        value: value,
+      },
+    }),
+  ])
   const result =
     resolution === RequirementResolutionResult.Found ||
     resolution === RequirementResolutionResult.Fixed
@@ -71,13 +79,34 @@ export function notifyResolveRequirement(
     },
     result,
   )
-  const aggregatedDoneStatus = getAggregatedStatus()
-  if (aggregatedDoneStatus != null) {
-    notifyOperationFinished({ type: 'checkRequirements' }, aggregatedDoneStatus)
-  }
 }
 
-function getAggregatedStatus(): ImportOperationResult | null {
+export function updateRequirements(
+  existingRequirements: ProjectRequirements,
+  incomingRequirements: Partial<ProjectRequirements>,
+): ProjectRequirements {
+  let result = { ...existingRequirements }
+  for (const incomingRequirement of Object.keys(incomingRequirements)) {
+    const incomingRequirementName = incomingRequirement as ProjectRequirement
+    result[incomingRequirementName] = {
+      ...result[incomingRequirementName],
+      ...incomingRequirements[incomingRequirementName],
+    }
+  }
+
+  const aggregatedDoneStatus = getAggregatedStatus(result)
+  if (aggregatedDoneStatus != null) {
+    setTimeout(() => {
+      notifyOperationFinished({ type: 'checkRequirements' }, aggregatedDoneStatus)
+    }, 0)
+  }
+
+  return result
+}
+
+function getAggregatedStatus(
+  requirementsResolutions: ProjectRequirements,
+): ImportOperationResult | null {
   for (const resolution of Object.values(requirementsResolutions)) {
     if (resolution.status != RequirementResolutionStatus.Done) {
       return null
@@ -92,21 +121,9 @@ function getAggregatedStatus(): ImportOperationResult | null {
   return ImportOperationResult.Success
 }
 
-enum RequirementResolutionStatus {
-  NotStarted = 'not-started',
-  Pending = 'pending',
-  Done = 'done',
-}
-
 export enum RequirementResolutionResult {
   Found = 'found',
   Fixed = 'fixed',
   Partial = 'partial',
   Critical = 'critical',
-}
-
-type RequirementResolution = {
-  status: RequirementResolutionStatus
-  value?: string
-  resolution?: RequirementResolutionResult
 }

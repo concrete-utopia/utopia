@@ -179,6 +179,7 @@ export const githubSubstateKeys = [
   'githubOperations',
   'githubData',
   'importOperations',
+  'projectRequirements',
 ] as const
 export const emptyGithubSubstate = {
   editor: pick(githubSubstateKeys, EmptyEditorStateForKeysOnly),

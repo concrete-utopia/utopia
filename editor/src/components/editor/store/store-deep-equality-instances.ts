@@ -362,6 +362,8 @@ import type {
   EditorRemixConfig,
   ErrorBoundaryHandling,
   GridControlData,
+  ProjectRequirements,
+  RequirementResolution,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -374,6 +376,8 @@ import {
   newGithubData,
   renderedAtPropertyPath,
   renderedAtChildNode,
+  requirementResolution,
+  newProjectRequirements,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -4756,6 +4760,30 @@ export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<Project
     projectGithubSettings,
   )
 
+export const ProjectRequirementResolutionKeepDeepEquality: KeepDeepEqualityCall<RequirementResolution> =
+  combine3EqualityCalls(
+    (resolution) => resolution.status,
+    createCallWithTripleEquals(),
+    (resolution) => resolution.value,
+    createCallWithTripleEquals(),
+    (resolution) => resolution.resolution,
+    createCallWithTripleEquals(),
+    requirementResolution,
+  )
+
+export const ProjectRequirementsKeepDeepEquality: KeepDeepEqualityCall<ProjectRequirements> =
+  combine4EqualityCalls(
+    (requirements) => requirements.storyboard,
+    ProjectRequirementResolutionKeepDeepEquality,
+    (requirements) => requirements.packageJsonEntries,
+    ProjectRequirementResolutionKeepDeepEquality,
+    (requirements) => requirements.language,
+    ProjectRequirementResolutionKeepDeepEquality,
+    (requirements) => requirements.reactVersion,
+    ProjectRequirementResolutionKeepDeepEquality,
+    newProjectRequirements,
+  )
+
 export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileChanges> =
   combine3EqualityCalls(
     (settings) => settings.modified,
@@ -5379,6 +5407,16 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.importOperations,
   )
 
+  const importWizardOpenResults = BooleanKeepDeepEquality(
+    oldValue.importWizardOpen,
+    newValue.importWizardOpen,
+  )
+
+  const projectRequirementsResults = ProjectRequirementsKeepDeepEquality(
+    oldValue.projectRequirements,
+    newValue.projectRequirements,
+  )
+
   const branchContentsResults = nullableDeepEquality(ProjectContentTreeRootKeepDeepEquality())(
     oldValue.branchOriginContents,
     newValue.branchOriginContents,
@@ -5424,11 +5462,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   const sharingDialogOpenResults = BooleanKeepDeepEquality(
     oldValue.sharingDialogOpen,
     newValue.sharingDialogOpen,
-  )
-
-  const importWizardOpenResults = BooleanKeepDeepEquality(
-    oldValue.importWizardOpen,
-    newValue.importWizardOpen,
   )
 
   const remixConfigResults = RemixConfigKeepDeepEquality(
@@ -5506,6 +5539,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     imageDragSessionStateEqual.areEqual &&
     githubOperationsResults.areEqual &&
     importOperationsResults.areEqual &&
+    importWizardOpenResults.areEqual &&
+    projectRequirementsResults.areEqual &&
     branchContentsResults.areEqual &&
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
@@ -5517,7 +5552,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     forkingResults.areEqual &&
     collaboratorsResults.areEqual &&
     sharingDialogOpenResults.areEqual &&
-    importWizardOpenResults.areEqual &&
     remixConfigResults.areEqual
 
   if (areEqual) {
@@ -5606,6 +5640,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       collaboratorsResults.value,
       sharingDialogOpenResults.value,
       importWizardOpenResults.value,
+      projectRequirementsResults.value,
       remixConfigResults.value,
     )
 

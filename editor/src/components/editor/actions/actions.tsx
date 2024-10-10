@@ -354,6 +354,7 @@ import type {
   SetErrorBoundaryHandling,
   SetImportWizardOpen,
   UpdateImportOperations,
+  UpdateProjectRequirements,
 } from '../action-types'
 import { isAlignment, isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -637,6 +638,7 @@ import {
   notifyCheckingRequirement,
   notifyResolveRequirement,
   RequirementResolutionResult,
+  updateRequirements,
 } from '../../../core/shared/import/utopia-requirements-service'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
@@ -1042,6 +1044,8 @@ export function restoreEditorState(
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
     importOperations: currentEditor.importOperations,
+    projectRequirements: currentEditor.projectRequirements,
+    importWizardOpen: currentEditor.importWizardOpen,
     branchOriginContents: currentEditor.branchOriginContents,
     githubData: currentEditor.githubData,
     refreshingDependencies: currentEditor.refreshingDependencies,
@@ -1053,7 +1057,6 @@ export function restoreEditorState(
     forking: currentEditor.forking,
     collaborators: currentEditor.collaborators,
     sharingDialogOpen: currentEditor.sharingDialogOpen,
-    importWizardOpen: currentEditor.importWizardOpen,
     editorRemixConfig: currentEditor.editorRemixConfig,
   }
 }
@@ -2268,6 +2271,22 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       importOperations: resultImportOperations,
+    }
+  },
+  UPDATE_PROJECT_REQUIREMENTS: (
+    action: UpdateProjectRequirements,
+    editor: EditorModel,
+  ): EditorModel => {
+    const result = updateRequirements(editor.projectRequirements, action.requirements)
+    return {
+      ...editor,
+      projectRequirements: result,
+    }
+  },
+  SET_IMPORT_WIZARD_OPEN: (action: SetImportWizardOpen, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      importWizardOpen: action.open,
     }
   },
   SET_REFRESHING_DEPENDENCIES: (
@@ -6157,12 +6176,6 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       sharingDialogOpen: action.open,
-    }
-  },
-  SET_IMPORT_WIZARD_OPEN: (action: SetImportWizardOpen, editor: EditorModel): EditorModel => {
-    return {
-      ...editor,
-      importWizardOpen: action.open,
     }
   },
   SET_ERROR_BOUNDARY_HANDLING: (

@@ -63,6 +63,7 @@ import type {
   ColorSwatch,
   PostActionMenuData,
   ErrorBoundaryHandling,
+  ProjectRequirements,
 } from './store/editor-state'
 import type { Notice } from '../common/notice'
 import type { LoginState } from '../../common/user'
@@ -1007,6 +1008,11 @@ export interface UpdateImportOperations {
   type: ImportOperationAction
 }
 
+export interface UpdateProjectRequirements {
+  action: 'UPDATE_PROJECT_REQUIREMENTS'
+  requirements: Partial<ProjectRequirements>
+}
+
 export interface SetRefreshingDependencies {
   action: 'SET_REFRESHING_DEPENDENCIES'
   value: boolean
@@ -1370,6 +1376,8 @@ export type EditorAction =
   | SetImageDragSessionState
   | UpdateGithubOperations
   | UpdateImportOperations
+  | UpdateProjectRequirements
+  | SetImportWizardOpen
   | UpdateBranchContents
   | SetRefreshingDependencies
   | ApplyCommandsAction
@@ -1393,7 +1401,6 @@ export type EditorAction =
   | SetCollaborators
   | ExtractPropertyControlsFromDescriptorFiles
   | SetSharingDialogOpen
-  | SetImportWizardOpen
   | ResetOnlineState
   | IncreaseOnlineStateFailureCount
   | SetErrorBoundaryHandling

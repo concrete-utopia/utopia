@@ -190,6 +190,7 @@ import type { NavigatorRow } from '../../navigator/navigator-row'
 import type { FancyError } from '../../../core/shared/code-exec-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
 import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
+import type { RequirementResolutionResult } from '../../../core/shared/import/utopia-requirements-service'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1163,6 +1164,70 @@ export interface PullRequest {
   number: number
 }
 
+export interface RequirementResolution {
+  status: RequirementResolutionStatus
+  value?: string | null
+  resolution?: RequirementResolutionResult | null
+}
+
+export function requirementResolution(
+  status: RequirementResolutionStatus,
+  value?: string | null,
+  resolution?: RequirementResolutionResult | null,
+): RequirementResolution {
+  return {
+    status,
+    value,
+    resolution,
+  }
+}
+
+export interface ProjectRequirements {
+  storyboard: RequirementResolution
+  packageJsonEntries: RequirementResolution
+  language: RequirementResolution
+  reactVersion: RequirementResolution
+}
+
+export type ProjectRequirement = keyof ProjectRequirements
+
+export function newProjectRequirements(
+  storyboard: RequirementResolution,
+  packageJsonEntries: RequirementResolution,
+  language: RequirementResolution,
+  reactVersion: RequirementResolution,
+): ProjectRequirements {
+  return {
+    storyboard,
+    packageJsonEntries,
+    language,
+    reactVersion,
+  }
+}
+
+export enum RequirementResolutionStatus {
+  NotStarted = 'not-started',
+  Pending = 'pending',
+  Done = 'done',
+}
+
+export function emptyRequirementResolution(): RequirementResolution {
+  return {
+    status: RequirementResolutionStatus.NotStarted,
+    value: null,
+    resolution: null,
+  }
+}
+
+export function emptyProjectRequirements(): ProjectRequirements {
+  return newProjectRequirements(
+    emptyRequirementResolution(),
+    emptyRequirementResolution(),
+    emptyRequirementResolution(),
+    emptyRequirementResolution(),
+  )
+}
+
 export interface ProjectGithubSettings {
   targetRepository: GithubRepo | null
   originCommit: string | null
@@ -1454,6 +1519,7 @@ export interface EditorState {
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
   importOperations: Array<ImportOperation>
+  projectRequirements: ProjectRequirements
   githubData: GithubData
   refreshingDependencies: boolean
   colorSwatches: Array<ColorSwatch>
@@ -1551,6 +1617,7 @@ export function editorState(
   collaborators: Collaborator[],
   sharingDialogOpen: boolean,
   importWizardOpen: boolean,
+  projectRequirements: ProjectRequirements,
   remixConfig: EditorRemixConfig,
 ): EditorState {
   return {
@@ -1636,6 +1703,7 @@ export function editorState(
     collaborators: collaborators,
     sharingDialogOpen: sharingDialogOpen,
     importWizardOpen: importWizardOpen,
+    projectRequirements: projectRequirements,
     editorRemixConfig: remixConfig,
   }
 }
@@ -2719,6 +2787,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     collaborators: [],
     sharingDialogOpen: false,
     importWizardOpen: false,
+    projectRequirements: emptyProjectRequirements(),
     editorRemixConfig: {
       errorBoundaryHandling: 'ignore-error-boundaries',
     },
@@ -3088,6 +3157,7 @@ export function editorModelFromPersistentModel(
     collaborators: [],
     sharingDialogOpen: false,
     importWizardOpen: false,
+    projectRequirements: emptyProjectRequirements(),
     editorRemixConfig: {
       errorBoundaryHandling: 'ignore-error-boundaries',
     },

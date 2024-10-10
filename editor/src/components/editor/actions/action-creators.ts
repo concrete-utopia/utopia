@@ -239,6 +239,7 @@ import type {
   SetErrorBoundaryHandling,
   SetImportWizardOpen,
   UpdateImportOperations,
+  UpdateProjectRequirements,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -259,6 +260,7 @@ import type {
   ColorSwatch,
   PostActionMenuData,
   ErrorBoundaryHandling,
+  ProjectRequirements,
 } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
 import type { TextProp } from '../../text-editor/text-editor'
@@ -1608,6 +1610,22 @@ export function updateImportOperations(
   }
 }
 
+export function updateProjectRequirements(
+  requirements: Partial<ProjectRequirements>,
+): UpdateProjectRequirements {
+  return {
+    action: 'UPDATE_PROJECT_REQUIREMENTS',
+    requirements: requirements,
+  }
+}
+
+export function setImportWizardOpen(open: boolean): SetImportWizardOpen {
+  return {
+    action: 'SET_IMPORT_WIZARD_OPEN',
+    open: open,
+  }
+}
+
 export function setFilebrowserDropTarget(target: string | null): SetFilebrowserDropTarget {
   return {
     action: 'SET_FILEBROWSER_DROPTARGET',
@@ -1889,13 +1907,6 @@ export function extractPropertyControlsFromDescriptorFiles(
 export function setSharingDialogOpen(open: boolean): SetSharingDialogOpen {
   return {
     action: 'SET_SHARING_DIALOG_OPEN',
-    open: open,
-  }
-}
-
-export function setImportWizardOpen(open: boolean): SetImportWizardOpen {
-  return {
-    action: 'SET_IMPORT_WIZARD_OPEN',
     open: open,
   }
 }
