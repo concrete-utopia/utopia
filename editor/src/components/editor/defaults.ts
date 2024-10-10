@@ -171,6 +171,28 @@ export function defaultButtonElement(uid: string): JSXElement {
   )
 }
 
+export function defaultGridElement(uid: string): JSXElement {
+  return jsxElement(
+    jsxElementName('div', []),
+    uid,
+    jsxAttributesFromMap({
+      'data-uid': jsExpressionValue(uid, emptyComments),
+      style: jsExpressionValue(
+        {
+          position: 'absolute',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gridTemplateRows: '1fr 1fr 1fr',
+          gap: 10,
+          padding: 10,
+        },
+        emptyComments,
+      ),
+    }),
+    [],
+  )
+}
+
 export function defaultFlexRowOrColStyle(): JSExpression {
   return jsExpressionValue(
     {
