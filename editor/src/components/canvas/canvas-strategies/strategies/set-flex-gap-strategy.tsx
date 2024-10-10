@@ -95,7 +95,11 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const flexGap = maybeFlexGapData(canvasState.startingMetadata, selectedElement)
+  const flexGap = maybeFlexGapData(
+    canvasState.styleInfoReader(selectedElement),
+    MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement),
+  )
+
   if (flexGap == null) {
     return null
   }
