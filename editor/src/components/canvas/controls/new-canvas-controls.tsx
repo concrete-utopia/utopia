@@ -74,6 +74,8 @@ import { NO_OP } from '../../../core/shared/utils'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
+import { GridControls } from './grid-controls'
+import { getAllGrids } from '../canvas-strategies/strategies/grid-helpers'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -313,6 +315,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     autoFocusedPaths,
     filePathMappings,
     propertyControlsInfo,
+    grids,
   } = useEditorState(
     Substores.fullStore,
     (store) => {
@@ -333,6 +336,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         autoFocusedPaths: store.derived.autoFocusedPaths,
         filePathMappings: store.derived.filePathMappings,
         propertyControlsInfo: store.editor.propertyControlsInfo,
+        grids: isDragInteractionActive(store.editor) ? getAllGrids(store.editor.jsxMetadata) : [],
       }
     },
     'NewCanvasControlsInner',
@@ -596,6 +600,14 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                   isSelectOrInsertMode(editorMode) &&
                     !EP.multiplePathsAllWithTheSameUID(localSelectedViews),
                   <>
+                    {when(
+                      dragInteractionActive,
+                      <RenderControlMemoized
+                        key={'grids'}
+                        control={GridControls.control as React.FC<{}>}
+                        propsForControl={{ targets: grids, visible: 'hidden' }}
+                      />,
+                    )}
                     {strategyControls.map((c) => (
                       <RenderControlMemoized
                         key={c.key}
