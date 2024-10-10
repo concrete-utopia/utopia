@@ -22,6 +22,7 @@ import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
+import type { FlexGapData } from '../../gap-utils'
 import {
   cursorFromFlexDirection,
   gapControlBoundsFromMetadata,
@@ -132,7 +133,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     selectedElement,
   )
 
-  const flexGap = useEditorState(
+  const flexGapFromEditor = useEditorState(
     Substores.fullStore,
     (store) =>
       getFlexGapData(
@@ -146,19 +147,24 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     'FlexGapControl flexGap',
   )
 
-  if (flexGap == null) {
-    return null
-  }
-
-  const flexGapValue = updatedGapValue ?? flexGap.value
-
-  const controlBounds = gapControlBoundsFromMetadata(
-    metadata,
-    selectedElement,
-    children.map((c) => c.elementPath),
-    flexGapValue.renderedValuePx,
-    flexGap.direction,
+  const flexGap: FlexGapData | null = optionalMap(
+    (gap) => ({
+      direction: gap.direction,
+      value: updatedGapValue ?? gap.value,
+    }),
+    flexGapFromEditor,
   )
+
+  const controlBounds =
+    flexGapFromEditor == null || flexGap == null
+      ? null
+      : gapControlBoundsFromMetadata(
+          metadata,
+          selectedElement,
+          children.map((c) => c.elementPath),
+          flexGap.value.renderedValuePx,
+          flexGapFromEditor.direction,
+        )
 
   const contentArea = React.useMemo((): Size => {
     function valueForDimension(
@@ -177,7 +183,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
       }, children),
     )
 
-    if (bounds == null) {
+    if (bounds == null || flexGap == null) {
       return zeroSize
     } else {
       return {
@@ -185,17 +191,17 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
           ['column', 'column-reverse'],
           flexGap.direction,
           bounds.width,
-          flexGapValue.renderedValuePx,
+          flexGap.value.renderedValuePx,
         ),
         height: valueForDimension(
           ['row', 'row-reverse'],
           flexGap.direction,
           bounds.height,
-          flexGapValue.renderedValuePx,
+          flexGap.value.renderedValuePx,
         ),
       }
     }
-  }, [children, flexGap.direction, flexGapValue.renderedValuePx, metadata])
+  }, [children, flexGap, metadata])
 
   const justifyContent = React.useMemo(() => {
     return (
@@ -211,12 +217,16 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     )
   }, [metadata, selectedElement])
 
+  if (flexGap == null || controlBounds == null) {
+    return null
+  }
+
   return (
     <CanvasOffsetWrapper>
       <div data-testid={FlexGapControlTestId} style={{ pointerEvents: 'none' }}>
         {controlBounds.map(({ bounds, path: p }) => {
           const path = EP.toString(p)
-          const valueToShow = fallbackEmptyValue(flexGapValue)
+          const valueToShow = fallbackEmptyValue(flexGap.value)
           return (
             <GapControlSegment
               key={path}
