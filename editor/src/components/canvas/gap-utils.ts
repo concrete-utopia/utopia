@@ -207,12 +207,6 @@ export function gridGapControlBoundsFromMetadata(
     return emptyResult
   }
 
-  const parentGridBounds = grid.globalFrame
-
-  if (parentGridBounds == null || isInfinityRectangle(parentGridBounds)) {
-    return emptyResult
-  }
-
   const gridRows = gridRowColumnInfo.rows
   const gridColumns = gridRowColumnInfo.columns
   const gridTemplateRows = getNullableAutoOrTemplateBaseString(gridRowColumnInfo.gridTemplateRows)
@@ -226,8 +220,8 @@ export function gridGapControlBoundsFromMetadata(
     return emptyResult
   }
   const allCellsBound = canvasRectangle({
-    x: gridCellBounds[0][0].x - parentGridBounds.x,
-    y: gridCellBounds[0][0].y - parentGridBounds.y,
+    x: gridCellBounds[0][0].x,
+    y: gridCellBounds[0][0].y,
     width:
       gridCellBounds[0][gridCellBounds[0].length - 1].x +
       gridCellBounds[0][gridCellBounds[0].length - 1].width -
@@ -247,7 +241,7 @@ export function gridGapControlBoundsFromMetadata(
       gapId: `${EP.toString(grid.elementPath)}-row-gap-${i}`,
       bounds: canvasRectangle({
         x: allCellsBound.x,
-        y: firstChildBounds.y + firstChildBounds.height - parentGridBounds.y,
+        y: firstChildBounds.y + firstChildBounds.height,
         width: allCellsBound.width,
         height: secondChildBounds.y - firstChildBounds.y - firstChildBounds.height,
       }),
@@ -264,7 +258,7 @@ export function gridGapControlBoundsFromMetadata(
     return {
       gapId: `${EP.toString(grid.elementPath)}-column-gap-${i}`,
       bounds: canvasRectangle({
-        x: firstChildBounds.x + firstChildBounds.width - parentGridBounds.x,
+        x: firstChildBounds.x + firstChildBounds.width,
         y: allCellsBound.y,
         width: secondChildBounds.x - firstChildBounds.x - firstChildBounds.width,
         height: allCellsBound.height,

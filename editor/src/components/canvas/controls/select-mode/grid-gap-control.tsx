@@ -134,21 +134,6 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
     return null
   }
 
-  const controlRef = useBoundingBox(
-    [selectedElement],
-    (ref, safeGappedBoundingBox, realBoundingBox) => {
-      if (isZeroSizedElement(realBoundingBox)) {
-        ref.current.style.display = 'none'
-      } else {
-        ref.current.style.display = 'block'
-        ref.current.style.left = safeGappedBoundingBox.x + 'px'
-        ref.current.style.top = safeGappedBoundingBox.y + 'px'
-        ref.current.style.width = safeGappedBoundingBox.width + 'px'
-        ref.current.style.height = safeGappedBoundingBox.height + 'px'
-      }
-    },
-  )
-
   const gridGapRow = updatedGapValueRow ?? gridGap.row
   const gridGapColumn = updatedGapValueColumn ?? gridGap.column
 
@@ -160,59 +145,58 @@ export const GridGapControl = controlForStrategyMemoized<GridGapControlProps>((p
   })
 
   return (
-    <CanvasOffsetWrapper>
-      <div
-        data-testid={GridGapControlTestId}
-        style={{ pointerEvents: 'none', position: 'absolute' }}
-        ref={controlRef}
-      >
-        {controlBounds.gaps.map(({ gap, bounds, axis, gapId }) => {
-          const gapControlProps = {
-            mouseDownHandler: axisMouseDownHandler,
-            gapId: gapId,
-            bounds: bounds,
-            accentColor: accentColor,
-            scale: scale,
-            isDragging: isDragging,
-            axis: axis,
-            gapValue: gap,
-            internalGrid: {
-              gridTemplateRows: controlBounds.gridTemplateRows,
-              gridTemplateColumns: controlBounds.gridTemplateColumns,
-              gap: axis === 'row' ? controlBounds.gapValues.column : controlBounds.gapValues.row,
-            },
-            elementHovered: elementHovered,
-            handles: axis === 'row' ? controlBounds.columns : controlBounds.rows,
-          }
-          if (axis === 'row') {
-            return (
-              <GapControlSegment
-                {...gapControlProps}
-                key={gapId}
-                onMouseDown={rowMouseDownHandler}
-                gapHoverStart={rowControlHoverStart}
-                gapHoverEnd={rowControlHoverEnd}
-                onHandleHoverStart={rowAxisHandleHoverStart}
-                onHandleHoverEnd={rowAxisHandleHoverEnd}
-                backgroundShown={rowBackgroundShown || rowAxisHandleHovererd}
-              />
-            )
-          }
-          return (
-            <GapControlSegment
-              {...gapControlProps}
-              key={gapId}
-              onMouseDown={columnMouseDownHandler}
-              gapHoverStart={columnControlHoverStart}
-              gapHoverEnd={columnControlHoverEnd}
-              onHandleHoverStart={columnAxisHandleHoverStart}
-              onHandleHoverEnd={columnAxisHandleHoverEnd}
-              backgroundShown={columnBackgroundShown || columnAxisHandleHovererd}
-            />
-          )
-        })}
-      </div>
-    </CanvasOffsetWrapper>
+    <div data-testid={GridGapControlTestId} style={{ pointerEvents: 'none', position: 'absolute' }}>
+      {controlBounds.gaps.map(({ gap, bounds, axis, gapId }) => {
+        const gapControlProps = {
+          mouseDownHandler: axisMouseDownHandler,
+          gapId: gapId,
+          bounds: bounds,
+          accentColor: accentColor,
+          scale: scale,
+          isDragging: isDragging,
+          axis: axis,
+          gapValue: gap,
+          internalGrid: {
+            gridTemplateRows: controlBounds.gridTemplateRows,
+            gridTemplateColumns: controlBounds.gridTemplateColumns,
+            gap: axis === 'row' ? controlBounds.gapValues.column : controlBounds.gapValues.row,
+          },
+          elementHovered: elementHovered,
+          handles: axis === 'row' ? controlBounds.columns : controlBounds.rows,
+        }
+        return (
+          <React.Fragment key={gapId}>
+            {axis === 'row' ? (
+              <CanvasOffsetWrapper limitAxis={'y'}>
+                <GapControlSegment
+                  {...gapControlProps}
+                  key={gapId}
+                  onMouseDown={rowMouseDownHandler}
+                  gapHoverStart={rowControlHoverStart}
+                  gapHoverEnd={rowControlHoverEnd}
+                  onHandleHoverStart={rowAxisHandleHoverStart}
+                  onHandleHoverEnd={rowAxisHandleHoverEnd}
+                  backgroundShown={rowBackgroundShown || rowAxisHandleHovererd}
+                />
+              </CanvasOffsetWrapper>
+            ) : (
+              <CanvasOffsetWrapper limitAxis={'x'}>
+                <GapControlSegment
+                  {...gapControlProps}
+                  key={gapId}
+                  onMouseDown={columnMouseDownHandler}
+                  gapHoverStart={columnControlHoverStart}
+                  gapHoverEnd={columnControlHoverEnd}
+                  onHandleHoverStart={columnAxisHandleHoverStart}
+                  onHandleHoverEnd={columnAxisHandleHoverEnd}
+                  backgroundShown={columnBackgroundShown || columnAxisHandleHovererd}
+                />
+              </CanvasOffsetWrapper>
+            )}
+          </React.Fragment>
+        )
+      })}
+    </div>
   )
 })
 
@@ -325,8 +309,8 @@ const GapControlSegment = React.memo<GridGapControlSegmentProps>((props) => {
       style={{
         pointerEvents: 'all',
         position: 'absolute',
-        left: bounds.x,
-        top: bounds.y,
+        left: axis === 'row' ? 0 : bounds.x,
+        top: axis === 'row' ? bounds.y : 0,
         width: bounds.width,
         height: bounds.height,
         display: 'flex',
@@ -402,10 +386,10 @@ function GridGapHandle({
   )
   const colorTheme = useColorTheme()
   const shouldShowIndicator = !isDragging && indicatorShown === index
-  let shouldShowHandle = !isDragging && gapIsHovered
+  let shouldShowHandle = true // !isDragging && gapIsHovered
   // show the handle also if the gap is too narrow to hover
   if (!gapIsHovered && !backgroundShown) {
-    shouldShowHandle = elementHovered && gapValue.value <= GapHandleGapWidthThreshold
+    shouldShowHandle = true // elementHovered && gapValue.value <= GapHandleGapWidthThreshold
   }
   const handleOpacity = gapIsHovered ? 1 : 0.3
 

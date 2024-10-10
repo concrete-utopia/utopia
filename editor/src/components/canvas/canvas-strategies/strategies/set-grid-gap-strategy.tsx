@@ -115,6 +115,7 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
     },
     key: 'grid-gap-resize-control',
     show: 'visible-except-when-other-strategy-is-active',
+    priority: 'top',
   })
 
   const maybeIndicatorProps = gridGapValueIndicatorProps(interactionSession, gridGap)
