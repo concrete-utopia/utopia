@@ -1520,6 +1520,7 @@ export interface EditorState {
   githubOperations: Array<GithubOperation>
   importOperations: Array<ImportOperation>
   projectRequirements: ProjectRequirements
+  importWizardOpen: boolean
   githubData: GithubData
   refreshingDependencies: boolean
   colorSwatches: Array<ColorSwatch>
@@ -1530,7 +1531,6 @@ export interface EditorState {
   forking: boolean
   collaborators: Collaborator[]
   sharingDialogOpen: boolean
-  importWizardOpen: boolean
   editorRemixConfig: EditorRemixConfig
 }
 
@@ -1605,6 +1605,8 @@ export function editorState(
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
   importOperations: Array<ImportOperation>,
+  importWizardOpen: boolean,
+  projectRequirements: ProjectRequirements,
   branchOriginContents: ProjectContentTreeRoot | null,
   githubData: GithubData,
   refreshingDependencies: boolean,
@@ -1616,8 +1618,6 @@ export function editorState(
   forking: boolean,
   collaborators: Collaborator[],
   sharingDialogOpen: boolean,
-  importWizardOpen: boolean,
-  projectRequirements: ProjectRequirements,
   remixConfig: EditorRemixConfig,
 ): EditorState {
   return {
@@ -1692,6 +1692,8 @@ export function editorState(
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
     importOperations: importOperations,
+    importWizardOpen: importWizardOpen,
+    projectRequirements: projectRequirements,
     githubData: githubData,
     refreshingDependencies: refreshingDependencies,
     colorSwatches: colorSwatches,
@@ -1702,8 +1704,6 @@ export function editorState(
     forking: forking,
     collaborators: collaborators,
     sharingDialogOpen: sharingDialogOpen,
-    importWizardOpen: importWizardOpen,
-    projectRequirements: projectRequirements,
     editorRemixConfig: remixConfig,
   }
 }
@@ -2772,6 +2772,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     imageDragSessionState: notDragging(),
     githubOperations: [],
     importOperations: [],
+    importWizardOpen: false,
+    projectRequirements: emptyProjectRequirements(),
     branchOriginContents: null,
     githubData: emptyGithubData(),
     refreshingDependencies: false,
@@ -2786,8 +2788,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     forking: false,
     collaborators: [],
     sharingDialogOpen: false,
-    importWizardOpen: false,
-    projectRequirements: emptyProjectRequirements(),
     editorRemixConfig: {
       errorBoundaryHandling: 'ignore-error-boundaries',
     },
@@ -3142,6 +3142,8 @@ export function editorModelFromPersistentModel(
     imageDragSessionState: notDragging(),
     githubOperations: [],
     importOperations: [],
+    importWizardOpen: false,
+    projectRequirements: emptyProjectRequirements(),
     refreshingDependencies: false,
     branchOriginContents: null,
     githubData: emptyGithubData(),
@@ -3156,8 +3158,6 @@ export function editorModelFromPersistentModel(
     forking: false,
     collaborators: [],
     sharingDialogOpen: false,
-    importWizardOpen: false,
-    projectRequirements: emptyProjectRequirements(),
     editorRemixConfig: {
       errorBoundaryHandling: 'ignore-error-boundaries',
     },

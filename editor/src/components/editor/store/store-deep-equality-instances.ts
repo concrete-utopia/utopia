@@ -4784,6 +4784,21 @@ export const ProjectRequirementsKeepDeepEquality: KeepDeepEqualityCall<ProjectRe
     newProjectRequirements,
   )
 
+export const ImportOperationKeepDeepEquality: KeepDeepEqualityCall<ImportOperation> = (
+  oldValue,
+  newValue,
+) => {
+  if (oldValue.type !== newValue.type) {
+    return keepDeepEqualityResult(newValue, false)
+  } else if (oldValue.id !== newValue.id) {
+    return keepDeepEqualityResult(newValue, false)
+  }
+  return keepDeepEqualityResult(oldValue, true)
+}
+
+export const ImportOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<ImportOperation>> =
+  arrayDeepEquality(ImportOperationKeepDeepEquality)
+
 export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileChanges> =
   combine3EqualityCalls(
     (settings) => settings.modified,
@@ -4854,23 +4869,8 @@ export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperati
   return keepDeepEqualityResult(oldValue, true)
 }
 
-export const ImportOperationKeepDeepEquality: KeepDeepEqualityCall<ImportOperation> = (
-  oldValue,
-  newValue,
-) => {
-  if (oldValue.type !== newValue.type) {
-    return keepDeepEqualityResult(newValue, false)
-  } else if (oldValue.id !== newValue.id) {
-    return keepDeepEqualityResult(newValue, false)
-  }
-  return keepDeepEqualityResult(oldValue, true)
-}
-
 export const GithubOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<GithubOperation>> =
   arrayDeepEquality(GithubOperationKeepDeepEquality)
-
-export const ImportOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<ImportOperation>> =
-  arrayDeepEquality(ImportOperationKeepDeepEquality)
 
 export const ColorSwatchDeepEquality: KeepDeepEqualityCall<ColorSwatch> = combine2EqualityCalls(
   (c) => c.id,
@@ -5628,6 +5628,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,
       importOperationsResults.value,
+      importWizardOpenResults.value,
+      projectRequirementsResults.value,
       branchContentsResults.value,
       githubDataResults.value,
       refreshingDependenciesResults.value,
@@ -5639,8 +5641,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       forkingResults.value,
       collaboratorsResults.value,
       sharingDialogOpenResults.value,
-      importWizardOpenResults.value,
-      projectRequirementsResults.value,
       remixConfigResults.value,
     )
 

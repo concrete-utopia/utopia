@@ -1013,6 +1013,11 @@ export interface UpdateProjectRequirements {
   requirements: Partial<ProjectRequirements>
 }
 
+export interface SetImportWizardOpen {
+  action: 'SET_IMPORT_WIZARD_OPEN'
+  open: boolean
+}
+
 export interface SetRefreshingDependencies {
   action: 'SET_REFRESHING_DEPENDENCIES'
   value: boolean
@@ -1191,11 +1196,6 @@ export interface ExtractPropertyControlsFromDescriptorFiles {
 
 export interface SetSharingDialogOpen {
   action: 'SET_SHARING_DIALOG_OPEN'
-  open: boolean
-}
-
-export interface SetImportWizardOpen {
-  action: 'SET_IMPORT_WIZARD_OPEN'
   open: boolean
 }
 
