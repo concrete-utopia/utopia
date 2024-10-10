@@ -40,7 +40,6 @@ import {
   pointsEqual,
   scaleRect,
   windowPoint,
-  zeroRectangle,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import {
@@ -89,7 +88,6 @@ import { windowToCanvasCoordinates } from '../dom-lookup'
 import type { Axis } from '../gap-utils'
 import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { CanvasLabel } from './select-mode/controls-common'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import type { GridCellCoordinates } from '../canvas-strategies/strategies/grid-cell-bounds'
 import { gridCellTargetId } from '../canvas-strategies/strategies/grid-cell-bounds'
@@ -662,9 +660,10 @@ export const GridControlsKey = (gridPath: ElementPath) => `grid-controls-${EP.to
 
 export interface GridControlProps {
   grid: GridData
+  visible: 'visible' | 'hidden'
 }
 
-export const GridControl = React.memo<GridControlProps>(({ grid }) => {
+export const GridControl = React.memo<GridControlProps>(({ grid, visible }) => {
   const dispatch = useDispatch()
   const controls = useAnimationControls()
   const colorTheme = useColorTheme()
@@ -916,6 +915,7 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
       grid.padding == null
         ? 0
         : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
+    opacity: visible === 'visible' ? 1 : 0,
   }
 
   // Gap needs to be set only if the other two are not present or we'll have rendering issues
@@ -1126,38 +1126,47 @@ GridControl.displayName = 'GridControl'
 
 export interface GridControlsProps {
   targets: ElementPath[]
+  visible: 'visible' | 'hidden'
 }
 
-export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ targets }) => {
-  const targetRootCell = useEditorState(
-    Substores.canvas,
-    (store) => store.editor.canvas.controls.gridControlData?.rootCell ?? null,
-    'GridControls targetRootCell',
-  )
+export const GridControls = controlForStrategyMemoized<GridControlsProps>(
+  ({ targets, visible }) => {
+    const targetRootCell = useEditorState(
+      Substores.canvas,
+      (store) => store.editor.canvas.controls.gridControlData?.rootCell ?? null,
+      'GridControls targetRootCell',
+    )
 
-  const hoveredGrids = useEditorState(
-    Substores.canvas,
-    (store) => stripNulls([store.editor.canvas.controls.gridControlData?.grid]),
-    'GridControls hoveredGrids',
-  )
+    const hoveredGrids = useEditorState(
+      Substores.canvas,
+      (store) => stripNulls([store.editor.canvas.controls.gridControlData?.grid]),
+      'GridControls hoveredGrids',
+    )
 
-  const grids = useGridData(uniqBy([...targets, ...hoveredGrids], (a, b) => EP.pathsEqual(a, b)))
+    const grids = useGridData(uniqBy([...targets, ...hoveredGrids], (a, b) => EP.pathsEqual(a, b)))
 
-  if (grids.length === 0) {
-    return null
-  }
+    if (grids.length === 0) {
+      return null
+    }
 
-  return (
-    <div id={'grid-controls'}>
-      <CanvasOffsetWrapper>
-        {grids.map((grid) => {
-          return <GridControl key={`grid-control-${EP.toString(grid.elementPath)}`} grid={grid} />
-        })}
-        <AbsoluteDistanceIndicators targetRootCell={targetRootCell} />
-      </CanvasOffsetWrapper>
-    </div>
-  )
-})
+    return (
+      <div id={'grid-controls'}>
+        <CanvasOffsetWrapper>
+          {grids.map((grid) => {
+            return (
+              <GridControl
+                key={`grid-control-${EP.toString(grid.elementPath)}`}
+                grid={grid}
+                visible={visible ?? 'visible'}
+              />
+            )
+          })}
+          <AbsoluteDistanceIndicators targetRootCell={targetRootCell} />
+        </CanvasOffsetWrapper>
+      </div>
+    )
+  },
+)
 
 const MIN_INDICATORS_DISTANCE = 32 // px
 

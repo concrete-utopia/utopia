@@ -45,6 +45,7 @@ import {
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { showGridControls } from '../../commands/show-grid-controls-command'
+import { memoize } from '../../../../core/shared/memoize'
 
 export function runGridRearrangeMove(
   targetElement: ElementPath,
@@ -812,4 +813,12 @@ function getOriginalElementGridConfiguration(
     originalCellBounds,
     mouseCellPosInOriginalElement,
   }
+}
+
+export const getAllGrids = memoize(getAllGridsInner, { maxSize: 1 })
+
+function getAllGridsInner(jsxMetadata: ElementInstanceMetadataMap): Array<ElementPath> {
+  return Object.keys(jsxMetadata)
+    .filter((key) => MetadataUtils.isGridLayoutedContainer(jsxMetadata[key]))
+    .map(EP.fromString)
 }
