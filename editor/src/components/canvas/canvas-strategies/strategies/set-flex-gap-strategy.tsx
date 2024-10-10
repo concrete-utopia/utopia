@@ -95,7 +95,11 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const flexGap = maybeFlexGapData(canvasState.startingMetadata, selectedElement)
+  const flexGap = maybeFlexGapData(
+    canvasState.styleInfoReader(selectedElement),
+    MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement),
+  )
+
   if (flexGap == null) {
     return null
   }
@@ -143,7 +147,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
         control: FloatingIndicator,
         props: {
           ...props,
-          color: colorTheme.brandNeonPink.value,
+          color: colorTheme.brandNeonOrange.value,
         },
         key: 'padding-value-indicator-control',
         show: 'visible-except-when-other-strategy-is-active',

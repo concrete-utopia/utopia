@@ -16,6 +16,7 @@ import type { CanvasRectangle, CanvasVector, Size } from '../../core/shared/math
 import { canvasRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
+import type { StyleInfo } from './canvas-types'
 import { CSSCursor } from './canvas-types'
 import type { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
 import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
@@ -329,15 +330,15 @@ export interface FlexGapData {
 }
 
 export function maybeFlexGapData(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
+  info: StyleInfo | null,
+  element: ElementInstanceMetadata | null,
 ): FlexGapData | null {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (
     element == null ||
     element.specialSizeMeasurements.display !== 'flex' ||
     isLeft(element.element) ||
-    !isJSXElement(element.element.value)
+    !isJSXElement(element.element.value) ||
+    info == null
   ) {
     return null
   }
@@ -347,18 +348,14 @@ export function maybeFlexGapData(
   }
 
   const gap = element.specialSizeMeasurements.gap ?? 0
-
-  const gapFromProps: CSSNumber | undefined = defaultEither(
-    undefined,
-    getLayoutProperty('gap', right(element.element.value.props), styleStringInArray),
-  )
+  const gapFromReader = info.gap?.value
 
   const flexDirection = element.specialSizeMeasurements.flexDirection ?? 'row'
 
   return {
     value: {
       renderedValuePx: gap,
-      value: gapFromProps ?? null,
+      value: gapFromReader ?? null,
     },
     direction: flexDirection,
   }

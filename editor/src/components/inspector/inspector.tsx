@@ -87,7 +87,6 @@ import {
   replaceFirstChildAndDeleteSiblings,
 } from '../editor/element-children'
 import { InspectorSectionHeader } from './section-header'
-import { GridPlacementSubsection } from './sections/style-section/container-subsection/grid-cell-subsection'
 import { ContainerSubsection } from './sections/style-section/container-subsection/container-subsection'
 import { isTailwindEnabled } from '../../core/tailwind/tailwind-compilation'
 
@@ -296,14 +295,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
 
   const shouldShowSimplifiedLayoutSection = inspectorPreferences.includes('layout')
 
-  const shouldShowGridCellSection = useEditorState(
-    Substores.metadata,
-    (store) =>
-      store.editor.selectedViews.length === 1 &&
-      MetadataUtils.isGridCell(store.editor.jsxMetadata, store.editor.selectedViews[0]),
-    'Inspector shouldShowGridCellSection',
-  )
-
   const shouldShowContainerSection =
     selectedViews.length > 0 && inspectorPreferences.includes('layout')
 
@@ -373,7 +364,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                         <ConstraintsSection />
                       </>,
                     )}
-                    {when(shouldShowGridCellSection, <GridPlacementSubsection />)}
                     {when(shouldShowFlexSection, <FlexSection />)}
                     {when(
                       multiselectedContract === 'frame' || multiselectedContract === 'wrapper-div',

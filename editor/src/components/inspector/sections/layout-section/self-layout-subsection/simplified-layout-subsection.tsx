@@ -17,6 +17,7 @@ import { FrameUpdatingLayoutSection } from './frame-updating-layout-section'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { getInspectorPreferencesForTargets } from '../../../../../core/property-controls/property-controls-utils'
 import { AlignmentButtons } from '../../../alignment-buttons'
+import { GridPlacementSubsection } from '../../style-section/container-subsection/grid-cell-subsection'
 
 export const SimplifiedLayoutSubsection = React.memo(() => {
   const selectedElementContract = useEditorState(
@@ -56,6 +57,14 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
 
   const shouldShowAlignmentButtons = !isCodeElement && inspectorPreferences.includes('layout')
 
+  const shouldShowGridCellSection = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.length === 1 &&
+      MetadataUtils.isGridCell(store.editor.jsxMetadata, store.editor.selectedViews[0]),
+    'Inspector shouldShowGridCellSection',
+  )
+
   return (
     <FlexColumn>
       <FlexRow
@@ -90,6 +99,7 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
           </>,
         )}
       </FlexColumn>
+      {when(shouldShowGridCellSection, <GridPlacementSubsection />)}
     </FlexColumn>
   )
 })

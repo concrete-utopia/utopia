@@ -539,6 +539,14 @@ export function matrixGetter<T>(array: T[], width: number): (row: number, column
   }
 }
 
+export function range(start: number, end: number): Array<number> {
+  let result: Array<number> = []
+  for (let i = start; i < end; i++) {
+    result.push(i)
+  }
+  return result
+}
+
 export function chunkArrayEqually<T>(
   sortedArray: T[],
   numberOfChunks: number,
