@@ -23,6 +23,7 @@ import { enableInsertModeForJSXElement, showToast } from './actions/action-creat
 import {
   defaultButtonElement,
   defaultDivElement,
+  defaultGridElement,
   defaultImgElement,
   defaultSpanElement,
 } from './defaults'
@@ -104,6 +105,10 @@ export function useEnterDrawToInsertForImage(): (event: React.MouseEvent<Element
 
 export function useEnterDrawToInsertForButton(): (event: React.MouseEvent<Element>) => void {
   return useEnterDrawToInsertForElement(defaultButtonElement)
+}
+
+export function useEnterDrawToInsertForGrid(): (event: React.MouseEvent<Element>) => void {
+  return useEnterDrawToInsertForElement(defaultGridElement)
 }
 
 export function useEnterDrawToInsertForConditional(): (event: React.MouseEvent<Element>) => void {

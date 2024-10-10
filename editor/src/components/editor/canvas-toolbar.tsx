@@ -28,6 +28,7 @@ import {
   useEnterDrawToInsertForButton,
   useEnterDrawToInsertForConditional,
   useEnterDrawToInsertForDiv,
+  useEnterDrawToInsertForGrid,
   useEnterDrawToInsertForImage,
   useEnterTextEditMode,
 } from './insert-callbacks'
@@ -79,6 +80,7 @@ export const InsertOrEditTextButtonTestId = 'insert-or-edit-text-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
 export const CommentModeButtonTestId = (status: string) => `canvas-toolbar-comment-mode-${status}`
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
+export const InsertGridButtonTestId = 'insert-mode-grid'
 export const CanvasToolbarId = 'canvas-toolbar'
 
 export const CanvasToolbarSearchPortalId = 'canvas-toolbar-search-portal'
@@ -220,6 +222,7 @@ export const CanvasToolbar = React.memo(() => {
   const insertTextCallback = useEnterTextEditMode()
   const insertButtonCallback = useEnterDrawToInsertForButton()
   const insertConditionalCallback = useEnterDrawToInsertForConditional()
+  const insertGridCallback = useEnterDrawToInsertForGrid()
 
   // Back to select mode, close the "floating" menu and turn off the forced insert mode.
   const dispatchSwitchToSelectModeCloseMenus = React.useCallback(() => {
@@ -546,6 +549,15 @@ export const CanvasToolbar = React.memo(() => {
                     iconType='view'
                     secondary={canvasToolbarMode.secondary.divInsertionActive}
                     onClick={insertDivCallback}
+                  />
+                </Tooltip>
+                <Tooltip title='Insert grid' placement='bottom'>
+                  <ToolbarButton
+                    testid={InsertGridButtonTestId}
+                    iconCategory='navigator-element'
+                    iconType='grid'
+                    onClick={insertGridCallback}
+                    size={12}
                   />
                 </Tooltip>
                 <Tooltip title='Insert image' placement='bottom'>

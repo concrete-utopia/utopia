@@ -8,6 +8,9 @@ import type { Optic } from '../../core/shared/optics/optics'
 import { fromField, fromTypeGuard } from '../../core/shared/optics/optic-creators'
 import { anyBy, set } from '../../core/shared/optics/optic-utilities'
 import type { EditorAction } from './action-types'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { getJSXAttributesAtPath } from '../../core/shared/jsx-attribute-utils'
+import { create } from '../../core/shared/property-path'
 
 // This is the data structure that governs the Canvas Toolbar's submenus and active buttons
 type ToolbarMode =
@@ -21,6 +24,7 @@ type ToolbarMode =
         imageInsertionActive: boolean
         buttonInsertionActive: boolean
         conditionalInsertionActive: boolean
+        gridInsertionActive: boolean
         insertSidebarOpen: boolean
       }
     }
@@ -110,6 +114,28 @@ export function useToolbarMode(): ToolbarMode {
     const insertionTargetConditional =
       editorMode.type === 'insert' &&
       editorMode.subjects.some((subject) => subject.insertionSubjectWrapper === 'conditional')
+    const insertionTargetGrid =
+      editorMode.type === 'insert' &&
+      editorMode.subjects.some((subject) => {
+        if (subject.element.name.baseVariable !== 'div') {
+          return false
+        }
+
+        const style = subject.element.props.find(
+          (p) => p.type === 'JSX_ATTRIBUTES_ENTRY' && p.key === 'style',
+        )
+        if (style == null) {
+          return false
+        }
+
+        const display = getJSXAttributesAtPath(subject.element.props, create('style', 'display'))
+        return (
+          style.type === 'JSX_ATTRIBUTES_ENTRY' &&
+          style.value.type === 'ATTRIBUTE_VALUE' &&
+          display.attribute.type === 'PART_OF_ATTRIBUTE_VALUE' &&
+          display.attribute.value === 'grid'
+        )
+      })
 
     return {
       primary: 'insert',
@@ -119,6 +145,7 @@ export function useToolbarMode(): ToolbarMode {
         imageInsertionActive: insertionTargetImage,
         buttonInsertionActive: insertionTargetButton,
         conditionalInsertionActive: insertionTargetConditional,
+        gridInsertionActive: insertionTargetGrid,
         insertSidebarOpen: rightMenuTab === RightMenuTab.Insert,
       },
     }
