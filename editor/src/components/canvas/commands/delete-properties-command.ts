@@ -95,13 +95,10 @@ export const runDeleteProperties = (
   editorState: EditorState,
   command: DeleteProperties,
 ): CommandFunctionResult => {
-  const { editorStatePatch: propertyUpdatePatch } = deleteValuesAtPath(
-    editorState,
-    command.element,
-    command.properties,
-  )
+  const { editorStatePatch: propertyUpdatePatch, editorStateWithChanges: editorStateWithChanges } =
+    deleteValuesAtPath(editorState, command.element, command.properties)
 
-  const propertiesToUnsetPatches = getPropertiesToUnsetPatches(editorState, command)
+  const propertiesToUnsetPatches = getPropertiesToUnsetPatches(editorStateWithChanges, command)
 
   return {
     editorStatePatches: [propertyUpdatePatch, ...propertiesToUnsetPatches],
