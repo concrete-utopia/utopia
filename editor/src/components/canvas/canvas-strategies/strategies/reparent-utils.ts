@@ -557,8 +557,8 @@ function pasteIntoNextGridCell(
     return null
   }
 
-  const targetIsGridCell = MetadataUtils.isGridCell(metadata, selectedView)
-  if (!targetIsGridCell) {
+  const targetIsGridChild = MetadataUtils.isGridCell(metadata, selectedView)
+  if (!targetIsGridChild) {
     return null
   }
 
