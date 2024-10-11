@@ -2,10 +2,7 @@
 /** @jsx jsx */
 import type { Sides } from 'utopia-api/core'
 import type { ElementPath } from 'utopia-shared/src/types'
-import {
-  isStaticGridRepeat,
-  printGridAutoOrTemplateBase,
-} from '../../../components/inspector/common/css-utils'
+import { isStaticGridRepeat, printGridAutoOrTemplateBase } from '../../inspector/common/css-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'

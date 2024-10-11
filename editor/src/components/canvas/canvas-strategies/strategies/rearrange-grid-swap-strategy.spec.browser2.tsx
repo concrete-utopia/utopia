@@ -9,7 +9,7 @@ import {
   pressKey,
 } from '../../event-helpers.test-utils'
 import { canvasPoint } from '../../../../core/shared/math-utils'
-import { GridCellTestId } from '../../controls/grid-controls'
+import { GridCellTestId } from '../../controls/grid-controls-for-strategies'
 
 const testProject = `
 import * as React from 'react'

@@ -75,14 +75,14 @@ import { windowToCanvasCoordinates } from '../dom-lookup'
 import type { Axis } from '../gap-utils'
 import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import type { GridControlsProps, GridData } from './grid-controls'
+import type { GridControlsProps, GridData } from './grid-controls-for-strategies'
 import {
   getNullableAutoOrTemplateBaseString,
   GridCellTestId,
   gridEdgeToEdgePosition,
   GridResizeEdgeTestId,
   useGridData,
-} from './grid-controls'
+} from './grid-controls-for-strategies'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds

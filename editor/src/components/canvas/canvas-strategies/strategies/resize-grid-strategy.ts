@@ -11,7 +11,7 @@ import { setProperty } from '../../commands/set-property-command'
 import {
   controlsForGridPlaceholders,
   GridRowColumnResizingControls,
-} from '../../controls/grid-controls'
+} from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'

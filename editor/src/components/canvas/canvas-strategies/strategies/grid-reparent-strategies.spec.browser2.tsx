@@ -5,7 +5,7 @@ import { offsetPoint, windowPoint } from '../../../../core/shared/math-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { cmdModifier } from '../../../../utils/modifiers'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
-import { GridCellTestId } from '../../controls/grid-controls'
+import { GridCellTestId } from '../../controls/grid-controls-for-strategies'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import type { Point } from '../../event-helpers.test-utils'
 import {
