@@ -1125,10 +1125,10 @@ export const GridControl = React.memo<GridControlProps>(({ grid }) => {
 GridControl.displayName = 'GridControl'
 
 export interface GridControlsProps {
-  targets: ElementPath[]
+  target: ElementPath
 }
 
-export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ targets }) => {
+export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ target }) => {
   const targetRootCell = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.controls.gridControlData?.rootCell ?? null,
@@ -1141,7 +1141,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ tar
     'GridControls hoveredGrids',
   )
 
-  const grids = useGridData(uniqBy([...targets, ...hoveredGrids], (a, b) => EP.pathsEqual(a, b)))
+  const grids = useGridData(uniqBy([target, ...hoveredGrids], (a, b) => EP.pathsEqual(a, b)))
 
   if (grids.length === 0) {
     return null
@@ -1845,10 +1845,10 @@ function gridPlaceholderWidthOrHeight(scale: number): string {
 export function controlsForGridPlaceholders(
   gridPath: ElementPath,
   whenToShow: WhenToShowControl = 'always-visible',
-): ControlWithProps<any> {
+): ControlWithProps<GridControlsProps> {
   return {
     control: GridControls,
-    props: { targets: [gridPath] },
+    props: { target: gridPath },
     key: GridControlsKey(gridPath),
     show: whenToShow,
     priority: 'bottom',
