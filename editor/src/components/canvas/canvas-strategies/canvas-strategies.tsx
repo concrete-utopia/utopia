@@ -19,6 +19,7 @@ import type {
   StrategyApplicationResult,
   InteractionLifecycle,
   CustomStrategyState,
+  WhenToShowControl,
 } from './canvas-strategy-types'
 import {
   ControlDelay,
@@ -83,6 +84,11 @@ import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent
 import { gridRearrangeResizeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
 import createCachedSelector from 're-reselect'
 import { getActivePlugin } from '../plugins/style-plugins'
+import {
+  controlsForGridPlaceholders,
+  GridControls,
+  isGridControlsProps,
+} from '../controls/grid-controls-for-strategies'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -648,6 +654,42 @@ function controlPriorityToNumber(prio: ControlWithProps<any>['priority']): numbe
   }
 }
 
+export function combineApplicableControls(
+  strategyControls: Array<ControlWithProps<unknown>>,
+): Array<ControlWithProps<unknown>> {
+  // Separate out the instances of `GridControls`.
+  let result: Array<ControlWithProps<unknown>> = []
+  let gridControlsInstances: Array<ControlWithProps<unknown>> = []
+  for (const control of strategyControls) {
+    if (control.control === GridControls) {
+      gridControlsInstances.push(control)
+    } else {
+      result.push(control)
+    }
+  }
+
+  // Sift the instances of `GridControls`, storing their targets by when they should be shown.
+  let gridControlsTargets: Map<WhenToShowControl, Array<ElementPath>> = new Map()
+  for (const control of gridControlsInstances) {
+    if (isGridControlsProps(control.props)) {
+      const possibleTargets = gridControlsTargets.get(control.show)
+      if (possibleTargets == null) {
+        gridControlsTargets.set(control.show, control.props.targets)
+      } else {
+        possibleTargets.push(...control.props.targets)
+      }
+    }
+  }
+
+  // Create new instances of `GridControls` with the combined targets.
+  for (const [show, targets] of gridControlsTargets) {
+    result.push(controlsForGridPlaceholders(targets, show, `-${show}`))
+  }
+
+  // Return the newly created controls with the combined entries.
+  return result
+}
+
 export function useGetApplicableStrategyControls(
   localSelectedViews: Array<ElementPath>,
 ): Array<ControlWithProps<unknown>> {
@@ -669,9 +711,10 @@ export function useGetApplicableStrategyControls(
         isResizable = true
       }
       const strategyControls = getApplicableControls(currentStrategy, strategy)
+      const combinedControls = combineApplicableControls(strategyControls)
       applicableControls = addAllUniquelyBy(
         applicableControls,
-        strategyControls,
+        combinedControls,
         (l, r) => l.control === r.control && l.key === r.key,
       )
     }

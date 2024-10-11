@@ -835,10 +835,8 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
               key={id}
               id={id}
               data-testid={id}
-              data-wtf={`data-wtf`}
               style={{
                 position: 'relative',
-                pointerEvents: 'initial',
               }}
               data-grid-row={countedRow}
               data-grid-column={countedColumn}
@@ -996,19 +994,38 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
 GridControl.displayName = 'GridControl'
 
 export const GridControlsComponent = ({ targets }: GridControlsProps) => {
+  const ancestorPaths = React.useMemo(() => {
+    return targets.flatMap((target) => EP.getAncestors(target))
+  }, [targets])
+  const ancestorGrids = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return ancestorPaths.filter((ancestorPath) => {
+        const ancestorMetadata = MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          ancestorPath,
+        )
+        return MetadataUtils.isGridLayoutedContainer(ancestorMetadata)
+      })
+    },
+    'GridControlsComponent ancestorGrids',
+  )
+
   const targetRootCell = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.controls.gridControlData?.rootCell ?? null,
-    'GridControls targetRootCell',
+    'GridControlsComponent targetRootCell',
   )
 
   const hoveredGrids = useEditorState(
     Substores.canvas,
     (store) => stripNulls([store.editor.canvas.controls.gridControlData?.grid]),
-    'GridControls hoveredGrids',
+    'GridControlsComponent hoveredGrids',
   )
 
-  const grids = useGridData(uniqBy([...targets, ...hoveredGrids], (a, b) => EP.pathsEqual(a, b)))
+  const grids = useGridData(
+    uniqBy([...targets, ...ancestorGrids, ...hoveredGrids], (a, b) => EP.pathsEqual(a, b)),
+  )
 
   if (grids.length === 0) {
     return null

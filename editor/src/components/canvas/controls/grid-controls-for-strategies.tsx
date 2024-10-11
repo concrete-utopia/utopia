@@ -162,7 +162,12 @@ export interface GridControlProps {
 }
 
 export interface GridControlsProps {
+  type: 'GRID_CONTROLS_PROPS'
   targets: ElementPath[]
+}
+
+export function isGridControlsProps(props: unknown): props is GridControlsProps {
+  return (props as GridControlsProps).type === 'GRID_CONTROLS_PROPS'
 }
 
 export const GridControls = controlForStrategyMemoized<GridControlsProps>(GridControlsComponent)
@@ -193,13 +198,17 @@ export function gridEdgeToEdgePosition(edge: GridResizeEdge): EdgePosition {
 }
 
 export function controlsForGridPlaceholders(
-  gridPath: ElementPath,
+  gridPath: ElementPath | Array<ElementPath>,
   whenToShow: WhenToShowControl = 'always-visible',
+  suffix: string | null = null,
 ): ControlWithProps<any> {
   return {
     control: GridControls,
-    props: { targets: [gridPath] },
-    key: GridControlsKey(gridPath),
+    props: {
+      type: 'GRID_CONTROLS_PROPS',
+      targets: Array.isArray(gridPath) ? gridPath : [gridPath],
+    },
+    key: `GridControls${suffix == null ? '' : suffix}`,
     show: whenToShow,
     priority: 'bottom',
   }
