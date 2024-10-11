@@ -26,12 +26,7 @@ import {
   textFileContents,
   unparsed,
 } from '../../core/shared/project-file-types'
-import {
-  addFileToProjectContents,
-  contentsToTree,
-  getTextFileByPath,
-  type ProjectContentTreeRoot,
-} from '../assets'
+import { addFileToProjectContents, getTextFileByPath } from '../assets'
 import type { ExportsInfo, MultiFileBuildResult } from '../../core/workers/common/worker-types'
 import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 
@@ -57,15 +52,6 @@ function transpileCode(
 
 const appJSCode =
   "\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n"
-
-const SampleSingleFileProjectContents: ProjectContentTreeRoot = contentsToTree({
-  '/app.js': textFile(
-    textFileContents(appJSCode, unparsed, RevisionsState.CodeAhead),
-    null,
-    null,
-    0,
-  ),
-})
 
 const SampleSingleFileBuildResult = transpileCode(['/app.js'], {
   '/app.js': appJSCode,
@@ -98,40 +84,15 @@ const SampleSingleFileExportsInfo = [
   },
 ]
 
-const multiFileAppJSCode =
-  "\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n"
-const multiFileComponentsJSCode =
-  "// component library\nimport * as React from 'react'\nimport { Text, View } from 'utopia-api'\n\nexport default (props) => (\n  <View layout={props.layout} style={props.style} onMouseDown={props.onMouseDown}>\n    <Text\n      style={{ fontSize: 16, textAlign: 'center' }}\n      text={props.text}\n      layout={{\n        left: 0,\n        top: 10,\n        width: '100%',\n        height: '100%',\n      }}\n      textSizing={'fixed'}\n    />\n  </View>\n)\n\nexport const LABEL = 'press me! 😉'\n\nexport const ComponentWithProps = (props) => {\n  return (\n    <div\n      style={{\n        ...props.style,\n        backgroundColor: props.pink ? 'hotpink' : 'transparent',\n        whiteSpace: 'normal',\n      }}\n    >\n      {(props.text + ' ').repeat(props.num)}\n    </div>\n  )\n}\n\nComponentWithProps.propertyControls = {\n  text: {\n    type: 'string',\n    title: 'Title',\n    defaultValue: 'Change me',\n  },\n  num: {\n    type: 'number',\n    title: 'amount',\n    defaultValue: 2,\n  },\n  pink: {\n    type: 'boolean',\n    title: 'Enabled',\n    defaultValue: true,\n  },\n}\n\n"
-const multiFilePreviewJSXCode =
-  'import * as React from "react";\nimport * as ReactDOM from "react-dom";\nimport { App } from "../app";\n\nconst root = document.getElementById("root");\nif (root != null) {\nReactDOM.render(<App />, root);\n}'
-
-const SampleMultiFileProjectContents: ProjectContentTreeRoot = contentsToTree({
-  '/app.js': textFile(
-    textFileContents(multiFileAppJSCode, unparsed, RevisionsState.CodeAhead),
-    null,
-    null,
-    0,
-  ),
-  '/src/components.js': textFile(
-    textFileContents(multiFileComponentsJSCode, unparsed, RevisionsState.CodeAhead),
-    null,
-    null,
-    0,
-  ),
-  '/public/preview.jsx': textFile(
-    textFileContents(multiFilePreviewJSXCode, unparsed, RevisionsState.CodeAhead),
-    null,
-    null,
-    0,
-  ),
-})
-
 const SampleMultiFileBuildResult = transpileCode(
   ['/app.js', '/src/components.js', '/public/preview.jsx'],
   {
-    '/app.js': multiFileAppJSCode,
-    '/src/components.js': multiFileComponentsJSCode,
-    '/public/preview.jsx': multiFilePreviewJSXCode,
+    '/app.js':
+      "\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
+    '/src/components.js':
+      "// component library\nimport * as React from 'react'\nimport { Text, View } from 'utopia-api'\n\nexport default (props) => (\n  <View layout={props.layout} style={props.style} onMouseDown={props.onMouseDown}>\n    <Text\n      style={{ fontSize: 16, textAlign: 'center' }}\n      text={props.text}\n      layout={{\n        left: 0,\n        top: 10,\n        width: '100%',\n        height: '100%',\n      }}\n      textSizing={'fixed'}\n    />\n  </View>\n)\n\nexport const LABEL = 'press me! 😉'\n\nexport const ComponentWithProps = (props) => {\n  return (\n    <div\n      style={{\n        ...props.style,\n        backgroundColor: props.pink ? 'hotpink' : 'transparent',\n        whiteSpace: 'normal',\n      }}\n    >\n      {(props.text + ' ').repeat(props.num)}\n    </div>\n  )\n}\n\nComponentWithProps.propertyControls = {\n  text: {\n    type: 'string',\n    title: 'Title',\n    defaultValue: 'Change me',\n  },\n  num: {\n    type: 'number',\n    title: 'amount',\n    defaultValue: 2,\n  },\n  pink: {\n    type: 'boolean',\n    title: 'Enabled',\n    defaultValue: true,\n  },\n}\n\n",
+    '/public/preview.jsx':
+      'import * as React from "react";\nimport * as ReactDOM from "react-dom";\nimport { App } from "../app";\n\nconst root = document.getElementById("root");\nif (root != null) {\nReactDOM.render(<App />, root);\n}',
   },
 )
 
@@ -255,25 +216,14 @@ const SampleExportsInfoWithError = [
   },
 ]
 
-const exceptionThrowingCodeJSFile = "export const boom = (() => {\n  throw Error('booom')\n})()\n"
-
-const SampleExceptionThrowingProjectContents: ProjectContentTreeRoot = contentsToTree({
-  '/src/code.js': textFile(
-    textFileContents(exceptionThrowingCodeJSFile, unparsed, RevisionsState.CodeAhead),
-    null,
-    null,
-    0,
-  ),
-})
-
 const SampleBuildResultWithException = transpileCode(['/src/code.js'], {
-  '/src/code.js': exceptionThrowingCodeJSFile,
+  '/src/code.js': "export const boom = (() => {\n  throw Error('booom')\n})()\n",
 })
 
 const SampleExportsInfoWithException = [
   {
     filename: '/src/code.js',
-    code: exceptionThrowingCodeJSFile,
+    code: "export const boom = (() => {\n  throw Error('booom')\n})()\n",
     exportTypes: {
       boom: {
         type: 'never',
@@ -440,9 +390,7 @@ describe('Creating require function', () => {
       createBuiltInDependenciesList(null),
     )
 
-    expect(
-      codeResultCache.curriedRequireFn(SampleSingleFileProjectContents)('/', './app', false),
-    ).toMatchSnapshot()
+    expect(codeResultCache.curriedRequireFn({})('/', './app', false)).toMatchSnapshot()
   })
   it('Creates require function for multi file build result', () => {
     const codeResultCache = generateCodeResultCache(
@@ -455,16 +403,8 @@ describe('Creating require function', () => {
       createBuiltInDependenciesList(null),
     )
 
-    expect(
-      codeResultCache.curriedRequireFn(SampleMultiFileProjectContents)('/', './app', false),
-    ).toMatchSnapshot()
-    expect(
-      codeResultCache.curriedRequireFn(SampleMultiFileProjectContents)(
-        '/',
-        './src/components',
-        false,
-      ),
-    ).toMatchSnapshot()
+    expect(codeResultCache.curriedRequireFn({})('/', './app', false)).toMatchSnapshot()
+    expect(codeResultCache.curriedRequireFn({})('/', './src/components', false)).toMatchSnapshot()
   })
   it('Require throws exception for module code', () => {
     const codeResultCache = generateCodeResultCache(
@@ -478,11 +418,7 @@ describe('Creating require function', () => {
     )
 
     expect(() =>
-      codeResultCache.curriedRequireFn(SampleExceptionThrowingProjectContents)(
-        '/',
-        './src/code',
-        false,
-      ),
+      codeResultCache.curriedRequireFn({})('/', './src/code', false),
     ).toThrowErrorMatchingSnapshot()
   })
   it('Require throws exception for import from non-existing module', () => {

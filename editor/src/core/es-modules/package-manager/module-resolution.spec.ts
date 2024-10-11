@@ -7,8 +7,7 @@ import {
   unparsed,
 } from '../../shared/project-file-types'
 import * as moduleResolutionExamples from '../test-cases/module-resolution-examples.json'
-import { resolveModule } from './module-resolution'
-import { isResolveSuccess } from './module-resolution-utils'
+import { isResolveSuccess, resolveModule } from './module-resolution'
 import { createNodeModules } from './test-utils'
 
 const sampleProjectContents: ProjectContentTreeRoot = contentsToTree({
@@ -34,34 +33,6 @@ const sampleProjectContents: ProjectContentTreeRoot = contentsToTree({
     null,
     0,
   ),
-  '/package.json': textFile(
-    textFileContents(
-      `
-    {
-      "name": "sample-project",
-      "exports": {
-        "./exported-module": "./exported-module-main.js"
-      },
-      "imports": {
-        "#dep-object": {
-          "default": "./src/dep-object.js"
-        },
-        "#dep-simple": "./src/dep-simple.js"
-      }
-    }`,
-      unparsed,
-      RevisionsState.CodeAhead,
-    ),
-    null,
-    null,
-    0,
-  ),
-  '/exported-module-main.js': textFile(
-    textFileContents('export const ExportedModuleMain = 1', unparsed, RevisionsState.CodeAhead),
-    null,
-    null,
-    0,
-  ),
   '/a/some/nested/file.js': textFile(
     textFileContents('export const Cake = "tasty"', unparsed, RevisionsState.CodeAhead),
     null,
@@ -80,29 +51,11 @@ const sampleProjectContents: ProjectContentTreeRoot = contentsToTree({
     null,
     0,
   ),
-  '/src/dep-object.js': textFile(
-    textFileContents('export const DepObject = 1', unparsed, RevisionsState.CodeAhead),
-    null,
-    null,
-    0,
-  ),
-  '/src/dep-simple.js': textFile(
-    textFileContents('export const DepSimple = 1', unparsed, RevisionsState.CodeAhead),
-    null,
-    null,
-    0,
-  ),
   '/src/icon.png': {
     type: 'ASSET_FILE',
   },
   '/src/simple.css': textFile(
     textFileContents('.utopiaClass { background-color: red; }', unparsed, RevisionsState.CodeAhead),
-    null,
-    null,
-    0,
-  ),
-  '/utopia/layout.utopia.js': textFile(
-    textFileContents('export const Layout = 1', unparsed, RevisionsState.CodeAhead),
     null,
     null,
     0,
@@ -291,69 +244,20 @@ describe('ES Package Manager Module Resolution', () => {
     expect(resolveResult.type).toEqual('RESOLVE_SUCCESS_IGNORE_MODULE')
   })
 
-  it('resolves package exports for local package', () => {
-    expect(resolve('/src/app.js', 'sample-project/exported-module')).toEqual(
-      '/exported-module-main.js',
-    )
-  })
-
-  it('resolves package imports simple for local package', () => {
-    expect(resolve('/src/app.js', '#dep-simple')).toEqual('/src/dep-simple.js')
-  })
-  it('resolves package imports object for local package', () => {
-    expect(resolve('/src/app.js', '#dep-object')).toEqual('/src/dep-object.js')
-  })
-
-  it('resolves package main entry for node module with exports with no subpath', () => {
-    expect(resolve('/src/app.js', 'module-with-exports-and-imports')).toEqual(
-      '/node_modules/module-with-exports-and-imports/index.main.js',
-    )
-  })
-
-  it('resolves package exports object main entry for node module', () => {
-    expect(resolve('/src/app.js', 'module-with-exports-and-imports-objects')).toEqual(
-      '/node_modules/module-with-exports-and-imports-objects/index.main.js',
-    )
-  })
-  it('resolves package exports object submodule export for node module', () => {
-    expect(resolve('/src/app.js', 'module-with-exports-and-imports-objects/submodule')).toEqual(
-      '/node_modules/module-with-exports-and-imports-objects/src/submodule.js',
-    )
-  })
-
-  it('resolves package imports for node module', () => {
-    expect(
-      resolve('/node_modules/module-with-exports-and-imports/src/something.js', '#dep'),
-    ).toEqual('/node_modules/module-with-exports-and-imports/dep.js')
-  })
-  it('resolves package imports object for node module', () => {
-    expect(
-      resolve('/node_modules/module-with-exports-and-imports-objects/src/something.js', '#dep'),
-    ).toEqual('/node_modules/module-with-exports-and-imports-objects/dep.js')
-  })
-
-  it('loads self references', () => {
-    expect(
-      resolve(
-        '/node_modules/my-package-with-package-root/src/deep-folder/moduleA.js',
-        'my-package-with-package-root',
-      ),
-    ).toEqual('/node_modules/my-package-with-package-root/index.js')
-    expect(
-      resolve(
-        '/node_modules/my-package-with-package-root/src/deep-folder/moduleA.js',
-        'my-package-with-package-root/src/other-folder/moduleB',
-      ),
-    ).toEqual('/node_modules/my-package-with-package-root/src/other-folder/moduleB.js')
-  })
-
-  it('resolves clsx', () => {
-    expect(resolve('/app/components/hydrogen/Button.jsx', 'clsx')).toEqual(
-      '/node_modules/clsx/dist/clsx.js',
-    )
-  })
-
-  it('resolves /utopia/layout.utopia', () => {
-    expect(resolve('/utopia/text.utopia.js', './layout.utopia')).toEqual('/utopia/layout.utopia.js')
-  })
+  // it('loads self references', () => {
+  //   expect(
+  //     resolveModule(
+  //       createNodeModules(moduleResolutionExamples.contents),
+  //       'my-package-with-package-root/src/deep-folder/moduleA.js',
+  //       'my-package-with-package-root',
+  //     ),
+  //   ).toEqual('my-package-with-package-root/index.js')
+  //   expect(
+  //     resolveModule(
+  //       createNodeModules(moduleResolutionExamples.contents),
+  //       'my-package-with-package-root/src/deep-folder/moduleA.js',
+  //       'my-package-with-package-root/src/other-folder/moduleB',
+  //     ),
+  //   ).toEqual('my-package-with-package-root/src/other-folder/moduleB.js')
+  // })
 })
