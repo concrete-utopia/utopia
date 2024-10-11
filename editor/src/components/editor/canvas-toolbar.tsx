@@ -534,7 +534,7 @@ export const CanvasToolbar = React.memo(() => {
       {/* Insert Mode */}
       {canvasToolbarMode.primary === 'insert'
         ? wrapInSubmenu(
-            <FlexColumn style={{ padding: '3px 8px 0 8px', flexGrow: 1 }}>
+            <FlexColumn style={{ padding: '3px 8px 0 8px', flexGrow: 1, gap: 5 }}>
               <FlexRow>
                 <Tooltip title='Back' placement='bottom'>
                   <ToolbarButton
@@ -546,9 +546,11 @@ export const CanvasToolbar = React.memo(() => {
                 </Tooltip>
                 <Tooltip title='Insert div' placement='bottom'>
                   <ToolbarButton
-                    iconType='view'
+                    iconCategory='navigator-element'
+                    iconType='div'
                     secondary={canvasToolbarMode.secondary.divInsertionActive}
                     onClick={insertDivCallback}
+                    size={12}
                   />
                 </Tooltip>
                 <Tooltip title='Insert grid' placement='bottom'>
@@ -562,24 +564,30 @@ export const CanvasToolbar = React.memo(() => {
                 </Tooltip>
                 <Tooltip title='Insert image' placement='bottom'>
                   <ToolbarButton
+                    iconCategory='navigator-element'
                     iconType='image'
                     secondary={canvasToolbarMode.secondary.imageInsertionActive}
                     onClick={insertImgCallback}
+                    size={12}
                   />
                 </Tooltip>
                 <Tooltip title='Insert button' placement='bottom'>
                   <ToolbarButton
+                    iconCategory='navigator-element'
                     iconType='clickable'
                     secondary={canvasToolbarMode.secondary.buttonInsertionActive}
                     onClick={insertButtonCallback}
+                    size={12}
                   />
                 </Tooltip>
                 <Tooltip title='Insert conditional' placement='bottom'>
                   <ToolbarButton
                     testid={InsertConditionalButtonTestId}
+                    iconCategory='navigator-element'
                     iconType='conditional'
                     secondary={canvasToolbarMode.secondary.conditionalInsertionActive}
                     onClick={insertConditionalCallback}
+                    size={12}
                   />
                 </Tooltip>
               </FlexRow>
