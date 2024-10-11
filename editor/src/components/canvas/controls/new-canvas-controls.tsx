@@ -348,8 +348,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     componentMetadata,
   )
 
-  const gridsWithoutControlData = useGridData(gridsWithoutControl)
-
   const cmdKeyPressed = keysPressed['cmd'] ?? false
 
   const contextMenuEnabled = !isLiveMode(editorMode)
@@ -611,7 +609,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                     {when(
                       dragInteractionActive,
                       <CanvasOffsetWrapper>
-                        {gridsWithoutControlData.map((grid) => {
+                        {gridsWithoutControl.map((grid) => {
                           return (
                             <GridControl
                               key={GridControlKey(grid.elementPath)}
@@ -704,7 +702,7 @@ function useGridsWithoutControl(
   dragInteractionActive: boolean,
   metadata: ElementInstanceMetadataMap,
 ) {
-  return React.useMemo(() => {
+  const grids = React.useMemo(() => {
     if (!dragInteractionActive) {
       return []
     }
@@ -712,6 +710,8 @@ function useGridsWithoutControl(
       return strategyControls.every((control) => control.key !== GridControlsKey(grid))
     })
   }, [metadata, strategyControls, dragInteractionActive])
+
+  return useGridData(grids)
 }
 
 SelectionAreaRectangle.displayName = 'SelectionAreaRectangle'
