@@ -657,6 +657,7 @@ export const GridRowColumnResizingControls =
   })
 
 export const GridControlsKey = (gridPath: ElementPath) => `grid-controls-${EP.toString(gridPath)}`
+export const GridControlKey = (gridPath: ElementPath) => `grid-control-${EP.toString(gridPath)}`
 
 export interface GridControlProps {
   grid: GridData
@@ -1154,11 +1155,7 @@ export const GridControls = controlForStrategyMemoized<GridControlsProps>(
         <CanvasOffsetWrapper>
           {grids.map((grid) => {
             return (
-              <GridControl
-                key={`grid-control-${EP.toString(grid.elementPath)}`}
-                grid={grid}
-                visible={visible}
-              />
+              <GridControl key={GridControlKey(grid.elementPath)} grid={grid} visible={visible} />
             )
           })}
           <AbsoluteDistanceIndicators targetRootCell={targetRootCell} />

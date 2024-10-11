@@ -74,9 +74,10 @@ import { NO_OP } from '../../../core/shared/utils'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
-import { GridControls, GridControlsKey } from './grid-controls'
+import { GridControl, GridControlKey, GridControlsKey, useGridData } from './grid-controls'
 import { getAllGrids } from '../canvas-strategies/strategies/grid-helpers'
 import type { ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
+import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -347,6 +348,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     componentMetadata,
   )
 
+  const gridsWithoutControlData = useGridData(gridsWithoutControl)
+
   const cmdKeyPressed = keysPressed['cmd'] ?? false
 
   const contextMenuEnabled = !isLiveMode(editorMode)
@@ -607,11 +610,17 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                   <>
                     {when(
                       dragInteractionActive,
-                      <RenderControlMemoized
-                        key={'grids'}
-                        control={GridControls.control as React.FC<{}>}
-                        propsForControl={{ targets: gridsWithoutControl, visible: 'hidden' }}
-                      />,
+                      <CanvasOffsetWrapper>
+                        {gridsWithoutControlData.map((grid) => {
+                          return (
+                            <GridControl
+                              key={GridControlKey(grid.elementPath)}
+                              grid={grid}
+                              visible={'hidden'}
+                            />
+                          )
+                        })}
+                      </CanvasOffsetWrapper>,
                     )}
                     {strategyControls.map((c) => (
                       <RenderControlMemoized
