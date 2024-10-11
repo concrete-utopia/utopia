@@ -92,7 +92,6 @@ function evaluateJs(
 
   function firstErrorHandler(error: Error): void {
     if (isEsModuleError(error)) {
-      // This is effectively implementing `MAYBE_DETECT_AND_LOAD` from https://nodejs.org/api/modules.html#all-together
       const { transpiledCode, sourceMap } = transformToCommonJS(filePath, moduleCode)
       evaluateWithHandler(transpiledCode, sourceMap, secondErrorHandler)
     } else {

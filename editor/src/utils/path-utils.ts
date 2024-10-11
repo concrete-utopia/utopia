@@ -33,7 +33,7 @@ export function getParentDirectory(filepath: string): string {
   return makePathFromParts(getPartsFromPath(filepath).slice(0, -1))
 }
 
-type SubPathCache = Map<string, PathCache>
+type SubPathCache = { [key: string]: PathCache }
 
 interface PathCache {
   cachedString: string
@@ -47,7 +47,7 @@ function pathCache(cachedString: string, subPathCache: SubPathCache): PathCache 
   }
 }
 
-let rootPathCache: SubPathCache = new Map()
+let rootPathCache: SubPathCache = {}
 
 function getPathFromCache(parts: Array<string>): string {
   let workingSubCache: SubPathCache = rootPathCache
@@ -55,14 +55,15 @@ function getPathFromCache(parts: Array<string>): string {
   let partsSoFar: Array<string> = []
   for (const part of parts) {
     partsSoFar.push(part)
-    if (workingSubCache.has(part)) {
-      workingPathCache = workingSubCache.get(part)!
+    if (part in workingSubCache) {
+      // The `in` check above proves this does not return `undefined`.
+      workingPathCache = workingSubCache[part]!
       workingSubCache = workingPathCache.subPathCache
     } else {
       const cachedString = `/${partsSoFar.join('/')}`
-      const newPathCache = pathCache(cachedString, new Map())
+      const newPathCache = pathCache(cachedString, {})
       workingPathCache = newPathCache
-      workingSubCache.set(part, newPathCache)
+      workingSubCache[part] = newPathCache
       workingSubCache = newPathCache.subPathCache
     }
   }
