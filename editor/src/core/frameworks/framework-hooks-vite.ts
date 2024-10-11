@@ -9,8 +9,9 @@ import type { ComponentToImport, CreationDataFromProject } from '../model/storyb
 import { namedComponentToImport, PossiblyMainComponentNames } from '../model/storyboard-utils'
 import { mergeImports } from '../workers/common/project-file-utils'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
-import type { FileLookupResult } from '../es-modules/package-manager/module-resolution'
-import { isResolveSuccess, resolveModule } from '../es-modules/package-manager/module-resolution'
+import type { FileLookupResult } from '../es-modules/package-manager/module-resolution-utils'
+import { isResolveSuccess } from '../es-modules/package-manager/module-resolution-utils'
+import { resolveModule } from '../es-modules/package-manager/module-resolution'
 import { getMainScriptElement, getRootElement, parseHtml } from '../shared/dom-utils'
 
 export class ViteFrameworkHooks implements FrameworkHooks {

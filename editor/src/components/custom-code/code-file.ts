@@ -355,6 +355,9 @@ export function generateCodeResultCache(
     delete evaluationCache[fileToDelete]
   }
 
+  // FIXME This actually isn't doing anything ever, because it appears that `updatedModules` above is always empty,
+  // however the require and resolve functions are still used, so we need to figure out which part of this code is
+  // still alive and which is dead
   // MUTATION ALERT! This function is mutating editorState.nodeModules.files by inserting the project files into it.
   incorporateBuildResult(nodeModules, projectContents, projectModules)
 
