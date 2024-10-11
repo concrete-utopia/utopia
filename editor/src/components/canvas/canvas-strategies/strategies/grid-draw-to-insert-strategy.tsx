@@ -20,7 +20,7 @@ import { insertElementInsertionSubject } from '../../commands/insert-element-ins
 import { showGridControls } from '../../commands/show-grid-controls-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import {
   getWrapperWithGeneratedUid,

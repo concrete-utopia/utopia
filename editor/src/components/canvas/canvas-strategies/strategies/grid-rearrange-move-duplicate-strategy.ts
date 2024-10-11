@@ -7,7 +7,7 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
