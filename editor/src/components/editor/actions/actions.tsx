@@ -58,6 +58,7 @@ import type {
   JSXConditionalExpression,
   JSXFragment,
   JSExpression,
+  ElementInstanceMetadata,
 } from '../../../core/shared/element-template'
 import {
   deleteJSXAttribute,
@@ -1923,6 +1924,28 @@ export const UPDATE_FNS = {
       return result
     }
 
+    function maybeApplyFixedDimensionsToGrid(
+      initialEditor: EditorState,
+      grid: ElementInstanceMetadata,
+      deleteCount: number,
+    ): EditorState {
+      const cells = MetadataUtils.getChildrenUnordered(initialEditor.jsxMetadata, grid.elementPath)
+      if (cells.length <= deleteCount) {
+        const rect = MetadataUtils.getFrameOrZeroRect(grid.elementPath, editor.jsxMetadata)
+        return applyValuesAtPath(initialEditor, grid.elementPath, [
+          {
+            path: styleP('width'),
+            value: jsExpressionValue(rect.width, emptyComments),
+          },
+          {
+            path: styleP('height'),
+            value: jsExpressionValue(rect.height, emptyComments),
+          },
+        ]).editorStateWithChanges
+      }
+      return initialEditor
+    }
+
     let bubbledUpDeletions: Array<ElementPath> = []
 
     const staticSelectedElements = editor.selectedViews.map((path, _, allSelectedPaths) => {
@@ -1958,9 +1981,52 @@ export const UPDATE_FNS = {
       return path
     })
 
-    const withElementDeleted = deleteElements(staticSelectedElements, editor, {
+    let working = deleteElements(staticSelectedElements, editor, {
       trueUpHuggingElements: true,
     })
+
+    const gridParents = staticSelectedElements
+      .filter((child) => MetadataUtils.isGridCell(editor.jsxMetadata, child))
+      .map((child) => EP.parentPath(child))
+    if (gridParents.length > 0) {
+      for (const grid of gridParents) {
+        // if the grid has no width and the leftmost or rightmost column is empty, set a fixed width
+        const gridMetadata = MetadataUtils.findElementByElementPath(working.jsxMetadata, grid)
+        const columns =
+          gridMetadata?.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
+        const rows = gridMetadata?.specialSizeMeasurements.containerGridProperties.gridTemplateRows
+
+        if (
+          gridMetadata == null ||
+          isLeft(gridMetadata.element) ||
+          !isJSXElement(gridMetadata.element.value) ||
+          columns?.type !== 'DIMENSIONS' ||
+          rows?.type !== 'DIMENSIONS'
+        ) {
+          continue
+        }
+
+        const width = getSimpleAttributeAtPath(
+          right(gridMetadata.element.value.props),
+          PP.create('style', 'width'),
+        )
+        const height = getSimpleAttributeAtPath(
+          right(gridMetadata.element.value.props),
+          PP.create('style', 'height'),
+        )
+
+        function lacksDimension(dimension: Either<string, any>) {
+          return dimension == null || isLeft(dimension) || dimension.value == null
+        }
+        if (lacksDimension(width) || lacksDimension(height)) {
+          working = maybeApplyFixedDimensionsToGrid(
+            working,
+            gridMetadata,
+            staticSelectedElements.filter((path) => EP.isChildOf(path, grid)).length,
+          )
+        }
+      }
+    }
 
     const newSelectedViews = uniqBy(
       mapDropNulls((view) => {
@@ -2000,7 +2066,7 @@ export const UPDATE_FNS = {
 
           const branchPath = withUnderlyingTarget(
             parentPath,
-            withElementDeleted.projectContents,
+            working.projectContents,
             null,
             (_, element) => {
               if (isJSXConditionalExpression(element) && element.uid === EP.toUid(parentPath)) {
@@ -2025,7 +2091,7 @@ export const UPDATE_FNS = {
     })
 
     return {
-      ...withElementDeleted,
+      ...working,
       selectedViews: newSelectedViews,
     }
   },

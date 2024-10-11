@@ -41,6 +41,7 @@ import {
   searchInComponentPicker,
   selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  wait,
 } from '../../../utils/utils.test-utils'
 import {
   firePasteEvent,
@@ -92,8 +93,11 @@ async function deleteFromScene(
     makeTestProjectCodeWithSnippet(inputSnippet),
     'await-first-dom-report',
   )
+  await wait(1000)
   await renderResult.dispatch([selectComponents(targets, true)], true)
+  await wait(3000)
   await renderResult.dispatch([deleteSelected()], true)
+  await wait(1000)
 
   return {
     code: getPrintedUiJsCode(renderResult.getEditorState()),
@@ -527,6 +531,60 @@ describe('actions', () => {
       //   `,
       //   wantSelection: [makeTargetPath(`root`)],
       // },
+      {
+        name: 'does not collapse empty grid',
+        input: `
+        <div data-uid='root'>
+          <div data-uid='grid' style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gridTemplateRows: '1fr 1fr 1fr' }}>
+		  	<div data-uid='deleteme1' style={{gridColumn: 1, gridRow: 1, width: 50, height: 50}} />
+			<div data-uid='deleteme2' style={{gridColumn: 3, gridRow: 1, width: 50, height: 50}} />
+			<div data-uid='deleteme3' style={{gridColumn: 2, gridRow: 3, width: 50, height: 50}} />
+		  </div>
+        </div>
+        `,
+        targets: [
+          makeTargetPath(`root/grid/deleteme1`),
+          makeTargetPath(`root/grid/deleteme2`),
+          makeTargetPath(`root/grid/deleteme3`),
+        ],
+        wantCode: `
+        <div data-uid='root'>
+          <div data-uid='grid' style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gridTemplateRows: '1fr 1fr 1fr', width: 400, height: 150 }} />
+        </div>
+        `,
+        wantSelection: [makeTargetPath(`root/grid`)],
+      },
+      {
+        name: 'does not collapse empty grid even with mixed selection',
+        input: `
+        <div data-uid='root'>
+          <div data-uid='grid1' style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gridTemplateRows: '1fr 1fr 1fr' }}>
+            <div data-uid='deleteme1' style={{gridColumn: 1, gridRow: 1, width: 50, height: 50}} />
+            <div data-uid='deleteme2' style={{gridColumn: 3, gridRow: 1, width: 50, height: 50}} />
+            <div data-uid='deleteme3' style={{gridColumn: 2, gridRow: 3, width: 50, height: 50}} />
+          </div>
+          <div data-uid='grid2' style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gridTemplateRows: '1fr 1fr 1fr' }}>
+            <div data-uid='deleteme4' style={{gridColumn: 1, gridRow: 1, width: 50, height: 50}} />
+            <div data-uid='deleteme5' style={{gridColumn: 2, gridRow: 3, width: 50, height: 50}} />
+          </div>
+        </div>
+        `,
+        targets: [
+          makeTargetPath(`root/grid1/deleteme1`),
+          makeTargetPath(`root/grid2/deleteme4`),
+          makeTargetPath(`root/grid2/deleteme5`),
+        ],
+        wantCode: `
+        <div data-uid='root'>
+            <div data-uid='grid1' style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gridTemplateRows: '1fr 1fr 1fr' }}>
+            <div data-uid='deleteme2' style={{gridColumn: 3, gridRow: 1, width: 50, height: 50}} />
+            <div data-uid='deleteme3' style={{gridColumn: 2, gridRow: 3, width: 50, height: 50}} />
+          </div>
+          <div data-uid='grid2' style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gridTemplateRows: '1fr 1fr 1fr', width: 400, height: 150 }} />
+        </div>
+        `,
+        wantSelection: [makeTargetPath(`root/grid1`), makeTargetPath(`root/grid2`)],
+      },
     ]
     tests.forEach((tt, idx) => {
       it(`(${idx + 1}) ${tt.name}`, async () => {
