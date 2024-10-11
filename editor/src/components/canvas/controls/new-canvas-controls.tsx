@@ -74,7 +74,7 @@ import { NO_OP } from '../../../core/shared/utils'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
-import { GridControls, GridControlsKeyPrefix, type GridControlsProps } from './grid-controls'
+import { GridControls, GridControlsKey } from './grid-controls'
 import { getAllGrids } from '../canvas-strategies/strategies/grid-helpers'
 import type { ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
 
@@ -700,11 +700,7 @@ function useGridsWithoutControl(
       return []
     }
     return getAllGrids(metadata).filter((grid) => {
-      return !strategyControls.some(
-        (control) =>
-          control.key.startsWith(GridControlsKeyPrefix) &&
-          (control.props as GridControlsProps).targets.some((t) => EP.pathsEqual(t, grid)),
-      )
+      return strategyControls.every((control) => control.key !== GridControlsKey(grid))
     })
   }, [metadata, strategyControls, dragInteractionActive])
 }
