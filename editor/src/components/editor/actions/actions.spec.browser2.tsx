@@ -40,8 +40,6 @@ import {
   expectSingleUndoNSaves,
   searchInComponentPicker,
   selectComponentsForTest,
-  setFeatureForBrowserTestsUseInDescribeBlockOnly,
-  wait,
 } from '../../../utils/utils.test-utils'
 import {
   firePasteEvent,
@@ -93,11 +91,8 @@ async function deleteFromScene(
     makeTestProjectCodeWithSnippet(inputSnippet),
     'await-first-dom-report',
   )
-  await wait(1000)
   await renderResult.dispatch([selectComponents(targets, true)], true)
-  await wait(3000)
   await renderResult.dispatch([deleteSelected()], true)
-  await wait(1000)
 
   return {
     code: getPrintedUiJsCode(renderResult.getEditorState()),
