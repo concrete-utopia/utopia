@@ -74,8 +74,9 @@ import { NO_OP } from '../../../core/shared/utils'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
-import { GridControls } from './grid-controls'
+import { GridControls, GridControlsKeyPrefix, type GridControlsProps } from './grid-controls'
 import { getAllGrids } from '../canvas-strategies/strategies/grid-helpers'
+import type { ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -315,7 +316,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     autoFocusedPaths,
     filePathMappings,
     propertyControlsInfo,
-    grids,
   } = useEditorState(
     Substores.fullStore,
     (store) => {
@@ -336,10 +336,15 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         autoFocusedPaths: store.derived.autoFocusedPaths,
         filePathMappings: store.derived.filePathMappings,
         propertyControlsInfo: store.editor.propertyControlsInfo,
-        grids: isDragInteractionActive(store.editor) ? getAllGrids(store.editor.jsxMetadata) : [],
       }
     },
     'NewCanvasControlsInner',
+  )
+
+  const gridsWithoutControl = useGridsWithoutControl(
+    strategyControls,
+    dragInteractionActive,
+    componentMetadata,
   )
 
   const cmdKeyPressed = keysPressed['cmd'] ?? false
@@ -605,7 +610,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                       <RenderControlMemoized
                         key={'grids'}
                         control={GridControls.control as React.FC<{}>}
-                        propsForControl={{ targets: grids, visible: 'hidden' }}
+                        propsForControl={{ targets: gridsWithoutControl, visible: 'hidden' }}
                       />,
                     )}
                     {strategyControls.map((c) => (
@@ -684,5 +689,24 @@ const SelectionAreaRectangle = React.memo(
     )
   },
 )
+
+function useGridsWithoutControl(
+  strategyControls: Array<ControlWithProps<unknown>>,
+  dragInteractionActive: boolean,
+  metadata: ElementInstanceMetadataMap,
+) {
+  return React.useMemo(() => {
+    if (!dragInteractionActive) {
+      return []
+    }
+    return getAllGrids(metadata).filter((grid) => {
+      return !strategyControls.some(
+        (control) =>
+          control.key.startsWith(GridControlsKeyPrefix) &&
+          (control.props as GridControlsProps).targets.some((t) => EP.pathsEqual(t, grid)),
+      )
+    })
+  }, [metadata, strategyControls, dragInteractionActive])
+}
 
 SelectionAreaRectangle.displayName = 'SelectionAreaRectangle'
