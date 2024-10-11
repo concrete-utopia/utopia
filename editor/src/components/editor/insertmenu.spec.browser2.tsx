@@ -26,7 +26,7 @@ function getInsertItems() {
   return screen.queryAllByTestId(/^component-picker-item-/gi)
 }
 
-const allInsertItemsCount = 23
+const allInsertItemsCount = 24
 
 function openInsertMenu(renderResult: EditorRenderResult) {
   return renderResult.dispatch(
