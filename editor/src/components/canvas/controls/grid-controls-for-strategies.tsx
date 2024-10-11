@@ -30,7 +30,7 @@ import {
   GridControlsComponent,
   GridResizeControlsComponent,
   GridRowColumnResizingControlsComponent,
-} from './grid-controls-components'
+} from './grid-controls'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
