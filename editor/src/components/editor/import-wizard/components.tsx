@@ -35,7 +35,7 @@ export function OperationLine({ operation }: { operation: ImportOperation }) {
         <OperationIcon runningStatus={operationRunningStatus} result={operation.result} />
         <div>{getImportOperationText(operation)}</div>
         <div>
-          <TimeFromInSeconds operation={operation} />
+          <TimeFromInSeconds operation={operation} runningStatus={operationRunningStatus} />
         </div>
       </OperationLineContent>
       <OperationChildrenList operation={operation} />
@@ -44,9 +44,6 @@ export function OperationLine({ operation }: { operation: ImportOperation }) {
 }
 
 function OperationChildrenList({ operation }: { operation: ImportOperation }) {
-  if (operation.type !== 'checkRequirements' && operation.type !== 'refreshDependencies') {
-    return null
-  }
   if (operation.children == null || operation.children.length === 0) {
     return null
   }
@@ -61,13 +58,13 @@ function OperationChildrenList({ operation }: { operation: ImportOperation }) {
     >
       {operation.type === 'refreshDependencies' ? (
         <AggregatedChildrenStatus
-          childOperations={operation.children}
+          childOperations={operation.children as ImportFetchDependency[]}
           successFn={dependenciesSuccessFn}
           successTextFn={dependenciesSuccessTextFn}
         />
       ) : operation.type === 'checkRequirements' ? (
         <AggregatedChildrenStatus
-          childOperations={operation.children}
+          childOperations={operation.children as ImportCheckRequirementAndFix[]}
           successFn={requirementsSuccessFn}
           successTextFn={requirementsSuccessTextFn}
         />
@@ -98,8 +95,8 @@ function AggregatedChildrenStatus<T extends ImportOperation>({
     <React.Fragment>
       {doneDependencies.length > 0 ? (
         <OperationLineWrapper className='operation-done'>
-          <OperationLineContent textColor='green'>
-            <Icons.Checkmark />
+          <OperationLineContent textColor='black'>
+            <Icons.Checkmark style={getIconColorStyle(ImportOperationResult.Success)} />
             <div>{successTextFn(doneDependencies.length)}</div>
           </OperationLineContent>
         </OperationLineWrapper>
@@ -118,20 +115,30 @@ function OperationIcon({
   runningStatus: 'waiting' | 'running' | 'done'
   result?: ImportOperationResult
 }) {
+  const iconColorStyle = React.useMemo(
+    () => (result != null ? getIconColorStyle(result) : {}),
+    [result],
+  )
   if (runningStatus === 'running') {
     return <GithubSpinner />
   } else if (runningStatus === 'done' && result === 'success') {
-    return <Icons.Checkmark />
+    return <Icons.Checkmark style={iconColorStyle} />
   } else if (runningStatus === 'done' && result === 'warn') {
-    return <Icons.WarningTriangle />
+    return <Icons.WarningTriangle style={iconColorStyle} />
   } else if (runningStatus === 'waiting') {
     return <Icons.Dot />
   } else {
-    return <Icons.Cross />
+    return <Icons.Cross style={iconColorStyle} />
   }
 }
 
-function TimeFromInSeconds({ operation }: { operation: ImportOperation }) {
+function TimeFromInSeconds({
+  operation,
+  runningStatus,
+}: {
+  operation: ImportOperation
+  runningStatus: 'waiting' | 'running' | 'done'
+}) {
   const [currentTime, setCurrentTime] = React.useState(Date.now())
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -153,7 +160,15 @@ function TimeFromInSeconds({ operation }: { operation: ImportOperation }) {
       ? (operationTime / 1000).toFixed(2)
       : Math.max(Math.floor(operationTime / 1000), 0)
   return operation.timeStarted == null ? null : (
-    <div data-short-time={operationTime < 100}>{timeInSeconds}s</div>
+    <div
+      data-short-time={operationTime < 100}
+      style={{
+        color: runningStatus === 'running' ? 'black' : 'gray',
+        fontSize: runningStatus === 'running' ? undefined : 12,
+      }}
+    >
+      {timeInSeconds}s
+    </div>
   )
 }
 
@@ -249,18 +264,32 @@ function getTextColor(
 ) {
   if (operationRunningStatus === 'waiting') {
     return 'gray'
-  } else if (operationRunningStatus === 'running') {
-    return 'black'
-  } else if (
-    operation.type === 'checkRequirementAndFix' &&
-    operation.resolution === RequirementResolutionResult.Fixed
-  ) {
-    return 'var(--utopitheme-primary)'
-  } else if (operation.result === ImportOperationResult.Success) {
-    return 'green'
-  } else if (operation.result === ImportOperationResult.Warn) {
-    return 'orange'
   } else {
-    return 'var(--utopitheme-errorForeground)'
+    return 'black'
   }
+}
+
+function getIconColorStyle(result: ImportOperationResult) {
+  // temp solution since we currently only have black icons
+  // https://codepen.io/sosuke/pen/Pjoqqp
+  if (result === ImportOperationResult.Error) {
+    return {
+      // our error red
+      filter:
+        'invert(14%) sepia(99%) saturate(4041%) hue-rotate(328deg) brightness(101%) contrast(115%)',
+    }
+  } else if (result === ImportOperationResult.Warn) {
+    return {
+      // orange
+      filter:
+        'invert(72%) sepia(90%) saturate(3088%) hue-rotate(1deg) brightness(105%) contrast(104%)',
+    }
+  } else if (result === ImportOperationResult.Success) {
+    return {
+      // green
+      filter:
+        'invert(72%) sepia(60%) saturate(3628%) hue-rotate(126deg) brightness(104%) contrast(76%)',
+    }
+  }
+  return {}
 }

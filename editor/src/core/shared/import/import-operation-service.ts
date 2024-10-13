@@ -70,10 +70,10 @@ export function areSameOperation(existing: ImportOperation, incoming: ImportOper
 export const defaultParentTypes: Partial<Record<ImportOperationType, ImportOperationType>> = {
   checkRequirementAndFix: 'checkRequirements',
   fetchDependency: 'refreshDependencies',
-}
+} as const
 
 function getParentArray(root: ImportOperation[], operation: ImportOperation): ImportOperation[] {
-  const parentOperationType = operation.parentOperationType ?? defaultParentTypes[operation.type]
+  const parentOperationType = defaultParentTypes[operation.type]
   if (parentOperationType == null) {
     return root
   }

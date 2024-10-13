@@ -1,6 +1,9 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
 import React from 'react'
+import { jsx } from '@emotion/react'
 import { getProjectID } from '../../../common/env-vars'
-import { Button, Icons, useColorTheme, UtopiaStyles } from '../../../uuiui'
+import { Button, FlexRow, H2, Icons, useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { useEditorState, Substores } from '../store/store-hook'
 import { when } from '../../../utils/react-conditionals'
 import { hideImportWizard } from '../../../core/shared/import/import-operation-service'
@@ -66,25 +69,32 @@ export const ImportWizard = React.memo(() => {
             fontSize: '14px',
             lineHeight: 'normal',
             letterSpacing: 'normal',
-            padding: 40,
+            padding: 20,
             overflow: 'hidden',
           }}
           onClick={stopPropagation}
         >
-          <Button
-            highlight
-            style={{
-              position: 'absolute',
-              top: 14,
-              right: 14,
-              width: 22,
-              height: 22,
+          <FlexRow
+            className='import-wizard-header'
+            css={{
+              justifyContent: 'space-between',
+              width: '100%',
             }}
-            onClick={handleDismiss}
           >
-            <Icons.Cross />
-          </Button>
+            <div css={{ fontSize: 16, fontWeight: 400 }}>Project Import</div>
+            <Button
+              highlight
+              style={{
+                width: 22,
+                height: 22,
+              }}
+              onClick={handleDismiss}
+            >
+              <Icons.Cross />
+            </Button>
+          </FlexRow>
           <div
+            className='import-wizard-body'
             style={{
               display: 'flex',
               flexDirection: 'column',
@@ -92,12 +102,23 @@ export const ImportWizard = React.memo(() => {
               overflow: 'scroll',
               height: '100%',
               width: '100%',
+              // padding: 20,
+              marginTop: 20,
             }}
           >
             {operations.map((operation) => (
               <OperationLine key={operation.id ?? operation.type} operation={operation} />
             ))}
           </div>
+          <div
+            className='import-wizard-footer'
+            css={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              width: '100%',
+              marginTop: 20,
+            }}
+          ></div>
         </div>,
       )}
     </div>

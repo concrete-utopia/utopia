@@ -8,7 +8,7 @@ type ImportOperationData = {
   timeDone?: number | null
   result?: ImportOperationResult
   error?: string
-  parentOperationType?: ImportOperationType
+  children?: ImportOperation[]
 }
 
 export enum ImportOperationResult {
@@ -25,7 +25,6 @@ type ImportLoadBranch = {
 
 type ImportRefreshDependencies = ImportOperationData & {
   type: 'refreshDependencies'
-  children?: ImportFetchDependency[]
 }
 
 export type ImportFetchDependency = ImportOperationData & {
@@ -59,7 +58,6 @@ export function importCheckRequirementAndFix(
 
 type ImportCheckRequirements = ImportOperationData & {
   type: 'checkRequirements'
-  children?: ImportCheckRequirementAndFix[]
 }
 
 export type ImportOperation =
