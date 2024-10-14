@@ -79,8 +79,8 @@ import {
   useGridData,
 } from './grid-controls-for-strategies'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
-import { useResizeEdges } from './select-mode/absolute-resize-control'
 import { isEdgePositionOnSide } from '../canvas-utils'
+import { useResizeEdges } from './select-mode/use-resize-edges'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -817,8 +817,6 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
           const countedColumn = Math.floor(cell % grid.columns) + 1
           const id = gridCellTargetId(grid.elementPath, countedRow, countedColumn)
           const borderID = `${id}-border`
-          const dotgridColor =
-            activelyDraggingOrResizingCell != null ? colorTheme.blackOpacity35.value : 'transparent'
 
           const isActiveCell =
             countedColumn === currentHoveredCell?.column && countedRow === currentHoveredCell?.row
