@@ -24,7 +24,7 @@ export const Plugins = {
 } as const
 
 export function getActivePlugin(editorState: EditorState): StylePlugin {
-  if (isFeatureEnabled('Tailwind') || isTailwindEnabled()) {
+  if (isFeatureEnabled('Tailwind') && isTailwindEnabled()) {
     return TailwindPlugin(getTailwindConfigCached(editorState))
   }
   return InlineStylePlugin
