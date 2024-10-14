@@ -15,7 +15,7 @@ import * as PP from '../../../../core/shared/property-path'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { isFixedHugFillModeApplied } from '../../../inspector/inspector-common'
+import { isFillOrStretchFillModeApplied } from '../../../inspector/inspector-common'
 import type { EdgePosition } from '../../canvas-types'
 import { oppositeEdgePosition } from '../../canvas-types'
 import {
@@ -84,11 +84,7 @@ export function basicResizeStrategy(
   const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
 
   const isGridCell = MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)
-  if (
-    isGridCell &&
-    (isFixedHugFillModeApplied(canvasState.startingMetadata, selectedElement, 'fill') ||
-      isFixedHugFillModeApplied(canvasState.startingMetadata, selectedElement, 'stretch'))
-  ) {
+  if (isGridCell && isFillOrStretchFillModeApplied(canvasState.startingMetadata, selectedElement)) {
     return null
   }
 
