@@ -821,10 +821,11 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
           const isActiveCell =
             countedColumn === currentHoveredCell?.column && countedRow === currentHoveredCell?.row
 
-          const borderColor =
-            isActiveCell && targetsAreCellsWithPositioning
-              ? colorTheme.brandNeonPink.value
-              : colorTheme.blackOpacity35.value
+          const activePositioningTarget = isActiveCell && targetsAreCellsWithPositioning
+
+          const borderColor = activePositioningTarget
+            ? colorTheme.brandNeonPink.value
+            : colorTheme.grey65.value
           return (
             <div
               key={id}
@@ -834,6 +835,7 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
               style={{
                 position: 'relative',
                 pointerEvents: 'initial',
+                zIndex: activePositioningTarget ? 1 : undefined,
               }}
               data-grid-row={countedRow}
               data-grid-column={countedColumn}
@@ -851,18 +853,8 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
                     height: gridPlaceholderWidthOrHeight(scale),
                     borderTop: gridPlaceholderBorder(borderColor, scale),
                     borderLeft: gridPlaceholderBorder(borderColor, scale),
-                    borderBottom:
-                      isActiveCell ||
-                      countedRow >= grid.rows ||
-                      (grid.rowGap != null && grid.rowGap > 0)
-                        ? gridPlaceholderBorder(borderColor, scale)
-                        : undefined,
-                    borderRight:
-                      isActiveCell ||
-                      countedColumn >= grid.columns ||
-                      (grid.columnGap != null && grid.columnGap > 0)
-                        ? gridPlaceholderBorder(borderColor, scale)
-                        : undefined,
+                    borderBottom: gridPlaceholderBorder(borderColor, scale),
+                    borderRight: gridPlaceholderBorder(borderColor, scale),
                   }}
                 />
               </React.Fragment>
