@@ -65,7 +65,6 @@ import {
 } from '../canvas-strategies/strategies/grid-helpers'
 import { canResizeGridTemplate } from '../canvas-strategies/strategies/resize-grid-strategy'
 import { resizeBoundingBoxFromSide } from '../canvas-strategies/strategies/resize-helpers'
-import type { EdgePosition } from '../canvas-types'
 import { CSSCursor } from '../canvas-types'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import type { Axis } from '../gap-utils'
@@ -73,13 +72,13 @@ import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import type { GridControlsProps, GridData } from './grid-controls-for-strategies'
 import {
+  edgePositionToGridResizeEdge,
   getNullableAutoOrTemplateBaseString,
   GridCellTestId,
   gridEdgeToEdgePosition,
   useGridData,
 } from './grid-controls-for-strategies'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
-import { isEdgePositionOnSide } from '../canvas-utils'
 import { useResizeEdges } from './select-mode/use-resize-edges'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
@@ -1594,20 +1593,4 @@ function gridPlaceholderTopOrLeftPosition(scale: number): string {
 
 function gridPlaceholderWidthOrHeight(scale: number): string {
   return `calc(100% + ${(borderExtension * 2) / scale}px)`
-}
-
-function edgePositionToGridResizeEdge(position: EdgePosition): GridResizeEdge | null {
-  if (!isEdgePositionOnSide(position)) {
-    return null
-  } else if (position.x === 0) {
-    return 'column-start'
-  } else if (position.x === 1) {
-    return 'column-end'
-  } else if (position.y === 0) {
-    return 'row-start'
-  } else if (position.y === 1) {
-    return 'row-end'
-  } else {
-    return null
-  }
 }
