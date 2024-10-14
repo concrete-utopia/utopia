@@ -225,7 +225,7 @@ interface GapControlSizeConstants {
 }
 
 const DefaultGapControlSizeConstants: GapControlSizeConstants = {
-  dragBorderWidth: 1,
+  dragBorderWidth: 0.5,
   borderWidth: 1,
   paddingIndicatorOffset: 10,
   hitAreaPadding: 5,
