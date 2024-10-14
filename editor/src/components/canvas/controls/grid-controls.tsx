@@ -927,7 +927,9 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
 })
 GridControl.displayName = 'GridControl'
 
-export const GridMeasurementHelper = React.memo<GridControlProps>(({ grid }) => {
+type GridMeasurementHelperProps = GridControlProps
+
+export const GridMeasurementHelper = React.memo<GridMeasurementHelperProps>(({ grid }) => {
   const placeholders = range(0, grid.cells)
 
   let style: CSSProperties = {
@@ -976,7 +978,9 @@ export const GridMeasurementHelper = React.memo<GridControlProps>(({ grid }) => 
         {placeholders.map((cell) => {
           const countedRow = Math.floor(cell / grid.columns) + 1
           const countedColumn = Math.floor(cell % grid.columns) + 1
-          const id = gridCellTargetId(grid.elementPath, countedRow, countedColumn)
+          const id = `grid-measurement-helper-${EP.toString(
+            grid.elementPath,
+          )}-${countedRow}-${countedColumn}`
           return (
             <div
               key={id}
