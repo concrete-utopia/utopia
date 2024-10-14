@@ -190,6 +190,7 @@ import type { NavigatorRow } from '../../navigator/navigator-row'
 import type { FancyError } from '../../../core/shared/code-exec-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
 import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
+import { RequirementResolutionStatus } from '../../../core/shared/import/utopia-requirements-service'
 import type { RequirementResolutionResult } from '../../../core/shared/import/utopia-requirements-service'
 
 const ObjectPathImmutable: any = OPI
@@ -1203,12 +1204,6 @@ export function newProjectRequirements(
     language,
     reactVersion,
   }
-}
-
-export enum RequirementResolutionStatus {
-  NotStarted = 'not-started',
-  Pending = 'pending',
-  Done = 'done',
 }
 
 export function emptyRequirementResolution(): RequirementResolution {

@@ -3,7 +3,6 @@ import { notifyOperationFinished, notifyOperationStarted } from './import-operat
 import type { ProjectRequirements } from '../../../components/editor/store/editor-state'
 import {
   emptyProjectRequirements,
-  RequirementResolutionStatus,
   type ProjectRequirement,
 } from '../../../components/editor/store/editor-state'
 import type { EditorDispatch } from '../../../components/editor/action-types'
@@ -126,4 +125,10 @@ export enum RequirementResolutionResult {
   Fixed = 'fixed',
   Partial = 'partial',
   Critical = 'critical',
+}
+
+export enum RequirementResolutionStatus {
+  NotStarted = 'not-started',
+  Pending = 'pending',
+  Done = 'done',
 }
