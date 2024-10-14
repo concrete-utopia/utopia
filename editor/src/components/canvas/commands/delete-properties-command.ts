@@ -16,8 +16,7 @@ import type { BaseCommand, CommandFunctionResult, WhenToRun } from './commands'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { patchParseSuccessAtElementPath } from './patch-utils'
-import type { NonEmptyArray } from '../../../core/shared/array-utils'
-import { isNonEmptyArray, mapDropNulls } from '../../../core/shared/array-utils'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 import { applyValuesAtPath } from './adjust-number-command'
 
 export interface DeleteProperties extends BaseCommand {
@@ -100,24 +99,13 @@ export const runDeleteProperties = (
   editorState: EditorState,
   command: DeleteProperties,
 ): CommandFunctionResult => {
-  if (!isNonEmptyArray(command.properties)) {
-    return {
-      editorStatePatches: [],
-      commandDescription: `Delete Properties ${command.properties
-        .map(PP.toString)
-        .join(',')} on ${EP.toUid(command.element)}`,
-    }
-  }
+  const { editorStatePatch: propertyUpdatePatch, editorStateWithChanges: withPropertiesRemoved } =
+    deleteValuesAtPath(editorState, command.element, command.properties)
 
-  const result = deleteValuesAtPath(editorState, command.element, command.properties)
-
-  const propertiesToUnsetPatches = getPropertiesToUnsetPatches(
-    result.editorStateWithChanges,
-    command,
-  )
+  const propertiesToUnsetPatches = getPropertiesToUnsetPatches(withPropertiesRemoved, command)
 
   return {
-    editorStatePatches: [result.editorStatePatch, ...propertiesToUnsetPatches],
+    editorStatePatches: [propertyUpdatePatch, ...propertiesToUnsetPatches],
     commandDescription: `Delete Properties ${command.properties
       .map(PP.toString)
       .join(',')} on ${EP.toUid(command.element)}`,

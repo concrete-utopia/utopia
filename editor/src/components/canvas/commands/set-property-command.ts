@@ -1,4 +1,4 @@
-import { isNonEmptyArray, mapDropNulls } from '../../../core/shared/array-utils'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import type {
