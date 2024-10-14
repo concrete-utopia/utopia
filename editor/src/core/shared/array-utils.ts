@@ -584,3 +584,16 @@ export function sortArrayByAndReturnPermutation<T>(
 export function revertArrayOrder<T>(array: T[], permutation: number[]): T[] {
   return array.map((_, index) => array[permutation.indexOf(index)])
 }
+
+// From https://stackoverflow.com/a/31879739
+export function interleaveArray<T>(array: T[], elem: T): T[] {
+  const newArray = []
+  let i = 0
+  if (i < array.length) {
+    newArray.push(array[i++])
+  }
+  while (i < array.length) {
+    newArray.push(elem, array[i++])
+  }
+  return newArray
+}

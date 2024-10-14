@@ -81,6 +81,7 @@ import {
 } from './grid-controls-for-strategies'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { useResizeEdges } from './select-mode/use-resize-edges'
+import { getStyleMatchingTargetGrid } from './grid-controls-helpers'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -763,46 +764,15 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
   })
 
   const placeholders = range(0, grid.cells)
-  let style: CSSProperties = {
-    position: 'absolute',
-    top: grid.frame.y,
-    left: grid.frame.x,
-    width: grid.frame.width,
-    height: grid.frame.height,
-    display: 'grid',
-    gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
-    gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
+  const baseStyle = getStyleMatchingTargetGrid(grid)
+  const style = {
+    ...baseStyle,
     backgroundColor:
       activelyDraggingOrResizingCell != null ? colorTheme.primary10.value : 'transparent',
     outline: `1px solid ${
       activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
     }`,
-    justifyContent: grid.justifyContent ?? 'initial',
-    alignContent: grid.alignContent ?? 'initial',
-    pointerEvents: 'none',
-    padding:
-      grid.padding == null
-        ? 0
-        : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
   }
-
-  // Gap needs to be set only if the other two are not present or we'll have rendering issues
-  // due to how measurements are calculated.
-  if (grid.rowGap != null && grid.columnGap != null) {
-    style.rowGap = grid.rowGap
-    style.columnGap = grid.columnGap
-  } else {
-    if (grid.gap != null) {
-      style.gap = grid.gap
-    }
-    if (grid.rowGap != null) {
-      style.rowGap = grid.rowGap
-    }
-    if (grid.columnGap != null) {
-      style.columnGap = grid.columnGap
-    }
-  }
-
   return (
     <React.Fragment>
       {/* grid lines */}
