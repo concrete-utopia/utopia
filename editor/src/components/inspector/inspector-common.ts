@@ -911,7 +911,7 @@ export function isFixedHugFillModeApplied(
   )
 }
 
-export function isFillOrStretchFillModeApplied(
+export function isFillOrStretchModeApplied(
   metadata: ElementInstanceMetadataMap,
   element: ElementPath,
 ): boolean {

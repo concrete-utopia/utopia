@@ -7,7 +7,7 @@ import {
   rectangleIntersection,
 } from '../../../../core/shared/math-utils'
 import { isCSSKeyword } from '../../../inspector/common/css-utils'
-import { isFillOrStretchFillModeApplied } from '../../../inspector/inspector-common'
+import { isFillOrStretchModeApplied } from '../../../inspector/inspector-common'
 import {
   controlsForGridPlaceholders,
   gridEdgeToEdgePosition,
@@ -52,7 +52,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  if (!isFillOrStretchFillModeApplied(canvasState.startingMetadata, selectedElement)) {
+  if (!isFillOrStretchModeApplied(canvasState.startingMetadata, selectedElement)) {
     return null
   }
 
