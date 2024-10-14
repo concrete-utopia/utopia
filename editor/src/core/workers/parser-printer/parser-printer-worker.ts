@@ -104,7 +104,7 @@ export function getParseFileResult(
     parseOptions.parsingCacheOptions.useParsingCache
   ) {
     // non blocking cache write
-    void storeParseResultInCache(file, result, parseOptions.parsingCacheOptions)
+    void storeParseResultInCache(file, result.parseResult, parseOptions.parsingCacheOptions)
   }
 
   return result

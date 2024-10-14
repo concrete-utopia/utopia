@@ -7,7 +7,7 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
@@ -72,11 +72,20 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
 
       const targetElement = EP.appendToPath(EP.parentPath(selectedElement), newUid)
 
+      const grid = MetadataUtils.findElementByElementPath(
+        canvasState.startingMetadata,
+        EP.parentPath(selectedElement),
+      )
+      if (grid == null) {
+        return emptyStrategyApplicationResult
+      }
+
       const moveCommands = runGridRearrangeMove(
         targetElement,
         selectedElement,
         canvasState.startingMetadata,
         interactionSession.interactionData,
+        grid,
       )
       if (moveCommands.length === 0) {
         return emptyStrategyApplicationResult

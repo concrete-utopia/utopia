@@ -7,12 +7,12 @@ import {
   rectangleIntersection,
 } from '../../../../core/shared/math-utils'
 import { isCSSKeyword } from '../../../inspector/common/css-utils'
-import { isFixedHugFillModeApplied } from '../../../inspector/inspector-common'
+import { isFillOrStretchModeApplied } from '../../../inspector/inspector-common'
 import {
   controlsForGridPlaceholders,
   gridEdgeToEdgePosition,
   GridResizeControls,
-} from '../../controls/grid-controls'
+} from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -52,10 +52,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const isFillOrStretchContainer =
-    isFixedHugFillModeApplied(canvasState.startingMetadata, selectedElement, 'fill') ||
-    isFixedHugFillModeApplied(canvasState.startingMetadata, selectedElement, 'stretch')
-  if (!isFillOrStretchContainer) {
+  if (!isFillOrStretchModeApplied(canvasState.startingMetadata, selectedElement)) {
     return null
   }
 

@@ -5445,7 +5445,10 @@ export const computedStyleKeys: Array<string> = Object.keys({
   ...layoutEmptyValuesNew,
 })
 
-type Parser<T> = (simpleValue: unknown, rawValue: ModifiableAttribute | null) => Either<string, T>
+export type Parser<T> = (
+  simpleValue: unknown,
+  rawValue: ModifiableAttribute | null,
+) => Either<string, T>
 
 type ParseFunction<T, K extends keyof T> = (
   prop: K,

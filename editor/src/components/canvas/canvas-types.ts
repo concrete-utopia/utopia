@@ -26,6 +26,7 @@ import type {
 import { InteractionSession } from './canvas-strategies/interaction-state'
 import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import type { MouseButtonsPressed } from '../../utils/mouse'
+import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -533,3 +534,24 @@ export const EdgePositionBottomRight: EdgePosition = { x: 1, y: 1 }
 export const EdgePositionTopRight: EdgePosition = { x: 1, y: 0 }
 
 export type SelectionLocked = 'locked' | 'locked-hierarchy' | 'selectable'
+
+export type PropertyTag = { type: 'hover' } | { type: 'breakpoint'; name: string }
+
+export interface WithPropertyTag<T> {
+  tag: PropertyTag | null
+  value: T
+}
+
+export const withPropertyTag = <T>(value: T): WithPropertyTag<T> => ({
+  tag: null,
+  value: value,
+})
+
+export type FlexGapInfo = WithPropertyTag<CSSNumber>
+
+export type FlexDirectionInfo = WithPropertyTag<FlexDirection>
+
+export interface StyleInfo {
+  gap: FlexGapInfo | null
+  flexDirection: FlexDirectionInfo | null
+}

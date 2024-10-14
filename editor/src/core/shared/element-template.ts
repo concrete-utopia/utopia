@@ -35,6 +35,7 @@ import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
 import type {
+  AlignContent,
   FlexAlignment,
   FlexJustifyContent,
   SelfAlignment,
@@ -2814,7 +2815,7 @@ export interface SpecialSizeMeasurements {
   gap: number | null
   flexDirection: FlexDirection | null
   justifyContent: FlexJustifyContent | null
-  alignContent: FlexJustifyContent | null
+  alignContent: AlignContent | null
   alignItems: FlexAlignment | null
   alignSelf: SelfAlignment | null
   justifySelf: SelfAlignment | null
@@ -2867,7 +2868,7 @@ export function specialSizeMeasurements(
   gap: number | null,
   flexDirection: FlexDirection | null,
   justifyContent: FlexJustifyContent | null,
-  alignContent: FlexJustifyContent | null,
+  alignContent: AlignContent | null,
   alignItems: FlexAlignment | null,
   htmlElementName: string,
   renderedChildrenCount: number,
