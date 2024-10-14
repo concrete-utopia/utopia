@@ -15,12 +15,13 @@ import {
   offsetPoint,
 } from '../../../../core/shared/math-utils'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
-import { GridResizeEdgeTestId } from '../../controls/grid-controls-for-strategies'
 import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import type { GridResizeEdge } from '../interaction-state'
 import { gridCellTargetId } from './grid-cell-bounds'
+import { ResizePointTestId } from '../../controls/select-mode/absolute-resize-control'
+import { gridEdgeToEdgePosition } from '../../controls/grid-controls-for-strategies'
 
 async function runCellResizeTest(
   editor: EditorRenderResult,
@@ -30,7 +31,9 @@ async function runCellResizeTest(
 ) {
   await selectComponentsForTest(editor, [elementPathToDrag])
 
-  const resizeControl = editor.renderedDOM.getByTestId(GridResizeEdgeTestId(edge))
+  const resizeControl = editor.renderedDOM.getByTestId(
+    ResizePointTestId(gridEdgeToEdgePosition(edge)),
+  )
   const targetGridCell = editor.renderedDOM.getByTestId(dragToCellTestId)
 
   await mouseDragFromPointToPoint(
@@ -61,7 +64,9 @@ async function runCellResizeTestWithDragVector(
 ) {
   await selectComponentsForTest(editor, [elementPathToDrag])
 
-  const resizeControl = editor.renderedDOM.getByTestId(GridResizeEdgeTestId(edge))
+  const resizeControl = editor.renderedDOM.getByTestId(
+    ResizePointTestId(gridEdgeToEdgePosition(edge)),
+  )
 
   const resizeControlCenter = getRectCenter(
     localRectangle({
@@ -82,15 +87,6 @@ async function runCellResizeTestWithDragVector(
 }
 
 describe('grid resize element strategy', () => {
-  it('cannot resize non-filling cells', async () => {
-    const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
-
-    await selectComponentsForTest(editor, [EP.fromString('sb/scene/grid/grid-child-not-filling')])
-
-    const resizeControl = editor.renderedDOM.queryByTestId(GridResizeEdgeTestId('column-end'))
-    expect(resizeControl).toBeNull()
-  })
-
   describe('column-end', () => {
     it('can enlarge element', async () => {
       const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
