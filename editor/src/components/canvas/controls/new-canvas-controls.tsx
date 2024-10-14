@@ -608,7 +608,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                           return (
                             <GridMeasurementHelper
                               key={GridControlKey(grid.elementPath)}
-                              grid={grid}
+                              {...grid}
                             />
                           )
                         })}

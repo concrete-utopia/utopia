@@ -927,59 +927,57 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
 })
 GridControl.displayName = 'GridControl'
 
-type GridMeasurementHelperProps = GridControlProps
-
-export const GridMeasurementHelper = React.memo<GridMeasurementHelperProps>(({ grid }) => {
-  const placeholders = range(0, grid.cells)
+export const GridMeasurementHelper = React.memo<GridData>((props) => {
+  const placeholders = range(0, props.cells)
 
   let style: CSSProperties = {
     position: 'absolute',
-    top: grid.frame.y,
-    left: grid.frame.x,
-    width: grid.frame.width,
-    height: grid.frame.height,
+    top: props.frame.y,
+    left: props.frame.x,
+    width: props.frame.width,
+    height: props.frame.height,
     display: 'grid',
-    gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
-    gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
-    justifyContent: grid.justifyContent ?? 'initial',
-    alignContent: grid.alignContent ?? 'initial',
+    gridTemplateColumns: getNullableAutoOrTemplateBaseString(props.gridTemplateColumns),
+    gridTemplateRows: getNullableAutoOrTemplateBaseString(props.gridTemplateRows),
+    justifyContent: props.justifyContent ?? 'initial',
+    alignContent: props.alignContent ?? 'initial',
     pointerEvents: 'none',
     padding:
-      grid.padding == null
+      props.padding == null
         ? 0
-        : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
+        : `${props.padding.top}px ${props.padding.right}px ${props.padding.bottom}px ${props.padding.left}px`,
     opacity: 1,
   }
 
   // Gap needs to be set only if the other two are not present or we'll have rendering issues
   // due to how measurements are calculated.
-  if (grid.rowGap != null && grid.columnGap != null) {
-    style.rowGap = grid.rowGap
-    style.columnGap = grid.columnGap
+  if (props.rowGap != null && props.columnGap != null) {
+    style.rowGap = props.rowGap
+    style.columnGap = props.columnGap
   } else {
-    if (grid.gap != null) {
-      style.gap = grid.gap
+    if (props.gap != null) {
+      style.gap = props.gap
     }
-    if (grid.rowGap != null) {
-      style.rowGap = grid.rowGap
+    if (props.rowGap != null) {
+      style.rowGap = props.rowGap
     }
-    if (grid.columnGap != null) {
-      style.columnGap = grid.columnGap
+    if (props.columnGap != null) {
+      style.columnGap = props.columnGap
     }
   }
 
   return (
     <CanvasOffsetWrapper>
       <div
-        id={`grid-measurement-helper-${EP.toString(grid.elementPath)}`}
-        data-grid-path={EP.toString(grid.elementPath)}
+        id={`grid-measurement-helper-${EP.toString(props.elementPath)}`}
+        data-grid-path={EP.toString(props.elementPath)}
         style={style}
       >
         {placeholders.map((cell) => {
-          const countedRow = Math.floor(cell / grid.columns) + 1
-          const countedColumn = Math.floor(cell % grid.columns) + 1
+          const countedRow = Math.floor(cell / props.columns) + 1
+          const countedColumn = Math.floor(cell % props.columns) + 1
           const id = `grid-measurement-helper-${EP.toString(
-            grid.elementPath,
+            props.elementPath,
           )}-${countedRow}-${countedColumn}`
           return (
             <div
