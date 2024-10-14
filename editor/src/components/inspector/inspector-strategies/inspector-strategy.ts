@@ -1,6 +1,12 @@
+import { mapDropNulls } from '../../../core/shared/array-utils'
+import * as EP from '../../../core/shared/element-path'
 import type { CanvasCommand } from '../../canvas/commands/commands'
 import type { EditorDispatch } from '../../editor/action-types'
-import { applyCommandsAction, transientActions } from '../../editor/actions/action-creators'
+import {
+  applyCommandsAction,
+  runNormalizationStep,
+  transientActions,
+} from '../../editor/actions/action-creators'
 import type { ElementsToRerender } from '../../editor/store/editor-state'
 
 interface CustomInspectorStrategyResultBase {
@@ -67,7 +73,21 @@ export function executeFirstApplicableStrategyForContinuousInteraction(
     if (elementsToRerenderTransient !== 'rerender-all-elements') {
       dispatch([transientActions([applyCommandsAction(commands)], elementsToRerenderTransient)])
     } else {
-      dispatch([applyCommandsAction(commands)])
+      dispatch([
+        applyCommandsAction(commands),
+        runNormalizationStep(
+          EP.uniqueElementPaths(
+            mapDropNulls((command) => {
+              switch (command.type) {
+                case 'DELETE_PROPERTIES':
+                  return command.element
+                default:
+                  return null
+              }
+            }, commands),
+          ),
+        ),
+      ])
     }
   }
 }

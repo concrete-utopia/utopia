@@ -6152,7 +6152,8 @@ export const UPDATE_FNS = {
     }
   },
   RUN_NORMALIZATION_STEP: (action: RunNormalizationStep, editor: EditorModel): EditorModel => {
-    const normalizedEditor = getActivePlugin(editor).normalizeFromInlineStyle(
+    const activePlugin = getActivePlugin(editor)
+    const normalizedEditor = activePlugin.normalizeFromInlineStyle(
       editor,
       action.elementsToNormalize,
     )
