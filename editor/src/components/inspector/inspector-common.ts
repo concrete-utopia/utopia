@@ -916,7 +916,7 @@ export function isFillOrStretchModeApplied(
   element: ElementPath,
 ): boolean {
   return (
-    isFixedHugFillModeApplied(metadata, element, 'fixed') ||
+    isFixedHugFillModeApplied(metadata, element, 'fill') ||
     isFixedHugFillModeApplied(metadata, element, 'stretch')
   )
 }
