@@ -337,6 +337,29 @@ Array [
     },
   },
   Object {
+    "insertableComponents": Array [
+      Object {
+        "defaultSize": Object {
+          "height": 150,
+          "width": 150,
+        },
+        "element": [Function],
+        "icon": "component",
+        "importsToAdd": Object {},
+        "insertionCeiling": Object {
+          "type": "file-root",
+        },
+        "name": "Grid",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "HTML_GRID",
+    },
+  },
+  Object {
     "insertableComponents": Array [],
     "source": Object {
       "dependencyName": "@heroicons/react",

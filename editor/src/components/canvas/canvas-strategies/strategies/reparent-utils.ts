@@ -538,6 +538,36 @@ function pasteNextToSameSizedElement(
   return null
 }
 
+function pasteIntoNextGridCell(
+  copyData: ParsedCopyData,
+  selectedViews: NonEmptyArray<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+): ReparentTargetForPaste | null {
+  if (selectedViews.length === 0) {
+    return null
+  }
+  const selectedView = lastOfNonEmptyArray(selectedViews)
+
+  // if the copied elements are grid cells and the target is a grid cell, paste next to it
+
+  const copyDataElementsAreGridCells = copyData.elementPaste.every(({ originalElementPath }) =>
+    MetadataUtils.isGridCell(copyData.originalContextMetadata, originalElementPath),
+  )
+  if (!copyDataElementsAreGridCells) {
+    return null
+  }
+
+  const targetIsGridChild = MetadataUtils.isGridCell(metadata, selectedView)
+  if (!targetIsGridChild) {
+    return null
+  }
+
+  return {
+    type: 'parent',
+    parentPath: childInsertionPath(EP.parentPath(selectedView)),
+  }
+}
+
 function canInsertIntoTarget(
   projectContents: ProjectContentTreeRoot,
   metadata: ElementInstanceMetadataMap,
@@ -760,6 +790,11 @@ export function getTargetParentForPaste(
   )
   if (pasteNextToSameSizedElementResult != null) {
     return right(pasteNextToSameSizedElementResult)
+  }
+
+  const paseIntoNextGridCellResult = pasteIntoNextGridCell(copyData, selectedViews, metadata)
+  if (paseIntoNextGridCellResult != null) {
+    return right(paseIntoNextGridCellResult)
   }
 
   const pasteIntoParentOrGrandparentResult = pasteIntoParentOrGrandparent(

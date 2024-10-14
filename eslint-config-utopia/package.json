@@ -4,21 +4,22 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
+    "@types/eslint": "7.2.2",
+    "@typescript-eslint/eslint-plugin": "6.7.2",
+    "@typescript-eslint/parser": "6.7.2",
+    "babel-eslint": "10.0.1",
     "eslint": "7.32.0",
-    "typescript": "5.2.2",
-    "prettier": "2.8.8",
     "eslint-config-prettier": "6.9.0",
     "eslint-import-resolver-typescript": "3.6.1",
-    "eslint-plugin-prettier": "3.1.2",
     "eslint-plugin-import": "2.28.1",
     "eslint-plugin-jest": "25.3.0",
     "eslint-plugin-jsx-a11y": "6.7.1",
+    "eslint-plugin-prettier": "3.1.2",
     "eslint-plugin-react": "7.33.2",
     "eslint-plugin-react-hooks": "4.6.0",
+    "eslint-plugin-react-refresh": "0.4.12",
     "jest": "27.2.2",
-    "babel-eslint": "10.0.1",
-    "@types/eslint": "7.2.2",
-    "@typescript-eslint/parser": "6.7.2",
-    "@typescript-eslint/eslint-plugin": "6.7.2"
+    "prettier": "2.8.8",
+    "typescript": "5.2.2"
   }
 }
