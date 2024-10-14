@@ -74,10 +74,7 @@ import { NO_OP } from '../../../core/shared/utils'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
-import { GridControl, GridControlKey, GridControlsKey, useGridData } from './grid-controls'
-import { getAllGrids } from '../canvas-strategies/strategies/grid-helpers'
-import type { ControlWithProps } from '../canvas-strategies/canvas-strategy-types'
-import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
+import { GridMeasurementHelper, GridControlKey, useGridData } from './grid-controls'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -342,11 +339,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     'NewCanvasControlsInner',
   )
 
-  const gridsWithoutControl = useGridsWithoutControl(
-    strategyControls,
-    dragInteractionActive,
-    componentMetadata,
-  )
+  const grids = useAllGrids(componentMetadata)
 
   const cmdKeyPressed = keysPressed['cmd'] ?? false
 
@@ -608,17 +601,16 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                   <>
                     {when(
                       dragInteractionActive,
-                      <CanvasOffsetWrapper>
-                        {gridsWithoutControl.map((grid) => {
+                      <React.Fragment>
+                        {grids.map((grid) => {
                           return (
-                            <GridControl
+                            <GridMeasurementHelper
                               key={GridControlKey(grid.elementPath)}
                               grid={grid}
-                              visible={'hidden'}
                             />
                           )
                         })}
-                      </CanvasOffsetWrapper>,
+                      </React.Fragment>,
                     )}
                     {strategyControls.map((c) => (
                       <RenderControlMemoized
@@ -697,19 +689,10 @@ const SelectionAreaRectangle = React.memo(
   },
 )
 
-function useGridsWithoutControl(
-  strategyControls: Array<ControlWithProps<unknown>>,
-  dragInteractionActive: boolean,
-  metadata: ElementInstanceMetadataMap,
-) {
+function useAllGrids(metadata: ElementInstanceMetadataMap) {
   const grids = React.useMemo(() => {
-    if (!dragInteractionActive) {
-      return []
-    }
-    return getAllGrids(metadata).filter((grid) => {
-      return strategyControls.every((control) => control.key !== GridControlsKey(grid))
-    })
-  }, [metadata, strategyControls, dragInteractionActive])
+    return MetadataUtils.getAllGrids(metadata)
+  }, [metadata])
 
   return useGridData(grids)
 }

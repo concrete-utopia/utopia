@@ -661,10 +661,9 @@ export const GridControlKey = (gridPath: ElementPath) => `grid-control-${EP.toSt
 
 export interface GridControlProps {
   grid: GridData
-  visible: 'visible' | 'hidden'
 }
 
-export const GridControl = React.memo<GridControlProps>(({ grid, visible }) => {
+export const GridControl = React.memo<GridControlProps>(({ grid }) => {
   const dispatch = useDispatch()
   const controls = useAnimationControls()
   const colorTheme = useColorTheme()
@@ -916,7 +915,6 @@ export const GridControl = React.memo<GridControlProps>(({ grid, visible }) => {
       grid.padding == null
         ? 0
         : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
-    opacity: visible === 'visible' ? 1 : 0,
   }
 
   // Gap needs to be set only if the other two are not present or we'll have rendering issues
@@ -1125,45 +1123,108 @@ export const GridControl = React.memo<GridControlProps>(({ grid, visible }) => {
 })
 GridControl.displayName = 'GridControl'
 
+export const GridMeasurementHelper = React.memo<GridControlProps>(({ grid }) => {
+  const placeholders = range(0, grid.cells)
+
+  let style: CSSProperties = {
+    position: 'absolute',
+    top: grid.frame.y,
+    left: grid.frame.x,
+    width: grid.frame.width,
+    height: grid.frame.height,
+    display: 'grid',
+    gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
+    gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
+    justifyContent: grid.justifyContent ?? 'initial',
+    alignContent: grid.alignContent ?? 'initial',
+    pointerEvents: 'none',
+    padding:
+      grid.padding == null
+        ? 0
+        : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
+    opacity: 1,
+  }
+
+  // Gap needs to be set only if the other two are not present or we'll have rendering issues
+  // due to how measurements are calculated.
+  if (grid.rowGap != null && grid.columnGap != null) {
+    style.rowGap = grid.rowGap
+    style.columnGap = grid.columnGap
+  } else {
+    if (grid.gap != null) {
+      style.gap = grid.gap
+    }
+    if (grid.rowGap != null) {
+      style.rowGap = grid.rowGap
+    }
+    if (grid.columnGap != null) {
+      style.columnGap = grid.columnGap
+    }
+  }
+
+  return (
+    <CanvasOffsetWrapper>
+      <div
+        id={`grid-measurement-helper-${EP.toString(grid.elementPath)}`}
+        data-grid-path={EP.toString(grid.elementPath)}
+        style={style}
+      >
+        {placeholders.map((cell) => {
+          const countedRow = Math.floor(cell / grid.columns) + 1
+          const countedColumn = Math.floor(cell % grid.columns) + 1
+          const id = gridCellTargetId(grid.elementPath, countedRow, countedColumn)
+          return (
+            <div
+              key={id}
+              style={{
+                position: 'relative',
+                pointerEvents: 'none',
+              }}
+              data-grid-row={countedRow}
+              data-grid-column={countedColumn}
+            />
+          )
+        })}
+      </div>
+    </CanvasOffsetWrapper>
+  )
+})
+GridMeasurementHelper.displayName = 'GridControl'
+
 export interface GridControlsProps {
   targets: ElementPath[]
-  visible: 'visible' | 'hidden'
 }
 
-export const GridControls = controlForStrategyMemoized<GridControlsProps>(
-  ({ targets, visible }) => {
-    const targetRootCell = useEditorState(
-      Substores.canvas,
-      (store) => store.editor.canvas.controls.gridControlData?.rootCell ?? null,
-      'GridControls targetRootCell',
-    )
+export const GridControls = controlForStrategyMemoized<GridControlsProps>(({ targets }) => {
+  const targetRootCell = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.controls.gridControlData?.rootCell ?? null,
+    'GridControls targetRootCell',
+  )
 
-    const hoveredGrids = useEditorState(
-      Substores.canvas,
-      (store) => stripNulls([store.editor.canvas.controls.gridControlData?.grid]),
-      'GridControls hoveredGrids',
-    )
+  const hoveredGrids = useEditorState(
+    Substores.canvas,
+    (store) => stripNulls([store.editor.canvas.controls.gridControlData?.grid]),
+    'GridControls hoveredGrids',
+  )
 
-    const grids = useGridData(uniqBy([...targets, ...hoveredGrids], (a, b) => EP.pathsEqual(a, b)))
+  const grids = useGridData(uniqBy([...targets, ...hoveredGrids], (a, b) => EP.pathsEqual(a, b)))
 
-    if (grids.length === 0) {
-      return null
-    }
+  if (grids.length === 0) {
+    return null
+  }
 
-    return (
-      <div id={'grid-controls'}>
-        <CanvasOffsetWrapper>
-          {grids.map((grid) => {
-            return (
-              <GridControl key={GridControlKey(grid.elementPath)} grid={grid} visible={visible} />
-            )
-          })}
-          <AbsoluteDistanceIndicators targetRootCell={targetRootCell} />
-        </CanvasOffsetWrapper>
-      </div>
-    )
-  },
-)
+  return (
+    <div id={'grid-controls'}>
+      <CanvasOffsetWrapper>
+        {grids.map((grid) => {
+          return <GridControl key={GridControlKey(grid.elementPath)} grid={grid} />
+        })}
+        <AbsoluteDistanceIndicators targetRootCell={targetRootCell} />
+      </CanvasOffsetWrapper>
+    </div>
+  )
+})
 
 const MIN_INDICATORS_DISTANCE = 32 // px
 
@@ -1854,7 +1915,7 @@ export function controlsForGridPlaceholders(
 ): ControlWithProps<GridControlsProps> {
   return {
     control: GridControls,
-    props: { targets: [gridPath], visible: 'visible' },
+    props: { targets: [gridPath] },
     key: GridControlsKey(gridPath),
     show: whenToShow,
     priority: 'bottom',

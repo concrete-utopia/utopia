@@ -814,11 +814,3 @@ function getOriginalElementGridConfiguration(
     mouseCellPosInOriginalElement,
   }
 }
-
-export const getAllGrids = memoize(getAllGridsInner, { maxSize: 1 })
-
-function getAllGridsInner(jsxMetadata: ElementInstanceMetadataMap): Array<ElementPath> {
-  return Object.keys(jsxMetadata)
-    .filter((key) => MetadataUtils.isGridLayoutedContainer(jsxMetadata[key]))
-    .map(EP.fromString)
-}

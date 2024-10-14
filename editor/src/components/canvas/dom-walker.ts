@@ -1069,7 +1069,7 @@ function measureGlobalFramesOfGridCellsFromControl(
   const path = grid.getAttribute(UTOPIA_PATH_KEY)
   let gridCellGlobalFrames: Array<Array<CanvasRectangle>> | null = null
   if (path != null) {
-    const gridControlElement = document.getElementById(`grid-${path}`)
+    const gridControlElement = document.getElementById(`grid-measurement-helper-${path}`)
     if (gridControlElement != null) {
       gridCellGlobalFrames = []
       for (const cell of gridControlElement.children) {
