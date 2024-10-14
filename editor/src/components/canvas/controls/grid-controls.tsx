@@ -840,7 +840,7 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
               style={{
                 position: 'relative',
                 pointerEvents: 'initial',
-                zIndex: activePositioningTarget ? 1 : 0,
+                zIndex: activePositioningTarget ? 1 : undefined,
               }}
               data-grid-row={countedRow}
               data-grid-column={countedColumn}
