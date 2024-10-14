@@ -5870,6 +5870,8 @@ export const UPDATE_FNS = {
   APPLY_COMMANDS: (action: ApplyCommandsAction, editor: EditorModel): EditorModel => {
     const withCommandsApplied = foldAndApplyCommandsSimple(editor, action.commands)
 
+    // TODO: extract this into a helper/extend the switch when adding Tailwind
+    // support for the inspector controls
     const affectedElements = mapDropNulls((command) => {
       switch (command.type) {
         case 'DELETE_PROPERTIES':

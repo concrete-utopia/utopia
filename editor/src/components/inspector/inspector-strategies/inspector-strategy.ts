@@ -76,6 +76,8 @@ export function executeFirstApplicableStrategyForContinuousInteraction(
       dispatch([
         applyCommandsAction(commands),
         runNormalizationStep(
+          // TODO: extract this into a helper/extend the switch when adding Tailwind
+          // support for the inspector controls
           EP.uniqueElementPaths(
             mapDropNulls((command) => {
               switch (command.type) {
