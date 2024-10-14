@@ -86,7 +86,8 @@ export function basicResizeStrategy(
   const isGridCell = MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)
   if (
     isGridCell &&
-    isFixedHugFillModeApplied(canvasState.startingMetadata, selectedElement, 'fill')
+    (isFixedHugFillModeApplied(canvasState.startingMetadata, selectedElement, 'fill') ||
+      isFixedHugFillModeApplied(canvasState.startingMetadata, selectedElement, 'stretch'))
   ) {
     return null
   }
