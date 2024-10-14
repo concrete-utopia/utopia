@@ -764,45 +764,14 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
   })
 
   const placeholders = range(0, grid.cells)
-  let style: CSSProperties = {
-    position: 'absolute',
-    top: grid.frame.y,
-    left: grid.frame.x,
-    width: grid.frame.width,
-    height: grid.frame.height,
-    display: 'grid',
-    gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
-    gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
-    backgroundColor:
-      activelyDraggingOrResizingCell != null ? colorTheme.primary10.value : 'transparent',
-    outline: `1px solid ${
-      activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
-    }`,
-    justifyContent: grid.justifyContent ?? 'initial',
-    alignContent: grid.alignContent ?? 'initial',
-    pointerEvents: 'none',
-    padding:
-      grid.padding == null
-        ? 0
-        : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
-  }
 
-  // Gap needs to be set only if the other two are not present or we'll have rendering issues
-  // due to how measurements are calculated.
-  if (grid.rowGap != null && grid.columnGap != null) {
-    style.rowGap = grid.rowGap
-    style.columnGap = grid.columnGap
-  } else {
-    if (grid.gap != null) {
-      style.gap = grid.gap
-    }
-    if (grid.rowGap != null) {
-      style.rowGap = grid.rowGap
-    }
-    if (grid.columnGap != null) {
-      style.columnGap = grid.columnGap
-    }
-  }
+  let style = useGridControlBaseStyle(grid)
+
+  style.backgroundColor =
+    activelyDraggingOrResizingCell != null ? colorTheme.primary10.value : 'transparent'
+  style.outline = `1px solid ${
+    activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
+  }`
 
   return (
     <React.Fragment>
@@ -930,41 +899,8 @@ GridControl.displayName = 'GridControl'
 export const GridMeasurementHelper = React.memo<GridControlProps>(({ grid }) => {
   const placeholders = range(0, grid.cells)
 
-  let style: CSSProperties = {
-    position: 'absolute',
-    top: grid.frame.y,
-    left: grid.frame.x,
-    width: grid.frame.width,
-    height: grid.frame.height,
-    display: 'grid',
-    gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
-    gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
-    justifyContent: grid.justifyContent ?? 'initial',
-    alignContent: grid.alignContent ?? 'initial',
-    pointerEvents: 'none',
-    padding:
-      grid.padding == null
-        ? 0
-        : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
-    opacity: 1,
-  }
-
-  // Gap needs to be set only if the other two are not present or we'll have rendering issues
-  // due to how measurements are calculated.
-  if (grid.rowGap != null && grid.columnGap != null) {
-    style.rowGap = grid.rowGap
-    style.columnGap = grid.columnGap
-  } else {
-    if (grid.gap != null) {
-      style.gap = grid.gap
-    }
-    if (grid.rowGap != null) {
-      style.rowGap = grid.rowGap
-    }
-    if (grid.columnGap != null) {
-      style.columnGap = grid.columnGap
-    }
-  }
+  const style = useGridControlBaseStyle(grid)
+  style.opacity = 1
 
   return (
     <CanvasOffsetWrapper>
@@ -1024,6 +960,46 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
       </CanvasOffsetWrapper>
     </div>
   )
+}
+
+function useGridControlBaseStyle(grid: GridData) {
+  return React.useMemo(() => {
+    let style: CSSProperties = {
+      position: 'absolute',
+      top: grid.frame.y,
+      left: grid.frame.x,
+      width: grid.frame.width,
+      height: grid.frame.height,
+      display: 'grid',
+      gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
+      gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
+      justifyContent: grid.justifyContent ?? 'initial',
+      alignContent: grid.alignContent ?? 'initial',
+      pointerEvents: 'none',
+      padding:
+        grid.padding == null
+          ? 0
+          : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
+    }
+
+    // Gap needs to be set only if the other two are not present or we'll have rendering issues
+    // due to how measurements are calculated.
+    if (grid.rowGap != null && grid.columnGap != null) {
+      style.rowGap = grid.rowGap
+      style.columnGap = grid.columnGap
+    } else {
+      if (grid.gap != null) {
+        style.gap = grid.gap
+      }
+      if (grid.rowGap != null) {
+        style.rowGap = grid.rowGap
+      }
+      if (grid.columnGap != null) {
+        style.columnGap = grid.columnGap
+      }
+    }
+    return style
+  }, [grid])
 }
 
 const MIN_INDICATORS_DISTANCE = 32 // px
