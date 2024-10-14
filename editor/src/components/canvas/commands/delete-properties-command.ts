@@ -79,7 +79,11 @@ function getPropertiesToUnsetPatches(
   const unsetProperties = getUnsetProperties(command.properties)
   const partialPropertiesToUnset = getPropertiesToUnset(unsetProperties)
   const unsetPropertiesPatch: EditorStatePatch = {
-    canvas: { propertiesToUnset: { $set: partialPropertiesToUnset } },
+    canvas: {
+      propertiesToUnset: {
+        $set: { ...partialPropertiesToUnset, ...editorState.canvas.propertiesToUnset },
+      },
+    },
   }
   const { editorStatePatch: setPropertiesToUnsetValuePatch } = applyValuesAtPath(
     editorState,
