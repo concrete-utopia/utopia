@@ -11,7 +11,7 @@ import { setProperty } from '../../commands/set-property-command'
 import {
   controlsForGridPlaceholders,
   GridRowColumnResizingControls,
-} from '../../controls/grid-controls'
+} from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -32,7 +32,7 @@ import {
 import { toFirst } from '../../../../core/shared/optics/optic-utilities'
 import type { Either } from '../../../../core/shared/either'
 import { foldEither, isLeft, isRight } from '../../../../core/shared/either'
-import { roundToNearestWhole } from '../../../../core/shared/math-utils'
+import { roundTo, roundToNearestWhole } from '../../../../core/shared/math-utils'
 import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-template'
 import { expandGridDimensions, replaceGridTemplateDimensionAtIndex } from './grid-helpers'
 import { setCursorCommand } from '../../commands/set-cursor-command'
@@ -143,6 +143,9 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         .compose(fromField('value'))
 
       const calculatedValue = toFirst(valueOptic, calculatedValues.dimensions)
+      if (isLeft(calculatedValue)) {
+        return emptyStrategyApplicationResult
+      }
       const mergedValue = toFirst(valueOptic, mergedValues.dimensions)
       if (isLeft(mergedValue)) {
         return emptyStrategyApplicationResult
@@ -160,7 +163,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         0,
         newResizedValue(
           mergedValue.value,
-          getNewDragValue(dragAmount, isFractional, calculatedValue, mergedValue),
+          getNewDragValue(dragAmount, isFractional, calculatedValue.value, mergedValue.value),
           precision,
           isFractional,
         ),
@@ -195,26 +198,24 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
 function getNewDragValue(
   dragAmount: number,
   isFractional: boolean,
-  possibleCalculatedValue: Either<string, number>,
-  mergedValue: Either<string, number>,
+  calculatedValue: number,
+  mergedValue: number,
 ): number {
   if (!isFractional) {
     return dragAmount
   }
 
-  if (!isRight(possibleCalculatedValue)) {
+  if (calculatedValue === 0) {
     return 0
   }
 
-  const mergedFractionalValue = foldEither(
-    () => 0,
-    (r) => r,
-    mergedValue,
-  )
-  const calculatedValue = possibleCalculatedValue.value
-  const perPointOne =
-    mergedFractionalValue == 0 ? 10 : (calculatedValue / mergedFractionalValue) * 0.1
-  return roundToNearestWhole((dragAmount / perPointOne) * 10) / 10
+  // for fr units, adjust the value to proportionally to .1
+  let proportionalResize = calculatedValue * 0.1
+  if (mergedValue !== 0) {
+    proportionalResize /= mergedValue
+  }
+
+  return roundToNearestWhole(dragAmount / proportionalResize) * 0.1
 }
 
 function newResizedValue(

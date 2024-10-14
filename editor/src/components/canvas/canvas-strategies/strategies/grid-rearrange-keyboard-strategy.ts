@@ -2,7 +2,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { GridPositionValue } from '../../../../core/shared/element-template'
 import { gridPositionValue } from '../../../../core/shared/element-template'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
 import type {
   CanvasStrategy,
   CustomStrategyState,

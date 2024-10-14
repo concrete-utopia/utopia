@@ -24,7 +24,7 @@ import { CSSCursor } from '../../../../uuiui-deps'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { isZeroSizedElement } from '../outline-utils'
 import { createArrayWithLength } from '../../../../core/shared/array-utils'
-import { useGridData } from '../grid-controls'
+import { useGridData } from '../grid-controls-for-strategies'
 
 export interface GridGapControlProps {
   selectedElement: ElementPath

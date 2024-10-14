@@ -75,7 +75,8 @@ import { NO_OP } from '../../../core/shared/utils'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
-import { GridMeasurementHelper, GridControlKey, useGridData } from './grid-controls'
+import { GridMeasurementHelper } from './grid-controls'
+import { GridControlKey, useGridData } from './grid-controls-for-strategies'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 

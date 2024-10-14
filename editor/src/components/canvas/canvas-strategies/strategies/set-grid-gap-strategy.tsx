@@ -42,8 +42,8 @@ import { colorTheme } from '../../../../uuiui'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
 import type { GridGapControlProps } from '../../controls/select-mode/grid-gap-control'
 import { GridGapControl } from '../../controls/select-mode/grid-gap-control'
-import type { GridControlsProps } from '../../controls/grid-controls'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls'
+import type { GridControlsProps } from '../../controls/grid-controls-for-strategies'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
 
 const SetGridGapStrategyId = 'SET_GRID_GAP_STRATEGY'
 
