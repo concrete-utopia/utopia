@@ -15,7 +15,7 @@ import {
   offsetPoint,
 } from '../../../../core/shared/math-utils'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
-import { GridResizeEdgeTestId } from '../../controls/grid-controls'
+import { GridResizeEdgeTestId } from '../../controls/grid-controls-for-strategies'
 import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'

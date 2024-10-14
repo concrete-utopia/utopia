@@ -10,7 +10,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import CanvasActions from '../../canvas-actions'
-import { GridCellTestId } from '../../controls/grid-controls'
+import { GridCellTestId } from '../../controls/grid-controls-for-strategies'
 import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'

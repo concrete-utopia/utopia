@@ -56,16 +56,9 @@ export const runUpdateClassList: CommandFunction<UpdateClassList> = (
 ) => {
   const { element, classNameUpdates } = command
 
-  const currentClassNameAttribute = getClassNameAttribute(
-    getElementFromProjectContents(element, editorState.projectContents),
-  )?.value
-
-  if (currentClassNameAttribute == null) {
-    return {
-      editorStatePatches: [],
-      commandDescription: `Update class list for ${EP.toUid(element)} with ${classNameUpdates}`,
-    }
-  }
+  const currentClassNameAttribute =
+    getClassNameAttribute(getElementFromProjectContents(element, editorState.projectContents))
+      ?.value ?? ''
 
   const parsedClassList = getParsedClassList(
     currentClassNameAttribute,

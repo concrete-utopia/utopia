@@ -112,7 +112,7 @@ describe('resize a grid', () => {
       y: resizeControlRect.y + resizeControlRect.height / 2,
     })
     const endPoint = canvasPoint({
-      x: startPoint.x + 20,
+      x: startPoint.x + 100,
       y: startPoint.y,
     })
     await mouseMoveToPoint(resizeControl, startPoint)
@@ -138,7 +138,7 @@ export var storyboard = (
         gap: 10,
         width: 600,
         height: 600,
-        gridTemplateColumns: '2.4fr 2.5fr 1fr',
+        gridTemplateColumns: '2.4fr 1.8fr 1fr',
         gridTemplateRows: '99px 109px 90px',
         height: 'max-content',
       }}
@@ -344,7 +344,7 @@ export var storyboard = (
       y: resizeControlRect.y + resizeControlRect.height / 2,
     })
     const endPoint = canvasPoint({
-      x: startPoint.x + 20,
+      x: startPoint.x + 100,
       y: startPoint.y,
     })
     await mouseMoveToPoint(resizeControl, startPoint)
@@ -370,7 +370,7 @@ export var storyboard = (
         gap: 10,
         width: 600,
         height: 600,
-        gridTemplateColumns: 'repeat(3, 2fr)',
+        gridTemplateColumns: 'repeat(3, 1.5fr)',
         gridTemplateRows: '99px 109px 90px',
         height: 'max-content',
       }}
