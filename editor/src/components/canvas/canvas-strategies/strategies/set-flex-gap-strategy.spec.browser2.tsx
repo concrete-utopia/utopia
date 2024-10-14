@@ -32,7 +32,6 @@ import { TailwindConfigPath } from '../../../../core/tailwind/tailwind-config'
 
 const DivTestId = 'mydiv'
 
-// describe.only('Flex gap strategy', () => {
 describe('Flex gap strategy', () => {
   it('gap controls are not present when element has no children', async () => {
     const editor = await renderTestEditorWithCode(
