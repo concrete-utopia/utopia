@@ -1149,7 +1149,7 @@ const AutoColsOrRowsControl = React.memo(
       [props.grid, props.axis, dispatch],
     )
 
-    const onUpdateAutoValue = React.useCallback(
+    const onUpdateNumberOrKeyword = React.useCallback(
       (newValue: UnknownOrEmptyInput<CSSNumber | CSSKeyword<ValidGridDimensionKeyword>>) => {
         const parsed = parseGridDimensionInput(newValue, null)
         if (parsed == null) {
@@ -1180,7 +1180,7 @@ const AutoColsOrRowsControl = React.memo(
         <GridExpressionInput
           testId={GridAutoColsOrRowsControlTestId(props.axis)}
           value={value ?? gridCSSKeyword(cssKeyword('auto'), null)}
-          onUpdateNumberOrKeyword={onUpdateAutoValue}
+          onUpdateNumberOrKeyword={onUpdateNumberOrKeyword}
           onUpdateDimension={onUpdateDimension}
           onFocus={autoColsOrRowsValueFocused.onFocus}
           onBlur={autoColsOrRowsValueFocused.onBlur}
