@@ -58,6 +58,15 @@ function shouldUseSmallElementResizeControl(size: number, scale: number): boolea
 
 export const AbsoluteResizeControl = controlForStrategyMemoized(
   ({ targets, pathsWereReplaced }: AbsoluteResizeControlProps) => {
+    const dispatch = useDispatch()
+
+    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+    const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+    const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
+    const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
+
+    const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+
     const controlRef = useBoundingBox(targets, (ref, safeGappedBoundingBox, realBoundingBox) => {
       if (isZeroSizedElement(realBoundingBox)) {
         ref.current.style.display = 'none'
@@ -87,13 +96,6 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
       ref.current.style.left = 0 + 'px'
       ref.current.style.width = boundingBox.width + 'px'
     })
-
-    const dispatch = useDispatch()
-    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-    const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-    const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
-    const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
-    const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
     const scale = useEditorState(
       Substores.canvasOffset,

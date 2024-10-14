@@ -1502,7 +1502,7 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
     return scaledFrame.width * scale > 30 && scaledFrame.height > 30
   }, [element, scale, isResizing])
 
-  const edges = useResizeEdges([target], {
+  const resizeEdges = useResizeEdges([target], {
     onEdgeDoubleClick: () => NO_OP,
     onEdgeMouseDown: (position) => (e) => {
       if (element == null) {
@@ -1557,10 +1557,10 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
             pointerEvents: 'none',
           }}
         >
-          {edges.top}
-          {edges.left}
-          {edges.bottom}
-          {edges.right}
+          {resizeEdges.top}
+          {resizeEdges.left}
+          {resizeEdges.bottom}
+          {resizeEdges.right}
         </div>
       </div>
     </CanvasOffsetWrapper>
