@@ -870,62 +870,6 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
                         : undefined,
                   }}
                 />
-                <React.Fragment>
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: -1,
-                      bottom: -1,
-                      left: -1,
-                      right: -1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <div style={{ width: 2, height: 2, backgroundColor: dotgridColor }} />
-                  </div>
-                  <div
-                    style={{
-                      width: 2,
-                      height: 2,
-                      backgroundColor: dotgridColor,
-                      position: 'absolute',
-                      top: -1,
-                      left: -1,
-                    }}
-                  />
-                  <div
-                    style={{
-                      width: 2,
-                      height: 2,
-                      backgroundColor: dotgridColor,
-                      position: 'absolute',
-                      bottom: -1,
-                      left: -1,
-                    }}
-                  />
-                  <div
-                    style={{
-                      width: 2,
-                      height: 2,
-                      backgroundColor: dotgridColor,
-                      position: 'absolute',
-                      top: -1,
-                      right: -1,
-                    }}
-                  />
-                  <div
-                    style={{
-                      width: 2,
-                      height: 2,
-                      backgroundColor: dotgridColor,
-                      position: 'absolute',
-                      bottom: -1,
-                      right: -1,
-                    }}
-                  />
-                </React.Fragment>
               </React.Fragment>
             </div>
           )
@@ -1676,16 +1620,16 @@ function gridKeyFromPath(path: ElementPath): string {
   return `grid-${EP.toString(path)}`
 }
 
-const placeholderBorderBaseWidth = 2
-
+const borderWidth = 1
 function gridPlaceholderBorder(color: string, scale: number): string {
-  return `${placeholderBorderBaseWidth / scale}px solid ${color}`
+  return `${borderWidth / scale}px solid ${color}`
 }
 
+const borderExtension = 0.5
 function gridPlaceholderTopOrLeftPosition(scale: number): string {
-  return `${-placeholderBorderBaseWidth / scale}px`
+  return `${-borderExtension / scale}px`
 }
 
 function gridPlaceholderWidthOrHeight(scale: number): string {
-  return `calc(100% + ${(placeholderBorderBaseWidth * 2) / scale}px)`
+  return `calc(100% + ${(borderExtension * 2) / scale}px)`
 }
