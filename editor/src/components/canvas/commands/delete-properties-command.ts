@@ -123,7 +123,7 @@ export const runDeleteProperties = (
 export function deleteValuesAtPath(
   editorState: EditorState,
   target: ElementPath,
-  properties: NonEmptyArray<PropertyPath>,
+  properties: Array<PropertyPath>,
 ): { editorStateWithChanges: EditorState; editorStatePatch: EditorStatePatch } {
   const workingEditorState = modifyUnderlyingElementForOpenFile(
     target,

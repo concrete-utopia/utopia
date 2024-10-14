@@ -118,12 +118,11 @@ export const runBulkUpdateProperties: CommandFunction<UpdateBulkProperties> = (
     (p) => (p.type === 'DELETE' ? p : null),
     command.properties,
   )
-
-  const propertyPathsToDelete = propsToDelete.map((d) => d.path)
-
-  const withDeletedProps = isNonEmptyArray(propertyPathsToDelete)
-    ? deleteValuesAtPath(editorState, command.element, propertyPathsToDelete).editorStateWithChanges
-    : editorState
+  const withDeletedProps = deleteValuesAtPath(
+    editorState,
+    command.element,
+    propsToDelete.map((d) => d.path),
+  )
 
   // 2. Apply SET updates
   const propsToSet: PropertyToSet[] = mapDropNulls(
@@ -131,7 +130,7 @@ export const runBulkUpdateProperties: CommandFunction<UpdateBulkProperties> = (
     command.properties,
   )
   const withSetProps = applyValuesAtPath(
-    withDeletedProps,
+    withDeletedProps.editorStateWithChanges,
     command.element,
     propsToSet.map((property) => ({
       path: property.path,

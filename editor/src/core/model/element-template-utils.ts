@@ -166,7 +166,7 @@ export function transformJSXComponentAtElementPath(
   const transformResult = transformAtPathOptionally(components, path, transform)
 
   if (transformResult.transformedElement == null) {
-    throw new Error(`Did not find element to transform ${EP.elementPathPartToString(path)}`)
+    return components
   } else {
     return transformResult.elements
   }
