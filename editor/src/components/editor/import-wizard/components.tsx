@@ -27,9 +27,25 @@ export function OperationLine({ operation }: { operation: ImportOperation }) {
     [operationRunningStatus, operation],
   )
 
+  const [childrenShown, serChildrenShown] = React.useState(false)
+  const shouldShowChildren = React.useMemo(
+    () => childrenShown || operation.timeDone == null,
+    [childrenShown, operation.timeDone],
+  )
+  const hasChildren = React.useMemo(
+    () => operation.children != null && operation.children.length > 0,
+    [operation.children],
+  )
+  const toggleShowChildren = React.useCallback(() => {
+    if (hasChildren) {
+      serChildrenShown((shown) => !shown)
+    }
+  }, [hasChildren])
+
   return (
     <OperationLineWrapper
       className={operationRunningStatus == 'done' ? 'operation-done' : 'operation-pending'}
+      onClick={toggleShowChildren}
     >
       <OperationLineContent textColor={textColor}>
         <OperationIcon runningStatus={operationRunningStatus} result={operation.result} />
@@ -37,8 +53,13 @@ export function OperationLine({ operation }: { operation: ImportOperation }) {
         <div>
           <TimeFromInSeconds operation={operation} runningStatus={operationRunningStatus} />
         </div>
+        {hasChildren ? (
+          <div>
+            {shouldShowChildren ? <Icons.ExpansionArrowDown /> : <Icons.ExpansionArrowRight />}
+          </div>
+        ) : null}
       </OperationLineContent>
-      <OperationChildrenList operation={operation} />
+      {shouldShowChildren && hasChildren ? <OperationChildrenList operation={operation} /> : null}
     </OperationLineWrapper>
   )
 }
@@ -63,11 +84,12 @@ function OperationChildrenList({ operation }: { operation: ImportOperation }) {
           successTextFn={dependenciesSuccessTextFn}
         />
       ) : operation.type === 'checkRequirements' ? (
-        <AggregatedChildrenStatus
-          childOperations={operation.children as ImportCheckRequirementAndFix[]}
-          successFn={requirementsSuccessFn}
-          successTextFn={requirementsSuccessTextFn}
-        />
+        operation.children.map((childOperation) => (
+          <OperationLine
+            key={childOperation.id ?? childOperation.type}
+            operation={childOperation}
+          />
+        ))
       ) : null}
     </div>
   )
@@ -175,9 +197,11 @@ function TimeFromInSeconds({
 function OperationLineWrapper({
   children,
   className,
+  onClick,
 }: {
   children: React.ReactNode
   className: string
+  onClick?: () => void
 }) {
   return (
     <div
@@ -189,7 +213,7 @@ function OperationLineWrapper({
       }}
       css={{
         '.import-wizard-operation-children > &': {
-          paddingLeft: 10,
+          paddingLeft: 26,
           fontSize: 12,
           img: {
             width: 12,
@@ -200,6 +224,7 @@ function OperationLineWrapper({
           visibility: 'hidden',
         },
       }}
+      onClick={onClick}
     >
       {children}
     </div>
@@ -218,7 +243,7 @@ function OperationLineContent({
       className='import-wizard-operation-line-content'
       style={{
         display: 'grid',
-        gridTemplateColumns: '15px 1fr 50px',
+        gridTemplateColumns: '15px max-content 1fr 14px',
         gap: 10,
         alignItems: 'center',
         color: textColor,

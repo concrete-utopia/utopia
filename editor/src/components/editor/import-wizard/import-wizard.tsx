@@ -3,15 +3,19 @@
 import React from 'react'
 import { jsx } from '@emotion/react'
 import { getProjectID } from '../../../common/env-vars'
-import { Button, FlexRow, H2, Icons, useColorTheme, UtopiaStyles } from '../../../uuiui'
+import { Button, FlexRow, Icons, useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { useEditorState, Substores } from '../store/store-hook'
 import { when } from '../../../utils/react-conditionals'
 import { hideImportWizard } from '../../../core/shared/import/import-operation-service'
 import { OperationLine } from './components'
+import {
+  ImportOperationResult,
+  type ImportOperation,
+} from '../../../core/shared/import/import-operation-types'
+import { assertNever } from '../../../core/shared/utils'
 
 export const ImportWizard = React.memo(() => {
   const colorTheme = useColorTheme()
-
   const projectId = getProjectID()
 
   const importWizardOpen: boolean = useEditorState(
@@ -114,14 +118,99 @@ export const ImportWizard = React.memo(() => {
             className='import-wizard-footer'
             css={{
               display: 'flex',
-              justifyContent: 'flex-end',
+              justifyContent: 'space-between',
+              alignItems: 'center',
               width: '100%',
               marginTop: 20,
             }}
-          ></div>
+          >
+            <ActionButtons operations={operations} />
+          </div>
         </div>,
       )}
     </div>
   )
 })
 ImportWizard.displayName = 'ImportWizard'
+
+function ActionButtons({ operations }: { operations: ImportOperation[] }) {
+  let totalResult: ImportOperationResult | null = React.useMemo(() => {
+    let result = ImportOperationResult.Success
+    for (const operation of operations) {
+      if (operation.timeDone == null || operation.result == null) {
+        return null
+      }
+      if (operation.result == ImportOperationResult.Error) {
+        return ImportOperationResult.Error
+      }
+      if (operation.result == ImportOperationResult.Warn) {
+        result = ImportOperationResult.Warn
+      }
+    }
+    return result
+  }, [operations])
+  const textColor = React.useMemo(() => {
+    switch (totalResult) {
+      case ImportOperationResult.Success:
+        return 'green'
+      case ImportOperationResult.Warn:
+        return 'orange'
+      case ImportOperationResult.Error:
+        return 'var(--utopitheme-githubIndicatorFailed)'
+      case null:
+        return 'black'
+      default:
+        assertNever(totalResult)
+    }
+  }, [totalResult])
+  const buttonColor = React.useMemo(() => {
+    switch (totalResult) {
+      case ImportOperationResult.Success:
+        return 'var(--utopitheme-green)'
+      case ImportOperationResult.Warn:
+        return 'var(--utopitheme-githubMUDModified)'
+      case ImportOperationResult.Error:
+        return 'var(--utopitheme-githubIndicatorFailed)'
+      case null:
+        return 'black'
+      default:
+        assertNever(totalResult)
+    }
+  }, [totalResult])
+  const textStyle = {
+    color: textColor,
+    fontSize: 16,
+  }
+  const buttonStyle = {
+    backgroundColor: buttonColor,
+    color: 'white',
+    padding: 20,
+    fontSize: 14,
+    cursor: 'pointer',
+  }
+  if (totalResult == ImportOperationResult.Success) {
+    return (
+      <React.Fragment>
+        <div style={textStyle}>Project Imported Successfully</div>
+        <Button style={buttonStyle}>Continue To Editor</Button>
+      </React.Fragment>
+    )
+  }
+  if (totalResult == ImportOperationResult.Warn) {
+    return (
+      <React.Fragment>
+        <div style={textStyle}>Project Imported With Warnings</div>
+        <Button style={buttonStyle}>Continue</Button>
+      </React.Fragment>
+    )
+  }
+  if (totalResult == ImportOperationResult.Error) {
+    return (
+      <React.Fragment>
+        <div style={textStyle}>Error Importing Project</div>
+        <Button style={buttonStyle}>Import A Different Project</Button>
+      </React.Fragment>
+    )
+  }
+  return null
+}
