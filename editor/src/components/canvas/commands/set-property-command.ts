@@ -1,4 +1,4 @@
-import { mapDropNulls } from '../../../core/shared/array-utils'
+import { isNonEmptyArray, mapDropNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import type {
@@ -118,19 +118,12 @@ export const runBulkUpdateProperties: CommandFunction<UpdateBulkProperties> = (
     (p) => (p.type === 'DELETE' ? p : null),
     command.properties,
   )
-  const withDeletedProps = deleteValuesAtPath(
-    editorState,
-    command.element,
-    propsToDelete.map((d) => d.path),
-  )
-  if (withDeletedProps == null) {
-    return {
-      editorStatePatches: [],
-      commandDescription: `Delete Properties ${command.properties
-        .map((p) => PP.toString(p.path))
-        .join(',')} on ${EP.toUid(command.element)}`,
-    }
-  }
+
+  const propertyPathsToDelete = propsToDelete.map((d) => d.path)
+
+  const withDeletedProps = isNonEmptyArray(propertyPathsToDelete)
+    ? deleteValuesAtPath(editorState, command.element, propertyPathsToDelete).editorStateWithChanges
+    : editorState
 
   // 2. Apply SET updates
   const propsToSet: PropertyToSet[] = mapDropNulls(
@@ -138,7 +131,7 @@ export const runBulkUpdateProperties: CommandFunction<UpdateBulkProperties> = (
     command.properties,
   )
   const withSetProps = applyValuesAtPath(
-    withDeletedProps.editorStateWithChanges,
+    withDeletedProps,
     command.element,
     propsToSet.map((property) => ({
       path: property.path,

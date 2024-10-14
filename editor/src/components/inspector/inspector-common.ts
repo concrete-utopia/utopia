@@ -3,7 +3,9 @@ import * as EP from '../../core/shared/element-path'
 import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import {
   allElemsEqual,
+  isNonEmptyArray,
   mapDropNulls,
+  NonEmptyArray,
   safeIndex,
   strictEvery,
   stripNulls,

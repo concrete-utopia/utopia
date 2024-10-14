@@ -16,7 +16,8 @@ import type { BaseCommand, CommandFunctionResult, WhenToRun } from './commands'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { patchParseSuccessAtElementPath } from './patch-utils'
-import { mapDropNulls } from '../../../core/shared/array-utils'
+import type { NonEmptyArray } from '../../../core/shared/array-utils'
+import { isNonEmptyArray, mapDropNulls } from '../../../core/shared/array-utils'
 import { applyValuesAtPath } from './adjust-number-command'
 
 export interface DeleteProperties extends BaseCommand {
@@ -101,8 +102,7 @@ export const runDeleteProperties = (
   editorState: EditorState,
   command: DeleteProperties,
 ): CommandFunctionResult => {
-  const result = deleteValuesAtPath(editorState, command.element, command.properties)
-  if (result == null) {
+  if (!isNonEmptyArray(command.properties)) {
     return {
       editorStatePatches: [],
       commandDescription: `Delete Properties ${command.properties
@@ -110,6 +110,8 @@ export const runDeleteProperties = (
         .join(',')} on ${EP.toUid(command.element)}`,
     }
   }
+
+  const result = deleteValuesAtPath(editorState, command.element, command.properties)
 
   const propertiesToUnsetPatches = getPropertiesToUnsetPatches(
     result.editorStateWithChanges,
@@ -127,11 +129,8 @@ export const runDeleteProperties = (
 export function deleteValuesAtPath(
   editorState: EditorState,
   target: ElementPath,
-  properties: Array<PropertyPath>,
-): { editorStateWithChanges: EditorState; editorStatePatch: EditorStatePatch } | null {
-  if (properties.length === 0) {
-    return null
-  }
+  properties: NonEmptyArray<PropertyPath>,
+): { editorStateWithChanges: EditorState; editorStatePatch: EditorStatePatch } {
   const workingEditorState = modifyUnderlyingElementForOpenFile(
     target,
     editorState,

@@ -24,6 +24,7 @@ import { parseCSSPercent, parseCSSPx, printCSSNumber } from '../../inspector/com
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { deleteValuesAtPath } from './delete-properties-command'
 import { patchParseSuccessAtElementPath } from './patch-utils'
+import { isNonEmptyArray } from '../../../core/shared/array-utils'
 
 export type CreateIfNotExistant = 'create-if-not-existing' | 'do-not-create-if-doesnt-exist'
 
@@ -441,13 +442,17 @@ export function deleteConflictingPropsForWidthHeight(
 
   if (propertiesToDelete.length === 0) {
     return editorState
-  } else {
-    const result = deleteValuesAtPath(editorState, target, propertiesToDelete)
-
-    if (result == null) {
-      return editorState
-    }
-
-    return result.editorStateWithChanges
   }
+
+  if (!isNonEmptyArray(propertiesToDelete)) {
+    return editorState
+  }
+
+  const { editorStateWithChanges: editorStateWithPropsDeleted } = deleteValuesAtPath(
+    editorState,
+    target,
+    propertiesToDelete,
+  )
+
+  return editorStateWithPropsDeleted
 }
