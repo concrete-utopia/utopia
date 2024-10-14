@@ -45,7 +45,6 @@ import {
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { showGridControls } from '../../commands/show-grid-controls-command'
-import { memoize } from '../../../../core/shared/memoize'
 
 export function runGridRearrangeMove(
   targetElement: ElementPath,
