@@ -44,7 +44,7 @@ import {
   notifyOperationStarted,
   startImportWizard,
 } from '../../import/import-operation-service'
-import { resetRequirementsResolutions } from '../../import/utopia-requirements-service'
+import { resetRequirementsResolutions } from '../../import/proejct-health-check/utopia-requirements-service'
 import { checkAndFixUtopiaRequirements } from '../../import/proejct-health-check/check-utopia-requirements'
 import { ImportOperationResult } from '../../import/import-operation-types'
 

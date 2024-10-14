@@ -11,7 +11,7 @@ import { ImportOperationResult } from '../../../core/shared/import/import-operat
 import { assertNever } from '../../../core/shared/utils'
 import { Icons } from '../../../uuiui'
 import { GithubSpinner } from '../../../components/navigator/left-pane/github-pane/github-spinner'
-import { RequirementResolutionResult } from '../../../core/shared/import/utopia-requirements-service'
+import { RequirementResolutionResult } from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
 
 export function OperationLine({ operation }: { operation: ImportOperation }) {
   const operationRunningStatus = React.useMemo(() => {

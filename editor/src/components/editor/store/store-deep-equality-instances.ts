@@ -362,8 +362,6 @@ import type {
   EditorRemixConfig,
   ErrorBoundaryHandling,
   GridControlData,
-  ProjectRequirements,
-  RequirementResolution,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -376,8 +374,6 @@ import {
   newGithubData,
   renderedAtPropertyPath,
   renderedAtChildNode,
-  requirementResolution,
-  newProjectRequirements,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -648,6 +644,14 @@ import type {
 import type { Axis } from '../../../components/canvas/gap-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
 import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
+import type {
+  ProjectRequirements,
+  RequirementResolution,
+} from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
+import {
+  newProjectRequirements,
+  requirementResolution,
+} from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(

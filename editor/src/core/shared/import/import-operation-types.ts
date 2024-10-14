@@ -1,5 +1,5 @@
 import type { GithubRepo } from '../../../components/editor/store/editor-state'
-import type { RequirementResolutionResult } from './utopia-requirements-service'
+import type { RequirementResolutionResult } from './proejct-health-check/utopia-requirements-types'
 
 type ImportOperationData = {
   text?: string

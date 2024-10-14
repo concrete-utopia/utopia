@@ -260,7 +260,6 @@ import type {
   ColorSwatch,
   PostActionMenuData,
   ErrorBoundaryHandling,
-  ProjectRequirements,
 } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
 import type { TextProp } from '../../text-editor/text-editor'
@@ -276,6 +275,7 @@ import type {
   ImportOperation,
   ImportOperationAction,
 } from '../../../core/shared/import/import-operation-types'
+import type { ProjectRequirements } from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
 
 export function clearSelection(): EditorAction {
   return {

@@ -1,12 +1,13 @@
-import { importCheckRequirementAndFix, ImportOperationResult } from './import-operation-types'
-import { notifyOperationFinished, notifyOperationStarted } from './import-operation-service'
-import type { ProjectRequirements } from '../../../components/editor/store/editor-state'
+import { importCheckRequirementAndFix, ImportOperationResult } from '../import-operation-types'
+import { notifyOperationFinished, notifyOperationStarted } from '../import-operation-service'
+import type { EditorDispatch } from '../../../../components/editor/action-types'
+import { updateProjectRequirements } from '../../../../components/editor/actions/action-creators'
+import type { ProjectRequirement, ProjectRequirements } from './utopia-requirements-types'
 import {
   emptyProjectRequirements,
-  type ProjectRequirement,
-} from '../../../components/editor/store/editor-state'
-import type { EditorDispatch } from '../../../components/editor/action-types'
-import { updateProjectRequirements } from '../../../components/editor/actions/action-creators'
+  RequirementResolutionResult,
+  RequirementResolutionStatus,
+} from './utopia-requirements-types'
 
 let editorDispatch: EditorDispatch | null = null
 
@@ -119,16 +120,4 @@ function getAggregatedStatus(
   }
   return ImportOperationResult.Success
 }
-
-export enum RequirementResolutionResult {
-  Found = 'found',
-  Fixed = 'fixed',
-  Partial = 'partial',
-  Critical = 'critical',
-}
-
-export enum RequirementResolutionStatus {
-  NotStarted = 'not-started',
-  Pending = 'pending',
-  Done = 'done',
-}
+export { RequirementResolutionResult }

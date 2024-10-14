@@ -4,11 +4,8 @@ import {
 } from '../../../../components/assets'
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import { codeFile, isTextFile, RevisionsState } from '../../project-file-types'
-import {
-  notifyCheckingRequirement,
-  notifyResolveRequirement,
-  RequirementResolutionResult,
-} from '../utopia-requirements-service'
+import { notifyCheckingRequirement, notifyResolveRequirement } from './utopia-requirements-service'
+import { RequirementResolutionResult } from './utopia-requirements-types'
 import { applyToAllUIJSFiles } from '../../../../core/model/project-file-utils'
 
 export function checkAndFixUtopiaRequirements(

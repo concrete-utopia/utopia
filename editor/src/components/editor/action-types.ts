@@ -63,7 +63,6 @@ import type {
   ColorSwatch,
   PostActionMenuData,
   ErrorBoundaryHandling,
-  ProjectRequirements,
 } from './store/editor-state'
 import type { Notice } from '../common/notice'
 import type { LoginState } from '../../common/user'
@@ -92,6 +91,7 @@ import type {
   ImportOperation,
   ImportOperationAction,
 } from '../../core/shared/import/import-operation-types'
+import type { ProjectRequirements } from '../../core/shared/import/proejct-health-check/utopia-requirements-types'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 

@@ -637,9 +637,9 @@ import { getUpdateOperationResult } from '../../../core/shared/import/import-ope
 import {
   notifyCheckingRequirement,
   notifyResolveRequirement,
-  RequirementResolutionResult,
   updateRequirements,
-} from '../../../core/shared/import/utopia-requirements-service'
+} from '../../../core/shared/import/proejct-health-check/utopia-requirements-service'
+import { RequirementResolutionResult } from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 

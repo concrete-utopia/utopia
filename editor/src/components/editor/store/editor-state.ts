@@ -190,8 +190,10 @@ import type { NavigatorRow } from '../../navigator/navigator-row'
 import type { FancyError } from '../../../core/shared/code-exec-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
 import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
-import { RequirementResolutionStatus } from '../../../core/shared/import/utopia-requirements-service'
-import type { RequirementResolutionResult } from '../../../core/shared/import/utopia-requirements-service'
+import {
+  emptyProjectRequirements,
+  type ProjectRequirements,
+} from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1163,64 +1165,6 @@ export interface PullRequest {
   title: string
   htmlURL: string
   number: number
-}
-
-export interface RequirementResolution {
-  status: RequirementResolutionStatus
-  value?: string | null
-  resolution?: RequirementResolutionResult | null
-}
-
-export function requirementResolution(
-  status: RequirementResolutionStatus,
-  value?: string | null,
-  resolution?: RequirementResolutionResult | null,
-): RequirementResolution {
-  return {
-    status,
-    value,
-    resolution,
-  }
-}
-
-export interface ProjectRequirements {
-  storyboard: RequirementResolution
-  packageJsonEntries: RequirementResolution
-  language: RequirementResolution
-  reactVersion: RequirementResolution
-}
-
-export type ProjectRequirement = keyof ProjectRequirements
-
-export function newProjectRequirements(
-  storyboard: RequirementResolution,
-  packageJsonEntries: RequirementResolution,
-  language: RequirementResolution,
-  reactVersion: RequirementResolution,
-): ProjectRequirements {
-  return {
-    storyboard,
-    packageJsonEntries,
-    language,
-    reactVersion,
-  }
-}
-
-export function emptyRequirementResolution(): RequirementResolution {
-  return {
-    status: RequirementResolutionStatus.NotStarted,
-    value: null,
-    resolution: null,
-  }
-}
-
-export function emptyProjectRequirements(): ProjectRequirements {
-  return newProjectRequirements(
-    emptyRequirementResolution(),
-    emptyRequirementResolution(),
-    emptyRequirementResolution(),
-    emptyRequirementResolution(),
-  )
 }
 
 export interface ProjectGithubSettings {
