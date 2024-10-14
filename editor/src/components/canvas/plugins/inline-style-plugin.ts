@@ -44,9 +44,11 @@ export const InlineStylePlugin: StylePlugin = {
   normalizeFromInlineStyle: (editor, elementsToNormalize) => {
     return foldAndApplyCommandsSimple(
       editor,
-      typedObjectKeys(editor.canvas.propertiesToUnset).flatMap((p) =>
-        elementsToNormalize.map((element) =>
-          deleteProperties('on-complete', element, [PP.create('style', p)]),
+      elementsToNormalize.flatMap((element) =>
+        deleteProperties(
+          'on-complete',
+          element,
+          typedObjectKeys(editor.canvas.propertiesToUnset).map((p) => PP.create('style', p)),
         ),
       ),
     )
