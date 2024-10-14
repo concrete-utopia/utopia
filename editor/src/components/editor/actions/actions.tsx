@@ -6583,9 +6583,12 @@ function alignFlexOrGridChildren(editor: EditorState, views: ElementPath[], alig
     ) {
       let working = { ...editorState }
 
-      working = deleteValuesAtPath(working, view, [styleP(target)]).editorStateWithChanges
+      const result = deleteValuesAtPath(working, view, [styleP(target)])
+      if (result == null) {
+        return working
+      }
 
-      working = applyValuesAtPath(working, view, [
+      working = applyValuesAtPath(result.editorStateWithChanges, view, [
         {
           path: styleP(dimension),
           value: jsExpressionValue(zeroRectIfNullOrInfinity(frame)[dimension], emptyComments),

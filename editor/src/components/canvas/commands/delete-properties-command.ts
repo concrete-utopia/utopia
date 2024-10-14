@@ -101,13 +101,23 @@ export const runDeleteProperties = (
   editorState: EditorState,
   command: DeleteProperties,
 ): CommandFunctionResult => {
-  const { editorStatePatch: propertyUpdatePatch, editorStateWithChanges: editorStateWithChanges } =
-    deleteValuesAtPath(editorState, command.element, command.properties)
+  const result = deleteValuesAtPath(editorState, command.element, command.properties)
+  if (result == null) {
+    return {
+      editorStatePatches: [],
+      commandDescription: `Delete Properties ${command.properties
+        .map(PP.toString)
+        .join(',')} on ${EP.toUid(command.element)}`,
+    }
+  }
 
-  const propertiesToUnsetPatches = getPropertiesToUnsetPatches(editorStateWithChanges, command)
+  const propertiesToUnsetPatches = getPropertiesToUnsetPatches(
+    result.editorStateWithChanges,
+    command,
+  )
 
   return {
-    editorStatePatches: [propertyUpdatePatch, ...propertiesToUnsetPatches],
+    editorStatePatches: [result.editorStatePatch, ...propertiesToUnsetPatches],
     commandDescription: `Delete Properties ${command.properties
       .map(PP.toString)
       .join(',')} on ${EP.toUid(command.element)}`,
@@ -118,7 +128,10 @@ export function deleteValuesAtPath(
   editorState: EditorState,
   target: ElementPath,
   properties: Array<PropertyPath>,
-): { editorStateWithChanges: EditorState; editorStatePatch: EditorStatePatch } {
+): { editorStateWithChanges: EditorState; editorStatePatch: EditorStatePatch } | null {
+  if (properties.length === 0) {
+    return null
+  }
   const workingEditorState = modifyUnderlyingElementForOpenFile(
     target,
     editorState,

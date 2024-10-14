@@ -123,6 +123,14 @@ export const runBulkUpdateProperties: CommandFunction<UpdateBulkProperties> = (
     command.element,
     propsToDelete.map((d) => d.path),
   )
+  if (withDeletedProps == null) {
+    return {
+      editorStatePatches: [],
+      commandDescription: `Delete Properties ${command.properties
+        .map((p) => PP.toString(p.path))
+        .join(',')} on ${EP.toUid(command.element)}`,
+    }
+  }
 
   // 2. Apply SET updates
   const propsToSet: PropertyToSet[] = mapDropNulls(
