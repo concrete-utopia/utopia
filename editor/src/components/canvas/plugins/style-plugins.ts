@@ -7,6 +7,7 @@ import {
   getTailwindConfigCached,
   isTailwindEnabled,
 } from '../../../core/tailwind/tailwind-compilation'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export interface StylePlugin {
   name: string
@@ -23,7 +24,7 @@ export const Plugins = {
 } as const
 
 export function getActivePlugin(editorState: EditorState): StylePlugin {
-  if (isTailwindEnabled()) {
+  if (isFeatureEnabled('Tailwind') || isTailwindEnabled()) {
     return TailwindPlugin(getTailwindConfigCached(editorState))
   }
   return InlineStylePlugin
