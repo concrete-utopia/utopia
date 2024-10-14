@@ -24,6 +24,7 @@ import { ElementContextMenu } from '../../element-context-menu'
 import type { Mode } from '../../editor/editor-modes'
 import {
   isCommentMode,
+  isInsertMode,
   isLiveMode,
   isSelectMode,
   isSelectModeWithArea,
@@ -600,7 +601,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                     !EP.multiplePathsAllWithTheSameUID(localSelectedViews),
                   <>
                     {when(
-                      dragInteractionActive,
+                      isSelectMode(editorMode) || isInsertMode(editorMode),
                       <React.Fragment>
                         {grids.map((grid) => {
                           return (

@@ -38,7 +38,7 @@ import {
 import type { DragInteractionData, InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { honoursPropsPosition, shouldKeepMovingDraggedGroupChildren } from './absolute-utils'
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
-import { getMetadataWithGridCellBounds, runGridRearrangeMove } from './grid-helpers'
+import { runGridRearrangeMove } from './grid-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { removeAbsolutePositioningProps } from './reparent-helpers/reparent-property-changes'
 import type { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
@@ -163,13 +163,10 @@ export function applyGridReparent(
           return emptyStrategyApplicationResult
         }
 
-        const { metadata: grid, customStrategyState: updatedCustomState } =
-          getMetadataWithGridCellBounds(
-            newParent.intendedParentPath,
-            canvasState.startingMetadata,
-            interactionSession.latestMetadata,
-            customStrategyState,
-          )
+        const grid = MetadataUtils.findElementByElementPath(
+          canvasState.startingMetadata,
+          newParent.intendedParentPath,
+        )
 
         if (grid == null) {
           return strategyApplicationResult([], [newParent.intendedParentPath])
@@ -230,12 +227,6 @@ export function applyGridReparent(
           newParent.intendedParentPath,
         ])
 
-        const baseCustomState = updatedCustomState ?? customStrategyState
-        const customStrategyStatePatch = {
-          ...baseCustomState,
-          elementsToRerender: elementsToRerender,
-        }
-
         return strategyApplicationResult(
           [
             ...outcomes.flatMap((c) => c.commands),
@@ -244,7 +235,9 @@ export function applyGridReparent(
             setCursorCommand(CSSCursor.Reparent),
           ],
           elementsToRerender,
-          customStrategyStatePatch,
+          {
+            elementsToRerender: elementsToRerender,
+          },
         )
       },
     )
