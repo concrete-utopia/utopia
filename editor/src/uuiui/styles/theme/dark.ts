@@ -134,6 +134,7 @@ const colorsWithOpacity = {
   whiteOpacity20: createUtopiColor('oklch(100% 0 0 /20%)'),
   whiteOpacity30: createUtopiColor('oklch(100% 0 0 /30%)'),
   whiteOpacity35: createUtopiColor('oklch(100% 0 0 /35%)'),
+  grey65: createUtopiColor('oklch(65% 0 0)'),
   blackOpacity35: createUtopiColor('oklch(0% 0 0 / 35%)'),
   canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(255,255,255,0.20)'),
   canvasControlsSizeBoxShadowColor50: createUtopiColor('rgba(255,255,255,0.5)'),
