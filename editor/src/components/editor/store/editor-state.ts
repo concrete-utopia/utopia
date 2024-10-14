@@ -869,8 +869,12 @@ export function internalClipboard(
   }
 }
 
-export interface PropertiesToUnset {
+export interface UnsetPropertyValues {
   gap?: '0px'
+}
+
+export interface PropertiesToUnset {
+  [pathString: string]: UnsetPropertyValues
 }
 
 export interface EditorStateCanvas {
@@ -918,7 +922,7 @@ export function editorStateCanvas(
   resizeOpts: ResizeOptions,
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>,
   controls: EditorStateCanvasControls,
-  propertiesToUnset: Partial<PropertiesToUnset>,
+  propertiesToUnset: PropertiesToUnset,
 ): EditorStateCanvas {
   return {
     elementsToRerender: elementsToRerender,

@@ -2,6 +2,7 @@ import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import type { StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { defaultEither, isLeft, mapEither, right } from '../../../core/shared/either'
+import * as EP from '../../../core/shared/element-path'
 import type { JSXElement } from '../../../core/shared/element-template'
 import { isJSXElement } from '../../../core/shared/element-template'
 import { typedObjectKeys } from '../../../core/shared/object-utils'
@@ -44,11 +45,11 @@ export const InlineStylePlugin: StylePlugin = {
   normalizeFromInlineStyle: (editor, elementsToNormalize) => {
     return foldAndApplyCommandsSimple(
       editor,
-      elementsToNormalize.flatMap((element) =>
+      Object.entries(editor.canvas.propertiesToUnset).map(([pathString, propertiesToUnset]) =>
         deleteProperties(
           'on-complete',
-          element,
-          typedObjectKeys(editor.canvas.propertiesToUnset).map((p) => PP.create('style', p)),
+          EP.fromString(pathString),
+          typedObjectKeys(propertiesToUnset).map((p) => PP.create('style', p)),
         ),
       ),
     )

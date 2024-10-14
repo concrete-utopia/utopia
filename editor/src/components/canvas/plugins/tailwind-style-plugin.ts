@@ -1,8 +1,8 @@
 import * as TailwindClassParser from '@xengine/tailwindcss-class-parser'
-import type { JSExpression, JSXAttributesEntry } from 'utopia-shared/src/types'
+import type { ElementPath, JSExpression, JSXAttributesEntry } from 'utopia-shared/src/types'
 import { isLeft } from '../../../core/shared/either'
 import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
-import type { PropertiesToUnset } from '../../editor/store/editor-state'
+import type { EditorState, UnsetPropertyValues } from '../../editor/store/editor-state'
 import {
   getElementFromProjectContents,
   getJSXElementFromProjectContents,
@@ -20,6 +20,7 @@ import type { WithPropertyTag } from '../canvas-types'
 import { withPropertyTag } from '../canvas-types'
 import type { Config } from 'tailwindcss/types/config'
 import { typedObjectKeys } from '../../../core/shared/object-utils'
+import * as EP from '../../../core/shared/element-path'
 
 function parseTailwindProperty<T>(value: unknown, parse: Parser<T>): WithPropertyTag<T> | null {
   const parsed = parse(value, null)
@@ -86,9 +87,70 @@ function getStylePropContents(
   return null
 }
 
-function getRemoveUpdates(propertiesToUnset: PropertiesToUnset): UCL.ClassListUpdate[] {
+function getRemoveUpdates(propertiesToUnset: UnsetPropertyValues): UCL.ClassListUpdate[] {
   return typedObjectKeys(propertiesToUnset).map((property) =>
     UCL.remove(TailwindPropertyMapping[property]),
+  )
+}
+
+function getNormalizationCommands(elementsToNormalize: ElementPath[], editorState: EditorState) {
+  return elementsToNormalize.flatMap((elementPath) => {
+    const element = getJSXElementFromProjectContents(elementPath, editorState.projectContents)
+    if (element == null) {
+      return []
+    }
+
+    const styleAttribute = element.props.find(
+      (prop): prop is JSXAttributesEntry =>
+        prop.type === 'JSX_ATTRIBUTES_ENTRY' && prop.key === 'style',
+    )
+    if (styleAttribute == null) {
+      return []
+    }
+
+    const styleValue = getStylePropContents(styleAttribute.value)
+    if (styleValue == null) {
+      return []
+    }
+
+    const styleProps = mapDropNulls(
+      (c): { key: keyof typeof TailwindPropertyMapping; value: unknown } | null =>
+        isSupportedTailwindProperty(c.key) ? { key: c.key, value: c.value } : null,
+      styleValue,
+    )
+
+    const stylePropConversions = mapDropNulls(({ key, value }) => {
+      const valueString = stringifiedStylePropValue(value)
+      if (valueString == null) {
+        return null
+      }
+
+      return { property: TailwindPropertyMapping[key], value: valueString }
+    }, styleProps)
+
+    return [
+      deleteProperties(
+        'on-complete',
+        elementPath,
+        Object.keys(TailwindPropertyMapping).map((prop) => PP.create('style', prop)),
+      ),
+      updateClassListCommand(
+        'always',
+        elementPath,
+        stylePropConversions.map(({ property, value }) => UCL.add({ property, value })),
+      ),
+    ]
+  })
+}
+
+function getPropertyCleanupCommands(editorState: EditorState) {
+  return Object.entries(editorState.canvas.propertiesToUnset).map(
+    ([pathString, propertiesToUnset]) =>
+      updateClassListCommand(
+        'always',
+        EP.fromString(pathString),
+        getRemoveUpdates(propertiesToUnset),
+      ),
   )
 }
 
@@ -116,58 +178,11 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
       }
     },
   normalizeFromInlineStyle: (editorState, elementsToNormalize) => {
-    const commands = elementsToNormalize.flatMap((elementPath) => {
-      const element = getJSXElementFromProjectContents(elementPath, editorState.projectContents)
-      if (element == null) {
-        return []
-      }
+    const commands = [
+      ...getNormalizationCommands(elementsToNormalize, editorState),
+      ...getPropertyCleanupCommands(editorState),
+    ]
 
-      const styleAttribute = element.props.find(
-        (prop): prop is JSXAttributesEntry =>
-          prop.type === 'JSX_ATTRIBUTES_ENTRY' && prop.key === 'style',
-      )
-      if (styleAttribute == null) {
-        return []
-      }
-
-      const styleValue = getStylePropContents(styleAttribute.value)
-      if (styleValue == null) {
-        return []
-      }
-
-      const styleProps = mapDropNulls(
-        (c): { key: keyof typeof TailwindPropertyMapping; value: unknown } | null =>
-          isSupportedTailwindProperty(c.key) ? { key: c.key, value: c.value } : null,
-        styleValue,
-      )
-
-      const stylePropConversions = mapDropNulls(({ key, value }) => {
-        const valueString = stringifiedStylePropValue(value)
-        if (valueString == null) {
-          return null
-        }
-
-        return { property: TailwindPropertyMapping[key], value: valueString }
-      }, styleProps)
-
-      return [
-        deleteProperties(
-          'on-complete',
-          elementPath,
-          Object.keys(TailwindPropertyMapping).map((prop) => PP.create('style', prop)),
-        ),
-        updateClassListCommand(
-          'always',
-          elementPath,
-          stylePropConversions.map(({ property, value }) => UCL.add({ property, value })),
-        ),
-        updateClassListCommand(
-          'always',
-          elementPath,
-          getRemoveUpdates(editorState.canvas.propertiesToUnset),
-        ),
-      ]
-    })
     if (commands.length === 0) {
       return editorState
     }

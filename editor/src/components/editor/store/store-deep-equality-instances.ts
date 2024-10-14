@@ -2769,10 +2769,12 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
   )
 
 export const PropertiesToUnsetKeepDeepEquality: KeepDeepEqualityCall<PropertiesToUnset> =
-  combine1EqualityCall(
-    (p) => p.gap,
-    undefinableDeepEquality(createCallWithTripleEquals()),
-    (gap) => ({ gap }),
+  objectDeepEquality(
+    combine1EqualityCall(
+      (p) => p.gap,
+      undefinableDeepEquality(createCallWithTripleEquals()),
+      (gap) => ({ gap }),
+    ),
   )
 
 export const ModifiersKeepDeepEquality: KeepDeepEqualityCall<Modifiers> = combine4EqualityCalls(

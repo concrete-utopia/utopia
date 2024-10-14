@@ -7,6 +7,7 @@ import type {
   EditorState,
   EditorStatePatch,
   PropertiesToUnset,
+  UnsetPropertyValues,
 } from '../../../components/editor/store/editor-state'
 import { modifyUnderlyingElementForOpenFile } from '../../../components/editor/store/editor-state'
 import { foldEither } from '../../../core/shared/either'
@@ -39,8 +40,8 @@ export function deleteProperties(
 }
 
 type PropertiesToUnsetArray = Array<{
-  prop: keyof PropertiesToUnset
-  value: PropertiesToUnset[keyof PropertiesToUnset]
+  prop: keyof UnsetPropertyValues
+  value: UnsetPropertyValues[keyof UnsetPropertyValues]
   path: PropertyPath
 }>
 
@@ -59,8 +60,8 @@ function getUnsetProperties(properties: Array<PropertyPath>): PropertiesToUnsetA
   }, properties)
 }
 
-function getPropertiesToUnset(propertiesToUnset: PropertiesToUnsetArray): PropertiesToUnset {
-  let result: Partial<PropertiesToUnset> = {}
+function getPropertiesToUnset(propertiesToUnset: PropertiesToUnsetArray): UnsetPropertyValues {
+  let result: UnsetPropertyValues = {}
   for (const { prop, value } of propertiesToUnset) {
     result[prop] = value
   }
@@ -77,10 +78,17 @@ function getPropertiesToUnsetPatches(
 
   const unsetProperties = getUnsetProperties(command.properties)
   const partialPropertiesToUnset = getPropertiesToUnset(unsetProperties)
+  const pathString = EP.toString(command.element)
   const unsetPropertiesPatch: EditorStatePatch = {
     canvas: {
       propertiesToUnset: {
-        $set: { ...partialPropertiesToUnset, ...editorState.canvas.propertiesToUnset },
+        $set: {
+          ...editorState.canvas.propertiesToUnset,
+          [pathString]: {
+            ...editorState.canvas.propertiesToUnset[pathString],
+            ...partialPropertiesToUnset,
+          },
+        },
       },
     },
   }
