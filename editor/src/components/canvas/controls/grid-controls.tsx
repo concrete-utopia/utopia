@@ -65,6 +65,7 @@ import {
 } from '../canvas-strategies/strategies/grid-helpers'
 import { canResizeGridTemplate } from '../canvas-strategies/strategies/resize-grid-strategy'
 import { resizeBoundingBoxFromSide } from '../canvas-strategies/strategies/resize-helpers'
+import type { EdgePosition } from '../canvas-types'
 import { CSSCursor } from '../canvas-types'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import type { Axis } from '../gap-utils'
@@ -1499,9 +1500,8 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
     return scaledFrame.width * scale > 30 && scaledFrame.height > 30
   }, [element, scale, isResizing])
 
-  const resizeEdges = useResizeEdges([target], {
-    onEdgeDoubleClick: () => NO_OP,
-    onEdgeMouseDown: (position) => (e) => {
+  const onEdgeMouseDown = React.useCallback(
+    (position: EdgePosition) => (e: React.MouseEvent<HTMLDivElement>) => {
       if (element == null) {
         return
       }
@@ -1513,7 +1513,13 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
 
       startResizeInteraction(EP.toUid(element.elementPath), edge)(e)
     },
+    [element, startResizeInteraction],
+  )
+
+  const resizeEdges = useResizeEdges([target], {
+    onEdgeDoubleClick: () => NO_OP,
     onEdgeMouseMove: NO_OP,
+    onEdgeMouseDown: onEdgeMouseDown,
     cursors: {
       top: CSSCursor.RowResize,
       bottom: CSSCursor.RowResize,
