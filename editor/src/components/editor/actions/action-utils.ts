@@ -137,6 +137,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'RESET_ONLINE_STATE':
     case 'INCREASE_ONLINE_STATE_FAILURE_COUNT':
     case 'SET_ERROR_BOUNDARY_HANDLING':
+    case 'RUN_NORMALIZATION_STEP':
       return true
 
     case 'TRUE_UP_ELEMENTS':

@@ -1191,6 +1191,11 @@ export interface SetErrorBoundaryHandling {
   errorBoundaryHandling: ErrorBoundaryHandling
 }
 
+export interface RunNormalizationStep {
+  action: 'RUN_NORMALIZATION_STEP'
+  elementsToNormalize: Array<ElementPath>
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1380,6 +1385,7 @@ export type EditorAction =
   | ResetOnlineState
   | IncreaseOnlineStateFailureCount
   | SetErrorBoundaryHandling
+  | RunNormalizationStep
 
 function actionForEach(action: EditorAction, fn: (action: EditorAction) => void): void {
   fn(action)

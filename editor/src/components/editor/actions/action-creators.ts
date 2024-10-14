@@ -237,6 +237,7 @@ import type {
   ToggleDataCanCondense,
   UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
+  RunNormalizationStep,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1894,5 +1895,14 @@ export function setErrorBoundaryHandling(
   return {
     action: 'SET_ERROR_BOUNDARY_HANDLING',
     errorBoundaryHandling: errorBoundaryHandling,
+  }
+}
+
+export function runNormalizationStep(
+  elementsToNormalize: Array<ElementPath>,
+): RunNormalizationStep {
+  return {
+    action: 'RUN_NORMALIZATION_STEP',
+    elementsToNormalize: elementsToNormalize,
   }
 }

@@ -352,6 +352,7 @@ import type {
   ToggleDataCanCondense,
   UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
+  RunNormalizationStep,
 } from '../action-types'
 import { isAlignment, isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -501,6 +502,7 @@ import {
   insertJSXElement,
   openCodeEditorFile,
   replaceMappedElement,
+  runNormalizationStep,
   scrollToPosition,
   selectComponents,
   setCodeEditorBuildErrors,
@@ -630,6 +632,7 @@ import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-ut
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { applyValuesAtPath } from '../../canvas/commands/adjust-number-command'
 import { styleP } from '../../inspector/inspector-common'
+import { getActivePlugin } from '../../canvas/plugins/style-plugins'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -5865,7 +5868,21 @@ export const UPDATE_FNS = {
     }
   },
   APPLY_COMMANDS: (action: ApplyCommandsAction, editor: EditorModel): EditorModel => {
-    return foldAndApplyCommandsSimple(editor, action.commands)
+    const withCommandsApplied = foldAndApplyCommandsSimple(editor, action.commands)
+
+    const affectedElements = mapDropNulls((command) => {
+      switch (command.type) {
+        case 'DELETE_PROPERTIES':
+          return command.element
+        default:
+          return null
+      }
+    }, action.commands)
+
+    return UPDATE_FNS.RUN_NORMALIZATION_STEP(
+      runNormalizationStep(affectedElements),
+      withCommandsApplied,
+    )
   },
   UPDATE_COLOR_SWATCHES: (action: UpdateColorSwatches, editor: EditorModel): EditorModel => {
     return {
@@ -6133,6 +6150,13 @@ export const UPDATE_FNS = {
         errorBoundaryHandling: action.errorBoundaryHandling,
       },
     }
+  },
+  RUN_NORMALIZATION_STEP: (action: RunNormalizationStep, editor: EditorModel): EditorModel => {
+    const normalizedEditor = getActivePlugin(editor).normalizeFromInlineStyle(
+      editor,
+      action.elementsToNormalize,
+    )
+    return normalizedEditor
   },
 }
 
