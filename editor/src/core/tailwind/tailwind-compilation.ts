@@ -1,7 +1,7 @@
 import React from 'react'
 import type { TailwindConfig, Tailwindcss } from '@mhsdesign/jit-browser-tailwindcss'
 import { createTailwindcss } from '@mhsdesign/jit-browser-tailwindcss'
-import type { ProjectContentTreeRoot, TextFile, TextFileContents } from 'utopia-shared/src/types'
+import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import { getProjectFileByFilePath, walkContentsTree } from '../../components/assets'
 import { interactionSessionIsActive } from '../../components/canvas/canvas-strategies/interaction-state'
 import { CanvasContainerID } from '../../components/canvas/canvas-types'
@@ -98,16 +98,25 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
     interactionSessionIsActive(store.editor.canvas.interactionSession),
   )
 
-  const observerCallback = React.useCallback(() => {
-    if (
-      isInteractionActiveRef.current ||
-      ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' || // implies that an interaction is in progress
-      !isFeatureEnabled('Tailwind')
-    ) {
-      return
-    }
-    generateTailwindClasses(projectContents, requireFn)
-  }, [isInteractionActiveRef, projectContents, requireFn])
+  const observerCallback = React.useCallback(
+    (mutations: MutationRecord[]) => {
+      const updateHasNewTailwindData = mutations.some(
+        (m) =>
+          m.addedNodes.length > 0 || // new DOM element was added with potentially new classes
+          m.attributeName === 'class', // a new class was added to the class attribute of an element
+      )
+      if (
+        isInteractionActiveRef.current ||
+        ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' || // implies that an interaction is in progress
+        !updateHasNewTailwindData ||
+        !isFeatureEnabled('Tailwind')
+      ) {
+        return
+      }
+      generateTailwindClasses(projectContents, requireFn)
+    },
+    [isInteractionActiveRef, projectContents, requireFn],
+  )
 
   React.useEffect(() => {
     const tailwindConfigFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
@@ -122,7 +131,7 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
       subtree: true,
     })
 
-    observerCallback()
+    generateTailwindClasses(projectContents, requireFn)
 
     return () => {
       observer.disconnect()
