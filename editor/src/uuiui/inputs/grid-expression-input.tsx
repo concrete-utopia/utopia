@@ -28,7 +28,6 @@ import { Icons, SmallerIcons } from '../icons'
 import { NO_OP } from '../../core/shared/utils'
 import { unless } from '../../utils/react-conditionals'
 import { useColorTheme } from '../styles/theme'
-import { capitalize } from '../../core/shared/string-utils'
 
 interface GridExpressionInputProps {
   testId: string
@@ -58,12 +57,8 @@ export const GridExpressionInput = React.memo(
   }: GridExpressionInputProps) => {
     const colorTheme = useColorTheme()
 
-    function getPrintValue(dim: GridDimension): string {
-      return capitalize(stringifyGridDimension(dim))
-    }
-
-    const [printValue, setPrintValue] = React.useState<string>(getPrintValue(value))
-    React.useEffect(() => setPrintValue(getPrintValue(value)), [value])
+    const [printValue, setPrintValue] = React.useState<string>(stringifyGridDimension(value))
+    React.useEffect(() => setPrintValue(stringifyGridDimension(value)), [value])
 
     const onChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       setPrintValue(e.target.value)
