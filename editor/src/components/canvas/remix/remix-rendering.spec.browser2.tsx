@@ -10,7 +10,7 @@ import {
 } from '../../../sample-projects/sample-project-utils.test-utils'
 import type { Modifiers } from '../../../utils/modifiers'
 import { emptyModifiers, cmdModifier } from '../../../utils/modifiers'
-import { selectComponentsForTest } from '../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../utils/utils.test-utils'
 import {
   runDOMWalker,
   selectComponents,
@@ -31,6 +31,7 @@ import {
   MockClipboardHandlers,
   firePasteEvent,
   mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
   mouseDownAtPoint,
   mouseDragFromPointWithDelta,
   pressKey,
@@ -811,6 +812,109 @@ describe('Remix content', () => {
     await dragMouse(renderResult, startPoint, dragDelta, emptyModifiers, () =>
       expectRemixSceneToBeRendered(renderResult),
     )
+  })
+
+  it('Can focus component in remix', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='storyboard'>
+          <RemixScene
+            data-uid='remix-scene'
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/app/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet'/>
+          </div>
+        )
+      }
+      `,
+      '/app/routes/_index.js': `import React from 'react'
+      import { Hero } from './index/Hero.jsx'
+      import { Column } from './index/column.jsx'
+      
+      export default function Index() {
+        return (
+          <Column data-uid='index-column'>
+              <Hero data-uid='index-hero'>
+            </Hero>
+          </Column>
+        )
+      }
+      `,
+      '/app/routes/index/Hero.jsx': `import React from 'react'
+
+      export function Hero() {
+        return (
+          <div data-uid='index-container-div'>
+            <h1 data-uid='index-hero-h1' data-testid='index-hero-h1'>This is the hero section</h1>
+          </div>
+        )
+      }
+      `,
+      '/app/routes/index/column.jsx': `import React from 'react'
+      export function Column({ children }) {
+        return <div data-uid='index-column-div'>{children}</div>
+      }
+      `,
+    })
+    const renderResult = await renderRemixProject(project)
+
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-storyboard/remix-scene',
+      'regular-storyboard/remix-scene:rootdiv',
+      'regular-storyboard/remix-scene:rootdiv/outlet',
+      'regular-storyboard/remix-scene:rootdiv/outlet:index-column',
+      'regular-storyboard/remix-scene:rootdiv/outlet:index-column/index-hero',
+    ])
+
+    const heroH1 = renderResult.renderedDOM.getByTestId('index-hero-h1')
+    const heroH1Bounds = heroH1.getBoundingClientRect()
+    const heroH1Center = windowPoint({
+      x: heroH1Bounds.x + heroH1Bounds.width / 2,
+      y: heroH1Bounds.y + heroH1Bounds.height / 2,
+    })
+
+    await mouseDoubleClickAtPoint(
+      renderResult.renderedDOM.getByTestId(CanvasControlsContainerID),
+      heroH1Center,
+    )
+
+    expect(
+      getNavigatorTargetsFromEditorState(renderResult.getEditorState().editor).navigatorTargets.map(
+        navigatorEntryToKey,
+      ),
+    ).toEqual([
+      'regular-storyboard/remix-scene',
+      'regular-storyboard/remix-scene:rootdiv',
+      'regular-storyboard/remix-scene:rootdiv/outlet',
+      'regular-storyboard/remix-scene:rootdiv/outlet:index-column',
+      'regular-storyboard/remix-scene:rootdiv/outlet:index-column/index-hero',
+      'regular-storyboard/remix-scene:rootdiv/outlet:index-column/index-hero:index-container-div',
+      'regular-storyboard/remix-scene:rootdiv/outlet:index-column/index-hero:index-container-div/index-hero-h1',
+    ])
   })
 })
 
