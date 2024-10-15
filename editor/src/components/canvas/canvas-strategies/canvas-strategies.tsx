@@ -1,6 +1,6 @@
 import React from 'react'
 import { createSelector } from 'reselect'
-import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
+import { mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import type {
@@ -648,9 +648,15 @@ function controlPriorityToNumber(prio: ControlWithProps<any>['priority']): numbe
   }
 }
 
-export function useGetApplicableStrategyControls(
-  localSelectedViews: Array<ElementPath>,
-): Array<ControlWithProps<unknown>> {
+const controlEquals = (l: ControlWithProps<any>, r: ControlWithProps<any>) => {
+  return l.control === r.control && l.key === r.key
+}
+
+export function useGetApplicableStrategyControls(localSelectedViews: Array<ElementPath>): {
+  bottomStrategyControls: Array<ControlWithProps<unknown>>
+  middleStrategyControls: Array<ControlWithProps<unknown>>
+  topStrategyControls: Array<ControlWithProps<unknown>>
+} {
   const applicableStrategies = useGetApplicableStrategies(localSelectedViews)
   const currentStrategy = useDelayedCurrentStrategy()
   const currentlyInProgress = useEditorState(
@@ -661,30 +667,47 @@ export function useGetApplicableStrategyControls(
     'useGetApplicableStrategyControls currentlyInProgress',
   )
   return React.useMemo(() => {
-    let applicableControls: Array<ControlWithProps<unknown>> = []
     let isResizable: boolean = false
+    const bottomStrategyControls: Array<ControlWithProps<unknown>> = []
+    const middleStrategyControls: Array<ControlWithProps<unknown>> = []
+    const topStrategyControls: Array<ControlWithProps<unknown>> = []
     // Add the controls for currently applicable strategies.
     for (const strategy of applicableStrategies) {
       if (isResizableStrategy(strategy)) {
         isResizable = true
       }
       const strategyControls = getApplicableControls(currentStrategy, strategy)
-      applicableControls = addAllUniquelyBy(
-        applicableControls,
-        strategyControls,
-        (l, r) => l.control === r.control && l.key === r.key,
-      )
+
+      // uniquely add the strategyControls to the bottom, middle, and top arrays
+      for (const control of strategyControls) {
+        if (
+          control.priority === 'bottom' &&
+          !bottomStrategyControls.some((c) => controlEquals(c, control))
+        ) {
+          bottomStrategyControls.push(control)
+        } else if (
+          control.priority === undefined &&
+          !middleStrategyControls.some((c) => controlEquals(c, control))
+        ) {
+          middleStrategyControls.push(control)
+        } else if (
+          control.priority === 'top' &&
+          !topStrategyControls.some((c) => controlEquals(c, control))
+        ) {
+          topStrategyControls.push(control)
+        }
+      }
     }
     // Special case controls.
     if (!isResizable && !currentlyInProgress) {
-      applicableControls.push(notResizableControls)
+      middleStrategyControls.push(notResizableControls)
     }
 
-    applicableControls = applicableControls.sort(
-      (a, b) => controlPriorityToNumber(a.priority) - controlPriorityToNumber(b.priority),
-    )
-
-    return applicableControls
+    return {
+      bottomStrategyControls: bottomStrategyControls,
+      middleStrategyControls: middleStrategyControls,
+      topStrategyControls: topStrategyControls,
+    }
   }, [applicableStrategies, currentStrategy, currentlyInProgress])
 }
 
