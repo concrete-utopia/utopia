@@ -87,6 +87,26 @@ function generateTailwindClasses(projectContents: ProjectContentTreeRoot, requir
   void generateTailwindStyles(tailwindCss, allCSSFiles)
 }
 
+function runTailwindClassGenerationOnDOMMutation(
+  mutations: MutationRecord[],
+  projectContents: ProjectContentTreeRoot,
+  requireFn: RequireFn,
+) {
+  const updateHasNewTailwindData = mutations.some(
+    (m) =>
+      m.addedNodes.length > 0 || // new DOM element was added with potentially new classes
+      m.attributeName === 'class', // a new class was added to the class attribute of an element
+  )
+  if (
+    ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' || // implies that an interaction is in progress
+    !updateHasNewTailwindData ||
+    !isFeatureEnabled('Tailwind')
+  ) {
+    return
+  }
+  generateTailwindClasses(projectContents, requireFn)
+}
+
 export const useTailwindCompilation = (requireFn: RequireFn) => {
   const projectContents = useEditorState(
     Substores.projectContents,
@@ -98,32 +118,19 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
     interactionSessionIsActive(store.editor.canvas.interactionSession),
   )
 
-  const observerCallback = React.useCallback(
-    (mutations: MutationRecord[]) => {
-      const updateHasNewTailwindData = mutations.some(
-        (m) =>
-          m.addedNodes.length > 0 || // new DOM element was added with potentially new classes
-          m.attributeName === 'class', // a new class was added to the class attribute of an element
-      )
-      if (
-        isInteractionActiveRef.current ||
-        ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' || // implies that an interaction is in progress
-        !updateHasNewTailwindData ||
-        !isFeatureEnabled('Tailwind')
-      ) {
-        return
-      }
-      generateTailwindClasses(projectContents, requireFn)
-    },
-    [isInteractionActiveRef, projectContents, requireFn],
-  )
-
   React.useEffect(() => {
     const tailwindConfigFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
-    if (tailwindConfigFile == null || tailwindConfigFile.type !== 'TEXT_FILE') {
-      return // we consider tailwind to be enabled if there's a tailwind config file in the project
+    if (
+      tailwindConfigFile == null ||
+      isInteractionActiveRef.current ||
+      ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' || // implies that an interaction is in progress
+      !isFeatureEnabled('Tailwind')
+    ) {
+      return
     }
-    const observer = new MutationObserver(observerCallback)
+    const observer = new MutationObserver((mutations) => {
+      runTailwindClassGenerationOnDOMMutation(mutations, projectContents, requireFn)
+    })
 
     observer.observe(document.getElementById(CanvasContainerID)!, {
       attributes: true,
@@ -136,5 +143,5 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
     return () => {
       observer.disconnect()
     }
-  }, [isInteractionActiveRef, observerCallback, projectContents, requireFn])
+  }, [isInteractionActiveRef, projectContents, requireFn])
 }
