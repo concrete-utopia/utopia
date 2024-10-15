@@ -1,6 +1,6 @@
 import React from 'react'
 import { createSelector } from 'reselect'
-import { mapDropNulls, sortBy } from '../../../core/shared/array-utils'
+import { mapDropNulls, pushUniquelyBy, sortBy } from '../../../core/shared/array-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import type {
@@ -680,21 +680,14 @@ export function useGetApplicableStrategyControls(localSelectedViews: Array<Eleme
 
       // uniquely add the strategyControls to the bottom, middle, and top arrays
       for (const control of strategyControls) {
-        if (
-          control.priority === 'bottom' &&
-          !bottomStrategyControls.some((c) => controlEquals(c, control))
-        ) {
-          bottomStrategyControls.push(control)
-        } else if (
-          control.priority === undefined &&
-          !middleStrategyControls.some((c) => controlEquals(c, control))
-        ) {
-          middleStrategyControls.push(control)
-        } else if (
-          control.priority === 'top' &&
-          !topStrategyControls.some((c) => controlEquals(c, control))
-        ) {
-          topStrategyControls.push(control)
+        if (control.priority === 'bottom') {
+          pushUniquelyBy(bottomStrategyControls, control, controlEquals)
+        } else if (control.priority === undefined) {
+          pushUniquelyBy(middleStrategyControls, control, controlEquals)
+        } else if (control.priority === 'top') {
+          pushUniquelyBy(topStrategyControls, control, controlEquals)
+        } else {
+          assertNever(control.priority)
         }
       }
     }
