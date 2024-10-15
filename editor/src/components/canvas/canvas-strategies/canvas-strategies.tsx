@@ -703,21 +703,23 @@ export function useGetApplicableStrategyControls(
     'useGetApplicableStrategyControls currentlyInProgress',
   )
   return React.useMemo(() => {
-    let applicableControls: Array<ControlWithProps<unknown>> = []
+    let strategyControls: Array<ControlWithProps<unknown>> = []
     let isResizable: boolean = false
     // Add the controls for currently applicable strategies.
     for (const strategy of applicableStrategies) {
       if (isResizableStrategy(strategy)) {
         isResizable = true
       }
-      const strategyControls = getApplicableControls(currentStrategy, strategy)
-      const combinedControls = combineApplicableControls(strategyControls)
-      applicableControls = addAllUniquelyBy(
-        applicableControls,
-        combinedControls,
-        (l, r) => l.control === r.control && l.key === r.key,
-      )
+      strategyControls.push(...getApplicableControls(currentStrategy, strategy))
     }
+    const combinedControls = combineApplicableControls(strategyControls)
+    let applicableControls: Array<ControlWithProps<unknown>> = []
+    applicableControls = addAllUniquelyBy(
+      applicableControls,
+      combinedControls,
+      (l, r) => l.control === r.control && l.key === r.key,
+    )
+
     // Special case controls.
     if (!isResizable && !currentlyInProgress) {
       applicableControls.push(notResizableControls)
