@@ -1,14 +1,18 @@
 import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { stripNulls, uniqBy } from '../../../core/shared/array-utils'
+import { stripNulls, uniqBy, zip } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { CanvasRectangle } from '../../../core/shared/math-utils'
-import { isInfinityRectangle } from '../../../core/shared/math-utils'
+import {
+  isInfinityRectangle,
+  nullIfInfinity,
+  rectanglesEqual,
+} from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../uuiui'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isInsertMode } from '../../editor/editor-modes'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import {
@@ -16,6 +20,10 @@ import {
   findFirstNonConditionalAncestor,
 } from '../../../core/model/conditionals'
 import { treatElementAsGroupLike } from '../canvas-strategies/strategies/group-helpers'
+import {
+  useCanvasAnimation,
+  useCanvasAnimations,
+} from '../ui-jsx-canvas-renderer/animation-context'
 
 export const ParentOutlinesTestIdSuffix = `-parent-outlines-control`
 
@@ -29,6 +37,73 @@ interface ImmediateParentOutlinesProps {
   targets: Array<ElementPath>
 }
 
+function useFlexReorderAnimation(parentPath: ElementPath) {
+  const childrenPaths: ElementPath[] = useEditorState(
+    Substores.metadata,
+    (store) =>
+      MetadataUtils.getChildrenPathsOrdered(
+        store.editor.jsxMetadata,
+        store.editor.elementPathTree,
+        parentPath,
+      ),
+    '',
+  )
+
+  const childrenPathsStrings = childrenPaths.map((p) => EP.toString(p)).join('')
+
+  const [lastChildrenPathStrings, setLastChildrenPathStrings] = React.useState(childrenPathsStrings)
+
+  const currentFrames: [ElementPath, CanvasRectangle | null][] = useEditorState(
+    Substores.metadata,
+    (store) =>
+      childrenPaths.map((child) => [
+        child,
+        nullIfInfinity(
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, child)?.globalFrame,
+        ),
+      ]),
+    '',
+  )
+  const [lastFrames, setLastFrames] =
+    React.useState<[ElementPath, CanvasRectangle | null][]>(currentFrames)
+
+  const animate = useCanvasAnimations()
+
+  React.useEffect(() => {
+    if (childrenPathsStrings === lastChildrenPathStrings) {
+      return
+    }
+
+    for (const [[childPath, currentF], [_, lastF]] of zip(currentFrames, lastFrames, (a, b) => [
+      a,
+      b,
+    ])) {
+      if (lastF == null || currentF == null) {
+        continue
+      }
+
+      void animate(
+        childPath,
+        {
+          x: [lastF.x - currentF.x, 0],
+          // y: [lastF.y - currentF.y, 0],
+        },
+        { duration: 0.75 },
+      )
+    }
+
+    setLastFrames(currentFrames)
+    setLastChildrenPathStrings(childrenPathsStrings)
+  }, [
+    animate,
+    childrenPaths,
+    childrenPathsStrings,
+    currentFrames,
+    lastChildrenPathStrings,
+    lastFrames,
+  ])
+}
+
 export const ImmediateParentOutlines = controlForStrategyMemoized(
   ({ targets }: ImmediateParentOutlinesProps) => {
     const colorTheme = useColorTheme()
@@ -37,6 +112,9 @@ export const ImmediateParentOutlines = controlForStrategyMemoized(
       (store) => store.editor.canvas.scale,
       'ImmediateParentOutlines canvas scale',
     )
+
+    useFlexReorderAnimation(EP.parentPath(targets[0]))
+
     const parentFrame = useEditorState(
       Substores.fullStore,
       (store) => {
