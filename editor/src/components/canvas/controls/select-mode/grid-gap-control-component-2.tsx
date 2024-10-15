@@ -60,10 +60,11 @@ const GridPaddingOutlineForDimension = (props: {
   return (
     <div style={style}>
       {createArrayWithLength(length, (index) => {
+        const hide = index === 0 || index === length - 1 || index % 2 === 0
         return (
           <GridRowHighlight
             key={index}
-            hide={index === 0 || index === length - 1 || index % 2 === 0} // we only want to show the divs that fall in where the gaps are in the original grid
+            hide={hide} // we only want to show the divs that fall in where the gaps are in the original grid
             gapId={`${dimension}-${index}`}
             onGapHover={NO_OP}
             onHandleHoverEndInner={NO_OP}
@@ -71,8 +72,8 @@ const GridPaddingOutlineForDimension = (props: {
             template={getNullableAutoOrTemplateBaseString(
               dimension === 'rows' ? grid.gridTemplateColumns : grid.gridTemplateRows,
             )}
-            numberOfHandles={dimension === 'rows' ? grid.columns : grid.rows}
-            gap={dimension === 'rows' ? grid.rowGap ?? grid.gap : grid.columnGap ?? grid.gap}
+            numberOfHandles={hide ? 0 : dimension === 'rows' ? grid.columns : grid.rows}
+            gap={dimension === 'columns' ? grid.rowGap ?? grid.gap : grid.columnGap ?? grid.gap}
             gapValue={cssNumber(1, 'fr')} // FIXME
           />
         )
