@@ -25,7 +25,6 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { maybeGridGapData, type Axis } from '../../gap-utils'
 import type { CSSNumberWithRenderedValue } from './controls-common'
 import { useHoverWithDelay } from './controls-common'
-import { useDelayedEditorState } from '../../canvas-strategies/canvas-strategies'
 
 export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) => {
   const { selectedElement } = props
@@ -38,7 +37,8 @@ export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) 
   )
 
   const elementHovered =
-    useDelayedEditorState(
+    useEditorState(
+      Substores.highlightedHoveredViews,
       (store) => store.editor.hoveredViews.includes(selectedElement),
       'GridGapControlComponent2 elementHovered',
     ) ?? false
