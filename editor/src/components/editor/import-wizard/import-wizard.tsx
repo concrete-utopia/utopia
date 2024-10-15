@@ -193,7 +193,9 @@ function ActionButtons({ importResult }: { importResult: ImportOperationResult |
     return (
       <React.Fragment>
         <div style={textStyle}>Project Imported Successfully</div>
-        <Button style={buttonStyle}>Continue To Editor</Button>
+        <Button onClick={hideImportWizard} style={buttonStyle}>
+          Continue To Editor
+        </Button>
       </React.Fragment>
     )
   }
@@ -201,7 +203,9 @@ function ActionButtons({ importResult }: { importResult: ImportOperationResult |
     return (
       <React.Fragment>
         <div style={textStyle}>Project Imported With Warnings</div>
-        <Button style={buttonStyle}>Continue</Button>
+        <Button onClick={hideImportWizard} style={buttonStyle}>
+          Continue
+        </Button>
       </React.Fragment>
     )
   }
