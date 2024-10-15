@@ -144,9 +144,9 @@ const GridResizingControl = React.memo((props: GridResizingControlProps) => {
   const colorTheme = useColorTheme()
 
   const canResize = React.useMemo(() => {
-    return !(
-      props.fromPropsAxisValues?.type !== 'DIMENSIONS' ||
-      props.fromPropsAxisValues.dimensions.length === 0
+    return (
+      props.fromPropsAxisValues?.type === 'DIMENSIONS' &&
+      props.fromPropsAxisValues.dimensions.length > 0
     )
   }, [props.fromPropsAxisValues])
 
