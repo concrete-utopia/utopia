@@ -27,6 +27,7 @@ import {
 } from '../canvas-types'
 import {
   GridControlsComponent,
+  type GridMeasurementHelperProps,
   GridResizeControlsComponent,
   GridRowColumnResizingControlsComponent,
 } from './grid-controls'
@@ -78,6 +79,54 @@ export type GridData = {
   columns: number
   cells: number
   metadata: ElementInstanceMetadata
+}
+
+export function useGridMeasurentHelperData(
+  elementPath: ElementPath,
+): GridMeasurementHelperProps | null {
+  const grid = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath)
+
+      const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element) ? element : null
+
+      if (
+        targetGridContainer == null ||
+        targetGridContainer.globalFrame == null ||
+        !isFiniteRectangle(targetGridContainer.globalFrame)
+      ) {
+        return null
+      }
+
+      const columns = getCellsCount(
+        targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
+      )
+      const rows = getCellsCount(
+        targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
+      )
+
+      return {
+        elementPath: targetGridContainer.elementPath,
+        frame: targetGridContainer.globalFrame,
+        gridTemplateColumns:
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
+        gridTemplateRows:
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
+        gap: targetGridContainer.specialSizeMeasurements.gap,
+        rowGap: targetGridContainer.specialSizeMeasurements.rowGap,
+        columnGap: targetGridContainer.specialSizeMeasurements.columnGap,
+        justifyContent: targetGridContainer.specialSizeMeasurements.justifyContent,
+        alignContent: targetGridContainer.specialSizeMeasurements.alignContent,
+        padding: targetGridContainer.specialSizeMeasurements.padding,
+        columns: columns,
+        cells: rows * columns,
+      }
+    },
+    'useGridMeasurentHelperData',
+  )
+
+  return grid
 }
 
 export function useGridData(elementPaths: ElementPath[]): GridData[] {
