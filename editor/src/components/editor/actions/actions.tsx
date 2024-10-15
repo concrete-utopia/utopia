@@ -6610,7 +6610,8 @@ function alignFlexOrGridChildren(editor: EditorState, views: ElementPath[], alig
     ) {
       let working = { ...editorState }
 
-      working = deleteValuesAtPath(working, view, [styleP(target)]).editorStateWithChanges
+      const withDeletedProps = deleteValuesAtPath(working, view, [styleP(target)])
+      working = withDeletedProps == null ? working : withDeletedProps.editorStateWithChanges
 
       working = applyValuesAtPath(working, view, [
         {

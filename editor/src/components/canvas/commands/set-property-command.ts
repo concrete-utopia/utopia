@@ -130,7 +130,7 @@ export const runBulkUpdateProperties: CommandFunction<UpdateBulkProperties> = (
     command.properties,
   )
   const withSetProps = applyValuesAtPath(
-    withDeletedProps.editorStateWithChanges,
+    withDeletedProps == null ? editorState : withDeletedProps.editorStateWithChanges,
     command.element,
     propsToSet.map((property) => ({
       path: property.path,

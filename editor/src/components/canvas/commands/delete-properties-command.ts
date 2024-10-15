@@ -6,7 +6,6 @@ import {
 import type {
   EditorState,
   EditorStatePatch,
-  PropertiesToUnset,
   UnsetPropertyValues,
 } from '../../../components/editor/store/editor-state'
 import { modifyUnderlyingElementForOpenFile } from '../../../components/editor/store/editor-state'
@@ -17,7 +16,7 @@ import type { BaseCommand, CommandFunctionResult, WhenToRun } from './commands'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { patchParseSuccessAtElementPath } from './patch-utils'
-import { mapDropNulls } from '../../../core/shared/array-utils'
+import { mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import { applyValuesAtPath } from './adjust-number-command'
 
 export interface DeleteProperties extends BaseCommand {
@@ -107,13 +106,13 @@ export const runDeleteProperties = (
   editorState: EditorState,
   command: DeleteProperties,
 ): CommandFunctionResult => {
-  const { editorStatePatch: propertyUpdatePatch, editorStateWithChanges: withPropertiesRemoved } =
-    deleteValuesAtPath(editorState, command.element, command.properties)
+  const result = deleteValuesAtPath(editorState, command.element, command.properties)
 
-  const propertiesToUnsetPatches = getPropertiesToUnsetPatches(withPropertiesRemoved, command)
+  const updatedEditorState = result == null ? editorState : result.editorStateWithChanges
+  const propertiesToUnsetPatches = getPropertiesToUnsetPatches(updatedEditorState, command)
 
   return {
-    editorStatePatches: [propertyUpdatePatch, ...propertiesToUnsetPatches],
+    editorStatePatches: stripNulls([result?.editorStatePatch, ...propertiesToUnsetPatches]),
     commandDescription: `Delete Properties ${command.properties
       .map(PP.toString)
       .join(',')} on ${EP.toUid(command.element)}`,
@@ -121,6 +120,22 @@ export const runDeleteProperties = (
 }
 
 export function deleteValuesAtPath(
+  editorState: EditorState,
+  target: ElementPath,
+  properties: Array<PropertyPath>,
+): { editorStateWithChanges: EditorState; editorStatePatch: EditorStatePatch } | null {
+  try {
+    return deleteValuesAtPathUnsafe(editorState, target, properties)
+  } catch {
+    return null
+  }
+}
+
+// This function is unsafe, because it calls
+// `transformJSXComponentAtElementPath` internally, and
+// `transformJSXComponentAtElementPath` throws an error if it cannot find an
+// element at the element path passed to it
+function deleteValuesAtPathUnsafe(
   editorState: EditorState,
   target: ElementPath,
   properties: Array<PropertyPath>,

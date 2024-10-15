@@ -1646,7 +1646,7 @@ describe('transformJSXComponentAtPath', () => {
     return getComponentsFromTopLevelElements(file.lastParseSuccess.topLevelElements)
   }
 
-  it('returns the component array unchanges on missing child of jsx element', () => {
+  it('throws exception on missing child of jsx element', () => {
     const components = createTestComponentsForSnippet(`
     <div style={{ ...props.style }} data-uid='aaa'>
       <div data-uid='parent' >
@@ -1662,7 +1662,7 @@ describe('transformJSXComponentAtPath', () => {
 
     const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b/xxx'
 
-    expect(
+    expect(() =>
       transformJSXComponentAtPath(
         components,
         EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
@@ -1676,7 +1676,7 @@ describe('transformJSXComponentAtPath', () => {
           return element
         },
       ),
-    ).toEqual(components)
+    ).toThrow()
   })
   // TODO activate this after removing absolutely stupid way of falling back to the conditional when the branch doesn't exist
   xit('throws exception on missing branch of conditional', () => {
@@ -1712,7 +1712,7 @@ describe('transformJSXComponentAtPath', () => {
       ),
     ).toThrow()
   })
-  it('returns the component array unchanges on missing elementsWithin of expression', () => {
+  it('throws exception on missing elementsWithin of expression', () => {
     const components = createTestComponentsForSnippet(`
     <div style={{ ...props.style }} data-uid='aaa'>
       <div data-uid='parent' >
@@ -1726,7 +1726,7 @@ describe('transformJSXComponentAtPath', () => {
 
     const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/2f2/xxx'
 
-    expect(
+    expect(() =>
       transformJSXComponentAtPath(
         components,
         EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
@@ -1740,7 +1740,7 @@ describe('transformJSXComponentAtPath', () => {
           return element
         },
       ),
-    ).toEqual(components)
+    ).toThrow()
   })
   it('updates a jsx element with jsx element parent', () => {
     const components = createTestComponentsForSnippet(`

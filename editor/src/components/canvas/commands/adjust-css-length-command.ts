@@ -442,12 +442,12 @@ export function deleteConflictingPropsForWidthHeight(
   if (propertiesToDelete.length === 0) {
     return editorState
   } else {
-    const { editorStateWithChanges: editorStateWithPropsDeleted } = deleteValuesAtPath(
-      editorState,
-      target,
-      propertiesToDelete,
-    )
+    const result = deleteValuesAtPath(editorState, target, propertiesToDelete)
 
-    return editorStateWithPropsDeleted
+    if (result == null) {
+      return editorState
+    }
+
+    return result.editorStateWithChanges
   }
 }
