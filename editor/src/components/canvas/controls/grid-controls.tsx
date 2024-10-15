@@ -565,7 +565,7 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
       store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
       store.editor.canvas.interactionSession?.interactionData.modifiers.cmd !== true &&
       store.editor.canvas.interactionSession?.interactionData.drag != null
-        ? store.editor.canvas.interactionSession.activeControl.id
+        ? EP.toUid(store.editor.canvas.interactionSession.activeControl.path)
         : null,
     'GridControl activelyDraggingOrResizingCell',
   )
@@ -605,7 +605,7 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
   const startInteractionWithUid = React.useCallback(
-    (params: { uid: string; row: number; column: number; frame: CanvasRectangle }) =>
+    (params: { path: ElementPath; row: number; column: number; frame: CanvasRectangle }) =>
       (event: React.MouseEvent) => {
         setInitialShadowFrame(params.frame)
 
@@ -620,7 +620,7 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
             createInteractionViaMouse(
               start.canvasPositionRounded,
               Modifier.modifiersForEvent(event),
-              gridCellHandle({ id: params.uid }),
+              gridCellHandle({ path: params.path }),
               'zero-drag-not-permitted',
             ),
           ),
@@ -666,13 +666,17 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
     (store) =>
       store.editor.canvas.interactionSession != null &&
       store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE'
-        ? store.editor.canvas.interactionSession.activeControl.id
+        ? store.editor.canvas.interactionSession.activeControl.path
         : null,
     'GridControl dragging',
   )
 
   const shadow = React.useMemo(() => {
-    return cells.find((cell) => EP.toUid(cell.elementPath) === dragging) ?? null
+    return (
+      cells.find(
+        (cell) => EP.toUid(cell.elementPath) === (dragging == null ? null : EP.toUid(dragging)),
+      ) ?? null
+    )
   }, [cells, dragging])
 
   const [initialShadowFrame, setInitialShadowFrame] = React.useState<CanvasRectangle | null>(
@@ -819,7 +823,9 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
           const borderID = `${id}-border`
 
           const isActiveCell =
-            countedColumn === currentHoveredCell?.column && countedRow === currentHoveredCell?.row
+            EP.isSiblingOf(dragging, grid.elementPath) &&
+            countedColumn === currentHoveredCell?.column &&
+            countedRow === currentHoveredCell?.row
 
           const activePositioningTarget = isActiveCell && targetsAreCellsWithPositioning
 
@@ -865,7 +871,7 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
         return (
           <div
             onMouseDown={startInteractionWithUid({
-              uid: EP.toUid(cell.elementPath),
+              path: cell.elementPath,
               frame: cell.globalFrame,
               row: cell.row,
               column: cell.column,
