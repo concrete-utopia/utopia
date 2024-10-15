@@ -62,26 +62,23 @@ export function getNullableAutoOrTemplateBaseString(
   }
 }
 
-export type GridData = {
-  elementPath: ElementPath
+export type GridMeasurementHelperData = {
   frame: CanvasRectangle
   gridTemplateColumns: GridAutoOrTemplateBase | null
   gridTemplateRows: GridAutoOrTemplateBase | null
-  gridTemplateColumnsFromProps: GridAutoOrTemplateBase | null
-  gridTemplateRowsFromProps: GridAutoOrTemplateBase | null
   gap: number | null
-  justifyContent: string | null
-  alignContent: string | null
   rowGap: number | null
   columnGap: number | null
+  justifyContent: string | null
+  alignContent: string | null
   padding: Sides
-  rows: number
   columns: number
   cells: number
-  metadata: ElementInstanceMetadata
 }
 
-export function useGridMeasurentHelperData(elementPath: ElementPath) {
+export function useGridMeasurentHelperData(
+  elementPath: ElementPath,
+): GridMeasurementHelperData | null {
   return useEditorState(
     Substores.metadata,
     (store) => {
@@ -123,6 +120,15 @@ export function useGridMeasurentHelperData(elementPath: ElementPath) {
     'useGridMeasurentHelperData',
     fastDeepEqual, //TODO: this should not be needed, but it seems EditorStateKeepDeepEquality is not running, and metadata reference is always updated
   )
+}
+
+export type GridData = GridMeasurementHelperData & {
+  elementPath: ElementPath
+  gridTemplateColumnsFromProps: GridAutoOrTemplateBase | null
+  gridTemplateRowsFromProps: GridAutoOrTemplateBase | null
+  rows: number
+  cells: number
+  metadata: ElementInstanceMetadata
 }
 
 export function useGridData(elementPaths: ElementPath[]): GridData[] {

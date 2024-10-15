@@ -770,44 +770,14 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
   })
 
   const placeholders = range(0, grid.cells)
-  let style: CSSProperties = {
-    position: 'absolute',
-    top: grid.frame.y,
-    left: grid.frame.x,
-    width: grid.frame.width,
-    height: grid.frame.height,
-    display: 'grid',
-    gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
-    gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
+
+  const style: CSSProperties = {
+    ...getGridControlBaseStyle(grid),
     backgroundColor:
       activelyDraggingOrResizingCell != null ? colorTheme.primary10.value : 'transparent',
     outline: `1px solid ${
       activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
     }`,
-    justifyContent: grid.justifyContent ?? 'initial',
-    alignContent: grid.alignContent ?? 'initial',
-    pointerEvents: 'none',
-    padding:
-      grid.padding == null
-        ? 0
-        : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
-  }
-
-  // Gap needs to be set only if the other two are not present or we'll have rendering issues
-  // due to how measurements are calculated.
-  if (grid.rowGap != null && grid.columnGap != null) {
-    style.rowGap = grid.rowGap
-    style.columnGap = grid.columnGap
-  } else {
-    if (grid.gap != null) {
-      style.gap = grid.gap
-    }
-    if (grid.rowGap != null) {
-      style.rowGap = grid.rowGap
-    }
-    if (grid.columnGap != null) {
-      style.columnGap = grid.columnGap
-    }
   }
 
   return (
@@ -965,40 +935,9 @@ const GridMeasurementHelper = React.memo<{ elementPath: ElementPath }>(({ elemen
 
   const placeholders = range(0, gridData.cells)
 
-  let style: CSSProperties = {
-    position: 'absolute',
-    top: gridData.frame.y,
-    left: gridData.frame.x,
-    width: gridData.frame.width,
-    height: gridData.frame.height,
-    display: 'grid',
-    gridTemplateColumns: getNullableAutoOrTemplateBaseString(gridData.gridTemplateColumns),
-    gridTemplateRows: getNullableAutoOrTemplateBaseString(gridData.gridTemplateRows),
-    justifyContent: gridData.justifyContent ?? 'initial',
-    alignContent: gridData.alignContent ?? 'initial',
-    pointerEvents: 'none',
-    padding:
-      gridData.padding == null
-        ? 0
-        : `${gridData.padding.top}px ${gridData.padding.right}px ${gridData.padding.bottom}px ${gridData.padding.left}px`,
+  const style: CSSProperties = {
+    ...getGridControlBaseStyle(gridData),
     opacity: 1,
-  }
-
-  // Gap needs to be set only if the other two are not present or we'll have rendering issues
-  // due to how measurements are calculated.
-  if (gridData.rowGap != null && gridData.columnGap != null) {
-    style.rowGap = gridData.rowGap
-    style.columnGap = gridData.columnGap
-  } else {
-    if (gridData.gap != null) {
-      style.gap = gridData.gap
-    }
-    if (gridData.rowGap != null) {
-      style.rowGap = gridData.rowGap
-    }
-    if (gridData.columnGap != null) {
-      style.columnGap = gridData.columnGap
-    }
   }
 
   return (
@@ -1699,4 +1638,43 @@ function useAllGrids(metadata: ElementInstanceMetadataMap) {
   return React.useMemo(() => {
     return MetadataUtils.getAllGrids(metadata)
   }, [metadata])
+}
+
+function getGridControlBaseStyle(gridData: GridMeasurementHelperData) {
+  let style: CSSProperties = {
+    position: 'absolute',
+    top: gridData.frame.y,
+    left: gridData.frame.x,
+    width: gridData.frame.width,
+    height: gridData.frame.height,
+    display: 'grid',
+    gridTemplateColumns: getNullableAutoOrTemplateBaseString(gridData.gridTemplateColumns),
+    gridTemplateRows: getNullableAutoOrTemplateBaseString(gridData.gridTemplateRows),
+    justifyContent: gridData.justifyContent ?? 'initial',
+    alignContent: gridData.alignContent ?? 'initial',
+    pointerEvents: 'none',
+    padding:
+      gridData.padding == null
+        ? 0
+        : `${gridData.padding.top}px ${gridData.padding.right}px ${gridData.padding.bottom}px ${gridData.padding.left}px`,
+  }
+
+  // Gap needs to be set only if the other two are not present or we'll have rendering issues
+  // due to how measurements are calculated.
+  if (gridData.rowGap != null && gridData.columnGap != null) {
+    style.rowGap = gridData.rowGap
+    style.columnGap = gridData.columnGap
+  } else {
+    if (gridData.gap != null) {
+      style.gap = gridData.gap
+    }
+    if (gridData.rowGap != null) {
+      style.rowGap = gridData.rowGap
+    }
+    if (gridData.columnGap != null) {
+      style.columnGap = gridData.columnGap
+    }
+  }
+
+  return style
 }
