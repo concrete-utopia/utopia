@@ -25,9 +25,10 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { maybeGridGapData, type Axis } from '../../gap-utils'
 import type { CSSNumberWithRenderedValue } from './controls-common'
 import { useHoverWithDelay } from './controls-common'
+import { useDelayedEditorState } from '../../canvas-strategies/canvas-strategies'
 
 export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) => {
-  const { selectedElement, updatedGapValueRow, updatedGapValueColumn } = props
+  const { selectedElement } = props
 
   const dispatch = useDispatch()
   const scale = useEditorState(
@@ -35,6 +36,12 @@ export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) 
     (store) => store.editor.canvas.scale,
     'GridGapControlComponent2 scale',
   )
+
+  const elementHovered =
+    useDelayedEditorState(
+      (store) => store.editor.hoveredViews.includes(selectedElement),
+      'GridGapControlComponent2 elementHovered',
+    ) ?? false
 
   const grid = useGridData([selectedElement]).at(0)
 
@@ -89,6 +96,7 @@ export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) 
         onMouseOver={onMouseOverRow}
         zIndexPriority={hoveredAxis === 'row' ? true : false}
         gridGap={gridGap.row}
+        elementHovered={elementHovered}
       />
       <GridPaddingOutlineForDimension
         grid={grid}
@@ -98,6 +106,7 @@ export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) 
         onMouseOver={onMouseOverColumn}
         zIndexPriority={hoveredAxis === 'column' ? true : false}
         gridGap={gridGap.column}
+        elementHovered={elementHovered}
       />
     </CanvasOffsetWrapper>
   )
@@ -111,8 +120,18 @@ const GridPaddingOutlineForDimension = (props: {
   onMouseOver: () => void
   zIndexPriority: boolean
   gridGap: CSSNumberWithRenderedValue
+  elementHovered: boolean
 }) => {
-  const { grid, gridGap, dimension, onMouseDown, beingDragged, onMouseOver, zIndexPriority } = props
+  const {
+    grid,
+    gridGap,
+    dimension,
+    onMouseDown,
+    beingDragged,
+    onMouseOver,
+    zIndexPriority,
+    elementHovered,
+  } = props
 
   let style: CSSProperties = {
     ...getStyleMatchingTargetGrid(grid),
@@ -152,6 +171,7 @@ const GridPaddingOutlineForDimension = (props: {
             gapValue={gridGap}
             beingDragged={beingDragged}
             onMouseOver={onMouseOver}
+            elementHovered={elementHovered}
           />
         )
       })}
@@ -170,6 +190,7 @@ const GridRowHighlight = (props: {
   gapValue: CSSNumberWithRenderedValue | null
   beingDragged: boolean
   onMouseOver: () => void
+  elementHovered: boolean
 }) => {
   const {
     gapId,
@@ -182,6 +203,7 @@ const GridRowHighlight = (props: {
     numberOfHandles,
     beingDragged,
     onMouseOver,
+    elementHovered,
   } = props
 
   const colorTheme = useColorTheme()
@@ -272,9 +294,9 @@ const GridRowHighlight = (props: {
           isDragging={beingDragged}
           onHandleHoverStartInner={onHandleHover}
           indicatorShown={handleIsHovered}
-          elementHovered={handleIsHovered != null}
+          elementHovered={elementHovered}
           gapIsHovered={gapIsHovered}
-          backgroundShown={true}
+          backgroundShown={backgroundShown}
         />
       ))}
     </div>
@@ -293,9 +315,7 @@ function tweakTrackListByInsertingGap(
     throw new Error('Cannot insert gap into fallback')
   }
 
-  if (gap == null) {
-    return printGridAutoOrTemplateBase(trackList)
-  }
+  const gapTrack = gap == null ? `0px` : `${gap}px`
 
-  return interleaveArray(trackList.dimensions.map(stringifyGridDimension), `${gap}px`).join(' ')
+  return interleaveArray(trackList.dimensions.map(stringifyGridDimension), gapTrack).join(' ')
 }
