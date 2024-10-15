@@ -947,6 +947,7 @@ export const GridMeasurementHelpers = React.memo(() => {
     </CanvasOffsetWrapper>
   )
 })
+GridMeasurementHelpers.displayName = 'GridMeasurementHelpers'
 
 const GridMeasurementHelper = React.memo<GridData>((props) => {
   const placeholders = range(0, props.cells)
