@@ -679,8 +679,7 @@ const LockedOverlay = React.memo(() => {
 
   const editorLocked = React.useMemo(() => githubOperations.length > 0, [githubOperations])
 
-  const refreshingDependencies = false
-  useEditorState(
+  const refreshingDependencies = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.refreshingDependencies,
     'LockedOverlay refreshingDependencies',
