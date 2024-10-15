@@ -259,11 +259,51 @@ function getRemixExportsOfModule(
     displayNoneInstances: Array<ElementPath>,
     metadataContext: UiJsxCanvasContextData,
   ) => {
+    let resolvedFiles: MapLike<MapLike<any>> = {}
+
     const requireFn = curriedRequireFn(innerProjectContents)
+    const resolve = curriedResolveFn(innerProjectContents)
 
-    const customRequire = (importOrigin: string, toImport: string) =>
-      requireFn(importOrigin, toImport, false)
+    const customRequire = (importOrigin: string, toImport: string) => {
+      if (resolvedFiles[importOrigin] == null) {
+        resolvedFiles[importOrigin] = []
+      }
+      let resolvedFromThisOrigin = resolvedFiles[importOrigin]
 
+      const alreadyResolved = resolvedFromThisOrigin[toImport] !== undefined
+      const filePathResolveResult = alreadyResolved
+        ? left<string, string>('Already resolved')
+        : resolve(importOrigin, toImport)
+
+      const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
+        resolvedFromThisOrigin,
+        toImport,
+        innerProjectContents,
+        customRequire,
+        mutableContextRef,
+        topLevelComponentRendererComponents,
+        filename,
+        fileBlobs,
+        hiddenInstances,
+        displayNoneInstances,
+        metadataContext,
+        NO_OP,
+        false,
+        filePathResolveResult,
+        null,
+      )
+      return foldEither(
+        () => {
+          // We did not find a ParseSuccess, fallback to standard require Fn
+          return requireFn(importOrigin, toImport, false)
+        },
+        (scope) => {
+          // Return an artificial exports object that contains our ComponentRendererComponents
+          return scope
+        },
+        resolvedParseSuccess,
+      )
+    }
     return createExecutionScope(
       filename,
       customRequire,
