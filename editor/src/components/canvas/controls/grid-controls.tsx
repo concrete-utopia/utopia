@@ -74,7 +74,11 @@ import { windowToCanvasCoordinates } from '../dom-lookup'
 import type { Axis } from '../gap-utils'
 import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import type { GridControlsProps, GridData } from './grid-controls-for-strategies'
+import type {
+  GridControlsProps,
+  GridData,
+  GridMeasurementHelperData,
+} from './grid-controls-for-strategies'
 import {
   edgePositionToGridResizeEdge,
   getNullableAutoOrTemplateBaseString,
