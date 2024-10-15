@@ -286,7 +286,7 @@ export function addAllUniquelyBy<T>(
 ): Array<T> {
   let workingArray = [...array]
   fastForEach(values, (value) => {
-    if (array.findIndex((a) => eq(a, value)) === -1) {
+    if (!workingArray.some((a) => eq(a, value))) {
       workingArray.push(value)
     }
   })

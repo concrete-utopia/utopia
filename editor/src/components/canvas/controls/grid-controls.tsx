@@ -810,7 +810,8 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
           const borderID = `${id}-border`
 
           const isActiveCell =
-            EP.isSiblingOf(dragging, grid.elementPath) &&
+            dragging != null &&
+            EP.isParentOf(grid.elementPath, dragging) &&
             countedColumn === currentHoveredCell?.column &&
             countedRow === currentHoveredCell?.row
 
