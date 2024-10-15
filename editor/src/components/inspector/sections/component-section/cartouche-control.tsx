@@ -11,6 +11,8 @@ import { dataPathSuccess, traceDataFromProp } from '../../../../core/data-tracin
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import type { CartoucheDataType } from './cartouche-ui'
 import { useColorTheme } from '../../../../uuiui'
+import { useSetAtom } from 'jotai'
+import { DataEditModalContextAtom } from './data-editor-modal'
 
 interface IdentifierExpressionCartoucheControlProps {
   contents: {
@@ -27,12 +29,13 @@ interface IdentifierExpressionCartoucheControlProps {
   propertyPath: PropertyPath
   elementPath: ElementPath
   datatype: CartoucheDataType
+  onOpenEditModal?: () => void
 }
 export const IdentifierExpressionCartoucheControl = React.memo(
   (props: IdentifierExpressionCartoucheControlProps) => {
     const { onOpenDataPicker, onDeleteCartouche, testId, safeToDelete } = props
 
-    const isDataComingFromHookResult = useEditorState(
+    const maybeHookResult = useEditorState(
       Substores.projectContentsAndMetadata,
       (store) =>
         traceDataFromProp(
@@ -40,9 +43,55 @@ export const IdentifierExpressionCartoucheControl = React.memo(
           store.editor.jsxMetadata,
           store.editor.projectContents,
           dataPathSuccess([]),
-        ).type === 'hook-result',
+        ),
       'IdentifierExpressionCartoucheControl trace',
     )
+
+    const isDataComingFromHookResult = maybeHookResult.type === 'hook-result'
+
+    const setDataEditorContext = useSetAtom(DataEditModalContextAtom)
+
+    const onOpenEditModalWithSetContext = React.useCallback(() => {
+      if (props.onOpenEditModal == null) {
+        return
+      }
+
+      const cartoucheForModal = (
+        <DataCartoucheInner
+          contentsToDisplay={props.contents}
+          onClick={NO_OP}
+          selected={false}
+          onDoubleClick={NO_OP}
+          safeToDelete={safeToDelete}
+          onDelete={NO_OP}
+          testId={`data-editor-cartouche-${testId}`}
+          contentIsComingFromServer={isDataComingFromHookResult}
+          datatype={props.datatype}
+        />
+      )
+
+      const dataPath =
+        maybeHookResult.type === 'hook-result' &&
+        maybeHookResult.dataPathIntoAttribute.type === 'DATA_PATH_SUCCESS'
+          ? maybeHookResult.dataPathIntoAttribute.dataPath
+          : null
+
+      setDataEditorContext({
+        cartoucheComponent: cartoucheForModal,
+        dataPath: dataPath,
+      })
+      props.onOpenEditModal()
+    }, [
+      isDataComingFromHookResult,
+      maybeHookResult,
+      props,
+      safeToDelete,
+      setDataEditorContext,
+      testId,
+    ])
+
+    const onOpenEditModal =
+      props.onOpenEditModal == null ? props.onOpenEditModal : onOpenEditModalWithSetContext
 
     return (
       <CartoucheInspectorWrapper>
@@ -51,6 +100,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
           onClick={NO_OP}
           selected={false}
           onDoubleClick={onOpenDataPicker}
+          openEditModal={onOpenEditModal}
           safeToDelete={safeToDelete}
           onDelete={onDeleteCartouche}
           testId={testId}
