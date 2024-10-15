@@ -680,14 +680,18 @@ export function useGetApplicableStrategyControls(localSelectedViews: Array<Eleme
 
       // uniquely add the strategyControls to the bottom, middle, and top arrays
       for (const control of strategyControls) {
-        if (control.priority === 'bottom') {
-          pushUniquelyBy(bottomStrategyControls, control, controlEquals)
-        } else if (control.priority === undefined) {
-          pushUniquelyBy(middleStrategyControls, control, controlEquals)
-        } else if (control.priority === 'top') {
-          pushUniquelyBy(topStrategyControls, control, controlEquals)
-        } else {
-          assertNever(control.priority)
+        switch (control.priority) {
+          case 'bottom':
+            pushUniquelyBy(bottomStrategyControls, control, controlEquals)
+            break
+          case undefined:
+            pushUniquelyBy(middleStrategyControls, control, controlEquals)
+            break
+          case 'top':
+            pushUniquelyBy(topStrategyControls, control, controlEquals)
+            break
+          default:
+            assertNever(control.priority)
         }
       }
     }
