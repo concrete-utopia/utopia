@@ -29,7 +29,7 @@ import { getNullableAutoOrTemplateBaseString, useGridData } from '../grid-contro
 import { getStyleMatchingTargetGrid } from '../grid-controls-helpers'
 import type { CSSNumberWithRenderedValue } from './controls-common'
 import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
-import { startInteraction } from './grid-gap-control-helpers'
+import { startGapControlInteraction } from './grid-gap-control-helpers'
 
 export interface GridGapControlProps {
   selectedElement: ElementPath
@@ -85,7 +85,7 @@ export const GridGapControlComponent = React.memo<GridGapControlProps>((props) =
 
   const axisMouseDownHandler = React.useCallback(
     (e: React.MouseEvent<HTMLDivElement>, axis: Axis) => {
-      startInteraction(e, dispatch, canvasOffset.current, scale, axis)
+      startGapControlInteraction(e, dispatch, canvasOffset.current, scale, axis)
     },
     [canvasOffset, dispatch, scale],
   )

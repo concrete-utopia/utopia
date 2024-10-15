@@ -7,7 +7,7 @@ import { createInteractionViaMouse, gridGapHandle } from '../../canvas-strategie
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import type { Axis } from '../../gap-utils'
 
-export function startInteraction(
+export function startGapControlInteraction(
   event: React.MouseEvent<HTMLDivElement>,
   dispatch: EditorDispatch,
   canvasOffset: CanvasVector,
