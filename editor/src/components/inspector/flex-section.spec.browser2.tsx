@@ -2,6 +2,7 @@ import { selectComponentsForTest } from '../../utils/utils.test-utils'
 import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import * as EP from '../../core/shared/element-path'
 import { act, fireEvent, screen } from '@testing-library/react'
+import { GridAutoColsOrRowsControlTestId } from './flex-section'
 
 describe('flex section', () => {
   describe('grid dimensions', () => {
@@ -73,6 +74,41 @@ describe('flex section', () => {
       const grid = await renderResult.renderedDOM.findByTestId('grid')
       expect(grid.style.gridTemplateColumns).toEqual('[area1] 1fr 1fr 1fr 1fr 1fr')
       expect(control.value).toBe('1fr')
+    })
+  })
+  describe('auto cols/rows', () => {
+    it('can set a number', async () => {
+      const renderResult = await renderTestEditorWithCode(gridProject, 'await-first-dom-report')
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/grid')])
+      const control: HTMLInputElement = await screen.findByTestId(
+        GridAutoColsOrRowsControlTestId('column'),
+      )
+      await typeIntoField(control, '50px')
+      const grid = await renderResult.renderedDOM.findByTestId('grid')
+      expect(grid.style.gridAutoColumns).toEqual('50px')
+      expect(control.value).toBe('50px')
+    })
+    it('can set a keyword', async () => {
+      const renderResult = await renderTestEditorWithCode(gridProject, 'await-first-dom-report')
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/grid')])
+      const control: HTMLInputElement = await screen.findByTestId(
+        GridAutoColsOrRowsControlTestId('column'),
+      )
+      await typeIntoField(control, 'min-content')
+      const grid = await renderResult.renderedDOM.findByTestId('grid')
+      expect(grid.style.gridAutoColumns).toEqual('min-content')
+      expect(control.value).toBe('min-content')
+    })
+    it('can set an expression', async () => {
+      const renderResult = await renderTestEditorWithCode(gridProject, 'await-first-dom-report')
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/grid')])
+      const control: HTMLInputElement = await screen.findByTestId(
+        GridAutoColsOrRowsControlTestId('column'),
+      )
+      await typeIntoField(control, 'minmax(50px, 1fr)')
+      const grid = await renderResult.renderedDOM.findByTestId('grid')
+      expect(grid.style.gridAutoColumns).toEqual('minmax(50px, 1fr)')
+      expect(control.value).toBe('minmax(50px, 1fr)')
     })
   })
 })
