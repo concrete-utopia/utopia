@@ -80,6 +80,7 @@ import { runDOMWalker } from '../editor/actions/action-creators'
 import { CanvasContainerOuterId } from './canvas-component-entry'
 import { ElementsToRerenderGLOBAL } from './ui-jsx-canvas'
 import type { GridCellGlobalFrames } from './canvas-strategies/strategies/grid-helpers'
+import { GridMeasurementHelperKey } from './controls/grid-controls-for-strategies'
 
 export const ResizeObserver =
   window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -1069,7 +1070,9 @@ function measureGlobalFramesOfGridCellsFromControl(
   const path = grid.getAttribute(UTOPIA_PATH_KEY)
   let gridCellGlobalFrames: Array<Array<CanvasRectangle>> | null = null
   if (path != null) {
-    const gridControlElement = document.getElementById(`grid-${path}`)
+    const gridControlElement = document.getElementById(
+      GridMeasurementHelperKey(EP.fromString(path)),
+    )
     if (gridControlElement != null) {
       gridCellGlobalFrames = []
       for (const cell of gridControlElement.children) {
