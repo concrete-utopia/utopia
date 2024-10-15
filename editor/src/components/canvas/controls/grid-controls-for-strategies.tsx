@@ -1,5 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+import fastDeepEqual from 'fast-deep-equal'
 import type { Sides } from 'utopia-api/core'
 import type { ElementPath } from 'utopia-shared/src/types'
 import { isStaticGridRepeat, printGridAutoOrTemplateBase } from '../../inspector/common/css-utils'
@@ -27,7 +28,6 @@ import {
 } from '../canvas-types'
 import {
   GridControlsComponent,
-  type GridMeasurementHelperProps,
   GridResizeControlsComponent,
   GridRowColumnResizingControlsComponent,
 } from './grid-controls'
@@ -81,10 +81,8 @@ export type GridData = {
   metadata: ElementInstanceMetadata
 }
 
-export function useGridMeasurentHelperData(
-  elementPath: ElementPath,
-): GridMeasurementHelperProps | null {
-  const grid = useEditorState(
+export function useGridMeasurentHelperData(elementPath: ElementPath) {
+  return useEditorState(
     Substores.metadata,
     (store) => {
       const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath)
@@ -107,7 +105,6 @@ export function useGridMeasurentHelperData(
       )
 
       return {
-        elementPath: targetGridContainer.elementPath,
         frame: targetGridContainer.globalFrame,
         gridTemplateColumns:
           targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
@@ -124,9 +121,8 @@ export function useGridMeasurentHelperData(
       }
     },
     'useGridMeasurentHelperData',
+    fastDeepEqual,
   )
-
-  return grid
 }
 
 export function useGridData(elementPaths: ElementPath[]): GridData[] {

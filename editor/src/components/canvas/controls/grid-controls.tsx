@@ -952,75 +952,64 @@ GridMeasurementHelpers.displayName = 'GridMeasurementHelpers'
 
 export interface GridMeasurementHelperProps {
   elementPath: ElementPath
-  frame: CanvasRectangle
-  gridTemplateColumns: GridAutoOrTemplateBase | null
-  gridTemplateRows: GridAutoOrTemplateBase | null
-  gap: number | null
-  justifyContent: string | null
-  alignContent: string | null
-  rowGap: number | null
-  columnGap: number | null
-  padding: Sides
-  columns: number
-  cells: number
 }
 
 const GridMeasurementHelper = React.memo<{ elementPath: ElementPath }>(({ elementPath }) => {
-  const grid = useGridMeasurentHelperData(elementPath)
+  const gridData = useGridMeasurentHelperData(elementPath)
 
-  if (grid == null) {
+  if (gridData == null) {
     return null
   }
 
-  const placeholders = range(0, grid.cells)
+  const placeholders = range(0, gridData.cells)
 
   let style: CSSProperties = {
     position: 'absolute',
-    top: grid.frame.y,
-    left: grid.frame.x,
-    width: grid.frame.width,
-    height: grid.frame.height,
+    top: gridData.frame.y,
+    left: gridData.frame.x,
+    width: gridData.frame.width,
+    height: gridData.frame.height,
     display: 'grid',
-    gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
-    gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
-    justifyContent: grid.justifyContent ?? 'initial',
-    alignContent: grid.alignContent ?? 'initial',
+    gridTemplateColumns: getNullableAutoOrTemplateBaseString(gridData.gridTemplateColumns),
+    gridTemplateRows: getNullableAutoOrTemplateBaseString(gridData.gridTemplateRows),
+    justifyContent: gridData.justifyContent ?? 'initial',
+    alignContent: gridData.alignContent ?? 'initial',
     pointerEvents: 'none',
     padding:
-      grid.padding == null
+      gridData.padding == null
         ? 0
-        : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
+        : `${gridData.padding.top}px ${gridData.padding.right}px ${gridData.padding.bottom}px ${gridData.padding.left}px`,
     opacity: 1,
   }
 
   // Gap needs to be set only if the other two are not present or we'll have rendering issues
   // due to how measurements are calculated.
-  if (grid.rowGap != null && grid.columnGap != null) {
-    style.rowGap = grid.rowGap
-    style.columnGap = grid.columnGap
+  if (gridData.rowGap != null && gridData.columnGap != null) {
+    style.rowGap = gridData.rowGap
+    style.columnGap = gridData.columnGap
   } else {
-    if (grid.gap != null) {
-      style.gap = grid.gap
+    if (gridData.gap != null) {
+      style.gap = gridData.gap
     }
-    if (grid.rowGap != null) {
-      style.rowGap = grid.rowGap
+    if (gridData.rowGap != null) {
+      style.rowGap = gridData.rowGap
     }
-    if (grid.columnGap != null) {
-      style.columnGap = grid.columnGap
+    if (gridData.columnGap != null) {
+      style.columnGap = gridData.columnGap
     }
   }
 
   return (
     <div
-      id={`grid-measurement-helper-${EP.toString(grid.elementPath)}`}
-      data-grid-path={EP.toString(grid.elementPath)}
+      id={`grid-measurement-helper-${EP.toString(elementPath)}`}
+      data-grid-path={EP.toString(elementPath)}
       style={style}
     >
       {placeholders.map((cell) => {
-        const countedRow = Math.floor(cell / grid.columns) + 1
-        const countedColumn = Math.floor(cell % grid.columns) + 1
+        const countedRow = Math.floor(cell / gridData.columns) + 1
+        const countedColumn = Math.floor(cell % gridData.columns) + 1
         const id = `grid-measurement-helper-${EP.toString(
-          grid.elementPath,
+          elementPath,
         )}-${countedRow}-${countedColumn}`
         return (
           <div
