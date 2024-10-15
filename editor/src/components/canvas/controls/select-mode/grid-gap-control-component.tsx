@@ -477,7 +477,7 @@ function handleDimensions(axis: Axis, scale: number): Size {
     return size(12 / scale, 4 / scale)
   }
   if (axis === 'column') {
-    return size(3 / scale, 12 / scale)
+    return size(4 / scale, 12 / scale)
   }
   assertNever(axis)
 }
