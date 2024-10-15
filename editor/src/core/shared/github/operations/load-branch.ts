@@ -42,7 +42,7 @@ import { updateProjectContentsWithParseResults } from '../../parser-projectconte
 import {
   notifyOperationFinished,
   notifyOperationStarted,
-  startImportWizard,
+  startImportProcess,
 } from '../../import/import-operation-service'
 import { resetRequirementsResolutions } from '../../import/proejct-health-check/utopia-requirements-service'
 import { checkAndFixUtopiaRequirements } from '../../import/proejct-health-check/check-utopia-requirements'
@@ -123,7 +123,7 @@ export const updateProjectWithBranchContent =
     currentProjectContents: ProjectContentTreeRoot,
     initiator: GithubOperationSource,
   ): Promise<void> => {
-    startImportWizard(dispatch)
+    startImportProcess(dispatch)
     notifyOperationStarted({
       type: 'loadBranch',
       branchName: branchName,

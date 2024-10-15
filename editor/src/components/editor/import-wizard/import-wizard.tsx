@@ -8,10 +8,7 @@ import { useEditorState, Substores } from '../store/store-hook'
 import { when } from '../../../utils/react-conditionals'
 import { hideImportWizard } from '../../../core/shared/import/import-operation-service'
 import { OperationLine } from './components'
-import {
-  ImportOperationResult,
-  type ImportOperation,
-} from '../../../core/shared/import/import-operation-types'
+import { ImportOperationResult } from '../../../core/shared/import/import-operation-types'
 import { assertNever } from '../../../core/shared/utils'
 
 export const ImportWizard = React.memo(() => {
@@ -37,6 +34,22 @@ export const ImportWizard = React.memo(() => {
   const stopPropagation = React.useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
   }, [])
+
+  const totalImportResult: ImportOperationResult | null = React.useMemo(() => {
+    let result = ImportOperationResult.Success
+    for (const operation of operations) {
+      if (operation.timeDone == null || operation.result == null) {
+        return null
+      }
+      if (operation.result == ImportOperationResult.Error) {
+        return ImportOperationResult.Error
+      }
+      if (operation.result == ImportOperationResult.Warn) {
+        result = ImportOperationResult.Warn
+      }
+    }
+    return result
+  }, [operations])
 
   if (projectId == null) {
     return null
@@ -86,16 +99,19 @@ export const ImportWizard = React.memo(() => {
             }}
           >
             <div css={{ fontSize: 16, fontWeight: 400 }}>Project Import</div>
-            <Button
-              highlight
-              style={{
-                width: 22,
-                height: 22,
-              }}
-              onClick={handleDismiss}
-            >
-              <Icons.Cross />
-            </Button>
+            {when(
+              totalImportResult != null,
+              <Button
+                highlight
+                style={{
+                  width: 22,
+                  height: 22,
+                }}
+                onClick={handleDismiss}
+              >
+                <Icons.Cross />
+              </Button>,
+            )}
           </FlexRow>
           <div
             className='import-wizard-body'
@@ -124,7 +140,7 @@ export const ImportWizard = React.memo(() => {
               marginTop: 20,
             }}
           >
-            <ActionButtons operations={operations} />
+            <ActionButtons importResult={totalImportResult} />
           </div>
         </div>,
       )}
@@ -133,24 +149,9 @@ export const ImportWizard = React.memo(() => {
 })
 ImportWizard.displayName = 'ImportWizard'
 
-function ActionButtons({ operations }: { operations: ImportOperation[] }) {
-  let totalResult: ImportOperationResult | null = React.useMemo(() => {
-    let result = ImportOperationResult.Success
-    for (const operation of operations) {
-      if (operation.timeDone == null || operation.result == null) {
-        return null
-      }
-      if (operation.result == ImportOperationResult.Error) {
-        return ImportOperationResult.Error
-      }
-      if (operation.result == ImportOperationResult.Warn) {
-        result = ImportOperationResult.Warn
-      }
-    }
-    return result
-  }, [operations])
+function ActionButtons({ importResult }: { importResult: ImportOperationResult | null }) {
   const textColor = React.useMemo(() => {
-    switch (totalResult) {
+    switch (importResult) {
       case ImportOperationResult.Success:
         return 'green'
       case ImportOperationResult.Warn:
@@ -160,11 +161,11 @@ function ActionButtons({ operations }: { operations: ImportOperation[] }) {
       case null:
         return 'black'
       default:
-        assertNever(totalResult)
+        assertNever(importResult)
     }
-  }, [totalResult])
+  }, [importResult])
   const buttonColor = React.useMemo(() => {
-    switch (totalResult) {
+    switch (importResult) {
       case ImportOperationResult.Success:
         return 'var(--utopitheme-green)'
       case ImportOperationResult.Warn:
@@ -174,9 +175,9 @@ function ActionButtons({ operations }: { operations: ImportOperation[] }) {
       case null:
         return 'black'
       default:
-        assertNever(totalResult)
+        assertNever(importResult)
     }
-  }, [totalResult])
+  }, [importResult])
   const textStyle = {
     color: textColor,
     fontSize: 16,
@@ -188,7 +189,7 @@ function ActionButtons({ operations }: { operations: ImportOperation[] }) {
     fontSize: 14,
     cursor: 'pointer',
   }
-  if (totalResult == ImportOperationResult.Success) {
+  if (importResult == ImportOperationResult.Success) {
     return (
       <React.Fragment>
         <div style={textStyle}>Project Imported Successfully</div>
@@ -196,7 +197,7 @@ function ActionButtons({ operations }: { operations: ImportOperation[] }) {
       </React.Fragment>
     )
   }
-  if (totalResult == ImportOperationResult.Warn) {
+  if (importResult == ImportOperationResult.Warn) {
     return (
       <React.Fragment>
         <div style={textStyle}>Project Imported With Warnings</div>
@@ -204,7 +205,7 @@ function ActionButtons({ operations }: { operations: ImportOperation[] }) {
       </React.Fragment>
     )
   }
-  if (totalResult == ImportOperationResult.Error) {
+  if (importResult == ImportOperationResult.Error) {
     return (
       <React.Fragment>
         <div style={textStyle}>Error Importing Project</div>

@@ -55,10 +55,6 @@ import { GithubOperations } from '../../../../core/shared/github/operations'
 import { useOnClickAuthenticateWithGithub } from '../../../../utils/github-auth-hooks'
 import { setFocus } from '../../../common/actions'
 import { OperationContext } from '../../../../core/shared/github/operations/github-operation-context'
-import {
-  showImportWizard,
-  startImportWizard,
-} from '../../../../core/shared/import/import-operation-service'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`

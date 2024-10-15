@@ -1,5 +1,5 @@
 import { assertNever } from '../utils'
-import type { EditorDispatch } from '../../../components/editor/action-types'
+import type { EditorAction, EditorDispatch } from '../../../components/editor/action-types'
 import {
   setImportWizardOpen,
   updateImportOperations,
@@ -10,13 +10,13 @@ import type {
   ImportOperationResult,
   ImportOperationType,
 } from './import-operation-types'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 let editorDispatch: EditorDispatch | null = null
 
-export function startImportWizard(dispatch: EditorDispatch) {
+export function startImportProcess(dispatch: EditorDispatch) {
   editorDispatch = dispatch
-  dispatch([
-    setImportWizardOpen(true),
+  const actions: EditorAction[] = [
     updateImportOperations(
       [
         { type: 'loadBranch' },
@@ -26,7 +26,11 @@ export function startImportWizard(dispatch: EditorDispatch) {
       ],
       ImportOperationAction.Replace,
     ),
-  ])
+  ]
+  if (isFeatureEnabled('Import Wizard')) {
+    actions.push(setImportWizardOpen(true))
+  }
+  dispatch(actions)
 }
 
 export function showImportWizard() {
