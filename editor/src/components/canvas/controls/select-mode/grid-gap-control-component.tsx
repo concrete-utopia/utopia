@@ -382,7 +382,7 @@ type GridGapHandleProps = {
   gapIsHovered: boolean
   backgroundShown: boolean
 }
-function GridGapHandle({
+export function GridGapHandle({
   gapId,
   index,
   scale,
@@ -432,6 +432,7 @@ function GridGapHandle({
       data-testid={`${GridGapControlHandleTestId}-${gapId}`}
       style={{
         visibility: shouldShowHandle ? 'visible' : 'hidden',
+        pointerEvents: 'all',
         padding: hitAreaPadding,
         cursor: axis === 'row' ? CSSCursor.GapNS : CSSCursor.GapEW,
         opacity: handleOpacity,
