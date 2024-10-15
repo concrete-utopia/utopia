@@ -2,9 +2,10 @@ import React from 'react'
 import { useColorTheme } from '../../../../uuiui'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import type { EdgePiece } from '../../canvas-types'
-import { paddingPropForEdge, simplePaddingFromMetadata } from '../../padding-utils'
+import { paddingPropForEdge, simplePaddingFromStyleInfo } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
+import { getActivePlugin } from '../../plugins/style-plugins'
 
 export interface SubduedPaddingControlProps {
   side: EdgePiece
@@ -25,9 +26,21 @@ export const SubduedPaddingControl = React.memo<SubduedPaddingControlProps>((pro
   const isVerticalPadding = !isHorizontalPadding
   const paddingKey = paddingPropForEdge(side)
 
+  const styleInfoRef = useRefEditorState((store) =>
+    getActivePlugin(store.editor).styleInfoFactory({
+      metadata: store.editor.jsxMetadata,
+      projectContents: store.editor.projectContents,
+      elementPathTree: store.editor.elementPathTree,
+    })(targets[0]),
+  )
+
   // TODO Multiselect
   const sideRef = useBoundingBox(targets, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata.current, targets[0])
+    const padding = simplePaddingFromStyleInfo(
+      elementMetadata.current,
+      targets[0],
+      styleInfoRef.current,
+    )
     const paddingValue = padding[paddingKey]?.renderedValuePx ?? 0
 
     const { x, y, width, height } = boundingBox

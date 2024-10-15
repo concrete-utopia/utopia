@@ -31,10 +31,20 @@ export const InlineStylePlugin: StylePlugin = {
 
       const gap = getPropertyFromInstance('gap', instance.element.value)
       const flexDirection = getPropertyFromInstance('flexDirection', instance.element.value)
+      const padding = getPropertyFromInstance('padding', instance.element.value)
+      const paddingTop = getPropertyFromInstance('paddingTop', instance.element.value)
+      const paddingBottom = getPropertyFromInstance('paddingBottom', instance.element.value)
+      const paddingLeft = getPropertyFromInstance('paddingLeft', instance.element.value)
+      const paddingRight = getPropertyFromInstance('paddingRight', instance.element.value)
 
       return {
-        gap: gap,
-        flexDirection: flexDirection,
+        gap,
+        flexDirection,
+        padding,
+        paddingTop,
+        paddingBottom,
+        paddingLeft,
+        paddingRight,
       }
     },
   normalizeFromInlineStyle: (editor) => editor,
