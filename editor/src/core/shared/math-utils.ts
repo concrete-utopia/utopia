@@ -1,4 +1,3 @@
-import { stripNulls } from './array-utils'
 import type { Either } from './either'
 import { left, right, mapEither } from './either'
 
@@ -637,6 +636,17 @@ export function combineRectangles<C extends CoordinateMarker>(
     width: first.width + second.width,
     height: first.height + second.height,
   } as Rectangle<C>
+}
+
+// Copied from array-utils.ts to prevent a cyclic dependency
+function stripNulls<T>(array: Array<T | null | undefined>): Array<T> {
+  var workingArray: Array<T> = []
+  for (const value of array) {
+    if (value !== null && value !== undefined) {
+      workingArray.push(value)
+    }
+  }
+  return workingArray
 }
 
 export function boundingRectangleArray<C extends CoordinateMarker>(
