@@ -35,9 +35,12 @@ export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) 
 
   const grid = useGridData([selectedElement]).at(0)
 
-  const isDragging = useEditorState(
+  const activeDraggingAxis = useEditorState(
     Substores.canvas,
-    (store) => store.editor.canvas.interactionSession?.activeControl.type === 'GRID_GAP_HANDLE',
+    (store) =>
+      store.editor.canvas.interactionSession?.activeControl.type === 'GRID_GAP_HANDLE'
+        ? store.editor.canvas.interactionSession?.activeControl.axis
+        : null,
     'GridGapControl isDragging',
   )
 
@@ -69,11 +72,13 @@ export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) 
         grid={grid}
         dimension={'rows'}
         onMouseDown={rowMouseDownHandler}
+        beingDragged={activeDraggingAxis === 'row'}
       />
       <GridPaddingOutlineForDimension
         grid={grid}
         dimension={'columns'}
         onMouseDown={columnMouseDownHandler}
+        beingDragged={activeDraggingAxis === 'column'}
       />
     </CanvasOffsetWrapper>
   )
@@ -83,8 +88,9 @@ const GridPaddingOutlineForDimension = (props: {
   grid: GridData
   dimension: 'rows' | 'columns'
   onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void
+  beingDragged: boolean
 }) => {
-  const { grid, dimension, onMouseDown } = props
+  const { grid, dimension, onMouseDown, beingDragged } = props
 
   let style: CSSProperties = {
     ...getStyleMatchingTargetGrid(grid),
@@ -123,6 +129,7 @@ const GridPaddingOutlineForDimension = (props: {
             numberOfHandles={hide ? 0 : dimension === 'rows' ? grid.columns : grid.rows}
             gap={dimension === 'columns' ? grid.rowGap ?? grid.gap : grid.columnGap ?? grid.gap}
             gapValue={cssNumber(1, 'fr')} // FIXME
+            beingDragged={beingDragged}
           />
         )
       })}
@@ -141,6 +148,7 @@ const GridRowHighlight = (props: {
   numberOfHandles: number
   gap: number | null
   gapValue: CSSNumber
+  beingDragged: boolean
 }) => {
   const {
     gapId,
@@ -153,6 +161,7 @@ const GridRowHighlight = (props: {
     gap,
     gapValue,
     numberOfHandles,
+    beingDragged,
   } = props
 
   const colorTheme = useColorTheme()
@@ -164,6 +173,8 @@ const GridRowHighlight = (props: {
 
   const lineWidth = 1 / canvasScale
 
+  const outlineColor = beingDragged ? colorTheme.brandNeonOrange.value : 'transparent'
+
   return (
     <div
       key={gapId}
@@ -173,7 +184,7 @@ const GridRowHighlight = (props: {
       style={{
         display: 'grid',
         position: 'relative',
-        boxShadow: `inset 0 0 0 ${lineWidth}px ${colorTheme.brandNeonOrange.value}`,
+        boxShadow: `inset 0 0 0 ${lineWidth}px ${outlineColor}`,
         opacity: hide ? 0 : 1,
 
         alignItems: 'center',
@@ -193,12 +204,12 @@ const GridRowHighlight = (props: {
           gapValue={gapValue}
           axis={axis}
           onMouseDown={onMouseDown}
-          isDragging={false}
+          isDragging={beingDragged}
           onHandleHoverStartInner={NO_OP}
           indicatorShown={null}
           elementHovered={true}
-          gapIsHovered={false}
-          backgroundShown={false}
+          gapIsHovered={true}
+          backgroundShown={true}
         />
       ))}
     </div>
