@@ -5,6 +5,7 @@ import type { CSSProperties } from 'react'
 import React from 'react'
 import {
   cssKeyword,
+  gridDimensionsAreEqual,
   isGridCSSNumber,
   isValidGridDimensionKeyword,
   parseCSSNumber,
@@ -27,6 +28,7 @@ import { Icons, SmallerIcons } from '../icons'
 import { NO_OP } from '../../core/shared/utils'
 import { unless } from '../../utils/react-conditionals'
 import { useColorTheme } from '../styles/theme'
+import { capitalize } from '../../core/shared/string-utils'
 
 interface GridExpressionInputProps {
   testId: string
@@ -37,6 +39,7 @@ interface GridExpressionInputProps {
   onBlur: () => void
   keywords: Array<{ label: string; value: CSSKeyword<any> }>
   style?: CSSProperties
+  defaultValue: GridDimension
 }
 
 const DropdownWidth = 25
@@ -51,11 +54,16 @@ export const GridExpressionInput = React.memo(
     onBlur,
     keywords,
     style = {},
+    defaultValue,
   }: GridExpressionInputProps) => {
     const colorTheme = useColorTheme()
 
-    const [printValue, setPrintValue] = React.useState<string>(stringifyGridDimension(value))
-    React.useEffect(() => setPrintValue(stringifyGridDimension(value)), [value])
+    function getPrintValue(dim: GridDimension): string {
+      return capitalize(stringifyGridDimension(dim))
+    }
+
+    const [printValue, setPrintValue] = React.useState<string>(getPrintValue(value))
+    React.useEffect(() => setPrintValue(getPrintValue(value)), [value])
 
     const onChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
       setPrintValue(e.target.value)
@@ -157,6 +165,10 @@ export const GridExpressionInput = React.memo(
       onBlur()
     }, [onBlur])
 
+    const isDefault = React.useMemo(() => {
+      return gridDimensionsAreEqual(value, defaultValue)
+    }, [value, defaultValue])
+
     return (
       <div
         style={style}
@@ -190,6 +202,7 @@ export const GridExpressionInput = React.memo(
           style={{
             width: inputFocused ? '100%' : `calc(100% - ${DropdownWidth}px)`,
           }}
+          css={{ color: isDefault ? colorTheme.fg6.value : colorTheme.fg0.value }}
         />
         {unless(
           inputFocused,

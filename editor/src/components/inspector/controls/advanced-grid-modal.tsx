@@ -16,6 +16,10 @@ import {
 import { optionalMap } from '../../../core/shared/optional-utils'
 import type { FlexAlignment } from 'utopia-api/core'
 import { FlexJustifyContent } from 'utopia-api/core'
+import { GridAutoColsOrRowsControlInner } from '../grid-auto-cols-or-rows-control'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { selectedViewsSelector } from '../inpector-selectors'
 
 export interface AdvancedGridModalProps {
   id: string
@@ -103,6 +107,25 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
     [alignContentLayoutInfo],
   )
 
+  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const grid = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (selectedViewsRef.current.length !== 1) {
+        return null
+      }
+      return MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        selectedViewsRef.current[0],
+      )
+    },
+    'AdvancedGridModal grid',
+  )
+
+  if (grid == null) {
+    return null
+  }
+
   const advancedGridModal = (
     <InspectorModal
       offsetX={modalOffset.x}
@@ -189,6 +212,23 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
             }}
             onOpenChange={toggleAlignContentDropdown}
           />
+        </UIGridRow>
+        <UIGridRow padded variant='<-------------1fr------------->'>
+          <span style={{ fontWeight: 600 }}>Template</span>
+        </UIGridRow>
+        <UIGridRow
+          padded
+          variant={rowVariant}
+          className={`ignore-react-onclickoutside-${props.id}`}
+        >
+          <GridAutoColsOrRowsControlInner grid={grid} axis='column' label='Auto Cols' />
+        </UIGridRow>
+        <UIGridRow
+          padded
+          variant={rowVariant}
+          className={`ignore-react-onclickoutside-${props.id}`}
+        >
+          <GridAutoColsOrRowsControlInner grid={grid} axis='row' label='Auto Rows' />
         </UIGridRow>
       </FlexColumn>
     </InspectorModal>

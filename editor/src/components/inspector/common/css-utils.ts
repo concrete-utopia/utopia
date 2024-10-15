@@ -83,6 +83,7 @@ import { parseFlex, printFlexAsAttributeValue } from '../../../printer-parsers/c
 import { memoize } from '../../../core/shared/memoize'
 import * as csstree from 'css-tree'
 import type { IcnProps } from '../../../uuiui'
+import { cssNumberEqual } from '../../canvas/controls/select-mode/controls-common'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -593,6 +594,37 @@ export type GridCSSNumber = BaseGridDimension & {
 export type GridCSSKeyword = BaseGridDimension & {
   type: 'KEYWORD'
   value: CSSKeyword<ValidGridDimensionKeyword>
+}
+
+export function gridDimensionsAreEqual(a: GridDimension, b: GridDimension): boolean {
+  switch (a.type) {
+    case 'KEYWORD':
+      if (a.type !== b.type) {
+        return false
+      }
+      return a.value.type === b.value.type && a.value.value === b.value.value
+    case 'NUMBER':
+      if (a.type !== b.type) {
+        return false
+      }
+      return cssNumberEqual(a.value, b.value)
+    case 'MINMAX':
+      if (a.type !== b.type) {
+        return false
+      }
+      return gridDimensionsAreEqual(a.min, b.min) && gridDimensionsAreEqual(a.max, b.max)
+    case 'REPEAT':
+      if (a.type !== b.type) {
+        return false
+      }
+      return (
+        a.times === b.times &&
+        a.value.length === b.value.length &&
+        a.value.every((value, index) => gridDimensionsAreEqual(value, b.value[index]))
+      )
+    default:
+      assertNever(a)
+  }
 }
 
 type BaseGridCSSRepeat = {

@@ -2,7 +2,7 @@ import { selectComponentsForTest } from '../../utils/utils.test-utils'
 import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import * as EP from '../../core/shared/element-path'
 import { act, fireEvent, screen } from '@testing-library/react'
-import { GridAutoColsOrRowsControlTestId } from './flex-section'
+import { GridAutoColsOrRowsControlTestId } from './grid-auto-cols-or-rows-control'
 
 describe('flex section', () => {
   describe('grid dimensions', () => {
