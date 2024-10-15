@@ -139,9 +139,12 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
     const canResizeDiagonally = useEditorState(
       Substores.metadata,
       (store) => {
-        return !selectedElementsRef.current.some((element) =>
-          isFillOrStretchModeAppliedOnAnySide(store.editor.jsxMetadata, element),
-        )
+        return !selectedElementsRef.current.some((element) => {
+          return (
+            MetadataUtils.isFlexOrGridChild(store.editor.jsxMetadata, element) &&
+            isFillOrStretchModeAppliedOnAnySide(store.editor.jsxMetadata, element)
+          )
+        })
       },
       'AbsoluteResizeControl canResizeDiagonally',
     )
