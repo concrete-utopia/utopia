@@ -10,7 +10,7 @@ import {
 } from '../../../sample-projects/sample-project-utils.test-utils'
 import type { Modifiers } from '../../../utils/modifiers'
 import { emptyModifiers, cmdModifier } from '../../../utils/modifiers'
-import { selectComponentsForTest, wait } from '../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../utils/utils.test-utils'
 import {
   runDOMWalker,
   selectComponents,
