@@ -11,7 +11,10 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls, range, stripNulls, uniqBy } from '../../../core/shared/array-utils'
 import { defaultEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import type { GridAutoOrTemplateDimensions } from '../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadataMap,
+  GridAutoOrTemplateDimensions,
+} from '../../../core/shared/element-template'
 import {
   isGridAutoOrTemplateDimensions,
   type GridAutoOrTemplateBase,
@@ -71,16 +74,25 @@ import { windowToCanvasCoordinates } from '../dom-lookup'
 import type { Axis } from '../gap-utils'
 import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import type { GridControlsProps, GridData } from './grid-controls-for-strategies'
+import type {
+  GridControlsProps,
+  GridData,
+  GridMeasurementHelperData,
+} from './grid-controls-for-strategies'
 import {
   edgePositionToGridResizeEdge,
   getNullableAutoOrTemplateBaseString,
   GridCellTestId,
+  GridControlKey,
   gridEdgeToEdgePosition,
+  GridMeasurementHelperKey,
+  GridMeasurementHelpersKey,
   useGridData,
+  useGridMeasurentHelperData,
 } from './grid-controls-for-strategies'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { useResizeEdges } from './select-mode/use-resize-edges'
+import { getGridHelperStyleMatchingTargetGrid } from './grid-controls-helpers'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -768,15 +780,9 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
   })
 
   const placeholders = controlsVisible === 'visible' ? range(0, grid.cells) : []
-  let style: CSSProperties = {
-    position: 'absolute',
-    top: grid.frame.y,
-    left: grid.frame.x,
-    width: grid.frame.width,
-    height: grid.frame.height,
-    display: 'grid',
-    gridTemplateColumns: getNullableAutoOrTemplateBaseString(grid.gridTemplateColumns),
-    gridTemplateRows: getNullableAutoOrTemplateBaseString(grid.gridTemplateRows),
+  const baseStyle = getGridHelperStyleMatchingTargetGrid(grid)
+  const style = {
+    ...baseStyle,
     backgroundColor:
       activelyDraggingOrResizingCell == null || controlsVisible === 'not-visible'
         ? 'transparent'
@@ -786,30 +792,6 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
         ? 'transparent'
         : colorTheme.primary.value
     }`,
-    justifyContent: grid.justifyContent ?? 'initial',
-    alignContent: grid.alignContent ?? 'initial',
-    pointerEvents: 'none',
-    padding:
-      grid.padding == null
-        ? 0
-        : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
-  }
-
-  // Gap needs to be set only if the other two are not present or we'll have rendering issues
-  // due to how measurements are calculated.
-  if (grid.rowGap != null && grid.columnGap != null) {
-    style.rowGap = grid.rowGap
-    style.columnGap = grid.columnGap
-  } else {
-    if (grid.gap != null) {
-      style.gap = grid.gap
-    }
-    if (grid.rowGap != null) {
-      style.rowGap = grid.rowGap
-    }
-    if (grid.columnGap != null) {
-      style.columnGap = grid.columnGap
-    }
   }
 
   return (
@@ -935,6 +917,70 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
 })
 GridControl.displayName = 'GridControl'
 
+export const GridMeasurementHelpers = React.memo(() => {
+  const metadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'GridMeasurementHelpers metadata',
+  )
+
+  const grids = useAllGrids(metadata)
+
+  return (
+    <CanvasOffsetWrapper>
+      {grids.map((grid) => {
+        return <GridMeasurementHelper key={GridMeasurementHelpersKey(grid)} elementPath={grid} />
+      })}
+    </CanvasOffsetWrapper>
+  )
+})
+GridMeasurementHelpers.displayName = 'GridMeasurementHelpers'
+
+export interface GridMeasurementHelperProps {
+  elementPath: ElementPath
+}
+
+const GridMeasurementHelper = React.memo<{ elementPath: ElementPath }>(({ elementPath }) => {
+  const gridData = useGridMeasurentHelperData(elementPath)
+
+  if (gridData == null) {
+    return null
+  }
+
+  const placeholders = range(0, gridData.cells)
+
+  const style: CSSProperties = {
+    ...getGridHelperStyleMatchingTargetGrid(gridData),
+    opacity: 1,
+  }
+
+  return (
+    <div
+      id={GridMeasurementHelperKey(elementPath)}
+      data-grid-path={EP.toString(elementPath)}
+      style={style}
+    >
+      {placeholders.map((cell) => {
+        const countedRow = Math.floor(cell / gridData.columns) + 1
+        const countedColumn = Math.floor(cell % gridData.columns) + 1
+        const id = `${GridMeasurementHelperKey(elementPath)}-${countedRow}-${countedColumn}`
+        return (
+          <div
+            key={id}
+            style={{
+              position: 'relative',
+              pointerEvents: 'none',
+            }}
+            data-grid-row={countedRow}
+            data-grid-column={countedColumn}
+          />
+        )
+      })}
+    </div>
+  )
+})
+GridMeasurementHelper.displayName = 'GridMeasurementHelper'
+
 export const GridControlsComponent = ({ targets }: GridControlsProps) => {
   const ancestorPaths = React.useMemo(() => {
     return targets.flatMap((target) => EP.getAncestors(target))
@@ -992,7 +1038,7 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
           )
           return (
             <GridControl
-              key={`grid-control-${EP.toString(grid.elementPath)}`}
+              key={GridControlKey(grid.elementPath)}
               grid={grid}
               controlsVisible={shouldHaveVisibleControls ? 'visible' : 'not-visible'}
             />
@@ -1638,4 +1684,10 @@ function gridPlaceholderTopOrLeftPosition(scale: number): string {
 
 function gridPlaceholderWidthOrHeight(scale: number): string {
   return `calc(100% + ${(borderExtension * 2) / scale}px)`
+}
+
+function useAllGrids(metadata: ElementInstanceMetadataMap) {
+  return React.useMemo(() => {
+    return MetadataUtils.getAllGrids(metadata)
+  }, [metadata])
 }

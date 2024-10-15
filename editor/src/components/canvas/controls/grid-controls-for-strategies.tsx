@@ -1,5 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+import fastDeepEqual from 'fast-deep-equal'
 import type { Sides } from 'utopia-api/core'
 import type { ElementPath } from 'utopia-shared/src/types'
 import { isStaticGridRepeat, printGridAutoOrTemplateBase } from '../../inspector/common/css-utils'
@@ -61,21 +62,71 @@ export function getNullableAutoOrTemplateBaseString(
   }
 }
 
-export type GridData = {
-  elementPath: ElementPath
+export type GridMeasurementHelperData = {
   frame: CanvasRectangle
   gridTemplateColumns: GridAutoOrTemplateBase | null
   gridTemplateRows: GridAutoOrTemplateBase | null
-  gridTemplateColumnsFromProps: GridAutoOrTemplateBase | null
-  gridTemplateRowsFromProps: GridAutoOrTemplateBase | null
   gap: number | null
-  justifyContent: string | null
-  alignContent: string | null
   rowGap: number | null
   columnGap: number | null
+  justifyContent: string | null
+  alignContent: string | null
   padding: Sides
-  rows: number
   columns: number
+  cells: number
+}
+
+export function useGridMeasurentHelperData(
+  elementPath: ElementPath,
+): GridMeasurementHelperData | null {
+  return useEditorState(
+    Substores.metadata,
+    (store) => {
+      const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath)
+
+      const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element) ? element : null
+
+      if (
+        targetGridContainer == null ||
+        targetGridContainer.globalFrame == null ||
+        !isFiniteRectangle(targetGridContainer.globalFrame)
+      ) {
+        return null
+      }
+
+      const columns = getCellsCount(
+        targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
+      )
+      const rows = getCellsCount(
+        targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
+      )
+
+      return {
+        frame: targetGridContainer.globalFrame,
+        gridTemplateColumns:
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
+        gridTemplateRows:
+          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
+        gap: targetGridContainer.specialSizeMeasurements.gap,
+        rowGap: targetGridContainer.specialSizeMeasurements.rowGap,
+        columnGap: targetGridContainer.specialSizeMeasurements.columnGap,
+        justifyContent: targetGridContainer.specialSizeMeasurements.justifyContent,
+        alignContent: targetGridContainer.specialSizeMeasurements.alignContent,
+        padding: targetGridContainer.specialSizeMeasurements.padding,
+        columns: columns,
+        cells: rows * columns,
+      }
+    },
+    'useGridMeasurentHelperData',
+    fastDeepEqual, //TODO: this should not be needed, but it seems EditorStateKeepDeepEquality is not running, and metadata reference is always updated
+  )
+}
+
+export type GridData = GridMeasurementHelperData & {
+  elementPath: ElementPath
+  gridTemplateColumnsFromProps: GridAutoOrTemplateBase | null
+  gridTemplateRowsFromProps: GridAutoOrTemplateBase | null
+  rows: number
   cells: number
   metadata: ElementInstanceMetadata
 }
@@ -156,6 +207,12 @@ export const GridRowColumnResizingControls =
   )
 
 export const GridControlsKey = (gridPath: ElementPath) => `grid-controls-${EP.toString(gridPath)}`
+export const GridControlKey = (gridPath: ElementPath) => `grid-control-${EP.toString(gridPath)}`
+
+export const GridMeasurementHelpersKey = (gridPath: ElementPath) =>
+  `grid-measurement-helpers-${EP.toString(gridPath)}`
+export const GridMeasurementHelperKey = (gridPath: ElementPath) =>
+  `grid-measurement-helper-${EP.toString(gridPath)}`
 
 export interface GridControlProps {
   grid: GridData

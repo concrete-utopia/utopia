@@ -247,9 +247,10 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
         {when(
           numberOfGridPropsSet > 0 && !menuOpen && !popupOpen,
           <Button
+            onClick={openPopup}
+            highlight
             style={{
-              color: colorTheme.secondaryBlue.value,
-              background: colorTheme.bg3.value,
+              color: colorTheme.dynamicBlue.value,
               minWidth: 22,
             }}
           >

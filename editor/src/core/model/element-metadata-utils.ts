@@ -408,6 +408,11 @@ export const MetadataUtils = {
       specialSizeMeasurements.elementGridPropertiesFromProps.gridRowEnd == null
     )
   },
+  getAllGrids(metadata: ElementInstanceMetadataMap): Array<ElementPath> {
+    return Object.values(metadata)
+      .filter((m) => MetadataUtils.isGridLayoutedContainer(m))
+      .map((m) => m.elementPath)
+  },
   isComponentInstanceFromMetadata(
     metadata: ElementInstanceMetadataMap,
     path: ElementPath,

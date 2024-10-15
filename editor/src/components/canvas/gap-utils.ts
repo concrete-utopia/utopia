@@ -223,7 +223,7 @@ export function gridGapControlBoundsFromMetadata(
 
   const gridCellBounds = grid.specialSizeMeasurements.gridCellGlobalFrames
 
-  if (gridCellBounds == null) {
+  if (gridCellBounds == null || gridCellBounds.length == 0) {
     return emptyResult
   }
   const allCellsBound = canvasRectangle({

@@ -1,12 +1,10 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import type { GridElementProperties, GridPosition } from '../../../../core/shared/element-template'
 import {
   type CanvasRectangle,
   isInfinityRectangle,
   rectangleIntersection,
 } from '../../../../core/shared/math-utils'
-import { isCSSKeyword } from '../../../inspector/common/css-utils'
 import { isFillOrStretchModeApplied } from '../../../inspector/inspector-common'
 import {
   controlsForGridPlaceholders,
@@ -22,13 +20,12 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { getMetadataWithGridCellBounds, setGridPropsCommands } from './grid-helpers'
+import { setGridPropsCommands } from './grid-helpers'
 import { resizeBoundingBoxFromSide } from './resize-helpers'
 
 export const gridResizeElementStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
-  customState,
 ) => {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length !== 1) {
@@ -86,13 +83,10 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      const { metadata: container, customStrategyState: updatedCustomState } =
-        getMetadataWithGridCellBounds(
-          EP.parentPath(selectedElement),
-          canvasState.startingMetadata,
-          interactionSession.latestMetadata,
-          customState,
-        )
+      const container = MetadataUtils.findElementByElementPath(
+        canvasState.startingMetadata,
+        EP.parentPath(selectedElement),
+      )
 
       if (container == null) {
         return emptyStrategyApplicationResult
@@ -123,7 +117,6 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
       return strategyApplicationResult(
         setGridPropsCommands(selectedElement, gridTemplate, gridProps),
         [parentGridPath],
-        updatedCustomState ?? undefined,
       )
     },
   }
