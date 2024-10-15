@@ -260,6 +260,7 @@ function getRemixExportsOfModule(
     metadataContext: UiJsxCanvasContextData,
   ) => {
     let resolvedFiles: MapLike<MapLike<any>> = {}
+    let resolvedFileNames: Array<string> = [filename]
 
     const requireFn = curriedRequireFn(innerProjectContents)
     const resolve = curriedResolveFn(innerProjectContents)
@@ -274,6 +275,8 @@ function getRemixExportsOfModule(
       const filePathResolveResult = alreadyResolved
         ? left<string, string>('Already resolved')
         : resolve(importOrigin, toImport)
+
+      forEachRight(filePathResolveResult, (filepath) => resolvedFileNames.push(filepath))
 
       const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
         resolvedFromThisOrigin,
