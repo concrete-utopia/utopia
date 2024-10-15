@@ -81,6 +81,8 @@ import {
   GridCellTestId,
   GridControlKey,
   gridEdgeToEdgePosition,
+  GridMeasurementHelperKey,
+  GridMeasurementHelpersKey,
   useGridData,
   useGridMeasurentHelperData,
 } from './grid-controls-for-strategies'
@@ -943,7 +945,7 @@ export const GridMeasurementHelpers = React.memo(() => {
   return (
     <CanvasOffsetWrapper>
       {grids.map((grid) => {
-        return <GridMeasurementHelper key={GridControlKey(grid)} elementPath={grid} />
+        return <GridMeasurementHelper key={GridMeasurementHelpersKey(grid)} elementPath={grid} />
       })}
     </CanvasOffsetWrapper>
   )
@@ -1001,16 +1003,14 @@ const GridMeasurementHelper = React.memo<{ elementPath: ElementPath }>(({ elemen
 
   return (
     <div
-      id={`grid-measurement-helper-${EP.toString(elementPath)}`}
+      id={GridMeasurementHelperKey(elementPath)}
       data-grid-path={EP.toString(elementPath)}
       style={style}
     >
       {placeholders.map((cell) => {
         const countedRow = Math.floor(cell / gridData.columns) + 1
         const countedColumn = Math.floor(cell % gridData.columns) + 1
-        const id = `grid-measurement-helper-${EP.toString(
-          elementPath,
-        )}-${countedRow}-${countedColumn}`
+        const id = `${GridMeasurementHelperKey(elementPath)}-${countedRow}-${countedColumn}`
         return (
           <div
             key={id}

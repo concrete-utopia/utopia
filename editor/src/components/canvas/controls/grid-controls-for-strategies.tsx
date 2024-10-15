@@ -203,6 +203,11 @@ export const GridRowColumnResizingControls =
 export const GridControlsKey = (gridPath: ElementPath) => `grid-controls-${EP.toString(gridPath)}`
 export const GridControlKey = (gridPath: ElementPath) => `grid-control-${EP.toString(gridPath)}`
 
+export const GridMeasurementHelpersKey = (gridPath: ElementPath) =>
+  `grid-measurement-helpers-${EP.toString(gridPath)}`
+export const GridMeasurementHelperKey = (gridPath: ElementPath) =>
+  `grid-measurement-helper-${EP.toString(gridPath)}`
+
 export interface GridControlProps {
   grid: GridData
 }
