@@ -71,10 +71,6 @@ function getPropertiesToUnsetPatches(
   editorState: EditorState,
   command: DeleteProperties,
 ): EditorStatePatch[] {
-  if (command.whenToRun === 'on-complete') {
-    return []
-  }
-
   const unsetProperties = getUnsetProperties(command.properties)
   const partialPropertiesToUnset = getPropertiesToUnset(unsetProperties)
   const pathString = EP.toString(command.element)
@@ -91,6 +87,11 @@ function getPropertiesToUnsetPatches(
       },
     },
   }
+
+  if (command.whenToRun === 'on-complete') {
+    return [unsetPropertiesPatch]
+  }
+
   const { editorStatePatch: setPropertiesToUnsetValuePatch } = applyValuesAtPath(
     editorState,
     command.element,
