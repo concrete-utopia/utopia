@@ -713,9 +713,7 @@ export function useGetApplicableStrategyControls(
       strategyControls.push(...getApplicableControls(currentStrategy, strategy))
     }
     const combinedControls = combineApplicableControls(strategyControls)
-    let applicableControls: Array<ControlWithProps<unknown>> = []
-    applicableControls = addAllUniquelyBy(
-      applicableControls,
+    let applicableControls: Array<ControlWithProps<unknown>> = addAllUniquelyBy(
       combinedControls,
       (l, r) => l.control === r.control && l.key === r.key,
     )
