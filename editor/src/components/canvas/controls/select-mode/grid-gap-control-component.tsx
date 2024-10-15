@@ -162,7 +162,7 @@ const GridPaddingOutlineForDimension = (props: {
 
   let style: CSSProperties = {
     ...getStyleMatchingTargetGrid(grid),
-    zIndex: zIndexPriority ? 1 : 0,
+    zIndex: zIndexPriority ? 1 : undefined,
     gap: undefined,
     rowGap: undefined,
     columnGap: undefined,
