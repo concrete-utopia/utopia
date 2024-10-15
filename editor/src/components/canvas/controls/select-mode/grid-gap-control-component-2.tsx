@@ -119,8 +119,6 @@ const GridPaddingOutlineForDimension = (props: {
             key={index}
             hide={hide} // we only want to show the divs that fall in where the gaps are in the original grid
             gapId={`${dimension}-${index}`}
-            onGapHover={NO_OP}
-            onHandleHoverEndInner={NO_OP}
             onMouseDown={onMouseDown}
             axis={dimension === 'rows' ? 'row' : 'column'}
             template={getNullableAutoOrTemplateBaseString(
@@ -140,8 +138,6 @@ const GridPaddingOutlineForDimension = (props: {
 const GridRowHighlight = (props: {
   gapId: string
   onMouseDown: React.MouseEventHandler
-  onGapHover: () => void
-  onHandleHoverEndInner: () => void
   hide: boolean
   axis: 'row' | 'column'
   template: string | undefined
@@ -150,19 +146,8 @@ const GridRowHighlight = (props: {
   gapValue: CSSNumber
   beingDragged: boolean
 }) => {
-  const {
-    gapId,
-    onMouseDown,
-    onGapHover,
-    onHandleHoverEndInner,
-    hide,
-    axis,
-    template,
-    gap,
-    gapValue,
-    numberOfHandles,
-    beingDragged,
-  } = props
+  const { gapId, onMouseDown, hide, axis, template, gap, gapValue, numberOfHandles, beingDragged } =
+    props
 
   const colorTheme = useColorTheme()
   const canvasScale = useEditorState(
@@ -175,13 +160,24 @@ const GridRowHighlight = (props: {
 
   const outlineColor = beingDragged ? colorTheme.brandNeonOrange.value : 'transparent'
 
+  const [gapIsHovered, setGapIsHovered] = React.useState(false)
+
+  const onGapHover = React.useCallback(() => {
+    setGapIsHovered(true)
+  }, [])
+
+  const onGapHoverEnd = React.useCallback((e: React.MouseEvent) => {
+    setGapIsHovered(false)
+  }, [])
+
   return (
     <div
       key={gapId}
       onMouseEnter={onGapHover}
-      onMouseLeave={onHandleHoverEndInner}
+      onMouseLeave={onGapHoverEnd}
       data-testid={`gap-control-segment-${gapId}`}
       style={{
+        pointerEvents: hide ? undefined : 'all',
         display: 'grid',
         position: 'relative',
         boxShadow: `inset 0 0 0 ${lineWidth}px ${outlineColor}`,
@@ -206,9 +202,9 @@ const GridRowHighlight = (props: {
           onMouseDown={onMouseDown}
           isDragging={beingDragged}
           onHandleHoverStartInner={NO_OP}
-          indicatorShown={null}
+          indicatorShown={15}
           elementHovered={true}
-          gapIsHovered={true}
+          gapIsHovered={gapIsHovered}
           backgroundShown={true}
         />
       ))}
