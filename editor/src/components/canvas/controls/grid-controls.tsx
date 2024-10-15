@@ -960,8 +960,15 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
     'GridControlsComponent hoveredGrids',
   )
 
+  // Uniqify the grid paths, and then sort them by depth.
+  // With the lowest depth grid at the end so that it renders on top and catches the events
+  // before those above it in the hierarchy.
   const grids = useGridData(
-    uniqBy([...targets, ...ancestorGrids, ...hoveredGrids], (a, b) => EP.pathsEqual(a, b)),
+    uniqBy([...targets, ...ancestorGrids, ...hoveredGrids], (a, b) => EP.pathsEqual(a, b)).sort(
+      (a, b) => {
+        return EP.fullDepth(a) - EP.fullDepth(b)
+      },
+    ),
   )
 
   if (grids.length === 0) {
