@@ -75,7 +75,6 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         props: { target: gridPath },
         key: `grid-row-col-resize-controls-${EP.toString(gridPath)}`,
         show: 'always-visible',
-        priority: 'top',
       },
       controlsForGridPlaceholders(gridPath),
     ],

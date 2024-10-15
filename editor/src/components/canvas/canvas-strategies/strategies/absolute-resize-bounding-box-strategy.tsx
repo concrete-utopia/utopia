@@ -120,6 +120,7 @@ export function absoluteResizeBoundingBoxStrategy(
         props: { targets: originalTargets, pathsWereReplaced: pathsWereReplaced },
         key: 'absolute-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
+        priority: 'top',
       }),
       controlWithProps({
         control: ZeroSizeResizeControlWrapper,
