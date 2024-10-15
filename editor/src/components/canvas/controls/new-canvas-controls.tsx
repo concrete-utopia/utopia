@@ -75,8 +75,7 @@ import { NO_OP } from '../../../core/shared/utils'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
-import { GridMeasurementHelper } from './grid-controls'
-import { GridControlKey, useGridData } from './grid-controls-for-strategies'
+import { GridMeasurementHelpers } from './grid-controls'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -341,8 +340,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     'NewCanvasControlsInner',
   )
 
-  const grids = useAllGrids(componentMetadata)
-
   const cmdKeyPressed = keysPressed['cmd'] ?? false
 
   const contextMenuEnabled = !isLiveMode(editorMode)
@@ -603,16 +600,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                   <>
                     {when(
                       isSelectMode(editorMode) || isInsertMode(editorMode),
-                      <React.Fragment>
-                        {grids.map((grid) => {
-                          return (
-                            <GridMeasurementHelper
-                              key={GridControlKey(grid.elementPath)}
-                              {...grid}
-                            />
-                          )
-                        })}
-                      </React.Fragment>,
+                      <GridMeasurementHelpers />,
                     )}
                     {strategyControls.map((c) => (
                       <RenderControlMemoized
@@ -690,13 +678,4 @@ const SelectionAreaRectangle = React.memo(
     )
   },
 )
-
-function useAllGrids(metadata: ElementInstanceMetadataMap) {
-  const grids = React.useMemo(() => {
-    return MetadataUtils.getAllGrids(metadata)
-  }, [metadata])
-
-  return useGridData(grids)
-}
-
 SelectionAreaRectangle.displayName = 'SelectionAreaRectangle'

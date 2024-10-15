@@ -11,7 +11,10 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls, range, stripNulls, uniqBy } from '../../../core/shared/array-utils'
 import { defaultEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import type { GridAutoOrTemplateDimensions } from '../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadataMap,
+  GridAutoOrTemplateDimensions,
+} from '../../../core/shared/element-template'
 import {
   isGridAutoOrTemplateDimensions,
   type GridAutoOrTemplateBase,
@@ -927,7 +930,25 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
 })
 GridControl.displayName = 'GridControl'
 
-export const GridMeasurementHelper = React.memo<GridData>((props) => {
+export const GridMeasurementHelpers = React.memo(() => {
+  const metadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'GridMeasurementHelpers metadata',
+  )
+
+  const grids = useAllGrids(metadata)
+
+  return (
+    <CanvasOffsetWrapper>
+      {grids.map((grid) => {
+        return <GridMeasurementHelper key={GridControlKey(grid.elementPath)} {...grid} />
+      })}
+    </CanvasOffsetWrapper>
+  )
+})
+
+const GridMeasurementHelper = React.memo<GridData>((props) => {
   const placeholders = range(0, props.cells)
 
   let style: CSSProperties = {
@@ -967,32 +988,30 @@ export const GridMeasurementHelper = React.memo<GridData>((props) => {
   }
 
   return (
-    <CanvasOffsetWrapper>
-      <div
-        id={`grid-measurement-helper-${EP.toString(props.elementPath)}`}
-        data-grid-path={EP.toString(props.elementPath)}
-        style={style}
-      >
-        {placeholders.map((cell) => {
-          const countedRow = Math.floor(cell / props.columns) + 1
-          const countedColumn = Math.floor(cell % props.columns) + 1
-          const id = `grid-measurement-helper-${EP.toString(
-            props.elementPath,
-          )}-${countedRow}-${countedColumn}`
-          return (
-            <div
-              key={id}
-              style={{
-                position: 'relative',
-                pointerEvents: 'none',
-              }}
-              data-grid-row={countedRow}
-              data-grid-column={countedColumn}
-            />
-          )
-        })}
-      </div>
-    </CanvasOffsetWrapper>
+    <div
+      id={`grid-measurement-helper-${EP.toString(props.elementPath)}`}
+      data-grid-path={EP.toString(props.elementPath)}
+      style={style}
+    >
+      {placeholders.map((cell) => {
+        const countedRow = Math.floor(cell / props.columns) + 1
+        const countedColumn = Math.floor(cell % props.columns) + 1
+        const id = `grid-measurement-helper-${EP.toString(
+          props.elementPath,
+        )}-${countedRow}-${countedColumn}`
+        return (
+          <div
+            key={id}
+            style={{
+              position: 'relative',
+              pointerEvents: 'none',
+            }}
+            data-grid-row={countedRow}
+            data-grid-column={countedColumn}
+          />
+        )
+      })}
+    </div>
   )
 })
 GridMeasurementHelper.displayName = 'GridMeasurementHelper'
@@ -1662,4 +1681,12 @@ function gridPlaceholderTopOrLeftPosition(scale: number): string {
 
 function gridPlaceholderWidthOrHeight(scale: number): string {
   return `calc(100% + ${(borderExtension * 2) / scale}px)`
+}
+
+function useAllGrids(metadata: ElementInstanceMetadataMap) {
+  const grids = React.useMemo(() => {
+    return MetadataUtils.getAllGrids(metadata)
+  }, [metadata])
+
+  return useGridData(grids)
 }
