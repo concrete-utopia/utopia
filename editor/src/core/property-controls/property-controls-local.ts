@@ -166,7 +166,7 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
       const result = requireFn(importOrigin, toImport, false)
       const filePathResolveResult = resolveFn(importOrigin, toImport)
       const absoluteFilenameOrPackage = defaultEither(toImport, filePathResolveResult)
-      return extendExportsWithInfo(result, absoluteFilenameOrPackage)
+      return extendExportsWithInfo(result, dropFileExtension(absoluteFilenameOrPackage))
     }
 
     let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }

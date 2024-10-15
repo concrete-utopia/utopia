@@ -742,7 +742,7 @@ describe('registered property controls', () => {
             errorCode: '',
             fileName: '/utopia/components.utopia.js',
             message:
-              'Validation failed: Module name (/src/card.js) does not match the module key (/src/cardd)',
+              'Validation failed: Module name (/src/card) does not match the module key (/src/cardd)',
             passTime: null,
             severity: 'warning',
             source: 'component-descriptor',
@@ -922,7 +922,7 @@ describe('registered property controls', () => {
           `import { Card } from '../src/card'
         
         const Components = {
-      '/src/card.js': {
+      '/src/card': {
         Cart: {
           component: Card,
           properties: { },
@@ -936,7 +936,7 @@ describe('registered property controls', () => {
           `import { Card } from '../src/card'
               
         const Components = {
-      '/src/card.js': {
+      '/src/card': {
         Card: {
           component: Card,
           properties: { },
@@ -963,7 +963,7 @@ describe('registered property controls', () => {
     expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo)).toEqual([
       'utopia-api',
       '@remix-run/react',
-      '/src/card.js',
+      '/src/card',
     ])
   })
   it('can use imports in the sidecar file', async () => {
@@ -1648,7 +1648,7 @@ describe('registered property controls', () => {
                 Object {
                   "elementToInsert": [Function],
                   "importsToAdd": Object {
-                    "/src/card2.js": Object {
+                    "/src/card2": Object {
                       "importedAs": null,
                       "importedFromWithin": Array [
                         Object {
@@ -1914,7 +1914,7 @@ describe('registered property controls', () => {
                       Object {
                         "elementToInsert": [Function],
                         "importsToAdd": Object {
-                          "/src/card2.js": Object {
+                          "/src/card2": Object {
                             "importedAs": null,
                             "importedFromWithin": Array [
                               Object {
