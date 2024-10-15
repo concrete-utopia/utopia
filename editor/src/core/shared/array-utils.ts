@@ -279,10 +279,14 @@ export function addAllUniquely<T extends string | number | boolean | null | unde
   return values.reduce(addUniquely, array)
 }
 
-export function addAllUniquelyBy<T>(values: Array<T>, eq: (l: T, r: T) => boolean): Array<T> {
-  let workingArray: Array<T> = []
+export function addAllUniquelyBy<T>(
+  array: Array<T>,
+  values: Array<T>,
+  eq: (l: T, r: T) => boolean,
+): Array<T> {
+  let workingArray = [...array]
   fastForEach(values, (value) => {
-    if (!workingArray.some((a) => eq(a, value))) {
+    if (array.findIndex((a) => eq(a, value)) === -1) {
       workingArray.push(value)
     }
   })
