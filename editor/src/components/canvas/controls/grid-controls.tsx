@@ -74,14 +74,9 @@ import { windowToCanvasCoordinates } from '../dom-lookup'
 import type { Axis } from '../gap-utils'
 import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import type {
-  GridControlsProps,
-  GridData,
-  GridMeasurementHelperData,
-} from './grid-controls-for-strategies'
+import type { GridControlsProps, GridData } from './grid-controls-for-strategies'
 import {
   edgePositionToGridResizeEdge,
-  getNullableAutoOrTemplateBaseString,
   GridCellTestId,
   GridControlKey,
   gridEdgeToEdgePosition,
@@ -93,6 +88,7 @@ import {
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { useResizeEdges } from './select-mode/use-resize-edges'
 import { getGridHelperStyleMatchingTargetGrid } from './grid-controls-helpers'
+import { isFillOrStretchModeAppliedOnSpecificSide } from '../../inspector/inspector-common'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -1566,6 +1562,28 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
     },
   })
 
+  const resizeDirection = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (element == null) {
+        return { horizontal: false, vertical: false }
+      }
+      return {
+        horizontal: isFillOrStretchModeAppliedOnSpecificSide(
+          store.editor.jsxMetadata,
+          element.elementPath,
+          'horizontal',
+        ),
+        vertical: isFillOrStretchModeAppliedOnSpecificSide(
+          store.editor.jsxMetadata,
+          element.elementPath,
+          'vertical',
+        ),
+      }
+    },
+    'GridResizeControlsComponent resizeDirection',
+  )
+
   if (
     element == null ||
     element.globalFrame == null ||
@@ -1598,10 +1616,20 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
             pointerEvents: 'none',
           }}
         >
-          {resizeEdges.top}
-          {resizeEdges.left}
-          {resizeEdges.bottom}
-          {resizeEdges.right}
+          {when(
+            resizeDirection.vertical,
+            <React.Fragment>
+              {resizeEdges.top}
+              {resizeEdges.bottom}
+            </React.Fragment>,
+          )}
+          {when(
+            resizeDirection.horizontal,
+            <React.Fragment>
+              {resizeEdges.left}
+              {resizeEdges.right}
+            </React.Fragment>,
+          )}
         </div>
       </div>
     </CanvasOffsetWrapper>
