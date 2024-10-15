@@ -22,7 +22,8 @@ import {
   type GridGapControlProps,
 } from './grid-gap-control-component'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import type { Axis } from '../../gap-utils'
+import { maybeGridGapData, type Axis } from '../../gap-utils'
+import type { CSSNumberWithRenderedValue } from './controls-common'
 import { useHoverWithDelay } from './controls-common'
 
 export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) => {
@@ -68,7 +69,13 @@ export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) 
   const onMouseOverRow = React.useCallback(() => setHoveredAxis('row'), [])
   const onMouseOverColumn = React.useCallback(() => setHoveredAxis('column'), [])
 
-  if (grid == null) {
+  const gridGap = useEditorState(
+    Substores.metadata,
+    (store) => maybeGridGapData(store.editor.jsxMetadata, selectedElement),
+    'GridGapControlComponent2 gridGap',
+  )
+
+  if (grid == null || gridGap == null) {
     return null
   }
 
@@ -81,6 +88,7 @@ export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) 
         beingDragged={activeDraggingAxis === 'row'}
         onMouseOver={onMouseOverRow}
         zIndexPriority={hoveredAxis === 'row' ? true : false}
+        gridGap={gridGap.row}
       />
       <GridPaddingOutlineForDimension
         grid={grid}
@@ -89,6 +97,7 @@ export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) 
         beingDragged={activeDraggingAxis === 'column'}
         onMouseOver={onMouseOverColumn}
         zIndexPriority={hoveredAxis === 'column' ? true : false}
+        gridGap={gridGap.column}
       />
     </CanvasOffsetWrapper>
   )
@@ -101,8 +110,9 @@ const GridPaddingOutlineForDimension = (props: {
   beingDragged: boolean
   onMouseOver: () => void
   zIndexPriority: boolean
+  gridGap: CSSNumberWithRenderedValue
 }) => {
-  const { grid, dimension, onMouseDown, beingDragged, onMouseOver, zIndexPriority } = props
+  const { grid, gridGap, dimension, onMouseDown, beingDragged, onMouseOver, zIndexPriority } = props
 
   let style: CSSProperties = {
     ...getStyleMatchingTargetGrid(grid),
@@ -139,7 +149,7 @@ const GridPaddingOutlineForDimension = (props: {
             )}
             numberOfHandles={hide ? 0 : dimension === 'rows' ? grid.columns : grid.rows}
             gap={dimension === 'columns' ? grid.rowGap ?? grid.gap : grid.columnGap ?? grid.gap}
-            gapValue={cssNumber(1, 'fr')} // FIXME
+            gapValue={gridGap}
             beingDragged={beingDragged}
             onMouseOver={onMouseOver}
           />
@@ -157,7 +167,7 @@ const GridRowHighlight = (props: {
   template: string | undefined
   numberOfHandles: number
   gap: number | null
-  gapValue: CSSNumber
+  gapValue: CSSNumberWithRenderedValue | null
   beingDragged: boolean
   onMouseOver: () => void
 }) => {
@@ -185,10 +195,10 @@ const GridRowHighlight = (props: {
 
   const outlineColor = beingDragged ? colorTheme.brandNeonOrange.value : 'transparent'
 
-  const [gapIsHovered, setGapIsHovered] = React.useState(false)
-
   const [backgroundShown, setBackgroundShown] = React.useState<boolean>(false)
 
+  const [gapIsHovered, setGapIsHovered] = React.useState(false)
+  const [handleIsHovered, setHandleIsHovered] = React.useState<number | null>(null)
   const [hoverStart, hoverEnd] = useHoverWithDelay(GridGapBackgroundHoverDelay, setBackgroundShown)
 
   const onGapHover = React.useCallback(
@@ -199,15 +209,28 @@ const GridRowHighlight = (props: {
     [onMouseOver],
   )
 
+  const onHandleHover = React.useCallback(
+    (e: React.MouseEvent, index: number) => {
+      hoverStart(e)
+      setHandleIsHovered(index)
+    },
+    [hoverStart],
+  )
+
   const onGapHoverEnd = React.useCallback(
     (e: React.MouseEvent) => {
       hoverEnd(e)
       setGapIsHovered(false)
+      setHandleIsHovered(null)
     },
     [hoverEnd],
   )
 
   const shouldShowBackground = !beingDragged && backgroundShown
+
+  if (gapValue == null) {
+    return null
+  }
 
   return (
     <div
@@ -247,9 +270,9 @@ const GridRowHighlight = (props: {
           axis={axis}
           onMouseDown={onMouseDown}
           isDragging={beingDragged}
-          onHandleHoverStartInner={hoverStart}
-          indicatorShown={null}
-          elementHovered={true}
+          onHandleHoverStartInner={onHandleHover}
+          indicatorShown={handleIsHovered}
+          elementHovered={handleIsHovered != null}
           gapIsHovered={gapIsHovered}
           backgroundShown={true}
         />

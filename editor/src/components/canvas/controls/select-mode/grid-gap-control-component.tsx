@@ -10,7 +10,7 @@ import type { EditorDispatch } from '../../../editor/action-types'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import type { CSSNumber } from '../../../inspector/common/css-utils'
-import { printCSSNumber } from '../../../inspector/common/css-utils'
+import { cssNumber, printCSSNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, gridGapHandle } from '../../canvas-strategies/interaction-state'
@@ -176,7 +176,7 @@ export const GridGapControlComponent = (props: GridGapControlProps) => {
             scale: scale,
             isDragging: isDragging,
             axis: axis,
-            gapValue: gap,
+            gapValue: axis === 'row' ? gridGapRow : gridGapColumn,
             internalGrid: {
               gridTemplateRows: controlBounds.gridTemplateRows,
               gridTemplateColumns: controlBounds.gridTemplateColumns,
@@ -249,7 +249,7 @@ interface GridGapControlSegmentProps {
   onHandleHoverEnd: React.MouseEventHandler
   bounds: CanvasRectangle
   axis: Axis
-  gapValue: CSSNumber
+  gapValue: CSSNumberWithRenderedValue
   elementHovered: boolean
   gapId: string
   accentColor: string
@@ -372,7 +372,7 @@ type GridGapHandleProps = {
   gapId: string
   index: number
   scale: number
-  gapValue: CSSNumber
+  gapValue: CSSNumberWithRenderedValue
   axis: Axis
   onMouseDown: React.MouseEventHandler
   isDragging: boolean
@@ -406,7 +406,7 @@ export function GridGapHandle({
   let shouldShowHandle = !isDragging && gapIsHovered
   // show the handle also if the gap is too narrow to hover
   if (!gapIsHovered && !backgroundShown) {
-    shouldShowHandle = elementHovered && gapValue.value <= GapHandleGapWidthThreshold
+    shouldShowHandle = elementHovered && gapValue.renderedValuePx <= GapHandleGapWidthThreshold
   }
   const handleOpacity = gapIsHovered ? 1 : 0.3
 
@@ -452,7 +452,10 @@ export function GridGapHandle({
         {when(
           shouldShowIndicator,
           <CanvasLabel
-            value={printCSSNumber(gapValue, null)}
+            value={printCSSNumber(
+              gapValue.value ?? cssNumber(gapValue.renderedValuePx, 'px'),
+              null,
+            )}
             scale={scale}
             color={colorTheme.brandNeonOrange.value}
             textColor={colorTheme.white.value}
