@@ -20,7 +20,6 @@ import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy
 import type { GridResizeEdge } from '../canvas-strategies/interaction-state'
 import type { EdgePosition } from '../canvas-types'
 import {
-  CSSCursor,
   EdgePositionBottom,
   EdgePositionLeft,
   EdgePositionRight,
@@ -31,6 +30,7 @@ import {
   GridResizeControlsComponent,
   GridRowColumnResizingControlsComponent,
 } from './grid-controls'
+import { isEdgePositionOnSide } from '../canvas-utils'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -172,8 +172,6 @@ export function isGridControlsProps(props: unknown): props is GridControlsProps 
 
 export const GridControls = controlForStrategyMemoized<GridControlsProps>(GridControlsComponent)
 
-export const GridResizeEdgeTestId = (edge: GridResizeEdge) => `grid-resize-edge-${edge}`
-
 interface GridResizeControlProps {
   target: ElementPath
 }
@@ -194,6 +192,22 @@ export function gridEdgeToEdgePosition(edge: GridResizeEdge): EdgePosition {
       return EdgePositionTop
     default:
       assertNever(edge)
+  }
+}
+
+export function edgePositionToGridResizeEdge(position: EdgePosition): GridResizeEdge | null {
+  if (!isEdgePositionOnSide(position)) {
+    return null
+  } else if (position.x === 0) {
+    return 'column-start'
+  } else if (position.x === 1) {
+    return 'column-end'
+  } else if (position.y === 0) {
+    return 'row-start'
+  } else if (position.y === 1) {
+    return 'row-end'
+  } else {
+    return null
   }
 }
 
