@@ -99,6 +99,7 @@ const GridPaddingOutlineForDimension = (props: {
       dimension === 'columns'
         ? tweakTrackListByInsertingGap(grid.gridTemplateColumns, grid.columnGap ?? grid.gap)
         : '1fr',
+    overflow: 'hidden',
   }
 
   const length = 2 * (dimension === 'rows' ? grid.rows : grid.columns) - 1
