@@ -4,7 +4,7 @@ import { createArrayWithLength, interleaveArray } from '../../../../core/shared/
 import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-template'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
-import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import type { CSSNumber } from '../../../inspector/common/css-utils'
 import {
   cssNumber,
@@ -15,12 +15,49 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { GridData } from '../grid-controls-for-strategies'
 import { getNullableAutoOrTemplateBaseString, useGridData } from '../grid-controls-for-strategies'
 import { getStyleMatchingTargetGrid } from '../grid-controls-helpers'
-import { GridGapHandle, type GridGapControlProps } from './grid-gap-control-component'
+import {
+  GridGapHandle,
+  startInteraction,
+  type GridGapControlProps,
+} from './grid-gap-control-component'
+import { useDispatch } from '../../../editor/store/dispatch-context'
+import type { Axis } from '../../gap-utils'
 
 export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) => {
   const { selectedElement, updatedGapValueRow, updatedGapValueColumn } = props
 
+  const dispatch = useDispatch()
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'GridGapControlComponent2 scale',
+  )
+
   const grid = useGridData([selectedElement]).at(0)
+
+  const isDragging = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.interactionSession?.activeControl.type === 'GRID_GAP_HANDLE',
+    'GridGapControl isDragging',
+  )
+
+  const canvasOffset = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+
+  const axisMouseDownHandler = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>, axis: Axis) => {
+      startInteraction(e, dispatch, canvasOffset.current, scale, axis)
+    },
+    [canvasOffset, dispatch, scale],
+  )
+  const rowMouseDownHandler = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => axisMouseDownHandler(e, 'row'),
+    [axisMouseDownHandler],
+  )
+
+  const columnMouseDownHandler = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => axisMouseDownHandler(e, 'column'),
+    [axisMouseDownHandler],
+  )
 
   if (grid == null) {
     return null
@@ -28,8 +65,16 @@ export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) 
 
   return (
     <CanvasOffsetWrapper>
-      <GridPaddingOutlineForDimension grid={grid} dimension={'rows'} />
-      <GridPaddingOutlineForDimension grid={grid} dimension={'columns'} />
+      <GridPaddingOutlineForDimension
+        grid={grid}
+        dimension={'rows'}
+        onMouseDown={rowMouseDownHandler}
+      />
+      <GridPaddingOutlineForDimension
+        grid={grid}
+        dimension={'columns'}
+        onMouseDown={columnMouseDownHandler}
+      />
     </CanvasOffsetWrapper>
   )
 })
@@ -37,8 +82,9 @@ export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) 
 const GridPaddingOutlineForDimension = (props: {
   grid: GridData
   dimension: 'rows' | 'columns'
+  onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void
 }) => {
-  const { grid, dimension } = props
+  const { grid, dimension, onMouseDown } = props
 
   let style: CSSProperties = {
     ...getStyleMatchingTargetGrid(grid),
@@ -68,6 +114,7 @@ const GridPaddingOutlineForDimension = (props: {
             gapId={`${dimension}-${index}`}
             onGapHover={NO_OP}
             onHandleHoverEndInner={NO_OP}
+            onMouseDown={onMouseDown}
             axis={dimension === 'rows' ? 'row' : 'column'}
             template={getNullableAutoOrTemplateBaseString(
               dimension === 'rows' ? grid.gridTemplateColumns : grid.gridTemplateRows,
@@ -84,6 +131,7 @@ const GridPaddingOutlineForDimension = (props: {
 
 const GridRowHighlight = (props: {
   gapId: string
+  onMouseDown: React.MouseEventHandler
   onGapHover: () => void
   onHandleHoverEndInner: () => void
   hide: boolean
@@ -95,6 +143,7 @@ const GridRowHighlight = (props: {
 }) => {
   const {
     gapId,
+    onMouseDown,
     onGapHover,
     onHandleHoverEndInner,
     hide,
@@ -142,7 +191,7 @@ const GridRowHighlight = (props: {
           scale={canvasScale}
           gapValue={gapValue}
           axis={axis}
-          onMouseDown={NO_OP}
+          onMouseDown={onMouseDown}
           isDragging={false}
           onHandleHoverStartInner={NO_OP}
           indicatorShown={null}

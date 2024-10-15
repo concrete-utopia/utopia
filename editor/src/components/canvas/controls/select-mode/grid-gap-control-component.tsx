@@ -479,7 +479,7 @@ function handleDimensions(axis: Axis, scale: number): Size {
   assertNever(axis)
 }
 
-function startInteraction(
+export function startInteraction(
   event: React.MouseEvent<HTMLDivElement>,
   dispatch: EditorDispatch,
   canvasOffset: CanvasVector,
