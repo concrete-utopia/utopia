@@ -3,7 +3,7 @@ import React from 'react'
 import { createArrayWithLength, interleaveArray } from '../../../../core/shared/array-utils'
 import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-template'
 import { NO_OP } from '../../../../core/shared/utils'
-import { useColorTheme } from '../../../../uuiui'
+import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import type { CSSNumber } from '../../../inspector/common/css-utils'
 import {
@@ -16,12 +16,14 @@ import type { GridData } from '../grid-controls-for-strategies'
 import { getNullableAutoOrTemplateBaseString, useGridData } from '../grid-controls-for-strategies'
 import { getStyleMatchingTargetGrid } from '../grid-controls-helpers'
 import {
+  GridGapBackgroundHoverDelay,
   GridGapHandle,
   startInteraction,
   type GridGapControlProps,
 } from './grid-gap-control-component'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import type { Axis } from '../../gap-utils'
+import { useHoverWithDelay } from './controls-common'
 
 export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) => {
   const { selectedElement, updatedGapValueRow, updatedGapValueColumn } = props
@@ -62,6 +64,10 @@ export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) 
     [axisMouseDownHandler],
   )
 
+  const [hoveredAxis, setHoveredAxis] = React.useState<'row' | 'column'>('row')
+  const onMouseOverRow = React.useCallback(() => setHoveredAxis('row'), [])
+  const onMouseOverColumn = React.useCallback(() => setHoveredAxis('column'), [])
+
   if (grid == null) {
     return null
   }
@@ -73,12 +79,16 @@ export const GridGapControlComponent2 = React.memo<GridGapControlProps>((props) 
         dimension={'rows'}
         onMouseDown={rowMouseDownHandler}
         beingDragged={activeDraggingAxis === 'row'}
+        onMouseOver={onMouseOverRow}
+        zIndexPriority={hoveredAxis === 'row' ? true : false}
       />
       <GridPaddingOutlineForDimension
         grid={grid}
         dimension={'columns'}
         onMouseDown={columnMouseDownHandler}
         beingDragged={activeDraggingAxis === 'column'}
+        onMouseOver={onMouseOverColumn}
+        zIndexPriority={hoveredAxis === 'column' ? true : false}
       />
     </CanvasOffsetWrapper>
   )
@@ -89,11 +99,14 @@ const GridPaddingOutlineForDimension = (props: {
   dimension: 'rows' | 'columns'
   onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void
   beingDragged: boolean
+  onMouseOver: () => void
+  zIndexPriority: boolean
 }) => {
-  const { grid, dimension, onMouseDown, beingDragged } = props
+  const { grid, dimension, onMouseDown, beingDragged, onMouseOver, zIndexPriority } = props
 
   let style: CSSProperties = {
     ...getStyleMatchingTargetGrid(grid),
+    zIndex: zIndexPriority ? 1 : 0,
     gap: undefined,
     rowGap: undefined,
     columnGap: undefined,
@@ -128,6 +141,7 @@ const GridPaddingOutlineForDimension = (props: {
             gap={dimension === 'columns' ? grid.rowGap ?? grid.gap : grid.columnGap ?? grid.gap}
             gapValue={cssNumber(1, 'fr')} // FIXME
             beingDragged={beingDragged}
+            onMouseOver={onMouseOver}
           />
         )
       })}
@@ -145,9 +159,20 @@ const GridRowHighlight = (props: {
   gap: number | null
   gapValue: CSSNumber
   beingDragged: boolean
+  onMouseOver: () => void
 }) => {
-  const { gapId, onMouseDown, hide, axis, template, gap, gapValue, numberOfHandles, beingDragged } =
-    props
+  const {
+    gapId,
+    onMouseDown,
+    hide,
+    axis,
+    template,
+    gap,
+    gapValue,
+    numberOfHandles,
+    beingDragged,
+    onMouseOver,
+  } = props
 
   const colorTheme = useColorTheme()
   const canvasScale = useEditorState(
@@ -162,13 +187,27 @@ const GridRowHighlight = (props: {
 
   const [gapIsHovered, setGapIsHovered] = React.useState(false)
 
-  const onGapHover = React.useCallback(() => {
-    setGapIsHovered(true)
-  }, [])
+  const [backgroundShown, setBackgroundShown] = React.useState<boolean>(false)
 
-  const onGapHoverEnd = React.useCallback((e: React.MouseEvent) => {
-    setGapIsHovered(false)
-  }, [])
+  const [hoverStart, hoverEnd] = useHoverWithDelay(GridGapBackgroundHoverDelay, setBackgroundShown)
+
+  const onGapHover = React.useCallback(
+    (e: React.MouseEvent) => {
+      onMouseOver()
+      setGapIsHovered(true)
+    },
+    [onMouseOver],
+  )
+
+  const onGapHoverEnd = React.useCallback(
+    (e: React.MouseEvent) => {
+      hoverEnd(e)
+      setGapIsHovered(false)
+    },
+    [hoverEnd],
+  )
+
+  const shouldShowBackground = !beingDragged && backgroundShown
 
   return (
     <div
@@ -190,6 +229,13 @@ const GridRowHighlight = (props: {
         gap: gap ?? 0,
         gridTemplateColumns: axis === 'row' ? template : '1fr',
         gridTemplateRows: axis === 'column' ? template : '1fr',
+
+        ...(shouldShowBackground
+          ? UtopiaStyles.backgrounds.stripedBackground(
+              colorTheme.brandNeonOrange.value,
+              canvasScale,
+            )
+          : {}),
       }}
     >
       {createArrayWithLength(numberOfHandles, (i) => (
@@ -201,8 +247,8 @@ const GridRowHighlight = (props: {
           axis={axis}
           onMouseDown={onMouseDown}
           isDragging={beingDragged}
-          onHandleHoverStartInner={NO_OP}
-          indicatorShown={15}
+          onHandleHoverStartInner={hoverStart}
+          indicatorShown={null}
           elementHovered={true}
           gapIsHovered={gapIsHovered}
           backgroundShown={true}

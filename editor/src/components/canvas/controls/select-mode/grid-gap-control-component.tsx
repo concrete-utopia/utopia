@@ -35,7 +35,7 @@ export interface GridGapControlProps {
 export const GridGapControlTestId = 'grid-gap-control'
 export const GridGapControlHandleTestId = 'grid-gap-control-handle'
 // background delay when hovering the gap
-const GridGapBackgroundHoverDelay = 1500
+export const GridGapBackgroundHoverDelay = 1500
 // background delay when hovering the handle itself
 const GapHandleBackgroundHoverDelay = 750
 // px threshold for showing the gap handles even without hovering the gap itself
