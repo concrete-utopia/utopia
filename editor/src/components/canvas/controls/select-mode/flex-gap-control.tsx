@@ -427,7 +427,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
 
 function handleDimensions(flexDirection: FlexDirection, scale: number): Size {
   if (flexDirection === 'row' || flexDirection === 'row-reverse') {
-    return size(3 / scale, 12 / scale)
+    return size(4 / scale, 12 / scale)
   }
   if (flexDirection === 'column' || flexDirection === 'column-reverse') {
     return size(12 / scale, 4 / scale)
