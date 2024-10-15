@@ -24,6 +24,7 @@ import { ElementContextMenu } from '../../element-context-menu'
 import type { Mode } from '../../editor/editor-modes'
 import {
   isCommentMode,
+  isInsertMode,
   isLiveMode,
   isSelectMode,
   isSelectModeWithArea,
@@ -74,6 +75,7 @@ import { NO_OP } from '../../../core/shared/utils'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
+import { GridMeasurementHelpers } from './grid-controls'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -596,6 +598,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                   isSelectOrInsertMode(editorMode) &&
                     !EP.multiplePathsAllWithTheSameUID(localSelectedViews),
                   <>
+                    {when(
+                      isSelectMode(editorMode) || isInsertMode(editorMode),
+                      <GridMeasurementHelpers />,
+                    )}
                     {strategyControls.map((c) => (
                       <RenderControlMemoized
                         key={c.key}
@@ -672,5 +678,4 @@ const SelectionAreaRectangle = React.memo(
     )
   },
 )
-
 SelectionAreaRectangle.displayName = 'SelectionAreaRectangle'

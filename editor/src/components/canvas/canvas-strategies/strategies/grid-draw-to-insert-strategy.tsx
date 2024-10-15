@@ -43,7 +43,7 @@ import {
   getStyleAttributesForFrameInAbsolutePosition,
   updateInsertionSubjectWithAttributes,
 } from './draw-to-insert-metastrategy'
-import { getMetadataWithGridCellBounds, setGridPropsCommands } from './grid-helpers'
+import { setGridPropsCommands } from './grid-helpers'
 import { newReparentSubjects } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
 import { getGridCellUnderMouseFromMetadata } from './grid-cell-bounds'
@@ -132,13 +132,10 @@ const gridDrawToInsertStrategyInner =
       canvasState.propertyControlsInfo,
     )?.newParent.intendedParentPath
 
-    const { metadata: parent, customStrategyState: updatedCustomState } =
-      getMetadataWithGridCellBounds(
-        targetParent,
-        canvasState.startingMetadata,
-        interactionSession.latestMetadata,
-        customStrategyState,
-      )
+    const parent = MetadataUtils.findElementByElementPath(
+      canvasState.startingMetadata,
+      targetParent,
+    )
 
     if (targetParent == null || parent == null || !MetadataUtils.isGridLayoutedContainer(parent)) {
       return null
@@ -175,7 +172,6 @@ const gridDrawToInsertStrategyInner =
               updateHighlightedViews('mid-interaction', [targetParent]),
             ],
             [targetParent],
-            updatedCustomState ?? undefined,
           )
         }
 
