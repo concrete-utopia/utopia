@@ -1,6 +1,6 @@
 import React from 'react'
 import { InspectorModal } from '../widgets/inspector-modal'
-import { FlexColumn, H1, SquareButton, UtopiaStyles } from '../../../uuiui'
+import { colorTheme, FlexColumn, H1, SquareButton, UtopiaStyles } from '../../../uuiui'
 import type { GridRowVariant } from '../widgets/ui-grid-row'
 import { UIGridRow } from '../widgets/ui-grid-row'
 import type { OptionChainOption } from './option-chain-control'
@@ -113,6 +113,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
       style={{
         ...UtopiaStyles.popup,
         minWidth: 230,
+        color: colorTheme.fg1.value,
       }}
     >
       <FlexColumn>
