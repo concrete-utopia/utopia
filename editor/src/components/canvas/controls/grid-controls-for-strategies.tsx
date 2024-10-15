@@ -121,7 +121,7 @@ export function useGridMeasurentHelperData(elementPath: ElementPath) {
       }
     },
     'useGridMeasurentHelperData',
-    fastDeepEqual,
+    fastDeepEqual, //TODO: this should not be needed, but it seems EditorStateKeepDeepEquality is not running, and metadata reference is always updated
   )
 }
 
