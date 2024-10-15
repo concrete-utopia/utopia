@@ -2,7 +2,9 @@ import type { CSSProperties } from 'react'
 import type { GridMeasurementHelperData } from './grid-controls-for-strategies'
 import { getNullableAutoOrTemplateBaseString } from './grid-controls-for-strategies'
 
-export function getStyleMatchingTargetGrid(grid: GridMeasurementHelperData): CSSProperties {
+export function getGridHelperStyleMatchingTargetGrid(
+  grid: GridMeasurementHelperData,
+): CSSProperties {
   let style: CSSProperties = {
     position: 'absolute',
     top: grid.frame.y,

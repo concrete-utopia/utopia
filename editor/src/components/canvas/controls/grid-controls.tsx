@@ -92,7 +92,7 @@ import {
 } from './grid-controls-for-strategies'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { useResizeEdges } from './select-mode/use-resize-edges'
-import { getStyleMatchingTargetGrid } from './grid-controls-helpers'
+import { getGridHelperStyleMatchingTargetGrid } from './grid-controls-helpers'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -775,7 +775,7 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
   })
 
   const placeholders = range(0, grid.cells)
-  const baseStyle = getStyleMatchingTargetGrid(grid)
+  const baseStyle = getGridHelperStyleMatchingTargetGrid(grid)
   const style = {
     ...baseStyle,
     backgroundColor:
@@ -941,7 +941,7 @@ const GridMeasurementHelper = React.memo<{ elementPath: ElementPath }>(({ elemen
   const placeholders = range(0, gridData.cells)
 
   const style: CSSProperties = {
-    ...getStyleMatchingTargetGrid(gridData),
+    ...getGridHelperStyleMatchingTargetGrid(gridData),
     opacity: 1,
   }
 

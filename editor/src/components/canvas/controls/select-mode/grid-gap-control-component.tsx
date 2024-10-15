@@ -26,7 +26,7 @@ import { maybeGridGapData } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { GridData } from '../grid-controls-for-strategies'
 import { getNullableAutoOrTemplateBaseString, useGridData } from '../grid-controls-for-strategies'
-import { getStyleMatchingTargetGrid } from '../grid-controls-helpers'
+import { getGridHelperStyleMatchingTargetGrid } from '../grid-controls-helpers'
 import type { CSSNumberWithRenderedValue } from './controls-common'
 import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
 import { startGapControlInteraction } from './grid-gap-control-helpers'
@@ -161,7 +161,7 @@ const GridPaddingOutlineForDimension = (props: {
   } = props
 
   let style: CSSProperties = {
-    ...getStyleMatchingTargetGrid(grid),
+    ...getGridHelperStyleMatchingTargetGrid(grid),
     zIndex: zIndexPriority ? 1 : undefined,
     gap: undefined,
     rowGap: undefined,
