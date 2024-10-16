@@ -4,7 +4,7 @@ import type { WindowPoint } from '../../../../core/shared/math-utils'
 import { offsetPoint, windowPoint } from '../../../../core/shared/math-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { cmdModifier } from '../../../../utils/modifiers'
-import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import { GridCellTestId } from '../../controls/grid-controls-for-strategies'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import type { Point } from '../../event-helpers.test-utils'
@@ -665,65 +665,187 @@ describe('grid reparent strategies', () => {
         formatTestProjectCode(
           makeTestProjectCode({
             extraCode: `
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 500,
+        top: 500,
+        padding: 10,
+        display: 'grid',
+        gap: 10,
+        gridTemplateRows: '1fr 1fr',
+        gridTemplateColumns: '1fr 1fr 1fr 1fr',
+      }}
+      data-uid='another-grid'
+      data-testid='another-grid'
+    >
+      <div
+        style={{
+          backgroundColor: '#0ff',
+          width: 79,
+          height: 86,
+          gridRow: 1,
+          gridColumn: 1,
+        }}
+        data-uid='foo'
+        data-testid='foo'
+      />
+      <div
+        style={{
+          backgroundColor: '#0ff',
+          width: 79,
+          height: 86,
+          gridRow: 2,
+          gridColumn: 3,
+        }}
+        data-uid='bar'
+        data-testid='bar'
+      />
+      <div
+        style={{
+          backgroundColor: '#f0f',
+          width: 79,
+          height: 86,
+          gridColumn: 1,
+          gridRow: 2,
+        }}
+        data-uid='dragme'
+        data-testid='dragme'
+      />
+      <div
+        style={{
+          backgroundColor: '#0ff',
+          width: 79,
+          height: 86,
+          gridColumn: 2,
+          gridColumn: 2,
+        }}
+        data-uid='baz'
+      />
+    </div>
+      `,
+          }),
+        ),
+      )
+    })
+    it('into a grid container with reorder (no explicit gridRow/gridColumn props', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCode({
+          insideGrid: `
         <div
           style={{
-            backgroundColor: '#aaaaaa33',
-            position: 'absolute',
-            left: 500,
-            top: 500,
-            padding: 10,
-            display: 'grid',
-            gap: 10,
-            gridTemplateRows: '1fr 1fr',
-            gridTemplateColumns: '1fr 1fr 1fr 1fr',
+            backgroundColor: '#f0f',
+            width: 79,
+            height: 86,
+            gridRow: 2,
+            gridColumn: 2,
           }}
-          data-uid='another-grid'
-          data-testid='another-grid'
-        >
-          <div
-            style={{
-              backgroundColor: '#0ff',
-              width: 79,
-              height: 86,
-              gridRow: 1,
-              gridColumn: 1,
-            }}
-            data-uid='foo'
-            data-testid='foo'
-          />
-          <div
-            style={{
-              backgroundColor: '#0ff',
-              width: 79,
-              height: 86,
-              gridRow: 2,
-              gridColumn: 3,
-            }}
-            data-uid='bar'
-            data-testid='bar'
-          />
-          <div
-            style={{
-              backgroundColor: '#0ff',
-              width: 79,
-              height: 86,
-              gridColumn: 2,
-              gridColumn: 2,
-            }}
-            data-uid='baz'
-          />
-          <div
-            style={{
-              backgroundColor: '#f0f',
-              width: 79,
-              height: 86,
-              gridColumn: 1,
-              gridRow: 2,
-            }}
-            data-uid='dragme'
-            data-testid='dragme'
-          />
-        </div>
+          data-uid='dragme'
+          data-testid='dragme'
+        />
+      `,
+          extraCode: `
+     <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 500,
+        top: 500,
+        padding: 10,
+        display: 'grid',
+        gap: 10,
+        gridTemplateRows: '1fr 1fr',
+        gridTemplateColumns: '1fr 1fr 1fr',
+        width: 317,
+      }}
+      data-uid='91c5676d-d826-423e-86d5-10b80717'
+      data-testid='another-grid'
+    >
+      <div
+        style={{
+          backgroundColor: '#0ff',
+          width: 79,
+          height: 86,
+        }}
+        data-uid='3995ebba-85b5-4293-964c-0c78fbe6'
+        data-testid='foo'
+      />
+      <div
+        style={{
+          backgroundColor: '#0ff',
+          width: 79,
+          height: 86,
+        }}
+        data-uid='eacc03a2-05bd-4f77-a8b2-3ab490ec'
+        data-testid='bar'
+      />
+    </div>
+    `,
+        }),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/grid/dragme')])
+
+      await dragOutToAnotherGrid(
+        editor,
+        'another-grid',
+        {
+          x: 300,
+          y: 20,
+        },
+        EP.fromString('sb/grid/dragme'),
+      )
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(
+          makeTestProjectCode({
+            extraCode: `
+        <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 500,
+        top: 500,
+        padding: 10,
+        display: 'grid',
+        gap: 10,
+        gridTemplateRows: '1fr 1fr',
+        gridTemplateColumns: '1fr 1fr 1fr',
+        width: 317,
+      }}
+      data-uid='91c5676d-d826-423e-86d5-10b80717'
+      data-testid='another-grid'
+    >
+      <div
+        style={{
+          backgroundColor: '#0ff',
+          width: 79,
+          height: 86,
+        }}
+        data-uid='3995ebba-85b5-4293-964c-0c78fbe6'
+        data-testid='foo'
+      />
+      <div
+        style={{
+          backgroundColor: '#0ff',
+          width: 79,
+          height: 86,
+        }}
+        data-uid='eacc03a2-05bd-4f77-a8b2-3ab490ec'
+        data-testid='bar'
+      />
+      <div
+        style={{
+          backgroundColor: '#f0f',
+          width: 79,
+          height: 86,
+        }}
+        data-uid='dragme'
+        data-testid='dragme'
+      />
+    </div>
       `,
           }),
         ),
