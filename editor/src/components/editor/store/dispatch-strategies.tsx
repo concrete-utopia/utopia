@@ -32,7 +32,7 @@ import type {
 import { SelectComponents } from '../action-types'
 import type { PropertiesToUnsetForElement } from '../actions/action-utils'
 import {
-  getPropertiesToUnsetFromCommands,
+  getPropertiesToRemoveFromCommands,
   isClearInteractionSession,
   isCreateOrUpdateInteractionSession,
   isTransientAction,
@@ -61,12 +61,23 @@ import { allowedToEditProject } from './collaborative-editing'
 import { canMeasurePerformance } from '../../../core/performance/performance-utils'
 import type { ElementPath } from 'utopia-shared/src/types'
 
+export interface NormalizationData {
+  elementsToNormalize: ElementPath[]
+  propertiesToRemove: PropertiesToUnsetForElement[]
+  propertiesToPatch: PropertiesToUnsetForElement[]
+}
+
+const emptyNormalizationData: NormalizationData = {
+  elementsToNormalize: [],
+  propertiesToRemove: [],
+  propertiesToPatch: [],
+}
+
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
   patchedEditorState: EditorState
   newStrategyState: StrategyState
-  elementsToNormalize: ElementPath[]
-  propertiesToRemove: PropertiesToUnsetForElement[]
+  normalizationData: NormalizationData
 }
 
 export function interactionFinished(
@@ -132,8 +143,11 @@ export function interactionFinished(
       unpatchedEditorState: finalEditor,
       patchedEditorState: finalEditor,
       newStrategyState: withClearedSession,
-      elementsToNormalize: strategyResult.elementsToRerender,
-      propertiesToRemove: getPropertiesToUnsetFromCommands(strategyResult.commands),
+      normalizationData: {
+        elementsToNormalize: strategyResult.elementsToRerender,
+        propertiesToRemove: getPropertiesToRemoveFromCommands(strategyResult.commands),
+        propertiesToPatch: [],
+      },
     }
   } else {
     // Try to keep any updated metadata that may have been populated into here
@@ -149,8 +163,7 @@ export function interactionFinished(
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: withClearedSession,
-      elementsToNormalize: [],
-      propertiesToRemove: [],
+      normalizationData: emptyNormalizationData,
     }
   }
 }
@@ -179,8 +192,7 @@ export function interactionHardReset(
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: withClearedSession,
-      elementsToNormalize: [],
-      propertiesToRemove: [],
+      normalizationData: emptyNormalizationData,
     }
   } else {
     const resetInteractionSession = interactionSessionHardReset(interactionSession)
@@ -238,16 +250,14 @@ export function interactionHardReset(
           strategyResult,
         ),
         newStrategyState: newStrategyState,
-        elementsToNormalize: [],
-        propertiesToRemove: [],
+        normalizationData: emptyNormalizationData,
       }
     } else {
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: newEditorState,
         newStrategyState: withClearedSession,
-        elementsToNormalize: [],
-        propertiesToRemove: [],
+        normalizationData: emptyNormalizationData,
       }
     }
   }
@@ -275,8 +285,7 @@ export function interactionUpdate(
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: result.strategyState,
-      elementsToNormalize: [],
-      propertiesToRemove: [],
+      normalizationData: emptyNormalizationData,
     }
   } else {
     // Determine the new canvas strategy to run this time around.
@@ -359,8 +368,7 @@ export function interactionStart(
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: withClearedSession,
-      elementsToNormalize: [],
-      propertiesToRemove: [],
+      normalizationData: emptyNormalizationData,
     }
   } else {
     // Determine the new canvas strategy to run this time around.
@@ -414,16 +422,14 @@ export function interactionStart(
           strategyResult,
         ),
         newStrategyState: newStrategyState,
-        elementsToNormalize: [],
-        propertiesToRemove: [],
+        normalizationData: emptyNormalizationData,
       }
     } else {
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: newEditorState,
         newStrategyState: withClearedSession,
-        elementsToNormalize: [],
-        propertiesToRemove: [],
+        normalizationData: emptyNormalizationData,
       }
     }
   }
@@ -451,8 +457,7 @@ export function interactionCancel(
     unpatchedEditorState: updatedEditorState,
     patchedEditorState: updatedEditorState,
     newStrategyState: createEmptyStrategyState({}, {}, {}),
-    elementsToNormalize: [],
-    propertiesToRemove: [],
+    normalizationData: emptyNormalizationData,
   }
 }
 
@@ -527,16 +532,14 @@ function handleUserChangedStrategy(
         strategyResult,
       ),
       newStrategyState: newStrategyState,
-      elementsToNormalize: [],
-      propertiesToRemove: [],
+      normalizationData: emptyNormalizationData,
     }
   } else {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: strategyState,
-      elementsToNormalize: [],
-      propertiesToRemove: [],
+      normalizationData: emptyNormalizationData,
     }
   }
 }
@@ -617,8 +620,7 @@ function handleAccumulatingKeypresses(
           strategyResult,
         ),
         newStrategyState: newStrategyState,
-        elementsToNormalize: [],
-        propertiesToRemove: [],
+        normalizationData: emptyNormalizationData,
       }
     }
   }
@@ -626,8 +628,7 @@ function handleAccumulatingKeypresses(
     unpatchedEditorState: newEditorState,
     patchedEditorState: newEditorState,
     newStrategyState: strategyState,
-    elementsToNormalize: [],
-    propertiesToRemove: [],
+    normalizationData: emptyNormalizationData,
   }
 }
 
@@ -688,16 +689,18 @@ function handleUpdate(
         strategyResult,
       ),
       newStrategyState: newStrategyState,
-      elementsToNormalize: [],
-      propertiesToRemove: getPropertiesToUnsetFromCommands(strategyResult.commands),
+      normalizationData: {
+        elementsToNormalize: [],
+        propertiesToRemove: [],
+        propertiesToPatch: getPropertiesToRemoveFromCommands(strategyResult.commands),
+      },
     }
   } else {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: strategyState,
-      elementsToNormalize: [],
-      propertiesToRemove: [],
+      normalizationData: emptyNormalizationData,
     }
   }
 }
@@ -717,8 +720,7 @@ export function handleStrategies(
   let unpatchedEditorState: EditorState
   let patchedEditorState: EditorState
   let newStrategyState: StrategyState
-  let elementsToNormalize: Array<ElementPath>
-  let propertiesToRemove: Array<PropertiesToUnsetForElement>
+  let normalizationData: NormalizationData
   if (allowedToEditProject(storedState.userState.loginState, storedState.projectServerState)) {
     const strategiesResult = handleStrategiesInner(
       strategies,
@@ -729,14 +731,12 @@ export function handleStrategies(
     unpatchedEditorState = strategiesResult.unpatchedEditorState
     patchedEditorState = strategiesResult.patchedEditorState
     newStrategyState = strategiesResult.newStrategyState
-    elementsToNormalize = strategiesResult.elementsToNormalize
-    propertiesToRemove = strategiesResult.propertiesToRemove
+    normalizationData = strategiesResult.normalizationData
   } else {
     unpatchedEditorState = result.unpatchedEditor
     patchedEditorState = result.unpatchedEditor
     newStrategyState = result.strategyState
-    elementsToNormalize = []
-    propertiesToRemove = []
+    normalizationData = emptyNormalizationData
   }
 
   const patchedEditorWithMetadata: EditorState = {
@@ -778,8 +778,7 @@ export function handleStrategies(
     patchedEditorState: patchedEditorWithMetadata,
     patchedDerivedState: patchedDerivedState,
     newStrategyState: newStrategyState,
-    elementsToNormalize: elementsToNormalize,
-    propertiesToRemove: propertiesToRemove,
+    normalizationData: normalizationData,
   }
 }
 
@@ -854,8 +853,7 @@ function handleStrategiesInner(
       unpatchedEditorState: result.unpatchedEditor, // we return the fresh unpatchedEditor, containing the up-to-date domMetadata and spyMetadata
       patchedEditorState: oldPatchedEditorWithNewMetadata, // the previous patched editor with updated metadata
       newStrategyState: storedState.strategyState,
-      elementsToNormalize: [],
-      propertiesToRemove: [],
+      normalizationData: emptyNormalizationData,
     }
   } else if (storedState.unpatchedEditor.canvas.interactionSession == null) {
     if (result.unpatchedEditor.canvas.interactionSession == null) {
@@ -863,8 +861,7 @@ function handleStrategiesInner(
         unpatchedEditorState: result.unpatchedEditor,
         patchedEditorState: result.unpatchedEditor,
         newStrategyState: result.strategyState,
-        elementsToNormalize: [],
-        propertiesToRemove: [],
+        normalizationData: emptyNormalizationData,
       }
     } else {
       return interactionStart(strategies, storedState, result)

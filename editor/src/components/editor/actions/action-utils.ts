@@ -376,6 +376,7 @@ export function getElementsToNormalizeFromCommands(commands: CanvasCommand[]): E
         return command.target
       case 'ADD_CONTAIN_LAYOUT_IF_NEEDED':
       case 'SET_PROPERTY':
+      case 'UPDATE_BULK_PROPERTIES':
         return command.element
       default:
         return null
@@ -399,26 +400,34 @@ export interface PropertiesToUnsetForElement {
   properties: PropertyPath[]
 }
 
-export function getPropertiesToUnsetFromCommands(
+export function getPropertiesToRemoveFromCommands(
   commands: CanvasCommand[],
 ): PropertiesToUnsetForElement[] {
   return mapDropNulls((command) => {
     switch (command.type) {
       case 'DELETE_PROPERTIES':
         return { elementPath: command.element, properties: command.properties }
+      case 'UPDATE_BULK_PROPERTIES':
+        return {
+          elementPath: command.element,
+          properties: mapDropNulls(
+            (p) => (p.type === 'DELETE' ? p.path : null),
+            command.properties,
+          ),
+        }
       default:
         return null
     }
   }, commands)
 }
 
-export function getPropertiesToUnsetFromActions(
+export function getPropertiesToRemoveFromActions(
   actions: EditorAction[],
 ): PropertiesToUnsetForElement[] {
   return actions.flatMap((action) => {
     switch (action.action) {
       case 'APPLY_COMMANDS':
-        return getPropertiesToUnsetFromCommands(action.commands)
+        return getPropertiesToRemoveFromCommands(action.commands)
       default:
         return []
     }

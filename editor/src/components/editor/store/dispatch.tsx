@@ -16,7 +16,7 @@ import {
   onlyActionIsWorkerParsedUpdate,
   simpleStringifyActions,
   getElementsToNormalizeFromActions,
-  getPropertiesToUnsetFromActions,
+  getPropertiesToRemoveFromActions,
 } from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
@@ -61,6 +61,7 @@ import {
   getProjectChanges,
   sendVSCodeChanges,
 } from './vscode-changes'
+import type { NormalizationData } from './dispatch-strategies'
 import { handleStrategies, updatePostActionState } from './dispatch-strategies'
 
 import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
@@ -1006,8 +1007,7 @@ function editorDispatchInner(
       patchedEditorState: patchedEditorStateFromStrategies,
       newStrategyState,
       patchedDerivedState,
-      elementsToNormalize: elementsToNormalizeFromStrategies,
-      propertiesToRemove: propertiesToRemoveFromStrategies,
+      normalizationData: normalizationDataFromStrategies,
     } = handleStrategies(
       strategiesToUse,
       dispatchedActions,
@@ -1017,27 +1017,34 @@ function editorDispatchInner(
     )
 
     const elementsToNormalizeFromActions = getElementsToNormalizeFromActions(dispatchedActions)
-    const propertiesToUnsetFromActions = getPropertiesToUnsetFromActions(dispatchedActions)
+    const propertiesToRemoveFromActions = getPropertiesToRemoveFromActions(dispatchedActions)
 
     const elementsToNormalize = [
       ...elementsToNormalizeFromActions,
-      ...elementsToNormalizeFromStrategies,
+      ...normalizationDataFromStrategies.elementsToNormalize,
     ]
 
     const propertiesToRemove = [
-      ...propertiesToUnsetFromActions,
-      ...propertiesToRemoveFromStrategies,
+      ...propertiesToRemoveFromActions,
+      ...normalizationDataFromStrategies.propertiesToRemove,
     ]
 
     const unpatchedEditor = runRemovedPropertyPatchingAndNormalization(
       unpatchedEditorStateFromStrategies,
-      elementsToNormalize,
-      propertiesToRemove,
+      {
+        elementsToNormalize: elementsToNormalize,
+        propertiesToRemove: propertiesToRemove,
+        propertiesToPatch: [],
+      },
     )
+
     const patchedEditor = runRemovedPropertyPatchingAndNormalization(
       patchedEditorStateFromStrategies,
-      elementsToNormalize,
-      propertiesToRemove,
+      {
+        elementsToNormalize: elementsToNormalize,
+        propertiesToRemove: propertiesToRemove,
+        propertiesToPatch: normalizationDataFromStrategies.propertiesToPatch,
+      },
     )
 
     return {
@@ -1107,39 +1114,48 @@ const PropertyDefaultValues: Record<string, string> = {
 
 function patchRemovedProperties(
   editor: EditorState,
-  propertiesToUnset: PropertiesToUnsetForElement[],
+  propertiesToPatch: PropertiesToUnsetForElement[],
 ): EditorState {
-  const propertiesToSetCommands = propertiesToUnset.flatMap(({ elementPath, properties }) =>
-    mapDropNulls((property) => {
-      const [maybeStyle, maybeCSSProp] = property.propertyElements
-      if (maybeStyle !== 'style' || maybeCSSProp == null) {
-        return null
-      }
+  const propertiesToSetCommands = propertiesToPatch.map(({ elementPath, properties }) =>
+    updateBulkProperties(
+      'always',
+      elementPath,
+      mapDropNulls((property) => {
+        const [maybeStyle, maybeCSSProp] = property.propertyElements
+        if (maybeStyle !== 'style' || maybeCSSProp == null) {
+          return null
+        }
 
-      const defaultValue = PropertyDefaultValues[maybeCSSProp]
-      if (defaultValue == null) {
-        return null
-      }
-      return updateBulkProperties('always', elementPath, [propertyToSet(property, defaultValue)])
-    }, properties),
+        const defaultValue = PropertyDefaultValues[maybeCSSProp]
+        if (defaultValue == null) {
+          return null
+        }
+        return propertyToSet(property, defaultValue)
+      }, properties),
+    ),
   )
   return foldAndApplyCommandsSimple(editor, propertiesToSetCommands)
 }
 
 function runRemovedPropertyPatchingAndNormalization(
   editorState: EditorState,
-  elementsToNormalize: ElementPath[],
-  propertiesToRemove: PropertiesToUnsetForElement[],
+  normalizationData: NormalizationData,
 ): EditorState {
-  if (elementsToNormalize.length === 0 && propertiesToRemove.length === 0) {
-    return editorState
-  }
+  const withRemovedPropsPatched =
+    normalizationData.propertiesToPatch.length === 0
+      ? editorState
+      : patchRemovedProperties(editorState, normalizationData.propertiesToPatch)
 
-  const withRemovedPropsPatched = patchRemovedProperties(editorState, propertiesToRemove)
+  if (
+    normalizationData.elementsToNormalize.length === 0 &&
+    normalizationData.propertiesToRemove.length === 0
+  ) {
+    return withRemovedPropsPatched
+  }
 
   return getActivePlugin(withRemovedPropsPatched).normalizeFromInlineStyle(
     withRemovedPropsPatched,
-    elementsToNormalize,
-    propertiesToRemove,
+    normalizationData.elementsToNormalize,
+    normalizationData.propertiesToRemove,
   )
 }
