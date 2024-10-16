@@ -92,8 +92,6 @@ import {
 import type { Axis } from '../canvas/gap-utils'
 import { GridExpressionInput } from '../../uuiui/inputs/grid-expression-input'
 
-const axisDropdownMenuButton = 'axisDropdownMenuButton'
-
 function getLayoutSystem(
   layoutSystem: DetectedLayoutSystem | null | undefined,
 ): 'grid' | 'flex' | null {
@@ -553,20 +551,20 @@ function AxisDimensionControl({
 
   const gridExpressionInputFocused = useGridExpressionInputFocused()
 
+  const [isHovered, setIsHovered] = React.useState(false)
+  const onMouseEnter = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+  const onMouseLeave = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
+
   return (
     <div
       key={`col-${value}-${index}`}
       style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-      css={{
-        [`& > .${axisDropdownMenuButton}`]: {
-          visibility: isOpen ? 'visible' : 'hidden',
-        },
-        ':hover': {
-          [`& > .${axisDropdownMenuButton}`]: {
-            visibility: 'visible',
-          },
-        },
-      }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <div
         style={{
@@ -600,9 +598,9 @@ function AxisDimensionControl({
           onBlur={gridExpressionInputFocused.onBlur}
           keywords={gridDimensionDropdownKeywords}
         />
-        {unless(
-          gridExpressionInputFocused.focused,
-          <SquareButton className={axisDropdownMenuButton}>
+        {when(
+          (isHovered && !gridExpressionInputFocused.focused) || isOpen,
+          <SquareButton>
             <DropdownMenu align='end' items={items} opener={opener} onOpenChange={onOpenChange} />
           </SquareButton>,
         )}

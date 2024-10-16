@@ -272,6 +272,12 @@ export function addUniquely<T extends string | number | boolean | null | undefin
   }
 }
 
+export function pushUniquelyBy<T>(array: Array<T>, value: T, eq: (l: T, r: T) => boolean): void {
+  if (array.findIndex((a) => eq(a, value)) === -1) {
+    array.push(value)
+  }
+}
+
 export function addAllUniquely<T extends string | number | boolean | null | undefined>(
   array: Array<T>,
   values: Array<T>,

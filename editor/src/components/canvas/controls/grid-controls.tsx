@@ -144,8 +144,22 @@ const GridResizingControl = React.memo((props: GridResizingControlProps) => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
+  const canResize = React.useMemo(() => {
+    return (
+      props.fromPropsAxisValues?.type === 'DIMENSIONS' &&
+      props.fromPropsAxisValues.dimensions.length > 0
+    )
+  }, [props.fromPropsAxisValues])
+
   const mouseDownHandler = React.useCallback(
     (event: React.MouseEvent): void => {
+      event.stopPropagation()
+      event.preventDefault()
+
+      if (!canResize) {
+        return
+      }
+
       function mouseUpHandler() {
         setResizingIndex(null)
         window.removeEventListener('mouseup', mouseUpHandler)
@@ -169,10 +183,8 @@ const GridResizingControl = React.memo((props: GridResizingControlProps) => {
           ),
         ),
       ])
-      event.stopPropagation()
-      event.preventDefault()
     },
-    [canvasOffset, dispatch, props.axis, props.dimensionIndex, scale, setResizingIndex],
+    [canvasOffset, dispatch, props.axis, props.dimensionIndex, scale, setResizingIndex, canResize],
   )
 
   const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
@@ -225,7 +237,9 @@ const GridResizingControl = React.memo((props: GridResizingControlProps) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          cursor: gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start'),
+          cursor: canResize
+            ? gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start')
+            : 'default',
           pointerEvents: 'initial',
         }}
         onMouseDown={mouseDownHandler}
@@ -448,16 +462,23 @@ export const GridRowColumnResizingControlsComponent = ({
 }: GridRowColumnResizingControlsProps) => {
   const grids = useGridData([target])
 
-  function getStripedAreaLength(template: GridAutoOrTemplateBase | null, gap: number) {
+  function getStripedAreaLength(
+    template: GridAutoOrTemplateBase | null,
+    gap: number,
+  ): number | null {
     if (template?.type !== 'DIMENSIONS') {
       return null
     }
-    return template.dimensions.reduce((acc, curr, index) => {
+    const fromDimensions = template.dimensions.reduce((acc, curr, index) => {
       if (curr.type === 'NUMBER') {
         return acc + curr.value.value + (index > 0 ? gap : 0)
       }
       return acc
     }, 0)
+    if (fromDimensions <= 0) {
+      return null
+    }
+    return fromDimensions
   }
 
   const scale = useEditorState(
@@ -510,7 +531,9 @@ export const GridRowColumnResizingControlsComponent = ({
             axis={'column'}
             gap={grid.columnGap ?? grid.gap}
             padding={grid.padding}
-            stripedAreaLength={getStripedAreaLength(grid.gridTemplateRows, grid.gap ?? 0)}
+            stripedAreaLength={
+              getStripedAreaLength(grid.gridTemplateRows, grid.gap ?? 0) ?? grid.frame.height
+            }
             alignContent={grid.justifyContent}
             justifyContent={grid.alignContent}
           />
@@ -526,7 +549,9 @@ export const GridRowColumnResizingControlsComponent = ({
             axis={'row'}
             gap={grid.rowGap ?? grid.gap}
             padding={grid.padding}
-            stripedAreaLength={getStripedAreaLength(grid.gridTemplateColumns, grid.gap ?? 0)}
+            stripedAreaLength={
+              getStripedAreaLength(grid.gridTemplateColumns, grid.gap ?? 0) ?? grid.frame.width
+            }
             alignContent={grid.alignContent}
             justifyContent={grid.justifyContent}
           />
