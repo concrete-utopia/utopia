@@ -389,6 +389,8 @@ export function getElementsToNormalizeFromActions(actions: EditorAction[]): Elem
     switch (action.action) {
       case 'APPLY_COMMANDS':
         return getElementsToNormalizeFromCommands(action.commands)
+      // TODO: extends this switch when we add support to non-canvas
+      // command-based edits
       default:
         return []
     }
