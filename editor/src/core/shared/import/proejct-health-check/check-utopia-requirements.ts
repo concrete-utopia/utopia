@@ -12,10 +12,10 @@ export function checkAndFixUtopiaRequirements(
   parsedProjectContents: ProjectContentTreeRoot,
 ): ProjectContentTreeRoot {
   let projectContents = parsedProjectContents
-  // check package.json
+  // check and fix package.json
   projectContents = checkAndFixPackageJson(projectContents)
   // check language
-  projectContents = checkProjectLanguage(projectContents)
+  checkProjectLanguage(projectContents)
   // check react version
   checkReactVersion(projectContents)
   return projectContents
@@ -73,7 +73,7 @@ function checkAndFixPackageJson(projectContents: ProjectContentTreeRoot): Projec
   return projectContents
 }
 
-function checkProjectLanguage(projectContents: ProjectContentTreeRoot): ProjectContentTreeRoot {
+function checkProjectLanguage(projectContents: ProjectContentTreeRoot): void {
   notifyCheckingRequirement('language', 'Checking project language')
   let jsCount = 0
   let tsCount = 0
@@ -85,12 +85,20 @@ function checkProjectLanguage(projectContents: ProjectContentTreeRoot): ProjectC
     }
     return uiJSFile
   })
-  if (tsCount > jsCount) {
+  if (tsCount > 0) {
     notifyResolveRequirement(
       'language',
       RequirementResolutionResult.Critical,
       'Majority of project files are in TS/TSX',
       'typescript',
+    )
+  } else if (jsCount == 0) {
+    // in case it's a .coffee project, python, etc
+    notifyResolveRequirement(
+      'language',
+      RequirementResolutionResult.Critical,
+      'No JS/JSX files found',
+      'javascript',
     )
   } else {
     notifyResolveRequirement(
@@ -100,7 +108,6 @@ function checkProjectLanguage(projectContents: ProjectContentTreeRoot): ProjectC
       'javascript',
     )
   }
-  return projectContents
 }
 
 function checkReactVersion(projectContents: ProjectContentTreeRoot): void {

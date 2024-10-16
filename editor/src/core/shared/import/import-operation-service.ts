@@ -33,16 +33,8 @@ export function startImportProcess(dispatch: EditorDispatch) {
   dispatch(actions)
 }
 
-export function showImportWizard() {
-  editorDispatch?.([setImportWizardOpen(true)])
-}
-
 export function hideImportWizard() {
   editorDispatch?.([setImportWizardOpen(false)])
-}
-
-export function dispatchUpdateOperation(operation: ImportOperation) {
-  editorDispatch?.([updateImportOperations([operation], ImportOperationAction.Update)])
 }
 
 export function notifyOperationStarted(operation: ImportOperation) {
