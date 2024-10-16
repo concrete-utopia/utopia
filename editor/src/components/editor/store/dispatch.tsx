@@ -7,6 +7,7 @@ import type { CanvasAction } from '../../canvas/canvas-types'
 import type { LocalNavigatorAction } from '../../navigator/actions'
 import type { EditorAction, EditorDispatch, UpdateMetadataInEditorState } from '../action-types'
 import { isLoggedIn } from '../action-types'
+import type { PropertiesToUnsetForElement } from '../actions/action-utils'
 import {
   isTransientAction,
   isUndoOrRedo,
@@ -77,18 +78,8 @@ import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
 import { ensureSceneIdsExist } from '../../../core/model/scene-id-utils'
-import type { ModuleEvaluator } from '../../../core/property-controls/property-controls-local'
-import {
-  createModuleEvaluator,
-  isComponentDescriptorFile,
-} from '../../../core/property-controls/property-controls-local'
-import {
-  hasReactRouterErrorBeenLogged,
-  setReactRouterErrorHasBeenLogged,
-} from '../../../core/shared/runtime-report-logs'
-import type { PropertyControlsInfo } from '../../custom-code/code-file'
+import { isComponentDescriptorFile } from '../../../core/property-controls/property-controls-local'
 import { getFilePathMappings } from '../../../core/model/project-file-utils'
-import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   getParserChunkCount,
   getParserWorkerCount,
@@ -100,6 +91,9 @@ import {
 } from '../../../core/performance/performance-utils'
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { getActivePlugin } from '../../canvas/plugins/style-plugins'
+import { mapDropNulls } from '../../../core/shared/array-utils'
+import { setProperty } from '../../canvas/commands/set-property-command'
+import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -1034,7 +1028,11 @@ function editorDispatchInner(
       ...propertiesToRemoveFromStrategies,
     ]
 
-    // TODO: patch unset gap to `gap: 0px`
+    const editorStateWithRemovedPropsPatched =
+      propertiesToRemove.length === 0
+        ? patchedEditorState
+        : patchRemovedProperties(patchedEditorState, propertiesToRemove)
+
     const normalizedEditorState =
       elementsToNormalize.length === 0 && propertiesToRemove.length === 0
         ? unpatchedEditorState
@@ -1046,7 +1044,7 @@ function editorDispatchInner(
 
     return {
       unpatchedEditor: normalizedEditorState,
-      patchedEditor: patchedEditorState,
+      patchedEditor: editorStateWithRemovedPropsPatched,
       unpatchedDerived: frozenDerivedState,
       patchedDerived: patchedDerivedState,
       strategyState: newStrategyState,
@@ -1103,4 +1101,34 @@ function resetUnpatchedEditorTransientFields(editor: EditorState): EditorState {
       elementsToRerender: 'rerender-all-elements',
     },
   }
+}
+
+const PropertyDefaultValues: Record<string, string> = {
+  gap: '0px',
+}
+
+function patchRemovedProperties(
+  editor: EditorState,
+  propertiesToUnset: PropertiesToUnsetForElement[],
+): EditorState {
+  const propertiesToSetCommands = propertiesToUnset.flatMap(({ elementPath, properties }) =>
+    mapDropNulls((property) => {
+      const [maybeStyle, maybeCSSProp] = property.propertyElements
+      if (maybeStyle !== 'style' || maybeCSSProp == null) {
+        return null
+      }
+
+      const defaultValue = PropertyDefaultValues[maybeCSSProp]
+      if (defaultValue == null) {
+        return null
+      }
+      return setProperty(
+        'always',
+        elementPath,
+        property as any, // TODO correct type
+        defaultValue,
+      )
+    }, properties),
+  )
+  return foldAndApplyCommandsSimple(editor, propertiesToSetCommands)
 }

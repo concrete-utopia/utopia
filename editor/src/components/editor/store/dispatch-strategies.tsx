@@ -689,7 +689,7 @@ function handleUpdate(
       ),
       newStrategyState: newStrategyState,
       elementsToNormalize: [],
-      propertiesToRemove: [],
+      propertiesToRemove: getPropertiesToUnsetFromCommands(strategyResult.commands),
     }
   } else {
     return {
