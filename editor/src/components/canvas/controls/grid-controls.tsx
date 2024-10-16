@@ -589,6 +589,12 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
     'GridControl currentHoveredCell',
   )
 
+  const currentHoveredGrid = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.controls.gridControlData?.grid ?? null,
+    'GridControl currentHoveredGrid',
+  )
+
   const targetsAreCellsWithPositioning = useEditorState(
     Substores.metadata,
     (store) =>
@@ -809,9 +815,11 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
           const id = gridCellTargetId(grid.elementPath, countedRow, countedColumn)
           const borderID = `${id}-border`
 
+          const isActiveGrid =
+            (dragging != null && EP.isParentOf(grid.elementPath, dragging)) ||
+            (currentHoveredGrid != null && EP.pathsEqual(grid.elementPath, currentHoveredGrid))
           const isActiveCell =
-            dragging != null &&
-            EP.isParentOf(grid.elementPath, dragging) &&
+            isActiveGrid &&
             countedColumn === currentHoveredCell?.column &&
             countedRow === currentHoveredCell?.row
 
