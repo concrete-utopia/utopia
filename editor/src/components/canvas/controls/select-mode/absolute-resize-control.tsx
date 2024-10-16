@@ -25,6 +25,7 @@ import {
   detectFillHugFixedState,
   invert,
   isFillOrStretchModeAppliedOnAnySide,
+  isFillOrStretchModeAppliedOnSpecificSide,
   resizeToFitCommands,
 } from '../../../inspector/inspector-common'
 import { setPropHugStrategies } from '../../../inspector/inspector-strategies/inspector-strategies'
@@ -136,17 +137,36 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
       onEdgeDoubleClick,
     })
 
-    const canResizeDiagonally = useEditorState(
+    const canResize = useEditorState(
       Substores.metadata,
       (store) => {
-        return !selectedElementsRef.current.some((element) => {
-          return (
-            MetadataUtils.isGridCell(store.editor.jsxMetadata, element) &&
-            isFillOrStretchModeAppliedOnAnySide(store.editor.jsxMetadata, element)
-          )
-        })
+        const metadata = store.editor.jsxMetadata
+
+        let horizontally = true
+        let vertically = true
+        let diagonally = true
+
+        for (const element of selectedElementsRef.current) {
+          if (MetadataUtils.isGridCell(metadata, element)) {
+            if (isFillOrStretchModeAppliedOnAnySide(metadata, element)) {
+              diagonally = false
+            }
+            if (isFillOrStretchModeAppliedOnSpecificSide(metadata, element, 'horizontal')) {
+              horizontally = false
+            }
+            if (isFillOrStretchModeAppliedOnSpecificSide(metadata, element, 'vertical')) {
+              vertically = false
+            }
+          }
+        }
+
+        return {
+          horizontally: horizontally,
+          vertically: vertically,
+          diagonally: diagonally,
+        }
       },
-      'AbsoluteResizeControl canResizeDiagonally',
+      'AbsoluteResizeControl canResize',
     )
 
     return (
@@ -159,12 +179,22 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
             pointerEvents: 'none',
           }}
         >
-          {resizeEdges.top}
-          {resizeEdges.left}
-          {resizeEdges.bottom}
-          {resizeEdges.right}
           {when(
-            canResizeDiagonally,
+            canResize.vertically,
+            <React.Fragment>
+              {resizeEdges.top}
+              {resizeEdges.bottom}
+            </React.Fragment>,
+          )}
+          {when(
+            canResize.horizontally,
+            <React.Fragment>
+              {resizeEdges.left}
+              {resizeEdges.right}
+            </React.Fragment>,
+          )}
+          {when(
+            canResize.diagonally,
             <React.Fragment>
               <ResizePoint
                 ref={topLeftRef}
