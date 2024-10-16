@@ -1034,6 +1034,7 @@ function editorDispatchInner(
         ? patchedEditorState
         : patchRemovedProperties(patchedEditorState, propertiesToRemove)
 
+    // TODO: disentangle normalizing from actions and normalizing from strategies
     const { patchedEditor, unpatchedEditor } = runNormalization(
       {
         patchedEditor: editorStateWithRemovedPropsPatched,
