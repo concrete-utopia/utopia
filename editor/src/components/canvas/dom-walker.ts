@@ -956,6 +956,7 @@ function getSpecialMeasurements(
     isParentNonStatic,
     parentLayoutSystem,
     layoutSystemForChildren,
+    false, // layoutSystemForChildrenInherited
     providesBoundsForAbsoluteChildren,
     elementStyle.display,
     position,

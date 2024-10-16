@@ -757,3 +757,28 @@ function getOriginalElementGridConfiguration(
     mouseCellPosInOriginalElement,
   }
 }
+
+export function findOriginalGrid(
+  metadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+): ElementPath | null {
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+  if (elementMetadata == null) {
+    return null
+  }
+
+  if (!MetadataUtils.isGridLayoutedContainer(elementMetadata)) {
+    return null
+  }
+
+  if (!elementMetadata.specialSizeMeasurements.layoutSystemForChildrenInherited) {
+    return path
+  }
+
+  const parentPath = EP.parentPath(path)
+  if (parentPath == null) {
+    return null
+  }
+
+  return findOriginalGrid(metadata, parentPath)
+}
