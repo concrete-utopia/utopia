@@ -92,7 +92,7 @@ import {
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { getActivePlugin } from '../../canvas/plugins/style-plugins'
 import { mapDropNulls } from '../../../core/shared/array-utils'
-import { setProperty } from '../../canvas/commands/set-property-command'
+import { propertyToSet, updateBulkProperties } from '../../canvas/commands/set-property-command'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 
 type DispatchResultFields = {
@@ -1002,8 +1002,8 @@ function editorDispatchInner(
     }
 
     const {
-      unpatchedEditorState,
-      patchedEditorState,
+      unpatchedEditorState: unpatchedEditorStateFromStrategies,
+      patchedEditorState: patchedEditorStateFromStrategies,
       newStrategyState,
       patchedDerivedState,
       elementsToNormalize: elementsToNormalizeFromStrategies,
@@ -1029,17 +1029,13 @@ function editorDispatchInner(
       ...propertiesToRemoveFromStrategies,
     ]
 
-    const editorStateWithRemovedPropsPatched =
-      propertiesToRemove.length === 0
-        ? patchedEditorState
-        : patchRemovedProperties(patchedEditorState, propertiesToRemove)
-
-    // TODO: disentangle normalizing from actions and normalizing from strategies
-    const { patchedEditor, unpatchedEditor } = runNormalization(
-      {
-        patchedEditor: editorStateWithRemovedPropsPatched,
-        unpatchedEditor: unpatchedEditorState,
-      },
+    const unpatchedEditor = runRemovedPropertyPatchingAndNormalization(
+      unpatchedEditorStateFromStrategies,
+      elementsToNormalize,
+      propertiesToRemove,
+    )
+    const patchedEditor = runRemovedPropertyPatchingAndNormalization(
+      patchedEditorStateFromStrategies,
       elementsToNormalize,
       propertiesToRemove,
     )
@@ -1105,27 +1101,6 @@ function resetUnpatchedEditorTransientFields(editor: EditorState): EditorState {
   }
 }
 
-function runNormalization(
-  { patchedEditor, unpatchedEditor }: { patchedEditor: EditorState; unpatchedEditor: EditorState },
-  elementsToNormalize: ElementPath[],
-  propertiesToRemove: PropertiesToUnsetForElement[],
-): { patchedEditor: EditorState; unpatchedEditor: EditorState } {
-  if (elementsToNormalize.length === 0) {
-    return {
-      unpatchedEditor: unpatchedEditor,
-      patchedEditor: patchedEditor,
-    }
-  }
-
-  const normalizedEditorState = getActivePlugin(patchedEditor).normalizeFromInlineStyle(
-    patchedEditor,
-    elementsToNormalize,
-    propertiesToRemove,
-  )
-
-  return { patchedEditor: normalizedEditorState, unpatchedEditor: normalizedEditorState }
-}
-
 const PropertyDefaultValues: Record<string, string> = {
   gap: '0px',
 }
@@ -1145,13 +1120,26 @@ function patchRemovedProperties(
       if (defaultValue == null) {
         return null
       }
-      return setProperty(
-        'always',
-        elementPath,
-        property as any, // TODO correct type
-        defaultValue,
-      )
+      return updateBulkProperties('always', elementPath, [propertyToSet(property, defaultValue)])
     }, properties),
   )
   return foldAndApplyCommandsSimple(editor, propertiesToSetCommands)
+}
+
+function runRemovedPropertyPatchingAndNormalization(
+  editorState: EditorState,
+  elementsToNormalize: ElementPath[],
+  propertiesToRemove: PropertiesToUnsetForElement[],
+): EditorState {
+  if (elementsToNormalize.length === 0 && propertiesToRemove.length === 0) {
+    return editorState
+  }
+
+  const withRemovedPropsPatched = patchRemovedProperties(editorState, propertiesToRemove)
+
+  return getActivePlugin(withRemovedPropsPatched).normalizeFromInlineStyle(
+    withRemovedPropsPatched,
+    elementsToNormalize,
+    propertiesToRemove,
+  )
 }
