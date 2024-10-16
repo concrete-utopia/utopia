@@ -30,6 +30,7 @@ import type {
 } from './editor-state'
 import {
   deriveState,
+  getJSXElementFromProjectContents,
   persistentModelFromEditorModel,
   storedEditorStateFromEditorState,
 } from './editor-state'
@@ -1116,23 +1117,27 @@ function patchRemovedProperties(
   editor: EditorState,
   propertiesToPatch: PropertiesToUnsetForElement[],
 ): EditorState {
-  const propertiesToSetCommands = propertiesToPatch.map(({ elementPath, properties }) =>
-    updateBulkProperties(
-      'always',
-      elementPath,
-      mapDropNulls((property) => {
-        const [maybeStyle, maybeCSSProp] = property.propertyElements
-        if (maybeStyle !== 'style' || maybeCSSProp == null) {
-          return null
-        }
+  const propertiesToSetCommands = mapDropNulls(
+    ({ elementPath, properties }) =>
+      getJSXElementFromProjectContents(elementPath, editor.projectContents) == null
+        ? null
+        : updateBulkProperties(
+            'always',
+            elementPath,
+            mapDropNulls((property) => {
+              const [maybeStyle, maybeCSSProp] = property.propertyElements
+              if (maybeStyle !== 'style' || maybeCSSProp == null) {
+                return null
+              }
 
-        const defaultValue = PropertyDefaultValues[maybeCSSProp]
-        if (defaultValue == null) {
-          return null
-        }
-        return propertyToSet(property, defaultValue)
-      }, properties),
-    ),
+              const defaultValue = PropertyDefaultValues[maybeCSSProp]
+              if (defaultValue == null) {
+                return null
+              }
+              return propertyToSet(property, defaultValue)
+            }, properties),
+          ),
+    propertiesToPatch,
   )
   return foldAndApplyCommandsSimple(editor, propertiesToSetCommands)
 }
