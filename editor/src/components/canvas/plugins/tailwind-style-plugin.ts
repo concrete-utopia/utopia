@@ -18,7 +18,7 @@ import type { StylePlugin } from './style-plugins'
 import type { WithPropertyTag } from '../canvas-types'
 import { withPropertyTag } from '../canvas-types'
 import type { Config } from 'tailwindcss/types/config'
-import type { PropertiesToUnsetForElement } from '../../editor/actions/action-utils'
+import type { PropertiesWithElementPath } from '../../editor/actions/action-utils'
 
 function parseTailwindProperty<T>(value: unknown, parse: Parser<T>): WithPropertyTag<T> | null {
   const parsed = parse(value, null)
@@ -99,7 +99,7 @@ function getRemoveUpdates(properties: PropertyPath[]) {
   }, properties)
 }
 
-function getPropertyCleanupCommands(propertiesToRemove: PropertiesToUnsetForElement[]) {
+function getPropertyCleanupCommands(propertiesToRemove: PropertiesWithElementPath[]) {
   return mapDropNulls(({ elementPath, properties }) => {
     const removeUpdates = getRemoveUpdates(properties)
     if (removeUpdates.length === 0) {

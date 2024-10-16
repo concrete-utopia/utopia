@@ -7,7 +7,7 @@ import {
   getTailwindConfigCached,
   isTailwindEnabled,
 } from '../../../core/tailwind/tailwind-compilation'
-import type { PropertiesToUnsetForElement } from '../../editor/actions/action-utils'
+import type { PropertiesWithElementPath } from '../../editor/actions/action-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export interface StylePlugin {
@@ -16,7 +16,7 @@ export interface StylePlugin {
   normalizeFromInlineStyle: (
     editorState: EditorState,
     elementsToNormalize: ElementPath[],
-    propertiesToRemove: PropertiesToUnsetForElement[],
+    propertiesToRemove: PropertiesWithElementPath[],
   ) => EditorState
 }
 

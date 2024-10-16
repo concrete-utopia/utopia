@@ -397,14 +397,14 @@ export function getElementsToNormalizeFromActions(actions: EditorAction[]): Elem
   })
 }
 
-export interface PropertiesToUnsetForElement {
+export interface PropertiesWithElementPath {
   elementPath: ElementPath
   properties: PropertyPath[]
 }
 
 export function getPropertiesToRemoveFromCommands(
   commands: CanvasCommand[],
-): PropertiesToUnsetForElement[] {
+): PropertiesWithElementPath[] {
   return mapDropNulls((command) => {
     switch (command.type) {
       case 'DELETE_PROPERTIES':
@@ -425,7 +425,7 @@ export function getPropertiesToRemoveFromCommands(
 
 export function getPropertiesToRemoveFromActions(
   actions: EditorAction[],
-): PropertiesToUnsetForElement[] {
+): PropertiesWithElementPath[] {
   return actions.flatMap((action) => {
     switch (action.action) {
       case 'APPLY_COMMANDS':

@@ -30,7 +30,7 @@ import type {
   StartPostActionSession,
 } from '../action-types'
 import { SelectComponents } from '../action-types'
-import type { PropertiesToUnsetForElement } from '../actions/action-utils'
+import type { PropertiesWithElementPath } from '../actions/action-utils'
 import {
   getPropertiesToRemoveFromCommands,
   isClearInteractionSession,
@@ -61,23 +61,38 @@ import { allowedToEditProject } from './collaborative-editing'
 import { canMeasurePerformance } from '../../../core/performance/performance-utils'
 import type { ElementPath } from 'utopia-shared/src/types'
 
-export interface NormalizationData {
-  elementsToNormalize: ElementPath[]
-  propertiesToRemove: PropertiesToUnsetForElement[]
-  propertiesToPatch: PropertiesToUnsetForElement[]
+export interface PropertiesToPatch {
+  type: 'properties-to-patch'
+  propertiesToPatch: PropertiesWithElementPath[]
 }
 
-const emptyNormalizationData: NormalizationData = {
-  elementsToNormalize: [],
-  propertiesToRemove: [],
-  propertiesToPatch: [],
+export const propertiesToPatch = (props: PropertiesWithElementPath[]): PropertiesToPatch => ({
+  type: 'properties-to-patch',
+  propertiesToPatch: props,
+})
+
+export interface NormalizationData {
+  type: 'normalization-data'
+  elementsToNormalize: ElementPath[]
+  propertiesToRemove: PropertiesWithElementPath[]
 }
+
+export const normalizationData = (
+  elementsToNormalize: ElementPath[],
+  propsToRemove: PropertiesWithElementPath[],
+): NormalizationData => ({
+  type: 'normalization-data',
+  elementsToNormalize: elementsToNormalize,
+  propertiesToRemove: propsToRemove,
+})
+
+export type PostProcessingData = PropertiesToPatch | NormalizationData
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
   patchedEditorState: EditorState
   newStrategyState: StrategyState
-  normalizationData: NormalizationData
+  postProcessingData: PostProcessingData | null
 }
 
 export function interactionFinished(
@@ -143,11 +158,10 @@ export function interactionFinished(
       unpatchedEditorState: finalEditor,
       patchedEditorState: finalEditor,
       newStrategyState: withClearedSession,
-      normalizationData: {
-        elementsToNormalize: strategyResult.elementsToRerender,
-        propertiesToRemove: getPropertiesToRemoveFromCommands(strategyResult.commands),
-        propertiesToPatch: [],
-      },
+      postProcessingData: normalizationData(
+        strategyResult.elementsToRerender,
+        getPropertiesToRemoveFromCommands(strategyResult.commands),
+      ),
     }
   } else {
     // Try to keep any updated metadata that may have been populated into here
@@ -163,7 +177,7 @@ export function interactionFinished(
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: withClearedSession,
-      normalizationData: emptyNormalizationData,
+      postProcessingData: null,
     }
   }
 }
@@ -192,7 +206,7 @@ export function interactionHardReset(
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: withClearedSession,
-      normalizationData: emptyNormalizationData,
+      postProcessingData: null,
     }
   } else {
     const resetInteractionSession = interactionSessionHardReset(interactionSession)
@@ -250,14 +264,14 @@ export function interactionHardReset(
           strategyResult,
         ),
         newStrategyState: newStrategyState,
-        normalizationData: emptyNormalizationData,
+        postProcessingData: null,
       }
     } else {
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: newEditorState,
         newStrategyState: withClearedSession,
-        normalizationData: emptyNormalizationData,
+        postProcessingData: null,
       }
     }
   }
@@ -285,7 +299,7 @@ export function interactionUpdate(
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: result.strategyState,
-      normalizationData: emptyNormalizationData,
+      postProcessingData: null,
     }
   } else {
     // Determine the new canvas strategy to run this time around.
@@ -368,7 +382,7 @@ export function interactionStart(
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: withClearedSession,
-      normalizationData: emptyNormalizationData,
+      postProcessingData: null,
     }
   } else {
     // Determine the new canvas strategy to run this time around.
@@ -422,14 +436,14 @@ export function interactionStart(
           strategyResult,
         ),
         newStrategyState: newStrategyState,
-        normalizationData: emptyNormalizationData,
+        postProcessingData: null,
       }
     } else {
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: newEditorState,
         newStrategyState: withClearedSession,
-        normalizationData: emptyNormalizationData,
+        postProcessingData: null,
       }
     }
   }
@@ -457,7 +471,7 @@ export function interactionCancel(
     unpatchedEditorState: updatedEditorState,
     patchedEditorState: updatedEditorState,
     newStrategyState: createEmptyStrategyState({}, {}, {}),
-    normalizationData: emptyNormalizationData,
+    postProcessingData: null,
   }
 }
 
@@ -532,14 +546,14 @@ function handleUserChangedStrategy(
         strategyResult,
       ),
       newStrategyState: newStrategyState,
-      normalizationData: emptyNormalizationData,
+      postProcessingData: null,
     }
   } else {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: strategyState,
-      normalizationData: emptyNormalizationData,
+      postProcessingData: null,
     }
   }
 }
@@ -620,7 +634,7 @@ function handleAccumulatingKeypresses(
           strategyResult,
         ),
         newStrategyState: newStrategyState,
-        normalizationData: emptyNormalizationData,
+        postProcessingData: null,
       }
     }
   }
@@ -628,7 +642,7 @@ function handleAccumulatingKeypresses(
     unpatchedEditorState: newEditorState,
     patchedEditorState: newEditorState,
     newStrategyState: strategyState,
-    normalizationData: emptyNormalizationData,
+    postProcessingData: null,
   }
 }
 
@@ -689,18 +703,16 @@ function handleUpdate(
         strategyResult,
       ),
       newStrategyState: newStrategyState,
-      normalizationData: {
-        elementsToNormalize: [],
-        propertiesToRemove: [],
-        propertiesToPatch: getPropertiesToRemoveFromCommands(strategyResult.commands),
-      },
+      postProcessingData: propertiesToPatch(
+        getPropertiesToRemoveFromCommands(strategyResult.commands),
+      ),
     }
   } else {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: strategyState,
-      normalizationData: emptyNormalizationData,
+      postProcessingData: null,
     }
   }
 }
@@ -720,7 +732,7 @@ export function handleStrategies(
   let unpatchedEditorState: EditorState
   let patchedEditorState: EditorState
   let newStrategyState: StrategyState
-  let normalizationData: NormalizationData
+  let postProcessingData: PostProcessingData | null
   if (allowedToEditProject(storedState.userState.loginState, storedState.projectServerState)) {
     const strategiesResult = handleStrategiesInner(
       strategies,
@@ -731,12 +743,12 @@ export function handleStrategies(
     unpatchedEditorState = strategiesResult.unpatchedEditorState
     patchedEditorState = strategiesResult.patchedEditorState
     newStrategyState = strategiesResult.newStrategyState
-    normalizationData = strategiesResult.normalizationData
+    postProcessingData = strategiesResult.postProcessingData
   } else {
     unpatchedEditorState = result.unpatchedEditor
     patchedEditorState = result.unpatchedEditor
     newStrategyState = result.strategyState
-    normalizationData = emptyNormalizationData
+    postProcessingData = null
   }
 
   const patchedEditorWithMetadata: EditorState = {
@@ -778,7 +790,7 @@ export function handleStrategies(
     patchedEditorState: patchedEditorWithMetadata,
     patchedDerivedState: patchedDerivedState,
     newStrategyState: newStrategyState,
-    normalizationData: normalizationData,
+    postProcessingData: postProcessingData,
   }
 }
 
@@ -853,7 +865,7 @@ function handleStrategiesInner(
       unpatchedEditorState: result.unpatchedEditor, // we return the fresh unpatchedEditor, containing the up-to-date domMetadata and spyMetadata
       patchedEditorState: oldPatchedEditorWithNewMetadata, // the previous patched editor with updated metadata
       newStrategyState: storedState.strategyState,
-      normalizationData: emptyNormalizationData,
+      postProcessingData: null,
     }
   } else if (storedState.unpatchedEditor.canvas.interactionSession == null) {
     if (result.unpatchedEditor.canvas.interactionSession == null) {
@@ -861,7 +873,7 @@ function handleStrategiesInner(
         unpatchedEditorState: result.unpatchedEditor,
         patchedEditorState: result.unpatchedEditor,
         newStrategyState: result.strategyState,
-        normalizationData: emptyNormalizationData,
+        postProcessingData: null,
       }
     } else {
       return interactionStart(strategies, storedState, result)
