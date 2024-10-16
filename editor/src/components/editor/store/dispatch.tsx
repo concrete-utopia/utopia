@@ -103,7 +103,6 @@ type DispatchResultFields = {
 }
 
 export type DispatchResult = EditorStoreFull & DispatchResultFields
-import type { ElementPath } from '../../../core/shared/project-file-types'
 
 const cannotUndoRedoToastId = 'cannot-undo-or-redo'
 

@@ -7,8 +7,6 @@ import { isJSXElement } from '../../../core/shared/element-template'
 import { styleStringInArray } from '../../../utils/common-constants'
 import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { withPropertyTag, type WithPropertyTag } from '../canvas-types'
-import { foldAndApplyCommandsSimple } from '../commands/commands'
-import { propertyToDelete, updateBulkProperties } from '../commands/set-property-command'
 import type { StylePlugin } from './style-plugins'
 
 function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(
