@@ -39,11 +39,5 @@ export const InlineStylePlugin: StylePlugin = {
         flexDirection: flexDirection,
       }
     },
-  normalizeFromInlineStyle: (editor, _, propertiesToRemove) =>
-    foldAndApplyCommandsSimple(
-      editor,
-      propertiesToRemove.map(({ elementPath, properties }) =>
-        updateBulkProperties('always', elementPath, properties.map(propertyToDelete)),
-      ),
-    ),
+  normalizeFromInlineStyle: (editor) => editor,
 }
