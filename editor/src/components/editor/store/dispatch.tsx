@@ -101,6 +101,7 @@ type DispatchResultFields = {
 }
 
 export type DispatchResult = EditorStoreFull & DispatchResultFields
+import type { ElementPath } from '../../../core/shared/project-file-types'
 
 const cannotUndoRedoToastId = 'cannot-undo-or-redo'
 
@@ -1033,18 +1034,18 @@ function editorDispatchInner(
         ? patchedEditorState
         : patchRemovedProperties(patchedEditorState, propertiesToRemove)
 
-    const normalizedEditorState =
-      elementsToNormalize.length === 0 && propertiesToRemove.length === 0
-        ? unpatchedEditorState
-        : getActivePlugin(unpatchedEditorState).normalizeFromInlineStyle(
-            unpatchedEditorState,
-            elementsToNormalize,
-            propertiesToRemove,
-          )
+    const { patchedEditor, unpatchedEditor } = runNormalization(
+      {
+        patchedEditor: editorStateWithRemovedPropsPatched,
+        unpatchedEditor: unpatchedEditorState,
+      },
+      elementsToNormalize,
+      propertiesToRemove,
+    )
 
     return {
-      unpatchedEditor: normalizedEditorState,
-      patchedEditor: editorStateWithRemovedPropsPatched,
+      unpatchedEditor: unpatchedEditor,
+      patchedEditor: patchedEditor,
       unpatchedDerived: frozenDerivedState,
       patchedDerived: patchedDerivedState,
       strategyState: newStrategyState,
@@ -1101,6 +1102,27 @@ function resetUnpatchedEditorTransientFields(editor: EditorState): EditorState {
       elementsToRerender: 'rerender-all-elements',
     },
   }
+}
+
+function runNormalization(
+  { patchedEditor, unpatchedEditor }: { patchedEditor: EditorState; unpatchedEditor: EditorState },
+  elementsToNormalize: ElementPath[],
+  propertiesToRemove: PropertiesToUnsetForElement[],
+): { patchedEditor: EditorState; unpatchedEditor: EditorState } {
+  if (elementsToNormalize.length === 0) {
+    return {
+      unpatchedEditor: unpatchedEditor,
+      patchedEditor: patchedEditor,
+    }
+  }
+
+  const normalizedEditorState = getActivePlugin(patchedEditor).normalizeFromInlineStyle(
+    patchedEditor,
+    elementsToNormalize,
+    propertiesToRemove,
+  )
+
+  return { patchedEditor: normalizedEditorState, unpatchedEditor: normalizedEditorState }
 }
 
 const PropertyDefaultValues: Record<string, string> = {
