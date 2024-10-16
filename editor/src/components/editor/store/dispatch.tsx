@@ -14,6 +14,8 @@ import {
   checkAnyWorkerUpdates,
   onlyActionIsWorkerParsedUpdate,
   simpleStringifyActions,
+  getElementsToNormalizeFromActions,
+  getPropertiesToUnsetFromActions,
 } from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
@@ -97,6 +99,7 @@ import {
   startPerformanceMeasure,
 } from '../../../core/performance/performance-utils'
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
+import { getActivePlugin } from '../../canvas/plugins/style-plugins'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -1003,17 +1006,46 @@ function editorDispatchInner(
       )
     }
 
-    const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
-      handleStrategies(
-        strategiesToUse,
-        dispatchedActions,
-        storedState,
-        result,
-        storedState.patchedDerived,
-      )
+    const {
+      unpatchedEditorState,
+      patchedEditorState,
+      newStrategyState,
+      patchedDerivedState,
+      elementsToNormalize: elementsToNormalizeFromStrategies,
+      propertiesToRemove: propertiesToRemoveFromStrategies,
+    } = handleStrategies(
+      strategiesToUse,
+      dispatchedActions,
+      storedState,
+      result,
+      storedState.patchedDerived,
+    )
+
+    const elementsToNormalizeFromActions = getElementsToNormalizeFromActions(dispatchedActions)
+    const propertiesToUnsetFromActions = getPropertiesToUnsetFromActions(dispatchedActions)
+
+    const elementsToNormalize = [
+      ...elementsToNormalizeFromActions,
+      ...elementsToNormalizeFromStrategies,
+    ]
+
+    const propertiesToRemove = [
+      ...propertiesToUnsetFromActions,
+      ...propertiesToRemoveFromStrategies,
+    ]
+
+    // TODO: patch unset gap to `gap: 0px`
+    const normalizedEditorState =
+      elementsToNormalize.length === 0 && propertiesToRemove.length === 0
+        ? unpatchedEditorState
+        : getActivePlugin(unpatchedEditorState).normalizeFromInlineStyle(
+            unpatchedEditorState,
+            elementsToNormalize,
+            propertiesToRemove,
+          )
 
     return {
-      unpatchedEditor: unpatchedEditorState,
+      unpatchedEditor: normalizedEditorState,
       patchedEditor: patchedEditorState,
       unpatchedDerived: frozenDerivedState,
       patchedDerived: patchedDerivedState,
