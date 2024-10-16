@@ -2,7 +2,7 @@ import { selectComponentsForTest } from '../../utils/utils.test-utils'
 import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import * as EP from '../../core/shared/element-path'
 import { act, fireEvent, screen } from '@testing-library/react'
-import { GridAutoColsOrRowsControlTestId } from './flex-section'
+import { GridAutoColsOrRowsControlTestId } from './grid-auto-cols-or-rows-control'
 
 describe('flex section', () => {
   describe('grid dimensions', () => {
@@ -78,7 +78,10 @@ describe('flex section', () => {
   })
   describe('auto cols/rows', () => {
     it('can set a number', async () => {
-      const renderResult = await renderTestEditorWithCode(gridProject, 'await-first-dom-report')
+      const renderResult = await renderTestEditorWithCode(
+        gridProjectWithoutTemplate,
+        'await-first-dom-report',
+      )
       await selectComponentsForTest(renderResult, [EP.fromString('sb/grid')])
       const control: HTMLInputElement = await screen.findByTestId(
         GridAutoColsOrRowsControlTestId('column'),
@@ -89,7 +92,10 @@ describe('flex section', () => {
       expect(control.value).toBe('50px')
     })
     it('can set a keyword', async () => {
-      const renderResult = await renderTestEditorWithCode(gridProject, 'await-first-dom-report')
+      const renderResult = await renderTestEditorWithCode(
+        gridProjectWithoutTemplate,
+        'await-first-dom-report',
+      )
       await selectComponentsForTest(renderResult, [EP.fromString('sb/grid')])
       const control: HTMLInputElement = await screen.findByTestId(
         GridAutoColsOrRowsControlTestId('column'),
@@ -100,7 +106,10 @@ describe('flex section', () => {
       expect(control.value).toBe('min-content')
     })
     it('can set an expression', async () => {
-      const renderResult = await renderTestEditorWithCode(gridProject, 'await-first-dom-report')
+      const renderResult = await renderTestEditorWithCode(
+        gridProjectWithoutTemplate,
+        'await-first-dom-report',
+      )
       await selectComponentsForTest(renderResult, [EP.fromString('sb/grid')])
       const control: HTMLInputElement = await screen.findByTestId(
         GridAutoColsOrRowsControlTestId('column'),
