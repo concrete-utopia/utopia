@@ -141,7 +141,7 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
       (store) => {
         return !selectedElementsRef.current.some((element) => {
           return (
-            MetadataUtils.isFlexOrGridChild(store.editor.jsxMetadata, element) &&
+            MetadataUtils.isGridCell(store.editor.jsxMetadata, element) &&
             isFillOrStretchModeAppliedOnAnySide(store.editor.jsxMetadata, element)
           )
         })
