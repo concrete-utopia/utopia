@@ -107,6 +107,7 @@ export function flexResizeBasicStrategy(
         props: { targets: selectedElements, pathsWereReplaced: false },
         key: 'absolute-resize-control',
         show: 'always-visible',
+        priority: 'top',
       }),
       controlWithProps({
         control: ZeroSizeResizeControlWrapper,
