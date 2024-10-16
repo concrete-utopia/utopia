@@ -285,7 +285,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
-  const strategyControls = useGetApplicableStrategyControls(localSelectedViews)
+  const { bottomStrategyControls, middleStrategyControls, topStrategyControls } =
+    useGetApplicableStrategyControls(localSelectedViews)
   const [inspectorHoveredControls] = useAtom(InspectorHoveredCanvasControls)
   const [inspectorFocusedControls] = useAtom(InspectorFocusedCanvasControls)
 
@@ -523,6 +524,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const resizeStatus = getResizeStatus()
 
+  const showStrategyControls =
+    isMyProject &&
+    isSelectOrInsertMode(editorMode) &&
+    !EP.multiplePathsAllWithTheSameUID(localSelectedViews)
+
   return (
     <>
       <div
@@ -557,6 +563,18 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         {when(
           resizeStatus !== 'disabled',
           <>
+            {when(
+              showStrategyControls,
+              <>
+                {bottomStrategyControls.map((c) => (
+                  <RenderControlMemoized
+                    key={c.key}
+                    control={c.control.control}
+                    propsForControl={c.props}
+                  />
+                ))}
+              </>,
+            )}
             {renderHighlightControls()}
             {unless(dragInteractionActive, <LayoutParentControl />)}
             {unless(
@@ -595,14 +613,20 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                 {renderTextEditableControls()}
                 {when(isSelectMode(editorMode), <AbsoluteChildrenOutline />)}
                 {when(
-                  isSelectOrInsertMode(editorMode) &&
-                    !EP.multiplePathsAllWithTheSameUID(localSelectedViews),
+                  showStrategyControls,
                   <>
                     {when(
                       isSelectMode(editorMode) || isInsertMode(editorMode),
                       <GridMeasurementHelpers />,
                     )}
-                    {strategyControls.map((c) => (
+                    {middleStrategyControls.map((c) => (
+                      <RenderControlMemoized
+                        key={c.key}
+                        control={c.control.control}
+                        propsForControl={c.props}
+                      />
+                    ))}
+                    {topStrategyControls.map((c) => (
                       <RenderControlMemoized
                         key={c.key}
                         control={c.control.control}
