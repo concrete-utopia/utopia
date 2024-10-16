@@ -563,9 +563,10 @@ export const GridRowColumnResizingControlsComponent = ({
 
 interface GridControlProps {
   grid: GridData
+  controlsVisible: 'visible' | 'not-visible'
 }
 
-const GridControl = React.memo<GridControlProps>(({ grid }) => {
+const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => {
   const dispatch = useDispatch()
   const controls = useAnimationControls()
   const colorTheme = useColorTheme()
@@ -598,7 +599,7 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
       store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
       store.editor.canvas.interactionSession?.interactionData.modifiers.cmd !== true &&
       store.editor.canvas.interactionSession?.interactionData.drag != null
-        ? store.editor.canvas.interactionSession.activeControl.id
+        ? EP.toUid(store.editor.canvas.interactionSession.activeControl.path)
         : null,
     'GridControl activelyDraggingOrResizingCell',
   )
@@ -607,6 +608,12 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
     Substores.canvas,
     (store) => store.editor.canvas.controls.gridControlData?.targetCell ?? null,
     'GridControl currentHoveredCell',
+  )
+
+  const currentHoveredGrid = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.controls.gridControlData?.grid ?? null,
+    'GridControl currentHoveredGrid',
   )
 
   const targetsAreCellsWithPositioning = useEditorState(
@@ -638,7 +645,7 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
 
   const startInteractionWithUid = React.useCallback(
-    (params: { uid: string; row: number; column: number; frame: CanvasRectangle }) =>
+    (params: { path: ElementPath; row: number; column: number; frame: CanvasRectangle }) =>
       (event: React.MouseEvent) => {
         setInitialShadowFrame(params.frame)
 
@@ -653,7 +660,7 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
             createInteractionViaMouse(
               start.canvasPositionRounded,
               Modifier.modifiersForEvent(event),
-              gridCellHandle({ id: params.uid }),
+              gridCellHandle({ path: params.path }),
               'zero-drag-not-permitted',
             ),
           ),
@@ -699,13 +706,17 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
     (store) =>
       store.editor.canvas.interactionSession != null &&
       store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE'
-        ? store.editor.canvas.interactionSession.activeControl.id
+        ? store.editor.canvas.interactionSession.activeControl.path
         : null,
     'GridControl dragging',
   )
 
   const shadow = React.useMemo(() => {
-    return cells.find((cell) => EP.toUid(cell.elementPath) === dragging) ?? null
+    return (
+      cells.find(
+        (cell) => EP.toUid(cell.elementPath) === (dragging == null ? null : EP.toUid(dragging)),
+      ) ?? null
+    )
   }, [cells, dragging])
 
   const [initialShadowFrame, setInitialShadowFrame] = React.useState<CanvasRectangle | null>(
@@ -795,14 +806,18 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
     gridPath: gridPath,
   })
 
-  const placeholders = range(0, grid.cells)
+  const placeholders = controlsVisible === 'visible' ? range(0, grid.cells) : []
   const baseStyle = getGridHelperStyleMatchingTargetGrid(grid)
   const style = {
     ...baseStyle,
     backgroundColor:
-      activelyDraggingOrResizingCell != null ? colorTheme.primary10.value : 'transparent',
+      activelyDraggingOrResizingCell == null || controlsVisible === 'not-visible'
+        ? 'transparent'
+        : colorTheme.primary10.value,
     outline: `1px solid ${
-      activelyDraggingOrResizingCell != null ? colorTheme.primary.value : 'transparent'
+      activelyDraggingOrResizingCell == null || controlsVisible === 'not-visible'
+        ? 'transparent'
+        : colorTheme.primary.value
     }`,
   }
 
@@ -821,8 +836,13 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
           const id = gridCellTargetId(grid.elementPath, countedRow, countedColumn)
           const borderID = `${id}-border`
 
+          const isActiveGrid =
+            (dragging != null && EP.isParentOf(grid.elementPath, dragging)) ||
+            (currentHoveredGrid != null && EP.pathsEqual(grid.elementPath, currentHoveredGrid))
           const isActiveCell =
-            countedColumn === currentHoveredCell?.column && countedRow === currentHoveredCell?.row
+            isActiveGrid &&
+            countedColumn === currentHoveredCell?.column &&
+            countedRow === currentHoveredCell?.row
 
           const activePositioningTarget = isActiveCell && targetsAreCellsWithPositioning
 
@@ -834,33 +854,29 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
               key={id}
               id={id}
               data-testid={id}
-              data-wtf={`data-wtf`}
               style={{
                 position: 'relative',
-                pointerEvents: 'initial',
                 zIndex: activePositioningTarget ? 1 : undefined,
               }}
               data-grid-row={countedRow}
               data-grid-column={countedColumn}
             >
-              <React.Fragment>
-                <div
-                  key={borderID}
-                  id={borderID}
-                  data-testid={borderID}
-                  style={{
-                    position: 'relative',
-                    left: gridPlaceholderTopOrLeftPosition(scale),
-                    top: gridPlaceholderTopOrLeftPosition(scale),
-                    width: gridPlaceholderWidthOrHeight(scale),
-                    height: gridPlaceholderWidthOrHeight(scale),
-                    borderTop: gridPlaceholderBorder(borderColor, scale),
-                    borderLeft: gridPlaceholderBorder(borderColor, scale),
-                    borderBottom: gridPlaceholderBorder(borderColor, scale),
-                    borderRight: gridPlaceholderBorder(borderColor, scale),
-                  }}
-                />
-              </React.Fragment>
+              <div
+                key={borderID}
+                id={borderID}
+                data-testid={borderID}
+                style={{
+                  position: 'relative',
+                  left: gridPlaceholderTopOrLeftPosition(scale),
+                  top: gridPlaceholderTopOrLeftPosition(scale),
+                  width: gridPlaceholderWidthOrHeight(scale),
+                  height: gridPlaceholderWidthOrHeight(scale),
+                  borderTop: gridPlaceholderBorder(borderColor, scale),
+                  borderLeft: gridPlaceholderBorder(borderColor, scale),
+                  borderBottom: gridPlaceholderBorder(borderColor, scale),
+                  borderRight: gridPlaceholderBorder(borderColor, scale),
+                }}
+              />
             </div>
           )
         })}
@@ -870,7 +886,7 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
         return (
           <div
             onMouseDown={startInteractionWithUid({
-              uid: EP.toUid(cell.elementPath),
+              path: cell.elementPath,
               frame: cell.globalFrame,
               row: cell.row,
               column: cell.column,
@@ -888,7 +904,8 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
               alignItems: 'flex-end',
               backgroundColor:
                 activelyDraggingOrResizingCell != null &&
-                EP.toUid(cell.elementPath) !== activelyDraggingOrResizingCell
+                EP.toUid(cell.elementPath) !== activelyDraggingOrResizingCell &&
+                controlsVisible === 'visible'
                   ? '#ffffff66'
                   : 'transparent',
               borderRadius:
@@ -905,7 +922,8 @@ const GridControl = React.memo<GridControlProps>(({ grid }) => {
       initialShadowFrame != null &&
       interactionData?.dragStart != null &&
       interactionData?.drag != null &&
-      hoveringStart != null ? (
+      hoveringStart != null &&
+      controlsVisible === 'visible' ? (
         <motion.div
           style={{
             pointerEvents: 'none',
@@ -994,19 +1012,47 @@ const GridMeasurementHelper = React.memo<{ elementPath: ElementPath }>(({ elemen
 GridMeasurementHelper.displayName = 'GridMeasurementHelper'
 
 export const GridControlsComponent = ({ targets }: GridControlsProps) => {
+  const ancestorPaths = React.useMemo(() => {
+    return targets.flatMap((target) => EP.getAncestors(target))
+  }, [targets])
+  const ancestorGrids: Array<ElementPath> = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return ancestorPaths.filter((ancestorPath) => {
+        const ancestorMetadata = MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          ancestorPath,
+        )
+        return MetadataUtils.isGridLayoutedContainer(ancestorMetadata)
+      })
+    },
+    'GridControlsComponent ancestorGrids',
+  )
+
   const targetRootCell = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.controls.gridControlData?.rootCell ?? null,
-    'GridControls targetRootCell',
+    'GridControlsComponent targetRootCell',
   )
 
   const hoveredGrids = useEditorState(
     Substores.canvas,
     (store) => stripNulls([store.editor.canvas.controls.gridControlData?.grid]),
-    'GridControls hoveredGrids',
+    'GridControlsComponent hoveredGrids',
   )
 
-  const grids = useGridData(uniqBy([...targets, ...hoveredGrids], (a, b) => EP.pathsEqual(a, b)))
+  const gridsWithVisibleControls: Array<ElementPath> = [...targets, ...hoveredGrids]
+
+  // Uniqify the grid paths, and then sort them by depth.
+  // With the lowest depth grid at the end so that it renders on top and catches the events
+  // before those above it in the hierarchy.
+  const grids = useGridData(
+    uniqBy([...gridsWithVisibleControls, ...ancestorGrids], (a, b) => EP.pathsEqual(a, b)).sort(
+      (a, b) => {
+        return EP.fullDepth(a) - EP.fullDepth(b)
+      },
+    ),
+  )
 
   if (grids.length === 0) {
     return null
@@ -1016,7 +1062,17 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
     <div id={'grid-controls'}>
       <CanvasOffsetWrapper>
         {grids.map((grid) => {
-          return <GridControl key={GridControlKey(grid.elementPath)} grid={grid} />
+          const shouldHaveVisibleControls = EP.containsPath(
+            grid.elementPath,
+            gridsWithVisibleControls,
+          )
+          return (
+            <GridControl
+              key={GridControlKey(grid.elementPath)}
+              grid={grid}
+              controlsVisible={shouldHaveVisibleControls ? 'visible' : 'not-visible'}
+            />
+          )
         })}
         <AbsoluteDistanceIndicators targetRootCell={targetRootCell} />
       </CanvasOffsetWrapper>

@@ -646,13 +646,13 @@ export function reorderSlider(): ReorderSlider {
 
 export interface GridCellHandle {
   type: 'GRID_CELL_HANDLE'
-  id: string
+  path: ElementPath
 }
 
-export function gridCellHandle(params: { id: string }): GridCellHandle {
+export function gridCellHandle(params: { path: ElementPath }): GridCellHandle {
   return {
     type: 'GRID_CELL_HANDLE',
-    id: params.id,
+    path: params.path,
   }
 }
 

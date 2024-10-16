@@ -19,6 +19,7 @@ import type {
   StrategyApplicationResult,
   InteractionLifecycle,
   CustomStrategyState,
+  WhenToShowControl,
 } from './canvas-strategy-types'
 import {
   ControlDelay,
@@ -83,6 +84,11 @@ import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent
 import { gridRearrangeResizeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
 import createCachedSelector from 're-reselect'
 import { getActivePlugin } from '../plugins/style-plugins'
+import {
+  controlsForGridPlaceholders,
+  GridControls,
+  isGridControlsProps,
+} from '../controls/grid-controls-for-strategies'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -648,6 +654,42 @@ function controlPriorityToNumber(prio: ControlWithProps<any>['priority']): numbe
   }
 }
 
+export function combineApplicableControls(
+  strategyControls: Array<ControlWithProps<unknown>>,
+): Array<ControlWithProps<unknown>> {
+  // Separate out the instances of `GridControls`.
+  let result: Array<ControlWithProps<unknown>> = []
+  let gridControlsInstances: Array<ControlWithProps<unknown>> = []
+  for (const control of strategyControls) {
+    if (control.control === GridControls) {
+      gridControlsInstances.push(control)
+    } else {
+      result.push(control)
+    }
+  }
+
+  // Sift the instances of `GridControls`, storing their targets by when they should be shown.
+  let gridControlsTargets: Map<WhenToShowControl, Array<ElementPath>> = new Map()
+  for (const control of gridControlsInstances) {
+    if (isGridControlsProps(control.props)) {
+      const possibleTargets = gridControlsTargets.get(control.show)
+      if (possibleTargets == null) {
+        gridControlsTargets.set(control.show, control.props.targets)
+      } else {
+        possibleTargets.push(...control.props.targets)
+      }
+    }
+  }
+
+  // Create new instances of `GridControls` with the combined targets.
+  for (const [show, targets] of gridControlsTargets) {
+    result.push(controlsForGridPlaceholders(targets, show, `-${show}`))
+  }
+
+  // Return the newly created controls with the combined entries.
+  return result
+}
+
 const controlEquals = (l: ControlWithProps<any>, r: ControlWithProps<any>) => {
   return l.control === r.control && l.key === r.key
 }
@@ -667,34 +709,37 @@ export function useGetApplicableStrategyControls(localSelectedViews: Array<Eleme
     'useGetApplicableStrategyControls currentlyInProgress',
   )
   return React.useMemo(() => {
+    let strategyControls: Array<ControlWithProps<unknown>> = []
     let isResizable: boolean = false
-    const bottomStrategyControls: Array<ControlWithProps<unknown>> = []
-    const middleStrategyControls: Array<ControlWithProps<unknown>> = []
-    const topStrategyControls: Array<ControlWithProps<unknown>> = []
     // Add the controls for currently applicable strategies.
     for (const strategy of applicableStrategies) {
       if (isResizableStrategy(strategy)) {
         isResizable = true
       }
-      const strategyControls = getApplicableControls(currentStrategy, strategy)
+      strategyControls.push(...getApplicableControls(currentStrategy, strategy))
+    }
+    const combinedControls = combineApplicableControls(strategyControls)
+    const bottomStrategyControls: Array<ControlWithProps<unknown>> = []
+    const middleStrategyControls: Array<ControlWithProps<unknown>> = []
+    const topStrategyControls: Array<ControlWithProps<unknown>> = []
 
-      // uniquely add the strategyControls to the bottom, middle, and top arrays
-      for (const control of strategyControls) {
-        switch (control.priority) {
-          case 'bottom':
-            pushUniquelyBy(bottomStrategyControls, control, controlEquals)
-            break
-          case undefined:
-            pushUniquelyBy(middleStrategyControls, control, controlEquals)
-            break
-          case 'top':
-            pushUniquelyBy(topStrategyControls, control, controlEquals)
-            break
-          default:
-            assertNever(control.priority)
-        }
+    // uniquely add the strategyControls to the bottom, middle, and top arrays
+    for (const control of combinedControls) {
+      switch (control.priority) {
+        case 'bottom':
+          pushUniquelyBy(bottomStrategyControls, control, controlEquals)
+          break
+        case undefined:
+          pushUniquelyBy(middleStrategyControls, control, controlEquals)
+          break
+        case 'top':
+          pushUniquelyBy(topStrategyControls, control, controlEquals)
+          break
+        default:
+          assertNever(control.priority)
       }
     }
+
     // Special case controls.
     if (!isResizable && !currentlyInProgress) {
       middleStrategyControls.push(notResizableControls)
