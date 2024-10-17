@@ -95,6 +95,40 @@ export var storyboard = (
 )
 `
 
+const makeTestProjectForAGeneratedGrid = (columns: string, rows: string) => `
+import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-uid='grid'
+      data-testid='grid'
+      style={{
+        position: 'absolute',
+        left: 25,
+        top: 305,
+        display: 'grid',
+        gap: 10,
+        width: 600,
+        height: 600,
+        gridTemplateColumns: '${columns}',
+        gridTemplateRows: '${rows}',
+        height: 'max-content',
+      }}
+    >
+      {[1,2,3].map(n => {
+        return <div
+        data-uid={\`row-1-column-\${n}\`}
+        data-testid={\`row-1-column-\${n}\`}
+        style={{ backgroundColor: 'pink' }}
+      />
+      })}
+    </div>
+  </Storyboard>
+)
+`
+
 describe('resize a grid', () => {
   it('update a fractionally sized column', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -206,6 +240,68 @@ export var storyboard = (
         data-testid='row-3-column-3'
         style={{ backgroundColor: 'pink' }}
       />
+    </div>
+  </Storyboard>
+)
+`)
+  })
+
+  it('update a fractionally sized column with generated content', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectForAGeneratedGrid('2.4fr 1fr 1fr', '99px 109px 90px'),
+      'await-first-dom-report',
+    )
+    const target = EP.fromString(`sb/grid`)
+    await renderResult.dispatch(selectComponents([target], false), true)
+    await renderResult.getDispatchFollowUpActionsFinished()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const resizeControl = renderResult.renderedDOM.getByTestId(`grid-column-handle-1`)
+    const resizeControlRect = resizeControl.getBoundingClientRect()
+    const startPoint = canvasPoint({
+      x: resizeControlRect.x + resizeControlRect.width / 2,
+      y: resizeControlRect.y + resizeControlRect.height / 2,
+    })
+    const endPoint = canvasPoint({
+      x: startPoint.x + 100,
+      y: startPoint.y,
+    })
+    await mouseMoveToPoint(resizeControl, startPoint)
+    await mouseDownAtPoint(resizeControl, startPoint)
+    await mouseMoveToPoint(canvasControlsLayer, endPoint)
+    await mouseUpAtPoint(canvasControlsLayer, endPoint)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState()))
+      .toEqual(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-uid='grid'
+      data-testid='grid'
+      style={{
+        position: 'absolute',
+        left: 25,
+        top: 305,
+        display: 'grid',
+        gap: 10,
+        width: 600,
+        height: 600,
+        gridTemplateColumns: '2.4fr 1.8fr 1fr',
+        gridTemplateRows: '99px 109px 90px',
+        height: 'max-content',
+      }}
+    >
+      {[1, 2, 3].map((n) => {
+        return (
+          <div
+            data-uid={\`row-1-column-\${n}\`}
+            data-testid={\`row-1-column-\${n}\`}
+            style={{ backgroundColor: 'pink' }}
+          />
+        )
+      })}
     </div>
   </Storyboard>
 )
