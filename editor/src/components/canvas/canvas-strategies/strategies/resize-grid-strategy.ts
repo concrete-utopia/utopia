@@ -187,6 +187,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
           ),
           propertyValueAsString,
         ),
+        setCursorCommand(control.axis === 'column' ? CSSCursor.ColResize : CSSCursor.RowResize),
       ]
 
       return strategyApplicationResult(commands, [gridPath])
