@@ -163,7 +163,7 @@ function getCommandsAndPatchForGridRearrange(
 
   return {
     commands: commands,
-    elementsToRerender: [EP.parentPath(selectedElement)],
+    elementsToRerender: [EP.parentPath(selectedElement), selectedElement],
   }
 }
 

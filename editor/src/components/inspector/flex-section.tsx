@@ -48,8 +48,6 @@ import {
   gridCSSNumber,
   isCSSKeyword,
   isCSSNumber,
-  isEmptyInputValue,
-  isGridCSSNumber,
   printArrayGridDimensions,
   type GridDimension,
 } from './common/css-utils'
@@ -91,8 +89,12 @@ import {
 } from '../canvas/controls/select-mode/select-mode-hooks'
 import type { Axis } from '../canvas/gap-utils'
 import { GridExpressionInput } from '../../uuiui/inputs/grid-expression-input'
-
-const axisDropdownMenuButton = 'axisDropdownMenuButton'
+import {
+  gridDimensionDropdownKeywords,
+  parseGridDimensionInput,
+  useGridExpressionInputFocused,
+} from './grid-helpers'
+import { GridAutoColsOrRowsControl } from './grid-auto-cols-or-rows-control'
 
 function getLayoutSystem(
   layoutSystem: DetectedLayoutSystem | null | undefined,
@@ -235,6 +237,12 @@ const TemplateDimensionControl = React.memo(
       return fromProps
     }, [grid, axis, values])
 
+    const autoTemplate = React.useMemo(() => {
+      return axis === 'column'
+        ? grid.specialSizeMeasurements.containerGridPropertiesFromProps.gridAutoColumns
+        : grid.specialSizeMeasurements.containerGridPropertiesFromProps.gridAutoRows
+    }, [grid, axis])
+
     const onUpdateDimension = React.useCallback(
       (index: number) => (newValue: GridDimension) => {
         if (template?.type !== 'DIMENSIONS') {
@@ -264,21 +272,7 @@ const TemplateDimensionControl = React.memo(
         (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<ValidGridDimensionKeyword>>) => {
           function getNewValue() {
             const gridValueAtIndex = values[index]
-            if (isCSSNumber(value)) {
-              const maybeUnit = isGridCSSNumber(gridValueAtIndex)
-                ? gridValueAtIndex.value.unit
-                : null
-              return gridCSSNumber(
-                cssNumber(value.value, value.unit ?? maybeUnit),
-                gridValueAtIndex.areaName,
-              )
-            } else if (isCSSKeyword(value)) {
-              return gridCSSKeyword(value, gridValueAtIndex.areaName)
-            } else if (isEmptyInputValue(value)) {
-              return gridCSSKeyword(cssKeyword('auto'), gridValueAtIndex.areaName)
-            } else {
-              return null
-            }
+            return parseGridDimensionInput(value, gridValueAtIndex ?? null)
           }
           const newValue = getNewValue()
           if (newValue == null) {
@@ -480,6 +474,20 @@ const TemplateDimensionControl = React.memo(
 
     const dimensionsWithGeneratedIndexes = useGeneratedIndexesFromGridDimensions(values)
 
+    const showAutoColsOrRows = React.useMemo(() => {
+      return (
+        template?.type !== 'DIMENSIONS' ||
+        template.dimensions.length === 0 ||
+        (autoTemplate?.type === 'DIMENSIONS' &&
+          autoTemplate.dimensions.length > 0 &&
+          !(
+            autoTemplate.dimensions.length === 1 &&
+            autoTemplate.dimensions[0].type === 'KEYWORD' &&
+            autoTemplate.dimensions[0].value.value === 'auto'
+          ))
+      )
+    }, [template, autoTemplate])
+
     return (
       <div
         style={{
@@ -508,17 +516,19 @@ const TemplateDimensionControl = React.memo(
             opener={openDropdown}
           />
         ))}
+        {when(
+          showAutoColsOrRows,
+          <GridAutoColsOrRowsControl
+            grid={grid}
+            axis={axis}
+            label={axis === 'column' ? 'Auto Cols' : 'Auto Rows'}
+          />,
+        )}
       </div>
     )
   },
 )
 TemplateDimensionControl.displayName = 'TemplateDimensionControl'
-
-const gridDimensionDropdownKeywords = [
-  { label: 'Auto', value: cssKeyword('auto') },
-  { label: 'Min-Content', value: cssKeyword('min-content') },
-  { label: 'Max-Content', value: cssKeyword('max-content') },
-]
 
 function AxisDimensionControl({
   value,
@@ -566,20 +576,20 @@ function AxisDimensionControl({
 
   const gridExpressionInputFocused = useGridExpressionInputFocused()
 
+  const [isHovered, setIsHovered] = React.useState(false)
+  const onMouseEnter = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+  const onMouseLeave = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
+
   return (
     <div
       key={`col-${value}-${index}`}
       style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-      css={{
-        [`& > .${axisDropdownMenuButton}`]: {
-          visibility: isOpen ? 'visible' : 'hidden',
-        },
-        ':hover': {
-          [`& > .${axisDropdownMenuButton}`]: {
-            visibility: 'visible',
-          },
-        },
-      }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <div
         style={{
@@ -588,10 +598,10 @@ function AxisDimensionControl({
           alignItems: 'center',
           gap: 6,
           gridTemplateColumns: gridExpressionInputFocused.focused
-            ? `40px auto`
+            ? '40px auto'
             : `40px auto ${UtopiaTheme.layout.inputHeight.default}px`,
           gridTemplateRows: '1fr',
-          width: `100%`,
+          width: '100%',
         }}
       >
         <Subdued
@@ -612,10 +622,11 @@ function AxisDimensionControl({
           onFocus={gridExpressionInputFocused.onFocus}
           onBlur={gridExpressionInputFocused.onBlur}
           keywords={gridDimensionDropdownKeywords}
+          defaultValue={gridCSSKeyword(cssKeyword('auto'), null)}
         />
-        {unless(
-          gridExpressionInputFocused.focused,
-          <SquareButton className={axisDropdownMenuButton}>
+        {when(
+          (isHovered && !gridExpressionInputFocused.focused) || isOpen,
+          <SquareButton>
             <DropdownMenu align='end' items={items} opener={opener} onOpenChange={onOpenChange} />
           </SquareButton>,
         )}
@@ -1104,11 +1115,4 @@ function useGeneratedIndexesFromGridDimensions(
     })
     return result
   }, [dimensions])
-}
-
-const useGridExpressionInputFocused = () => {
-  const [focused, setFocused] = React.useState(false)
-  const onFocus = React.useCallback(() => setFocused(true), [])
-  const onBlur = React.useCallback(() => setFocused(false), [])
-  return { focused, onFocus, onBlur }
 }

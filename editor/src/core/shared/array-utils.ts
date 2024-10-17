@@ -272,6 +272,12 @@ export function addUniquely<T extends string | number | boolean | null | undefin
   }
 }
 
+export function pushUniquelyBy<T>(array: Array<T>, value: T, eq: (l: T, r: T) => boolean): void {
+  if (array.findIndex((a) => eq(a, value)) === -1) {
+    array.push(value)
+  }
+}
+
 export function addAllUniquely<T extends string | number | boolean | null | undefined>(
   array: Array<T>,
   values: Array<T>,
@@ -286,7 +292,7 @@ export function addAllUniquelyBy<T>(
 ): Array<T> {
   let workingArray = [...array]
   fastForEach(values, (value) => {
-    if (array.findIndex((a) => eq(a, value)) === -1) {
+    if (!workingArray.some((a) => eq(a, value))) {
       workingArray.push(value)
     }
   })
@@ -583,4 +589,17 @@ export function sortArrayByAndReturnPermutation<T>(
 
 export function revertArrayOrder<T>(array: T[], permutation: number[]): T[] {
   return array.map((_, index) => array[permutation.indexOf(index)])
+}
+
+// From https://stackoverflow.com/a/31879739
+export function interleaveArray<T>(array: T[], elem: T): T[] {
+  const newArray = []
+  let i = 0
+  if (i < array.length) {
+    newArray.push(array[i++])
+  }
+  while (i < array.length) {
+    newArray.push(elem, array[i++])
+  }
+  return newArray
 }

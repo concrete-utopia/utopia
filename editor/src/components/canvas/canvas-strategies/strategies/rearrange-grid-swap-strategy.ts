@@ -104,11 +104,11 @@ export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
 
       if (
         pointerOverChild != null &&
-        EP.toUid(pointerOverChild.elementPath) !== interactionSession.activeControl.id
+        EP.toUid(pointerOverChild.elementPath) !== EP.toUid(interactionSession.activeControl.path)
       ) {
         commands.push(
           ...swapChildrenCommands({
-            grabbedElementUid: interactionSession.activeControl.id,
+            grabbedElementUid: EP.toUid(interactionSession.activeControl.path),
             swapToElementUid: EP.toUid(pointerOverChild.elementPath),
             children: children,
             parentPath: EP.parentPath(selectedElement),

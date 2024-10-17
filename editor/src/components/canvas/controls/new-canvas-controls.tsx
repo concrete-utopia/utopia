@@ -24,6 +24,7 @@ import { ElementContextMenu } from '../../element-context-menu'
 import type { Mode } from '../../editor/editor-modes'
 import {
   isCommentMode,
+  isInsertMode,
   isLiveMode,
   isSelectMode,
   isSelectModeWithArea,
@@ -74,6 +75,7 @@ import { NO_OP } from '../../../core/shared/utils'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
+import { GridMeasurementHelpers } from './grid-controls'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -283,7 +285,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
-  const strategyControls = useGetApplicableStrategyControls(localSelectedViews)
+  const { bottomStrategyControls, middleStrategyControls, topStrategyControls } =
+    useGetApplicableStrategyControls(localSelectedViews)
   const [inspectorHoveredControls] = useAtom(InspectorHoveredCanvasControls)
   const [inspectorFocusedControls] = useAtom(InspectorFocusedCanvasControls)
 
@@ -521,6 +524,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const resizeStatus = getResizeStatus()
 
+  const showStrategyControls =
+    isMyProject &&
+    isSelectOrInsertMode(editorMode) &&
+    !EP.multiplePathsAllWithTheSameUID(localSelectedViews)
+
   return (
     <>
       <div
@@ -555,6 +563,18 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         {when(
           resizeStatus !== 'disabled',
           <>
+            {when(
+              showStrategyControls,
+              <>
+                {bottomStrategyControls.map((c) => (
+                  <RenderControlMemoized
+                    key={c.key}
+                    control={c.control.control}
+                    propsForControl={c.props}
+                  />
+                ))}
+              </>,
+            )}
             {renderHighlightControls()}
             {unless(dragInteractionActive, <LayoutParentControl />)}
             {unless(
@@ -593,10 +613,20 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                 {renderTextEditableControls()}
                 {when(isSelectMode(editorMode), <AbsoluteChildrenOutline />)}
                 {when(
-                  isSelectOrInsertMode(editorMode) &&
-                    !EP.multiplePathsAllWithTheSameUID(localSelectedViews),
+                  showStrategyControls,
                   <>
-                    {strategyControls.map((c) => (
+                    {when(
+                      isSelectMode(editorMode) || isInsertMode(editorMode),
+                      <GridMeasurementHelpers />,
+                    )}
+                    {middleStrategyControls.map((c) => (
+                      <RenderControlMemoized
+                        key={c.key}
+                        control={c.control.control}
+                        propsForControl={c.props}
+                      />
+                    ))}
+                    {topStrategyControls.map((c) => (
                       <RenderControlMemoized
                         key={c.key}
                         control={c.control.control}
@@ -672,5 +702,4 @@ const SelectionAreaRectangle = React.memo(
     )
   },
 )
-
 SelectionAreaRectangle.displayName = 'SelectionAreaRectangle'
