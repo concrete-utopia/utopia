@@ -164,9 +164,17 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
+      const shouldSetGapByAxis = gridGap.row.value != null || gridGap.column.value != null
+
       const axis = interactionSession.activeControl.axis
       const shouldTearOffGapByAxis = axis === 'row' ? shouldTearOffGap.y : shouldTearOffGap.x
-      const axisStyleProp = axis === 'row' ? StyleRowGapProp : StyleColumnGapProp
+
+      const axisStyleProp = shouldSetGapByAxis
+        ? axis === 'row'
+          ? StyleRowGapProp
+          : StyleColumnGapProp
+        : StyleGapProp
+
       const gridGapMeasurement =
         axis === 'row' ? updatedGridGapMeasurement.row : updatedGridGapMeasurement.column
 
