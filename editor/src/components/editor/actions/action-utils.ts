@@ -3,6 +3,8 @@ import { mapDropNulls, safeIndex } from '../../../core/shared/array-utils'
 import type { CanvasCommand } from '../../canvas/commands/commands'
 import type { EditorAction } from '../action-types'
 import { isFromVSCodeAction } from './actions-from-vscode'
+import * as EP from '../../../core/shared/element-path'
+import * as PP from '../../../core/shared/property-path'
 
 export function isTransientAction(action: EditorAction): boolean {
   switch (action.action) {
@@ -402,25 +404,134 @@ export interface PropertiesWithElementPath {
   properties: PropertyPath[]
 }
 
+type PropertyUpdateDelta =
+  | {
+      type: 'delete'
+      prop: string
+      element: ElementPath
+    }
+  | {
+      type: 'set'
+      prop: string
+      value: string | number
+      element: ElementPath
+    }
+
+interface SimpleInlineStyle {
+  [elementPathString: string]: Record<string, string | number>
+}
+
+function ensureEntryExists<T>(
+  style: Record<string, T>,
+  elementPath: ElementPath,
+  defaultValue: T,
+): void {
+  const elementPathString = EP.toString(elementPath)
+  if (!(elementPathString in style)) {
+    style[elementPathString] = defaultValue
+  }
+}
+
+function applyDeltaToSimpleInlineStyle(
+  style: SimpleInlineStyle,
+  delta: PropertyUpdateDelta,
+): SimpleInlineStyle {
+  ensureEntryExists(style, delta.element, {})
+  switch (delta.type) {
+    case 'delete':
+      delete style[EP.toString(delta.element)][delta.prop]
+      break
+    case 'set':
+      style[EP.toString(delta.element)][delta.prop] = delta.value
+      break
+  }
+  return style
+}
+
+function interpretPropertyUpdates(updates: PropertyUpdateDelta[]): SimpleInlineStyle {
+  return updates.reduce(applyDeltaToSimpleInlineStyle, {})
+}
+
+function makeDeleteDelta(element: ElementPath, prop: PropertyPath): PropertyUpdateDelta | null {
+  const [maybeStyle, maybeProp] = prop.propertyElements
+  if (maybeStyle !== 'style' || maybeProp == null || typeof maybeProp !== 'string') {
+    return null
+  }
+  return {
+    type: 'delete',
+    element: element,
+    prop: maybeProp,
+  }
+}
+function makeSetDelta(
+  element: ElementPath,
+  prop: PropertyPath,
+  value: string | number,
+): PropertyUpdateDelta | null {
+  const [maybeStyle, maybeProp] = prop.propertyElements
+  if (maybeStyle !== 'style' || maybeProp == null || typeof maybeProp !== 'string') {
+    return null
+  }
+  return {
+    type: 'set',
+    element: element,
+    prop: maybeProp,
+    value: value,
+  }
+}
+
+function propertyUpdateDeltaFromCanvasCommand(commands: CanvasCommand[]): PropertyUpdateDelta[] {
+  return commands.flatMap((command) => {
+    switch (command.type) {
+      case 'DELETE_PROPERTIES':
+        return command.properties.flatMap((p) => makeDeleteDelta(command.element, p) ?? [])
+      case 'SET_PROPERTY':
+        return makeSetDelta(command.element, command.property, command.value) ?? []
+      case 'UPDATE_BULK_PROPERTIES':
+        return [
+          ...command.properties.flatMap((p) =>
+            p.type === 'SET' ? makeDeleteDelta(command.element, p.path) ?? [] : [],
+          ),
+          ...command.properties.flatMap((p) =>
+            p.type === 'SET' ? makeSetDelta(command.element, p.path, p.value) ?? [] : [],
+          ),
+        ]
+      default:
+        return []
+    }
+  })
+}
+
+interface ElementPathAndProp {
+  elementPath: ElementPath
+  prop: string
+}
+
 export function getPropertiesToRemoveFromCommands(
   commands: CanvasCommand[],
 ): PropertiesWithElementPath[] {
-  return mapDropNulls((command) => {
-    switch (command.type) {
-      case 'DELETE_PROPERTIES':
-        return { elementPath: command.element, properties: command.properties }
-      case 'UPDATE_BULK_PROPERTIES':
-        return {
-          elementPath: command.element,
-          properties: mapDropNulls(
-            (p) => (p.type === 'DELETE' ? p.path : null),
-            command.properties,
-          ),
-        }
-      default:
-        return null
-    }
-  }, commands)
+  const deltas = propertyUpdateDeltaFromCanvasCommand(commands)
+  const simpleStyle = interpretPropertyUpdates(deltas)
+
+  const allRemoves: ElementPathAndProp[] = mapDropNulls(
+    (delta) => (delta.type === 'set' ? null : { elementPath: delta.element, prop: delta.prop }),
+    deltas,
+  )
+
+  const propsToRemove = allRemoves.filter(
+    (remove) => simpleStyle[EP.toString(remove.elementPath)][remove.prop] == null, // The prop hasn't been readded by a subsequent set
+  )
+
+  const result: Record<string, string[]> = {}
+  for (const remove of propsToRemove) {
+    ensureEntryExists(result, remove.elementPath, [])
+    result[EP.toString(remove.elementPath)].push(remove.prop)
+  }
+
+  return Object.entries(result).map(([elementPathString, props]) => ({
+    elementPath: EP.fromString(elementPathString),
+    properties: props.map((p) => PP.create('style', p)),
+  }))
 }
 
 export function getPropertiesToRemoveFromActions(
