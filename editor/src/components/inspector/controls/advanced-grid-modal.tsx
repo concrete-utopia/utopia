@@ -14,7 +14,7 @@ import {
   separatorRadixSelectOption,
 } from '../../../uuiui/radix-components'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import type { FlexAlignment } from 'utopia-api/core'
+import { FlexAlignment } from 'utopia-api/core'
 import { FlexJustifyContent } from 'utopia-api/core'
 import { GridAutoColsOrRowsControlInner } from '../grid-auto-cols-or-rows-control'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -79,10 +79,16 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
     [alignItemsLayoutInfo],
   )
 
-  const contentOptions = [
+  const justifyOptions = [
     unsetSelectOption,
     separatorRadixSelectOption(),
     ...Object.values(FlexJustifyContent).map(selectOption),
+  ]
+
+  const alignOptions = [
+    unsetSelectOption,
+    separatorRadixSelectOption(),
+    ...Object.values(FlexAlignment).map(selectOption),
   ]
 
   const onSubmitJustifyContent = React.useCallback(
@@ -187,7 +193,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
           <RadixSelect
             id='grid.justifyContent'
             value={currentJustifyContentValue ?? unsetSelectOption}
-            options={contentOptions}
+            options={justifyOptions}
             onValueChange={onSubmitJustifyContent}
             contentClassName={`ignore-react-onclickoutside-${props.id}`}
             contentStyle={{
@@ -205,7 +211,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
           <RadixSelect
             id='grid.alignContent'
             value={currentAlignContentValue ?? unsetSelectOption}
-            options={contentOptions}
+            options={alignOptions}
             onValueChange={onSubmitAlignContent}
             contentClassName={`ignore-react-onclickoutside-${props.id}`}
             contentStyle={{
@@ -301,11 +307,11 @@ const justifyItemsOptions = itemsOptions('justify')
 const alignItemsOptions = itemsOptions('align')
 const rowVariant: GridRowVariant = '|--67px--|<--------1fr-------->'
 
-function selectOption(value: FlexJustifyContent) {
+function selectOption(value: FlexJustifyContent | FlexAlignment) {
   return regularRadixSelectOption({
     label: value.replace('-', ' '),
     value: value,
-    placeholder: true,
+    placeholder: false,
   })
 }
 
