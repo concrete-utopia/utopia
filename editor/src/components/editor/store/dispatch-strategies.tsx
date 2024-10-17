@@ -30,7 +30,9 @@ import type {
   StartPostActionSession,
 } from '../action-types'
 import { SelectComponents } from '../action-types'
+import type { PropertiesWithElementPath } from '../actions/action-utils'
 import {
+  getPropertiesToRemoveFromCommands,
   isClearInteractionSession,
   isCreateOrUpdateInteractionSession,
   isTransientAction,
@@ -57,12 +59,40 @@ import { isInsertMode } from '../editor-modes'
 import { patchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 import { allowedToEditProject } from './collaborative-editing'
 import { canMeasurePerformance } from '../../../core/performance/performance-utils'
-import { getActivePlugin } from '../../canvas/plugins/style-plugins'
+import type { ElementPath } from 'utopia-shared/src/types'
+
+export interface PropertiesToPatch {
+  type: 'properties-to-patch'
+  propertiesToPatch: PropertiesWithElementPath[]
+}
+
+export const propertiesToPatch = (props: PropertiesWithElementPath[]): PropertiesToPatch => ({
+  type: 'properties-to-patch',
+  propertiesToPatch: props,
+})
+
+export interface NormalizationData {
+  type: 'normalization-data'
+  elementsToNormalize: ElementPath[]
+  propertiesToRemove: PropertiesWithElementPath[]
+}
+
+export const normalizationData = (
+  elementsToNormalize: ElementPath[],
+  propsToRemove: PropertiesWithElementPath[],
+): NormalizationData => ({
+  type: 'normalization-data',
+  elementsToNormalize: elementsToNormalize,
+  propertiesToRemove: propsToRemove,
+})
+
+export type PostProcessingData = PropertiesToPatch | NormalizationData
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
   patchedEditorState: EditorState
   newStrategyState: StrategyState
+  postProcessingData: PostProcessingData | null
 }
 
 export function interactionFinished(
@@ -113,14 +143,9 @@ export function interactionFinished(
       'end-interaction',
     )
 
-    const normalizedEditor = getActivePlugin(editorState).normalizeFromInlineStyle(
-      editorState,
-      strategyResult.elementsToRerender,
-    )
-
     const finalEditor: EditorState = applyElementsToRerenderFromStrategyResult(
       {
-        ...normalizedEditor,
+        ...editorState,
         // TODO instead of clearing the metadata, we should save the latest valid metadata here to save a dom-walker run
         jsxMetadata: {},
         domMetadata: {},
@@ -133,6 +158,10 @@ export function interactionFinished(
       unpatchedEditorState: finalEditor,
       patchedEditorState: finalEditor,
       newStrategyState: withClearedSession,
+      postProcessingData: normalizationData(
+        strategyResult.elementsToRerender,
+        getPropertiesToRemoveFromCommands(strategyResult.commands),
+      ),
     }
   } else {
     // Try to keep any updated metadata that may have been populated into here
@@ -148,6 +177,7 @@ export function interactionFinished(
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: withClearedSession,
+      postProcessingData: null,
     }
   }
 }
@@ -176,6 +206,7 @@ export function interactionHardReset(
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: withClearedSession,
+      postProcessingData: null,
     }
   } else {
     const resetInteractionSession = interactionSessionHardReset(interactionSession)
@@ -233,12 +264,14 @@ export function interactionHardReset(
           strategyResult,
         ),
         newStrategyState: newStrategyState,
+        postProcessingData: null,
       }
     } else {
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: newEditorState,
         newStrategyState: withClearedSession,
+        postProcessingData: null,
       }
     }
   }
@@ -266,6 +299,7 @@ export function interactionUpdate(
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: result.strategyState,
+      postProcessingData: null,
     }
   } else {
     // Determine the new canvas strategy to run this time around.
@@ -348,6 +382,7 @@ export function interactionStart(
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: withClearedSession,
+      postProcessingData: null,
     }
   } else {
     // Determine the new canvas strategy to run this time around.
@@ -401,12 +436,14 @@ export function interactionStart(
           strategyResult,
         ),
         newStrategyState: newStrategyState,
+        postProcessingData: null,
       }
     } else {
       return {
         unpatchedEditorState: newEditorState,
         patchedEditorState: newEditorState,
         newStrategyState: withClearedSession,
+        postProcessingData: null,
       }
     }
   }
@@ -434,6 +471,7 @@ export function interactionCancel(
     unpatchedEditorState: updatedEditorState,
     patchedEditorState: updatedEditorState,
     newStrategyState: createEmptyStrategyState({}, {}, {}),
+    postProcessingData: null,
   }
 }
 
@@ -508,12 +546,14 @@ function handleUserChangedStrategy(
         strategyResult,
       ),
       newStrategyState: newStrategyState,
+      postProcessingData: null,
     }
   } else {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: strategyState,
+      postProcessingData: null,
     }
   }
 }
@@ -594,6 +634,7 @@ function handleAccumulatingKeypresses(
           strategyResult,
         ),
         newStrategyState: newStrategyState,
+        postProcessingData: null,
       }
     }
   }
@@ -601,6 +642,7 @@ function handleAccumulatingKeypresses(
     unpatchedEditorState: newEditorState,
     patchedEditorState: newEditorState,
     newStrategyState: strategyState,
+    postProcessingData: null,
   }
 }
 
@@ -661,12 +703,16 @@ function handleUpdate(
         strategyResult,
       ),
       newStrategyState: newStrategyState,
+      postProcessingData: propertiesToPatch(
+        getPropertiesToRemoveFromCommands(strategyResult.commands),
+      ),
     }
   } else {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newStrategyState: strategyState,
+      postProcessingData: null,
     }
   }
 }
@@ -686,6 +732,7 @@ export function handleStrategies(
   let unpatchedEditorState: EditorState
   let patchedEditorState: EditorState
   let newStrategyState: StrategyState
+  let postProcessingData: PostProcessingData | null
   if (allowedToEditProject(storedState.userState.loginState, storedState.projectServerState)) {
     const strategiesResult = handleStrategiesInner(
       strategies,
@@ -696,10 +743,12 @@ export function handleStrategies(
     unpatchedEditorState = strategiesResult.unpatchedEditorState
     patchedEditorState = strategiesResult.patchedEditorState
     newStrategyState = strategiesResult.newStrategyState
+    postProcessingData = strategiesResult.postProcessingData
   } else {
     unpatchedEditorState = result.unpatchedEditor
     patchedEditorState = result.unpatchedEditor
     newStrategyState = result.strategyState
+    postProcessingData = null
   }
 
   const patchedEditorWithMetadata: EditorState = {
@@ -739,8 +788,9 @@ export function handleStrategies(
   return {
     unpatchedEditorState: unpatchedEditorState,
     patchedEditorState: patchedEditorWithMetadata,
-    patchedDerivedState,
+    patchedDerivedState: patchedDerivedState,
     newStrategyState: newStrategyState,
+    postProcessingData: postProcessingData,
   }
 }
 
@@ -815,6 +865,7 @@ function handleStrategiesInner(
       unpatchedEditorState: result.unpatchedEditor, // we return the fresh unpatchedEditor, containing the up-to-date domMetadata and spyMetadata
       patchedEditorState: oldPatchedEditorWithNewMetadata, // the previous patched editor with updated metadata
       newStrategyState: storedState.strategyState,
+      postProcessingData: null,
     }
   } else if (storedState.unpatchedEditor.canvas.interactionSession == null) {
     if (result.unpatchedEditor.canvas.interactionSession == null) {
@@ -822,6 +873,7 @@ function handleStrategiesInner(
         unpatchedEditorState: result.unpatchedEditor,
         patchedEditorState: result.unpatchedEditor,
         newStrategyState: result.strategyState,
+        postProcessingData: null,
       }
     } else {
       return interactionStart(strategies, storedState, result)
