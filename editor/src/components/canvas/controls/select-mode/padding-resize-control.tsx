@@ -34,7 +34,7 @@ import {
   paddingAdjustMode,
   paddingFromSpecialSizeMeasurements,
   PaddingIndictorOffset,
-  simplePaddingFromMetadata,
+  simplePaddingFromStyleInfo,
 } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -43,6 +43,7 @@ import type { CSSNumberWithRenderedValue } from './controls-common'
 import { CanvasLabel, fallbackEmptyValue, PillHandle, useHoverWithDelay } from './controls-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { getActivePlugin } from '../../plugins/style-plugins'
 
 export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
 export const paddingControlHandleTestId = (edge: EdgePiece): string =>
@@ -358,12 +359,24 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
     }
   }, [hoveredViews, selectedElements])
 
-  const currentPadding = React.useMemo(() => {
-    return combinePaddings(
-      paddingFromSpecialSizeMeasurements(elementMetadata, selectedElements[0]),
-      simplePaddingFromMetadata(elementMetadata, selectedElements[0]),
-    )
-  }, [elementMetadata, selectedElements])
+  const currentPadding = useEditorState(
+    Substores.fullStore,
+    (store) => {
+      return combinePaddings(
+        paddingFromSpecialSizeMeasurements(store.editor.jsxMetadata, selectedElements[0]),
+        simplePaddingFromStyleInfo(
+          elementMetadata,
+          selectedElements[0],
+          getActivePlugin(store.editor).styleInfoFactory({
+            metadata: store.editor.jsxMetadata,
+            projectContents: store.editor.projectContents,
+            elementPathTree: store.editor.elementPathTree,
+          })(selectedElements[0]),
+        ),
+      )
+    },
+    'PaddingResizeControl currentPadding',
+  )
 
   const shownByParent = selectedElementHovered || anyControlHovered
 
