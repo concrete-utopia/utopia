@@ -532,7 +532,8 @@ export const GridRowColumnResizingControlsComponent = ({
             gap={grid.columnGap ?? grid.gap}
             padding={grid.padding}
             stripedAreaLength={
-              getStripedAreaLength(grid.gridTemplateRows, grid.gap ?? 0) ?? grid.frame.height
+              getStripedAreaLength(grid.gridTemplateRows, grid.rowGap ?? grid.gap ?? 0) ??
+              grid.frame.height
             }
             alignContent={grid.justifyContent}
             justifyContent={grid.alignContent}
@@ -550,7 +551,8 @@ export const GridRowColumnResizingControlsComponent = ({
             gap={grid.rowGap ?? grid.gap}
             padding={grid.padding}
             stripedAreaLength={
-              getStripedAreaLength(grid.gridTemplateColumns, grid.gap ?? 0) ?? grid.frame.width
+              getStripedAreaLength(grid.gridTemplateColumns, grid.columnGap ?? grid.gap ?? 0) ??
+              grid.frame.width
             }
             alignContent={grid.alignContent}
             justifyContent={grid.justifyContent}
