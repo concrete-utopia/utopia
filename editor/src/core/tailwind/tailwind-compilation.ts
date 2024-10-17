@@ -104,28 +104,30 @@ function runTailwindClassGenerationOnDOMMutation(
 }
 
 export const useTailwindCompilation = (requireFn: RequireFn) => {
-  const projectContents = useEditorState(
-    Substores.projectContents,
-    (store) => store.editor.projectContents,
-    'useTailwindCompilation projectContents',
-  )
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
   const isInteractionActiveRef = useRefEditorState((store) =>
     interactionSessionIsActive(store.editor.canvas.interactionSession),
   )
 
+  const tailwindConfigExists =
+    getProjectFileByFilePath(projectContentsRef.current, TailwindConfigPath) != null
+
   React.useEffect(() => {
-    const tailwindConfigFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
-    if (
-      tailwindConfigFile == null ||
-      isInteractionActiveRef.current ||
-      ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' || // implies that an interaction is in progress
-      !isFeatureEnabled('Tailwind')
-    ) {
+    if (!tailwindConfigExists || !isFeatureEnabled('Tailwind')) {
       return
     }
+
+    generateTailwindClasses(projectContentsRef.current, requireFn)
     const observer = new MutationObserver((mutations) => {
-      runTailwindClassGenerationOnDOMMutation(mutations, projectContents, requireFn)
+      if (
+        isInteractionActiveRef.current ||
+        ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' // implies that an interaction is in progress) {
+      ) {
+        return
+      }
+
+      runTailwindClassGenerationOnDOMMutation(mutations, projectContentsRef.current, requireFn)
     })
 
     observer.observe(document.getElementById(CanvasContainerID)!, {
@@ -134,10 +136,8 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
       subtree: true,
     })
 
-    generateTailwindClasses(projectContents, requireFn)
-
     return () => {
       observer.disconnect()
     }
-  }, [isInteractionActiveRef, projectContents, requireFn])
+  }, [isInteractionActiveRef, projectContentsRef, requireFn, tailwindConfigExists])
 }
