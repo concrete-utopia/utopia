@@ -1,5 +1,5 @@
 import * as TailwindClassParser from '@xengine/tailwindcss-class-parser'
-import type { JSXAttributesEntry } from 'utopia-shared/src/types'
+import type { JSExpression, JSXAttributesEntry, PropertyPath } from 'utopia-shared/src/types'
 import { isLeft } from '../../../core/shared/either'
 import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
 import {
@@ -18,6 +18,7 @@ import type { StylePlugin } from './style-plugins'
 import type { WithPropertyTag } from '../canvas-types'
 import { withPropertyTag } from '../canvas-types'
 import type { Config } from 'tailwindcss/types/config'
+import type { PropertiesWithElementPath } from '../../editor/actions/action-utils'
 
 function parseTailwindProperty<T>(value: unknown, parse: Parser<T>): WithPropertyTag<T> | null {
   const parsed = parse(value, null)
@@ -47,7 +48,7 @@ function stringifiedStylePropValue(value: unknown): string | null {
   return null
 }
 
-function getTailwindClassMapping(classes: string[], config: Config | null) {
+function getTailwindClassMapping(classes: string[], config: Config | null): Record<string, string> {
   const mapping: Record<string, string> = {}
   classes.forEach((className) => {
     const parsed = TailwindClassParser.parse(className, config ?? undefined)
@@ -57,6 +58,55 @@ function getTailwindClassMapping(classes: string[], config: Config | null) {
     mapping[parsed.property] = parsed.value
   })
   return mapping
+}
+
+function getStylePropContents(
+  styleProp: JSExpression,
+): Array<{ key: string; value: unknown }> | null {
+  if (styleProp.type === 'ATTRIBUTE_NESTED_OBJECT') {
+    return mapDropNulls(
+      (c): { key: string; value: unknown } | null =>
+        c.type === 'PROPERTY_ASSIGNMENT' &&
+        c.value.type === 'ATTRIBUTE_VALUE' &&
+        typeof c.key === 'string'
+          ? { key: c.key, value: c.value.value }
+          : null,
+      styleProp.content,
+    )
+  }
+
+  if (styleProp.type === 'ATTRIBUTE_VALUE' && typeof styleProp.value === 'object') {
+    return mapDropNulls(
+      ([key, value]) => (typeof key !== 'object' ? null : { key, value }),
+      Object.entries(styleProp.value),
+    )
+  }
+
+  return null
+}
+
+function getRemoveUpdates(properties: PropertyPath[]): UCL.ClassListUpdate[] {
+  return mapDropNulls((property) => {
+    const [maybeStyle, maybeCSSProp] = property.propertyElements
+    if (
+      maybeStyle !== 'style' ||
+      maybeCSSProp == null ||
+      !isSupportedTailwindProperty(maybeCSSProp)
+    ) {
+      return null
+    }
+    return UCL.remove(TailwindPropertyMapping[maybeCSSProp])
+  }, properties)
+}
+
+function getPropertyCleanupCommands(propertiesToRemove: PropertiesWithElementPath[]) {
+  return mapDropNulls(({ elementPath, properties }) => {
+    const removeUpdates = getRemoveUpdates(properties)
+    if (removeUpdates.length === 0) {
+      return null
+    }
+    return updateClassListCommand('always', elementPath, removeUpdates)
+  }, propertiesToRemove)
 }
 
 export const TailwindPlugin = (config: Config | null): StylePlugin => ({
@@ -82,7 +132,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         ),
       }
     },
-  normalizeFromInlineStyle: (editorState, elementsToNormalize) => {
+  normalizeFromInlineStyle: (editorState, elementsToNormalize, propertiesToRemove) => {
     const commands = elementsToNormalize.flatMap((elementPath) => {
       const element = getJSXElementFromProjectContents(elementPath, editorState.projectContents)
       if (element == null) {
@@ -97,19 +147,15 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         return []
       }
 
-      const styleValue = styleAttribute.value
-      if (styleValue.type !== 'ATTRIBUTE_NESTED_OBJECT') {
+      const styleValue = getStylePropContents(styleAttribute.value)
+      if (styleValue == null) {
         return []
       }
 
       const styleProps = mapDropNulls(
         (c): { key: keyof typeof TailwindPropertyMapping; value: unknown } | null =>
-          c.type === 'PROPERTY_ASSIGNMENT' &&
-          c.value.type === 'ATTRIBUTE_VALUE' &&
-          isSupportedTailwindProperty(c.key)
-            ? { key: c.key, value: c.value.value }
-            : null,
-        styleValue.content,
+          isSupportedTailwindProperty(c.key) ? { key: c.key, value: c.value } : null,
+        styleValue,
       )
 
       const stylePropConversions = mapDropNulls(({ key, value }) => {
@@ -134,10 +180,15 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         ),
       ]
     })
-    if (commands.length === 0) {
+
+    const commandsWithPropertyCleanup = [
+      ...commands,
+      ...getPropertyCleanupCommands(propertiesToRemove),
+    ]
+    if (commandsWithPropertyCleanup.length === 0) {
       return editorState
     }
 
-    return foldAndApplyCommandsSimple(editorState, commands)
+    return foldAndApplyCommandsSimple(editorState, commandsWithPropertyCleanup)
   },
 })
