@@ -2995,9 +2995,9 @@ export const BorderRadiusResizeHandleKeepDeepEquality: KeepDeepEqualityCall<
 
 export const GridCellHandleKeepDeepEquality: KeepDeepEqualityCall<GridCellHandle> =
   combine1EqualityCall(
-    (handle) => handle.id,
-    createCallWithTripleEquals<string>(),
-    (id) => gridCellHandle({ id }),
+    (handle) => handle.path,
+    ElementPathKeepDeepEquality,
+    (path) => gridCellHandle({ path }),
   )
 
 export const GridAxisHandleKeepDeepEquality: KeepDeepEqualityCall<GridAxisHandle> =

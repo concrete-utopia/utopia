@@ -11,7 +11,8 @@ import {
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import CanvasActions from '../../canvas-actions'
 import { GridCellTestId } from '../../controls/grid-controls-for-strategies'
-import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
+import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { mouseDragFromPointToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import type { GridCellCoordinates } from './grid-cell-bounds'
@@ -572,6 +573,7 @@ export var storyboard = (
           childCenter,
           offsetPoint(childCenter, windowPoint({ x: 280, y: 120 })),
           {
+            staggerMoveEvents: false,
             moveBeforeMouseDown: true,
           },
         )
@@ -767,24 +769,28 @@ async function runMoveTest(
   const sourceRect = sourceGridCell.getBoundingClientRect()
   const targetRect = targetGridCell.getBoundingClientRect()
 
+  const endPoint = getRectCenter(
+    localRectangle({
+      x: targetRect.x,
+      y: targetRect.y,
+      width: targetRect.width,
+      height: targetRect.height,
+    }),
+  )
+
   await mouseDragFromPointToPoint(
     sourceGridCell,
     {
       x: sourceRect.x + 10,
       y: sourceRect.y + 10,
     },
-    getRectCenter(
-      localRectangle({
-        x: targetRect.x,
-        y: targetRect.y,
-        width: targetRect.width,
-        height: targetRect.height,
-      }),
-    ),
+    endPoint,
     {
+      staggerMoveEvents: false,
       moveBeforeMouseDown: true,
     },
   )
+  await mouseUpAtPoint(editor.renderedDOM.getByTestId(CanvasControlsContainerID), endPoint)
 
   return editor.renderedDOM.getByTestId(props.testId).style
 }
@@ -941,7 +947,7 @@ export var storyboard = (
             height: '100%',
           }}
           data-uid='pink'
-		  data-testid='pink'
+		      data-testid='pink'
           data-label='pink'
         />
         <div
@@ -951,7 +957,7 @@ export var storyboard = (
             height: '100%',
           }}
           data-uid='orange'
-		  data-testid='orange'
+		      data-testid='orange'
           data-label='orange'
         />
         <div
@@ -961,7 +967,7 @@ export var storyboard = (
             height: '100%',
           }}
           data-uid='cyan'
-		  data-testid='cyan'
+		      data-testid='cyan'
           data-label='cyan'
         />
         <div
@@ -971,7 +977,7 @@ export var storyboard = (
             height: '100%',
           }}
           data-uid='blue'
-		  data-testid='blue'
+		      data-testid='blue'
           data-label='blue'
         />
       </div>

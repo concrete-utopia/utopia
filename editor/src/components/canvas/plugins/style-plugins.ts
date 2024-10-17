@@ -7,6 +7,8 @@ import {
   getTailwindConfigCached,
   isTailwindEnabled,
 } from '../../../core/tailwind/tailwind-compilation'
+import type { PropertiesWithElementPath } from '../../editor/actions/action-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export interface StylePlugin {
   name: string
@@ -14,6 +16,7 @@ export interface StylePlugin {
   normalizeFromInlineStyle: (
     editorState: EditorState,
     elementsToNormalize: ElementPath[],
+    propertiesToRemove: PropertiesWithElementPath[],
   ) => EditorState
 }
 
@@ -23,7 +26,7 @@ export const Plugins = {
 } as const
 
 export function getActivePlugin(editorState: EditorState): StylePlugin {
-  if (isTailwindEnabled()) {
+  if (isFeatureEnabled('Tailwind') && isTailwindEnabled()) {
     return TailwindPlugin(getTailwindConfigCached(editorState))
   }
   return InlineStylePlugin

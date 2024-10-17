@@ -5,6 +5,7 @@ import type { CSSProperties } from 'react'
 import React from 'react'
 import {
   cssKeyword,
+  gridDimensionsAreEqual,
   isGridCSSNumber,
   isValidGridDimensionKeyword,
   parseCSSNumber,
@@ -37,6 +38,7 @@ interface GridExpressionInputProps {
   onBlur: () => void
   keywords: Array<{ label: string; value: CSSKeyword<any> }>
   style?: CSSProperties
+  defaultValue: GridDimension
 }
 
 const DropdownWidth = 25
@@ -51,6 +53,7 @@ export const GridExpressionInput = React.memo(
     onBlur,
     keywords,
     style = {},
+    defaultValue,
   }: GridExpressionInputProps) => {
     const colorTheme = useColorTheme()
 
@@ -157,6 +160,10 @@ export const GridExpressionInput = React.memo(
       onBlur()
     }, [onBlur])
 
+    const isDefault = React.useMemo(() => {
+      return gridDimensionsAreEqual(value, defaultValue)
+    }, [value, defaultValue])
+
     return (
       <div
         style={style}
@@ -190,6 +197,7 @@ export const GridExpressionInput = React.memo(
           style={{
             width: inputFocused ? '100%' : `calc(100% - ${DropdownWidth}px)`,
           }}
+          css={{ color: isDefault ? colorTheme.fg6.value : colorTheme.fg0.value }}
         />
         {unless(
           inputFocused,

@@ -710,62 +710,6 @@ export function getGridRelatedIndexes(params: {
   return expandedRelatedIndexes[params.index] ?? []
 }
 
-export function getMetadataWithGridCellBounds(
-  path: ElementPath | null | undefined,
-  startingMetadata: ElementInstanceMetadataMap,
-  latestMetadata: ElementInstanceMetadataMap,
-  customStrategyState: CustomStrategyState,
-): {
-  metadata: ElementInstanceMetadata | null
-  customStrategyState: CustomStrategyState | null
-} {
-  if (path == null) {
-    return {
-      metadata: null,
-      customStrategyState: null,
-    }
-  }
-
-  const fromStartingMetadata = MetadataUtils.findElementByElementPath(startingMetadata, path)
-
-  if (fromStartingMetadata?.specialSizeMeasurements.gridCellGlobalFrames != null) {
-    return {
-      metadata: fromStartingMetadata,
-      customStrategyState: null,
-    }
-  }
-
-  const fromStrategyState = customStrategyState.grid.metadataCacheForGrids[EP.toString(path)]
-  if (fromStrategyState != null) {
-    return {
-      metadata: fromStrategyState,
-      customStrategyState: null,
-    }
-  }
-
-  const fromLatestMetadata = MetadataUtils.findElementByElementPath(latestMetadata, path)
-  if (fromLatestMetadata?.specialSizeMeasurements.gridCellGlobalFrames != null) {
-    return {
-      metadata: fromLatestMetadata,
-      customStrategyState: {
-        ...customStrategyState,
-        grid: {
-          ...customStrategyState.grid,
-          metadataCacheForGrids: {
-            ...customStrategyState.grid.metadataCacheForGrids,
-            [EP.toString(path)]: fromLatestMetadata,
-          },
-        },
-      },
-    }
-  }
-
-  return {
-    metadata: fromStartingMetadata,
-    customStrategyState: null,
-  }
-}
-
 function getOriginalElementGridConfiguration(
   gridCellGlobalFrames: GridCellGlobalFrames,
   interactionData: DragInteractionData,
