@@ -1,7 +1,14 @@
 import { assertNever } from '../../../../core/shared/utils'
+import { TailwindConfigPath } from '../../../../core/tailwind/tailwind-config'
+import { createModifiedProject } from '../../../../sample-projects/sample-project-utils.test-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
-import { cmdModifier, shiftModifier } from '../../../../utils/modifiers'
-import { expectSingleUndo2Saves, wait } from '../../../../utils/utils.test-utils'
+import { cmdModifier } from '../../../../utils/modifiers'
+import {
+  expectSingleUndo2Saves,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  wait,
+} from '../../../../utils/utils.test-utils'
+import { StoryboardFilePath } from '../../../editor/store/editor-state'
 import { cssNumber } from '../../../inspector/common/css-utils'
 import type { EdgePiece } from '../../canvas-types'
 import { isHorizontalEdgePiece } from '../../canvas-types'
@@ -39,6 +46,7 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  renderTestEditorWithModel,
 } from '../../ui-jsx.test-utils'
 import { PaddingTearThreshold, SetPaddingStrategyName } from './set-padding-strategy'
 
@@ -742,6 +750,61 @@ describe('Padding resize strategy', () => {
       // eslint-disable-next-line jest/expect-expect
       it('bottom', async () => {
         await testAdjustIndividualPaddingValueWithHuggingContainer('bottom', 'coarse', 35, -35)
+      })
+    })
+  })
+
+  describe('Tailwind', () => {
+    describe('tailwind', () => {
+      setFeatureForBrowserTestsUseInDescribeBlockOnly('Tailwind', true)
+      const Project = createModifiedProject({
+        [StoryboardFilePath]: `
+    import React from 'react'
+    import { Scene, Storyboard } from 'utopia-api'
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <Scene
+          id='scene'
+          commentId='scene'
+          data-uid='scene'
+          style={{
+            width: 700,
+            height: 759,
+            position: 'absolute',
+            left: 212,
+            top: 128,
+          }}
+        >
+          <div
+            data-uid='div'
+            data-testid='${DivTestId}'
+            className='top-10 left-10 absolute flex flex-row gap-12'
+          >
+            <div className='bg-red-500 w-10 h-10' data-uid='child-1' />
+            <div className='bg-red-500 w-10 h-10' data-uid='child-2' />
+          </div>  
+        </Scene>
+      </Storyboard>
+    )
+    
+    `,
+        [TailwindConfigPath]: `
+        const TailwindConfig = { }
+        export default TailwindConfig
+    `,
+        'app.css': `
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;`,
+      })
+
+      it('can set tailwind padding', async () => {
+        // TODO
+        const editor = await renderTestEditorWithModel(Project, 'await-first-dom-report')
+        // await selectComponentsForTest(editor, [EP.fromString('sb/scene/div')])
+        // await doGapResize(editor, canvasPoint({ x: 10, y: 0 }))
+        const div = editor.renderedDOM.getByTestId('mydiv')
+        expect(div.className).toEqual('top-10 left-10 absolute flex flex-row gap-16')
       })
     })
   })
