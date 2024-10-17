@@ -119,13 +119,10 @@ interface GridResizingControlProps {
   dimension: GridDimension
   dimensionIndex: number
   axis: Axis
-  containingFrame: CanvasRectangle
   fromPropsAxisValues: GridAutoOrTemplateDimensions | null
-  padding: number
-  resizing: 'resize-target' | 'resize-generated' | 'not-resizing'
   setResizingIndex: (v: number | null) => void
+  resizing: 'resize-target' | 'resize-generated' | 'not-resizing'
   resizeLocked: boolean
-  stripedAreaLength: number | null
 }
 
 const GridResizingControl = React.memo((props: GridResizingControlProps) => {
@@ -200,17 +197,6 @@ const GridResizingControl = React.memo((props: GridResizingControlProps) => {
   const labelId = `grid-${props.axis}-handle-${props.dimensionIndex}`
   const containerId = `${labelId}-container`
 
-  const shadowSize = React.useMemo(() => {
-    return props.axis === 'column'
-      ? props.containingFrame.height + GRID_RESIZE_HANDLE_CONTAINER_SIZE
-      : props.containingFrame.width + GRID_RESIZE_HANDLE_CONTAINER_SIZE
-  }, [props.containingFrame, props.axis])
-
-  const stripedAreaSkew = React.useMemo(
-    () => GRID_RESIZE_HANDLE_CONTAINER_SIZE / scale + props.padding,
-    [scale, props.padding],
-  )
-
   return (
     <div
       key={containerId}
@@ -219,8 +205,8 @@ const GridResizingControl = React.memo((props: GridResizingControlProps) => {
         display: 'flex',
         alignItems: props.axis === 'column' ? 'flex-start' : 'center',
         justifyContent: props.axis === 'column' ? 'center' : 'flex-start',
-        height: props.axis === 'column' && props.resizing !== 'not-resizing' ? shadowSize : '100%',
-        width: props.axis === 'row' && props.resizing !== 'not-resizing' ? shadowSize : '100%',
+        height: '100%',
+        width: '100%',
         position: 'relative',
       }}
     >
@@ -247,58 +233,6 @@ const GridResizingControl = React.memo((props: GridResizingControlProps) => {
       >
         {getLabelForAxis(props.dimension, props.dimensionIndex, props.fromPropsAxisValues)}
       </div>
-      {when(
-        props.resizing !== 'not-resizing',
-        <div
-          style={{
-            position: 'absolute',
-            top: props.axis === 'column' ? stripedAreaSkew : 0,
-            left: props.axis === 'row' ? stripedAreaSkew : 0,
-            right: props.axis === 'row' || props.stripedAreaLength == null ? undefined : 0,
-            width:
-              props.axis === 'row' && props.stripedAreaLength != null
-                ? props.stripedAreaLength
-                : undefined,
-            bottom: props.axis === 'column' || props.stripedAreaLength == null ? undefined : 0,
-            height:
-              props.axis === 'column' && props.stripedAreaLength != null
-                ? props.stripedAreaLength
-                : undefined,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: `1px solid ${
-              props.resizeLocked
-                ? colorTheme.primary10.value
-                : props.resizing === 'resize-target'
-                ? colorTheme.primary.value
-                : colorTheme.primary50.value
-            }`,
-            ...(props.resizeLocked
-              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.primary10.value, scale)
-              : props.resizing === 'resize-target'
-              ? UtopiaStyles.backgrounds.stripedBackground(colorTheme.primary50.value, scale)
-              : UtopiaStyles.backgrounds.stripedBackground(colorTheme.primary10.value, scale)),
-          }}
-        >
-          {when(
-            props.dimension.areaName != null,
-            <div
-              style={{
-                position: 'absolute',
-                color: colorTheme.primary.value,
-                background: colorTheme.white.value,
-                top: 0,
-                left: 0,
-                padding: '0 4px',
-                borderRadius: '0 0 3px 0',
-              }}
-            >
-              {props.dimension.areaName}
-            </div>,
-          )}
-        </div>,
-      )}
     </div>
   )
 })
@@ -421,9 +355,7 @@ const GridResizing = React.memo((props: GridResizingProps) => {
                 dimensionIndex={dimensionIndex}
                 dimension={dimension}
                 fromPropsAxisValues={fromProps}
-                stripedAreaLength={props.stripedAreaLength}
                 axis={props.axis}
-                containingFrame={props.containingFrame}
                 resizing={
                   resizingIndex === dimensionIndex
                     ? 'resize-target'
@@ -433,13 +365,6 @@ const GridResizing = React.memo((props: GridResizingProps) => {
                 }
                 resizeLocked={resizeLocked}
                 setResizingIndex={setResizingIndex}
-                padding={
-                  props.padding == null
-                    ? 0
-                    : props.axis === 'column'
-                    ? props.padding.top ?? 0
-                    : props.padding.left ?? 0
-                }
               />
             )
           })}
