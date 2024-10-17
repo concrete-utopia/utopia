@@ -1126,6 +1126,11 @@ function addNormalizationDataFromActions(
 
 const PropertyDefaultValues: Record<string, string> = {
   gap: '0px',
+  padding: '0px',
+  paddingTop: '0px',
+  paddingRight: '0px',
+  paddingBottom: '0px',
+  paddingLeft: '0px',
 }
 
 function patchRemovedProperties(
