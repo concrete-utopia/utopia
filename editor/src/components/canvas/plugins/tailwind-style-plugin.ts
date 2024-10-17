@@ -48,7 +48,7 @@ function stringifiedStylePropValue(value: unknown): string | null {
   return null
 }
 
-function getTailwindClassMapping(classes: string[], config: Config | null) {
+function getTailwindClassMapping(classes: string[], config: Config | null): Record<string, string> {
   const mapping: Record<string, string> = {}
   classes.forEach((className) => {
     const parsed = TailwindClassParser.parse(className, config ?? undefined)
@@ -85,7 +85,7 @@ function getStylePropContents(
   return null
 }
 
-function getRemoveUpdates(properties: PropertyPath[]) {
+function getRemoveUpdates(properties: PropertyPath[]): UCL.ClassListUpdate[] {
   return mapDropNulls((property) => {
     const [maybeStyle, maybeCSSProp] = property.propertyElements
     if (
