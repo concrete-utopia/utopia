@@ -215,6 +215,7 @@ export enum FlexJustifyContent {
   SpaceAround = 'space-around',
   SpaceBetween = 'space-between',
   SpaceEvenly = 'space-evenly',
+  Stretch = 'stretch',
 }
 
 export const AllFlexJustifyContents: Array<FlexJustifyContent> = [
@@ -224,6 +225,7 @@ export const AllFlexJustifyContents: Array<FlexJustifyContent> = [
   FlexJustifyContent.SpaceAround,
   FlexJustifyContent.SpaceBetween,
   FlexJustifyContent.SpaceEvenly,
+  FlexJustifyContent.Stretch,
 ]
 
 export enum FlexDirection {
