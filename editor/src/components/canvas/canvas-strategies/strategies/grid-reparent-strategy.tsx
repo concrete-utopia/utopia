@@ -272,18 +272,22 @@ function gridReparentCommands(
   if (reparentResult == null) {
     return null
   }
-  const gridPropsCommands = runGridRearrangeMove(target, target, jsxMetadata, interactionData, grid)
-
-  if (gridPropsCommands == null) {
-    return null
-  }
 
   const { commands: reparentCommands, newPath } = reparentResult
+
+  const gridPropsCommands = runGridRearrangeMove(
+    target,
+    target,
+    jsxMetadata,
+    interactionData,
+    grid,
+    newPath,
+  )
 
   const removeAbsolutePositioningPropsCommands = removeAbsolutePositioningProps('always', newPath)
 
   return {
-    commands: [...gridPropsCommands, ...reparentCommands, removeAbsolutePositioningPropsCommands],
+    commands: [...reparentCommands, ...gridPropsCommands, removeAbsolutePositioningPropsCommands],
     newPath: newPath,
     oldPath: target,
   }
