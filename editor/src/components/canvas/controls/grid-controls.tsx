@@ -232,31 +232,49 @@ const GridResizingControl = React.memo((props: GridResizingControlProps) => {
       }}
     >
       <div
-        data-testid={labelId}
         style={{
-          zoom: 1 / scale,
-          height: GRID_RESIZE_HANDLE_SIZE,
-          borderRadius: 3,
-          padding: '0 4px',
-          border: `.1px solid ${colorTheme.white.value}`,
-          background: colorTheme.primary.value,
-          color: colorTheme.white.value,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: canResize
-            ? gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start')
-            : 'default',
-          pointerEvents: 'initial',
-          width: labelsHovered ? `calc-size(min-content, size)` : 10, // FIXME
-          overflow: 'hidden',
-          transition: 'width 0.2s ease',
+          // display: 'flex',
+          justifyContent: 'flex-end',
+          width: 0,
+          height: 0,
+          alignSelf: 'center',
+          justifySelf: 'center',
+          overflow: 'visible',
         }}
-        onMouseDown={mouseDownHandler}
-        onMouseMove={onMouseMove}
-        onMouseOver={onMouseOver}
       >
-        {getLabelForAxis(props.dimension, props.dimensionIndex, props.fromPropsAxisValues)}
+        <div
+          data-testid={labelId}
+          style={{
+            position: 'absolute',
+            right: props.axis === 'row' ? 0 : undefined,
+            zoom: 1 / scale,
+            height: GRID_RESIZE_HANDLE_SIZE,
+            borderRadius: 3,
+            // padding: '0 4px',
+            border: `.1px solid ${colorTheme.white.value}`,
+            background: colorTheme.primary.value,
+            color: colorTheme.white.value,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: canResize
+              ? gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start')
+              : 'default',
+            pointerEvents: 'initial',
+            width: labelsHovered ? `calc-size(min-content, size)` : 4, // FIXME
+            overflow: 'hidden',
+            rotate: props.axis === 'column' ? (labelsHovered ? '-45deg' : '-90deg') : '0deg',
+            transformOrigin: 'left center',
+            transition: 'width 0.0s ease',
+          }}
+          onMouseDown={mouseDownHandler}
+          onMouseMove={onMouseMove}
+          onMouseOver={onMouseOver}
+        >
+          {!labelsHovered
+            ? ''
+            : getLabelForAxis(props.dimension, props.dimensionIndex, props.fromPropsAxisValues)}
+        </div>
       </div>
       {when(
         props.resizing !== 'not-resizing',
