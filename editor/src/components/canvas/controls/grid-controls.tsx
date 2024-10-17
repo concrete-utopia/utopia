@@ -126,6 +126,7 @@ interface GridResizingControlProps {
   setResizingIndex: (v: number | null) => void
   resizeLocked: boolean
   stripedAreaLength: number | null
+  labelsHovered: [boolean, React.Dispatch<React.SetStateAction<boolean>>]
 }
 
 const GridResizingControl = React.memo((props: GridResizingControlProps) => {
@@ -211,6 +212,12 @@ const GridResizingControl = React.memo((props: GridResizingControlProps) => {
     [scale, props.padding],
   )
 
+  const [labelsHovered, setLabelsHovered] = props.labelsHovered
+
+  const onMouseOver = React.useCallback(() => {
+    setLabelsHovered(true)
+  }, [setLabelsHovered])
+
   return (
     <div
       key={containerId}
@@ -225,27 +232,49 @@ const GridResizingControl = React.memo((props: GridResizingControlProps) => {
       }}
     >
       <div
-        data-testid={labelId}
         style={{
-          zoom: 1 / scale,
-          height: GRID_RESIZE_HANDLE_SIZE,
-          borderRadius: 3,
-          padding: '0 4px',
-          border: `.1px solid ${colorTheme.white.value}`,
-          background: colorTheme.primary.value,
-          color: colorTheme.white.value,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: canResize
-            ? gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start')
-            : 'default',
-          pointerEvents: 'initial',
+          // display: 'flex',
+          justifyContent: 'flex-end',
+          width: 0,
+          height: 0,
+          alignSelf: 'center',
+          justifySelf: 'center',
+          overflow: 'visible',
         }}
-        onMouseDown={mouseDownHandler}
-        onMouseMove={onMouseMove}
       >
-        {getLabelForAxis(props.dimension, props.dimensionIndex, props.fromPropsAxisValues)}
+        <div
+          data-testid={labelId}
+          style={{
+            position: 'absolute',
+            right: props.axis === 'row' ? 0 : undefined,
+            zoom: 1 / scale,
+            height: GRID_RESIZE_HANDLE_SIZE,
+            borderRadius: 3,
+            // padding: '0 4px',
+            border: `.1px solid ${colorTheme.white.value}`,
+            background: colorTheme.primary.value,
+            color: colorTheme.white.value,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: canResize
+              ? gridEdgeToCSSCursor(props.axis === 'column' ? 'column-start' : 'row-start')
+              : 'default',
+            pointerEvents: 'initial',
+            width: labelsHovered ? `calc-size(min-content, size)` : 4, // FIXME
+            overflow: 'hidden',
+            rotate: props.axis === 'column' ? (labelsHovered ? '-45deg' : '-90deg') : '0deg',
+            transformOrigin: 'left center',
+            transition: 'width 0.0s ease',
+          }}
+          onMouseDown={mouseDownHandler}
+          onMouseMove={onMouseMove}
+          onMouseOver={onMouseOver}
+        >
+          {!labelsHovered
+            ? ''
+            : getLabelForAxis(props.dimension, props.dimensionIndex, props.fromPropsAxisValues)}
+        </div>
       </div>
       {when(
         props.resizing !== 'not-resizing',
@@ -314,6 +343,7 @@ interface GridResizingProps {
   padding: Sides | null
   justifyContent: string | null
   alignContent: string | null
+  labelsHovered: [boolean, React.Dispatch<React.SetStateAction<boolean>>]
 }
 
 const GridResizing = React.memo((props: GridResizingProps) => {
@@ -440,6 +470,7 @@ const GridResizing = React.memo((props: GridResizingProps) => {
                     ? props.padding.top ?? 0
                     : props.padding.left ?? 0
                 }
+                labelsHovered={props.labelsHovered}
               />
             )
           })}
@@ -519,44 +550,50 @@ export const GridRowColumnResizingControlsComponent = ({
     })
   }, [scale, grids])
 
+  const labelsHovered = React.useState(false)
+
   return (
     <CanvasOffsetWrapper>
-      {gridsWithVisibleResizeControls.flatMap((grid) => {
-        return (
-          <GridResizing
-            key={`grid-resizing-column-${EP.toString(grid.elementPath)}`}
-            axisValues={grid.gridTemplateColumns}
-            fromPropsAxisValues={grid.gridTemplateColumnsFromProps}
-            containingFrame={grid.frame}
-            axis={'column'}
-            gap={grid.columnGap ?? grid.gap}
-            padding={grid.padding}
-            stripedAreaLength={
-              getStripedAreaLength(grid.gridTemplateRows, grid.gap ?? 0) ?? grid.frame.height
-            }
-            alignContent={grid.justifyContent}
-            justifyContent={grid.alignContent}
-          />
-        )
-      })}
-      {gridsWithVisibleResizeControls.flatMap((grid) => {
-        return (
-          <GridResizing
-            key={`grid-resizing-row-${EP.toString(grid.elementPath)}`}
-            axisValues={grid.gridTemplateRows}
-            fromPropsAxisValues={grid.gridTemplateRowsFromProps}
-            containingFrame={grid.frame}
-            axis={'row'}
-            gap={grid.rowGap ?? grid.gap}
-            padding={grid.padding}
-            stripedAreaLength={
-              getStripedAreaLength(grid.gridTemplateColumns, grid.gap ?? 0) ?? grid.frame.width
-            }
-            alignContent={grid.alignContent}
-            justifyContent={grid.justifyContent}
-          />
-        )
-      })}
+      <div onMouseLeave={() => labelsHovered[1](false)}>
+        {gridsWithVisibleResizeControls.flatMap((grid) => {
+          return (
+            <GridResizing
+              key={`grid-resizing-column-${EP.toString(grid.elementPath)}`}
+              axisValues={grid.gridTemplateColumns}
+              fromPropsAxisValues={grid.gridTemplateColumnsFromProps}
+              containingFrame={grid.frame}
+              axis={'column'}
+              gap={grid.columnGap ?? grid.gap}
+              padding={grid.padding}
+              stripedAreaLength={
+                getStripedAreaLength(grid.gridTemplateRows, grid.gap ?? 0) ?? grid.frame.height
+              }
+              alignContent={grid.justifyContent}
+              justifyContent={grid.alignContent}
+              labelsHovered={labelsHovered}
+            />
+          )
+        })}
+        {gridsWithVisibleResizeControls.flatMap((grid) => {
+          return (
+            <GridResizing
+              key={`grid-resizing-row-${EP.toString(grid.elementPath)}`}
+              axisValues={grid.gridTemplateRows}
+              fromPropsAxisValues={grid.gridTemplateRowsFromProps}
+              containingFrame={grid.frame}
+              axis={'row'}
+              gap={grid.rowGap ?? grid.gap}
+              padding={grid.padding}
+              stripedAreaLength={
+                getStripedAreaLength(grid.gridTemplateColumns, grid.gap ?? 0) ?? grid.frame.width
+              }
+              alignContent={grid.alignContent}
+              justifyContent={grid.justifyContent}
+              labelsHovered={labelsHovered}
+            />
+          )
+        })}
+      </div>
     </CanvasOffsetWrapper>
   )
 }
