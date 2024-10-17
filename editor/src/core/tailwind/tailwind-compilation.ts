@@ -95,7 +95,7 @@ function runTailwindClassGenerationOnDOMMutation(
   const updateHasNewTailwindData = mutations.some(
     (m) =>
       m.addedNodes.length > 0 || // new DOM element was added with potentially new classes
-      m.attributeName === 'class', // a new class was added to the class attribute of an element
+      m.attributeName === 'class', // potentially new classes were added to the class attribute of an element
   )
   if (!updateHasNewTailwindData) {
     return
