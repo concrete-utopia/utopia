@@ -4,7 +4,11 @@ import { createTailwindcss } from '@mhsdesign/jit-browser-tailwindcss'
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import { getProjectFileByFilePath, walkContentsTree } from '../../components/assets'
 import { CanvasContainerID } from '../../components/canvas/canvas-types'
-import { useRefEditorState } from '../../components/editor/store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+} from '../../components/editor/store/store-hook'
 import { importDefault } from '../es-modules/commonjs-interop'
 import { rescopeCSSToTargetCanvasOnly } from '../shared/css-utils'
 import type { RequireFn } from '../shared/npm-dependency-types'
@@ -13,6 +17,8 @@ import { ElementsToRerenderGLOBAL } from '../../components/canvas/ui-jsx-canvas'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { Config } from 'tailwindcss/types/config'
 import type { EditorState } from '../../components/editor/store/editor-state'
+import { createSelector } from 'reselect'
+import type { ProjectContentSubstate } from '../../components/editor/store/store-hook-substore-types'
 
 const LatestConfig: { current: { code: string; config: Config } | null } = { current: null }
 export function getTailwindConfigCached(editorState: EditorState): Config | null {
@@ -103,6 +109,11 @@ function runTailwindClassGenerationOnDOMMutation(
   generateTailwindClasses(projectContents, requireFn)
 }
 
+const tailwindConfigSelector = createSelector(
+  (store: ProjectContentSubstate) => store.editor.projectContents,
+  (projectContents) => getProjectFileByFilePath(projectContents, TailwindConfigPath),
+)
+
 export const useTailwindCompilation = () => {
   const requireFnRef = useRefEditorState((store) => {
     const requireFn = store.editor.codeResultCache.curriedRequireFn(store.editor.projectContents)
@@ -114,11 +125,20 @@ export const useTailwindCompilation = () => {
     (store) => store.editor.canvas.interactionSession != null,
   )
 
-  const tailwindConfigExists =
-    getProjectFileByFilePath(projectContentsRef.current, TailwindConfigPath) != null
+  // this is not a ref, beacuse we want to re-compile the Tailwind classes when the tailwind config changes
+  const tailwindConfig = useEditorState(
+    Substores.projectContents,
+    tailwindConfigSelector,
+    'useTailwindCompilation tailwindConfig',
+  )
 
   React.useEffect(() => {
-    if (!tailwindConfigExists || !isFeatureEnabled('Tailwind')) {
+    const canvasContainer = document.getElementById(CanvasContainerID)
+    if (
+      tailwindConfig == null || // TODO: read this from the utopia key in package.json
+      canvasContainer == null ||
+      !isFeatureEnabled('Tailwind')
+    ) {
       return
     }
 
@@ -131,7 +151,7 @@ export const useTailwindCompilation = () => {
       )
     })
 
-    observer.observe(document.getElementById(CanvasContainerID)!, {
+    observer.observe(canvasContainer, {
       attributes: true,
       childList: true,
       subtree: true,
@@ -143,5 +163,5 @@ export const useTailwindCompilation = () => {
     return () => {
       observer.disconnect()
     }
-  }, [isInteractionActiveRef, projectContentsRef, requireFnRef, tailwindConfigExists])
+  }, [isInteractionActiveRef, projectContentsRef, requireFnRef, tailwindConfig])
 }
