@@ -381,16 +381,8 @@ export const MetadataUtils = {
     return instance?.specialSizeMeasurements.layoutSystemForChildren === 'grid'
   },
   isGridCell(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
-    const parent = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
-    return (
-      parent != null &&
-      isRight(parent.element) &&
-      isJSXElement(parent.element.value) &&
-      parent.element.value.children.length > 0 &&
-      parent.specialSizeMeasurements.containerGridProperties.gridTemplateColumns != null &&
-      parent.specialSizeMeasurements.containerGridProperties.gridTemplateRows != null &&
-      MetadataUtils.isGridLayoutedContainer(parent)
-    )
+    const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+    return elementMetadata?.specialSizeMeasurements.parentLayoutSystem === 'grid'
   },
   isGridCellWithPositioning(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
@@ -2660,6 +2652,7 @@ function fillLayoutSystemForChildrenFromAncestors(
       specialSizeMeasurements: {
         ...elem.specialSizeMeasurements,
         layoutSystemForChildren: layoutSystemForChildren,
+        layoutSystemForChildrenInherited: true,
       },
     }
   })

@@ -34,7 +34,11 @@ import type { Either } from '../../../../core/shared/either'
 import { foldEither, isLeft, isRight } from '../../../../core/shared/either'
 import { roundTo, roundToNearestWhole } from '../../../../core/shared/math-utils'
 import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-template'
-import { expandGridDimensions, replaceGridTemplateDimensionAtIndex } from './grid-helpers'
+import {
+  expandGridDimensions,
+  findOriginalGrid,
+  replaceGridTemplateDimensionAtIndex,
+} from './grid-helpers'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { CSSCursor } from '../../canvas-types'
 
@@ -60,6 +64,11 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
   }
 
   const gridPath = isGrid ? selectedElement : EP.parentPath(selectedElement)
+  const metadata = interactionSession?.latestMetadata ?? canvasState.startingMetadata
+  const originalGridPath = findOriginalGrid(metadata, gridPath)
+  if (originalGridPath == null) {
+    return null
+  }
 
   return {
     id: 'resize-grid-strategy',
@@ -96,7 +105,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       const dragAmount = control.axis === 'column' ? drag.x : drag.y
 
       const gridSpecialSizeMeasurements =
-        canvasState.startingMetadata[EP.toString(gridPath)].specialSizeMeasurements
+        canvasState.startingMetadata[EP.toString(originalGridPath)].specialSizeMeasurements
 
       const originalValues =
         control.axis === 'column'
@@ -180,16 +189,17 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       const commands = [
         setProperty(
           'always',
-          gridPath,
+          originalGridPath,
           PP.create(
             'style',
             control.axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows',
           ),
           propertyValueAsString,
         ),
+        setCursorCommand(control.axis === 'column' ? CSSCursor.ColResize : CSSCursor.RowResize),
       ]
 
-      return strategyApplicationResult(commands, [gridPath])
+      return strategyApplicationResult(commands, [originalGridPath])
     },
   }
 }

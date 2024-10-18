@@ -32,6 +32,7 @@ import {
   GridRowColumnResizingControlsComponent,
 } from './grid-controls'
 import { isEdgePositionOnSide } from '../canvas-utils'
+import { findOriginalGrid } from '../canvas-strategies/strategies/grid-helpers'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -136,7 +137,11 @@ export function useGridData(elementPaths: ElementPath[]): GridData[] {
     Substores.metadata,
     (store) => {
       return mapDropNulls((view) => {
-        const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view)
+        const originalGridPath = findOriginalGrid(store.editor.jsxMetadata, view)
+        const element = MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          originalGridPath,
+        )
 
         const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element) ? element : null
 
@@ -172,7 +177,7 @@ export function useGridData(elementPaths: ElementPath[]): GridData[] {
         )
 
         return {
-          elementPath: targetGridContainer.elementPath,
+          elementPath: view,
           metadata: targetGridContainer,
           frame: targetGridContainer.globalFrame,
           gridTemplateColumns: gridTemplateColumns,
