@@ -180,7 +180,7 @@ const GridPaddingOutlineForDimension = (props: {
       {createArrayWithLength(length, (index) => {
         const hide = index === 0 || index === length - 1 || index % 2 === 0
         return (
-          <GridRowHighlight
+          <GridRowOrColumnHighlight
             key={index}
             hide={hide} // we only want to show the divs that fall in where the gaps are in the original grid
             gapId={`${dimension}-${index}`}
@@ -204,7 +204,7 @@ const GridPaddingOutlineForDimension = (props: {
   )
 }
 
-const GridRowHighlight = (props: {
+const GridRowOrColumnHighlight = (props: {
   gapId: string
   onMouseDown: React.MouseEventHandler
   hide: boolean
