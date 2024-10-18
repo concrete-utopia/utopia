@@ -374,20 +374,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     }
   }
 
-  const elementsToRerenderRef = React.useRef(ElementsToRerenderGLOBAL.current)
-  const shouldRerenderRef = React.useRef(false)
-  shouldRerenderRef.current =
-    ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
-    elementsToRerenderRef.current === 'rerender-all-elements' || // TODO this means the first drag frame will still be slow, figure out a nicer way to immediately switch to true. probably this should live in a dedicated a function
-    !arrayEqualsByValue(
-      ElementsToRerenderGLOBAL.current,
-      elementsToRerenderRef.current,
-      EP.pathsEqual,
-    ) || // once we get here, we know that both `ElementsToRerenderGLOBAL.current` and `elementsToRerenderRef.current` are arrays
-    haveProjectImportsChanged()
-  elementsToRerenderRef.current = ElementsToRerenderGLOBAL.current
-
-  if (shouldRerenderRef.current) {
+  if (haveProjectImportsChanged()) {
     maybeOldProjectContents.current = projectContents
   }
 
