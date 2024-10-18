@@ -219,8 +219,11 @@ const GridTrackSizeLabelForDimension = React.memo((props: GridResizingControlPro
       <div
         data-testid={labelId}
         style={{
+          position: 'absolute',
           zoom: 1 / scale,
           height: GRID_RESIZE_HANDLE_SIZE,
+          right: props.axis === 'row' ? 'calc(100% + 8px)' : undefined,
+          bottom: props.axis === 'column' ? 'calc(100% + 8px)' : undefined,
           borderRadius: 3,
           padding: '0 4px',
           border: `.1px solid ${colorTheme.white.value}`,
