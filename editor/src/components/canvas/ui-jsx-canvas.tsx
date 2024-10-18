@@ -98,6 +98,7 @@ import { listenForReactRouterErrors } from '../../core/shared/runtime-report-log
 import { getFilePathMappings } from '../../core/model/project-file-utils'
 import { useInvalidatedCanvasRemount } from './canvas-component-entry'
 import { useTailwindCompilation } from '../../core/tailwind/tailwind-compilation'
+import { getProjectImports } from '../editor/import-utils'
 
 applyUIDMonkeyPatch()
 
@@ -360,20 +361,20 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   useClearSpyMetadataOnRemount(props.invalidatedCanvasData, isRemounted, metadataContext)
 
-  const elementsToRerenderRef = React.useRef(ElementsToRerenderGLOBAL.current)
-  const shouldRerenderRef = React.useRef(false)
-  shouldRerenderRef.current =
-    ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
-    elementsToRerenderRef.current === 'rerender-all-elements' || // TODO this means the first drag frame will still be slow, figure out a nicer way to immediately switch to true. probably this should live in a dedicated a function
-    !arrayEqualsByValue(
-      ElementsToRerenderGLOBAL.current,
-      elementsToRerenderRef.current,
-      EP.pathsEqual,
-    ) // once we get here, we know that both `ElementsToRerenderGLOBAL.current` and `elementsToRerenderRef.current` are arrays
-  elementsToRerenderRef.current = ElementsToRerenderGLOBAL.current
-
   const maybeOldProjectContents = React.useRef(projectContents)
-  if (shouldRerenderRef.current) {
+
+  function haveProjectImportsChanged(): boolean {
+    const oldProjectContents = maybeOldProjectContents.current
+    if (oldProjectContents === projectContents) {
+      return false
+    } else {
+      const oldImports = getProjectImports(oldProjectContents)
+      const newImports = getProjectImports(projectContents)
+      return !Utils.shallowEqual(oldImports, newImports)
+    }
+  }
+
+  if (haveProjectImportsChanged()) {
     maybeOldProjectContents.current = projectContents
   }
 

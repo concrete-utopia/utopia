@@ -171,7 +171,7 @@ const gridDrawToInsertStrategyInner =
               ),
               updateHighlightedViews('mid-interaction', [targetParent]),
             ],
-            [targetParent],
+            [],
           )
         }
 
