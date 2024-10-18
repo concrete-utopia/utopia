@@ -7,6 +7,7 @@ import { size } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { when } from '../../../../utils/react-conditionals'
+import type { UtopiColor } from '../../../../uuiui'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { CSSCursor } from '../../../../uuiui-deps'
 import { useDispatch } from '../../../editor/store/dispatch-context'
@@ -135,7 +136,7 @@ export const GridGapControlComponent = React.memo<GridGapControlProps>((props) =
   )
 })
 
-const GridPaddingOutlineForDimension = (props: {
+export const GridPaddingOutlineForDimension = (props: {
   grid: GridData
   dimension: 'rows' | 'columns'
   onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void
@@ -144,6 +145,7 @@ const GridPaddingOutlineForDimension = (props: {
   zIndexPriority: boolean
   gridGap: CSSNumberWithRenderedValue
   elementHovered: boolean
+  draggedOutlineColor?: UtopiColor
 }) => {
   const {
     grid,
@@ -154,6 +156,7 @@ const GridPaddingOutlineForDimension = (props: {
     onMouseOver,
     zIndexPriority,
     elementHovered,
+    draggedOutlineColor,
   } = props
 
   let style: CSSProperties = {
@@ -197,6 +200,7 @@ const GridPaddingOutlineForDimension = (props: {
             elementHovered={elementHovered}
             gridJustifyContent={grid.justifyContent}
             gridAlignContent={grid.alignContent}
+            draggedOutlineColor={draggedOutlineColor}
           />
         )
       })}
@@ -218,6 +222,7 @@ const GridRowOrColumnHighlight = (props: {
   elementHovered: boolean
   gridJustifyContent: FlexJustifyContent | null
   gridAlignContent: AlignContent | null
+  draggedOutlineColor?: UtopiColor
 }) => {
   const {
     gapId,
@@ -233,6 +238,7 @@ const GridRowOrColumnHighlight = (props: {
     elementHovered,
     gridJustifyContent,
     gridAlignContent,
+    draggedOutlineColor,
   } = props
 
   const colorTheme = useColorTheme()
@@ -244,7 +250,9 @@ const GridRowOrColumnHighlight = (props: {
 
   const lineWidth = 1 / canvasScale
 
-  const outlineColor = beingDragged ? colorTheme.brandNeonOrange.value : 'transparent'
+  const outlineColor = beingDragged
+    ? (draggedOutlineColor ?? colorTheme.brandNeonOrange).value
+    : 'transparent'
 
   const [backgroundShown, setBackgroundShown] = React.useState<boolean>(false)
 
