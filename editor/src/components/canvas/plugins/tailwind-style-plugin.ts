@@ -114,6 +114,8 @@ function getPropertyCleanupCommands(propertiesToRemove: PropertiesWithElementPat
   }, propertiesToRemove)
 }
 
+const underscoresToSpaces = (s: string | undefined) => s?.replace(/[-_]/g, ' ')
+
 export const TailwindPlugin = (config: Config | null): StylePlugin => ({
   name: 'Tailwind',
   styleInfoFactory:
@@ -136,7 +138,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
           cssParsers.flexDirection,
         ),
         padding: parseTailwindProperty(
-          mapping[TailwindPropertyMapping.padding],
+          underscoresToSpaces(mapping[TailwindPropertyMapping.padding]),
           cssParsers.padding,
         ),
         paddingTop: parseTailwindProperty(
