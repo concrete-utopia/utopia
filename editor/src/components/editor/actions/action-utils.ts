@@ -1,5 +1,5 @@
 import type { ElementPath, PropertyPath } from 'utopia-shared/src/types'
-import { mapDropNulls, safeIndex } from '../../../core/shared/array-utils'
+import { mapDropNulls, safeIndex, uniq } from '../../../core/shared/array-utils'
 import type { CanvasCommand } from '../../canvas/commands/commands'
 import type { EditorAction } from '../action-types'
 import { isFromVSCodeAction } from './actions-from-vscode'
@@ -507,10 +507,7 @@ interface ElementPathAndProp {
   prop: string
 }
 
-export function getPropertiesToRemoveFromCommands(
-  commands: CanvasCommand[],
-): PropertiesWithElementPath[] {
-  const deltas = propertyUpdateDeltaFromCanvasCommand(commands)
+function getPropertiesToRemoveFromDeltas(deltas: PropertyUpdateDelta[]): Record<string, string[]> {
   const simpleStyle = interpretPropertyUpdates(deltas)
 
   const allRemoves: ElementPathAndProp[] = mapDropNulls(
@@ -527,8 +524,110 @@ export function getPropertiesToRemoveFromCommands(
     ensureEntryExists(result, remove.elementPath, [])
     result[EP.toString(remove.elementPath)].push(remove.prop)
   }
+  return result
+}
 
-  return Object.entries(result).map(([elementPathString, props]) => ({
+const PaddingLonghands = ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft']
+
+interface PropertyPatchValues {
+  gap?: '0px'
+  paddingTop?: '0px'
+  paddingRight?: '0px'
+  paddingBottom?: '0px'
+  paddingLeft?: '0px'
+}
+
+function setPropertyValue(
+  propertyPatchValues: PropertyPatchValues,
+  prop: string,
+): PropertyPatchValues {
+  switch (prop) {
+    case 'gap':
+      propertyPatchValues.gap = '0px'
+      break
+    case 'paddingTop':
+      propertyPatchValues.paddingTop = '0px'
+      break
+    case 'paddingRight':
+      propertyPatchValues.paddingRight = '0px'
+      break
+    case 'paddingBottom':
+      propertyPatchValues.paddingBottom = '0px'
+      break
+    case 'paddingLeft':
+      propertyPatchValues.paddingLeft = '0px'
+      break
+    default:
+      break
+  }
+
+  return propertyPatchValues
+}
+
+export interface PropertiesToPatchWithDefaults {
+  [elementPathString: string]: PropertyPatchValues
+}
+
+function substituteShorthandProperties(
+  propsToSetByElement: Record<string, string[]>,
+  elementPathString: string,
+  prop: string,
+): string[] {
+  const paddingShorthandSet = propsToSetByElement[elementPathString]?.includes('padding')
+
+  if (prop === 'padding') {
+    return PaddingLonghands.filter((p) => !propsToSetByElement[elementPathString]?.includes(p))
+  }
+
+  if (PaddingLonghands.includes(prop)) {
+    if (paddingShorthandSet) {
+      return []
+    }
+  }
+  return [prop]
+}
+
+export function getPropertiesToPatchFromCommands(
+  commands: CanvasCommand[],
+): PropertiesToPatchWithDefaults {
+  const deltas = propertyUpdateDeltaFromCanvasCommand(commands)
+  const propsToRemove = getPropertiesToRemoveFromDeltas(deltas)
+
+  const propsToSetByElement: Record<string, string[]> = {}
+  for (const delta of deltas) {
+    if (delta.type === 'set') {
+      ensureEntryExists(propsToSetByElement, delta.element, [])
+      propsToSetByElement[EP.toString(delta.element)].push(delta.prop)
+    }
+  }
+
+  const withPropsSubstituted = Object.entries(propsToRemove).map(
+    ([elementPathString, props]): [string, string[]] => [
+      elementPathString,
+      uniq(
+        props.flatMap((prop) =>
+          substituteShorthandProperties(propsToSetByElement, elementPathString, prop),
+        ),
+      ),
+    ],
+  )
+
+  const result: PropertiesToPatchWithDefaults = {}
+  for (const [elementPathString, props] of withPropsSubstituted) {
+    ensureEntryExists(result, EP.fromString(elementPathString), {})
+    result[elementPathString] = props.reduce(setPropertyValue, {})
+  }
+
+  return result
+}
+
+export function getPropertiesToRemoveFromCommands(
+  commands: CanvasCommand[],
+): PropertiesWithElementPath[] {
+  const deltas = propertyUpdateDeltaFromCanvasCommand(commands)
+  const propsToRemove = getPropertiesToRemoveFromDeltas(deltas)
+
+  return Object.entries(propsToRemove).map(([elementPathString, props]) => ({
     elementPath: EP.fromString(elementPathString),
     properties: props.map((p) => PP.create('style', p)),
   }))

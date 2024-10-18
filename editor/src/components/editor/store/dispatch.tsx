@@ -7,7 +7,7 @@ import type { CanvasAction } from '../../canvas/canvas-types'
 import type { LocalNavigatorAction } from '../../navigator/actions'
 import type { EditorAction, EditorDispatch, UpdateMetadataInEditorState } from '../action-types'
 import { isLoggedIn } from '../action-types'
-import type { PropertiesWithElementPath } from '../actions/action-utils'
+import type { PropertiesToPatchWithDefaults } from '../actions/action-utils'
 import {
   isTransientAction,
   isUndoOrRedo,
@@ -68,6 +68,7 @@ import { handleStrategies, normalizationData, updatePostActionState } from './di
 import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 import { arrayOfPathsEqual, removePathsWithDeadUIDs } from '../../../core/shared/element-path'
+import * as EP from '../../../core/shared/element-path'
 import { notice } from '../../../components/common/notice'
 import { getUidMappings, getAllUniqueUidsFromMapping } from '../../../core/model/get-uid-mappings'
 import { updateSimpleLocks } from '../../../core/shared/element-locking'
@@ -96,6 +97,7 @@ import { getActivePlugin } from '../../canvas/plugins/style-plugins'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { propertyToSet, updateBulkProperties } from '../../canvas/commands/set-property-command'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
+import * as PP from '../../../core/shared/property-path'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -1124,40 +1126,23 @@ function addNormalizationDataFromActions(
   )
 }
 
-const PropertyDefaultValues: Record<string, string> = {
-  gap: '0px',
-  padding: '0px',
-  paddingTop: '0px',
-  paddingRight: '0px',
-  paddingBottom: '0px',
-  paddingLeft: '0px',
-}
-
 function patchRemovedProperties(
   editor: EditorState,
-  propertiesToPatch: PropertiesWithElementPath[],
+  propertiesToPatch: PropertiesToPatchWithDefaults,
 ): EditorState {
   const propertiesToSetCommands = mapDropNulls(
-    ({ elementPath, properties }) =>
-      getJSXElementFromProjectContents(elementPath, editor.projectContents) == null
+    ([elementPathString, properties]) =>
+      getJSXElementFromProjectContents(EP.fromString(elementPathString), editor.projectContents) ==
+      null
         ? null
         : updateBulkProperties(
             'always',
-            elementPath,
-            mapDropNulls((property) => {
-              const [maybeStyle, maybeCSSProp] = property.propertyElements
-              if (maybeStyle !== 'style' || maybeCSSProp == null) {
-                return null
-              }
-
-              const defaultValue = PropertyDefaultValues[maybeCSSProp]
-              if (defaultValue == null) {
-                return null
-              }
-              return propertyToSet(property, defaultValue)
-            }, properties),
+            EP.fromString(elementPathString),
+            Object.entries(properties).map(([property, value]) => {
+              return propertyToSet(PP.create('style', property), value)
+            }),
           ),
-    propertiesToPatch,
+    Object.entries(propertiesToPatch),
   )
   return foldAndApplyCommandsSimple(editor, propertiesToSetCommands)
 }
@@ -1167,7 +1152,7 @@ function runRemovedPropertyPatchingAndNormalization(
   postProcessingData: PostProcessingData,
 ): EditorState {
   if (postProcessingData.type === 'properties-to-patch') {
-    return postProcessingData.propertiesToPatch.length === 0
+    return Object.keys(postProcessingData.propertiesToPatch).length === 0
       ? editorState
       : patchRemovedProperties(editorState, postProcessingData.propertiesToPatch)
   }
