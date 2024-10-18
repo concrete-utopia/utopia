@@ -203,6 +203,20 @@ const GridTrackSizeLabelForDimension = React.memo((props: GridResizingControlPro
   const labelId = `grid-${props.axis}-handle-${props.dimensionIndex}`
   const containerId = `${labelId}-container`
 
+  const cssProp = React.useMemo(
+    () => ({
+      backgroundColor:
+        props.resizing === 'resize-target'
+          ? colorTheme.primary.value
+          : colorTheme.primarySubdued.value,
+      '&:hover': {
+        zIndex: 1,
+        backgroundColor: colorTheme.primary.value,
+      },
+    }),
+    [props.resizing, colorTheme],
+  )
+
   return (
     <div
       key={containerId}
@@ -227,7 +241,6 @@ const GridTrackSizeLabelForDimension = React.memo((props: GridResizingControlPro
           borderRadius: 3,
           padding: '0 4px',
           border: `.1px solid ${colorTheme.white.value}`,
-          background: colorTheme.primary.value,
           color: colorTheme.white.value,
           display: 'flex',
           alignItems: 'center',
@@ -239,6 +252,7 @@ const GridTrackSizeLabelForDimension = React.memo((props: GridResizingControlPro
         }}
         onMouseDown={mouseDownHandler}
         onMouseMove={onMouseMove}
+        css={cssProp}
       >
         {getLabelForAxis(props.dimension, props.dimensionIndex, props.fromPropsAxisValues)}
       </div>
