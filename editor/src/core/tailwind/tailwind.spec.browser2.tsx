@@ -1,5 +1,13 @@
+import { mouseClickAtPoint } from '../../components/canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../../components/canvas/ui-jsx.test-utils'
 import { renderTestEditorWithModel } from '../../components/canvas/ui-jsx.test-utils'
+import { switchEditorMode } from '../../components/editor/actions/action-creators'
+import { EditorModes } from '../../components/editor/editor-modes'
+import { StoryboardFilePath } from '../../components/editor/store/editor-state'
+import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
 import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../utils/utils.test-utils'
+import { windowPoint } from '../shared/math-utils'
+import { TailwindConfigPath } from './tailwind-config'
 import { Project } from './tailwind.test-utils'
 
 describe('rendering tailwind projects in the editor', () => {
@@ -133,4 +141,166 @@ describe('rendering tailwind projects in the editor', () => {
       })
     }
   })
+
+  describe('Remix', () => {
+    const projectWithMultipleRoutes = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+        import { RemixScene, Storyboard } from 'utopia-api'
+        
+        export var storyboard = (
+          <Storyboard data-uid='storyboard'>
+            <RemixScene
+              className='absolute top-[100px] left-[200px] w-[700px] h-[700px]'
+              data-label='Playground'
+              data-uid='remix'
+            />
+          </Storyboard>
+        )
+        `,
+      ['/app/root.js']: `import React from 'react'
+        import { Outlet } from '@remix-run/react'
+        
+        export default function Root() {
+          return (
+            <div data-testid='root' className='flex flex-col gap-10 bg-red-200 text-2xl'>
+              I am Root!
+              <Outlet />
+            </div>
+          )
+        }
+        `,
+      ['/app/routes/_index.js']: `import React from 'react'
+        import { Link } from '@remix-run/react'
+  
+        export default function Index() {
+          return (
+            <div data-testid='index' className='flex flex-col gap-8'>
+              Index page
+              <Link to='/about' data-testid='remix-link'>About</Link>
+            </div>
+          )
+        }
+        `,
+      ['/app/routes/about.js']: `import React from 'react'
+  
+        export default function About() {
+          return (
+            <div data-testid='about' className='flex flex-row gap-6 p-4'>
+              <span data-testid='about-text' className='text-shadow-md'>About page</span>
+            </div>
+          )
+        }
+        `,
+      '/src/app.css': `
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;
+        `,
+      [TailwindConfigPath]: `
+        const Tailwind = {
+    theme: {
+      colors: {
+        transparent: 'transparent',
+        current: 'currentColor',
+        white: '#ffffff',
+        purple: '#3f3cbb',
+        midnight: '#121063',
+        metal: '#565584',
+        tahiti: '#3ab7bf',
+        silver: '#ecebff',
+        'bubble-gum': '#ff77e9',
+        bermuda: '#78dcca',
+      },
+    },
+    plugins: [
+      function ({ addUtilities }) {
+        const newUtilities = {
+          '.text-shadow': {
+            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
+          },
+          '.text-shadow-md': {
+            textShadow: '3px 3px 6px rgba(0, 0, 0, 0.2)',
+          },
+          '.text-shadow-lg': {
+            textShadow: '4px 4px 8px rgba(0, 0, 0, 0.3)',
+          },
+          '.text-shadow-none': {
+            textShadow: 'none',
+          },
+        }
+  
+        addUtilities(newUtilities, ['responsive', 'hover'])
+      },
+    ],
+  }
+  export default Tailwind`,
+    })
+
+    it('can render content in a RemixScene', async () => {
+      const editor = await renderTestEditorWithModel(
+        projectWithMultipleRoutes,
+        'await-first-dom-report',
+      )
+      {
+        const root = editor.renderedDOM.getByTestId('root')
+        const { backgroundColor, display, flexDirection, gap, fontSize } = getComputedStyle(root)
+        expect({ backgroundColor, display, flexDirection, gap, fontSize }).toEqual({
+          backgroundColor: 'rgba(0, 0, 0, 0)',
+          display: 'flex',
+          flexDirection: 'column',
+          fontSize: '24px',
+          gap: '40px',
+        })
+      }
+      {
+        const index = editor.renderedDOM.getByTestId('index')
+        const { display, flexDirection, gap } = getComputedStyle(index)
+        expect({ display, flexDirection, gap }).toEqual({
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '32px',
+        })
+      }
+    })
+    it('can render content after navigating to a different page', async () => {
+      const editor = await renderTestEditorWithModel(
+        projectWithMultipleRoutes,
+        'await-first-dom-report',
+      )
+      await switchToLiveMode(editor)
+      await clickRemixLink(editor)
+
+      {
+        const about = editor.renderedDOM.getByTestId('about')
+        const { display, flexDirection, gap, padding } = getComputedStyle(about)
+        expect({ display, flexDirection, gap, padding }).toEqual({
+          display: 'flex',
+          flexDirection: 'row',
+          gap: '24px',
+          padding: '16px',
+        })
+      }
+      {
+        const aboutText = editor.renderedDOM.getByTestId('about-text')
+        const { textShadow } = getComputedStyle(aboutText)
+        expect(textShadow).toEqual('rgba(0, 0, 0, 0.2) 3px 3px 6px')
+      }
+    })
+  })
 })
+
+const switchToLiveMode = (editor: EditorRenderResult) =>
+  editor.dispatch([switchEditorMode(EditorModes.liveMode())], true)
+
+async function clickLinkWithTestId(editor: EditorRenderResult, testId: string) {
+  const targetElement = editor.renderedDOM.queryAllByTestId(testId)[0]
+  const targetElementBounds = targetElement.getBoundingClientRect()
+
+  const clickPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+  await mouseClickAtPoint(targetElement, clickPoint)
+}
+
+async function clickRemixLink(editor: EditorRenderResult) {
+  await clickLinkWithTestId(editor, 'remix-link')
+  await editor.getDispatchFollowUpActionsFinished()
+}
