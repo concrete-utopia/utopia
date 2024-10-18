@@ -30,8 +30,12 @@ import type {
   StartPostActionSession,
 } from '../action-types'
 import { SelectComponents } from '../action-types'
-import type { PropertiesWithElementPath } from '../actions/action-utils'
+import type {
+  PropertiesToPatchWithDefaults,
+  PropertiesWithElementPath,
+} from '../actions/action-utils'
 import {
+  getPropertiesToPatchFromCommands,
   getPropertiesToRemoveFromCommands,
   isClearInteractionSession,
   isCreateOrUpdateInteractionSession,
@@ -63,10 +67,10 @@ import type { ElementPath } from 'utopia-shared/src/types'
 
 export interface PropertiesToPatch {
   type: 'properties-to-patch'
-  propertiesToPatch: PropertiesWithElementPath[]
+  propertiesToPatch: PropertiesToPatchWithDefaults
 }
 
-export const propertiesToPatch = (props: PropertiesWithElementPath[]): PropertiesToPatch => ({
+export const propertiesToPatch = (props: PropertiesToPatchWithDefaults): PropertiesToPatch => ({
   type: 'properties-to-patch',
   propertiesToPatch: props,
 })
@@ -704,7 +708,7 @@ function handleUpdate(
       ),
       newStrategyState: newStrategyState,
       postProcessingData: propertiesToPatch(
-        getPropertiesToRemoveFromCommands(strategyResult.commands),
+        getPropertiesToPatchFromCommands(strategyResult.commands),
       ),
     }
   } else {
