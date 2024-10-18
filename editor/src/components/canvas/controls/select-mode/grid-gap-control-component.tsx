@@ -296,8 +296,8 @@ const GridRowOrColumnHighlight = (props: {
         boxShadow: `inset 0 0 0 ${lineWidth}px ${outlineColor}`,
         opacity: hide ? 0 : 1,
 
-        alignContent: axis === 'row' ? 'center' : gridAlignContent ?? 'center',
-        justifyContent: axis === 'row' ? gridJustifyContent ?? 'center' : 'center',
+        alignContent: axis === 'row' ? undefined : gridAlignContent ?? undefined,
+        justifyContent: axis === 'row' ? gridJustifyContent ?? undefined : undefined,
         placeItems: 'center',
 
         gap: gap ?? 0,
