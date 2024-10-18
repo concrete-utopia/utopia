@@ -240,7 +240,7 @@ const gridDrawToInsertStrategyInner =
                 : null,
             ]),
           ],
-          [targetParent],
+          [targetParent, insertedElementPath],
           {
             strategyGeneratedUidsCache: {
               [insertionSubject.uid]: maybeWrapperWithUid?.uid,
