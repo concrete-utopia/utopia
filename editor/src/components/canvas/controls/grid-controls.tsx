@@ -74,7 +74,11 @@ import { windowToCanvasCoordinates } from '../dom-lookup'
 import type { Axis } from '../gap-utils'
 import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import type { GridControlsProps, GridData } from './grid-controls-for-strategies'
+import type {
+  GridControlsProps,
+  GridData,
+  GridMeasurementHelperData,
+} from './grid-controls-for-strategies'
 import {
   edgePositionToGridResizeEdge,
   GridCellTestId,
@@ -112,7 +116,6 @@ function getLabelForAxis(
   return gridCSSNumberToLabel(defaultEither(fromDOM, fromPropsAtIndex))
 }
 
-const GRID_RESIZE_HANDLE_CONTAINER_SIZE = 30 // px
 const GRID_RESIZE_HANDLE_SIZE = 15 // px
 
 interface GridResizingControlProps {
@@ -200,17 +203,6 @@ const GridTrackSizeLabelForDimension = React.memo((props: GridResizingControlPro
   const labelId = `grid-${props.axis}-handle-${props.dimensionIndex}`
   const containerId = `${labelId}-container`
 
-  const shadowSize = React.useMemo(() => {
-    return props.axis === 'column'
-      ? props.containingFrame.height + GRID_RESIZE_HANDLE_CONTAINER_SIZE
-      : props.containingFrame.width + GRID_RESIZE_HANDLE_CONTAINER_SIZE
-  }, [props.containingFrame, props.axis])
-
-  const stripedAreaSkew = React.useMemo(
-    () => GRID_RESIZE_HANDLE_CONTAINER_SIZE / scale + props.padding,
-    [scale, props.padding],
-  )
-
   return (
     <div
       key={containerId}
@@ -219,8 +211,8 @@ const GridTrackSizeLabelForDimension = React.memo((props: GridResizingControlPro
         display: 'flex',
         alignItems: props.axis === 'column' ? 'flex-start' : 'center',
         justifyContent: props.axis === 'column' ? 'center' : 'flex-start',
-        height: props.axis === 'column' && props.resizing !== 'not-resizing' ? shadowSize : '100%',
-        width: props.axis === 'row' && props.resizing !== 'not-resizing' ? shadowSize : '100%',
+        height: '100%',
+        width: '100%',
         position: 'relative',
       }}
     >
@@ -263,17 +255,6 @@ const GridResizingStripedIndicator = React.memo((props: GridResizingControlProps
   const labelId = `grid-${props.axis}-handle-${props.dimensionIndex}`
   const containerId = `${labelId}-container`
 
-  const shadowSize = React.useMemo(() => {
-    return props.axis === 'column'
-      ? props.containingFrame.height + GRID_RESIZE_HANDLE_CONTAINER_SIZE
-      : props.containingFrame.width + GRID_RESIZE_HANDLE_CONTAINER_SIZE
-  }, [props.containingFrame, props.axis])
-
-  const stripedAreaSkew = React.useMemo(
-    () => GRID_RESIZE_HANDLE_CONTAINER_SIZE / scale + props.padding,
-    [scale, props.padding],
-  )
-
   return (
     <div
       key={containerId}
@@ -282,8 +263,8 @@ const GridResizingStripedIndicator = React.memo((props: GridResizingControlProps
         display: 'flex',
         alignItems: props.axis === 'column' ? 'flex-start' : 'center',
         justifyContent: props.axis === 'column' ? 'center' : 'flex-start',
-        height: props.axis === 'column' && props.resizing !== 'not-resizing' ? shadowSize : '100%',
-        width: props.axis === 'row' && props.resizing !== 'not-resizing' ? shadowSize : '100%',
+        height: '100%',
+        width: '100%',
         position: 'relative',
       }}
     >
@@ -291,20 +272,9 @@ const GridResizingStripedIndicator = React.memo((props: GridResizingControlProps
         props.resizing !== 'not-resizing',
         <div
           style={{
-            position: 'absolute',
-            top: props.axis === 'column' ? stripedAreaSkew : 0,
-            left: props.axis === 'row' ? stripedAreaSkew : 0,
-            right: props.axis === 'row' || props.stripedAreaLength == null ? undefined : 0,
-            width:
-              props.axis === 'row' && props.stripedAreaLength != null
-                ? props.stripedAreaLength
-                : undefined,
-            bottom: props.axis === 'column' || props.stripedAreaLength == null ? undefined : 0,
-            height:
-              props.axis === 'column' && props.stripedAreaLength != null
-                ? props.stripedAreaLength
-                : undefined,
             display: 'flex',
+            width: '100%',
+            height: '100%',
             alignItems: 'center',
             justifyContent: 'center',
             border: `1px solid ${
@@ -345,6 +315,7 @@ const GridResizingStripedIndicator = React.memo((props: GridResizingControlProps
 GridResizingStripedIndicator.displayName = 'GridResizingStripedIndicator'
 
 interface GridResizingProps {
+  targetGrid: GridMeasurementHelperData
   axisValues: GridAutoOrTemplateBase | null
   fromPropsAxisValues: GridAutoOrTemplateBase | null
   stripedAreaLength: number | null
@@ -415,35 +386,17 @@ const GridResizing = React.memo((props: GridResizingProps) => {
   }
   switch (props.axisValues.type) {
     case 'DIMENSIONS':
-      const size = GRID_RESIZE_HANDLE_CONTAINER_SIZE / canvasScale
       const dimensions = props.axisValues.dimensions
 
+      const helperGridBaseStyle: React.CSSProperties = getGridHelperStyleMatchingTargetGrid(
+        props.targetGrid,
+      )
+
       const helperGridStyle: React.CSSProperties = {
-        position: 'absolute',
-        top: props.containingFrame.y - (props.axis === 'column' ? size : 0),
-        left: props.containingFrame.x - (props.axis === 'row' ? size : 0),
-        width: props.axis === 'column' ? props.containingFrame.width : size,
-        height: props.axis === 'row' ? props.containingFrame.height : size,
-        display: 'grid',
+        ...helperGridBaseStyle,
+        gridTemplateRows: props.axis === 'row' ? helperGridBaseStyle.gridTemplateRows : '1fr',
         gridTemplateColumns:
-          props.axis === 'column'
-            ? dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
-            : undefined,
-        gridTemplateRows:
-          props.axis === 'row'
-            ? dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
-            : undefined,
-        gap: props.gap ?? 0,
-        paddingLeft:
-          props.axis === 'column' && props.padding != null ? `${props.padding.left}px` : undefined,
-        paddingTop:
-          props.axis === 'row' && props.padding != null ? `${props.padding.top}px` : undefined,
-        paddingRight:
-          props.axis === 'column' && props.padding != null ? `${props.padding.right}px` : undefined,
-        paddingBottom:
-          props.axis === 'row' && props.padding != null ? `${props.padding.bottom}px` : undefined,
-        justifyContent: props.justifyContent ?? undefined,
-        alignContent: props.alignContent ?? undefined,
+          props.axis === 'column' ? helperGridBaseStyle.gridTemplateColumns : '1fr',
       }
 
       return (
@@ -592,6 +545,7 @@ export const GridRowColumnResizingControlsComponent = ({
         return (
           <GridResizing
             key={`grid-resizing-column-${EP.toString(grid.elementPath)}`}
+            targetGrid={grid}
             axisValues={grid.gridTemplateColumns}
             fromPropsAxisValues={grid.gridTemplateColumnsFromProps}
             containingFrame={grid.frame}
@@ -611,6 +565,7 @@ export const GridRowColumnResizingControlsComponent = ({
         return (
           <GridResizing
             key={`grid-resizing-row-${EP.toString(grid.elementPath)}`}
+            targetGrid={grid}
             axisValues={grid.gridTemplateRows}
             fromPropsAxisValues={grid.gridTemplateRowsFromProps}
             containingFrame={grid.frame}
