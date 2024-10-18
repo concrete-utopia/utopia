@@ -33,6 +33,7 @@ import {
 } from './grid-controls'
 import { isEdgePositionOnSide } from '../canvas-utils'
 import { findOriginalGrid } from '../canvas-strategies/strategies/grid-helpers'
+import type { AlignContent, FlexJustifyContent } from '../../inspector/inspector-common'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -70,8 +71,8 @@ export type GridMeasurementHelperData = {
   gap: number | null
   rowGap: number | null
   columnGap: number | null
-  justifyContent: string | null
-  alignContent: string | null
+  justifyContent: FlexJustifyContent | null
+  alignContent: AlignContent | null
   padding: Sides
   columns: number
   cells: number
