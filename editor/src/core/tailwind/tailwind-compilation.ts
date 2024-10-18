@@ -3,13 +3,8 @@ import type { TailwindConfig, Tailwindcss } from '@mhsdesign/jit-browser-tailwin
 import { createTailwindcss } from '@mhsdesign/jit-browser-tailwindcss'
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import { getProjectFileByFilePath, walkContentsTree } from '../../components/assets'
-import { interactionSessionIsActive } from '../../components/canvas/canvas-strategies/interaction-state'
 import { CanvasContainerID } from '../../components/canvas/canvas-types'
-import {
-  Substores,
-  useEditorState,
-  useRefEditorState,
-} from '../../components/editor/store/store-hook'
+import { useRefEditorState } from '../../components/editor/store/store-hook'
 import { importDefault } from '../es-modules/commonjs-interop'
 import { rescopeCSSToTargetCanvasOnly } from '../shared/css-utils'
 import type { RequireFn } from '../shared/npm-dependency-types'
@@ -90,6 +85,7 @@ function generateTailwindClasses(projectContents: ProjectContentTreeRoot, requir
 function runTailwindClassGenerationOnDOMMutation(
   mutations: MutationRecord[],
   projectContents: ProjectContentTreeRoot,
+  isInteractionActive: boolean,
   requireFn: RequireFn,
 ) {
   const updateHasNewTailwindData = mutations.some(
@@ -97,17 +93,25 @@ function runTailwindClassGenerationOnDOMMutation(
       m.addedNodes.length > 0 || // new DOM element was added with potentially new classes
       m.attributeName === 'class', // potentially new classes were added to the class attribute of an element
   )
-  if (!updateHasNewTailwindData) {
+  if (
+    !updateHasNewTailwindData ||
+    isInteractionActive ||
+    ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' // implies that an interaction is in progress)
+  ) {
     return
   }
   generateTailwindClasses(projectContents, requireFn)
 }
 
-export const useTailwindCompilation = (requireFn: RequireFn) => {
+export const useTailwindCompilation = () => {
+  const requireFnRef = useRefEditorState((store) => {
+    const requireFn = store.editor.codeResultCache.curriedRequireFn(store.editor.projectContents)
+    return (importOrigin: string, toImport: string) => requireFn(importOrigin, toImport, false)
+  })
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
-  const isInteractionActiveRef = useRefEditorState((store) =>
-    interactionSessionIsActive(store.editor.canvas.interactionSession),
+  const isInteractionActiveRef = useRefEditorState(
+    (store) => store.editor.canvas.interactionSession != null,
   )
 
   const tailwindConfigExists =
@@ -118,16 +122,13 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
       return
     }
 
-    generateTailwindClasses(projectContentsRef.current, requireFn)
     const observer = new MutationObserver((mutations) => {
-      if (
-        isInteractionActiveRef.current ||
-        ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' // implies that an interaction is in progress) {
-      ) {
-        return
-      }
-
-      runTailwindClassGenerationOnDOMMutation(mutations, projectContentsRef.current, requireFn)
+      runTailwindClassGenerationOnDOMMutation(
+        mutations,
+        projectContentsRef.current,
+        isInteractionActiveRef.current,
+        requireFnRef.current,
+      )
     })
 
     observer.observe(document.getElementById(CanvasContainerID)!, {
@@ -136,8 +137,11 @@ export const useTailwindCompilation = (requireFn: RequireFn) => {
       subtree: true,
     })
 
+    // run the initial tailwind class generation
+    generateTailwindClasses(projectContentsRef.current, requireFnRef.current)
+
     return () => {
       observer.disconnect()
     }
-  }, [isInteractionActiveRef, projectContentsRef, requireFn, tailwindConfigExists])
+  }, [isInteractionActiveRef, projectContentsRef, requireFnRef, tailwindConfigExists])
 }
