@@ -128,7 +128,7 @@ interface GridResizingControlProps {
   stripedAreaLength: number | null
 }
 
-const GridResizingControl = React.memo((props: GridResizingControlProps) => {
+const GridTrackSizeLabelForDimension = React.memo((props: GridResizingControlProps) => {
   const { setResizingIndex } = props
 
   const canvasOffset = useEditorState(
@@ -247,6 +247,46 @@ const GridResizingControl = React.memo((props: GridResizingControlProps) => {
       >
         {getLabelForAxis(props.dimension, props.dimensionIndex, props.fromPropsAxisValues)}
       </div>
+    </div>
+  )
+})
+GridTrackSizeLabelForDimension.displayName = 'GridTrackSizeLabelForDimension'
+
+const GridResizingStripedIndicator = React.memo((props: GridResizingControlProps) => {
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'GridResizingControl scale',
+  )
+  const colorTheme = useColorTheme()
+
+  const labelId = `grid-${props.axis}-handle-${props.dimensionIndex}`
+  const containerId = `${labelId}-container`
+
+  const shadowSize = React.useMemo(() => {
+    return props.axis === 'column'
+      ? props.containingFrame.height + GRID_RESIZE_HANDLE_CONTAINER_SIZE
+      : props.containingFrame.width + GRID_RESIZE_HANDLE_CONTAINER_SIZE
+  }, [props.containingFrame, props.axis])
+
+  const stripedAreaSkew = React.useMemo(
+    () => GRID_RESIZE_HANDLE_CONTAINER_SIZE / scale + props.padding,
+    [scale, props.padding],
+  )
+
+  return (
+    <div
+      key={containerId}
+      data-testid={containerId}
+      style={{
+        display: 'flex',
+        alignItems: props.axis === 'column' ? 'flex-start' : 'center',
+        justifyContent: props.axis === 'column' ? 'center' : 'flex-start',
+        height: props.axis === 'column' && props.resizing !== 'not-resizing' ? shadowSize : '100%',
+        width: props.axis === 'row' && props.resizing !== 'not-resizing' ? shadowSize : '100%',
+        position: 'relative',
+      }}
+    >
       {when(
         props.resizing !== 'not-resizing',
         <div
@@ -302,7 +342,7 @@ const GridResizingControl = React.memo((props: GridResizingControlProps) => {
     </div>
   )
 })
-GridResizingControl.displayName = 'GridResizingControl'
+GridResizingStripedIndicator.displayName = 'GridResizingStripedIndicator'
 
 interface GridResizingProps {
   axisValues: GridAutoOrTemplateBase | null
@@ -378,72 +418,99 @@ const GridResizing = React.memo((props: GridResizingProps) => {
       const size = GRID_RESIZE_HANDLE_CONTAINER_SIZE / canvasScale
       const dimensions = props.axisValues.dimensions
 
+      const helperGridStyle: React.CSSProperties = {
+        position: 'absolute',
+        top: props.containingFrame.y - (props.axis === 'column' ? size : 0),
+        left: props.containingFrame.x - (props.axis === 'row' ? size : 0),
+        width: props.axis === 'column' ? props.containingFrame.width : size,
+        height: props.axis === 'row' ? props.containingFrame.height : size,
+        display: 'grid',
+        gridTemplateColumns:
+          props.axis === 'column'
+            ? dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
+            : undefined,
+        gridTemplateRows:
+          props.axis === 'row'
+            ? dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
+            : undefined,
+        gap: props.gap ?? 0,
+        paddingLeft:
+          props.axis === 'column' && props.padding != null ? `${props.padding.left}px` : undefined,
+        paddingTop:
+          props.axis === 'row' && props.padding != null ? `${props.padding.top}px` : undefined,
+        paddingRight:
+          props.axis === 'column' && props.padding != null ? `${props.padding.right}px` : undefined,
+        paddingBottom:
+          props.axis === 'row' && props.padding != null ? `${props.padding.bottom}px` : undefined,
+        justifyContent: props.justifyContent ?? undefined,
+        alignContent: props.alignContent ?? undefined,
+      }
+
       return (
-        <div
-          style={{
-            position: 'absolute',
-            top: props.containingFrame.y - (props.axis === 'column' ? size : 0),
-            left: props.containingFrame.x - (props.axis === 'row' ? size : 0),
-            width: props.axis === 'column' ? props.containingFrame.width : size,
-            height: props.axis === 'row' ? props.containingFrame.height : size,
-            display: 'grid',
-            gridTemplateColumns:
-              props.axis === 'column'
-                ? dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
-                : undefined,
-            gridTemplateRows:
-              props.axis === 'row'
-                ? dimensions.map((dim) => printGridCSSNumber(dim)).join(' ')
-                : undefined,
-            gap: props.gap ?? 0,
-            paddingLeft:
-              props.axis === 'column' && props.padding != null
-                ? `${props.padding.left}px`
-                : undefined,
-            paddingTop:
-              props.axis === 'row' && props.padding != null ? `${props.padding.top}px` : undefined,
-            paddingRight:
-              props.axis === 'column' && props.padding != null
-                ? `${props.padding.right}px`
-                : undefined,
-            paddingBottom:
-              props.axis === 'row' && props.padding != null
-                ? `${props.padding.bottom}px`
-                : undefined,
-            justifyContent: props.justifyContent ?? undefined,
-            alignContent: props.alignContent ?? undefined,
-          }}
-        >
-          {dimensions.flatMap((dimension, dimensionIndex) => {
-            return (
-              <GridResizingControl
-                key={`grid-resizing-control-${dimensionIndex}`}
-                dimensionIndex={dimensionIndex}
-                dimension={dimension}
-                fromPropsAxisValues={fromProps}
-                stripedAreaLength={props.stripedAreaLength}
-                axis={props.axis}
-                containingFrame={props.containingFrame}
-                resizing={
-                  resizingIndex === dimensionIndex
-                    ? 'resize-target'
-                    : coresizingIndexes.includes(dimensionIndex)
-                    ? 'resize-generated'
-                    : 'not-resizing'
-                }
-                resizeLocked={resizeLocked}
-                setResizingIndex={setResizingIndex}
-                padding={
-                  props.padding == null
-                    ? 0
-                    : props.axis === 'column'
-                    ? props.padding.top ?? 0
-                    : props.padding.left ?? 0
-                }
-              />
-            )
-          })}
-        </div>
+        <React.Fragment>
+          <div style={helperGridStyle}>
+            {dimensions.flatMap((dimension, dimensionIndex) => {
+              return (
+                <GridResizingStripedIndicator
+                  key={`grid-resizing-striped-indicator-${dimensionIndex}`}
+                  dimensionIndex={dimensionIndex}
+                  dimension={dimension}
+                  fromPropsAxisValues={fromProps}
+                  stripedAreaLength={props.stripedAreaLength}
+                  axis={props.axis}
+                  containingFrame={props.containingFrame}
+                  resizing={
+                    resizingIndex === dimensionIndex
+                      ? 'resize-target'
+                      : coresizingIndexes.includes(dimensionIndex)
+                      ? 'resize-generated'
+                      : 'not-resizing'
+                  }
+                  resizeLocked={resizeLocked}
+                  setResizingIndex={setResizingIndex}
+                  padding={
+                    props.padding == null
+                      ? 0
+                      : props.axis === 'column'
+                      ? props.padding.top ?? 0
+                      : props.padding.left ?? 0
+                  }
+                />
+              )
+            })}
+          </div>
+          <div style={helperGridStyle}>
+            {dimensions.flatMap((dimension, dimensionIndex) => {
+              return (
+                <GridTrackSizeLabelForDimension
+                  key={`grid-resizing-label-${dimensionIndex}`}
+                  dimensionIndex={dimensionIndex}
+                  dimension={dimension}
+                  fromPropsAxisValues={fromProps}
+                  stripedAreaLength={props.stripedAreaLength}
+                  axis={props.axis}
+                  containingFrame={props.containingFrame}
+                  resizing={
+                    resizingIndex === dimensionIndex
+                      ? 'resize-target'
+                      : coresizingIndexes.includes(dimensionIndex)
+                      ? 'resize-generated'
+                      : 'not-resizing'
+                  }
+                  resizeLocked={resizeLocked}
+                  setResizingIndex={setResizingIndex}
+                  padding={
+                    props.padding == null
+                      ? 0
+                      : props.axis === 'column'
+                      ? props.padding.top ?? 0
+                      : props.padding.left ?? 0
+                  }
+                />
+              )
+            })}
+          </div>
+        </React.Fragment>
       )
     case 'FALLBACK':
       return null
