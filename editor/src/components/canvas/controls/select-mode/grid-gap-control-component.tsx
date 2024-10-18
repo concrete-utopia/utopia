@@ -2,15 +2,13 @@ import type { CSSProperties } from 'react'
 import React from 'react'
 import { createArrayWithLength, interleaveArray } from '../../../../core/shared/array-utils'
 import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-template'
-import type { CanvasVector, Size } from '../../../../core/shared/math-utils'
-import { size, windowPoint } from '../../../../core/shared/math-utils'
+import type { Size } from '../../../../core/shared/math-utils'
+import { size } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { CSSCursor } from '../../../../uuiui-deps'
-import type { EditorDispatch } from '../../../editor/action-types'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import {
@@ -18,9 +16,6 @@ import {
   printCSSNumber,
   stringifyGridDimension,
 } from '../../../inspector/common/css-utils'
-import CanvasActions from '../../canvas-actions'
-import { createInteractionViaMouse, gridGapHandle } from '../../canvas-strategies/interaction-state'
-import { windowToCanvasCoordinates } from '../../dom-lookup'
 import type { Axis } from '../../gap-utils'
 import { maybeGridGapData } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -30,6 +25,7 @@ import { getGridHelperStyleMatchingTargetGrid } from '../grid-controls-helpers'
 import type { CSSNumberWithRenderedValue } from './controls-common'
 import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
 import { startGapControlInteraction } from './grid-gap-control-helpers'
+import type { AlignContent, FlexJustifyContent } from '../../../inspector/inspector-common'
 
 export interface GridGapControlProps {
   selectedElement: ElementPath
@@ -199,6 +195,8 @@ const GridPaddingOutlineForDimension = (props: {
             beingDragged={beingDragged}
             onMouseOver={onMouseOver}
             elementHovered={elementHovered}
+            gridJustifyContent={grid.justifyContent}
+            gridAlignContent={grid.alignContent}
           />
         )
       })}
@@ -218,6 +216,8 @@ const GridRowHighlight = (props: {
   beingDragged: boolean
   onMouseOver: () => void
   elementHovered: boolean
+  gridJustifyContent: FlexJustifyContent | null
+  gridAlignContent: AlignContent | null
 }) => {
   const {
     gapId,
@@ -231,6 +231,8 @@ const GridRowHighlight = (props: {
     beingDragged,
     onMouseOver,
     elementHovered,
+    gridJustifyContent,
+    gridAlignContent,
   } = props
 
   const colorTheme = useColorTheme()
@@ -294,8 +296,8 @@ const GridRowHighlight = (props: {
         boxShadow: `inset 0 0 0 ${lineWidth}px ${outlineColor}`,
         opacity: hide ? 0 : 1,
 
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignContent: axis === 'row' ? 'center' : gridAlignContent ?? 'center',
+        justifyContent: axis === 'row' ? gridJustifyContent ?? 'center' : 'center',
         placeItems: 'center',
 
         gap: gap ?? 0,
