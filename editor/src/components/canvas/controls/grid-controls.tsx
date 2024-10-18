@@ -131,7 +131,7 @@ interface GridResizingControlProps {
   stripedAreaLength: number | null
 }
 
-const GridTrackSizeLabelForDimension = React.memo((props: GridResizingControlProps) => {
+const GridTrackSizeLabel = React.memo((props: GridResizingControlProps) => {
   const { setResizingIndex } = props
 
   const canvasOffset = useEditorState(
@@ -259,7 +259,7 @@ const GridTrackSizeLabelForDimension = React.memo((props: GridResizingControlPro
     </div>
   )
 })
-GridTrackSizeLabelForDimension.displayName = 'GridTrackSizeLabelForDimension'
+GridTrackSizeLabel.displayName = 'GridTrackSizeLabel'
 
 const GridResizingStripedIndicator = React.memo((props: GridResizingControlProps) => {
   const scale = useEditorState(
@@ -452,7 +452,7 @@ const GridResizing = React.memo((props: GridResizingProps) => {
           <div style={helperGridStyle}>
             {dimensions.flatMap((dimension, dimensionIndex) => {
               return (
-                <GridTrackSizeLabelForDimension
+                <GridTrackSizeLabel
                   key={`grid-resizing-label-${dimensionIndex}`}
                   dimensionIndex={dimensionIndex}
                   dimension={dimension}
