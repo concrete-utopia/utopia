@@ -11,11 +11,14 @@ type ImportOperationData = {
   children?: ImportOperation[]
 }
 
-export enum ImportOperationResult {
-  Success = 'success',
-  Error = 'error',
-  Warn = 'warn',
-}
+export const ImportOperationResult = {
+  Success: 'success',
+  Error: 'error',
+  Warn: 'warn',
+} as const
+
+export type ImportOperationResult =
+  (typeof ImportOperationResult)[keyof typeof ImportOperationResult]
 
 type ImportLoadBranch = {
   type: 'loadBranch'
@@ -70,9 +73,12 @@ export type ImportOperation =
 
 export type ImportOperationType = ImportOperation['type']
 
-export enum ImportOperationAction {
-  Add = 'add',
-  Remove = 'remove',
-  Update = 'update',
-  Replace = 'replace',
-}
+export const ImportOperationAction = {
+  Add: 'add',
+  Remove: 'remove',
+  Update: 'update',
+  Replace: 'replace',
+} as const
+
+export type ImportOperationAction =
+  (typeof ImportOperationAction)[keyof typeof ImportOperationAction]

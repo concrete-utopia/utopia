@@ -39,14 +39,18 @@ export const ImportWizard = React.memo(() => {
   }, [])
 
   const totalImportResult: ImportOperationResult | null = React.useMemo(() => {
-    let result = ImportOperationResult.Success
+    let result: ImportOperationResult = ImportOperationResult.Success
     for (const operation of operations) {
+      // if one of the operations is still running, we don't know the total result yet
       if (operation.timeDone == null || operation.result == null) {
         return null
       }
+      // if any operation is an error, the total result is an error
       if (operation.result == ImportOperationResult.Error) {
         return ImportOperationResult.Error
       }
+      // if any operation is at least a warn, the total result is a warn,
+      // but we also need to check if there are any errors
       if (operation.result == ImportOperationResult.Warn) {
         result = ImportOperationResult.Warn
       }
