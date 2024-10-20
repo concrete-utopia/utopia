@@ -89,7 +89,7 @@ function checkProjectLanguage(
   let jsCount = 0
   let tsCount = 0
   applyToAllUIJSFiles(projectContents, (filename, uiJSFile) => {
-    if (filename.endsWith('.ts') || filename.endsWith('.tsx')) {
+    if ((filename.endsWith('.ts') || filename.endsWith('.tsx')) && !filename.endsWith('.d.ts')) {
       tsCount++
     } else if (filename.endsWith('.js') || filename.endsWith('.jsx')) {
       jsCount++
@@ -101,7 +101,7 @@ function checkProjectLanguage(
       dispatch,
       'language',
       RequirementResolutionResult.Critical,
-      'Majority of project files are in TS/TSX',
+      'There are Typescript files in the project',
       'typescript',
     )
   } else if (jsCount == 0) {

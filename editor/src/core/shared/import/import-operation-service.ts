@@ -40,7 +40,9 @@ export function notifyOperationStarted(dispatch: EditorDispatch, operation: Impo
     timeStarted: Date.now(),
     timeDone: null,
   }
-  dispatch([updateImportOperations([operationWithTime], ImportOperationAction.Update)])
+  setTimeout(() => {
+    dispatch([updateImportOperations([operationWithTime], ImportOperationAction.Update)])
+  }, 0)
 }
 
 export function notifyOperationFinished(
@@ -54,7 +56,9 @@ export function notifyOperationFinished(
     timeDone: timeDone,
     result: result,
   }
-  dispatch([updateImportOperations([operationWithTime], ImportOperationAction.Update)])
+  setTimeout(() => {
+    dispatch([updateImportOperations([operationWithTime], ImportOperationAction.Update)])
+  }, 0)
 }
 
 export function areSameOperation(existing: ImportOperation, incoming: ImportOperation): boolean {

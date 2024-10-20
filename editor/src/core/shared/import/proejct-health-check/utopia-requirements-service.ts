@@ -16,9 +16,18 @@ const initialTexts: Record<ProjectRequirement, string> = {
   reactVersion: 'Checking React version',
 }
 
+export function updateProjectRequirementsStatus(
+  dispatch: EditorDispatch,
+  projectRequirements: Partial<ProjectRequirements>,
+) {
+  setTimeout(() => {
+    dispatch([updateProjectRequirements(projectRequirements)])
+  }, 0)
+}
+
 export function resetRequirementsResolutions(dispatch: EditorDispatch) {
   let projectRequirements = emptyProjectRequirements()
-  dispatch([updateProjectRequirements(projectRequirements)])
+  updateProjectRequirementsStatus(dispatch, projectRequirements)
   notifyOperationStarted(dispatch, {
     type: 'checkRequirements',
     children: Object.keys(projectRequirements).map((key) =>
@@ -35,13 +44,11 @@ export function notifyCheckingRequirement(
   requirement: ProjectRequirement,
   text: string,
 ) {
-  dispatch([
-    updateProjectRequirements({
-      [requirement]: {
-        status: RequirementResolutionStatus.Pending,
-      },
-    }),
-  ])
+  updateProjectRequirementsStatus(dispatch, {
+    [requirement]: {
+      status: RequirementResolutionStatus.Pending,
+    },
+  })
   notifyOperationStarted(dispatch, {
     type: 'checkRequirementAndFix',
     id: requirement,
@@ -56,15 +63,13 @@ export function notifyResolveRequirement(
   text: string,
   value?: string,
 ) {
-  dispatch([
-    updateProjectRequirements({
-      [requirementName]: {
-        status: RequirementResolutionStatus.Done,
-        resolution: resolution,
-        value: value,
-      },
-    }),
-  ])
+  updateProjectRequirementsStatus(dispatch, {
+    [requirementName]: {
+      status: RequirementResolutionStatus.Done,
+      resolution: resolution,
+      value: value,
+    },
+  })
   const result =
     resolution === RequirementResolutionResult.Found ||
     resolution === RequirementResolutionResult.Fixed
@@ -100,9 +105,7 @@ export function updateRequirements(
 
   const aggregatedDoneStatus = getAggregatedStatus(result)
   if (aggregatedDoneStatus != null) {
-    setTimeout(() => {
-      notifyOperationFinished(dispatch, { type: 'checkRequirements' }, aggregatedDoneStatus)
-    }, 0)
+    notifyOperationFinished(dispatch, { type: 'checkRequirements' }, aggregatedDoneStatus)
   }
 
   return result
