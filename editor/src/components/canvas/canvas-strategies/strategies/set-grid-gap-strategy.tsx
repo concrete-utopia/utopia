@@ -40,7 +40,7 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import { colorTheme } from '../../../../uuiui'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
-import type { GridGapControlProps } from '../../controls/select-mode/grid-gap-control'
+import type { GridGapControlProps } from '../../controls/select-mode/grid-gap-control-component'
 import { GridGapControl } from '../../controls/select-mode/grid-gap-control'
 import type { GridControlsProps } from '../../controls/grid-controls-for-strategies'
 import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
@@ -164,9 +164,17 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
+      const shouldSetGapByAxis = gridGap.row.value != null || gridGap.column.value != null
+
       const axis = interactionSession.activeControl.axis
       const shouldTearOffGapByAxis = axis === 'row' ? shouldTearOffGap.y : shouldTearOffGap.x
-      const axisStyleProp = axis === 'row' ? StyleRowGapProp : StyleColumnGapProp
+
+      const axisStyleProp = shouldSetGapByAxis
+        ? axis === 'row'
+          ? StyleRowGapProp
+          : StyleColumnGapProp
+        : StyleGapProp
+
       const gridGapMeasurement =
         axis === 'row' ? updatedGridGapMeasurement.row : updatedGridGapMeasurement.column
 

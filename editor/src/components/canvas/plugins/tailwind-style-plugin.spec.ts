@@ -66,6 +66,7 @@ describe('tailwind style plugin', () => {
     const normalizedEditor = TailwindPlugin(null).normalizeFromInlineStyle(
       editor.getEditorState().editor,
       [target],
+      [],
     )
 
     const normalizedElement = getJSXElementFromProjectContents(
@@ -96,7 +97,7 @@ describe('tailwind style plugin', () => {
     const target = EP.fromString('sb/scene/div')
     const normalizedEditor = TailwindPlugin(
       getTailwindConfigCached(editor.getEditorState().editor),
-    ).normalizeFromInlineStyle(editor.getEditorState().editor, [target])
+    ).normalizeFromInlineStyle(editor.getEditorState().editor, [target], [])
 
     const normalizedElement = getJSXElementFromProjectContents(
       target,

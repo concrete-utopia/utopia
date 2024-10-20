@@ -2200,6 +2200,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.layoutSystemForChildren,
       newSize.layoutSystemForChildren,
     ).areEqual
+    const layoutSystemForChildrenInheritedResult =
+      oldSize.layoutSystemForChildrenInherited === newSize.layoutSystemForChildrenInherited
     const providesBoundsForAbsoluteChildrenResult =
       oldSize.providesBoundsForAbsoluteChildren === newSize.providesBoundsForAbsoluteChildren
     const positionResult = oldSize.position === newSize.position
@@ -2287,6 +2289,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       usesParentBoundsResult &&
       parentLayoutSystemResult &&
       layoutSystemForChildrenResult &&
+      layoutSystemForChildrenInheritedResult &&
       providesBoundsForAbsoluteChildrenResult &&
       positionResult &&
       marginResult.areEqual &&
@@ -2340,6 +2343,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.usesParentBounds,
         newSize.parentLayoutSystem,
         newSize.layoutSystemForChildren,
+        newSize.layoutSystemForChildrenInherited,
         newSize.providesBoundsForAbsoluteChildren,
         newSize.display,
         newSize.position,
@@ -3004,9 +3008,9 @@ export const BorderRadiusResizeHandleKeepDeepEquality: KeepDeepEqualityCall<
 
 export const GridCellHandleKeepDeepEquality: KeepDeepEqualityCall<GridCellHandle> =
   combine1EqualityCall(
-    (handle) => handle.id,
-    createCallWithTripleEquals<string>(),
-    (id) => gridCellHandle({ id }),
+    (handle) => handle.path,
+    ElementPathKeepDeepEquality,
+    (path) => gridCellHandle({ path }),
   )
 
 export const GridAxisHandleKeepDeepEquality: KeepDeepEqualityCall<GridAxisHandle> =

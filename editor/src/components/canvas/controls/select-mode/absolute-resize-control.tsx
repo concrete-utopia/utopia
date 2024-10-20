@@ -24,6 +24,8 @@ import type { FixedHugFill } from '../../../inspector/inspector-common'
 import {
   detectFillHugFixedState,
   invert,
+  isFillOrStretchModeAppliedOnAnySide,
+  isFillOrStretchModeAppliedOnSpecificSide,
   resizeToFitCommands,
 } from '../../../inspector/inspector-common'
 import { setPropHugStrategies } from '../../../inspector/inspector-strategies/inspector-strategies'
@@ -135,6 +137,38 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
       onEdgeDoubleClick,
     })
 
+    const canResize = useEditorState(
+      Substores.metadata,
+      (store) => {
+        const metadata = store.editor.jsxMetadata
+
+        let horizontally = true
+        let vertically = true
+        let diagonally = true
+
+        for (const element of selectedElementsRef.current) {
+          if (MetadataUtils.isGridCell(metadata, element)) {
+            if (isFillOrStretchModeAppliedOnAnySide(metadata, element)) {
+              diagonally = false
+            }
+            if (isFillOrStretchModeAppliedOnSpecificSide(metadata, element, 'horizontal')) {
+              horizontally = false
+            }
+            if (isFillOrStretchModeAppliedOnSpecificSide(metadata, element, 'vertical')) {
+              vertically = false
+            }
+          }
+        }
+
+        return {
+          horizontally: horizontally,
+          vertically: vertically,
+          diagonally: diagonally,
+        }
+      },
+      'AbsoluteResizeControl canResize',
+    )
+
     return (
       <CanvasOffsetWrapper>
         <div
@@ -145,22 +179,45 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
             pointerEvents: 'none',
           }}
         >
-          {resizeEdges.top}
-          {resizeEdges.left}
-          {resizeEdges.bottom}
-          {resizeEdges.right}
-          <ResizePoint ref={topLeftRef} position={{ x: 0, y: 0 }} cursor={CSSCursor.ResizeNWSE} />
-          <ResizePoint ref={topRightRef} position={{ x: 1, y: 0 }} cursor={CSSCursor.ResizeNESW} />
-          <ResizePoint
-            ref={bottomLeftRef}
-            position={{ x: 0, y: 1 }}
-            cursor={CSSCursor.ResizeNESW}
-          />
-          <ResizePoint
-            ref={bottomRightRef}
-            position={{ x: 1, y: 1 }}
-            cursor={CSSCursor.ResizeNWSE}
-          />
+          {when(
+            canResize.vertically,
+            <React.Fragment>
+              {resizeEdges.top}
+              {resizeEdges.bottom}
+            </React.Fragment>,
+          )}
+          {when(
+            canResize.horizontally,
+            <React.Fragment>
+              {resizeEdges.left}
+              {resizeEdges.right}
+            </React.Fragment>,
+          )}
+          {when(
+            canResize.diagonally,
+            <React.Fragment>
+              <ResizePoint
+                ref={topLeftRef}
+                position={{ x: 0, y: 0 }}
+                cursor={CSSCursor.ResizeNWSE}
+              />
+              <ResizePoint
+                ref={topRightRef}
+                position={{ x: 1, y: 0 }}
+                cursor={CSSCursor.ResizeNESW}
+              />
+              <ResizePoint
+                ref={bottomLeftRef}
+                position={{ x: 0, y: 1 }}
+                cursor={CSSCursor.ResizeNESW}
+              />
+              <ResizePoint
+                ref={bottomRightRef}
+                position={{ x: 1, y: 1 }}
+                cursor={CSSCursor.ResizeNWSE}
+              />
+            </React.Fragment>,
+          )}
           <SizeLabel ref={resizeRef} targets={targets} pathsWereReplaced={pathsWereReplaced} />
         </div>
       </CanvasOffsetWrapper>

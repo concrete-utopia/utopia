@@ -166,6 +166,7 @@ export function keyboardAbsoluteResizeStrategy(
         props: { targets: selectedElements, pathsWereReplaced: pathsWereReplaced },
         key: 'absolute-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
+        priority: 'top',
       }),
     ],
     fitness: getFitness(interactionSession),

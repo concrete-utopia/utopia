@@ -52,12 +52,13 @@ export function runGridRearrangeMove(
   jsxMetadata: ElementInstanceMetadataMap,
   interactionData: DragInteractionData,
   grid: ElementInstanceMetadata,
+  newPathAfterReparent?: ElementPath,
 ): CanvasCommand[] {
   if (interactionData.drag == null) {
     return []
   }
 
-  const isReparent = !EP.isParentOf(grid.elementPath, selectedElement)
+  const isReparent = newPathAfterReparent != null
 
   const { gridCellGlobalFrames, containerGridProperties: gridTemplate } =
     grid.specialSizeMeasurements
@@ -97,7 +98,9 @@ export function runGridRearrangeMove(
   // get the new adjusted column
   const column = Math.max(targetCellCoords.column - mouseCellPosInOriginalElement.column, 1)
 
-  const gridCellMoveCommands = setGridPropsCommands(targetElement, gridTemplate, {
+  const pathForCommands = newPathAfterReparent ?? targetElement // when reparenting, we want to use the new path for commands
+
+  const gridCellMoveCommands = setGridPropsCommands(pathForCommands, gridTemplate, {
     gridColumnStart: gridPositionValue(column),
     gridColumnEnd: gridPositionValue(column + originalCellBounds.height),
     gridRowStart: gridPositionValue(row),
@@ -147,14 +150,12 @@ export function runGridRearrangeMove(
     EP.pathsEqual(selectedElement, s.path),
   )
 
-  const moveType =
-    originalElementMetadata == null
-      ? 'rearrange'
-      : getGridMoveType({
-          originalElementMetadata: originalElementMetadata,
-          possiblyReorderIndex: possiblyReorderIndex,
-          cellsSortedByPosition: cellsSortedByPosition,
-        })
+  const moveType = getGridMoveType({
+    elementPath: targetElement,
+    originalElementMetadata: originalElementMetadata,
+    possiblyReorderIndex: possiblyReorderIndex,
+    cellsSortedByPosition: cellsSortedByPosition,
+  })
 
   const updateGridControlsCommand = showGridControls(
     'mid-interaction',
@@ -165,6 +166,9 @@ export function runGridRearrangeMove(
 
   switch (moveType) {
     case 'absolute': {
+      if (isReparent) {
+        return []
+      }
       const absoluteMoveCommands = gridChildAbsoluteMoveCommands(
         MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
         MetadataUtils.getFrameOrZeroRectInCanvasCoords(grid.elementPath, jsxMetadata),
@@ -176,7 +180,7 @@ export function runGridRearrangeMove(
       const targetRootCell = gridCellCoordinates(row, column)
       const canvasRect = getGlobalFrameOfGridCell(grid, targetRootCell)
       const absoluteMoveCommands =
-        canvasRect == null
+        canvasRect == null || isReparent
           ? []
           : gridChildAbsoluteMoveCommands(
               MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
@@ -188,7 +192,7 @@ export function runGridRearrangeMove(
         ...absoluteMoveCommands,
         reorderElement(
           'always',
-          selectedElement,
+          pathForCommands,
           absolute(Math.max(indexInSortedCellsForRearrange, 0)),
         ),
         updateGridControlsCommand,
@@ -196,8 +200,8 @@ export function runGridRearrangeMove(
     }
     case 'reorder': {
       return [
-        reorderElement('always', selectedElement, absolute(possiblyReorderIndex)),
-        deleteProperties('always', selectedElement, [
+        reorderElement('always', pathForCommands, absolute(possiblyReorderIndex)),
+        deleteProperties('always', pathForCommands, [
           PP.create('style', 'gridColumn'),
           PP.create('style', 'gridRow'),
           PP.create('style', 'gridColumnStart'),
@@ -451,12 +455,16 @@ type GridMoveType =
   | 'absolute' // a regular absolute move, relative to the grid
 
 function getGridMoveType(params: {
-  originalElementMetadata: ElementInstanceMetadata
+  elementPath: ElementPath
+  originalElementMetadata: ElementInstanceMetadata | null
   possiblyReorderIndex: number
   cellsSortedByPosition: SortableGridElementProperties[]
 }): GridMoveType {
-  const specialSizeMeasurements = params.originalElementMetadata.specialSizeMeasurements
-  if (MetadataUtils.isPositionAbsolute(params.originalElementMetadata)) {
+  const specialSizeMeasurements = params.originalElementMetadata?.specialSizeMeasurements
+  if (
+    specialSizeMeasurements != null &&
+    MetadataUtils.isPositionAbsolute(params.originalElementMetadata)
+  ) {
     return MetadataUtils.hasNoGridCellPositioning(specialSizeMeasurements)
       ? 'absolute'
       : 'rearrange'
@@ -465,11 +473,11 @@ function getGridMoveType(params: {
     return 'rearrange'
   }
 
-  const elementGridProperties = specialSizeMeasurements.elementGridProperties
-  const gridRowStart = gridPositionNumberValue(elementGridProperties.gridRowStart)
-  const gridColumnStart = gridPositionNumberValue(elementGridProperties.gridColumnStart)
-  const gridRowEnd = gridPositionNumberValue(elementGridProperties.gridRowEnd)
-  const gridColumnEnd = gridPositionNumberValue(elementGridProperties.gridColumnEnd)
+  const elementGridProperties = specialSizeMeasurements?.elementGridProperties
+  const gridRowStart = gridPositionNumberValue(elementGridProperties?.gridRowStart ?? null)
+  const gridColumnStart = gridPositionNumberValue(elementGridProperties?.gridColumnStart ?? null)
+  const gridRowEnd = gridPositionNumberValue(elementGridProperties?.gridRowEnd ?? null)
+  const gridColumnEnd = gridPositionNumberValue(elementGridProperties?.gridColumnEnd ?? null)
 
   const isMultiCellChild =
     (gridRowEnd != null && gridRowStart != null && gridRowEnd > gridRowStart + 1) ||
@@ -482,10 +490,8 @@ function getGridMoveType(params: {
   // The first element is intrinsically in order, so try to adjust for that
   if (params.possiblyReorderIndex === 0) {
     const isTheOnlyChild = params.cellsSortedByPosition.length === 1
-    const isAlreadyTheFirstChild = EP.pathsEqual(
-      params.cellsSortedByPosition[0].path,
-      params.originalElementMetadata.elementPath,
-    )
+    const isAlreadyTheFirstChild =
+      EP.toUid(params.cellsSortedByPosition[0].path) === EP.toUid(params.elementPath)
 
     const isAlreadyAtOrigin = gridRowStart === 1 && gridColumnStart === 1
 
@@ -710,62 +716,6 @@ export function getGridRelatedIndexes(params: {
   return expandedRelatedIndexes[params.index] ?? []
 }
 
-export function getMetadataWithGridCellBounds(
-  path: ElementPath | null | undefined,
-  startingMetadata: ElementInstanceMetadataMap,
-  latestMetadata: ElementInstanceMetadataMap,
-  customStrategyState: CustomStrategyState,
-): {
-  metadata: ElementInstanceMetadata | null
-  customStrategyState: CustomStrategyState | null
-} {
-  if (path == null) {
-    return {
-      metadata: null,
-      customStrategyState: null,
-    }
-  }
-
-  const fromStartingMetadata = MetadataUtils.findElementByElementPath(startingMetadata, path)
-
-  if (fromStartingMetadata?.specialSizeMeasurements.gridCellGlobalFrames != null) {
-    return {
-      metadata: fromStartingMetadata,
-      customStrategyState: null,
-    }
-  }
-
-  const fromStrategyState = customStrategyState.grid.metadataCacheForGrids[EP.toString(path)]
-  if (fromStrategyState != null) {
-    return {
-      metadata: fromStrategyState,
-      customStrategyState: null,
-    }
-  }
-
-  const fromLatestMetadata = MetadataUtils.findElementByElementPath(latestMetadata, path)
-  if (fromLatestMetadata?.specialSizeMeasurements.gridCellGlobalFrames != null) {
-    return {
-      metadata: fromLatestMetadata,
-      customStrategyState: {
-        ...customStrategyState,
-        grid: {
-          ...customStrategyState.grid,
-          metadataCacheForGrids: {
-            ...customStrategyState.grid.metadataCacheForGrids,
-            [EP.toString(path)]: fromLatestMetadata,
-          },
-        },
-      },
-    }
-  }
-
-  return {
-    metadata: fromStartingMetadata,
-    customStrategyState: null,
-  }
-}
-
 function getOriginalElementGridConfiguration(
   gridCellGlobalFrames: GridCellGlobalFrames,
   interactionData: DragInteractionData,
@@ -812,4 +762,29 @@ function getOriginalElementGridConfiguration(
     originalCellBounds,
     mouseCellPosInOriginalElement,
   }
+}
+
+export function findOriginalGrid(
+  metadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+): ElementPath | null {
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+  if (elementMetadata == null) {
+    return null
+  }
+
+  if (!MetadataUtils.isGridLayoutedContainer(elementMetadata)) {
+    return null
+  }
+
+  if (!elementMetadata.specialSizeMeasurements.layoutSystemForChildrenInherited) {
+    return path
+  }
+
+  const parentPath = EP.parentPath(path)
+  if (parentPath == null) {
+    return null
+  }
+
+  return findOriginalGrid(metadata, parentPath)
 }

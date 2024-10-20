@@ -1,6 +1,6 @@
 import React from 'react'
 import { InspectorModal } from '../widgets/inspector-modal'
-import { FlexColumn, H1, SquareButton, UtopiaStyles } from '../../../uuiui'
+import { colorTheme, FlexColumn, H1, SquareButton, UtopiaStyles } from '../../../uuiui'
 import type { GridRowVariant } from '../widgets/ui-grid-row'
 import { UIGridRow } from '../widgets/ui-grid-row'
 import type { OptionChainOption } from './option-chain-control'
@@ -14,8 +14,12 @@ import {
   separatorRadixSelectOption,
 } from '../../../uuiui/radix-components'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import type { FlexAlignment } from 'utopia-api/core'
+import { FlexAlignment } from 'utopia-api/core'
 import { FlexJustifyContent } from 'utopia-api/core'
+import { GridAutoColsOrRowsControlInner } from '../grid-auto-cols-or-rows-control'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { selectedViewsSelector } from '../inpector-selectors'
 
 export interface AdvancedGridModalProps {
   id: string
@@ -75,10 +79,16 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
     [alignItemsLayoutInfo],
   )
 
-  const contentOptions = [
+  const justifyOptions = [
     unsetSelectOption,
     separatorRadixSelectOption(),
     ...Object.values(FlexJustifyContent).map(selectOption),
+  ]
+
+  const alignOptions = [
+    unsetSelectOption,
+    separatorRadixSelectOption(),
+    ...Object.values(FlexAlignment).map(selectOption),
   ]
 
   const onSubmitJustifyContent = React.useCallback(
@@ -103,6 +113,25 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
     [alignContentLayoutInfo],
   )
 
+  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const grid = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (selectedViewsRef.current.length !== 1) {
+        return null
+      }
+      return MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        selectedViewsRef.current[0],
+      )
+    },
+    'AdvancedGridModal grid',
+  )
+
+  if (grid == null) {
+    return null
+  }
+
   const advancedGridModal = (
     <InspectorModal
       offsetX={modalOffset.x}
@@ -113,6 +142,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
       style={{
         ...UtopiaStyles.popup,
         minWidth: 230,
+        color: colorTheme.fg1.value,
       }}
     >
       <FlexColumn>
@@ -163,7 +193,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
           <RadixSelect
             id='grid.justifyContent'
             value={currentJustifyContentValue ?? unsetSelectOption}
-            options={contentOptions}
+            options={justifyOptions}
             onValueChange={onSubmitJustifyContent}
             contentClassName={`ignore-react-onclickoutside-${props.id}`}
             contentStyle={{
@@ -181,7 +211,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
           <RadixSelect
             id='grid.alignContent'
             value={currentAlignContentValue ?? unsetSelectOption}
-            options={contentOptions}
+            options={alignOptions}
             onValueChange={onSubmitAlignContent}
             contentClassName={`ignore-react-onclickoutside-${props.id}`}
             contentStyle={{
@@ -189,6 +219,23 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
             }}
             onOpenChange={toggleAlignContentDropdown}
           />
+        </UIGridRow>
+        <UIGridRow padded variant='<-------------1fr------------->'>
+          <span style={{ fontWeight: 600 }}>Template</span>
+        </UIGridRow>
+        <UIGridRow
+          padded
+          variant={rowVariant}
+          className={`ignore-react-onclickoutside-${props.id}`}
+        >
+          <GridAutoColsOrRowsControlInner grid={grid} axis='column' label='Auto Cols' />
+        </UIGridRow>
+        <UIGridRow
+          padded
+          variant={rowVariant}
+          className={`ignore-react-onclickoutside-${props.id}`}
+        >
+          <GridAutoColsOrRowsControlInner grid={grid} axis='row' label='Auto Rows' />
         </UIGridRow>
       </FlexColumn>
     </InspectorModal>
@@ -260,11 +307,11 @@ const justifyItemsOptions = itemsOptions('justify')
 const alignItemsOptions = itemsOptions('align')
 const rowVariant: GridRowVariant = '|--67px--|<--------1fr-------->'
 
-function selectOption(value: FlexJustifyContent) {
+function selectOption(value: FlexJustifyContent | FlexAlignment) {
   return regularRadixSelectOption({
     label: value.replace('-', ' '),
     value: value,
-    placeholder: true,
+    placeholder: false,
   })
 }
 

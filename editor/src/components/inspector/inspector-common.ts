@@ -921,6 +921,27 @@ export function isFillOrStretchModeApplied(
   )
 }
 
+export function isFillOrStretchModeAppliedOnAnySide(
+  metadata: ElementInstanceMetadataMap,
+  element: ElementPath,
+): boolean {
+  return (
+    isFixedHugFillModeAppliedOnAnySide(metadata, element, 'fill') ||
+    isFixedHugFillModeAppliedOnAnySide(metadata, element, 'stretch')
+  )
+}
+
+export function isFillOrStretchModeAppliedOnSpecificSide(
+  metadata: ElementInstanceMetadataMap,
+  element: ElementPath,
+  side: 'horizontal' | 'vertical',
+): boolean {
+  return (
+    detectFillHugFixedState(side, metadata, element).fixedHugFill?.type === 'fill' ||
+    detectFillHugFixedState(side, metadata, element).fixedHugFill?.type === 'stretch'
+  )
+}
+
 export function isFixedHugFillModeAppliedOnAnySide(
   metadata: ElementInstanceMetadataMap,
   element: ElementPath,

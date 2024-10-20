@@ -7,6 +7,7 @@ import type { CanvasAction } from '../../canvas/canvas-types'
 import type { LocalNavigatorAction } from '../../navigator/actions'
 import type { EditorAction, EditorDispatch, UpdateMetadataInEditorState } from '../action-types'
 import { isLoggedIn } from '../action-types'
+import type { PropertiesWithElementPath } from '../actions/action-utils'
 import {
   isTransientAction,
   isUndoOrRedo,
@@ -14,6 +15,8 @@ import {
   checkAnyWorkerUpdates,
   onlyActionIsWorkerParsedUpdate,
   simpleStringifyActions,
+  getElementsToNormalizeFromActions,
+  getPropertiesToRemoveFromActions,
 } from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
@@ -27,6 +30,7 @@ import type {
 } from './editor-state'
 import {
   deriveState,
+  getJSXElementFromProjectContents,
   persistentModelFromEditorModel,
   storedEditorStateFromEditorState,
 } from './editor-state'
@@ -40,7 +44,7 @@ import {
   runResetOnlineState,
   runUpdateProjectServerState,
 } from './editor-update'
-import { isBrowserEnvironment } from '../../../core/shared/utils'
+import { assertNever, isBrowserEnvironment } from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { ProjectContentTreeRoot } from '../../assets'
 import { treeToContents } from '../../assets'
@@ -58,7 +62,8 @@ import {
   getProjectChanges,
   sendVSCodeChanges,
 } from './vscode-changes'
-import { handleStrategies, updatePostActionState } from './dispatch-strategies'
+import type { NormalizationData, PostProcessingData } from './dispatch-strategies'
+import { handleStrategies, normalizationData, updatePostActionState } from './dispatch-strategies'
 
 import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
@@ -75,18 +80,8 @@ import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
 import { ensureSceneIdsExist } from '../../../core/model/scene-id-utils'
-import type { ModuleEvaluator } from '../../../core/property-controls/property-controls-local'
-import {
-  createModuleEvaluator,
-  isComponentDescriptorFile,
-} from '../../../core/property-controls/property-controls-local'
-import {
-  hasReactRouterErrorBeenLogged,
-  setReactRouterErrorHasBeenLogged,
-} from '../../../core/shared/runtime-report-logs'
-import type { PropertyControlsInfo } from '../../custom-code/code-file'
+import { isComponentDescriptorFile } from '../../../core/property-controls/property-controls-local'
 import { getFilePathMappings } from '../../../core/model/project-file-utils'
-import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import {
   getParserChunkCount,
   getParserWorkerCount,
@@ -97,6 +92,10 @@ import {
   startPerformanceMeasure,
 } from '../../../core/performance/performance-utils'
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
+import { getActivePlugin } from '../../canvas/plugins/style-plugins'
+import { mapDropNulls } from '../../../core/shared/array-utils'
+import { propertyToSet, updateBulkProperties } from '../../canvas/commands/set-property-command'
+import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -1003,18 +1002,56 @@ function editorDispatchInner(
       )
     }
 
-    const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
-      handleStrategies(
-        strategiesToUse,
-        dispatchedActions,
-        storedState,
-        result,
-        storedState.patchedDerived,
-      )
+    const {
+      unpatchedEditorState: unpatchedEditorStateFromStrategies,
+      patchedEditorState: patchedEditorStateFromStrategies,
+      newStrategyState,
+      patchedDerivedState,
+      postProcessingData: postProcessingDataFromStrategies,
+    } = handleStrategies(
+      strategiesToUse,
+      dispatchedActions,
+      storedState,
+      result,
+      storedState.patchedDerived,
+    )
+
+    const elementsToNormalizeFromActions = getElementsToNormalizeFromActions(dispatchedActions)
+    const propertiesToRemoveFromActions = getPropertiesToRemoveFromActions(dispatchedActions)
+
+    const elementsToNormalize = [
+      ...elementsToNormalizeFromActions,
+      ...(postProcessingDataFromStrategies?.type === 'normalization-data'
+        ? postProcessingDataFromStrategies.elementsToNormalize
+        : []),
+    ]
+
+    const propertiesToRemove = [
+      ...propertiesToRemoveFromActions,
+      ...(postProcessingDataFromStrategies?.type === 'normalization-data'
+        ? postProcessingDataFromStrategies.propertiesToRemove
+        : []),
+    ]
+
+    const unpatchedEditor = runRemovedPropertyPatchingAndNormalization(
+      unpatchedEditorStateFromStrategies,
+      normalizationData(elementsToNormalize, propertiesToRemove),
+    )
+
+    const patchedEditor =
+      postProcessingDataFromStrategies === null
+        ? patchedEditorStateFromStrategies
+        : runRemovedPropertyPatchingAndNormalization(
+            patchedEditorStateFromStrategies,
+            addNormalizationDataFromActions(
+              postProcessingDataFromStrategies,
+              normalizationData(elementsToNormalizeFromActions, propertiesToRemoveFromActions),
+            ),
+          )
 
     return {
-      unpatchedEditor: unpatchedEditorState,
-      patchedEditor: patchedEditorState,
+      unpatchedEditor: unpatchedEditor,
+      patchedEditor: patchedEditor,
       unpatchedDerived: frozenDerivedState,
       patchedDerived: patchedDerivedState,
       strategyState: newStrategyState,
@@ -1071,4 +1108,79 @@ function resetUnpatchedEditorTransientFields(editor: EditorState): EditorState {
       elementsToRerender: 'rerender-all-elements',
     },
   }
+}
+
+function addNormalizationDataFromActions(
+  data: PostProcessingData,
+  fromActions: NormalizationData,
+): PostProcessingData {
+  if (data.type === 'properties-to-patch') {
+    return data
+  }
+
+  return normalizationData(
+    [...data.elementsToNormalize, ...fromActions.elementsToNormalize],
+    [...data.propertiesToRemove, ...fromActions.propertiesToRemove],
+  )
+}
+
+const PropertyDefaultValues: Record<string, string> = {
+  gap: '0px',
+}
+
+function patchRemovedProperties(
+  editor: EditorState,
+  propertiesToPatch: PropertiesWithElementPath[],
+): EditorState {
+  const propertiesToSetCommands = mapDropNulls(
+    ({ elementPath, properties }) =>
+      getJSXElementFromProjectContents(elementPath, editor.projectContents) == null
+        ? null
+        : updateBulkProperties(
+            'always',
+            elementPath,
+            mapDropNulls((property) => {
+              const [maybeStyle, maybeCSSProp] = property.propertyElements
+              if (maybeStyle !== 'style' || maybeCSSProp == null) {
+                return null
+              }
+
+              const defaultValue = PropertyDefaultValues[maybeCSSProp]
+              if (defaultValue == null) {
+                return null
+              }
+              return propertyToSet(property, defaultValue)
+            }, properties),
+          ),
+    propertiesToPatch,
+  )
+  return foldAndApplyCommandsSimple(editor, propertiesToSetCommands)
+}
+
+function runRemovedPropertyPatchingAndNormalization(
+  editorState: EditorState,
+  postProcessingData: PostProcessingData,
+): EditorState {
+  if (postProcessingData.type === 'properties-to-patch') {
+    return postProcessingData.propertiesToPatch.length === 0
+      ? editorState
+      : patchRemovedProperties(editorState, postProcessingData.propertiesToPatch)
+  }
+
+  if (postProcessingData.type === 'normalization-data') {
+    if (
+      postProcessingData.elementsToNormalize.length === 0 &&
+      postProcessingData.propertiesToRemove.length === 0
+    ) {
+      return editorState
+    }
+
+    return getActivePlugin(editorState).normalizeFromInlineStyle(
+      editorState,
+      postProcessingData.elementsToNormalize,
+      postProcessingData.propertiesToRemove,
+    )
+  }
+
+  assertNever(postProcessingData)
 }
