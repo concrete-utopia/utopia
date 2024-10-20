@@ -281,6 +281,49 @@ function failError(dependency: RequestedNpmDependency): DependencyFetchError {
   }
 }
 
+export async function fetchNodeModule(
+  dep: RequestedNpmDependency,
+  shouldRetry: boolean = true,
+): Promise<Either<DependencyFetchError, NodeModules>> {
+  try {
+    const matchingVersionResponse = await findMatchingVersion(dep.name, dep.version, 'skipFetch')
+    if (isPackageNotFound(matchingVersionResponse)) {
+      return left(failNotFound(dep))
+    }
+
+    const fetchResolvedDependency = shouldRetry
+      ? fetchPackagerResponseWithRetry
+      : fetchPackagerResponse
+
+    const packagerResponse = await fetchResolvedDependency(dep, matchingVersionResponse.version)
+
+    if (packagerResponse != null) {
+      /**
+       * to avoid clashing transitive dependencies,
+       * we "move" all transitive dependencies into a subfolder at
+       * /node_modules/<main_package>/node_modules/<transitive_dep>/
+       *
+       * the module resolution won't mind this, the only downside to this approach is
+       * that if two main dependencies share the exact same version of a transitive
+       * dependency, they will not share that transitive dependency in memory,
+       * so this is wasting a bit of memory.
+       *
+       * but it avoids two of the same transitive dependencies with different versions from
+       * overwriting each other.
+       *
+       * the real nice solution would be to apply npm's module resolution logic that
+       * pulls up shared transitive dependencies to the main /node_modules/ folder.
+       */
+      return right(mangleNodeModulePaths(dep.name, packagerResponse))
+    } else {
+      return left(failError(dep))
+    }
+  } catch (e) {
+    // TODO: proper error handling, now we don't show error for a missing package. The error will be visible when you try to import
+    return left(failError(dep))
+  }
+}
+
 export async function fetchNodeModules(
   newDeps: Array<RequestedNpmDependency>,
   builtInDependencies: BuiltInDependencies,
@@ -290,75 +333,21 @@ export async function fetchNodeModules(
     (d) => !isBuiltInDependency(builtInDependencies, d.name),
   )
   const nodeModulesArr = await Promise.all(
-    dependenciesToDownload.map(
-      async (newDep): Promise<Either<DependencyFetchError, NodeModules>> => {
-        function notifyFetchEnd(result: ImportOperationResult) {
-          notifyOperationFinished(
-            {
-              type: 'fetchDependency',
-              id: `${newDep.name}@${newDep.version}`,
-              dependencyName: newDep.name,
-              dependencyVersion: newDep.version,
-            },
-            result,
-          )
-        }
-        try {
-          notifyOperationStarted({
-            type: 'fetchDependency',
-            id: `${newDep.name}@${newDep.version}`,
-            dependencyName: newDep.name,
-            dependencyVersion: newDep.version,
-          })
-          const matchingVersionResponse = await findMatchingVersion(
-            newDep.name,
-            newDep.version,
-            'skipFetch',
-          )
-          if (isPackageNotFound(matchingVersionResponse)) {
-            notifyFetchEnd(ImportOperationResult.Error)
-            return left(failNotFound(newDep))
-          }
-
-          const fetchResolvedDependency = shouldRetry
-            ? fetchPackagerResponseWithRetry
-            : fetchPackagerResponse
-
-          const packagerResponse = await fetchResolvedDependency(
-            newDep,
-            matchingVersionResponse.version,
-          )
-
-          if (packagerResponse != null) {
-            /**
-             * to avoid clashing transitive dependencies,
-             * we "move" all transitive dependencies into a subfolder at
-             * /node_modules/<main_package>/node_modules/<transitive_dep>/
-             *
-             * the module resolution won't mind this, the only downside to this approach is
-             * that if two main dependencies share the exact same version of a transitive
-             * dependency, they will not share that transitive dependency in memory,
-             * so this is wasting a bit of memory.
-             *
-             * but it avoids two of the same transitive dependencies with different versions from
-             * overwriting each other.
-             *
-             * the real nice solution would be to apply npm's module resolution logic that
-             * pulls up shared transitive dependencies to the main /node_modules/ folder.
-             */
-            notifyFetchEnd(ImportOperationResult.Success)
-            return right(mangleNodeModulePaths(newDep.name, packagerResponse))
-          } else {
-            notifyFetchEnd(ImportOperationResult.Error)
-            return left(failError(newDep))
-          }
-        } catch (e) {
-          // TODO: proper error handling, now we don't show error for a missing package. The error will be visible when you try to import
-          notifyFetchEnd(ImportOperationResult.Error)
-          return left(failError(newDep))
-        }
-      },
-    ),
+    dependenciesToDownload.map(async (dep) => {
+      const fetchDependencyOperation = {
+        type: 'fetchDependency',
+        id: `${dep.name}@${dep.version}`,
+        dependencyName: dep.name,
+        dependencyVersion: dep.version,
+      } as const
+      notifyOperationStarted(fetchDependencyOperation)
+      const fetchResult = await fetchNodeModule(dep, shouldRetry)
+      const fetchStatus = isLeft(fetchResult)
+        ? ImportOperationResult.Error
+        : ImportOperationResult.Success
+      notifyOperationFinished(fetchDependencyOperation, fetchStatus)
+      return fetchResult
+    }),
   )
   const errors = nodeModulesArr
     .filter(isLeft)
