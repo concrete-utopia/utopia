@@ -9,8 +9,6 @@ import {
   RequirementResolutionStatus,
 } from './utopia-requirements-types'
 
-let editorDispatch: EditorDispatch | null = null
-
 const initialTexts: Record<ProjectRequirement, string> = {
   storyboard: 'Checking storyboard.js',
   packageJsonEntries: 'Checking package.json',
@@ -19,10 +17,9 @@ const initialTexts: Record<ProjectRequirement, string> = {
 }
 
 export function resetRequirementsResolutions(dispatch: EditorDispatch) {
-  editorDispatch = dispatch
   let projectRequirements = emptyProjectRequirements()
-  editorDispatch?.([updateProjectRequirements(projectRequirements)])
-  notifyOperationStarted({
+  dispatch([updateProjectRequirements(projectRequirements)])
+  notifyOperationStarted(dispatch, {
     type: 'checkRequirements',
     children: Object.keys(projectRequirements).map((key) =>
       importCheckRequirementAndFix(
@@ -33,15 +30,19 @@ export function resetRequirementsResolutions(dispatch: EditorDispatch) {
   })
 }
 
-export function notifyCheckingRequirement(requirement: ProjectRequirement, text: string) {
-  editorDispatch?.([
+export function notifyCheckingRequirement(
+  dispatch: EditorDispatch,
+  requirement: ProjectRequirement,
+  text: string,
+) {
+  dispatch([
     updateProjectRequirements({
       [requirement]: {
         status: RequirementResolutionStatus.Pending,
       },
     }),
   ])
-  notifyOperationStarted({
+  notifyOperationStarted(dispatch, {
     type: 'checkRequirementAndFix',
     id: requirement,
     text: text,
@@ -49,12 +50,13 @@ export function notifyCheckingRequirement(requirement: ProjectRequirement, text:
 }
 
 export function notifyResolveRequirement(
+  dispatch: EditorDispatch,
   requirementName: ProjectRequirement,
   resolution: RequirementResolutionResult,
   text: string,
   value?: string,
 ) {
-  editorDispatch?.([
+  dispatch([
     updateProjectRequirements({
       [requirementName]: {
         status: RequirementResolutionStatus.Done,
@@ -71,6 +73,7 @@ export function notifyResolveRequirement(
       ? ImportOperationResult.Warn
       : ImportOperationResult.Error
   notifyOperationFinished(
+    dispatch,
     {
       type: 'checkRequirementAndFix',
       id: requirementName,
@@ -82,6 +85,7 @@ export function notifyResolveRequirement(
 }
 
 export function updateRequirements(
+  dispatch: EditorDispatch,
   existingRequirements: ProjectRequirements,
   incomingRequirements: Partial<ProjectRequirements>,
 ): ProjectRequirements {
@@ -97,7 +101,7 @@ export function updateRequirements(
   const aggregatedDoneStatus = getAggregatedStatus(result)
   if (aggregatedDoneStatus != null) {
     setTimeout(() => {
-      notifyOperationFinished({ type: 'checkRequirements' }, aggregatedDoneStatus)
+      notifyOperationFinished(dispatch, { type: 'checkRequirements' }, aggregatedDoneStatus)
     }, 0)
   }
 

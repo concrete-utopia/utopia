@@ -1133,6 +1133,7 @@ describe('UPDATE_FROM_WORKER', () => {
       updateToCheck,
       startingEditorState,
       defaultUserState,
+      NO_OP,
     )
 
     // Check that the model hasn't changed, because of the stale revised time.
@@ -1180,6 +1181,7 @@ describe('UPDATE_FROM_WORKER', () => {
       updateToCheck,
       startingEditorState,
       defaultUserState,
+      NO_OP,
     )
 
     // Get the same values that we started with but from the updated editor state.

@@ -124,7 +124,7 @@ export const updateProjectWithBranchContent =
     initiator: GithubOperationSource,
   ): Promise<void> => {
     startImportProcess(dispatch)
-    notifyOperationStarted({
+    notifyOperationStarted(dispatch, {
       type: 'loadBranch',
       branchName: branchName,
       githubRepo: githubRepo,
@@ -161,24 +161,26 @@ export const updateProjectWithBranchContent =
             if (resetBranches) {
               newGithubData.branches = null
             }
-            notifyOperationFinished({ type: 'loadBranch' }, ImportOperationResult.Success)
+            notifyOperationFinished(dispatch, { type: 'loadBranch' }, ImportOperationResult.Success)
 
-            notifyOperationStarted({ type: 'parseFiles' })
+            notifyOperationStarted(dispatch, { type: 'parseFiles' })
             // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
             // So that it will override any existing files that might already exist in the project when sending them to VS Code.
             const parseResults = await updateProjectContentsWithParseResults(
               workers,
               responseBody.branch.content,
             )
-            notifyOperationFinished({ type: 'parseFiles' }, ImportOperationResult.Success)
+            notifyOperationFinished(dispatch, { type: 'parseFiles' }, ImportOperationResult.Success)
 
             resetRequirementsResolutions(dispatch)
             const parsedProjectContentsInitial = createStoryboardFileIfNecessary(
+              dispatch,
               parseResults,
               'create-placeholder',
             )
 
             const parsedProjectContents = checkAndFixUtopiaRequirements(
+              dispatch,
               parsedProjectContentsInitial,
             )
 
@@ -207,7 +209,7 @@ export const updateProjectWithBranchContent =
             let dependenciesPromise: Promise<void> = Promise.resolve()
             const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
             if (packageJson != null && isTextFile(packageJson)) {
-              notifyOperationStarted({ type: 'refreshDependencies' })
+              notifyOperationStarted(dispatch, { type: 'refreshDependencies' })
               dependenciesPromise = refreshDependencies(
                 dispatch,
                 packageJson.fileContents.code,

@@ -52,6 +52,7 @@ import {
   notifyOperationStarted,
 } from '../../shared/import/import-operation-service'
 import { ImportOperationResult } from '../../shared/import/import-operation-types'
+import type { EditorDispatch } from '../../../components/editor/action-types'
 
 let depPackagerCache: { [key: string]: PackagerServerResponse } = {}
 
@@ -325,6 +326,7 @@ export async function fetchNodeModule(
 }
 
 export async function fetchNodeModules(
+  dispatch: EditorDispatch,
   newDeps: Array<RequestedNpmDependency>,
   builtInDependencies: BuiltInDependencies,
   shouldRetry: boolean = true,
@@ -340,12 +342,12 @@ export async function fetchNodeModules(
         dependencyName: dep.name,
         dependencyVersion: dep.version,
       } as const
-      notifyOperationStarted(fetchDependencyOperation)
+      notifyOperationStarted(dispatch, fetchDependencyOperation)
       const fetchResult = await fetchNodeModule(dep, shouldRetry)
       const fetchStatus = isLeft(fetchResult)
         ? ImportOperationResult.Error
         : ImportOperationResult.Success
-      notifyOperationFinished(fetchDependencyOperation, fetchStatus)
+      notifyOperationFinished(dispatch, fetchDependencyOperation, fetchStatus)
       return fetchResult
     }),
   )

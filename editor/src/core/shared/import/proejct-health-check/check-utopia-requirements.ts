@@ -7,17 +7,19 @@ import { codeFile, isTextFile, RevisionsState } from '../../project-file-types'
 import { notifyCheckingRequirement, notifyResolveRequirement } from './utopia-requirements-service'
 import { RequirementResolutionResult } from './utopia-requirements-types'
 import { applyToAllUIJSFiles } from '../../../../core/model/project-file-utils'
+import type { EditorDispatch } from '../../../../components/editor/action-types'
 
 export function checkAndFixUtopiaRequirements(
+  dispatch: EditorDispatch,
   parsedProjectContents: ProjectContentTreeRoot,
 ): ProjectContentTreeRoot {
   let projectContents = parsedProjectContents
   // check and fix package.json
-  projectContents = checkAndFixPackageJson(projectContents)
+  projectContents = checkAndFixPackageJson(dispatch, projectContents)
   // check language
-  checkProjectLanguage(projectContents)
+  checkProjectLanguage(dispatch, projectContents)
   // check react version
-  checkReactVersion(projectContents)
+  checkReactVersion(dispatch, projectContents)
   return projectContents
 }
 
@@ -31,11 +33,15 @@ function getPackageJson(
   return null
 }
 
-function checkAndFixPackageJson(projectContents: ProjectContentTreeRoot): ProjectContentTreeRoot {
-  notifyCheckingRequirement('packageJsonEntries', 'Checking package.json')
+function checkAndFixPackageJson(
+  dispatch: EditorDispatch,
+  projectContents: ProjectContentTreeRoot,
+): ProjectContentTreeRoot {
+  notifyCheckingRequirement(dispatch, 'packageJsonEntries', 'Checking package.json')
   const parsedPackageJson = getPackageJson(projectContents)
   if (parsedPackageJson == null) {
     notifyResolveRequirement(
+      dispatch,
       'packageJsonEntries',
       RequirementResolutionResult.Critical,
       'The file package.json was not found',
@@ -57,6 +63,7 @@ function checkAndFixPackageJson(projectContents: ProjectContentTreeRoot): Projec
       ),
     )
     notifyResolveRequirement(
+      dispatch,
       'packageJsonEntries',
       RequirementResolutionResult.Fixed,
       'Fixed utopia entry in package.json',
@@ -64,6 +71,7 @@ function checkAndFixPackageJson(projectContents: ProjectContentTreeRoot): Projec
     return result
   } else {
     notifyResolveRequirement(
+      dispatch,
       'packageJsonEntries',
       RequirementResolutionResult.Found,
       'Valid package.json found',
@@ -73,8 +81,11 @@ function checkAndFixPackageJson(projectContents: ProjectContentTreeRoot): Projec
   return projectContents
 }
 
-function checkProjectLanguage(projectContents: ProjectContentTreeRoot): void {
-  notifyCheckingRequirement('language', 'Checking project language')
+function checkProjectLanguage(
+  dispatch: EditorDispatch,
+  projectContents: ProjectContentTreeRoot,
+): void {
+  notifyCheckingRequirement(dispatch, 'language', 'Checking project language')
   let jsCount = 0
   let tsCount = 0
   applyToAllUIJSFiles(projectContents, (filename, uiJSFile) => {
@@ -87,6 +98,7 @@ function checkProjectLanguage(projectContents: ProjectContentTreeRoot): void {
   })
   if (tsCount > 0) {
     notifyResolveRequirement(
+      dispatch,
       'language',
       RequirementResolutionResult.Critical,
       'Majority of project files are in TS/TSX',
@@ -95,6 +107,7 @@ function checkProjectLanguage(projectContents: ProjectContentTreeRoot): void {
   } else if (jsCount == 0) {
     // in case it's a .coffee project, python, etc
     notifyResolveRequirement(
+      dispatch,
       'language',
       RequirementResolutionResult.Critical,
       'No JS/JSX files found',
@@ -102,6 +115,7 @@ function checkProjectLanguage(projectContents: ProjectContentTreeRoot): void {
     )
   } else {
     notifyResolveRequirement(
+      dispatch,
       'language',
       RequirementResolutionResult.Found,
       'Project uses JS/JSX',
@@ -110,8 +124,11 @@ function checkProjectLanguage(projectContents: ProjectContentTreeRoot): void {
   }
 }
 
-function checkReactVersion(projectContents: ProjectContentTreeRoot): void {
-  notifyCheckingRequirement('reactVersion', 'Checking React version')
+function checkReactVersion(
+  dispatch: EditorDispatch,
+  projectContents: ProjectContentTreeRoot,
+): void {
+  notifyCheckingRequirement(dispatch, 'reactVersion', 'Checking React version')
   const parsedPackageJson = getPackageJson(projectContents)
   if (
     parsedPackageJson == null ||
@@ -119,6 +136,7 @@ function checkReactVersion(projectContents: ProjectContentTreeRoot): void {
     parsedPackageJson.dependencies.react == null
   ) {
     return notifyResolveRequirement(
+      dispatch,
       'reactVersion',
       RequirementResolutionResult.Critical,
       'React is not in dependencies',
@@ -127,6 +145,7 @@ function checkReactVersion(projectContents: ProjectContentTreeRoot): void {
   const reactVersion = parsedPackageJson.dependencies.react
   // TODO: check react version
   return notifyResolveRequirement(
+    dispatch,
     'reactVersion',
     RequirementResolutionResult.Found,
     'React version is ok',

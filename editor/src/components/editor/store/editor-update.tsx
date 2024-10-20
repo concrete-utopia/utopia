@@ -225,7 +225,7 @@ export function runSimpleLocalEditorAction(
     case 'SET_IMPORT_WIZARD_OPEN':
       return UPDATE_FNS.SET_IMPORT_WIZARD_OPEN(action, state)
     case 'UPDATE_PROJECT_REQUIREMENTS':
-      return UPDATE_FNS.UPDATE_PROJECT_REQUIREMENTS(action, state)
+      return UPDATE_FNS.UPDATE_PROJECT_REQUIREMENTS(action, state, dispatch)
     case 'REMOVE_TOAST':
       return UPDATE_FNS.REMOVE_TOAST(action, state)
     case 'SET_HIGHLIGHTED_VIEWS':
@@ -293,7 +293,7 @@ export function runSimpleLocalEditorAction(
     case 'REMOVE_FILE_CONFLICT':
       return UPDATE_FNS.REMOVE_FILE_CONFLICT(action, state)
     case 'UPDATE_FROM_WORKER':
-      return UPDATE_FNS.UPDATE_FROM_WORKER(action, state, userState)
+      return UPDATE_FNS.UPDATE_FROM_WORKER(action, state, userState, dispatch)
     case 'UPDATE_FROM_CODE_EDITOR':
       return UPDATE_FNS.UPDATE_FROM_CODE_EDITOR(
         action,

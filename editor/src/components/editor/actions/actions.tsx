@@ -1643,13 +1643,19 @@ function createStoryboardFileWithPlaceholderContents(
 }
 
 export function createStoryboardFileIfNecessary(
+  dispatch: EditorDispatch,
   projectContents: ProjectContentTreeRoot,
   createPlaceholder: 'create-placeholder' | 'skip-creating-placeholder',
 ): ProjectContentTreeRoot {
-  notifyCheckingRequirement('storyboard', 'Checking for storyboard.js')
+  notifyCheckingRequirement(dispatch, 'storyboard', 'Checking for storyboard.js')
   const storyboardFile = getProjectFileByFilePath(projectContents, StoryboardFilePath)
   if (storyboardFile != null) {
-    notifyResolveRequirement('storyboard', RequirementResolutionResult.Found, 'Storyboard.js found')
+    notifyResolveRequirement(
+      dispatch,
+      'storyboard',
+      RequirementResolutionResult.Found,
+      'Storyboard.js found',
+    )
     return projectContents
   }
 
@@ -1660,12 +1666,14 @@ export function createStoryboardFileIfNecessary(
 
   if (result == projectContents) {
     notifyResolveRequirement(
+      dispatch,
       'storyboard',
       RequirementResolutionResult.Partial,
       'Storyboard.js skipped',
     )
   } else {
     notifyResolveRequirement(
+      dispatch,
       'storyboard',
       RequirementResolutionResult.Fixed,
       'Storyboard.js created',
@@ -2276,8 +2284,9 @@ export const UPDATE_FNS = {
   UPDATE_PROJECT_REQUIREMENTS: (
     action: UpdateProjectRequirements,
     editor: EditorModel,
+    dispatch: EditorDispatch,
   ): EditorModel => {
-    const result = updateRequirements(editor.projectRequirements, action.requirements)
+    const result = updateRequirements(dispatch, editor.projectRequirements, action.requirements)
     return {
       ...editor,
       projectRequirements: result,
@@ -4007,6 +4016,7 @@ export const UPDATE_FNS = {
     action: UpdateFromWorker,
     editor: EditorModel,
     userState: UserState,
+    dispatch: EditorDispatch,
   ): EditorModel => {
     let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
     let anyParsedUpdates: boolean = false
@@ -4043,6 +4053,7 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       projectContents: createStoryboardFileIfNecessary(
+        dispatch,
         workingProjectContents,
         // If we are in the process of cloning a Github repository, do not create placeholder Storyboard
         userState.githubState.gitRepoToLoad != null
@@ -4868,7 +4879,11 @@ export const UPDATE_FNS = {
       propertyControlsInfo: action.propertyControlsInfo,
     }
   },
-  UPDATE_TEXT: (action: UpdateText, editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {
+  UPDATE_TEXT: (
+    action: UpdateText,
+    editorStore: EditorStoreUnpatched,
+    dispatch: EditorDispatch,
+  ): EditorStoreUnpatched => {
     const { textProp } = action
     // This flag is useful when editing conditional expressions:
     // if the edited element is a js expression AND the content is still between curly brackets after editing,
@@ -5066,6 +5081,7 @@ export const UPDATE_FNS = {
       updateFromWorker(workerUpdates),
       withFileChanges.unpatchedEditor,
       withFileChanges.userState,
+      dispatch,
     )
     return {
       ...withFileChanges,
@@ -5680,7 +5696,7 @@ export const UPDATE_FNS = {
               requestedNpmDependency('tailwindcss', tailwindVersion.version),
               requestedNpmDependency('postcss', postcssVersion.version),
             ]
-            void fetchNodeModules(updatedNpmDeps, builtInDependencies).then(
+            void fetchNodeModules(dispatch, updatedNpmDeps, builtInDependencies).then(
               (fetchNodeModulesResult) => {
                 const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
                   updatedNpmDeps,
@@ -6390,6 +6406,7 @@ export async function load(
   const migratedModel = applyMigrations(model)
   const npmDependencies = dependenciesWithEditorRequirements(migratedModel.projectContents)
   const fetchNodeModulesResult = await fetchNodeModules(
+    dispatch,
     npmDependencies,
     builtInDependencies,
     retryFetchNodeModules,

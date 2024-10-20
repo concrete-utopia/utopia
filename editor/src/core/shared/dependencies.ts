@@ -82,7 +82,11 @@ export async function refreshDependencies(
 
     const depsToFetch = newDeps.concat(updatedDeps)
 
-    const fetchNodeModulesResult = await fetchNodeModules(depsToFetch, builtInDependencies)
+    const fetchNodeModulesResult = await fetchNodeModules(
+      dispatch,
+      depsToFetch,
+      builtInDependencies,
+    )
 
     const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
       deps,
@@ -98,6 +102,7 @@ export async function refreshDependencies(
     ])
 
     notifyOperationFinished(
+      dispatch,
       { type: 'refreshDependencies' },
       getDependenciesStatus(loadedPackagesStatus),
     )

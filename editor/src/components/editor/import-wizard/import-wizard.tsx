@@ -10,6 +10,7 @@ import { hideImportWizard } from '../../../core/shared/import/import-operation-s
 import { OperationLine } from './components'
 import { ImportOperationResult } from '../../../core/shared/import/import-operation-types'
 import { assertNever } from '../../../core/shared/utils'
+import { useDispatch } from '../store/dispatch-context'
 
 export const ImportWizard = React.memo(() => {
   const colorTheme = useColorTheme()
@@ -27,9 +28,11 @@ export const ImportWizard = React.memo(() => {
     'ImportWizard operations',
   )
 
+  const dispatch = useDispatch()
+
   const handleDismiss = React.useCallback(() => {
-    hideImportWizard()
-  }, [])
+    hideImportWizard(dispatch)
+  }, [dispatch])
 
   const stopPropagation = React.useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
@@ -189,11 +192,15 @@ function ActionButtons({ importResult }: { importResult: ImportOperationResult |
     fontSize: 14,
     cursor: 'pointer',
   }
+  const dispatch = useDispatch()
+  const hideWizard = React.useCallback(() => {
+    hideImportWizard(dispatch)
+  }, [dispatch])
   if (importResult == ImportOperationResult.Success) {
     return (
       <React.Fragment>
         <div style={textStyle}>Project Imported Successfully</div>
-        <Button onClick={hideImportWizard} style={buttonStyle}>
+        <Button onClick={hideWizard} style={buttonStyle}>
           Continue To Editor
         </Button>
       </React.Fragment>
@@ -203,7 +210,7 @@ function ActionButtons({ importResult }: { importResult: ImportOperationResult |
     return (
       <React.Fragment>
         <div style={textStyle}>Project Imported With Warnings</div>
-        <Button onClick={hideImportWizard} style={buttonStyle}>
+        <Button onClick={hideWizard} style={buttonStyle}>
           Continue
         </Button>
       </React.Fragment>

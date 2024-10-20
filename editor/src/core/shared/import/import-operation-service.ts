@@ -12,10 +12,7 @@ import type {
 } from './import-operation-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 
-let editorDispatch: EditorDispatch | null = null
-
 export function startImportProcess(dispatch: EditorDispatch) {
-  editorDispatch = dispatch
   const actions: EditorAction[] = [
     updateImportOperations(
       [
@@ -33,27 +30,31 @@ export function startImportProcess(dispatch: EditorDispatch) {
   dispatch(actions)
 }
 
-export function hideImportWizard() {
-  editorDispatch?.([setImportWizardOpen(false)])
+export function hideImportWizard(dispatch: EditorDispatch) {
+  dispatch([setImportWizardOpen(false)])
 }
 
-export function notifyOperationStarted(operation: ImportOperation) {
+export function notifyOperationStarted(dispatch: EditorDispatch, operation: ImportOperation) {
   const operationWithTime = {
     ...operation,
     timeStarted: Date.now(),
     timeDone: null,
   }
-  editorDispatch?.([updateImportOperations([operationWithTime], ImportOperationAction.Update)])
+  dispatch([updateImportOperations([operationWithTime], ImportOperationAction.Update)])
 }
 
-export function notifyOperationFinished(operation: ImportOperation, result: ImportOperationResult) {
+export function notifyOperationFinished(
+  dispatch: EditorDispatch,
+  operation: ImportOperation,
+  result: ImportOperationResult,
+) {
   const timeDone = Date.now()
   const operationWithTime = {
     ...operation,
     timeDone: timeDone,
     result: result,
   }
-  editorDispatch?.([updateImportOperations([operationWithTime], ImportOperationAction.Update)])
+  dispatch([updateImportOperations([operationWithTime], ImportOperationAction.Update)])
 }
 
 export function areSameOperation(existing: ImportOperation, incoming: ImportOperation): boolean {
