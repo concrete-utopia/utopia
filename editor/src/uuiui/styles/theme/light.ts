@@ -3,6 +3,7 @@ import type { dark } from './dark'
 
 const lightBase = {
   primary: createUtopiColor('oklch(59% 0.25 254)'),
+  primarySubdued: createUtopiColor('oklch(75% 0.15 254)'),
   primary10solid: createUtopiColor('oklch(0.98 0.01 253.75)'),
   primary10: createUtopiColor('oklch(59% 0.25 254 / 10%)'),
   primary25: createUtopiColor('oklch(59% 0.25 254 / 25%)'),

@@ -72,10 +72,6 @@ import { elementHasOnlyTextChildren } from '../../canvas-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
 import type { Axis } from '../../../inspector/inspector-common'
 import { detectFillHugFixedState, isHuggingFixedHugFill } from '../../../inspector/inspector-common'
-import {
-  AdjustCssLengthProperties,
-  adjustCssLengthProperties,
-} from '../../commands/adjust-css-length-command'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
 

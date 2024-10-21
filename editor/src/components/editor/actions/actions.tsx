@@ -544,10 +544,7 @@ import {
   replaceWithElementsWrappedInFragmentBehaviour,
 } from '../store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
-import {
-  deleteProperties,
-  deleteValuesAtPath,
-} from '../../canvas/commands/delete-properties-command'
+import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   fixParentContainingBlockSettings,
@@ -628,8 +625,8 @@ import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-i
 import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
-import { applyValuesAtPath } from '../../canvas/commands/adjust-number-command'
 import { styleP } from '../../inspector/inspector-common'
+import { applyValuesAtPath, deleteValuesAtPath } from '../../canvas/commands/utils/property-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 

@@ -2,15 +2,14 @@ import type { CSSProperties } from 'react'
 import React from 'react'
 import { createArrayWithLength, interleaveArray } from '../../../../core/shared/array-utils'
 import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-template'
-import type { CanvasVector, Size } from '../../../../core/shared/math-utils'
-import { size, windowPoint } from '../../../../core/shared/math-utils'
+import type { Size } from '../../../../core/shared/math-utils'
+import { size } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
+import type { UtopiColor } from '../../../../uuiui'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { CSSCursor } from '../../../../uuiui-deps'
-import type { EditorDispatch } from '../../../editor/action-types'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import {
@@ -18,9 +17,6 @@ import {
   printCSSNumber,
   stringifyGridDimension,
 } from '../../../inspector/common/css-utils'
-import CanvasActions from '../../canvas-actions'
-import { createInteractionViaMouse, gridGapHandle } from '../../canvas-strategies/interaction-state'
-import { windowToCanvasCoordinates } from '../../dom-lookup'
 import type { Axis } from '../../gap-utils'
 import { maybeGridGapData } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -30,6 +26,7 @@ import { getGridHelperStyleMatchingTargetGrid } from '../grid-controls-helpers'
 import type { CSSNumberWithRenderedValue } from './controls-common'
 import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
 import { startGapControlInteraction } from './grid-gap-control-helpers'
+import type { AlignContent, FlexJustifyContent } from '../../../inspector/inspector-common'
 
 export interface GridGapControlProps {
   selectedElement: ElementPath
@@ -139,7 +136,7 @@ export const GridGapControlComponent = React.memo<GridGapControlProps>((props) =
   )
 })
 
-const GridPaddingOutlineForDimension = (props: {
+export const GridPaddingOutlineForDimension = (props: {
   grid: GridData
   dimension: 'rows' | 'columns'
   onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void
@@ -148,6 +145,7 @@ const GridPaddingOutlineForDimension = (props: {
   zIndexPriority: boolean
   gridGap: CSSNumberWithRenderedValue
   elementHovered: boolean
+  draggedOutlineColor?: UtopiColor
 }) => {
   const {
     grid,
@@ -158,6 +156,7 @@ const GridPaddingOutlineForDimension = (props: {
     onMouseOver,
     zIndexPriority,
     elementHovered,
+    draggedOutlineColor,
   } = props
 
   let style: CSSProperties = {
@@ -184,7 +183,7 @@ const GridPaddingOutlineForDimension = (props: {
       {createArrayWithLength(length, (index) => {
         const hide = index === 0 || index === length - 1 || index % 2 === 0
         return (
-          <GridRowHighlight
+          <GridRowOrColumnHighlight
             key={index}
             hide={hide} // we only want to show the divs that fall in where the gaps are in the original grid
             gapId={`${dimension}-${index}`}
@@ -199,6 +198,9 @@ const GridPaddingOutlineForDimension = (props: {
             beingDragged={beingDragged}
             onMouseOver={onMouseOver}
             elementHovered={elementHovered}
+            gridJustifyContent={grid.justifyContent}
+            gridAlignContent={grid.alignContent}
+            draggedOutlineColor={draggedOutlineColor}
           />
         )
       })}
@@ -206,7 +208,7 @@ const GridPaddingOutlineForDimension = (props: {
   )
 }
 
-const GridRowHighlight = (props: {
+const GridRowOrColumnHighlight = (props: {
   gapId: string
   onMouseDown: React.MouseEventHandler
   hide: boolean
@@ -218,6 +220,9 @@ const GridRowHighlight = (props: {
   beingDragged: boolean
   onMouseOver: () => void
   elementHovered: boolean
+  gridJustifyContent: FlexJustifyContent | null
+  gridAlignContent: AlignContent | null
+  draggedOutlineColor?: UtopiColor
 }) => {
   const {
     gapId,
@@ -231,6 +236,9 @@ const GridRowHighlight = (props: {
     beingDragged,
     onMouseOver,
     elementHovered,
+    gridJustifyContent,
+    gridAlignContent,
+    draggedOutlineColor,
   } = props
 
   const colorTheme = useColorTheme()
@@ -242,7 +250,9 @@ const GridRowHighlight = (props: {
 
   const lineWidth = 1 / canvasScale
 
-  const outlineColor = beingDragged ? colorTheme.brandNeonOrange.value : 'transparent'
+  const outlineColor = beingDragged
+    ? (draggedOutlineColor ?? colorTheme.brandNeonOrange).value
+    : 'transparent'
 
   const [backgroundShown, setBackgroundShown] = React.useState<boolean>(false)
 
@@ -294,8 +304,8 @@ const GridRowHighlight = (props: {
         boxShadow: `inset 0 0 0 ${lineWidth}px ${outlineColor}`,
         opacity: hide ? 0 : 1,
 
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignContent: axis === 'row' ? undefined : gridAlignContent ?? undefined,
+        justifyContent: axis === 'row' ? gridJustifyContent ?? undefined : undefined,
         placeItems: 'center',
 
         gap: gap ?? 0,

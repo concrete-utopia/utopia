@@ -498,7 +498,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const executionScope = scope
 
-  useTailwindCompilation(customRequire)
+  useTailwindCompilation()
 
   const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
