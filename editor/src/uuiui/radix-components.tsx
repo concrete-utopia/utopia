@@ -90,6 +90,7 @@ export interface DropdownMenuProps {
   alignOffset?: number
   onOpenChange?: (open: boolean) => void
   style?: CSSProperties
+  isOpen?: boolean
 }
 
 export const ItemContainerTestId = (id: string) => `item-container-${id}`
@@ -103,7 +104,7 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
   }, [])
   const onEscapeKeyDown = React.useCallback((e: KeyboardEvent) => e.stopPropagation(), [])
 
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = useIsDropdownMenuOpen(props.isOpen ?? null)
 
   const shouldShowCheckboxes = props.items.some(
     (i) => !isSeparatorDropdownMenuItem(i) && i.checked != null,
@@ -408,3 +409,15 @@ export const RadixSelect = React.memo(
   },
 )
 RadixSelect.displayName = 'RadixSelect'
+
+function useIsDropdownMenuOpen(isOpenFromProps: boolean | null) {
+  const state = React.useState(isOpenFromProps || false)
+  const [, setOpen] = state
+
+  // If the `isOpen` value coming from props changes, update the state.
+  React.useEffect(() => {
+    setOpen(isOpenFromProps || false)
+  }, [setOpen, isOpenFromProps])
+
+  return state
+}

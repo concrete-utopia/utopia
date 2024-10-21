@@ -4,7 +4,7 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import { createSelector } from 'reselect'
-import { unless, when } from '../../utils/react-conditionals'
+import { when } from '../../utils/react-conditionals'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { AddRemoveLayoutSystemControl } from './add-remove-layout-system-control'
 import { FlexDirectionToggle } from './flex-direction-control'
@@ -554,9 +554,15 @@ function AxisDimensionControl({
   opener: (isOpen: boolean) => React.ReactElement
 }) {
   const testId = `grid-dimension-${axis}-${index}`
-  const [isOpen, setIsOpen] = React.useState(false)
-  const onOpenChange = React.useCallback((isDropdownOpen: boolean) => {
-    setIsOpen(isDropdownOpen)
+  const [isDotsMenuOpen, setDotsMenuOpen] = React.useState(false)
+  const [isTitleMenuOpen, setTitleMenuOpen] = React.useState(false)
+
+  const onOpenChangeDotsMenu = React.useCallback((isDropdownOpen: boolean) => {
+    setDotsMenuOpen(isDropdownOpen)
+  }, [])
+
+  const onOpenChangeTitleMenu = React.useCallback(() => {
+    setTitleMenuOpen(false)
   }, [])
 
   const isDynamic = React.useMemo(() => {
@@ -583,6 +589,14 @@ function AxisDimensionControl({
   const onMouseLeave = React.useCallback(() => {
     setIsHovered(false)
   }, [])
+
+  const onContextMenuTitle = React.useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setTitleMenuOpen(true)
+  }, [])
+
+  const invisibleOpener = React.useCallback(() => null, [])
 
   return (
     <div
@@ -611,8 +625,16 @@ function AxisDimensionControl({
             whiteSpace: 'nowrap',
           }}
           title={isDynamic ? dynamicIndexTitle : undefined}
+          onContextMenu={onContextMenuTitle}
         >
           {title}
+          <DropdownMenu
+            align='start'
+            items={items}
+            opener={invisibleOpener}
+            onOpenChange={onOpenChangeTitleMenu}
+            isOpen={isTitleMenuOpen}
+          />
         </Subdued>
         <GridExpressionInput
           testId={testId}
@@ -625,9 +647,14 @@ function AxisDimensionControl({
           defaultValue={gridCSSKeyword(cssKeyword('auto'), null)}
         />
         {when(
-          (isHovered && !gridExpressionInputFocused.focused) || isOpen,
+          (isHovered && !gridExpressionInputFocused.focused) || isDotsMenuOpen,
           <SquareButton>
-            <DropdownMenu align='end' items={items} opener={opener} onOpenChange={onOpenChange} />
+            <DropdownMenu
+              align='end'
+              items={items}
+              opener={opener}
+              onOpenChange={onOpenChangeDotsMenu}
+            />
           </SquareButton>,
         )}
       </div>
