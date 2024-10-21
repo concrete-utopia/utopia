@@ -6,6 +6,8 @@ import type { EditorState, EditorStatePatch } from '../../editor/store/editor-st
 import type { CommandDescription } from '../canvas-strategies/interaction-state'
 import type { AdjustCssLengthProperties } from './adjust-css-length-command'
 import { runAdjustCssLengthProperties } from './adjust-css-length-command'
+import type { ConvertToAbsolute } from './convert-to-absolute-command'
+import { runConvertToAbsolute } from './convert-to-absolute-command'
 import type { ReorderElement } from './reorder-element-command'
 import { runReorderElement } from './reorder-element-command'
 import type { ReparentElement } from './reparent-element-command'
@@ -102,6 +104,7 @@ export type CanvasCommand =
   | UpdateSelectedViews
   | UpdateHighlightedViews
   | SetSnappingGuidelines
+  | ConvertToAbsolute
   | SetCssLengthProperty
   | ReorderElement
   | ShowOutlineHighlight
@@ -154,6 +157,8 @@ export function runCanvasCommand(
       return runUpdateHighlightedViews(editorState, command)
     case 'SET_SNAPPING_GUIDELINES':
       return runSetSnappingGuidelines(editorState, command)
+    case 'CONVERT_TO_ABSOLUTE':
+      return runConvertToAbsolute(editorState, command)
     case 'SET_CSS_LENGTH_PROPERTY':
       return runSetCssLengthProperty(editorState, command)
     case 'REORDER_ELEMENT':

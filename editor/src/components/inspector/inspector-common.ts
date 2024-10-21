@@ -72,6 +72,7 @@ import {
   groupConversionCommands,
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
+import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
 import { hugPropertiesFromStyleMap } from '../../core/shared/dom-utils'
 import { setHugContentForAxis } from './inspector-strategies/hug-contents-strategy'
 
@@ -1130,7 +1131,7 @@ function addPositionAbsoluteTopLeft(
   parentFlexDirection: FlexDirection | null,
 ): Array<CanvasCommand> {
   return [
-    setProperty('always', elementPath, styleP('position'), 'absolute'),
+    convertToAbsolute('always', elementPath),
     setCssLengthProperty(
       'always',
       elementPath,
