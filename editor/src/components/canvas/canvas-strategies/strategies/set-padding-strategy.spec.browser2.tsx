@@ -834,7 +834,7 @@ describe('Padding resize strategy', () => {
       await testPaddingResizeForEdge(editor, 50, 'top', 'precise')
       await editor.getDispatchFollowUpActionsFinished()
       const div = editor.renderedDOM.getByTestId('mydiv')
-      expect(div.className).toEqual('top-10 left-10 absolute flex flex-row pt-12')
+      expect(div.className).toEqual('top-10 left-10 absolute flex flex-row pt-24')
     })
   })
 })
