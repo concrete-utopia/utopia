@@ -1,3 +1,4 @@
+import * as EP from '../../../../core/shared/element-path'
 import { assertNever } from '../../../../core/shared/utils'
 import { TailwindConfigPath } from '../../../../core/tailwind/tailwind-config'
 import { createModifiedProject } from '../../../../sample-projects/sample-project-utils.test-utils'
@@ -5,6 +6,7 @@ import type { Modifiers } from '../../../../utils/modifiers'
 import { cmdModifier } from '../../../../utils/modifiers'
 import {
   expectSingleUndo2Saves,
+  selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
   wait,
 } from '../../../../utils/utils.test-utils'
@@ -755,9 +757,10 @@ describe('Padding resize strategy', () => {
   })
 
   describe('Tailwind', () => {
-    describe('tailwind', () => {
-      setFeatureForBrowserTestsUseInDescribeBlockOnly('Tailwind', true)
-      const Project = createModifiedProject({
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Tailwind', true)
+
+    const TailwindProject = (classes: string) =>
+      createModifiedProject({
         [StoryboardFilePath]: `
     import React from 'react'
     import { Scene, Storyboard } from 'utopia-api'
@@ -776,9 +779,9 @@ describe('Padding resize strategy', () => {
           }}
         >
           <div
-            data-uid='div'
-            data-testid='${DivTestId}'
-            className='top-10 left-10 absolute flex flex-row gap-12'
+            data-uid='mydiv'
+            data-testid='mydiv'
+            className='top-10 left-10 absolute flex flex-row ${classes}'
           >
             <div className='bg-red-500 w-10 h-10' data-uid='child-1' />
             <div className='bg-red-500 w-10 h-10' data-uid='child-2' />
@@ -798,14 +801,40 @@ describe('Padding resize strategy', () => {
         @tailwind utilities;`,
       })
 
-      it('can set tailwind padding', async () => {
-        // TODO
-        const editor = await renderTestEditorWithModel(Project, 'await-first-dom-report')
-        // await selectComponentsForTest(editor, [EP.fromString('sb/scene/div')])
-        // await doGapResize(editor, canvasPoint({ x: 10, y: 0 }))
-        const div = editor.renderedDOM.getByTestId('mydiv')
-        expect(div.className).toEqual('top-10 left-10 absolute flex flex-row gap-16')
-      })
+    it('can set tailwind padding', async () => {
+      const editor = await renderTestEditorWithModel(
+        TailwindProject('p-12'),
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/mydiv')])
+      await testPaddingResizeForEdge(editor, 50, 'top', 'precise')
+      await editor.getDispatchFollowUpActionsFinished()
+      const div = editor.renderedDOM.getByTestId('mydiv')
+      expect(div.className).toEqual('top-10 left-10 absolute flex flex-row p-[6rem_3rem_3rem_3rem]')
+    })
+
+    it('can remove tailwind padding', async () => {
+      const editor = await renderTestEditorWithModel(
+        TailwindProject('p-4'),
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/mydiv')])
+      await testPaddingResizeForEdge(editor, -150, 'top', 'precise')
+      await editor.getDispatchFollowUpActionsFinished()
+      const div = editor.renderedDOM.getByTestId('mydiv')
+      expect(div.className).toEqual('top-10 left-10 absolute flex flex-row pb-4 pl-4 pr-4')
+    })
+
+    it('can set tailwind padding longhand', async () => {
+      const editor = await renderTestEditorWithModel(
+        TailwindProject('pt-12'),
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/mydiv')])
+      await testPaddingResizeForEdge(editor, 50, 'top', 'precise')
+      await editor.getDispatchFollowUpActionsFinished()
+      const div = editor.renderedDOM.getByTestId('mydiv')
+      expect(div.className).toEqual('top-10 left-10 absolute flex flex-row pt-12')
     })
   })
 })
