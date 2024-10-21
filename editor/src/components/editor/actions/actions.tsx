@@ -628,8 +628,8 @@ import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-i
 import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
-import { applyValuesAtPath } from '../../canvas/commands/adjust-number-command'
 import { styleP } from '../../inspector/inspector-common'
+import { applyValuesAtPath } from '../../canvas/commands/utils/property-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 

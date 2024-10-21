@@ -8,9 +8,9 @@ import type {
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type { EditorState } from '../../editor/store/editor-state'
-import { applyValuesAtPath } from './adjust-number-command'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { deleteValuesAtPath } from './delete-properties-command'
+import { applyValuesAtPath } from './utils/property-utils'
 
 type PositionProp = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 
