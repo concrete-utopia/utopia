@@ -1018,42 +1018,9 @@ function editorDispatchInner(
       storedState.patchedDerived,
     )
 
-    const elementsToNormalizeFromActions = getElementsToNormalizeFromActions(dispatchedActions)
-    const propertiesToRemoveFromActions = getPropertiesToRemoveFromActions(dispatchedActions)
-
-    const elementsToNormalize = [
-      ...elementsToNormalizeFromActions,
-      ...(postProcessingDataFromStrategies?.type === 'normalization-data'
-        ? postProcessingDataFromStrategies.elementsToNormalize
-        : []),
-    ]
-
-    const propertiesToRemove = [
-      ...propertiesToRemoveFromActions,
-      ...(postProcessingDataFromStrategies?.type === 'normalization-data'
-        ? postProcessingDataFromStrategies.propertiesToRemove
-        : []),
-    ]
-
-    const unpatchedEditor = runRemovedPropertyPatchingAndNormalization(
-      unpatchedEditorStateFromStrategies,
-      normalizationData(elementsToNormalize, propertiesToRemove),
-    )
-
-    const patchedEditor =
-      postProcessingDataFromStrategies === null
-        ? patchedEditorStateFromStrategies
-        : runRemovedPropertyPatchingAndNormalization(
-            patchedEditorStateFromStrategies,
-            addNormalizationDataFromActions(
-              postProcessingDataFromStrategies,
-              normalizationData(elementsToNormalizeFromActions, propertiesToRemoveFromActions),
-            ),
-          )
-
     return {
-      unpatchedEditor: unpatchedEditor,
-      patchedEditor: patchedEditor,
+      unpatchedEditor: unpatchedEditorStateFromStrategies,
+      patchedEditor: patchedEditorStateFromStrategies,
       unpatchedDerived: frozenDerivedState,
       patchedDerived: patchedDerivedState,
       strategyState: newStrategyState,
@@ -1110,67 +1077,4 @@ function resetUnpatchedEditorTransientFields(editor: EditorState): EditorState {
       elementsToRerender: 'rerender-all-elements',
     },
   }
-}
-
-function addNormalizationDataFromActions(
-  data: PostProcessingData,
-  fromActions: NormalizationData,
-): PostProcessingData {
-  if (data.type === 'properties-to-patch') {
-    return data
-  }
-
-  return normalizationData(
-    [...data.elementsToNormalize, ...fromActions.elementsToNormalize],
-    [...data.propertiesToRemove, ...fromActions.propertiesToRemove],
-  )
-}
-
-function patchRemovedProperties(
-  editor: EditorState,
-  propertiesToPatch: PropertiesToPatchWithDefaults,
-): EditorState {
-  const propertiesToSetCommands = mapDropNulls(
-    ([elementPathString, properties]) =>
-      getJSXElementFromProjectContents(EP.fromString(elementPathString), editor.projectContents) ==
-      null
-        ? null
-        : updateBulkProperties(
-            'always',
-            EP.fromString(elementPathString),
-            Object.entries(properties).map(([property, value]) => {
-              return propertyToSet(PP.create('style', property), value)
-            }),
-          ),
-    Object.entries(propertiesToPatch),
-  )
-  return foldAndApplyCommandsSimple(editor, propertiesToSetCommands)
-}
-
-function runRemovedPropertyPatchingAndNormalization(
-  editorState: EditorState,
-  postProcessingData: PostProcessingData,
-): EditorState {
-  if (postProcessingData.type === 'properties-to-patch') {
-    return Object.keys(postProcessingData.propertiesToPatch).length === 0
-      ? editorState
-      : patchRemovedProperties(editorState, postProcessingData.propertiesToPatch)
-  }
-
-  if (postProcessingData.type === 'normalization-data') {
-    if (
-      postProcessingData.elementsToNormalize.length === 0 &&
-      postProcessingData.propertiesToRemove.length === 0
-    ) {
-      return editorState
-    }
-
-    return getActivePlugin(editorState).normalizeFromInlineStyle(
-      editorState,
-      postProcessingData.elementsToNormalize,
-      postProcessingData.propertiesToRemove,
-    )
-  }
-
-  assertNever(postProcessingData)
 }
