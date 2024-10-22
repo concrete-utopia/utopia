@@ -3,6 +3,7 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import composeRefs from '@seznam/compose-react-refs'
+import type { CSSProperties } from 'react'
 import React from 'react'
 import type { ControlStatus } from '../../components/inspector/common/control-status'
 import type { ControlStyles } from '../../components/inspector/common/control-styles'
@@ -34,6 +35,7 @@ export interface StringInputProps
   pasteHandler?: boolean
   showBorder?: boolean
   innerStyle?: React.CSSProperties
+  ellipsize?: boolean
 }
 
 export const StringInput = React.memo(
@@ -49,6 +51,7 @@ export const StringInput = React.memo(
         DEPRECATED_labelBelow: labelBelow,
         testId,
         showBorder,
+        ellipsize,
         ...inputProps
       },
       propsRef,
@@ -87,6 +90,13 @@ export const StringInput = React.memo(
       )
 
       const placeholder = getControlStylesAwarePlaceholder(controlStyles) ?? initialPlaceHolder
+
+      let inputStyle: CSSProperties = {}
+      if (ellipsize) {
+        inputStyle.textOverflow = 'ellipsis'
+        inputStyle.whiteSpace = 'nowrap'
+        inputStyle.overflow = 'hidden'
+      }
 
       return (
         <form
@@ -142,6 +152,7 @@ export const StringInput = React.memo(
               autoComplete='off'
               spellCheck={false}
               growInputAutomatically={inputProps.growInputAutomatically}
+              style={inputStyle}
             />
             {labelBelow == null ? null : (
               <LabelBelow htmlFor={inputProps.id} style={{ color: controlStyles.secondaryColor }}>

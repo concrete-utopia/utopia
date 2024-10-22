@@ -200,6 +200,7 @@ export const GridExpressionInput = React.memo(
             width: inputFocused ? '100%' : `calc(100% - ${DropdownWidth}px)`,
           }}
           css={{ color: isDefault ? colorTheme.fg6.value : colorTheme.fg0.value }}
+          ellipsize={true}
         />
         {unless(
           inputFocused,
