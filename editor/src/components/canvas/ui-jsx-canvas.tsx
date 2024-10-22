@@ -75,7 +75,11 @@ import {
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import type { RemixValidPathsGenerationContext } from './canvas-utils'
-import { getParseSuccessForFilePath, getValidElementPaths } from './canvas-utils'
+import {
+  projectContentsSameForRefreshRequire,
+  getParseSuccessForFilePath,
+  getValidElementPaths,
+} from './canvas-utils'
 import { arrayEqualsByValue, fastForEach, NO_OP } from '../../core/shared/utils'
 import {
   AlwaysFalse,
@@ -360,20 +364,13 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   useClearSpyMetadataOnRemount(props.invalidatedCanvasData, isRemounted, metadataContext)
 
-  const elementsToRerenderRef = React.useRef(ElementsToRerenderGLOBAL.current)
-  const shouldRerenderRef = React.useRef(false)
-  shouldRerenderRef.current =
-    ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
-    elementsToRerenderRef.current === 'rerender-all-elements' || // TODO this means the first drag frame will still be slow, figure out a nicer way to immediately switch to true. probably this should live in a dedicated a function
-    !arrayEqualsByValue(
-      ElementsToRerenderGLOBAL.current,
-      elementsToRerenderRef.current,
-      EP.pathsEqual,
-    ) // once we get here, we know that both `ElementsToRerenderGLOBAL.current` and `elementsToRerenderRef.current` are arrays
-  elementsToRerenderRef.current = ElementsToRerenderGLOBAL.current
-
   const maybeOldProjectContents = React.useRef(projectContents)
-  if (shouldRerenderRef.current) {
+
+  const projectContentsSimilarEnough = projectContentsSameForRefreshRequire(
+    maybeOldProjectContents.current,
+    projectContents,
+  )
+  if (!projectContentsSimilarEnough) {
     maybeOldProjectContents.current = projectContents
   }
 
