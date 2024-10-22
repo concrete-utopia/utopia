@@ -11,6 +11,7 @@ import { Icons, SmallerIcons } from './icons'
 import { when } from '../utils/react-conditionals'
 import { Icn, type IcnProps } from './icn'
 import { forceNotNull } from '../core/shared/optional-utils'
+import { usePropControlledStateV2 } from '../components/inspector/common/inspector-utils'
 
 // Keep this in sync with the radix-components-portal div in index.html.
 export const RadixComponentsPortalId = 'radix-components-portal'
@@ -90,6 +91,7 @@ export interface DropdownMenuProps {
   alignOffset?: number
   onOpenChange?: (open: boolean) => void
   style?: CSSProperties
+  forceOpen?: boolean
 }
 
 export const ItemContainerTestId = (id: string) => `item-container-${id}`
@@ -103,7 +105,7 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
   }, [])
   const onEscapeKeyDown = React.useCallback((e: KeyboardEvent) => e.stopPropagation(), [])
 
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = usePropControlledStateV2(props.forceOpen || false)
 
   const shouldShowCheckboxes = props.items.some(
     (i) => !isSeparatorDropdownMenuItem(i) && i.checked != null,
