@@ -6,8 +6,6 @@ import type { EditorState, EditorStatePatch } from '../../editor/store/editor-st
 import type { CommandDescription } from '../canvas-strategies/interaction-state'
 import type { AdjustCssLengthProperties } from './adjust-css-length-command'
 import { runAdjustCssLengthProperties } from './adjust-css-length-command'
-import type { AdjustNumberProperty } from './adjust-number-command'
-import { runAdjustNumberProperty } from './adjust-number-command'
 import type { ConvertToAbsolute } from './convert-to-absolute-command'
 import { runConvertToAbsolute } from './convert-to-absolute-command'
 import type { ReorderElement } from './reorder-element-command'
@@ -47,8 +45,6 @@ import type { InsertElementInsertionSubject } from './insert-element-insertion-s
 import { runInsertElementInsertionSubject } from './insert-element-insertion-subject'
 import type { AddElement } from './add-element-command'
 import { runAddElement } from './add-element-command'
-import type { UpdatePropIfExists } from './update-prop-if-exists-command'
-import { runUpdatePropIfExists } from './update-prop-if-exists-command'
 import type { HighlightElementsCommand } from './highlight-element-command'
 import { runHighlightElementsCommand } from './highlight-element-command'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
@@ -102,7 +98,6 @@ export type CanvasCommand =
   | WildcardPatch
   | UpdateFunctionCommand
   | StrategySwitched
-  | AdjustNumberProperty
   | AdjustCssLengthProperties
   | ReparentElement
   | DuplicateElement
@@ -119,7 +114,6 @@ export type CanvasCommand =
   | PushIntendedBoundsAndUpdateHuggingElements
   | DeleteProperties
   | SetProperty
-  | UpdatePropIfExists
   | AddImportsToFile
   | AddToReparentedToPaths
   | InsertElementInsertionSubject
@@ -151,8 +145,6 @@ export function runCanvasCommand(
       return runUpdateFunctionCommand(editorState, command, commandLifecycle)
     case 'STRATEGY_SWITCHED':
       return runStrategySwitchedCommand(command)
-    case 'ADJUST_NUMBER_PROPERTY':
-      return runAdjustNumberProperty(editorState, command)
     case 'ADJUST_CSS_LENGTH_PROPERTY':
       return runAdjustCssLengthProperties(editorState, command)
     case 'REPARENT_ELEMENT':
@@ -187,8 +179,6 @@ export function runCanvasCommand(
       return runSetProperty(editorState, command)
     case 'UPDATE_BULK_PROPERTIES':
       return runBulkUpdateProperties(editorState, command)
-    case 'UPDATE_PROP_IF_EXISTS':
-      return runUpdatePropIfExists(editorState, command)
     case 'ADD_IMPORTS_TO_FILE':
       return runAddImportsToFile(editorState, command)
     case 'ADD_TO_REPARENTED_TO_PATHS':

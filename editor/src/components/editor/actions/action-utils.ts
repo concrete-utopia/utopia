@@ -370,7 +370,6 @@ export function getElementsToNormalizeFromCommands(commands: CanvasCommand[]): E
     switch (command.type) {
       case 'ADJUST_CSS_LENGTH_PROPERTY':
       case 'SET_CSS_LENGTH_PROPERTY':
-      case 'ADJUST_NUMBER_PROPERTY':
       case 'CONVERT_CSS_PERCENT_TO_PX':
       case 'CONVERT_TO_ABSOLUTE':
         return command.target

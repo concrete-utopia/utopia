@@ -22,8 +22,8 @@ import { modifyUnderlyingForOpenFile } from '../../editor/store/editor-state'
 import type { CSSNumber, FlexDirection } from '../../inspector/common/css-utils'
 import { parseCSSPercent, parseCSSPx, printCSSNumber } from '../../inspector/common/css-utils'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
-import { deleteValuesAtPath } from './delete-properties-command'
 import { patchParseSuccessAtElementPath } from './patch-utils'
+import { deleteValuesAtPath } from './utils/property-utils'
 
 export type CreateIfNotExistant = 'create-if-not-existing' | 'do-not-create-if-doesnt-exist'
 
@@ -416,7 +416,7 @@ function getConflictingPropertiesToDelete(
   return propertiesToDelete
 }
 
-export function deleteConflictingPropsForWidthHeightFromAttributes(
+function deleteConflictingPropsForWidthHeightFromAttributes(
   attributes: JSXAttributes,
   propertyPath: PropertyPath,
   parentFlexDirection: FlexDirection | null,
