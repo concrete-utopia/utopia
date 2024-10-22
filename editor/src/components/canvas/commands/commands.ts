@@ -174,9 +174,9 @@ export function runCanvasCommand(
     case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING_ELEMENTS':
       return runPushIntendedBoundsAndUpdateHuggingElements(editorState, command)
     case 'DELETE_PROPERTIES':
-      return runDeleteProperties(editorState, command)
+      return runDeleteProperties(editorState, command, commandLifecycle)
     case 'SET_PROPERTY':
-      return runSetProperty(editorState, command)
+      return runSetProperty(editorState, command, commandLifecycle)
     case 'UPDATE_BULK_PROPERTIES':
       return runBulkUpdateProperties(editorState, command)
     case 'ADD_IMPORTS_TO_FILE':

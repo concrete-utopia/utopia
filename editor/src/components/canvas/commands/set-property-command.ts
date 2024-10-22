@@ -8,8 +8,14 @@ import type {
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type { EditorState } from '../../editor/store/editor-state'
+import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
+import { runStyleUpdateForStrategy } from '../plugins/style-plugins'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
-import { applyValuesAtPath, deleteValuesAtPath } from './utils/property-utils'
+import {
+  applyValuesAtPath,
+  deleteValuesAtPath,
+  maybeCssPropertyFromInlineStyle,
+} from './utils/property-utils'
 
 type PositionProp = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 
@@ -87,24 +93,40 @@ export function setPropertyOmitNullProp<T extends PropertyPathPart>(
   }
 }
 
-export const runSetProperty: CommandFunction<SetProperty> = (
+function getCommandDescription(command: SetProperty) {
+  return `Set Property ${PP.toString(command.property)}=${JSON.stringify(
+    command.property,
+    null,
+    2,
+  )} on ${EP.toUid(command.element)}`
+}
+
+export const runSetProperty = (
   editorState: EditorState,
   command: SetProperty,
+  interactionLifecycle: InteractionLifecycle,
 ) => {
-  // Apply the update to the properties.
-  const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
+  const prop = maybeCssPropertyFromInlineStyle(command.property)
+  if (prop == null) {
+    const { editorStatePatch } = applyValuesAtPath(editorState, command.element, [
+      { path: command.property, value: jsExpressionValue(command.value, emptyComments) },
+    ])
+    return {
+      editorStatePatches: [editorStatePatch],
+      commandDescription: getCommandDescription(command),
+    }
+  }
+
+  const editorStatePatches = runStyleUpdateForStrategy(
+    interactionLifecycle,
     editorState,
     command.element,
-    [{ path: command.property, value: jsExpressionValue(command.value, emptyComments) }],
+    [{ type: 'set', property: prop, value: command.value.toString() }],
   )
 
   return {
-    editorStatePatches: [propertyUpdatePatch],
-    commandDescription: `Set Property ${PP.toString(command.property)}=${JSON.stringify(
-      command.property,
-      null,
-      2,
-    )} on ${EP.toUid(command.element)}`,
+    editorStatePatches: editorStatePatches,
+    commandDescription: getCommandDescription(command),
   }
 }
 

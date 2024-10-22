@@ -11,11 +11,9 @@ import {
 } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import { styleStringInArray } from '../../../utils/common-constants'
-import type { EditorState } from '../../editor/store/editor-state'
 import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { withPropertyTag, type WithPropertyTag } from '../canvas-types'
-import { applyValuesAtPath } from '../commands/adjust-number-command'
-import { deleteValuesAtPath } from '../commands/delete-properties-command'
+import { applyValuesAtPath, deleteValuesAtPath } from '../commands/utils/property-utils'
 import type { StylePlugin } from './style-plugins'
 
 function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(
@@ -73,9 +71,14 @@ export const InlineStylePlugin: StylePlugin = {
       updates,
     )
 
-    return [
-      (e: EditorState) => deleteValuesAtPath(e, elementPath, propsToDelete),
-      (e: EditorState) => applyValuesAtPath(e, elementPath, propsToSet),
-    ].reduce((state, fn) => fn(state).editorStateWithChanges, editorState)
+    const { editorStateWithChanges: withValuesDeleted, editorStatePatch: deleteValuesPatch } =
+      deleteValuesAtPath(editorState, elementPath, propsToDelete)
+    const { editorStatePatch: applyValuesPatch } = applyValuesAtPath(
+      withValuesDeleted,
+      elementPath,
+      propsToSet,
+    )
+
+    return [deleteValuesPatch, applyValuesPatch]
   },
 }
