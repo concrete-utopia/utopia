@@ -633,7 +633,7 @@ function AxisDimensionControl({
             items={items}
             opener={invisibleOpener}
             onOpenChange={onOpenChangeTitleMenu}
-            isOpen={isTitleMenuOpen}
+            forceOpen={isTitleMenuOpen}
           />
         </Subdued>
         <GridExpressionInput

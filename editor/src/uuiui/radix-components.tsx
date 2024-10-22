@@ -91,7 +91,7 @@ export interface DropdownMenuProps {
   alignOffset?: number
   onOpenChange?: (open: boolean) => void
   style?: CSSProperties
-  isOpen?: boolean
+  forceOpen?: boolean
 }
 
 export const ItemContainerTestId = (id: string) => `item-container-${id}`
@@ -105,7 +105,7 @@ export const DropdownMenu = React.memo<DropdownMenuProps>((props) => {
   }, [])
   const onEscapeKeyDown = React.useCallback((e: KeyboardEvent) => e.stopPropagation(), [])
 
-  const [open, setOpen] = usePropControlledStateV2(props.isOpen || false)
+  const [open, setOpen] = usePropControlledStateV2(props.forceOpen || false)
 
   const shouldShowCheckboxes = props.items.some(
     (i) => !isSeparatorDropdownMenuItem(i) && i.checked != null,
