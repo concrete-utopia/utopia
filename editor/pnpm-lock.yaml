@@ -150,7 +150,7 @@ specifiers:
   '@vercel/stega': 0.1.0
   '@vitejs/plugin-react': 4.0.4
   '@welldone-software/why-did-you-render': 5.0.0-rc.1
-  '@xengine/tailwindcss-class-parser': 1.1.17
+  '@xengine/tailwindcss-class-parser': 1.1.18
   ajv: 6.4.0
   anser: 2.1.0
   antd: 4.3.5
@@ -320,7 +320,7 @@ specifiers:
   string-replace-loader: 2.2.0
   strip-ansi: 6.0.0
   style-loader: 0.18.2
-  tailwindcss: ^3.4.13
+  tailwindcss: 3.4.11
   tar: 6.0.5
   terser-webpack-plugin: 5.3.9
   three: 0.140.2
@@ -390,7 +390,7 @@ dependencies:
   '@types/w3c-css-typed-object-model-level-1': 20180410.0.5
   '@use-it/interval': 0.1.3_react@18.1.0
   '@vercel/stega': 0.1.0
-  '@xengine/tailwindcss-class-parser': 1.1.17_tailwindcss@3.4.13
+  '@xengine/tailwindcss-class-parser': 1.1.18_tailwindcss@3.4.11
   ajv: 6.4.0
   anser: 2.1.0
   antd: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
@@ -648,7 +648,7 @@ devDependencies:
   source-map-loader: 0.2.3
   string-replace-loader: 2.2.0_webpack@5.88.2
   style-loader: 0.18.2
-  tailwindcss: 3.4.13
+  tailwindcss: 3.4.11
   tar: 6.0.5
   terser-webpack-plugin: 5.3.9_webpack@5.88.2
   three: 0.140.2
@@ -6002,13 +6002,13 @@ packages:
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: true
 
-  /@xengine/tailwindcss-class-parser/1.1.17_tailwindcss@3.4.13:
-    resolution: {integrity: sha512-LRod5tEDSpr3T2I8R3U0bRH4O18MDfAdybxQRLSbcIta4AboQEeIUrNVsz6wRmJcsrBXtQYbwP4k9zsE+QnKAg==}
+  /@xengine/tailwindcss-class-parser/1.1.18_tailwindcss@3.4.11:
+    resolution: {integrity: sha512-BUH8MY4cAV7H1mHXIF1cny63VOiI4HXQD5z2q3SJ2seE1dcMWpUH7PvJ3cq8iO8cJ1q81qDTKUp9nlmRU7Gn6A==}
     peerDependencies:
       tailwindcss: '*'
     dependencies:
       colord: 2.9.3
-      tailwindcss: 3.4.13
+      tailwindcss: 3.4.11
     dev: false
 
   /@xstate/fsm/2.1.0:
@@ -18593,6 +18593,36 @@ packages:
       string-width: 4.2.3
       strip-ansi: 6.0.1
 
+  /tailwindcss/3.4.11:
+    resolution: {integrity: sha512-qhEuBcLemjSJk5ajccN9xJFtM/h0AVCPaA6C92jNP+M2J8kX+eMJHI7R2HFKUvvAsMpcfLILMCFYSeDwpMmlUg==}
+    engines: {node: '>=14.0.0'}
+    hasBin: true
+    dependencies:
+      '@alloc/quick-lru': 5.2.0
+      arg: 5.0.2
+      chokidar: 3.5.3
+      didyoumean: 1.2.2
+      dlv: 1.1.3
+      fast-glob: 3.3.1
+      glob-parent: 6.0.2
+      is-glob: 4.0.3
+      jiti: 1.21.6
+      lilconfig: 2.1.0
+      micromatch: 4.0.5
+      normalize-path: 3.0.0
+      object-hash: 3.0.0
+      picocolors: 1.0.0
+      postcss: 8.4.27
+      postcss-import: 15.1.0_postcss@8.4.27
+      postcss-js: 4.0.1_postcss@8.4.27
+      postcss-load-config: 4.0.2_postcss@8.4.27
+      postcss-nested: 6.2.0_postcss@8.4.27
+      postcss-selector-parser: 6.1.2
+      resolve: 1.22.2
+      sucrase: 3.35.0
+    transitivePeerDependencies:
+      - ts-node
+
   /tailwindcss/3.4.13:
     resolution: {integrity: sha512-KqjHOJKogOUt5Bs752ykCeiwvi0fKVkr5oqsFNt/8px/tA8scFPIlkygsf6jXrfCqGHz7VflA6+yytWuM+XhFw==}
     engines: {node: '>=14.0.0'}
@@ -18622,6 +18652,7 @@ packages:
       sucrase: 3.35.0
     transitivePeerDependencies:
       - ts-node
+    dev: false
 
   /tapable/1.1.3:
     resolution: {integrity: sha512-4WK/bYZmj8xLr+HUCODHGF1ZFzsYffasLUgEiMBY4fgtltdO6B4WJtlSbPaDTLpYTcGVwM2qLnFTICEcNxs3kA==}
