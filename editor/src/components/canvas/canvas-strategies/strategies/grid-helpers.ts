@@ -788,3 +788,12 @@ export function findOriginalGrid(
 
   return findOriginalGrid(metadata, parentPath)
 }
+
+// Returns whether the given dimensions are made of just one item, being a CSS keyword with value "auto".
+export function isJustAutoGridDimension(dimensions: GridDimension[]): boolean {
+  return (
+    dimensions.length === 1 &&
+    dimensions[0].type === 'KEYWORD' &&
+    dimensions[0].value.value === 'auto'
+  )
+}
