@@ -29,7 +29,7 @@ export var storyboard = (
         height: ${params.height ?? "'max-content'"},
         ${params.columns != null ? `gridTemplateColumns: '${params.columns}',` : ''}
         ${params.rows != null ? `gridTemplateRows: '${params.rows}',` : ''}
-		${params.shorthand != null ? `gridTemplate: '${params.shorthand}',` : ''}
+        ${params.shorthand != null ? `gridTemplate: '${params.shorthand}',` : ''}
       }}
     >
       <div
