@@ -66,7 +66,10 @@ import {
   type ElementInstanceMetadata,
   type GridElementProperties,
 } from '../../core/shared/element-template'
-import { setGridPropsCommands } from '../canvas/canvas-strategies/strategies/grid-helpers'
+import {
+  isJustAutoGridDimension,
+  setGridPropsCommands,
+} from '../canvas/canvas-strategies/strategies/grid-helpers'
 import { type CanvasCommand } from '../canvas/commands/commands'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import {
@@ -480,11 +483,7 @@ const TemplateDimensionControl = React.memo(
         template.dimensions.length === 0 ||
         (autoTemplate?.type === 'DIMENSIONS' &&
           autoTemplate.dimensions.length > 0 &&
-          !(
-            autoTemplate.dimensions.length === 1 &&
-            autoTemplate.dimensions[0].type === 'KEYWORD' &&
-            autoTemplate.dimensions[0].value.value === 'auto'
-          ))
+          !isJustAutoGridDimension(autoTemplate.dimensions))
       )
     }, [template, autoTemplate])
 
