@@ -21,13 +21,22 @@ function parseTailwindProperty<T>(value: unknown, parse: Parser<T>): WithPropert
 }
 
 const TailwindPropertyMapping: Record<string, string> = {
+  width: 'width',
+  height: 'height',
   gap: 'gap',
-  flexDirection: 'flexDirection',
   padding: 'padding',
   paddingTop: 'paddingTop',
   paddingRight: 'paddingRight',
   paddingBottom: 'paddingBottom',
   paddingLeft: 'paddingLeft',
+  justifyContent: 'justifyContent',
+  alignItems: 'alignItems',
+  flex: 'flex',
+  flexDirection: 'flexDirection',
+  flexGrow: 'flexGrow',
+  flexShrink: 'flexShrink',
+  flexBasis: 'flexBasis',
+  flexWrap: 'flexWrap',
 }
 
 function isSupportedTailwindProperty(prop: unknown): prop is keyof typeof TailwindPropertyMapping {

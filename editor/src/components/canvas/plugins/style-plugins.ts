@@ -13,9 +13,18 @@ import {
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { assertNever } from '../../../core/shared/utils'
 
-export type StyleUpdate =
-  | { type: 'set'; property: string; value: string | number }
-  | { type: 'delete'; property: string }
+export interface UpdateCSSProp {
+  type: 'set'
+  property: string
+  value: string | number
+}
+
+interface DeleteCSSProp {
+  type: 'delete'
+  property: string
+}
+
+export type StyleUpdate = UpdateCSSProp | DeleteCSSProp
 
 export interface StylePlugin {
   name: string
@@ -68,16 +77,8 @@ export function runStyleUpdateForStrategy(
     case 'mid-interaction':
       return runStyleUpdateMidInteraction(editorState, elementPath, updates)
     case 'end-interaction':
-      return runStyleUpdateForPropertyUpdate(editorState, elementPath, updates)
+      return getActivePlugin(editorState).updateStyles(editorState, elementPath, updates)
     default:
       assertNever(commandLifecycle)
   }
-}
-
-export function runStyleUpdateForPropertyUpdate(
-  editorState: EditorState,
-  elementPath: ElementPath,
-  updates: StyleUpdate[],
-) {
-  return getActivePlugin(editorState).updateStyles(editorState, elementPath, updates)
 }

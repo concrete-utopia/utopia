@@ -18,11 +18,16 @@ export function getParsedClassList(
   config: Config | null,
 ): TailwindClassParserResult[] {
   return classList.split(' ').map((c) => {
-    const result = TailwindClassParser.parse(c, config ?? undefined)
-    if (result.kind === 'error') {
+    try {
+      // TailwindClassParser.parse can throw
+      const result = TailwindClassParser.parse(c, config ?? undefined)
+      if (result.kind === 'error') {
+        return { type: 'unparsed', className: c }
+      }
+      return { type: 'parsed', ast: result }
+    } catch (e) {
       return { type: 'unparsed', className: c }
     }
-    return { type: 'parsed', ast: result }
   })
 }
 
@@ -35,10 +40,15 @@ export function getClassListFromParsedClassList(
       if (c.type === 'unparsed') {
         return c.className
       }
-      return TailwindClassParser.classname(
-        c.ast as any, // FIXME the types are not exported from @xengine/tailwindcss-class-parser
-        config ?? undefined,
-      )
+      try {
+        return TailwindClassParser.classname(
+          c.ast as any, // FIXME the types are not exported from @xengine/tailwindcss-class-parser
+          config ?? undefined,
+        )
+      } catch (e) {
+        console.error(e)
+        return ''
+      }
     })
     .filter((part) => part != null && part.length > 0)
     .join(' ')
