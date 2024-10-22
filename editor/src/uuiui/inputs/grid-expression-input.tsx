@@ -27,7 +27,7 @@ import {
 import { Icons, SmallerIcons } from '../icons'
 import { NO_OP } from '../../core/shared/utils'
 import { unless } from '../../utils/react-conditionals'
-import { useColorTheme } from '../styles/theme'
+import { useColorTheme, UtopiaTheme } from '../styles/theme'
 
 interface GridExpressionInputProps {
   testId: string
@@ -164,22 +164,24 @@ export const GridExpressionInput = React.memo(
       return gridDimensionsAreEqual(value, defaultValue)
     }, [value, defaultValue])
 
+    const highlightBorder = dropdownOpen || inputFocused
+
     return (
       <div
         style={style}
         css={{
-          borderRadius: 2,
+          borderRadius: UtopiaTheme.inputBorderRadius,
           display: 'flex',
           alignItems: 'center',
           flexGrow: 1,
           flexDirection: 'row',
+          boxShadow: `inset 0px 0px 0px 1px ${
+            highlightBorder ? colorTheme.dynamicBlue.value : 'transparent'
+          }`,
           '&:hover': {
             boxShadow: `inset 0px 0px 0px 1px ${
-              dropdownOpen ? colorTheme.dynamicBlue.value : colorTheme.fg7.value
+              highlightBorder ? colorTheme.dynamicBlue.value : colorTheme.fg7.value
             }`,
-          },
-          '&:focus-within': {
-            boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
           },
         }}
         onMouseOver={onMouseOver}
