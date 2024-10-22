@@ -63,7 +63,12 @@ import type {
   HighlightBoundsForUids,
   ExportsDetail,
 } from '../../core/shared/project-file-types'
-import { isExportDefault, isParseSuccess, isTextFile } from '../../core/shared/project-file-types'
+import {
+  importsEquals,
+  isExportDefault,
+  isParseSuccess,
+  isTextFile,
+} from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
   getDefaultExportedTopLevelElement,
@@ -140,7 +145,11 @@ import { getStoryboardUID } from '../../core/model/scene-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { ProjectContentTreeRoot } from '../assets'
-import { getProjectFileByFilePath } from '../assets'
+import {
+  getProjectFileByFilePath,
+  isProjectContentDirectory,
+  isProjectContentFile,
+} from '../assets'
 import type { CSSNumber } from '../inspector/common/css-utils'
 import { parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
 import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
@@ -2179,4 +2188,70 @@ export function canvasPanelOffsets(): {
     left: (codeEditor?.clientWidth ?? 0) + (leftPane?.clientWidth ?? 0),
     right: inspector?.clientWidth ?? 0,
   }
+}
+
+export function projectContentsSameForRefreshRequire(
+  oldProjectContents: ProjectContentTreeRoot,
+  newProjectContents: ProjectContentTreeRoot,
+): boolean {
+  if (oldProjectContents === newProjectContents) {
+    // Identical references, so the imports are the same.
+    return true
+  } else {
+    for (const [filename, oldProjectTree] of Object.entries(oldProjectContents)) {
+      const newProjectTree = newProjectContents[filename]
+      // If the file can't be found in the other tree, the imports are not the same.
+      if (newProjectTree == null) {
+        return false
+      }
+      if (isProjectContentFile(oldProjectTree) && isProjectContentFile(newProjectTree)) {
+        // Both entries are files.
+        const oldContent = oldProjectTree.content
+        const newContent = newProjectTree.content
+        if (isTextFile(oldContent) || isTextFile(newContent)) {
+          if (isTextFile(oldContent) && isTextFile(newContent)) {
+            const oldParsed = oldContent.fileContents.parsed
+            const newParsed = newContent.fileContents.parsed
+            if (isParseSuccess(oldParsed) || isParseSuccess(newParsed)) {
+              if (isParseSuccess(oldParsed) && isParseSuccess(newParsed)) {
+                if (
+                  !importsEquals(oldParsed.imports, newParsed.imports) ||
+                  oldParsed.combinedTopLevelArbitraryBlock !==
+                    newParsed.combinedTopLevelArbitraryBlock ||
+                  oldParsed.exportsDetail !== newParsed.exportsDetail
+                ) {
+                  // For the same file the imports, combined top
+                  // level arbitrary block or exports have changed.
+                  return false
+                }
+              } else {
+                // One of the files is a parse success but the other is not.
+                return false
+              }
+            }
+          } else {
+            // One of the files is a text file but the other is not.
+            return false
+          }
+        }
+      } else if (
+        isProjectContentDirectory(oldProjectTree) &&
+        isProjectContentDirectory(newProjectTree)
+      ) {
+        // Both entries are directories.
+        if (
+          !projectContentsSameForRefreshRequire(oldProjectTree.children, newProjectTree.children)
+        ) {
+          // The imports of the subdirectories differ.
+          return false
+        }
+      } else {
+        // One of the entries is a file and the other is a directory.
+        return false
+      }
+    }
+  }
+
+  // If nothing differs, return true.
+  return true
 }

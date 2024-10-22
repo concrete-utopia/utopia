@@ -75,7 +75,11 @@ import {
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import type { RemixValidPathsGenerationContext } from './canvas-utils'
-import { getParseSuccessForFilePath, getValidElementPaths } from './canvas-utils'
+import {
+  projectContentsSameForRefreshRequire,
+  getParseSuccessForFilePath,
+  getValidElementPaths,
+} from './canvas-utils'
 import { arrayEqualsByValue, fastForEach, NO_OP } from '../../core/shared/utils'
 import {
   AlwaysFalse,
@@ -98,7 +102,6 @@ import { listenForReactRouterErrors } from '../../core/shared/runtime-report-log
 import { getFilePathMappings } from '../../core/model/project-file-utils'
 import { useInvalidatedCanvasRemount } from './canvas-component-entry'
 import { useTailwindCompilation } from '../../core/tailwind/tailwind-compilation'
-import { getProjectImports } from '../editor/import-utils'
 
 applyUIDMonkeyPatch()
 
@@ -363,18 +366,11 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const maybeOldProjectContents = React.useRef(projectContents)
 
-  function haveProjectImportsChanged(): boolean {
-    const oldProjectContents = maybeOldProjectContents.current
-    if (oldProjectContents === projectContents) {
-      return false
-    } else {
-      const oldImports = getProjectImports(oldProjectContents)
-      const newImports = getProjectImports(projectContents)
-      return !Utils.shallowEqual(oldImports, newImports)
-    }
-  }
-
-  if (haveProjectImportsChanged()) {
+  const projectContentsSimilarEnough = projectContentsSameForRefreshRequire(
+    maybeOldProjectContents.current,
+    projectContents,
+  )
+  if (!projectContentsSimilarEnough) {
     maybeOldProjectContents.current = projectContents
   }
 
