@@ -7,7 +7,6 @@ import type { CanvasAction } from '../../canvas/canvas-types'
 import type { LocalNavigatorAction } from '../../navigator/actions'
 import type { EditorAction, EditorDispatch, UpdateMetadataInEditorState } from '../action-types'
 import { isLoggedIn } from '../action-types'
-import type { PropertiesToPatchWithDefaults } from '../actions/action-utils'
 import {
   isTransientAction,
   isUndoOrRedo,
@@ -15,8 +14,6 @@ import {
   checkAnyWorkerUpdates,
   onlyActionIsWorkerParsedUpdate,
   simpleStringifyActions,
-  getElementsToNormalizeFromActions,
-  getPropertiesToRemoveFromActions,
 } from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
@@ -62,13 +59,11 @@ import {
   getProjectChanges,
   sendVSCodeChanges,
 } from './vscode-changes'
-import type { NormalizationData, PostProcessingData } from './dispatch-strategies'
-import { handleStrategies, normalizationData, updatePostActionState } from './dispatch-strategies'
+import { handleStrategies, updatePostActionState } from './dispatch-strategies'
 
 import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 import { arrayOfPathsEqual, removePathsWithDeadUIDs } from '../../../core/shared/element-path'
-import * as EP from '../../../core/shared/element-path'
 import { notice } from '../../../components/common/notice'
 import { getUidMappings, getAllUniqueUidsFromMapping } from '../../../core/model/get-uid-mappings'
 import { updateSimpleLocks } from '../../../core/shared/element-locking'
@@ -97,7 +92,6 @@ import { getActivePlugin } from '../../canvas/plugins/style-plugins'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { propertyToSet, updateBulkProperties } from '../../canvas/commands/set-property-command'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
-import * as PP from '../../../core/shared/property-path'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -1009,7 +1003,6 @@ function editorDispatchInner(
       patchedEditorState: patchedEditorStateFromStrategies,
       newStrategyState,
       patchedDerivedState,
-      postProcessingData: postProcessingDataFromStrategies,
     } = handleStrategies(
       strategiesToUse,
       dispatchedActions,
