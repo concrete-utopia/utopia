@@ -49,12 +49,11 @@ export function runStyleUpdateMidInteraction(
   updates: StyleUpdate[],
 ) {
   const withRemovedPropsPatched = updates.map((p): StyleUpdate => {
-    switch (p.type) {
-      case 'set':
-        return p
-      case 'delete':
-        return { type: 'set', property: p.property, value: PropertyPatchValues[p.property] }
+    if (p.type === 'delete' && PropertyPatchValues[p.property] != null) {
+      return { type: 'set', property: p.property, value: PropertyPatchValues[p.property] }
     }
+
+    return p
   })
   return InlineStylePlugin.updateStyles(editorState, elementPath, withRemovedPropsPatched)
 }
