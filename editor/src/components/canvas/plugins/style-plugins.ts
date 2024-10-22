@@ -11,11 +11,10 @@ import {
   isTailwindEnabled,
 } from '../../../core/tailwind/tailwind-compilation'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import type { EditorStateWithPatch } from '../commands/utils/property-utils'
 import { assertNever } from '../../../core/shared/utils'
 
 export type StyleUpdate =
-  | { type: 'set'; property: string; value: string }
+  | { type: 'set'; property: string; value: string | number }
   | { type: 'delete'; property: string }
 
 export interface StylePlugin {

@@ -121,7 +121,7 @@ export const runSetProperty = (
     interactionLifecycle,
     editorState,
     command.element,
-    [{ type: 'set', property: prop, value: command.value.toString() }],
+    [{ type: 'set', property: prop, value: command.value }],
   )
 
   return {

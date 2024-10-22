@@ -104,7 +104,10 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
       (update) =>
         update.type !== 'set' || TailwindPropertyMapping[update.property] == null
           ? null
-          : UCL.add({ property: TailwindPropertyMapping[update.property], value: update.value }),
+          : UCL.add({
+              property: TailwindPropertyMapping[update.property],
+              value: update.value.toString(),
+            }),
       updates,
     )
 
