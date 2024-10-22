@@ -96,6 +96,7 @@ import {
   navigatorTargetsSelector,
   navigatorTargetsSelectorNavigatorTargets,
 } from '../navigator/navigator-utils'
+import { ImportWizard } from './import-wizard/import-wizard'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -520,6 +521,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         <ProjectForkFlow />
         <LockedOverlay />
         <SharingDialog />
+        <ImportWizard />
       </SimpleFlexRow>
       {portalTarget != null
         ? ReactDOM.createPortal(<ComponentPickerContextMenu />, portalTarget)
@@ -683,6 +685,12 @@ const LockedOverlay = React.memo(() => {
     'LockedOverlay refreshingDependencies',
   )
 
+  const importWizardOpen = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.importWizardOpen,
+    'LockedOverlay importWizardOpen',
+  )
+
   const forking = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.forking,
@@ -699,8 +707,8 @@ const LockedOverlay = React.memo(() => {
   `
 
   const locked = React.useMemo(() => {
-    return editorLocked || refreshingDependencies || forking
-  }, [editorLocked, refreshingDependencies, forking])
+    return (editorLocked || refreshingDependencies || forking) && !importWizardOpen
+  }, [editorLocked, refreshingDependencies, forking, importWizardOpen])
 
   const dialogContent = React.useMemo((): string | null => {
     if (refreshingDependencies) {
