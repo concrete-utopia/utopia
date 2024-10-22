@@ -2200,6 +2200,10 @@ export function projectContentsSameForRefreshRequire(
   } else {
     for (const [filename, oldProjectTree] of Object.entries(oldProjectContents)) {
       const newProjectTree = newProjectContents[filename]
+      // No need to check these further if they have the same reference.
+      if (oldProjectTree === newProjectTree) {
+        continue
+      }
       // If the file can't be found in the other tree, the imports are not the same.
       if (newProjectTree == null) {
         return false

@@ -31,7 +31,7 @@ import type {
   NodeModules,
 } from '../../core/shared/project-file-types'
 import { importAlias, importDetails, importsResolution } from '../../core/shared/project-file-types'
-import { walkContentsTreeForParseSuccess, type ProjectContentTreeRoot } from '../assets'
+import type { ProjectContentTreeRoot } from '../assets'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { withUnderlyingTarget } from './store/editor-state'
 import * as EP from '../../core/shared/element-path'
@@ -365,14 +365,4 @@ function removeImportDetails(
     importedAs: importedAs,
     importedFromWithin: importedFromWithin,
   }
-}
-
-export function getProjectImports(projectContents: ProjectContentTreeRoot): {
-  [filename: string]: Imports
-} {
-  let result: { [filename: string]: Imports } = {}
-  walkContentsTreeForParseSuccess(projectContents, (filePath, parseSuccess) => {
-    result[filePath] = parseSuccess.imports
-  })
-  return result
 }
