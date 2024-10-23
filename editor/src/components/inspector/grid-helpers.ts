@@ -33,12 +33,12 @@ export function parseGridDimensionInput(
       currentValue != null && isGridCSSNumber(currentValue) ? currentValue.value.unit : null
     return gridCSSNumber(
       cssNumber(value.value, value.unit ?? maybeUnit),
-      currentValue?.areaName ?? null,
+      currentValue?.lineName ?? null,
     )
   } else if (isCSSKeyword(value)) {
-    return gridCSSKeyword(value, currentValue?.areaName ?? null)
+    return gridCSSKeyword(value, currentValue?.lineName ?? null)
   } else if (isEmptyInputValue(value)) {
-    return gridCSSKeyword(cssKeyword('auto'), currentValue?.areaName ?? null)
+    return gridCSSKeyword(cssKeyword('auto'), currentValue?.lineName ?? null)
   } else {
     return null
   }
