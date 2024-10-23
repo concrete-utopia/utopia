@@ -389,7 +389,7 @@ const TemplateDimensionControl = React.memo(
         }
         const currentLineName = dimensions.dimensions[index]?.lineName ?? undefined
 
-        const rawNewLineName = window.prompt('Area name:', currentLineName)?.trim()
+        const rawNewLineName = window.prompt('Line name:', currentLineName)?.trim()
         if (rawNewLineName == null) {
           return
         }
@@ -415,9 +415,9 @@ const TemplateDimensionControl = React.memo(
           ),
         ]
 
-        // replace the area name in the template and update the grid children so they
-        // reference the new area name, if they used to reference the previous one
-        const adjustedGridTemplate = renameAreaInTemplateAtIndex(
+        // replace the line name in the template and update the grid children so they
+        // reference the new line name, if they used to reference the previous one
+        const adjustedGridTemplate = renameLineInTemplateAtIndex(
           container,
           axis,
           index,
@@ -694,7 +694,7 @@ function removeTemplateValueAtIndex(
   }
 }
 
-function renameAreaInTemplateAtIndex(
+function renameLineInTemplateAtIndex(
   original: GridContainerProperties,
   axis: 'column' | 'row',
   index: number,
