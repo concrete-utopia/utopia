@@ -2667,7 +2667,7 @@ export function gridPositionValue(numericalPosition: number | null): GridPositio
 
 export const validGridPositionKeywords = ['auto']
 
-export type ValidGridPositionKeyword = string // using <string> because valid keywords are also area names we cannot know in advance
+export type ValidGridPositionKeyword = string // using <string> because valid keywords are also line names we cannot know in advance
 
 export type GridPosition = GridPositionValue | CSSKeyword<ValidGridPositionKeyword>
 

@@ -1321,7 +1321,7 @@ export function parseGridChildren(
         break
       }
       case 'Brackets': {
-        // The next child will get this area name
+        // The next child will get this line name
         nextLineName = child.children.toArray().find((c) => c.type === 'Identifier')?.name ?? null
         break
       }
