@@ -499,6 +499,7 @@ describe('Padding resize strategy', () => {
     )
   })
 
+  // FIXME: this test fails because of property zeroing
   it('paddingTop can be removed by dragging when longhand props are present', async () => {
     const dragDeltaToZero = -100
     const editor = await renderTestEditorWithCode(

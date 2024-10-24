@@ -125,7 +125,8 @@ const genericPropPatcher =
     styleInfo: StyleInfo | null,
     updatedProperties: StylePropsUpdatedDuringInteraction,
   ) => {
-    const propIsSetOnElement = (styleInfo as Record<string, unknown> | null)?.[prop] != null // TODO type
+    const propIsSetOnElement =
+      (styleInfo as Record<string, { type: string }> | null)?.[prop]?.type === 'property' // TODO type
     const propIsSetFromCommand = updatedProperties.propertiesUpdated.includes(prop)
     if (!propIsSetOnElement || propIsSetFromCommand) {
       return []
