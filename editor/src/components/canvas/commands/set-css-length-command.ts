@@ -23,11 +23,14 @@ import {
   printCSSNumber,
   printCSSNumberOrKeyword,
 } from '../../inspector/common/css-utils'
-import type { CreateIfNotExistant } from './adjust-css-length-command'
-import { deleteConflictingPropsForWidthHeight } from './adjust-css-length-command'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import {
+  deleteConflictingPropsForWidthHeight,
+  type CreateIfNotExistant,
+} from './adjust-css-length-command'
+import type { BaseCommand, CommandFunctionResult, WhenToRun } from './commands'
 import { addToastPatch } from './show-toast-command'
 import { applyValuesAtPath } from './utils/property-utils'
+import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 
 type CssNumberOrKeepOriginalUnit =
   | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber | CSSKeyword }
@@ -75,22 +78,24 @@ export function setCssLengthProperty(
   }
 }
 
-export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
+export const runSetCssLengthProperty = (
   editorState: EditorState,
   command: SetCssLengthProperty,
-) => {
+  interactionLifecycle: InteractionLifecycle,
+): CommandFunctionResult => {
   // in case of width or height change, delete min, max and flex props
   const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
+    interactionLifecycle,
     editorState,
     command.target,
-    command.property,
+    [command.property],
     command.parentFlexDirection,
   )
 
   // Identify the current value, whatever that may be.
   const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
     command.target,
-    editorState,
+    editorStateWithPropsDeleted,
     left(`no target element was found at path ${EP.toString(command.target)}`),
     (_, element) => {
       if (isJSXElement(element)) {

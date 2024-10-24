@@ -14,6 +14,7 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { assertNever } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
+import type { EditorStateWithPatch } from '../commands/utils/property-utils'
 import { applyValuesAtPath } from '../commands/utils/property-utils'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
@@ -39,7 +40,7 @@ export interface StylePlugin {
     editorState: EditorState,
     elementPath: ElementPath,
     updates: StyleUpdate[],
-  ) => EditorStatePatch[]
+  ) => EditorStateWithPatch
 }
 
 export function getActivePlugin(editorState: EditorState): StylePlugin {
@@ -74,7 +75,7 @@ function ensureElementPathInUpdatedPropertiesGlobal(elementPath: ElementPath) {
   }
 }
 
-export function runStyleUpdateMidInteraction(
+function runStyleUpdateMidInteraction(
   editorState: EditorState,
   elementPath: ElementPath,
   updates: StyleUpdate[],

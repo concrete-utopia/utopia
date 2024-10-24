@@ -552,6 +552,12 @@ export type FlexGapInfo = WithPropertyTag<CSSNumber>
 export type FlexDirectionInfo = WithPropertyTag<FlexDirection>
 export type PaddingInfo = WithPropertyTag<CSSPadding>
 export type PaddingSideInfo = WithPropertyTag<CSSNumber>
+export type WidthInfo = WithPropertyTag<CSSNumber>
+export type HeightInfo = WithPropertyTag<CSSNumber>
+export type TopInfo = WithPropertyTag<CSSNumber>
+export type LeftInfo = WithPropertyTag<CSSNumber>
+export type RightInfo = WithPropertyTag<CSSNumber>
+export type BottomInfo = WithPropertyTag<CSSNumber>
 
 export interface StyleInfo {
   gap: FlexGapInfo | null
@@ -561,4 +567,10 @@ export interface StyleInfo {
   paddingRight: PaddingSideInfo | null
   paddingBottom: PaddingSideInfo | null
   paddingLeft: PaddingSideInfo | null
+  width: WidthInfo | null
+  height: HeightInfo | null
+  top: TopInfo | null
+  left: LeftInfo | null
+  right: RightInfo | null
+  bottom: BottomInfo | null
 }

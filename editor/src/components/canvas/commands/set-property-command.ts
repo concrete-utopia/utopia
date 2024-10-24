@@ -10,7 +10,7 @@ import * as PP from '../../../core/shared/property-path'
 import type { EditorState } from '../../editor/store/editor-state'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import { runStyleUpdateForStrategy } from '../plugins/style-plugins'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, CommandFunctionResult, WhenToRun } from './commands'
 import {
   applyValuesAtPath,
   deleteValuesAtPath,
@@ -105,7 +105,7 @@ export const runSetProperty = (
   editorState: EditorState,
   command: SetProperty,
   interactionLifecycle: InteractionLifecycle,
-) => {
+): CommandFunctionResult => {
   const prop = maybeCssPropertyFromInlineStyle(command.property)
   if (prop == null) {
     const { editorStatePatch } = applyValuesAtPath(editorState, command.element, [
@@ -117,7 +117,7 @@ export const runSetProperty = (
     }
   }
 
-  const editorStatePatches = runStyleUpdateForStrategy(
+  const { editorStatePatch } = runStyleUpdateForStrategy(
     interactionLifecycle,
     editorState,
     command.element,
@@ -125,7 +125,7 @@ export const runSetProperty = (
   )
 
   return {
-    editorStatePatches: editorStatePatches,
+    editorStatePatches: [editorStatePatch],
     commandDescription: getCommandDescription(command),
   }
 }

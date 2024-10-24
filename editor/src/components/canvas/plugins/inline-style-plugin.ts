@@ -2,7 +2,7 @@ import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import type { StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
-import { defaultEither, isLeft, mapEither, right } from '../../../core/shared/either'
+import * as Either from '../../../core/shared/either'
 import type { JSXElement } from '../../../core/shared/element-template'
 import {
   emptyComments,
@@ -20,11 +20,14 @@ import type { StylePlugin } from './style-plugins'
 function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(
   prop: P,
   element: JSXElement,
-): WithPropertyTag<T> | null {
+): WithPropertyTag<NonNullable<T>> | null {
   return optionalMap(
     withPropertyTag,
-    defaultEither(null, getLayoutProperty(prop, right(element.props), styleStringInArray)),
-  ) as WithPropertyTag<T> | null
+    Either.defaultEither(
+      null,
+      getLayoutProperty(prop, Either.right(element.props), styleStringInArray),
+    ),
+  ) as WithPropertyTag<NonNullable<T>> | null
 }
 
 export const InlineStylePlugin: StylePlugin = {
@@ -33,7 +36,11 @@ export const InlineStylePlugin: StylePlugin = {
     ({ metadata }) =>
     (elementPath) => {
       const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
-      if (instance == null || isLeft(instance.element) || !isJSXElement(instance.element.value)) {
+      if (
+        instance == null ||
+        Either.isLeft(instance.element) ||
+        !isJSXElement(instance.element.value)
+      ) {
         return null
       }
 
@@ -44,6 +51,12 @@ export const InlineStylePlugin: StylePlugin = {
       const paddingBottom = getPropertyFromInstance('paddingBottom', instance.element.value)
       const paddingLeft = getPropertyFromInstance('paddingLeft', instance.element.value)
       const paddingRight = getPropertyFromInstance('paddingRight', instance.element.value)
+      const width = getPropertyFromInstance('width', instance.element.value)
+      const height = getPropertyFromInstance('height', instance.element.value)
+      const top = getPropertyFromInstance('top', instance.element.value)
+      const left = getPropertyFromInstance('left', instance.element.value)
+      const right = getPropertyFromInstance('right', instance.element.value)
+      const bottom = getPropertyFromInstance('bottom', instance.element.value)
 
       return {
         gap,
@@ -53,6 +66,12 @@ export const InlineStylePlugin: StylePlugin = {
         paddingBottom,
         paddingLeft,
         paddingRight,
+        width,
+        height,
+        top,
+        left,
+        right,
+        bottom,
       }
     },
   updateStyles: (editorState, elementPath, updates) => {
@@ -72,14 +91,12 @@ export const InlineStylePlugin: StylePlugin = {
       updates,
     )
 
-    const { editorStateWithChanges: withValuesDeleted, editorStatePatch: deleteValuesPatch } =
-      deleteValuesAtPath(editorState, elementPath, propsToDelete)
-    const { editorStatePatch: applyValuesPatch } = applyValuesAtPath(
-      withValuesDeleted,
+    const { editorStateWithChanges: withValuesDeleted } = deleteValuesAtPath(
+      editorState,
       elementPath,
-      propsToSet,
+      propsToDelete,
     )
 
-    return [deleteValuesPatch, applyValuesPatch]
+    return applyValuesAtPath(withValuesDeleted, elementPath, propsToSet)
   },
 }

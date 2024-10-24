@@ -45,13 +45,13 @@ export const runDeleteProperties = (
   )
 
   // Apply the update to the properties.
-  const { editorStateWithChanges, editorStatePatch: propertyUpdatePatch } = deleteValuesAtPath(
+  const { editorStateWithChanges } = deleteValuesAtPath(
     editorState,
     command.element,
     command.properties,
   )
 
-  const withStylePropsDeleted = runStyleUpdateForStrategy(
+  const { editorStatePatch } = runStyleUpdateForStrategy(
     interactionLifecycle,
     editorStateWithChanges,
     command.element,
@@ -59,7 +59,7 @@ export const runDeleteProperties = (
   )
 
   return {
-    editorStatePatches: [propertyUpdatePatch, ...withStylePropsDeleted],
+    editorStatePatches: [editorStatePatch],
     commandDescription: `Delete Properties ${command.properties
       .map(PP.toString)
       .join(',')} on ${EP.toUid(command.element)}`,
