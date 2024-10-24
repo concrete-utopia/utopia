@@ -6,11 +6,16 @@ import type { EditorState, EditorStatePatch } from '../../../editor/store/editor
 import { modifyUnderlyingElementForOpenFile } from '../../../editor/store/editor-state'
 import { patchParseSuccessAtElementPath } from '../patch-utils'
 
+export interface EditorStateWithPatch {
+  editorStateWithChanges: EditorState
+  editorStatePatch: EditorStatePatch
+}
+
 export function applyValuesAtPath(
   editorState: EditorState,
   target: ElementPath,
   jsxValuesAndPathsToSet: ValueAtPath[],
-): { editorStateWithChanges: EditorState; editorStatePatch: EditorStatePatch } {
+): EditorStateWithPatch {
   const workingEditorState = modifyUnderlyingElementForOpenFile(
     target,
     editorState,
@@ -51,7 +56,7 @@ export function deleteValuesAtPath(
   editorState: EditorState,
   target: ElementPath,
   properties: Array<PropertyPath>,
-): { editorStateWithChanges: EditorState; editorStatePatch: EditorStatePatch } {
+): EditorStateWithPatch {
   const workingEditorState = modifyUnderlyingElementForOpenFile(
     target,
     editorState,

@@ -88,10 +88,10 @@ import {
   startPerformanceMeasure,
 } from '../../../core/performance/performance-utils'
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
-import { getActivePlugin } from '../../canvas/plugins/style-plugins'
-import { mapDropNulls } from '../../../core/shared/array-utils'
-import { propertyToSet, updateBulkProperties } from '../../canvas/commands/set-property-command'
-import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
+import {
+  patchRemovedProperties,
+  resetUpdatedPropertiesGlobal,
+} from '../../canvas/plugins/style-plugins'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -998,6 +998,8 @@ function editorDispatchInner(
       )
     }
 
+    resetUpdatedPropertiesGlobal()
+
     const {
       unpatchedEditorState: unpatchedEditorStateFromStrategies,
       patchedEditorState: patchedEditorStateFromStrategies,
@@ -1012,8 +1014,8 @@ function editorDispatchInner(
     )
 
     return {
-      unpatchedEditor: unpatchedEditorStateFromStrategies,
-      patchedEditor: patchedEditorStateFromStrategies,
+      unpatchedEditor: patchRemovedProperties(unpatchedEditorStateFromStrategies),
+      patchedEditor: patchRemovedProperties(patchedEditorStateFromStrategies),
       unpatchedDerived: frozenDerivedState,
       patchedDerived: patchedDerivedState,
       strategyState: newStrategyState,

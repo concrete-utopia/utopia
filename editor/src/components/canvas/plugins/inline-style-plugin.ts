@@ -9,6 +9,7 @@ import {
   isJSXElement,
   jsExpressionValue,
 } from '../../../core/shared/element-template'
+import { optionalMap } from '../../../core/shared/optional-utils'
 import * as PP from '../../../core/shared/property-path'
 import { styleStringInArray } from '../../../utils/common-constants'
 import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
@@ -20,9 +21,9 @@ function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSPropert
   prop: P,
   element: JSXElement,
 ): WithPropertyTag<T> | null {
-  return defaultEither(
-    null,
-    mapEither(withPropertyTag, getLayoutProperty(prop, right(element.props), styleStringInArray)),
+  return optionalMap(
+    withPropertyTag,
+    defaultEither(null, getLayoutProperty(prop, right(element.props), styleStringInArray)),
   ) as WithPropertyTag<T> | null
 }
 
