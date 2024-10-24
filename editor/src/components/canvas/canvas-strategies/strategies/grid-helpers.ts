@@ -249,14 +249,14 @@ export function setGridPropsCommands(
   const rowStart = gridPositionToValue(gridProps.gridRowStart)
   const rowEnd = gridPositionToValue(gridProps.gridRowEnd)
 
-  const areaColumnStart = asMaybeNamedAreaOrValue(gridTemplate, 'column', columnStart)
-  const areaColumnEnd = asMaybeNamedAreaOrValue(gridTemplate, 'column', columnEnd)
-  const areaRowStart = asMaybeNamedAreaOrValue(gridTemplate, 'row', rowStart)
-  const areaRowEnd = asMaybeNamedAreaOrValue(gridTemplate, 'row', rowEnd)
+  const lineColumnStart = asMaybeNamedLineOrValue(gridTemplate, 'column', columnStart)
+  const lineColumnEnd = asMaybeNamedLineOrValue(gridTemplate, 'column', columnEnd)
+  const lineRowStart = asMaybeNamedLineOrValue(gridTemplate, 'row', rowStart)
+  const lineRowEnd = asMaybeNamedLineOrValue(gridTemplate, 'row', rowEnd)
 
   if (columnStart != null && columnStart === columnEnd) {
     commands.push(
-      setProperty('always', elementPath, PP.create('style', 'gridColumn'), areaColumnStart),
+      setProperty('always', elementPath, PP.create('style', 'gridColumn'), lineColumnStart),
     )
   } else if (
     columnStart != null &&
@@ -266,23 +266,23 @@ export function setGridPropsCommands(
     columnStart === columnEnd - 1
   ) {
     commands.push(
-      setProperty('always', elementPath, PP.create('style', 'gridColumn'), areaColumnStart),
+      setProperty('always', elementPath, PP.create('style', 'gridColumn'), lineColumnStart),
     )
   } else {
     if (columnStart != null) {
       commands.push(
-        setProperty('always', elementPath, PP.create('style', 'gridColumnStart'), areaColumnStart),
+        setProperty('always', elementPath, PP.create('style', 'gridColumnStart'), lineColumnStart),
       )
     }
     if (columnEnd != null) {
       commands.push(
-        setProperty('always', elementPath, PP.create('style', 'gridColumnEnd'), areaColumnEnd),
+        setProperty('always', elementPath, PP.create('style', 'gridColumnEnd'), lineColumnEnd),
       )
     }
   }
 
   if (rowStart != null && rowStart === rowEnd) {
-    commands.push(setProperty('always', elementPath, PP.create('style', 'gridRow'), areaRowStart))
+    commands.push(setProperty('always', elementPath, PP.create('style', 'gridRow'), lineRowStart))
   } else if (
     rowStart != null &&
     typeof rowStart === 'number' &&
@@ -290,16 +290,16 @@ export function setGridPropsCommands(
     typeof rowEnd === 'number' &&
     rowStart === rowEnd - 1
   ) {
-    commands.push(setProperty('always', elementPath, PP.create('style', 'gridRow'), areaRowStart))
+    commands.push(setProperty('always', elementPath, PP.create('style', 'gridRow'), lineRowStart))
   } else {
     if (rowStart != null) {
       commands.push(
-        setProperty('always', elementPath, PP.create('style', 'gridRowStart'), areaRowStart),
+        setProperty('always', elementPath, PP.create('style', 'gridRowStart'), lineRowStart),
       )
     }
     if (rowEnd != null) {
       commands.push(
-        setProperty('always', elementPath, PP.create('style', 'gridRowEnd'), areaRowEnd),
+        setProperty('always', elementPath, PP.create('style', 'gridRowEnd'), lineRowEnd),
       )
     }
   }
@@ -352,7 +352,7 @@ function getCellCoordsDelta(
   return gridCellCoordinates(rowDiff, columnDiff)
 }
 
-function asMaybeNamedAreaOrValue(
+function asMaybeNamedLineOrValue(
   grid: GridContainerProperties,
   axis: 'row' | 'column',
   value: number | string | null,
@@ -362,9 +362,9 @@ function asMaybeNamedAreaOrValue(
   } else if (typeof value === 'number') {
     const template = axis === 'row' ? grid.gridTemplateRows : grid.gridTemplateColumns
     if (template?.type === 'DIMENSIONS') {
-      const maybeAreaStart = template.dimensions.at(value - 1)
-      if (maybeAreaStart != null && maybeAreaStart.areaName != null) {
-        return maybeAreaStart.areaName
+      const maybeLineStart = template.dimensions.at(value - 1)
+      if (maybeLineStart != null && maybeLineStart.lineName != null) {
+        return maybeLineStart.lineName
       }
     }
     return value === 0 ? 1 : value
@@ -602,12 +602,12 @@ function alterGridTemplateDimensions(params: {
           if (before.length + after.length === 0) {
             return null
           }
-          return gridCSSRepeat(dim.times, [...before, ...after], dim.areaName)
+          return gridCSSRepeat(dim.times, [...before, ...after], dim.lineName)
         case 'REPLACE':
           return gridCSSRepeat(
             dim.times,
             [...before, params.patch.newValue, ...after],
-            dim.areaName,
+            dim.lineName,
           )
         default:
           assertNever(params.patch)

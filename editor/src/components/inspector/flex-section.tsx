@@ -387,22 +387,22 @@ const TemplateDimensionControl = React.memo(
         if (dimensions?.type !== 'DIMENSIONS') {
           return
         }
-        const currentAreaName = dimensions.dimensions[index]?.areaName ?? undefined
+        const currentLineName = dimensions.dimensions[index]?.lineName ?? undefined
 
-        const rawNewAreaName = window.prompt('Area name:', currentAreaName)?.trim()
-        if (rawNewAreaName == null) {
+        const rawNewLineName = window.prompt('Line name:', currentLineName)?.trim()
+        if (rawNewLineName == null) {
           return
         }
 
-        const newAreaName: string | null =
-          rawNewAreaName.length === 0 ? null : sanitizeAreaName(rawNewAreaName)
+        const newLineName: string | null =
+          rawNewLineName.length === 0 ? null : sanitizeLineName(rawNewLineName)
 
         const left = template.dimensions.slice(0, index)
         const right = template.dimensions.slice(index + 1)
 
         const newValues = [
           ...left,
-          { ...values[index], areaName: newAreaName } as GridDimension,
+          { ...values[index], lineName: newLineName } as GridDimension,
           ...right,
         ]
 
@@ -415,13 +415,13 @@ const TemplateDimensionControl = React.memo(
           ),
         ]
 
-        // replace the area name in the template and update the grid children so they
-        // reference the new area name, if they used to reference the previous one
-        const adjustedGridTemplate = renameAreaInTemplateAtIndex(
+        // replace the line name in the template and update the grid children so they
+        // reference the new line name, if they used to reference the previous one
+        const adjustedGridTemplate = renameLineInTemplateAtIndex(
           container,
           axis,
           index,
-          newAreaName,
+          newLineName,
         )
         const children = MetadataUtils.getChildrenUnordered(metadataRef.current, grid.elementPath)
         for (const child of children) {
@@ -575,9 +575,9 @@ function AxisDimensionControl({
 
   const title = React.useMemo(() => {
     if (isDynamic) {
-      return value.areaName ?? dynamicIndexTitle
+      return value.lineName ?? dynamicIndexTitle
     }
-    return value.areaName ?? indexFrom
+    return value.lineName ?? indexFrom
   }, [value, indexFrom, isDynamic, dynamicIndexTitle])
 
   const gridExpressionInputFocused = useGridExpressionInputFocused()
@@ -694,17 +694,17 @@ function removeTemplateValueAtIndex(
   }
 }
 
-function renameAreaInTemplateAtIndex(
+function renameLineInTemplateAtIndex(
   original: GridContainerProperties,
   axis: 'column' | 'row',
   index: number,
-  newAreaName: string | null,
+  newLineName: string | null,
 ): GridContainerProperties {
   function renameDimension(dimension: GridDimension, idx: number): GridDimension {
     return idx === index
       ? ({
           ...dimension,
-          areaName: dimension.type === 'REPEAT' ? null : newAreaName,
+          lineName: dimension.type === 'REPEAT' ? null : newLineName,
         } as GridDimension)
       : dimension
   }
@@ -734,8 +734,8 @@ function renameAreaInTemplateAtIndex(
 
 const reAlphanumericDashUnderscore = /[^0-9a-z\-_]+/gi
 
-function sanitizeAreaName(areaName: string): string {
-  return areaName.replace(reAlphanumericDashUnderscore, '-')
+function sanitizeLineName(lineName: string): string {
+  return lineName.replace(reAlphanumericDashUnderscore, '-')
 }
 
 function serializeValue(v: CSSNumber) {

@@ -309,7 +309,7 @@ const GridResizingStripedIndicator = React.memo((props: GridResizingControlProps
           }}
         >
           {when(
-            props.dimension.areaName != null,
+            props.dimension.lineName != null,
             <div
               style={{
                 position: 'absolute',
@@ -321,7 +321,7 @@ const GridResizingStripedIndicator = React.memo((props: GridResizingControlProps
                 borderRadius: '0 0 3px 0',
               }}
             >
-              {props.dimension.areaName}
+              {props.dimension.lineName}
             </div>,
           )}
         </div>,
