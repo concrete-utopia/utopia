@@ -326,16 +326,21 @@ export const RadixSelect = React.memo(
     }, [props.value, isOpen])
 
     const options = React.useMemo(() => {
-      let propsOptions = [...props.options]
+      let fullOptions = [...props.options]
+
       if (
+        // the value is not null
         props.value != null &&
-        !propsOptions.some((opt) => equalRadixSelectOptions(opt, props.value)) &&
-        props.allowedValues?.some((allowed) => allowed === props.value?.value)
+        // the value is allowed for this dropdown
+        props.allowedValues?.some((allowed) => allowed === props.value?.value) &&
+        // the options don't contain the value already
+        !fullOptions.some((opt) => equalRadixSelectOptions(opt, props.value))
       ) {
-        propsOptions.unshift(...[props.value, separatorDropdownMenuItem('unknown-dropdown-value')])
+        // add the given option + separator at the top of the options
+        fullOptions.unshift(...[props.value, separatorDropdownMenuItem('unknown-dropdown-value')])
       }
 
-      return propsOptions
+      return fullOptions
     }, [props.options, props.value, props.allowedValues])
 
     return (
