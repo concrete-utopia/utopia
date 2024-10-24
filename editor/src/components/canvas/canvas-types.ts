@@ -26,7 +26,7 @@ import type {
 import { InteractionSession } from './canvas-strategies/interaction-state'
 import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import type { MouseButtonsPressed } from '../../utils/mouse'
-import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
+import type { CSSNumber, CSSPadding, FlexDirection } from '../inspector/common/css-utils'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -537,21 +537,47 @@ export type SelectionLocked = 'locked' | 'locked-hierarchy' | 'selectable'
 
 export type PropertyTag = { type: 'hover' } | { type: 'breakpoint'; name: string }
 
-export interface WithPropertyTag<T> {
-  tag: PropertyTag | null
-  value: T
+export type CSSStyleProperty<T> =
+  | { type: 'not-found' }
+  | { type: 'not-editable' }
+  | {
+      type: 'property'
+
+      tag: PropertyTag | null
+      value: T
+    }
+
+export function maybePropertyValue<T>(property: CSSStyleProperty<T>): T | null {
+  if (property.type === 'property') {
+    return property.value
+  }
+  return null
 }
 
-export const withPropertyTag = <T>(value: T): WithPropertyTag<T> => ({
-  tag: null,
-  value: value,
-})
+export type FlexGapInfo = CSSStyleProperty<CSSNumber>
 
-export type FlexGapInfo = WithPropertyTag<CSSNumber>
-
-export type FlexDirectionInfo = WithPropertyTag<FlexDirection>
+export type FlexDirectionInfo = CSSStyleProperty<FlexDirection>
+export type PaddingInfo = CSSStyleProperty<CSSPadding>
+export type PaddingSideInfo = CSSStyleProperty<CSSNumber>
+export type WidthInfo = CSSStyleProperty<CSSNumber>
+export type HeightInfo = CSSStyleProperty<CSSNumber>
+export type TopInfo = CSSStyleProperty<CSSNumber>
+export type LeftInfo = CSSStyleProperty<CSSNumber>
+export type RightInfo = CSSStyleProperty<CSSNumber>
+export type BottomInfo = CSSStyleProperty<CSSNumber>
 
 export interface StyleInfo {
   gap: FlexGapInfo | null
   flexDirection: FlexDirectionInfo | null
+  padding: PaddingInfo | null
+  paddingTop: PaddingSideInfo | null
+  paddingRight: PaddingSideInfo | null
+  paddingBottom: PaddingSideInfo | null
+  paddingLeft: PaddingSideInfo | null
+  width: WidthInfo | null
+  height: HeightInfo | null
+  top: TopInfo | null
+  left: LeftInfo | null
+  right: RightInfo | null
+  bottom: BottomInfo | null
 }
