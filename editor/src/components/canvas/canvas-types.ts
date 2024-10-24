@@ -26,7 +26,7 @@ import type {
 import { InteractionSession } from './canvas-strategies/interaction-state'
 import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import type { MouseButtonsPressed } from '../../utils/mouse'
-import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
+import type { CSSNumber, CSSPadding, FlexDirection } from '../inspector/common/css-utils'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -550,8 +550,15 @@ export const withPropertyTag = <T>(value: T): WithPropertyTag<T> => ({
 export type FlexGapInfo = WithPropertyTag<CSSNumber>
 
 export type FlexDirectionInfo = WithPropertyTag<FlexDirection>
+export type PaddingInfo = WithPropertyTag<CSSPadding>
+export type PaddingSideInfo = WithPropertyTag<CSSNumber>
 
 export interface StyleInfo {
   gap: FlexGapInfo | null
   flexDirection: FlexDirectionInfo | null
+  padding: PaddingInfo | null
+  paddingTop: PaddingSideInfo | null
+  paddingRight: PaddingSideInfo | null
+  paddingBottom: PaddingSideInfo | null
+  paddingLeft: PaddingSideInfo | null
 }

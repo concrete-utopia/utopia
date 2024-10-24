@@ -7,23 +7,21 @@ import {
   getTailwindConfigCached,
   isTailwindEnabled,
 } from '../../../core/tailwind/tailwind-compilation'
-import type { PropertiesWithElementPath } from '../../editor/actions/action-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+
+export type StyleUpdate =
+  | { type: 'set'; property: string; value: string }
+  | { type: 'delete'; property: string }
 
 export interface StylePlugin {
   name: string
   styleInfoFactory: StyleInfoFactory
-  normalizeFromInlineStyle: (
+  updateStyles: (
     editorState: EditorState,
-    elementsToNormalize: ElementPath[],
-    propertiesToRemove: PropertiesWithElementPath[],
+    elementPath: ElementPath,
+    updates: StyleUpdate[],
   ) => EditorState
 }
-
-export const Plugins = {
-  InlineStyle: InlineStylePlugin,
-  Tailwind: TailwindPlugin,
-} as const
 
 export function getActivePlugin(editorState: EditorState): StylePlugin {
   if (isFeatureEnabled('Tailwind') && isTailwindEnabled()) {
