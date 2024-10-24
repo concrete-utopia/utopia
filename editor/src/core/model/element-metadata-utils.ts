@@ -1342,7 +1342,7 @@ export const MetadataUtils = {
     Utils.fastForEach(targets, (target) => {
       const instance = MetadataUtils.findElementByElementPath(metadata, target)
       if (instance != null && this.isImg(instance)) {
-        const componentFrame = MetadataUtils.getLocalFrame(target, metadata)
+        const componentFrame = MetadataUtils.getLocalFrame(target, metadata, null)
         if (componentFrame != null && isFiniteRectangle(componentFrame)) {
           const imageSize = getImageSize(allElementProps, instance)
           const widthMultiplier = imageSize.width / componentFrame.width
@@ -1535,6 +1535,7 @@ export const MetadataUtils = {
   getLocalFrame(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
+    parentToTarget: ElementPath | null,
   ): MaybeInfinityLocalRectangle | null {
     function getNonRootParent(parentOf: ElementPath): ElementPath {
       // If the target is the root element of an instance (`a/b/c:root`), then we want to instead
@@ -1553,7 +1554,7 @@ export const MetadataUtils = {
     }
 
     const targetGlobalFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
-    const parentPath = getNonRootParent(path)
+    const parentPath = parentToTarget ?? getNonRootParent(path)
     const parentGlobalFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, metadata)
     if (targetGlobalFrame == null || parentGlobalFrame == null) {
       return null
@@ -1619,7 +1620,7 @@ export const MetadataUtils = {
     return aabb
   },
   getFrameOrZeroRect(path: ElementPath, metadata: ElementInstanceMetadataMap): LocalRectangle {
-    const frame = MetadataUtils.getLocalFrame(path, metadata)
+    const frame = MetadataUtils.getLocalFrame(path, metadata, null)
     return zeroRectIfNullOrInfinity(frame)
   },
   getFrameRelativeTo(
@@ -1632,7 +1633,7 @@ export const MetadataUtils = {
     } else {
       const paths = EP.allPathsForLastPart(parent)
       const parentFrames: Array<MaybeInfinityLocalRectangle> = Utils.stripNulls(
-        paths.map((path) => this.getLocalFrame(path, metadata)),
+        paths.map((path) => this.getLocalFrame(path, metadata, null)),
       )
       return parentFrames.reduce<LocalRectangle>((working, next) => {
         if (isInfinityRectangle(next)) {
@@ -2846,7 +2847,7 @@ export function propertyHasSimpleValue(
 }
 
 // This function creates a fake metadata for the given element
-// Useful when metadata is needed before the real on is created.
+// Useful when metadata is needed before the real one is created.
 export function createFakeMetadataForElement(
   path: ElementPath,
   element: JSXElementChild,

@@ -178,7 +178,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
     const bounds = boundingRectangleArray(
       mapDropNulls((c) => {
-        const localFrame = MetadataUtils.getLocalFrame(c.elementPath, metadata)
+        const localFrame = MetadataUtils.getLocalFrame(c.elementPath, metadata, null)
         return localFrame != null && isFiniteRectangle(localFrame) ? localFrame : null
       }, children),
     )

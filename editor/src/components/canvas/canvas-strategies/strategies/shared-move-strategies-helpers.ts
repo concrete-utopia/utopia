@@ -31,6 +31,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 
+import type { AllElementProps } from '../../../editor/store/editor-state'
 import { getJSXElementFromProjectContents } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { determineConstrainedDragAxis } from '../../canvas-controls-frame'
@@ -78,6 +79,7 @@ import {
 } from '../../commands/set-css-length-command'
 import type { ActiveFrame, ActiveFrameAction } from '../../commands/set-active-frames-command'
 import { activeFrameTargetRect, setActiveFrames } from '../../commands/set-active-frames-command'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export interface MoveCommandsOptions {
   ignoreLocalFrame?: boolean
@@ -227,6 +229,8 @@ function getAppropriateLocalFrame(
 export function getDirectMoveCommandsForSelectedElement(
   projectContents: ProjectContentTreeRoot,
   startingMetadata: ElementInstanceMetadataMap,
+  startingAllElementProps: AllElementProps,
+  startingElementPathTree: ElementPathTrees,
   selectedElement: ElementPath,
   mappedPath: ElementPath,
   leftOrTop: 'left' | 'top',
@@ -246,6 +250,8 @@ export function getDirectMoveCommandsForSelectedElement(
   return getMoveCommandsForSelectedElement(
     projectContents,
     startingMetadata,
+    startingAllElementProps,
+    startingElementPathTree,
     selectedElement,
     mappedPath,
     drag,
@@ -255,6 +261,8 @@ export function getDirectMoveCommandsForSelectedElement(
 export function getMoveCommandsForSelectedElement(
   projectContents: ProjectContentTreeRoot,
   startingMetadata: ElementInstanceMetadataMap,
+  startingAllElementProps: AllElementProps,
+  startingElementPathTree: ElementPathTrees,
   selectedElement: ElementPath,
   mappedPath: ElementPath,
   drag: CanvasVector,
@@ -273,14 +281,34 @@ export function getMoveCommandsForSelectedElement(
     selectedElement,
   )
 
+  const closestNonFragmentParent = MetadataUtils.getClosestNonFragmentParent(
+    startingMetadata,
+    startingAllElementProps,
+    startingElementPathTree,
+    EP.parentPath(mappedPath),
+  )
+  const closestNonFragmentParentMetadata = MetadataUtils.findElementByElementPath(
+    startingMetadata,
+    closestNonFragmentParent,
+  )
+  const providesBoundsForAbsoluteChildren =
+    closestNonFragmentParentMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren ??
+    false
+
   const elementParentBounds =
-    elementMetadata?.specialSizeMeasurements.coordinateSystemBounds ?? null
+    elementMetadata?.specialSizeMeasurements.coordinateSystemBounds ??
+    (providesBoundsForAbsoluteChildren
+      ? nullIfInfinity(closestNonFragmentParentMetadata?.globalFrame)
+      : null) ??
+    null
 
   const globalFrame = nullIfInfinity(
     MetadataUtils.getFrameInCanvasCoords(selectedElement, startingMetadata),
   )
 
-  const localFrame = nullIfInfinity(MetadataUtils.getLocalFrame(selectedElement, startingMetadata))
+  const localFrame = nullIfInfinity(
+    MetadataUtils.getLocalFrame(selectedElement, startingMetadata, EP.parentPath(mappedPath)),
+  )
 
   if (element == null) {
     return { commands: [], intendedBounds: [] }
@@ -330,6 +358,8 @@ export function getInteractionMoveCommandsForSelectedElement(
   return getMoveCommandsForSelectedElement(
     canvasState.projectContents,
     canvasState.startingMetadata,
+    canvasState.startingAllElementProps,
+    canvasState.startingElementPathTree,
     selectedElement,
     mappedPath,
     drag,
@@ -339,6 +369,8 @@ export function getInteractionMoveCommandsForSelectedElement(
 
 export function moveInspectorStrategy(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPathTree: ElementPathTrees,
   selectedElementPaths: ElementPath[],
   projectContents: ProjectContentTreeRoot,
   movement: CanvasVector,
@@ -352,6 +384,8 @@ export function moveInspectorStrategy(
         const moveCommandsResult = getMoveCommandsForSelectedElement(
           projectContents,
           metadata,
+          allElementProps,
+          elementPathTree,
           selectedPath,
           selectedPath,
           movement,
@@ -368,6 +402,8 @@ export function moveInspectorStrategy(
 
 export function directMoveInspectorStrategy(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPathTree: ElementPathTrees,
   selectedElementPaths: ElementPath[],
   projectContents: ProjectContentTreeRoot,
   leftOrTop: 'left' | 'top',
@@ -382,6 +418,8 @@ export function directMoveInspectorStrategy(
         const moveCommandsResult = getDirectMoveCommandsForSelectedElement(
           projectContents,
           metadata,
+          allElementProps,
+          elementPathTree,
           selectedPath,
           selectedPath,
           leftOrTop,

@@ -90,6 +90,7 @@ export function getAbsoluteReparentPropertyChanges(
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   forcePins: ForcePins,
+  containLayout: 'should-add' | 'should-not-add',
 ): Array<AdjustCssLengthProperties | ConvertCssPercentToPx> {
   const element: JSXElement | null = getJSXElementFromProjectContents(target, projectContents)
 
@@ -108,7 +109,10 @@ export function getAbsoluteReparentPropertyChanges(
 
   const currentParentContentBox =
     MetadataUtils.getGlobalContentBoxForChildren(originalParentInstance)
-  const newParentContentBox = MetadataUtils.getGlobalContentBoxForChildren(newParentInstance)
+  const newParentContentBox =
+    containLayout === 'should-add'
+      ? nullIfInfinity(newParentInstance.globalFrame)
+      : MetadataUtils.getGlobalContentBoxForChildren(newParentInstance)
 
   if (currentParentContentBox == null || newParentContentBox == null) {
     return []
@@ -349,6 +353,7 @@ export function getReparentPropertyChanges(
         currentMetadata,
         projectContents,
         'force-pins',
+        'should-not-add',
       )
 
       const strategyCommands = runReparentPropertyStrategies([

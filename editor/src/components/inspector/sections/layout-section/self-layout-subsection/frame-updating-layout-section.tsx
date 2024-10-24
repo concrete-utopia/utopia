@@ -36,7 +36,12 @@ import {
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
-import { metadataSelector, selectedViewsSelector } from '../../../../inspector/inpector-selectors'
+import {
+  allElementPropsSelector,
+  metadataSelector,
+  pathTreesSelector,
+  selectedViewsSelector,
+} from '../../../../inspector/inpector-selectors'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import {
   cssNumber,
@@ -93,6 +98,8 @@ interface LTWHPixelValues {
 export const FrameUpdatingLayoutSection = React.memo(() => {
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
+  const allElementPropsRef = useRefEditorState(allElementPropsSelector)
+  const elementPathTreesRef = useRefEditorState(pathTreesSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const originalGlobalFrame: CanvasRectangle = useEditorState(
@@ -182,6 +189,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
         const maybeInfinityLocalFrame = MetadataUtils.getLocalFrame(
           selectedView,
           store.editor.jsxMetadata,
+          null,
         )
         if (maybeInfinityLocalFrame == null || isInfinityRectangle(maybeInfinityLocalFrame)) {
           result.left.push(0)
@@ -217,6 +225,8 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
               [
                 moveInspectorStrategy(
                   metadataRef.current,
+                  allElementPropsRef.current,
+                  elementPathTreesRef.current,
                   selectedViewsRef.current,
                   projectContentsRef.current,
                   frameUpdate.edgeMovement,
@@ -252,6 +262,8 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
               [
                 directMoveInspectorStrategy(
                   metadataRef.current,
+                  allElementPropsRef.current,
+                  elementPathTreesRef.current,
                   selectedViewsRef.current,
                   projectContentsRef.current,
                   leftOrTop,
@@ -282,7 +294,15 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           assertNever(frameUpdate)
       }
     },
-    [dispatch, metadataRef, originalGlobalFrame, projectContentsRef, selectedViewsRef],
+    [
+      allElementPropsRef,
+      dispatch,
+      elementPathTreesRef,
+      metadataRef,
+      originalGlobalFrame,
+      projectContentsRef,
+      selectedViewsRef,
+    ],
   )
 
   const disableXYControls = React.useMemo(() => {
