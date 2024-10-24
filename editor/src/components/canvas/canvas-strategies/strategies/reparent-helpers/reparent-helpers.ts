@@ -531,7 +531,7 @@ export function absolutePositionForReparent(
   }
 
   const localFrame = zeroRectIfNullOrInfinity(
-    MetadataUtils.getLocalFrame(targetParent, metadata.currentMetadata) ?? null,
+    MetadataUtils.getLocalFrame(targetParent, metadata.currentMetadata, null) ?? null,
   )
 
   // offset the element with the target parent's offset, since the target parent doesn't

@@ -184,6 +184,12 @@ export function applyAbsoluteReparent(
                 projectContents,
                 nodeModules,
                 'force-pins',
+                shouldAddContainLayout(
+                  canvasState.startingMetadata,
+                  canvasState.startingAllElementProps,
+                  canvasState.startingElementPathTree,
+                  newParent.intendedParentPath,
+                ),
               ),
             selectedElements,
           )
@@ -254,6 +260,7 @@ export function createAbsoluteReparentAndOffsetCommands(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   forcePins: ForcePins,
+  containLayout: 'should-add' | 'should-not-add',
 ) {
   const reparentResult = getReparentOutcome(
     metadata,
@@ -271,12 +278,13 @@ export function createAbsoluteReparentAndOffsetCommands(
   if (reparentResult == null) {
     return null
   } else {
-    const offsetCommands = replaceFragmentLikePathsWithTheirChildrenRecursive(
+    const replacedPaths = replaceFragmentLikePathsWithTheirChildrenRecursive(
       metadata,
       elementProps,
       pathTree,
       [target],
-    ).flatMap((p) => {
+    )
+    const offsetCommands = replacedPaths.flatMap((p) => {
       return getAbsoluteReparentPropertyChanges(
         p,
         newParent.intendedParentPath,
@@ -284,6 +292,7 @@ export function createAbsoluteReparentAndOffsetCommands(
         metadata,
         projectContents,
         forcePins,
+        containLayout,
       )
     })
 
@@ -296,12 +305,12 @@ export function createAbsoluteReparentAndOffsetCommands(
   }
 }
 
-function maybeAddContainLayout(
+export function shouldAddContainLayout(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   path: ElementPath,
-): CanvasCommand[] {
+): 'should-add' | 'should-not-add' {
   const closestNonFragmentParent = MetadataUtils.getClosestNonFragmentParent(
     metadata,
     allElementProps,
@@ -310,14 +319,23 @@ function maybeAddContainLayout(
   )
 
   if (EP.isStoryboardPath(closestNonFragmentParent)) {
-    return []
+    return 'should-not-add'
   }
 
   const parentProvidesBoundsForAbsoluteChildren =
     MetadataUtils.findElementByElementPath(metadata, closestNonFragmentParent)
       ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren === true
 
-  return parentProvidesBoundsForAbsoluteChildren
-    ? []
-    : [setProperty('always', path, PP.create('style', 'contain'), 'layout')]
+  return parentProvidesBoundsForAbsoluteChildren ? 'should-not-add' : 'should-add'
+}
+
+function maybeAddContainLayout(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
+  path: ElementPath,
+): CanvasCommand[] {
+  return shouldAddContainLayout(metadata, allElementProps, pathTrees, path) === 'should-add'
+    ? [setProperty('always', path, PP.create('style', 'contain'), 'layout')]
+    : []
 }
