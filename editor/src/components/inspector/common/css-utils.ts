@@ -583,7 +583,7 @@ export type GridCSSNumberUnit = LengthUnit | ResolutionUnit | PercentUnit | 'fr'
 const GridCSSNumberUnits: Array<GridCSSNumberUnit> = [...LengthUnits, ...ResolutionUnits, '%', 'fr']
 
 type BaseGridDimension = {
-  areaName: string | null
+  lineName: string | null
 }
 
 export type GridCSSNumber = BaseGridDimension & {
@@ -630,17 +630,17 @@ export function gridDimensionsAreEqual(a: GridDimension, b: GridDimension): bool
 type BaseGridCSSRepeat = {
   type: 'REPEAT'
   value: Array<GridDimension>
-  areaName: string | null
+  lineName: string | null
 }
 
 function baseGridCSSRepeat(
   value: Array<GridDimension>,
-  areaName: string | null,
+  lineName: string | null,
 ): BaseGridCSSRepeat {
   return {
     type: 'REPEAT',
     value: value,
-    areaName: areaName,
+    lineName: lineName,
   }
 }
 
@@ -651,10 +651,10 @@ type GridCSSRepeatStatic = BaseGridCSSRepeat & {
 function gridCSSRepeatStatic(
   times: number,
   value: Array<GridDimension>,
-  areaName: string | null,
+  lineName: string | null,
 ): GridCSSRepeatStatic {
   return {
-    ...baseGridCSSRepeat(value, areaName),
+    ...baseGridCSSRepeat(value, lineName),
     times: times,
   }
 }
@@ -666,10 +666,10 @@ type GridCSSRepeatDynamic = BaseGridCSSRepeat & {
 function gridCSSRepeatDynamic(
   times: CSSKeyword<'auto-fill' | 'auto-fit'>,
   value: Array<GridDimension>,
-  areaName: string | null,
+  lineName: string | null,
 ): GridCSSRepeatDynamic {
   return {
-    ...baseGridCSSRepeat(value, areaName),
+    ...baseGridCSSRepeat(value, lineName),
     times: times,
   }
 }
@@ -713,24 +713,24 @@ export function isGridCSSKeyword(dim: GridDimension): dim is GridCSSKeyword {
 
 export function gridCSSKeyword(
   value: CSSKeyword<ValidGridDimensionKeyword>,
-  areaName: string | null,
+  lineName: string | null,
 ): GridCSSKeyword {
   return {
     type: 'KEYWORD',
     value: value,
-    areaName: areaName,
+    lineName: lineName,
   }
 }
 
 export function gridCSSRepeat(
   times: GridCSSRepeatTimes,
   value: GridDimension[],
-  areaName: string | null,
+  lineName: string | null,
 ): GridCSSRepeat {
   if (typeof times === 'number') {
-    return gridCSSRepeatStatic(times, value, areaName)
+    return gridCSSRepeatStatic(times, value, lineName)
   } else {
-    return gridCSSRepeatDynamic(times, value, areaName)
+    return gridCSSRepeatDynamic(times, value, lineName)
   }
 }
 
@@ -749,21 +749,21 @@ export function isGridCSSMinmax(dim: GridDimension): dim is GridCSSMinmax {
 export function gridCSSMinmax(
   min: GridCSSNumber | GridCSSKeyword,
   max: GridCSSNumber | GridCSSKeyword,
-  areaName: string | null,
+  lineName: string | null,
 ): GridCSSMinmax {
   return {
     type: 'MINMAX',
     min: min,
     max: max,
-    areaName: areaName,
+    lineName: lineName,
   }
 }
 
-export function gridCSSNumber(value: CSSNumber, areaName: string | null): GridCSSNumber {
+export function gridCSSNumber(value: CSSNumber, lineName: string | null): GridCSSNumber {
   return {
     type: 'NUMBER',
     value: value,
-    areaName: areaName,
+    lineName: lineName,
   }
 }
 
@@ -949,8 +949,8 @@ export function printCSSNumber(
 }
 
 export function printGridDimensionCSS(dimension: GridDimension): string {
-  const areaName = dimension.areaName != null ? `[${dimension.areaName}] ` : ''
-  return areaName + stringifyGridDimension(dimension)
+  const lineName = dimension.lineName != null ? `[${dimension.lineName}] ` : ''
+  return lineName + stringifyGridDimension(dimension)
 }
 
 export function stringifyGridDimension(dimension: GridDimension): string {
@@ -1083,19 +1083,19 @@ export function parseToCSSGridDimension(input: unknown): Either<string, GridDime
       const match = input.match(gridCSSTemplateNumberRegex)
       if (match != null) {
         return {
-          areaName: match[1],
+          lineName: match[1],
           inputToParse: match[2],
         }
       }
     }
-    return { areaName: null, inputToParse: input }
+    return { lineName: null, inputToParse: input }
   }
-  const { areaName, inputToParse } = getParts()
+  const { lineName: lineName, inputToParse } = getParts()
 
   return mapEither((value) => {
     return {
       ...value,
-      areaName: value.type === 'REPEAT' ? null : areaName,
+      lineName: value.type === 'REPEAT' ? null : lineName,
     } as GridDimension
   }, parseCSSGrid(inputToParse))
 }
@@ -1128,7 +1128,7 @@ export function parseGridPosition(
     const referenceTemplate =
       axis === 'row' ? container.gridTemplateRows : container.gridTemplateColumns
     if (referenceTemplate?.type === 'DIMENSIONS') {
-      const maybeArea = referenceTemplate.dimensions.findIndex((dim) => dim.areaName === input)
+      const maybeArea = referenceTemplate.dimensions.findIndex((dim) => dim.lineName === input)
       if (maybeArea >= 0) {
         let value = gridPositionValue(maybeArea + 1)
         if (
@@ -1236,12 +1236,12 @@ export function parseGridAutoOrTemplateBase(
 export function parseGridChildren(
   children: csstree.List<csstree.CssNode>,
 ): Either<string, GridDimension[]> {
-  let nextAreaName: string | null = null
+  let nextLineName: string | null = null
 
-  function getAreaName() {
-    const currentAreaName = nextAreaName != null ? `${nextAreaName}` : null
-    nextAreaName = null
-    return currentAreaName
+  function getLineName() {
+    const currentLineName = nextLineName != null ? `${nextLineName}` : null
+    nextLineName = null
+    return currentLineName
   }
 
   let dimensions: GridDimension[] = []
@@ -1250,7 +1250,7 @@ export function parseGridChildren(
       case 'Dimension': {
         const parsedDimension = parseCSSNumber(`${child.value}${child.unit}`, 'AnyValid')
         if (isRight(parsedDimension)) {
-          dimensions.push(gridCSSNumber(parsedDimension.value, getAreaName()))
+          dimensions.push(gridCSSNumber(parsedDimension.value, getLineName()))
         } else {
           return left('Invalid grid CSS dimension.')
         }
@@ -1258,7 +1258,7 @@ export function parseGridChildren(
       }
       case 'Identifier': {
         if (isValidGridDimensionKeyword(child.name)) {
-          dimensions.push(gridCSSKeyword(cssKeyword(child.name), getAreaName()))
+          dimensions.push(gridCSSKeyword(cssKeyword(child.name), getLineName()))
         } else {
           return left('Invalid grid CSS keyword.')
         }
@@ -1274,7 +1274,7 @@ export function parseGridChildren(
               return left('Invalid grid CSS repeat times.')
             }
 
-            const areaName = getAreaName()
+            const lineName = getLineName()
 
             const values = new csstree.List<csstree.CssNode>().fromArray(
               otherChildren.filter(
@@ -1287,7 +1287,7 @@ export function parseGridChildren(
             )
             const parsedDimensions = parseGridChildren(values)
             if (isRight(parsedDimensions)) {
-              dimensions.push(gridCSSRepeat(times, parsedDimensions.value, areaName))
+              dimensions.push(gridCSSRepeat(times, parsedDimensions.value, lineName))
             } else {
               return left('Invalid grid CSS repeat values.')
             }
@@ -1311,7 +1311,7 @@ export function parseGridChildren(
               ) {
                 return left('Invalid minmax arguments.')
               }
-              dimensions.push(gridCSSMinmax(min, max, getAreaName()))
+              dimensions.push(gridCSSMinmax(min, max, getLineName()))
             }
             break
           }
@@ -1321,8 +1321,8 @@ export function parseGridChildren(
         break
       }
       case 'Brackets': {
-        // The next child will get this area name
-        nextAreaName = child.children.toArray().find((c) => c.type === 'Identifier')?.name ?? null
+        // The next child will get this line name
+        nextLineName = child.children.toArray().find((c) => c.type === 'Identifier')?.name ?? null
         break
       }
       default:

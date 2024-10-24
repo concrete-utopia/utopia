@@ -165,7 +165,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
 
       const isFractional = mergedUnit.value === 'fr'
       const precision = modifiers.cmd ? 'coarse' : 'precise'
-      const areaName = mergedValues.dimensions[control.columnOrRow]?.areaName ?? null
+      const lineName = mergedValues.dimensions[control.columnOrRow]?.lineName ?? null
 
       const newValue = Math.max(
         0,
@@ -181,7 +181,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
         originalValues.dimensions,
         expandedOriginalValues,
         control.columnOrRow,
-        gridCSSNumber(cssNumber(newValue, mergedUnit.value), areaName),
+        gridCSSNumber(cssNumber(newValue, mergedUnit.value), lineName),
       )
 
       const propertyValueAsString = printArrayGridDimensions(newDimensions)
