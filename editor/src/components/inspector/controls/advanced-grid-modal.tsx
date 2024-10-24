@@ -82,13 +82,27 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
   const justifyOptions = [
     unsetSelectOption,
     separatorRadixSelectOption(),
-    ...Object.values(FlexJustifyContent).map(selectOption),
+    ...[
+      FlexJustifyContent.FlexStart,
+      FlexJustifyContent.Center,
+      FlexJustifyContent.FlexEnd,
+      FlexJustifyContent.SpaceAround,
+      FlexJustifyContent.SpaceBetween,
+      FlexJustifyContent.SpaceEvenly,
+      FlexJustifyContent.Stretch,
+    ].map(selectOption),
   ]
 
   const alignOptions = [
     unsetSelectOption,
     separatorRadixSelectOption(),
-    ...Object.values(FlexAlignment).map(selectOption),
+    ...[
+      FlexAlignment.Auto,
+      FlexAlignment.FlexStart,
+      FlexAlignment.Center,
+      FlexAlignment.FlexEnd,
+      FlexAlignment.Stretch,
+    ].map(selectOption),
   ]
 
   const onSubmitJustifyContent = React.useCallback(
