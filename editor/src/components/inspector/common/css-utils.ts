@@ -4620,6 +4620,11 @@ const flexAlignmentsParser: Parser<FlexAlignment> = isOneOfTheseParser([
   FlexAlignment.Center,
   FlexAlignment.FlexEnd,
   FlexAlignment.Stretch,
+  FlexAlignment.Baseline,
+  FlexAlignment.FirstBaseline,
+  FlexAlignment.LastBaseline,
+  FlexAlignment.SafeCenter,
+  FlexAlignment.UnsafeCenter,
 ])
 
 const flexJustifyContentParser: Parser<FlexJustifyContent> = isOneOfTheseParser([
@@ -4629,6 +4634,10 @@ const flexJustifyContentParser: Parser<FlexJustifyContent> = isOneOfTheseParser(
   FlexJustifyContent.SpaceAround,
   FlexJustifyContent.SpaceBetween,
   FlexJustifyContent.SpaceEvenly,
+  FlexJustifyContent.Stretch,
+  FlexJustifyContent.Normal,
+  FlexJustifyContent.SafeCenter,
+  FlexJustifyContent.UnsafeCenter,
 ])
 
 export type CSSPosition = '-webkit-sticky' | 'absolute' | 'fixed' | 'relative' | 'static' | 'sticky'
