@@ -14,7 +14,7 @@ import {
   separatorRadixSelectOption,
 } from '../../../uuiui/radix-components'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import { FlexAlignment } from 'utopia-api/core'
+import { AllFlexAlignments, AllFlexJustifyContents, FlexAlignment } from 'utopia-api/core'
 import { FlexJustifyContent } from 'utopia-api/core'
 import { GridAutoColsOrRowsControlInner } from '../grid-auto-cols-or-rows-control'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -214,6 +214,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
               zIndex: 1,
             }}
             onOpenChange={toggleJustifyContentDropdown}
+            allowedValues={AllFlexJustifyContents}
           />
         </UIGridRow>
         <UIGridRow
@@ -232,6 +233,7 @@ export const AdvancedGridModal = React.memo((props: AdvancedGridModalProps) => {
               zIndex: 1,
             }}
             onOpenChange={toggleAlignContentDropdown}
+            allowedValues={AllFlexAlignments}
           />
         </UIGridRow>
         <UIGridRow padded variant='<-------------1fr------------->'>
