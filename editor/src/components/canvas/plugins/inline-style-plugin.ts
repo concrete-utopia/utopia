@@ -1,6 +1,5 @@
-import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import type { StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { getSimpleAttributeAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as Either from '../../../core/shared/either'
 import type { JSXElement } from '../../../core/shared/element-template'
@@ -9,25 +8,30 @@ import {
   isJSXElement,
   jsExpressionValue,
 } from '../../../core/shared/element-template'
-import { optionalMap } from '../../../core/shared/optional-utils'
 import * as PP from '../../../core/shared/property-path'
-import { styleStringInArray } from '../../../utils/common-constants'
-import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
-import { withPropertyTag, type WithPropertyTag } from '../canvas-types'
+import { cssParsers, type ParsedCSSProperties } from '../../inspector/common/css-utils'
+import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import type { CSSStyleProperty } from '../canvas-types'
 import { applyValuesAtPath, deleteValuesAtPath } from '../commands/utils/property-utils'
 import type { StylePlugin } from './style-plugins'
 
 function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(
   prop: P,
   element: JSXElement,
-): WithPropertyTag<NonNullable<T>> | null {
-  return optionalMap(
-    withPropertyTag,
-    Either.defaultEither(
-      null,
-      getLayoutProperty(prop, Either.right(element.props), styleStringInArray),
-    ),
-  ) as WithPropertyTag<NonNullable<T>> | null
+): CSSStyleProperty<NonNullable<T>> | null {
+  const attribute = getSimpleAttributeAtPath(
+    Either.right(element.props),
+    stylePropPathMappingFn(prop, ['style']),
+  )
+  if (Either.isLeft(attribute) || attribute.value == null) {
+    return { type: 'not-found' }
+  }
+  const parser = cssParsers[prop] as (value: unknown) => Either.Either<string, T>
+  const parsed = parser(attribute.value)
+  if (Either.isLeft(parsed) || parsed.value == null) {
+    return { type: 'not-editable' }
+  }
+  return { type: 'property', tag: null, value: parsed.value }
 }
 
 export const InlineStylePlugin: StylePlugin = {

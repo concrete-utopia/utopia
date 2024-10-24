@@ -9,8 +9,7 @@ import { mapDropNulls } from '../../../core/shared/array-utils'
 import { updateClassListCommand } from './../commands/update-class-list-command'
 import * as UCL from './../commands/update-class-list-command'
 import type { StylePlugin } from './style-plugins'
-import type { WithPropertyTag } from '../canvas-types'
-import { withPropertyTag } from '../canvas-types'
+import type { CSSStyleProperty } from '../canvas-types'
 import type { Config } from 'tailwindcss/types/config'
 import { emptyComments } from 'utopia-shared/src/types'
 import { jsExpressionValue } from '../../../core/shared/element-template'
@@ -29,12 +28,12 @@ import * as PP from '../../../core/shared/property-path'
 function parseTailwindProperty<T>(
   value: unknown,
   parse: Parser<T>,
-): WithPropertyTag<NonNullable<T>> | null {
+): CSSStyleProperty<NonNullable<T>> | null {
   const parsed = parse(value, null)
   if (isLeft(parsed) || parsed.value == null) {
-    return null
+    return { type: 'not-found' }
   }
-  return withPropertyTag(parsed.value)
+  return { type: 'property', tag: null, value: parsed.value }
 }
 
 const TailwindPropertyMapping: Record<string, string> = {

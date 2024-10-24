@@ -14,7 +14,7 @@ import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import type { CSSNumber, CSSNumberUnit, CSSPadding } from '../inspector/common/css-utils'
 import { printCSSNumber } from '../inspector/common/css-utils'
-import type { EdgePiece, StyleInfo } from './canvas-types'
+import { maybePropertyValue, type EdgePiece, type StyleInfo } from './canvas-types'
 import type {
   AdjustPrecision,
   CSSNumberWithRenderedValue,
@@ -75,13 +75,13 @@ export function simplePaddingFromStyleInfo(
 
   const paddingNumbers = paddingFromSpecialSizeMeasurements(metadata, elementPath)
 
-  const padding: CSSPadding | undefined = styleInfo?.padding?.value
+  const padding = optionalMap(maybePropertyValue, styleInfo?.padding)
 
-  const paddingLonghands: CSSPaddingMappedValues<CSSNumber | undefined> = {
-    paddingTop: styleInfo?.paddingTop?.value,
-    paddingBottom: styleInfo?.paddingBottom?.value,
-    paddingLeft: styleInfo?.paddingLeft?.value,
-    paddingRight: styleInfo?.paddingRight?.value,
+  const paddingLonghands: CSSPaddingMappedValues<CSSNumber | null> = {
+    paddingTop: optionalMap(maybePropertyValue, styleInfo?.paddingTop),
+    paddingBottom: optionalMap(maybePropertyValue, styleInfo?.paddingBottom),
+    paddingLeft: optionalMap(maybePropertyValue, styleInfo?.paddingLeft),
+    paddingRight: optionalMap(maybePropertyValue, styleInfo?.paddingRight),
   }
 
   const make = (prop: CSSPaddingKey): CSSNumberWithRenderedValue | undefined => {
