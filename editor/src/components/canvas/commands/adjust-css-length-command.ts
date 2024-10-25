@@ -99,7 +99,10 @@ export const runAdjustCssLengthProperties = (
       if (isJSXElement(element)) {
         return command.properties.reduce((workingElement, property) => {
           // Get the current value of the property...
-          const currentValue = getModifiableJSXAttributeAtPath(element.props, property.property)
+          const currentValue = getModifiableJSXAttributeAtPath(
+            workingElement.props,
+            property.property,
+          )
           // ...If the value is not writeable then escape out.
           if (isLeft(currentValue)) {
             commandDescriptions.push(
@@ -168,7 +171,7 @@ export const runAdjustCssLengthProperties = (
           if (isRight(parsePxResult)) {
             return handleUpdateResult(
               updatePixelValueByPixel(
-                element.props,
+                workingElement.props,
                 command.target,
                 property.property,
                 parsePxResult.value,
@@ -183,7 +186,7 @@ export const runAdjustCssLengthProperties = (
           if (isRight(parsePercentResult)) {
             return handleUpdateResult(
               updatePercentageValueByPixel(
-                element.props,
+                workingElement.props,
                 command.target,
                 property.property,
                 property.parentDimensionPx,
@@ -196,7 +199,12 @@ export const runAdjustCssLengthProperties = (
           // Otherwise if it is permitted to create it if it doesn't exist, then do so.
           if (property.createIfNonExistant === 'create-if-not-existing') {
             return handleUpdateResult(
-              setPixelValue(element.props, command.target, property.property, property.valuePx),
+              setPixelValue(
+                workingElement.props,
+                command.target,
+                property.property,
+                property.valuePx,
+              ),
             )
           }
 
@@ -416,6 +424,10 @@ export function deleteConflictingPropsForWidthHeight(
 ): EditorState {
   return propertyPaths.reduce((editor, propertyPath) => {
     const propertiesToDelete = getConflictingPropertiesToDelete(parentFlexDirection, propertyPath)
+    if (propertiesToDelete.length === 0) {
+      return editor
+    }
+
     return runStyleUpdateForStrategy(
       interactionLifecycle,
       editor,
