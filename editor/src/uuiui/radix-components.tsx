@@ -343,11 +343,21 @@ export const RadixSelect = React.memo(
       return fullOptions
     }, [props.options, props.value, props.allowedValues])
 
+    const onMouseDownOutside = React.useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation()
+        e.preventDefault()
+        onOpenChange(false)
+      },
+      [onOpenChange],
+    )
+
     return (
       <Select.Root
         value={props.value?.value}
         onValueChange={props.onValueChange}
         onOpenChange={onOpenChange}
+        open={isOpen}
       >
         <Select.Trigger
           style={{
@@ -390,6 +400,17 @@ export const RadixSelect = React.memo(
               ...(props.contentStyle ?? {}),
             }}
           >
+            <div
+              style={{
+                backgroundColor: 'transparent',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                bottom: 0,
+                right: 0,
+              }}
+              onMouseDown={onMouseDownOutside}
+            />
             <Select.ScrollUpButton>
               <Icons.ExpansionArrow color='on-highlight-main' />
             </Select.ScrollUpButton>
