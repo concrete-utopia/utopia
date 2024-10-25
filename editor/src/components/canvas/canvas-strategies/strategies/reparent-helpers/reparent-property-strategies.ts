@@ -313,6 +313,7 @@ export const convertFragmentLikeChildrenToVisualSize =
           metadata.currentMetadata,
           projectContents,
           'force-pins',
+          'dont-add-contain-layout',
         )
       } else {
         const directions = singleAxisAutoLayoutContainerDirections(
