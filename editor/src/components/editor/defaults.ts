@@ -98,11 +98,12 @@ export function defaultRectangleElementStyle(): JSExpression {
 
 export function defaultRectangleElement(uid: string): JSXElement {
   return jsxElement(
-    jsxElementName('Rectangle', []),
+    jsxElementName('div', []),
     uid,
     jsxAttributesFromMap({
       style: defaultRectangleElementStyle(),
       'data-uid': jsExpressionValue(uid, emptyComments),
+      'data-label': jsExpressionValue('Rectangle', emptyComments),
     }),
     [],
   )
