@@ -67,6 +67,7 @@ import {
   treatElementAsFragmentLike,
 } from '../fragment-like-helpers'
 import type { OldPathToNewPathMapping } from '../../post-action-options/post-action-paste'
+import type { ShouldAddContainLayout } from './reparent-helpers'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -90,7 +91,7 @@ export function getAbsoluteReparentPropertyChanges(
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   forcePins: ForcePins,
-  containLayout: 'should-add' | 'should-not-add',
+  containLayout: ShouldAddContainLayout,
 ): Array<AdjustCssLengthProperties | ConvertCssPercentToPx> {
   const element: JSXElement | null = getJSXElementFromProjectContents(target, projectContents)
 
@@ -110,7 +111,7 @@ export function getAbsoluteReparentPropertyChanges(
   const currentParentContentBox =
     MetadataUtils.getGlobalContentBoxForChildren(originalParentInstance)
   const newParentContentBox =
-    containLayout === 'should-add'
+    containLayout === 'add-contain-layout'
       ? nullIfInfinity(newParentInstance.globalFrame)
       : MetadataUtils.getGlobalContentBoxForChildren(newParentInstance)
 
@@ -353,7 +354,7 @@ export function getReparentPropertyChanges(
         currentMetadata,
         projectContents,
         'force-pins',
-        'should-not-add',
+        'dont-add-contain-layout',
       )
 
       const strategyCommands = runReparentPropertyStrategies([

@@ -37,6 +37,7 @@ import type { InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { honoursPropsPosition, shouldKeepMovingDraggedGroupChildren } from './absolute-utils'
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
+import type { ShouldAddContainLayout } from './reparent-helpers/reparent-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import type { ForcePins } from './reparent-helpers/reparent-property-changes'
 import { getAbsoluteReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
@@ -260,7 +261,7 @@ export function createAbsoluteReparentAndOffsetCommands(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   forcePins: ForcePins,
-  containLayout: 'should-add' | 'should-not-add',
+  containLayout: ShouldAddContainLayout,
 ) {
   const reparentResult = getReparentOutcome(
     metadata,
@@ -310,7 +311,7 @@ export function shouldAddContainLayout(
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   path: ElementPath,
-): 'should-add' | 'should-not-add' {
+): ShouldAddContainLayout {
   const closestNonFragmentParent = MetadataUtils.getClosestNonFragmentParent(
     metadata,
     allElementProps,
@@ -319,14 +320,14 @@ export function shouldAddContainLayout(
   )
 
   if (EP.isStoryboardPath(closestNonFragmentParent)) {
-    return 'should-not-add'
+    return 'add-contain-layout'
   }
 
   const parentProvidesBoundsForAbsoluteChildren =
     MetadataUtils.findElementByElementPath(metadata, closestNonFragmentParent)
       ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren === true
 
-  return parentProvidesBoundsForAbsoluteChildren ? 'should-not-add' : 'should-add'
+  return parentProvidesBoundsForAbsoluteChildren ? 'dont-add-contain-layout' : 'add-contain-layout'
 }
 
 function maybeAddContainLayout(
@@ -335,7 +336,7 @@ function maybeAddContainLayout(
   pathTrees: ElementPathTrees,
   path: ElementPath,
 ): CanvasCommand[] {
-  return shouldAddContainLayout(metadata, allElementProps, pathTrees, path) === 'should-add'
+  return shouldAddContainLayout(metadata, allElementProps, pathTrees, path) === 'add-contain-layout'
     ? [setProperty('always', path, PP.create('style', 'contain'), 'layout')]
     : []
 }

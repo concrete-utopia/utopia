@@ -75,6 +75,8 @@ import type { ReparentTargetForPaste } from '../reparent-utils'
 import { cleanSteganoTextData } from '../../../../../core/shared/stegano-text'
 import { assertNever } from '../../../../../core/shared/utils'
 
+export type ShouldAddContainLayout = 'add-contain-layout' | 'dont-add-contain-layout'
+
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
   startingMetadata: ElementInstanceMetadataMap,

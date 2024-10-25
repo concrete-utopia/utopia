@@ -48,7 +48,7 @@ export const reparentToUnwrapAsAbsoluteStrategy = (
       projectContents,
       nodeModules,
       'do-not-force-pins',
-      'should-not-add',
+      'dont-add-contain-layout',
     )
 
     if (result == null) {
