@@ -175,7 +175,7 @@ export const runAdjustCssLengthProperties = (
 
   const { editorStatePatch } = runStyleUpdateForStrategy(
     interactionLifecycle,
-    editorState,
+    withConflictingPropertiesRemoved,
     command.target,
     propsToUpdate,
   )

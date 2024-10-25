@@ -169,7 +169,7 @@ export const runSetCssLengthProperty = (
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = runStyleUpdateForStrategy(
     interactionLifecycle,
-    editorState,
+    editorStateWithPropsDeleted,
     command.target,
     propsToUpdate,
   )
