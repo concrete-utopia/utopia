@@ -320,7 +320,7 @@ export function shouldAddContainLayout(
   )
 
   if (EP.isStoryboardPath(closestNonFragmentParent)) {
-    return 'add-contain-layout'
+    return 'dont-add-contain-layout'
   }
 
   const parentProvidesBoundsForAbsoluteChildren =
