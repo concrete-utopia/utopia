@@ -64,7 +64,7 @@ import {
 } from '../../core/model/utopia-constants'
 import { emptySet } from '../../core/shared/set-utils'
 import { getDeepestPathOnDomElement, getPathStringsOnDomElement } from '../../core/shared/uid-utils'
-import { forceNotNull } from '../../core/shared/optional-utils'
+import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import type { EditorState, EditorStorePatched } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
@@ -921,10 +921,25 @@ function getSpecialMeasurements(
     ? padding.value
     : sides(undefined, undefined, undefined, undefined)
 
+  const pathStr = element.getAttribute(UTOPIA_PATH_KEY)
+  const path = optionalMap(EP.fromString, pathStr)
+
   const gridCellGlobalFrames =
-    layoutSystemForChildren === 'grid'
+    path != null && layoutSystemForChildren === 'grid'
       ? measureGlobalFramesOfGridCellsFromControl(
-          element,
+          path,
+          scale,
+          containerRectLazy,
+          elementCanvasRectangleCache,
+        )
+      : null
+
+  const parentGridCellGlobalFrames =
+    element.parentElement != null &&
+    elementLayoutSystem(parentElementStyle) === 'grid' &&
+    path != null
+      ? measureGlobalFramesOfGridCellsFromControl(
+          EP.parentPath(path),
           scale,
           containerRectLazy,
           elementCanvasRectangleCache,
@@ -932,6 +947,7 @@ function getSpecialMeasurements(
       : null
 
   const containerGridPropertiesFromProps = getGridContainerProperties(element.style)
+  const parentContainerGridPropertiesFromProps = getGridContainerProperties(parentElementStyle)
   const containerGridProperties = getGridContainerProperties(elementStyle, {
     dynamicCols: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateColumns),
     dynamicRows: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateRows),
@@ -993,12 +1009,15 @@ function getSpecialMeasurements(
     textBounds,
     computedHugProperty,
     containerGridProperties,
+    parentContainerGridProperties,
     containerElementProperties,
     containerGridPropertiesFromProps,
+    parentContainerGridPropertiesFromProps,
     containerElementPropertiesFromProps,
     rowGap,
     columnGap,
     gridCellGlobalFrames,
+    parentGridCellGlobalFrames,
     justifySelf,
     alignSelf,
   )
@@ -1063,46 +1082,42 @@ function getClosestOffsetParent(element: HTMLElement): Element | null {
 }
 
 function measureGlobalFramesOfGridCellsFromControl(
-  grid: HTMLElement,
+  gridPath: ElementPath,
   scale: number,
   containerRectLazy: CanvasPoint | (() => CanvasPoint),
   elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): GridCellGlobalFrames | null {
-  const path = grid.getAttribute(UTOPIA_PATH_KEY)
-  let gridCellGlobalFrames: Array<Array<CanvasRectangle>> | null = null
-  if (path != null) {
-    const gridControlElement = document.getElementById(
-      GridMeasurementHelperKey(EP.fromString(path)),
-    )
-    if (gridControlElement != null) {
-      gridCellGlobalFrames = []
-      for (const cell of gridControlElement.children) {
-        if (!(cell instanceof HTMLElement)) {
-          continue
-        }
-        const rowIndexAttr = cell.getAttribute('data-grid-row')
-        const columnIndexAttr = cell.getAttribute('data-grid-column')
-        if (rowIndexAttr == null || columnIndexAttr == null) {
-          continue
-        }
-        const rowIndex = parseInt(rowIndexAttr)
-        const columnIndex = parseInt(columnIndexAttr)
-        if (!isFinite(rowIndex) || !isFinite(columnIndex)) {
-          continue
-        }
-        const row = gridCellGlobalFrames[rowIndex - 1]
-        if (row == null) {
-          gridCellGlobalFrames[rowIndex - 1] = []
-        }
-        gridCellGlobalFrames[rowIndex - 1][columnIndex - 1] = globalFrameForElement(
-          cell,
-          scale,
-          containerRectLazy,
-          'without-text-content',
-          'nearest-half',
-          elementCanvasRectangleCache,
-        )
+  const path = EP.toString(gridPath)
+  let gridCellGlobalFrames: GridCellGlobalFrames | null = null
+  const gridControlElement = document.getElementById(GridMeasurementHelperKey(EP.fromString(path)))
+  if (gridControlElement != null) {
+    gridCellGlobalFrames = []
+    for (const cell of gridControlElement.children) {
+      if (!(cell instanceof HTMLElement)) {
+        continue
       }
+      const rowIndexAttr = cell.getAttribute('data-grid-row')
+      const columnIndexAttr = cell.getAttribute('data-grid-column')
+      if (rowIndexAttr == null || columnIndexAttr == null) {
+        continue
+      }
+      const rowIndex = parseInt(rowIndexAttr)
+      const columnIndex = parseInt(columnIndexAttr)
+      if (!isFinite(rowIndex) || !isFinite(columnIndex)) {
+        continue
+      }
+      const row = gridCellGlobalFrames[rowIndex - 1]
+      if (row == null) {
+        gridCellGlobalFrames[rowIndex - 1] = []
+      }
+      gridCellGlobalFrames[rowIndex - 1][columnIndex - 1] = globalFrameForElement(
+        cell,
+        scale,
+        containerRectLazy,
+        'without-text-content',
+        'nearest-half',
+        elementCanvasRectangleCache,
+      )
     }
   }
   return gridCellGlobalFrames

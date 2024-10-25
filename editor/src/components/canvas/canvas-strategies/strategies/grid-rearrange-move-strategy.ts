@@ -145,21 +145,28 @@ function getCommandsAndPatchForGridRearrange(
     return { commands: [], elementsToRerender: [] }
   }
 
-  const grid = MetadataUtils.findElementByElementPath(
+  const selectedElementMetadata = MetadataUtils.findElementByElementPath(
     canvasState.startingMetadata,
-    EP.parentPath(selectedElement),
+    selectedElement,
   )
-  if (grid == null) {
+  if (selectedElementMetadata == null) {
     return { commands: [], elementsToRerender: [] }
   }
 
-  const commands = runGridRearrangeMove(
-    selectedElement,
-    selectedElement,
-    canvasState.startingMetadata,
-    interactionData,
-    grid,
-  )
+  const { parentGridCellGlobalFrames, parentContainerGridProperties } =
+    selectedElementMetadata.specialSizeMeasurements
+
+  const commands =
+    parentGridCellGlobalFrames != null
+      ? runGridRearrangeMove(
+          selectedElement,
+          selectedElement,
+          canvasState.startingMetadata,
+          interactionData,
+          parentGridCellGlobalFrames,
+          parentContainerGridProperties,
+        )
+      : []
 
   return {
     commands: commands,
