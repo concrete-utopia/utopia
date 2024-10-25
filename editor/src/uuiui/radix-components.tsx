@@ -12,6 +12,7 @@ import { when } from '../utils/react-conditionals'
 import { Icn, type IcnProps } from './icn'
 import { forceNotNull } from '../core/shared/optional-utils'
 import { usePropControlledStateV2 } from '../components/inspector/common/inspector-utils'
+import { assertNever } from '../core/shared/utils'
 
 // Keep this in sync with the radix-components-portal div in index.html.
 export const RadixComponentsPortalId = 'radix-components-portal'
@@ -256,6 +257,29 @@ export function separatorRadixSelectOption(): Separator {
 
 export type RadixSelectOption = RegularRadixSelectOption | Separator
 
+function equalRadixSelectOptions(
+  a: RadixSelectOption | null,
+  b: RadixSelectOption | null,
+): boolean {
+  if (a == null && b == null) {
+    return true
+  }
+  if (a == null || b == null) {
+    return false
+  }
+  switch (a.type) {
+    case 'REGULAR':
+      if (b.type !== 'REGULAR') {
+        return false
+      }
+      return a.value === b.value && a.label === b.label
+    case 'SEPARATOR':
+      return b.type === 'SEPARATOR'
+    default:
+      assertNever(a)
+  }
+}
+
 function optionLabelToString(
   option: RegularRadixSelectOption | null,
   isOpen: boolean,
@@ -280,6 +304,7 @@ export const RadixSelect = React.memo(
     onValueChange?: (value: string) => void
     contentClassName?: string
     onOpenChange?: (open: boolean) => void
+    allowedValues?: string[]
   }) => {
     const stopPropagation = React.useCallback((e: React.KeyboardEvent) => {
       e.stopPropagation()
@@ -296,7 +321,27 @@ export const RadixSelect = React.memo(
       [propsOnOpenChange],
     )
 
-    const valueLabel = optionLabelToString(props.value ?? null, isOpen, props.value?.value ?? null)
+    const valueLabel = React.useMemo(() => {
+      return optionLabelToString(props.value ?? null, isOpen, props.value?.value ?? null)
+    }, [props.value, isOpen])
+
+    const options = React.useMemo(() => {
+      let fullOptions = [...props.options]
+
+      if (
+        // the value is not null
+        props.value != null &&
+        // the value is allowed for this dropdown
+        props.allowedValues?.some((allowed) => allowed === props.value?.value) &&
+        // the options don't contain the value already
+        !fullOptions.some((opt) => equalRadixSelectOptions(opt, props.value))
+      ) {
+        // add the given option + separator at the top of the options
+        fullOptions.unshift(...[props.value, separatorDropdownMenuItem('unknown-dropdown-value')])
+      }
+
+      return fullOptions
+    }, [props.options, props.value, props.allowedValues])
 
     return (
       <Select.Root
@@ -355,7 +400,7 @@ export const RadixSelect = React.memo(
                 gap: 2,
               }}
             >
-              {props.options.map((option, index) => {
+              {options.map((option, index) => {
                 if (option.type === 'SEPARATOR') {
                   return (
                     <Select.Separator
