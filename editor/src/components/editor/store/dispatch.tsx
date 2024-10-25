@@ -1013,14 +1013,9 @@ function editorDispatchInner(
       storedState.patchedDerived,
     )
 
-    const unpatchedEditor = patchRemovedProperties(unpatchedEditorStateFromStrategies)
-    const patchedEditor = patchRemovedProperties(patchedEditorStateFromStrategies)
-
-    resetUpdatedPropertiesGlobal()
-
     return {
-      unpatchedEditor: unpatchedEditor,
-      patchedEditor: patchedEditor,
+      unpatchedEditor: unpatchedEditorStateFromStrategies,
+      patchedEditor: patchedEditorStateFromStrategies,
       unpatchedDerived: frozenDerivedState,
       patchedDerived: patchedDerivedState,
       strategyState: newStrategyState,

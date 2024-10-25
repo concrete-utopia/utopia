@@ -6,6 +6,7 @@ import type {
 import {
   applyCanvasStrategy,
   applyElementsToRerenderFromStrategyResult,
+  applyElementsToRerenderFromStrategyResultAndZeroProps,
   findCanvasStrategy,
   interactionInProgress,
   pickCanvasStateFromEditorState,
@@ -222,7 +223,7 @@ export function interactionHardReset(
 
       return {
         unpatchedEditorState: newEditorState,
-        patchedEditorState: applyElementsToRerenderFromStrategyResult(
+        patchedEditorState: applyElementsToRerenderFromStrategyResultAndZeroProps(
           commandResult.editorState,
           strategyResult,
         ),
@@ -390,7 +391,7 @@ export function interactionStart(
 
       return {
         unpatchedEditorState: newEditorState,
-        patchedEditorState: applyElementsToRerenderFromStrategyResult(
+        patchedEditorState: applyElementsToRerenderFromStrategyResultAndZeroProps(
           commandResult.editorState,
           strategyResult,
         ),
@@ -497,7 +498,7 @@ function handleUserChangedStrategy(
 
     return {
       unpatchedEditorState: newEditorState,
-      patchedEditorState: applyElementsToRerenderFromStrategyResult(
+      patchedEditorState: applyElementsToRerenderFromStrategyResultAndZeroProps(
         commandResult.editorState,
         strategyResult,
       ),
@@ -583,7 +584,7 @@ function handleAccumulatingKeypresses(
 
       return {
         unpatchedEditorState: updatedEditorState,
-        patchedEditorState: applyElementsToRerenderFromStrategyResult(
+        patchedEditorState: applyElementsToRerenderFromStrategyResultAndZeroProps(
           commandResult.editorState,
           strategyResult,
         ),
@@ -650,7 +651,7 @@ function handleUpdate(
     }
     return {
       unpatchedEditorState: newEditorState,
-      patchedEditorState: applyElementsToRerenderFromStrategyResult(
+      patchedEditorState: applyElementsToRerenderFromStrategyResultAndZeroProps(
         commandResult.editorState,
         strategyResult,
       ),
