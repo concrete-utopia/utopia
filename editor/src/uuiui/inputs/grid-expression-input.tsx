@@ -83,7 +83,7 @@ export const GridExpressionInput = React.memo(
         if (maybeMinmax != null) {
           return onUpdateDimension({
             ...maybeMinmax,
-            areaName: value.areaName,
+            lineName: value.lineName,
           } as GridDimension)
         }
 

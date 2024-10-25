@@ -1977,7 +1977,7 @@ export const GridCSSNumberKeepDeepEquality: KeepDeepEqualityCall<GridCSSNumber> 
   combine2EqualityCalls(
     (p) => p.value,
     CSSNumberKeepDeepEquality,
-    (p) => p.areaName,
+    (p) => p.lineName,
     NullableStringKeepDeepEquality,
     gridCSSNumber,
   )
@@ -1986,7 +1986,7 @@ export const GridCSSKeywordKeepDeepEquality: KeepDeepEqualityCall<GridCSSKeyword
   combine2EqualityCalls(
     (p) => p.value,
     createCallWithTripleEquals(),
-    (p) => p.areaName,
+    (p) => p.lineName,
     NullableStringKeepDeepEquality,
     gridCSSKeyword,
   )
@@ -2030,7 +2030,7 @@ export const GridCSSRepeatKeepDeepEquality: KeepDeepEqualityCall<GridCSSRepeat> 
     createCallWithTripleEquals(),
     (p) => p.value,
     arrayDeepEquality(GridDimensionKeepDeepEquality),
-    (p) => p.areaName,
+    (p) => p.lineName,
     NullableStringKeepDeepEquality,
     gridCSSRepeat,
   )
@@ -2064,7 +2064,7 @@ export const GridCSSMinmaxKeepDeepEquality: KeepDeepEqualityCall<GridCSSMinmax> 
     GridCSSNumberOrKeywordKeepDeepEquality,
     (p) => p.max,
     GridCSSNumberOrKeywordKeepDeepEquality,
-    (p) => p.areaName,
+    (p) => p.lineName,
     NullableStringKeepDeepEquality,
     gridCSSMinmax,
   )
