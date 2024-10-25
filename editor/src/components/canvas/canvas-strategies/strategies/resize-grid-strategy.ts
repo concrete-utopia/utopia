@@ -7,7 +7,12 @@ import {
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import * as PP from '../../../../core/shared/property-path'
-import { setProperty } from '../../commands/set-property-command'
+import type { PropertyToUpdate } from '../../commands/set-property-command'
+import {
+  propertyToDelete,
+  propertyToSet,
+  updateBulkProperties,
+} from '../../commands/set-property-command'
 import {
   controlsForGridPlaceholders,
   GridRowColumnResizingControls,
@@ -30,17 +35,19 @@ import {
   printArrayGridDimensions,
 } from '../../../../components/inspector/common/css-utils'
 import { toFirst } from '../../../../core/shared/optics/optic-utilities'
-import type { Either } from '../../../../core/shared/either'
-import { foldEither, isLeft, isRight } from '../../../../core/shared/either'
-import { roundTo, roundToNearestWhole } from '../../../../core/shared/math-utils'
+import { isLeft } from '../../../../core/shared/either'
+import { roundToNearestWhole } from '../../../../core/shared/math-utils'
 import type { GridAutoOrTemplateBase } from '../../../../core/shared/element-template'
 import {
   expandGridDimensions,
   findOriginalGrid,
+  isJustAutoGridDimension,
   replaceGridTemplateDimensionAtIndex,
 } from './grid-helpers'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { CSSCursor } from '../../canvas-types'
+import type { CanvasCommand } from '../../commands/commands'
+import type { Axis } from '../../gap-utils'
 
 export const resizeGridStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -116,6 +123,12 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
           ? gridSpecialSizeMeasurements.containerGridProperties.gridTemplateColumns
           : gridSpecialSizeMeasurements.containerGridProperties.gridTemplateRows
 
+      const otherAxis: Axis = control.axis === 'column' ? 'row' : 'column'
+      const otherAxisValues =
+        otherAxis === 'column'
+          ? gridSpecialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateColumns
+          : gridSpecialSizeMeasurements.containerGridPropertiesFromProps.gridTemplateRows
+
       if (
         calculatedValues == null ||
         calculatedValues.type !== 'DIMENSIONS' ||
@@ -186,16 +199,31 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
 
       const propertyValueAsString = printArrayGridDimensions(newDimensions)
 
-      const commands = [
-        setProperty(
-          'always',
-          originalGridPath,
-          PP.create(
-            'style',
-            control.axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows',
-          ),
-          propertyValueAsString,
-        ),
+      const propertyAxis = PP.create(
+        'style',
+        control.axis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows',
+      )
+      let propertiesToUpdate: PropertyToUpdate[] = [
+        propertyToSet(propertyAxis, propertyValueAsString),
+        propertyToDelete(PP.create('style', 'gridTemplate')), // delete the shorthand in favor of the longhands
+      ]
+
+      if (
+        otherAxisValues?.type === 'DIMENSIONS' &&
+        otherAxisValues.dimensions.length > 0 &&
+        !isJustAutoGridDimension(otherAxisValues.dimensions)
+      ) {
+        // if the other axis has dimensions, serialize them in their longhand
+        const propertyOtherAxis = PP.create(
+          'style',
+          otherAxis === 'column' ? 'gridTemplateColumns' : 'gridTemplateRows',
+        )
+        const otherAxisValueAsString = printArrayGridDimensions(otherAxisValues.dimensions)
+        propertiesToUpdate.push(propertyToSet(propertyOtherAxis, otherAxisValueAsString))
+      }
+
+      let commands: CanvasCommand[] = [
+        updateBulkProperties('always', originalGridPath, propertiesToUpdate),
         setCursorCommand(control.axis === 'column' ? CSSCursor.ColResize : CSSCursor.RowResize),
       ]
 
