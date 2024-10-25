@@ -3,9 +3,11 @@
 import { jsx } from '@emotion/react'
 import type { CSSProperties } from 'react'
 import React from 'react'
+import type { CSSNumberUnit } from '../../components/inspector/common/css-utils'
 import {
   cssKeyword,
   gridDimensionsAreEqual,
+  isFR,
   isGridCSSNumber,
   isValidGridDimensionKeyword,
   parseCSSNumber,
@@ -28,6 +30,9 @@ import { Icons, SmallerIcons } from '../icons'
 import { NO_OP } from '../../core/shared/utils'
 import { unless } from '../../utils/react-conditionals'
 import { useColorTheme, UtopiaTheme } from '../styles/theme'
+import type { Optic } from '../../core/shared/optics/optics'
+import { fromField, fromTypeGuard, notNull } from '../../core/shared/optics/optic-creators'
+import { exists, modify } from '../../core/shared/optics/optic-utilities'
 
 interface GridExpressionInputProps {
   testId: string
@@ -66,32 +71,53 @@ export const GridExpressionInput = React.memo(
 
     const onKeyDown = React.useCallback(
       (e: React.KeyboardEvent) => {
-        if (e.key !== 'Enter') {
-          return
-        }
-        if (isValidGridDimensionKeyword(printValue)) {
-          return onUpdateNumberOrKeyword(cssKeyword(printValue))
-        }
+        switch (e.key) {
+          case 'Enter':
+            if (isValidGridDimensionKeyword(printValue)) {
+              return onUpdateNumberOrKeyword(cssKeyword(printValue))
+            }
 
-        const defaultUnit = isGridCSSNumber(value) ? value.value.unit : 'px'
-        const maybeNumber = parseCSSNumber(printValue, 'AnyValid', defaultUnit)
-        if (isRight(maybeNumber)) {
-          return onUpdateNumberOrKeyword(maybeNumber.value)
-        }
+            const defaultUnit = isGridCSSNumber(value) ? value.value.unit : 'px'
+            const maybeNumber = parseCSSNumber(printValue, 'AnyValid', defaultUnit)
+            if (isRight(maybeNumber)) {
+              return onUpdateNumberOrKeyword(maybeNumber.value)
+            }
 
-        const maybeMinmax = parseGridCSSMinmaxOrRepeat(printValue)
-        if (maybeMinmax != null) {
-          return onUpdateDimension({
-            ...maybeMinmax,
-            lineName: value.lineName,
-          } as GridDimension)
-        }
+            const maybeMinmax = parseGridCSSMinmaxOrRepeat(printValue)
+            if (maybeMinmax != null) {
+              return onUpdateDimension({
+                ...maybeMinmax,
+                lineName: value.lineName,
+              } as GridDimension)
+            }
 
-        if (printValue === '') {
-          return onUpdateNumberOrKeyword(cssKeyword('auto'))
-        }
+            if (printValue === '') {
+              return onUpdateNumberOrKeyword(cssKeyword('auto'))
+            }
 
-        setPrintValue(stringifyGridDimension(value))
+            setPrintValue(stringifyGridDimension(value))
+            break
+          case 'ArrowUp':
+          case 'ArrowDown':
+            e.preventDefault()
+            const gridNumberValueOptic: Optic<GridDimension, CSSNumber> = fromTypeGuard(
+              isGridCSSNumber,
+            ).compose(fromField('value'))
+            const valueUnitOptic: Optic<GridDimension, 'fr'> = gridNumberValueOptic
+              .compose(fromField('unit'))
+              .compose(notNull())
+              .compose(fromTypeGuard(isFR))
+            const gridNumberNumberOptic: Optic<GridDimension, number> =
+              gridNumberValueOptic.compose(fromField('value'))
+            if (exists(valueUnitOptic, value)) {
+              function updateFractional(fractionalValue: number): number {
+                return fractionalValue + (e.key === 'ArrowUp' ? 0.1 : -0.1)
+              }
+              const updatedDimension = modify(gridNumberNumberOptic, updateFractional, value)
+              onUpdateDimension(updatedDimension)
+            }
+            break
+        }
       },
       [printValue, onUpdateNumberOrKeyword, onUpdateDimension, value],
     )

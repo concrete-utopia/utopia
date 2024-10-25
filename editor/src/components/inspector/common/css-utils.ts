@@ -574,6 +574,10 @@ const CSSNumberUnits: Array<CSSNumberUnit> = [
   '%',
 ]
 
+export function isFR(unit: CSSNumberUnit): unit is 'fr' {
+  return unit === 'fr'
+}
+
 export interface CSSNumber {
   value: number
   unit: CSSNumberUnit | null
