@@ -48,6 +48,8 @@ interface GridExpressionInputProps {
 
 const DropdownWidth = 25
 
+const ArrowKeyFractionalIncrement = 0.1
+
 export const GridExpressionInput = React.memo(
   ({
     testId,
@@ -111,7 +113,10 @@ export const GridExpressionInput = React.memo(
               gridNumberValueOptic.compose(fromField('value'))
             if (exists(valueUnitOptic, value)) {
               function updateFractional(fractionalValue: number): number {
-                return fractionalValue + (e.key === 'ArrowUp' ? 0.1 : -0.1)
+                return (
+                  fractionalValue +
+                  (e.key === 'ArrowUp' ? ArrowKeyFractionalIncrement : -ArrowKeyFractionalIncrement)
+                )
               }
               const updatedDimension = modify(gridNumberNumberOptic, updateFractional, value)
               onUpdateDimension(updatedDimension)
