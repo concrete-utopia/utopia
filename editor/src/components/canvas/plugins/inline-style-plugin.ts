@@ -9,6 +9,7 @@ import {
   jsExpressionValue,
 } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
+import { getJSXElementFromProjectContents } from '../../editor/store/editor-state'
 import { cssParsers, type ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import type { CSSStyleProperty } from '../canvas-types'
@@ -37,30 +38,26 @@ function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSPropert
 export const InlineStylePlugin: StylePlugin = {
   name: 'Inline Style',
   styleInfoFactory:
-    ({ metadata }) =>
+    ({ projectContents }) =>
     (elementPath) => {
-      const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
-      if (
-        instance == null ||
-        Either.isLeft(instance.element) ||
-        !isJSXElement(instance.element.value)
-      ) {
+      const element = getJSXElementFromProjectContents(elementPath, projectContents)
+      if (element == null) {
         return null
       }
 
-      const gap = getPropertyFromInstance('gap', instance.element.value)
-      const flexDirection = getPropertyFromInstance('flexDirection', instance.element.value)
-      const padding = getPropertyFromInstance('padding', instance.element.value)
-      const paddingTop = getPropertyFromInstance('paddingTop', instance.element.value)
-      const paddingBottom = getPropertyFromInstance('paddingBottom', instance.element.value)
-      const paddingLeft = getPropertyFromInstance('paddingLeft', instance.element.value)
-      const paddingRight = getPropertyFromInstance('paddingRight', instance.element.value)
-      const width = getPropertyFromInstance('width', instance.element.value)
-      const height = getPropertyFromInstance('height', instance.element.value)
-      const top = getPropertyFromInstance('top', instance.element.value)
-      const left = getPropertyFromInstance('left', instance.element.value)
-      const right = getPropertyFromInstance('right', instance.element.value)
-      const bottom = getPropertyFromInstance('bottom', instance.element.value)
+      const gap = getPropertyFromInstance('gap', element)
+      const flexDirection = getPropertyFromInstance('flexDirection', element)
+      const padding = getPropertyFromInstance('padding', element)
+      const paddingTop = getPropertyFromInstance('paddingTop', element)
+      const paddingBottom = getPropertyFromInstance('paddingBottom', element)
+      const paddingLeft = getPropertyFromInstance('paddingLeft', element)
+      const paddingRight = getPropertyFromInstance('paddingRight', element)
+      const width = getPropertyFromInstance('width', element)
+      const height = getPropertyFromInstance('height', element)
+      const top = getPropertyFromInstance('top', element)
+      const left = getPropertyFromInstance('left', element)
+      const right = getPropertyFromInstance('right', element)
+      const bottom = getPropertyFromInstance('bottom', element)
 
       return {
         gap,
