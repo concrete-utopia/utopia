@@ -261,7 +261,7 @@ export function createAbsoluteReparentAndOffsetCommands(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   forcePins: ForcePins,
-  containLayout: ShouldAddContainLayout,
+  willContainLayoutBeAdded: ShouldAddContainLayout,
 ) {
   const reparentResult = getReparentOutcome(
     metadata,
@@ -293,7 +293,7 @@ export function createAbsoluteReparentAndOffsetCommands(
         metadata,
         projectContents,
         forcePins,
-        containLayout,
+        willContainLayoutBeAdded,
       )
     })
 

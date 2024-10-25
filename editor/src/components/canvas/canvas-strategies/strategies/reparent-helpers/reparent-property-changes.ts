@@ -91,7 +91,7 @@ export function getAbsoluteReparentPropertyChanges(
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   forcePins: ForcePins,
-  containLayout: ShouldAddContainLayout,
+  willContainLayoutBeAdded: ShouldAddContainLayout,
 ): Array<AdjustCssLengthProperties | ConvertCssPercentToPx> {
   const element: JSXElement | null = getJSXElementFromProjectContents(target, projectContents)
 
@@ -111,7 +111,7 @@ export function getAbsoluteReparentPropertyChanges(
   const currentParentContentBox =
     MetadataUtils.getGlobalContentBoxForChildren(originalParentInstance)
   const newParentContentBox =
-    containLayout === 'add-contain-layout'
+    willContainLayoutBeAdded === 'add-contain-layout'
       ? nullIfInfinity(newParentInstance.globalFrame)
       : MetadataUtils.getGlobalContentBoxForChildren(newParentInstance)
 
