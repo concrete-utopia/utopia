@@ -302,6 +302,13 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       gridAutoRows: null,
       gridAutoFlow: null,
     },
+    parentContainerGridProperties: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+      gridAutoFlow: null,
+    },
     elementGridProperties: {
       gridColumnStart: null,
       gridColumnEnd: null,
@@ -309,6 +316,13 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       gridRowEnd: null,
     },
     containerGridPropertiesFromProps: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+      gridAutoFlow: null,
+    },
+    parentContainerGridPropertiesFromProps: {
       gridTemplateColumns: null,
       gridTemplateRows: null,
       gridAutoColumns: null,
@@ -324,6 +338,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     rowGap: null,
     columnGap: null,
     gridCellGlobalFrames: null,
+    parentGridCellGlobalFrames: null,
     justifySelf: null,
     alignSelf: null,
   }
@@ -425,6 +440,13 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       gridAutoRows: null,
       gridAutoFlow: null,
     },
+    parentContainerGridProperties: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+      gridAutoFlow: null,
+    },
     elementGridProperties: {
       gridColumnStart: null,
       gridColumnEnd: null,
@@ -432,6 +454,13 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       gridRowEnd: null,
     },
     containerGridPropertiesFromProps: {
+      gridTemplateColumns: null,
+      gridTemplateRows: null,
+      gridAutoColumns: null,
+      gridAutoRows: null,
+      gridAutoFlow: null,
+    },
+    parentContainerGridPropertiesFromProps: {
       gridTemplateColumns: null,
       gridTemplateRows: null,
       gridAutoColumns: null,
@@ -447,6 +476,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     rowGap: null,
     columnGap: null,
     gridCellGlobalFrames: null,
+    parentGridCellGlobalFrames: null,
     justifySelf: null,
     alignSelf: null,
   }
@@ -603,6 +633,13 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         gridAutoRows: null,
         gridAutoFlow: null,
       },
+      parentContainerGridProperties: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+        gridAutoFlow: null,
+      },
       elementGridProperties: {
         gridColumnStart: null,
         gridColumnEnd: null,
@@ -610,6 +647,13 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         gridRowEnd: null,
       },
       containerGridPropertiesFromProps: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+        gridAutoFlow: null,
+      },
+      parentContainerGridPropertiesFromProps: {
         gridTemplateColumns: null,
         gridTemplateRows: null,
         gridAutoColumns: null,
@@ -625,6 +669,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       rowGap: null,
       columnGap: null,
       gridCellGlobalFrames: null,
+      parentGridCellGlobalFrames: null,
       justifySelf: null,
       alignSelf: null,
     },
@@ -758,6 +803,13 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         gridAutoRows: null,
         gridAutoFlow: null,
       },
+      parentContainerGridProperties: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+        gridAutoFlow: null,
+      },
       elementGridProperties: {
         gridColumnStart: null,
         gridColumnEnd: null,
@@ -765,6 +817,13 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         gridRowEnd: null,
       },
       containerGridPropertiesFromProps: {
+        gridTemplateColumns: null,
+        gridTemplateRows: null,
+        gridAutoColumns: null,
+        gridAutoRows: null,
+        gridAutoFlow: null,
+      },
+      parentContainerGridPropertiesFromProps: {
         gridTemplateColumns: null,
         gridTemplateRows: null,
         gridAutoColumns: null,
@@ -780,6 +839,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       rowGap: null,
       columnGap: null,
       gridCellGlobalFrames: null,
+      parentGridCellGlobalFrames: null,
       justifySelf: null,
       alignSelf: null,
     },
@@ -938,6 +998,13 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           gridAutoRows: null,
           gridAutoFlow: null,
         },
+        parentContainerGridProperties: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
         elementGridProperties: {
           gridColumnStart: null,
           gridColumnEnd: null,
@@ -945,6 +1012,13 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           gridRowEnd: null,
         },
         containerGridPropertiesFromProps: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
+        parentContainerGridPropertiesFromProps: {
           gridTemplateColumns: null,
           gridTemplateRows: null,
           gridAutoColumns: null,
@@ -960,6 +1034,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         rowGap: null,
         columnGap: null,
         gridCellGlobalFrames: null,
+        parentGridCellGlobalFrames: null,
         justifySelf: null,
         alignSelf: null,
       },
@@ -1095,6 +1170,13 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           gridAutoRows: null,
           gridAutoFlow: null,
         },
+        parentContainerGridProperties: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
         elementGridProperties: {
           gridColumnStart: null,
           gridColumnEnd: null,
@@ -1102,6 +1184,13 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           gridRowEnd: null,
         },
         containerGridPropertiesFromProps: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
+        parentContainerGridPropertiesFromProps: {
           gridTemplateColumns: null,
           gridTemplateRows: null,
           gridAutoColumns: null,
@@ -1117,6 +1206,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         rowGap: null,
         columnGap: null,
         gridCellGlobalFrames: null,
+        parentGridCellGlobalFrames: null,
         justifySelf: null,
         alignSelf: null,
       },
@@ -1252,6 +1342,13 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           gridAutoRows: null,
           gridAutoFlow: null,
         },
+        parentContainerGridProperties: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
         elementGridProperties: {
           gridColumnStart: null,
           gridColumnEnd: null,
@@ -1259,6 +1356,13 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           gridRowEnd: null,
         },
         containerGridPropertiesFromProps: {
+          gridTemplateColumns: null,
+          gridTemplateRows: null,
+          gridAutoColumns: null,
+          gridAutoRows: null,
+          gridAutoFlow: null,
+        },
+        parentContainerGridPropertiesFromProps: {
           gridTemplateColumns: null,
           gridTemplateRows: null,
           gridAutoColumns: null,
@@ -1274,6 +1378,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         rowGap: null,
         columnGap: null,
         gridCellGlobalFrames: null,
+        parentGridCellGlobalFrames: null,
         justifySelf: null,
         alignSelf: null,
       },

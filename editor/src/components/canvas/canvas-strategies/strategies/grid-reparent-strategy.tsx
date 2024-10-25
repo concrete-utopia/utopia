@@ -163,15 +163,6 @@ export function applyGridReparent(
           return emptyStrategyApplicationResult
         }
 
-        const grid = MetadataUtils.findElementByElementPath(
-          canvasState.startingMetadata,
-          newParent.intendedParentPath,
-        )
-
-        if (grid == null) {
-          return strategyApplicationResult([], [newParent.intendedParentPath])
-        }
-
         const allowedToReparent = selectedElements.every((selectedElement) => {
           return isAllowedToReparent(
             canvasState.projectContents,
@@ -197,7 +188,6 @@ export function applyGridReparent(
               selectedElement,
               newParent,
               interactionData,
-              grid,
             ),
           selectedElements,
         )
@@ -254,7 +244,6 @@ function gridReparentCommands(
   target: ElementPath,
   newParent: InsertionPath,
   interactionData: DragInteractionData,
-  grid: ElementInstanceMetadata,
 ) {
   const reparentResult = getReparentOutcome(
     jsxMetadata,
@@ -275,14 +264,25 @@ function gridReparentCommands(
 
   const { commands: reparentCommands, newPath } = reparentResult
 
-  const gridPropsCommands = runGridRearrangeMove(
-    target,
-    target,
+  const targetParent = MetadataUtils.findElementByElementPath(
     jsxMetadata,
-    interactionData,
-    grid,
-    newPath,
+    newParent.intendedParentPath,
   )
+  const gridCellGlobalFrames = targetParent?.specialSizeMeasurements.gridCellGlobalFrames ?? null
+  const gridTemplate = targetParent?.specialSizeMeasurements.containerGridProperties ?? null
+
+  const gridPropsCommands =
+    gridCellGlobalFrames != null && gridTemplate != null
+      ? runGridRearrangeMove(
+          target,
+          target,
+          jsxMetadata,
+          interactionData,
+          gridCellGlobalFrames,
+          gridTemplate,
+          newPath,
+        )
+      : []
 
   const removeAbsolutePositioningPropsCommands = removeAbsolutePositioningProps('always', newPath)
 
