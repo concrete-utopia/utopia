@@ -119,6 +119,9 @@ const runUpdateClassList = (editorState: EditorState, command: UCL.UpdateClassLi
 
 const underscoresToSpaces = (s: string | undefined) => s?.replace(/[-_]/g, ' ')
 
+const stringifyPropertyValue = (value: string | number) =>
+  typeof value === 'string' ? value : `${value}px`
+
 export const TailwindPlugin = (config: Config | null): StylePlugin => ({
   name: 'Tailwind',
   styleInfoFactory:
@@ -184,7 +187,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
           ? null
           : UCL.add({
               property: TailwindPropertyMapping[update.property],
-              value: update.value.toString(),
+              value: stringifyPropertyValue(update.value),
             }),
       updates,
     )
