@@ -1986,7 +1986,7 @@ export const GridCSSNumberKeepDeepEquality: KeepDeepEqualityCall<GridCSSNumber> 
   combine2EqualityCalls(
     (p) => p.value,
     CSSNumberKeepDeepEquality,
-    (p) => p.areaName,
+    (p) => p.lineName,
     NullableStringKeepDeepEquality,
     gridCSSNumber,
   )
@@ -1995,7 +1995,7 @@ export const GridCSSKeywordKeepDeepEquality: KeepDeepEqualityCall<GridCSSKeyword
   combine2EqualityCalls(
     (p) => p.value,
     createCallWithTripleEquals(),
-    (p) => p.areaName,
+    (p) => p.lineName,
     NullableStringKeepDeepEquality,
     gridCSSKeyword,
   )
@@ -2039,7 +2039,7 @@ export const GridCSSRepeatKeepDeepEquality: KeepDeepEqualityCall<GridCSSRepeat> 
     createCallWithTripleEquals(),
     (p) => p.value,
     arrayDeepEquality(GridDimensionKeepDeepEquality),
-    (p) => p.areaName,
+    (p) => p.lineName,
     NullableStringKeepDeepEquality,
     gridCSSRepeat,
   )
@@ -2073,7 +2073,7 @@ export const GridCSSMinmaxKeepDeepEquality: KeepDeepEqualityCall<GridCSSMinmax> 
     GridCSSNumberOrKeywordKeepDeepEquality,
     (p) => p.max,
     GridCSSNumberOrKeywordKeepDeepEquality,
-    (p) => p.areaName,
+    (p) => p.lineName,
     NullableStringKeepDeepEquality,
     gridCSSMinmax,
   )
@@ -2256,6 +2256,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.containerGridProperties,
       newSize.containerGridProperties,
     ).areEqual
+    const parentGridContainerPropertiesEqual = GridContainerPropertiesKeepDeepEquality()(
+      oldSize.parentContainerGridProperties,
+      newSize.parentContainerGridProperties,
+    ).areEqual
     const gridElementPropertiesEqual = GridElementPropertiesKeepDeepEquality()(
       oldSize.elementGridProperties,
       newSize.elementGridProperties,
@@ -2264,6 +2268,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const gridContainerPropertiesFromPropsEqual = GridContainerPropertiesKeepDeepEquality()(
       oldSize.containerGridPropertiesFromProps,
       newSize.containerGridPropertiesFromProps,
+    ).areEqual
+    const parentGridContainerPropertiesFromPropsEqual = GridContainerPropertiesKeepDeepEquality()(
+      oldSize.parentContainerGridPropertiesFromProps,
+      newSize.parentContainerGridPropertiesFromProps,
     ).areEqual
     const gridElementPropertiesFromPropsEqual = GridElementPropertiesKeepDeepEquality()(
       oldSize.elementGridPropertiesFromProps,
@@ -2278,6 +2286,13 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
 
     const justifySelfEquals = oldSize.justifySelf === newSize.justifySelf
     const alignSelfEquals = oldSize.alignSelf === newSize.alignSelf
+
+    const gridCellGlobalFramesEqual = nullableDeepEquality(
+      arrayDeepEquality(arrayDeepEquality(CanvasRectangleKeepDeepEquality)),
+    )(oldSize.gridCellGlobalFrames, newSize.gridCellGlobalFrames).areEqual
+    const parentGridCellGlobalFramesEqual = nullableDeepEquality(
+      arrayDeepEquality(arrayDeepEquality(CanvasRectangleKeepDeepEquality)),
+    )(oldSize.gridCellGlobalFrames, newSize.gridCellGlobalFrames).areEqual
 
     const areEqual =
       offsetResult.areEqual &&
@@ -2323,13 +2338,17 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       textBoundsEqual &&
       computedHugPropertyEqual &&
       gridContainerPropertiesEqual &&
+      parentGridContainerPropertiesEqual &&
       gridElementPropertiesEqual &&
       gridContainerPropertiesFromPropsEqual &&
+      parentGridContainerPropertiesFromPropsEqual &&
       gridElementPropertiesFromPropsEqual &&
       rowGapEquals &&
       columnGapEquals &&
       justifySelfEquals &&
-      alignSelfEquals
+      alignSelfEquals &&
+      gridCellGlobalFramesEqual &&
+      parentGridCellGlobalFramesEqual
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -2378,12 +2397,15 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.textBounds,
         newSize.computedHugProperty,
         newSize.containerGridProperties,
+        newSize.parentContainerGridProperties,
         newSize.elementGridProperties,
         newSize.containerGridPropertiesFromProps,
+        newSize.parentContainerGridPropertiesFromProps,
         newSize.elementGridPropertiesFromProps,
         newSize.rowGap,
         newSize.columnGap,
         newSize.gridCellGlobalFrames,
+        newSize.parentGridCellGlobalFrames,
         newSize.justifySelf,
         newSize.alignSelf,
       )

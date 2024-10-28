@@ -4,7 +4,7 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import { createSelector } from 'reselect'
-import { unless, when } from '../../utils/react-conditionals'
+import { when } from '../../utils/react-conditionals'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { AddRemoveLayoutSystemControl } from './add-remove-layout-system-control'
 import { FlexDirectionToggle } from './flex-direction-control'
@@ -66,7 +66,10 @@ import {
   type ElementInstanceMetadata,
   type GridElementProperties,
 } from '../../core/shared/element-template'
-import { setGridPropsCommands } from '../canvas/canvas-strategies/strategies/grid-helpers'
+import {
+  isJustAutoGridDimension,
+  setGridPropsCommands,
+} from '../canvas/canvas-strategies/strategies/grid-helpers'
 import { type CanvasCommand } from '../canvas/commands/commands'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import {
@@ -387,22 +390,22 @@ const TemplateDimensionControl = React.memo(
         if (dimensions?.type !== 'DIMENSIONS') {
           return
         }
-        const currentAreaName = dimensions.dimensions[index]?.areaName ?? undefined
+        const currentLineName = dimensions.dimensions[index]?.lineName ?? undefined
 
-        const rawNewAreaName = window.prompt('Area name:', currentAreaName)?.trim()
-        if (rawNewAreaName == null) {
+        const rawNewLineName = window.prompt('Line name:', currentLineName)?.trim()
+        if (rawNewLineName == null) {
           return
         }
 
-        const newAreaName: string | null =
-          rawNewAreaName.length === 0 ? null : sanitizeAreaName(rawNewAreaName)
+        const newLineName: string | null =
+          rawNewLineName.length === 0 ? null : sanitizeLineName(rawNewLineName)
 
         const left = template.dimensions.slice(0, index)
         const right = template.dimensions.slice(index + 1)
 
         const newValues = [
           ...left,
-          { ...values[index], areaName: newAreaName } as GridDimension,
+          { ...values[index], lineName: newLineName } as GridDimension,
           ...right,
         ]
 
@@ -415,13 +418,13 @@ const TemplateDimensionControl = React.memo(
           ),
         ]
 
-        // replace the area name in the template and update the grid children so they
-        // reference the new area name, if they used to reference the previous one
-        const adjustedGridTemplate = renameAreaInTemplateAtIndex(
+        // replace the line name in the template and update the grid children so they
+        // reference the new line name, if they used to reference the previous one
+        const adjustedGridTemplate = renameLineInTemplateAtIndex(
           container,
           axis,
           index,
-          newAreaName,
+          newLineName,
         )
         const children = MetadataUtils.getChildrenUnordered(metadataRef.current, grid.elementPath)
         for (const child of children) {
@@ -480,11 +483,7 @@ const TemplateDimensionControl = React.memo(
         template.dimensions.length === 0 ||
         (autoTemplate?.type === 'DIMENSIONS' &&
           autoTemplate.dimensions.length > 0 &&
-          !(
-            autoTemplate.dimensions.length === 1 &&
-            autoTemplate.dimensions[0].type === 'KEYWORD' &&
-            autoTemplate.dimensions[0].value.value === 'auto'
-          ))
+          !isJustAutoGridDimension(autoTemplate.dimensions))
       )
     }, [template, autoTemplate])
 
@@ -554,9 +553,15 @@ function AxisDimensionControl({
   opener: (isOpen: boolean) => React.ReactElement
 }) {
   const testId = `grid-dimension-${axis}-${index}`
-  const [isOpen, setIsOpen] = React.useState(false)
-  const onOpenChange = React.useCallback((isDropdownOpen: boolean) => {
-    setIsOpen(isDropdownOpen)
+  const [isDotsMenuOpen, setDotsMenuOpen] = React.useState(false)
+  const [isTitleMenuOpen, setTitleMenuOpen] = React.useState(false)
+
+  const onOpenChangeDotsMenu = React.useCallback((isDropdownOpen: boolean) => {
+    setDotsMenuOpen(isDropdownOpen)
+  }, [])
+
+  const onOpenChangeTitleMenu = React.useCallback(() => {
+    setTitleMenuOpen(false)
   }, [])
 
   const isDynamic = React.useMemo(() => {
@@ -569,9 +574,9 @@ function AxisDimensionControl({
 
   const title = React.useMemo(() => {
     if (isDynamic) {
-      return value.areaName ?? dynamicIndexTitle
+      return value.lineName ?? dynamicIndexTitle
     }
-    return value.areaName ?? indexFrom
+    return value.lineName ?? indexFrom
   }, [value, indexFrom, isDynamic, dynamicIndexTitle])
 
   const gridExpressionInputFocused = useGridExpressionInputFocused()
@@ -583,6 +588,14 @@ function AxisDimensionControl({
   const onMouseLeave = React.useCallback(() => {
     setIsHovered(false)
   }, [])
+
+  const onContextMenuTitle = React.useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setTitleMenuOpen(true)
+  }, [])
+
+  const invisibleOpener = React.useCallback(() => null, [])
 
   return (
     <div
@@ -611,8 +624,16 @@ function AxisDimensionControl({
             whiteSpace: 'nowrap',
           }}
           title={isDynamic ? dynamicIndexTitle : undefined}
+          onContextMenu={onContextMenuTitle}
         >
           {title}
+          <DropdownMenu
+            align='start'
+            items={items}
+            opener={invisibleOpener}
+            onOpenChange={onOpenChangeTitleMenu}
+            forceOpen={isTitleMenuOpen}
+          />
         </Subdued>
         <GridExpressionInput
           testId={testId}
@@ -625,9 +646,14 @@ function AxisDimensionControl({
           defaultValue={gridCSSKeyword(cssKeyword('auto'), null)}
         />
         {when(
-          (isHovered && !gridExpressionInputFocused.focused) || isOpen,
+          (isHovered && !gridExpressionInputFocused.focused) || isDotsMenuOpen,
           <SquareButton>
-            <DropdownMenu align='end' items={items} opener={opener} onOpenChange={onOpenChange} />
+            <DropdownMenu
+              align='end'
+              items={items}
+              opener={opener}
+              onOpenChange={onOpenChangeDotsMenu}
+            />
           </SquareButton>,
         )}
       </div>
@@ -667,17 +693,17 @@ function removeTemplateValueAtIndex(
   }
 }
 
-function renameAreaInTemplateAtIndex(
+function renameLineInTemplateAtIndex(
   original: GridContainerProperties,
   axis: 'column' | 'row',
   index: number,
-  newAreaName: string | null,
+  newLineName: string | null,
 ): GridContainerProperties {
   function renameDimension(dimension: GridDimension, idx: number): GridDimension {
     return idx === index
       ? ({
           ...dimension,
-          areaName: dimension.type === 'REPEAT' ? null : newAreaName,
+          lineName: dimension.type === 'REPEAT' ? null : newLineName,
         } as GridDimension)
       : dimension
   }
@@ -707,8 +733,8 @@ function renameAreaInTemplateAtIndex(
 
 const reAlphanumericDashUnderscore = /[^0-9a-z\-_]+/gi
 
-function sanitizeAreaName(areaName: string): string {
-  return areaName.replace(reAlphanumericDashUnderscore, '-')
+function sanitizeLineName(lineName: string): string {
+  return lineName.replace(reAlphanumericDashUnderscore, '-')
 }
 
 function serializeValue(v: CSSNumber) {

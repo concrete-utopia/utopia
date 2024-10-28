@@ -14,8 +14,8 @@ import {
 import { getTailwindConfigCached } from '../../../core/tailwind/tailwind-compilation'
 import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
 import { getElementFromProjectContents, type EditorState } from '../../editor/store/editor-state'
-import { applyValuesAtPath } from './adjust-number-command'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { applyValuesAtPath } from './utils/property-utils'
 
 export interface UpdateClassList extends BaseCommand {
   type: 'UPDATE_CLASS_LIST'

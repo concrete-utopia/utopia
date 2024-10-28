@@ -4,12 +4,7 @@ import type {
   StaticElementPathPart,
   ElementPath,
 } from './project-file-types'
-import type {
-  CanvasRectangle,
-  LocalPoint,
-  MaybeInfinityCanvasRectangle,
-  MaybeInfinityLocalRectangle,
-} from './math-utils'
+import type { CanvasRectangle, LocalPoint, MaybeInfinityCanvasRectangle } from './math-utils'
 import { zeroCanvasRect } from './math-utils'
 import type { Either } from './either'
 import { flatMapEither, isRight, left, mapEither, right } from './either'
@@ -212,6 +207,7 @@ import {
   emptyAttributeMetadata,
   simpleFunctionWrap,
 } from 'utopia-shared/src/types/element-template'
+import type { GridCellGlobalFrames } from '../../components/canvas/canvas-strategies/strategies/grid-helpers'
 export { emptyComments, emptyComputedStyle, emptyAttributeMetadata }
 
 export function isParsedCommentsEmpty(comments: ParsedComments): boolean {
@@ -2667,7 +2663,7 @@ export function gridPositionValue(numericalPosition: number | null): GridPositio
 
 export const validGridPositionKeywords = ['auto']
 
-export type ValidGridPositionKeyword = string // using <string> because valid keywords are also area names we cannot know in advance
+export type ValidGridPositionKeyword = string // using <string> because valid keywords are also line names we cannot know in advance
 
 export type GridPosition = GridPositionValue | CSSKeyword<ValidGridPositionKeyword>
 
@@ -2834,12 +2830,15 @@ export interface SpecialSizeMeasurements {
   textDecorationLine: string | null
   computedHugProperty: HugPropertyWidthHeight
   containerGridProperties: GridContainerProperties
+  parentContainerGridProperties: GridContainerProperties
   elementGridProperties: GridElementProperties
   containerGridPropertiesFromProps: GridContainerProperties
+  parentContainerGridPropertiesFromProps: GridContainerProperties
   elementGridPropertiesFromProps: GridElementProperties
   rowGap: number | null
   columnGap: number | null
-  gridCellGlobalFrames: Array<Array<CanvasRectangle>> | null
+  gridCellGlobalFrames: GridCellGlobalFrames | null
+  parentGridCellGlobalFrames: GridCellGlobalFrames | null
 }
 
 export function specialSizeMeasurements(
@@ -2887,12 +2886,15 @@ export function specialSizeMeasurements(
   textBounds: CanvasRectangle | null,
   computedHugProperty: HugPropertyWidthHeight,
   containerGridProperties: GridContainerProperties,
+  parentContainerGridProperties: GridContainerProperties,
   elementGridProperties: GridElementProperties,
   containerGridPropertiesFromProps: GridContainerProperties,
+  parentContainerGridPropertiesFromProps: GridContainerProperties,
   elementGridPropertiesFromProps: GridElementProperties,
   rowGap: number | null,
   columnGap: number | null,
-  gridCellGlobalFrames: Array<Array<CanvasRectangle>> | null,
+  gridCellGlobalFrames: GridCellGlobalFrames | null,
+  parentGridCellGlobalFrames: GridCellGlobalFrames | null,
   justifySelf: SelfAlignment | null,
   alignSelf: SelfAlignment | null,
 ): SpecialSizeMeasurements {
@@ -2941,12 +2943,15 @@ export function specialSizeMeasurements(
     textDecorationLine,
     computedHugProperty,
     containerGridProperties,
+    parentContainerGridProperties,
     elementGridProperties,
     containerGridPropertiesFromProps,
+    parentContainerGridPropertiesFromProps,
     elementGridPropertiesFromProps,
     rowGap,
     columnGap,
     gridCellGlobalFrames,
+    parentGridCellGlobalFrames,
     justifySelf,
     alignSelf,
   }
@@ -3007,10 +3012,24 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     gridAutoFlow: null,
   },
   {
+    gridTemplateColumns: null,
+    gridTemplateRows: null,
+    gridAutoColumns: null,
+    gridAutoRows: null,
+    gridAutoFlow: null,
+  },
+  {
     gridColumnStart: null,
     gridColumnEnd: null,
     gridRowStart: null,
     gridRowEnd: null,
+  },
+  {
+    gridTemplateColumns: null,
+    gridTemplateRows: null,
+    gridAutoColumns: null,
+    gridAutoRows: null,
+    gridAutoFlow: null,
   },
   {
     gridTemplateColumns: null,
@@ -3025,6 +3044,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     gridRowStart: null,
     gridRowEnd: null,
   },
+  null,
   null,
   null,
   null,

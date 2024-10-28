@@ -63,7 +63,7 @@ import {
 import type { GridCellCoordinates } from '../canvas-strategies/strategies/grid-cell-bounds'
 import { gridCellTargetId } from '../canvas-strategies/strategies/grid-cell-bounds'
 import {
-  getGlobalFrameOfGridCell,
+  getGlobalFrameOfGridCellFromMetadata,
   getGridRelatedIndexes,
 } from '../canvas-strategies/strategies/grid-helpers'
 import { canResizeGridTemplate } from '../canvas-strategies/strategies/resize-grid-strategy'
@@ -309,7 +309,7 @@ const GridResizingStripedIndicator = React.memo((props: GridResizingControlProps
           }}
         >
           {when(
-            props.dimension.areaName != null,
+            props.dimension.lineName != null,
             <div
               style={{
                 position: 'absolute',
@@ -321,7 +321,7 @@ const GridResizingStripedIndicator = React.memo((props: GridResizingControlProps
                 borderRadius: '0 0 3px 0',
               }}
             >
-              {props.dimension.areaName}
+              {props.dimension.lineName}
             </div>,
           )}
         </div>,
@@ -1153,7 +1153,7 @@ const AbsoluteDistanceIndicators = React.memo(
       if (gridMetadata == null || props.targetRootCell == null) {
         return null
       }
-      return getGlobalFrameOfGridCell(gridMetadata, props.targetRootCell)
+      return getGlobalFrameOfGridCellFromMetadata(gridMetadata, props.targetRootCell)
     }, [props.targetRootCell, gridMetadata])
 
     const distanceTop =
@@ -1460,7 +1460,7 @@ function useCellAnimation(params: {
       return null
     }
 
-    return getGlobalFrameOfGridCell(gridMetadata, targetRootCell)
+    return getGlobalFrameOfGridCellFromMetadata(gridMetadata, targetRootCell)
   }, [gridMetadata, targetRootCell])
 
   React.useEffect(() => {

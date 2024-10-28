@@ -547,10 +547,7 @@ import {
   replaceWithElementsWrappedInFragmentBehaviour,
 } from '../store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
-import {
-  deleteProperties,
-  deleteValuesAtPath,
-} from '../../canvas/commands/delete-properties-command'
+import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   fixParentContainingBlockSettings,
@@ -631,7 +628,6 @@ import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-i
 import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
-import { applyValuesAtPath } from '../../canvas/commands/adjust-number-command'
 import { styleP } from '../../inspector/inspector-common'
 import { getUpdateOperationResult } from '../../../core/shared/import/import-operation-service'
 import {
@@ -640,6 +636,7 @@ import {
   updateRequirements,
 } from '../../../core/shared/import/proejct-health-check/utopia-requirements-service'
 import { RequirementResolutionResult } from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
+import { applyValuesAtPath, deleteValuesAtPath } from '../../canvas/commands/utils/property-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1145,7 +1142,7 @@ function deleteElements(
         if (metadata == null || isLeft(metadata.element)) {
           return null
         }
-        const frame = MetadataUtils.getLocalFrame(path, editor.jsxMetadata)
+        const frame = MetadataUtils.getLocalFrame(path, editor.jsxMetadata, null)
         if (frame == null || !isFiniteRectangle(frame)) {
           return null
         }
@@ -3385,7 +3382,7 @@ export const UPDATE_FNS = {
   },
   RESET_PINS: (action: ResetPins, editor: EditorModel): EditorModel => {
     const target = action.target
-    const frame = MetadataUtils.getLocalFrame(target, editor.jsxMetadata)
+    const frame = MetadataUtils.getLocalFrame(target, editor.jsxMetadata, null)
 
     if (frame == null || isInfinityRectangle(frame)) {
       return editor
@@ -3413,7 +3410,7 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_FRAME_DIMENSIONS: (action: UpdateFrameDimensions, editor: EditorModel): EditorModel => {
-    const initialFrame = MetadataUtils.getLocalFrame(action.element, editor.jsxMetadata)
+    const initialFrame = MetadataUtils.getLocalFrame(action.element, editor.jsxMetadata, null)
 
     if (initialFrame == null || isInfinityRectangle(initialFrame)) {
       return editor
@@ -5592,6 +5589,7 @@ export const UPDATE_FNS = {
         const localFrame = MetadataUtils.getLocalFrame(
           action.insertionPath.intendedParentPath,
           editor.jsxMetadata,
+          null,
         )
         if (group != null && localFrame != null) {
           switch (element.type) {

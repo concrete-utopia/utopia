@@ -95,14 +95,14 @@ export function getClosestGridCellToPoint(
 
 export function getGridChildCellCoordBoundsFromCanvas(
   child: ElementInstanceMetadata,
-  grid: ElementInstanceMetadata,
+  gridCellGlobalFrames: GridCellGlobalFrames,
 ) {
   const cellFrame = child.globalFrame
-  if (cellFrame == null || isInfinityRectangle(cellFrame)) {
+  if (cellFrame == null || isInfinityRectangle(cellFrame) || gridCellGlobalFrames == null) {
     return null
   }
 
-  const cellOrigin = getClosestGridCellToPointFromMetadata(grid, cellFrame)
+  const cellOrigin = getClosestGridCellToPoint(gridCellGlobalFrames, cellFrame)
   if (cellOrigin == null) {
     return null
   }
@@ -114,7 +114,7 @@ export function getGridChildCellCoordBoundsFromCanvas(
       y: cellFrame.height,
     }),
   )
-  const cellEnd = getClosestGridCellToPointFromMetadata(grid, cellEndPoint)
+  const cellEnd = getClosestGridCellToPoint(gridCellGlobalFrames, cellEndPoint)
   if (cellEnd == null) {
     return null
   }
