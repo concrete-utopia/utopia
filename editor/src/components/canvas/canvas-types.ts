@@ -565,10 +565,12 @@ export type TopInfo = CSSStyleProperty<CSSNumber>
 export type LeftInfo = CSSStyleProperty<CSSNumber>
 export type RightInfo = CSSStyleProperty<CSSNumber>
 export type BottomInfo = CSSStyleProperty<CSSNumber>
+export type FlexBasisInfo = CSSStyleProperty<CSSNumber>
 
 export interface StyleInfo {
   gap: FlexGapInfo | null
   flexDirection: FlexDirectionInfo | null
+  flexBasis: FlexBasisInfo | null
   padding: PaddingInfo | null
   paddingTop: PaddingSideInfo | null
   paddingRight: PaddingSideInfo | null

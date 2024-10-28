@@ -58,10 +58,12 @@ export const InlineStylePlugin: StylePlugin = {
       const left = getPropertyFromInstance('left', element)
       const right = getPropertyFromInstance('right', element)
       const bottom = getPropertyFromInstance('bottom', element)
+      const flexBasis = getPropertyFromInstance('flexBasis', element)
 
       return {
         gap,
         flexDirection,
+        flexBasis,
         padding,
         paddingTop,
         paddingBottom,

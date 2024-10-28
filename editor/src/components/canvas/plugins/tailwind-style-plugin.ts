@@ -140,6 +140,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
           mapping[TailwindPropertyMapping.flexDirection],
           cssParsers.flexDirection,
         ),
+        flexBasis: null, // @xengine/tailwindcss-class-parser doesn't support flex-basis
         padding: parseTailwindProperty(
           underscoresToSpaces(mapping[TailwindPropertyMapping.padding]),
           cssParsers.padding,
