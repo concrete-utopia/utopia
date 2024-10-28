@@ -113,15 +113,11 @@ export function getCSSNumberFromStyleInfo(
 ): GetCSSNumberFromStyleInfoResult {
   let styleInfoUntyped = styleInfo as any as Record<string, CSSStyleProperty<unknown>>
   const prop = styleInfoUntyped[property]
-  if (prop == null) {
+  if (prop == null || prop.type === 'not-found') {
     return { type: 'not-found' }
   }
 
-  if (prop.type !== 'property') {
-    return { type: 'not-found' }
-  }
-
-  if (!isCSSNumber(prop.value)) {
+  if (prop.type === 'not-editable' || !isCSSNumber(prop.value)) {
     return { type: 'not-css-number' }
   }
   return { type: 'css-number', number: prop.value }
