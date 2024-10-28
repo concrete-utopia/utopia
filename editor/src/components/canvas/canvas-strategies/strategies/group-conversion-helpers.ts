@@ -9,6 +9,7 @@ import {
 } from '../../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import {
+  MarginPropertyPaths,
   removeBackgroundProperties,
   removeMarginProperties,
   removePaddingProperties,
@@ -127,6 +128,7 @@ import type { Optic } from '../../../../core/shared/optics/optics'
 import type { EditorContract } from './contracts/contract-helpers'
 import { useRefEditorState } from '../../../editor/store/store-hook'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { deleteProperties } from '../../commands/delete-properties-command'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -423,13 +425,8 @@ export function convertFragmentToGroup(
       MetadataUtils.findElementByElementPath(metadata, EP.parentPath(elementPath)),
     ) ?? zeroCanvasRect
 
+  const childrenPaths = MetadataUtils.getChildrenPathsOrdered(pathTrees, elementPath)
   const { children, uid } = instance.element
-
-  // Remove the margins from the children.
-  const toPropsOptic = traverseArray<JSXElementChild>()
-    .compose(fromTypeGuard(isJSXElement))
-    .compose(fromField('props'))
-  const childrenWithoutMargins = modify(toPropsOptic, removeMarginProperties, children)
 
   const left = instance.childrenBoundingFrame.x - parentBounds.x
   const top = instance.childrenBoundingFrame.y - parentBounds.y
@@ -448,6 +445,7 @@ export function convertFragmentToGroup(
       jsxElement(
         'Group',
         uid,
+        // TODO: set Tailwind props here
         jsxAttributesFromMap({
           'data-uid': jsExpressionValue(uid, emptyComments),
           style: jsExpressionValue(
@@ -459,13 +457,14 @@ export function convertFragmentToGroup(
             emptyComments,
           ),
         }),
-        childrenWithoutMargins,
+        children,
       ),
       {
         indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
         importsToAdd: GroupImport,
       },
     ),
+    ...childrenPaths.map((childPath) => deleteProperties('always', childPath, MarginPropertyPaths)),
     ...offsetChildrenByDelta(instance.childInstances, instance.childrenBoundingFrame),
   ]
 }

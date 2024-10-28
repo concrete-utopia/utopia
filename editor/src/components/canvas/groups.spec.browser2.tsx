@@ -14,6 +14,7 @@ import {
   makeTestProjectCodeWithSnippetWithoutUIDs,
   formatTestProjectCode,
   getPrintedUiJsCode,
+  renderTestEditorWithModel,
 } from './ui-jsx.test-utils'
 import { shiftCmdModifier } from '../../utils/modifiers'
 import type { ElementPath } from '../../core/shared/project-file-types'
@@ -32,6 +33,13 @@ import {
   convertFragmentToGroup,
   convertFrameToGroup,
 } from './canvas-strategies/strategies/group-conversion-helpers'
+import {
+  selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+} from '../../utils/utils.test-utils'
+import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
+import { StoryboardFilePath } from '../editor/store/editor-state'
+import { TailwindConfigPath } from '../../core/tailwind/tailwind-config'
 
 const notNullFiniteCanvasRectangleOptic = notNull<MaybeInfinityCanvasRectangle>().compose(
   fromTypeGuard(isFiniteRectangle),
@@ -344,6 +352,83 @@ describe('Groups', () => {
         rect2: rect2FrameAfter,
       }
       expect(actualFrames).toEqual(expectedFrames)
+    })
+
+    describe('with Tailwind', () => {
+      setFeatureForBrowserTestsUseInDescribeBlockOnly('Tailwind', true)
+
+      const TailwindProject = createModifiedProject({
+        [StoryboardFilePath]: `
+      import React from 'react'
+      import { Scene, Storyboard } from 'utopia-api'
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <Scene
+            id='scene'
+            commentId='scene'
+            data-uid='scene'
+            className='w-[700px] h-[700px] absolute left-[200px] top-[128px]'
+          >
+            <div
+              data-uid='mydiv'
+              data-testid='mydiv'
+              className='top-10 left-10 absolute w-[500px] h-[500px] bg-red-100'
+            >
+              <React.Fragment data-uid='fragment'>
+                <div data-testid='child-1' data-uid='child-1' className='bg-slate-200 absolute left-4 top-4 w-[100px] h-[100px] mr-4' />
+                <div data-testid='child-2' data-uid='child-2' className='bg-slate-300 absolute left-[50px] top-[110px] w-[100px] h-[130px] m-[47px]' />
+              </React.Fragment>
+            </div>  
+          </Scene>
+        </Storyboard>
+      )
+      
+      `,
+        [TailwindConfigPath]: `
+          const TailwindConfig = { }
+          export default TailwindConfig
+      `,
+        'app.css': `
+          @tailwind base;
+          @tailwind components;
+          @tailwind utilities;`,
+      })
+
+      it('removes margin appropriately', async () => {
+        const editor = await renderTestEditorWithModel(TailwindProject, 'await-first-dom-report')
+        const targetPath = EP.fromString('sb/scene/mydiv/fragment')
+        await selectComponentsForTest(editor, [targetPath])
+        const editorState = editor.getEditorState().editor
+        await editor.dispatch(
+          [
+            applyCommandsAction(
+              convertFragmentToGroup(
+                editorState.jsxMetadata,
+                editorState.elementPathTree,
+                editorState.allElementProps,
+                targetPath,
+              ),
+            ),
+          ],
+          true,
+        )
+        await editor.getDispatchFollowUpActionsFinished()
+
+        const groupProps = editor.getEditorState().editor.allElementProps[EP.toString(targetPath)]
+        expect(groupProps?.style).toEqual({
+          height: 271,
+          left: 16, // same as left-4 in TW
+          position: 'absolute',
+          top: 16, // same as top-4 in TW
+          width: 181,
+        })
+
+        const { className: child1ClassName } = editor.renderedDOM.getByTestId('child-1')
+        expect(child1ClassName).toEqual('bg-accent absolute left-0 top-0 w-[100px] h-[100px]') // mr-4 is removed
+
+        const { className: child2ClassName } = editor.renderedDOM.getByTestId('child-2')
+        expect(child2ClassName).toEqual('bg-slate-200 absolute left-0 top-0 w-[100px] h-[100px]') // m-[47px] is removed
+      })
     })
   })
   describe('wrap in group', () => {
