@@ -8,6 +8,7 @@ import {
   RequirementResolutionResult,
   RequirementResolutionStatus,
 } from './utopia-requirements-types'
+import { isFeatureEnabled } from '../../../../utils/feature-switches'
 
 const initialTexts: Record<ProjectRequirement, string> = {
   storyboard: 'Checking storyboard.js',
@@ -20,6 +21,9 @@ export function updateProjectRequirementsStatus(
   dispatch: EditorDispatch,
   projectRequirements: Partial<ProjectRequirements>,
 ) {
+  if (!isFeatureEnabled('Import Wizard')) {
+    return
+  }
   setTimeout(() => {
     dispatch([updateProjectRequirements(projectRequirements)])
   }, 0)

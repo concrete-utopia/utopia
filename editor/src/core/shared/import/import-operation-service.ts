@@ -40,6 +40,9 @@ export function notifyOperationStarted(dispatch: EditorDispatch, operation: Impo
     timeStarted: Date.now(),
     timeDone: null,
   }
+  if (!isFeatureEnabled('Import Wizard')) {
+    return
+  }
   setTimeout(() => {
     dispatch([updateImportOperations([operationWithTime], ImportOperationAction.Update)])
   }, 0)
@@ -55,6 +58,9 @@ export function notifyOperationFinished(
     ...operation,
     timeDone: timeDone,
     result: result,
+  }
+  if (!isFeatureEnabled('Import Wizard')) {
+    return
   }
   setTimeout(() => {
     dispatch([updateImportOperations([operationWithTime], ImportOperationAction.Update)])
