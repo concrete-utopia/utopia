@@ -94,6 +94,7 @@ export const InspectorModal: React.FunctionComponent<
         >
           <div
             style={{
+              pointerEvents: 'all',
               position: 'absolute',
               left: cssOffset.left,
               top: cssOffset.top,
