@@ -55,6 +55,8 @@ interface StylePropsUpdatedDuringInteraction {
   propertiesDeleted: string[]
 }
 
+// FIXME: this is a global for the purposes of the spike, this should be moved
+// into an editor state in a production-ready implementation
 export const UpdatedPropertiesGlobal: {
   current: { [elementPathString: string]: StylePropsUpdatedDuringInteraction }
 } = {
