@@ -352,6 +352,9 @@ import type {
   ToggleDataCanCondense,
   UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
+  SetImportWizardOpen,
+  UpdateImportOperations,
+  UpdateProjectRequirements,
 } from '../action-types'
 import { isAlignment, isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -626,6 +629,13 @@ import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { styleP } from '../../inspector/inspector-common'
+import { getUpdateOperationResult } from '../../../core/shared/import/import-operation-service'
+import {
+  notifyCheckingRequirement,
+  notifyResolveRequirement,
+  updateRequirements,
+} from '../../../core/shared/import/proejct-health-check/utopia-requirements-service'
+import { RequirementResolutionResult } from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
 import { applyValuesAtPath, deleteValuesAtPath } from '../../canvas/commands/utils/property-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
@@ -1030,6 +1040,9 @@ export function restoreEditorState(
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
+    importOperations: currentEditor.importOperations,
+    projectRequirements: currentEditor.projectRequirements,
+    importWizardOpen: currentEditor.importWizardOpen,
     branchOriginContents: currentEditor.branchOriginContents,
     githubData: currentEditor.githubData,
     refreshingDependencies: currentEditor.refreshingDependencies,
@@ -1627,19 +1640,44 @@ function createStoryboardFileWithPlaceholderContents(
 }
 
 export function createStoryboardFileIfNecessary(
+  dispatch: EditorDispatch,
   projectContents: ProjectContentTreeRoot,
   createPlaceholder: 'create-placeholder' | 'skip-creating-placeholder',
 ): ProjectContentTreeRoot {
+  notifyCheckingRequirement(dispatch, 'storyboard', 'Checking for storyboard.js')
   const storyboardFile = getProjectFileByFilePath(projectContents, StoryboardFilePath)
   if (storyboardFile != null) {
+    notifyResolveRequirement(
+      dispatch,
+      'storyboard',
+      RequirementResolutionResult.Found,
+      'Storyboard.js found',
+    )
     return projectContents
   }
 
-  return (
+  const result =
     createStoryboardFileIfRemixProject(projectContents) ??
     createStoryboardFileIfMainComponentPresent(projectContents) ??
     createStoryboardFileWithPlaceholderContents(projectContents, createPlaceholder)
-  )
+
+  if (result == projectContents) {
+    notifyResolveRequirement(
+      dispatch,
+      'storyboard',
+      RequirementResolutionResult.Partial,
+      'Storyboard.js skipped',
+    )
+  } else {
+    notifyResolveRequirement(
+      dispatch,
+      'storyboard',
+      RequirementResolutionResult.Fixed,
+      'Storyboard.js created',
+    )
+  }
+
+  return result
 }
 
 // JS Editor Actions:
@@ -2227,6 +2265,34 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       githubOperations: operations,
+    }
+  },
+  UPDATE_IMPORT_OPERATIONS: (action: UpdateImportOperations, editor: EditorModel): EditorModel => {
+    const resultImportOperations = getUpdateOperationResult(
+      editor.importOperations,
+      action.operations,
+      action.type,
+    )
+    return {
+      ...editor,
+      importOperations: resultImportOperations,
+    }
+  },
+  UPDATE_PROJECT_REQUIREMENTS: (
+    action: UpdateProjectRequirements,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    const result = updateRequirements(dispatch, editor.projectRequirements, action.requirements)
+    return {
+      ...editor,
+      projectRequirements: result,
+    }
+  },
+  SET_IMPORT_WIZARD_OPEN: (action: SetImportWizardOpen, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      importWizardOpen: action.open,
     }
   },
   SET_REFRESHING_DEPENDENCIES: (
@@ -3947,6 +4013,7 @@ export const UPDATE_FNS = {
     action: UpdateFromWorker,
     editor: EditorModel,
     userState: UserState,
+    dispatch: EditorDispatch,
   ): EditorModel => {
     let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
     let anyParsedUpdates: boolean = false
@@ -3983,6 +4050,7 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       projectContents: createStoryboardFileIfNecessary(
+        dispatch,
         workingProjectContents,
         // If we are in the process of cloning a Github repository, do not create placeholder Storyboard
         userState.githubState.gitRepoToLoad != null
@@ -4808,7 +4876,11 @@ export const UPDATE_FNS = {
       propertyControlsInfo: action.propertyControlsInfo,
     }
   },
-  UPDATE_TEXT: (action: UpdateText, editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {
+  UPDATE_TEXT: (
+    action: UpdateText,
+    editorStore: EditorStoreUnpatched,
+    dispatch: EditorDispatch,
+  ): EditorStoreUnpatched => {
     const { textProp } = action
     // This flag is useful when editing conditional expressions:
     // if the edited element is a js expression AND the content is still between curly brackets after editing,
@@ -5006,6 +5078,7 @@ export const UPDATE_FNS = {
       updateFromWorker(workerUpdates),
       withFileChanges.unpatchedEditor,
       withFileChanges.userState,
+      dispatch,
     )
     return {
       ...withFileChanges,
@@ -5621,7 +5694,7 @@ export const UPDATE_FNS = {
               requestedNpmDependency('tailwindcss', tailwindVersion.version),
               requestedNpmDependency('postcss', postcssVersion.version),
             ]
-            void fetchNodeModules(updatedNpmDeps, builtInDependencies).then(
+            void fetchNodeModules(dispatch, updatedNpmDeps, builtInDependencies).then(
               (fetchNodeModulesResult) => {
                 const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
                   updatedNpmDeps,
@@ -6331,6 +6404,7 @@ export async function load(
   const migratedModel = applyMigrations(model)
   const npmDependencies = dependenciesWithEditorRequirements(migratedModel.projectContents)
   const fetchNodeModulesResult = await fetchNodeModules(
+    dispatch,
     npmDependencies,
     builtInDependencies,
     retryFetchNodeModules,

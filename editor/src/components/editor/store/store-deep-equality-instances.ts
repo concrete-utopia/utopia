@@ -643,6 +643,15 @@ import type {
 } from '../../../core/property-controls/component-descriptor-parser'
 import type { Axis } from '../../../components/canvas/gap-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
+import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
+import type {
+  ProjectRequirements,
+  RequirementResolution,
+} from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
+import {
+  newProjectRequirements,
+  requirementResolution,
+} from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -4781,6 +4790,45 @@ export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<Project
     projectGithubSettings,
   )
 
+export const ProjectRequirementResolutionKeepDeepEquality: KeepDeepEqualityCall<RequirementResolution> =
+  combine3EqualityCalls(
+    (resolution) => resolution.status,
+    createCallWithTripleEquals(),
+    (resolution) => resolution.value,
+    createCallWithTripleEquals(),
+    (resolution) => resolution.resolution,
+    createCallWithTripleEquals(),
+    requirementResolution,
+  )
+
+export const ProjectRequirementsKeepDeepEquality: KeepDeepEqualityCall<ProjectRequirements> =
+  combine4EqualityCalls(
+    (requirements) => requirements.storyboard,
+    ProjectRequirementResolutionKeepDeepEquality,
+    (requirements) => requirements.packageJsonEntries,
+    ProjectRequirementResolutionKeepDeepEquality,
+    (requirements) => requirements.language,
+    ProjectRequirementResolutionKeepDeepEquality,
+    (requirements) => requirements.reactVersion,
+    ProjectRequirementResolutionKeepDeepEquality,
+    newProjectRequirements,
+  )
+
+export const ImportOperationKeepDeepEquality: KeepDeepEqualityCall<ImportOperation> = (
+  oldValue,
+  newValue,
+) => {
+  if (oldValue.type !== newValue.type) {
+    return keepDeepEqualityResult(newValue, false)
+  } else if (oldValue.id !== newValue.id) {
+    return keepDeepEqualityResult(newValue, false)
+  }
+  return keepDeepEqualityResult(oldValue, true)
+}
+
+export const ImportOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<ImportOperation>> =
+  arrayDeepEquality(ImportOperationKeepDeepEquality)
+
 export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileChanges> =
   combine3EqualityCalls(
     (settings) => settings.modified,
@@ -5384,6 +5432,21 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubOperations,
   )
 
+  const importOperationsResults = arrayDeepEquality(ImportOperationKeepDeepEquality)(
+    oldValue.importOperations,
+    newValue.importOperations,
+  )
+
+  const importWizardOpenResults = BooleanKeepDeepEquality(
+    oldValue.importWizardOpen,
+    newValue.importWizardOpen,
+  )
+
+  const projectRequirementsResults = ProjectRequirementsKeepDeepEquality(
+    oldValue.projectRequirements,
+    newValue.projectRequirements,
+  )
+
   const branchContentsResults = nullableDeepEquality(ProjectContentTreeRootKeepDeepEquality())(
     oldValue.branchOriginContents,
     newValue.branchOriginContents,
@@ -5505,6 +5568,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubSettingsResults.areEqual &&
     imageDragSessionStateEqual.areEqual &&
     githubOperationsResults.areEqual &&
+    importOperationsResults.areEqual &&
+    importWizardOpenResults.areEqual &&
+    projectRequirementsResults.areEqual &&
     branchContentsResults.areEqual &&
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
@@ -5591,6 +5657,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,
+      importOperationsResults.value,
+      importWizardOpenResults.value,
+      projectRequirementsResults.value,
       branchContentsResults.value,
       githubDataResults.value,
       refreshingDependenciesResults.value,

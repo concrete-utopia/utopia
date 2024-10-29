@@ -189,7 +189,7 @@ function processAction(
       }
 
       if (action.action === 'UPDATE_TEXT') {
-        working = UPDATE_FNS.UPDATE_TEXT(action, working)
+        working = UPDATE_FNS.UPDATE_TEXT(action, working, dispatchEvent)
       }
 
       if (action.action === 'TRUNCATE_HISTORY') {

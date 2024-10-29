@@ -174,6 +174,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
       },
     )
     const fetchNodeModulesResult = await fetchNodeModules(
+      NO_OP,
       [requestedNpmDependency('react-spring', '8.0.27')],
       createBuiltInDependenciesList(null),
     )
@@ -209,6 +210,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
       },
     )
     void fetchNodeModules(
+      NO_OP,
       [requestedNpmDependency('antd', '4.2.5')],
       createBuiltInDependenciesList(null),
     ).then((fetchNodeModulesResult) => {
@@ -280,6 +282,7 @@ describe('ES Dependency Manager', () => {
       },
     )
     const fetchNodeModulesResult = await fetchNodeModules(
+      NO_OP,
       [requestedNpmDependency('broken', '1.0.0')],
       createBuiltInDependenciesList(null),
     )
@@ -315,6 +318,7 @@ describe('ES Dependency Manager — d.ts', () => {
     )
 
     const fetchNodeModulesResult = await fetchNodeModules(
+      NO_OP,
       [requestedNpmDependency('react-spring', '8.0.27')],
       createBuiltInDependenciesList(null),
     )
@@ -350,6 +354,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
       },
     )
     void fetchNodeModules(
+      NO_OP,
       [requestedNpmDependency('mypackage', '0.0.1')],
       createBuiltInDependenciesList(null),
     ).then((fetchNodeModulesResult) => {
@@ -416,6 +421,7 @@ describe('ES Dependency manager - retry behavior', () => {
     )
 
     void fetchNodeModules(
+      NO_OP,
       [requestedNpmDependency('react-spring', '8.0.27')],
       createBuiltInDependenciesList(null),
     ).then((fetchNodeModulesResult) => {
@@ -438,6 +444,7 @@ describe('ES Dependency manager - retry behavior', () => {
     )
 
     void fetchNodeModules(
+      NO_OP,
       [requestedNpmDependency('react-spring', '8.0.27')],
       createBuiltInDependenciesList(null),
     ).then((fetchNodeModulesResult) => {
@@ -466,6 +473,7 @@ describe('ES Dependency manager - retry behavior', () => {
     )
 
     void fetchNodeModules(
+      NO_OP,
       [requestedNpmDependency('react-spring', '8.0.27')],
       createBuiltInDependenciesList(null),
       false,
