@@ -3606,6 +3606,7 @@ export function modifyUnderlyingForOpenFile(
   return modifyUnderlyingTarget(target, editor, modifyElement)
 }
 
+// this might read from inline style
 export function modifyUnderlyingTargetElement(
   target: ElementPath,
   editor: EditorState,
@@ -3633,6 +3634,7 @@ export function modifyUnderlyingTargetElement(
   )
 }
 
+// this might read from inline style
 export function modifyUnderlyingTargetJSXElement(
   target: ElementPath,
   editor: EditorState,
@@ -3655,6 +3657,7 @@ export function modifyUnderlyingTargetJSXElement(
   )
 }
 
+// this might read from inline style
 export function modifyUnderlyingElementForOpenFile(
   target: ElementPath,
   editor: EditorState,
@@ -3678,6 +3681,7 @@ export function modifyUnderlyingElementForOpenFile(
   )
 }
 
+// this might read from inline style
 export function withUnderlyingTarget<T>(
   target: ElementPath | null | undefined,
   projectContents: ProjectContentTreeRoot,

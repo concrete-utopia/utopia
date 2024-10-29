@@ -626,7 +626,12 @@ import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { styleP } from '../../inspector/inspector-common'
-import { applyValuesAtPath, deleteValuesAtPath } from '../../canvas/commands/utils/property-utils'
+import {
+  applyValuesAtPath,
+  deleteValuesAtPath,
+  maybeCssPropertyFromInlineStyle,
+} from '../../canvas/commands/utils/property-utils'
+import { getActivePlugin } from '../../canvas/plugins/style-plugins'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1765,51 +1770,46 @@ export const UPDATE_FNS = {
     }
   },
   UNSET_PROPERTY: (action: UnsetProperty, editor: EditorModel): EditorModel => {
-    // TODO also queue group true up, just like for SET_PROP
-    let unsetPropFailedMessage: string | null = null
-    const updatedEditor = modifyUnderlyingElementForOpenFile(
-      action.element,
-      editor,
-      (element) => {
-        const updatedProps = unsetJSXValueAtPath(element.props, action.property)
-        return foldEither(
-          (failureMessage) => {
-            unsetPropFailedMessage = failureMessage
-            return element
-          },
-          (updatedAttributes) => ({
-            ...element,
-            props: updatedAttributes,
-          }),
-          updatedProps,
-        )
-      },
-      (success) => success,
-    )
-    if (unsetPropFailedMessage != null) {
-      const toastAction = showToast(notice(unsetPropFailedMessage, 'ERROR'))
-      return UPDATE_FNS.ADD_TOAST(toastAction, editor)
-    } else {
-      return updatedEditor
+    const prop = maybeCssPropertyFromInlineStyle(action.property)
+    if (prop == null) {
+      return deleteValuesAtPath(editor, action.element, [action.property]).editorStateWithChanges
     }
+
+    return getActivePlugin(editor).updateStyles(editor, action.element, [
+      { type: 'delete', property: prop },
+    ]).editorStateWithChanges
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     let setPropFailedMessage: string | null = null
     let newSelectedViews: Array<ElementPath> = editor.selectedViews
+    const prop = maybeCssPropertyFromInlineStyle(action.propertyPath)
+    const valueForStyleProp =
+      action.value.type === 'ATTRIBUTE_VALUE' &&
+      (typeof action.value.value === 'number' || typeof action.value.value === 'string')
+        ? action.value.value
+        : null
+
+    const editorWithPropSet =
+      prop == null || valueForStyleProp == null
+        ? applyValuesAtPath(editor, action.target, [
+            { path: action.propertyPath, value: action.value },
+          ]).editorStateWithChanges
+        : getActivePlugin(editor).updateStyles(editor, action.target, [
+            { type: 'set', property: prop, value: valueForStyleProp },
+          ]).editorStateWithChanges
+
+    if (isJSXElement(action.value)) {
+      newSelectedViews = [EP.appendToPath(action.target, action.value.uid)]
+    }
+
     let updatedEditor = modifyUnderlyingTargetElement(
       action.target,
-      editor,
+      editorWithPropSet,
       (element) => {
         if (!isJSXElement(element)) {
           return element
         }
-        const updatedProps = setJSXValueAtPath(element.props, action.propertyPath, action.value)
-        // when this is a render prop we should select it
-        if (isJSXElement(action.value)) {
-          newSelectedViews = [EP.appendToPath(action.target, action.value.uid)]
-        }
         if (
-          isRight(updatedProps) &&
           PP.contains(
             [
               PP.create('style', 'top'),
@@ -1823,7 +1823,7 @@ export const UPDATE_FNS = {
           )
         ) {
           const maybeInvalidGroupState = groupStateFromJSXElement(
-            { ...element, props: updatedProps.value },
+            element,
             action.target,
             editor.jsxMetadata,
             editor.elementPathTree,
@@ -1842,18 +1842,11 @@ export const UPDATE_FNS = {
             return element
           }
         }
-        return foldEither(
-          (failureMessage) => {
-            setPropFailedMessage = failureMessage
-            return element
-          },
-          (updatedAttributes) => ({
-            ...element,
-            // we round style.left/top/right/bottom/width/height pins for the modified element
-            props: roundAttributeLayoutValues(styleStringInArray, updatedAttributes),
-          }),
-          updatedProps,
-        )
+
+        return {
+          ...element,
+          props: roundAttributeLayoutValues(styleStringInArray, element.props),
+        }
       },
       (success, _, underlyingFilePath) => {
         const updatedImports = mergeImports(

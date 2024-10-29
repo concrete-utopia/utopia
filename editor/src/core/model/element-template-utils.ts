@@ -885,6 +885,7 @@ function concatHonoursPositions(honoursPositions: Array<HonoursPosition>): Honou
   return result ?? 'does-not-honour'
 }
 
+// this might read from inline style
 export function componentHonoursPropsPosition(component: UtopiaJSXComponent): HonoursPosition {
   if (component.params == null) {
     return 'does-not-honour'

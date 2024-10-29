@@ -1188,6 +1188,7 @@ export const MetadataUtils = {
       }
     }
   },
+  // this might read from inline style
   targetHonoursPropsSize(
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadata | null,
@@ -1212,6 +1213,7 @@ export const MetadataUtils = {
       return componentHonoursPropsSize(underlyingComponent)
     }
   },
+  // this might read from inline style
   targetHonoursPropsPosition(
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadata | null,
