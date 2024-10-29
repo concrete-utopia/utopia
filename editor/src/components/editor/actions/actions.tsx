@@ -634,7 +634,6 @@ import {
   deleteValuesAtPath,
   maybeCssPropertyFromInlineStyle,
 } from '../../canvas/commands/utils/property-utils'
-import { getActivePlugin } from '../../canvas/plugins/style-plugins'
 import { getUpdateOperationResult } from '../../../core/shared/import/import-operation-service'
 import {
   notifyCheckingRequirement,
@@ -642,6 +641,7 @@ import {
   updateRequirements,
 } from '../../../core/shared/import/proejct-health-check/utopia-requirements-service'
 import { RequirementResolutionResult } from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
+import { setProperty } from '../../canvas/commands/set-property-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1808,14 +1808,9 @@ export const UPDATE_FNS = {
     }
   },
   UNSET_PROPERTY: (action: UnsetProperty, editor: EditorModel): EditorModel => {
-    const prop = maybeCssPropertyFromInlineStyle(action.property)
-    if (prop == null) {
-      return deleteValuesAtPath(editor, action.element, [action.property]).editorStateWithChanges
-    }
-
-    return getActivePlugin(editor).updateStyles(editor, action.element, [
-      { type: 'delete', property: prop },
-    ]).editorStateWithChanges
+    return foldAndApplyCommandsSimple(editor, [
+      deleteProperties('always', action.element, [action.property]),
+    ])
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     let setPropFailedMessage: string | null = null
@@ -1832,9 +1827,9 @@ export const UPDATE_FNS = {
         ? applyValuesAtPath(editor, action.target, [
             { path: action.propertyPath, value: action.value },
           ]).editorStateWithChanges
-        : getActivePlugin(editor).updateStyles(editor, action.target, [
-            { type: 'set', property: prop, value: valueForStyleProp },
-          ]).editorStateWithChanges
+        : foldAndApplyCommandsSimple(editor, [
+            setProperty('always', action.target, PP.create('style', prop), valueForStyleProp),
+          ])
 
     if (isJSXElement(action.value)) {
       newSelectedViews = [EP.appendToPath(action.target, action.value.uid)]
