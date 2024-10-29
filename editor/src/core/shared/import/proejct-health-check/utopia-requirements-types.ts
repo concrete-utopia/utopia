@@ -1,3 +1,5 @@
+import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
+
 export const RequirementResolutionResult = {
   Found: 'found',
   Fixed: 'fixed',
@@ -73,4 +75,16 @@ export function newProjectRequirements(
     language,
     reactVersion,
   }
+}
+
+export interface RequirementCheckResult {
+  resolution: RequirementResolutionResult
+  resultText: string
+  resultValue?: string
+  newProjectContents?: ProjectContentTreeRoot | null
+}
+
+export interface RequirementCheck {
+  check: (projectContents: ProjectContentTreeRoot) => RequirementCheckResult
+  getStartText: () => string
 }
