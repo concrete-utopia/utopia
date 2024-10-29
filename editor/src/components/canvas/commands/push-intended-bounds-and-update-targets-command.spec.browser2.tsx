@@ -19,7 +19,7 @@ function makeScenePath(trailingPath: string): ElementPath {
 describe('push intended bounds', () => {
   describe('hugging elements', () => {
     describe('flex containers', () => {
-      xit('keeps the container dimensions when becoming empty (flex) (delete, single element)', async () => {
+      it('keeps the container dimensions when becoming empty (flex) (delete, single element)', async () => {
         const renderResult = await renderTestEditorWithCode(
           formatTestProjectCode(
             makeTestProjectCodeWithSnippet(`
@@ -74,7 +74,7 @@ describe('push intended bounds', () => {
           ),
         )
       })
-      xit('keeps the container dimensions when becoming empty (flex) (delete, multiple elements)', async () => {
+      it('keeps the container dimensions when becoming empty (flex) (delete, multiple elements)', async () => {
         const renderResult = await renderTestEditorWithCode(
           formatTestProjectCode(
             makeTestProjectCodeWithSnippet(`
@@ -177,7 +177,7 @@ describe('push intended bounds', () => {
           ),
         )
       })
-      xit('keeps the container dimensions when becoming empty (zero-sized)', async () => {
+      it('keeps the container dimensions when becoming empty (zero-sized)', async () => {
         const renderResult = await renderTestEditorWithCode(
           formatTestProjectCode(`
 				import * as React from 'react'
@@ -211,7 +211,7 @@ describe('push intended bounds', () => {
 		`),
         )
       })
-      xit('keeps the container dimensions when becoming empty (inside a flex container)', async () => {
+      it('keeps the container dimensions when becoming empty (inside a flex container)', async () => {
         const renderResult = await renderTestEditorWithCode(
           formatTestProjectCode(`
 				import * as React from 'react'

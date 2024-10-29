@@ -77,8 +77,7 @@ export function getCommandsForPushIntendedBounds(
 
   return [
     pushIntendedBoundsAndUpdateGroups(groupTargets, isStartingMetadata),
-    // disabling this as the collapsed elements detection is way too agressive and converts too many elements to absolute
-    // pushIntendedBoundsAndUpdateHuggingElements(huggingElementTargets),
+    pushIntendedBoundsAndUpdateHuggingElements(huggingElementTargets),
   ]
 }
 
