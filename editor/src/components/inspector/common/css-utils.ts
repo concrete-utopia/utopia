@@ -31,9 +31,11 @@ import type {
   JSExpressionValue,
   JSXElement,
   GridPosition,
-  GridRange,
   GridAutoOrTemplateBase,
   GridContainerProperties,
+  GridRange,
+  GridSpan,
+  GridPositionOrSpan,
 } from '../../../core/shared/element-template'
 import {
   emptyComments,
@@ -45,6 +47,7 @@ import {
   jsExpressionValue,
   gridPositionValue,
   gridRange,
+  gridSpanNumeric,
 } from '../../../core/shared/element-template'
 import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import {
@@ -1198,25 +1201,60 @@ export function parseGridRange(
   axis: 'row' | 'column',
   input: unknown,
 ): Either<string, GridRange> {
-  if (typeof input === 'string') {
-    if (input.includes('/')) {
-      const splitInput = input.split('/')
-      const startParsed = parseGridPosition(container, axis, 'start', null, splitInput[0])
-      const endParsed = parseGridPosition(container, axis, 'end', null, splitInput[1])
-      return applicative2Either(gridRange, startParsed, endParsed)
-    } else {
-      const startParsed = parseGridPosition(container, axis, 'start', null, input)
-      return mapEither((start) => {
-        const end =
-          !isCSSKeyword(start) && start.numericalPosition != null
-            ? gridPositionValue(start.numericalPosition + 1)
-            : null
-        return gridRange(start, end)
-      }, startParsed)
-    }
-  } else {
-    return left('Not a valid grid range.')
+  if (typeof input !== 'string') {
+    return left('invalid grid item')
   }
+
+  const val = csstree.parse(input, { context: 'value' })
+  if (val.type !== 'Value') {
+    return left('invalid grid item value')
+  }
+  const children = val.children.toArray()
+  const slashIndex = children.findIndex((c) => c.type === 'Operator' && c.value === '/')
+
+  const isRange = slashIndex >= 0
+  const start = isRange ? children.slice(0, slashIndex) : children
+  const end = isRange ? children.slice(slashIndex + 1) : []
+
+  if (start.length === 0) {
+    return left('invalid start')
+  }
+
+  function maybeSpan(v: csstree.CssNode[]): GridSpan | null {
+    if (v.length !== 2) {
+      return null
+    }
+    const isSpan = v[0].type === 'Identifier' && v[0].name === 'span'
+    if (!isSpan) {
+      return null
+    }
+    if (v[1].type !== 'Number') {
+      return null // TODO area support
+    }
+    return gridSpanNumeric(parseInt(v[1].value))
+  }
+  function maybeLine(v: csstree.CssNode[]): GridPosition | null {
+    if (v.length !== 1) {
+      return null
+    }
+    const first = v[0]
+    switch (first.type) {
+      case 'Number':
+        return gridPositionValue(parseInt(first.value))
+      case 'Identifier':
+        return cssKeyword(first.name) // TODO split between keyword and line name
+      default:
+        return null
+    }
+  }
+
+  const maybeStart: GridPositionOrSpan | null = maybeSpan(start) ?? maybeLine(start)
+  if (maybeStart == null) {
+    return left('missing start')
+  }
+  const maybeEnd: GridPositionOrSpan | null = maybeSpan(end) ?? maybeLine(end)
+
+  return right(gridRange(maybeStart, maybeEnd))
 }
 
 export function parseGridAutoOrTemplateBase(

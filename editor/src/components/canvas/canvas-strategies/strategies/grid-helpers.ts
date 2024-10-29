@@ -7,6 +7,7 @@ import type {
 } from '../../../../core/shared/element-template'
 import {
   gridPositionValue,
+  isGridSpan,
   type ElementInstanceMetadata,
   type GridContainerProperties,
   type GridElementProperties,
@@ -33,7 +34,13 @@ import type { CanvasCommand } from '../../commands/commands'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { setCssLengthProperty } from '../../commands/set-css-length-command'
-import { setProperty } from '../../commands/set-property-command'
+import type { PropertyToUpdate } from '../../commands/set-property-command'
+import {
+  propertyToDelete,
+  propertyToSet,
+  setProperty,
+  updateBulkProperties,
+} from '../../commands/set-property-command'
 import type { DragInteractionData } from '../interaction-state'
 import type { GridCellCoordinates } from './grid-cell-bounds'
 import {
@@ -92,11 +99,16 @@ export function runGridRearrangeMove(
   const pathForCommands = newPathAfterReparent ?? targetElement // when reparenting, we want to use the new path for commands
   const gridPath = EP.parentPath(pathForCommands)
 
+  const targetElementProps = MetadataUtils.findElementByElementPath(jsxMetadata, pathForCommands)
+    ?.specialSizeMeasurements.elementGridPropertiesFromProps
+
   const gridCellMoveCommands = setGridPropsCommands(pathForCommands, gridTemplate, {
     gridColumnStart: gridPositionValue(column),
     gridColumnEnd: gridPositionValue(column + originalCellBounds.height),
     gridRowStart: gridPositionValue(row),
     gridRowEnd: gridPositionValue(row + originalCellBounds.width),
+    gridColumnSpan: targetElementProps?.gridColumnSpan,
+    gridRowSpan: targetElementProps?.gridRowSpan,
   })
 
   const gridTemplateColumns =
@@ -131,6 +143,8 @@ export function runGridRearrangeMove(
         gridColumnEnd: gridPositionValue(targetCellCoords.column),
         gridRowStart: gridPositionValue(targetCellCoords.row),
         gridRowEnd: gridPositionValue(targetCellCoords.row),
+        gridColumnSpan: null,
+        gridRowSpan: null,
       },
       path: selectedElement,
       index: siblings.length + 1,
@@ -192,16 +206,36 @@ export function runGridRearrangeMove(
       ]
     }
     case 'reorder': {
+      let propsToUpdate: PropertyToUpdate[] = [
+        propertyToDelete(PP.create('style', 'gridColumnStart')),
+        propertyToDelete(PP.create('style', 'gridColumnEnd')),
+        propertyToDelete(PP.create('style', 'gridRowStart')),
+        propertyToDelete(PP.create('style', 'gridRowEnd')),
+      ]
+      if (targetElementProps?.gridColumnSpan != null) {
+        propsToUpdate.push(
+          propertyToSet(
+            PP.create('style', 'gridColumn'),
+            `span ${targetElementProps.gridColumnSpan.value}`,
+          ),
+        )
+      } else {
+        propsToUpdate.push(propertyToDelete(PP.create('style', 'gridColumn')))
+      }
+      if (targetElementProps?.gridRowSpan != null) {
+        propsToUpdate.push(
+          propertyToSet(
+            PP.create('style', 'gridRow'),
+            `span ${targetElementProps.gridRowSpan.value}`,
+          ),
+        )
+      } else {
+        propsToUpdate.push(propertyToDelete(PP.create('style', 'gridRow')))
+      }
+
       return [
         reorderElement('always', pathForCommands, absolute(possiblyReorderIndex)),
-        deleteProperties('always', pathForCommands, [
-          PP.create('style', 'gridColumn'),
-          PP.create('style', 'gridRow'),
-          PP.create('style', 'gridColumnStart'),
-          PP.create('style', 'gridColumnEnd'),
-          PP.create('style', 'gridRowStart'),
-          PP.create('style', 'gridRowEnd'),
-        ]),
+        updateBulkProperties('always', pathForCommands, propsToUpdate),
         updateGridControlsCommand,
       ]
     }
@@ -224,7 +258,7 @@ export function gridPositionToValue(p: GridPosition | null | undefined): string 
 export function setGridPropsCommands(
   elementPath: ElementPath,
   gridTemplate: GridContainerProperties,
-  gridProps: Partial<GridElementProperties>,
+  elementProps: Partial<GridElementProperties>,
 ): CanvasCommand[] {
   let commands: CanvasCommand[] = [
     deleteProperties('always', elementPath, [
@@ -237,17 +271,34 @@ export function setGridPropsCommands(
       PP.create('style', 'gridRowEnd'),
     ]),
   ]
-  const columnStart = gridPositionToValue(gridProps.gridColumnStart)
-  const columnEnd = gridPositionToValue(gridProps.gridColumnEnd)
-  const rowStart = gridPositionToValue(gridProps.gridRowStart)
-  const rowEnd = gridPositionToValue(gridProps.gridRowEnd)
+  const columnStart = gridPositionToValue(elementProps.gridColumnStart)
+  const columnEnd = gridPositionToValue(elementProps.gridColumnEnd)
+  const rowStart = gridPositionToValue(elementProps.gridRowStart)
+  const rowEnd = gridPositionToValue(elementProps.gridRowEnd)
 
   const lineColumnStart = asMaybeNamedLineOrValue(gridTemplate, 'column', columnStart)
   const lineColumnEnd = asMaybeNamedLineOrValue(gridTemplate, 'column', columnEnd)
   const lineRowStart = asMaybeNamedLineOrValue(gridTemplate, 'row', rowStart)
   const lineRowEnd = asMaybeNamedLineOrValue(gridTemplate, 'row', rowEnd)
 
-  if (columnStart != null && columnStart === columnEnd) {
+  function spanLineValue(value: string | number) {
+    let spanValue = `span ${value}`
+    if (lineColumnStart !== 'auto' && lineColumnStart !== 1) {
+      spanValue = `${lineColumnStart} / ${spanValue}`
+    }
+    return spanValue
+  }
+
+  if (elementProps.gridColumnSpan != null) {
+    commands.push(
+      setProperty(
+        'always',
+        elementPath,
+        PP.create('style', 'gridColumn'),
+        spanLineValue(elementProps.gridColumnSpan.value),
+      ),
+    )
+  } else if (columnStart != null && columnStart === columnEnd) {
     commands.push(
       setProperty('always', elementPath, PP.create('style', 'gridColumn'), lineColumnStart),
     )
@@ -274,7 +325,16 @@ export function setGridPropsCommands(
     }
   }
 
-  if (rowStart != null && rowStart === rowEnd) {
+  if (elementProps.gridRowSpan != null) {
+    commands.push(
+      setProperty(
+        'always',
+        elementPath,
+        PP.create('style', 'gridRow'),
+        spanLineValue(elementProps.gridRowSpan.value),
+      ),
+    )
+  } else if (rowStart != null && rowStart === rowEnd) {
     commands.push(setProperty('always', elementPath, PP.create('style', 'gridRow'), lineRowStart))
   } else if (
     rowStart != null &&
@@ -317,7 +377,7 @@ function getGridChildCellCoordBoundsFromProps(
   // get the grid fixtures (start and end for column and row) from the element metadata
   function getGridProperty(field: keyof GridElementProperties, innerFallback: number) {
     const propValue = element.specialSizeMeasurements.elementGridProperties[field]
-    if (propValue == null || isCSSKeyword(propValue)) {
+    if (propValue == null || isCSSKeyword(propValue) || isGridSpan(propValue)) {
       return innerFallback
     }
     return propValue.numericalPosition ?? innerFallback
