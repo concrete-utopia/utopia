@@ -191,18 +191,20 @@ interface PinOutlineProps {
   scale: number
 }
 
+const PinOutlineUnscaledSize = 1
+
 const PinOutline = React.memo((props: PinOutlineProps): JSX.Element => {
   const colorTheme = useColorTheme()
   const width = props.isHorizontalLine ? props.size : 0
   const height = props.isHorizontalLine ? 0 : props.size
   const borderTop = props.isHorizontalLine
-    ? `${1 / props.scale}px dashed ${colorTheme.primary.value}`
+    ? `${PinOutlineUnscaledSize / props.scale}px dashed ${colorTheme.primary.value}`
     : 'none'
   const borderLeft = props.isHorizontalLine
     ? 'none'
-    : `${1 / props.scale}px dashed ${colorTheme.primary.value}`
-  const lineLeft = props.startX - 0.5 / props.scale
-  const lineTop = props.startY - 0.5 / props.scale
+    : `${PinOutlineUnscaledSize / props.scale}px dashed ${colorTheme.primary.value}`
+  const lineLeft = props.startX - PinOutlineUnscaledSize / 2 / props.scale
+  const lineTop = props.startY - PinOutlineUnscaledSize / 2 / props.scale
 
   return (
     <div
