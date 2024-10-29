@@ -201,12 +201,15 @@ const PinOutline = React.memo((props: PinOutlineProps): JSX.Element => {
   const borderLeft = props.isHorizontalLine
     ? 'none'
     : `${1 / props.scale}px dashed ${colorTheme.primary.value}`
+  const lineLeft = props.startX - 0.5 / props.scale
+  const lineTop = props.startY - 0.5 / props.scale
+
   return (
     <div
       style={{
         position: 'absolute',
-        left: props.startX,
-        top: props.startY,
+        left: lineLeft,
+        top: lineTop,
         width: width,
         height: height,
         borderTop: borderTop,
