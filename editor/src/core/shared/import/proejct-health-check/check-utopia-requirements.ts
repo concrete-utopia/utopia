@@ -5,16 +5,16 @@ import type { EditorDispatch } from '../../../../components/editor/action-types'
 import CheckPackageJson from './requirements/requirement-package-json'
 import CheckLanguage from './requirements/requirement-language'
 import CheckReactVersion from './requirements/requirement-react'
-import type { RequirementCheck } from './utopia-requirements-types'
+import type { ProjectRequirements, RequirementCheck } from './utopia-requirements-types'
 import { notifyCheckingRequirement, notifyResolveRequirement } from './utopia-requirements-service'
 import CheckStoryboard from './requirements/requirement-storyboard'
 
-const checks: RequirementCheck[] = [
-  new CheckStoryboard(),
-  new CheckPackageJson(),
-  new CheckLanguage(),
-  new CheckReactVersion(),
-]
+const checks: Record<keyof ProjectRequirements, RequirementCheck> = {
+  storyboard: new CheckStoryboard(),
+  packageJsonEntries: new CheckPackageJson(),
+  language: new CheckLanguage(),
+  reactVersion: new CheckReactVersion(),
+}
 
 export function checkAndFixUtopiaRequirements(
   dispatch: EditorDispatch,
@@ -22,8 +22,8 @@ export function checkAndFixUtopiaRequirements(
 ): ProjectContentTreeRoot {
   let projectContents = parsedProjectContents
   // iterate over all checks, updating the project contents as we go
-  for (const check of checks) {
-    const checkName = check.getRequirementName()
+  for (const [name, check] of Object.entries(checks)) {
+    const checkName = name as keyof ProjectRequirements
     notifyCheckingRequirement(dispatch, checkName, check.getStartText())
     const checkResult = check.check(projectContents)
     notifyResolveRequirement(

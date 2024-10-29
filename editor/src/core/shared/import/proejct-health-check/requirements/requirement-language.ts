@@ -1,5 +1,4 @@
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
-import type { ProjectRequirements } from '../utopia-requirements-types'
 import {
   RequirementResolutionResult,
   type RequirementCheck,
@@ -8,9 +7,6 @@ import {
 import { applyToAllUIJSFiles } from '../../../../model/project-file-utils'
 
 export default class CheckProjectLanguage implements RequirementCheck {
-  getRequirementName(): keyof ProjectRequirements {
-    return 'language'
-  }
   getStartText(): string {
     return 'Checking project language'
   }

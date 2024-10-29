@@ -1,5 +1,4 @@
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
-import type { ProjectRequirements } from '../utopia-requirements-types'
 import {
   RequirementResolutionResult,
   type RequirementCheck,
@@ -11,9 +10,6 @@ import Semver from 'semver'
 const SUPPORTED_REACT_VERSION_RANGE = '16.8.0 - 18.x'
 
 export default class CheckReactRequirement implements RequirementCheck {
-  getRequirementName(): keyof ProjectRequirements {
-    return 'reactVersion'
-  }
   getStartText(): string {
     return 'Checking React version'
   }

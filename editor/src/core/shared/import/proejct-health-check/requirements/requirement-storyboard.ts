@@ -1,5 +1,5 @@
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
-import type { ProjectRequirements, RequirementCheckResult } from '../utopia-requirements-types'
+import type { RequirementCheckResult } from '../utopia-requirements-types'
 import { RequirementResolutionResult } from '../utopia-requirements-types'
 import type { RequirementCheck } from '../utopia-requirements-types'
 import { defaultEither } from '../../../../../core/shared/either'
@@ -13,9 +13,6 @@ import { codeFile } from '../../../../../core/shared/project-file-types'
 import { addStoryboardFileToProject } from '../../../../../core/model/storyboard-utils'
 
 export default class CheckStoryboard implements RequirementCheck {
-  getRequirementName(): keyof ProjectRequirements {
-    return 'storyboard'
-  }
   getStartText(): string {
     return 'Checking for storyboard.js'
   }

@@ -77,15 +77,14 @@ export function newProjectRequirements(
   }
 }
 
-export interface RequirementCheck {
-  check: (projectContents: ProjectContentTreeRoot) => {
-    resolution: RequirementResolutionResult
-    resultText: string
-    resultValue?: string
-    newProjectContents?: ProjectContentTreeRoot | null
-  }
-  getRequirementName: () => keyof ProjectRequirements
-  getStartText: () => string
+export interface RequirementCheckResult {
+  resolution: RequirementResolutionResult
+  resultText: string
+  resultValue?: string
+  newProjectContents?: ProjectContentTreeRoot | null
 }
 
-export type RequirementCheckResult = ReturnType<RequirementCheck['check']>
+export interface RequirementCheck {
+  check: (projectContents: ProjectContentTreeRoot) => RequirementCheckResult
+  getStartText: () => string
+}

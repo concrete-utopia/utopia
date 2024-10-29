@@ -1,19 +1,12 @@
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import { RevisionsState } from 'utopia-shared/src/types'
 import { getPackageJson } from '../check-utopia-requirements'
-import type {
-  ProjectRequirements,
-  RequirementCheck,
-  RequirementCheckResult,
-} from '../utopia-requirements-types'
+import type { RequirementCheck, RequirementCheckResult } from '../utopia-requirements-types'
 import { RequirementResolutionResult } from '../utopia-requirements-types'
 import { addFileToProjectContents } from '../../../../../components/assets'
 import { codeFile } from '../../../../../core/shared/project-file-types'
 
 export default class PackageJsonCheckAndFix implements RequirementCheck {
-  getRequirementName(): keyof ProjectRequirements {
-    return 'packageJsonEntries'
-  }
   getStartText(): string {
     return 'Checking package.json'
   }
