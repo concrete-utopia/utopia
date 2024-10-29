@@ -45,6 +45,7 @@ export function gridRearrangeResizeKeyboardStrategy(
 
   const gridTemplate = cell.specialSizeMeasurements.parentContainerGridProperties
   const gridCellGlobalFrames = cell.specialSizeMeasurements.parentGridCellGlobalFrames
+  const elementGridProperties = cell.specialSizeMeasurements.elementGridPropertiesFromProps
 
   const initialCellBounds =
     gridCellGlobalFrames != null
@@ -123,10 +124,12 @@ export function gridRearrangeResizeKeyboardStrategy(
 
       return strategyApplicationResult(
         setGridPropsCommands(target, gridTemplate, {
-          gridColumnStart,
-          gridColumnEnd,
-          gridRowStart,
-          gridRowEnd,
+          gridColumnStart: gridColumnStart,
+          gridColumnEnd: gridColumnEnd,
+          gridRowStart: gridRowStart,
+          gridRowEnd: gridRowEnd,
+          gridColumnSpan: elementGridProperties.gridColumnSpan,
+          gridRowSpan: elementGridProperties.gridRowSpan,
         }),
         [parentGridPath],
       )
