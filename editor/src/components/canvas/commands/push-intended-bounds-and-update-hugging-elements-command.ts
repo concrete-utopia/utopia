@@ -128,39 +128,8 @@ function applyUpdateResizeHuggingElementsCommands(
           'height',
           frameAndTarget.frame.height,
         ),
+        showToastCommand('Added fixed width and height', 'NOTICE', 'added-width-height'), // TODO before merge verify this toast shows up
       )
-
-      const parentPath = EP.parentPath(frameAndTarget.target)
-      const parentElement = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
-      const parentIsHugging =
-        parentElement != null &&
-        (isHuggingParent(parentElement, 'width') || isHuggingParent(parentElement, 'height'))
-      const shouldSetAbsolutePosition =
-        EP.isStoryboardPath(parentPath) || parentElement == null || parentIsHugging
-      if (shouldSetAbsolutePosition) {
-        commands.push(
-          setProperty('always', frameAndTarget.target, PP.create('style', 'position'), 'absolute'),
-          setCSSDimension(
-            metadata.specialSizeMeasurements.flexDirection,
-            'left',
-            frameAndTarget.frame.x,
-          ),
-          setCSSDimension(
-            metadata.specialSizeMeasurements.flexDirection,
-            'top',
-            frameAndTarget.frame.y,
-          ),
-          showToastCommand(
-            'Converted to fixed size and absolute position',
-            'NOTICE',
-            'convert-to-fixed-size',
-          ),
-        )
-      } else {
-        commands.push(
-          showToastCommand('Added fixed width and height', 'NOTICE', 'added-width-height'),
-        )
-      }
     }
   }
   return {
