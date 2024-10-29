@@ -1860,6 +1860,7 @@ export const UPDATE_FNS = {
             action.propertyPath,
           )
         ) {
+          // TODO: refactor this to read from the plugins
           const maybeInvalidGroupState = groupStateFromJSXElement(
             element,
             action.target,
@@ -1883,10 +1884,12 @@ export const UPDATE_FNS = {
 
         return {
           ...element,
+          // TODO: refactor this to use commands
           props: roundAttributeLayoutValues(styleStringInArray, element.props),
         }
       },
       (success, _, underlyingFilePath) => {
+        // TODO: the setProperty command should do this as well
         const updatedImports = mergeImports(
           underlyingFilePath,
           getFilePathMappings(editor.projectContents),
