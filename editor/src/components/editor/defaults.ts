@@ -126,9 +126,7 @@ export function defaultDivElement(uid: string): JSXElement {
     jsxElementName('div', []),
     uid,
     jsxAttributesFromMap({
-      // TODO Tailwind: this needs to be a function of the active plugin
-      className: jsExpressionValue('absolute', emptyComments),
-      // style: defaultElementStyle(),
+      style: defaultElementStyle(),
       'data-uid': jsExpressionValue(uid, emptyComments),
     }),
     [],
