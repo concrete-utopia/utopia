@@ -33,9 +33,7 @@ import {
   saveGithubAsset,
 } from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
-import { createStoryboardFileIfNecessary } from '../../../../components/editor/actions/actions'
 import { getAllComponentDescriptorFilePaths } from '../../../property-controls/property-controls-local'
-import type { ExistingAsset } from '../../../../components/editor/server'
 import { GithubOperations } from '.'
 import { assertNever } from '../../utils'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
@@ -173,16 +171,8 @@ export const updateProjectWithBranchContent =
             notifyOperationFinished(dispatch, { type: 'parseFiles' }, ImportOperationResult.Success)
 
             resetRequirementsResolutions(dispatch)
-            const parsedProjectContentsInitial = createStoryboardFileIfNecessary(
-              dispatch,
-              parseResults,
-              'create-placeholder',
-            )
 
-            const parsedProjectContents = checkAndFixUtopiaRequirements(
-              dispatch,
-              parsedProjectContentsInitial,
-            )
+            const parsedProjectContents = checkAndFixUtopiaRequirements(dispatch, parseResults)
 
             // Update the editor with everything so that if anything else fails past this point
             // there's no loss of data from the user's perspective.
