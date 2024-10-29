@@ -424,10 +424,12 @@ describe('Groups', () => {
         })
 
         const { className: child1ClassName } = editor.renderedDOM.getByTestId('child-1')
-        expect(child1ClassName).toEqual('bg-accent absolute left-0 top-0 w-[100px] h-[100px]') // mr-4 is removed
+        expect(child1ClassName).toEqual('bg-slate-200 absolute left-0 top-0 w-[100px] h-[100px]') // mr-4 is removed
 
         const { className: child2ClassName } = editor.renderedDOM.getByTestId('child-2')
-        expect(child2ClassName).toEqual('bg-slate-200 absolute left-0 top-0 w-[100px] h-[100px]') // m-[47px] is removed
+        expect(child2ClassName).toEqual(
+          'bg-slate-300 absolute left-[81px] top-[141px] w-[100px] h-[130px]', // m-[47px] is removed
+        )
       })
     })
   })
