@@ -22,6 +22,7 @@ export type FeatureName =
   | 'Debug - Arbitrary Code Cache'
   | 'Canvas Fast Selection Hack'
   | 'Tailwind'
+  | 'Import Wizard'
   | 'Show Debug Features'
 
 export const AllFeatureNames: FeatureName[] = [
@@ -46,6 +47,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Condensed Navigator Entries',
   'Canvas Fast Selection Hack',
   'Tailwind',
+  'Import Wizard',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -68,6 +70,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
   'Use Parsing Cache': false,
   'Canvas Fast Selection Hack': true,
+  'Import Wizard': false,
   'Show Debug Features': false,
 }
 

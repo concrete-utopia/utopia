@@ -421,26 +421,21 @@ export function GridGapHandle({
     [onHandleHoverStartInner, index],
   )
 
-  const rowGapStyles =
-    axis === 'row'
-      ? ({
-          left: '50%',
-          top: '50%',
-          transform: 'translate(-50%, -50%)',
-          position: 'absolute',
-          gridArea: `1/${index + 1}/2/${index + 2}`,
-        } as const)
-      : {}
   return (
     <div
-      data-testid={`${GridGapControlHandleTestId}-${gapId}`}
+      data-testid={`${GridGapControlHandleTestId}-${gapId}-${index}`}
       style={{
         visibility: shouldShowHandle ? 'visible' : 'hidden',
         pointerEvents: 'all',
         padding: hitAreaPadding,
         cursor: axis === 'row' ? CSSCursor.GapNS : CSSCursor.GapEW,
         opacity: handleOpacity,
-        ...rowGapStyles,
+        left: '50%',
+        top: '50%',
+        transform: 'translate(-50%, -50%)',
+        position: 'absolute',
+        gridArea:
+          axis === 'row' ? `1/${index + 1}/2/${index + 2}` : `${index + 1}/1/${index + 2}/2`,
       }}
       onMouseDown={onMouseDown}
       onMouseEnter={onHandleHoverStart}

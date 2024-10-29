@@ -189,6 +189,11 @@ import type { OnlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
 import type { FancyError } from '../../../core/shared/code-exec-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
+import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
+import {
+  emptyProjectRequirements,
+  type ProjectRequirements,
+} from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1452,6 +1457,9 @@ export interface EditorState {
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
+  importOperations: Array<ImportOperation>
+  projectRequirements: ProjectRequirements
+  importWizardOpen: boolean
   githubData: GithubData
   refreshingDependencies: boolean
   colorSwatches: Array<ColorSwatch>
@@ -1535,6 +1543,9 @@ export function editorState(
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
+  importOperations: Array<ImportOperation>,
+  importWizardOpen: boolean,
+  projectRequirements: ProjectRequirements,
   branchOriginContents: ProjectContentTreeRoot | null,
   githubData: GithubData,
   refreshingDependencies: boolean,
@@ -1619,6 +1630,9 @@ export function editorState(
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
+    importOperations: importOperations,
+    importWizardOpen: importWizardOpen,
+    projectRequirements: projectRequirements,
     githubData: githubData,
     refreshingDependencies: refreshingDependencies,
     colorSwatches: colorSwatches,
@@ -2696,6 +2710,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
+    importOperations: [],
+    importWizardOpen: false,
+    projectRequirements: emptyProjectRequirements(),
     branchOriginContents: null,
     githubData: emptyGithubData(),
     refreshingDependencies: false,
@@ -3063,6 +3080,9 @@ export function editorModelFromPersistentModel(
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
     githubOperations: [],
+    importOperations: [],
+    importWizardOpen: false,
+    projectRequirements: emptyProjectRequirements(),
     refreshingDependencies: false,
     branchOriginContents: null,
     githubData: emptyGithubData(),

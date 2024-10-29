@@ -194,22 +194,24 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
 
       this.props.editorDispatch([EditorActions.updatePackageJson(npmDependencies)])
 
-      void fetchNodeModules(npmDependencies, this.props.builtInDependencies).then(
-        (fetchNodeModulesResult) => {
-          if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-            this.packagesUpdateFailed(
-              `Failed to download the following dependencies: ${JSON.stringify(
-                fetchNodeModulesResult.dependenciesWithError.map((d) => d.name),
-              )}`,
-              fetchNodeModulesResult.dependenciesWithError[0]?.name,
-            )
-          }
-          this.setState({ dependencyLoadingStatus: 'not-loading' })
-          this.props.editorDispatch([
-            EditorActions.updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
-          ])
-        },
-      )
+      void fetchNodeModules(
+        this.props.editorDispatch,
+        npmDependencies,
+        this.props.builtInDependencies,
+      ).then((fetchNodeModulesResult) => {
+        if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+          this.packagesUpdateFailed(
+            `Failed to download the following dependencies: ${JSON.stringify(
+              fetchNodeModulesResult.dependenciesWithError.map((d) => d.name),
+            )}`,
+            fetchNodeModulesResult.dependenciesWithError[0]?.name,
+          )
+        }
+        this.setState({ dependencyLoadingStatus: 'not-loading' })
+        this.props.editorDispatch([
+          EditorActions.updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
+        ])
+      })
 
       this.setState({ dependencyLoadingStatus: 'removing' })
     }
@@ -358,6 +360,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
                 EditorActions.updatePackageJson(updatedNpmDeps),
               ])
               fetchNodeModules(
+                this.props.editorDispatch,
                 [requestedNpmDependency(editedPackageName, editedPackageVersion!)],
                 this.props.builtInDependencies,
               )
