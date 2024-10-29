@@ -125,6 +125,50 @@ describe('grid resize element strategy', () => {
         gridRowStart: '2',
       })
     })
+
+    it('can enlarge element in grid component', async () => {
+      const editor = await renderTestEditorWithCode(
+        ProjectCodeGridComponent,
+        'await-first-dom-report',
+      )
+
+      await runCellResizeTest(
+        editor,
+        'column-end',
+        gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 10),
+      )
+
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+        editor.renderedDOM.getByTestId('grid-child').style
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: '11',
+        gridColumnStart: '7',
+        gridRowStart: '2',
+        gridRowEnd: 'auto',
+      })
+    })
+
+    it('can shrink element in grid component', async () => {
+      const editor = await renderTestEditorWithCode(
+        ProjectCodeGridComponent,
+        'await-first-dom-report',
+      )
+
+      await runCellResizeTest(
+        editor,
+        'column-end',
+        gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 8),
+      )
+
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+        editor.renderedDOM.getByTestId('grid-child').style
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: '9',
+        gridColumnStart: '7',
+        gridRowEnd: 'auto',
+        gridRowStart: '2',
+      })
+    })
   })
 
   describe('column-start', () => {
@@ -165,11 +209,94 @@ describe('grid resize element strategy', () => {
         gridRowStart: '2',
       })
     })
+
+    it('can enlarge element in grid component', async () => {
+      const editor = await renderTestEditorWithCode(
+        ProjectCodeGridComponent,
+        'await-first-dom-report',
+      )
+
+      await runCellResizeTest(
+        editor,
+        'column-start',
+        gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 6),
+      )
+
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+        editor.renderedDOM.getByTestId('grid-child').style
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: '10',
+        gridColumnStart: '6',
+        gridRowEnd: 'auto',
+        gridRowStart: '2',
+      })
+    })
+
+    it('can shrink element in grid component', async () => {
+      const editor = await renderTestEditorWithCode(
+        ProjectCodeGridComponent,
+        'await-first-dom-report',
+      )
+
+      await runCellResizeTest(
+        editor,
+        'column-start',
+        gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 8),
+      )
+
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+        editor.renderedDOM.getByTestId('grid-child').style
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: '10',
+        gridColumnStart: '8',
+        gridRowEnd: 'auto',
+        gridRowStart: '2',
+      })
+    })
   })
 
   describe('row-end', () => {
     it('can resize element', async () => {
       const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
+
+      await runCellResizeTest(
+        editor,
+        'row-end',
+        gridCellTargetId(EP.fromString('sb/scene/grid'), 3, 6),
+      )
+      {
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('grid-child').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: '10',
+          gridColumnStart: '7',
+          gridRowEnd: '4',
+          gridRowStart: '2',
+        })
+      }
+
+      await runCellResizeTest(
+        editor,
+        'row-end',
+        gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 8),
+      )
+      {
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('grid-child').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: '10',
+          gridColumnStart: '7',
+          gridRowEnd: 'auto',
+          gridRowStart: '2',
+        })
+      }
+    })
+
+    it('can resize element in grid component', async () => {
+      const editor = await renderTestEditorWithCode(
+        ProjectCodeGridComponent,
+        'await-first-dom-report',
+      )
 
       await runCellResizeTest(
         editor,
@@ -243,10 +370,95 @@ describe('grid resize element strategy', () => {
         })
       }
     })
+
+    it('can resize element in grid component', async () => {
+      const editor = await renderTestEditorWithCode(
+        ProjectCodeGridComponent,
+        'await-first-dom-report',
+      )
+
+      await runCellResizeTest(
+        editor,
+        'row-start',
+        gridCellTargetId(EP.fromString('sb/scene/grid'), 1, 6),
+      )
+
+      {
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('grid-child').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: '10',
+          gridColumnStart: '7',
+          gridRowEnd: '3',
+          gridRowStart: '1',
+        })
+      }
+
+      {
+        await runCellResizeTest(
+          editor,
+          'row-start',
+          gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 8),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('grid-child').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: '10',
+          gridColumnStart: '7',
+          gridRowEnd: 'auto',
+          gridRowStart: '2',
+        })
+      }
+    })
   })
 
   it('can resize element with mouse move outside of grid cells', async () => {
     const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
+    await runCellResizeTest(
+      editor,
+      'column-end',
+      gridCellTargetId(EP.fromString('sb/scene/grid'), 1, 8),
+    )
+
+    {
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+        editor.renderedDOM.getByTestId('grid-child').style
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: '9',
+        gridColumnStart: '7',
+        gridRowEnd: 'auto',
+        gridRowStart: '2',
+      })
+    }
+
+    {
+      // moving a 2 cell wide element in the middle, over the gap between 2 cells
+      await runCellResizeTestWithDragVector(
+        editor,
+        'row-start',
+        localPoint({
+          x: 0,
+          y: -50,
+        }),
+      )
+
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+        editor.renderedDOM.getByTestId('grid-child').style
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: '9',
+        gridColumnStart: '7',
+        gridRowEnd: '3',
+        gridRowStart: '1',
+      })
+    }
+  })
+
+  it('can resize element with mouse move outside of grid cells in grid component', async () => {
+    const editor = await renderTestEditorWithCode(
+      ProjectCodeGridComponent,
+      'await-first-dom-report',
+    )
     await runCellResizeTest(
       editor,
       'column-end',
@@ -434,6 +646,29 @@ export var storyboard = (
       gridRowEnd: 'auto',
     })
   })
+
+  it('also works for stretching cells in grid component', async () => {
+    const editor = await renderTestEditorWithCode(
+      ProjectCodeGridComponent,
+      'await-first-dom-report',
+    )
+
+    await runCellResizeTest(
+      editor,
+      'column-end',
+      gridCellTargetId(EP.fromString('sb/scene/grid'), 2, 10),
+      EP.fromString('sb/scene/grid/eee'),
+    )
+
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+      editor.renderedDOM.getByTestId('grid-child-stretch').style
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnEnd: '11',
+      gridColumnStart: '4',
+      gridRowStart: '4',
+      gridRowEnd: 'auto',
+    })
+  })
 })
 
 const ProjectCode = `import * as React from 'react'
@@ -534,6 +769,120 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )
+`
+
+const ProjectCodeGridComponent = `import * as React from 'react'
+import { Scene, Storyboard, Placeholder } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 847,
+        height: 895,
+        position: 'absolute',
+        left: 46,
+        top: 131,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <Grid
+        style={{
+          height: 482,
+          width: 786,
+          position: 'absolute',
+          left: 31,
+          top: 0,
+        }}
+        data-uid='grid'
+      >
+        <div
+          style={{
+            minHeight: 0,
+            backgroundColor: '#f3785f',
+            gridColumnEnd: 5,
+            gridColumnStart: 1,
+            gridRowEnd: 3,
+            gridRowStart: 1,
+          }}
+          data-uid='aaa'
+        />
+        <Placeholder
+          style={{
+            minHeight: 0,
+            backgroundColor: '#23565b',
+            gridColumnStart: 11,
+            gridColumnEnd: 13,
+            gridRowStart: 1,
+            gridRowEnd: 2,
+          }}
+          data-uid='bbb'
+        />
+        <Placeholder
+          style={{
+            minHeight: 0,
+            gridColumnEnd: 5,
+            gridRowEnd: 4,
+            gridColumnStart: 1,
+            gridRowStart: 3,
+            backgroundColor: '#0074ff',
+            width: 25,
+            height: 30,
+          }}
+          data-uid='grid-child-not-filling'
+          data-testid='grid-child-not-filling'
+        />
+        <div
+          style={{
+            minHeight: 0,
+            gridColumnEnd: 10,
+            gridRowEnd: 3,
+            gridColumnStart: 7,
+            gridRowStart: 2,
+            backgroundColor: '#db48f6',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='ddd'
+          data-testid='grid-child'
+        />
+        <div
+          style={{
+            backgroundColor: '#9f0',
+            alignSelf: 'stretch',
+            justifySelf: 'stretch',
+            gridColumn: 4,
+            gridRow: 4,
+          }}
+          data-uid='eee'
+          data-testid='grid-child-stretch'
+        />
+      </Grid>
+    </Scene>
+  </Storyboard>
+)
+
+export function Grid(props) {
+  return (
+    <div
+      {...props}
+      style={{
+        ...props.style,
+        display: 'grid',
+        gridTemplateRows: '75px 75px 75px 75px',
+        gridTemplateColumns:
+          '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
+        gridGap: 16,
+      }}
+      data-uid='f84914f31dbc6c5d9b44c11ae54139ef'
+    >
+      {props.children}
+    </div>
+  )
+}
 `
 
 const ProjectCodeWithGridArea = `import * as React from 'react'
