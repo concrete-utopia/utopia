@@ -48,6 +48,7 @@ import {
   gridPositionValue,
   gridRange,
   gridSpanNumeric,
+  gridSpanArea,
 } from '../../../core/shared/element-template'
 import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import {
@@ -1205,11 +1206,12 @@ export function parseGridRange(
     return left('invalid grid item')
   }
 
-  const val = csstree.parse(input, { context: 'value' })
-  if (val.type !== 'Value') {
+  const parsed = csstree.parse(input, { context: 'value' })
+  if (parsed.type !== 'Value') {
     return left('invalid grid item value')
   }
-  const children = val.children.toArray()
+
+  const children = parsed.children.toArray()
   const slashIndex = children.findIndex((c) => c.type === 'Operator' && c.value === '/')
 
   const isRange = slashIndex >= 0
@@ -1220,39 +1222,12 @@ export function parseGridRange(
     return left('invalid start')
   }
 
-  function maybeSpan(v: csstree.CssNode[]): GridSpan | null {
-    if (v.length !== 2) {
-      return null
-    }
-    const isSpan = v[0].type === 'Identifier' && v[0].name === 'span'
-    if (!isSpan) {
-      return null
-    }
-    if (v[1].type !== 'Number') {
-      return null // TODO area support
-    }
-    return gridSpanNumeric(parseInt(v[1].value))
-  }
-  function maybeLine(v: csstree.CssNode[]): GridPosition | null {
-    if (v.length !== 1) {
-      return null
-    }
-    const first = v[0]
-    switch (first.type) {
-      case 'Number':
-        return gridPositionValue(parseInt(first.value))
-      case 'Identifier':
-        return cssKeyword(first.name) // TODO split between keyword and line name
-      default:
-        return null
-    }
-  }
-
-  const maybeStart: GridPositionOrSpan | null = maybeSpan(start) ?? maybeLine(start)
+  const maybeStart = maybeParseGridSpan(start) ?? maybeParseGridLine(start, axis, container)
   if (maybeStart == null) {
     return left('missing start')
   }
-  const maybeEnd: GridPositionOrSpan | null = maybeSpan(end) ?? maybeLine(end)
+
+  const maybeEnd = maybeParseGridSpan(end) ?? maybeParseGridLine(end, axis, container)
 
   return right(gridRange(maybeStart, maybeEnd))
 }
@@ -5938,6 +5913,64 @@ function parseRepeatTimes(firstChild: csstree.CssNode) {
       return firstChild.name === 'auto-fill' || firstChild.name === 'auto-fit'
         ? cssKeyword(firstChild.name)
         : null
+    default:
+      return null
+  }
+}
+
+export function maybeParseGridSpan(nodes: csstree.CssNode[]): GridSpan | null {
+  if (nodes.length !== 2) {
+    return null
+  }
+
+  const [identifier, value] = nodes
+
+  const isSpan = identifier.type === 'Identifier' && identifier.name === 'span'
+  if (!isSpan) {
+    return null
+  }
+
+  switch (value.type) {
+    case 'Number':
+      return gridSpanNumeric(parseInt(value.value))
+    case 'Identifier':
+      return gridSpanArea(value.name)
+    default:
+      return null
+  }
+}
+
+export function maybeParseGridLine(
+  nodes: csstree.CssNode[],
+  axis: 'row' | 'column',
+  container: GridContainerProperties,
+): GridPosition | null {
+  if (nodes.length !== 1) {
+    return null
+  }
+  const first = nodes[0]
+  switch (first.type) {
+    case 'Number':
+      return gridPositionValue(parseInt(first.value))
+    case 'Identifier':
+      // the identifier can either be a keyword…
+      if (isValidGridDimensionKeyword(first.name)) {
+        return cssKeyword(first.name)
+      }
+
+      // …or a line name, in which case look it up in the template and return its index
+      const targetTracks =
+        axis === 'column' ? container.gridTemplateColumns : container.gridTemplateRows
+      const maybeLineFromName =
+        targetTracks?.type === 'DIMENSIONS'
+          ? targetTracks.dimensions.findIndex((dim) => dim.lineName === first.name)
+          : null
+      if (maybeLineFromName == null || maybeLineFromName < 0) {
+        // line name not found
+        return null
+      }
+
+      return gridPositionValue(maybeLineFromName + 1) // tracks are 1-indexed
     default:
       return null
   }

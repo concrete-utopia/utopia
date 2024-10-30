@@ -2782,6 +2782,10 @@ export function isGridSpan(u: unknown): u is GridSpan {
   )
 }
 
+export function stringifyGridSpan(span: GridSpan): string {
+  return `span ${span.value}`
+}
+
 export type GridSpanNumeric = {
   type: 'SPAN_NUMERIC'
   value: number

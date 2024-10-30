@@ -4,10 +4,12 @@ import * as EP from '../../../../core/shared/element-path'
 import type {
   ElementInstanceMetadataMap,
   GridPositionValue,
+  GridSpan,
 } from '../../../../core/shared/element-template'
 import {
   gridPositionValue,
   isGridSpan,
+  stringifyGridSpan,
   type ElementInstanceMetadata,
   type GridContainerProperties,
   type GridElementProperties,
@@ -99,16 +101,18 @@ export function runGridRearrangeMove(
   const pathForCommands = newPathAfterReparent ?? targetElement // when reparenting, we want to use the new path for commands
   const gridPath = EP.parentPath(pathForCommands)
 
-  const targetElementProps = MetadataUtils.findElementByElementPath(jsxMetadata, pathForCommands)
-    ?.specialSizeMeasurements.elementGridPropertiesFromProps
+  const elementGridPropertiesFromProps = MetadataUtils.findElementByElementPath(
+    jsxMetadata,
+    pathForCommands,
+  )?.specialSizeMeasurements.elementGridPropertiesFromProps
 
   const gridCellMoveCommands = setGridPropsCommands(pathForCommands, gridTemplate, {
     gridColumnStart: gridPositionValue(column),
     gridColumnEnd: gridPositionValue(column + originalCellBounds.height),
     gridRowStart: gridPositionValue(row),
     gridRowEnd: gridPositionValue(row + originalCellBounds.width),
-    gridColumnSpan: targetElementProps?.gridColumnSpan,
-    gridRowSpan: targetElementProps?.gridRowSpan,
+    gridColumnSpan: elementGridPropertiesFromProps?.gridColumnSpan,
+    gridRowSpan: elementGridPropertiesFromProps?.gridRowSpan,
   })
 
   const gridTemplateColumns =
@@ -212,21 +216,21 @@ export function runGridRearrangeMove(
         propertyToDelete(PP.create('style', 'gridRowStart')),
         propertyToDelete(PP.create('style', 'gridRowEnd')),
       ]
-      if (targetElementProps?.gridColumnSpan != null) {
+      if (elementGridPropertiesFromProps?.gridColumnSpan != null) {
         propsToUpdate.push(
           propertyToSet(
             PP.create('style', 'gridColumn'),
-            `span ${targetElementProps.gridColumnSpan.value}`,
+            stringifyGridSpan(elementGridPropertiesFromProps.gridColumnSpan),
           ),
         )
       } else {
         propsToUpdate.push(propertyToDelete(PP.create('style', 'gridColumn')))
       }
-      if (targetElementProps?.gridRowSpan != null) {
+      if (elementGridPropertiesFromProps?.gridRowSpan != null) {
         propsToUpdate.push(
           propertyToSet(
             PP.create('style', 'gridRow'),
-            `span ${targetElementProps.gridRowSpan.value}`,
+            stringifyGridSpan(elementGridPropertiesFromProps.gridRowSpan),
           ),
         )
       } else {
@@ -281,12 +285,11 @@ export function setGridPropsCommands(
   const lineRowStart = asMaybeNamedLineOrValue(gridTemplate, 'row', rowStart)
   const lineRowEnd = asMaybeNamedLineOrValue(gridTemplate, 'row', rowEnd)
 
-  function spanLineValue(value: string | number) {
-    let spanValue = `span ${value}`
-    if (lineColumnStart !== 'auto' && lineColumnStart !== 1) {
-      spanValue = `${lineColumnStart} / ${spanValue}`
-    }
-    return spanValue
+  function spanLineValue(span: GridSpan) {
+    const spanValue = stringifyGridSpan(span)
+    return lineColumnStart === 'auto' || lineColumnStart === 1
+      ? spanValue
+      : `${lineColumnStart} / ${spanValue}`
   }
 
   if (elementProps.gridColumnSpan != null) {
@@ -295,7 +298,7 @@ export function setGridPropsCommands(
         'always',
         elementPath,
         PP.create('style', 'gridColumn'),
-        spanLineValue(elementProps.gridColumnSpan.value),
+        spanLineValue(elementProps.gridColumnSpan),
       ),
     )
   } else if (columnStart != null && columnStart === columnEnd) {
@@ -331,7 +334,7 @@ export function setGridPropsCommands(
         'always',
         elementPath,
         PP.create('style', 'gridRow'),
-        spanLineValue(elementProps.gridRowSpan.value),
+        spanLineValue(elementProps.gridRowSpan),
       ),
     )
   } else if (rowStart != null && rowStart === rowEnd) {
