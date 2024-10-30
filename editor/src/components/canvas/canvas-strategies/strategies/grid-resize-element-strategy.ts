@@ -33,6 +33,13 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
+  const selectedElementMetadata = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElement,
+  )
+  if (selectedElementMetadata == null) {
+    return null
+  }
   const isElementInsideGrid = MetadataUtils.isGridCell(
     canvasState.startingMetadata,
     selectedElement,
@@ -83,16 +90,8 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      const container = MetadataUtils.findElementByElementPath(
-        canvasState.startingMetadata,
-        EP.parentPath(selectedElement),
-      )
-
-      if (container == null) {
-        return emptyStrategyApplicationResult
-      }
-
-      const allCellBounds = container.specialSizeMeasurements.gridCellGlobalFrames
+      const allCellBounds =
+        selectedElementMetadata.specialSizeMeasurements.parentGridCellGlobalFrames
 
       if (allCellBounds == null) {
         return emptyStrategyApplicationResult
@@ -112,7 +111,8 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      const gridTemplate = container.specialSizeMeasurements.containerGridProperties
+      const gridTemplate =
+        selectedElementMetadata.specialSizeMeasurements.parentContainerGridProperties
 
       return strategyApplicationResult(
         setGridPropsCommands(selectedElement, gridTemplate, gridProps),
