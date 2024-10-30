@@ -99,7 +99,7 @@ const dependenciesSuccessFn = (op: ImportFetchDependency) =>
 const dependenciesSuccessTextFn = (successCount: number) =>
   `${successCount} dependencies fetched successfully`
 const requirementsSuccessFn = (op: ImportCheckRequirementAndFix) =>
-  op.resolution === RequirementResolutionResult.Found
+  op.resolution === RequirementResolutionResult.Passed
 const requirementsSuccessTextFn = (successCount: number) => `${successCount} requirements met`
 
 function AggregatedChildrenStatus<T extends ImportOperation>({

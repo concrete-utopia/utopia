@@ -761,3 +761,36 @@ export function ensureDirectoriesExist(projectContents: ProjectContents): Projec
     return result
   }
 }
+
+function getFileAsJson<T>(projectContents: ProjectContentTreeRoot, fileName: string): T | null {
+  const file = getProjectFileByFilePath(projectContents, fileName)
+  if (file != null && isTextFile(file)) {
+    return JSON.parse(file.fileContents.code) as T
+  }
+  return null
+}
+
+type PackageJson = { utopia?: Record<string, string>; dependencies?: Record<string, string> }
+export function getPackageJson(projectContents: ProjectContentTreeRoot): PackageJson | null {
+  return getFileAsJson<PackageJson>(projectContents, '/package.json')
+}
+
+type PackageLockJson = { dependencies?: Record<string, { version?: string }> }
+export function getPackageLockJson(
+  projectContents: ProjectContentTreeRoot,
+): PackageLockJson | null {
+  return getFileAsJson<PackageLockJson>(projectContents, '/package-lock.json')
+}
+
+export function getProjectDependencies(
+  projectContents: ProjectContentTreeRoot,
+): Record<string, string> | null {
+  const packageJsonDependencies = getPackageJson(projectContents)?.dependencies ?? {}
+  const packageLockJsonDependencies = getPackageLockJson(projectContents)?.dependencies ?? {}
+  for (const packageName of Object.keys(packageJsonDependencies)) {
+    if (packageLockJsonDependencies[packageName]?.version != null) {
+      packageJsonDependencies[packageName] = packageLockJsonDependencies[packageName].version
+    }
+  }
+  return packageJsonDependencies
+}

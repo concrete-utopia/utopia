@@ -13,9 +13,6 @@ import { codeFile } from '../../../../../core/shared/project-file-types'
 import { addStoryboardFileToProject } from '../../../../../core/model/storyboard-utils'
 
 export default class CheckStoryboard implements RequirementCheck {
-  getStartText(): string {
-    return 'Checking for storyboard.js'
-  }
   check(projectContents: ProjectContentTreeRoot): RequirementCheckResult {
     return createStoryboardFileIfNecessaryInner(projectContents)
   }
@@ -34,7 +31,7 @@ function createStoryboardFileIfNecessaryInner(
   const storyboardFile = getProjectFileByFilePath(projectContents, StoryboardFilePath)
   if (storyboardFile != null) {
     return {
-      resolution: RequirementResolutionResult.Found,
+      resolution: RequirementResolutionResult.Passed,
       resultText: 'Storyboard.js found',
     }
   }
