@@ -923,7 +923,7 @@ function getSpecialMeasurements(
 
   const gridCellGlobalFrames =
     layoutSystemForChildren === 'grid'
-      ? measureGlobalFramesOfGridCellsFromControl(
+      ? measureGlobalFramesOfGridCells(
           element,
           scale,
           containerRectLazy,
@@ -933,7 +933,7 @@ function getSpecialMeasurements(
 
   const parentGridCellGlobalFrames =
     element.parentElement != null && elementLayoutSystem(parentElementStyle) === 'grid'
-      ? measureGlobalFramesOfGridCellsFromControl(
+      ? measureGlobalFramesOfGridCells(
           element.parentElement,
           scale,
           containerRectLazy,
@@ -1076,7 +1076,7 @@ function getClosestOffsetParent(element: HTMLElement): Element | null {
   return null
 }
 
-function measureGlobalFramesOfGridCellsFromControl(
+function measureGlobalFramesOfGridCells(
   element: HTMLElement,
   scale: number,
   containerRectLazy: CanvasPoint | (() => CanvasPoint),
