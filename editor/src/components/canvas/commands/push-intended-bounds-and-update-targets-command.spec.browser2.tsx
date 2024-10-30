@@ -205,7 +205,7 @@ describe('push intended bounds', () => {
 
 			export var storyboard = (
 				<Storyboard data-uid='sb'>
-					<div data-uid='container' data-testid='container' style={{ backgroundColor: 'red', width: 80, height: 80, position: 'absolute', left: 100, top: 100 }} />
+					<div data-uid='container' data-testid='container' style={{ backgroundColor: 'red' }} />
 				</Storyboard>
 			)
 		`),
