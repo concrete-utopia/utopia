@@ -444,7 +444,7 @@ describe('actions', () => {
               <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
               <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
             </Group>
-            <div data-uid='foo' style={{ width: 400, height: 0, position: 'absolute', left: 0, top: 50 }} />
+            <div data-uid='foo' style={{ width: 400, height: 0 }} />
           </View>
         `,
         wantSelection: [makeTargetPath('view/group/child1'), makeTargetPath('view/foo')],
@@ -460,7 +460,7 @@ describe('actions', () => {
         `,
         targets: [makeTargetPath('view/group/child1')],
         wantCode: `
-          <View data-uid='view' style={{ width: 400, height: 10, position: 'absolute', left: 0, top: 0 }} />
+          <View data-uid='view' style={{ width: 400, height: 10 }} />
         `,
         wantSelection: [makeTargetPath('view')],
       },
@@ -479,7 +479,7 @@ describe('actions', () => {
         `,
         targets: [makeTargetPath(`root/g1/g2/f1/child`)],
         wantCode: `
-          <div data-uid='root' style={{ width: 400, height: 0, position: 'absolute', left: 0, top: 0 }} />
+          <div data-uid='root' style={{ width: 400, height: 0 }} />
         `,
         wantSelection: [makeTargetPath(`root`)],
       },
@@ -523,7 +523,7 @@ describe('actions', () => {
         `,
         targets: [makeTargetPath(`root/g1/g2/f1/child`), makeTargetPath(`root/g1/delete-me`)],
         wantCode: `
-          <div data-uid='root' style={{ width: 400, height: 0, position: 'absolute', left: 0, top: 0 }} />
+          <div data-uid='root' style={{ width: 400, height: 0 }} />
         `,
         wantSelection: [makeTargetPath(`root`)],
       },

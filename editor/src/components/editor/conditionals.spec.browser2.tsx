@@ -336,7 +336,7 @@ describe('conditionals', () => {
                 null
               )
             }
-              <div data-uid='fff' data-testid='fff' style={{ width: ${divFFF.width}, height: ${divFFF.height}, position: 'absolute', left: ${left}, top: ${top} }} />
+              <div data-uid='fff' data-testid='fff' style={{ width: ${divFFF.width}, height: ${divFFF.height} }} />
             </div>
          `),
       )
