@@ -8,8 +8,15 @@ import type {
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type { EditorState } from '../../editor/store/editor-state'
-import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
-import { applyValuesAtPath, deleteValuesAtPath } from './utils/property-utils'
+import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
+import { runStyleUpdateForStrategy } from '../plugins/style-plugins'
+import * as SU from '../plugins/style-plugins'
+import type { BaseCommand, CommandFunction, CommandFunctionResult, WhenToRun } from './commands'
+import {
+  applyValuesAtPath,
+  deleteValuesAtPath,
+  maybeCssPropertyFromInlineStyle,
+} from './utils/property-utils'
 
 type PositionProp = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 
@@ -19,12 +26,9 @@ export interface SetProperty extends BaseCommand {
   property: PropertyPath
   value: string | number
 }
-
 export type PropertyToUpdate = PropertyToSet | PropertyToDelete
-
 type PropertyToSet = { type: 'SET'; path: PropertyPath; value: string | number }
 type PropertyToDelete = { type: 'DELETE'; path: PropertyPath }
-
 export function propertyToSet(path: PropertyPath, value: string | number): PropertyToUpdate {
   return {
     type: 'SET',
@@ -32,20 +36,17 @@ export function propertyToSet(path: PropertyPath, value: string | number): Prope
     value: value,
   }
 }
-
 export function propertyToDelete(path: PropertyPath): PropertyToUpdate {
   return {
     type: 'DELETE',
     path: path,
   }
 }
-
 export interface UpdateBulkProperties extends BaseCommand {
   type: 'UPDATE_BULK_PROPERTIES'
   element: ElementPath
   properties: PropertyToUpdate[]
 }
-
 export function setProperty<T extends PropertyPathPart>(
   whenToRun: WhenToRun,
   element: ElementPath,
@@ -60,7 +61,6 @@ export function setProperty<T extends PropertyPathPart>(
     value: value,
   }
 }
-
 export function updateBulkProperties(
   whenToRun: WhenToRun,
   element: ElementPath,
@@ -73,7 +73,6 @@ export function updateBulkProperties(
     properties: properties,
   }
 }
-
 export function setPropertyOmitNullProp<T extends PropertyPathPart>(
   whenToRun: WhenToRun,
   element: ElementPath,
@@ -87,24 +86,40 @@ export function setPropertyOmitNullProp<T extends PropertyPathPart>(
   }
 }
 
-export const runSetProperty: CommandFunction<SetProperty> = (
+function getCommandDescription(command: SetProperty) {
+  return `Set Property ${PP.toString(command.property)}=${JSON.stringify(
+    command.property,
+    null,
+    2,
+  )} on ${EP.toUid(command.element)}`
+}
+
+export const runSetProperty = (
   editorState: EditorState,
   command: SetProperty,
-) => {
-  // Apply the update to the properties.
-  const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
+  interactionLifecycle: InteractionLifecycle,
+): CommandFunctionResult => {
+  const prop = maybeCssPropertyFromInlineStyle(command.property)
+  if (prop == null) {
+    const { editorStatePatch } = applyValuesAtPath(editorState, command.element, [
+      { path: command.property, value: jsExpressionValue(command.value, emptyComments) },
+    ])
+    return {
+      editorStatePatches: [editorStatePatch],
+      commandDescription: getCommandDescription(command),
+    }
+  }
+
+  const { editorStatePatch } = runStyleUpdateForStrategy(
+    interactionLifecycle,
     editorState,
     command.element,
-    [{ path: command.property, value: jsExpressionValue(command.value, emptyComments) }],
+    [SU.updateCSSProp(prop, command.value)],
   )
 
   return {
-    editorStatePatches: [propertyUpdatePatch],
-    commandDescription: `Set Property ${PP.toString(command.property)}=${JSON.stringify(
-      command.property,
-      null,
-      2,
-    )} on ${EP.toUid(command.element)}`,
+    editorStatePatches: [editorStatePatch],
+    commandDescription: getCommandDescription(command),
   }
 }
 

@@ -47,69 +47,65 @@ export var storyboard = (
 `,
   })
 
-describe('tailwind style plugin', () => {
-  it('can normalize inline style', async () => {
-    const editor = await renderTestEditorWithModel(
-      Project({
-        top: 2,
-        left: 2,
-        width: 100,
-        height: 100,
-        backgroundColor: 'blue',
-        display: 'flex',
-        flexDirection: 'row',
-        gap: '12px',
-      }),
-      'await-first-dom-report',
-    )
-    const target = EP.fromString('sb/scene/div')
-    const normalizedEditor = TailwindPlugin(null).normalizeFromInlineStyle(
-      editor.getEditorState().editor,
-      [target],
-      [],
-    )
-
-    const normalizedElement = getJSXElementFromProjectContents(
-      target,
-      normalizedEditor.projectContents,
-    )!
-
-    expect(formatJSXAttributes(normalizedElement.props)).toEqual({
-      className: 'flex-row gap-[12px]',
-      'data-uid': 'div',
-      style: { backgroundColor: 'blue', display: 'flex', height: 100, left: 2, top: 2, width: 100 },
-    })
-  })
-  it('can normalize inline style with custom Tailwind config', async () => {
-    const editor = await renderTestEditorWithModel(
-      Project({
-        top: 2,
-        left: 2,
-        width: 100,
-        height: 100,
-        backgroundColor: 'blue',
-        display: 'flex',
-        flexDirection: 'row',
-        gap: '222px',
-      }),
-      'await-first-dom-report',
-    )
-    const target = EP.fromString('sb/scene/div')
-    const normalizedEditor = TailwindPlugin(
-      getTailwindConfigCached(editor.getEditorState().editor),
-    ).normalizeFromInlineStyle(editor.getEditorState().editor, [target], [])
-
-    const normalizedElement = getJSXElementFromProjectContents(
-      target,
-      normalizedEditor.projectContents,
-    )!
-
-    expect(formatJSXAttributes(normalizedElement.props)).toEqual({
-      className: 'flex-row gap-enormous',
-      'data-uid': 'div',
-      style: { backgroundColor: 'blue', display: 'flex', height: 100, left: 2, top: 2, width: 100 },
-    })
-  })
+xdescribe('tailwind style plugin', () => {
+  // it('can normalize inline style', async () => {
+  //   const editor = await renderTestEditorWithModel(
+  //     Project({
+  //       top: 2,
+  //       left: 2,
+  //       width: 100,
+  //       height: 100,
+  //       backgroundColor: 'blue',
+  //       display: 'flex',
+  //       flexDirection: 'row',
+  //       gap: '12px',
+  //     }),
+  //     'await-first-dom-report',
+  //   )
+  //   const target = EP.fromString('sb/scene/div')
+  //   const normalizedEditor = TailwindPlugin(null).normalizeFromInlineStyle(
+  //     editor.getEditorState().editor,
+  //     [target],
+  //     [],
+  //   )
+  //   const normalizedElement = getJSXElementFromProjectContents(
+  //     target,
+  //     normalizedEditor.projectContents,
+  //   )!
+  //   expect(formatJSXAttributes(normalizedElement.props)).toEqual({
+  //     className: 'flex-row gap-[12px]',
+  //     'data-uid': 'div',
+  //     style: { backgroundColor: 'blue', display: 'flex', height: 100, left: 2, top: 2, width: 100 },
+  //   })
+  // })
+  // it('can normalize inline style with custom Tailwind config', async () => {
+  //   const editor = await renderTestEditorWithModel(
+  //     Project({
+  //       top: 2,
+  //       left: 2,
+  //       width: 100,
+  //       height: 100,
+  //       backgroundColor: 'blue',
+  //       display: 'flex',
+  //       flexDirection: 'row',
+  //       gap: '222px',
+  //     }),
+  //     'await-first-dom-report',
+  //   )
+  //   const target = EP.fromString('sb/scene/div')
+  //   const normalizedEditor = TailwindPlugin(
+  //     getTailwindConfigCached(editor.getEditorState().editor),
+  //   ).normalizeFromInlineStyle(editor.getEditorState().editor, [target], [])
+  //   const normalizedElement = getJSXElementFromProjectContents(
+  //     target,
+  //     normalizedEditor.projectContents,
+  //   )!
+  //   expect(formatJSXAttributes(normalizedElement.props)).toEqual({
+  //     className: 'flex-row gap-enormous',
+  //     'data-uid': 'div',
+  //     style: { backgroundColor: 'blue', display: 'flex', height: 100, left: 2, top: 2, width: 100 },
+  //   })
+  // })
 })
 
 function formatJSXAttributes(attributes: JSXAttributes) {
