@@ -126,7 +126,7 @@ export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
   }
 }
 
-const GridPositioningProps: Array<keyof React.CSSProperties> = [
+export const GridPositioningProps: Array<keyof React.CSSProperties> = [
   'gridColumn',
   'gridRow',
   'gridColumnStart',
