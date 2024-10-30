@@ -29,8 +29,11 @@ export function OperationLine({ operation }: { operation: ImportOperation }) {
 
   const [childrenShown, serChildrenShown] = React.useState(false)
   const shouldShowChildren = React.useMemo(
-    () => childrenShown || operation.timeDone == null,
-    [childrenShown, operation.timeDone],
+    () =>
+      childrenShown ||
+      operation.timeDone == null ||
+      operation.result == ImportOperationResult.Error,
+    [childrenShown, operation.timeDone, operation.result],
   )
   const hasChildren = React.useMemo(
     () => operation.children != null && operation.children.length > 0,
