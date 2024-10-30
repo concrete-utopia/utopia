@@ -68,7 +68,7 @@ import type { InsertionSubject, InsertionSubjectWrapper } from '../../editor/edi
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './strategies/fragment-like-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { gridRearrangeMoveStrategy } from './strategies/grid-rearrange-move-strategy'
+import { gridMoveRearrangeStrategy } from './strategies/grid-move-rearrange-strategy'
 import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
@@ -89,6 +89,7 @@ import {
   GridControls,
   isGridControlsProps,
 } from '../controls/grid-controls-for-strategies'
+import { gridMoveReorderStrategy } from './strategies/grid-move-reorder-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -116,7 +117,8 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       convertToAbsoluteAndMoveStrategy,
       convertToAbsoluteAndMoveAndSetParentFixedStrategy,
       reorderSliderStategy,
-      gridRearrangeMoveStrategy,
+      gridMoveRearrangeStrategy,
+      gridMoveReorderStrategy,
       rearrangeGridSwapStrategy,
       gridRearrangeMoveDuplicateStrategy,
       gridRearrangeResizeKeyboardStrategy,

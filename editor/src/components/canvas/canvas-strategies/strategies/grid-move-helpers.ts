@@ -1,0 +1,162 @@
+import type { ElementPath } from 'utopia-shared/src/types'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import * as EP from '../../../../core/shared/element-path'
+import type {
+  ElementInstanceMetadataMap,
+  GridAutoOrTemplateBase,
+} from '../../../../core/shared/element-template'
+import * as PP from '../../../../core/shared/property-path'
+import { printGridAutoOrTemplateBase } from '../../../inspector/common/css-utils'
+import type { CanvasCommand } from '../../commands/commands'
+import type { PropertyToUpdate } from '../../commands/set-property-command'
+import {
+  propertyToDelete,
+  propertyToSet,
+  updateBulkProperties,
+} from '../../commands/set-property-command'
+import type { InteractionCanvasState } from '../canvas-strategy-types'
+import type { DragInteractionData } from '../interaction-state'
+import { runGridMoveRearrange } from './grid-helpers'
+
+export function getCommandsAndPatchForGridRearrange(
+  canvasState: InteractionCanvasState,
+  interactionData: DragInteractionData,
+  selectedElement: ElementPath,
+): {
+  commands: CanvasCommand[]
+  elementsToRerender: ElementPath[]
+} {
+  if (interactionData.drag == null) {
+    return { commands: [], elementsToRerender: [] }
+  }
+
+  const selectedElementMetadata = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElement,
+  )
+  if (selectedElementMetadata == null) {
+    return { commands: [], elementsToRerender: [] }
+  }
+
+  const { parentGridCellGlobalFrames, parentContainerGridProperties } =
+    selectedElementMetadata.specialSizeMeasurements
+
+  const commands =
+    parentGridCellGlobalFrames != null
+      ? runGridMoveRearrange(
+          selectedElement,
+          selectedElement,
+          canvasState.startingMetadata,
+          interactionData,
+          parentGridCellGlobalFrames,
+          parentContainerGridProperties,
+        )
+      : []
+
+  return {
+    commands: commands,
+    elementsToRerender: [EP.parentPath(selectedElement), selectedElement],
+  }
+}
+
+export function restoreGridTemplateFromProps(params: {
+  columns: GridAutoOrTemplateBase
+  rows: GridAutoOrTemplateBase
+}): PropertyToUpdate[] {
+  let properties: PropertyToUpdate[] = []
+  const newCols = printGridAutoOrTemplateBase(params.columns)
+  const newRows = printGridAutoOrTemplateBase(params.rows)
+  if (newCols === '') {
+    properties.push(propertyToDelete(PP.create('style', 'gridTemplateColumns')))
+  } else {
+    properties.push(propertyToSet(PP.create('style', 'gridTemplateColumns'), newCols))
+  }
+  if (newRows === '') {
+    properties.push(propertyToDelete(PP.create('style', 'gridTemplateRows')))
+  } else {
+    properties.push(propertyToSet(PP.create('style', 'gridTemplateRows'), newRows))
+  }
+  return properties
+}
+
+type GridInitialTemplates = {
+  calculated: {
+    columns: GridAutoOrTemplateBase
+    rows: GridAutoOrTemplateBase
+  }
+  fromProps: {
+    columns: GridAutoOrTemplateBase
+    rows: GridAutoOrTemplateBase
+  }
+}
+
+export function getGridTemplates(
+  jsxMetadata: ElementInstanceMetadataMap,
+  gridPath: ElementPath,
+): GridInitialTemplates | null {
+  const grid = MetadataUtils.findElementByElementPath(jsxMetadata, gridPath)
+  if (grid == null) {
+    return null
+  }
+
+  const templateFromProps = grid.specialSizeMeasurements.containerGridPropertiesFromProps
+  const templateRowsFromProps = templateFromProps.gridTemplateRows
+  if (templateRowsFromProps == null) {
+    return null
+  }
+  const templateColsFromProps = templateFromProps.gridTemplateColumns
+  if (templateColsFromProps == null) {
+    return null
+  }
+
+  const templateCalculated = grid.specialSizeMeasurements.containerGridProperties
+  const templateRowsCalculated = templateCalculated.gridTemplateRows
+  if (templateRowsCalculated == null) {
+    return null
+  }
+  const templateColsCalculated = templateCalculated.gridTemplateColumns
+  if (templateColsCalculated == null) {
+    return null
+  }
+
+  return {
+    calculated: {
+      columns: templateColsCalculated,
+      rows: templateRowsCalculated,
+    },
+    fromProps: {
+      columns: templateColsFromProps,
+      rows: templateRowsFromProps,
+    },
+  }
+}
+
+export function gridMoveStrategiesExtraCommands(
+  parentGridPath: ElementPath,
+  initialTemplates: GridInitialTemplates,
+) {
+  const midInteractionCommands = [
+    // during the interaction, freeze the template with the calculated values…
+    updateBulkProperties('mid-interaction', parentGridPath, [
+      propertyToSet(
+        PP.create('style', 'gridTemplateColumns'),
+        printGridAutoOrTemplateBase(initialTemplates.calculated.columns),
+      ),
+      propertyToSet(
+        PP.create('style', 'gridTemplateRows'),
+        printGridAutoOrTemplateBase(initialTemplates.calculated.rows),
+      ),
+    ]),
+  ]
+
+  const onCompleteCommands = [
+    // …eventually, restore the grid template on complete.
+    updateBulkProperties(
+      'on-complete',
+      parentGridPath,
+      restoreGridTemplateFromProps(initialTemplates.fromProps),
+    ),
+  ]
+
+  return { midInteractionCommands, onCompleteCommands }
+}

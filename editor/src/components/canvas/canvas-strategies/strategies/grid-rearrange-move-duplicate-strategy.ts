@@ -17,7 +17,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { runGridRearrangeMove } from './grid-helpers'
+import { runGridMoveRearrange } from './grid-helpers'
 
 export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -85,7 +85,7 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
 
       const moveCommands =
         parentGridCellGlobalFrames != null
-          ? runGridRearrangeMove(
+          ? runGridMoveRearrange(
               targetElement,
               selectedElement,
               canvasState.startingMetadata,

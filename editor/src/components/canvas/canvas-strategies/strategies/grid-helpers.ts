@@ -45,7 +45,7 @@ import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { showGridControls } from '../../commands/show-grid-controls-command'
 
-export function runGridRearrangeMove(
+export function runGridMoveRearrange(
   targetElement: ElementPath,
   selectedElement: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
@@ -191,23 +191,89 @@ export function runGridRearrangeMove(
         updateGridControlsCommand,
       ]
     }
-    case 'reorder': {
-      return [
-        reorderElement('always', pathForCommands, absolute(possiblyReorderIndex)),
-        deleteProperties('always', pathForCommands, [
-          PP.create('style', 'gridColumn'),
-          PP.create('style', 'gridRow'),
-          PP.create('style', 'gridColumnStart'),
-          PP.create('style', 'gridColumnEnd'),
-          PP.create('style', 'gridRowStart'),
-          PP.create('style', 'gridRowEnd'),
-        ]),
-        updateGridControlsCommand,
-      ]
-    }
     default:
       assertNever(moveType)
   }
+}
+
+export function runGridMoveReorder(
+  targetElement: ElementPath,
+  selectedElement: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  interactionData: DragInteractionData,
+  gridCellGlobalFrames: GridCellGlobalFrames,
+  gridTemplate: GridContainerProperties,
+  newPathAfterReparent?: ElementPath,
+): CanvasCommand[] {
+  if (interactionData.drag == null) {
+    return []
+  }
+
+  const originalElement = MetadataUtils.findElementByElementPath(jsxMetadata, selectedElement)
+  if (originalElement == null) {
+    return []
+  }
+
+  const isReparent = newPathAfterReparent != null
+
+  const mousePos = offsetPoint(interactionData.dragStart, interactionData.drag)
+  const targetCellData = getClosestGridCellToPoint(gridCellGlobalFrames, mousePos)
+  const targetCellCoords = targetCellData?.gridCellCoordinates
+  if (targetCellCoords == null) {
+    return []
+  }
+
+  const originalElementGridConfiguration = isReparent
+    ? {
+        originalCellBounds: { width: 1, height: 1 }, //when reparenting, we just put it in a single cell
+        mouseCellPosInOriginalElement: { row: 0, column: 0 },
+      }
+    : getOriginalElementGridConfiguration(gridCellGlobalFrames, interactionData, originalElement)
+  if (originalElementGridConfiguration == null) {
+    return []
+  }
+
+  const { mouseCellPosInOriginalElement } = originalElementGridConfiguration
+
+  // get the new adjusted row
+  const row = Math.max(targetCellCoords.row - mouseCellPosInOriginalElement.row, 1)
+  // get the new adjusted column
+  const column = Math.max(targetCellCoords.column - mouseCellPosInOriginalElement.column, 1)
+
+  const pathForCommands = newPathAfterReparent ?? targetElement // when reparenting, we want to use the new path for commands
+  const gridPath = EP.parentPath(pathForCommands)
+
+  const gridTemplateColumns =
+    gridTemplate.gridTemplateColumns?.type === 'DIMENSIONS'
+      ? gridTemplate.gridTemplateColumns.dimensions.length
+      : 1
+
+  // The "pure" index in the grid children for the cell under mouse
+  const possiblyReorderIndex = getGridPositionIndex({
+    row: targetCellCoords.row,
+    column: targetCellCoords.column,
+    gridTemplateColumns: gridTemplateColumns,
+  })
+
+  const updateGridControlsCommand = showGridControls(
+    'mid-interaction',
+    gridPath,
+    targetCellData?.gridCellCoordinates ?? null,
+    gridCellCoordinates(row, column),
+  )
+
+  return [
+    reorderElement('always', pathForCommands, absolute(possiblyReorderIndex)),
+    deleteProperties('always', pathForCommands, [
+      PP.create('style', 'gridColumn'),
+      PP.create('style', 'gridRow'),
+      PP.create('style', 'gridColumnStart'),
+      PP.create('style', 'gridColumnEnd'),
+      PP.create('style', 'gridRowStart'),
+      PP.create('style', 'gridRowEnd'),
+    ]),
+    updateGridControlsCommand,
+  ]
 }
 
 export function gridPositionToValue(p: GridPosition | null | undefined): string | number | null {
@@ -442,8 +508,7 @@ function sortElementsByGridPosition(gridTemplateColumns: number) {
   }
 }
 
-type GridMoveType =
-  | 'reorder' // reorder the element in the code based on the ascending position, and remove explicit positioning props
+type GridMoveRearrangeType =
   | 'rearrange' // set explicit positioning props, and reorder based on the visual location
   | 'absolute' // a regular absolute move, relative to the grid
 
@@ -453,7 +518,7 @@ function getGridMoveType(params: {
   possiblyReorderIndex: number
   cellsSortedByPosition: SortableGridElementProperties[]
   isReparent: boolean
-}): GridMoveType {
+}): GridMoveRearrangeType {
   const specialSizeMeasurements = params.originalElementMetadata?.specialSizeMeasurements
   if (
     !params.isReparent &&
@@ -468,51 +533,11 @@ function getGridMoveType(params: {
     return 'rearrange'
   }
 
-  const elementGridProperties = specialSizeMeasurements?.elementGridProperties
-  const gridRowStart = gridPositionNumberValue(elementGridProperties?.gridRowStart ?? null)
-  const gridColumnStart = gridPositionNumberValue(elementGridProperties?.gridColumnStart ?? null)
-  const gridRowEnd = gridPositionNumberValue(elementGridProperties?.gridRowEnd ?? null)
-  const gridColumnEnd = gridPositionNumberValue(elementGridProperties?.gridColumnEnd ?? null)
-
-  const isMultiCellChild =
-    (gridRowEnd != null && gridRowStart != null && gridRowEnd > gridRowStart + 1) ||
-    (gridColumnEnd != null && gridColumnStart != null && gridColumnEnd > gridColumnStart + 1)
-
-  if (isMultiCellChild) {
-    return 'rearrange'
-  }
-
-  // The first element is intrinsically in order, so try to adjust for that
-  if (params.possiblyReorderIndex === 0) {
-    const isTheOnlyChild = params.cellsSortedByPosition.length === 1
-    const isAlreadyTheFirstChild =
-      EP.toUid(params.cellsSortedByPosition[0].path) === EP.toUid(params.elementPath)
-
-    const isAlreadyAtOrigin = gridRowStart === 1 && gridColumnStart === 1
-
-    if (isTheOnlyChild || isAlreadyTheFirstChild || isAlreadyAtOrigin) {
-      return 'reorder'
-    }
-  }
-
-  const previousElement = params.cellsSortedByPosition.at(params.possiblyReorderIndex - 1)
-  if (previousElement == null) {
-    return 'rearrange'
-  }
-  const previousElementColumn = previousElement.gridColumnStart ?? null
-  const previousElementRow = previousElement.gridRowStart ?? null
-  return isGridPositionNumericValue(previousElementColumn) &&
-    isGridPositionNumericValue(previousElementRow)
-    ? 'rearrange'
-    : 'reorder'
+  return 'rearrange'
 }
 
-function isGridPositionNumericValue(p: GridPosition | null): p is GridPositionValue {
+export function isGridPositionNumericValue(p: GridPosition | null): p is GridPositionValue {
   return p != null && !(isCSSKeyword(p) && p.value === 'auto')
-}
-
-function gridPositionNumberValue(p: GridPosition | null): number | null {
-  return isGridPositionNumericValue(p) ? p.numericalPosition : null
 }
 
 function getGridPositionIndex(props: {
@@ -786,5 +811,16 @@ export function isJustAutoGridDimension(dimensions: GridDimension[]): boolean {
     dimensions.length === 1 &&
     dimensions[0].type === 'KEYWORD' &&
     dimensions[0].value.value === 'auto'
+  )
+}
+
+export function isGridElementPinned(
+  elementGridPropertiesFromProps: GridElementProperties | null,
+): boolean {
+  return (
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridColumnEnd ?? null) ||
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridColumnStart ?? null) ||
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridRowEnd ?? null) ||
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridRowStart ?? null)
   )
 }
