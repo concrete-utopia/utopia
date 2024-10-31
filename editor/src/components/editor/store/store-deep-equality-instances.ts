@@ -4802,7 +4802,7 @@ export const ProjectRequirementResolutionKeepDeepEquality: KeepDeepEqualityCall<
   )
 
 export const ProjectRequirementsKeepDeepEquality: KeepDeepEqualityCall<ProjectRequirements> =
-  combine4EqualityCalls(
+  combine5EqualityCalls(
     (requirements) => requirements.storyboard,
     ProjectRequirementResolutionKeepDeepEquality,
     (requirements) => requirements.packageJsonEntries,
@@ -4810,6 +4810,8 @@ export const ProjectRequirementsKeepDeepEquality: KeepDeepEqualityCall<ProjectRe
     (requirements) => requirements.language,
     ProjectRequirementResolutionKeepDeepEquality,
     (requirements) => requirements.reactVersion,
+    ProjectRequirementResolutionKeepDeepEquality,
+    (requirements) => requirements.serverPackages,
     ProjectRequirementResolutionKeepDeepEquality,
     newProjectRequirements,
   )

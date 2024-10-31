@@ -7,9 +7,6 @@ import {
 import { applyToAllUIJSFiles } from '../../../../model/project-file-utils'
 
 export default class CheckProjectLanguage implements RequirementCheck {
-  getStartText(): string {
-    return 'Checking project language'
-  }
   check(projectContents: ProjectContentTreeRoot): RequirementCheckResult {
     let jsCount = 0
     let tsCount = 0
@@ -35,7 +32,7 @@ export default class CheckProjectLanguage implements RequirementCheck {
       }
     } else {
       return {
-        resolution: RequirementResolutionResult.Found,
+        resolution: RequirementResolutionResult.Passed,
         resultText: 'Project uses JS/JSX',
         resultValue: 'javascript',
       }
