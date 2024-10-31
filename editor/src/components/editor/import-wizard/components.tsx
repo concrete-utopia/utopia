@@ -9,7 +9,7 @@ import type {
 } from '../../../core/shared/import/import-operation-types'
 import { ImportOperationResult } from '../../../core/shared/import/import-operation-types'
 import { assertNever } from '../../../core/shared/utils'
-import { Icons, useColorTheme } from '../../../uuiui'
+import { Icn, Icons, useColorTheme } from '../../../uuiui'
 import { GithubSpinner } from '../../../components/navigator/left-pane/github-pane/github-spinner'
 import { RequirementResolutionResult } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
@@ -119,7 +119,7 @@ function AggregatedChildrenStatus<T extends ImportOperation>({
       {doneDependencies.length > 0 ? (
         <OperationLineWrapper className='operation-done'>
           <OperationLineContent textColor={colorTheme.fg0.value}>
-            <Icons.Checkmark style={getIconColorStyle(ImportOperationResult.Success)} />
+            <Icn color='green' type='checkmark' />
             <div>{successTextFn(doneDependencies.length)}</div>
           </OperationLineContent>
         </OperationLineWrapper>
@@ -138,20 +138,16 @@ function OperationIcon({
   runningStatus: 'waiting' | 'running' | 'done'
   result?: ImportOperationResult
 }) {
-  const iconColorStyle = React.useMemo(
-    () => (result != null ? getIconColorStyle(result) : {}),
-    [result],
-  )
   if (runningStatus === 'running') {
     return <GithubSpinner />
   } else if (runningStatus === 'done' && result === 'success') {
-    return <Icons.Checkmark style={iconColorStyle} />
+    return <Icn color='green' type='checkmark' />
   } else if (runningStatus === 'done' && result === 'warn') {
-    return <Icons.WarningTriangle style={iconColorStyle} />
+    return <Icn color='component-orange' type='warningtriangle' />
   } else if (runningStatus === 'waiting') {
     return <Icons.Dot />
   } else {
-    return <Icons.Cross style={iconColorStyle} />
+    return <Icn color='error' type='cross' />
   }
 }
 
@@ -283,37 +279,4 @@ function getImportOperationText(operation: ImportOperation): React.ReactNode {
     default:
       assertNever(operation)
   }
-}
-
-function getTextColor(operationRunningStatus: 'waiting' | 'running' | 'done') {
-  if (operationRunningStatus === 'waiting') {
-    return 'gray'
-  } else {
-    return 'black'
-  }
-}
-
-function getIconColorStyle(result: ImportOperationResult) {
-  // temp solution since we currently only have black icons
-  // https://codepen.io/sosuke/pen/Pjoqqp
-  if (result === ImportOperationResult.Error) {
-    return {
-      // our error red
-      filter:
-        'invert(14%) sepia(99%) saturate(4041%) hue-rotate(328deg) brightness(101%) contrast(115%)',
-    }
-  } else if (result === ImportOperationResult.Warn) {
-    return {
-      // orange
-      filter:
-        'invert(72%) sepia(90%) saturate(3088%) hue-rotate(1deg) brightness(105%) contrast(104%)',
-    }
-  } else if (result === ImportOperationResult.Success) {
-    return {
-      // green
-      filter:
-        'invert(72%) sepia(60%) saturate(3628%) hue-rotate(126deg) brightness(104%) contrast(76%)',
-    }
-  }
-  return {}
 }
