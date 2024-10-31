@@ -53,10 +53,19 @@ export const gridMoveReorderStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const elementGridPropertiesFromProps = MetadataUtils.findElementByElementPath(
+  const selectedElementMetadata = MetadataUtils.findElementByElementPath(
     canvasState.startingMetadata,
     selectedElement,
-  )?.specialSizeMeasurements.elementGridPropertiesFromProps
+  )
+  if (selectedElementMetadata == null) {
+    return null
+  }
+  if (MetadataUtils.isPositionAbsolute(selectedElementMetadata)) {
+    return null
+  }
+
+  const elementGridPropertiesFromProps =
+    selectedElementMetadata.specialSizeMeasurements.elementGridPropertiesFromProps
 
   const pinnedState = getGridElementPinState(elementGridPropertiesFromProps ?? null)
   const fitnessModifier = pinnedState !== 'pinned' ? 1 : -1

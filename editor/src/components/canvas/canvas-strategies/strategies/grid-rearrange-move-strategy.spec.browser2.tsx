@@ -8,11 +8,11 @@ import {
   offsetPoint,
   windowPoint,
 } from '../../../../core/shared/math-utils'
-import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import CanvasActions from '../../canvas-actions'
 import { GridCellTestId } from '../../controls/grid-controls-for-strategies'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { mouseDragFromPointToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
+import { keyDown, mouseDragFromPointToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import type { GridCellCoordinates } from './grid-cell-bounds'
@@ -76,7 +76,7 @@ describe('grid rearrange move strategy', () => {
     })
   })
 
-  it('can rearrange element with no explicit grid props set', async () => {
+  it('can rearrange element with no explicit grid props set (tab-ing to rearrange)', async () => {
     const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
     const testId = 'bbb'
@@ -84,6 +84,7 @@ describe('grid rearrange move strategy', () => {
       scale: 1,
       pathString: `sb/scene/grid/${testId}`,
       testId: testId,
+      tab: true,
     })
     expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
       gridColumnEnd: 'auto',
@@ -140,8 +141,6 @@ export var storyboard = (
       data-testid='grid'
       style={{
         position: 'absolute',
-        left: -94,
-        top: 698,
         display: 'grid',
         gap: 10,
         width: 600,
@@ -205,6 +204,7 @@ export var storyboard = (
       const elementPathToDrag = EP.fromString(`sb/grid/${testId}`)
 
       await selectComponentsForTest(editor, [elementPathToDrag])
+      await wait(2000)
 
       const sourceGridCell = editor.renderedDOM.getByTestId(GridCellTestId(elementPathToDrag))
       const targetGridCell = editor.renderedDOM.getByTestId(
@@ -222,7 +222,7 @@ export var storyboard = (
         },
         getRectCenter(
           localRectangle({
-            x: targetRect.x,
+            x: targetRect.x + 2000,
             y: targetRect.y,
             width: targetRect.width,
             height: targetRect.height,
@@ -232,6 +232,8 @@ export var storyboard = (
           moveBeforeMouseDown: true,
         },
       )
+
+      await wait(2000)
 
       const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
         editor.renderedDOM.getByTestId(testId).style
@@ -335,8 +337,8 @@ export var storyboard = (
           expect({ top, left, gridColumn, gridRow }).toEqual({
             gridColumn: '1',
             gridRow: '1',
-            left: '37px',
-            top: '41px',
+            left: '21px',
+            top: '25px',
           })
         }
       })
@@ -369,7 +371,7 @@ export var storyboard = (
         await mouseDragFromPointToPoint(
           editor.renderedDOM.getByTestId(GridCellTestId(EP.fromString('sb/scene/grid/child'))),
           childCenter,
-          offsetPoint(childCenter, windowPoint({ x: 240, y: 240 })),
+          offsetPoint(childCenter, windowPoint({ x: 20, y: 20 })),
           {
             moveBeforeMouseDown: true,
           },
@@ -380,8 +382,8 @@ export var storyboard = (
           expect({ top, left, gridColumn, gridRow }).toEqual({
             gridColumn: '1',
             gridRow: '1',
-            left: '137px',
-            top: '141px',
+            left: '19px',
+            top: '23px',
           })
         }
       })
@@ -412,7 +414,7 @@ export var storyboard = (
         await mouseDragFromPointToPoint(
           editor.renderedDOM.getByTestId(GridCellTestId(EP.fromString('sb/scene/grid/child'))),
           childCenter,
-          offsetPoint(childCenter, windowPoint({ x: 240, y: 240 })),
+          offsetPoint(childCenter, windowPoint({ x: 1200, y: 1200 })),
           {
             moveBeforeMouseDown: true,
           },
@@ -498,7 +500,7 @@ export var storyboard = (
         await mouseDragFromPointToPoint(
           editor.renderedDOM.getByTestId(GridCellTestId(EP.fromString('sb/scene/grid/child'))),
           startPoint,
-          offsetPoint(startPoint, windowPoint({ x: -100, y: -100 })),
+          offsetPoint(startPoint, windowPoint({ x: -500, y: -500 })),
           {
             moveBeforeMouseDown: true,
           },
@@ -595,6 +597,7 @@ export var storyboard = (
           {
             staggerMoveEvents: false,
             moveBeforeMouseDown: true,
+            tab: true,
           },
         )
 
@@ -645,7 +648,13 @@ export var storyboard = (
       const editor = await renderTestEditorWithCode(ProjectCodeReorder, 'await-first-dom-report')
 
       const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd, cells } =
-        await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 2, column: 2 })
+        await runReorderTest(
+          editor,
+          'sb/scene/grid',
+          'orange',
+          { row: 2, column: 2 },
+          { tab: true },
+        )
 
       expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
         gridColumnEnd: 'auto',
@@ -659,7 +668,13 @@ export var storyboard = (
     it('reorders an element setting positioning also relative to other fixed elements', async () => {
       const editor = await renderTestEditorWithCode(ProjectCodeReorder, 'await-first-dom-report')
 
-      const first = await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 2, column: 2 })
+      const first = await runReorderTest(
+        editor,
+        'sb/scene/grid',
+        'orange',
+        { row: 2, column: 2 },
+        { tab: true },
+      )
 
       expect({
         gridRowStart: first.gridRowStart,
@@ -675,7 +690,13 @@ export var storyboard = (
 
       expect(first.cells).toEqual(['pink', 'cyan', 'blue', 'orange'])
 
-      const second = await runReorderTest(editor, 'sb/scene/grid', 'pink', { row: 2, column: 3 })
+      const second = await runReorderTest(
+        editor,
+        'sb/scene/grid',
+        'pink',
+        { row: 2, column: 3 },
+        { tab: true },
+      )
 
       expect({
         gridRowStart: second.gridRowStart,
@@ -695,7 +716,13 @@ export var storyboard = (
     it('reorders and removes positioning when moving back to contiguous', async () => {
       const editor = await renderTestEditorWithCode(ProjectCodeReorder, 'await-first-dom-report')
 
-      const first = await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 2, column: 2 })
+      const first = await runReorderTest(
+        editor,
+        'sb/scene/grid',
+        'orange',
+        { row: 2, column: 2 },
+        { tab: true },
+      )
       expect({
         gridRowStart: first.gridRowStart,
         gridRowEnd: first.gridRowEnd,
@@ -710,7 +737,13 @@ export var storyboard = (
 
       expect(first.cells).toEqual(['pink', 'cyan', 'blue', 'orange'])
 
-      const second = await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 1, column: 1 })
+      const second = await runReorderTest(
+        editor,
+        'sb/scene/grid',
+        'orange',
+        { row: 1, column: 1 },
+        { tab: true },
+      )
 
       expect({
         gridRowStart: second.gridRowStart,
@@ -733,7 +766,13 @@ export var storyboard = (
         'await-first-dom-report',
       )
 
-      const result = await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 1, column: 1 })
+      const result = await runReorderTest(
+        editor,
+        'sb/scene/grid',
+        'orange',
+        { row: 1, column: 1 },
+        { tab: true },
+      )
       expect({
         gridRowStart: result.gridRowStart,
         gridRowEnd: result.gridRowEnd,
@@ -759,6 +798,7 @@ async function runMoveTest(
     testId: string
     targetCell?: GridCellCoordinates
     draggedCell?: GridCellCoordinates
+    tab?: boolean
   },
 ) {
   const elementPathToDrag = EP.fromString(props.pathString)
@@ -810,6 +850,9 @@ async function runMoveTest(
       moveBeforeMouseDown: true,
     },
   )
+  if (props.tab) {
+    await keyDown('Tab')
+  }
   await mouseUpAtPoint(editor.renderedDOM.getByTestId(CanvasControlsContainerID), endPoint)
 
   return editor.renderedDOM.getByTestId(props.testId).style
@@ -820,12 +863,14 @@ async function runReorderTest(
   gridTestId: string,
   testId: string,
   targetCell: GridCellCoordinates,
+  options?: { tab?: boolean },
 ) {
   const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest(editor, {
     scale: 1,
     pathString: `${gridTestId}/${testId}`,
     testId: testId,
     targetCell: targetCell,
+    tab: options?.tab,
   })
 
   const element = editor.getEditorState().editor.jsxMetadata[gridTestId]
