@@ -9,7 +9,7 @@ import type {
 } from '../../../core/shared/import/import-operation-types'
 import { ImportOperationResult } from '../../../core/shared/import/import-operation-types'
 import { assertNever } from '../../../core/shared/utils'
-import { Icons } from '../../../uuiui'
+import { Icons, useColorTheme } from '../../../uuiui'
 import { GithubSpinner } from '../../../components/navigator/left-pane/github-pane/github-spinner'
 import { RequirementResolutionResult } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
@@ -21,11 +21,8 @@ export function OperationLine({ operation }: { operation: ImportOperation }) {
       ? 'running'
       : 'done'
   }, [operation.timeStarted, operation.timeDone])
-
-  const textColor = React.useMemo(
-    () => getTextColor(operationRunningStatus, operation),
-    [operationRunningStatus, operation],
-  )
+  const colorTheme = useColorTheme()
+  const textColor = operationRunningStatus === 'waiting' ? 'gray' : colorTheme.fg0.value
 
   const [childrenShown, serChildrenShown] = React.useState(false)
   const shouldShowChildren = React.useMemo(
@@ -114,13 +111,14 @@ function AggregatedChildrenStatus<T extends ImportOperation>({
   successFn: (operation: T) => boolean
   successTextFn: (successCount: number) => string
 }) {
+  const colorTheme = useColorTheme()
   const doneDependencies = childOperations.filter(successFn)
   const restOfDependencies = childOperations.filter((op) => !successFn(op))
   return (
     <React.Fragment>
       {doneDependencies.length > 0 ? (
         <OperationLineWrapper className='operation-done'>
-          <OperationLineContent textColor='black'>
+          <OperationLineContent textColor={colorTheme.fg0.value}>
             <Icons.Checkmark style={getIconColorStyle(ImportOperationResult.Success)} />
             <div>{successTextFn(doneDependencies.length)}</div>
           </OperationLineContent>
@@ -164,6 +162,7 @@ function TimeFromInSeconds({
   operation: ImportOperation
   runningStatus: 'waiting' | 'running' | 'done'
 }) {
+  const colorTheme = useColorTheme()
   const [currentTime, setCurrentTime] = React.useState(Date.now())
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -188,7 +187,7 @@ function TimeFromInSeconds({
     <div
       data-short-time={operationTime < 100}
       style={{
-        color: runningStatus === 'running' ? 'black' : 'gray',
+        color: runningStatus === 'running' ? colorTheme.fg0.value : 'gray',
         fontSize: runningStatus === 'running' ? undefined : 12,
       }}
     >
@@ -286,10 +285,7 @@ function getImportOperationText(operation: ImportOperation): React.ReactNode {
   }
 }
 
-function getTextColor(
-  operationRunningStatus: 'waiting' | 'running' | 'done',
-  operation: ImportOperation,
-) {
+function getTextColor(operationRunningStatus: 'waiting' | 'running' | 'done') {
   if (operationRunningStatus === 'waiting') {
     return 'gray'
   } else {
