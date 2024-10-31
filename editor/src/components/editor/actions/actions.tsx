@@ -628,9 +628,9 @@ import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-ut
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { styleP } from '../../inspector/inspector-common'
 import { getUpdateOperationResult } from '../../../core/shared/import/import-operation-service'
-import { updateRequirements } from '../../../core/shared/import/proejct-health-check/utopia-requirements-service'
+import { updateRequirements } from '../../../core/shared/import/project-health-check/utopia-requirements-service'
 import { applyValuesAtPath, deleteValuesAtPath } from '../../canvas/commands/utils/property-utils'
-import { createStoryboardFileIfNecessary } from '../../../core/shared/import/proejct-health-check/requirements/requirement-storyboard'
+import { createStoryboardFileIfNecessary } from '../../../core/shared/import/project-health-check/requirements/requirement-storyboard'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 

@@ -1,15 +1,12 @@
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import { RevisionsState } from 'utopia-shared/src/types'
-import { getPackageJson } from '../check-utopia-requirements'
+import { getPackageJson } from '../../../../../components/assets'
 import type { RequirementCheck, RequirementCheckResult } from '../utopia-requirements-types'
 import { RequirementResolutionResult } from '../utopia-requirements-types'
 import { addFileToProjectContents } from '../../../../../components/assets'
 import { codeFile } from '../../../../../core/shared/project-file-types'
 
 export default class PackageJsonCheckAndFix implements RequirementCheck {
-  getStartText(): string {
-    return 'Checking package.json'
-  }
   check(projectContents: ProjectContentTreeRoot): RequirementCheckResult {
     const parsedPackageJson = getPackageJson(projectContents)
     if (parsedPackageJson == null) {
@@ -39,7 +36,7 @@ export default class PackageJsonCheckAndFix implements RequirementCheck {
       }
     } else {
       return {
-        resolution: RequirementResolutionResult.Found,
+        resolution: RequirementResolutionResult.Passed,
         resultText: 'Valid package.json found',
       }
     }

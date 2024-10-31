@@ -11,7 +11,7 @@ import { ImportOperationResult } from '../../../core/shared/import/import-operat
 import { assertNever } from '../../../core/shared/utils'
 import { Icons } from '../../../uuiui'
 import { GithubSpinner } from '../../../components/navigator/left-pane/github-pane/github-spinner'
-import { RequirementResolutionResult } from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
+import { RequirementResolutionResult } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
 export function OperationLine({ operation }: { operation: ImportOperation }) {
   const operationRunningStatus = React.useMemo(() => {
@@ -29,8 +29,11 @@ export function OperationLine({ operation }: { operation: ImportOperation }) {
 
   const [childrenShown, serChildrenShown] = React.useState(false)
   const shouldShowChildren = React.useMemo(
-    () => childrenShown || operation.timeDone == null,
-    [childrenShown, operation.timeDone],
+    () =>
+      childrenShown ||
+      operation.timeDone == null ||
+      operation.result == ImportOperationResult.Error,
+    [childrenShown, operation.timeDone, operation.result],
   )
   const hasChildren = React.useMemo(
     () => operation.children != null && operation.children.length > 0,
@@ -99,7 +102,7 @@ const dependenciesSuccessFn = (op: ImportFetchDependency) =>
 const dependenciesSuccessTextFn = (successCount: number) =>
   `${successCount} dependencies fetched successfully`
 const requirementsSuccessFn = (op: ImportCheckRequirementAndFix) =>
-  op.resolution === RequirementResolutionResult.Found
+  op.resolution === RequirementResolutionResult.Passed
 const requirementsSuccessTextFn = (successCount: number) => `${successCount} requirements met`
 
 function AggregatedChildrenStatus<T extends ImportOperation>({

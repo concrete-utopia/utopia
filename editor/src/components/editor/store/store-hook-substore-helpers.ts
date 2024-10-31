@@ -1,5 +1,5 @@
 import { type EditorState } from './editor-state'
-import { emptyProjectRequirements } from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
+import { emptyProjectRequirements } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
 export const EmptyEditorStateForKeysOnly: EditorState = {
   id: null,
