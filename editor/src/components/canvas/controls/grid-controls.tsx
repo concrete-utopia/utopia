@@ -903,9 +903,10 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
 
           const activePositioningTarget = isActiveCell && !dontShowActiveCellHighlight // TODO: move the logic into runGridRearrangeMove and do not set targetCell prop in these cases
 
-          const borderColor = activePositioningTarget
-            ? colorTheme.brandNeonPink.value
-            : colorTheme.grey65.value
+          const borderColor =
+            activePositioningTarget && !anyTargetNotPinned
+              ? colorTheme.brandNeonPink.value
+              : colorTheme.grey65.value
 
           return (
             <div
