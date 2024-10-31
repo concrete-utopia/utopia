@@ -1,29 +1,48 @@
+import type { PropertyPath } from 'utopia-shared/src/types'
 import type { StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
-import { getSimpleAttributeAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as Either from '../../../core/shared/either'
-import type { JSXElement } from '../../../core/shared/element-template'
-import {
-  emptyComments,
-  isJSXElement,
-  jsExpressionValue,
-} from '../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
+import { Utils } from '../../../uuiui-deps'
 import { getJSXElementFromProjectContents } from '../../editor/store/editor-state'
 import { cssParsers, type ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import type { CSSStyleProperty } from '../canvas-types'
+import type { CSSStyleProperty, StyleInfo } from '../canvas-types'
 import { applyValuesAtPath, deleteValuesAtPath } from '../commands/utils/property-utils'
 import type { StylePlugin } from './style-plugins'
+import {
+  getModifiableJSXAttributeAtPath,
+  jsxSimpleAttributeToValue,
+} from '../../../core/shared/jsx-attribute-utils'
+
+function getPropValue(
+  propsOrAttributes: PropsOrJSXAttributes,
+  path: PropertyPath,
+): Either.Either<string, any> {
+  return Either.foldEither(
+    (props) => {
+      const possibleValue = Utils.path(PP.getElements(path), props)
+      if (possibleValue == null) {
+        return Either.right(undefined)
+      } else {
+        return Either.right(possibleValue)
+      }
+    },
+    (attributes) => {
+      const getAttrResult = getModifiableJSXAttributeAtPath(attributes, path)
+      return Either.flatMapEither((attr) => jsxSimpleAttributeToValue(attr), getAttrResult)
+    },
+    propsOrAttributes,
+  )
+}
 
 function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(
   prop: P,
-  element: JSXElement,
+  propsOrAttributes: PropsOrJSXAttributes,
 ): CSSStyleProperty<NonNullable<T>> | null {
-  const attribute = getSimpleAttributeAtPath(
-    Either.right(element.props),
-    stylePropPathMappingFn(prop, ['style']),
-  )
+  const attribute = getPropValue(propsOrAttributes, stylePropPathMappingFn(prop, ['style']))
   if (Either.isLeft(attribute) || attribute.value == null) {
     return { type: 'not-found' }
   }
@@ -37,6 +56,12 @@ function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSPropert
 
 export const InlineStylePlugin: StylePlugin = {
   name: 'Inline Style',
+  readStyleFromElementProps: <T extends keyof StyleInfo>(
+    propsOrAttributes: PropsOrJSXAttributes,
+    key: T,
+  ) => {
+    return getPropertyFromInstance(key, propsOrAttributes) as StyleInfo[T]
+  },
   styleInfoFactory:
     ({ projectContents }) =>
     (elementPath) => {
@@ -45,20 +70,22 @@ export const InlineStylePlugin: StylePlugin = {
         return null
       }
 
-      const gap = getPropertyFromInstance('gap', element)
-      const flexDirection = getPropertyFromInstance('flexDirection', element)
-      const padding = getPropertyFromInstance('padding', element)
-      const paddingTop = getPropertyFromInstance('paddingTop', element)
-      const paddingBottom = getPropertyFromInstance('paddingBottom', element)
-      const paddingLeft = getPropertyFromInstance('paddingLeft', element)
-      const paddingRight = getPropertyFromInstance('paddingRight', element)
-      const width = getPropertyFromInstance('width', element)
-      const height = getPropertyFromInstance('height', element)
-      const top = getPropertyFromInstance('top', element)
-      const left = getPropertyFromInstance('left', element)
-      const right = getPropertyFromInstance('right', element)
-      const bottom = getPropertyFromInstance('bottom', element)
-      const flexBasis = getPropertyFromInstance('flexBasis', element)
+      const gap = getPropertyFromInstance('gap', Either.right(element.props))
+      const flexDirection = getPropertyFromInstance('flexDirection', Either.right(element.props))
+      const padding = getPropertyFromInstance('padding', Either.right(element.props))
+      const paddingTop = getPropertyFromInstance('paddingTop', Either.right(element.props))
+      const paddingBottom = getPropertyFromInstance('paddingBottom', Either.right(element.props))
+      const paddingLeft = getPropertyFromInstance('paddingLeft', Either.right(element.props))
+      const paddingRight = getPropertyFromInstance('paddingRight', Either.right(element.props))
+      const width = getPropertyFromInstance('width', Either.right(element.props))
+      const height = getPropertyFromInstance('height', Either.right(element.props))
+      const top = getPropertyFromInstance('top', Either.right(element.props))
+      const left = getPropertyFromInstance('left', Either.right(element.props))
+      const right = getPropertyFromInstance('right', Either.right(element.props))
+      const bottom = getPropertyFromInstance('bottom', Either.right(element.props))
+      const flexBasis = getPropertyFromInstance('flexBasis', Either.right(element.props))
+      const flexGrow = getPropertyFromInstance('flexGrow', Either.right(element.props))
+      const flex = getPropertyFromInstance('flex', Either.right(element.props))
 
       return {
         gap,
@@ -75,6 +102,8 @@ export const InlineStylePlugin: StylePlugin = {
         left,
         right,
         bottom,
+        flexGrow,
+        flex,
       }
     },
   updateStyles: (editorState, elementPath, updates) => {

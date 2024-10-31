@@ -43,7 +43,14 @@ export function getTailwindConfigCached(editorState: EditorState): Config | null
   return config
 }
 
-const TAILWIND_INSTANCE: { current: Tailwindcss | null } = { current: null }
+const TAILWIND_INSTANCE: {
+  current: Tailwindcss | null
+  config: Config | null
+} = { current: null, config: null }
+
+export function getTailwindConfigFromSingletonInstance(): Config | null {
+  return TAILWIND_INSTANCE.config
+}
 
 export function isTailwindEnabled(): boolean {
   return TAILWIND_INSTANCE.current != null
@@ -82,9 +89,10 @@ function getCssFilesFromProjectContents(projectContents: ProjectContentTreeRoot)
 
 function generateTailwindClasses(projectContents: ProjectContentTreeRoot, requireFn: RequireFn) {
   const allCSSFiles = getCssFilesFromProjectContents(projectContents).join('\n')
-  const rawConfig = importDefault(requireFn('/', TailwindConfigPath))
-  const tailwindCss = createTailwindcss({ tailwindConfig: rawConfig as TailwindConfig })
+  const rawConfig = importDefault(requireFn('/', TailwindConfigPath)) as Config
+  const tailwindCss = createTailwindcss({ tailwindConfig: rawConfig })
   TAILWIND_INSTANCE.current = tailwindCss
+  TAILWIND_INSTANCE.config = rawConfig
   void generateTailwindStyles(tailwindCss, allCSSFiles)
 }
 

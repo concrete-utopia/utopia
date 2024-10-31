@@ -1,4 +1,4 @@
-import type { ElementPath } from 'utopia-shared/src/types'
+import type { ElementPath, PropertyPath } from 'utopia-shared/src/types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type {
   InteractionLifecycle,
@@ -8,6 +8,7 @@ import { InlineStylePlugin } from './inline-style-plugin'
 import { TailwindPlugin } from './tailwind-style-plugin'
 import {
   getTailwindConfigCached,
+  getTailwindConfigFromSingletonInstance,
   isTailwindEnabled,
 } from '../../../core/tailwind/tailwind-compilation'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
@@ -19,6 +20,7 @@ import { applyValuesAtPath } from '../commands/utils/property-utils'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import type { StyleInfo } from '../canvas-types'
+import type { PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
 
 export interface UpdateCSSProp {
   type: 'set'
@@ -36,6 +38,10 @@ export type StyleUpdate = UpdateCSSProp | DeleteCSSProp
 export interface StylePlugin {
   name: string
   styleInfoFactory: StyleInfoFactory
+  readStyleFromElementProps: <T extends keyof StyleInfo>(
+    props: PropsOrJSXAttributes,
+    cssProp: T,
+  ) => StyleInfo[T] | null
   updateStyles: (
     editorState: EditorState,
     elementPath: ElementPath,
@@ -46,6 +52,13 @@ export interface StylePlugin {
 export function getActivePlugin(editorState: EditorState): StylePlugin {
   if (isFeatureEnabled('Tailwind') && isTailwindEnabled()) {
     return TailwindPlugin(getTailwindConfigCached(editorState))
+  }
+  return InlineStylePlugin
+}
+
+export function getActivePluginSingleton(): StylePlugin {
+  if (isFeatureEnabled('Tailwind') && isTailwindEnabled()) {
+    return TailwindPlugin(getTailwindConfigFromSingletonInstance())
   }
   return InlineStylePlugin
 }

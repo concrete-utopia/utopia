@@ -1,5 +1,5 @@
 import * as TailwindClassParser from '@xengine/tailwindcss-class-parser'
-import { isLeft } from '../../../core/shared/either'
+import { defaultEither, flatMapEither, foldEither, isLeft } from '../../../core/shared/either'
 import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
 import type { EditorState } from '../../editor/store/editor-state'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
@@ -9,7 +9,7 @@ import { mapDropNulls } from '../../../core/shared/array-utils'
 import { updateClassListCommand } from './../commands/update-class-list-command'
 import * as UCL from './../commands/update-class-list-command'
 import type { StylePlugin } from './style-plugins'
-import type { CSSStyleProperty } from '../canvas-types'
+import type { CSSStyleProperty, StyleInfo } from '../canvas-types'
 import type { Config } from 'tailwindcss/types/config'
 import { emptyComments } from 'utopia-shared/src/types'
 import { jsExpressionValue } from '../../../core/shared/element-template'
@@ -24,6 +24,12 @@ import {
 import { getTailwindConfigCached } from '../../../core/tailwind/tailwind-compilation'
 import { applyValuesAtPath } from '../commands/utils/property-utils'
 import * as PP from '../../../core/shared/property-path'
+import { Utils } from '../../../uuiui-deps'
+import {
+  getModifiableJSXAttributeAtPath,
+  jsxSimpleAttributeToValue,
+} from '../../../core/shared/jsx-attribute-utils'
+import type { PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
 
 function parseTailwindProperty<T>(
   value: unknown,
@@ -129,6 +135,37 @@ const stringifyPropertyValue = (value: string | number) =>
 
 export const TailwindPlugin = (config: Config | null): StylePlugin => ({
   name: 'Tailwind',
+  readStyleFromElementProps: <T extends keyof StyleInfo>(
+    propsOrAttributes: PropsOrJSXAttributes,
+    key: T,
+  ) => {
+    if (TailwindPropertyMapping[key] == null) {
+      return null
+    }
+
+    const classNameAttribute = foldEither(
+      (props) => Utils.path(['className'], props),
+      (attributes) =>
+        defaultEither(
+          null,
+          flatMapEither(
+            (attr) => jsxSimpleAttributeToValue(attr),
+            getModifiableJSXAttributeAtPath(attributes, PP.create('className')),
+          ),
+        ),
+      propsOrAttributes,
+    )
+
+    if (typeof classNameAttribute !== 'string') {
+      return null
+    }
+
+    const mapping = getTailwindClassMapping(classNameAttribute.split(' '), config)
+    return parseTailwindProperty(
+      mapping[TailwindPropertyMapping[key]],
+      cssParsers[key],
+    ) as StyleInfo[T]
+  },
   styleInfoFactory:
     ({ projectContents }) =>
     (elementPath) => {
@@ -175,6 +212,11 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         left: parseTailwindProperty(mapping[TailwindPropertyMapping.left], cssParsers.left),
         right: parseTailwindProperty(mapping[TailwindPropertyMapping.right], cssParsers.right),
         bottom: parseTailwindProperty(mapping[TailwindPropertyMapping.bottom], cssParsers.bottom),
+        flexGrow: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.flexGrow],
+          cssParsers.flexGrow,
+        ),
+        flex: parseTailwindProperty(mapping[TailwindPropertyMapping.flex], cssParsers.flex),
       }
     },
   updateStyles: (editorState, elementPath, updates) => {

@@ -26,7 +26,7 @@ import type {
 import { InteractionSession } from './canvas-strategies/interaction-state'
 import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import type { MouseButtonsPressed } from '../../utils/mouse'
-import type { CSSNumber, CSSPadding, FlexDirection } from '../inspector/common/css-utils'
+import type { CSSFlex, CSSNumber, CSSPadding, FlexDirection } from '../inspector/common/css-utils'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -566,11 +566,14 @@ export type LeftInfo = CSSStyleProperty<CSSNumber>
 export type RightInfo = CSSStyleProperty<CSSNumber>
 export type BottomInfo = CSSStyleProperty<CSSNumber>
 export type FlexBasisInfo = CSSStyleProperty<CSSNumber>
+export type FlexGrowInfo = CSSStyleProperty<number>
+export type FlexInfo = CSSStyleProperty<CSSFlex>
 
 export interface StyleInfo {
   gap: FlexGapInfo | null
   flexDirection: FlexDirectionInfo | null
   flexBasis: FlexBasisInfo | null
+  flexGrow: FlexGrowInfo | null
   padding: PaddingInfo | null
   paddingTop: PaddingSideInfo | null
   paddingRight: PaddingSideInfo | null
@@ -582,4 +585,28 @@ export interface StyleInfo {
   left: LeftInfo | null
   right: RightInfo | null
   bottom: BottomInfo | null
+  flex: FlexInfo | null
+}
+
+const emptyStyleInfo: StyleInfo = {
+  gap: null,
+  flexDirection: null,
+  flexBasis: null,
+  flexGrow: null,
+  padding: null,
+  paddingTop: null,
+  paddingRight: null,
+  paddingBottom: null,
+  paddingLeft: null,
+  width: null,
+  height: null,
+  top: null,
+  left: null,
+  right: null,
+  bottom: null,
+  flex: null,
+}
+
+export function isStyleInfoKey(key: string): key is keyof StyleInfo {
+  return key in emptyStyleInfo
 }
