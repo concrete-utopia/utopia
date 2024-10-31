@@ -25,7 +25,7 @@ export function checkAndFixUtopiaRequirements(
     serverPackages: new CheckServerPackages(),
   }
   let projectContents = parsedProjectContents
-  let result: RequirementResolutionResult = RequirementResolutionResult.Found
+  let result: RequirementResolutionResult = RequirementResolutionResult.Passed
   // iterate over all checks, updating the project contents as we go
   for (const [name, check] of Object.entries(checks)) {
     const checkName = name as ProjectRequirement
