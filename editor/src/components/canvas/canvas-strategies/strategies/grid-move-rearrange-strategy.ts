@@ -126,7 +126,7 @@ function getStrategyToApply(
     MetadataUtils.isPositionAbsolute(element) &&
     !MetadataUtils.isGridCellWithPositioning(jsxMetadata, cell)
       ? 'Grid Move (Abs)'
-      : 'Rearrange Grid (Move)'
+      : 'Grid Rearrange'
 
   return {
     name: name,

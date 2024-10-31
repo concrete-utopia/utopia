@@ -70,7 +70,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { gridMoveRearrangeStrategy } from './strategies/grid-move-rearrange-strategy'
 import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
-import { gridRearrangeMoveDuplicateStrategy } from './strategies/grid-rearrange-move-duplicate-strategy'
+import { gridMoveRearrangeDuplicateStrategy } from './strategies/grid-move-rearrange-duplicate-strategy'
 import { setGridGapStrategy } from './strategies/set-grid-gap-strategy'
 import type { CanvasCommand } from '../commands/commands'
 import { foldAndApplyCommandsInner } from '../commands/commands'
@@ -117,7 +117,7 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       reorderSliderStategy,
       gridMoveRearrangeStrategy,
       gridMoveReorderStrategy,
-      gridRearrangeMoveDuplicateStrategy,
+      gridMoveRearrangeDuplicateStrategy,
       gridRearrangeResizeKeyboardStrategy,
     ],
   )

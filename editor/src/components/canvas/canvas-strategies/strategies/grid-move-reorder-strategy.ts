@@ -64,8 +64,8 @@ export const gridMoveReorderStrategy: CanvasStrategyFactory = (
 
   return {
     id: 'reorder-grid-move-strategy',
-    name: 'Reorder (Grid)',
-    descriptiveLabel: 'Reorder (Grid)',
+    name: 'Grid Reorder',
+    descriptiveLabel: 'Grid Reorder',
     icon: {
       category: 'tools',
       type: 'pointer',
