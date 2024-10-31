@@ -1,5 +1,4 @@
 import React from 'react'
-import { createSelector } from 'reselect'
 import { mapDropNulls, pushUniquelyBy, sortBy } from '../../../core/shared/array-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
@@ -70,7 +69,6 @@ import { retargetStrategyToChildrenOfFragmentLikeElements } from './strategies/f
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { gridMoveRearrangeStrategy } from './strategies/grid-move-rearrange-strategy'
 import { resizeGridStrategy } from './strategies/resize-grid-strategy'
-import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
 import { gridRearrangeMoveDuplicateStrategy } from './strategies/grid-rearrange-move-duplicate-strategy'
 import { setGridGapStrategy } from './strategies/set-grid-gap-strategy'
@@ -119,7 +117,6 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       reorderSliderStategy,
       gridMoveRearrangeStrategy,
       gridMoveReorderStrategy,
-      rearrangeGridSwapStrategy,
       gridRearrangeMoveDuplicateStrategy,
       gridRearrangeResizeKeyboardStrategy,
     ],
