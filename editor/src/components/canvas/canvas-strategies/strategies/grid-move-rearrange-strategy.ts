@@ -55,7 +55,6 @@ export const gridMoveRearrangeStrategy: CanvasStrategyFactory = (
   }
 
   const strategyToApply = getStrategyToApply(
-    interactionSession.interactionData,
     parentGridPath,
     canvasState.startingMetadata,
     selectedElement,
@@ -111,15 +110,10 @@ type StrategyToApply = {
 }
 
 function getStrategyToApply(
-  interactionData: DragInteractionData,
   parentGridPath: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
   cell: ElementPath,
-): StrategyToApply | null {
-  if (interactionData.drag == null) {
-    return null
-  }
-
+): StrategyToApply {
   const element = MetadataUtils.findElementByElementPath(jsxMetadata, cell)
 
   const name =

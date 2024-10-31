@@ -523,20 +523,16 @@ function getGridMoveType(params: {
   if (
     !params.isReparent &&
     specialSizeMeasurements != null &&
-    MetadataUtils.isPositionAbsolute(params.originalElementMetadata)
+    MetadataUtils.isPositionAbsolute(params.originalElementMetadata) &&
+    MetadataUtils.hasNoGridCellPositioning(specialSizeMeasurements)
   ) {
-    return MetadataUtils.hasNoGridCellPositioning(specialSizeMeasurements)
-      ? 'absolute'
-      : 'rearrange'
-  }
-  if (params.possiblyReorderIndex >= params.cellsSortedByPosition.length) {
-    return 'rearrange'
+    return 'absolute'
   }
 
   return 'rearrange'
 }
 
-export function isGridPositionNumericValue(p: GridPosition | null): p is GridPositionValue {
+function isGridPositionNumericValue(p: GridPosition | null): p is GridPositionValue {
   return p != null && !(isCSSKeyword(p) && p.value === 'auto')
 }
 
