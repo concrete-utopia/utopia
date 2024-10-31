@@ -227,7 +227,8 @@ describe('requirements checks', () => {
         additionalFiles: {
           '/src/app.js': textFile(
             textFileContents(
-              `import { readFileSync } from 'fs'`,
+              `import { readFileSync } from 'fs'
+              import * as crypto from 'node:crypto'`,
               unparsed,
               RevisionsState.CodeAhead,
             ),
@@ -240,6 +241,7 @@ describe('requirements checks', () => {
       const parsedProjectContents = parseProjectContents(project.projectContents)
       const result = check.check(parsedProjectContents)
       expect(result.resolution).toBe(RequirementResolutionResult.Partial)
+      expect(result.resultValue).toBe('fs, node:crypto')
     })
 
     it('should return success for a project with node builtins that are shimmed', () => {
