@@ -45,8 +45,8 @@ import {
 import {
   RequirementResolutionResult,
   resetRequirementsResolutions,
-} from '../../import/proejct-health-check/utopia-requirements-service'
-import { checkAndFixUtopiaRequirements } from '../../import/proejct-health-check/check-utopia-requirements'
+} from '../../import/project-health-check/utopia-requirements-service'
+import { checkAndFixUtopiaRequirements } from '../../import/project-health-check/check-utopia-requirements'
 import { ImportOperationResult } from '../../import/import-operation-types'
 
 export const saveAssetsToProject =
