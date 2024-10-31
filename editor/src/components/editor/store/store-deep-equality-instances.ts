@@ -491,7 +491,7 @@ import type {
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
   ComponentDescriptorFromDescriptorFile,
-  TypedInpsectorSpec,
+  TypedInspectorSpec,
   ShownInspectorSpec,
   StyleSectionState,
 } from '../../custom-code/code-file'
@@ -3935,7 +3935,7 @@ export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCal
   }
 }
 
-const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<TypedInpsectorSpec> = (
+const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<TypedInspectorSpec> = (
   oldValue,
   newValue,
 ) => {
