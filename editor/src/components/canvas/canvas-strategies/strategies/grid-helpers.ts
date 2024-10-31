@@ -54,61 +54,39 @@ export function runGridMoveRearrange(
   gridTemplate: GridContainerProperties,
   newPathAfterReparent?: ElementPath,
 ): CanvasCommand[] {
-  if (interactionData.drag == null) {
+  const common = getGridMoveCommonData(
+    targetElement,
+    selectedElement,
+    jsxMetadata,
+    interactionData,
+    gridCellGlobalFrames,
+    gridTemplate,
+    newPathAfterReparent,
+  )
+  if (common == null) {
     return []
   }
+  const {
+    newCoords,
+    gridPath,
+    targetCellCoords,
+    gridTemplateColumns,
+    possiblyReorderIndex,
+    targetCellData,
+    gridConfig,
+    pathForCommands,
+    isReparent,
+    originalElement,
+  } = common
 
-  const originalElement = MetadataUtils.findElementByElementPath(jsxMetadata, selectedElement)
-  if (originalElement == null) {
-    return []
-  }
-
-  const isReparent = newPathAfterReparent != null
-
-  const mousePos = offsetPoint(interactionData.dragStart, interactionData.drag)
-  const targetCellData = getClosestGridCellToPoint(gridCellGlobalFrames, mousePos)
-  const targetCellCoords = targetCellData?.gridCellCoordinates
-  if (targetCellCoords == null) {
-    return []
-  }
-
-  const originalElementGridConfiguration = isReparent
-    ? {
-        originalCellBounds: { width: 1, height: 1 }, //when reparenting, we just put it in a single cell
-        mouseCellPosInOriginalElement: { row: 0, column: 0 },
-      }
-    : getOriginalElementGridConfiguration(gridCellGlobalFrames, interactionData, originalElement)
-  if (originalElementGridConfiguration == null) {
-    return []
-  }
-
-  const { originalCellBounds, mouseCellPosInOriginalElement } = originalElementGridConfiguration
-
-  // get the new adjusted row
-  const row = Math.max(targetCellCoords.row - mouseCellPosInOriginalElement.row, 1)
-  // get the new adjusted column
-  const column = Math.max(targetCellCoords.column - mouseCellPosInOriginalElement.column, 1)
-
-  const pathForCommands = newPathAfterReparent ?? targetElement // when reparenting, we want to use the new path for commands
-  const gridPath = EP.parentPath(pathForCommands)
+  const { column, row } = newCoords
+  const { originalCellBounds } = gridConfig
 
   const gridCellMoveCommands = setGridPropsCommands(pathForCommands, gridTemplate, {
     gridColumnStart: gridPositionValue(column),
     gridColumnEnd: gridPositionValue(column + originalCellBounds.height),
     gridRowStart: gridPositionValue(row),
     gridRowEnd: gridPositionValue(row + originalCellBounds.width),
-  })
-
-  const gridTemplateColumns =
-    gridTemplate.gridTemplateColumns?.type === 'DIMENSIONS'
-      ? gridTemplate.gridTemplateColumns.dimensions.length
-      : 1
-
-  // The "pure" index in the grid children for the cell under mouse
-  const possiblyReorderIndex = getGridPositionIndex({
-    row: targetCellCoords.row,
-    column: targetCellCoords.column,
-    gridTemplateColumns: gridTemplateColumns,
   })
 
   // The siblings of the grid element being moved
@@ -205,56 +183,22 @@ export function runGridMoveReorder(
   gridTemplate: GridContainerProperties,
   newPathAfterReparent?: ElementPath,
 ): CanvasCommand[] {
-  if (interactionData.drag == null) {
+  const common = getGridMoveCommonData(
+    targetElement,
+    selectedElement,
+    jsxMetadata,
+    interactionData,
+    gridCellGlobalFrames,
+    gridTemplate,
+    newPathAfterReparent,
+  )
+  if (common == null) {
     return []
   }
-
-  const originalElement = MetadataUtils.findElementByElementPath(jsxMetadata, selectedElement)
-  if (originalElement == null) {
-    return []
-  }
-
-  const isReparent = newPathAfterReparent != null
-
-  const mousePos = offsetPoint(interactionData.dragStart, interactionData.drag)
-  const targetCellData = getClosestGridCellToPoint(gridCellGlobalFrames, mousePos)
-  const targetCellCoords = targetCellData?.gridCellCoordinates
-  if (targetCellCoords == null) {
-    return []
-  }
-
-  const originalElementGridConfiguration = isReparent
-    ? {
-        originalCellBounds: { width: 1, height: 1 }, //when reparenting, we just put it in a single cell
-        mouseCellPosInOriginalElement: { row: 0, column: 0 },
-      }
-    : getOriginalElementGridConfiguration(gridCellGlobalFrames, interactionData, originalElement)
-  if (originalElementGridConfiguration == null) {
-    return []
-  }
-
-  const { mouseCellPosInOriginalElement } = originalElementGridConfiguration
-
-  // get the new adjusted row
-  const row = Math.max(targetCellCoords.row - mouseCellPosInOriginalElement.row, 1)
-  // get the new adjusted column
-  const column = Math.max(targetCellCoords.column - mouseCellPosInOriginalElement.column, 1)
-
-  const pathForCommands = newPathAfterReparent ?? targetElement // when reparenting, we want to use the new path for commands
-  const gridPath = EP.parentPath(pathForCommands)
-
-  const gridTemplateColumns =
-    gridTemplate.gridTemplateColumns?.type === 'DIMENSIONS'
-      ? gridTemplate.gridTemplateColumns.dimensions.length
-      : 1
+  const { newCoords, gridPath, possiblyReorderIndex, targetCellData, pathForCommands } = common
+  const { row, column } = newCoords
 
   // The "pure" index in the grid children for the cell under mouse
-  const possiblyReorderIndex = getGridPositionIndex({
-    row: targetCellCoords.row,
-    column: targetCellCoords.column,
-    gridTemplateColumns: gridTemplateColumns,
-  })
-
   const updateGridControlsCommand = showGridControls(
     'mid-interaction',
     gridPath,
@@ -274,6 +218,75 @@ export function runGridMoveReorder(
     ]),
     updateGridControlsCommand,
   ]
+}
+
+function getGridMoveCommonData(
+  targetElement: ElementPath,
+  selectedElement: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  interactionData: DragInteractionData,
+  gridCellGlobalFrames: GridCellGlobalFrames,
+  gridTemplate: GridContainerProperties,
+  newPathAfterReparent?: ElementPath,
+) {
+  if (interactionData.drag == null) {
+    return null
+  }
+
+  const isReparent = newPathAfterReparent != null
+  const pathForCommands = newPathAfterReparent ?? targetElement // when reparenting, we want to use the new path for commands
+
+  const originalElement = MetadataUtils.findElementByElementPath(jsxMetadata, selectedElement)
+  if (originalElement == null) {
+    return null
+  }
+
+  const gridConfig = isReparent
+    ? {
+        originalCellBounds: { width: 1, height: 1 }, // when reparenting, we just put it in a single cell
+        mouseCellPosInOriginalElement: { row: 0, column: 0 },
+      }
+    : getOriginalElementGridConfiguration(gridCellGlobalFrames, interactionData, originalElement)
+  if (gridConfig == null) {
+    return null
+  }
+  const { mouseCellPosInOriginalElement } = gridConfig
+
+  const gridPath = EP.parentPath(pathForCommands)
+
+  const mousePos = offsetPoint(interactionData.dragStart, interactionData.drag)
+  const targetCellData = getClosestGridCellToPoint(gridCellGlobalFrames, mousePos)
+  const targetCellCoords = targetCellData?.gridCellCoordinates
+  if (targetCellCoords == null) {
+    return null
+  }
+  const row = Math.max(targetCellCoords.row - mouseCellPosInOriginalElement.row, 1)
+  const column = Math.max(targetCellCoords.column - mouseCellPosInOriginalElement.column, 1)
+
+  const gridTemplateColumns =
+    gridTemplate.gridTemplateColumns?.type === 'DIMENSIONS'
+      ? gridTemplate.gridTemplateColumns.dimensions.length
+      : 1
+
+  // The "pure" index in the grid children for the cell under mouse
+  const possiblyReorderIndex = getGridPositionIndex({
+    row: targetCellCoords.row,
+    column: targetCellCoords.column,
+    gridTemplateColumns: gridTemplateColumns,
+  })
+
+  return {
+    newCoords: { row, column },
+    targetCellData: targetCellData,
+    gridPath: gridPath,
+    pathForCommands: pathForCommands,
+    targetCellCoords: targetCellCoords,
+    gridTemplateColumns: gridTemplateColumns,
+    possiblyReorderIndex: possiblyReorderIndex,
+    gridConfig: gridConfig,
+    isReparent: isReparent,
+    originalElement: originalElement,
+  }
 }
 
 export function gridPositionToValue(p: GridPosition | null | undefined): string | number | null {
