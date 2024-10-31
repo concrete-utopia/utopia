@@ -49,3 +49,12 @@ export const gridDimensionDropdownKeywords = [
   { label: 'Min-Content', value: cssKeyword('min-content') },
   { label: 'Max-Content', value: cssKeyword('max-content') },
 ]
+
+export const GridPositioningProps: Array<keyof React.CSSProperties> = [
+  'gridColumn',
+  'gridRow',
+  'gridColumnStart',
+  'gridColumnEnd',
+  'gridRowStart',
+  'gridRowEnd',
+]

@@ -39,7 +39,7 @@ import {
 } from '../../../common/css-utils'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { deleteProperties } from '../../../../canvas/commands/delete-properties-command'
-import { GridPositioningProps } from '../../../../canvas/canvas-strategies/strategies/rearrange-grid-swap-strategy'
+import { GridPositioningProps } from '../../../grid-helpers'
 import { styleP } from '../../../inspector-common'
 
 type CellAdjustMode = 'dimensions' | 'boundaries'
