@@ -82,10 +82,11 @@ export const ImportWizard = React.memo(() => {
         <div
           style={{
             background: colorTheme.bg0.value,
+            color: colorTheme.fg0.value,
             boxShadow: UtopiaStyles.popup.boxShadow,
             borderRadius: 10,
             width: 600,
-            height: 500,
+            height: 420,
             position: 'relative',
             display: 'flex',
             flexDirection: 'column',
@@ -105,18 +106,18 @@ export const ImportWizard = React.memo(() => {
               width: '100%',
             }}
           >
-            <div css={{ fontSize: 16, fontWeight: 400 }}>Project Import</div>
+            <div css={{ fontSize: 16, fontWeight: 400 }}>Loading Project</div>
             {when(
-              totalImportResult != null,
+              totalImportResult == null,
               <Button
                 highlight
                 style={{
-                  width: 22,
-                  height: 22,
+                  padding: 15,
+                  color: colorTheme.fg6.value,
                 }}
                 onClick={handleDismiss}
               >
-                <Icons.Cross />
+                Cancel
               </Button>,
             )}
           </FlexRow>
@@ -157,6 +158,7 @@ export const ImportWizard = React.memo(() => {
 ImportWizard.displayName = 'ImportWizard'
 
 function ActionButtons({ importResult }: { importResult: ImportOperationResult | null }) {
+  const colorTheme = useColorTheme()
   const textColor = React.useMemo(() => {
     switch (importResult) {
       case ImportOperationResult.Success:
@@ -187,11 +189,10 @@ function ActionButtons({ importResult }: { importResult: ImportOperationResult |
   }, [importResult])
   const textStyle = {
     color: textColor,
-    fontSize: 16,
+    fontSize: 14,
   }
   const buttonStyle = {
-    backgroundColor: buttonColor,
-    color: 'white',
+    backgroundColor: colorTheme.buttonBackground.value,
     padding: 20,
     fontSize: 14,
     cursor: 'pointer',
