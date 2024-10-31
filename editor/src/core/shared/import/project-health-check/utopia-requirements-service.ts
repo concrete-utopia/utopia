@@ -10,11 +10,12 @@ import {
 } from './utopia-requirements-types'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 
-const initialTexts: Record<ProjectRequirement, string> = {
+export const initialTexts: Record<ProjectRequirement, string> = {
   storyboard: 'Checking storyboard.js',
-  packageJsonEntries: 'Checking package.json',
+  packageJsonEntries: 'Checking for a valid package.json',
   language: 'Checking project language',
   reactVersion: 'Checking React version',
+  serverPackages: 'Checking for server packages',
 }
 
 export function updateProjectRequirementsStatus(
@@ -75,7 +76,7 @@ export function notifyResolveRequirement(
     },
   })
   const result =
-    resolution === RequirementResolutionResult.Found ||
+    resolution === RequirementResolutionResult.Passed ||
     resolution === RequirementResolutionResult.Fixed
       ? ImportOperationResult.Success
       : resolution === RequirementResolutionResult.Partial

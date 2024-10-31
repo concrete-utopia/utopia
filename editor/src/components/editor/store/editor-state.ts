@@ -190,11 +190,11 @@ import type { NavigatorRow } from '../../navigator/navigator-row'
 import type { FancyError } from '../../../core/shared/code-exec-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
 import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
+import type { HuggingElementContentsStatus } from '../../../components/canvas/hugging-utils'
 import {
   emptyProjectRequirements,
   type ProjectRequirements,
-} from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
-import type { HuggingElementContentsStatus } from '../../../components/canvas/hugging-utils'
+} from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
 const ObjectPathImmutable: any = OPI
 

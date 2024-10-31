@@ -33,9 +33,7 @@ import {
   saveGithubAsset,
 } from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
-import { createStoryboardFileIfNecessary } from '../../../../components/editor/actions/actions'
 import { getAllComponentDescriptorFilePaths } from '../../../property-controls/property-controls-local'
-import type { ExistingAsset } from '../../../../components/editor/server'
 import { GithubOperations } from '.'
 import { assertNever } from '../../utils'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
@@ -44,8 +42,11 @@ import {
   notifyOperationStarted,
   startImportProcess,
 } from '../../import/import-operation-service'
-import { resetRequirementsResolutions } from '../../import/proejct-health-check/utopia-requirements-service'
-import { checkAndFixUtopiaRequirements } from '../../import/proejct-health-check/check-utopia-requirements'
+import {
+  RequirementResolutionResult,
+  resetRequirementsResolutions,
+} from '../../import/project-health-check/utopia-requirements-service'
+import { checkAndFixUtopiaRequirements } from '../../import/project-health-check/check-utopia-requirements'
 import { ImportOperationResult } from '../../import/import-operation-types'
 
 export const saveAssetsToProject =
@@ -173,16 +174,12 @@ export const updateProjectWithBranchContent =
             notifyOperationFinished(dispatch, { type: 'parseFiles' }, ImportOperationResult.Success)
 
             resetRequirementsResolutions(dispatch)
-            const parsedProjectContentsInitial = createStoryboardFileIfNecessary(
-              dispatch,
-              parseResults,
-              'create-placeholder',
-            )
+            const { fixedProjectContents, result: requirementResolutionResult } =
+              checkAndFixUtopiaRequirements(dispatch, parseResults)
 
-            const parsedProjectContents = checkAndFixUtopiaRequirements(
-              dispatch,
-              parsedProjectContentsInitial,
-            )
+            if (requirementResolutionResult === RequirementResolutionResult.Critical) {
+              return []
+            }
 
             // Update the editor with everything so that if anything else fails past this point
             // there's no loss of data from the user's perspective.
@@ -195,19 +192,19 @@ export const updateProjectWithBranchContent =
                   branchName,
                   true,
                 ),
-                updateProjectContents(parsedProjectContents),
-                updateBranchContents(parsedProjectContents),
+                updateProjectContents(fixedProjectContents),
+                updateBranchContents(fixedProjectContents),
                 truncateHistory(),
               ],
               'everyone',
             )
 
             const componentDescriptorFiles =
-              getAllComponentDescriptorFilePaths(parsedProjectContents)
+              getAllComponentDescriptorFilePaths(fixedProjectContents)
 
             // If there's a package.json file, then attempt to load the dependencies for it.
             let dependenciesPromise: Promise<void> = Promise.resolve()
-            const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
+            const packageJson = packageJsonFileFromProjectContents(fixedProjectContents)
             if (packageJson != null && isTextFile(packageJson)) {
               notifyOperationStarted(dispatch, { type: 'refreshDependencies' })
               dependenciesPromise = refreshDependencies(

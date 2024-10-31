@@ -38,6 +38,9 @@ import {
   isEmptyInputValue,
 } from '../../../common/css-utils'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
+import { deleteProperties } from '../../../../canvas/commands/delete-properties-command'
+import { GridPositioningProps } from '../../../../canvas/canvas-strategies/strategies/rearrange-grid-swap-strategy'
+import { styleP } from '../../../inspector-common'
 
 type CellAdjustMode = 'dimensions' | 'boundaries'
 
@@ -100,6 +103,18 @@ export const GridPlacementSubsection = React.memo(() => {
     dispatch([applyCommandsAction(commands)])
   }, [dispatch, cell, gridTemplate])
 
+  const removePlacementProps = React.useCallback(() => {
+    if (cell == null) {
+      return
+    }
+
+    dispatch([
+      applyCommandsAction([
+        deleteProperties('always', cell.elementPath, GridPositioningProps.map(styleP)),
+      ]),
+    ])
+  }, [dispatch, cell])
+
   if (cell == null || gridTemplate == null) {
     return null
   }
@@ -120,6 +135,12 @@ export const GridPlacementSubsection = React.memo(() => {
           isAllDefaults,
           <SquareButton highlight onClick={writeDefaults}>
             <Icons.SmallPlus />
+          </SquareButton>,
+        )}
+        {unless(
+          isAllDefaults,
+          <SquareButton highlight onClick={removePlacementProps}>
+            <Icons.SmallCross />
           </SquareButton>,
         )}
       </InspectorSubsectionHeader>

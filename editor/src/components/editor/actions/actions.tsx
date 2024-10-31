@@ -398,7 +398,6 @@ import {
   trueUpChildrenOfGroupChanged,
   trueUpHuggingElement,
   trueUpGroupElementChanged,
-  getPackageJsonFromProjectContents,
   modifyUnderlyingTargetJSXElement,
   getAllComponentDescriptorErrors,
   updatePackageJsonInEditorState,
@@ -441,7 +440,6 @@ import { reorderElement } from '../../../components/canvas/commands/reorder-elem
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
-import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
 import type { TreeConflicts } from '../../../core/shared/github/helpers'
@@ -630,15 +628,11 @@ import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-ut
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { styleP } from '../../inspector/inspector-common'
 import { getUpdateOperationResult } from '../../../core/shared/import/import-operation-service'
-import {
-  notifyCheckingRequirement,
-  notifyResolveRequirement,
-  updateRequirements,
-} from '../../../core/shared/import/proejct-health-check/utopia-requirements-service'
-import { RequirementResolutionResult } from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
+import { updateRequirements } from '../../../core/shared/import/project-health-check/utopia-requirements-service'
 import { applyValuesAtPath, deleteValuesAtPath } from '../../canvas/commands/utils/property-utils'
 import type { HuggingElementContentsStatus } from '../../../components/canvas/hugging-utils'
 import { getHuggingElementContentsStatus } from '../../../components/canvas/hugging-utils'
+import { createStoryboardFileIfNecessary } from '../../../core/shared/import/project-health-check/requirements/requirement-storyboard'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1605,91 +1599,6 @@ function updateCodeEditorVisibility(editor: EditorModel, codePaneVisible: boolea
       codePaneVisible: codePaneVisible,
     },
   }
-}
-
-function createStoryboardFileIfRemixProject(
-  projectContents: ProjectContentTreeRoot,
-): ProjectContentTreeRoot | null {
-  const packageJsonContents = defaultEither(
-    null,
-    getPackageJsonFromProjectContents(projectContents),
-  )
-  if (packageJsonContents == null) {
-    return null
-  }
-  const remixNotIncluded = packageJsonContents['dependencies']?.['@remix-run/react'] == null
-  if (remixNotIncluded) {
-    return null
-  }
-
-  const updatedProjectContents = addFileToProjectContents(
-    projectContents,
-    StoryboardFilePath,
-    codeFile(DefaultStoryboardWithRemix, null, 1),
-  )
-  return updatedProjectContents
-}
-
-function createStoryboardFileIfMainComponentPresent(
-  projectContents: ProjectContentTreeRoot,
-): ProjectContentTreeRoot | null {
-  return addStoryboardFileToProject(projectContents)
-}
-
-function createStoryboardFileWithPlaceholderContents(
-  projectContents: ProjectContentTreeRoot,
-  createPlaceholder: 'create-placeholder' | 'skip-creating-placeholder',
-): ProjectContentTreeRoot {
-  if (createPlaceholder === 'skip-creating-placeholder') {
-    return projectContents
-  }
-  const updatedProjectContents = addFileToProjectContents(
-    projectContents,
-    StoryboardFilePath,
-    codeFile(DefaultStoryboardContents, null, 1),
-  )
-  return updatedProjectContents
-}
-
-export function createStoryboardFileIfNecessary(
-  dispatch: EditorDispatch,
-  projectContents: ProjectContentTreeRoot,
-  createPlaceholder: 'create-placeholder' | 'skip-creating-placeholder',
-): ProjectContentTreeRoot {
-  notifyCheckingRequirement(dispatch, 'storyboard', 'Checking for storyboard.js')
-  const storyboardFile = getProjectFileByFilePath(projectContents, StoryboardFilePath)
-  if (storyboardFile != null) {
-    notifyResolveRequirement(
-      dispatch,
-      'storyboard',
-      RequirementResolutionResult.Found,
-      'Storyboard.js found',
-    )
-    return projectContents
-  }
-
-  const result =
-    createStoryboardFileIfRemixProject(projectContents) ??
-    createStoryboardFileIfMainComponentPresent(projectContents) ??
-    createStoryboardFileWithPlaceholderContents(projectContents, createPlaceholder)
-
-  if (result == projectContents) {
-    notifyResolveRequirement(
-      dispatch,
-      'storyboard',
-      RequirementResolutionResult.Partial,
-      'Storyboard.js skipped',
-    )
-  } else {
-    notifyResolveRequirement(
-      dispatch,
-      'storyboard',
-      RequirementResolutionResult.Fixed,
-      'Storyboard.js created',
-    )
-  }
-
-  return result
 }
 
 // JS Editor Actions:
@@ -4061,14 +3970,12 @@ export const UPDATE_FNS = {
     }
     return {
       ...editor,
-      projectContents: createStoryboardFileIfNecessary(
-        dispatch,
-        workingProjectContents,
-        // If we are in the process of cloning a Github repository, do not create placeholder Storyboard
+      projectContents:
+        // If we are in the process of cloning a Github repository, do not create storyboard
+        // it will be created in the requirements check phase
         userState.githubState.gitRepoToLoad != null
-          ? 'skip-creating-placeholder'
-          : 'create-placeholder',
-      ),
+          ? workingProjectContents
+          : createStoryboardFileIfNecessary(workingProjectContents),
       canvas: {
         ...editor.canvas,
         canvasContentInvalidateCount: anyParsedUpdates
@@ -6473,61 +6380,6 @@ function saveFileInProjectContents(
     return addFileToProjectContents(projectContents, filePath, saveFile(file))
   }
 }
-
-const DefaultStoryboardWithRemix = `import * as React from 'react'
-import { Storyboard, RemixScene } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard>
-    <RemixScene
-      style={{
-        position: 'absolute',
-        width: 644,
-        height: 750,
-        left: 200,
-        top: 30,
-        overflow: 'hidden',
-      }}
-      data-label='Mood Board'
-    />
-  </Storyboard>
-)
-`
-
-const DefaultStoryboardContents = `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard>
-    <Scene
-      style={{
-        width: 603,
-        height: 794,
-        position: 'absolute',
-        left: 212,
-        top: 128,
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '253px 101px',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <span
-        style={{
-          wordBreak: 'break-word',
-          fontSize: '25px',
-          width: 257,
-          height: 130,
-        }}
-      >
-        Open the insert menu or press the + button in the
-        toolbar to insert components
-      </span>
-    </Scene>
-  </Storyboard>
-  )
-`
 
 function addTextFile(
   editor: EditorState,
