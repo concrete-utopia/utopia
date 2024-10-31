@@ -2765,17 +2765,20 @@ export const GridCellCoordinatesKeepDeepEquality: KeepDeepEqualityCall<GridCellC
   )
 
 export const GridControlDataKeepDeepEquality: KeepDeepEqualityCall<GridControlData> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (data) => data.grid,
     ElementPathKeepDeepEquality,
     (data) => data.targetCell,
     nullableDeepEquality(GridCellCoordinatesKeepDeepEquality),
     (data) => data.rootCell,
     nullableDeepEquality(GridCellCoordinatesKeepDeepEquality),
-    (grid, targetCell, rootCell) => ({
+    (data) => data.rootCellIsValidTarget,
+    nullableDeepEquality(BooleanKeepDeepEquality),
+    (grid, targetCell, rootCell, rootCellIsValidTarget) => ({
       grid,
       targetCell,
       rootCell,
+      rootCellIsValidTarget,
     }),
   )
 

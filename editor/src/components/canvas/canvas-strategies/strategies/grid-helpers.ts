@@ -133,6 +133,7 @@ export function runGridMoveRearrange(
     gridPath,
     targetCellData?.gridCellCoordinates ?? null,
     gridCellCoordinates(row, column),
+    true,
   )
 
   switch (moveType) {
@@ -198,11 +199,18 @@ export function runGridMoveReorder(
   const { newCoords, gridPath, possiblyReorderIndex, targetCellData, pathForCommands } = common
   const { row, column } = newCoords
 
+  const flowElementsCount = MetadataUtils.getChildrenUnordered(jsxMetadata, gridPath).filter(
+    (child) =>
+      getGridElementPinState(child.specialSizeMeasurements.elementGridPropertiesFromProps) !==
+      'pinned',
+  ).length
+
   const updateGridControlsCommand = showGridControls(
     'mid-interaction',
     gridPath,
     targetCellData?.gridCellCoordinates ?? null,
     gridCellCoordinates(row, column),
+    possiblyReorderIndex < flowElementsCount,
   )
 
   return [

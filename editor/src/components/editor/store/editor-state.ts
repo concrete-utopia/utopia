@@ -818,6 +818,7 @@ export interface GridControlData {
   grid: ElementPath
   targetCell: GridCellCoordinates | null // the cell under the mouse
   rootCell: GridCellCoordinates | null // the top-left cell of the target child
+  rootCellIsValidTarget: boolean | null
 }
 
 export interface EditorStateCanvasControls {

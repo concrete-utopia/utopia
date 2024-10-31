@@ -8,6 +8,7 @@ export interface ShowGridControlsCommand extends BaseCommand {
   target: ElementPath
   targetCell: GridCellCoordinates | null
   rootCell: GridCellCoordinates | null
+  rootCellIsValidTarget: boolean | null
 }
 
 export function showGridControls(
@@ -15,6 +16,7 @@ export function showGridControls(
   target: ElementPath,
   targetCell: GridCellCoordinates | null,
   rootCell: GridCellCoordinates | null,
+  rootCellIsValidTarget: boolean | null,
 ): ShowGridControlsCommand {
   return {
     type: 'SHOW_GRID_CONTROLS',
@@ -22,6 +24,7 @@ export function showGridControls(
     target: target,
     targetCell: targetCell,
     rootCell: rootCell,
+    rootCellIsValidTarget: rootCellIsValidTarget,
   }
 }
 
@@ -37,6 +40,7 @@ export const runShowGridControlsCommand: CommandFunction<ShowGridControlsCommand
             grid: command.target,
             targetCell: command.targetCell,
             rootCell: command.rootCell,
+            rootCellIsValidTarget: command.rootCellIsValidTarget,
           },
         },
       },

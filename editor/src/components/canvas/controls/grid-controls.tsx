@@ -876,7 +876,15 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
     }`,
   }
 
-  const dontShowActiveCellHighlight = !targetsAreCellsWithPositioning && anyTargetAbsolute
+  const targetRootCellIsValidTarget = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.controls.gridControlData?.rootCellIsValidTarget ?? false,
+    'GridControl targetRootCellIsValidTarget',
+  )
+
+  const dontShowActiveCellHighlight =
+    (!targetsAreCellsWithPositioning && anyTargetAbsolute) ||
+    (anyTargetNotPinned && !targetRootCellIsValidTarget)
 
   return (
     <React.Fragment>
@@ -903,10 +911,9 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
 
           const activePositioningTarget = isActiveCell && !dontShowActiveCellHighlight // TODO: move the logic into runGridRearrangeMove and do not set targetCell prop in these cases
 
-          const borderColor =
-            activePositioningTarget && !anyTargetNotPinned
-              ? colorTheme.brandNeonPink.value
-              : colorTheme.grey65.value
+          const borderColor = activePositioningTarget
+            ? colorTheme.brandNeonPink.value
+            : colorTheme.grey65.value
 
           return (
             <div
