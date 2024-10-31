@@ -814,9 +814,11 @@ export function isJustAutoGridDimension(dimensions: GridDimension[]): boolean {
   )
 }
 
-export function isGridElementPinned(
+type GridElementPinState = 'not-pinned' | 'auto-pinned' | 'pinned'
+
+export function getGridElementPinState(
   elementGridPropertiesFromProps: GridElementProperties | null,
-): 'not-pinned' | 'auto-pinned' | 'pinned' {
+): GridElementPinState {
   if (
     elementGridPropertiesFromProps?.gridColumnEnd == null ||
     elementGridPropertiesFromProps?.gridColumnStart == null ||

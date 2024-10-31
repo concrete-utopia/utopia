@@ -10,7 +10,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { isGridElementPinned } from './grid-helpers'
+import { getGridElementPinState } from './grid-helpers'
 import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import {
   getCommandsAndPatchForGridReorder,
@@ -44,7 +44,7 @@ export const gridMoveReorderStrategy: CanvasStrategyFactory = (
     selectedElement,
   )?.specialSizeMeasurements.elementGridPropertiesFromProps
 
-  const pinnedState = isGridElementPinned(elementGridPropertiesFromProps ?? null)
+  const pinnedState = getGridElementPinState(elementGridPropertiesFromProps ?? null)
 
   const parentGridPath = EP.parentPath(selectedElement)
   const gridFrame = MetadataUtils.findElementByElementPath(

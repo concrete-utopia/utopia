@@ -65,7 +65,7 @@ import { gridCellTargetId } from '../canvas-strategies/strategies/grid-cell-boun
 import {
   getGlobalFrameOfGridCellFromMetadata,
   getGridRelatedIndexes,
-  isGridElementPinned,
+  getGridElementPinState,
 } from '../canvas-strategies/strategies/grid-helpers'
 import { canResizeGridTemplate } from '../canvas-strategies/strategies/resize-grid-strategy'
 import { resizeBoundingBoxFromSide } from '../canvas-strategies/strategies/resize-helpers'
@@ -683,7 +683,7 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
     (store) =>
       store.editor.selectedViews.some(
         (elementPath) =>
-          isGridElementPinned(
+          getGridElementPinState(
             MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath)
               ?.specialSizeMeasurements.elementGridPropertiesFromProps ?? null,
           ) !== 'pinned',
