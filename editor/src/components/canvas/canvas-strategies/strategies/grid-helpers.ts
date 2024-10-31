@@ -198,7 +198,6 @@ export function runGridMoveReorder(
   const { newCoords, gridPath, possiblyReorderIndex, targetCellData, pathForCommands } = common
   const { row, column } = newCoords
 
-  // The "pure" index in the grid children for the cell under mouse
   const updateGridControlsCommand = showGridControls(
     'mid-interaction',
     gridPath,
