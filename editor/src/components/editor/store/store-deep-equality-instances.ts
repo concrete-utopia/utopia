@@ -647,11 +647,11 @@ import type { ImportOperation } from '../../../core/shared/import/import-operati
 import type {
   ProjectRequirements,
   RequirementResolution,
-} from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
+} from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 import {
   newProjectRequirements,
   requirementResolution,
-} from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
+} from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(

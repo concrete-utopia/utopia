@@ -275,7 +275,7 @@ import type {
   ImportOperation,
   ImportOperationAction,
 } from '../../../core/shared/import/import-operation-types'
-import type { ProjectRequirements } from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
+import type { ProjectRequirements } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
 export function clearSelection(): EditorAction {
   return {
