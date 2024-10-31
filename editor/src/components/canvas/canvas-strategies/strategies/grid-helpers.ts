@@ -816,11 +816,22 @@ export function isJustAutoGridDimension(dimensions: GridDimension[]): boolean {
 
 export function isGridElementPinned(
   elementGridPropertiesFromProps: GridElementProperties | null,
-): boolean {
-  return (
+): 'not-pinned' | 'auto-pinned' | 'pinned' {
+  if (
+    elementGridPropertiesFromProps?.gridColumnEnd == null ||
+    elementGridPropertiesFromProps?.gridColumnStart == null ||
+    elementGridPropertiesFromProps?.gridRowEnd == null ||
+    elementGridPropertiesFromProps?.gridRowStart == null
+  ) {
+    return 'not-pinned'
+  }
+  if (
     isGridPositionNumericValue(elementGridPropertiesFromProps?.gridColumnEnd ?? null) ||
     isGridPositionNumericValue(elementGridPropertiesFromProps?.gridColumnStart ?? null) ||
     isGridPositionNumericValue(elementGridPropertiesFromProps?.gridRowEnd ?? null) ||
     isGridPositionNumericValue(elementGridPropertiesFromProps?.gridRowStart ?? null)
-  )
+  ) {
+    return 'pinned'
+  }
+  return 'auto-pinned'
 }

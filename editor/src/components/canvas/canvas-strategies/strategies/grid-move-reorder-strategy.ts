@@ -1,9 +1,6 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
-import * as PP from '../../../../core/shared/property-path'
-import { printGridAutoOrTemplateBase } from '../../../inspector/common/css-utils'
-import { propertyToSet, updateBulkProperties } from '../../commands/set-property-command'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -16,10 +13,9 @@ import type { InteractionSession } from '../interaction-state'
 import { isGridElementPinned } from './grid-helpers'
 import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import {
-  getCommandsAndPatchForGridRearrange,
+  getCommandsAndPatchForGridReorder,
   getGridTemplates,
   gridMoveStrategiesExtraCommands,
-  restoreGridTemplateFromProps,
 } from './grid-move-helpers'
 
 export const gridMoveReorderStrategy: CanvasStrategyFactory = (
@@ -47,9 +43,8 @@ export const gridMoveReorderStrategy: CanvasStrategyFactory = (
     canvasState.startingMetadata,
     selectedElement,
   )?.specialSizeMeasurements.elementGridPropertiesFromProps
-  if (isGridElementPinned(elementGridPropertiesFromProps ?? null)) {
-    return null
-  }
+
+  const pinnedState = isGridElementPinned(elementGridPropertiesFromProps ?? null)
 
   const parentGridPath = EP.parentPath(selectedElement)
   const gridFrame = MetadataUtils.findElementByElementPath(
@@ -65,16 +60,22 @@ export const gridMoveReorderStrategy: CanvasStrategyFactory = (
     return null
   }
 
+  const fitnessModifier = pinnedState !== 'pinned' ? 1 : -1
+
   return {
     id: 'reorder-grid-move-strategy',
-    name: 'GRID REORDER',
-    descriptiveLabel: 'GRID REORDER',
+    name: 'Reorder (Grid)',
+    descriptiveLabel: 'Reorder (Grid)',
     icon: {
       category: 'tools',
       type: 'pointer',
     },
     controlsToRender: [controlsForGridPlaceholders(parentGridPath, 'visible-only-while-active')],
-    fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 2),
+    fitness: onlyFitWhenDraggingThisControl(
+      interactionSession,
+      'GRID_CELL_HANDLE',
+      2 + fitnessModifier,
+    ),
     apply: () => {
       if (
         interactionSession == null ||
@@ -85,7 +86,7 @@ export const gridMoveReorderStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      const { commands, elementsToRerender } = getCommandsAndPatchForGridRearrange(
+      const { commands, elementsToRerender } = getCommandsAndPatchForGridReorder(
         canvasState,
         interactionSession.interactionData,
         selectedElement,

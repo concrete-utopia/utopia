@@ -65,6 +65,7 @@ import { gridCellTargetId } from '../canvas-strategies/strategies/grid-cell-boun
 import {
   getGlobalFrameOfGridCellFromMetadata,
   getGridRelatedIndexes,
+  isGridElementPinned,
 } from '../canvas-strategies/strategies/grid-helpers'
 import { canResizeGridTemplate } from '../canvas-strategies/strategies/resize-grid-strategy'
 import { resizeBoundingBoxFromSide } from '../canvas-strategies/strategies/resize-helpers'
@@ -677,6 +678,19 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
     'GridControl anyTargetAbsolute',
   )
 
+  const anyTargetNotPinned = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.some(
+        (elementPath) =>
+          isGridElementPinned(
+            MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath)
+              ?.specialSizeMeasurements.elementGridPropertiesFromProps ?? null,
+          ) !== 'pinned',
+      ),
+    'GridControl anyTargetNotPinned',
+  )
+
   const scale = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.scale,
@@ -840,7 +854,7 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
   )
 
   useCellAnimation({
-    disabled: anyTargetAbsolute,
+    disabled: anyTargetAbsolute || anyTargetNotPinned,
     targetRootCell: targetRootCell,
     controls: controls,
     shadowFrame: initialShadowFrame,
@@ -1440,7 +1454,7 @@ function useCellAnimation(params: {
   const selectedViews = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews,
-    'useSnapAnimation selectedViews',
+    'useCellAnimation selectedViews',
   )
 
   const animate = useCanvasAnimation(selectedViews)

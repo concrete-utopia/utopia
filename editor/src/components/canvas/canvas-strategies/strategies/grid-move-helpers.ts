@@ -16,7 +16,7 @@ import {
 } from '../../commands/set-property-command'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
 import type { DragInteractionData } from '../interaction-state'
-import { runGridMoveRearrange } from './grid-helpers'
+import { runGridMoveRearrange, runGridMoveReorder } from './grid-helpers'
 
 export function getCommandsAndPatchForGridRearrange(
   canvasState: InteractionCanvasState,
@@ -44,6 +44,47 @@ export function getCommandsAndPatchForGridRearrange(
   const commands =
     parentGridCellGlobalFrames != null
       ? runGridMoveRearrange(
+          selectedElement,
+          selectedElement,
+          canvasState.startingMetadata,
+          interactionData,
+          parentGridCellGlobalFrames,
+          parentContainerGridProperties,
+        )
+      : []
+
+  return {
+    commands: commands,
+    elementsToRerender: [EP.parentPath(selectedElement), selectedElement],
+  }
+}
+
+export function getCommandsAndPatchForGridReorder(
+  canvasState: InteractionCanvasState,
+  interactionData: DragInteractionData,
+  selectedElement: ElementPath,
+): {
+  commands: CanvasCommand[]
+  elementsToRerender: ElementPath[]
+} {
+  if (interactionData.drag == null) {
+    return { commands: [], elementsToRerender: [] }
+  }
+
+  const selectedElementMetadata = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElement,
+  )
+  if (selectedElementMetadata == null) {
+    return { commands: [], elementsToRerender: [] }
+  }
+
+  const { parentGridCellGlobalFrames, parentContainerGridProperties } =
+    selectedElementMetadata.specialSizeMeasurements
+
+  const commands =
+    parentGridCellGlobalFrames != null
+      ? runGridMoveReorder(
           selectedElement,
           selectedElement,
           canvasState.startingMetadata,

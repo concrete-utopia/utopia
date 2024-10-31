@@ -3,9 +3,6 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { isInfinityRectangle } from '../../../../core/shared/math-utils'
-import * as PP from '../../../../core/shared/property-path'
-import { printGridAutoOrTemplateBase } from '../../../inspector/common/css-utils'
-import { propertyToSet, updateBulkProperties } from '../../commands/set-property-command'
 import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
@@ -16,12 +13,10 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { DragInteractionData, InteractionSession } from '../interaction-state'
-import { isGridElementPinned } from './grid-helpers'
 import {
   getCommandsAndPatchForGridRearrange,
   getGridTemplates,
   gridMoveStrategiesExtraCommands,
-  restoreGridTemplateFromProps,
 } from './grid-move-helpers'
 
 export const gridMoveRearrangeStrategy: CanvasStrategyFactory = (
@@ -42,14 +37,6 @@ export const gridMoveRearrangeStrategy: CanvasStrategyFactory = (
 
   const selectedElement = selectedElements[0]
   if (!MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)) {
-    return null
-  }
-
-  const elementGridPropertiesFromProps = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
-    selectedElement,
-  )?.specialSizeMeasurements.elementGridPropertiesFromProps
-  if (!isGridElementPinned(elementGridPropertiesFromProps ?? null)) {
     return null
   }
 
