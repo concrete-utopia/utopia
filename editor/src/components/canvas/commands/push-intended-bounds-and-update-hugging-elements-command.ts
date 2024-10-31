@@ -133,7 +133,7 @@ function applyUpdateResizeHuggingElementsCommands(
           'height',
           frameAndTarget.frame.height,
         ),
-        showToastCommand('Added fixed width and height', 'NOTICE', 'added-width-height'), // TODO before merge verify this toast shows up
+        showToastCommand('Added fixed width and height', 'NOTICE', 'added-width-height'),
       )
     }
   }
