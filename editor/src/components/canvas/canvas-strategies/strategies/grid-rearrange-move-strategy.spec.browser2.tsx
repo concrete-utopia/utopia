@@ -8,7 +8,7 @@ import {
   offsetPoint,
   windowPoint,
 } from '../../../../core/shared/math-utils'
-import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import CanvasActions from '../../canvas-actions'
 import { GridCellTestId } from '../../controls/grid-controls-for-strategies'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
@@ -204,7 +204,6 @@ export var storyboard = (
       const elementPathToDrag = EP.fromString(`sb/grid/${testId}`)
 
       await selectComponentsForTest(editor, [elementPathToDrag])
-      await wait(2000)
 
       const sourceGridCell = editor.renderedDOM.getByTestId(GridCellTestId(elementPathToDrag))
       const targetGridCell = editor.renderedDOM.getByTestId(
@@ -232,8 +231,6 @@ export var storyboard = (
           moveBeforeMouseDown: true,
         },
       )
-
-      await wait(2000)
 
       const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
         editor.renderedDOM.getByTestId(testId).style
