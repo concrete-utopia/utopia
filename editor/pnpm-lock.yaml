@@ -163,7 +163,6 @@ specifiers:
   browserfs: '2.0'
   browserify: 13.1.0
   buffer: 6.0.3
-  builtin-modules: 3.3.0
   chai: 4.1.2
   chroma-js: 2.1.0
   classnames: 2.2.6
@@ -400,7 +399,6 @@ dependencies:
   babel-plugin-transform-react-jsx: 6.24.1
   browserfs: 2.0.0
   buffer: 6.0.3
-  builtin-modules: 3.3.0
   chroma-js: 2.1.0
   classnames: 2.2.6
   clipboard-polyfill: 2.4.6
@@ -7373,6 +7371,7 @@ packages:
   /builtin-modules/3.3.0:
     resolution: {integrity: sha512-zhaCDicdLuWN5UbN5IMnFqNMhNfo919sH85y2/ea+5Yg9TsTkeZxpL+JLbp6cgYFS4sRLp3YV4S6yDuqVWHYOw==}
     engines: {node: '>=6'}
+    dev: true
 
   /builtin-status-codes/3.0.0:
     resolution: {integrity: sha1-hZgoeOIbmOHGZCXgPQF0eI9Wnug=}

@@ -180,7 +180,6 @@
     "babel-plugin-transform-react-jsx": "6.24.1",
     "browserfs": "2.0",
     "buffer": "6.0.3",
-    "builtin-modules": "3.3.0",
     "chroma-js": "2.1.0",
     "classnames": "2.2.6",
     "clipboard-polyfill": "2.4.6",

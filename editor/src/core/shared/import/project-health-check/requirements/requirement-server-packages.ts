@@ -6,7 +6,7 @@ import {
 } from '../utopia-requirements-types'
 import { getProjectDependencies, walkContentsTree } from '../../../../../components/assets'
 import { isParseSuccess, isTextFile } from '../../../../../core/shared/project-file-types'
-import builtinModules from 'builtin-modules'
+import builtinModules from './builtin-modules.json'
 
 const serverPackagesRestrictionList: RegExp[] = [/^next/, /^remix/, /^astro/, /^svelte/]
 
@@ -44,7 +44,7 @@ export default class CheckServerPackages implements RequirementCheck {
     if (nodeBuiltins.length > 0) {
       return {
         resolution: RequirementResolutionResult.Partial,
-        resultText: 'Node builtins found',
+        resultText: 'Node built-ins found',
         resultValue: nodeBuiltins.join(', '),
       }
     }
