@@ -194,6 +194,7 @@ import {
   emptyProjectRequirements,
   type ProjectRequirements,
 } from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
+import type { HuggingElementContentsStatus } from '../../../components/canvas/hugging-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1360,17 +1361,23 @@ export function trueUpChildrenOfGroupChanged(
 export interface TrueUpHuggingElement {
   type: 'TRUE_UP_HUGGING_ELEMENT'
   target: ElementPath
+  elementFrame: CanvasRectangle
   frame: CanvasRectangle
+  huggingElementContentsStatus: HuggingElementContentsStatus
 }
 
 export function trueUpHuggingElement(
   target: ElementPath,
+  elementFrame: CanvasRectangle,
   frame: CanvasRectangle,
+  huggingElementContentsStatus: HuggingElementContentsStatus,
 ): TrueUpHuggingElement {
   return {
     type: 'TRUE_UP_HUGGING_ELEMENT',
     target: target,
+    elementFrame: elementFrame,
     frame: frame,
+    huggingElementContentsStatus: huggingElementContentsStatus,
   }
 }
 

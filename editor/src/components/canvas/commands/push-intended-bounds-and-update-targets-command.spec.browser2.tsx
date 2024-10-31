@@ -251,6 +251,46 @@ describe('push intended bounds', () => {
 		`),
         )
       })
+      it('keeps the container dimensions when becoming empty (inside a grid container)', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(`
+				import * as React from 'react'
+				import { Storyboard, Group } from 'utopia-api'
+
+				export var storyboard = (
+					<Storyboard data-uid='sb'>
+						<div data-uid='grid' style={{ display: 'grid', gridTemplateColumns: '1fr', gridRowColumns: '1fr', alignItems: 'center', justifyContent: 'center', padding: 10, gap: 10, backgroundColor: 'white', width: 100, height: 100, position: 'absolute', left: 21, top: 17 }}>
+							<div data-uid='container' data-testid='container' style={{ backgroundColor: 'red' }}>
+								<div data-uid='delete-me' style={{ backgroundColor: 'yellow', width: 80, height: 80 }}>
+									delete me pls
+								</div>
+							</div>
+						</div>
+					</Storyboard>
+				)
+			`),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(renderResult, [EP.fromString(`sb/grid/container/delete-me`)])
+
+        await renderResult.dispatch([deleteSelected()], true)
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(`
+			import * as React from 'react'
+			import { Storyboard, Group } from 'utopia-api'
+
+			export var storyboard = (
+				<Storyboard data-uid='sb'>
+					<div data-uid='grid' style={{ display: 'grid', gridTemplateColumns: '1fr', gridRowColumns: '1fr', alignItems: 'center', justifyContent: 'center', padding: 10, gap: 10, backgroundColor: 'white', width: 100, height: 100, position: 'absolute', left: 21, top: 17 }}>
+						<div data-uid='container' data-testid='container' style={{ backgroundColor: 'red', width: 80, height: 80 }} />
+					</div>
+				</Storyboard>
+			)
+		`),
+        )
+      })
     })
   })
 })
