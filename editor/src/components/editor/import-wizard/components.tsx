@@ -212,11 +212,6 @@ function OperationLineWrapper({
       css={{
         '.import-wizard-operation-children > &': {
           paddingLeft: 26,
-          fontSize: 12,
-          img: {
-            width: 12,
-            height: 12,
-          },
         },
         '.import-wizard-operation-children .operation-done [data-short-time=true]': {
           visibility: 'hidden',
