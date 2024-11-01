@@ -143,7 +143,7 @@ function OperationIcon({
   } else if (runningStatus === 'done' && result === 'success') {
     return <Icn color='green' type='checkmark' />
   } else if (runningStatus === 'done' && result === 'warn') {
-    return <Icn color='component-orange' type='warningtriangle' />
+    return <Icn color='component-orange' type='warningtriangle' category='navigator-element' />
   } else if (runningStatus === 'waiting') {
     return <Icons.Dot />
   } else {

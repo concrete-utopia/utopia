@@ -164,7 +164,7 @@ function ActionButtons({ importResult }: { importResult: ImportOperationResult |
       case ImportOperationResult.Success:
         return 'green'
       case ImportOperationResult.Warn:
-        return 'orange'
+        return colorTheme.warningOrange.value
       case ImportOperationResult.Error:
         return 'var(--utopitheme-githubIndicatorFailed)'
       case null:
@@ -172,21 +172,7 @@ function ActionButtons({ importResult }: { importResult: ImportOperationResult |
       default:
         assertNever(importResult)
     }
-  }, [importResult])
-  const buttonColor = React.useMemo(() => {
-    switch (importResult) {
-      case ImportOperationResult.Success:
-        return 'var(--utopitheme-green)'
-      case ImportOperationResult.Warn:
-        return 'var(--utopitheme-githubMUDModified)'
-      case ImportOperationResult.Error:
-        return 'var(--utopitheme-githubIndicatorFailed)'
-      case null:
-        return 'black'
-      default:
-        assertNever(importResult)
-    }
-  }, [importResult])
+  }, [colorTheme.warningOrange.value, importResult])
   const textStyle = {
     color: textColor,
     fontSize: 14,
