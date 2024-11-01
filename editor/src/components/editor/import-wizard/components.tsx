@@ -74,7 +74,7 @@ function OperationChildrenList({ operation }: { operation: ImportOperation }) {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 10,
+        gap: 15,
       }}
     >
       {operation.type === 'refreshDependencies' ? (
@@ -207,7 +207,7 @@ function OperationLineWrapper({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 10,
+        gap: 15,
       }}
       css={{
         '.import-wizard-operation-children > &': {
