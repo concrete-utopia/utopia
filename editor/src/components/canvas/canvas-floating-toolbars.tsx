@@ -44,10 +44,8 @@ export const CanvasFloatingToolbars = React.memo((props: { style: React.CSSPrope
           <CanvasStrategyPicker />
         </FlexRow>
       </FlexRow>
-      <FlexRow style={{ marginTop: `auto` }}>
-        <FlexRow style={{ marginBottom: '6.5px' }}>
-          <ToastRenderer />
-        </FlexRow>
+      <FlexRow style={{ marginTop: 'auto', marginBottom: '6.5px' }}>
+        <ToastRenderer />
       </FlexRow>
       {/* The error overlays are deliberately the last here so they hide other canvas UI, except the test menu */}
       {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
