@@ -645,6 +645,7 @@ export const ToastRenderer = React.memo(() => {
   return (
     <FlexColumn
       key={'toast-stack'}
+      data-testid={'toast-stack'}
       style={{
         zIndex: 100,
         gap: 10,

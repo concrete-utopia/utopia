@@ -6,6 +6,7 @@ import { ErrorOverlayComponent } from './canvas-error-overlay'
 import { SafeModeErrorOverlay } from './canvas-wrapper-component'
 import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-picker'
 import { TestMenu } from '../titlebar/test-menu'
+import { ToastRenderer } from '../editor/editor-component'
 
 export const CanvasFloatingToolbars = React.memo((props: { style: React.CSSProperties }) => {
   const safeMode = useEditorState(
@@ -41,6 +42,11 @@ export const CanvasFloatingToolbars = React.memo((props: { style: React.CSSPrope
         <FlexRow style={{ width: 250, alignItems: 'flex-start', gap: 10 }}>
           <CanvasToolbar />
           <CanvasStrategyPicker />
+        </FlexRow>
+      </FlexRow>
+      <FlexRow style={{ marginTop: `auto` }}>
+        <FlexRow style={{ marginBottom: '6.5px' }}>
+          <ToastRenderer />
         </FlexRow>
       </FlexRow>
       {/* The error overlays are deliberately the last here so they hide other canvas UI, except the test menu */}
