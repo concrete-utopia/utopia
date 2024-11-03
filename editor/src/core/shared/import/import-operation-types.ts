@@ -7,14 +7,16 @@ type ImportOperationData = {
   timeStarted?: number | null
   timeDone?: number | null
   result?: ImportOperationResult
-  error?: string
   children?: ImportOperation[]
 }
 
 export const ImportOperationResult = {
   Success: 'success',
-  Error: 'error',
   Warn: 'warn',
+  // an error that shows "continue anyway" button
+  Error: 'error',
+  // an error that we can't recover from
+  CriticalError: 'criticalError',
 } as const
 
 export type ImportOperationResult =

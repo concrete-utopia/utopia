@@ -3,14 +3,22 @@
 import React from 'react'
 import { jsx } from '@emotion/react'
 import { getProjectID } from '../../../common/env-vars'
-import { Button, FlexRow, Icons, useColorTheme, UtopiaStyles } from '../../../uuiui'
+import { Button, FlexRow, useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { useEditorState, Substores } from '../store/store-hook'
-import { when } from '../../../utils/react-conditionals'
-import { hideImportWizard } from '../../../core/shared/import/import-operation-service'
+import { unless, when } from '../../../utils/react-conditionals'
+import {
+  hideImportWizard,
+  updateImportOperationResult,
+} from '../../../core/shared/import/import-operation-service'
 import { OperationLine } from './components'
-import { ImportOperationResult } from '../../../core/shared/import/import-operation-types'
+import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
+import {
+  ImportOperationAction,
+  ImportOperationResult,
+} from '../../../core/shared/import/import-operation-types'
 import { assertNever } from '../../../core/shared/utils'
 import { useDispatch } from '../store/dispatch-context'
+import { updateImportOperations } from '../actions/action-creators'
 
 export const ImportWizard = React.memo(() => {
   const colorTheme = useColorTheme()
@@ -39,23 +47,24 @@ export const ImportWizard = React.memo(() => {
   }, [])
 
   const totalImportResult: ImportOperationResult | null = React.useMemo(() => {
-    let result: ImportOperationResult = ImportOperationResult.Success
+    // if any operation is an error, the total result is immediately an error
     for (const operation of operations) {
-      // if one of the operations is still running, we don't know the total result yet
-      if (operation.timeDone == null || operation.result == null) {
-        return null
-      }
-      // if any operation is an error, the total result is an error
-      if (operation.result == ImportOperationResult.Error) {
-        return ImportOperationResult.Error
-      }
-      // if any operation is at least a warn, the total result is a warn,
-      // but we also need to check if there are any errors
-      if (operation.result == ImportOperationResult.Warn) {
-        result = ImportOperationResult.Warn
+      if (
+        operation.result == ImportOperationResult.CriticalError ||
+        operation.result == ImportOperationResult.Error
+      ) {
+        return operation.result
       }
     }
-    return result
+    // if any operation is still running, we don't show the total result yet
+    if (operations.some((op) => op.timeDone == null || op.result == null)) {
+      return null
+    }
+    // if any operation is a warning, the total result is a warning
+    if (operations.some((op) => op.result == ImportOperationResult.Warn)) {
+      return ImportOperationResult.Warn
+    }
+    return ImportOperationResult.Success
   }, [operations])
 
   if (projectId == null) {
@@ -91,7 +100,7 @@ export const ImportWizard = React.memo(() => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            fontSize: '14px',
+            fontSize: '13px',
             lineHeight: 'normal',
             letterSpacing: 'normal',
             padding: 20,
@@ -146,6 +155,7 @@ export const ImportWizard = React.memo(() => {
               alignItems: 'center',
               width: '100%',
               marginTop: 20,
+              gap: 10,
             }}
           >
             <ActionButtons importResult={totalImportResult} />
@@ -159,20 +169,38 @@ ImportWizard.displayName = 'ImportWizard'
 
 function ActionButtons({ importResult }: { importResult: ImportOperationResult | null }) {
   const colorTheme = useColorTheme()
+  const operations = useEditorState(
+    Substores.github,
+    (store) => store.editor.importOperations,
+    'ImportWizard operations',
+  )
+  const dispatch = useDispatch()
   const textColor = React.useMemo(() => {
     switch (importResult) {
       case ImportOperationResult.Success:
-        return 'green'
+        return colorTheme.green.value
       case ImportOperationResult.Warn:
         return colorTheme.warningOrange.value
       case ImportOperationResult.Error:
-        return 'var(--utopitheme-githubIndicatorFailed)'
+        return colorTheme.error.value
+      case ImportOperationResult.CriticalError:
+        return colorTheme.error.value
       case null:
-        return 'black'
+        return colorTheme.fg0.value
       default:
         assertNever(importResult)
     }
-  }, [colorTheme.warningOrange.value, importResult])
+  }, [colorTheme, importResult])
+  const continueAnyway = React.useCallback(() => {
+    const operationsToUpdate: ImportOperation[] = operations.map((op) =>
+      updateImportOperationResult(op, (operation) =>
+        operation.result === ImportOperationResult.Error
+          ? ImportOperationResult.Warn
+          : operation.result,
+      ),
+    )
+    dispatch([updateImportOperations(operationsToUpdate, ImportOperationAction.Update)])
+  }, [dispatch, operations])
   const textStyle = {
     color: textColor,
     fontSize: 14,
@@ -183,7 +211,6 @@ function ActionButtons({ importResult }: { importResult: ImportOperationResult |
     fontSize: 14,
     cursor: 'pointer',
   }
-  const dispatch = useDispatch()
   const hideWizard = React.useCallback(() => {
     hideImportWizard(dispatch)
   }, [dispatch])
@@ -207,11 +234,25 @@ function ActionButtons({ importResult }: { importResult: ImportOperationResult |
       </React.Fragment>
     )
   }
-  if (importResult == ImportOperationResult.Error) {
+  if (
+    importResult == ImportOperationResult.Error ||
+    importResult == ImportOperationResult.CriticalError
+  ) {
     return (
       <React.Fragment>
         <div style={textStyle}>Error Importing Project</div>
-        <Button style={buttonStyle}>Import A Different Project</Button>
+        <Button style={{ ...buttonStyle, marginLeft: 'auto' }}>Import A Different Project</Button>
+        {unless(
+          importResult == ImportOperationResult.CriticalError,
+          <Button
+            style={{
+              cursor: 'pointer',
+            }}
+            onClick={continueAnyway}
+          >
+            Continue Anyway
+          </Button>,
+        )}
       </React.Fragment>
     )
   }

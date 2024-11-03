@@ -147,3 +147,14 @@ export function getUpdateOperationResult(
   }
   return operations
 }
+
+export function updateImportOperationResult(
+  operation: ImportOperation,
+  updater: (operation: ImportOperation) => ImportOperationResult | undefined,
+): ImportOperation {
+  return {
+    ...operation,
+    result: updater(operation),
+    children: operation.children?.map((child) => updateImportOperationResult(child, updater)),
+  }
+}
