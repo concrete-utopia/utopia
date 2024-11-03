@@ -82,10 +82,11 @@ export const ImportWizard = React.memo(() => {
         <div
           style={{
             background: colorTheme.bg0.value,
+            color: colorTheme.fg0.value,
             boxShadow: UtopiaStyles.popup.boxShadow,
             borderRadius: 10,
             width: 600,
-            height: 500,
+            height: 420,
             position: 'relative',
             display: 'flex',
             flexDirection: 'column',
@@ -105,18 +106,18 @@ export const ImportWizard = React.memo(() => {
               width: '100%',
             }}
           >
-            <div css={{ fontSize: 16, fontWeight: 400 }}>Project Import</div>
+            <div css={{ fontSize: 16, fontWeight: 400 }}>Loading Project</div>
             {when(
-              totalImportResult != null,
+              totalImportResult == null,
               <Button
                 highlight
                 style={{
-                  width: 22,
-                  height: 22,
+                  padding: 15,
+                  color: colorTheme.fg6.value,
                 }}
                 onClick={handleDismiss}
               >
-                <Icons.Cross />
+                Cancel
               </Button>,
             )}
           </FlexRow>
@@ -157,12 +158,13 @@ export const ImportWizard = React.memo(() => {
 ImportWizard.displayName = 'ImportWizard'
 
 function ActionButtons({ importResult }: { importResult: ImportOperationResult | null }) {
+  const colorTheme = useColorTheme()
   const textColor = React.useMemo(() => {
     switch (importResult) {
       case ImportOperationResult.Success:
         return 'green'
       case ImportOperationResult.Warn:
-        return 'orange'
+        return colorTheme.warningOrange.value
       case ImportOperationResult.Error:
         return 'var(--utopitheme-githubIndicatorFailed)'
       case null:
@@ -170,28 +172,13 @@ function ActionButtons({ importResult }: { importResult: ImportOperationResult |
       default:
         assertNever(importResult)
     }
-  }, [importResult])
-  const buttonColor = React.useMemo(() => {
-    switch (importResult) {
-      case ImportOperationResult.Success:
-        return 'var(--utopitheme-green)'
-      case ImportOperationResult.Warn:
-        return 'var(--utopitheme-githubMUDModified)'
-      case ImportOperationResult.Error:
-        return 'var(--utopitheme-githubIndicatorFailed)'
-      case null:
-        return 'black'
-      default:
-        assertNever(importResult)
-    }
-  }, [importResult])
+  }, [colorTheme.warningOrange.value, importResult])
   const textStyle = {
     color: textColor,
-    fontSize: 16,
+    fontSize: 14,
   }
   const buttonStyle = {
-    backgroundColor: buttonColor,
-    color: 'white',
+    backgroundColor: colorTheme.buttonBackground.value,
     padding: 20,
     fontSize: 14,
     cursor: 'pointer',
