@@ -29,7 +29,7 @@ export function OperationLine({ operation }: { operation: ImportOperation }) {
     () =>
       childrenShown ||
       operation.timeDone == null ||
-      operation.result == ImportOperationResult.Error,
+      operation.result != ImportOperationResult.Success,
     [childrenShown, operation.timeDone, operation.result],
   )
   const hasChildren = React.useMemo(

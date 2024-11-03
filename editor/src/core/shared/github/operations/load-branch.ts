@@ -1,6 +1,6 @@
 import type { UtopiaTsWorkers } from '../../../../core/workers/common/worker-types'
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
-import { getProjectFileByFilePath, walkContentsTree } from '../../../../components/assets'
+import { getProjectFileByFilePath } from '../../../../components/assets'
 import {
   packageJsonFileFromProjectContents,
   walkContentsTreeAsync,
@@ -129,6 +129,7 @@ export const updateProjectWithBranchContent =
     currentProjectContents: ProjectContentTreeRoot,
     initiator: GithubOperationSource,
   ): Promise<void> => {
+    updateContentsAndFetchDependencies = null
     startImportProcess(dispatch)
     notifyOperationStarted(dispatch, {
       type: 'loadBranch',
@@ -182,19 +183,81 @@ export const updateProjectWithBranchContent =
             const { fixedProjectContents, result: requirementResolutionResult } =
               checkAndFixUtopiaRequirements(dispatch, parseResults)
 
+            updateContentsAndFetchDependencies = async function () {
+              // branch should never be null here
+              if (responseBody.branch == null) {
+                return
+              }
+              // Update the editor with everything so that if anything else fails past this point
+              // there's no loss of data from the user's perspective.
+              dispatch(
+                [
+                  ...connectRepo(
+                    resetBranches,
+                    githubRepo,
+                    responseBody.branch.originCommit,
+                    branchName,
+                    true,
+                  ),
+                  updateProjectContents(fixedProjectContents),
+                  updateBranchContents(fixedProjectContents),
+                  truncateHistory(),
+                ],
+                'everyone',
+              )
+
+              const componentDescriptorFiles =
+                getAllComponentDescriptorFilePaths(fixedProjectContents)
+
+              // If there's a package.json file, then attempt to load the dependencies for it.
+              let dependenciesPromise: Promise<void> = Promise.resolve()
+              const packageJson = packageJsonFileFromProjectContents(fixedProjectContents)
+              if (packageJson != null && isTextFile(packageJson)) {
+                notifyOperationStarted(dispatch, { type: 'refreshDependencies' })
+                dependenciesPromise = refreshDependencies(
+                  dispatch,
+                  packageJson.fileContents.code,
+                  currentDeps,
+                  builtInDependencies,
+                  {},
+                ).then(() => {})
+              }
+
+              // When the dependencies update has gone through, then indicate that the project was imported.
+              await dependenciesPromise
+                .catch(() => {
+                  dispatch(
+                    [
+                      showToast(
+                        notice(
+                          `Github: There was an error when attempting to update the dependencies.`,
+                          'ERROR',
+                        ),
+                      ),
+                    ],
+                    'everyone',
+                  )
+                })
+                .finally(() => {
+                  dispatch(
+                    [
+                      extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles),
+                      showToast(
+                        notice(
+                          `Github: Updated the project with the content from ${branchName}`,
+                          'SUCCESS',
+                        ),
+                      ),
+                    ],
+                    'everyone',
+                  )
+                })
+            }
+
             if (requirementResolutionResult === RequirementResolutionResult.Critical) {
               // wait for user's decision
             } else {
-              await updateContentsAndFetchDependencies(
-                dispatch,
-                resetBranches,
-                githubRepo,
-                responseBody,
-                branchName,
-                fixedProjectContents,
-                currentDeps,
-                builtInDependencies,
-              )
+              void updateContentsAndFetchDependencies()
             }
             break
           default:
@@ -205,72 +268,7 @@ export const updateProjectWithBranchContent =
     )
   }
 
-async function updateContentsAndFetchDependencies(
-  dispatch: EditorDispatch,
-  resetBranches: boolean,
-  githubRepo: GithubRepo,
-  responseBody: GetBranchContentSuccess,
-  branchName: string,
-  fixedProjectContents: ProjectContentTreeRoot,
-  currentDeps: Array<RequestedNpmDependency>,
-  builtInDependencies: BuiltInDependencies,
-) {
-  // branch should never be null here
-  if (responseBody.branch == null) {
-    return
-  }
-  // Update the editor with everything so that if anything else fails past this point
-  // there's no loss of data from the user's perspective.
-  dispatch(
-    [
-      ...connectRepo(resetBranches, githubRepo, responseBody.branch.originCommit, branchName, true),
-      updateProjectContents(fixedProjectContents),
-      updateBranchContents(fixedProjectContents),
-      truncateHistory(),
-    ],
-    'everyone',
-  )
-
-  const componentDescriptorFiles = getAllComponentDescriptorFilePaths(fixedProjectContents)
-
-  // If there's a package.json file, then attempt to load the dependencies for it.
-  let dependenciesPromise: Promise<void> = Promise.resolve()
-  const packageJson = packageJsonFileFromProjectContents(fixedProjectContents)
-  if (packageJson != null && isTextFile(packageJson)) {
-    notifyOperationStarted(dispatch, { type: 'refreshDependencies' })
-    dependenciesPromise = refreshDependencies(
-      dispatch,
-      packageJson.fileContents.code,
-      currentDeps,
-      builtInDependencies,
-      {},
-    ).then(() => {})
-  }
-
-  // When the dependencies update has gone through, then indicate that the project was imported.
-  await dependenciesPromise
-    .catch(() => {
-      dispatch(
-        [
-          showToast(
-            notice(
-              `Github: There was an error when attempting to update the dependencies.`,
-              'ERROR',
-            ),
-          ),
-        ],
-        'everyone',
-      )
-    })
-    .finally(() => {
-      dispatch(
-        [
-          extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles),
-          showToast(
-            notice(`Github: Updated the project with the content from ${branchName}`, 'SUCCESS'),
-          ),
-        ],
-        'everyone',
-      )
-    })
+let updateContentsAndFetchDependencies: (() => Promise<void>) | null = null
+export function runUpdateContentsAndFetchDependencies(): Promise<void> {
+  return updateContentsAndFetchDependencies?.() ?? Promise.resolve()
 }

@@ -19,6 +19,7 @@ import {
 import { assertNever } from '../../../core/shared/utils'
 import { useDispatch } from '../store/dispatch-context'
 import { updateImportOperations } from '../actions/action-creators'
+import { runUpdateContentsAndFetchDependencies } from '../../../core/shared/github/operations/load-branch'
 
 export const ImportWizard = React.memo(() => {
   const colorTheme = useColorTheme()
@@ -95,7 +96,7 @@ export const ImportWizard = React.memo(() => {
             boxShadow: UtopiaStyles.popup.boxShadow,
             borderRadius: 10,
             width: 600,
-            height: 420,
+            height: 450,
             position: 'relative',
             display: 'flex',
             flexDirection: 'column',
@@ -200,6 +201,11 @@ function ActionButtons({ importResult }: { importResult: ImportOperationResult |
       ),
     )
     dispatch([updateImportOperations(operationsToUpdate, ImportOperationAction.Update)])
+    // check if we still need to fetch dependencies
+    const fetchDependencies = operations.find((op) => op.type === 'refreshDependencies')
+    if (fetchDependencies?.timeStarted == null) {
+      void runUpdateContentsAndFetchDependencies()
+    }
   }, [dispatch, operations])
   const textStyle = {
     color: textColor,
