@@ -44,7 +44,6 @@ import { getFullFrame } from '../../../frame'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import type { CanvasFrameAndTarget } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
-import { convertToAbsolute } from '../../commands/convert-to-absolute-command'
 import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
 import {
   setCssLengthProperty,

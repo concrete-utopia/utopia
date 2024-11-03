@@ -43,7 +43,7 @@ import type {
   ComponentDescriptorWithName,
   ComponentInfo,
   PropertyControlsInfo,
-  TypedInpsectorSpec,
+  TypedInspectorSpec,
 } from '../../components/custom-code/code-file'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { parseControlDescription } from './property-controls-parser'
@@ -76,7 +76,7 @@ import {
   right,
   sequenceEither,
 } from '../shared/either'
-import { assertNever } from '../shared/utils'
+import { assertNever, identity } from '../shared/utils'
 import type {
   Imports,
   ParsedTextFile,
@@ -97,7 +97,7 @@ import {
   type ComponentRendererComponent,
 } from '../../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
 import type { MapLike } from 'typescript'
-import { attemptToResolveParsedComponents } from '../../components/canvas/ui-jsx-canvas'
+import { emptyUiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 import { NO_OP } from '../shared/utils'
 import { createExecutionScope } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import type { EditorDispatch } from '../../components/editor/action-types'
@@ -160,70 +160,20 @@ function extendExportsWithInfo(exports: any, toImport: string): any {
 export type ModuleEvaluator = (moduleName: string) => any
 export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
   return (moduleName: string) => {
+    const requireFn = editor.codeResultCache.curriedRequireFn(editor.projectContents)
+    const resolveFn = editor.codeResultCache.curriedResolveFn(editor.projectContents)
+    const customRequire = (importOrigin: string, toImport: string) => {
+      const result = requireFn(importOrigin, toImport, false)
+      const filePathResolveResult = resolveFn(importOrigin, toImport)
+      const absoluteFilenameOrPackage = defaultEither(toImport, filePathResolveResult)
+      return extendExportsWithInfo(result, dropFileExtension(absoluteFilenameOrPackage))
+    }
+
     let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
     let topLevelComponentRendererComponents: {
       current: MapLike<MapLike<ComponentRendererComponent>>
     } = { current: {} }
-    const emptyMetadataContext: UiJsxCanvasContextData = {
-      current: {
-        spyValues: {
-          allElementProps: {},
-          metadata: {},
-          variablesInScope: {},
-        },
-      },
-    }
 
-    let resolvedFiles: MapLike<MapLike<any>> = {}
-    let resolvedFileNames: Array<string> = [moduleName]
-
-    const requireFn = editor.codeResultCache.curriedRequireFn(editor.projectContents)
-    const resolve = editor.codeResultCache.curriedResolveFn(editor.projectContents)
-
-    const customRequire = (importOrigin: string, toImport: string) => {
-      if (resolvedFiles[importOrigin] == null) {
-        resolvedFiles[importOrigin] = []
-      }
-      let resolvedFromThisOrigin = resolvedFiles[importOrigin]
-
-      const alreadyResolved = resolvedFromThisOrigin[toImport] !== undefined
-      const filePathResolveResult = alreadyResolved
-        ? left<string, string>('Already resolved')
-        : resolve(importOrigin, toImport)
-
-      forEachRight(filePathResolveResult, (filepath) => resolvedFileNames.push(filepath))
-
-      const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
-        resolvedFromThisOrigin,
-        toImport,
-        editor.projectContents,
-        customRequire,
-        mutableContextRef,
-        topLevelComponentRendererComponents,
-        moduleName,
-        editor.canvas.base64Blobs,
-        editor.hiddenInstances,
-        editor.displayNoneInstances,
-        emptyMetadataContext,
-        NO_OP,
-        false,
-        filePathResolveResult,
-        null,
-      )
-      const result = foldEither(
-        () => {
-          // We did not find a ParseSuccess, fallback to standard require Fn
-          return requireFn(importOrigin, toImport, false)
-        },
-        (scope) => {
-          // Return an artificial exports object that contains our ComponentRendererComponents
-          return scope
-        },
-        resolvedParseSuccess,
-      )
-      const absoluteFilenameOrPackage = defaultEither(toImport, filePathResolveResult)
-      return extendExportsWithInfo(result, absoluteFilenameOrPackage)
-    }
     return createExecutionScope(
       moduleName,
       customRequire,
@@ -234,7 +184,7 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
       editor.canvas.base64Blobs,
       editor.hiddenInstances,
       editor.displayNoneInstances,
-      emptyMetadataContext,
+      emptyUiJsxCanvasContextData(),
       NO_OP,
       false,
       null,
@@ -1048,7 +998,7 @@ async function parseComponentVariants(
   return parsedVariants
 }
 
-function parseInspectorSpec(inspector: InspectorSpec | undefined): TypedInpsectorSpec {
+function parseInspectorSpec(inspector: InspectorSpec | undefined): TypedInspectorSpec {
   if (inspector == null) {
     return ComponentDescriptorDefaults.inspector
   }

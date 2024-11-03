@@ -2,12 +2,8 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { GridPositionValue } from '../../../../core/shared/element-template'
 import { gridPositionValue } from '../../../../core/shared/element-template'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls'
-import type {
-  CanvasStrategy,
-  CustomStrategyState,
-  InteractionCanvasState,
-} from '../canvas-strategy-types'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
+import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
@@ -15,13 +11,12 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { setGridPropsCommands } from './grid-helpers'
-import { getGridCellBoundsFromCanvas } from './grid-cell-bounds'
+import { getGridChildCellCoordBoundsFromCanvas } from './grid-cell-bounds'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 
 export function gridRearrangeResizeKeyboardStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
-  customState: CustomStrategyState,
 ): CanvasStrategy | null {
   if (
     interactionSession?.activeControl.type !== 'KEYBOARD_CATCHER_CONTROL' ||
@@ -48,13 +43,13 @@ export function gridRearrangeResizeKeyboardStrategy(
 
   const parentGridPath = EP.parentPath(target)
 
-  const grid = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, parentGridPath)
-  if (grid == null) {
-    return null
-  }
-  const gridTemplate = grid.specialSizeMeasurements.containerGridProperties
+  const gridTemplate = cell.specialSizeMeasurements.parentContainerGridProperties
+  const gridCellGlobalFrames = cell.specialSizeMeasurements.parentGridCellGlobalFrames
 
-  const initialCellBounds = getGridCellBoundsFromCanvas(cell, grid)
+  const initialCellBounds =
+    gridCellGlobalFrames != null
+      ? getGridChildCellCoordBoundsFromCanvas(cell, gridCellGlobalFrames)
+      : null
   if (initialCellBounds == null) {
     return null
   }

@@ -37,7 +37,7 @@ export const AlignmentButtons = React.memo(() => {
 
   const disableDistribute = selectedViews.current.length < 3
 
-  const activeAlignments = useActiveAlignments()
+  const { activeAlignments, allSelectedViewsAreFlexOrGridChildren } = useActiveAlignments()
   const hasActiveAlignments = React.useMemo(() => {
     return (
       activeAlignments.bottom ||
@@ -174,6 +174,9 @@ export const AlignmentButtons = React.memo(() => {
   const disableJustify = useDisableAlignment(selectedViews.current, 'horizontal')
   const disableAlign = useDisableAlignment(selectedViews.current, 'vertical')
 
+  const justifyIconPrefix = allSelectedViewsAreFlexOrGridChildren ? 'justifySelf' : 'justify'
+  const alignIconPrefix = allSelectedViewsAreFlexOrGridChildren ? 'alignSelf' : 'align'
+
   return (
     <UIGridRow padded={false} variant='<--1fr--><--1fr-->|22px|'>
       <OptionChainControl
@@ -187,19 +190,19 @@ export const AlignmentButtons = React.memo(() => {
         options={[
           {
             value: 'left',
-            icon: { category: 'inspector', type: 'justify-start' },
+            icon: { category: 'inspector', type: `${justifyIconPrefix}-start` },
             forceCallOnSubmitValue: true,
             disabled: disableJustify,
           },
           {
             value: 'hcenter',
-            icon: { category: 'inspector', type: 'justify-center' },
+            icon: { category: 'inspector', type: `${justifyIconPrefix}-center` },
             forceCallOnSubmitValue: true,
             disabled: disableJustify,
           },
           {
             value: 'right',
-            icon: { category: 'inspector', type: 'justify-end' },
+            icon: { category: 'inspector', type: `${justifyIconPrefix}-end` },
             forceCallOnSubmitValue: true,
             disabled: disableJustify,
           },
@@ -216,19 +219,19 @@ export const AlignmentButtons = React.memo(() => {
         options={[
           {
             value: 'top',
-            icon: { category: 'inspector', type: 'align-start' },
+            icon: { category: 'inspector', type: `${alignIconPrefix}-start` },
             forceCallOnSubmitValue: true,
             disabled: disableAlign,
           },
           {
             value: 'vcenter',
-            icon: { category: 'inspector', type: 'align-center' },
+            icon: { category: 'inspector', type: `${alignIconPrefix}-center` },
             forceCallOnSubmitValue: true,
             disabled: disableAlign,
           },
           {
             value: 'bottom',
-            icon: { category: 'inspector', type: 'align-end' },
+            icon: { category: 'inspector', type: `${alignIconPrefix}-end` },
             forceCallOnSubmitValue: true,
             disabled: disableAlign,
           },
@@ -241,13 +244,21 @@ export const AlignmentButtons = React.memo(() => {
 })
 AlignmentButtons.displayName = 'AlignmentButtons'
 
-function useActiveAlignments(): ActiveAlignments {
+function useActiveAlignments(): {
+  activeAlignments: ActiveAlignments
+  allSelectedViewsAreFlexOrGridChildren: boolean
+} {
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
 
   const jsxMetadata = useEditorState(
     Substores.metadata,
     (store) => store.editor.jsxMetadata,
     'useActiveAlignments jsxMetadata',
+  )
+
+  const allSelectedViewsAreFlexOrGridChildren = React.useMemo(
+    () => selectedViews.current.every((path) => MetadataUtils.isFlexOrGridChild(jsxMetadata, path)),
+    [selectedViews, jsxMetadata],
   )
 
   const isActive = React.useCallback(
@@ -257,9 +268,7 @@ function useActiveAlignments(): ActiveAlignments {
       }
 
       // Only flex/grid children can have active alignments, because they would mean nothing for flow elements.
-      if (
-        !selectedViews.current.every((view) => MetadataUtils.isFlexOrGridChild(jsxMetadata, view))
-      ) {
+      if (!allSelectedViewsAreFlexOrGridChildren) {
         return false
       }
 
@@ -321,10 +330,10 @@ function useActiveAlignments(): ActiveAlignments {
         }
       })
     },
-    [jsxMetadata, selectedViews],
+    [jsxMetadata, selectedViews, allSelectedViewsAreFlexOrGridChildren],
   )
 
-  return React.useMemo(() => {
+  const activeAlignments = React.useMemo(() => {
     return {
       left: isActive('left'),
       hcenter: isActive('hcenter'),
@@ -334,6 +343,11 @@ function useActiveAlignments(): ActiveAlignments {
       bottom: isActive('bottom'),
     }
   }, [isActive])
+
+  return {
+    activeAlignments: activeAlignments,
+    allSelectedViewsAreFlexOrGridChildren: allSelectedViewsAreFlexOrGridChildren,
+  }
 }
 
 type UnsetAlignment = {

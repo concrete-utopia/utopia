@@ -1,4 +1,5 @@
-import type { EditorState } from './editor-state'
+import { type EditorState } from './editor-state'
+import { emptyProjectRequirements } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
 export const EmptyEditorStateForKeysOnly: EditorState = {
   id: null,
@@ -88,7 +89,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
       reparentedToPaths: [],
       dragToMoveIndicatorFlags: null as any,
       parentOutlineHighlight: null,
-      gridControls: null,
+      gridControlData: null,
     },
   },
   inspector: {
@@ -157,6 +158,9 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   githubSettings: null as any,
   imageDragSessionState: null as any,
   githubOperations: [],
+  importOperations: [],
+  importWizardOpen: false,
+  projectRequirements: emptyProjectRequirements(),
   branchOriginContents: null,
   githubData: null as any,
   refreshingDependencies: false,

@@ -10,8 +10,9 @@ import {
 } from '../../../../core/shared/math-utils'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import CanvasActions from '../../canvas-actions'
-import { GridCellTestId } from '../../controls/grid-controls'
-import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
+import { GridCellTestId } from '../../controls/grid-controls-for-strategies'
+import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
+import { mouseDragFromPointToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import type { GridCellCoordinates } from './grid-cell-bounds'
@@ -32,6 +33,46 @@ describe('grid rearrange move strategy', () => {
       gridColumnStart: '3',
       gridRowEnd: '4',
       gridRowStart: '2',
+    })
+  })
+
+  it('can rearrange elements in a grid component', async () => {
+    const editor = await renderTestEditorWithCode(
+      ProjectCodeGridComponent,
+      'await-first-dom-report',
+    )
+
+    const testId = 'aaa'
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest(editor, {
+      scale: 1,
+      pathString: `sb/scene/grid/${testId}`,
+      testId: testId,
+    })
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnEnd: '7',
+      gridColumnStart: '3',
+      gridRowEnd: '4',
+      gridRowStart: '2',
+    })
+  })
+
+  it('can not rearrange multicell element out of the grid', async () => {
+    const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
+
+    const testId = 'aaa'
+    // moving a multi-cell element to the left, but it is already on the left of the grid
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest(editor, {
+      scale: 1,
+      pathString: `sb/scene/grid/${testId}`,
+      testId: testId,
+      targetCell: { row: 2, column: 1 },
+      draggedCell: { row: 2, column: 2 },
+    })
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnEnd: '5',
+      gridColumnStart: '1',
+      gridRowEnd: '3',
+      gridRowStart: '1',
     })
   })
 
@@ -552,6 +593,7 @@ export var storyboard = (
           childCenter,
           offsetPoint(childCenter, windowPoint({ x: 280, y: 120 })),
           {
+            staggerMoveEvents: false,
             moveBeforeMouseDown: true,
           },
         )
@@ -684,6 +726,28 @@ export var storyboard = (
 
       expect(second.cells).toEqual(['orange', 'pink', 'cyan', 'blue'])
     })
+
+    it('doesnt reorder when element occupies multiple cells', async () => {
+      const editor = await renderTestEditorWithCode(
+        ProjectCodeReorderwithMultiCellChild,
+        'await-first-dom-report',
+      )
+
+      const result = await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 1, column: 1 })
+      expect({
+        gridRowStart: result.gridRowStart,
+        gridRowEnd: result.gridRowEnd,
+        gridColumnStart: result.gridColumnStart,
+        gridColumnEnd: result.gridColumnEnd,
+      }).toEqual({
+        gridColumnEnd: '3',
+        gridColumnStart: '1',
+        gridRowEnd: 'auto',
+        gridRowStart: '1',
+      })
+
+      expect(result.cells).toEqual(['pink', 'orange', 'cyan', 'blue'])
+    })
   })
 })
 
@@ -694,6 +758,7 @@ async function runMoveTest(
     pathString: string
     testId: string
     targetCell?: GridCellCoordinates
+    draggedCell?: GridCellCoordinates
   },
 ) {
   const elementPathToDrag = EP.fromString(props.pathString)
@@ -704,7 +769,15 @@ async function runMoveTest(
     await editor.dispatch([CanvasActions.zoom(props.scale)], true)
   }
 
-  const sourceGridCell = editor.renderedDOM.getByTestId(GridCellTestId(elementPathToDrag))
+  const sourceGridCell = editor.renderedDOM.getByTestId(
+    props.draggedCell == null
+      ? GridCellTestId(elementPathToDrag)
+      : gridCellTargetId(
+          EP.fromString('sb/scene/grid'),
+          props.draggedCell.row,
+          props.draggedCell.column,
+        ),
+  )
   const targetGridCell = editor.renderedDOM.getByTestId(
     gridCellTargetId(
       EP.fromString('sb/scene/grid'),
@@ -716,24 +789,28 @@ async function runMoveTest(
   const sourceRect = sourceGridCell.getBoundingClientRect()
   const targetRect = targetGridCell.getBoundingClientRect()
 
+  const endPoint = getRectCenter(
+    localRectangle({
+      x: targetRect.x,
+      y: targetRect.y,
+      width: targetRect.width,
+      height: targetRect.height,
+    }),
+  )
+
   await mouseDragFromPointToPoint(
     sourceGridCell,
     {
       x: sourceRect.x + 10,
       y: sourceRect.y + 10,
     },
-    getRectCenter(
-      localRectangle({
-        x: targetRect.x,
-        y: targetRect.y,
-        width: targetRect.width,
-        height: targetRect.height,
-      }),
-    ),
+    endPoint,
     {
+      staggerMoveEvents: false,
       moveBeforeMouseDown: true,
     },
   )
+  await mouseUpAtPoint(editor.renderedDOM.getByTestId(CanvasControlsContainerID), endPoint)
 
   return editor.renderedDOM.getByTestId(props.testId).style
 }
@@ -851,7 +928,184 @@ export var storyboard = (
 )
 `
 
+const ProjectCodeGridComponent = `import * as React from 'react'
+import { Scene, Storyboard, Placeholder } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 847,
+        height: 895,
+        position: 'absolute',
+        left: 46,
+        top: 131,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <Grid
+        style={{
+          display: 'grid',
+          gridTemplateRows: '75px 75px 75px 75px',
+          gridTemplateColumns:
+            '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
+          gridGap: 16,
+          height: 482,
+          width: 786,
+          position: 'absolute',
+          left: 31,
+          top: 0,
+        }}
+        data-uid='grid'
+      >
+        <div
+          style={{
+            minHeight: 0,
+            backgroundColor: '#f3785f',
+            gridColumnEnd: 5,
+            gridColumnStart: 1,
+            gridRowEnd: 3,
+            gridRowStart: 1,
+          }}
+          data-uid='aaa'
+          data-testid='aaa'
+        />
+        <div
+          style={{
+            minHeight: 0,
+            backgroundColor: '#23565b',
+          }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+        <Placeholder
+          style={{
+            minHeight: 0,
+            gridColumnEnd: 5,
+            gridRowEnd: 4,
+            gridColumnStart: 1,
+            gridRowStart: 3,
+            backgroundColor: '#0074ff',
+          }}
+          data-uid='ccc'
+        />
+        <Placeholder
+          style={{
+            minHeight: 0,
+            gridColumnEnd: 9,
+            gridRowEnd: 4,
+            gridColumnStart: 5,
+            gridRowStart: 3,
+          }}
+          data-uid='ddd'
+        />
+      </Grid>
+    </Scene>
+  </Storyboard>
+)
+
+export function Grid(props) {
+  return (
+    <div
+      {...props}
+      style={{
+        ...props.style,
+        display: 'grid',
+        gridTemplateRows: '75px 75px 75px 75px',
+        gridTemplateColumns:
+          '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
+        gridGap: 16,
+      }}
+      data-uid='f84914f31dbc6c5d9b44c11ae54139ef'
+    >
+      {props.children}
+    </div>
+  )
+}
+`
+
 const ProjectCodeReorder = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 600,
+        height: 600,
+        position: 'absolute',
+        left: 0,
+        top: 0,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 500,
+          height: 500,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gridTemplateRows: '1fr 1fr 1fr',
+          gridGap: 10,
+          padding: 10,
+        }}
+        data-testid='grid'
+        data-uid='grid'
+      >
+        <div
+          style={{
+            backgroundColor: '#f09',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='pink'
+		      data-testid='pink'
+          data-label='pink'
+        />
+        <div
+          style={{
+            backgroundColor: '#f90',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='orange'
+		      data-testid='orange'
+          data-label='orange'
+        />
+        <div
+          style={{
+            backgroundColor: '#0f9',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='cyan'
+		      data-testid='cyan'
+          data-label='cyan'
+        />
+        <div
+          style={{
+            backgroundColor: '#09f',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='blue'
+		      data-testid='blue'
+          data-label='blue'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+
+const ProjectCodeReorderwithMultiCellChild = `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 export var storyboard = (
@@ -898,6 +1152,8 @@ export var storyboard = (
             backgroundColor: '#f90',
             width: '100%',
             height: '100%',
+            gridColumnStart: 2,
+            gridColumnEnd: 4,
           }}
           data-uid='orange'
 		  data-testid='orange'

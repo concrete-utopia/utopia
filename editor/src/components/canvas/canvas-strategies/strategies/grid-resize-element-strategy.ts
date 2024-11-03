@@ -1,18 +1,16 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import type { GridElementProperties, GridPosition } from '../../../../core/shared/element-template'
 import {
   type CanvasRectangle,
   isInfinityRectangle,
   rectangleIntersection,
 } from '../../../../core/shared/math-utils'
-import { isCSSKeyword } from '../../../inspector/common/css-utils'
-import { isFixedHugFillModeApplied } from '../../../inspector/inspector-common'
+import { isFillOrStretchModeAppliedOnAnySide } from '../../../inspector/inspector-common'
 import {
   controlsForGridPlaceholders,
   gridEdgeToEdgePosition,
   GridResizeControls,
-} from '../../controls/grid-controls'
+} from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -22,13 +20,12 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { getMetadataWithGridCellBounds, setGridPropsCommands } from './grid-helpers'
+import { setGridPropsCommands } from './grid-helpers'
 import { resizeBoundingBoxFromSide } from './resize-helpers'
 
 export const gridResizeElementStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
-  customState,
 ) => {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (selectedElements.length !== 1) {
@@ -36,6 +33,13 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
+  const selectedElementMetadata = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElement,
+  )
+  if (selectedElementMetadata == null) {
+    return null
+  }
   const isElementInsideGrid = MetadataUtils.isGridCell(
     canvasState.startingMetadata,
     selectedElement,
@@ -52,10 +56,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const isFillOrStretchContainer =
-    isFixedHugFillModeApplied(canvasState.startingMetadata, selectedElement, 'fill') ||
-    isFixedHugFillModeApplied(canvasState.startingMetadata, selectedElement, 'stretch')
-  if (!isFillOrStretchContainer) {
+  if (!isFillOrStretchModeAppliedOnAnySide(canvasState.startingMetadata, selectedElement)) {
     return null
   }
 
@@ -89,19 +90,8 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      const { metadata: container, customStrategyState: updatedCustomState } =
-        getMetadataWithGridCellBounds(
-          EP.parentPath(selectedElement),
-          canvasState.startingMetadata,
-          interactionSession.latestMetadata,
-          customState,
-        )
-
-      if (container == null) {
-        return emptyStrategyApplicationResult
-      }
-
-      const allCellBounds = container.specialSizeMeasurements.gridCellGlobalFrames
+      const allCellBounds =
+        selectedElementMetadata.specialSizeMeasurements.parentGridCellGlobalFrames
 
       if (allCellBounds == null) {
         return emptyStrategyApplicationResult
@@ -121,12 +111,12 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      const gridTemplate = container.specialSizeMeasurements.containerGridProperties
+      const gridTemplate =
+        selectedElementMetadata.specialSizeMeasurements.parentContainerGridProperties
 
       return strategyApplicationResult(
         setGridPropsCommands(selectedElement, gridTemplate, gridProps),
         [parentGridPath],
-        updatedCustomState ?? undefined,
       )
     },
   }

@@ -1,6 +1,6 @@
 import React from 'react'
 import { createSelector } from 'reselect'
-import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
+import { mapDropNulls, pushUniquelyBy, sortBy } from '../../../core/shared/array-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
 import type {
@@ -19,6 +19,7 @@ import type {
   StrategyApplicationResult,
   InteractionLifecycle,
   CustomStrategyState,
+  WhenToShowControl,
 } from './canvas-strategy-types'
 import {
   ControlDelay,
@@ -82,6 +83,12 @@ import { reparentSubjectsForInteractionTarget } from './strategies/reparent-help
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
 import { gridRearrangeResizeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
 import createCachedSelector from 're-reselect'
+import { getActivePlugin } from '../plugins/style-plugins'
+import {
+  controlsForGridPlaceholders,
+  GridControls,
+  isGridControlsProps,
+} from '../controls/grid-controls-for-strategies'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -202,6 +209,7 @@ export function pickCanvasStateFromEditorState(
   editorState: EditorState,
   builtInDependencies: BuiltInDependencies,
 ): InteractionCanvasState {
+  const activePlugin = getActivePlugin(editorState)
   return {
     builtInDependencies: builtInDependencies,
     interactionTarget: getInteractionTargetFromEditorState(editorState, localSelectedViews),
@@ -214,6 +222,11 @@ export function pickCanvasStateFromEditorState(
     startingElementPathTree: editorState.elementPathTree,
     startingAllElementProps: editorState.allElementProps,
     propertyControlsInfo: editorState.propertyControlsInfo,
+    styleInfoReader: activePlugin.styleInfoFactory({
+      projectContents: editorState.projectContents,
+      metadata: editorState.jsxMetadata,
+      elementPathTree: editorState.elementPathTree,
+    }),
   }
 }
 
@@ -224,6 +237,8 @@ export function pickCanvasStateFromEditorStateWithMetadata(
   metadata: ElementInstanceMetadataMap,
   allElementProps?: AllElementProps,
 ): InteractionCanvasState {
+  const activePlugin = getActivePlugin(editorState)
+
   return {
     builtInDependencies: builtInDependencies,
     interactionTarget: getInteractionTargetFromEditorState(editorState, localSelectedViews),
@@ -236,6 +251,11 @@ export function pickCanvasStateFromEditorStateWithMetadata(
     startingElementPathTree: editorState.elementPathTree, // IMPORTANT! This isn't based on the passed in metadata
     startingAllElementProps: allElementProps ?? editorState.allElementProps,
     propertyControlsInfo: editorState.propertyControlsInfo,
+    styleInfoReader: activePlugin.styleInfoFactory({
+      projectContents: editorState.projectContents,
+      metadata: metadata,
+      elementPathTree: editorState.elementPathTree,
+    }),
   }
 }
 
@@ -634,9 +654,51 @@ function controlPriorityToNumber(prio: ControlWithProps<any>['priority']): numbe
   }
 }
 
-export function useGetApplicableStrategyControls(
-  localSelectedViews: Array<ElementPath>,
+export function combineApplicableControls(
+  strategyControls: Array<ControlWithProps<unknown>>,
 ): Array<ControlWithProps<unknown>> {
+  // Separate out the instances of `GridControls`.
+  let result: Array<ControlWithProps<unknown>> = []
+  let gridControlsInstances: Array<ControlWithProps<unknown>> = []
+  for (const control of strategyControls) {
+    if (control.control === GridControls) {
+      gridControlsInstances.push(control)
+    } else {
+      result.push(control)
+    }
+  }
+
+  // Sift the instances of `GridControls`, storing their targets by when they should be shown.
+  let gridControlsTargets: Map<WhenToShowControl, Array<ElementPath>> = new Map()
+  for (const control of gridControlsInstances) {
+    if (isGridControlsProps(control.props)) {
+      const possibleTargets = gridControlsTargets.get(control.show)
+      if (possibleTargets == null) {
+        gridControlsTargets.set(control.show, control.props.targets)
+      } else {
+        possibleTargets.push(...control.props.targets)
+      }
+    }
+  }
+
+  // Create new instances of `GridControls` with the combined targets.
+  for (const [show, targets] of gridControlsTargets) {
+    result.push(controlsForGridPlaceholders(targets, show, `-${show}`))
+  }
+
+  // Return the newly created controls with the combined entries.
+  return result
+}
+
+const controlEquals = (l: ControlWithProps<any>, r: ControlWithProps<any>) => {
+  return l.control === r.control && l.key === r.key
+}
+
+export function useGetApplicableStrategyControls(localSelectedViews: Array<ElementPath>): {
+  bottomStrategyControls: Array<ControlWithProps<unknown>>
+  middleStrategyControls: Array<ControlWithProps<unknown>>
+  topStrategyControls: Array<ControlWithProps<unknown>>
+} {
   const applicableStrategies = useGetApplicableStrategies(localSelectedViews)
   const currentStrategy = useDelayedCurrentStrategy()
   const currentlyInProgress = useEditorState(
@@ -647,30 +709,47 @@ export function useGetApplicableStrategyControls(
     'useGetApplicableStrategyControls currentlyInProgress',
   )
   return React.useMemo(() => {
-    let applicableControls: Array<ControlWithProps<unknown>> = []
+    let strategyControls: Array<ControlWithProps<unknown>> = []
     let isResizable: boolean = false
     // Add the controls for currently applicable strategies.
     for (const strategy of applicableStrategies) {
       if (isResizableStrategy(strategy)) {
         isResizable = true
       }
-      const strategyControls = getApplicableControls(currentStrategy, strategy)
-      applicableControls = addAllUniquelyBy(
-        applicableControls,
-        strategyControls,
-        (l, r) => l.control === r.control && l.key === r.key,
-      )
+      strategyControls.push(...getApplicableControls(currentStrategy, strategy))
     }
+    const combinedControls = combineApplicableControls(strategyControls)
+    const bottomStrategyControls: Array<ControlWithProps<unknown>> = []
+    const middleStrategyControls: Array<ControlWithProps<unknown>> = []
+    const topStrategyControls: Array<ControlWithProps<unknown>> = []
+
+    // uniquely add the strategyControls to the bottom, middle, and top arrays
+    for (const control of combinedControls) {
+      switch (control.priority) {
+        case 'bottom':
+          pushUniquelyBy(bottomStrategyControls, control, controlEquals)
+          break
+        case undefined:
+          pushUniquelyBy(middleStrategyControls, control, controlEquals)
+          break
+        case 'top':
+          pushUniquelyBy(topStrategyControls, control, controlEquals)
+          break
+        default:
+          assertNever(control.priority)
+      }
+    }
+
     // Special case controls.
     if (!isResizable && !currentlyInProgress) {
-      applicableControls.push(notResizableControls)
+      middleStrategyControls.push(notResizableControls)
     }
 
-    applicableControls = applicableControls.sort(
-      (a, b) => controlPriorityToNumber(a.priority) - controlPriorityToNumber(b.priority),
-    )
-
-    return applicableControls
+    return {
+      bottomStrategyControls: bottomStrategyControls,
+      middleStrategyControls: middleStrategyControls,
+      topStrategyControls: topStrategyControls,
+    }
   }, [applicableStrategies, currentStrategy, currentlyInProgress])
 }
 

@@ -222,8 +222,8 @@ export function useFilteredOptions(
   }, [filter, maxResults, onEmptyResults])
 }
 
-function getClassNameAttribute(element: JSXElementChild | null): {
-  value: string | null
+function getClassNameJSXAttribute(element: JSXElementChild | null): {
+  value: any | null
   isSettable: boolean
 } {
   if (element != null && isJSXElement(element)) {
@@ -246,6 +246,26 @@ function getClassNameAttribute(element: JSXElementChild | null): {
       isSettable: true,
     }
   }
+}
+
+export function getClassNameAttribute(element: JSXElementChild | null): {
+  value: string | null
+  isSettable: boolean
+} {
+  const classNameJSXAttribute = getClassNameJSXAttribute(element)
+  if (
+    classNameJSXAttribute.value == null ||
+    // The type check here is necessary because in <div className /> the value
+    // of `className` would be `true`
+    typeof classNameJSXAttribute.value !== 'string'
+  ) {
+    return {
+      value: null,
+      isSettable: classNameJSXAttribute.isSettable,
+    }
+  }
+
+  return classNameJSXAttribute
 }
 
 export function useGetSelectedClasses(): {

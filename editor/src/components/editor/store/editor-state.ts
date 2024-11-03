@@ -31,7 +31,6 @@ import type {
 } from '../../../core/shared/element-template'
 import {
   emptyJsxMetadata,
-  getElementsByUIDFromTopLevelElements,
   isJSExpression,
   isJSXConditionalExpression,
   isJSXElement,
@@ -61,14 +60,12 @@ import type {
   NodeModules,
   ParseSuccess,
   ProjectFile,
-  PropertyPath,
   StaticElementPath,
   TextFile,
 } from '../../../core/shared/project-file-types'
 import {
   RevisionsState,
   codeFile,
-  foldParsedTextFile,
   isParseFailure,
   isParseSuccess,
   isParsedTextFile,
@@ -125,7 +122,6 @@ import type { Notice } from '../../common/notice'
 import type { ShortcutConfiguration } from '../shortcut-definitions'
 import {
   DerivedStateKeepDeepEquality,
-  ElementInstanceMetadataMapKeepDeepEquality,
   InvalidOverrideNavigatorEntryKeepDeepEquality,
   RenderPropNavigatorEntryKeepDeepEquality,
   RenderPropValueNavigatorEntryKeepDeepEquality,
@@ -192,6 +188,12 @@ import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { OnlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
 import type { FancyError } from '../../../core/shared/code-exec-utils'
+import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
+import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
+import {
+  emptyProjectRequirements,
+  type ProjectRequirements,
+} from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
 const ObjectPathImmutable: any = OPI
 
@@ -214,7 +216,6 @@ export enum RightMenuTab {
   Inspector = 'inspector',
   Settings = 'settings',
   Comments = 'comments',
-  RollYourOwn = 'roll-your-own',
 }
 
 // TODO: this should just contain an NpmDependency and a status
@@ -813,6 +814,12 @@ export interface DragToMoveIndicatorFlags {
   ancestor: boolean
 }
 
+export interface GridControlData {
+  grid: ElementPath
+  targetCell: GridCellCoordinates | null // the cell under the mouse
+  rootCell: GridCellCoordinates | null // the top-left cell of the target child
+}
+
 export interface EditorStateCanvasControls {
   // this is where we can put props for the strategy controls
   snappingGuidelines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
@@ -823,7 +830,7 @@ export interface EditorStateCanvasControls {
   reparentedToPaths: Array<ElementPath>
   dragToMoveIndicatorFlags: DragToMoveIndicatorFlags
   parentOutlineHighlight: ElementPath | null
-  gridControls: ElementPath | null
+  gridControlData: GridControlData | null
 }
 
 export function editorStateCanvasControls(
@@ -835,7 +842,7 @@ export function editorStateCanvasControls(
   reparentedToPaths: Array<ElementPath>,
   dragToMoveIndicatorFlagsValue: DragToMoveIndicatorFlags,
   parentOutlineHighlight: ElementPath | null,
-  gridControls: ElementPath | null,
+  gridControlData: GridControlData | null,
 ): EditorStateCanvasControls {
   return {
     snappingGuidelines: snappingGuidelines,
@@ -846,7 +853,7 @@ export function editorStateCanvasControls(
     reparentedToPaths: reparentedToPaths,
     dragToMoveIndicatorFlags: dragToMoveIndicatorFlagsValue,
     parentOutlineHighlight: parentOutlineHighlight,
-    gridControls: gridControls,
+    gridControlData: gridControlData,
   }
 }
 
@@ -1450,6 +1457,9 @@ export interface EditorState {
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
+  importOperations: Array<ImportOperation>
+  projectRequirements: ProjectRequirements
+  importWizardOpen: boolean
   githubData: GithubData
   refreshingDependencies: boolean
   colorSwatches: Array<ColorSwatch>
@@ -1533,6 +1543,9 @@ export function editorState(
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
+  importOperations: Array<ImportOperation>,
+  importWizardOpen: boolean,
+  projectRequirements: ProjectRequirements,
   branchOriginContents: ProjectContentTreeRoot | null,
   githubData: GithubData,
   refreshingDependencies: boolean,
@@ -1617,6 +1630,9 @@ export function editorState(
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
+    importOperations: importOperations,
+    importWizardOpen: importWizardOpen,
+    projectRequirements: projectRequirements,
     githubData: githubData,
     refreshingDependencies: refreshingDependencies,
     colorSwatches: colorSwatches,
@@ -2625,7 +2641,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
-        gridControls: null,
+        gridControlData: null,
       },
     },
     inspector: {
@@ -2694,6 +2710,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
+    importOperations: [],
+    importWizardOpen: false,
+    projectRequirements: emptyProjectRequirements(),
     branchOriginContents: null,
     githubData: emptyGithubData(),
     refreshingDependencies: false,
@@ -3000,7 +3019,7 @@ export function editorModelFromPersistentModel(
         reparentedToPaths: [],
         dragToMoveIndicatorFlags: emptyDragToMoveIndicatorFlags,
         parentOutlineHighlight: null,
-        gridControls: null,
+        gridControlData: null,
       },
     },
     inspector: {
@@ -3061,6 +3080,9 @@ export function editorModelFromPersistentModel(
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
     githubOperations: [],
+    importOperations: [],
+    importWizardOpen: false,
+    projectRequirements: emptyProjectRequirements(),
     refreshingDependencies: false,
     branchOriginContents: null,
     githubData: emptyGithubData(),

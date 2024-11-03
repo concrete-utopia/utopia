@@ -22,10 +22,11 @@ import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse, flexGapHandle } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
+import type { FlexGapData } from '../../gap-utils'
 import {
   cursorFromFlexDirection,
-  maybeFlexGapData,
   gapControlBoundsFromMetadata,
+  maybeFlexGapData,
   recurseIntoChildrenOfMapOrFragment,
 } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -46,6 +47,7 @@ import {
   reverseJustifyContent,
 } from '../../../../core/model/flex-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
+import { getActivePlugin } from '../../plugins/style-plugins'
 
 interface FlexGapControlProps {
   selectedElement: ElementPath
@@ -130,20 +132,39 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     elementPathTrees,
     selectedElement,
   )
-  const flexGap = maybeFlexGapData(metadata, selectedElement)
-  if (flexGap == null) {
-    return null
-  }
 
-  const flexGapValue = updatedGapValue ?? flexGap.value
-
-  const controlBounds = gapControlBoundsFromMetadata(
-    metadata,
-    selectedElement,
-    children.map((c) => c.elementPath),
-    flexGapValue.renderedValuePx,
-    flexGap.direction,
+  const flexGapFromEditor = useEditorState(
+    Substores.fullStore,
+    (store) =>
+      maybeFlexGapData(
+        getActivePlugin(store.editor).styleInfoFactory({
+          projectContents: store.editor.projectContents,
+          metadata: metadata,
+          elementPathTree: store.editor.elementPathTree,
+        })(selectedElement),
+        MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, selectedElement),
+      ),
+    'FlexGapControl flexGapFromEditor',
   )
+
+  const flexGap: FlexGapData | null = optionalMap(
+    (gap) => ({
+      direction: gap.direction,
+      value: updatedGapValue ?? gap.value,
+    }),
+    flexGapFromEditor,
+  )
+
+  const controlBounds =
+    flexGapFromEditor == null || flexGap == null
+      ? null
+      : gapControlBoundsFromMetadata(
+          metadata,
+          selectedElement,
+          children.map((c) => c.elementPath),
+          flexGap.value.renderedValuePx,
+          flexGapFromEditor.direction,
+        )
 
   const contentArea = React.useMemo((): Size => {
     function valueForDimension(
@@ -157,12 +178,12 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
 
     const bounds = boundingRectangleArray(
       mapDropNulls((c) => {
-        const localFrame = MetadataUtils.getLocalFrame(c.elementPath, metadata)
+        const localFrame = MetadataUtils.getLocalFrame(c.elementPath, metadata, null)
         return localFrame != null && isFiniteRectangle(localFrame) ? localFrame : null
       }, children),
     )
 
-    if (bounds == null) {
+    if (bounds == null || flexGap == null) {
       return zeroSize
     } else {
       return {
@@ -170,17 +191,17 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
           ['column', 'column-reverse'],
           flexGap.direction,
           bounds.width,
-          flexGapValue.renderedValuePx,
+          flexGap.value.renderedValuePx,
         ),
         height: valueForDimension(
           ['row', 'row-reverse'],
           flexGap.direction,
           bounds.height,
-          flexGapValue.renderedValuePx,
+          flexGap.value.renderedValuePx,
         ),
       }
     }
-  }, [children, flexGap.direction, flexGapValue.renderedValuePx, metadata])
+  }, [children, flexGap, metadata])
 
   const justifyContent = React.useMemo(() => {
     return (
@@ -196,12 +217,16 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     )
   }, [metadata, selectedElement])
 
+  if (flexGap == null || controlBounds == null) {
+    return null
+  }
+
   return (
     <CanvasOffsetWrapper>
       <div data-testid={FlexGapControlTestId} style={{ pointerEvents: 'none' }}>
         {controlBounds.map(({ bounds, path: p }) => {
           const path = EP.toString(p)
-          const valueToShow = fallbackEmptyValue(flexGapValue)
+          const valueToShow = fallbackEmptyValue(flexGap.value)
           return (
             <GapControlSegment
               key={path}
@@ -383,7 +408,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
               <CanvasLabel
                 value={printCSSNumber(gapValue, null)}
                 scale={scale}
-                color={colorTheme.brandNeonPink.value}
+                color={colorTheme.brandNeonOrange.value}
                 textColor={colorTheme.white.value}
               />,
             )}
@@ -391,7 +416,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
           <PillHandle
             width={width}
             height={height}
-            pillColor={colorTheme.brandNeonPink.value}
+            pillColor={colorTheme.brandNeonOrange.value}
             borderWidth={borderWidth}
           />
         </div>
@@ -402,7 +427,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
 
 function handleDimensions(flexDirection: FlexDirection, scale: number): Size {
   if (flexDirection === 'row' || flexDirection === 'row-reverse') {
-    return size(3 / scale, 12 / scale)
+    return size(4 / scale, 12 / scale)
   }
   if (flexDirection === 'column' || flexDirection === 'column-reverse') {
     return size(12 / scale, 4 / scale)

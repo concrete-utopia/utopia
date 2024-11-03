@@ -67,12 +67,19 @@ import {
   treatElementAsFragmentLike,
 } from '../fragment-like-helpers'
 import type { OldPathToNewPathMapping } from '../../post-action-options/post-action-paste'
+import type { ShouldAddContainLayout } from './reparent-helpers'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
   PP.create('style', 'top'),
   PP.create('style', 'right'),
   PP.create('style', 'bottom'),
+  PP.create('style', 'gridRow'),
+  PP.create('style', 'gridColumn'),
+  PP.create('style', 'gridRowStart'),
+  PP.create('style', 'gridRowEnd'),
+  PP.create('style', 'gridColumnStart'),
+  PP.create('style', 'gridColumnEnd'),
 ]
 
 export type ForcePins = 'force-pins' | 'do-not-force-pins'
@@ -84,6 +91,7 @@ export function getAbsoluteReparentPropertyChanges(
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   forcePins: ForcePins,
+  willContainLayoutBeAdded: ShouldAddContainLayout,
 ): Array<AdjustCssLengthProperties | ConvertCssPercentToPx> {
   const element: JSXElement | null = getJSXElementFromProjectContents(target, projectContents)
 
@@ -102,7 +110,10 @@ export function getAbsoluteReparentPropertyChanges(
 
   const currentParentContentBox =
     MetadataUtils.getGlobalContentBoxForChildren(originalParentInstance)
-  const newParentContentBox = MetadataUtils.getGlobalContentBoxForChildren(newParentInstance)
+  const newParentContentBox =
+    willContainLayoutBeAdded === 'add-contain-layout'
+      ? nullIfInfinity(newParentInstance.globalFrame)
+      : MetadataUtils.getGlobalContentBoxForChildren(newParentInstance)
 
   if (currentParentContentBox == null || newParentContentBox == null) {
     return []
@@ -343,6 +354,7 @@ export function getReparentPropertyChanges(
         currentMetadata,
         projectContents,
         'force-pins',
+        'dont-add-contain-layout',
       )
 
       const strategyCommands = runReparentPropertyStrategies([

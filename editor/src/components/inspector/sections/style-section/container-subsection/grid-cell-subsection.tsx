@@ -38,6 +38,9 @@ import {
   isEmptyInputValue,
 } from '../../../common/css-utils'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
+import { deleteProperties } from '../../../../canvas/commands/delete-properties-command'
+import { GridPositioningProps } from '../../../../canvas/canvas-strategies/strategies/rearrange-grid-swap-strategy'
+import { styleP } from '../../../inspector-common'
 
 type CellAdjustMode = 'dimensions' | 'boundaries'
 
@@ -100,6 +103,18 @@ export const GridPlacementSubsection = React.memo(() => {
     dispatch([applyCommandsAction(commands)])
   }, [dispatch, cell, gridTemplate])
 
+  const removePlacementProps = React.useCallback(() => {
+    if (cell == null) {
+      return
+    }
+
+    dispatch([
+      applyCommandsAction([
+        deleteProperties('always', cell.elementPath, GridPositioningProps.map(styleP)),
+      ]),
+    ])
+  }, [dispatch, cell])
+
   if (cell == null || gridTemplate == null) {
     return null
   }
@@ -120,6 +135,12 @@ export const GridPlacementSubsection = React.memo(() => {
           isAllDefaults,
           <SquareButton highlight onClick={writeDefaults}>
             <Icons.SmallPlus />
+          </SquareButton>,
+        )}
+        {unless(
+          isAllDefaults,
+          <SquareButton highlight onClick={removePlacementProps}>
+            <Icons.SmallCross />
           </SquareButton>,
         )}
       </InspectorSubsectionHeader>
@@ -190,12 +211,12 @@ const DimensionsControls = React.memo(
             ? gridPositionValue(e.value)
             : cssKeyword(e.value)
 
-          const maybeAreaValue = maybeValueFromAreaName(
+          const maybeLineValue = maybeValueFromLineName(
             value,
             dimension === 'gridColumnStart' || dimension === 'width' ? columnLabels : rowLabels,
           )
-          if (maybeAreaValue != null) {
-            value = maybeAreaValue
+          if (maybeLineValue != null) {
+            value = maybeLineValue
           }
 
           let newValues = {
@@ -277,8 +298,8 @@ const DimensionsControls = React.memo(
               onSubmitValue={onSubmitPosition('gridColumnStart')}
               value={columnStartValue.value}
               valueAlias={columnStartValue.alias}
-              keywords={keywordsForPosition(columnLabels.map((l) => l.areaName))}
-              keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.areaName))}
+              keywords={keywordsForPosition(columnLabels.map((l) => l.lineName))}
+              keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.lineName))}
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridColumn',
@@ -290,8 +311,8 @@ const DimensionsControls = React.memo(
               onSubmitValue={onSubmitPosition('gridRowStart')}
               value={rowStartValue.value}
               valueAlias={rowStartValue.alias}
-              keywords={keywordsForPosition(rowLabels.map((l) => l.areaName))}
-              keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.areaName))}
+              keywords={keywordsForPosition(rowLabels.map((l) => l.lineName))}
+              keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.lineName))}
               labelInner={{
                 category: 'inspector-element',
                 type: 'gridRow',
@@ -354,14 +375,14 @@ const BoundariesControls = React.memo(
             ? gridPositionValue(e.value)
             : cssKeyword(e.value)
 
-          const maybeAreaValue = maybeValueFromAreaName(
+          const maybeLineValue = maybeValueFromLineName(
             value,
             dimension === 'gridColumnStart' || dimension === 'gridColumnEnd'
               ? columnLabels
               : rowLabels,
           )
-          if (maybeAreaValue != null) {
-            value = maybeAreaValue
+          if (maybeLineValue != null) {
+            value = maybeLineValue
           }
 
           const newValues = {
@@ -418,8 +439,8 @@ const BoundariesControls = React.memo(
                 type: 'gridColumn-start',
                 color: 'on-highlight-secondary',
               }}
-              keywords={keywordsForPosition(columnLabels.map((l) => l.areaName))}
-              keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.areaName))}
+              keywords={keywordsForPosition(columnLabels.map((l) => l.lineName))}
+              keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.lineName))}
             />
             <NumberOrKeywordControl
               value={rowStartValue.value}
@@ -431,8 +452,8 @@ const BoundariesControls = React.memo(
                 type: 'gridRow-start',
                 color: 'on-highlight-secondary',
               }}
-              keywords={keywordsForPosition(rowLabels.map((l) => l.areaName))}
-              keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.areaName))}
+              keywords={keywordsForPosition(rowLabels.map((l) => l.lineName))}
+              keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.lineName))}
             />
           </UIGridRow>
         </UIGridRow>
@@ -449,8 +470,8 @@ const BoundariesControls = React.memo(
                 type: 'gridColumn-end',
                 color: 'on-highlight-secondary',
               }}
-              keywords={keywordsForPosition(columnLabels.map((l) => l.areaName))}
-              keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.areaName))}
+              keywords={keywordsForPosition(columnLabels.map((l) => l.lineName))}
+              keywordTypeCheck={isValidGridPositionKeyword(columnLabels.map((l) => l.lineName))}
             />
             <NumberOrKeywordControl
               value={rowEndValue.value}
@@ -462,8 +483,8 @@ const BoundariesControls = React.memo(
                 type: 'gridRow-end',
                 color: 'on-highlight-secondary',
               }}
-              keywords={keywordsForPosition(rowLabels.map((l) => l.areaName))}
-              keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.areaName))}
+              keywords={keywordsForPosition(rowLabels.map((l) => l.lineName))}
+              keywordTypeCheck={isValidGridPositionKeyword(rowLabels.map((l) => l.lineName))}
             />
           </UIGridRow>
         </UIGridRow>
@@ -496,10 +517,10 @@ function getLabelsFromTemplate(gridTemplate: GridContainerProperties) {
       return []
     }
     return mapDropNulls((d, index) => {
-      if (d.areaName == null) {
+      if (d.lineName == null) {
         return null
       }
-      return { areaName: d.areaName, position: index + 1 }
+      return { lineName: d.lineName, position: index + 1 }
     }, template.dimensions)
   }
   const columnLabels = getAxisLabels('gridTemplateColumns')
@@ -523,28 +544,28 @@ function keywordsForPosition(labels: string[]) {
   return items
 }
 
-function maybeValueFromAreaName(
+function maybeValueFromLineName(
   value: GridPosition,
-  labels: { areaName: string; position: number }[],
+  labels: { lineName: string; position: number }[],
 ): GridPositionValue | null {
   if (!isCSSKeyword(value)) {
     return null
   }
-  const areaMatch = labels.find((l) => l.areaName === value.value)
-  if (areaMatch != null) {
-    return gridPositionValue(areaMatch.position)
+  const lineMatch = labels.find((l) => l.lineName === value.value)
+  if (lineMatch != null) {
+    return gridPositionValue(lineMatch.position)
   }
   return null
 }
 
 function getValueWithAlias(
   position: GridPosition | null,
-  labels: { areaName: string; position: number }[],
+  labels: { lineName: string; position: number }[],
 ) {
   const value = getValue(position) ?? cssKeyword('auto')
   if (isCSSKeyword(value)) {
     return { value: value }
   }
-  const areaName = labels.find((l) => l.position === value.value)
-  return { value: value, alias: areaName?.areaName }
+  const lineName = labels.find((l) => l.position === value.value)
+  return { value: value, alias: lineName?.lineName }
 }

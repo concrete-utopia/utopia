@@ -16,6 +16,7 @@ import type { CanvasRectangle, CanvasVector, Size } from '../../core/shared/math
 import { canvasRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
+import type { StyleInfo } from './canvas-types'
 import { CSSCursor } from './canvas-types'
 import type { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
 import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
@@ -31,8 +32,8 @@ import { isReversedFlexDirection } from '../../core/model/flex-utils'
 import * as EP from '../../core/shared/element-path'
 import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragment-like-helpers'
 import type { AllElementProps } from '../editor/store/editor-state'
-import type { GridData } from './controls/grid-controls'
-import { getNullableAutoOrTemplateBaseString } from './controls/grid-controls'
+import type { GridData } from './controls/grid-controls-for-strategies'
+import { getNullableAutoOrTemplateBaseString } from './controls/grid-controls-for-strategies'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -175,116 +176,6 @@ export function gapControlBoundsFromMetadata(
   )
 }
 
-export function gridGapControlBoundsFromMetadata(
-  gridRowColumnInfo: GridData,
-  gapValues: { row: CSSNumber; column: CSSNumber },
-): {
-  gaps: Array<{
-    bounds: CanvasRectangle
-    gapId: string
-    gap: CSSNumber
-    axis: Axis
-  }>
-  rows: number
-  columns: number
-  cellBounds: CanvasRectangle
-  gapValues: { row: CSSNumber; column: CSSNumber }
-  gridTemplateRows: string
-  gridTemplateColumns: string
-} {
-  const emptyResult = {
-    rows: 0,
-    columns: 0,
-    gaps: [],
-    cellBounds: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
-    gapValues: gapValues,
-    gridTemplateRows: '1fr',
-    gridTemplateColumns: '1fr',
-  }
-  const grid = gridRowColumnInfo.metadata
-
-  if (grid == null) {
-    return emptyResult
-  }
-
-  const parentGridBounds = grid.globalFrame
-
-  if (parentGridBounds == null || isInfinityRectangle(parentGridBounds)) {
-    return emptyResult
-  }
-
-  const gridRows = gridRowColumnInfo.rows
-  const gridColumns = gridRowColumnInfo.columns
-  const gridTemplateRows = getNullableAutoOrTemplateBaseString(gridRowColumnInfo.gridTemplateRows)
-  const gridTemplateColumns = getNullableAutoOrTemplateBaseString(
-    gridRowColumnInfo.gridTemplateColumns,
-  )
-
-  const gridCellBounds = grid.specialSizeMeasurements.gridCellGlobalFrames
-
-  if (gridCellBounds == null) {
-    return emptyResult
-  }
-  const allCellsBound = canvasRectangle({
-    x: gridCellBounds[0][0].x - parentGridBounds.x,
-    y: gridCellBounds[0][0].y - parentGridBounds.y,
-    width:
-      gridCellBounds[0][gridCellBounds[0].length - 1].x +
-      gridCellBounds[0][gridCellBounds[0].length - 1].width -
-      gridCellBounds[0][0].x,
-    height:
-      gridCellBounds[gridCellBounds.length - 1][0].y +
-      gridCellBounds[gridCellBounds.length - 1][0].height -
-      gridCellBounds[0][0].y,
-  })
-
-  // row gaps array
-  const rowGaps = createArrayWithLength(gridCellBounds.length - 1, (i) => {
-    // cell i represents the gap between child [i * gridColumns] and child [(i+1) * gridColumns]
-    const firstChildBounds = gridCellBounds[i][0]
-    const secondChildBounds = gridCellBounds[i + 1][0]
-    return {
-      gapId: `${EP.toString(grid.elementPath)}-row-gap-${i}`,
-      bounds: canvasRectangle({
-        x: allCellsBound.x,
-        y: firstChildBounds.y + firstChildBounds.height - parentGridBounds.y,
-        width: allCellsBound.width,
-        height: secondChildBounds.y - firstChildBounds.y - firstChildBounds.height,
-      }),
-      gap: gapValues.row,
-      axis: 'row' as Axis,
-    }
-  })
-
-  // column gaps array
-  const columnGaps = createArrayWithLength(gridCellBounds[0].length - 1, (i) => {
-    // cell i represents the gap between child [i] and child [i + 1]
-    const firstChildBounds = gridCellBounds[0][i]
-    const secondChildBounds = gridCellBounds[0][i + 1]
-    return {
-      gapId: `${EP.toString(grid.elementPath)}-column-gap-${i}`,
-      bounds: canvasRectangle({
-        x: firstChildBounds.x + firstChildBounds.width - parentGridBounds.x,
-        y: allCellsBound.y,
-        width: secondChildBounds.x - firstChildBounds.x - firstChildBounds.width,
-        height: allCellsBound.height,
-      }),
-      gap: gapValues.column,
-      axis: 'column' as Axis,
-    }
-  })
-
-  return {
-    gaps: rowGaps.concat(columnGaps),
-    rows: gridRows,
-    columns: gridColumns,
-    gridTemplateRows: gridTemplateRows ?? '',
-    gridTemplateColumns: gridTemplateColumns ?? '',
-    cellBounds: allCellsBound,
-    gapValues: gapValues,
-  }
-}
-
 export interface GridGapData {
   row: CSSNumberWithRenderedValue
   column: CSSNumberWithRenderedValue
@@ -329,15 +220,15 @@ export interface FlexGapData {
 }
 
 export function maybeFlexGapData(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
+  info: StyleInfo | null,
+  element: ElementInstanceMetadata | null,
 ): FlexGapData | null {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (
     element == null ||
     element.specialSizeMeasurements.display !== 'flex' ||
     isLeft(element.element) ||
-    !isJSXElement(element.element.value)
+    !isJSXElement(element.element.value) ||
+    info == null
   ) {
     return null
   }
@@ -347,18 +238,14 @@ export function maybeFlexGapData(
   }
 
   const gap = element.specialSizeMeasurements.gap ?? 0
-
-  const gapFromProps: CSSNumber | undefined = defaultEither(
-    undefined,
-    getLayoutProperty('gap', right(element.element.value.props), styleStringInArray),
-  )
+  const gapFromReader = info.gap?.value
 
   const flexDirection = element.specialSizeMeasurements.flexDirection ?? 'row'
 
   return {
     value: {
       renderedValuePx: gap,
-      value: gapFromProps ?? null,
+      value: gapFromReader ?? null,
     },
     direction: flexDirection,
   }

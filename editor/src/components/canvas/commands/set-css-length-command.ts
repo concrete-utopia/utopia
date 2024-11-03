@@ -25,9 +25,9 @@ import {
 } from '../../inspector/common/css-utils'
 import type { CreateIfNotExistant } from './adjust-css-length-command'
 import { deleteConflictingPropsForWidthHeight } from './adjust-css-length-command'
-import { applyValuesAtPath } from './adjust-number-command'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { addToastPatch } from './show-toast-command'
+import { applyValuesAtPath } from './utils/property-utils'
 
 type CssNumberOrKeepOriginalUnit =
   | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber | CSSKeyword }

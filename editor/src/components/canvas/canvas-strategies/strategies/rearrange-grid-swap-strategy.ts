@@ -14,7 +14,7 @@ import { create } from '../../../../core/shared/property-path'
 import type { CanvasCommand } from '../../commands/commands'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { rearrangeChildren } from '../../commands/rearrange-children-command'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
 import { recurseIntoChildrenOfMapOrFragment } from '../../gap-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
@@ -104,11 +104,11 @@ export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
 
       if (
         pointerOverChild != null &&
-        EP.toUid(pointerOverChild.elementPath) !== interactionSession.activeControl.id
+        EP.toUid(pointerOverChild.elementPath) !== EP.toUid(interactionSession.activeControl.path)
       ) {
         commands.push(
           ...swapChildrenCommands({
-            grabbedElementUid: interactionSession.activeControl.id,
+            grabbedElementUid: EP.toUid(interactionSession.activeControl.path),
             swapToElementUid: EP.toUid(pointerOverChild.elementPath),
             children: children,
             parentPath: EP.parentPath(selectedElement),
@@ -126,7 +126,7 @@ export const rearrangeGridSwapStrategy: CanvasStrategyFactory = (
   }
 }
 
-const GridPositioningProps: Array<keyof React.CSSProperties> = [
+export const GridPositioningProps: Array<keyof React.CSSProperties> = [
   'gridColumn',
   'gridRow',
   'gridColumnStart',

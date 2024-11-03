@@ -75,7 +75,6 @@ import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
 import { hugPropertiesFromStyleMap } from '../../core/shared/dom-utils'
 import { setHugContentForAxis } from './inspector-strategies/hug-contents-strategy'
-import { getGridCellBoundsFromCanvas } from '../canvas/canvas-strategies/strategies/grid-cell-bounds'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -95,6 +94,75 @@ export function getFlexJustifyContent(value: string | null): FlexJustifyContent 
       return 'space-between'
     case 'space-evenly':
       return 'space-evenly'
+    default:
+      return null
+  }
+}
+
+export type AlignContent =
+  | 'normal'
+  | 'start'
+  | 'center'
+  | 'end'
+  | 'flex-start'
+  | 'flex-end'
+  | 'baseline'
+  | 'first baseline'
+  | 'last baseline'
+  | 'space-between'
+  | 'space-around'
+  | 'space-evenly'
+  | 'stretch'
+  | 'safe center'
+  | 'unsafe center'
+  | 'inherit'
+  | 'initial'
+  | 'revert'
+  | 'revert-layer'
+  | 'unset'
+
+export function getAlignContent(value: string | null): AlignContent | null {
+  switch (value) {
+    case 'normal':
+      return 'normal'
+    case 'start':
+      return 'start'
+    case 'center':
+      return 'center'
+    case 'end':
+      return 'end'
+    case 'flex-start':
+      return 'flex-start'
+    case 'flex-end':
+      return 'flex-end'
+    case 'baseline':
+      return 'baseline'
+    case 'first baseline':
+      return 'first baseline'
+    case 'last baseline':
+      return 'last baseline'
+    case 'space-between':
+      return 'space-between'
+    case 'space-around':
+      return 'space-around'
+    case 'space-evenly':
+      return 'space-evenly'
+    case 'stretch':
+      return 'stretch'
+    case 'safe center':
+      return 'safe center'
+    case 'unsafe center':
+      return 'unsafe center'
+    case 'inherit':
+      return 'inherit'
+    case 'initial':
+      return 'initial'
+    case 'revert':
+      return 'revert'
+    case 'revert-layer':
+      return 'revert-layer'
+    case 'unset':
+      return 'unset'
     default:
       return null
   }
@@ -843,6 +911,37 @@ export function isFixedHugFillModeApplied(
   )
 }
 
+export function isFillOrStretchModeApplied(
+  metadata: ElementInstanceMetadataMap,
+  element: ElementPath,
+): boolean {
+  return (
+    isFixedHugFillModeApplied(metadata, element, 'fill') ||
+    isFixedHugFillModeApplied(metadata, element, 'stretch')
+  )
+}
+
+export function isFillOrStretchModeAppliedOnAnySide(
+  metadata: ElementInstanceMetadataMap,
+  element: ElementPath,
+): boolean {
+  return (
+    isFixedHugFillModeAppliedOnAnySide(metadata, element, 'fill') ||
+    isFixedHugFillModeAppliedOnAnySide(metadata, element, 'stretch')
+  )
+}
+
+export function isFillOrStretchModeAppliedOnSpecificSide(
+  metadata: ElementInstanceMetadataMap,
+  element: ElementPath,
+  side: 'horizontal' | 'vertical',
+): boolean {
+  return (
+    detectFillHugFixedState(side, metadata, element).fixedHugFill?.type === 'fill' ||
+    detectFillHugFixedState(side, metadata, element).fixedHugFill?.type === 'stretch'
+  )
+}
+
 export function isFixedHugFillModeAppliedOnAnySide(
   metadata: ElementInstanceMetadataMap,
   element: ElementPath,
@@ -1146,7 +1245,7 @@ export function setParentToFixedIfHugCommands(
     return []
   }
 
-  const globalFrame = MetadataUtils.getLocalFrame(parentPath, metadata)
+  const globalFrame = MetadataUtils.getLocalFrame(parentPath, metadata, null)
   if (globalFrame == null || isInfinityRectangle(globalFrame)) {
     return []
   }
@@ -1359,7 +1458,7 @@ export function getConvertIndividualElementToAbsoluteCommandsFromMetadata(
   jsxMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
 ): Array<CanvasCommand> {
-  const localFrame = MetadataUtils.getLocalFrame(target, jsxMetadata)
+  const localFrame = MetadataUtils.getLocalFrame(target, jsxMetadata, null)
   if (localFrame == null || isInfinityRectangle(localFrame)) {
     return []
   }

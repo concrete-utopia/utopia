@@ -20,7 +20,7 @@ import { insertElementInsertionSubject } from '../../commands/insert-element-ins
 import { showGridControls } from '../../commands/show-grid-controls-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
 import {
   getWrapperWithGeneratedUid,
@@ -43,7 +43,7 @@ import {
   getStyleAttributesForFrameInAbsolutePosition,
   updateInsertionSubjectWithAttributes,
 } from './draw-to-insert-metastrategy'
-import { getMetadataWithGridCellBounds, setGridPropsCommands } from './grid-helpers'
+import { setGridPropsCommands } from './grid-helpers'
 import { newReparentSubjects } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
 import { getGridCellUnderMouseFromMetadata } from './grid-cell-bounds'
@@ -132,13 +132,10 @@ const gridDrawToInsertStrategyInner =
       canvasState.propertyControlsInfo,
     )?.newParent.intendedParentPath
 
-    const { metadata: parent, customStrategyState: updatedCustomState } =
-      getMetadataWithGridCellBounds(
-        targetParent,
-        canvasState.startingMetadata,
-        interactionSession.latestMetadata,
-        customStrategyState,
-      )
+    const parent = MetadataUtils.findElementByElementPath(
+      canvasState.startingMetadata,
+      targetParent,
+    )
 
     if (targetParent == null || parent == null || !MetadataUtils.isGridLayoutedContainer(parent)) {
       return null
@@ -161,27 +158,20 @@ const gridDrawToInsertStrategyInner =
         const newTargetCell = getGridCellUnderMouseFromMetadata(parent, canvasPointToUse)
 
         if (strategyLifecycle === 'mid-interaction' && interactionData.type === 'HOVER') {
-          const baseCustomState = updatedCustomState ?? customStrategyState
-          const customStatePatch = {
-            ...baseCustomState,
-            grid: {
-              ...baseCustomState.grid,
-              // this is added here during the hover interaction so that
-              // `GridControls` can render the hover highlight based on the
-              // coordinates in `targetCellData`
-              targetCellData: newTargetCell ?? customStrategyState.grid.targetCellData,
-            },
-          }
           return strategyApplicationResult(
             [
               wildcardPatch('mid-interaction', {
                 selectedViews: { $set: [] },
               }),
-              showGridControls('mid-interaction', targetParent),
+              showGridControls(
+                'mid-interaction',
+                targetParent,
+                newTargetCell?.gridCellCoordinates ?? null,
+                null,
+              ),
               updateHighlightedViews('mid-interaction', [targetParent]),
             ],
-            [targetParent],
-            customStatePatch,
+            [],
           )
         }
 

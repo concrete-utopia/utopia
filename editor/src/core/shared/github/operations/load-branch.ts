@@ -33,12 +33,21 @@ import {
   saveGithubAsset,
 } from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
-import { createStoryboardFileIfNecessary } from '../../../../components/editor/actions/actions'
 import { getAllComponentDescriptorFilePaths } from '../../../property-controls/property-controls-local'
-import type { ExistingAsset } from '../../../../components/editor/server'
 import { GithubOperations } from '.'
 import { assertNever } from '../../utils'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
+import {
+  notifyOperationFinished,
+  notifyOperationStarted,
+  startImportProcess,
+} from '../../import/import-operation-service'
+import {
+  RequirementResolutionResult,
+  resetRequirementsResolutions,
+} from '../../import/project-health-check/utopia-requirements-service'
+import { checkAndFixUtopiaRequirements } from '../../import/project-health-check/check-utopia-requirements'
+import { ImportOperationResult } from '../../import/import-operation-types'
 
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
@@ -115,6 +124,12 @@ export const updateProjectWithBranchContent =
     currentProjectContents: ProjectContentTreeRoot,
     initiator: GithubOperationSource,
   ): Promise<void> => {
+    startImportProcess(dispatch)
+    notifyOperationStarted(dispatch, {
+      type: 'loadBranch',
+      branchName: branchName,
+      githubRepo: githubRepo,
+    })
     await runGithubOperation(
       {
         name: 'loadBranch',
@@ -147,13 +162,24 @@ export const updateProjectWithBranchContent =
             if (resetBranches) {
               newGithubData.branches = null
             }
+            notifyOperationFinished(dispatch, { type: 'loadBranch' }, ImportOperationResult.Success)
 
+            notifyOperationStarted(dispatch, { type: 'parseFiles' })
             // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
             // So that it will override any existing files that might already exist in the project when sending them to VS Code.
-            const parsedProjectContents = createStoryboardFileIfNecessary(
-              await updateProjectContentsWithParseResults(workers, responseBody.branch.content),
-              'create-placeholder',
+            const parseResults = await updateProjectContentsWithParseResults(
+              workers,
+              responseBody.branch.content,
             )
+            notifyOperationFinished(dispatch, { type: 'parseFiles' }, ImportOperationResult.Success)
+
+            resetRequirementsResolutions(dispatch)
+            const { fixedProjectContents, result: requirementResolutionResult } =
+              checkAndFixUtopiaRequirements(dispatch, parseResults)
+
+            if (requirementResolutionResult === RequirementResolutionResult.Critical) {
+              return []
+            }
 
             // Update the editor with everything so that if anything else fails past this point
             // there's no loss of data from the user's perspective.
@@ -166,20 +192,21 @@ export const updateProjectWithBranchContent =
                   branchName,
                   true,
                 ),
-                updateProjectContents(parsedProjectContents),
-                updateBranchContents(parsedProjectContents),
+                updateProjectContents(fixedProjectContents),
+                updateBranchContents(fixedProjectContents),
                 truncateHistory(),
               ],
               'everyone',
             )
 
             const componentDescriptorFiles =
-              getAllComponentDescriptorFilePaths(parsedProjectContents)
+              getAllComponentDescriptorFilePaths(fixedProjectContents)
 
             // If there's a package.json file, then attempt to load the dependencies for it.
             let dependenciesPromise: Promise<void> = Promise.resolve()
-            const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
+            const packageJson = packageJsonFileFromProjectContents(fixedProjectContents)
             if (packageJson != null && isTextFile(packageJson)) {
+              notifyOperationStarted(dispatch, { type: 'refreshDependencies' })
               dependenciesPromise = refreshDependencies(
                 dispatch,
                 packageJson.fileContents.code,

@@ -198,6 +198,11 @@ export enum FlexAlignment {
   Center = 'center',
   FlexEnd = 'flex-end',
   Stretch = 'stretch',
+  Baseline = 'baseline',
+  FirstBaseline = 'first baseline',
+  LastBaseline = 'last baseline',
+  SafeCenter = 'safe center',
+  UnsafeCenter = 'unsafe center',
 }
 
 export const AllFlexAlignments: Array<FlexAlignment> = [
@@ -206,6 +211,11 @@ export const AllFlexAlignments: Array<FlexAlignment> = [
   FlexAlignment.Center,
   FlexAlignment.FlexEnd,
   FlexAlignment.Stretch,
+  FlexAlignment.Baseline,
+  FlexAlignment.FirstBaseline,
+  FlexAlignment.LastBaseline,
+  FlexAlignment.SafeCenter,
+  FlexAlignment.UnsafeCenter,
 ]
 
 export enum FlexJustifyContent {
@@ -215,6 +225,10 @@ export enum FlexJustifyContent {
   SpaceAround = 'space-around',
   SpaceBetween = 'space-between',
   SpaceEvenly = 'space-evenly',
+  Stretch = 'stretch',
+  Normal = 'normal',
+  SafeCenter = 'safe center',
+  UnsafeCenter = 'unsafe center',
 }
 
 export const AllFlexJustifyContents: Array<FlexJustifyContent> = [
@@ -224,6 +238,10 @@ export const AllFlexJustifyContents: Array<FlexJustifyContent> = [
   FlexJustifyContent.SpaceAround,
   FlexJustifyContent.SpaceBetween,
   FlexJustifyContent.SpaceEvenly,
+  FlexJustifyContent.Stretch,
+  FlexJustifyContent.Normal,
+  FlexJustifyContent.SafeCenter,
+  FlexJustifyContent.UnsafeCenter,
 ]
 
 export enum FlexDirection {

@@ -4,7 +4,7 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import { createSelector } from 'reselect'
-import { unless, when } from '../../utils/react-conditionals'
+import { when } from '../../utils/react-conditionals'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { AddRemoveLayoutSystemControl } from './add-remove-layout-system-control'
 import { FlexDirectionToggle } from './flex-direction-control'
@@ -30,6 +30,7 @@ import {
   SquareButton,
   Subdued,
   Tooltip,
+  UtopiaTheme,
 } from '../../uuiui'
 import type {
   CSSKeyword,
@@ -47,8 +48,6 @@ import {
   gridCSSNumber,
   isCSSKeyword,
   isCSSNumber,
-  isEmptyInputValue,
-  isGridCSSNumber,
   printArrayGridDimensions,
   type GridDimension,
 } from './common/css-utils'
@@ -67,7 +66,10 @@ import {
   type ElementInstanceMetadata,
   type GridElementProperties,
 } from '../../core/shared/element-template'
-import { setGridPropsCommands } from '../canvas/canvas-strategies/strategies/grid-helpers'
+import {
+  isJustAutoGridDimension,
+  setGridPropsCommands,
+} from '../canvas/canvas-strategies/strategies/grid-helpers'
 import { type CanvasCommand } from '../canvas/commands/commands'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
 import {
@@ -90,8 +92,12 @@ import {
 } from '../canvas/controls/select-mode/select-mode-hooks'
 import type { Axis } from '../canvas/gap-utils'
 import { GridExpressionInput } from '../../uuiui/inputs/grid-expression-input'
-
-const axisDropdownMenuButton = 'axisDropdownMenuButton'
+import {
+  gridDimensionDropdownKeywords,
+  parseGridDimensionInput,
+  useGridExpressionInputFocused,
+} from './grid-helpers'
+import { GridAutoColsOrRowsControl } from './grid-auto-cols-or-rows-control'
 
 function getLayoutSystem(
   layoutSystem: DetectedLayoutSystem | null | undefined,
@@ -234,6 +240,12 @@ const TemplateDimensionControl = React.memo(
       return fromProps
     }, [grid, axis, values])
 
+    const autoTemplate = React.useMemo(() => {
+      return axis === 'column'
+        ? grid.specialSizeMeasurements.containerGridPropertiesFromProps.gridAutoColumns
+        : grid.specialSizeMeasurements.containerGridPropertiesFromProps.gridAutoRows
+    }, [grid, axis])
+
     const onUpdateDimension = React.useCallback(
       (index: number) => (newValue: GridDimension) => {
         if (template?.type !== 'DIMENSIONS') {
@@ -263,21 +275,7 @@ const TemplateDimensionControl = React.memo(
         (value: UnknownOrEmptyInput<CSSNumber | CSSKeyword<ValidGridDimensionKeyword>>) => {
           function getNewValue() {
             const gridValueAtIndex = values[index]
-            if (isCSSNumber(value)) {
-              const maybeUnit = isGridCSSNumber(gridValueAtIndex)
-                ? gridValueAtIndex.value.unit
-                : null
-              return gridCSSNumber(
-                cssNumber(value.value, value.unit ?? maybeUnit),
-                gridValueAtIndex.areaName,
-              )
-            } else if (isCSSKeyword(value)) {
-              return gridCSSKeyword(value, gridValueAtIndex.areaName)
-            } else if (isEmptyInputValue(value)) {
-              return gridCSSKeyword(cssKeyword('auto'), gridValueAtIndex.areaName)
-            } else {
-              return null
-            }
+            return parseGridDimensionInput(value, gridValueAtIndex ?? null)
           }
           const newValue = getNewValue()
           if (newValue == null) {
@@ -392,22 +390,22 @@ const TemplateDimensionControl = React.memo(
         if (dimensions?.type !== 'DIMENSIONS') {
           return
         }
-        const currentAreaName = dimensions.dimensions[index]?.areaName ?? undefined
+        const currentLineName = dimensions.dimensions[index]?.lineName ?? undefined
 
-        const rawNewAreaName = window.prompt('Area name:', currentAreaName)?.trim()
-        if (rawNewAreaName == null) {
+        const rawNewLineName = window.prompt('Line name:', currentLineName)?.trim()
+        if (rawNewLineName == null) {
           return
         }
 
-        const newAreaName: string | null =
-          rawNewAreaName.length === 0 ? null : sanitizeAreaName(rawNewAreaName)
+        const newLineName: string | null =
+          rawNewLineName.length === 0 ? null : sanitizeLineName(rawNewLineName)
 
         const left = template.dimensions.slice(0, index)
         const right = template.dimensions.slice(index + 1)
 
         const newValues = [
           ...left,
-          { ...values[index], areaName: newAreaName } as GridDimension,
+          { ...values[index], lineName: newLineName } as GridDimension,
           ...right,
         ]
 
@@ -420,13 +418,13 @@ const TemplateDimensionControl = React.memo(
           ),
         ]
 
-        // replace the area name in the template and update the grid children so they
-        // reference the new area name, if they used to reference the previous one
-        const adjustedGridTemplate = renameAreaInTemplateAtIndex(
+        // replace the line name in the template and update the grid children so they
+        // reference the new line name, if they used to reference the previous one
+        const adjustedGridTemplate = renameLineInTemplateAtIndex(
           container,
           axis,
           index,
-          newAreaName,
+          newLineName,
         )
         const children = MetadataUtils.getChildrenUnordered(metadataRef.current, grid.elementPath)
         for (const child of children) {
@@ -479,6 +477,16 @@ const TemplateDimensionControl = React.memo(
 
     const dimensionsWithGeneratedIndexes = useGeneratedIndexesFromGridDimensions(values)
 
+    const showAutoColsOrRows = React.useMemo(() => {
+      return (
+        template?.type !== 'DIMENSIONS' ||
+        template.dimensions.length === 0 ||
+        (autoTemplate?.type === 'DIMENSIONS' &&
+          autoTemplate.dimensions.length > 0 &&
+          !isJustAutoGridDimension(autoTemplate.dimensions))
+      )
+    }, [template, autoTemplate])
+
     return (
       <div
         style={{
@@ -507,6 +515,14 @@ const TemplateDimensionControl = React.memo(
             opener={openDropdown}
           />
         ))}
+        {when(
+          showAutoColsOrRows,
+          <GridAutoColsOrRowsControl
+            grid={grid}
+            axis={axis}
+            label={axis === 'column' ? 'Auto Cols' : 'Auto Rows'}
+          />,
+        )}
       </div>
     )
   },
@@ -537,9 +553,15 @@ function AxisDimensionControl({
   opener: (isOpen: boolean) => React.ReactElement
 }) {
   const testId = `grid-dimension-${axis}-${index}`
-  const [isOpen, setIsOpen] = React.useState(false)
-  const onOpenChange = React.useCallback((isDropdownOpen: boolean) => {
-    setIsOpen(isDropdownOpen)
+  const [isDotsMenuOpen, setDotsMenuOpen] = React.useState(false)
+  const [isTitleMenuOpen, setTitleMenuOpen] = React.useState(false)
+
+  const onOpenChangeDotsMenu = React.useCallback((isDropdownOpen: boolean) => {
+    setDotsMenuOpen(isDropdownOpen)
+  }, [])
+
+  const onOpenChangeTitleMenu = React.useCallback(() => {
+    setTitleMenuOpen(false)
   }, [])
 
   const isDynamic = React.useMemo(() => {
@@ -552,39 +574,66 @@ function AxisDimensionControl({
 
   const title = React.useMemo(() => {
     if (isDynamic) {
-      return value.areaName ?? dynamicIndexTitle
+      return value.lineName ?? dynamicIndexTitle
     }
-    return value.areaName ?? indexFrom
+    return value.lineName ?? indexFrom
   }, [value, indexFrom, isDynamic, dynamicIndexTitle])
 
   const gridExpressionInputFocused = useGridExpressionInputFocused()
+
+  const [isHovered, setIsHovered] = React.useState(false)
+  const onMouseEnter = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+  const onMouseLeave = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
+
+  const onContextMenuTitle = React.useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setTitleMenuOpen(true)
+  }, [])
+
+  const invisibleOpener = React.useCallback(() => null, [])
 
   return (
     <div
       key={`col-${value}-${index}`}
       style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-      css={{
-        [`& > .${axisDropdownMenuButton}`]: {
-          visibility: isOpen ? 'visible' : 'hidden',
-        },
-        ':hover': {
-          [`& > .${axisDropdownMenuButton}`]: {
-            visibility: 'visible',
-          },
-        },
-      }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridAutoFlow: 'column',
+          alignItems: 'center',
+          gap: 6,
+          gridTemplateColumns: gridExpressionInputFocused.focused
+            ? '40px auto'
+            : `40px auto ${UtopiaTheme.layout.inputHeight.default}px`,
+          gridTemplateRows: '1fr',
+          width: '100%',
+        }}
+      >
         <Subdued
           style={{
-            width: 40,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
           }}
           title={isDynamic ? dynamicIndexTitle : undefined}
+          onContextMenu={onContextMenuTitle}
         >
           {title}
+          <DropdownMenu
+            align='start'
+            items={items}
+            opener={invisibleOpener}
+            onOpenChange={onOpenChangeTitleMenu}
+            forceOpen={isTitleMenuOpen}
+          />
         </Subdued>
         <GridExpressionInput
           testId={testId}
@@ -593,14 +642,21 @@ function AxisDimensionControl({
           onUpdateDimension={onUpdateDimension(index)}
           onFocus={gridExpressionInputFocused.onFocus}
           onBlur={gridExpressionInputFocused.onBlur}
+          keywords={gridDimensionDropdownKeywords}
+          defaultValue={gridCSSKeyword(cssKeyword('auto'), null)}
         />
+        {when(
+          (isHovered && !gridExpressionInputFocused.focused) || isDotsMenuOpen,
+          <SquareButton>
+            <DropdownMenu
+              align='end'
+              items={items}
+              opener={opener}
+              onOpenChange={onOpenChangeDotsMenu}
+            />
+          </SquareButton>,
+        )}
       </div>
-      {unless(
-        gridExpressionInputFocused.focused,
-        <SquareButton className={axisDropdownMenuButton}>
-          <DropdownMenu align='end' items={items} opener={opener} onOpenChange={onOpenChange} />
-        </SquareButton>,
-      )}
     </div>
   )
 }
@@ -637,17 +693,17 @@ function removeTemplateValueAtIndex(
   }
 }
 
-function renameAreaInTemplateAtIndex(
+function renameLineInTemplateAtIndex(
   original: GridContainerProperties,
   axis: 'column' | 'row',
   index: number,
-  newAreaName: string | null,
+  newLineName: string | null,
 ): GridContainerProperties {
   function renameDimension(dimension: GridDimension, idx: number): GridDimension {
     return idx === index
       ? ({
           ...dimension,
-          areaName: dimension.type === 'REPEAT' ? null : newAreaName,
+          lineName: dimension.type === 'REPEAT' ? null : newLineName,
         } as GridDimension)
       : dimension
   }
@@ -677,8 +733,8 @@ function renameAreaInTemplateAtIndex(
 
 const reAlphanumericDashUnderscore = /[^0-9a-z\-_]+/gi
 
-function sanitizeAreaName(areaName: string): string {
-  return areaName.replace(reAlphanumericDashUnderscore, '-')
+function sanitizeLineName(lineName: string): string {
+  return lineName.replace(reAlphanumericDashUnderscore, '-')
 }
 
 function serializeValue(v: CSSNumber) {
@@ -967,8 +1023,8 @@ function selectOption(value: GridAutoFlow) {
 }
 
 const unsetSelectOption = regularRadixSelectOption({
-  label: 'unset',
-  value: 'unset',
+  label: (isOpen, currentValue) => (isOpen && currentValue !== 'auto' ? 'unset' : 'auto'),
+  value: 'auto',
   placeholder: true,
 })
 
@@ -1026,7 +1082,7 @@ const AutoFlowControl = React.memo(() => {
         selectededViewsRef.current.map((path) =>
           applyCommandsAction([
             updateBulkProperties('always', path, [
-              value === 'unset'
+              value === 'auto'
                 ? propertyToDelete(PP.create('style', 'gridAutoFlow'))
                 : propertyToSet(PP.create('style', 'gridAutoFlow'), value),
             ]),
@@ -1085,11 +1141,4 @@ function useGeneratedIndexesFromGridDimensions(
     })
     return result
   }, [dimensions])
-}
-
-const useGridExpressionInputFocused = () => {
-  const [focused, setFocused] = React.useState(false)
-  const onFocus = React.useCallback(() => setFocused(true), [])
-  const onBlur = React.useCallback(() => setFocused(false), [])
-  return { focused, onFocus, onBlur }
 }

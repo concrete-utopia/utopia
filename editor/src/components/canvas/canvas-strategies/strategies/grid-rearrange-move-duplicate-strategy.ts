@@ -7,7 +7,7 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
@@ -72,19 +72,28 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
 
       const targetElement = EP.appendToPath(EP.parentPath(selectedElement), newUid)
 
-      const {
-        commands: moveCommands,
-        targetCell: targetGridCellData,
-        draggingFromCell,
-        originalRootCell,
-        targetRootCell,
-      } = runGridRearrangeMove(
-        targetElement,
-        selectedElement,
+      const selectedElementMetadata = MetadataUtils.findElementByElementPath(
         canvasState.startingMetadata,
-        interactionSession.interactionData,
-        customState.grid,
+        selectedElement,
       )
+      if (selectedElementMetadata == null) {
+        return emptyStrategyApplicationResult
+      }
+
+      const { parentGridCellGlobalFrames, parentContainerGridProperties } =
+        selectedElementMetadata.specialSizeMeasurements
+
+      const moveCommands =
+        parentGridCellGlobalFrames != null
+          ? runGridRearrangeMove(
+              targetElement,
+              selectedElement,
+              canvasState.startingMetadata,
+              interactionSession.interactionData,
+              parentGridCellGlobalFrames,
+              parentContainerGridProperties,
+            )
+          : []
       if (moveCommands.length === 0) {
         return emptyStrategyApplicationResult
       }
@@ -99,13 +108,6 @@ export const gridRearrangeMoveDuplicateStrategy: CanvasStrategyFactory = (
         ],
         [...selectedElements, targetElement],
         {
-          grid: {
-            ...customState.grid,
-            targetCellData: targetGridCellData,
-            draggingFromCell: draggingFromCell,
-            originalRootCell: originalRootCell,
-            currentRootCell: targetRootCell,
-          },
           duplicatedElementNewUids: duplicatedElementNewUids,
         },
       )

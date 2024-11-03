@@ -3,7 +3,6 @@ import type { TailwindConfig, Tailwindcss } from '@mhsdesign/jit-browser-tailwin
 import { createTailwindcss } from '@mhsdesign/jit-browser-tailwindcss'
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import { getProjectFileByFilePath, walkContentsTree } from '../../components/assets'
-import { interactionSessionIsActive } from '../../components/canvas/canvas-strategies/interaction-state'
 import { CanvasContainerID } from '../../components/canvas/canvas-types'
 import {
   Substores,
@@ -16,6 +15,33 @@ import type { RequireFn } from '../shared/npm-dependency-types'
 import { TailwindConfigPath } from './tailwind-config'
 import { ElementsToRerenderGLOBAL } from '../../components/canvas/ui-jsx-canvas'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import type { Config } from 'tailwindcss/types/config'
+import type { EditorState } from '../../components/editor/store/editor-state'
+import { createSelector } from 'reselect'
+import type { ProjectContentSubstate } from '../../components/editor/store/store-hook-substore-types'
+
+const LatestConfig: { current: { code: string; config: Config } | null } = { current: null }
+export function getTailwindConfigCached(editorState: EditorState): Config | null {
+  const tailwindConfig = getProjectFileByFilePath(editorState.projectContents, TailwindConfigPath)
+  if (tailwindConfig == null || tailwindConfig.type !== 'TEXT_FILE') {
+    return null
+  }
+  const cached =
+    LatestConfig.current == null || LatestConfig.current.code !== tailwindConfig.fileContents.code
+      ? null
+      : LatestConfig.current.config
+
+  if (cached != null) {
+    return cached
+  }
+  const requireFn = editorState.codeResultCache.curriedRequireFn(editorState.projectContents)
+  const customRequire = (importOrigin: string, toImport: string) =>
+    requireFn(importOrigin, toImport, false)
+  const config = importDefault(customRequire('/', TailwindConfigPath)) as Config
+  LatestConfig.current = { code: tailwindConfig.fileContents.code, config: config }
+
+  return config
+}
 
 const TAILWIND_INSTANCE: { current: Tailwindcss | null } = { current: null }
 
@@ -62,45 +88,80 @@ function generateTailwindClasses(projectContents: ProjectContentTreeRoot, requir
   void generateTailwindStyles(tailwindCss, allCSSFiles)
 }
 
-export const useTailwindCompilation = (requireFn: RequireFn) => {
-  const projectContents = useEditorState(
+function runTailwindClassGenerationOnDOMMutation(
+  mutations: MutationRecord[],
+  projectContents: ProjectContentTreeRoot,
+  isInteractionActive: boolean,
+  requireFn: RequireFn,
+) {
+  const updateHasNewTailwindData = mutations.some(
+    (m) =>
+      m.addedNodes.length > 0 || // new DOM element was added with potentially new classes
+      m.attributeName === 'class', // potentially new classes were added to the class attribute of an element
+  )
+  if (
+    !updateHasNewTailwindData ||
+    isInteractionActive ||
+    ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' // implies that an interaction is in progress)
+  ) {
+    return
+  }
+  generateTailwindClasses(projectContents, requireFn)
+}
+
+const tailwindConfigSelector = createSelector(
+  (store: ProjectContentSubstate) => store.editor.projectContents,
+  (projectContents) => getProjectFileByFilePath(projectContents, TailwindConfigPath),
+)
+
+export const useTailwindCompilation = () => {
+  const requireFnRef = useRefEditorState((store) => {
+    const requireFn = store.editor.codeResultCache.curriedRequireFn(store.editor.projectContents)
+    return (importOrigin: string, toImport: string) => requireFn(importOrigin, toImport, false)
+  })
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+
+  const isInteractionActiveRef = useRefEditorState(
+    (store) => store.editor.canvas.interactionSession != null,
+  )
+
+  // this is not a ref, beacuse we want to re-compile the Tailwind classes when the tailwind config changes
+  const tailwindConfig = useEditorState(
     Substores.projectContents,
-    (store) => store.editor.projectContents,
-    'useTailwindCompilation projectContents',
+    tailwindConfigSelector,
+    'useTailwindCompilation tailwindConfig',
   )
 
-  const isInteractionActiveRef = useRefEditorState((store) =>
-    interactionSessionIsActive(store.editor.canvas.interactionSession),
-  )
-
-  const observerCallback = React.useCallback(() => {
+  React.useEffect(() => {
+    const canvasContainer = document.getElementById(CanvasContainerID)
     if (
-      isInteractionActiveRef.current ||
-      ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' || // implies that an interaction is in progress
+      tailwindConfig == null || // TODO: read this from the utopia key in package.json
+      canvasContainer == null ||
       !isFeatureEnabled('Tailwind')
     ) {
       return
     }
-    generateTailwindClasses(projectContents, requireFn)
-  }, [isInteractionActiveRef, projectContents, requireFn])
 
-  React.useEffect(() => {
-    const tailwindConfigFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
-    if (tailwindConfigFile == null || tailwindConfigFile.type !== 'TEXT_FILE') {
-      return // we consider tailwind to be enabled if there's a tailwind config file in the project
-    }
-    const observer = new MutationObserver(observerCallback)
+    const observer = new MutationObserver((mutations) => {
+      runTailwindClassGenerationOnDOMMutation(
+        mutations,
+        projectContentsRef.current,
+        isInteractionActiveRef.current,
+        requireFnRef.current,
+      )
+    })
 
-    observer.observe(document.getElementById(CanvasContainerID)!, {
+    observer.observe(canvasContainer, {
       attributes: true,
       childList: true,
       subtree: true,
     })
 
-    observerCallback()
+    // run the initial tailwind class generation
+    generateTailwindClasses(projectContentsRef.current, requireFnRef.current)
 
     return () => {
       observer.disconnect()
     }
-  }, [isInteractionActiveRef, observerCallback, projectContents, requireFn])
+  }, [isInteractionActiveRef, projectContentsRef, requireFnRef, tailwindConfig])
 }

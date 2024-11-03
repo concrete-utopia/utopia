@@ -75,6 +75,8 @@ import type { ReparentTargetForPaste } from '../reparent-utils'
 import { cleanSteganoTextData } from '../../../../../core/shared/stegano-text'
 import { assertNever } from '../../../../../core/shared/utils'
 
+export type ShouldAddContainLayout = 'add-contain-layout' | 'dont-add-contain-layout'
+
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
   startingMetadata: ElementInstanceMetadataMap,
@@ -531,7 +533,7 @@ export function absolutePositionForReparent(
   }
 
   const localFrame = zeroRectIfNullOrInfinity(
-    MetadataUtils.getLocalFrame(targetParent, metadata.currentMetadata) ?? null,
+    MetadataUtils.getLocalFrame(targetParent, metadata.currentMetadata, null) ?? null,
   )
 
   // offset the element with the target parent's offset, since the target parent doesn't

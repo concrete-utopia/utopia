@@ -1,11 +1,14 @@
+import { isParseableFile } from '../../../core/shared/file-utils'
 import { URL_HASH } from '../../../common/env-vars'
 import { type ParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import {
   ARBITRARY_CODE_FILE_NAME,
+  createParseFileResult,
   type ParseFile,
   type ParseFileResult,
 } from '../common/worker-types'
 import localforage from 'localforage'
+import type { ParsedTextFile } from 'utopia-shared/src/types'
 
 export const CACHE_DB_NAME = 'editor-cache'
 export const PARSE_CACHE_STORE_NAME = 'file-parse-cache'
@@ -33,15 +36,22 @@ function logCacheMessage(parsingCacheOptions: ParseCacheOptions, ...messages: (s
   }
 }
 
+function isArbitraryCodeFile(filename: string): boolean {
+  return filename === ARBITRARY_CODE_FILE_NAME
+}
+
 function stringIdentifiers(filename: string, content: string): (string | object)[] {
-  if (filename === ARBITRARY_CODE_FILE_NAME) {
+  if (isArbitraryCodeFile(filename)) {
     return ['code', [{ content: content }]]
   }
   return [filename]
 }
 
-function shouldSkipCacheForFile(filename: string, parsingCacheOptions: ParseCacheOptions): boolean {
-  return filename === ARBITRARY_CODE_FILE_NAME && !parsingCacheOptions.cacheArbitraryCode
+function shouldUseCacheForFile(filename: string, parsingCacheOptions: ParseCacheOptions): boolean {
+  return (
+    isParseableFile(filename) &&
+    (!isArbitraryCodeFile(filename) || parsingCacheOptions.cacheArbitraryCode)
+  )
 }
 
 export function getParseCacheVersion(): string {
@@ -58,17 +68,17 @@ export async function getParseResultFromCache(
   file: ParseFile,
   parsingCacheOptions: ParseCacheOptions,
 ): Promise<ParseFileResult | null> {
-  const { filename, content } = file
-  if (shouldSkipCacheForFile(filename, parsingCacheOptions)) {
+  const { filename, content, versionNumber } = file
+  if (!shouldUseCacheForFile(filename, parsingCacheOptions)) {
     return null
   }
   const cacheKey = getCacheKey(filename)
   //check localforage for cache
   const cachedResult = await getParseCacheStore().getItem<CachedParseResult>(cacheKey)
   const cachedResultForContent = cachedResult?.[getCacheIndexKeyWithVersion(content)]
-  if (cachedResultForContent?.parseResult?.type === 'PARSE_SUCCESS') {
+  if (cachedResultForContent?.type === 'PARSE_SUCCESS') {
     logCacheMessage(parsingCacheOptions, 'Cache hit for', ...stringIdentifiers(filename, content))
-    return cachedResultForContent
+    return createParseFileResult(filename, cachedResultForContent, versionNumber)
   }
   logCacheMessage(parsingCacheOptions, 'Cache miss for', ...stringIdentifiers(filename, content))
   return null
@@ -76,16 +86,16 @@ export async function getParseResultFromCache(
 
 export async function storeParseResultInCache(
   file: ParseFile,
-  result: ParseFileResult,
+  result: ParsedTextFile,
   parsingCacheOptions: ParseCacheOptions,
 ): Promise<void> {
   const { filename, content } = file
-  if (shouldSkipCacheForFile(filename, parsingCacheOptions)) {
+  if (!shouldUseCacheForFile(filename, parsingCacheOptions)) {
     return
   }
   logCacheMessage(parsingCacheOptions, 'Caching', ...stringIdentifiers(filename, content))
   const cacheKey = getCacheKey(filename)
-  if (filename === ARBITRARY_CODE_FILE_NAME) {
+  if (isArbitraryCodeFile(filename)) {
     // for the special filename 'code.tsx', we store multiple contents, so we need to read it first
     const cachedResult = (await getParseCacheStore().getItem<CachedParseResult>(cacheKey)) ?? {}
     // limit the arbitrary code cache keys size
@@ -113,4 +123,4 @@ export async function clearParseCache(parsingCacheOptions: ParseCacheOptions) {
   })
 }
 
-type CachedParseResult = { [fileContent: string]: ParseFileResult }
+type CachedParseResult = { [fileContent: string]: ParsedTextFile }

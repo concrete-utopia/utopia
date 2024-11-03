@@ -2,12 +2,13 @@ import type { ElementPath } from 'utopia-shared/src/types'
 import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import {
   canvasPoint,
+  distanceFromPointToRectangle,
   isInfinityRectangle,
   offsetPoint,
   rectContainsPointInclusive,
 } from '../../../../core/shared/math-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { type GridCellGlobalFrames, type TargetGridCellData } from './grid-helpers'
+import type { TargetGridCellData, GridCellGlobalFrames } from './grid-helpers'
 import type { CanvasPoint } from '../../../../core/shared/math-utils'
 
 export type GridCellCoordinates = { row: number; column: number }
@@ -57,16 +58,51 @@ function getGridCellUnderPoint(
   return null
 }
 
-export function getGridCellBoundsFromCanvas(
-  cell: ElementInstanceMetadata,
+export function getClosestGridCellToPointFromMetadata(
   grid: ElementInstanceMetadata,
-) {
-  const cellFrame = cell.globalFrame
-  if (cellFrame == null || isInfinityRectangle(cellFrame)) {
+  point: CanvasPoint,
+): TargetGridCellData | null {
+  const gridCellGlobalFrames = grid.specialSizeMeasurements.gridCellGlobalFrames
+
+  if (gridCellGlobalFrames == null) {
     return null
   }
 
-  const cellOrigin = getGridCellUnderMouseFromMetadata(grid, cellFrame)
+  return getClosestGridCellToPoint(gridCellGlobalFrames, point)
+}
+
+export function getClosestGridCellToPoint(
+  gridCellGlobalFrames: GridCellGlobalFrames,
+  point: CanvasPoint,
+): TargetGridCellData | null {
+  let closestCell: TargetGridCellData | null = null
+  let closestDistance = Infinity
+
+  for (let i = 0; i < gridCellGlobalFrames.length; i++) {
+    for (let j = 0; j < gridCellGlobalFrames[i].length; j++) {
+      const currentDistance = distanceFromPointToRectangle(point, gridCellGlobalFrames[i][j])
+      if (currentDistance < closestDistance) {
+        closestCell = {
+          gridCellCoordinates: gridCellCoordinates(i + 1, j + 1),
+          cellCanvasRectangle: gridCellGlobalFrames[i][j],
+        }
+        closestDistance = currentDistance
+      }
+    }
+  }
+  return closestCell
+}
+
+export function getGridChildCellCoordBoundsFromCanvas(
+  child: ElementInstanceMetadata,
+  gridCellGlobalFrames: GridCellGlobalFrames,
+) {
+  const cellFrame = child.globalFrame
+  if (cellFrame == null || isInfinityRectangle(cellFrame) || gridCellGlobalFrames == null) {
+    return null
+  }
+
+  const cellOrigin = getClosestGridCellToPoint(gridCellGlobalFrames, cellFrame)
   if (cellOrigin == null) {
     return null
   }
@@ -78,7 +114,7 @@ export function getGridCellBoundsFromCanvas(
       y: cellFrame.height,
     }),
   )
-  const cellEnd = getGridCellUnderMouseFromMetadata(grid, cellEndPoint)
+  const cellEnd = getClosestGridCellToPoint(gridCellGlobalFrames, cellEndPoint)
   if (cellEnd == null) {
     return null
   }

@@ -35,8 +35,6 @@ import { EditorModes, isCommentMode } from '../editor/editor-modes'
 import { useAllowedToEditProject } from '../editor/store/collaborative-editing'
 import { useCanComment } from '../../core/commenting/comment-hooks'
 import { ElementsOutsideVisibleAreaIndicator } from '../editor/elements-outside-visible-area-indicator'
-import { isFeatureEnabled } from '../../utils/feature-switches'
-import { RollYourOwnFeaturesPane } from '../navigator/left-pane/roll-your-own-pane'
 import { AnimationContext } from './ui-jsx-canvas-renderer/animation-context'
 
 function isCodeEditorEnabled(): boolean {
@@ -136,7 +134,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
   )
   const dispatch = useDispatch()
 
-  const onClickTab = React.useCallback(
+  const onMouseDownTab = React.useCallback(
     (menuTab: RightMenuTab) => {
       const actions: Array<EditorAction> = [EditorActions.setRightMenuTab(menuTab)]
       if (isCommentMode(editorModeRef.current) && menuTab !== RightMenuTab.Comments) {
@@ -147,25 +145,21 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
     [dispatch, editorModeRef],
   )
 
-  const onClickInsertTab = React.useCallback(() => {
-    onClickTab(RightMenuTab.Insert)
-  }, [onClickTab])
+  const onMouseDownInsertTab = React.useCallback(() => {
+    onMouseDownTab(RightMenuTab.Insert)
+  }, [onMouseDownTab])
 
-  const onClickCommentsTab = React.useCallback(() => {
-    onClickTab(RightMenuTab.Comments)
-  }, [onClickTab])
+  const onMouseDownCommentsTab = React.useCallback(() => {
+    onMouseDownTab(RightMenuTab.Comments)
+  }, [onMouseDownTab])
 
-  const onClickInspectorTab = React.useCallback(() => {
-    onClickTab(RightMenuTab.Inspector)
-  }, [onClickTab])
+  const onMouseDownInspectorTab = React.useCallback(() => {
+    onMouseDownTab(RightMenuTab.Inspector)
+  }, [onMouseDownTab])
 
-  const onClickSettingsTab = React.useCallback(() => {
-    onClickTab(RightMenuTab.Settings)
-  }, [onClickTab])
-
-  const onClickRollYourOwnTab = React.useCallback(() => {
-    onClickTab(RightMenuTab.RollYourOwn)
-  }, [onClickTab])
+  const onMouseDownSettingsTab = React.useCallback(() => {
+    onMouseDownTab(RightMenuTab.Settings)
+  }, [onMouseDownTab])
 
   const canComment = useCanComment()
 
@@ -206,7 +200,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
           <MenuTab
             label={'Inspector'}
             selected={selectedTab === RightMenuTab.Inspector}
-            onClick={onClickInspectorTab}
+            onMouseDown={onMouseDownInspectorTab}
           />
           {when(
             allowedToEdit,
@@ -216,7 +210,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
                 <MenuTab
                   label={'Insert'}
                   selected={selectedTab === RightMenuTab.Insert}
-                  onClick={onClickInsertTab}
+                  onMouseDown={onMouseDownInsertTab}
                 />,
               )}
             </>,
@@ -227,22 +221,14 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
               testId='comments-tab'
               label={'Comments'}
               selected={selectedTab === RightMenuTab.Comments}
-              onClick={onClickCommentsTab}
+              onMouseDown={onMouseDownCommentsTab}
             />,
           )}
           <MenuTab
             label={'Settings'}
             selected={selectedTab === RightMenuTab.Settings}
-            onClick={onClickSettingsTab}
+            onMouseDown={onMouseDownSettingsTab}
           />
-          {when(
-            isFeatureEnabled('Roll Your Own'),
-            <MenuTab
-              label={'RYO'}
-              selected={selectedTab === RightMenuTab.RollYourOwn}
-              onClick={onClickRollYourOwnTab}
-            />,
-          )}
         </FlexRow>
         <SimpleFlexRow
           className='Inspector-entrypoint'
@@ -260,7 +246,6 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
           {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
           {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
           {when(selectedTab === RightMenuTab.Comments, <CommentsPane />)}
-          {when(selectedTab === RightMenuTab.RollYourOwn, <RollYourOwnFeaturesPane />)}
         </SimpleFlexRow>
         <CanvasStrategyInspector />
       </FlexColumn>

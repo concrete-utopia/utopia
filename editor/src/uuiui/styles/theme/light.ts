@@ -3,6 +3,7 @@ import type { dark } from './dark'
 
 const lightBase = {
   primary: createUtopiColor('oklch(59% 0.25 254)'),
+  primarySubdued: createUtopiColor('oklch(75% 0.15 254)'),
   primary10solid: createUtopiColor('oklch(0.98 0.01 253.75)'),
   primary10: createUtopiColor('oklch(59% 0.25 254 / 10%)'),
   primary25: createUtopiColor('oklch(59% 0.25 254 / 25%)'),
@@ -20,6 +21,7 @@ const lightBase = {
   brandNeonPink10: createUtopiColor('oklch(72.53% 0.353 331.69 / 10%)'),
   brandNeonPink60: createUtopiColor('oklch(72.53% 0.353 331.69 / 30%)'),
   brandNeonGreen: createUtopiColor('oklch(86.6% 0.27 158.6)'),
+  brandNeonOrange: createUtopiColor('oklch(79% 0.19 70)'),
   green: createUtopiColor('oklch(64.6% 0.17 150.6)'),
   green10: createUtopiColor('oklch(64.6% 0.17 150.6 / 10%)'),
   green20: createUtopiColor('oklch(64.6% 0.17 150.6 / 20%)'),
@@ -134,6 +136,8 @@ const colorsWithOpacity = {
   whiteOpacity20: createUtopiColor('oklch(100% 0 0 /20%)'),
   whiteOpacity30: createUtopiColor('oklch(100% 0 0 /30%)'),
   whiteOpacity35: createUtopiColor('oklch(100% 0 0 /35%)'),
+  blackOpacity35: createUtopiColor('oklch(0% 0 0 / 35%)'),
+  grey65: createUtopiColor('oklch(65% 0 0)'),
   canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(0,0,0,0.20)'),
   canvasControlsSizeBoxShadowColor50: createUtopiColor('rgba(0,0,0,0.5)'),
   neutralInvertedBackground10: createUtopiColor('hsla(0,0%,0%,0.1)'),
@@ -266,7 +270,7 @@ const lightTheme = {
   codeEditorGrid: createUtopiColor('#6d705b'),
 
   // Gap controls
-  gapControlsBg: createUtopiColor('#FFA500'),
+  gapControlsBg: lightBase.brandNeonOrange,
 }
 
 // all values in light must be of the type UtopiColor! This will break if you made a mistake.

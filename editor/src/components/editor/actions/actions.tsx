@@ -352,6 +352,9 @@ import type {
   ToggleDataCanCondense,
   UpdateMetadataInEditorState,
   SetErrorBoundaryHandling,
+  SetImportWizardOpen,
+  UpdateImportOperations,
+  UpdateProjectRequirements,
 } from '../action-types'
 import { isAlignment, isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -395,7 +398,6 @@ import {
   trueUpChildrenOfGroupChanged,
   trueUpHuggingElement,
   trueUpGroupElementChanged,
-  getPackageJsonFromProjectContents,
   modifyUnderlyingTargetJSXElement,
   getAllComponentDescriptorErrors,
   updatePackageJsonInEditorState,
@@ -438,7 +440,6 @@ import { reorderElement } from '../../../components/canvas/commands/reorder-elem
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
-import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
 import type { TreeConflicts } from '../../../core/shared/github/helpers'
@@ -544,10 +545,7 @@ import {
   replaceWithElementsWrappedInFragmentBehaviour,
 } from '../store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
-import {
-  deleteProperties,
-  deleteValuesAtPath,
-} from '../../canvas/commands/delete-properties-command'
+import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   fixParentContainingBlockSettings,
@@ -628,8 +626,11 @@ import { isReplaceKeepChildrenAndStyleTarget } from '../../navigator/navigator-i
 import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
-import { applyValuesAtPath } from '../../canvas/commands/adjust-number-command'
 import { styleP } from '../../inspector/inspector-common'
+import { getUpdateOperationResult } from '../../../core/shared/import/import-operation-service'
+import { updateRequirements } from '../../../core/shared/import/project-health-check/utopia-requirements-service'
+import { applyValuesAtPath, deleteValuesAtPath } from '../../canvas/commands/utils/property-utils'
+import { createStoryboardFileIfNecessary } from '../../../core/shared/import/project-health-check/requirements/requirement-storyboard'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1033,6 +1034,9 @@ export function restoreEditorState(
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
+    importOperations: currentEditor.importOperations,
+    projectRequirements: currentEditor.projectRequirements,
+    importWizardOpen: currentEditor.importWizardOpen,
     branchOriginContents: currentEditor.branchOriginContents,
     githubData: currentEditor.githubData,
     refreshingDependencies: currentEditor.refreshingDependencies,
@@ -1132,7 +1136,7 @@ function deleteElements(
         if (metadata == null || isLeft(metadata.element)) {
           return null
         }
-        const frame = MetadataUtils.getLocalFrame(path, editor.jsxMetadata)
+        const frame = MetadataUtils.getLocalFrame(path, editor.jsxMetadata, null)
         if (frame == null || !isFiniteRectangle(frame)) {
           return null
         }
@@ -1583,66 +1587,6 @@ function updateCodeEditorVisibility(editor: EditorModel, codePaneVisible: boolea
       codePaneVisible: codePaneVisible,
     },
   }
-}
-
-function createStoryboardFileIfRemixProject(
-  projectContents: ProjectContentTreeRoot,
-): ProjectContentTreeRoot | null {
-  const packageJsonContents = defaultEither(
-    null,
-    getPackageJsonFromProjectContents(projectContents),
-  )
-  if (packageJsonContents == null) {
-    return null
-  }
-  const remixNotIncluded = packageJsonContents['dependencies']?.['@remix-run/react'] == null
-  if (remixNotIncluded) {
-    return null
-  }
-
-  const updatedProjectContents = addFileToProjectContents(
-    projectContents,
-    StoryboardFilePath,
-    codeFile(DefaultStoryboardWithRemix, null, 1),
-  )
-  return updatedProjectContents
-}
-
-function createStoryboardFileIfMainComponentPresent(
-  projectContents: ProjectContentTreeRoot,
-): ProjectContentTreeRoot | null {
-  return addStoryboardFileToProject(projectContents)
-}
-
-function createStoryboardFileWithPlaceholderContents(
-  projectContents: ProjectContentTreeRoot,
-  createPlaceholder: 'create-placeholder' | 'skip-creating-placeholder',
-): ProjectContentTreeRoot {
-  if (createPlaceholder === 'skip-creating-placeholder') {
-    return projectContents
-  }
-  const updatedProjectContents = addFileToProjectContents(
-    projectContents,
-    StoryboardFilePath,
-    codeFile(DefaultStoryboardContents, null, 1),
-  )
-  return updatedProjectContents
-}
-
-export function createStoryboardFileIfNecessary(
-  projectContents: ProjectContentTreeRoot,
-  createPlaceholder: 'create-placeholder' | 'skip-creating-placeholder',
-): ProjectContentTreeRoot {
-  const storyboardFile = getProjectFileByFilePath(projectContents, StoryboardFilePath)
-  if (storyboardFile != null) {
-    return projectContents
-  }
-
-  return (
-    createStoryboardFileIfRemixProject(projectContents) ??
-    createStoryboardFileIfMainComponentPresent(projectContents) ??
-    createStoryboardFileWithPlaceholderContents(projectContents, createPlaceholder)
-  )
 }
 
 // JS Editor Actions:
@@ -2230,6 +2174,34 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       githubOperations: operations,
+    }
+  },
+  UPDATE_IMPORT_OPERATIONS: (action: UpdateImportOperations, editor: EditorModel): EditorModel => {
+    const resultImportOperations = getUpdateOperationResult(
+      editor.importOperations,
+      action.operations,
+      action.type,
+    )
+    return {
+      ...editor,
+      importOperations: resultImportOperations,
+    }
+  },
+  UPDATE_PROJECT_REQUIREMENTS: (
+    action: UpdateProjectRequirements,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    const result = updateRequirements(dispatch, editor.projectRequirements, action.requirements)
+    return {
+      ...editor,
+      projectRequirements: result,
+    }
+  },
+  SET_IMPORT_WIZARD_OPEN: (action: SetImportWizardOpen, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      importWizardOpen: action.open,
     }
   },
   SET_REFRESHING_DEPENDENCIES: (
@@ -3319,7 +3291,7 @@ export const UPDATE_FNS = {
   },
   RESET_PINS: (action: ResetPins, editor: EditorModel): EditorModel => {
     const target = action.target
-    const frame = MetadataUtils.getLocalFrame(target, editor.jsxMetadata)
+    const frame = MetadataUtils.getLocalFrame(target, editor.jsxMetadata, null)
 
     if (frame == null || isInfinityRectangle(frame)) {
       return editor
@@ -3347,7 +3319,7 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_FRAME_DIMENSIONS: (action: UpdateFrameDimensions, editor: EditorModel): EditorModel => {
-    const initialFrame = MetadataUtils.getLocalFrame(action.element, editor.jsxMetadata)
+    const initialFrame = MetadataUtils.getLocalFrame(action.element, editor.jsxMetadata, null)
 
     if (initialFrame == null || isInfinityRectangle(initialFrame)) {
       return editor
@@ -3950,6 +3922,7 @@ export const UPDATE_FNS = {
     action: UpdateFromWorker,
     editor: EditorModel,
     userState: UserState,
+    dispatch: EditorDispatch,
   ): EditorModel => {
     let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
     let anyParsedUpdates: boolean = false
@@ -3985,13 +3958,12 @@ export const UPDATE_FNS = {
     }
     return {
       ...editor,
-      projectContents: createStoryboardFileIfNecessary(
-        workingProjectContents,
-        // If we are in the process of cloning a Github repository, do not create placeholder Storyboard
+      projectContents:
+        // If we are in the process of cloning a Github repository, do not create storyboard
+        // it will be created in the requirements check phase
         userState.githubState.gitRepoToLoad != null
-          ? 'skip-creating-placeholder'
-          : 'create-placeholder',
-      ),
+          ? workingProjectContents
+          : createStoryboardFileIfNecessary(workingProjectContents),
       canvas: {
         ...editor.canvas,
         canvasContentInvalidateCount: anyParsedUpdates
@@ -4811,7 +4783,11 @@ export const UPDATE_FNS = {
       propertyControlsInfo: action.propertyControlsInfo,
     }
   },
-  UPDATE_TEXT: (action: UpdateText, editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {
+  UPDATE_TEXT: (
+    action: UpdateText,
+    editorStore: EditorStoreUnpatched,
+    dispatch: EditorDispatch,
+  ): EditorStoreUnpatched => {
     const { textProp } = action
     // This flag is useful when editing conditional expressions:
     // if the edited element is a js expression AND the content is still between curly brackets after editing,
@@ -5009,6 +4985,7 @@ export const UPDATE_FNS = {
       updateFromWorker(workerUpdates),
       withFileChanges.unpatchedEditor,
       withFileChanges.userState,
+      dispatch,
     )
     return {
       ...withFileChanges,
@@ -5519,6 +5496,7 @@ export const UPDATE_FNS = {
         const localFrame = MetadataUtils.getLocalFrame(
           action.insertionPath.intendedParentPath,
           editor.jsxMetadata,
+          null,
         )
         if (group != null && localFrame != null) {
           switch (element.type) {
@@ -5623,7 +5601,7 @@ export const UPDATE_FNS = {
               requestedNpmDependency('tailwindcss', tailwindVersion.version),
               requestedNpmDependency('postcss', postcssVersion.version),
             ]
-            void fetchNodeModules(updatedNpmDeps, builtInDependencies).then(
+            void fetchNodeModules(dispatch, updatedNpmDeps, builtInDependencies).then(
               (fetchNodeModulesResult) => {
                 const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
                   updatedNpmDeps,
@@ -6333,6 +6311,7 @@ export async function load(
   const migratedModel = applyMigrations(model)
   const npmDependencies = dependenciesWithEditorRequirements(migratedModel.projectContents)
   const fetchNodeModulesResult = await fetchNodeModules(
+    dispatch,
     npmDependencies,
     builtInDependencies,
     retryFetchNodeModules,
@@ -6389,61 +6368,6 @@ function saveFileInProjectContents(
     return addFileToProjectContents(projectContents, filePath, saveFile(file))
   }
 }
-
-const DefaultStoryboardWithRemix = `import * as React from 'react'
-import { Storyboard, RemixScene } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard>
-    <RemixScene
-      style={{
-        position: 'absolute',
-        width: 644,
-        height: 750,
-        left: 200,
-        top: 30,
-        overflow: 'hidden',
-      }}
-      data-label='Mood Board'
-    />
-  </Storyboard>
-)
-`
-
-const DefaultStoryboardContents = `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard>
-    <Scene
-      style={{
-        width: 603,
-        height: 794,
-        position: 'absolute',
-        left: 212,
-        top: 128,
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '253px 101px',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <span
-        style={{
-          wordBreak: 'break-word',
-          fontSize: '25px',
-          width: 257,
-          height: 130,
-        }}
-      >
-        Open the insert menu or press the + button in the
-        toolbar to insert components
-      </span>
-    </Scene>
-  </Storyboard>
-  )
-`
 
 function addTextFile(
   editor: EditorState,

@@ -15,7 +15,7 @@ import * as PP from '../../../../core/shared/property-path'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { isFixedHugFillModeApplied } from '../../../inspector/inspector-common'
+import { isFillOrStretchModeApplied } from '../../../inspector/inspector-common'
 import type { EdgePosition } from '../../canvas-types'
 import { oppositeEdgePosition } from '../../canvas-types'
 import {
@@ -36,7 +36,7 @@ import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
@@ -84,10 +84,7 @@ export function basicResizeStrategy(
   const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
 
   const isGridCell = MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)
-  if (
-    isGridCell &&
-    isFixedHugFillModeApplied(canvasState.startingMetadata, selectedElement, 'fill')
-  ) {
+  if (isGridCell && isFillOrStretchModeApplied(canvasState.startingMetadata, selectedElement)) {
     return null
   }
 
@@ -105,6 +102,7 @@ export function basicResizeStrategy(
         props: { targets: selectedElements, pathsWereReplaced: false },
         key: 'absolute-resize-control',
         show: 'always-visible',
+        priority: 'top',
       }),
       controlWithProps({
         control: ZeroSizeResizeControlWrapper,

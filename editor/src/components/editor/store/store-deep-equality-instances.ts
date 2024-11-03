@@ -361,6 +361,7 @@ import type {
   RenderedAt,
   EditorRemixConfig,
   ErrorBoundaryHandling,
+  GridControlData,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -490,7 +491,7 @@ import type {
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
   ComponentDescriptorFromDescriptorFile,
-  TypedInpsectorSpec,
+  TypedInspectorSpec,
   ShownInspectorSpec,
   StyleSectionState,
 } from '../../custom-code/code-file'
@@ -641,6 +642,16 @@ import type {
   ComponentDescriptorPropertiesBounds,
 } from '../../../core/property-controls/component-descriptor-parser'
 import type { Axis } from '../../../components/canvas/gap-utils'
+import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
+import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
+import type {
+  ProjectRequirements,
+  RequirementResolution,
+} from '../../../core/shared/import/project-health-check/utopia-requirements-types'
+import {
+  newProjectRequirements,
+  requirementResolution,
+} from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -1975,7 +1986,7 @@ export const GridCSSNumberKeepDeepEquality: KeepDeepEqualityCall<GridCSSNumber> 
   combine2EqualityCalls(
     (p) => p.value,
     CSSNumberKeepDeepEquality,
-    (p) => p.areaName,
+    (p) => p.lineName,
     NullableStringKeepDeepEquality,
     gridCSSNumber,
   )
@@ -1984,7 +1995,7 @@ export const GridCSSKeywordKeepDeepEquality: KeepDeepEqualityCall<GridCSSKeyword
   combine2EqualityCalls(
     (p) => p.value,
     createCallWithTripleEquals(),
-    (p) => p.areaName,
+    (p) => p.lineName,
     NullableStringKeepDeepEquality,
     gridCSSKeyword,
   )
@@ -2028,7 +2039,7 @@ export const GridCSSRepeatKeepDeepEquality: KeepDeepEqualityCall<GridCSSRepeat> 
     createCallWithTripleEquals(),
     (p) => p.value,
     arrayDeepEquality(GridDimensionKeepDeepEquality),
-    (p) => p.areaName,
+    (p) => p.lineName,
     NullableStringKeepDeepEquality,
     gridCSSRepeat,
   )
@@ -2062,7 +2073,7 @@ export const GridCSSMinmaxKeepDeepEquality: KeepDeepEqualityCall<GridCSSMinmax> 
     GridCSSNumberOrKeywordKeepDeepEquality,
     (p) => p.max,
     GridCSSNumberOrKeywordKeepDeepEquality,
-    (p) => p.areaName,
+    (p) => p.lineName,
     NullableStringKeepDeepEquality,
     gridCSSMinmax,
   )
@@ -2189,6 +2200,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.layoutSystemForChildren,
       newSize.layoutSystemForChildren,
     ).areEqual
+    const layoutSystemForChildrenInheritedResult =
+      oldSize.layoutSystemForChildrenInherited === newSize.layoutSystemForChildrenInherited
     const providesBoundsForAbsoluteChildrenResult =
       oldSize.providesBoundsForAbsoluteChildren === newSize.providesBoundsForAbsoluteChildren
     const positionResult = oldSize.position === newSize.position
@@ -2243,6 +2256,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.containerGridProperties,
       newSize.containerGridProperties,
     ).areEqual
+    const parentGridContainerPropertiesEqual = GridContainerPropertiesKeepDeepEquality()(
+      oldSize.parentContainerGridProperties,
+      newSize.parentContainerGridProperties,
+    ).areEqual
     const gridElementPropertiesEqual = GridElementPropertiesKeepDeepEquality()(
       oldSize.elementGridProperties,
       newSize.elementGridProperties,
@@ -2251,6 +2268,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const gridContainerPropertiesFromPropsEqual = GridContainerPropertiesKeepDeepEquality()(
       oldSize.containerGridPropertiesFromProps,
       newSize.containerGridPropertiesFromProps,
+    ).areEqual
+    const parentGridContainerPropertiesFromPropsEqual = GridContainerPropertiesKeepDeepEquality()(
+      oldSize.parentContainerGridPropertiesFromProps,
+      newSize.parentContainerGridPropertiesFromProps,
     ).areEqual
     const gridElementPropertiesFromPropsEqual = GridElementPropertiesKeepDeepEquality()(
       oldSize.elementGridPropertiesFromProps,
@@ -2266,6 +2287,13 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const justifySelfEquals = oldSize.justifySelf === newSize.justifySelf
     const alignSelfEquals = oldSize.alignSelf === newSize.alignSelf
 
+    const gridCellGlobalFramesEqual = nullableDeepEquality(
+      arrayDeepEquality(arrayDeepEquality(CanvasRectangleKeepDeepEquality)),
+    )(oldSize.gridCellGlobalFrames, newSize.gridCellGlobalFrames).areEqual
+    const parentGridCellGlobalFramesEqual = nullableDeepEquality(
+      arrayDeepEquality(arrayDeepEquality(CanvasRectangleKeepDeepEquality)),
+    )(oldSize.gridCellGlobalFrames, newSize.gridCellGlobalFrames).areEqual
+
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -2276,6 +2304,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       usesParentBoundsResult &&
       parentLayoutSystemResult &&
       layoutSystemForChildrenResult &&
+      layoutSystemForChildrenInheritedResult &&
       providesBoundsForAbsoluteChildrenResult &&
       positionResult &&
       marginResult.areEqual &&
@@ -2309,13 +2338,17 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       textBoundsEqual &&
       computedHugPropertyEqual &&
       gridContainerPropertiesEqual &&
+      parentGridContainerPropertiesEqual &&
       gridElementPropertiesEqual &&
       gridContainerPropertiesFromPropsEqual &&
+      parentGridContainerPropertiesFromPropsEqual &&
       gridElementPropertiesFromPropsEqual &&
       rowGapEquals &&
       columnGapEquals &&
       justifySelfEquals &&
-      alignSelfEquals
+      alignSelfEquals &&
+      gridCellGlobalFramesEqual &&
+      parentGridCellGlobalFramesEqual
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -2329,6 +2362,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.usesParentBounds,
         newSize.parentLayoutSystem,
         newSize.layoutSystemForChildren,
+        newSize.layoutSystemForChildrenInherited,
         newSize.providesBoundsForAbsoluteChildren,
         newSize.display,
         newSize.position,
@@ -2363,12 +2397,15 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.textBounds,
         newSize.computedHugProperty,
         newSize.containerGridProperties,
+        newSize.parentContainerGridProperties,
         newSize.elementGridProperties,
         newSize.containerGridPropertiesFromProps,
+        newSize.parentContainerGridPropertiesFromProps,
         newSize.elementGridPropertiesFromProps,
         newSize.rowGap,
         newSize.columnGap,
         newSize.gridCellGlobalFrames,
+        newSize.parentGridCellGlobalFrames,
         newSize.justifySelf,
         newSize.alignSelf,
       )
@@ -2718,6 +2755,30 @@ export const DragToMoveIndicatorFlagsKeepDeepEquality: KeepDeepEqualityCall<Drag
     dragToMoveIndicatorFlags,
   )
 
+export const GridCellCoordinatesKeepDeepEquality: KeepDeepEqualityCall<GridCellCoordinates> =
+  combine2EqualityCalls(
+    (data) => data.row,
+    createCallWithTripleEquals(),
+    (data) => data.column,
+    createCallWithTripleEquals(),
+    (row, column) => ({ row, column }),
+  )
+
+export const GridControlDataKeepDeepEquality: KeepDeepEqualityCall<GridControlData> =
+  combine3EqualityCalls(
+    (data) => data.grid,
+    ElementPathKeepDeepEquality,
+    (data) => data.targetCell,
+    nullableDeepEquality(GridCellCoordinatesKeepDeepEquality),
+    (data) => data.rootCell,
+    nullableDeepEquality(GridCellCoordinatesKeepDeepEquality),
+    (grid, targetCell, rootCell) => ({
+      grid,
+      targetCell,
+      rootCell,
+    }),
+  )
+
 export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<EditorStateCanvasControls> =
   combine9EqualityCalls(
     (controls) => controls.snappingGuidelines,
@@ -2736,8 +2797,8 @@ export const EditorStateCanvasControlsKeepDeepEquality: KeepDeepEqualityCall<Edi
     DragToMoveIndicatorFlagsKeepDeepEquality,
     (controls) => controls.parentOutlineHighlight,
     nullableDeepEquality(ElementPathKeepDeepEquality),
-    (controls) => controls.gridControls,
-    nullableDeepEquality(ElementPathKeepDeepEquality),
+    (controls) => controls.gridControlData,
+    nullableDeepEquality(GridControlDataKeepDeepEquality),
     editorStateCanvasControls,
   )
 
@@ -2969,9 +3030,9 @@ export const BorderRadiusResizeHandleKeepDeepEquality: KeepDeepEqualityCall<
 
 export const GridCellHandleKeepDeepEquality: KeepDeepEqualityCall<GridCellHandle> =
   combine1EqualityCall(
-    (handle) => handle.id,
-    createCallWithTripleEquals<string>(),
-    (id) => gridCellHandle({ id }),
+    (handle) => handle.path,
+    ElementPathKeepDeepEquality,
+    (path) => gridCellHandle({ path }),
   )
 
 export const GridAxisHandleKeepDeepEquality: KeepDeepEqualityCall<GridAxisHandle> =
@@ -3874,7 +3935,7 @@ export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCal
   }
 }
 
-const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<TypedInpsectorSpec> = (
+const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<TypedInspectorSpec> = (
   oldValue,
   newValue,
 ) => {
@@ -4729,6 +4790,47 @@ export const ProjectGithubSettingsKeepDeepEquality: KeepDeepEqualityCall<Project
     projectGithubSettings,
   )
 
+export const ProjectRequirementResolutionKeepDeepEquality: KeepDeepEqualityCall<RequirementResolution> =
+  combine3EqualityCalls(
+    (resolution) => resolution.status,
+    createCallWithTripleEquals(),
+    (resolution) => resolution.value,
+    createCallWithTripleEquals(),
+    (resolution) => resolution.resolution,
+    createCallWithTripleEquals(),
+    requirementResolution,
+  )
+
+export const ProjectRequirementsKeepDeepEquality: KeepDeepEqualityCall<ProjectRequirements> =
+  combine5EqualityCalls(
+    (requirements) => requirements.storyboard,
+    ProjectRequirementResolutionKeepDeepEquality,
+    (requirements) => requirements.packageJsonEntries,
+    ProjectRequirementResolutionKeepDeepEquality,
+    (requirements) => requirements.language,
+    ProjectRequirementResolutionKeepDeepEquality,
+    (requirements) => requirements.reactVersion,
+    ProjectRequirementResolutionKeepDeepEquality,
+    (requirements) => requirements.serverPackages,
+    ProjectRequirementResolutionKeepDeepEquality,
+    newProjectRequirements,
+  )
+
+export const ImportOperationKeepDeepEquality: KeepDeepEqualityCall<ImportOperation> = (
+  oldValue,
+  newValue,
+) => {
+  if (oldValue.type !== newValue.type) {
+    return keepDeepEqualityResult(newValue, false)
+  } else if (oldValue.id !== newValue.id) {
+    return keepDeepEqualityResult(newValue, false)
+  }
+  return keepDeepEqualityResult(oldValue, true)
+}
+
+export const ImportOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<ImportOperation>> =
+  arrayDeepEquality(ImportOperationKeepDeepEquality)
+
 export const GithubFileChangesKeepDeepEquality: KeepDeepEqualityCall<GithubFileChanges> =
   combine3EqualityCalls(
     (settings) => settings.modified,
@@ -5332,6 +5434,21 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubOperations,
   )
 
+  const importOperationsResults = arrayDeepEquality(ImportOperationKeepDeepEquality)(
+    oldValue.importOperations,
+    newValue.importOperations,
+  )
+
+  const importWizardOpenResults = BooleanKeepDeepEquality(
+    oldValue.importWizardOpen,
+    newValue.importWizardOpen,
+  )
+
+  const projectRequirementsResults = ProjectRequirementsKeepDeepEquality(
+    oldValue.projectRequirements,
+    newValue.projectRequirements,
+  )
+
   const branchContentsResults = nullableDeepEquality(ProjectContentTreeRootKeepDeepEquality())(
     oldValue.branchOriginContents,
     newValue.branchOriginContents,
@@ -5453,6 +5570,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubSettingsResults.areEqual &&
     imageDragSessionStateEqual.areEqual &&
     githubOperationsResults.areEqual &&
+    importOperationsResults.areEqual &&
+    importWizardOpenResults.areEqual &&
+    projectRequirementsResults.areEqual &&
     branchContentsResults.areEqual &&
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
@@ -5539,6 +5659,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,
+      importOperationsResults.value,
+      importWizardOpenResults.value,
+      projectRequirementsResults.value,
       branchContentsResults.value,
       githubDataResults.value,
       refreshingDependenciesResults.value,

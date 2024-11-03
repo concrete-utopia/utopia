@@ -40,10 +40,11 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import { colorTheme } from '../../../../uuiui'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
-import type { GridGapControlProps } from '../../controls/select-mode/grid-gap-control'
+import type { GridGapControlProps } from '../../controls/select-mode/grid-gap-control-component'
 import { GridGapControl } from '../../controls/select-mode/grid-gap-control'
-import type { GridControlsProps } from '../../controls/grid-controls'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls'
+import type { GridControlsProps } from '../../controls/grid-controls-for-strategies'
+import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
+import { getComponentDescriptorForTarget } from '../../../../core/property-controls/property-controls-utils'
 
 const SetGridGapStrategyId = 'SET_GRID_GAP_STRATEGY'
 
@@ -63,22 +64,31 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
+  const selectedElementMetadata = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElement,
+  )
   if (
-    !MetadataUtils.isGridLayoutedContainer(
-      MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement),
-    )
+    selectedElementMetadata == null ||
+    !MetadataUtils.isGridLayoutedContainer(selectedElementMetadata)
   ) {
     return null
   }
 
-  const children = recurseIntoChildrenOfMapOrFragment(
-    canvasState.startingMetadata,
-    canvasState.startingAllElementProps,
-    canvasState.startingElementPathTree,
-    selectedElement,
+  const supportsStyleProp = MetadataUtils.targetRegisteredStyleControlsOrHonoursStyleProps(
+    canvasState.projectContents,
+    selectedElementMetadata,
+    canvasState.propertyControlsInfo,
+    'layout-system',
+    ['gap', 'rowGap', 'columnGap'],
+    'some',
   )
+  if (!supportsStyleProp) {
+    return null
+  }
 
   const gridGap = maybeGridGapData(canvasState.startingMetadata, selectedElement)
+
   if (gridGap == null) {
     return null
   }
@@ -132,7 +142,7 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
         control: FloatingIndicator,
         props: {
           ...maybeIndicatorProps,
-          color: colorTheme.brandNeonPink.value,
+          color: colorTheme.brandNeonOrange.value,
         },
         key: 'padding-value-indicator-control',
         show: 'visible-except-when-other-strategy-is-active',
@@ -164,9 +174,17 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
+      const shouldSetGapByAxis = gridGap.row.value != null || gridGap.column.value != null
+
       const axis = interactionSession.activeControl.axis
       const shouldTearOffGapByAxis = axis === 'row' ? shouldTearOffGap.y : shouldTearOffGap.x
-      const axisStyleProp = axis === 'row' ? StyleRowGapProp : StyleColumnGapProp
+
+      const axisStyleProp = shouldSetGapByAxis
+        ? axis === 'row'
+          ? StyleRowGapProp
+          : StyleColumnGapProp
+        : StyleGapProp
+
       const gridGapMeasurement =
         axis === 'row' ? updatedGridGapMeasurement.row : updatedGridGapMeasurement.column
 

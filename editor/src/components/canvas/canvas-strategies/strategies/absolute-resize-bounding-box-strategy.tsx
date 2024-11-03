@@ -120,6 +120,7 @@ export function absoluteResizeBoundingBoxStrategy(
         props: { targets: originalTargets, pathsWereReplaced: pathsWereReplaced },
         key: 'absolute-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
+        priority: 'top',
       }),
       controlWithProps({
         control: ZeroSizeResizeControlWrapper,
@@ -481,7 +482,7 @@ function getConstrainedSizes(
       constraints.right ||
       constraints.width
 
-    const localFrame = MetadataUtils.getLocalFrame(element.elementPath, jsxMetadata)
+    const localFrame = MetadataUtils.getLocalFrame(element.elementPath, jsxMetadata, null)
     if (
       isConstrained &&
       localFrame != null &&

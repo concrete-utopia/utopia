@@ -40,11 +40,6 @@ import {
   EdgePositionBottom,
 } from '../../canvas-types'
 import { pickPointOnRect, snapPoint } from '../../canvas-utils'
-import type { AdjustCssLengthProperties } from '../../commands/adjust-css-length-command'
-import {
-  adjustCssLengthProperties,
-  lengthPropertyToAdjust,
-} from '../../commands/adjust-css-length-command'
 import { pointGuidelineToBoundsEdge } from '../../controls/guideline-helpers'
 import type { AbsolutePin } from './resize-helpers'
 import { ensureAtLeastTwoPinsForEdgePosition, resizeBoundingBox } from './resize-helpers'

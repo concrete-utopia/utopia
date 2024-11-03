@@ -9,6 +9,7 @@ import type {
   GridContainerProperties,
   GridElementProperties,
   DomElementMetadata,
+  GridAutoOrTemplateBase,
 } from '../../core/shared/element-template'
 import {
   specialSizeMeasurements,
@@ -16,6 +17,7 @@ import {
   gridElementProperties,
   gridAutoOrTemplateFallback,
   domElementMetadata,
+  gridAutoOrTemplateDimensions,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import type { ElementCanvasRectangleCache } from '../../core/shared/dom-utils'
@@ -52,20 +54,22 @@ import {
   parseGridAutoOrTemplateBase,
   parseGridAutoFlow,
   isCSSKeyword,
+  isDynamicGridRepeat,
 } from '../inspector/common/css-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
-import {
-  UTOPIA_PATH_KEY,
-  UTOPIA_SCENE_ID_KEY,
-  UTOPIA_UID_KEY,
-} from '../../core/model/utopia-constants'
+import { UTOPIA_SCENE_ID_KEY, UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
 import { emptySet } from '../../core/shared/set-utils'
-import { getDeepestPathOnDomElement, getPathStringsOnDomElement } from '../../core/shared/uid-utils'
+import {
+  getDeepestPathOnDomElement,
+  getPathsOnDomElement,
+  getPathStringsOnDomElement,
+} from '../../core/shared/uid-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import type { EditorState, EditorStorePatched } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
 import {
+  getAlignContent,
   getFlexAlignment,
   getFlexJustifyContent,
   getSelfAlignment,
@@ -76,6 +80,7 @@ import { runDOMWalker } from '../editor/actions/action-creators'
 import { CanvasContainerOuterId } from './canvas-component-entry'
 import { ElementsToRerenderGLOBAL } from './ui-jsx-canvas'
 import type { GridCellGlobalFrames } from './canvas-strategies/strategies/grid-helpers'
+import { GridMeasurementHelperKey } from './controls/grid-controls-for-strategies'
 
 export const ResizeObserver =
   window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -555,6 +560,10 @@ export function collectDomElementMetadataForElement(
 
 function getGridContainerProperties(
   elementStyle: CSSStyleDeclaration | null,
+  options?: {
+    dynamicCols: boolean
+    dynamicRows: boolean
+  },
 ): GridContainerProperties {
   if (elementStyle == null) {
     return {
@@ -565,14 +574,23 @@ function getGridContainerProperties(
       gridAutoFlow: null,
     }
   }
-  const gridTemplateColumns = defaultEither(
-    gridAutoOrTemplateFallback(elementStyle.gridTemplateColumns),
-    parseGridAutoOrTemplateBase(elementStyle.gridTemplateColumns),
+
+  const gridTemplateColumns = trimDynamicEmptyDimensions(
+    defaultEither(
+      gridAutoOrTemplateFallback(elementStyle.gridTemplateColumns),
+      parseGridAutoOrTemplateBase(elementStyle.gridTemplateColumns),
+    ),
+    options?.dynamicCols === true,
   )
-  const gridTemplateRows = defaultEither(
-    gridAutoOrTemplateFallback(elementStyle.gridTemplateRows),
-    parseGridAutoOrTemplateBase(elementStyle.gridTemplateRows),
+
+  const gridTemplateRows = trimDynamicEmptyDimensions(
+    defaultEither(
+      gridAutoOrTemplateFallback(elementStyle.gridTemplateRows),
+      parseGridAutoOrTemplateBase(elementStyle.gridTemplateRows),
+    ),
+    options?.dynamicRows === true,
   )
+
   const gridAutoColumns = defaultEither(
     gridAutoOrTemplateFallback(elementStyle.gridAutoColumns),
     parseGridAutoOrTemplateBase(elementStyle.gridAutoColumns),
@@ -588,6 +606,23 @@ function getGridContainerProperties(
     gridAutoRows,
     parseGridAutoFlow(elementStyle.gridAutoFlow),
   )
+}
+
+function trimDynamicEmptyDimensions(
+  template: GridAutoOrTemplateBase,
+  isDynamic: boolean,
+): GridAutoOrTemplateBase {
+  if (!isDynamic) {
+    return template
+  }
+  if (template.type !== 'DIMENSIONS') {
+    return template
+  }
+
+  const lastNonEmptyColumn = template.dimensions.findLastIndex(
+    (d) => d.type === 'KEYWORD' || (d.type === 'NUMBER' && d.value.value !== 0),
+  )
+  return gridAutoOrTemplateDimensions(template.dimensions.slice(0, lastNonEmptyColumn + 1))
 }
 
 function getGridElementProperties(
@@ -723,7 +758,7 @@ function getSpecialMeasurements(
   const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
   const justifyContent = getFlexJustifyContent(elementStyle.justifyContent)
-  const alignContent = getFlexJustifyContent(elementStyle.alignContent)
+  const alignContent = getAlignContent(elementStyle.alignContent)
   const alignItems = getFlexAlignment(elementStyle.alignItems)
   const alignSelf = getSelfAlignment(elementStyle.alignSelf)
   const justifySelf = getSelfAlignment(elementStyle.justifySelf)
@@ -882,15 +917,13 @@ function getSpecialMeasurements(
 
   const parentContainerGridProperties = getGridContainerProperties(parentElementStyle)
 
-  const containerGridProperties = getGridContainerProperties(elementStyle)
-
   const paddingValue = isRight(padding)
     ? padding.value
     : sides(undefined, undefined, undefined, undefined)
 
   const gridCellGlobalFrames =
     layoutSystemForChildren === 'grid'
-      ? measureGlobalFramesOfGridCellsFromControl(
+      ? measureGlobalFramesOfGridCells(
           element,
           scale,
           containerRectLazy,
@@ -898,14 +931,30 @@ function getSpecialMeasurements(
         )
       : null
 
-  const containerElementProperties = getGridElementProperties(
-    parentContainerGridProperties,
-    elementStyle,
-  )
+  const parentGridCellGlobalFrames =
+    element.parentElement != null && elementLayoutSystem(parentElementStyle) === 'grid'
+      ? measureGlobalFramesOfGridCells(
+          element.parentElement,
+          scale,
+          containerRectLazy,
+          elementCanvasRectangleCache,
+        )
+      : null
+
   const containerGridPropertiesFromProps = getGridContainerProperties(element.style)
+  const parentContainerGridPropertiesFromProps = getGridContainerProperties(parentElementStyle)
+  const containerGridProperties = getGridContainerProperties(elementStyle, {
+    dynamicCols: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateColumns),
+    dynamicRows: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateRows),
+  })
+
   const containerElementPropertiesFromProps = getGridElementProperties(
     parentContainerGridProperties,
     element.style,
+  )
+  const containerElementProperties = getGridElementProperties(
+    parentContainerGridProperties,
+    elementStyle,
   )
 
   return specialSizeMeasurements(
@@ -918,6 +967,7 @@ function getSpecialMeasurements(
     isParentNonStatic,
     parentLayoutSystem,
     layoutSystemForChildren,
+    false, // layoutSystemForChildrenInherited
     providesBoundsForAbsoluteChildren,
     elementStyle.display,
     position,
@@ -954,15 +1004,22 @@ function getSpecialMeasurements(
     textBounds,
     computedHugProperty,
     containerGridProperties,
+    parentContainerGridProperties,
     containerElementProperties,
     containerGridPropertiesFromProps,
+    parentContainerGridPropertiesFromProps,
     containerElementPropertiesFromProps,
     rowGap,
     columnGap,
     gridCellGlobalFrames,
+    parentGridCellGlobalFrames,
     justifySelf,
     alignSelf,
   )
+}
+
+function isDynamicGridTemplate(template: GridAutoOrTemplateBase | null) {
+  return template?.type === 'DIMENSIONS' && template.dimensions.some((d) => isDynamicGridRepeat(d))
 }
 
 function elementContainsOnlyText(element: HTMLElement): boolean {
@@ -1019,45 +1076,53 @@ function getClosestOffsetParent(element: HTMLElement): Element | null {
   return null
 }
 
-function measureGlobalFramesOfGridCellsFromControl(
-  grid: HTMLElement,
+function measureGlobalFramesOfGridCells(
+  element: HTMLElement,
   scale: number,
   containerRectLazy: CanvasPoint | (() => CanvasPoint),
   elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): GridCellGlobalFrames | null {
-  const path = grid.getAttribute(UTOPIA_PATH_KEY)
-  let gridCellGlobalFrames: Array<Array<CanvasRectangle>> | null = null
-  if (path != null) {
-    const gridControlElement = document.getElementById(`grid-${path}`)
-    if (gridControlElement != null) {
-      gridCellGlobalFrames = []
-      for (const cell of gridControlElement.children) {
-        if (!(cell instanceof HTMLElement)) {
-          continue
-        }
-        const rowIndexAttr = cell.getAttribute('data-grid-row')
-        const columnIndexAttr = cell.getAttribute('data-grid-column')
-        if (rowIndexAttr == null || columnIndexAttr == null) {
-          continue
-        }
-        const rowIndex = parseInt(rowIndexAttr)
-        const columnIndex = parseInt(columnIndexAttr)
-        if (!isFinite(rowIndex) || !isFinite(columnIndex)) {
-          continue
-        }
-        const row = gridCellGlobalFrames[rowIndex - 1]
-        if (row == null) {
-          gridCellGlobalFrames[rowIndex - 1] = []
-        }
-        gridCellGlobalFrames[rowIndex - 1][columnIndex - 1] = globalFrameForElement(
-          cell,
-          scale,
-          containerRectLazy,
-          'without-text-content',
-          'nearest-half',
-          elementCanvasRectangleCache,
-        )
+  const paths = getPathsOnDomElement(element)
+
+  let gridCellGlobalFrames: GridCellGlobalFrames | null = null
+  const gridControlElement = (() => {
+    for (let p of paths) {
+      const maybeGridControlElement = document.getElementById(GridMeasurementHelperKey(p))
+      if (maybeGridControlElement != null) {
+        return maybeGridControlElement
       }
+    }
+    return null
+  })()
+
+  if (gridControlElement != null) {
+    gridCellGlobalFrames = []
+    for (const cell of gridControlElement.children) {
+      if (!(cell instanceof HTMLElement)) {
+        continue
+      }
+      const rowIndexAttr = cell.getAttribute('data-grid-row')
+      const columnIndexAttr = cell.getAttribute('data-grid-column')
+      if (rowIndexAttr == null || columnIndexAttr == null) {
+        continue
+      }
+      const rowIndex = parseInt(rowIndexAttr)
+      const columnIndex = parseInt(columnIndexAttr)
+      if (!isFinite(rowIndex) || !isFinite(columnIndex)) {
+        continue
+      }
+      const row = gridCellGlobalFrames[rowIndex - 1]
+      if (row == null) {
+        gridCellGlobalFrames[rowIndex - 1] = []
+      }
+      gridCellGlobalFrames[rowIndex - 1][columnIndex - 1] = globalFrameForElement(
+        cell,
+        scale,
+        containerRectLazy,
+        'without-text-content',
+        'nearest-half',
+        elementCanvasRectangleCache,
+      )
     }
   }
   return gridCellGlobalFrames
