@@ -13,16 +13,17 @@ import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
 import {
-  getTargetPathsFromInteractionTarget,
   emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { findOriginalGrid, runGridMoveRearrange } from './grid-helpers'
 import {
+  findOriginalGrid,
   getParentGridTemplatesFromChildMeasurements,
   gridMoveStrategiesExtraCommands,
-} from './grid-move-helpers'
+} from './grid-helpers'
+import { runGridMoveRearrange } from './grid-move-rearrange-strategy'
 
 export const gridMoveRearrangeDuplicateStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
