@@ -61,7 +61,6 @@ export function notifyOperationFinished(
   const timeDone = Date.now()
   const operationWithTime = {
     ...operation,
-    timeStarted: operation.timeStarted ?? timeDone,
     timeDone: timeDone,
     result: result,
   }
