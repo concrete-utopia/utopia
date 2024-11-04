@@ -16,7 +16,7 @@ import {
 } from '../../commands/set-property-command'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
 import type { DragInteractionData } from '../interaction-state'
-import { runGridMoveRearrange, runGridMoveReorder } from './grid-helpers'
+import { findOriginalGrid, runGridMoveRearrange, runGridMoveReorder } from './grid-helpers'
 
 export function getCommandsAndPatchForGridRearrange(
   canvasState: InteractionCanvasState,
@@ -38,20 +38,25 @@ export function getCommandsAndPatchForGridRearrange(
     return { commands: [], elementsToRerender: [] }
   }
 
+  const gridPath = findOriginalGrid(canvasState.startingMetadata, EP.parentPath(selectedElement))
+  if (gridPath == null) {
+    return { commands: [], elementsToRerender: [] }
+  }
+
   const { parentGridCellGlobalFrames, parentContainerGridProperties } =
     selectedElementMetadata.specialSizeMeasurements
+  if (parentGridCellGlobalFrames == null) {
+    return { commands: [], elementsToRerender: [] }
+  }
 
-  const commands =
-    parentGridCellGlobalFrames != null
-      ? runGridMoveRearrange(
-          selectedElement,
-          selectedElement,
-          canvasState.startingMetadata,
-          interactionData,
-          parentGridCellGlobalFrames,
-          parentContainerGridProperties,
-        )
-      : []
+  const commands = runGridMoveRearrange(
+    canvasState.startingMetadata,
+    interactionData,
+    selectedElementMetadata,
+    gridPath,
+    parentGridCellGlobalFrames,
+    parentContainerGridProperties,
+  )
 
   return {
     commands: commands,
@@ -79,20 +84,25 @@ export function getCommandsAndPatchForGridReorder(
     return { commands: [], elementsToRerender: [] }
   }
 
+  const gridPath = findOriginalGrid(canvasState.startingMetadata, EP.parentPath(selectedElement))
+  if (gridPath == null) {
+    return { commands: [], elementsToRerender: [] }
+  }
+
   const { parentGridCellGlobalFrames, parentContainerGridProperties } =
     selectedElementMetadata.specialSizeMeasurements
+  if (parentGridCellGlobalFrames == null) {
+    return { commands: [], elementsToRerender: [] }
+  }
 
-  const commands =
-    parentGridCellGlobalFrames != null
-      ? runGridMoveReorder(
-          selectedElement,
-          selectedElement,
-          canvasState.startingMetadata,
-          interactionData,
-          parentGridCellGlobalFrames,
-          parentContainerGridProperties,
-        )
-      : []
+  const commands = runGridMoveReorder(
+    canvasState.startingMetadata,
+    interactionData,
+    selectedElementMetadata,
+    gridPath,
+    parentGridCellGlobalFrames,
+    parentContainerGridProperties,
+  )
 
   return {
     commands: commands,

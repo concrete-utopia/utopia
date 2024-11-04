@@ -18,7 +18,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { runGridMoveRearrange } from './grid-helpers'
+import { findOriginalGrid, runGridMoveRearrange } from './grid-helpers'
 import {
   getParentGridTemplatesFromChildMeasurements,
   gridMoveStrategiesExtraCommands,
@@ -101,23 +101,28 @@ export const gridMoveRearrangeDuplicateStrategy: CanvasStrategyFactory = (
 
       const targetElement = EP.appendToPath(EP.parentPath(selectedElement), newUid)
 
-      const { parentGridCellGlobalFrames, parentContainerGridProperties } =
-        selectedElementMetadata.specialSizeMeasurements
-
-      const moveCommands =
-        parentGridCellGlobalFrames != null
-          ? runGridMoveRearrange(
-              targetElement,
-              selectedElement,
-              canvasState.startingMetadata,
-              interactionSession.interactionData,
-              parentGridCellGlobalFrames,
-              parentContainerGridProperties,
-            )
-          : []
-      if (moveCommands.length === 0) {
+      const gridPath = findOriginalGrid(
+        canvasState.startingMetadata,
+        EP.parentPath(selectedElement),
+      )
+      if (gridPath == null) {
         return emptyStrategyApplicationResult
       }
+
+      const { parentGridCellGlobalFrames, parentContainerGridProperties } =
+        selectedElementMetadata.specialSizeMeasurements
+      if (parentGridCellGlobalFrames == null) {
+        return emptyStrategyApplicationResult
+      }
+
+      const moveCommands = runGridMoveRearrange(
+        canvasState.startingMetadata,
+        interactionSession.interactionData,
+        selectedElementMetadata,
+        gridPath,
+        parentGridCellGlobalFrames,
+        parentContainerGridProperties,
+      )
 
       const { midInteractionCommands, onCompleteCommands } = gridMoveStrategiesExtraCommands(
         parentGridPath,
