@@ -38,7 +38,7 @@ export function getCommandsAndPatchForGridRearrange(
     return { commands: [], elementsToRerender: [] }
   }
 
-  const gridPath = findOriginalGrid(canvasState.startingMetadata, EP.parentPath(selectedElement))
+  const gridPath = findOriginalGrid(canvasState.startingMetadata, EP.parentPath(selectedElement)) // TODO don't use EP.parentPath
   if (gridPath == null) {
     return { commands: [], elementsToRerender: [] }
   }
@@ -84,7 +84,7 @@ export function getCommandsAndPatchForGridReorder(
     return { commands: [], elementsToRerender: [] }
   }
 
-  const gridPath = findOriginalGrid(canvasState.startingMetadata, EP.parentPath(selectedElement))
+  const gridPath = findOriginalGrid(canvasState.startingMetadata, EP.parentPath(selectedElement)) // TODO don't use EP.parentPath
   if (gridPath == null) {
     return { commands: [], elementsToRerender: [] }
   }
@@ -110,7 +110,7 @@ export function getCommandsAndPatchForGridReorder(
   }
 }
 
-export function restoreGridTemplateFromProps(params: {
+function restoreGridTemplateFromProps(params: {
   columns: GridAutoOrTemplateBase
   rows: GridAutoOrTemplateBase
 }): PropertyToUpdate[] {

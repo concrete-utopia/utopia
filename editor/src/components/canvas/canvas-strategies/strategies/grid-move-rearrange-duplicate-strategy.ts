@@ -104,7 +104,7 @@ export const gridMoveRearrangeDuplicateStrategy: CanvasStrategyFactory = (
       const gridPath = findOriginalGrid(
         canvasState.startingMetadata,
         EP.parentPath(selectedElement),
-      )
+      ) // TODO don't use EP.parentPath
       if (gridPath == null) {
         return emptyStrategyApplicationResult
       }
