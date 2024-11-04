@@ -24,7 +24,7 @@ export const gridMoveReorderStrategy: CanvasStrategyFactory = (
 ) => {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (
-    selectedElements.length === 0 ||
+    selectedElements.length !== 1 ||
     interactionSession == null ||
     interactionSession.interactionData.type !== 'DRAG' ||
     interactionSession.interactionData.drag == null ||

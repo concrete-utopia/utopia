@@ -12,7 +12,7 @@ import {
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import type { DragInteractionData, InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import {
   getCommandsAndPatchForGridRearrange,
   getGridTemplates,
@@ -25,7 +25,7 @@ export const gridMoveRearrangeStrategy: CanvasStrategyFactory = (
 ) => {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   if (
-    selectedElements.length === 0 ||
+    selectedElements.length !== 1 ||
     interactionSession == null ||
     interactionSession.interactionData.type !== 'DRAG' ||
     interactionSession.interactionData.drag == null ||
