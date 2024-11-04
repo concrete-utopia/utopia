@@ -1,5 +1,8 @@
+import type { JSExpression } from 'utopia-shared/src/types'
+import type { PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
 import { right } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
+import { assertNever } from '../../../core/shared/utils'
 import { getTailwindConfigCached } from '../../../core/tailwind/tailwind-compilation'
 import { setFeatureForUnitTestsUseInDescribeBlockOnly } from '../../../utils/utils.test-utils'
 import { getJSXElementFromProjectContents } from '../../editor/store/editor-state'
@@ -39,6 +42,32 @@ describe('style plugins', () => {
         type: 'property',
         value: { unit: null, value: 700 },
       })
+    })
+
+    it('can write width to element props', async () => {
+      const editor = await renderTestEditorWithCode(Project, 'await-first-dom-report')
+      const element = getJSXElementFromProjectContents(
+        EP.fromString('sb/scene'),
+        editor.getEditorState().editor.projectContents,
+      )!
+      const updatedProps = InlineStylePlugin.updateCSSPropertyInProps(element.props, [
+        { type: 'set', property: 'width', value: 123 },
+      ])
+      expect(getSimplifiedProps(updatedProps)).toEqual([
+        ['id', 'scene'],
+        ['commentId', 'scene'],
+        ['data-uid', 'scene'],
+        [
+          'style',
+          [
+            ['width', 123], // <- the updated prop value
+            ['height', 759],
+            ['position', 'absolute'],
+            ['left', 212],
+            ['top', 128],
+          ],
+        ],
+      ])
     })
   })
 
@@ -80,6 +109,21 @@ describe('style plugins', () => {
         value: { unit: 'rem', value: 2.5 },
       })
     })
+
+    it('can write width to element props', async () => {
+      const editor = await renderTestEditorWithCode(Project, 'await-first-dom-report')
+      const element = getJSXElementFromProjectContents(
+        EP.fromString('sb/scene/mydiv/child-1'),
+        editor.getEditorState().editor.projectContents,
+      )!
+      const updatedProps = TailwindPlugin(
+        getTailwindConfigCached(editor.getEditorState().editor),
+      ).updateCSSPropertyInProps(element.props, [{ type: 'set', property: 'width', value: 123 }])
+      expect(getSimplifiedProps(updatedProps)).toEqual([
+        ['className', 'bg-red-500 w-[123px] h-10'], // w-[123px] is the new value
+        ['data-uid', 'child-1'],
+      ])
+    })
   })
 })
 
@@ -112,3 +156,33 @@ const Project = `
       </Storyboard>
     )
     `
+
+function getSimplifiedJSExpression(expr: JSExpression) {
+  return expr.type === 'ATTRIBUTE_VALUE'
+    ? expr.value
+    : expr.type === 'ATTRIBUTE_NESTED_OBJECT'
+    ? expr.content.map((prop): unknown =>
+        prop.type === 'SPREAD_ASSIGNMENT'
+          ? '<spread assigmnent>'
+          : [prop.key, getSimplifiedJSExpression(prop.value)],
+      )
+    : '<attribute value>'
+}
+
+function getSimplifiedProps(props: PropsOrJSXAttributes) {
+  if (props.type === 'LEFT') {
+    return props.value
+  }
+  if (props.type === 'RIGHT') {
+    return props.value.map((p) => {
+      switch (p.type) {
+        case 'JSX_ATTRIBUTES_SPREAD':
+          return `<spread value>`
+        case 'JSX_ATTRIBUTES_ENTRY':
+          return [p.key, getSimplifiedJSExpression(p.value)]
+        default:
+          assertNever(p)
+      }
+    })
+  }
+}

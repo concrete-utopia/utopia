@@ -1,12 +1,16 @@
 import * as TailwindClassParser from '@xengine/tailwindcss-class-parser'
-import { defaultEither, flatMapEither, foldEither, isLeft } from '../../../core/shared/either'
+import {
+  defaultEither,
+  flatMapEither,
+  foldEither,
+  isLeft,
+  right,
+} from '../../../core/shared/either'
 import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
-import type { EditorState } from '../../editor/store/editor-state'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import type { Parser } from '../../inspector/common/css-utils'
 import { cssParsers } from '../../inspector/common/css-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
-import { updateClassListCommand } from './../commands/update-class-list-command'
 import * as UCL from './../commands/update-class-list-command'
 import type { StylePlugin } from './style-plugins'
 import type { CSSStyleProperty, StyleInfo } from '../canvas-types'
@@ -21,13 +25,13 @@ import {
   addNewClasses,
   getClassListFromParsedClassList,
 } from '../../../core/tailwind/tailwind-class-list-utils'
-import { getTailwindConfigCached } from '../../../core/tailwind/tailwind-compilation'
 import { applyValuesAtPath } from '../commands/utils/property-utils'
 import * as PP from '../../../core/shared/property-path'
 import { Utils } from '../../../uuiui-deps'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
+  setJSXValueAtPathParts,
 } from '../../../core/shared/jsx-attribute-utils'
 import type { PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
 
@@ -86,17 +90,12 @@ function getTailwindClassMapping(classes: string[], config: Config | null): Reco
   return mapping
 }
 
-const runUpdateClassList = (editorState: EditorState, command: UCL.UpdateClassList) => {
-  const { element, classNameUpdates } = command
-
-  const currentClassNameAttribute =
-    getClassNameAttribute(getElementFromProjectContents(element, editorState.projectContents))
-      ?.value ?? ''
-
-  const parsedClassList = getParsedClassList(
-    currentClassNameAttribute,
-    getTailwindConfigCached(editorState),
-  )
+const runUpdateClassList = (
+  currentClassNameAttribute: string,
+  tailwindConfig: Config | null,
+  classNameUpdates: UCL.ClassListUpdate[],
+): string => {
+  const parsedClassList = getParsedClassList(currentClassNameAttribute, tailwindConfig)
 
   const propertiesToRemove = mapDropNulls(
     (update) => (update.type !== 'remove' ? null : update.property),
@@ -115,17 +114,9 @@ const runUpdateClassList = (editorState: EditorState, command: UCL.UpdateClassLi
     addNewClasses(propertiesToUpdate),
   ].reduce((classList, fn) => fn(classList), parsedClassList)
 
-  const newClassList = getClassListFromParsedClassList(
-    updatedClassList,
-    getTailwindConfigCached(editorState),
-  )
+  const newClassList = getClassListFromParsedClassList(updatedClassList, tailwindConfig)
 
-  return applyValuesAtPath(editorState, element, [
-    {
-      path: PP.create('className'),
-      value: jsExpressionValue(newClassList, emptyComments),
-    },
-  ])
+  return newClassList
 }
 
 const underscoresToSpaces = (s: string | undefined) => s?.replace(/[-_]/g, ' ')
@@ -239,9 +230,69 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
       updates,
     )
 
-    return runUpdateClassList(
-      editorState,
-      updateClassListCommand('always', elementPath, [...propsToDelete, ...propsToSet]),
+    const currentClassNameAttribute =
+      getClassNameAttribute(getElementFromProjectContents(elementPath, editorState.projectContents))
+        ?.value ?? ''
+
+    const newClassList = runUpdateClassList(currentClassNameAttribute, config, [
+      ...propsToDelete,
+      ...propsToSet,
+    ])
+
+    return applyValuesAtPath(editorState, elementPath, [
+      {
+        path: PP.create('className'),
+        value: jsExpressionValue(newClassList, emptyComments),
+      },
+    ])
+  },
+  updateCSSPropertyInProps: (attributes, updates) => {
+    const classNameAttribute = defaultEither(
+      null,
+      flatMapEither(
+        (attr) => jsxSimpleAttributeToValue(attr),
+        getModifiableJSXAttributeAtPath(attributes, PP.create('className')),
+      ),
+    )
+
+    if (typeof classNameAttribute !== 'string') {
+      return right(attributes)
+    }
+
+    const propsToDelete = mapDropNulls(
+      (update) =>
+        update.type !== 'delete' || TailwindPropertyMapping[update.property] == null
+          ? null
+          : UCL.remove(TailwindPropertyMapping[update.property]),
+      updates,
+    )
+
+    const propsToSet = mapDropNulls(
+      (update) =>
+        update.type !== 'set' || TailwindPropertyMapping[update.property] == null
+          ? null
+          : UCL.add({
+              property: TailwindPropertyMapping[update.property],
+              value: stringifyPropertyValue(update.value),
+            }),
+      updates,
+    )
+
+    const newClassList = runUpdateClassList(classNameAttribute, config, [
+      ...propsToDelete,
+      ...propsToSet,
+    ])
+
+    return right(
+      defaultEither(
+        attributes,
+        setJSXValueAtPathParts(
+          attributes,
+          ['className'],
+          0,
+          jsExpressionValue(newClassList, emptyComments),
+        ),
+      ),
     )
   },
 })

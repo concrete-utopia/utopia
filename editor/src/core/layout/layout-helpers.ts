@@ -32,7 +32,7 @@ import {
 import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { stylePropPathMappingFn } from '../../components/inspector/common/property-path-hooks'
-import { setJSXValueAtPath } from '../shared/jsx-attribute-utils'
+import { setJSXValueAtPathWithPlugin } from '../shared/set-jsx-value-utils'
 
 export function targetRespectsLayout(
   target: ElementPath,
@@ -55,7 +55,7 @@ export const PinLayoutHelpers = {
         if (frameProp === 'centerX' || frameProp === 'centerY') {
           return right(workingProps)
         } else {
-          return setJSXValueAtPath(
+          return setJSXValueAtPathWithPlugin(
             workingProps,
             stylePropPathMappingFn(frameProp, propertyTarget),
             jsExpressionValue(frame[frameProp], emptyComments),

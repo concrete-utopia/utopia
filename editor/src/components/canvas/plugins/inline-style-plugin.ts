@@ -1,21 +1,23 @@
-import type { PropertyPath } from 'utopia-shared/src/types'
+import type { JSXAttributes, PropertyPath } from 'utopia-shared/src/types'
 import type { StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import type { PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as Either from '../../../core/shared/either'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
-import { Utils } from '../../../uuiui-deps'
 import { getJSXElementFromProjectContents } from '../../editor/store/editor-state'
 import { cssParsers, type ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import type { CSSStyleProperty, StyleInfo } from '../canvas-types'
 import { applyValuesAtPath, deleteValuesAtPath } from '../commands/utils/property-utils'
-import type { StylePlugin } from './style-plugins'
+import type { StylePlugin, StyleUpdate } from './style-plugins'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
+  setJSXValueAtPathParts,
 } from '../../../core/shared/jsx-attribute-utils'
+import { unsetJSXValueAtPath } from '../../../core/shared/jsx-attributes'
+import Utils from '../../../utils/utils'
 
 function getPropValue(
   propsOrAttributes: PropsOrJSXAttributes,
@@ -130,5 +132,37 @@ export const InlineStylePlugin: StylePlugin = {
     )
 
     return applyValuesAtPath(withValuesDeleted, elementPath, propsToSet)
+  },
+  updateCSSPropertyInProps: (
+    props: JSXAttributes,
+    updates: StyleUpdate[],
+  ): PropsOrJSXAttributes => {
+    const propsToDelete = mapDropNulls(
+      (update) => (update.type === 'delete' ? PP.create('style', update.property) : null),
+      updates,
+    )
+
+    const propsToSet = mapDropNulls(
+      (update) =>
+        update.type === 'set'
+          ? {
+              path: PP.create('style', update.property),
+              value: jsExpressionValue(update.value, emptyComments),
+            }
+          : null,
+      updates,
+    )
+
+    const withPropsUnset = propsToDelete.reduce(
+      (acc, propertyPath) => Either.defaultEither(acc, unsetJSXValueAtPath(acc, propertyPath)),
+      props,
+    )
+    const withPropsSet = propsToSet.reduce(
+      (acc, { path, value }) =>
+        Either.defaultEither(acc, setJSXValueAtPathParts(props, PP.getElements(path), 0, value)),
+      withPropsUnset,
+    )
+
+    return Either.right(withPropsSet)
   },
 }

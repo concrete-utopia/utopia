@@ -1,5 +1,5 @@
-import type { ElementPath, PropertyPath } from 'utopia-shared/src/types'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { ElementPath, JSXAttributes } from 'utopia-shared/src/types'
+import type { EditorState } from '../../editor/store/editor-state'
 import type {
   InteractionLifecycle,
   StyleInfoFactory,
@@ -47,6 +47,7 @@ export interface StylePlugin {
     elementPath: ElementPath,
     updates: StyleUpdate[],
   ) => EditorStateWithPatch
+  updateCSSPropertyInProps: (props: JSXAttributes, updates: StyleUpdate[]) => PropsOrJSXAttributes
 }
 
 export function getActivePlugin(editorState: EditorState): StylePlugin {
