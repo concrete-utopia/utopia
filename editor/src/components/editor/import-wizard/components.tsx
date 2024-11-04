@@ -15,11 +15,10 @@ import { RequirementResolutionResult } from '../../../core/shared/import/project
 
 export function OperationLine({ operation }: { operation: ImportOperation }) {
   const operationRunningStatus = React.useMemo(() => {
-    return operation.timeStarted == null
-      ? 'waiting'
-      : operation.timeDone == null
-      ? 'running'
-      : 'done'
+    if (operation.timeDone != null) {
+      return 'done'
+    }
+    return operation.timeStarted == null ? 'waiting' : 'running'
   }, [operation.timeStarted, operation.timeDone])
   const colorTheme = useColorTheme()
   const textColor = operationRunningStatus === 'waiting' ? 'gray' : colorTheme.fg0.value
