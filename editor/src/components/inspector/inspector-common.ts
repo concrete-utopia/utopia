@@ -824,10 +824,7 @@ export function detectFillHugFixedState(
 
   const property = widthHeightFromAxis(axis)
 
-  const simpleAttribute = defaultEither(
-    null,
-    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', property)),
-  )
+  const simpleAttribute = cssNumberPropReader(property)
 
   const detectedHugType = element.specialSizeMeasurements.computedHugProperty[property]
   if (detectedHugType != null) {
@@ -853,7 +850,7 @@ export function detectFillHugFixedState(
 
   const isGroupLike = treatElementAsGroupLike(metadata, elementPath)
 
-  const parsed = defaultEither(null, parseCSSLengthPercent(simpleAttribute))
+  const parsed = simpleAttribute
   if (parsed != null && parsed.unit === '%') {
     const type = (() => {
       if (isGroupLike) {
