@@ -168,7 +168,7 @@ const gridDrawToInsertStrategyInner =
                 targetParent,
                 newTargetCell?.gridCellCoordinates ?? null,
                 null,
-                true,
+                'valid',
               ),
               updateHighlightedViews('mid-interaction', [targetParent]),
             ],
