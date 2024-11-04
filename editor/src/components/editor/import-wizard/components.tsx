@@ -253,14 +253,26 @@ function getImportOperationText(operation: ImportOperation): React.ReactNode {
   }
   switch (operation.type) {
     case 'loadBranch':
-      return (
-        <span>
-          Loading branch{' '}
-          <strong>
-            {operation.githubRepo?.owner}/{operation.githubRepo?.repository}@{operation.branchName}
-          </strong>
-        </span>
-      )
+      if (operation.branchName != null) {
+        return (
+          <span>
+            Loading branch{' '}
+            <strong>
+              {operation.githubRepo?.owner}/{operation.githubRepo?.repository}@
+              {operation.branchName}
+            </strong>
+          </span>
+        )
+      } else {
+        return (
+          <span>
+            Loading repository{' '}
+            <strong>
+              {operation.githubRepo?.owner}/{operation.githubRepo?.repository}
+            </strong>
+          </span>
+        )
+      }
     case 'fetchDependency':
       return `Fetching ${operation.dependencyName}@${operation.dependencyVersion}`
     case 'parseFiles':
