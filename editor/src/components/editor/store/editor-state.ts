@@ -193,7 +193,7 @@ import type { ImportOperation } from '../../../core/shared/import/import-operati
 import {
   emptyProjectRequirements,
   type ProjectRequirements,
-} from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
+} from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
 const ObjectPathImmutable: any = OPI
 

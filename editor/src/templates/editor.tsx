@@ -135,6 +135,7 @@ import { omitWithPredicate } from '../core/shared/object-utils'
 import { getParserWorkerCount } from '../core/workers/common/concurrency-utils'
 import { canMeasurePerformance } from '../core/performance/performance-utils'
 import { getChildGroupsForNonGroupParents } from '../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
+import { EditorModes } from '../components/editor/editor-modes'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -412,7 +413,8 @@ export class Editor {
     this.boundDispatch(
       [
         EditorActions.clearHighlightedViews(),
-        CanvasActions.clearInteractionSession(true),
+        CanvasActions.clearInteractionSession(false),
+        EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none')),
         EditorActions.updateKeys({}),
         EditorActions.closePopup(),
         EditorActions.clearPostActionData(),

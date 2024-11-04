@@ -634,8 +634,8 @@ import {
 } from '../../canvas/commands/utils/property-utils'
 import { getUpdateOperationResult } from '../../../core/shared/import/import-operation-service'
 import { setProperty } from '../../canvas/commands/set-property-command'
-import { updateRequirements } from '../../../core/shared/import/proejct-health-check/utopia-requirements-service'
-import { createStoryboardFileIfNecessary } from '../../../core/shared/import/proejct-health-check/requirements/requirement-storyboard'
+import { updateRequirements } from '../../../core/shared/import/project-health-check/utopia-requirements-service'
+import { createStoryboardFileIfNecessary } from '../../../core/shared/import/project-health-check/requirements/requirement-storyboard'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 

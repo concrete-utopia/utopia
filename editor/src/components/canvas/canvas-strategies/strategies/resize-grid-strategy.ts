@@ -48,6 +48,7 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 import { CSSCursor } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
 import type { Axis } from '../../gap-utils'
+import { getComponentDescriptorForTarget } from '../../../../core/property-controls/property-controls-utils'
 
 export const resizeGridStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -59,6 +60,22 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
+  const selectedElementMetadata = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElement,
+  )
+  if (selectedElementMetadata == null) {
+    return null
+  }
+
+  const supportsStyleProp = MetadataUtils.targetRegisteredStyleControlsOrHonoursStyleProps(
+    canvasState.projectContents,
+    selectedElementMetadata,
+    canvasState.propertyControlsInfo,
+    'layout-system',
+    ['gridTemplateColumns', 'gridTemplateRows'],
+    'some',
+  )
 
   const isGridCell = MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)
   const isGrid = MetadataUtils.isGridLayoutedContainer(
@@ -94,7 +111,9 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       },
       controlsForGridPlaceholders(gridPath),
     ],
-    fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_AXIS_HANDLE', 1),
+    fitness: supportsStyleProp
+      ? onlyFitWhenDraggingThisControl(interactionSession, 'GRID_AXIS_HANDLE', 1)
+      : 0,
     apply: () => {
       if (
         interactionSession == null ||

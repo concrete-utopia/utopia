@@ -91,7 +91,7 @@ import type {
   ImportOperation,
   ImportOperationAction,
 } from '../../core/shared/import/import-operation-types'
-import type { ProjectRequirements } from '../../core/shared/import/proejct-health-check/utopia-requirements-types'
+import type { ProjectRequirements } from '../../core/shared/import/project-health-check/utopia-requirements-types'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 

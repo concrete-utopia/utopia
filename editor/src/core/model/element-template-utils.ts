@@ -970,6 +970,46 @@ export function componentHonoursPropsSize(component: UtopiaJSXComponent): boolea
   }
 }
 
+export function componentHonoursStyleProps(
+  component: UtopiaJSXComponent,
+  props: Array<string>,
+  everyOrSome: 'every' | 'some',
+): boolean {
+  if (component.params == null) {
+    return false
+  } else {
+    const nonNullParams = component.params
+    function checkElements(rootElement: JSXElementChild): boolean {
+      switch (rootElement.type) {
+        case 'JSX_ELEMENT':
+          if (propsStyleIsSpreadInto(nonNullParams, rootElement.props)) {
+            return true
+          }
+          const styleAttrs = props.map((prop) => ({
+            propName: prop,
+            attr: getJSXAttributesAtPath(rootElement.props, PP.create('style', prop)),
+          }))
+          const filterFn = (styleAttr: { propName: string; attr: GetJSXAttributeResult }) =>
+            propertyComesFromPropsStyle(nonNullParams, styleAttr.attr, styleAttr.propName)
+          switch (everyOrSome) {
+            case 'some':
+              return styleAttrs.some(filterFn)
+            case 'every':
+              return styleAttrs.every(filterFn)
+            default:
+              assertNever(everyOrSome)
+          }
+          break
+        case 'JSX_FRAGMENT':
+          return rootElement.children.every(checkElements)
+        default:
+          return false
+      }
+    }
+    return checkElements(component.rootElement)
+  }
+}
+
 function checkJSReferencesVariable(
   jsExpression: JSExpressionOtherJavaScript,
   variableName: string,

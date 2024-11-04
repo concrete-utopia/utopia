@@ -491,7 +491,7 @@ import type {
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
   ComponentDescriptorFromDescriptorFile,
-  TypedInpsectorSpec,
+  TypedInspectorSpec,
   ShownInspectorSpec,
   StyleSectionState,
 } from '../../custom-code/code-file'
@@ -647,11 +647,11 @@ import type { ImportOperation } from '../../../core/shared/import/import-operati
 import type {
   ProjectRequirements,
   RequirementResolution,
-} from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
+} from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 import {
   newProjectRequirements,
   requirementResolution,
-} from '../../../core/shared/import/proejct-health-check/utopia-requirements-types'
+} from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -3935,7 +3935,7 @@ export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCal
   }
 }
 
-const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<TypedInpsectorSpec> = (
+const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<TypedInspectorSpec> = (
   oldValue,
   newValue,
 ) => {
@@ -4802,7 +4802,7 @@ export const ProjectRequirementResolutionKeepDeepEquality: KeepDeepEqualityCall<
   )
 
 export const ProjectRequirementsKeepDeepEquality: KeepDeepEqualityCall<ProjectRequirements> =
-  combine4EqualityCalls(
+  combine5EqualityCalls(
     (requirements) => requirements.storyboard,
     ProjectRequirementResolutionKeepDeepEquality,
     (requirements) => requirements.packageJsonEntries,
@@ -4810,6 +4810,8 @@ export const ProjectRequirementsKeepDeepEquality: KeepDeepEqualityCall<ProjectRe
     (requirements) => requirements.language,
     ProjectRequirementResolutionKeepDeepEquality,
     (requirements) => requirements.reactVersion,
+    ProjectRequirementResolutionKeepDeepEquality,
+    (requirements) => requirements.serverPackages,
     ProjectRequirementResolutionKeepDeepEquality,
     newProjectRequirements,
   )

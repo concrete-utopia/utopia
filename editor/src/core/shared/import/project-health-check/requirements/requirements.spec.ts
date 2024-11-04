@@ -8,8 +8,10 @@ import { RevisionsState } from '../../../../../core/shared/project-file-types'
 import { unparsed } from '../../../../../core/shared/project-file-types'
 import { contentsToTree } from '../../../../../components/assets'
 import { DefaultPackageJson } from '../../../../../components/editor/store/editor-state'
-import { getPackageJson } from '../check-utopia-requirements'
+import { getPackageJson } from '../../../../../components/assets'
 import CheckStoryboard from './requirement-storyboard'
+import CheckServerPackages from './requirement-server-packages'
+import { parseProjectContents } from '../../../../../sample-projects/sample-project-utils.test-utils'
 
 describe('requirements checks', () => {
   describe('project language', () => {
@@ -18,7 +20,7 @@ describe('requirements checks', () => {
       const project = simpleDefaultProject()
       const projectContents = project.projectContents
       const result = check.check(projectContents)
-      expect(result.resolution).toBe(RequirementResolutionResult.Found)
+      expect(result.resolution).toBe(RequirementResolutionResult.Passed)
     })
 
     it('should return failure for a project with ts files', () => {
@@ -41,7 +43,7 @@ describe('requirements checks', () => {
       })
       const projectContents = project.projectContents
       const result = check.check(projectContents)
-      expect(result.resolution).toBe(RequirementResolutionResult.Found)
+      expect(result.resolution).toBe(RequirementResolutionResult.Passed)
     })
     it('should fail for a project with no js files', () => {
       const check = new CheckProjectLanguage()
@@ -59,7 +61,7 @@ describe('requirements checks', () => {
       const project = simpleDefaultProject()
       const projectContents = project.projectContents
       const result = check.check(projectContents)
-      expect(result.resolution).toBe(RequirementResolutionResult.Found)
+      expect(result.resolution).toBe(RequirementResolutionResult.Passed)
     })
     it('should return failure for a project without a package.json', () => {
       const check = new CheckPackageJson()
@@ -103,7 +105,7 @@ describe('requirements checks', () => {
       const project = simpleDefaultProject()
       const projectContents = project.projectContents
       const result = check.check(projectContents)
-      expect(result.resolution).toBe(RequirementResolutionResult.Found)
+      expect(result.resolution).toBe(RequirementResolutionResult.Passed)
     })
     it('should return failure for a project with a react version less than 16.8', () => {
       const check = new CheckReactVersion()
@@ -173,7 +175,7 @@ describe('requirements checks', () => {
       const project = simpleDefaultProject()
       const projectContents = project.projectContents
       const result = check.check(projectContents)
-      expect(result.resolution).toBe(RequirementResolutionResult.Found)
+      expect(result.resolution).toBe(RequirementResolutionResult.Passed)
     })
     it('should create a storyboard if there is no storyboard', () => {
       const check = new CheckStoryboard()
@@ -186,6 +188,91 @@ describe('requirements checks', () => {
       expect(result.resolution).toBe(RequirementResolutionResult.Fixed)
       expect(result.newProjectContents).not.toBeNull()
       expect(result.newProjectContents!['utopia/storyboard.js']).not.toBeNull()
+    })
+  })
+
+  describe('server packages', () => {
+    it('should return success for a project with no server packages', () => {
+      const check = new CheckServerPackages()
+      const project = simpleDefaultProject()
+      const projectContents = project.projectContents
+      const result = check.check(projectContents)
+      expect(result.resolution).toBe(RequirementResolutionResult.Passed)
+    })
+
+    it('should return failure for a project with server packages', () => {
+      const check = new CheckServerPackages()
+      const project = simpleDefaultProject({
+        additionalFiles: {
+          '/package.json': textFile(
+            textFileContents(
+              JSON.stringify({ dependencies: { next: '14.2.5' } }, null, 2),
+              unparsed,
+              RevisionsState.CodeAhead,
+            ),
+            null,
+            null,
+            0,
+          ),
+        },
+      })
+      const projectContents = project.projectContents
+      const result = check.check(projectContents)
+      expect(result.resolution).toBe(RequirementResolutionResult.Critical)
+    })
+
+    it('should return partial for a project with node builtins', () => {
+      const check = new CheckServerPackages()
+      const project = simpleDefaultProject({
+        additionalFiles: {
+          '/src/app.js': textFile(
+            textFileContents(
+              `import { readFileSync } from 'fs'
+              import * as crypto from 'node:crypto'`,
+              unparsed,
+              RevisionsState.CodeAhead,
+            ),
+            null,
+            null,
+            0,
+          ),
+        },
+      })
+      const parsedProjectContents = parseProjectContents(project.projectContents)
+      const result = check.check(parsedProjectContents)
+      expect(result.resolution).toBe(RequirementResolutionResult.Partial)
+      expect(result.resultValue).toBe('fs, node:crypto')
+    })
+
+    it('should return success for a project with node builtins that are shimmed', () => {
+      const check = new CheckServerPackages()
+      const project = simpleDefaultProject({
+        additionalFiles: {
+          '/src/app.js': textFile(
+            textFileContents(
+              `import { readFileSync } from 'fs'`,
+              unparsed,
+              RevisionsState.CodeAhead,
+            ),
+            null,
+            null,
+            0,
+          ),
+          '/package.json': textFile(
+            textFileContents(
+              JSON.stringify({ dependencies: { fs: '1.0.0' } }, null, 2),
+              unparsed,
+              RevisionsState.CodeAhead,
+            ),
+            null,
+            null,
+            0,
+          ),
+        },
+      })
+      const parsedProjectContents = parseProjectContents(project.projectContents)
+      const result = check.check(parsedProjectContents)
+      expect(result.resolution).toBe(RequirementResolutionResult.Passed)
     })
   })
 })

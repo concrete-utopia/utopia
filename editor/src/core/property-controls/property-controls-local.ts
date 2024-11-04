@@ -43,7 +43,7 @@ import type {
   ComponentDescriptorWithName,
   ComponentInfo,
   PropertyControlsInfo,
-  TypedInpsectorSpec,
+  TypedInspectorSpec,
 } from '../../components/custom-code/code-file'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { parseControlDescription } from './property-controls-parser'
@@ -998,7 +998,7 @@ async function parseComponentVariants(
   return parsedVariants
 }
 
-function parseInspectorSpec(inspector: InspectorSpec | undefined): TypedInpsectorSpec {
+function parseInspectorSpec(inspector: InspectorSpec | undefined): TypedInspectorSpec {
   if (inspector == null) {
     return ComponentDescriptorDefaults.inspector
   }

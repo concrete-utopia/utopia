@@ -1,9 +1,13 @@
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
 
 export const RequirementResolutionResult = {
-  Found: 'found',
+  // the requirement was passed without any fixes
+  Passed: 'passed',
+  // the requirement was found to be missing, but was fixed
   Fixed: 'fixed',
+  // the requirement was found to be missing, but it's not critical
   Partial: 'partial',
+  // the requirement was found to be missing and we cannot continue with the project
   Critical: 'critical',
 } as const
 
@@ -29,6 +33,7 @@ export function emptyRequirementResolution(): RequirementResolution {
 
 export function emptyProjectRequirements(): ProjectRequirements {
   return newProjectRequirements(
+    emptyRequirementResolution(),
     emptyRequirementResolution(),
     emptyRequirementResolution(),
     emptyRequirementResolution(),
@@ -59,6 +64,7 @@ export interface ProjectRequirements {
   packageJsonEntries: RequirementResolution
   language: RequirementResolution
   reactVersion: RequirementResolution
+  serverPackages: RequirementResolution
 }
 
 export type ProjectRequirement = keyof ProjectRequirements
@@ -68,12 +74,14 @@ export function newProjectRequirements(
   packageJsonEntries: RequirementResolution,
   language: RequirementResolution,
   reactVersion: RequirementResolution,
+  serverPackages: RequirementResolution,
 ): ProjectRequirements {
   return {
     storyboard,
     packageJsonEntries,
     language,
     reactVersion,
+    serverPackages,
   }
 }
 
@@ -86,5 +94,4 @@ export interface RequirementCheckResult {
 
 export interface RequirementCheck {
   check: (projectContents: ProjectContentTreeRoot) => RequirementCheckResult
-  getStartText: () => string
 }
