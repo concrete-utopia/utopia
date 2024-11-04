@@ -46,8 +46,8 @@ import { updateProjectContentsWithParseResults } from '../../parser-projectconte
 import {
   notifyOperationFinished,
   notifyOperationStarted,
+  pauseImport,
   startImportProcess,
-  updateProjectImportStatus,
 } from '../../import/import-operation-service'
 import {
   RequirementResolutionResult,
@@ -199,90 +199,81 @@ export const updateProjectWithBranchContent =
             const { fixedProjectContents, result: requirementResolutionResult } =
               checkAndFixUtopiaRequirements(dispatch, parseResults)
 
-            const updateContentsAndFetchDependencies = async function () {
-              // branch should never be null here
-              if (responseBody.branch == null) {
-                return
-              }
-              // Update the editor with everything so that if anything else fails past this point
-              // there's no loss of data from the user's perspective.
-              dispatch(
-                [
-                  ...connectRepo(
-                    resetBranches,
-                    githubRepo,
-                    responseBody.branch.originCommit,
-                    branchName,
-                    true,
-                  ),
-                  updateProjectContents(fixedProjectContents),
-                  updateBranchContents(fixedProjectContents),
-                  truncateHistory(),
-                ],
-                'everyone',
-              )
-
-              const componentDescriptorFiles =
-                getAllComponentDescriptorFilePaths(fixedProjectContents)
-
-              // If there's a package.json file, then attempt to load the dependencies for it.
-              let dependenciesPromise: Promise<void> = Promise.resolve()
-              const packageJson = packageJsonFileFromProjectContents(fixedProjectContents)
-              if (packageJson != null && isTextFile(packageJson)) {
-                notifyOperationStarted(dispatch, { type: 'refreshDependencies' })
-                dependenciesPromise = refreshDependencies(
-                  dispatch,
-                  packageJson.fileContents.code,
-                  currentDeps,
-                  builtInDependencies,
-                  {},
-                ).then(() => {})
-              }
-
-              // When the dependencies update has gone through, then indicate that the project was imported.
-              await dependenciesPromise
-                .catch(() => {
-                  if (isFeatureEnabled('Import Wizard')) {
-                    notifyOperationFinished(
-                      dispatch,
-                      { type: 'refreshDependencies' },
-                      ImportOperationResult.Error,
-                    )
-                  } else {
-                    showToast(
-                      notice(
-                        `Github: There was an error when attempting to update the dependencies.`,
-                        'ERROR',
-                      ),
-                    )
-                  }
-                })
-                .finally(() => {
-                  dispatch(
-                    [
-                      extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles),
-                      isFeatureEnabled('Import Wizard')
-                        ? updateImportStatus({ status: 'done' })
-                        : showToast(
-                            notice(
-                              `Github: Updated the project with the content from ${branchName}`,
-                              'SUCCESS',
-                            ),
-                          ),
-                    ],
-                    'everyone',
-                  )
-                })
-            }
-
             if (requirementResolutionResult === RequirementResolutionResult.Critical) {
-              updateProjectImportStatus(dispatch, {
-                status: 'paused',
-                onResume: updateContentsAndFetchDependencies,
-              })
-            } else {
-              void updateContentsAndFetchDependencies()
+              // wait for the user to resume the import if they choose to
+              await pauseImport(dispatch)
             }
+
+            // Update the editor with everything so that if anything else fails past this point
+            // there's no loss of data from the user's perspective.
+            dispatch(
+              [
+                ...connectRepo(
+                  resetBranches,
+                  githubRepo,
+                  responseBody.branch.originCommit,
+                  branchName,
+                  true,
+                ),
+                updateProjectContents(fixedProjectContents),
+                updateBranchContents(fixedProjectContents),
+                truncateHistory(),
+              ],
+              'everyone',
+            )
+
+            const componentDescriptorFiles =
+              getAllComponentDescriptorFilePaths(fixedProjectContents)
+
+            // If there's a package.json file, then attempt to load the dependencies for it.
+            let dependenciesPromise: Promise<void> = Promise.resolve()
+            const packageJson = packageJsonFileFromProjectContents(fixedProjectContents)
+            if (packageJson != null && isTextFile(packageJson)) {
+              notifyOperationStarted(dispatch, { type: 'refreshDependencies' })
+              dependenciesPromise = refreshDependencies(
+                dispatch,
+                packageJson.fileContents.code,
+                currentDeps,
+                builtInDependencies,
+                {},
+              ).then(() => {})
+            }
+
+            // When the dependencies update has gone through, then indicate that the project was imported.
+            await dependenciesPromise
+              .catch(() => {
+                if (isFeatureEnabled('Import Wizard')) {
+                  notifyOperationFinished(
+                    dispatch,
+                    { type: 'refreshDependencies' },
+                    ImportOperationResult.Error,
+                  )
+                } else {
+                  showToast(
+                    notice(
+                      `Github: There was an error when attempting to update the dependencies.`,
+                      'ERROR',
+                    ),
+                  )
+                }
+              })
+              .finally(() => {
+                dispatch(
+                  [
+                    extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles),
+                    isFeatureEnabled('Import Wizard')
+                      ? updateImportStatus({ status: 'done' })
+                      : showToast(
+                          notice(
+                            `Github: Updated the project with the content from ${branchName}`,
+                            'SUCCESS',
+                          ),
+                        ),
+                  ],
+                  'everyone',
+                )
+              })
+
             break
           default:
             assertNever(responseBody)

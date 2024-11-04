@@ -188,3 +188,9 @@ export function getTotalImportStatusAndResult(importState: ImportState): TotalIm
     importStatus: importState.importStatus,
   }
 }
+
+export function pauseImport(dispatch: EditorDispatch): Promise<void> {
+  return new Promise((resolve) =>
+    updateProjectImportStatus(dispatch, { status: 'paused', onResume: resolve }),
+  )
+}
