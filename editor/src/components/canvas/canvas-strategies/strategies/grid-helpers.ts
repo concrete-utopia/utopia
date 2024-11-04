@@ -123,7 +123,6 @@ export function runGridMoveRearrange(
     })
     .sort(sortElementsByGridPosition(templateColumnsCount))
 
-  // If rearranging, reorder to the index based on the sorted cells arrays.
   const indexInSortedCellsForRearrange = cellsSortedByPosition.findIndex((s) =>
     EP.pathsEqual(selectedElementMetadata.elementPath, s.path),
   )
@@ -158,8 +157,6 @@ export function runGridMoveAbsolute(
     return []
   }
 
-  const pathForCommands = selectedElementMetadata.elementPath // when reparenting, we want to use the new path for commands
-
   const gridConfig = getOriginalElementGridConfiguration(
     gridCellGlobalFrames,
     interactionData,
@@ -168,6 +165,7 @@ export function runGridMoveAbsolute(
   if (gridConfig == null) {
     return []
   }
+  const { mouseCellPosInOriginalElement } = gridConfig
 
   const mousePos = offsetPoint(interactionData.dragStart, interactionData.drag)
   const targetCellData = getClosestGridCellToPoint(gridCellGlobalFrames, mousePos)
@@ -176,21 +174,21 @@ export function runGridMoveAbsolute(
     return []
   }
 
-  const { mouseCellPosInOriginalElement, originalCellBounds } = gridConfig
-
   const row = Math.max(targetCellCoords.row - mouseCellPosInOriginalElement.row, 1)
   const column = Math.max(targetCellCoords.column - mouseCellPosInOriginalElement.column, 1)
 
-  const updateGridControlsCommand = showGridControls(
-    'mid-interaction',
-    gridPath,
-    targetCellData?.gridCellCoordinates ?? null,
-    gridCellCoordinates(row, column),
-  )
+  const targetRootCell = gridCellCoordinates(row, column)
 
   // if moving an absolutely-positioned child which does not have pinning
   // props, do not set them at all.
   if (MetadataUtils.hasNoGridCellPositioning(selectedElementMetadata.specialSizeMeasurements)) {
+    const updateGridControlsCommand = showGridControls(
+      'mid-interaction',
+      gridPath,
+      targetCellCoords,
+      targetRootCell,
+    )
+
     const absoluteMoveCommands = gridChildAbsoluteMoveCommands(
       MetadataUtils.findElementByElementPath(jsxMetadata, selectedElementMetadata.elementPath),
       MetadataUtils.getFrameOrZeroRectInCanvasCoords(gridPath, jsxMetadata),
@@ -199,69 +197,26 @@ export function runGridMoveAbsolute(
     return [...absoluteMoveCommands, updateGridControlsCommand]
   }
 
-  // The siblings of the grid element being moved
-  const siblings = MetadataUtils.getChildrenUnordered(jsxMetadata, gridPath)
-    .filter((s) => !EP.pathsEqual(s.elementPath, selectedElementMetadata.elementPath))
-    .map(
-      (s, index): SortableGridElementProperties => ({
-        ...s.specialSizeMeasurements.elementGridProperties,
-        index: index,
-        path: s.elementPath,
-      }),
-    )
-
-  // Sort the siblings and the cell under mouse ascending based on their grid coordinates, so that
-  // the indexes grow left-right, top-bottom.
-  const templateColumnsCount =
-    gridTemplate.gridTemplateColumns?.type === 'DIMENSIONS'
-      ? gridTemplate.gridTemplateColumns.dimensions.length
-      : 1
-  const cellsSortedByPosition = siblings
-    .concat({
-      ...{
-        gridColumnStart: gridPositionValue(targetCellCoords.column),
-        gridColumnEnd: gridPositionValue(targetCellCoords.column),
-        gridRowStart: gridPositionValue(targetCellCoords.row),
-        gridRowEnd: gridPositionValue(targetCellCoords.row),
-      },
-      path: selectedElementMetadata.elementPath,
-      index: siblings.length + 1,
-    })
-    .sort(sortElementsByGridPosition(templateColumnsCount))
-
-  // If rearranging, reorder to the index based on the sorted cells arrays.
-  const indexInSortedCellsForRearrange = cellsSortedByPosition.findIndex((s) =>
-    EP.pathsEqual(selectedElementMetadata.elementPath, s.path),
-  )
-
-  const gridCellMoveCommands = setGridPropsCommands(pathForCommands, gridTemplate, {
-    gridColumnStart: gridPositionValue(column),
-    gridColumnEnd: gridPositionValue(column + originalCellBounds.height),
-    gridRowStart: gridPositionValue(row),
-    gridRowEnd: gridPositionValue(row + originalCellBounds.width),
-  })
-  const targetRootCell = gridCellCoordinates(row, column)
-
+  // otherwise, return a rearrange move + absolute adjustment
   const canvasRect = getGlobalFrameOfGridCell(gridCellGlobalFrames, targetRootCell)
   if (canvasRect == null) {
     return []
   }
-
   const absoluteMoveCommands = gridChildAbsoluteMoveCommands(
     MetadataUtils.findElementByElementPath(jsxMetadata, selectedElementMetadata.elementPath),
     canvasRect,
     interactionData,
   )
-  return [
-    ...absoluteMoveCommands,
-    ...gridCellMoveCommands,
-    reorderElement(
-      'always',
-      pathForCommands,
-      absolute(Math.max(indexInSortedCellsForRearrange, 0)),
-    ),
-    updateGridControlsCommand,
-  ]
+  const rearrangeCommands = runGridMoveRearrange(
+    jsxMetadata,
+    interactionData,
+    selectedElementMetadata,
+    gridPath,
+    gridCellGlobalFrames,
+    gridTemplate,
+    null,
+  )
+  return [...rearrangeCommands, ...absoluteMoveCommands]
 }
 
 export function runGridMoveReorder(
