@@ -2,8 +2,8 @@ import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type {
-  ElementInstanceMetadataMap,
   GridAutoOrTemplateBase,
+  SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
 import * as PP from '../../../../core/shared/property-path'
 import { printGridAutoOrTemplateBase } from '../../../inspector/common/css-utils'
@@ -131,32 +131,27 @@ type GridInitialTemplates = {
   }
 }
 
-export function getGridTemplates(
-  jsxMetadata: ElementInstanceMetadataMap,
-  gridPath: ElementPath,
+export function getParentGridTemplatesFromChildMeasurements(
+  specialSizeMeasurements: SpecialSizeMeasurements,
 ): GridInitialTemplates | null {
-  const grid = MetadataUtils.findElementByElementPath(jsxMetadata, gridPath)
-  if (grid == null) {
-    return null
-  }
+  const parentTemplateCalculated = specialSizeMeasurements.parentContainerGridProperties
+  const parentTemplateFromProps = specialSizeMeasurements.parentContainerGridPropertiesFromProps
 
-  const templateFromProps = grid.specialSizeMeasurements.containerGridPropertiesFromProps
-  const templateRowsFromProps = templateFromProps.gridTemplateRows
-  if (templateRowsFromProps == null) {
+  const templateColsCalculated = parentTemplateCalculated.gridTemplateColumns
+  if (templateColsCalculated == null) {
     return null
   }
-  const templateColsFromProps = templateFromProps.gridTemplateColumns
-  if (templateColsFromProps == null) {
-    return null
-  }
-
-  const templateCalculated = grid.specialSizeMeasurements.containerGridProperties
-  const templateRowsCalculated = templateCalculated.gridTemplateRows
+  const templateRowsCalculated = parentTemplateCalculated.gridTemplateRows
   if (templateRowsCalculated == null) {
     return null
   }
-  const templateColsCalculated = templateCalculated.gridTemplateColumns
-  if (templateColsCalculated == null) {
+
+  const templateColsFromProps = parentTemplateFromProps.gridTemplateColumns
+  if (templateColsFromProps == null) {
+    return null
+  }
+  const templateRowsFromProps = parentTemplateFromProps.gridTemplateRows
+  if (templateRowsFromProps == null) {
     return null
   }
 

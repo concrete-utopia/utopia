@@ -14,7 +14,7 @@ import { getGridElementPinState } from './grid-helpers'
 import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import {
   getCommandsAndPatchForGridReorder,
-  getGridTemplates,
+  getParentGridTemplatesFromChildMeasurements,
   gridMoveStrategiesExtraCommands,
 } from './grid-move-helpers'
 
@@ -39,20 +39,6 @@ export const gridMoveReorderStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const parentGridPath = EP.parentPath(selectedElement)
-  const gridFrame = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
-    parentGridPath,
-  )?.globalFrame
-  if (gridFrame == null || isInfinityRectangle(gridFrame)) {
-    return null
-  }
-
-  const initialTemplates = getGridTemplates(canvasState.startingMetadata, parentGridPath)
-  if (initialTemplates == null) {
-    return null
-  }
-
   const selectedElementMetadata = MetadataUtils.findElementByElementPath(
     canvasState.startingMetadata,
     selectedElement,
@@ -61,6 +47,22 @@ export const gridMoveReorderStrategy: CanvasStrategyFactory = (
     return null
   }
   if (MetadataUtils.isPositionAbsolute(selectedElementMetadata)) {
+    return null
+  }
+
+  const initialTemplates = getParentGridTemplatesFromChildMeasurements(
+    selectedElementMetadata.specialSizeMeasurements,
+  )
+  if (initialTemplates == null) {
+    return null
+  }
+
+  const parentGridPath = EP.parentPath(selectedElement)
+  const gridFrame = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    parentGridPath,
+  )?.globalFrame
+  if (gridFrame == null || isInfinityRectangle(gridFrame)) {
     return null
   }
 

@@ -19,7 +19,10 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { runGridMoveRearrange } from './grid-helpers'
-import { getGridTemplates, gridMoveStrategiesExtraCommands } from './grid-move-helpers'
+import {
+  getParentGridTemplatesFromChildMeasurements,
+  gridMoveStrategiesExtraCommands,
+} from './grid-move-helpers'
 
 export const gridMoveRearrangeDuplicateStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -43,17 +46,27 @@ export const gridMoveRearrangeDuplicateStrategy: CanvasStrategyFactory = (
     return null
   }
 
+  const selectedElementMetadata = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElement,
+  )
+  if (selectedElementMetadata == null) {
+    return null
+  }
+
+  const initialTemplates = getParentGridTemplatesFromChildMeasurements(
+    selectedElementMetadata.specialSizeMeasurements,
+  )
+  if (initialTemplates == null) {
+    return null
+  }
+
   const parentGridPath = EP.parentPath(selectedElement)
   const gridFrame = MetadataUtils.findElementByElementPath(
     canvasState.startingMetadata,
     parentGridPath,
   )?.globalFrame
   if (gridFrame == null || isInfinityRectangle(gridFrame)) {
-    return null
-  }
-
-  const initialTemplates = getGridTemplates(canvasState.startingMetadata, parentGridPath)
-  if (initialTemplates == null) {
     return null
   }
 
@@ -87,14 +100,6 @@ export const gridMoveRearrangeDuplicateStrategy: CanvasStrategyFactory = (
       }
 
       const targetElement = EP.appendToPath(EP.parentPath(selectedElement), newUid)
-
-      const selectedElementMetadata = MetadataUtils.findElementByElementPath(
-        canvasState.startingMetadata,
-        selectedElement,
-      )
-      if (selectedElementMetadata == null) {
-        return emptyStrategyApplicationResult
-      }
 
       const { parentGridCellGlobalFrames, parentContainerGridProperties } =
         selectedElementMetadata.specialSizeMeasurements
