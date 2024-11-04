@@ -193,7 +193,14 @@ export function runGridMoveReorder(
   if (common == null) {
     return []
   }
-  const { newCoords, gridPath, possiblyReorderIndex, targetCellData, pathForCommands } = common
+  const {
+    newCoords,
+    gridPath,
+    targetCellData,
+    pathForCommands,
+    targetCellCoords,
+    gridTemplateColumns,
+  } = common
   const { row, column } = newCoords
 
   const flowElementsCount = MetadataUtils.getChildrenUnordered(jsxMetadata, gridPath).filter(
@@ -201,6 +208,13 @@ export function runGridMoveReorder(
       getGridElementPinState(child.specialSizeMeasurements.elementGridPropertiesFromProps) !==
       'pinned',
   ).length
+
+  // The "pure" index in the grid children for the cell under mouse
+  const possiblyReorderIndex = getGridPositionIndex({
+    row: targetCellCoords.row,
+    column: targetCellCoords.column,
+    gridTemplateColumns: gridTemplateColumns,
+  })
 
   const updateGridControlsCommand = showGridControls(
     'mid-interaction',
@@ -272,13 +286,6 @@ function getGridMoveCommonData(
       ? gridTemplate.gridTemplateColumns.dimensions.length
       : 1
 
-  // The "pure" index in the grid children for the cell under mouse
-  const possiblyReorderIndex = getGridPositionIndex({
-    row: targetCellCoords.row,
-    column: targetCellCoords.column,
-    gridTemplateColumns: gridTemplateColumns,
-  })
-
   return {
     newCoords: { row, column },
     targetCellData: targetCellData,
@@ -286,7 +293,6 @@ function getGridMoveCommonData(
     pathForCommands: pathForCommands,
     targetCellCoords: targetCellCoords,
     gridTemplateColumns: gridTemplateColumns,
-    possiblyReorderIndex: possiblyReorderIndex,
     gridConfig: gridConfig,
     isReparent: isReparent,
     originalElement: originalElement,
