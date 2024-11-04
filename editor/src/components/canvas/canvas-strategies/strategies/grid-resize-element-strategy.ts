@@ -20,7 +20,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { setGridPropsCommands } from './grid-helpers'
+import { findOriginalGrid, setGridPropsCommands } from './grid-helpers'
 import { resizeBoundingBoxFromSide } from './resize-helpers'
 
 export const gridResizeElementStrategy: CanvasStrategyFactory = (
@@ -60,7 +60,13 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const parentGridPath = EP.parentPath(selectedElement)
+  const parentGridPath = findOriginalGrid(
+    canvasState.startingMetadata,
+    EP.parentPath(selectedElement),
+  ) // TODO don't use EP.parentPath
+  if (parentGridPath == null) {
+    return null
+  }
 
   return {
     id: 'GRID-CELL-RESIZE-STRATEGY',

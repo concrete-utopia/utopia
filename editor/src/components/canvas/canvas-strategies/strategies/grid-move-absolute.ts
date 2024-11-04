@@ -75,7 +75,14 @@ export const gridMoveAbsoluteStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const parentGridPath = EP.parentPath(selectedElement)
+  const parentGridPath = findOriginalGrid(
+    canvasState.startingMetadata,
+    EP.parentPath(selectedElement),
+  ) // TODO don't use EP.parentPath
+  if (parentGridPath == null) {
+    return null
+  }
+
   const gridFrame = MetadataUtils.findElementByElementPath(
     canvasState.startingMetadata,
     parentGridPath,
@@ -112,6 +119,7 @@ export const gridMoveAbsoluteStrategy: CanvasStrategyFactory = (
         canvasState,
         interactionSession.interactionData,
         selectedElement,
+        parentGridPath,
       )
       if (commands.length === 0) {
         return emptyStrategyApplicationResult
@@ -133,6 +141,7 @@ function getCommandsAndPatchForGridAbsoluteMove(
   canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
   selectedElement: ElementPath,
+  gridPath: ElementPath,
 ): {
   commands: CanvasCommand[]
   elementsToRerender: ElementPath[]
@@ -146,11 +155,6 @@ function getCommandsAndPatchForGridAbsoluteMove(
     selectedElement,
   )
   if (selectedElementMetadata == null) {
-    return { commands: [], elementsToRerender: [] }
-  }
-
-  const gridPath = findOriginalGrid(canvasState.startingMetadata, EP.parentPath(selectedElement)) // TODO don't use EP.parentPath
-  if (gridPath == null) {
     return { commands: [], elementsToRerender: [] }
   }
 
@@ -171,7 +175,7 @@ function getCommandsAndPatchForGridAbsoluteMove(
 
   return {
     commands: commands,
-    elementsToRerender: [EP.parentPath(selectedElement), selectedElement],
+    elementsToRerender: [gridPath, selectedElement],
   }
 }
 

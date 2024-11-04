@@ -70,7 +70,13 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const gridPath = isGrid ? selectedElement : EP.parentPath(selectedElement)
+  const gridPath = isGrid
+    ? selectedElement
+    : findOriginalGrid(canvasState.startingMetadata, EP.parentPath(selectedElement)) // TODO don't use EP.parentPath
+  if (gridPath == null) {
+    return null
+  }
+
   const metadata = interactionSession?.latestMetadata ?? canvasState.startingMetadata
   const originalGridPath = findOriginalGrid(metadata, gridPath)
   if (originalGridPath == null) {

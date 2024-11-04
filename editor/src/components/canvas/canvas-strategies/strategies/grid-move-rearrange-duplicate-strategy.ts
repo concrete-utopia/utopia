@@ -62,7 +62,14 @@ export const gridMoveRearrangeDuplicateStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const parentGridPath = EP.parentPath(selectedElement)
+  const parentGridPath = findOriginalGrid(
+    canvasState.startingMetadata,
+    EP.parentPath(selectedElement),
+  ) // TODO don't use EP.parentPath
+  if (parentGridPath == null) {
+    return null
+  }
+
   const gridFrame = MetadataUtils.findElementByElementPath(
     canvasState.startingMetadata,
     parentGridPath,
@@ -79,7 +86,7 @@ export const gridMoveRearrangeDuplicateStrategy: CanvasStrategyFactory = (
       category: 'tools',
       type: 'pointer',
     },
-    controlsToRender: [controlsForGridPlaceholders(EP.parentPath(selectedElement))],
+    controlsToRender: [controlsForGridPlaceholders(parentGridPath)],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 3),
     apply: () => {
       if (
@@ -100,15 +107,7 @@ export const gridMoveRearrangeDuplicateStrategy: CanvasStrategyFactory = (
         duplicatedElementNewUids[oldUid] = newUid
       }
 
-      const targetElement = EP.appendToPath(EP.parentPath(selectedElement), newUid)
-
-      const gridPath = findOriginalGrid(
-        canvasState.startingMetadata,
-        EP.parentPath(selectedElement),
-      ) // TODO don't use EP.parentPath
-      if (gridPath == null) {
-        return emptyStrategyApplicationResult
-      }
+      const targetElement = EP.appendToPath(parentGridPath, newUid)
 
       const { parentGridCellGlobalFrames, parentContainerGridProperties } =
         selectedElementMetadata.specialSizeMeasurements
@@ -120,7 +119,7 @@ export const gridMoveRearrangeDuplicateStrategy: CanvasStrategyFactory = (
         canvasState.startingMetadata,
         interactionSession.interactionData,
         selectedElementMetadata,
-        gridPath,
+        parentGridPath,
         parentGridCellGlobalFrames,
         parentContainerGridProperties,
         null,
