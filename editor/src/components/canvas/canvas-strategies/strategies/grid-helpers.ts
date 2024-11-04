@@ -54,7 +54,7 @@ export function runGridMoveRearrange(
   gridTemplate: GridContainerProperties,
   newPathAfterReparent?: ElementPath,
 ): CanvasCommand[] {
-  const common = getGridMoveCommonData(
+  const moveConfig = getGridMoveConfig(
     targetElement,
     selectedElement,
     jsxMetadata,
@@ -63,7 +63,7 @@ export function runGridMoveRearrange(
     gridTemplate,
     newPathAfterReparent,
   )
-  if (common == null) {
+  if (moveConfig == null) {
     return []
   }
   const {
@@ -76,7 +76,7 @@ export function runGridMoveRearrange(
     pathForCommands,
     isReparent,
     originalElement,
-  } = common
+  } = moveConfig
 
   const { column, row } = newCoords
   const { originalCellBounds } = gridConfig
@@ -181,7 +181,7 @@ export function runGridMoveReorder(
   gridTemplate: GridContainerProperties,
   newPathAfterReparent?: ElementPath,
 ): CanvasCommand[] {
-  const common = getGridMoveCommonData(
+  const moveConfig = getGridMoveConfig(
     targetElement,
     selectedElement,
     jsxMetadata,
@@ -190,7 +190,7 @@ export function runGridMoveReorder(
     gridTemplate,
     newPathAfterReparent,
   )
-  if (common == null) {
+  if (moveConfig == null) {
     return []
   }
   const {
@@ -200,7 +200,7 @@ export function runGridMoveReorder(
     pathForCommands,
     targetCellCoords,
     gridTemplateColumns,
-  } = common
+  } = moveConfig
   const { row, column } = newCoords
 
   const flowElementsCount = MetadataUtils.getChildrenUnordered(jsxMetadata, gridPath).filter(
@@ -238,7 +238,7 @@ export function runGridMoveReorder(
   ]
 }
 
-function getGridMoveCommonData(
+function getGridMoveConfig(
   targetElement: ElementPath,
   selectedElement: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
