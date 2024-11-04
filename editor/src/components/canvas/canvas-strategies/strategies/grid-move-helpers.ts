@@ -16,7 +16,12 @@ import {
 } from '../../commands/set-property-command'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
 import type { DragInteractionData } from '../interaction-state'
-import { findOriginalGrid, runGridMoveRearrange, runGridMoveReorder } from './grid-helpers'
+import {
+  findOriginalGrid,
+  runGridMoveAbsolute,
+  runGridMoveRearrange,
+  runGridMoveReorder,
+} from './grid-helpers'
 
 export function getCommandsAndPatchForGridRearrange(
   canvasState: InteractionCanvasState,
@@ -50,6 +55,53 @@ export function getCommandsAndPatchForGridRearrange(
   }
 
   const commands = runGridMoveRearrange(
+    canvasState.startingMetadata,
+    interactionData,
+    selectedElementMetadata,
+    gridPath,
+    parentGridCellGlobalFrames,
+    parentContainerGridProperties,
+    null,
+  )
+
+  return {
+    commands: commands,
+    elementsToRerender: [EP.parentPath(selectedElement), selectedElement],
+  }
+}
+
+export function getCommandsAndPatchForGridAbsoluteMove(
+  canvasState: InteractionCanvasState,
+  interactionData: DragInteractionData,
+  selectedElement: ElementPath,
+): {
+  commands: CanvasCommand[]
+  elementsToRerender: ElementPath[]
+} {
+  if (interactionData.drag == null) {
+    return { commands: [], elementsToRerender: [] }
+  }
+
+  const selectedElementMetadata = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElement,
+  )
+  if (selectedElementMetadata == null) {
+    return { commands: [], elementsToRerender: [] }
+  }
+
+  const gridPath = findOriginalGrid(canvasState.startingMetadata, EP.parentPath(selectedElement)) // TODO don't use EP.parentPath
+  if (gridPath == null) {
+    return { commands: [], elementsToRerender: [] }
+  }
+
+  const { parentGridCellGlobalFrames, parentContainerGridProperties } =
+    selectedElementMetadata.specialSizeMeasurements
+  if (parentGridCellGlobalFrames == null) {
+    return { commands: [], elementsToRerender: [] }
+  }
+
+  const commands = runGridMoveAbsolute(
     canvasState.startingMetadata,
     interactionData,
     selectedElementMetadata,

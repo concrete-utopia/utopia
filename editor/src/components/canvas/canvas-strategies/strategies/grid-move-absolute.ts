@@ -12,12 +12,12 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import {
-  getCommandsAndPatchForGridRearrange,
+  getCommandsAndPatchForGridAbsoluteMove,
   getParentGridTemplatesFromChildMeasurements,
   gridMoveStrategiesExtraCommands,
 } from './grid-move-helpers'
 
-export const gridMoveRearrangeStrategy: CanvasStrategyFactory = (
+export const gridMoveAbsoluteStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ) => {
@@ -61,14 +61,14 @@ export const gridMoveRearrangeStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  if (MetadataUtils.isPositionAbsolute(selectedElementMetadata)) {
+  if (!MetadataUtils.isPositionAbsolute(selectedElementMetadata)) {
     return null
   }
 
   return {
-    id: 'rearrange-grid-move-strategy',
-    name: 'Grid rearrange',
-    descriptiveLabel: 'Grid rearrange',
+    id: 'absolute-grid-move-strategy',
+    name: 'Grid move (Abs)',
+    descriptiveLabel: 'Grid move (Abs)',
     icon: {
       category: 'tools',
       type: 'pointer',
@@ -85,7 +85,7 @@ export const gridMoveRearrangeStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      const { commands, elementsToRerender } = getCommandsAndPatchForGridRearrange(
+      const { commands, elementsToRerender } = getCommandsAndPatchForGridAbsoluteMove(
         canvasState,
         interactionSession.interactionData,
         selectedElement,

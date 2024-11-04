@@ -122,6 +122,7 @@ export const gridMoveRearrangeDuplicateStrategy: CanvasStrategyFactory = (
         gridPath,
         parentGridCellGlobalFrames,
         parentContainerGridProperties,
+        null,
       )
 
       const { midInteractionCommands, onCompleteCommands } = gridMoveStrategiesExtraCommands(

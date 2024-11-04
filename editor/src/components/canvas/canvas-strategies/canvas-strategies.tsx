@@ -88,6 +88,7 @@ import {
   isGridControlsProps,
 } from '../controls/grid-controls-for-strategies'
 import { gridMoveReorderStrategy } from './strategies/grid-move-reorder-strategy'
+import { gridMoveAbsoluteStrategy } from './strategies/grid-move-absolute'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -119,6 +120,7 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       gridMoveRearrangeDuplicateStrategy,
       gridMoveReorderStrategy,
       gridRearrangeResizeKeyboardStrategy,
+      gridMoveAbsoluteStrategy,
     ],
   )
 }
