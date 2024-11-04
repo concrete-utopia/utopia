@@ -75,6 +75,33 @@ export type ImportOperation =
 
 export type ImportOperationType = ImportOperation['type']
 
+export type ImportState = {
+  importStatus: ImportStatus
+  importOperations: ImportOperation[]
+}
+
+export function newImportState(importStatus: ImportStatus, importOperations: ImportOperation[]) {
+  return {
+    importStatus: importStatus,
+    importOperations: importOperations,
+  }
+}
+
+export function emptyImportState(): ImportState {
+  return newImportState({ status: 'not-started' }, [])
+}
+
+export type ImportStatus =
+  | ImportStatusNotStarted
+  | ImportStatusInProgress
+  | ImportStatusDone
+  | ImportStatusPaused
+
+export type ImportStatusNotStarted = { status: 'not-started' }
+export type ImportStatusInProgress = { status: 'in-progress' }
+export type ImportStatusDone = { status: 'done' }
+export type ImportStatusPaused = { status: 'paused'; onResume: () => void }
+
 export const ImportOperationAction = {
   Add: 'add',
   Remove: 'remove',
@@ -84,3 +111,8 @@ export const ImportOperationAction = {
 
 export type ImportOperationAction =
   (typeof ImportOperationAction)[keyof typeof ImportOperationAction]
+
+export type TotalImportResult = {
+  importStatus: ImportStatus
+  result: ImportOperationResult
+}

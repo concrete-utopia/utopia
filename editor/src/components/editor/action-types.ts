@@ -90,6 +90,7 @@ import { assertNever } from '../../core/shared/utils'
 import type {
   ImportOperation,
   ImportOperationAction,
+  ImportStatus,
 } from '../../core/shared/import/import-operation-types'
 import type { ProjectRequirements } from '../../core/shared/import/project-health-check/utopia-requirements-types'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
@@ -1008,6 +1009,11 @@ export interface UpdateImportOperations {
   type: ImportOperationAction
 }
 
+export interface UpdateImportStatus {
+  action: 'UPDATE_IMPORT_STATUS'
+  importStatus: ImportStatus
+}
+
 export interface UpdateProjectRequirements {
   action: 'UPDATE_PROJECT_REQUIREMENTS'
   requirements: Partial<ProjectRequirements>
@@ -1376,6 +1382,7 @@ export type EditorAction =
   | SetImageDragSessionState
   | UpdateGithubOperations
   | UpdateImportOperations
+  | UpdateImportStatus
   | UpdateProjectRequirements
   | SetImportWizardOpen
   | UpdateBranchContents

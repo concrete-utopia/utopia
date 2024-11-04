@@ -12,6 +12,7 @@ import {
   showToast,
   truncateHistory,
   updateBranchContents,
+  updateImportStatus,
   updateProjectContents,
 } from '../../../../components/editor/actions/action-creators'
 import type {
@@ -46,6 +47,7 @@ import {
   notifyOperationFinished,
   notifyOperationStarted,
   startImportProcess,
+  updateProjectImportStatus,
 } from '../../import/import-operation-service'
 import {
   RequirementResolutionResult,
@@ -53,6 +55,7 @@ import {
 } from '../../import/project-health-check/utopia-requirements-service'
 import { checkAndFixUtopiaRequirements } from '../../import/project-health-check/check-utopia-requirements'
 import { ImportOperationResult } from '../../import/import-operation-types'
+import { isFeatureEnabled } from '../../../../utils/feature-switches'
 
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
@@ -129,7 +132,6 @@ export const updateProjectWithBranchContent =
     currentProjectContents: ProjectContentTreeRoot,
     initiator: GithubOperationSource,
   ): Promise<void> => {
-    updateContentsAndFetchDependencies = null
     startImportProcess(dispatch)
     notifyOperationStarted(dispatch, {
       type: 'loadBranch',
@@ -157,9 +159,23 @@ export const updateProjectWithBranchContent =
 
         switch (responseBody.type) {
           case 'FAILURE':
+            if (isFeatureEnabled('Import Wizard')) {
+              notifyOperationFinished(
+                dispatch,
+                { type: 'loadBranch' },
+                ImportOperationResult.CriticalError,
+              )
+            }
             throw githubAPIError(operation, responseBody.failureReason)
           case 'SUCCESS':
             if (responseBody.branch == null) {
+              if (isFeatureEnabled('Import Wizard')) {
+                notifyOperationFinished(
+                  dispatch,
+                  { type: 'loadBranch' },
+                  ImportOperationResult.CriticalError,
+                )
+              }
               throw githubAPIError(operation, `Could not find branch ${branchName}`)
             }
             const newGithubData: Partial<GithubData> = {
@@ -183,7 +199,7 @@ export const updateProjectWithBranchContent =
             const { fixedProjectContents, result: requirementResolutionResult } =
               checkAndFixUtopiaRequirements(dispatch, parseResults)
 
-            updateContentsAndFetchDependencies = async function () {
+            const updateContentsAndFetchDependencies = async function () {
               // branch should never be null here
               if (responseBody.branch == null) {
                 return
@@ -226,28 +242,33 @@ export const updateProjectWithBranchContent =
               // When the dependencies update has gone through, then indicate that the project was imported.
               await dependenciesPromise
                 .catch(() => {
-                  dispatch(
-                    [
-                      showToast(
-                        notice(
-                          `Github: There was an error when attempting to update the dependencies.`,
-                          'ERROR',
-                        ),
+                  if (isFeatureEnabled('Import Wizard')) {
+                    notifyOperationFinished(
+                      dispatch,
+                      { type: 'refreshDependencies' },
+                      ImportOperationResult.Error,
+                    )
+                  } else {
+                    showToast(
+                      notice(
+                        `Github: There was an error when attempting to update the dependencies.`,
+                        'ERROR',
                       ),
-                    ],
-                    'everyone',
-                  )
+                    )
+                  }
                 })
                 .finally(() => {
                   dispatch(
                     [
                       extractPropertyControlsFromDescriptorFiles(componentDescriptorFiles),
-                      showToast(
-                        notice(
-                          `Github: Updated the project with the content from ${branchName}`,
-                          'SUCCESS',
-                        ),
-                      ),
+                      isFeatureEnabled('Import Wizard')
+                        ? updateImportStatus({ status: 'done' })
+                        : showToast(
+                            notice(
+                              `Github: Updated the project with the content from ${branchName}`,
+                              'SUCCESS',
+                            ),
+                          ),
                     ],
                     'everyone',
                   )
@@ -255,7 +276,10 @@ export const updateProjectWithBranchContent =
             }
 
             if (requirementResolutionResult === RequirementResolutionResult.Critical) {
-              // wait for user's decision
+              updateProjectImportStatus(dispatch, {
+                status: 'paused',
+                onResume: updateContentsAndFetchDependencies,
+              })
             } else {
               void updateContentsAndFetchDependencies()
             }
@@ -267,8 +291,3 @@ export const updateProjectWithBranchContent =
       },
     )
   }
-
-let updateContentsAndFetchDependencies: (() => Promise<void>) | null = null
-export function runUpdateContentsAndFetchDependencies(): Promise<void> {
-  return updateContentsAndFetchDependencies?.() ?? Promise.resolve()
-}
