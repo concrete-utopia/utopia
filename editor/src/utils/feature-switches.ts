@@ -70,7 +70,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Condensed Navigator Entries': !IS_TEST_ENVIRONMENT,
   'Use Parsing Cache': false,
   'Canvas Fast Selection Hack': true,
-  'Import Wizard': false,
+  'Import Wizard': true,
   'Show Debug Features': false,
 }
 
