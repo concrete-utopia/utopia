@@ -71,7 +71,6 @@ export function runGridMoveRearrange(
     gridPath,
     targetCellCoords,
     gridTemplateColumns,
-    possiblyReorderIndex,
     targetCellData,
     gridConfig,
     pathForCommands,
@@ -123,8 +122,6 @@ export function runGridMoveRearrange(
   const moveType = getGridMoveType({
     elementPath: targetElement,
     originalElementMetadata: originalElement,
-    possiblyReorderIndex: possiblyReorderIndex,
-    cellsSortedByPosition: cellsSortedByPosition,
     isReparent: isReparent,
   })
 
@@ -535,8 +532,6 @@ type GridMoveRearrangeType =
 function getGridMoveType(params: {
   elementPath: ElementPath
   originalElementMetadata: ElementInstanceMetadata | null
-  possiblyReorderIndex: number
-  cellsSortedByPosition: SortableGridElementProperties[]
   isReparent: boolean
 }): GridMoveRearrangeType {
   const specialSizeMeasurements = params.originalElementMetadata?.specialSizeMeasurements
