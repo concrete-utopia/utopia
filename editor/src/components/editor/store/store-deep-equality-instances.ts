@@ -151,6 +151,7 @@ import type {
   GridAutoOrTemplateBase,
   GridAutoOrTemplateDimensions,
   GridAutoOrTemplateFallback,
+  StylePluginConfig,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -266,6 +267,7 @@ import {
   unionDeepEquality,
   combine11EqualityCalls,
   combine15EqualityCalls,
+  combine16EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -2480,8 +2482,19 @@ export const EarlyReturnKeepDeepEquality: KeepDeepEqualityCall<
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const StylePluginConfigKeepDeepEquality: KeepDeepEqualityCall<StylePluginConfig> = (
+  oldValue,
+  newValue,
+) => {
+  if (oldValue.type === 'inline-style' && oldValue.type === newValue.type) {
+    return keepDeepEqualityResult(oldValue, true)
+  }
+
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine15EqualityCalls(
+  combine16EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -2512,6 +2525,8 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(EarlyReturnKeepDeepEquality),
     (metadata) => metadata.assignedToProp,
     nullableDeepEquality(StringKeepDeepEquality),
+    (metadata) => metadata.stylePluginConfig,
+    StylePluginConfigKeepDeepEquality,
     elementInstanceMetadata,
   )
 

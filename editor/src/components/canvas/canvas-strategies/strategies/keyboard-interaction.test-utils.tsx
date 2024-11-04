@@ -18,6 +18,7 @@ import type { KeyCharacter } from '../../../../utils/keyboard'
 import type { Modifiers } from '../../../../utils/modifiers'
 import type { EditorState } from '../../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../../commands/commands'
+import { getStylePluginConfig } from '../../plugins/style-plugins'
 import { pickCanvasStateFromEditorStateWithMetadata } from '../canvas-strategies'
 import type {
   CanvasStrategy,
@@ -38,6 +39,8 @@ export function pressKeys(
   keys: Array<KeyCharacter>,
   modifiers: Modifiers,
 ): EditorState {
+  const stylePluginConfig = getStylePluginConfig(editorState)
+
   const metadata: ElementInstanceMetadataMap = {
     ...editorState.jsxMetadata,
     'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb': elementInstanceMetadata(
@@ -64,6 +67,7 @@ export function pressKeys(
       null,
       null,
       null,
+      stylePluginConfig,
     ),
   }
   const interactionSession: InteractionSession = {

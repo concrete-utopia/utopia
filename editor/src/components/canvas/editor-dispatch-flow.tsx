@@ -7,6 +7,7 @@ import type { EditorStoreFull } from '../editor/store/editor-state'
 import { runDomSamplerRegular } from './dom-sampler'
 import { resubscribeObservers } from './dom-walker'
 import { ElementsToRerenderGLOBAL, type UiJsxCanvasContextData } from './ui-jsx-canvas'
+import { getStylePluginConfig } from './plugins/style-plugins'
 
 export function carryDispatchResultFields(
   firstDispatchResult: DispatchResult,
@@ -39,6 +40,8 @@ export function runDomSamplerAndSaveResults(
         restrictToElements: Array<ElementPath>
       },
 ) {
+  const stylePluginConfig = getStylePluginConfig(storedState.patchedEditor)
+
   const metadataResult = runDomSamplerRegular({
     elementsToFocusOn:
       restrictToElements === 'run-full'
@@ -50,6 +53,7 @@ export function runDomSamplerAndSaveResults(
     selectedViews: storedState.patchedEditor.selectedViews,
     metadataToUpdate: storedState.elementMetadata,
     spyCollector: spyCollector,
+    stylePluginConfig: stylePluginConfig,
   })
 
   const storedStateWithNewMetadata: EditorStoreFull = {

@@ -688,6 +688,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     textContent: null,
     earlyReturn: null,
     assignedToProp: null,
+    stylePluginConfig: { type: 'inline-style' },
   }
   const newDifferentValue: ElementInstanceMetadata = {
     elementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
@@ -858,6 +859,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     textContent: null,
     earlyReturn: null,
     assignedToProp: null,
+    stylePluginConfig: { type: 'inline-style' },
   }
 
   it('same reference returns the same reference', () => {
@@ -1053,6 +1055,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       textContent: null,
       earlyReturn: null,
       assignedToProp: null,
+      stylePluginConfig: { type: 'inline-style' },
     },
   }
   const newSameValue: ElementInstanceMetadataMap = {
@@ -1225,6 +1228,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       textContent: null,
       earlyReturn: null,
       assignedToProp: null,
+      stylePluginConfig: { type: 'inline-style' },
     },
   }
   const newDifferentValue: ElementInstanceMetadataMap = {
@@ -1397,6 +1401,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       textContent: 'hello',
       earlyReturn: null,
       assignedToProp: null,
+      stylePluginConfig: { type: 'inline-style' },
     },
   }
 

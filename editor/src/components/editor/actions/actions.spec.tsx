@@ -1080,6 +1080,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
       null,
       null,
       null,
+      { type: 'inline-style' },
     )
     const fakeMetadata: ElementInstanceMetadataMap = {
       [EP.toString(pathToFocus)]: divElementMetadata,
@@ -1118,6 +1119,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
       null,
       null,
       null,
+      { type: 'inline-style' },
     )
     const fakeMetadata: ElementInstanceMetadataMap = {
       [EP.toString(pathToFocus)]: cardElementMetadata,

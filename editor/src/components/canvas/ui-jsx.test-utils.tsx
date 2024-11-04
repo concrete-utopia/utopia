@@ -165,6 +165,7 @@ import {
   ElementInstanceMetadataKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
 } from '../editor/store/store-deep-equality-instances'
+import { getStylePluginConfig } from './plugins/style-plugins'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -436,6 +437,7 @@ export async function renderTestEditorWithModel(
       resubscribeObservers(domWalkerMutableState)
 
       const elementsToFocusOn = collectElementsToRerender(workingEditorState, actions)
+      const stylePluginConfig = getStylePluginConfig(workingEditorState.patchedEditor)
       const metadataResult = runDomSamplerRegular({
         elementsToFocusOn: elementsToFocusOn,
         domWalkerAdditionalElementsToFocusOn:
@@ -444,6 +446,7 @@ export async function renderTestEditorWithModel(
         metadataToUpdate: workingEditorState.elementMetadata,
         selectedViews: workingEditorState.patchedEditor.selectedViews,
         spyCollector: spyCollector,
+        stylePluginConfig: stylePluginConfig,
       })
 
       const deepEqualityResult = ElementInstanceMetadataMapKeepDeepEquality(
@@ -512,6 +515,7 @@ export async function renderTestEditorWithModel(
           // collectElementsToRerender
           // (https://github.com/concrete-utopia/utopia/pull/6465)
           const elementsToFocusOn = collectElementsToRerender(workingEditorState, actions)
+          const stylePluginConfig = getStylePluginConfig(workingEditorState.patchedEditor)
           const metadataResult = runDomSamplerGroups({
             elementsToFocusOn: elementsToFocusOn,
             domWalkerAdditionalElementsToFocusOn:
@@ -520,6 +524,7 @@ export async function renderTestEditorWithModel(
             metadataToUpdate: workingEditorState.elementMetadata,
             selectedViews: workingEditorState.patchedEditor.selectedViews,
             spyCollector: spyCollector,
+            stylePluginConfig: stylePluginConfig,
           })
 
           if (metadataResult != null) {

@@ -2956,6 +2956,7 @@ export function createFakeMetadataForElement(
     null,
     null,
     null,
+    { type: 'inline-style' },
   )
 }
 
