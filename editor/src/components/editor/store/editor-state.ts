@@ -814,13 +814,10 @@ export interface DragToMoveIndicatorFlags {
   ancestor: boolean
 }
 
-export type ValidOrInvalid = 'valid' | 'invalid'
-
 export interface GridControlData {
   grid: ElementPath
   targetCell: GridCellCoordinates | null // the cell under the mouse
   rootCell: GridCellCoordinates | null // the top-left cell of the target child
-  rootCellTargetValidity: ValidOrInvalid
 }
 
 export interface EditorStateCanvasControls {
