@@ -2772,13 +2772,13 @@ export const GridControlDataKeepDeepEquality: KeepDeepEqualityCall<GridControlDa
     nullableDeepEquality(GridCellCoordinatesKeepDeepEquality),
     (data) => data.rootCell,
     nullableDeepEquality(GridCellCoordinatesKeepDeepEquality),
-    (data) => data.rootCellIsValidTarget,
-    nullableDeepEquality(BooleanKeepDeepEquality),
-    (grid, targetCell, rootCell, rootCellIsValidTarget) => ({
+    (data) => data.rootCellTargetValidity,
+    createCallWithTripleEquals(),
+    (grid, targetCell, rootCell, rootCellTargetValidity) => ({
       grid,
       targetCell,
       rootCell,
-      rootCellIsValidTarget,
+      rootCellTargetValidity,
     }),
   )
 

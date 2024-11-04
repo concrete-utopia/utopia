@@ -130,7 +130,7 @@ export function runGridMoveRearrange(
     gridPath,
     targetCellData?.gridCellCoordinates ?? null,
     gridCellCoordinates(row, column),
-    true,
+    'valid',
   )
 
   switch (moveType) {
@@ -221,7 +221,7 @@ export function runGridMoveReorder(
     gridPath,
     targetCellData?.gridCellCoordinates ?? null,
     gridCellCoordinates(row, column),
-    possiblyReorderIndex < flowElementsCount,
+    possiblyReorderIndex < flowElementsCount ? 'valid' : 'invalid',
   )
 
   return [

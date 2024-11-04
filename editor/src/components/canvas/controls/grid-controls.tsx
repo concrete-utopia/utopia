@@ -878,7 +878,7 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
 
   const targetRootCellIsValidTarget = useEditorState(
     Substores.canvas,
-    (store) => store.editor.canvas.controls.gridControlData?.rootCellIsValidTarget ?? false,
+    (store) => store.editor.canvas.controls.gridControlData?.rootCellTargetValidity === 'valid',
     'GridControl targetRootCellIsValidTarget',
   )
 
