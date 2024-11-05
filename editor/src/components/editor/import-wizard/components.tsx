@@ -15,11 +15,10 @@ import { RequirementResolutionResult } from '../../../core/shared/import/project
 
 export function OperationLine({ operation }: { operation: ImportOperation }) {
   const operationRunningStatus = React.useMemo(() => {
-    return operation.timeStarted == null
-      ? 'waiting'
-      : operation.timeDone == null
-      ? 'running'
-      : 'done'
+    if (operation.timeDone != null) {
+      return 'done'
+    }
+    return operation.timeStarted == null ? 'waiting' : 'running'
   }, [operation.timeStarted, operation.timeDone])
   const colorTheme = useColorTheme()
   const textColor = operationRunningStatus === 'waiting' ? 'gray' : colorTheme.fg0.value
@@ -29,7 +28,7 @@ export function OperationLine({ operation }: { operation: ImportOperation }) {
     () =>
       childrenShown ||
       operation.timeDone == null ||
-      operation.result == ImportOperationResult.Error,
+      operation.result != ImportOperationResult.Success,
     [childrenShown, operation.timeDone, operation.result],
   )
   const hasChildren = React.useMemo(
@@ -253,14 +252,26 @@ function getImportOperationText(operation: ImportOperation): React.ReactNode {
   }
   switch (operation.type) {
     case 'loadBranch':
-      return (
-        <span>
-          Loading branch{' '}
-          <strong>
-            {operation.githubRepo?.owner}/{operation.githubRepo?.repository}@{operation.branchName}
-          </strong>
-        </span>
-      )
+      if (operation.branchName != null) {
+        return (
+          <span>
+            Loading branch{' '}
+            <strong>
+              {operation.githubRepo?.owner}/{operation.githubRepo?.repository}@
+              {operation.branchName}
+            </strong>
+          </span>
+        )
+      } else {
+        return (
+          <span>
+            Loading repository{' '}
+            <strong>
+              {operation.githubRepo?.owner}/{operation.githubRepo?.repository}
+            </strong>
+          </span>
+        )
+      }
     case 'fetchDependency':
       return `Fetching ${operation.dependencyName}@${operation.dependencyVersion}`
     case 'parseFiles':
