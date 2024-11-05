@@ -94,6 +94,11 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
             }),
       updates,
     )
-    return UCL.runUpdateClassList(editorState, elementPath, [...propsToDelete, ...propsToSet])
+    return UCL.runUpdateClassList(
+      editorState,
+      elementPath,
+      [...propsToDelete, ...propsToSet],
+      config,
+    )
   },
 })
