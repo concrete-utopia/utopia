@@ -31,7 +31,6 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { DragInteractionData, InteractionSession } from '../interaction-state'
-import { getClosestGridCellToPoint, gridCellCoordinates } from './grid-cell-bounds'
 import type { GridCellGlobalFrames } from './grid-helpers'
 import {
   findOriginalGrid,
@@ -41,6 +40,7 @@ import {
   gridMoveStrategiesExtraCommands,
 } from './grid-helpers'
 import { runGridMoveRearrange } from './grid-move-rearrange-strategy'
+import { getTargetGridCellData } from '../../../inspector/grid-helpers'
 
 export const gridMoveAbsoluteStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -203,17 +203,15 @@ function runGridMoveAbsolute(
   }
   const { mouseCellPosInOriginalElement } = gridConfig
 
-  const mousePos = offsetPoint(interactionData.dragStart, interactionData.drag)
-  const targetCellData = getClosestGridCellToPoint(gridCellGlobalFrames, mousePos)
-  const targetCellCoords = targetCellData?.gridCellCoordinates
-  if (targetCellCoords == null) {
+  const targetGridCellData = getTargetGridCellData(
+    interactionData,
+    gridCellGlobalFrames,
+    mouseCellPosInOriginalElement,
+  )
+  if (targetGridCellData == null) {
     return []
   }
-
-  const row = Math.max(targetCellCoords.row - mouseCellPosInOriginalElement.row, 1)
-  const column = Math.max(targetCellCoords.column - mouseCellPosInOriginalElement.column, 1)
-
-  const targetRootCell = gridCellCoordinates(row, column)
+  const { targetCellCoords, targetRootCell } = targetGridCellData
 
   // if moving an absolutely-positioned child which does not have pinning
   // props, do not set them at all.

@@ -6,7 +6,7 @@ import type {
   ElementInstanceMetadataMap,
   GridContainerProperties,
 } from '../../../../core/shared/element-template'
-import { isInfinityRectangle, offsetPoint } from '../../../../core/shared/math-utils'
+import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { absolute } from '../../../../utils/utils'
 import type { CanvasCommand } from '../../commands/commands'
@@ -23,7 +23,6 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { DragInteractionData, InteractionSession } from '../interaction-state'
-import { getClosestGridCellToPoint, gridCellCoordinates } from './grid-cell-bounds'
 import type { GridCellGlobalFrames } from './grid-helpers'
 import {
   findOriginalGrid,
@@ -34,6 +33,7 @@ import {
   gridMoveStrategiesExtraCommands,
   isFlowGridChild,
 } from './grid-helpers'
+import { getTargetGridCellData } from '../../../inspector/grid-helpers'
 
 export const gridMoveReorderStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -207,15 +207,15 @@ function runGridMoveReorder(
     return []
   }
 
-  const mousePos = offsetPoint(interactionData.dragStart, interactionData.drag)
-  const targetCellData = getClosestGridCellToPoint(gridCellGlobalFrames, mousePos)
-  const targetCellCoords = targetCellData?.gridCellCoordinates
-  if (targetCellCoords == null) {
+  const targetGridCellData = getTargetGridCellData(
+    interactionData,
+    gridCellGlobalFrames,
+    mouseCellPosInOriginalElement,
+  )
+  if (targetGridCellData == null) {
     return []
   }
-
-  const row = Math.max(targetCellCoords.row - mouseCellPosInOriginalElement.row, 1)
-  const column = Math.max(targetCellCoords.column - mouseCellPosInOriginalElement.column, 1)
+  const { targetCellCoords, targetRootCell } = targetGridCellData
 
   const gridTemplateColumns =
     gridTemplate.gridTemplateColumns?.type === 'DIMENSIONS'
@@ -237,8 +237,8 @@ function runGridMoveReorder(
   const updateGridControlsCommand = showGridControls(
     'mid-interaction',
     gridPath,
-    targetCellData?.gridCellCoordinates ?? null,
-    canReorderToIndex ? gridCellCoordinates(row, column) : null,
+    targetCellCoords,
+    canReorderToIndex ? targetRootCell : null,
   )
 
   return [

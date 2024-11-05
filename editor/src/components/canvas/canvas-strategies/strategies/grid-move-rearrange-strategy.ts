@@ -7,7 +7,7 @@ import type {
   GridContainerProperties,
 } from '../../../../core/shared/element-template'
 import { gridPositionValue } from '../../../../core/shared/element-template'
-import { isInfinityRectangle, offsetPoint } from '../../../../core/shared/math-utils'
+import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { absolute } from '../../../../utils/utils'
 import type { CanvasCommand } from '../../commands/commands'
 import { reorderElement } from '../../commands/reorder-element-command'
@@ -22,7 +22,6 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { DragInteractionData, InteractionSession } from '../interaction-state'
-import { getClosestGridCellToPoint, gridCellCoordinates } from './grid-cell-bounds'
 import type { GridCellGlobalFrames, SortableGridElementProperties } from './grid-helpers'
 import {
   findOriginalGrid,
@@ -32,6 +31,7 @@ import {
   setGridPropsCommands,
   sortElementsByGridPosition,
 } from './grid-helpers'
+import { getTargetGridCellData } from '../../../inspector/grid-helpers'
 
 export const gridMoveRearrangeStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -204,21 +204,21 @@ export function runGridMoveRearrange(
   }
   const { mouseCellPosInOriginalElement, originalCellBounds } = gridConfig
 
-  const mousePos = offsetPoint(interactionData.dragStart, interactionData.drag)
-  const targetCellData = getClosestGridCellToPoint(gridCellGlobalFrames, mousePos)
-  const targetCellCoords = targetCellData?.gridCellCoordinates
-  if (targetCellCoords == null) {
+  const targetGridCellData = getTargetGridCellData(
+    interactionData,
+    gridCellGlobalFrames,
+    mouseCellPosInOriginalElement,
+  )
+  if (targetGridCellData == null) {
     return []
   }
-
-  const row = Math.max(targetCellCoords.row - mouseCellPosInOriginalElement.row, 1)
-  const column = Math.max(targetCellCoords.column - mouseCellPosInOriginalElement.column, 1)
+  const { targetCellCoords, targetRootCell } = targetGridCellData
 
   const gridCellMoveCommands = setGridPropsCommands(pathForCommands, gridTemplate, {
-    gridColumnStart: gridPositionValue(column),
-    gridColumnEnd: gridPositionValue(column + originalCellBounds.height),
-    gridRowStart: gridPositionValue(row),
-    gridRowEnd: gridPositionValue(row + originalCellBounds.width),
+    gridColumnStart: gridPositionValue(targetRootCell.column),
+    gridColumnEnd: gridPositionValue(targetRootCell.column + originalCellBounds.height),
+    gridRowStart: gridPositionValue(targetRootCell.row),
+    gridRowEnd: gridPositionValue(targetRootCell.row + originalCellBounds.width),
   })
 
   // The siblings of the grid element being moved
@@ -258,8 +258,8 @@ export function runGridMoveRearrange(
   const updateGridControlsCommand = showGridControls(
     'mid-interaction',
     gridPath,
-    targetCellData?.gridCellCoordinates ?? null,
-    gridCellCoordinates(row, column),
+    targetCellCoords,
+    targetRootCell,
   )
 
   return [
