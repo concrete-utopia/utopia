@@ -18,7 +18,8 @@ import type { EditorStateWithPatch } from '../commands/utils/property-utils'
 import { applyValuesAtPath } from '../commands/utils/property-utils'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
-import type { StyleInfo } from '../canvas-types'
+import { isStyleInfoKey, type StyleInfo } from '../canvas-types'
+import { atom, createStore } from 'jotai'
 
 export interface UpdateCSSProp {
   type: 'set'
@@ -66,26 +67,34 @@ interface StylePropsUpdatedDuringInteraction {
   propertiesDeleted: string[]
 }
 
-// FIXME: this is a global for the purposes of the spike, this should be moved
-// into an editor state in a production-ready implementation
-export const UpdatedPropertiesGlobal: {
-  current: { [elementPathString: string]: StylePropsUpdatedDuringInteraction }
-} = {
-  current: {},
+interface UpdatedProperties {
+  [elementPathString: string]: StylePropsUpdatedDuringInteraction
 }
 
-export function resetUpdatedPropertiesGlobal() {
-  UpdatedPropertiesGlobal.current = {}
+const UpdatedPropertiesAtom = atom<UpdatedProperties>({})
+const UpdatedPropertiesStore = createStore()
+
+export function resetUpdatedProperties() {
+  UpdatedPropertiesStore.set(UpdatedPropertiesAtom, {})
 }
 
-function ensureElementPathInUpdatedPropertiesGlobal(elementPath: ElementPath) {
+function getPropertiesUpdatedDuringInteraction() {
+  return UpdatedPropertiesStore.get(UpdatedPropertiesAtom)
+}
+
+function ensureElementPathInUpdatedPropertiesGlobal(
+  elementPath: ElementPath,
+  updatedProperties: UpdatedProperties,
+) {
   const elementPathString = EP.toString(elementPath)
-  if (!(elementPathString in UpdatedPropertiesGlobal.current)) {
-    UpdatedPropertiesGlobal.current[elementPathString] = {
+  if (!(elementPathString in updatedProperties)) {
+    updatedProperties[elementPathString] = {
       propertiesDeleted: [],
       propertiesUpdated: [],
     }
   }
+
+  return updatedProperties
 }
 
 function runStyleUpdateMidInteraction(
@@ -93,23 +102,21 @@ function runStyleUpdateMidInteraction(
   elementPath: ElementPath,
   updates: StyleUpdate[],
 ) {
-  ensureElementPathInUpdatedPropertiesGlobal(elementPath)
+  const updatedProperties = getPropertiesUpdatedDuringInteraction()
+  ensureElementPathInUpdatedPropertiesGlobal(elementPath, updatedProperties)
   for (const update of updates) {
     switch (update.type) {
       case 'delete':
-        UpdatedPropertiesGlobal.current[EP.toString(elementPath)].propertiesDeleted.push(
-          update.property,
-        )
+        updatedProperties[EP.toString(elementPath)].propertiesDeleted.push(update.property)
         break
       case 'set':
-        UpdatedPropertiesGlobal.current[EP.toString(elementPath)].propertiesUpdated.push(
-          update.property,
-        )
+        updatedProperties[EP.toString(elementPath)].propertiesUpdated.push(update.property)
         break
       default:
         assertNever(update)
     }
   }
+  UpdatedPropertiesStore.set(UpdatedPropertiesAtom, updatedProperties)
   return InlineStylePlugin.updateStyles(editorState, elementPath, updates)
 }
 
@@ -123,7 +130,7 @@ const makeZeroProp = (cssProp: string, zeroValue: string = '0px'): ValueAtPath =
 interface PropPatcher {
   matches: (prop: string) => boolean
   patch: (
-    prop: string, // TODO: this could be more strongly typed
+    prop: keyof StyleInfo,
     styleInfo: StyleInfo | null,
     updatedProperties: StylePropsUpdatedDuringInteraction,
   ) => ValueAtPath[]
@@ -132,12 +139,11 @@ interface PropPatcher {
 const genericPropPatcher =
   (zeroValue: string) =>
   (
-    prop: string,
+    prop: keyof StyleInfo,
     styleInfo: StyleInfo | null,
     updatedProperties: StylePropsUpdatedDuringInteraction,
   ) => {
-    const propIsSetOnElement =
-      (styleInfo as Record<string, { type: string }> | null)?.[prop]?.type === 'property' // TODO type
+    const propIsSetOnElement = styleInfo?.[prop] != null
     const propIsSetFromCommand = updatedProperties.propertiesUpdated.includes(prop)
     if (!propIsSetOnElement || propIsSetFromCommand) {
       return []
@@ -152,6 +158,11 @@ function getPropertiesToZero(
   updatedProperties: StylePropsUpdatedDuringInteraction,
 ): ValueAtPath[] {
   return updatedProperties.propertiesDeleted.flatMap((prop): ValueAtPath[] => {
+    if (!isStyleInfoKey(prop)) {
+      console.error("Trying to zero prop that's not a handled by StyleInfo:", prop)
+      return []
+    }
+
     const match = patchers.find((p) => p.matches(prop))
     if (match == null) {
       return []
@@ -167,7 +178,9 @@ export function patchRemovedProperties(editorState: EditorState): EditorState {
     elementPathTree: editorState.elementPathTree,
   })
 
-  return Object.entries(UpdatedPropertiesGlobal.current).reduce(
+  const propertiesUpdatedDuringInteraction = getPropertiesUpdatedDuringInteraction()
+
+  return Object.entries(propertiesUpdatedDuringInteraction).reduce(
     (acc, [elementPathString, updatedProperties]) => {
       const elementPath = EP.fromString(elementPathString)
       const styleInfo = styleInfoReader(elementPath)

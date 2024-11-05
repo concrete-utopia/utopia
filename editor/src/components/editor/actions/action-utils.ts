@@ -1,6 +1,4 @@
-import type { ElementPath, PropertyPath } from 'utopia-shared/src/types'
-import { mapDropNulls, safeIndex } from '../../../core/shared/array-utils'
-import type { CanvasCommand } from '../../canvas/commands/commands'
+import { safeIndex } from '../../../core/shared/array-utils'
 import type { EditorAction } from '../action-types'
 import { isFromVSCodeAction } from './actions-from-vscode'
 
