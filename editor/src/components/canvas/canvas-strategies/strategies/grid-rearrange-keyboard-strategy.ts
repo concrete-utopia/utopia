@@ -10,7 +10,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { setGridPropsCommands } from './grid-helpers'
+import { findOriginalGrid, setGridPropsCommands } from './grid-helpers'
 import { getGridChildCellCoordBoundsFromCanvas } from './grid-cell-bounds'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 
@@ -41,7 +41,10 @@ export function gridRearrangeResizeKeyboardStrategy(
     return null
   }
 
-  const parentGridPath = EP.parentPath(target)
+  const parentGridPath = findOriginalGrid(canvasState.startingMetadata, EP.parentPath(target)) // TODO don't use EP.parentPath
+  if (parentGridPath == null) {
+    return null
+  }
 
   const gridTemplate = cell.specialSizeMeasurements.parentContainerGridProperties
   const gridCellGlobalFrames = cell.specialSizeMeasurements.parentGridCellGlobalFrames

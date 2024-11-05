@@ -205,6 +205,7 @@ export async function mouseDragFromPointToPoint(
     moveBeforeMouseDown?: boolean
     skipMouseUp?: boolean
     realMouseDown?: boolean
+    tab?: boolean
   } = {},
 ): Promise<void> {
   const { buttons, ...mouseUpOptions } = options.eventOptions ?? {}
@@ -269,6 +270,10 @@ export async function mouseDragFromPointToPoint(
         },
       },
     )
+  }
+
+  if (options.tab) {
+    await keyDown('Tab')
   }
 
   if (options.midDragCallback != null) {

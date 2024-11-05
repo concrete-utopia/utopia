@@ -847,6 +847,8 @@ describe('grid reparent strategies', () => {
           backgroundColor: '#f0f',
           width: 79,
           height: 86,
+          gridColumn: 3,
+          gridRow: 1,
         }}
         data-uid='dragme'
         data-testid='dragme'
