@@ -78,7 +78,6 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   textContent: null,
   earlyReturn: null,
   assignedToProp: null,
-  stylePluginConfig: { type: 'inline-style' },
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
@@ -99,7 +98,6 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   textContent: null,
   earlyReturn: null,
   assignedToProp: null,
-  stylePluginConfig: { type: 'inline-style' },
 }
 
 const testComponentMetadataGrandchild: ElementInstanceMetadata = {
@@ -121,7 +119,6 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   textContent: null,
   earlyReturn: null,
   assignedToProp: null,
-  stylePluginConfig: { type: 'inline-style' },
 }
 
 const testComponentPropsGrandchild: ElementProps = {
@@ -147,7 +144,6 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   textContent: null,
   earlyReturn: null,
   assignedToProp: null,
-  stylePluginConfig: { type: 'inline-style' },
 }
 
 const testComponentRoot1: ElementInstanceMetadata = {
@@ -166,7 +162,6 @@ const testComponentRoot1: ElementInstanceMetadata = {
   textContent: null,
   earlyReturn: null,
   assignedToProp: null,
-  stylePluginConfig: { type: 'inline-style' },
 }
 
 const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
@@ -188,7 +183,6 @@ const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
   textContent: null,
   earlyReturn: null,
   assignedToProp: null,
-  stylePluginConfig: { type: 'inline-style' },
 }
 
 const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
@@ -210,7 +204,6 @@ const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
   textContent: null,
   earlyReturn: null,
   assignedToProp: null,
-  stylePluginConfig: { type: 'inline-style' },
 }
 
 const testComponentSceneChildElement: ElementInstanceMetadata = {
@@ -229,7 +222,6 @@ const testComponentSceneChildElement: ElementInstanceMetadata = {
   textContent: null,
   earlyReturn: null,
   assignedToProp: null,
-  stylePluginConfig: { type: 'inline-style' },
 }
 
 const testComponentSceneElement: ElementInstanceMetadata = {
@@ -248,7 +240,6 @@ const testComponentSceneElement: ElementInstanceMetadata = {
   textContent: null,
   earlyReturn: null,
   assignedToProp: null,
-  stylePluginConfig: { type: 'inline-style' },
 }
 
 const testComponentSceneElementProps: ElementProps = {
@@ -274,7 +265,6 @@ const testStoryboardGrandChildElement: ElementInstanceMetadata = {
   textContent: null,
   earlyReturn: null,
   assignedToProp: null,
-  stylePluginConfig: { type: 'inline-style' },
 }
 
 const testStoryboardChildElement: ElementInstanceMetadata = {
@@ -293,7 +283,6 @@ const testStoryboardChildElement: ElementInstanceMetadata = {
   textContent: null,
   earlyReturn: null,
   assignedToProp: null,
-  stylePluginConfig: { type: 'inline-style' },
 }
 
 const testStoryboardElement: ElementInstanceMetadata = {
@@ -312,7 +301,6 @@ const testStoryboardElement: ElementInstanceMetadata = {
   textContent: null,
   earlyReturn: null,
   assignedToProp: null,
-  stylePluginConfig: { type: 'inline-style' },
 }
 
 const testElementMetadataMap: ElementInstanceMetadataMap = {
@@ -405,7 +393,6 @@ function dummyInstanceDataForElementType(
     textContent: null,
     earlyReturn: null,
     assignedToProp: null,
-    stylePluginConfig: { type: 'inline-style' },
   }
 }
 
@@ -1071,7 +1058,6 @@ describe('getElementLabel', () => {
     null,
     null,
     null,
-    { type: 'inline-style' },
   )
   const spanElementProps: ElementProps = {
     'data-uid': 'span-1',
@@ -1098,7 +1084,6 @@ describe('getElementLabel', () => {
     null,
     null,
     null,
-    { type: 'inline-style' },
   )
   const divElementProps: ElementProps = {
     'data-uid': 'div-1',

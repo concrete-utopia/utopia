@@ -15,7 +15,6 @@ import { getCanvasRectangleFromElement } from '../../core/shared/dom-utils'
 import { alternativeEither, left } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
-import type { StylePluginConfig } from '../../core/shared/element-template'
 import {
   domElementMetadata,
   emptySpecialSizeMeasurements,
@@ -54,7 +53,6 @@ export function runDomSamplerUnchecked(options: {
   selectedViews: Array<ElementPath>
   metadataToUpdate: ElementInstanceMetadataMap
   spyCollector: UiJsxCanvasContextData
-  stylePluginConfig: StylePluginConfig
 }): { metadata: ElementInstanceMetadataMap; tree: ElementPathTrees } {
   const elementCanvasRectangleCache: ElementCanvasRectangleCache = new Map()
   // we inject domWalkerAdditionalElementsToUpdate into ElementsToRerenderGLOBAL so that we can collect metadata for elements affected by Group resizing
@@ -106,7 +104,6 @@ export function runDomSamplerUnchecked(options: {
       spyPaths: spyPaths,
       elementCanvasRectangleCache: elementCanvasRectangleCache,
       checkExistingMetadata: 'check-existing',
-      stylePluginConfig: options.stylePluginConfig,
     })
   } else {
     result = collectMetadataForPaths({
@@ -125,7 +122,6 @@ export function runDomSamplerUnchecked(options: {
       spyPaths: spyPaths,
       elementCanvasRectangleCache: elementCanvasRectangleCache,
       checkExistingMetadata: 'keep-existing',
-      stylePluginConfig: options.stylePluginConfig,
     })
   }
 
@@ -162,7 +158,6 @@ function collectMetadataForPaths({
   spyPaths,
   elementCanvasRectangleCache,
   checkExistingMetadata,
-  stylePluginConfig,
 }: {
   canvasRootContainer: HTMLElement
   pathsToCollect: Array<ElementPath>
@@ -174,7 +169,6 @@ function collectMetadataForPaths({
   spyPaths: Array<string>
   elementCanvasRectangleCache: ElementCanvasRectangleCache
   checkExistingMetadata: 'check-existing' | 'keep-existing'
-  stylePluginConfig: StylePluginConfig
 }): {
   metadata: ElementInstanceMetadataMap
   tree: ElementPathTrees
@@ -259,7 +253,6 @@ function collectMetadataForPaths({
       assignedToProp: spyMetadata.assignedToProp,
       conditionValue: spyMetadata.conditionValue,
       earlyReturn: spyMetadata.earlyReturn,
-      stylePluginConfig: stylePluginConfig,
     }
     metadataToUpdate_MUTATE[EP.toString(spyMetadata.elementPath)] = elementInstanceMetadata
   })

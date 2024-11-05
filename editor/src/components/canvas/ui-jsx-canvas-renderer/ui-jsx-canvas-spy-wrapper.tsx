@@ -8,7 +8,6 @@ import type {
   JSXConditionalExpression,
   ConditionValue,
   EarlyReturn,
-  StylePluginConfig,
 } from '../../../core/shared/element-template'
 import {
   emptyAttributeMetadata,
@@ -65,7 +64,6 @@ export function addFakeSpyEntry(
   imports: Imports,
   conditionValue: ConditionValue,
   earlyReturn: EarlyReturn | null,
-  stylePluginConfig: StylePluginConfig,
   prop: string | null,
 ): void {
   // Ensure that entries are not created which aren't included in `validPaths`,
@@ -100,7 +98,6 @@ export function addFakeSpyEntry(
       textContent: null,
       earlyReturn: earlyReturn,
       assignedToProp: prop,
-      stylePluginConfig: stylePluginConfig,
     }
     const elementPathString = EP.toComponentId(elementPath)
     metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
@@ -123,7 +120,6 @@ export function buildSpyWrappedElement(
   variablesInScope: VariableData,
   isTextEditor: 'text-editor' | 'real-element' = 'real-element',
   assignedToProp: string | null,
-  stylePluginConfig: StylePluginConfig,
 ): React.ReactElement {
   const props = {
     ...finalProps,
@@ -159,7 +155,6 @@ export function buildSpyWrappedElement(
       textContent: null,
       earlyReturn: null,
       assignedToProp: assignedToProp,
-      stylePluginConfig: stylePluginConfig,
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)

@@ -18,7 +18,6 @@ import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import type { EditorStateWithPatch } from '../commands/utils/property-utils'
 import { applyValuesAtPath } from '../commands/utils/property-utils'
 import * as PP from '../../../core/shared/property-path'
-import type { StylePluginConfig } from '../../../core/shared/element-template'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import type { StyleInfo } from '../canvas-types'
 import type { PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
@@ -218,23 +217,5 @@ export function runStyleUpdateForStrategy(
       return getActivePlugin(editorState).updateStyles(editorState, elementPath, updates)
     default:
       assertNever(commandLifecycle)
-  }
-}
-
-export function getStylePluginConfig(editorState: EditorState): StylePluginConfig {
-  const tailwindConfig = getTailwindConfigCached(editorState)
-  return tailwindConfig == null
-    ? { type: 'inline-style' }
-    : { type: 'tailwind', config: tailwindConfig }
-}
-
-export function getActivePluginFromStylePluginConfig(
-  stylePluginConfig: StylePluginConfig,
-): StylePlugin {
-  switch (stylePluginConfig.type) {
-    case 'inline-style':
-      return InlineStylePlugin
-    case 'tailwind':
-      return TailwindPlugin(stylePluginConfig.config)
   }
 }

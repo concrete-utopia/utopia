@@ -74,7 +74,7 @@ import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
 import { hugPropertiesFromStyleMap } from '../../core/shared/dom-utils'
 import { setHugContentForAxis } from './inspector-strategies/hug-contents-strategy'
-import { getActivePluginFromStylePluginConfig } from '../canvas/plugins/style-plugins'
+import { getActivePluginSingleton } from '../canvas/plugins/style-plugins'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -738,9 +738,7 @@ export function detectFillHugFixedState(
   const { props } = element.element.value
 
   const cssNumberPropReader = (prop: 'width' | 'height') => {
-    const valueFromProps = getActivePluginFromStylePluginConfig(
-      element.stylePluginConfig,
-    ).readStyleFromElementProps(right(props), prop)
+    const valueFromProps = getActivePluginSingleton().readStyleFromElementProps(right(props), prop)
     return valueFromProps == null || valueFromProps.type !== 'property'
       ? null
       : valueFromProps.value
@@ -748,9 +746,7 @@ export function detectFillHugFixedState(
 
   const width = cssNumberPropReader('width')
   const height = cssNumberPropReader('height')
-  const flexFromProps = getActivePluginFromStylePluginConfig(
-    element.stylePluginConfig,
-  ).readStyleFromElementProps(right(props), 'flex')
+  const flexFromProps = getActivePluginSingleton().readStyleFromElementProps(right(props), 'flex')
   const flexGrowFromFlex =
     flexFromProps == null || flexFromProps.type !== 'property'
       ? null
@@ -778,9 +774,10 @@ export function detectFillHugFixedState(
     }
   }
 
-  const flexGrowLonghandFromProps = getActivePluginFromStylePluginConfig(
-    element.stylePluginConfig,
-  ).readStyleFromElementProps(right(props), 'flexGrow')
+  const flexGrowLonghandFromProps = getActivePluginSingleton().readStyleFromElementProps(
+    right(props),
+    'flexGrow',
+  )
   const flexGrowLonghand =
     flexGrowLonghandFromProps == null || flexGrowLonghandFromProps.type !== 'property'
       ? null

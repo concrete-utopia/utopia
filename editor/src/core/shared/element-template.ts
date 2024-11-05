@@ -208,7 +208,6 @@ import {
   simpleFunctionWrap,
 } from 'utopia-shared/src/types/element-template'
 import type { GridCellGlobalFrames } from '../../components/canvas/canvas-strategies/strategies/grid-helpers'
-import type { Config } from 'tailwindcss/types/config'
 export { emptyComments, emptyComputedStyle, emptyAttributeMetadata }
 
 export function isParsedCommentsEmpty(comments: ParsedComments): boolean {
@@ -2538,8 +2537,6 @@ export function arbitraryBlockRanToEnd(
 
 export type ArbitraryBlockResult = EarlyReturn | ArbitraryBlockRanToEnd
 
-export type StylePluginConfig = { type: 'inline-style' } | { type: 'tailwind'; config: Config }
-
 export interface ElementInstanceMetadata {
   elementPath: ElementPath
   element: Either<string, JSXElementChild>
@@ -2547,7 +2544,6 @@ export interface ElementInstanceMetadata {
   nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null
   componentInstance: boolean
   isEmotionOrStyledComponent: boolean
-  stylePluginConfig: StylePluginConfig
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
   attributeMetadata: StyleAttributeMetadata | null
@@ -2591,7 +2587,6 @@ export function elementInstanceMetadata(
   textContent: string | null,
   earlyReturn: EarlyReturnResult | EarlyReturnVoid | null,
   assignedToProp: string | null,
-  stylePluginConfig: StylePluginConfig,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -2609,7 +2604,6 @@ export function elementInstanceMetadata(
     textContent: textContent,
     earlyReturn: earlyReturn,
     assignedToProp: assignedToProp,
-    stylePluginConfig: stylePluginConfig,
   }
 }
 

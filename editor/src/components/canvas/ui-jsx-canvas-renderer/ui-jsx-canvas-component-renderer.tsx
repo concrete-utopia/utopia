@@ -4,7 +4,6 @@ import type {
   EarlyReturn,
   JSXElementChild,
   Param,
-  StylePluginConfig,
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import {
@@ -30,7 +29,6 @@ import {
 import { applyPropsParamToPassedProps } from './ui-jsx-canvas-props-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as EP from '../../../core/shared/element-path'
-import type { RenderContext } from './ui-jsx-canvas-element-renderer-utils'
 import {
   createLookupRender,
   renderCoreElement,
@@ -91,7 +89,6 @@ export function createComponentRendererComponent(params: {
   topLevelElementName: string | null
   filePath: string
   mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>
-  stylePluginConfig: StylePluginConfig
 }): ComponentRendererComponent {
   const Component = (...functionArguments: Array<any>) => {
     // Attempt to determine which function argument is the "regular" props object/value.
@@ -198,7 +195,6 @@ export function createComponentRendererComponent(params: {
             editedText: rerenderUtopiaContext.editedText,
             variablesInScope: mutableContext.spiedVariablesDeclaredInRootScope,
             filePathMappings: rerenderUtopiaContext.filePathMappings,
-            stylePluginConfig: params.stylePluginConfig,
           },
           undefined,
           codeError,
@@ -249,7 +245,7 @@ export function createComponentRendererComponent(params: {
       })
     }
 
-    const renderContextBase: RenderContext = {
+    const renderContextBase = {
       rootScope: scope,
       parentComponentInputProps: realPassedProps,
       requireResult: mutableContext.requireResult,
@@ -267,9 +263,7 @@ export function createComponentRendererComponent(params: {
       code: code,
       highlightBounds: highlightBounds,
       editedText: rerenderUtopiaContext.editedText,
-      variablesInScope: {},
       filePathMappings: rerenderUtopiaContext.filePathMappings,
-      stylePluginConfig: params.stylePluginConfig,
     }
 
     const buildResult = React.useRef<BuildResult>(emptyBuildResult())
@@ -372,7 +366,6 @@ export function createComponentRendererComponent(params: {
           imports,
           'not-a-conditional',
           earlyReturn,
-          params.stylePluginConfig,
           null,
         )
       }

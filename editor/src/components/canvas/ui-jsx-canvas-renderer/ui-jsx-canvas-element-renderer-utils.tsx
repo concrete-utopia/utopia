@@ -17,7 +17,6 @@ import type {
   JSPropertyAccess,
   JSElementAccess,
   JSXAttributes,
-  StylePluginConfig,
 } from '../../../core/shared/element-template'
 import {
   isJSXElement,
@@ -102,7 +101,6 @@ export interface RenderContext {
   editedText: ElementPath | null
   variablesInScope: VariableData
   filePathMappings: FilePathMappings
-  stylePluginConfig: StylePluginConfig
 }
 
 export function createLookupRender(
@@ -273,7 +271,6 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
-          renderContext.stylePluginConfig,
           null,
         )
       }
@@ -341,7 +338,6 @@ export function renderCoreElement(
           variablesInScope,
           'real-element',
           null,
-          renderContext.stylePluginConfig,
         )
       }
       const innerRender = createLookupRender(
@@ -381,7 +377,6 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
-          renderContext.stylePluginConfig,
           assignedToProp,
         )
       }
@@ -446,7 +441,6 @@ export function renderCoreElement(
           variablesInScope,
           'real-element',
           assignedToProp,
-          renderContext.stylePluginConfig,
         )
       }
       const innerRender = createLookupRender(
@@ -546,7 +540,6 @@ export function renderCoreElement(
             default: defaultConditionValue,
           },
           null,
-          renderContext.stylePluginConfig,
           assignedToProp,
         )
       }
@@ -602,7 +595,6 @@ export function renderCoreElement(
           variablesInScope,
           'real-element',
           assignedToProp,
-          renderContext.stylePluginConfig,
         )
       }
 
@@ -633,7 +625,6 @@ export function renderCoreElement(
           imports,
           'not-a-conditional',
           null,
-          renderContext.stylePluginConfig,
           assignedToProp,
         )
       }
@@ -667,7 +658,6 @@ export function renderCoreElement(
           variablesInScope,
           'real-element',
           assignedToProp,
-          renderContext.stylePluginConfig,
         )
       }
 
@@ -892,7 +882,6 @@ function renderJSXElement(
         variablesInScope,
         'text-editor',
         assignedToProp,
-        renderContext.stylePluginConfig,
       )
     }
     return buildSpyWrappedElement(
@@ -911,7 +900,6 @@ function renderJSXElement(
       variablesInScope,
       'real-element',
       assignedToProp,
-      renderContext.stylePluginConfig,
     )
   } else {
     return renderComponentUsingJsxFactoryFunction(

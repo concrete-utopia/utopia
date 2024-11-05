@@ -110,7 +110,6 @@ export const testRenderContext: RenderContext = {
   editedText: null,
   variablesInScope: {},
   filePathMappings: [],
-  stylePluginConfig: { type: 'inline-style' },
 }
 
 export function delay(time: number): Promise<void> {
@@ -396,7 +395,6 @@ function createFakeMetadataForJSXElement(
       textContent: textContents,
       earlyReturn: null,
       assignedToProp: null,
-      stylePluginConfig: { type: 'inline-style' },
     })
     elements.push(...children)
   } else if (isJSXFragment(element)) {
@@ -435,7 +433,6 @@ function createFakeMetadataForStoryboard(elementPath: ElementPath): ElementInsta
     textContent: null,
     earlyReturn: null,
     assignedToProp: null,
-    stylePluginConfig: { type: 'inline-style' },
   }
 }
 

@@ -1,6 +1,6 @@
 import React from 'react'
 import type { MapLike } from 'typescript'
-import type { StylePluginConfig, UtopiaJSXComponent } from '../../../core/shared/element-template'
+import type { UtopiaJSXComponent } from '../../../core/shared/element-template'
 import {
   ArbitraryJSBlock,
   isUtopiaJSXComponent,
@@ -45,7 +45,6 @@ import {
 } from '../../../core/shared/dom-utils'
 import { emptySet } from '../../../core/shared/set-utils'
 import { getFilePathMappings } from '../../../core/model/project-file-utils'
-import { getTailwindConfigFromProjectContents } from '../../../core/tailwind/tailwind-compilation'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -129,10 +128,6 @@ export function createExecutionScope(
   let topLevelComponentRendererComponentsForFile =
     topLevelComponentRendererComponents.current[filePath]
 
-  const tailwindConfig = getTailwindConfigFromProjectContents(projectContents, customRequire)
-  const stylePluginConfig: StylePluginConfig =
-    tailwindConfig == null ? { type: 'inline-style' } : { type: 'tailwind', config: tailwindConfig }
-
   function addComponentToScope(component: UtopiaJSXComponent): void {
     const elementName = component.name ?? 'default'
     topLevelJsxComponents.set(component.name, component)
@@ -143,7 +138,6 @@ export function createExecutionScope(
         topLevelElementName: component.name,
         mutableContextRef: mutableContextRef,
         filePath: filePath,
-        stylePluginConfig: stylePluginConfig,
       })
       const wrappedComponent = component.functionWrapping.reduceRight((workingComponent, wrap) => {
         switch (wrap.type) {
@@ -191,7 +185,6 @@ export function createExecutionScope(
     editedText: editedText,
     variablesInScope: {},
     filePathMappings: filePathMappings,
-    stylePluginConfig: stylePluginConfig,
   }
 
   let spiedVariablesInRoot: VariableData = {}

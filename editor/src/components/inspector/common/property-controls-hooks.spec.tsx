@@ -130,7 +130,6 @@ function callPropertyControlsHook(
       null,
       null,
       null,
-      { type: 'inline-style' },
     ),
   }
   let allElementProps: AllElementProps = {
@@ -154,7 +153,6 @@ function callPropertyControlsHook(
       null,
       null,
       null,
-      { type: 'inline-style' },
     )
     allElementProps[EP.toString(selectedViews[1])] = {
       propWithControlButNoValue: 'but there is a value!',
@@ -177,7 +175,6 @@ function callPropertyControlsHook(
       null,
       null,
       null,
-      { type: 'inline-style' },
     )
 
     allElementProps[EP.toString(selectedViews[2])] = { propWithOtherKey: 10 }

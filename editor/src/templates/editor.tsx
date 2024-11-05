@@ -136,7 +136,6 @@ import { getParserWorkerCount } from '../core/workers/common/concurrency-utils'
 import { canMeasurePerformance } from '../core/performance/performance-utils'
 import { getChildGroupsForNonGroupParents } from '../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { EditorModes } from '../components/editor/editor-modes'
-import { getStylePluginConfig } from '../components/canvas/plugins/style-plugins'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -557,8 +556,6 @@ export class Editor {
 
           // re-run the dom-sampler
           Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
-            const stylePluginConfig = getStylePluginConfig(this.storedState.patchedEditor)
-
             const metadataResult = runDomSamplerGroups({
               elementsToFocusOn: ElementsToRerenderGLOBAL.current,
               domWalkerAdditionalElementsToFocusOn:
@@ -567,7 +564,6 @@ export class Editor {
               selectedViews: this.storedState.patchedEditor.selectedViews,
               metadataToUpdate: this.storedState.elementMetadata,
               spyCollector: this.spyCollector,
-              stylePluginConfig: stylePluginConfig,
             })
 
             this.storedState.elementMetadata = metadataResult.metadata

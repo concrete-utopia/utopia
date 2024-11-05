@@ -21,11 +21,8 @@ import { createSelector } from 'reselect'
 import type { ProjectContentSubstate } from '../../components/editor/store/store-hook-substore-types'
 
 const LatestConfig: { current: { code: string; config: Config } | null } = { current: null }
-export function getTailwindConfigFromProjectContents(
-  projectContents: ProjectContentTreeRoot,
-  customRequire: RequireFn,
-): Config | null {
-  const tailwindConfig = getProjectFileByFilePath(projectContents, TailwindConfigPath)
+export function getTailwindConfigCached(editorState: EditorState): Config | null {
+  const tailwindConfig = getProjectFileByFilePath(editorState.projectContents, TailwindConfigPath)
   if (tailwindConfig == null || tailwindConfig.type !== 'TEXT_FILE') {
     return null
   }
@@ -37,16 +34,13 @@ export function getTailwindConfigFromProjectContents(
   if (cached != null) {
     return cached
   }
+  const requireFn = editorState.codeResultCache.curriedRequireFn(editorState.projectContents)
+  const customRequire = (importOrigin: string, toImport: string) =>
+    requireFn(importOrigin, toImport, false)
   const config = importDefault(customRequire('/', TailwindConfigPath)) as Config
   LatestConfig.current = { code: tailwindConfig.fileContents.code, config: config }
 
   return config
-}
-export function getTailwindConfigCached(editorState: EditorState): Config | null {
-  const requireFn = editorState.codeResultCache.curriedRequireFn(editorState.projectContents)
-  const customRequire = (importOrigin: string, toImport: string) =>
-    requireFn(importOrigin, toImport, false)
-  return getTailwindConfigFromProjectContents(editorState.projectContents, customRequire)
 }
 
 const TAILWIND_INSTANCE: {
