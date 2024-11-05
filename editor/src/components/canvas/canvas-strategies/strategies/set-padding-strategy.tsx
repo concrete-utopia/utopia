@@ -270,6 +270,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
                 ),
               })),
             ),
+            setProperty('always', selectedElement, StylePaddingProp, '0px 0px 0px 0px'),
           ],
           selectedElements,
         )

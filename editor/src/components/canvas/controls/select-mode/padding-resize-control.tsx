@@ -43,7 +43,7 @@ import type { CSSNumberWithRenderedValue } from './controls-common'
 import { CanvasLabel, fallbackEmptyValue, PillHandle, useHoverWithDelay } from './controls-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { getActivePlugin } from '../../plugins/style-plugins'
+import { getActivePluginFromEditorState } from '../../plugins/style-plugins'
 
 export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
 export const paddingControlHandleTestId = (edge: EdgePiece): string =>
@@ -367,7 +367,7 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
         simplePaddingFromStyleInfo(
           elementMetadata,
           selectedElements[0],
-          getActivePlugin(store.editor).styleInfoFactory({
+          getActivePluginFromEditorState(store.editor).styleInfoFactory({
             metadata: store.editor.jsxMetadata,
             projectContents: store.editor.projectContents,
             elementPathTree: store.editor.elementPathTree,

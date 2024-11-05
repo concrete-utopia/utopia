@@ -8,7 +8,7 @@ import { InlineStylePlugin } from './inline-style-plugin'
 import { TailwindPlugin } from './tailwind-style-plugin'
 import {
   getTailwindConfigCached,
-  getTailwindConfigFromSingletonInstance,
+  getTailwindConfigFromStore,
   isTailwindEnabled,
 } from '../../../core/tailwind/tailwind-compilation'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
@@ -50,16 +50,16 @@ export interface StylePlugin {
   updateCSSPropertyInProps: (props: JSXAttributes, updates: StyleUpdate[]) => PropsOrJSXAttributes
 }
 
-export function getActivePlugin(editorState: EditorState): StylePlugin {
+export function getActivePluginFromEditorState(editorState: EditorState): StylePlugin {
   if (isFeatureEnabled('Tailwind') && isTailwindEnabled()) {
     return TailwindPlugin(getTailwindConfigCached(editorState))
   }
   return InlineStylePlugin
 }
 
-export function getActivePluginSingleton(): StylePlugin {
+export function getActivePlugin(): StylePlugin {
   if (isFeatureEnabled('Tailwind') && isTailwindEnabled()) {
-    return TailwindPlugin(getTailwindConfigFromSingletonInstance())
+    return TailwindPlugin(getTailwindConfigFromStore())
   }
   return InlineStylePlugin
 }
@@ -183,7 +183,7 @@ function getPropertiesToZero(
 }
 
 export function patchRemovedProperties(editorState: EditorState): EditorState {
-  const styleInfoReader = getActivePlugin(editorState).styleInfoFactory({
+  const styleInfoReader = getActivePluginFromEditorState(editorState).styleInfoFactory({
     projectContents: editorState.projectContents,
     metadata: editorState.jsxMetadata,
     elementPathTree: editorState.elementPathTree,
@@ -214,7 +214,11 @@ export function runStyleUpdateForStrategy(
     case 'mid-interaction':
       return runStyleUpdateMidInteraction(editorState, elementPath, updates)
     case 'end-interaction':
-      return getActivePlugin(editorState).updateStyles(editorState, elementPath, updates)
+      return getActivePluginFromEditorState(editorState).updateStyles(
+        editorState,
+        elementPath,
+        updates,
+      )
     default:
       assertNever(commandLifecycle)
   }

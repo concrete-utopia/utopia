@@ -19,6 +19,7 @@ import type { Config } from 'tailwindcss/types/config'
 import type { EditorState } from '../../components/editor/store/editor-state'
 import { createSelector } from 'reselect'
 import type { ProjectContentSubstate } from '../../components/editor/store/store-hook-substore-types'
+import { atom, createStore } from 'jotai'
 
 const LatestConfig: { current: { code: string; config: Config } | null } = { current: null }
 export function getTailwindConfigCached(editorState: EditorState): Config | null {
@@ -43,13 +44,15 @@ export function getTailwindConfigCached(editorState: EditorState): Config | null
   return config
 }
 
+const TailwindConfigAtom = atom<Config | null>(null)
+export const TailwindConfigStore = createStore()
+
 const TAILWIND_INSTANCE: {
   current: Tailwindcss | null
-  config: Config | null
-} = { current: null, config: null }
+} = { current: null }
 
-export function getTailwindConfigFromSingletonInstance(): Config | null {
-  return TAILWIND_INSTANCE.config
+export function getTailwindConfigFromStore(): Config | null {
+  return TailwindConfigStore.get(TailwindConfigAtom)
 }
 
 export function isTailwindEnabled(): boolean {
@@ -92,7 +95,7 @@ function generateTailwindClasses(projectContents: ProjectContentTreeRoot, requir
   const rawConfig = importDefault(requireFn('/', TailwindConfigPath)) as Config
   const tailwindCss = createTailwindcss({ tailwindConfig: rawConfig })
   TAILWIND_INSTANCE.current = tailwindCss
-  TAILWIND_INSTANCE.config = rawConfig
+  TailwindConfigStore.set(TailwindConfigAtom, rawConfig)
   void generateTailwindStyles(tailwindCss, allCSSFiles)
 }
 

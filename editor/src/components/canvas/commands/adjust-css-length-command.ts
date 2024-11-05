@@ -10,7 +10,7 @@ import type { BaseCommand, CommandFunctionResult, WhenToRun } from './commands'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { getCSSNumberFromStyleInfo, maybeCssPropertyFromInlineStyle } from './utils/property-utils'
 import type { StyleUpdate } from '../plugins/style-plugins'
-import { getActivePlugin, runStyleUpdateForStrategy } from '../plugins/style-plugins'
+import { getActivePluginFromEditorState, runStyleUpdateForStrategy } from '../plugins/style-plugins'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 
 export type CreateIfNotExistant = 'create-if-not-existing' | 'do-not-create-if-doesnt-exist'
@@ -71,7 +71,9 @@ export const runAdjustCssLengthProperties = (
     command.parentFlexDirection,
   )
 
-  const styleInfoReader = getActivePlugin(withConflictingPropertiesRemoved).styleInfoFactory({
+  const styleInfoReader = getActivePluginFromEditorState(
+    withConflictingPropertiesRemoved,
+  ).styleInfoFactory({
     projectContents: withConflictingPropertiesRemoved.projectContents,
     metadata: withConflictingPropertiesRemoved.jsxMetadata,
     elementPathTree: withConflictingPropertiesRemoved.elementPathTree,

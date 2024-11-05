@@ -136,6 +136,7 @@ import { getParserWorkerCount } from '../core/workers/common/concurrency-utils'
 import { canMeasurePerformance } from '../core/performance/performance-utils'
 import { getChildGroupsForNonGroupParents } from '../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { EditorModes } from '../components/editor/editor-modes'
+import { TailwindConfigStore } from '../core/tailwind/tailwind-compilation'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -738,26 +739,28 @@ export const EditorRoot: React.FunctionComponent<{
 
   return (
     <AtomsDevtools>
-      <JotaiProvider>
-        <DispatchContext.Provider value={dispatch}>
-          <OriginalMainEditorStateContext.Provider value={mainStore}>
-            <EditorStateContext.Provider value={mainStore}>
-              <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
-                <CanvasStateContext.Provider value={canvasStore}>
-                  <LowPriorityStateContext.Provider value={lowPriorityStore}>
-                    <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-                      <AnimationContext.Provider
-                        value={{ animate: animate, scope: animationScope }}
-                      >
-                        <EditorComponent />
-                      </AnimationContext.Provider>
-                    </UiJsxCanvasCtxAtom.Provider>
-                  </LowPriorityStateContext.Provider>
-                </CanvasStateContext.Provider>
-              </DomWalkerMutableStateCtx.Provider>
-            </EditorStateContext.Provider>
-          </OriginalMainEditorStateContext.Provider>
-        </DispatchContext.Provider>
+      <JotaiProvider store={TailwindConfigStore}>
+        <JotaiProvider>
+          <DispatchContext.Provider value={dispatch}>
+            <OriginalMainEditorStateContext.Provider value={mainStore}>
+              <EditorStateContext.Provider value={mainStore}>
+                <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
+                  <CanvasStateContext.Provider value={canvasStore}>
+                    <LowPriorityStateContext.Provider value={lowPriorityStore}>
+                      <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
+                        <AnimationContext.Provider
+                          value={{ animate: animate, scope: animationScope }}
+                        >
+                          <EditorComponent />
+                        </AnimationContext.Provider>
+                      </UiJsxCanvasCtxAtom.Provider>
+                    </LowPriorityStateContext.Provider>
+                  </CanvasStateContext.Provider>
+                </DomWalkerMutableStateCtx.Provider>
+              </EditorStateContext.Provider>
+            </OriginalMainEditorStateContext.Provider>
+          </DispatchContext.Provider>
+        </JotaiProvider>
       </JotaiProvider>
     </AtomsDevtools>
   )

@@ -5,7 +5,7 @@ import type { EdgePiece } from '../../canvas-types'
 import { paddingPropForEdge, simplePaddingFromStyleInfo } from '../../padding-utils'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
-import { getActivePlugin } from '../../plugins/style-plugins'
+import { getActivePluginFromEditorState } from '../../plugins/style-plugins'
 
 export interface SubduedPaddingControlProps {
   side: EdgePiece
@@ -27,7 +27,7 @@ export const SubduedPaddingControl = React.memo<SubduedPaddingControlProps>((pro
   const paddingKey = paddingPropForEdge(side)
 
   const styleInfoRef = useRefEditorState((store) =>
-    getActivePlugin(store.editor).styleInfoFactory({
+    getActivePluginFromEditorState(store.editor).styleInfoFactory({
       metadata: store.editor.jsxMetadata,
       projectContents: store.editor.projectContents,
       elementPathTree: store.editor.elementPathTree,

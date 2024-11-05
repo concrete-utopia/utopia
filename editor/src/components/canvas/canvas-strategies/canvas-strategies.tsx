@@ -83,7 +83,7 @@ import { reparentSubjectsForInteractionTarget } from './strategies/reparent-help
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
 import { gridRearrangeResizeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
 import createCachedSelector from 're-reselect'
-import { getActivePlugin, patchRemovedProperties } from '../plugins/style-plugins'
+import { getActivePluginFromEditorState, patchRemovedProperties } from '../plugins/style-plugins'
 import {
   controlsForGridPlaceholders,
   GridControls,
@@ -209,7 +209,7 @@ export function pickCanvasStateFromEditorState(
   editorState: EditorState,
   builtInDependencies: BuiltInDependencies,
 ): InteractionCanvasState {
-  const activePlugin = getActivePlugin(editorState)
+  const activePlugin = getActivePluginFromEditorState(editorState)
   return {
     builtInDependencies: builtInDependencies,
     interactionTarget: getInteractionTargetFromEditorState(editorState, localSelectedViews),
@@ -237,7 +237,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
   metadata: ElementInstanceMetadataMap,
   allElementProps?: AllElementProps,
 ): InteractionCanvasState {
-  const activePlugin = getActivePlugin(editorState)
+  const activePlugin = getActivePluginFromEditorState(editorState)
 
   return {
     builtInDependencies: builtInDependencies,

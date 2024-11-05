@@ -74,7 +74,7 @@ import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
 import { hugPropertiesFromStyleMap } from '../../core/shared/dom-utils'
 import { setHugContentForAxis } from './inspector-strategies/hug-contents-strategy'
-import { getActivePluginSingleton } from '../canvas/plugins/style-plugins'
+import { getActivePlugin } from '../canvas/plugins/style-plugins'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -738,7 +738,7 @@ export function detectFillHugFixedState(
   const { props } = element.element.value
 
   const cssNumberPropReader = (prop: 'width' | 'height') => {
-    const valueFromProps = getActivePluginSingleton().readStyleFromElementProps(right(props), prop)
+    const valueFromProps = getActivePlugin().readStyleFromElementProps(right(props), prop)
     return valueFromProps == null || valueFromProps.type !== 'property'
       ? null
       : valueFromProps.value
@@ -746,7 +746,7 @@ export function detectFillHugFixedState(
 
   const width = cssNumberPropReader('width')
   const height = cssNumberPropReader('height')
-  const flexFromProps = getActivePluginSingleton().readStyleFromElementProps(right(props), 'flex')
+  const flexFromProps = getActivePlugin().readStyleFromElementProps(right(props), 'flex')
   const flexGrowFromFlex =
     flexFromProps == null || flexFromProps.type !== 'property'
       ? null
@@ -774,7 +774,7 @@ export function detectFillHugFixedState(
     }
   }
 
-  const flexGrowLonghandFromProps = getActivePluginSingleton().readStyleFromElementProps(
+  const flexGrowLonghandFromProps = getActivePlugin().readStyleFromElementProps(
     right(props),
     'flexGrow',
   )

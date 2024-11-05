@@ -1,4 +1,4 @@
-import { getActivePluginSingleton } from '../../components/canvas/plugins/style-plugins'
+import { getActivePlugin } from '../../components/canvas/plugins/style-plugins'
 import type { Either } from './either'
 import type { JSXAttributes, JSExpression } from './element-template'
 import { setJSXValueAtPathParts } from './jsx-attribute-utils'
@@ -24,7 +24,7 @@ export function setJSXValueAtPathWithPlugin(
     return setJSXValueAtPathParts(attributes, path.propertyElements, 0, value)
   }
 
-  return getActivePluginSingleton().updateCSSPropertyInProps(attributes, [
+  return getActivePlugin().updateCSSPropertyInProps(attributes, [
     { type: 'set', property: maybeCSSProp, value: valueForCSSProp },
   ])
 }

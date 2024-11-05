@@ -19,7 +19,7 @@ import { addToastPatch } from './show-toast-command'
 import { getCSSNumberFromStyleInfo, maybeCssPropertyFromInlineStyle } from './utils/property-utils'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import type { StyleUpdate } from '../plugins/style-plugins'
-import { getActivePlugin, runStyleUpdateForStrategy } from '../plugins/style-plugins'
+import { getActivePluginFromEditorState, runStyleUpdateForStrategy } from '../plugins/style-plugins'
 
 type CssNumberOrKeepOriginalUnit =
   | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber | CSSKeyword }
@@ -81,7 +81,7 @@ export const runSetCssLengthProperty = (
     command.parentFlexDirection,
   )
 
-  const styleInfo = getActivePlugin(editorStateWithPropsDeleted).styleInfoFactory({
+  const styleInfo = getActivePluginFromEditorState(editorStateWithPropsDeleted).styleInfoFactory({
     projectContents: editorStateWithPropsDeleted.projectContents,
     metadata: editorStateWithPropsDeleted.jsxMetadata,
     elementPathTree: editorStateWithPropsDeleted.elementPathTree,

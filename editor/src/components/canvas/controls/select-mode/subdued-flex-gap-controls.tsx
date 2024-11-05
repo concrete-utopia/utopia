@@ -11,7 +11,7 @@ import {
 } from '../../gap-utils'
 import type { ElementPath } from 'utopia-shared/src/types'
 import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
-import { getActivePlugin } from '../../plugins/style-plugins'
+import { getActivePluginFromEditorState } from '../../plugins/style-plugins'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 export interface SubduedFlexGapControlProps {
@@ -41,7 +41,7 @@ export const SubduedFlexGapControl = React.memo<SubduedFlexGapControlProps>((pro
     Substores.fullStore,
     (store) =>
       maybeFlexGapData(
-        getActivePlugin(store.editor).styleInfoFactory({
+        getActivePluginFromEditorState(store.editor).styleInfoFactory({
           projectContents: store.editor.projectContents,
           metadata: store.editor.jsxMetadata,
           elementPathTree: store.editor.elementPathTree,
