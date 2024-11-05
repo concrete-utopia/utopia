@@ -165,7 +165,6 @@ export function applyGridReparent(
 
         const allowedToReparent = selectedElements.every((selectedElement) => {
           return isAllowedToReparent(
-            canvasState.projectContents,
             canvasState.startingMetadata,
             selectedElement,
             newParent.intendedParentPath,
