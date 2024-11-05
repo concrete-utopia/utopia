@@ -11,6 +11,7 @@ import { DefaultPackageJson } from '../../../../../components/editor/store/edito
 import { getPackageJson } from '../../../../../components/assets'
 import CheckStoryboard from './requirement-storyboard'
 import CheckServerPackages from './requirement-server-packages'
+import { parseProjectContents } from '../../../../../sample-projects/sample-project-utils.test-utils'
 
 describe('requirements checks', () => {
   describe('project language', () => {
@@ -218,6 +219,60 @@ describe('requirements checks', () => {
       const projectContents = project.projectContents
       const result = check.check(projectContents)
       expect(result.resolution).toBe(RequirementResolutionResult.Critical)
+    })
+
+    it('should return partial for a project with node builtins', () => {
+      const check = new CheckServerPackages()
+      const project = simpleDefaultProject({
+        additionalFiles: {
+          '/src/app.js': textFile(
+            textFileContents(
+              `import { readFileSync } from 'fs'
+              import * as crypto from 'node:crypto'`,
+              unparsed,
+              RevisionsState.CodeAhead,
+            ),
+            null,
+            null,
+            0,
+          ),
+        },
+      })
+      const parsedProjectContents = parseProjectContents(project.projectContents)
+      const result = check.check(parsedProjectContents)
+      expect(result.resolution).toBe(RequirementResolutionResult.Partial)
+      expect(result.resultValue).toBe('fs, node:crypto')
+    })
+
+    it('should return success for a project with node builtins that are shimmed', () => {
+      const check = new CheckServerPackages()
+      const project = simpleDefaultProject({
+        additionalFiles: {
+          '/src/app.js': textFile(
+            textFileContents(
+              `import { readFileSync } from 'fs'`,
+              unparsed,
+              RevisionsState.CodeAhead,
+            ),
+            null,
+            null,
+            0,
+          ),
+          '/package.json': textFile(
+            textFileContents(
+              JSON.stringify({ dependencies: { fs: '1.0.0' } }, null, 2),
+              unparsed,
+              RevisionsState.CodeAhead,
+            ),
+            null,
+            null,
+            0,
+          ),
+        },
+      })
+      const parsedProjectContents = parseProjectContents(project.projectContents)
+      const result = check.check(parsedProjectContents)
+      expect(result.resolution).toBe(RequirementResolutionResult.Passed)
     })
   })
 })
