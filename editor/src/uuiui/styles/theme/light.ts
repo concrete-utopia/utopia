@@ -111,6 +111,7 @@ const lightErrorStates = {
   // TODO vv only used by image-thumbnail-control, consider removing
   warningBgTranslucent: createUtopiColor('rgba(250, 94, 0, 0.2)'),
   warningBgSolid: createUtopiColor('rgba(252,142,77,1)'),
+  warningOrange: createUtopiColor('#FF8A44'),
 }
 
 // TEMP colors with preset opacity pulled from within the app

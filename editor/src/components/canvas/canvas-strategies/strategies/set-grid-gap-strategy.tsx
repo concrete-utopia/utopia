@@ -44,6 +44,7 @@ import type { GridGapControlProps } from '../../controls/select-mode/grid-gap-co
 import { GridGapControl } from '../../controls/select-mode/grid-gap-control'
 import type { GridControlsProps } from '../../controls/grid-controls-for-strategies'
 import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
+import { getComponentDescriptorForTarget } from '../../../../core/property-controls/property-controls-utils'
 
 const SetGridGapStrategyId = 'SET_GRID_GAP_STRATEGY'
 
@@ -63,22 +64,31 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
+  const selectedElementMetadata = MetadataUtils.findElementByElementPath(
+    canvasState.startingMetadata,
+    selectedElement,
+  )
   if (
-    !MetadataUtils.isGridLayoutedContainer(
-      MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement),
-    )
+    selectedElementMetadata == null ||
+    !MetadataUtils.isGridLayoutedContainer(selectedElementMetadata)
   ) {
     return null
   }
 
-  const children = recurseIntoChildrenOfMapOrFragment(
-    canvasState.startingMetadata,
-    canvasState.startingAllElementProps,
-    canvasState.startingElementPathTree,
-    selectedElement,
+  const supportsStyleProp = MetadataUtils.targetRegisteredStyleControlsOrHonoursStyleProps(
+    canvasState.projectContents,
+    selectedElementMetadata,
+    canvasState.propertyControlsInfo,
+    'layout-system',
+    ['gap', 'rowGap', 'columnGap'],
+    'some',
   )
+  if (!supportsStyleProp) {
+    return null
+  }
 
   const gridGap = maybeGridGapData(canvasState.startingMetadata, selectedElement)
+
   if (gridGap == null) {
     return null
   }

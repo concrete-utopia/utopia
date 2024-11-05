@@ -1,5 +1,5 @@
 import * as OPI from 'object-path-immutable'
-import type { Emphasis, FlexLength, Icon, Sides } from 'utopia-api/core'
+import type { Emphasis, FlexLength, Icon, Sides, Styling } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
@@ -113,6 +113,7 @@ import {
   componentUsesProperty,
   findJSXElementChildAtPath,
   elementChildSupportsChildrenAlsoText,
+  componentHonoursStyleProps,
 } from './element-template-utils'
 import {
   isImportedComponent,
@@ -1210,6 +1211,70 @@ export const MetadataUtils = {
       return true
     } else {
       return componentHonoursPropsSize(underlyingComponent)
+    }
+  },
+  targetHonoursStyleProps(
+    projectContents: ProjectContentTreeRoot,
+    metadata: ElementInstanceMetadata | null,
+    props: Array<string>,
+    everyOrSome: 'every' | 'some',
+  ): boolean {
+    if (metadata == null) {
+      return false
+    }
+    if (
+      isLeft(metadata.element) ||
+      (isRight(metadata.element) && !isJSXElement(metadata.element.value))
+    ) {
+      return false
+    }
+    const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
+      projectContents,
+      metadata.importInfo,
+    )
+    if (underlyingComponent == null) {
+      // Could be an external third party component, assuming true for now.
+      return true
+    } else {
+      return componentHonoursStyleProps(underlyingComponent, props, everyOrSome)
+    }
+  },
+  targetRegisteredStyleControlsOrHonoursStyleProps(
+    projectContents: ProjectContentTreeRoot,
+    metadata: ElementInstanceMetadata,
+    propertyControlsInfo: PropertyControlsInfo,
+    inspectorSection: Styling, // if this inspector section is registered then the target honours the style props
+    props: Array<string>,
+    everyOrSome: 'every' | 'some',
+  ): boolean {
+    const inspectorSectionRegistered = (() => {
+      const descriptor = getComponentDescriptorForTarget(
+        { propertyControlsInfo, projectContents },
+        metadata.elementPath,
+      )
+
+      if (descriptor?.inspector == null) {
+        return 'no-annotation'
+      }
+
+      if (
+        descriptor.inspector.type === 'hidden' ||
+        !descriptor.inspector.sections.includes(inspectorSection)
+      ) {
+        return 'registered-to-hide'
+      }
+      return 'registered-to-show'
+    })()
+
+    switch (inspectorSectionRegistered) {
+      case 'registered-to-show': //
+        return true
+      case 'registered-to-hide':
+        return false
+      case 'no-annotation':
+        return this.targetHonoursStyleProps(projectContents, metadata, props, everyOrSome)
+      default:
+        assertNever(inspectorSectionRegistered)
     }
   },
   targetHonoursPropsPosition(

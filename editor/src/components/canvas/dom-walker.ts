@@ -57,14 +57,14 @@ import {
   isDynamicGridRepeat,
 } from '../inspector/common/css-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
-import {
-  UTOPIA_PATH_KEY,
-  UTOPIA_SCENE_ID_KEY,
-  UTOPIA_UID_KEY,
-} from '../../core/model/utopia-constants'
+import { UTOPIA_SCENE_ID_KEY, UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
 import { emptySet } from '../../core/shared/set-utils'
-import { getDeepestPathOnDomElement, getPathStringsOnDomElement } from '../../core/shared/uid-utils'
-import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
+import {
+  getDeepestPathOnDomElement,
+  getPathsOnDomElement,
+  getPathStringsOnDomElement,
+} from '../../core/shared/uid-utils'
+import { forceNotNull } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import type { EditorState, EditorStorePatched } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
@@ -921,13 +921,10 @@ function getSpecialMeasurements(
     ? padding.value
     : sides(undefined, undefined, undefined, undefined)
 
-  const pathStr = element.getAttribute(UTOPIA_PATH_KEY)
-  const path = optionalMap(EP.fromString, pathStr)
-
   const gridCellGlobalFrames =
-    path != null && layoutSystemForChildren === 'grid'
-      ? measureGlobalFramesOfGridCellsFromControl(
-          path,
+    layoutSystemForChildren === 'grid'
+      ? measureGlobalFramesOfGridCells(
+          element,
           scale,
           containerRectLazy,
           elementCanvasRectangleCache,
@@ -935,11 +932,9 @@ function getSpecialMeasurements(
       : null
 
   const parentGridCellGlobalFrames =
-    element.parentElement != null &&
-    elementLayoutSystem(parentElementStyle) === 'grid' &&
-    path != null
-      ? measureGlobalFramesOfGridCellsFromControl(
-          EP.parentPath(path),
+    element.parentElement != null && elementLayoutSystem(parentElementStyle) === 'grid'
+      ? measureGlobalFramesOfGridCells(
+          element.parentElement,
           scale,
           containerRectLazy,
           elementCanvasRectangleCache,
@@ -1081,15 +1076,25 @@ function getClosestOffsetParent(element: HTMLElement): Element | null {
   return null
 }
 
-function measureGlobalFramesOfGridCellsFromControl(
-  gridPath: ElementPath,
+function measureGlobalFramesOfGridCells(
+  element: HTMLElement,
   scale: number,
   containerRectLazy: CanvasPoint | (() => CanvasPoint),
   elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): GridCellGlobalFrames | null {
-  const path = EP.toString(gridPath)
+  const paths = getPathsOnDomElement(element)
+
   let gridCellGlobalFrames: GridCellGlobalFrames | null = null
-  const gridControlElement = document.getElementById(GridMeasurementHelperKey(EP.fromString(path)))
+  const gridControlElement = (() => {
+    for (let p of paths) {
+      const maybeGridControlElement = document.getElementById(GridMeasurementHelperKey(p))
+      if (maybeGridControlElement != null) {
+        return maybeGridControlElement
+      }
+    }
+    return null
+  })()
+
   if (gridControlElement != null) {
     gridCellGlobalFrames = []
     for (const cell of gridControlElement.children) {
