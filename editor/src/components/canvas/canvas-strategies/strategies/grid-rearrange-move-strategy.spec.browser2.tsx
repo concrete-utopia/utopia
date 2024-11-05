@@ -506,8 +506,8 @@ export var storyboard = (
         {
           const { top, left, gridColumn, gridRow } = child.style
           expect({ top, left, gridColumn, gridRow }).toEqual({
-            gridColumn: '1',
-            gridRow: '1',
+            gridColumn: '1 / 3',
+            gridRow: '1 / 3',
             left: '59px',
             top: '59.5px',
           })

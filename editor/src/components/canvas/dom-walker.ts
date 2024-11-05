@@ -702,9 +702,9 @@ function getSpecialMeasurements(
   containerRectLazy: CanvasPoint | (() => CanvasPoint),
   elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): SpecialSizeMeasurements {
-  const elementStyle = window.getComputedStyle(element)
-  const layoutSystemForChildren = elementLayoutSystem(elementStyle)
-  const position = getPosition(elementStyle)
+  const computedStyle = window.getComputedStyle(element)
+  const layoutSystemForChildren = elementLayoutSystem(computedStyle)
+  const position = getPosition(computedStyle)
 
   const offset = {
     x: roundToNearestHalf(element.offsetLeft),
@@ -739,7 +739,7 @@ function getSpecialMeasurements(
     element.parentElement == null ? null : window.getComputedStyle(element.parentElement)
   const isParentNonStatic = isElementNonStatic(parentElementStyle)
 
-  const providesBoundsForAbsoluteChildren = isElementAContainingBlockForAbsolute(elementStyle)
+  const providesBoundsForAbsoluteChildren = isElementAContainingBlockForAbsolute(computedStyle)
 
   const parentLayoutSystem = elementLayoutSystem(parentElementStyle)
   const parentProvidesLayout = element.parentElement === element.offsetParent
@@ -754,29 +754,29 @@ function getSpecialMeasurements(
     element.parentElement != null &&
     element.parentElement.style[sizeMainAxis] === MaxContent
 
-  const flexDirection = eitherToMaybe(parseFlexDirection(elementStyle.flexDirection, null))
+  const flexDirection = eitherToMaybe(parseFlexDirection(computedStyle.flexDirection, null))
   const parentTextDirection = eitherToMaybe(parseDirection(parentElementStyle?.direction, null))
 
-  const justifyContent = getFlexJustifyContent(elementStyle.justifyContent)
-  const alignContent = getAlignContent(elementStyle.alignContent)
-  const alignItems = getFlexAlignment(elementStyle.alignItems)
-  const alignSelf = getSelfAlignment(elementStyle.alignSelf)
-  const justifySelf = getSelfAlignment(elementStyle.justifySelf)
+  const justifyContent = getFlexJustifyContent(computedStyle.justifyContent)
+  const alignContent = getAlignContent(computedStyle.alignContent)
+  const alignItems = getFlexAlignment(computedStyle.alignItems)
+  const alignSelf = getSelfAlignment(computedStyle.alignSelf)
+  const justifySelf = getSelfAlignment(computedStyle.justifySelf)
 
   const margin = applicative4Either(
     applicativeSidesPxTransform,
-    parseCSSLength(elementStyle.marginTop),
-    parseCSSLength(elementStyle.marginRight),
-    parseCSSLength(elementStyle.marginBottom),
-    parseCSSLength(elementStyle.marginLeft),
+    parseCSSLength(computedStyle.marginTop),
+    parseCSSLength(computedStyle.marginRight),
+    parseCSSLength(computedStyle.marginBottom),
+    parseCSSLength(computedStyle.marginLeft),
   )
 
   const padding = applicative4Either(
     applicativeSidesPxTransform,
-    parseCSSLength(elementStyle.paddingTop),
-    parseCSSLength(elementStyle.paddingRight),
-    parseCSSLength(elementStyle.paddingBottom),
-    parseCSSLength(elementStyle.paddingLeft),
+    parseCSSLength(computedStyle.paddingTop),
+    parseCSSLength(computedStyle.paddingRight),
+    parseCSSLength(computedStyle.paddingBottom),
+    parseCSSLength(computedStyle.paddingLeft),
   )
 
   const parentPadding = applicative4Either(
@@ -799,10 +799,10 @@ function getSpecialMeasurements(
 
   const childrenCount = element.childElementCount
 
-  const borderTopWidth = parseCSSLength(elementStyle.borderTopWidth)
-  const borderRightWidth = parseCSSLength(elementStyle.borderRightWidth)
-  const borderBottomWidth = parseCSSLength(elementStyle.borderBottomWidth)
-  const borderLeftWidth = parseCSSLength(elementStyle.borderLeftWidth)
+  const borderTopWidth = parseCSSLength(computedStyle.borderTopWidth)
+  const borderRightWidth = parseCSSLength(computedStyle.borderRightWidth)
+  const borderBottomWidth = parseCSSLength(computedStyle.borderBottomWidth)
+  const borderLeftWidth = parseCSSLength(computedStyle.borderLeftWidth)
   const border = {
     top: isRight(borderTopWidth) ? borderTopWidth.value.value : 0,
     right: isRight(borderRightWidth) ? borderRightWidth.value.value : 0,
@@ -844,25 +844,25 @@ function getSpecialMeasurements(
   }
 
   const hasPositionOffset =
-    !positionValueIsDefault(elementStyle.top) ||
-    !positionValueIsDefault(elementStyle.right) ||
-    !positionValueIsDefault(elementStyle.bottom) ||
-    !positionValueIsDefault(elementStyle.left)
-  const hasTransform = elementStyle.transform !== 'none'
+    !positionValueIsDefault(computedStyle.top) ||
+    !positionValueIsDefault(computedStyle.right) ||
+    !positionValueIsDefault(computedStyle.bottom) ||
+    !positionValueIsDefault(computedStyle.left)
+  const hasTransform = computedStyle.transform !== 'none'
 
   const gap = defaultEither(
     null,
-    mapEither((n) => n.value, parseCSSLength(elementStyle.gap)),
+    mapEither((n) => n.value, parseCSSLength(computedStyle.gap)),
   )
 
   const rowGap = defaultEither(
     null,
-    mapEither((n) => n.value, parseCSSLength(elementStyle.rowGap)),
+    mapEither((n) => n.value, parseCSSLength(computedStyle.rowGap)),
   )
 
   const columnGap = defaultEither(
     null,
-    mapEither((n) => n.value, parseCSSLength(elementStyle.columnGap)),
+    mapEither((n) => n.value, parseCSSLength(computedStyle.columnGap)),
   )
 
   const flexGapValue = parseCSSLength(parentElementStyle?.gap)
@@ -872,17 +872,17 @@ function getSpecialMeasurements(
     null,
     applicative4Either(
       applicativeSidesPxTransform,
-      parseCSSLength(elementStyle.borderTopLeftRadius),
-      parseCSSLength(elementStyle.borderTopRightRadius),
-      parseCSSLength(elementStyle.borderBottomLeftRadius),
-      parseCSSLength(elementStyle.borderBottomRightRadius),
+      parseCSSLength(computedStyle.borderTopLeftRadius),
+      parseCSSLength(computedStyle.borderTopRightRadius),
+      parseCSSLength(computedStyle.borderBottomLeftRadius),
+      parseCSSLength(computedStyle.borderBottomRightRadius),
     ),
   )
 
-  const fontSize = elementStyle.fontSize
-  const fontWeight = elementStyle.fontWeight
-  const fontStyle = elementStyle.fontStyle
-  const textDecorationLine = elementStyle.textDecorationLine
+  const fontSize = computedStyle.fontSize
+  const fontWeight = computedStyle.fontWeight
+  const fontStyle = computedStyle.fontStyle
+  const textDecorationLine = computedStyle.textDecorationLine
 
   const textBounds = elementContainsOnlyText(element)
     ? stretchRect(
@@ -895,15 +895,15 @@ function getSpecialMeasurements(
         ),
         {
           w:
-            maybeValueFromComputedStyle(elementStyle.paddingLeft) +
-            maybeValueFromComputedStyle(elementStyle.paddingRight) +
-            maybeValueFromComputedStyle(elementStyle.marginLeft) +
-            maybeValueFromComputedStyle(elementStyle.marginRight),
+            maybeValueFromComputedStyle(computedStyle.paddingLeft) +
+            maybeValueFromComputedStyle(computedStyle.paddingRight) +
+            maybeValueFromComputedStyle(computedStyle.marginLeft) +
+            maybeValueFromComputedStyle(computedStyle.marginRight),
           h:
-            maybeValueFromComputedStyle(elementStyle.paddingTop) +
-            maybeValueFromComputedStyle(elementStyle.paddingBottom) +
-            maybeValueFromComputedStyle(elementStyle.marginTop) +
-            maybeValueFromComputedStyle(elementStyle.marginBottom),
+            maybeValueFromComputedStyle(computedStyle.paddingTop) +
+            maybeValueFromComputedStyle(computedStyle.paddingBottom) +
+            maybeValueFromComputedStyle(computedStyle.marginTop) +
+            maybeValueFromComputedStyle(computedStyle.marginBottom),
         },
       )
     : null
@@ -943,7 +943,7 @@ function getSpecialMeasurements(
 
   const containerGridPropertiesFromProps = getGridContainerProperties(element.style)
   const parentContainerGridPropertiesFromProps = getGridContainerProperties(parentElementStyle)
-  const containerGridProperties = getGridContainerProperties(elementStyle, {
+  const containerGridProperties = getGridContainerProperties(computedStyle, {
     dynamicCols: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateColumns),
     dynamicRows: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateRows),
   })
@@ -954,7 +954,7 @@ function getSpecialMeasurements(
   )
   const containerElementProperties = getGridElementProperties(
     parentContainerGridProperties,
-    elementStyle,
+    computedStyle,
   )
 
   return specialSizeMeasurements(
@@ -969,7 +969,7 @@ function getSpecialMeasurements(
     layoutSystemForChildren,
     false, // layoutSystemForChildrenInherited
     providesBoundsForAbsoluteChildren,
-    elementStyle.display,
+    computedStyle.display,
     position,
     isRight(margin) ? margin.value : sides(undefined, undefined, undefined, undefined),
     paddingValue,
@@ -992,7 +992,7 @@ function getSpecialMeasurements(
     element.localName,
     childrenCount,
     globalContentBoxForChildren,
-    elementStyle.float,
+    computedStyle.float,
     hasPositionOffset,
     parentTextDirection,
     hasTransform,

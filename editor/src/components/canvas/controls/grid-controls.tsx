@@ -1,5 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import type { AnimationControls } from 'framer-motion'
 import { motion, useAnimationControls } from 'framer-motion'
@@ -7,9 +8,10 @@ import type { CSSProperties } from 'react'
 import React from 'react'
 import type { Sides } from 'utopia-api/core'
 import type { ElementPath } from 'utopia-shared/src/types'
+import type { PropsOrJSXAttributes } from '../../../core/model/element-metadata-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls, range, stripNulls, uniqBy } from '../../../core/shared/array-utils'
-import { defaultEither } from '../../../core/shared/either'
+import { defaultEither, eitherToMaybe } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import type {
   ElementInstanceMetadataMap,
@@ -19,7 +21,7 @@ import {
   isGridAutoOrTemplateDimensions,
   type GridAutoOrTemplateBase,
 } from '../../../core/shared/element-template'
-import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
+import type { CanvasPoint, CanvasRectangle, LocalRectangle } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
   isFiniteRectangle,
@@ -28,6 +30,7 @@ import {
   pointsEqual,
   scaleRect,
   windowPoint,
+  zeroCanvasRect,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import {
@@ -44,12 +47,23 @@ import { Modifier } from '../../../utils/modifiers'
 import { when } from '../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import type { GridDimension, GridDiscreteDimension } from '../../inspector/common/css-utils'
 import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../../editor/store/store-hook'
+import type {
+  CSSNumber,
+  GridDimension,
+  GridDiscreteDimension,
+} from '../../inspector/common/css-utils'
+import {
+  cssNumberToString,
   isCSSKeyword,
   isDynamicGridRepeat,
   isGridCSSRepeat,
+  printCSSNumberWithDefaultUnit,
   printGridCSSNumber,
 } from '../../inspector/common/css-utils'
 import CanvasActions from '../canvas-actions'
@@ -66,6 +80,7 @@ import {
   getGlobalFrameOfGridCellFromMetadata,
   getGridRelatedIndexes,
   getGridElementPinState,
+  gridPositionToValue,
 } from '../canvas-strategies/strategies/grid-helpers'
 import { canResizeGridTemplate } from '../canvas-strategies/strategies/resize-grid-strategy'
 import { resizeBoundingBoxFromSide } from '../canvas-strategies/strategies/resize-helpers'
@@ -85,6 +100,7 @@ import {
   GridCellTestId,
   GridControlKey,
   gridEdgeToEdgePosition,
+  GridElementContainingBlockKey,
   GridMeasurementHelperKey,
   GridMeasurementHelpersKey,
   useGridData,
@@ -94,6 +110,10 @@ import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { useResizeEdges } from './select-mode/use-resize-edges'
 import { getGridHelperStyleMatchingTargetGrid } from './grid-controls-helpers'
 import { isFillOrStretchModeAppliedOnSpecificSide } from '../../inspector/inspector-common'
+import type { PinOutlineProps } from './position-outline'
+import { PinOutline, PositionOutline, usePropsOrJSXAttributes } from './position-outline'
+import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
+import { styleStringInArray } from '../../../utils/common-constants'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -1782,6 +1802,232 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
     </CanvasOffsetWrapper>
   )
 }
+
+function collectGridPinOutlines(
+  attributes: PropsOrJSXAttributes,
+  frame: LocalRectangle,
+  scale: number,
+): PinOutlineProps[] {
+  const pinLeft = eitherToMaybe(getLayoutProperty('left', attributes, styleStringInArray))
+  const pinTop = eitherToMaybe(getLayoutProperty('top', attributes, styleStringInArray))
+  const pinRight = eitherToMaybe(getLayoutProperty('right', attributes, styleStringInArray))
+  const pinBottom = eitherToMaybe(getLayoutProperty('bottom', attributes, styleStringInArray))
+  let pins: PinOutlineProps[] = []
+  if (pinLeft != null) {
+    let startY: string | number | undefined = undefined
+    let endY: string | number | undefined = undefined
+    if (pinTop != null) {
+      startY = `calc(${printCSSNumberWithDefaultUnit(pinTop, 'px')} + ${frame.height / 2}px)`
+    } else if (pinBottom != null) {
+      endY = `calc(${printCSSNumberWithDefaultUnit(pinBottom, 'px')} + ${frame.height / 2}px)`
+    } else {
+      startY = frame.height / 2
+    }
+    pins.push({
+      name: 'left',
+      isHorizontalLine: true,
+      size: printCSSNumberWithDefaultUnit(pinLeft, 'px'),
+      startX: 0,
+      startY: startY,
+      endY: endY,
+      scale: scale,
+    })
+  }
+  if (pinTop != null) {
+    let startX: string | number | undefined = undefined
+    let endX: string | number | undefined = undefined
+    if (pinLeft != null) {
+      startX = `calc(${printCSSNumberWithDefaultUnit(pinLeft, 'px')} + ${frame.width / 2}px)`
+    } else if (pinRight != null) {
+      endX = `calc(${printCSSNumberWithDefaultUnit(pinRight, 'px')} + ${frame.width / 2}px)`
+    } else {
+      startX = frame.width / 2
+    }
+    pins.push({
+      name: 'top',
+      isHorizontalLine: false,
+      size: printCSSNumberWithDefaultUnit(pinTop, 'px'),
+      startX: startX,
+      endX: endX,
+      startY: 0,
+      scale: scale,
+    })
+  }
+  if (pinRight != null) {
+    let startY: string | number | undefined = undefined
+    let endY: string | number | undefined = undefined
+    if (pinTop != null) {
+      startY = `calc(${printCSSNumberWithDefaultUnit(pinTop, 'px')} + ${frame.height / 2}px)`
+    } else if (pinBottom != null) {
+      endY = `calc(${printCSSNumberWithDefaultUnit(pinBottom, 'px')} + ${frame.height / 2}px)`
+    } else {
+      endY = frame.height / 2
+    }
+    pins.push({
+      name: 'right',
+      isHorizontalLine: true,
+      size: printCSSNumberWithDefaultUnit(pinRight, 'px'),
+      startY: startY,
+      endX: 0,
+      endY: endY,
+      scale: scale,
+    })
+  }
+  if (pinBottom != null) {
+    let startX: string | number | undefined = undefined
+    let endX: string | number | undefined = undefined
+    if (pinLeft != null) {
+      startX = `calc(${printCSSNumberWithDefaultUnit(pinLeft, 'px')} + ${frame.width / 2}px)`
+    } else if (pinRight != null) {
+      endX = `calc(${printCSSNumberWithDefaultUnit(pinRight, 'px')} + ${frame.width / 2}px)`
+    } else {
+      endX = frame.width / 2
+    }
+    pins.push({
+      name: 'bottom',
+      isHorizontalLine: false,
+      size: printCSSNumberWithDefaultUnit(pinBottom, 'px'),
+      startX: startX,
+      endX: endX,
+      endY: 0,
+      scale: scale,
+    })
+  }
+  return pins
+}
+
+export interface GridElementContainingBlockProps {
+  gridPath: ElementPath
+  gridChild: ElementPath
+}
+
+const GridElementContainingBlock = React.memo<GridElementContainingBlockProps>((props) => {
+  const gridData = useGridMeasurentHelperData(props.gridPath)
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'GridElementContainingBlock scale',
+  )
+  const position = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const childMetadata = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        props.gridChild,
+      )
+      return childMetadata?.specialSizeMeasurements.position
+    },
+    'GridElementContainingBlock position',
+  )
+  const gridChildStyle: CSSProperties = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const childMetadata = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        props.gridChild,
+      )
+      if (childMetadata == null) {
+        return {}
+      }
+      const gridFromProps = childMetadata.specialSizeMeasurements.elementGridPropertiesFromProps
+      const gridComputed = childMetadata.specialSizeMeasurements.elementGridProperties
+      return {
+        gridColumnStart:
+          gridPositionToValue(gridFromProps.gridColumnStart ?? gridComputed.gridColumnStart) ??
+          undefined,
+        gridColumnEnd:
+          gridPositionToValue(gridFromProps.gridColumnEnd ?? gridComputed.gridColumnEnd) ??
+          undefined,
+        gridRowStart:
+          gridPositionToValue(gridFromProps.gridRowStart ?? gridComputed.gridRowStart) ?? undefined,
+        gridRowEnd:
+          gridPositionToValue(gridFromProps.gridRowEnd ?? gridComputed.gridRowEnd) ?? undefined,
+        position: childMetadata.specialSizeMeasurements.position ?? undefined,
+      }
+    },
+    'GridElementContainingBlock gridChildStyle',
+  )
+  const gridChildFrame = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return MetadataUtils.getLocalFrame(props.gridChild, store.editor.jsxMetadata, null)
+    },
+    'GridElementContainingBlock gridChildFrame',
+  )
+  const attributes = usePropsOrJSXAttributes(props.gridChild)
+
+  if (gridChildFrame == null || isInfinityRectangle(gridChildFrame)) {
+    return null
+  }
+
+  if (gridData == null) {
+    return null
+  }
+
+  if (position !== 'absolute') {
+    return null
+  }
+
+  const style: CSSProperties = {
+    ...getGridHelperStyleMatchingTargetGrid(gridData),
+    opacity: 1,
+  }
+
+  const pins: Array<PinOutlineProps> = collectGridPinOutlines(attributes, gridChildFrame, scale)
+
+  return (
+    <div
+      id={GridElementContainingBlockKey(props.gridPath)}
+      data-grid-path={EP.toString(props.gridPath)}
+      style={style}
+    >
+      <div
+        id={`${GridElementContainingBlockKey(props.gridPath)}-child`}
+        style={{
+          ...gridChildStyle,
+          pointerEvents: 'none',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+        }}
+      >
+        {pins.map((pin) => (
+          <PinOutline {...pin} key={pin.name} />
+        ))}
+      </div>
+    </div>
+  )
+})
+GridElementContainingBlock.displayName = 'GridElementContainingBlock'
+
+export interface GridElementContainingBlocksProps {}
+
+export const GridElementContainingBlocks = React.memo<GridElementContainingBlocksProps>((props) => {
+  const selectedGridChildElements = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return store.editor.selectedViews.filter((selectedView) => {
+        return MetadataUtils.isGridCell(store.editor.jsxMetadata, selectedView)
+      })
+    },
+    'GridElementContainingBlocks selectedViews',
+  )
+
+  return (
+    <CanvasOffsetWrapper>
+      {selectedGridChildElements.map((selectedGridChildElement) => {
+        return (
+          <GridElementContainingBlock
+            key={GridElementContainingBlockKey(selectedGridChildElement)}
+            gridPath={EP.parentPath(selectedGridChildElement)}
+            gridChild={selectedGridChildElement}
+          />
+        )
+      })}
+    </CanvasOffsetWrapper>
+  )
+})
 
 function gridEdgeToCSSCursor(edge: GridResizeEdge): CSSCursor {
   switch (edge) {

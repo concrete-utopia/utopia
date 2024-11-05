@@ -31,8 +31,9 @@ export const PinLines = React.memo(() => {
       return mapDropNulls((path) => {
         const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
         const isAbsolute = MetadataUtils.isPositionAbsolute(element)
+        const isGridCell = MetadataUtils.isGridCell(store.editor.jsxMetadata, path)
         const frame = element?.globalFrame
-        if (isAbsolute && frame != null && isFiniteRectangle(frame)) {
+        if (isAbsolute && !isGridCell && frame != null && isFiniteRectangle(frame)) {
           return {
             path: path,
             frame: frame,
@@ -78,26 +79,26 @@ interface PositionOutlineProps {
 export const PositionOutline = React.memo((props: PositionOutlineProps) => {
   const containingFrame = useContainingFrameForElement(props.path)
   const attributes = usePropsOrJSXAttributes(props.path)
-  if (containingFrame != null) {
-    let pins: PinOutlineProps[] = collectPinOutlines(
-      attributes,
-      props.frame,
-      containingFrame,
-      props.scale,
-    )
-    return (
-      <CanvasOffsetWrapper>
-        {pins.map((pin) => (
-          <PinOutline {...pin} key={pin.name} />
-        ))}
-      </CanvasOffsetWrapper>
-    )
-  } else {
+  if (containingFrame == null) {
     return null
   }
+
+  const pins: PinOutlineProps[] = collectPinOutlines(
+    attributes,
+    props.frame,
+    containingFrame,
+    props.scale,
+  )
+  return (
+    <CanvasOffsetWrapper>
+      {pins.map((pin) => (
+        <PinOutline {...pin} key={pin.name} />
+      ))}
+    </CanvasOffsetWrapper>
+  )
 })
 
-const usePropsOrJSXAttributes = (path: ElementPath): PropsOrJSXAttributes => {
+export const usePropsOrJSXAttributes = (path: ElementPath): PropsOrJSXAttributes => {
   return useEditorState(
     Substores.metadata,
     (store) => {
@@ -128,7 +129,7 @@ const useContainingFrameForElement = (path: ElementPath): CanvasRectangle | null
   )
 }
 
-const collectPinOutlines = (
+export const collectPinOutlines = (
   attributes: PropsOrJSXAttributes,
   frame: CanvasRectangle,
   containingFrame: CanvasRectangle,
@@ -182,29 +183,53 @@ const collectPinOutlines = (
   return pins
 }
 
-interface PinOutlineProps {
+export interface PinOutlineProps {
   name: string
   isHorizontalLine: boolean
-  startX: number
-  startY: number
-  size: number
+  startX?: number | string
+  endX?: number | string
+  startY?: number | string
+  endY?: number | string
+  size: number | string
   scale: number
 }
 
 const PinOutlineUnscaledSize = 1
 
-const PinOutline = React.memo((props: PinOutlineProps): JSX.Element => {
+export const PinOutline = React.memo((props: PinOutlineProps): JSX.Element => {
   const colorTheme = useColorTheme()
-  const width = props.isHorizontalLine ? props.size : 0
-  const height = props.isHorizontalLine ? 0 : props.size
+  function numberOrStringToSize(value: number | string): string {
+    return typeof value === 'number' ? `${value}px` : value
+  }
+  const width = numberOrStringToSize(props.isHorizontalLine ? props.size : 0)
+  const height = numberOrStringToSize(props.isHorizontalLine ? 0 : props.size)
   const borderTop = props.isHorizontalLine
     ? `${PinOutlineUnscaledSize / props.scale}px dashed ${colorTheme.primary.value}`
     : 'none'
   const borderLeft = props.isHorizontalLine
     ? 'none'
     : `${PinOutlineUnscaledSize / props.scale}px dashed ${colorTheme.primary.value}`
-  const lineLeft = props.startX - PinOutlineUnscaledSize / 2 / props.scale
-  const lineTop = props.startY - PinOutlineUnscaledSize / 2 / props.scale
+
+  const lineLeft =
+    props.startX == null
+      ? undefined
+      : `calc(${numberOrStringToSize(props.startX)} - ${
+          PinOutlineUnscaledSize / 2 / props.scale
+        }px)`
+  const lineTop =
+    props.startY == null
+      ? undefined
+      : `calc(${numberOrStringToSize(props.startY)} - ${
+          PinOutlineUnscaledSize / 2 / props.scale
+        }px)`
+  const lineRight =
+    props.endX == null
+      ? undefined
+      : `calc(${numberOrStringToSize(props.endX)} - ${PinOutlineUnscaledSize / 2 / props.scale}px)`
+  const lineBottom =
+    props.endY == null
+      ? undefined
+      : `calc(${numberOrStringToSize(props.endY)} - ${PinOutlineUnscaledSize / 2 / props.scale}px)`
 
   return (
     <div
@@ -212,6 +237,8 @@ const PinOutline = React.memo((props: PinOutlineProps): JSX.Element => {
         position: 'absolute',
         left: lineLeft,
         top: lineTop,
+        right: lineRight,
+        bottom: lineBottom,
         width: width,
         height: height,
         borderTop: borderTop,
