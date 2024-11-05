@@ -9,9 +9,11 @@ import type {
 import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
+  canvasRectangle,
   canvasVector,
   isInfinityRectangle,
   offsetPoint,
+  zeroRectangle,
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { cssNumber } from '../../../inspector/common/css-utils'
@@ -216,41 +218,34 @@ function runGridMoveAbsolute(
   // if moving an absolutely-positioned child which does not have pinning
   // props, do not set them at all.
   if (MetadataUtils.hasNoGridCellPositioning(selectedElementMetadata.specialSizeMeasurements)) {
-    const updateGridControlsCommand = showGridControls(
-      'mid-interaction',
-      gridPath,
-      targetCellCoords,
-      targetRootCell,
-    )
-
-    const absoluteMoveCommands = gridChildAbsoluteMoveCommands(
-      MetadataUtils.findElementByElementPath(jsxMetadata, selectedElementMetadata.elementPath),
-      MetadataUtils.getFrameOrZeroRectInCanvasCoords(gridPath, jsxMetadata),
-      interactionData,
-    )
-    return [...absoluteMoveCommands, updateGridControlsCommand]
+    return [
+      showGridControls('mid-interaction', gridPath, targetCellCoords, targetRootCell),
+      ...gridChildAbsoluteMoveCommands(
+        selectedElementMetadata,
+        MetadataUtils.getFrameOrZeroRectInCanvasCoords(gridPath, jsxMetadata),
+        interactionData,
+      ),
+    ]
   }
 
   // otherwise, return a rearrange move + absolute adjustment
-  const canvasRect = getGlobalFrameOfGridCell(gridCellGlobalFrames, targetRootCell)
-  if (canvasRect == null) {
-    return []
-  }
-  const absoluteMoveCommands = gridChildAbsoluteMoveCommands(
-    MetadataUtils.findElementByElementPath(jsxMetadata, selectedElementMetadata.elementPath),
-    canvasRect,
-    interactionData,
-  )
-  const rearrangeCommands = runGridMoveRearrange(
-    jsxMetadata,
-    interactionData,
-    selectedElementMetadata,
-    gridPath,
-    gridCellGlobalFrames,
-    gridTemplate,
-    null,
-  )
-  return [...rearrangeCommands, ...absoluteMoveCommands]
+  return [
+    ...gridChildAbsoluteMoveCommands(
+      selectedElementMetadata,
+      getGlobalFrameOfGridCell(gridCellGlobalFrames, targetRootCell) ??
+        canvasRectangle(zeroRectangle),
+      interactionData,
+    ),
+    ...runGridMoveRearrange(
+      jsxMetadata,
+      interactionData,
+      selectedElementMetadata,
+      gridPath,
+      gridCellGlobalFrames,
+      gridTemplate,
+      null,
+    ),
+  ]
 }
 
 function gridChildAbsoluteMoveCommands(

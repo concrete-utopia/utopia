@@ -77,12 +77,6 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const metadata = interactionSession?.latestMetadata ?? canvasState.startingMetadata
-  const originalGridPath = findOriginalGrid(metadata, gridPath)
-  if (originalGridPath == null) {
-    return null
-  }
-
   return {
     id: 'resize-grid-strategy',
     name: 'Resize Grid',
@@ -118,7 +112,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       const dragAmount = control.axis === 'column' ? drag.x : drag.y
 
       const gridSpecialSizeMeasurements =
-        canvasState.startingMetadata[EP.toString(originalGridPath)].specialSizeMeasurements
+        canvasState.startingMetadata[EP.toString(gridPath)].specialSizeMeasurements
 
       const originalValues =
         control.axis === 'column'
@@ -229,11 +223,11 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
       }
 
       let commands: CanvasCommand[] = [
-        updateBulkProperties('always', originalGridPath, propertiesToUpdate),
+        updateBulkProperties('always', gridPath, propertiesToUpdate),
         setCursorCommand(control.axis === 'column' ? CSSCursor.ColResize : CSSCursor.RowResize),
       ]
 
-      return strategyApplicationResult(commands, [originalGridPath])
+      return strategyApplicationResult(commands, [gridPath])
     },
   }
 }
