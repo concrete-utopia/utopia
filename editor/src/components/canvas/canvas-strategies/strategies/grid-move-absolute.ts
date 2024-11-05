@@ -1,18 +1,18 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import type {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-  GridContainerProperties,
+import {
+  type ElementInstanceMetadata,
+  type ElementInstanceMetadataMap,
+  type GridContainerProperties,
 } from '../../../../core/shared/element-template'
 import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
   canvasRectangle,
-  canvasVector,
   isInfinityRectangle,
   offsetPoint,
+  pointDifference,
   zeroRectangle,
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
@@ -228,12 +228,6 @@ function runGridMoveAbsolute(
 
   // otherwise, return a rearrange move + absolute adjustment
   return [
-    ...gridChildAbsoluteMoveCommands(
-      selectedElementMetadata,
-      getGlobalFrameOfGridCell(gridCellGlobalFrames, targetRootCell) ??
-        canvasRectangle(zeroRectangle),
-      interactionData,
-    ),
     ...runGridMoveRearrange(
       jsxMetadata,
       interactionData,
@@ -243,40 +237,33 @@ function runGridMoveAbsolute(
       gridTemplate,
       null,
     ),
+    ...gridChildAbsoluteMoveCommands(
+      selectedElementMetadata,
+      getGlobalFrameOfGridCell(gridCellGlobalFrames, targetRootCell) ??
+        canvasRectangle(zeroRectangle),
+      interactionData,
+    ),
   ]
 }
 
 function gridChildAbsoluteMoveCommands(
-  targetMetadata: ElementInstanceMetadata | null,
+  element: ElementInstanceMetadata,
   containingRect: CanvasRectangle,
   dragInteractionData: DragInteractionData,
 ): CanvasCommand[] {
   if (
-    targetMetadata == null ||
-    targetMetadata.globalFrame == null ||
-    isInfinityRectangle(targetMetadata.globalFrame) ||
-    !MetadataUtils.isPositionAbsolute(targetMetadata)
+    element.globalFrame == null ||
+    isInfinityRectangle(element.globalFrame) ||
+    dragInteractionData.drag == null
   ) {
     return []
   }
 
-  const offsetInTarget = canvasPoint({
-    x: dragInteractionData.originalDragStart.x - targetMetadata.globalFrame.x,
-    y: dragInteractionData.originalDragStart.y - targetMetadata.globalFrame.y,
-  })
-
-  const dragOffset = offsetPoint(
-    dragInteractionData.originalDragStart,
-    dragInteractionData.drag ?? canvasPoint({ x: 0, y: 0 }),
-  )
-
-  const offset = canvasVector({
-    x: dragOffset.x - containingRect.x - offsetInTarget.x,
-    y: dragOffset.y - containingRect.y - offsetInTarget.y,
-  })
+  const offsetInTarget = pointDifference(containingRect, element.globalFrame)
+  const dragOffset = offsetPoint(offsetInTarget, dragInteractionData.drag)
 
   return [
-    deleteProperties('always', targetMetadata.elementPath, [
+    deleteProperties('always', element.elementPath, [
       PP.create('style', 'top'),
       PP.create('style', 'left'),
       PP.create('style', 'right'),
@@ -284,16 +271,16 @@ function gridChildAbsoluteMoveCommands(
     ]),
     setCssLengthProperty(
       'always',
-      targetMetadata.elementPath,
+      element.elementPath,
       PP.create('style', 'top'),
-      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(offset.y, null) },
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(dragOffset.y, null) },
       null,
     ),
     setCssLengthProperty(
       'always',
-      targetMetadata.elementPath,
+      element.elementPath,
       PP.create('style', 'left'),
-      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(offset.x, null) },
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(dragOffset.x, null) },
       null,
     ),
   ]
