@@ -225,7 +225,7 @@ function runGridMoveAbsolute(
     ]
   }
 
-  // otherwise, return a rearrange move + absolute adjustment
+  // otherwise, return a change location + absolute adjustment
   return [
     ...runGridChangeElementLocation(
       jsxMetadata,

@@ -79,9 +79,9 @@ export const gridChangeElementLocationDuplicateStrategy: CanvasStrategyFactory =
   }
 
   return {
-    id: 'rearrange-grid-move-duplicate-strategy',
-    name: 'Grid Rearrange (Duplicate)',
-    descriptiveLabel: 'Grid Rearrange (Duplicate)',
+    id: 'grid-change-element-location-duplicate-strategy',
+    name: 'Change Location (Duplicate)',
+    descriptiveLabel: 'Change Location (Duplicate)',
     icon: {
       category: 'tools',
       type: 'pointer',

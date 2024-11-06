@@ -89,9 +89,9 @@ export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
   }
 
   return {
-    id: 'rearrange-grid-move-strategy',
-    name: 'Grid rearrange',
-    descriptiveLabel: 'Grid rearrange',
+    id: 'grid-change-element-location-strategy',
+    name: 'Change Location',
+    descriptiveLabel: 'Change Location',
     icon: {
       category: 'tools',
       type: 'pointer',
@@ -108,7 +108,7 @@ export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      const { commands, elementsToRerender } = getCommandsAndPatchForGridRearrange(
+      const { commands, elementsToRerender } = getCommandsAndPatchForGridChangeElementLocation(
         canvasState,
         interactionSession.interactionData,
         selectedElement,
@@ -131,7 +131,7 @@ export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
   }
 }
 
-function getCommandsAndPatchForGridRearrange(
+function getCommandsAndPatchForGridChangeElementLocation(
   canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
   selectedElement: ElementPath,
@@ -252,7 +252,7 @@ export function runGridChangeElementLocation(
     })
     .sort(sortElementsByGridPosition(templateColumnsCount))
 
-  const indexInSortedCellsForRearrange = cellsSortedByPosition.findIndex((s) =>
+  const indexInSortedCellsForChangeLocation = cellsSortedByPosition.findIndex((s) =>
     EP.pathsEqual(selectedElementMetadata.elementPath, s.path),
   )
 
@@ -268,7 +268,7 @@ export function runGridChangeElementLocation(
     reorderElement(
       'always',
       pathForCommands,
-      absolute(Math.max(indexInSortedCellsForRearrange, 0)),
+      absolute(Math.max(indexInSortedCellsForChangeLocation, 0)),
     ),
     updateGridControlsCommand,
   ]

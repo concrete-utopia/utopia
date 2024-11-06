@@ -79,7 +79,7 @@ import { wrapInContainerCommand } from '../commands/wrap-in-container-command'
 import type { ElementPath } from 'utopia-shared/src/types'
 import { reparentSubjectsForInteractionTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
-import { gridRearrangeResizeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
+import { gridChangeElementLocationResizeKeyboardStrategy } from './strategies/grid-change-element-location-keyboard-strategy'
 import createCachedSelector from 're-reselect'
 import { getActivePlugin } from '../plugins/style-plugins'
 import {
@@ -119,7 +119,7 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       gridChangeElementLocationStrategy,
       gridChangeElementLocationDuplicateStrategy,
       gridReorderStrategy,
-      gridRearrangeResizeKeyboardStrategy,
+      gridChangeElementLocationResizeKeyboardStrategy,
       gridMoveAbsoluteStrategy,
     ],
   )
