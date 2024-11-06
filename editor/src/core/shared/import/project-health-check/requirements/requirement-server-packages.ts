@@ -23,7 +23,7 @@ export default class CheckServerPackages implements RequirementCheck {
     if (serverPackages.length > 0) {
       return {
         resolution: RequirementResolutionResult.Critical,
-        resultText: 'Server packages found',
+        resultText: 'Unsupported server packages found',
         resultValue: serverPackages.join(', '),
       }
     }

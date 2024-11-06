@@ -238,33 +238,44 @@ function ActionButtons({ importResult }: { importResult: TotalImportResult }) {
       </React.Fragment>
     )
   }
-  if (
-    importResult.result == ImportOperationResult.Error ||
-    importResult.result == ImportOperationResult.CriticalError
-  ) {
+  if (importResult.result == ImportOperationResult.CriticalError) {
+    return (
+      <React.Fragment>
+        <div style={textStyle}>Error Importing Project</div>
+        <Button style={{ ...buttonStyle, marginLeft: 'auto' }} onClick={importADifferentProject}>
+          Cancel
+        </Button>
+      </React.Fragment>
+    )
+  }
+  if (importResult.result == ImportOperationResult.Error) {
     return (
       <React.Fragment>
         <div style={textStyle}>
-          {importResult.importStatus.status !== 'done' ||
-          importResult.result === ImportOperationResult.CriticalError
-            ? 'Error Importing Project'
+          {importResult.importStatus.status !== 'done'
+            ? 'Error While Importing Project'
             : 'Project Imported With Errors'}
         </div>
-        <Button style={{ ...buttonStyle, marginLeft: 'auto' }} onClick={importADifferentProject}>
-          Import A Different Project
-        </Button>
-        {unless(
-          importResult.result == ImportOperationResult.CriticalError,
+        {when(
+          importResult.importStatus.status !== 'done',
           <Button
             style={{
               cursor: 'pointer',
+              marginLeft: 'auto',
             }}
             onClick={continueAnyway}
           >
-            {importResult.importStatus.status === 'done'
-              ? 'Continue To Editor'
-              : 'Continue Importing'}
+            Continue Anyway
           </Button>,
+        )}
+        {importResult.importStatus.status === 'done' ? (
+          <Button style={{ ...buttonStyle }} onClick={hideWizard}>
+            Continue To Editor
+          </Button>
+        ) : (
+          <Button style={{ ...buttonStyle }} onClick={importADifferentProject}>
+            Cancel
+          </Button>
         )}
       </React.Fragment>
     )
