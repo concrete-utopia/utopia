@@ -1,12 +1,18 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
+import * as PP from '../../../../core/shared/property-path'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   GridContainerProperties,
+  GridElementProperties,
 } from '../../../../core/shared/element-template'
-import { gridPositionValue } from '../../../../core/shared/element-template'
+import {
+  getJSXAttribute,
+  gridPositionValue,
+  isJSXElement,
+} from '../../../../core/shared/element-template'
 import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { absolute } from '../../../../utils/utils'
 import type { CanvasCommand } from '../../commands/commands'
@@ -32,6 +38,13 @@ import {
   sortElementsByGridPosition,
 } from './grid-helpers'
 import { getTargetGridCellData } from '../../../inspector/grid-helpers'
+import { forEachOf } from '../../../../core/shared/optics/optic-utilities'
+import {
+  eitherRight,
+  fromField,
+  fromTypeGuard,
+} from '../../../../core/shared/optics/optic-creators'
+import { getJSXAttributesAtPath } from '../../../..//core/shared/jsx-attribute-utils'
 
 export const gridMoveRearrangeStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -214,11 +227,53 @@ export function runGridMoveRearrange(
   }
   const { targetCellCoords, targetRootCell } = targetGridCellData
 
-  const gridCellMoveCommands = setGridPropsCommands(pathForCommands, gridTemplate, {
+  const gridProps: Partial<GridElementProperties> = {
     gridColumnStart: gridPositionValue(targetRootCell.column),
     gridColumnEnd: gridPositionValue(targetRootCell.column + originalCellBounds.height),
     gridRowStart: gridPositionValue(targetRootCell.row),
     gridRowEnd: gridPositionValue(targetRootCell.row + originalCellBounds.width),
+  }
+
+  // TODO: Remove this logic once there is a fix for the handling of the track end fields.
+  let keepGridColumnEnd: boolean = true
+  let keepGridRowEnd: boolean = true
+  forEachOf(
+    fromField<ElementInstanceMetadata, 'element'>('element')
+      .compose(eitherRight())
+      .compose(fromTypeGuard(isJSXElement))
+      .compose(fromField('props')),
+    selectedElementMetadata,
+    (elementProperties) => {
+      const gridColumnEnd = getJSXAttributesAtPath(
+        elementProperties,
+        PP.create('style', 'gridColumnEnd'),
+      )
+      if (gridColumnEnd.attribute.type === 'ATTRIBUTE_NOT_FOUND') {
+        keepGridColumnEnd = false
+      }
+      const gridRowEnd = getJSXAttributesAtPath(elementProperties, PP.create('style', 'gridRowEnd'))
+      if (gridRowEnd.attribute.type === 'ATTRIBUTE_NOT_FOUND') {
+        keepGridRowEnd = false
+      }
+    },
+  )
+
+  const gridCellMoveCommands = setGridPropsCommands(
+    pathForCommands,
+    gridTemplate,
+    gridProps,
+  ).filter((command) => {
+    if (command.type === 'SET_PROPERTY') {
+      if (PP.pathsEqual(command.property, PP.create('style', 'gridColumnEnd'))) {
+        return keepGridColumnEnd
+      } else if (PP.pathsEqual(command.property, PP.create('style', 'gridRowEnd'))) {
+        return keepGridRowEnd
+      } else {
+        return true
+      }
+    } else {
+      return true
+    }
   })
 
   // The siblings of the grid element being moved

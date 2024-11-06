@@ -504,10 +504,10 @@ export var storyboard = (
         await mouseUpAtPoint(dragTarget, endPoint)
 
         {
-          const { top, left, gridColumn, gridRow } = child.style
-          expect({ top, left, gridColumn, gridRow }).toEqual({
-            gridColumn: '1 / 3',
-            gridRow: '1 / 3',
+          const { top, left, gridColumnStart, gridRowStart } = child.style
+          expect({ top, left, gridColumnStart, gridRowStart }).toEqual({
+            gridColumnStart: '1',
+            gridRowStart: '1',
             left: '59px',
             top: '59.5px',
           })
