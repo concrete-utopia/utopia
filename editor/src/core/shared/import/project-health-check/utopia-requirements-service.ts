@@ -11,10 +11,10 @@ import {
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 
 export const initialTexts: Record<ProjectRequirement, string> = {
-  storyboard: 'Checking storyboard.js',
   packageJsonEntries: 'Checking for a valid package.json',
   language: 'Checking project language',
   reactVersion: 'Checking React version',
+  storyboard: 'Checking storyboard.js',
   serverPackages: 'Checking for server packages',
 }
 

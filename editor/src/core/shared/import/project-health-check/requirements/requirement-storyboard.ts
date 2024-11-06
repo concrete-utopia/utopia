@@ -13,7 +13,7 @@ import { codeFile } from '../../../../../core/shared/project-file-types'
 import { addStoryboardFileToProject } from '../../../../../core/model/storyboard-utils'
 
 export default class CheckStoryboard implements RequirementCheck {
-  stage: RequirementCheckStage = 'pre-parsed'
+  stage: RequirementCheckStage = 'parsed'
   check(projectContents: ProjectContentTreeRoot): RequirementCheckResult {
     return createStoryboardFileIfNecessaryInner(projectContents)
   }

@@ -18,10 +18,10 @@ let requirementsToChecks: Record<ProjectRequirement, RequirementCheck> | undefin
 export function getChecks(): Record<ProjectRequirement, RequirementCheck> {
   if (requirementsToChecks == null) {
     requirementsToChecks = {
-      storyboard: new CheckStoryboard(),
       packageJsonEntries: new CheckPackageJson(),
       language: new CheckLanguage(),
       reactVersion: new CheckReactVersion(),
+      storyboard: new CheckStoryboard(),
       serverPackages: new CheckServerPackages(),
     }
   }

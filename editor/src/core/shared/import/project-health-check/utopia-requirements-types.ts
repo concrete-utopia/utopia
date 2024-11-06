@@ -60,27 +60,27 @@ export function requirementResolution(
 }
 
 export interface ProjectRequirements {
-  storyboard: RequirementResolution
   packageJsonEntries: RequirementResolution
   language: RequirementResolution
   reactVersion: RequirementResolution
+  storyboard: RequirementResolution
   serverPackages: RequirementResolution
 }
 
 export type ProjectRequirement = keyof ProjectRequirements
 
 export function newProjectRequirements(
-  storyboard: RequirementResolution,
   packageJsonEntries: RequirementResolution,
   language: RequirementResolution,
   reactVersion: RequirementResolution,
+  storyboard: RequirementResolution,
   serverPackages: RequirementResolution,
 ): ProjectRequirements {
   return {
-    storyboard,
     packageJsonEntries,
     language,
     reactVersion,
+    storyboard,
     serverPackages,
   }
 }
