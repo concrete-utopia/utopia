@@ -41,12 +41,6 @@ export const ImportWizard = React.memo(() => {
 
   const operations = importState.importOperations
 
-  const dispatch = useDispatch()
-
-  const handleDismiss = React.useCallback(() => {
-    hideImportWizard(dispatch)
-  }, [dispatch])
-
   const stopPropagation = React.useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
   }, [])
@@ -107,19 +101,6 @@ export const ImportWizard = React.memo(() => {
             }}
           >
             <div css={{ fontSize: 16, fontWeight: 400 }}>Loading Project</div>
-            {when(
-              totalImportResult.importStatus.status === 'in-progress',
-              <Button
-                highlight
-                style={{
-                  padding: 15,
-                  color: colorTheme.fg6.value,
-                }}
-                onClick={handleDismiss}
-              >
-                Cancel
-              </Button>,
-            )}
           </FlexRow>
           <div
             className='import-wizard-body'
