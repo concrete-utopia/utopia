@@ -8,9 +8,7 @@ import type { EditorDispatch } from '../../../../components/editor/action-types'
 import { updateProjectRequirements } from '../../../../components/editor/actions/action-creators'
 import type {
   PostParseValidationRequirement,
-  PostParseValidationRequirements,
   PreParseValidationRequirement,
-  PreParseValidationRequirements,
   ProjectRequirement,
   ProjectRequirements,
 } from './utopia-requirements-types'

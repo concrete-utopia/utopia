@@ -103,4 +103,8 @@ export interface RequirementCheck {
   check: (projectContents: ProjectContentTreeRoot) => RequirementCheckResult
 }
 
-export type RequirementCheckStage = 'pre-parsed' | 'parsed'
+export type RequirementCheckStage = 'preParse' | 'postParse'
+export type RequirementsByStage = {
+  preParse: Record<PreParseValidationRequirement, RequirementCheck>
+  postParse: Record<PostParseValidationRequirement, RequirementCheck>
+}

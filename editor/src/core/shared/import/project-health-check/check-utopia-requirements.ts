@@ -5,26 +5,17 @@ import CheckLanguage from './requirements/requirement-language'
 import CheckReactVersion from './requirements/requirement-react'
 import { RequirementResolutionResult } from './utopia-requirements-types'
 import type {
-  PostParseValidationRequirement,
-  PreParseValidationRequirement,
   ProjectRequirement,
   RequirementCheck,
+  RequirementCheckStage,
+  RequirementsByStage,
 } from './utopia-requirements-types'
 import { notifyCheckingRequirement, notifyResolveRequirement } from './utopia-requirements-service'
 import CheckStoryboard from './requirements/requirement-storyboard'
 import CheckServerPackages from './requirements/requirement-server-packages'
 
-let requirementsToCheck:
-  | {
-      preParse: Record<PreParseValidationRequirement, RequirementCheck>
-      postParse: Record<PostParseValidationRequirement, RequirementCheck>
-    }
-  | undefined
-
-export function getRequirementsToCheck(): {
-  preParse: Record<PreParseValidationRequirement, RequirementCheck>
-  postParse: Record<PostParseValidationRequirement, RequirementCheck>
-} {
+let requirementsToCheck: RequirementsByStage | undefined
+export function getRequirementsToCheck(): RequirementsByStage {
   if (requirementsToCheck == null) {
     requirementsToCheck = {
       preParse: {
@@ -59,7 +50,7 @@ export function checkAndFixUtopiaRequirementsParsed(
   )
 }
 
-export function getRequirementStage(requirement: ProjectRequirement): 'preParse' | 'postParse' {
+export function getRequirementStage(requirement: ProjectRequirement): RequirementCheckStage {
   if (requirement in getRequirementsToCheck().preParse) {
     return 'preParse'
   }
