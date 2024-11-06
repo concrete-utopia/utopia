@@ -3,17 +3,22 @@ import type { EditorAction, EditorDispatch } from '../../../components/editor/ac
 import {
   setImportWizardOpen,
   updateImportOperations,
+  updateImportStatus,
 } from '../../../components/editor/actions/action-creators'
 import { ImportOperationAction } from './import-operation-types'
 import type {
   ImportOperation,
-  ImportOperationResult,
   ImportOperationType,
+  ImportState,
+  ImportStatus,
+  TotalImportResult,
 } from './import-operation-types'
+import { ImportOperationResult } from './import-operation-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function startImportProcess(dispatch: EditorDispatch) {
   const actions: EditorAction[] = [
+    updateImportStatus({ status: 'in-progress' }),
     updateImportOperations(
       [
         { type: 'loadBranch' },
@@ -146,4 +151,46 @@ export function getUpdateOperationResult(
       assertNever(type)
   }
   return operations
+}
+
+export function updateProjectImportStatus(dispatch: EditorDispatch, importStatus: ImportStatus) {
+  dispatch([updateImportStatus(importStatus)])
+}
+
+export function getTotalImportStatusAndResult(importState: ImportState): TotalImportResult {
+  const operations = importState.importOperations
+  // if any operation is an error, the total result is immediately an error
+  for (const operation of operations) {
+    // with critical errors we are done immediately
+    if (operation.result == ImportOperationResult.CriticalError) {
+      return {
+        result: ImportOperationResult.CriticalError,
+        importStatus: { status: 'done' },
+      }
+    }
+    // we continue on errors, to let the user decide
+    if (operation.result == ImportOperationResult.Error) {
+      return {
+        result: ImportOperationResult.Error,
+        importStatus: importState.importStatus,
+      }
+    }
+  }
+  // if any operation is a warning, the total result is a warning
+  if (operations.some((op) => op.result == ImportOperationResult.Warn)) {
+    return {
+      result: ImportOperationResult.Warn,
+      importStatus: importState.importStatus,
+    }
+  }
+  return {
+    result: ImportOperationResult.Success,
+    importStatus: importState.importStatus,
+  }
+}
+
+export function pauseImport(dispatch: EditorDispatch): Promise<void> {
+  return new Promise((resolve) =>
+    updateProjectImportStatus(dispatch, { status: 'paused', onResume: resolve }),
+  )
 }

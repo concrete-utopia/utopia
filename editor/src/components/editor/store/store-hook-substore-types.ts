@@ -178,7 +178,7 @@ export const githubSubstateKeys = [
   'githubSettings',
   'githubOperations',
   'githubData',
-  'importOperations',
+  'importState',
   'projectRequirements',
 ] as const
 export const emptyGithubSubstate = {

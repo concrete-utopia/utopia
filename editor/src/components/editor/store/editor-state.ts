@@ -189,8 +189,12 @@ import type { OnlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
 import type { FancyError } from '../../../core/shared/code-exec-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
-import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
 import type { HuggingElementContentsStatus } from '../../../components/canvas/hugging-utils'
+import {
+  emptyImportState,
+  type ImportOperation,
+  type ImportState,
+} from '../../../core/shared/import/import-operation-types'
 import {
   emptyProjectRequirements,
   type ProjectRequirements,
@@ -1464,7 +1468,7 @@ export interface EditorState {
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
-  importOperations: Array<ImportOperation>
+  importState: ImportState
   projectRequirements: ProjectRequirements
   importWizardOpen: boolean
   githubData: GithubData
@@ -1550,7 +1554,7 @@ export function editorState(
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
-  importOperations: Array<ImportOperation>,
+  importState: ImportState,
   importWizardOpen: boolean,
   projectRequirements: ProjectRequirements,
   branchOriginContents: ProjectContentTreeRoot | null,
@@ -1637,7 +1641,7 @@ export function editorState(
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
-    importOperations: importOperations,
+    importState: importState,
     importWizardOpen: importWizardOpen,
     projectRequirements: projectRequirements,
     githubData: githubData,
@@ -2717,7 +2721,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
-    importOperations: [],
+    importState: emptyImportState(),
     importWizardOpen: false,
     projectRequirements: emptyProjectRequirements(),
     branchOriginContents: null,
@@ -3087,7 +3091,7 @@ export function editorModelFromPersistentModel(
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
     githubOperations: [],
-    importOperations: [],
+    importState: emptyImportState(),
     importWizardOpen: false,
     projectRequirements: emptyProjectRequirements(),
     refreshingDependencies: false,

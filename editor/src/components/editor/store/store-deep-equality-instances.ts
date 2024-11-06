@@ -491,7 +491,7 @@ import type {
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
   ComponentDescriptorFromDescriptorFile,
-  TypedInpsectorSpec,
+  TypedInspectorSpec,
   ShownInspectorSpec,
   StyleSectionState,
 } from '../../custom-code/code-file'
@@ -643,7 +643,11 @@ import type {
 } from '../../../core/property-controls/component-descriptor-parser'
 import type { Axis } from '../../../components/canvas/gap-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
-import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
+import {
+  newImportState,
+  type ImportOperation,
+  type ImportState,
+} from '../../../core/shared/import/import-operation-types'
 import type {
   ProjectRequirements,
   RequirementResolution,
@@ -3935,7 +3939,7 @@ export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCal
   }
 }
 
-const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<TypedInpsectorSpec> = (
+const InspectorSpecKeepDeepEquality: KeepDeepEqualityCall<TypedInspectorSpec> = (
   oldValue,
   newValue,
 ) => {
@@ -4904,6 +4908,14 @@ export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperati
 export const GithubOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<GithubOperation>> =
   arrayDeepEquality(GithubOperationKeepDeepEquality)
 
+export const ImportStateKeepDeepEquality: KeepDeepEqualityCall<ImportState> = combine2EqualityCalls(
+  (importState) => importState.importStatus,
+  createCallWithTripleEquals(),
+  (importState) => importState.importOperations,
+  arrayDeepEquality(ImportOperationKeepDeepEquality),
+  newImportState,
+)
+
 export const ColorSwatchDeepEquality: KeepDeepEqualityCall<ColorSwatch> = combine2EqualityCalls(
   (c) => c.id,
   StringKeepDeepEquality,
@@ -5439,10 +5451,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubOperations,
   )
 
-  const importOperationsResults = arrayDeepEquality(ImportOperationKeepDeepEquality)(
-    oldValue.importOperations,
-    newValue.importOperations,
-  )
+  const importStateResults = ImportStateKeepDeepEquality(oldValue.importState, newValue.importState)
 
   const importWizardOpenResults = BooleanKeepDeepEquality(
     oldValue.importWizardOpen,
@@ -5575,7 +5584,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubSettingsResults.areEqual &&
     imageDragSessionStateEqual.areEqual &&
     githubOperationsResults.areEqual &&
-    importOperationsResults.areEqual &&
+    importStateResults.areEqual &&
     importWizardOpenResults.areEqual &&
     projectRequirementsResults.areEqual &&
     branchContentsResults.areEqual &&
@@ -5664,7 +5673,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,
-      importOperationsResults.value,
+      importStateResults.value,
       importWizardOpenResults.value,
       projectRequirementsResults.value,
       branchContentsResults.value,

@@ -4,10 +4,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import {
-  type ElementInstanceMetadata,
-  type ElementInstanceMetadataMap,
-} from '../../../../core/shared/element-template'
+import { type ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
@@ -38,7 +35,7 @@ import {
 import type { DragInteractionData, InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { honoursPropsPosition, shouldKeepMovingDraggedGroupChildren } from './absolute-utils'
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
-import { runGridRearrangeMove } from './grid-helpers'
+import { runGridMoveRearrange } from './grid-move-rearrange-strategy'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { removeAbsolutePositioningProps } from './reparent-helpers/reparent-property-changes'
 import type { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
@@ -165,7 +162,6 @@ export function applyGridReparent(
 
         const allowedToReparent = selectedElements.every((selectedElement) => {
           return isAllowedToReparent(
-            canvasState.projectContents,
             canvasState.startingMetadata,
             selectedElement,
             newParent.intendedParentPath,
@@ -268,21 +264,34 @@ function gridReparentCommands(
     jsxMetadata,
     newParent.intendedParentPath,
   )
-  const gridCellGlobalFrames = targetParent?.specialSizeMeasurements.gridCellGlobalFrames ?? null
-  const gridTemplate = targetParent?.specialSizeMeasurements.containerGridProperties ?? null
+  if (targetParent == null) {
+    return null
+  }
 
-  const gridPropsCommands =
-    gridCellGlobalFrames != null && gridTemplate != null
-      ? runGridRearrangeMove(
-          target,
-          target,
-          jsxMetadata,
-          interactionData,
-          gridCellGlobalFrames,
-          gridTemplate,
-          newPath,
-        )
-      : []
+  const gridCellGlobalFrames = targetParent?.specialSizeMeasurements.gridCellGlobalFrames ?? null
+  if (gridCellGlobalFrames == null) {
+    return null
+  }
+
+  const gridTemplate = targetParent?.specialSizeMeasurements.containerGridProperties ?? null
+  if (gridTemplate == null) {
+    return null
+  }
+
+  const targetElement = MetadataUtils.findElementByElementPath(jsxMetadata, target)
+  if (targetElement == null) {
+    return null
+  }
+
+  const gridPropsCommands = runGridMoveRearrange(
+    jsxMetadata,
+    interactionData,
+    targetElement,
+    targetParent.elementPath,
+    gridCellGlobalFrames,
+    gridTemplate,
+    newPath,
+  )
 
   const removeAbsolutePositioningPropsCommands = removeAbsolutePositioningProps('always', newPath)
 

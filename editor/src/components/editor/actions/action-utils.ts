@@ -141,6 +141,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_ERROR_BOUNDARY_HANDLING':
     case 'SET_IMPORT_WIZARD_OPEN':
     case 'UPDATE_IMPORT_OPERATIONS':
+    case 'UPDATE_IMPORT_STATUS':
     case 'UPDATE_PROJECT_REQUIREMENTS':
       return true
 

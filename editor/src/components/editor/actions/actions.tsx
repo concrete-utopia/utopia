@@ -355,6 +355,7 @@ import type {
   SetImportWizardOpen,
   UpdateImportOperations,
   UpdateProjectRequirements,
+  UpdateImportStatus,
 } from '../action-types'
 import { isAlignment, isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -1036,7 +1037,7 @@ export function restoreEditorState(
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
-    importOperations: currentEditor.importOperations,
+    importState: currentEditor.importState,
     projectRequirements: currentEditor.projectRequirements,
     importWizardOpen: currentEditor.importWizardOpen,
     branchOriginContents: currentEditor.branchOriginContents,
@@ -2190,13 +2191,22 @@ export const UPDATE_FNS = {
   },
   UPDATE_IMPORT_OPERATIONS: (action: UpdateImportOperations, editor: EditorModel): EditorModel => {
     const resultImportOperations = getUpdateOperationResult(
-      editor.importOperations,
+      editor.importState.importOperations,
       action.operations,
       action.type,
     )
     return {
       ...editor,
-      importOperations: resultImportOperations,
+      importState: { ...editor.importState, importOperations: resultImportOperations },
+    }
+  },
+  UPDATE_IMPORT_STATUS: (action: UpdateImportStatus, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      importState: {
+        ...editor.importState,
+        importStatus: action.importStatus,
+      },
     }
   },
   UPDATE_PROJECT_REQUIREMENTS: (
