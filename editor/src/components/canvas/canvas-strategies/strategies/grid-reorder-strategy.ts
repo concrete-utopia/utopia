@@ -35,7 +35,7 @@ import {
 } from './grid-helpers'
 import { getTargetGridCellData } from '../../../inspector/grid-helpers'
 
-export const gridMoveReorderStrategy: CanvasStrategyFactory = (
+export const gridReorderStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ) => {
@@ -171,7 +171,7 @@ function getCommandsAndPatchForGridReorder(
     return { commands: [], elementsToRerender: [] }
   }
 
-  const commands = runGridMoveReorder(
+  const commands = runGridReorder(
     canvasState.startingMetadata,
     interactionData,
     selectedElementMetadata,
@@ -186,7 +186,7 @@ function getCommandsAndPatchForGridReorder(
   }
 }
 
-function runGridMoveReorder(
+function runGridReorder(
   jsxMetadata: ElementInstanceMetadataMap,
   interactionData: DragInteractionData,
   selectedElementMetadata: ElementInstanceMetadata,

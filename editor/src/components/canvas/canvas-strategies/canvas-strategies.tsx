@@ -67,10 +67,10 @@ import type { InsertionSubject, InsertionSubjectWrapper } from '../../editor/edi
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './strategies/fragment-like-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { gridMoveRearrangeStrategy } from './strategies/grid-move-rearrange-strategy'
+import { gridChangeElementLocationStrategy } from './strategies/grid-change-element-location-strategy'
 import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
-import { gridMoveRearrangeDuplicateStrategy } from './strategies/grid-move-rearrange-duplicate-strategy'
+import { gridChangeElementLocationDuplicateStrategy } from './strategies/grid-change-element-location-duplicate-strategy'
 import { setGridGapStrategy } from './strategies/set-grid-gap-strategy'
 import type { CanvasCommand } from '../commands/commands'
 import { foldAndApplyCommandsInner } from '../commands/commands'
@@ -87,7 +87,7 @@ import {
   GridControls,
   isGridControlsProps,
 } from '../controls/grid-controls-for-strategies'
-import { gridMoveReorderStrategy } from './strategies/grid-move-reorder-strategy'
+import { gridReorderStrategy } from './strategies/grid-reorder-strategy'
 import { gridMoveAbsoluteStrategy } from './strategies/grid-move-absolute'
 
 export type CanvasStrategyFactory = (
@@ -116,9 +116,9 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       convertToAbsoluteAndMoveStrategy,
       convertToAbsoluteAndMoveAndSetParentFixedStrategy,
       reorderSliderStategy,
-      gridMoveRearrangeStrategy,
-      gridMoveRearrangeDuplicateStrategy,
-      gridMoveReorderStrategy,
+      gridChangeElementLocationStrategy,
+      gridChangeElementLocationDuplicateStrategy,
+      gridReorderStrategy,
       gridRearrangeResizeKeyboardStrategy,
       gridMoveAbsoluteStrategy,
     ],
