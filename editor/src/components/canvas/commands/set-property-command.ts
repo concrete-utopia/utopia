@@ -110,7 +110,7 @@ export const runSetProperty = (
     }
   }
 
-  const { editorStatePatch } = runStyleUpdateForStrategy(
+  const { editorStatePatches } = runStyleUpdateForStrategy(
     interactionLifecycle,
     editorState,
     command.element,
@@ -118,7 +118,7 @@ export const runSetProperty = (
   )
 
   return {
-    editorStatePatches: [editorStatePatch],
+    editorStatePatches: editorStatePatches,
     commandDescription: getCommandDescription(command),
   }
 }

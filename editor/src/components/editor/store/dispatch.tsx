@@ -995,15 +995,19 @@ function editorDispatchInner(
       )
     }
 
-    resetUpdatedProperties()
+    const storedStateForStrategies: EditorStoreFull = {
+      ...storedState,
+      patchedEditor: resetUpdatedProperties(storedState.patchedEditor),
+      unpatchedEditor: resetUpdatedProperties(storedState.unpatchedEditor),
+    }
 
     const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } =
       handleStrategies(
         strategiesToUse,
         dispatchedActions,
-        storedState,
+        storedStateForStrategies,
         result,
-        storedState.patchedDerived,
+        storedStateForStrategies.patchedDerived,
       )
 
     return {

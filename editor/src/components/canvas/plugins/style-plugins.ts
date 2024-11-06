@@ -1,5 +1,5 @@
 import type { ElementPath } from 'utopia-shared/src/types'
-import type { EditorState } from '../../editor/store/editor-state'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type {
   InteractionLifecycle,
   StyleInfoFactory,
@@ -19,7 +19,6 @@ import { applyValuesAtPath } from '../commands/utils/property-utils'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import { isStyleInfoKey, type StyleInfo } from '../canvas-types'
-import { atom, createStore } from 'jotai'
 
 export interface UpdateCSSProp {
   type: 'set'
@@ -62,48 +61,48 @@ export function getActivePlugin(editorState: EditorState): StylePlugin {
   return InlineStylePlugin
 }
 
-interface StylePropsUpdatedDuringInteraction {
+export interface StylePropsUpdatedDuringInteraction {
   propertiesUpdated: string[]
   propertiesDeleted: string[]
 }
 
-interface UpdatedProperties {
+export interface UpdatedProperties {
   [elementPathString: string]: StylePropsUpdatedDuringInteraction
 }
 
-const UpdatedPropertiesAtom = atom<UpdatedProperties>({})
-const UpdatedPropertiesStore = createStore()
-
-export function resetUpdatedProperties() {
-  UpdatedPropertiesStore.set(UpdatedPropertiesAtom, {})
+export function resetUpdatedProperties(editorState: EditorState): EditorState {
+  return { ...editorState, propertiesUpdatedDuringInteraction: {} }
 }
 
-function getPropertiesUpdatedDuringInteraction() {
-  return UpdatedPropertiesStore.get(UpdatedPropertiesAtom)
+function getPropertiesUpdatedDuringInteraction(editorState: EditorState) {
+  return editorState.propertiesUpdatedDuringInteraction
 }
 
 function ensureElementPathInUpdatedPropertiesGlobal(
   elementPath: ElementPath,
   updatedProperties: UpdatedProperties,
 ) {
+  const updatedPropertiesToExtend = { ...updatedProperties }
   const elementPathString = EP.toString(elementPath)
-  if (!(elementPathString in updatedProperties)) {
-    updatedProperties[elementPathString] = {
+  if (!(elementPathString in updatedPropertiesToExtend)) {
+    updatedPropertiesToExtend[elementPathString] = {
       propertiesDeleted: [],
       propertiesUpdated: [],
     }
   }
 
-  return updatedProperties
+  return updatedPropertiesToExtend
 }
 
 function runStyleUpdateMidInteraction(
   editorState: EditorState,
   elementPath: ElementPath,
   updates: StyleUpdate[],
-) {
-  const updatedProperties = getPropertiesUpdatedDuringInteraction()
-  ensureElementPathInUpdatedPropertiesGlobal(elementPath, updatedProperties)
+): { editorStateWithChanges: EditorState; editorStatePatches: EditorStatePatch[] } {
+  const updatedProperties = ensureElementPathInUpdatedPropertiesGlobal(
+    elementPath,
+    getPropertiesUpdatedDuringInteraction(editorState),
+  )
   for (const update of updates) {
     switch (update.type) {
       case 'delete':
@@ -116,8 +115,18 @@ function runStyleUpdateMidInteraction(
         assertNever(update)
     }
   }
-  UpdatedPropertiesStore.set(UpdatedPropertiesAtom, updatedProperties)
-  return InlineStylePlugin.updateStyles(editorState, elementPath, updates)
+  const { editorStatePatch, editorStateWithChanges } = InlineStylePlugin.updateStyles(
+    editorState,
+    elementPath,
+    updates,
+  )
+  return {
+    editorStateWithChanges: editorStateWithChanges,
+    editorStatePatches: [
+      editorStatePatch,
+      { propertiesUpdatedDuringInteraction: { $set: updatedProperties } },
+    ],
+  }
 }
 
 const makeZeroProp = (cssProp: string, zeroValue: string = '0px'): ValueAtPath => {
@@ -178,7 +187,7 @@ export function patchRemovedProperties(editorState: EditorState): EditorState {
     elementPathTree: editorState.elementPathTree,
   })
 
-  const propertiesUpdatedDuringInteraction = getPropertiesUpdatedDuringInteraction()
+  const propertiesUpdatedDuringInteraction = getPropertiesUpdatedDuringInteraction(editorState)
 
   return Object.entries(propertiesUpdatedDuringInteraction).reduce(
     (acc, [elementPathString, updatedProperties]) => {
@@ -205,7 +214,13 @@ export function runStyleUpdateForStrategy(
     case 'mid-interaction':
       return runStyleUpdateMidInteraction(editorState, elementPath, updates)
     case 'end-interaction':
-      return getActivePlugin(editorState).updateStyles(editorState, elementPath, updates)
+      const { editorStatePatch, editorStateWithChanges } = getActivePlugin(
+        editorState,
+      ).updateStyles(editorState, elementPath, updates)
+      return {
+        editorStateWithChanges: editorStateWithChanges,
+        editorStatePatches: [editorStatePatch],
+      }
     default:
       assertNever(commandLifecycle)
   }

@@ -51,7 +51,7 @@ export const runDeleteProperties = (
     command.properties,
   )
 
-  const { editorStatePatch } = runStyleUpdateForStrategy(
+  const { editorStatePatches } = runStyleUpdateForStrategy(
     interactionLifecycle,
     editorStateWithChanges,
     command.element,
@@ -59,7 +59,7 @@ export const runDeleteProperties = (
   )
 
   return {
-    editorStatePatches: [editorStatePatch],
+    editorStatePatches: editorStatePatches,
     commandDescription: `Delete Properties ${command.properties
       .map(PP.toString)
       .join(',')} on ${EP.toUid(command.element)}`,
