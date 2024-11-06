@@ -94,4 +94,7 @@ export interface RequirementCheckResult {
 
 export interface RequirementCheck {
   check: (projectContents: ProjectContentTreeRoot) => RequirementCheckResult
+  stage: RequirementCheckStage
 }
+
+export type RequirementCheckStage = 'pre-parsed' | 'parsed'

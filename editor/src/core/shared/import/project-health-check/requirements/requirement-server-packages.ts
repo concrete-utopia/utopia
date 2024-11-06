@@ -1,4 +1,5 @@
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
+import type { RequirementCheckStage } from '../utopia-requirements-types'
 import {
   RequirementResolutionResult,
   type RequirementCheck,
@@ -11,6 +12,7 @@ import builtinModules from './builtin-modules.json'
 const serverPackagesRestrictionList: RegExp[] = [/^next/, /^remix/, /^astro/, /^svelte/]
 
 export default class CheckServerPackages implements RequirementCheck {
+  stage: RequirementCheckStage = 'parsed'
   check(projectContents: ProjectContentTreeRoot): RequirementCheckResult {
     const projectDependencies = getProjectDependencies(projectContents) ?? {}
 

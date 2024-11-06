@@ -1,4 +1,5 @@
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
+import type { RequirementCheckStage } from '../utopia-requirements-types'
 import {
   RequirementResolutionResult,
   type RequirementCheck,
@@ -7,6 +8,7 @@ import {
 import { applyToAllUIJSFiles } from '../../../../model/project-file-utils'
 
 export default class CheckProjectLanguage implements RequirementCheck {
+  stage: RequirementCheckStage = 'pre-parsed'
   check(projectContents: ProjectContentTreeRoot): RequirementCheckResult {
     let jsCount = 0
     let tsCount = 0

@@ -12,25 +12,56 @@ import {
 } from './utopia-requirements-service'
 import CheckStoryboard from './requirements/requirement-storyboard'
 import CheckServerPackages from './requirements/requirement-server-packages'
+import { objectFilter } from '../../object-utils'
 
-export function checkAndFixUtopiaRequirements(
+let requirementsToChecks: Record<ProjectRequirement, RequirementCheck> | undefined
+export function getChecks(): Record<ProjectRequirement, RequirementCheck> {
+  if (requirementsToChecks == null) {
+    requirementsToChecks = {
+      storyboard: new CheckStoryboard(),
+      packageJsonEntries: new CheckPackageJson(),
+      language: new CheckLanguage(),
+      reactVersion: new CheckReactVersion(),
+      serverPackages: new CheckServerPackages(),
+    }
+  }
+  return requirementsToChecks
+}
+
+export function checkAndFixUtopiaRequirementsPreParsed(
+  dispatch: EditorDispatch,
+  projectContents: ProjectContentTreeRoot,
+): { result: RequirementResolutionResult; fixedProjectContents: ProjectContentTreeRoot } {
+  return checkAndFixUtopiaRequirements(
+    dispatch,
+    projectContents,
+    objectFilter((check) => check.stage === 'pre-parsed', getChecks()),
+  )
+}
+
+export function checkAndFixUtopiaRequirementsParsed(
   dispatch: EditorDispatch,
   parsedProjectContents: ProjectContentTreeRoot,
 ): { result: RequirementResolutionResult; fixedProjectContents: ProjectContentTreeRoot } {
-  const checks: Record<ProjectRequirement, RequirementCheck> = {
-    storyboard: new CheckStoryboard(),
-    packageJsonEntries: new CheckPackageJson(),
-    language: new CheckLanguage(),
-    reactVersion: new CheckReactVersion(),
-    serverPackages: new CheckServerPackages(),
-  }
-  let projectContents = parsedProjectContents
+  return checkAndFixUtopiaRequirements(
+    dispatch,
+    parsedProjectContents,
+    objectFilter((check) => check.stage === 'parsed', getChecks()),
+  )
+}
+
+function checkAndFixUtopiaRequirements(
+  dispatch: EditorDispatch,
+  projectContents: ProjectContentTreeRoot,
+  checks: Partial<Record<ProjectRequirement, RequirementCheck>>,
+): { result: RequirementResolutionResult; fixedProjectContents: ProjectContentTreeRoot } {
+  let updatedProjectContents = projectContents
   let result: RequirementResolutionResult = RequirementResolutionResult.Passed
   // iterate over all checks, updating the project contents as we go
   for (const [name, check] of Object.entries(checks)) {
     const checkName = name as ProjectRequirement
     notifyCheckingRequirement(dispatch, checkName, initialTexts[checkName])
-    const checkResult = check.check(projectContents)
+    const checkResult = check.check(updatedProjectContents)
     if (checkResult.resolution === RequirementResolutionResult.Critical) {
       result = RequirementResolutionResult.Critical
     }
@@ -41,7 +72,7 @@ export function checkAndFixUtopiaRequirements(
       checkResult.resultText,
       checkResult.resultValue,
     )
-    projectContents = checkResult.newProjectContents ?? projectContents
+    updatedProjectContents = checkResult.newProjectContents ?? updatedProjectContents
   }
-  return { result: result, fixedProjectContents: projectContents }
+  return { result: result, fixedProjectContents: updatedProjectContents }
 }

@@ -22,8 +22,8 @@ export function startImportProcess(dispatch: EditorDispatch) {
     updateImportOperations(
       [
         { type: 'loadBranch' },
-        { type: 'parseFiles' },
         { type: 'checkRequirements' },
+        { type: 'parseFiles' },
         { type: 'refreshDependencies' },
       ],
       ImportOperationAction.Replace,

@@ -1,12 +1,17 @@
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import { RevisionsState } from 'utopia-shared/src/types'
 import { getPackageJson } from '../../../../../components/assets'
-import type { RequirementCheck, RequirementCheckResult } from '../utopia-requirements-types'
+import type {
+  RequirementCheck,
+  RequirementCheckResult,
+  RequirementCheckStage,
+} from '../utopia-requirements-types'
 import { RequirementResolutionResult } from '../utopia-requirements-types'
 import { addFileToProjectContents } from '../../../../../components/assets'
 import { codeFile } from '../../../../../core/shared/project-file-types'
 
 export default class PackageJsonCheckAndFix implements RequirementCheck {
+  stage: RequirementCheckStage = 'pre-parsed'
   check(projectContents: ProjectContentTreeRoot): RequirementCheckResult {
     const parsedPackageJson = getPackageJson(projectContents)
     if (parsedPackageJson == null) {
