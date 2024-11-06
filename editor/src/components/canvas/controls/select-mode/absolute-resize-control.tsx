@@ -147,7 +147,7 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
         let diagonally = true
 
         for (const element of selectedElementsRef.current) {
-          if (MetadataUtils.isGridCell(metadata, element)) {
+          if (MetadataUtils.isGridItem(metadata, element)) {
             if (isFillOrStretchModeAppliedOnAnySide(metadata, element)) {
               diagonally = false
             }

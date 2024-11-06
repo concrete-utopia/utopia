@@ -77,7 +77,7 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
     'some',
   )
 
-  const isGridCell = MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)
+  const isGridCell = MetadataUtils.isGridItem(canvasState.startingMetadata, selectedElement)
   const isGrid = MetadataUtils.isGridLayoutedContainer(
     MetadataUtils.findElementByElementPath(canvasState.startingMetadata, selectedElement),
   )

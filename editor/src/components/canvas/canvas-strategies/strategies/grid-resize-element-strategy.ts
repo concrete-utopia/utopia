@@ -40,7 +40,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
   if (selectedElementMetadata == null) {
     return null
   }
-  const isElementInsideGrid = MetadataUtils.isGridCell(
+  const isElementInsideGrid = MetadataUtils.isGridItem(
     canvasState.startingMetadata,
     selectedElement,
   )
