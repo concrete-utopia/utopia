@@ -292,5 +292,114 @@ describe('push intended bounds', () => {
         )
       })
     })
+    it('keeps the container dimensions with a fractionally defined grid becomes empty', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+      import * as React from 'react'
+      import { Storyboard, Group } from 'utopia-api'
+
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <div data-uid='grid' style={{ display: 'grid', gridTemplateColumns: '1fr', gridRowColumns: '1fr', alignItems: 'center', justifyContent: 'center', padding: 10, gap: 10, backgroundColor: 'white', position: 'absolute', left: 21, top: 17 }}>
+            <div data-uid='delete-me' style={{ backgroundColor: 'yellow', width: 80, height: 80 }}>
+              delete me pls
+            </div>
+          </div>
+        </Storyboard>
+      )
+    `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(renderResult, [EP.fromString(`sb/grid/delete-me`)])
+
+      await renderResult.dispatch([deleteSelected()], true)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+    import * as React from 'react'
+    import { Storyboard, Group } from 'utopia-api'
+
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <div data-uid='grid' style={{ display: 'grid', gridTemplateColumns: '1fr', gridRowColumns: '1fr', alignItems: 'center', justifyContent: 'center', padding: 10, gap: 10, backgroundColor: 'white', position: 'absolute', left: 21, top: 17, width: 100, height: 100 }} />
+      </Storyboard>
+    )
+  `),
+      )
+    })
+
+    it('keeps the container dimensions with a grid that has auto repeat becomes empty', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+      import * as React from 'react'
+      import { Storyboard, Group } from 'utopia-api'
+
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <div data-uid='grid' style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gridRowColumns: 'repeat(5, 1fr)', alignItems: 'center', justifyContent: 'center', padding: 10, gap: 10, backgroundColor: 'white', position: 'absolute', left: 21, top: 17 }}>
+            <div data-uid='delete-me' style={{ backgroundColor: 'yellow', width: 80, height: 80 }}>
+              delete me pls
+            </div>
+          </div>
+        </Storyboard>
+      )
+    `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(renderResult, [EP.fromString(`sb/grid/delete-me`)])
+
+      await renderResult.dispatch([deleteSelected()], true)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+    import * as React from 'react'
+    import { Storyboard, Group } from 'utopia-api'
+
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <div data-uid='grid' style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gridRowColumns: 'repeat(5, 1fr)', alignItems: 'center', justifyContent: 'center', padding: 10, gap: 10, backgroundColor: 'white', position: 'absolute', left: 21, top: 17, width: 140, height: 100 }} />
+      </Storyboard>
+    )
+  `),
+      )
+    })
+    it('keeps the container dimensions with a grid that has all sorts of options becomes empty', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+      import * as React from 'react'
+      import { Storyboard, Group } from 'utopia-api'
+
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <div data-uid='grid' style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(10rem, 1fr))', gridRowColumns: 'auto', alignItems: 'center', justifyContent: 'center', padding: 10, gap: 10, backgroundColor: 'white', position: 'absolute', left: 21, top: 17 }}>
+            <div data-uid='delete-me' style={{ backgroundColor: 'yellow', width: 80, height: 80 }}>
+              delete me pls
+            </div>
+          </div>
+        </Storyboard>
+      )
+    `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(renderResult, [EP.fromString(`sb/grid/delete-me`)])
+
+      await renderResult.dispatch([deleteSelected()], true)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+    import * as React from 'react'
+    import { Storyboard, Group } from 'utopia-api'
+
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <div data-uid='grid' style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(10rem, 1fr))', gridRowColumns: 'auto', alignItems: 'center', justifyContent: 'center', padding: 10, gap: 10, backgroundColor: 'white', position: 'absolute', left: 21, top: 17, width: 180, height: 100 }} />
+      </Storyboard>
+    )
+  `),
+      )
+    })
   })
 })
