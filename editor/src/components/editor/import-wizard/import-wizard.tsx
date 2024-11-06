@@ -100,7 +100,7 @@ export const ImportWizard = React.memo(() => {
               flex: 'none',
             }}
           >
-            <div css={{ fontSize: 16, fontWeight: 400 }}>Loading Project</div>
+            <div css={{ fontSize: 16, fontWeight: 400 }}>Cloning Project</div>
           </FlexRow>
           <div
             className='import-wizard-body'

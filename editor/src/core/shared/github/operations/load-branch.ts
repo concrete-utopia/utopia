@@ -52,6 +52,8 @@ import {
 import {
   RequirementResolutionResult,
   resetRequirementsResolutions,
+  startPostParseValidation,
+  startPreParseValidation,
 } from '../../import/project-health-check/utopia-requirements-service'
 import {
   checkAndFixUtopiaRequirementsParsed,
@@ -189,8 +191,9 @@ export const updateProjectWithBranchContent =
             }
             notifyOperationFinished(dispatch, { type: 'loadBranch' }, ImportOperationResult.Success)
 
+            // pre parse validation
             resetRequirementsResolutions(dispatch)
-
+            startPreParseValidation(dispatch)
             const {
               fixedProjectContents: projectContents,
               result: preParsedRequirementResolutionResult,
@@ -199,6 +202,8 @@ export const updateProjectWithBranchContent =
               // wait for the user to resume the import if they choose to
               await pauseImport(dispatch)
             }
+
+            // parse files
             notifyOperationStarted(dispatch, { type: 'parseFiles' })
             // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
             // So that it will override any existing files that might already exist in the project when sending them to VS Code.
@@ -208,10 +213,11 @@ export const updateProjectWithBranchContent =
             )
             notifyOperationFinished(dispatch, { type: 'parseFiles' }, ImportOperationResult.Success)
 
-            const { fixedProjectContents, result: requirementResolutionResult } =
+            // post parse validation
+            startPostParseValidation(dispatch)
+            const { fixedProjectContents, result: postParsedRequirementResolutionResult } =
               checkAndFixUtopiaRequirementsParsed(dispatch, parseResults)
-
-            if (requirementResolutionResult === RequirementResolutionResult.Critical) {
+            if (postParsedRequirementResolutionResult === RequirementResolutionResult.Critical) {
               // wait for the user to resume the import if they choose to
               await pauseImport(dispatch)
             }

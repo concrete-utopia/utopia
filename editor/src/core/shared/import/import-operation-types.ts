@@ -43,26 +43,48 @@ type ImportParseFiles = {
   type: 'parseFiles'
 } & ImportOperationData
 
-export type ImportCheckRequirementAndFix = ImportOperationData & {
-  type: 'checkRequirementAndFix'
+export type ImportCheckRequirementAndFixPostParse = ImportOperationData & {
+  type: 'checkRequirementAndFixPostParse'
   resolution?: RequirementResolutionResult
   text: string
   id: string
 }
 
-export function importCheckRequirementAndFix(
+export function importCheckRequirementAndFixPostParse(
   id: string,
   text: string,
-): ImportCheckRequirementAndFix {
+): ImportCheckRequirementAndFixPostParse {
   return {
-    type: 'checkRequirementAndFix',
+    type: 'checkRequirementAndFixPostParse',
     text: text,
     id: id,
   }
 }
 
-type ImportCheckRequirements = ImportOperationData & {
-  type: 'checkRequirements'
+export type ImportCheckRequirementAndFixPreParse = ImportOperationData & {
+  type: 'checkRequirementAndFixPreParse'
+  resolution?: RequirementResolutionResult
+  text: string
+  id: string
+}
+
+export function importCheckRequirementAndFixPreParse(
+  id: string,
+  text: string,
+): ImportCheckRequirementAndFixPreParse {
+  return {
+    type: 'checkRequirementAndFixPreParse',
+    text: text,
+    id: id,
+  }
+}
+
+type ImportCheckRequirementsPostParse = ImportOperationData & {
+  type: 'checkRequirementsPostParse'
+}
+
+type ImportCheckRequirementsPreParse = ImportOperationData & {
+  type: 'checkRequirementsPreParse'
 }
 
 export type ImportOperation =
@@ -70,8 +92,10 @@ export type ImportOperation =
   | ImportRefreshDependencies
   | ImportParseFiles
   | ImportFetchDependency
-  | ImportCheckRequirementAndFix
-  | ImportCheckRequirements
+  | ImportCheckRequirementAndFixPreParse
+  | ImportCheckRequirementAndFixPostParse
+  | ImportCheckRequirementsPreParse
+  | ImportCheckRequirementsPostParse
 
 export type ImportOperationType = ImportOperation['type']
 

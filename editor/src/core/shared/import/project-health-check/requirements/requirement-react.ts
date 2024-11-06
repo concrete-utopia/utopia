@@ -1,5 +1,4 @@
 import type { ProjectContentTreeRoot } from 'utopia-shared/src/types'
-import type { RequirementCheckStage } from '../utopia-requirements-types'
 import {
   RequirementResolutionResult,
   type RequirementCheck,
@@ -11,7 +10,7 @@ import { getProjectDependencies } from '../../../../../components/assets'
 const SUPPORTED_REACT_VERSION_RANGE = '16.8.0 - 18.x'
 
 export default class CheckReactRequirement implements RequirementCheck {
-  stage: RequirementCheckStage = 'pre-parsed'
+  initialText = 'Checking React version'
   check(projectContents: ProjectContentTreeRoot): RequirementCheckResult {
     const projectDependencies = getProjectDependencies(projectContents)
     const reactVersion = projectDependencies?.react

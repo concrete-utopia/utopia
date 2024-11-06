@@ -59,14 +59,20 @@ export function requirementResolution(
   }
 }
 
-export interface ProjectRequirements {
+export type PreParseValidationRequirements = {
   packageJsonEntries: RequirementResolution
   language: RequirementResolution
   reactVersion: RequirementResolution
+}
+export type PreParseValidationRequirement = keyof PreParseValidationRequirements
+
+export type PostParseValidationRequirements = {
   storyboard: RequirementResolution
   serverPackages: RequirementResolution
 }
+export type PostParseValidationRequirement = keyof PostParseValidationRequirements
 
+export type ProjectRequirements = PreParseValidationRequirements & PostParseValidationRequirements
 export type ProjectRequirement = keyof ProjectRequirements
 
 export function newProjectRequirements(
@@ -93,8 +99,8 @@ export interface RequirementCheckResult {
 }
 
 export interface RequirementCheck {
+  initialText: string
   check: (projectContents: ProjectContentTreeRoot) => RequirementCheckResult
-  stage: RequirementCheckStage
 }
 
 export type RequirementCheckStage = 'pre-parsed' | 'parsed'
