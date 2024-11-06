@@ -24,7 +24,7 @@ import type { GridCellCoordinates } from './grid-cell-bounds'
 import { gridCellTargetId } from './grid-cell-bounds'
 
 describe('grid element change location strategy', () => {
-  it('can change location elements on a grid', async () => {
+  it('can change the location of elements on a grid', async () => {
     const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
     const testId = 'aaa'
@@ -41,7 +41,7 @@ describe('grid element change location strategy', () => {
     })
   })
 
-  it('can change location elements in a grid component', async () => {
+  it('can change the location of elements in a grid component', async () => {
     const editor = await renderTestEditorWithCode(
       ProjectCodeGridComponent,
       'await-first-dom-report',
@@ -61,7 +61,7 @@ describe('grid element change location strategy', () => {
     })
   })
 
-  it('can not change location multicell element out of the grid', async () => {
+  it('can not change location of a multicell element out of the grid', async () => {
     const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
     const testId = 'aaa'
@@ -81,7 +81,7 @@ describe('grid element change location strategy', () => {
     })
   })
 
-  it('can change location element with no explicit grid props set', async () => {
+  it('can change the location of element with no explicit grid props set', async () => {
     const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
     const testId = 'bbb'
@@ -100,7 +100,7 @@ describe('grid element change location strategy', () => {
     })
   })
 
-  it('can change location elements on a grid (zoom out)', async () => {
+  it('can change the location of elements on a grid (zoom out)', async () => {
     const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
     const testId = 'aaa'
@@ -117,7 +117,7 @@ describe('grid element change location strategy', () => {
     })
   })
 
-  it('can change location elements on a grid (zoom in)', async () => {
+  it('can change the location of elements on a grid (zoom in)', async () => {
     const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
     const testId = 'aaa'
