@@ -8,7 +8,6 @@ import {
 } from '../../../../core/shared/element-template'
 import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
-  canvasPoint,
   canvasRectangle,
   isInfinityRectangle,
   offsetPoint,
@@ -39,7 +38,7 @@ import {
   getParentGridTemplatesFromChildMeasurements,
   gridMoveStrategiesExtraCommands,
 } from './grid-helpers'
-import { runGridMoveRearrange } from './grid-move-rearrange-strategy'
+import { runGridChangeElementLocation } from './grid-change-element-location-strategy'
 import { getTargetGridCellData } from '../../../inspector/grid-helpers'
 
 export const gridMoveAbsoluteStrategy: CanvasStrategyFactory = (
@@ -226,9 +225,9 @@ function runGridMoveAbsolute(
     ]
   }
 
-  // otherwise, return a rearrange move + absolute adjustment
+  // otherwise, return a change location + absolute adjustment
   return [
-    ...runGridMoveRearrange(
+    ...runGridChangeElementLocation(
       jsxMetadata,
       interactionData,
       selectedElementMetadata,
