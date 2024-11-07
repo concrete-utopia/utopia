@@ -23,8 +23,8 @@ import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import type { GridCellCoordinates } from './grid-cell-bounds'
 import { gridCellTargetId } from './grid-cell-bounds'
 
-describe('grid rearrange move strategy', () => {
-  it('can rearrange elements on a grid', async () => {
+describe('grid element change location strategy', () => {
+  it('can change the location of elements on a grid', async () => {
     const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
     const testId = 'aaa'
@@ -42,7 +42,7 @@ describe('grid rearrange move strategy', () => {
   })
 
   describe('component items', () => {
-    it('can rearrange components on a grid when component takes style prop', async () => {
+    it('can change the location of components on a grid when component takes style prop', async () => {
       const editor = await renderTestEditorWithCode(
         makeProjectCodeWithItemComponent(`export function Item(props) {
   return (
@@ -71,7 +71,7 @@ describe('grid rearrange move strategy', () => {
       })
     })
 
-    it('can not rearrange components on a grid when component doesnt take style prop', async () => {
+    it('can not change the location of components on a grid when component doesnt take style prop', async () => {
       const editor = await renderTestEditorWithCode(
         makeProjectCodeWithItemComponent(`export function Item(props) {
   return (
@@ -91,10 +91,10 @@ describe('grid rearrange move strategy', () => {
         },
         (ed) => {
           const strategies = ed.getEditorState().strategyState.sortedApplicableStrategies
-          const rearrangeStrategy = strategies?.find(
-            (s) => s.strategy.id === 'rearrange-grid-move-strategy',
+          const changeLocationStrategy = strategies?.find(
+            (s) => s.strategy.id === 'grid-change-element-location-strategy',
           )
-          expect(rearrangeStrategy).toBeUndefined()
+          expect(changeLocationStrategy).toBeUndefined()
           const reorderStrategy = strategies?.find(
             (s) => s.strategy.id === 'reorder-grid-move-strategy',
           )
@@ -104,7 +104,7 @@ describe('grid rearrange move strategy', () => {
     })
   })
 
-  it('can rearrange elements in a grid component', async () => {
+  it('can change the location of elements in a grid component', async () => {
     const editor = await renderTestEditorWithCode(
       ProjectCodeGridComponent,
       'await-first-dom-report',
@@ -124,7 +124,7 @@ describe('grid rearrange move strategy', () => {
     })
   })
 
-  it('can not rearrange multicell element out of the grid', async () => {
+  it('can not change location of a multicell element out of the grid', async () => {
     const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
     const testId = 'aaa'
@@ -144,7 +144,7 @@ describe('grid rearrange move strategy', () => {
     })
   })
 
-  it('can rearrange element with no explicit grid props set', async () => {
+  it('can change the location of element with no explicit grid props set', async () => {
     const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
     const testId = 'bbb'
@@ -163,7 +163,7 @@ describe('grid rearrange move strategy', () => {
     })
   })
 
-  it('can rearrange elements on a grid (zoom out)', async () => {
+  it('can change the location of elements on a grid (zoom out)', async () => {
     const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
     const testId = 'aaa'
@@ -180,7 +180,7 @@ describe('grid rearrange move strategy', () => {
     })
   })
 
-  it('can rearrange elements on a grid (zoom in)', async () => {
+  it('can change the location of elements on a grid (zoom in)', async () => {
     const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
     const testId = 'aaa'

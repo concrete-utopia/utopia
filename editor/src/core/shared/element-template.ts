@@ -2783,6 +2783,13 @@ export function gridElementProperties(
   }
 }
 
+export type BorderWidths = {
+  top: number
+  right: number
+  bottom: number
+  left: number
+}
+
 export interface SpecialSizeMeasurements {
   offset: LocalPoint
   coordinateSystemBounds: CanvasRectangle | null
@@ -2839,6 +2846,7 @@ export interface SpecialSizeMeasurements {
   columnGap: number | null
   gridCellGlobalFrames: GridCellGlobalFrames | null
   parentGridCellGlobalFrames: GridCellGlobalFrames | null
+  borderWidths: BorderWidths
 }
 
 export function specialSizeMeasurements(
@@ -2897,6 +2905,7 @@ export function specialSizeMeasurements(
   parentGridCellGlobalFrames: GridCellGlobalFrames | null,
   justifySelf: SelfAlignment | null,
   alignSelf: SelfAlignment | null,
+  borderWidths: BorderWidths,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -2954,6 +2963,7 @@ export function specialSizeMeasurements(
     parentGridCellGlobalFrames,
     justifySelf,
     alignSelf,
+    borderWidths,
   }
 }
 
@@ -3050,6 +3060,12 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   null,
   null,
+  {
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
 )
 
 export function walkElement(

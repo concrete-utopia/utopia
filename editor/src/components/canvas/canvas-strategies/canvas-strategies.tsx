@@ -67,10 +67,10 @@ import type { InsertionSubject, InsertionSubjectWrapper } from '../../editor/edi
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './strategies/fragment-like-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { gridMoveRearrangeStrategy } from './strategies/grid-move-rearrange-strategy'
+import { gridChangeElementLocationStrategy } from './strategies/grid-change-element-location-strategy'
 import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
-import { gridMoveRearrangeDuplicateStrategy } from './strategies/grid-move-rearrange-duplicate-strategy'
+import { gridChangeElementLocationDuplicateStrategy } from './strategies/grid-change-element-location-duplicate-strategy'
 import { setGridGapStrategy } from './strategies/set-grid-gap-strategy'
 import type { CanvasCommand } from '../commands/commands'
 import { foldAndApplyCommandsInner } from '../commands/commands'
@@ -79,7 +79,7 @@ import { wrapInContainerCommand } from '../commands/wrap-in-container-command'
 import type { ElementPath } from 'utopia-shared/src/types'
 import { reparentSubjectsForInteractionTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
-import { gridRearrangeResizeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
+import { gridChangeElementLocationResizeKeyboardStrategy } from './strategies/grid-change-element-location-keyboard-strategy'
 import createCachedSelector from 're-reselect'
 import { getActivePlugin } from '../plugins/style-plugins'
 import {
@@ -87,7 +87,7 @@ import {
   GridControls,
   isGridControlsProps,
 } from '../controls/grid-controls-for-strategies'
-import { gridMoveReorderStrategy } from './strategies/grid-move-reorder-strategy'
+import { gridReorderStrategy } from './strategies/grid-reorder-strategy'
 import { gridMoveAbsoluteStrategy } from './strategies/grid-move-absolute'
 
 export type CanvasStrategyFactory = (
@@ -116,10 +116,10 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       convertToAbsoluteAndMoveStrategy,
       convertToAbsoluteAndMoveAndSetParentFixedStrategy,
       reorderSliderStategy,
-      gridMoveRearrangeStrategy,
-      gridMoveRearrangeDuplicateStrategy,
-      gridMoveReorderStrategy,
-      gridRearrangeResizeKeyboardStrategy,
+      gridChangeElementLocationStrategy,
+      gridChangeElementLocationDuplicateStrategy,
+      gridReorderStrategy,
+      gridChangeElementLocationResizeKeyboardStrategy,
       gridMoveAbsoluteStrategy,
     ],
   )

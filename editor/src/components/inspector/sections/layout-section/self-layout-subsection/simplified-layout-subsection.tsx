@@ -61,7 +61,7 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
     Substores.metadata,
     (store) =>
       store.editor.selectedViews.length === 1 &&
-      MetadataUtils.isGridCell(store.editor.jsxMetadata, store.editor.selectedViews[0]),
+      MetadataUtils.isGridItem(store.editor.jsxMetadata, store.editor.selectedViews[0]),
     'Inspector shouldShowGridCellSection',
   )
 

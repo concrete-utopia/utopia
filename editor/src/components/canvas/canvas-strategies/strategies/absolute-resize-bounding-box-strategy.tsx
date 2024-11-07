@@ -98,7 +98,7 @@ export function absoluteResizeBoundingBoxStrategy(
   }
 
   if (
-    retargetedTargets.some((path) => MetadataUtils.isGridCell(canvasState.startingMetadata, path))
+    retargetedTargets.some((path) => MetadataUtils.isGridItem(canvasState.startingMetadata, path))
   ) {
     return null
   }

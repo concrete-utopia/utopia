@@ -35,7 +35,7 @@ import {
 import type { DragInteractionData, InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { honoursPropsPosition, shouldKeepMovingDraggedGroupChildren } from './absolute-utils'
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
-import { runGridMoveRearrange } from './grid-move-rearrange-strategy'
+import { runGridChangeElementLocation } from './grid-change-element-location-strategy'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { removeAbsolutePositioningProps } from './reparent-helpers/reparent-property-changes'
 import type { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
@@ -283,7 +283,7 @@ function gridReparentCommands(
     return null
   }
 
-  const gridPropsCommands = runGridMoveRearrange(
+  const gridPropsCommands = runGridChangeElementLocation(
     jsxMetadata,
     interactionData,
     targetElement,
