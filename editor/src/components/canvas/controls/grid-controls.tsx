@@ -682,7 +682,7 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
     Substores.metadata,
     (store) =>
       store.editor.selectedViews.every((elementPath) =>
-        MetadataUtils.isGridCellWithPositioning(store.editor.jsxMetadata, elementPath),
+        MetadataUtils.isGridItemWithPositioning(store.editor.jsxMetadata, elementPath),
       ),
     'GridControl targetsAreCellsWithPositioning',
   )

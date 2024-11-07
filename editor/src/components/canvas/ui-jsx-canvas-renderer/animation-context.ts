@@ -52,13 +52,18 @@ export function useCanvasAnimation(paths: ElementPath[]) {
     return uids.map((uid) => `[data-uid='${uid}']`).join(',')
   }, [uids])
 
+  const elements = React.useMemo(
+    () => (selector == null || selector === '' ? [] : document.querySelectorAll(selector)),
+    [selector],
+  )
+
   return React.useCallback(
     (keyframes: DOMKeyframesDefinition, options?: DynamicAnimationOptions) => {
-      if (ctx.animate == null || selector == null) {
+      if (ctx.animate == null || elements.length === 0 || selector == null) {
         return
       }
       void ctx.animate(selector, keyframes, options)
     },
-    [ctx, selector],
+    [ctx, elements, selector],
   )
 }
