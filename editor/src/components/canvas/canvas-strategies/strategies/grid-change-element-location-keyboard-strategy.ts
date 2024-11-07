@@ -32,7 +32,7 @@ export function gridChangeElementLocationResizeKeyboardStrategy(
 
   const target = selectedElements[0]
 
-  if (!MetadataUtils.isGridCell(canvasState.startingMetadata, target)) {
+  if (!MetadataUtils.isGridItem(canvasState.startingMetadata, target)) {
     return null
   }
 

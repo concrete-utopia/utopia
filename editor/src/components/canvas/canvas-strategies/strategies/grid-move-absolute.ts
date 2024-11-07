@@ -58,7 +58,7 @@ export const gridMoveAbsoluteStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
-  if (!MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)) {
+  if (!MetadataUtils.isGridItem(canvasState.startingMetadata, selectedElement)) {
     return null
   }
 
@@ -214,7 +214,7 @@ function runGridMoveAbsolute(
 
   // if moving an absolutely-positioned child which does not have pinning
   // props, do not set them at all.
-  if (MetadataUtils.hasNoGridCellPositioning(selectedElementMetadata.specialSizeMeasurements)) {
+  if (MetadataUtils.hasNoGridItemPositioning(selectedElementMetadata.specialSizeMeasurements)) {
     return [
       showGridControls('mid-interaction', gridPath, targetCellCoords, targetRootCell),
       ...gridChildAbsoluteMoveCommands(
