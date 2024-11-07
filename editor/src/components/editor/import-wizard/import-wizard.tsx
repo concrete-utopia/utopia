@@ -199,67 +199,66 @@ function ActionButtons({ importResult }: { importResult: TotalImportResult }) {
   ) {
     return null
   }
-  if (importResult.result == ImportOperationResult.Success) {
-    return (
-      <React.Fragment>
-        <div style={textStyle}>Project Imported Successfully</div>
-        <Button onClick={hideWizard} style={buttonStyle}>
-          Continue To Editor
-        </Button>
-      </React.Fragment>
-    )
-  }
-  if (importResult.result == ImportOperationResult.Warn) {
-    return (
-      <React.Fragment>
-        <div style={textStyle}>Project Imported With Warnings</div>
-        <Button onClick={hideWizard} style={buttonStyle}>
-          Continue To Editor
-        </Button>
-      </React.Fragment>
-    )
-  }
-  if (importResult.result == ImportOperationResult.CriticalError) {
-    return (
-      <React.Fragment>
-        <div style={textStyle}>Error Importing Project</div>
-        <Button style={{ ...buttonStyle, marginLeft: 'auto' }} onClick={importADifferentProject}>
-          Cancel
-        </Button>
-      </React.Fragment>
-    )
-  }
-  if (importResult.result == ImportOperationResult.Error) {
-    return (
-      <React.Fragment>
-        <div style={textStyle}>
-          {importResult.importStatus.status !== 'done'
-            ? 'Error While Importing Project'
-            : 'Project Imported With Errors'}
-        </div>
-        {when(
-          importResult.importStatus.status !== 'done',
-          <Button
-            style={{
-              cursor: 'pointer',
-              marginLeft: 'auto',
-            }}
-            onClick={continueAnyway}
-          >
-            Continue Anyway
-          </Button>,
-        )}
-        {importResult.importStatus.status === 'done' ? (
-          <Button style={{ ...buttonStyle }} onClick={hideWizard}>
+  switch (importResult.result) {
+    case ImportOperationResult.Success:
+      return (
+        <React.Fragment>
+          <div style={textStyle}>Project Imported Successfully</div>
+          <Button onClick={hideWizard} style={buttonStyle}>
             Continue To Editor
           </Button>
-        ) : (
-          <Button style={{ ...buttonStyle }} onClick={importADifferentProject}>
+        </React.Fragment>
+      )
+    case ImportOperationResult.Warn:
+      return (
+        <React.Fragment>
+          <div style={textStyle}>Project Imported With Warnings</div>
+          <Button onClick={hideWizard} style={buttonStyle}>
+            Continue To Editor
+          </Button>
+        </React.Fragment>
+      )
+    case ImportOperationResult.CriticalError:
+      return (
+        <React.Fragment>
+          <div style={textStyle}>Error Importing Project</div>
+          <Button style={{ ...buttonStyle, marginLeft: 'auto' }} onClick={importADifferentProject}>
             Cancel
           </Button>
-        )}
-      </React.Fragment>
-    )
+        </React.Fragment>
+      )
+    case ImportOperationResult.Error:
+      return (
+        <React.Fragment>
+          <div style={textStyle}>
+            {importResult.importStatus.status !== 'done'
+              ? 'Error While Importing Project'
+              : 'Project Imported With Errors'}
+          </div>
+          {when(
+            importResult.importStatus.status !== 'done',
+            <Button
+              style={{
+                cursor: 'pointer',
+                marginLeft: 'auto',
+              }}
+              onClick={continueAnyway}
+            >
+              Continue Anyway
+            </Button>,
+          )}
+          {importResult.importStatus.status === 'done' ? (
+            <Button style={{ ...buttonStyle }} onClick={hideWizard}>
+              Continue To Editor
+            </Button>
+          ) : (
+            <Button style={{ ...buttonStyle }} onClick={importADifferentProject}>
+              Cancel
+            </Button>
+          )}
+        </React.Fragment>
+      )
+    default:
+      assertNever(importResult.result)
   }
-  return null
 }
