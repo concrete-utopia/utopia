@@ -11,7 +11,10 @@ interface TestGridOutlinesResult {
   right?: SimpleRectangle
 }
 
-async function testGridOutlines(attributes: CSSProperties): Promise<TestGridOutlinesResult> {
+async function testGridOutlines(
+  targetPath: string,
+  attributes: CSSProperties,
+): Promise<TestGridOutlinesResult> {
   const fullAttributes: CSSProperties = { backgroundColor: 'pink', ...attributes }
   let fullAttributesText: string = '{\n'
   for (const [key, value] of Object.entries(fullAttributes)) {
@@ -60,12 +63,43 @@ export var storyboard = (
           data-testid='grid-child'
         />
       </div>
+      <div
+        style={{
+          position: 'absolute',
+          left: 1000,
+          top: 0
+        }}
+        data-uid='grid-2-outer'
+      >
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateRows: '100px 100px 100px',
+            gridTemplateColumns: '100px 100px 100px',
+            gridGap: 15,
+            height: 400,
+            width: 400,
+            left: 0,
+            top: 0,
+            padding: '10px 20px 30px 40px'
+          }}
+          data-uid='grid-2'
+        >
+          <div
+            style={
+              ${fullAttributesText}
+            }
+            data-uid='grid-child-2'
+            data-testid='grid-child-2'
+          />
+        </div>
+      </div>
     </Scene>
   </Storyboard>
 )
 `
   const editor = await renderTestEditorWithCode(projectCode, 'await-first-dom-report')
-  await selectComponentsForTest(editor, [EP.fromString('storyboard/scene/grid/grid-child')])
+  await selectComponentsForTest(editor, [EP.fromString(targetPath)])
 
   const topPinLine = editor.renderedDOM.queryByTestId('pin-line-top')
   const leftPinLine = editor.renderedDOM.queryByTestId('pin-line-left')
@@ -100,7 +134,7 @@ export var storyboard = (
 
 describe('Grid Pin Outlines', () => {
   it('pinned top and left, grid rows and columns fully specified and not absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       top: 5,
       left: 12,
       gridRowStart: 2,
@@ -113,7 +147,7 @@ describe('Grid Pin Outlines', () => {
     expect(result).toEqual({})
   })
   it('pinned top and left, grid rows and columns fully specified and absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       position: 'absolute',
       top: 5,
       left: 12,
@@ -130,7 +164,7 @@ describe('Grid Pin Outlines', () => {
     })
   })
   it('pinned top and right, grid rows and columns fully specified and not absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       top: 5,
       right: 12,
       gridRowStart: 2,
@@ -143,7 +177,7 @@ describe('Grid Pin Outlines', () => {
     expect(result).toEqual({})
   })
   it('pinned top and right, grid rows and columns fully specified and absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       position: 'absolute',
       top: 5,
       right: 12,
@@ -160,7 +194,7 @@ describe('Grid Pin Outlines', () => {
     })
   })
   it('pinned bottom and left, grid rows and columns fully specified and not absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       bottom: 5,
       left: 12,
       gridRowStart: 2,
@@ -173,7 +207,7 @@ describe('Grid Pin Outlines', () => {
     expect(result).toEqual({})
   })
   it('pinned bottom and left, grid rows and columns fully specified and absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       position: 'absolute',
       bottom: 5,
       left: 12,
@@ -190,7 +224,7 @@ describe('Grid Pin Outlines', () => {
     })
   })
   it('pinned bottom and right, grid rows and columns fully specified and not absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       bottom: 5,
       right: 12,
       gridRowStart: 2,
@@ -203,7 +237,7 @@ describe('Grid Pin Outlines', () => {
     expect(result).toEqual({})
   })
   it('pinned bottom and right, grid rows and columns fully specified and absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       position: 'absolute',
       bottom: 5,
       right: 12,
@@ -221,7 +255,7 @@ describe('Grid Pin Outlines', () => {
   })
 
   it('pinned top and left, grid column end set to auto and not absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       top: 5,
       left: 12,
       gridRowStart: 2,
@@ -234,7 +268,7 @@ describe('Grid Pin Outlines', () => {
     expect(result).toEqual({})
   })
   it('pinned top and left, grid column end set to auto and absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       position: 'absolute',
       top: 5,
       left: 12,
@@ -251,7 +285,7 @@ describe('Grid Pin Outlines', () => {
     })
   })
   it('pinned top and right, grid column end set to auto and not absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       top: 5,
       right: 12,
       gridRowStart: 2,
@@ -264,7 +298,7 @@ describe('Grid Pin Outlines', () => {
     expect(result).toEqual({})
   })
   it('pinned top and right, grid column end set to auto and absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       position: 'absolute',
       top: 5,
       right: 12,
@@ -281,7 +315,7 @@ describe('Grid Pin Outlines', () => {
     })
   })
   it('pinned bottom and left, grid column end set to auto and not absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       bottom: 5,
       left: 12,
       gridRowStart: 2,
@@ -294,7 +328,7 @@ describe('Grid Pin Outlines', () => {
     expect(result).toEqual({})
   })
   it('pinned bottom and left, grid column end set to auto and absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       position: 'absolute',
       bottom: 5,
       left: 12,
@@ -311,7 +345,7 @@ describe('Grid Pin Outlines', () => {
     })
   })
   it('pinned bottom and right, grid column end set to auto and not absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       bottom: 5,
       right: 12,
       gridRowStart: 2,
@@ -324,7 +358,7 @@ describe('Grid Pin Outlines', () => {
     expect(result).toEqual({})
   })
   it('pinned bottom and right, grid column end set to auto and absolutely positioned', async () => {
-    const result = await testGridOutlines({
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
       position: 'absolute',
       bottom: 5,
       right: 12,
@@ -338,6 +372,247 @@ describe('Grid Pin Outlines', () => {
     expect(result).toEqual({
       right: { x: 807.5, y: 355.5, width: 12, height: 1 },
       bottom: { x: 781.5, y: 381.5, width: 1, height: 5 },
+    })
+  })
+
+  it('pinned top and left, grid rows and columns fully specified and not absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      top: 5,
+      left: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({})
+  })
+  it('pinned top and left, grid rows and columns fully specified and absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      position: 'absolute',
+      top: 5,
+      left: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({
+      left: { x: 1418.5, y: 190.5, width: 12, height: 1 },
+      top: { x: 1455.5, y: 160.5, width: 1, height: 5 },
+    })
+  })
+  it('pinned top and right, grid rows and columns fully specified and not absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      top: 5,
+      right: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({})
+  })
+  it('pinned top and right, grid rows and columns fully specified and absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      position: 'absolute',
+      top: 5,
+      right: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({
+      right: { x: 1806.5, y: 190.5, width: 12, height: 1 },
+      top: { x: 1781.5, y: 160.5, width: 1, height: 5 },
+    })
+  })
+  it('pinned bottom and left, grid rows and columns fully specified and not absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      bottom: 5,
+      left: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({})
+  })
+  it('pinned bottom and left, grid rows and columns fully specified and absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      position: 'absolute',
+      bottom: 5,
+      left: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({
+      left: { x: 1418.5, y: 530.5, width: 12, height: 1 },
+      bottom: { x: 1455.5, y: 555.5, width: 1, height: 5 },
+    })
+  })
+  it('pinned bottom and right, grid rows and columns fully specified and not absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      bottom: 5,
+      right: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({})
+  })
+  it('pinned bottom and right, grid rows and columns fully specified and absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      position: 'absolute',
+      bottom: 5,
+      right: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({
+      right: { x: 1806.5, y: 530.5, width: 12, height: 1 },
+      bottom: { x: 1781.5, y: 555.5, width: 1, height: 5 },
+    })
+  })
+  it('pinned top and left, grid column end set to auto and not absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      top: 5,
+      left: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 'auto',
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({})
+  })
+  it('pinned top and left, grid column end set to auto and absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      position: 'absolute',
+      top: 5,
+      left: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 'auto',
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({
+      left: { x: 1418.5, y: 190.5, width: 12, height: 1 },
+      top: { x: 1455.5, y: 160.5, width: 1, height: 5 },
+    })
+  })
+  it('pinned top and right, grid column end set to auto and not absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      top: 5,
+      right: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 'auto',
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({})
+  })
+  it('pinned top and right, grid column end set to auto and absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      position: 'absolute',
+      top: 5,
+      right: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 'auto',
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({
+      right: { x: 1806.5, y: 190.5, width: 12, height: 1 },
+      top: { x: 1781.5, y: 160.5, width: 1, height: 5 },
+    })
+  })
+  it('pinned bottom and left, grid column end set to auto and not absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      bottom: 5,
+      left: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 'auto',
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({})
+  })
+  it('pinned bottom and left, grid column end set to auto and absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      position: 'absolute',
+      bottom: 5,
+      left: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 'auto',
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({
+      left: { x: 1418.5, y: 530.5, width: 12, height: 1 },
+      bottom: { x: 1455.5, y: 555.5, width: 1, height: 5 },
+    })
+  })
+  it('pinned bottom and right, grid column end set to auto and not absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      bottom: 5,
+      right: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 'auto',
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({})
+  })
+  it('pinned bottom and right, grid column end set to auto and absolutely positioned in non-absolute grid', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid-2-outer/grid-2/grid-child-2', {
+      position: 'absolute',
+      bottom: 5,
+      right: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 'auto',
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({
+      right: { x: 1806.5, y: 530.5, width: 12, height: 1 },
+      bottom: { x: 1781.5, y: 555.5, width: 1, height: 5 },
     })
   })
 })

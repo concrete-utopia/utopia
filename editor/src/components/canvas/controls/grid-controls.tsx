@@ -2008,7 +2008,10 @@ export const GridElementContainingBlocks = React.memo<GridElementContainingBlock
     Substores.metadata,
     (store) => {
       return store.editor.selectedViews.filter((selectedView) => {
-        return MetadataUtils.isGridItem(store.editor.jsxMetadata, selectedView)
+        return MetadataUtils.isGridItemWithLayoutProvidingGridParent(
+          store.editor.jsxMetadata,
+          selectedView,
+        )
       })
     },
     'GridElementContainingBlocks selectedViews',

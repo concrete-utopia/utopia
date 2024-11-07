@@ -31,7 +31,10 @@ export const PinLines = React.memo(() => {
       return mapDropNulls((path) => {
         const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
         const isAbsolute = MetadataUtils.isPositionAbsolute(element)
-        const isGridItem = MetadataUtils.isGridItem(store.editor.jsxMetadata, path)
+        const isGridItem = MetadataUtils.isGridItemWithLayoutProvidingGridParent(
+          store.editor.jsxMetadata,
+          path,
+        )
         const frame = element?.globalFrame
         if (isAbsolute && !isGridItem && frame != null && isFiniteRectangle(frame)) {
           return {
