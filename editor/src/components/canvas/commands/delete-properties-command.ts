@@ -48,7 +48,7 @@ export const runDeleteProperties = (
   const { editorStateWithChanges } = deleteValuesAtPath(
     editorState,
     command.element,
-    command.properties,
+    propsToDelete.rest,
   )
 
   const { editorStatePatches } = runStyleUpdateForStrategy(
