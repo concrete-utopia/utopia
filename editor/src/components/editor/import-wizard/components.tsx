@@ -56,7 +56,18 @@ export function OperationLine({ operation }: { operation: ImportOperation }) {
           </div>
         ) : null}
       </OperationLineContent>
-      {shouldShowChildren && hasChildren ? <OperationChildrenList operation={operation} /> : null}
+      {shouldShowChildren && hasChildren ? (
+        <div
+          className='import-wizard-operation-children'
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 15,
+          }}
+        >
+          <OperationChildrenList operation={operation} />
+        </div>
+      ) : null}
     </OperationLineWrapper>
   )
 }
@@ -65,33 +76,27 @@ function OperationChildrenList({ operation }: { operation: ImportOperation }) {
   if (operation.children == null || operation.children.length === 0) {
     return null
   }
+  // this is a special case where we don't list all of the children
+  // but we collapse the successful ones to a single line
+  if (operation.type === 'refreshDependencies') {
+    return (
+      <AggregatedChildrenStatus
+        childOperations={operation.children as ImportFetchDependency[]}
+        successFn={dependenciesSuccessFn}
+        successTextFn={dependenciesSuccessTextFn}
+      />
+    )
+  }
+  // otherwise, we list all of the children
   return (
-    <div
-      className='import-wizard-operation-children'
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 15,
-      }}
-    >
-      {operation.type === 'refreshDependencies' ? (
-        <AggregatedChildrenStatus
-          childOperations={operation.children as ImportFetchDependency[]}
-          successFn={dependenciesSuccessFn}
-          successTextFn={dependenciesSuccessTextFn}
-        />
-      ) : operation.type === 'checkRequirementsPreParse' ||
-        operation.type === 'checkRequirementsPostParse' ? (
-        operation.children.map((childOperation) => (
-          <OperationLine
-            key={childOperation.id ?? childOperation.type}
-            operation={childOperation}
-          />
-        ))
-      ) : null}
-    </div>
+    <React.Fragment>
+      {operation.children?.map((childOperation) => (
+        <OperationLine key={childOperation.id ?? childOperation.type} operation={childOperation} />
+      ))}
+    </React.Fragment>
   )
 }
+
 const dependenciesSuccessFn = (op: ImportFetchDependency) =>
   op.result === ImportOperationResult.Success
 const dependenciesSuccessTextFn = (successCount: number) =>
