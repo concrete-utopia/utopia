@@ -746,7 +746,7 @@ export function detectFillHugFixedState(
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'height')),
   )
 
-  if (MetadataUtils.isGridCell(metadata, elementPath)) {
+  if (MetadataUtils.isGridItem(metadata, elementPath)) {
     const isStretchingExplicitly =
       (element.specialSizeMeasurements.alignSelf === 'stretch' &&
         axis === 'horizontal' &&
@@ -1205,7 +1205,7 @@ export function getFixedFillHugOptionsForElement(
         ? 'hug'
         : null,
       fillContainerApplicable(metadata, selectedView)
-        ? MetadataUtils.isGridCell(metadata, selectedView)
+        ? MetadataUtils.isGridItem(metadata, selectedView)
           ? 'stretch'
           : 'fill'
         : null,

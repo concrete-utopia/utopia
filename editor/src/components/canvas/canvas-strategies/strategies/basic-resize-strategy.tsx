@@ -83,7 +83,7 @@ export function basicResizeStrategy(
   const elementDimensionsProps = metadata != null ? getElementDimensions(metadata) : null
   const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
 
-  const isGridCell = MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElement)
+  const isGridCell = MetadataUtils.isGridItem(canvasState.startingMetadata, selectedElement)
   if (isGridCell && isFillOrStretchModeApplied(canvasState.startingMetadata, selectedElement)) {
     return null
   }
@@ -216,7 +216,7 @@ export function basicResizeStrategy(
           )
 
           const gridsToRerender = selectedElements
-            .filter((element) => MetadataUtils.isGridCell(canvasState.startingMetadata, element))
+            .filter((element) => MetadataUtils.isGridItem(canvasState.startingMetadata, element))
             .map(EP.parentPath)
 
           const elementsToRerender = [...selectedElements, ...gridsToRerender]

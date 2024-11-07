@@ -381,19 +381,19 @@ export const MetadataUtils = {
   isGridLayoutedContainer(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.layoutSystemForChildren === 'grid'
   },
-  isGridCell(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+  isGridItem(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
     return elementMetadata?.specialSizeMeasurements.parentLayoutSystem === 'grid'
   },
-  isGridCellWithPositioning(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+  isGridItemWithPositioning(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     return (
-      MetadataUtils.isGridCell(metadata, path) &&
+      MetadataUtils.isGridItem(metadata, path) &&
       element != null &&
-      !MetadataUtils.hasNoGridCellPositioning(element.specialSizeMeasurements)
+      !MetadataUtils.hasNoGridItemPositioning(element.specialSizeMeasurements)
     )
   },
-  hasNoGridCellPositioning(specialSizeMeasurements: SpecialSizeMeasurements): boolean {
+  hasNoGridItemPositioning(specialSizeMeasurements: SpecialSizeMeasurements): boolean {
     return (
       specialSizeMeasurements.elementGridPropertiesFromProps.gridColumnStart == null &&
       specialSizeMeasurements.elementGridPropertiesFromProps.gridColumnEnd == null &&
@@ -632,7 +632,7 @@ export const MetadataUtils = {
     return (
       MetadataUtils.isFlexLayoutedContainer(
         MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path)),
-      ) || MetadataUtils.isGridCell(jsxMetadata, path)
+      ) || MetadataUtils.isGridItem(jsxMetadata, path)
     )
   },
   getRelativeAlignJustify: function (

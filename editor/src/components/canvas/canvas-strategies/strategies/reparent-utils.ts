@@ -551,13 +551,13 @@ function pasteIntoNextGridCell(
   // if the copied elements are grid cells and the target is a grid cell, paste next to it
 
   const copyDataElementsAreGridCells = copyData.elementPaste.every(({ originalElementPath }) =>
-    MetadataUtils.isGridCell(copyData.originalContextMetadata, originalElementPath),
+    MetadataUtils.isGridItem(copyData.originalContextMetadata, originalElementPath),
   )
   if (!copyDataElementsAreGridCells) {
     return null
   }
 
-  const targetIsGridChild = MetadataUtils.isGridCell(metadata, selectedView)
+  const targetIsGridChild = MetadataUtils.isGridItem(metadata, selectedView)
   if (!targetIsGridChild) {
     return null
   }

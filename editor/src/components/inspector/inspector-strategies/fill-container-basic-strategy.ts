@@ -167,7 +167,7 @@ export const fillContainerStrategyGridParent = (
   name: 'Set to Fill Container, in grid layout',
   strategy: () => {
     const elements = elementPaths.filter(
-      (path) => fillContainerApplicable(metadata, path) && MetadataUtils.isGridCell(metadata, path),
+      (path) => fillContainerApplicable(metadata, path) && MetadataUtils.isGridItem(metadata, path),
     )
 
     if (elements.length === 0) {
