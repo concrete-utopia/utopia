@@ -1011,6 +1011,35 @@ export var storyboard = (
           data-uid='aaa'
           data-testid='aaa'
         />
+        <div
+          style={{
+            minHeight: 0,
+            backgroundColor: '#23565b',
+          }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+        <Placeholder
+          style={{
+            minHeight: 0,
+            gridColumnEnd: 5,
+            gridRowEnd: 4,
+            gridColumnStart: 1,
+            gridRowStart: 3,
+            backgroundColor: '#0074ff',
+          }}
+          data-uid='ccc'
+        />
+        <Placeholder
+          style={{
+            minHeight: 0,
+            gridColumnEnd: 9,
+            gridRowEnd: 4,
+            gridColumnStart: 5,
+            gridRowStart: 3,
+          }}
+          data-uid='ddd'
+        />
       </div>
     </Scene>
   </Storyboard>
