@@ -999,7 +999,7 @@ export var storyboard = (
         }}
         data-uid='grid'
       >
-        <Item
+        <div
           style={{
             minHeight: 0,
             backgroundColor: '#f3785f',
