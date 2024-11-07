@@ -94,11 +94,16 @@ function ensureElementPathInUpdatedPropertiesGlobal(
   return updatedPropertiesToExtend
 }
 
+interface EditorStateWithPatches {
+  editorStateWithChanges: EditorState
+  editorStatePatches: EditorStatePatch[]
+}
+
 function runStyleUpdateMidInteraction(
   editorState: EditorState,
   elementPath: ElementPath,
   updates: StyleUpdate[],
-): { editorStateWithChanges: EditorState; editorStatePatches: EditorStatePatch[] } {
+): EditorStateWithPatches {
   const updatedProperties = ensureElementPathInUpdatedPropertiesGlobal(
     elementPath,
     getPropertiesUpdatedDuringInteraction(editorState),
