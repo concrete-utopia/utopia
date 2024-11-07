@@ -151,6 +151,7 @@ import type {
   GridAutoOrTemplateBase,
   GridAutoOrTemplateDimensions,
   GridAutoOrTemplateFallback,
+  BorderWidths,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -2178,6 +2179,20 @@ export function GridElementPropertiesKeepDeepEquality(): KeepDeepEqualityCall<Gr
   )
 }
 
+export function BorderWidthsKeepDeepEquality(): KeepDeepEqualityCall<BorderWidths> {
+  return combine4EqualityCalls(
+    (p) => p.bottom,
+    NumberKeepDeepEquality,
+    (p) => p.left,
+    NumberKeepDeepEquality,
+    (p) => p.right,
+    NumberKeepDeepEquality,
+    (p) => p.top,
+    NumberKeepDeepEquality,
+    (bottom, left, right, top) => ({ bottom, left, right, top }),
+  )
+}
+
 export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<SpecialSizeMeasurements> {
   return (oldSize, newSize) => {
     const offsetResult = LocalPointKeepDeepEquality(oldSize.offset, newSize.offset)
@@ -2298,6 +2313,11 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       arrayDeepEquality(arrayDeepEquality(CanvasRectangleKeepDeepEquality)),
     )(oldSize.gridCellGlobalFrames, newSize.gridCellGlobalFrames).areEqual
 
+    const borderWidthsEqual = BorderWidthsKeepDeepEquality()(
+      oldSize.borderWidths,
+      newSize.borderWidths,
+    ).areEqual
+
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -2352,7 +2372,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       justifySelfEquals &&
       alignSelfEquals &&
       gridCellGlobalFramesEqual &&
-      parentGridCellGlobalFramesEqual
+      parentGridCellGlobalFramesEqual &&
+      borderWidthsEqual
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -2412,6 +2433,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.parentGridCellGlobalFrames,
         newSize.justifySelf,
         newSize.alignSelf,
+        newSize.borderWidths,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
