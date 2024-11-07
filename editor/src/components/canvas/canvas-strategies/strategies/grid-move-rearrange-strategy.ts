@@ -66,7 +66,7 @@ export const gridMoveRearrangeStrategy: CanvasStrategyFactory = (
       canvasState.propertyControlsInfo,
       'layout',
       ['gridRow', 'gridColumn', 'gridRowStart', 'gridColumnStart', 'gridRowEnd', 'gridColumnEnd'],
-      'some',
+      'every',
     )
   ) {
     return null
