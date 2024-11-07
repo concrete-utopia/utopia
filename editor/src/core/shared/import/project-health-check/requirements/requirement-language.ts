@@ -7,6 +7,7 @@ import {
 import { applyToAllUIJSFiles } from '../../../../model/project-file-utils'
 
 export default class CheckProjectLanguage implements RequirementCheck {
+  initialText = 'Checking project language'
   check(projectContents: ProjectContentTreeRoot): RequirementCheckResult {
     let jsCount = 0
     let tsCount = 0

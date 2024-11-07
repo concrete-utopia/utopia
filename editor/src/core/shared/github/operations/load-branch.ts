@@ -52,8 +52,13 @@ import {
 import {
   RequirementResolutionResult,
   resetRequirementsResolutions,
+  startPostParseValidation,
+  startPreParseValidation,
 } from '../../import/project-health-check/utopia-requirements-service'
-import { checkAndFixUtopiaRequirements } from '../../import/project-health-check/check-utopia-requirements'
+import {
+  checkAndFixUtopiaRequirementsParsed,
+  checkAndFixUtopiaRequirementsPreParsed,
+} from '../../import/project-health-check/check-utopia-requirements'
 import { ImportOperationResult } from '../../import/import-operation-types'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 
@@ -186,20 +191,33 @@ export const updateProjectWithBranchContent =
             }
             notifyOperationFinished(dispatch, { type: 'loadBranch' }, ImportOperationResult.Success)
 
+            // pre parse validation
+            resetRequirementsResolutions(dispatch)
+            startPreParseValidation(dispatch)
+            const {
+              fixedProjectContents: projectContents,
+              result: preParsedRequirementResolutionResult,
+            } = checkAndFixUtopiaRequirementsPreParsed(dispatch, responseBody.branch.content)
+            if (preParsedRequirementResolutionResult === RequirementResolutionResult.Critical) {
+              // wait for the user to resume the import if they choose to
+              await pauseImport(dispatch)
+            }
+
+            // parse files
             notifyOperationStarted(dispatch, { type: 'parseFiles' })
             // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
             // So that it will override any existing files that might already exist in the project when sending them to VS Code.
             const parseResults = await updateProjectContentsWithParseResults(
               workers,
-              responseBody.branch.content,
+              projectContents,
             )
             notifyOperationFinished(dispatch, { type: 'parseFiles' }, ImportOperationResult.Success)
 
-            resetRequirementsResolutions(dispatch)
-            const { fixedProjectContents, result: requirementResolutionResult } =
-              checkAndFixUtopiaRequirements(dispatch, parseResults)
-
-            if (requirementResolutionResult === RequirementResolutionResult.Critical) {
+            // post parse validation
+            startPostParseValidation(dispatch)
+            const { fixedProjectContents, result: postParsedRequirementResolutionResult } =
+              checkAndFixUtopiaRequirementsParsed(dispatch, parseResults)
+            if (postParsedRequirementResolutionResult === RequirementResolutionResult.Critical) {
               // wait for the user to resume the import if they choose to
               await pauseImport(dispatch)
             }

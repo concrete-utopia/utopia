@@ -7,6 +7,7 @@ import { addFileToProjectContents } from '../../../../../components/assets'
 import { codeFile } from '../../../../../core/shared/project-file-types'
 
 export default class PackageJsonCheckAndFix implements RequirementCheck {
+  initialText = 'Checking for a valid package.json'
   check(projectContents: ProjectContentTreeRoot): RequirementCheckResult {
     const parsedPackageJson = getPackageJson(projectContents)
     if (parsedPackageJson == null) {

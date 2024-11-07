@@ -3,7 +3,6 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import type {
-  ImportCheckRequirementAndFix,
   ImportFetchDependency,
   ImportOperation,
 } from '../../../core/shared/import/import-operation-types'
@@ -11,7 +10,6 @@ import { ImportOperationResult } from '../../../core/shared/import/import-operat
 import { assertNever } from '../../../core/shared/utils'
 import { Icn, Icons, useColorTheme } from '../../../uuiui'
 import { GithubSpinner } from '../../../components/navigator/left-pane/github-pane/github-spinner'
-import { RequirementResolutionResult } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
 export function OperationLine({ operation }: { operation: ImportOperation }) {
   const operationRunningStatus = React.useMemo(() => {
@@ -58,7 +56,18 @@ export function OperationLine({ operation }: { operation: ImportOperation }) {
           </div>
         ) : null}
       </OperationLineContent>
-      {shouldShowChildren && hasChildren ? <OperationChildrenList operation={operation} /> : null}
+      {shouldShowChildren && hasChildren ? (
+        <div
+          className='import-wizard-operation-children'
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 15,
+          }}
+        >
+          <OperationChildrenList operation={operation} />
+        </div>
+      ) : null}
     </OperationLineWrapper>
   )
 }
@@ -67,39 +76,31 @@ function OperationChildrenList({ operation }: { operation: ImportOperation }) {
   if (operation.children == null || operation.children.length === 0) {
     return null
   }
+  // this is a special case where we don't list all of the children
+  // but we collapse the successful ones to a single line
+  if (operation.type === 'refreshDependencies') {
+    return (
+      <AggregatedChildrenStatus
+        childOperations={operation.children as ImportFetchDependency[]}
+        successFn={dependenciesSuccessFn}
+        successTextFn={dependenciesSuccessTextFn}
+      />
+    )
+  }
+  // otherwise, we list all of the children
   return (
-    <div
-      className='import-wizard-operation-children'
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 15,
-      }}
-    >
-      {operation.type === 'refreshDependencies' ? (
-        <AggregatedChildrenStatus
-          childOperations={operation.children as ImportFetchDependency[]}
-          successFn={dependenciesSuccessFn}
-          successTextFn={dependenciesSuccessTextFn}
-        />
-      ) : operation.type === 'checkRequirements' ? (
-        operation.children.map((childOperation) => (
-          <OperationLine
-            key={childOperation.id ?? childOperation.type}
-            operation={childOperation}
-          />
-        ))
-      ) : null}
-    </div>
+    <React.Fragment>
+      {operation.children?.map((childOperation) => (
+        <OperationLine key={childOperation.id ?? childOperation.type} operation={childOperation} />
+      ))}
+    </React.Fragment>
   )
 }
+
 const dependenciesSuccessFn = (op: ImportFetchDependency) =>
   op.result === ImportOperationResult.Success
 const dependenciesSuccessTextFn = (successCount: number) =>
   `${successCount} dependencies fetched successfully`
-const requirementsSuccessFn = (op: ImportCheckRequirementAndFix) =>
-  op.resolution === RequirementResolutionResult.Passed
-const requirementsSuccessTextFn = (successCount: number) => `${successCount} requirements met`
 
 function AggregatedChildrenStatus<T extends ImportOperation>({
   childOperations,
@@ -255,7 +256,7 @@ function getImportOperationText(operation: ImportOperation): React.ReactNode {
       if (operation.branchName != null) {
         return (
           <span>
-            Loading branch{' '}
+            Fetching branch{' '}
             <strong>
               {operation.githubRepo?.owner}/{operation.githubRepo?.repository}@
               {operation.branchName}
@@ -265,7 +266,7 @@ function getImportOperationText(operation: ImportOperation): React.ReactNode {
       } else {
         return (
           <span>
-            Loading repository{' '}
+            Fetching repository{' '}
             <strong>
               {operation.githubRepo?.owner}/{operation.githubRepo?.repository}
             </strong>
@@ -278,9 +279,13 @@ function getImportOperationText(operation: ImportOperation): React.ReactNode {
       return 'Parsing files'
     case 'refreshDependencies':
       return 'Fetching dependencies'
-    case 'checkRequirements':
+    case 'checkRequirementsPreParse':
+      return 'Validating code'
+    case 'checkRequirementsPostParse':
       return 'Checking Utopia requirements'
-    case 'checkRequirementAndFix':
+    case 'checkRequirementAndFixPreParse':
+      return operation.text
+    case 'checkRequirementAndFixPostParse':
       return operation.text
     default:
       assertNever(operation)

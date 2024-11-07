@@ -191,13 +191,13 @@ import type { FancyError } from '../../../core/shared/code-exec-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
 import {
   emptyImportState,
-  type ImportOperation,
   type ImportState,
 } from '../../../core/shared/import/import-operation-types'
 import {
   emptyProjectRequirements,
   type ProjectRequirements,
 } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 const ObjectPathImmutable: any = OPI
 
@@ -362,6 +362,8 @@ export function githubOperationLocksEditor(op: GithubOperation): boolean {
     case 'loadRepositories':
     case 'listPullRequestsForBranch':
       return false
+    case 'loadBranch':
+      return !isFeatureEnabled('Import Wizard')
     default:
       return true
   }

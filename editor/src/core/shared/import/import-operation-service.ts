@@ -22,8 +22,9 @@ export function startImportProcess(dispatch: EditorDispatch) {
     updateImportOperations(
       [
         { type: 'loadBranch' },
+        { type: 'checkRequirementsPreParse' },
         { type: 'parseFiles' },
-        { type: 'checkRequirements' },
+        { type: 'checkRequirementsPostParse' },
         { type: 'refreshDependencies' },
       ],
       ImportOperationAction.Replace,
@@ -80,7 +81,8 @@ export function areSameOperation(existing: ImportOperation, incoming: ImportOper
 }
 
 export const defaultParentTypes: Partial<Record<ImportOperationType, ImportOperationType>> = {
-  checkRequirementAndFix: 'checkRequirements',
+  checkRequirementAndFixPreParse: 'checkRequirementsPreParse',
+  checkRequirementAndFixPostParse: 'checkRequirementsPostParse',
   fetchDependency: 'refreshDependencies',
 } as const
 
