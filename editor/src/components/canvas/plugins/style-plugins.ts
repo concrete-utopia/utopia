@@ -31,16 +31,20 @@ interface DeleteCSSProp {
   property: string
 }
 
-export const updateCSSProp = (property: string, value: string | number): UpdateCSSProp => ({
-  type: 'set',
-  property: property,
-  value: value,
-})
+export function updateCSSProp(property: string, value: string | number): UpdateCSSProp {
+  return {
+    type: 'set',
+    property: property,
+    value: value,
+  }
+}
 
-export const deleteCSSProp = (property: string): DeleteCSSProp => ({
-  type: 'delete',
-  property: property,
-})
+export function deleteCSSProp(property: string): DeleteCSSProp {
+  return {
+    type: 'delete',
+    property: property,
+  }
+}
 
 export type StyleUpdate = UpdateCSSProp | DeleteCSSProp
 
