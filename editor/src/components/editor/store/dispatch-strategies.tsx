@@ -6,7 +6,7 @@ import type {
 import {
   applyCanvasStrategy,
   applyElementsToRerenderFromStrategyResult,
-  applyElementsToRerenderFromStrategyResultAndZeroProps,
+  applyElementsToRerenderFromStrategyResultAndPatchRemovedProps,
   findCanvasStrategy,
   interactionInProgress,
   pickCanvasStateFromEditorState,
@@ -223,7 +223,7 @@ export function interactionHardReset(
 
       return {
         unpatchedEditorState: newEditorState,
-        patchedEditorState: applyElementsToRerenderFromStrategyResultAndZeroProps(
+        patchedEditorState: applyElementsToRerenderFromStrategyResultAndPatchRemovedProps(
           commandResult.editorState,
           strategyResult,
         ),
@@ -391,7 +391,7 @@ export function interactionStart(
 
       return {
         unpatchedEditorState: newEditorState,
-        patchedEditorState: applyElementsToRerenderFromStrategyResultAndZeroProps(
+        patchedEditorState: applyElementsToRerenderFromStrategyResultAndPatchRemovedProps(
           commandResult.editorState,
           strategyResult,
         ),
@@ -498,7 +498,7 @@ function handleUserChangedStrategy(
 
     return {
       unpatchedEditorState: newEditorState,
-      patchedEditorState: applyElementsToRerenderFromStrategyResultAndZeroProps(
+      patchedEditorState: applyElementsToRerenderFromStrategyResultAndPatchRemovedProps(
         commandResult.editorState,
         strategyResult,
       ),
@@ -584,7 +584,7 @@ function handleAccumulatingKeypresses(
 
       return {
         unpatchedEditorState: updatedEditorState,
-        patchedEditorState: applyElementsToRerenderFromStrategyResultAndZeroProps(
+        patchedEditorState: applyElementsToRerenderFromStrategyResultAndPatchRemovedProps(
           commandResult.editorState,
           strategyResult,
         ),
@@ -651,7 +651,7 @@ function handleUpdate(
     }
     return {
       unpatchedEditorState: newEditorState,
-      patchedEditorState: applyElementsToRerenderFromStrategyResultAndZeroProps(
+      patchedEditorState: applyElementsToRerenderFromStrategyResultAndPatchRemovedProps(
         commandResult.editorState,
         strategyResult,
       ),

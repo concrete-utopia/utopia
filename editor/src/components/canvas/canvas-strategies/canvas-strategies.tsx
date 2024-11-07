@@ -495,7 +495,7 @@ export function applyCanvasStrategy(
   return strategy.apply(strategyLifecycle)
 }
 
-export function applyElementsToRerenderFromStrategyResultAndZeroProps(
+export function applyElementsToRerenderFromStrategyResultAndPatchRemovedProps(
   editorState: EditorState,
   strategyResult: StrategyApplicationResult,
 ): EditorState {
