@@ -6,12 +6,7 @@ import {
 import { notifyOperationFinished, notifyOperationStarted } from '../import-operation-service'
 import type { EditorDispatch } from '../../../../components/editor/action-types'
 import { updateProjectRequirements } from '../../../../components/editor/actions/action-creators'
-import type {
-  PostParseValidationRequirement,
-  PreParseValidationRequirement,
-  ProjectRequirement,
-  ProjectRequirements,
-} from './utopia-requirements-types'
+import type { ProjectRequirement, ProjectRequirements } from './utopia-requirements-types'
 import {
   emptyProjectRequirements,
   RequirementResolutionResult,
@@ -19,7 +14,7 @@ import {
 } from './utopia-requirements-types'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { getRequirementStage, getRequirementsToCheck } from './check-utopia-requirements'
-import { objectFilter } from '../../object-utils'
+import { objectFilter, objectKeys } from '../../object-utils'
 
 export function updateProjectRequirementsStatus(
   dispatch: EditorDispatch,
@@ -42,11 +37,8 @@ export function startPreParseValidation(dispatch: EditorDispatch) {
   const checks = getRequirementsToCheck().preParse
   notifyOperationStarted(dispatch, {
     type: 'checkRequirementsPreParse',
-    children: Object.keys(checks).map((key) =>
-      importCheckRequirementAndFixPreParse(
-        key as ProjectRequirement,
-        checks[key as PreParseValidationRequirement].initialText,
-      ),
+    children: objectKeys(checks).map((key) =>
+      importCheckRequirementAndFixPreParse(key, checks[key].initialText),
     ),
   })
 }
@@ -55,11 +47,8 @@ export function startPostParseValidation(dispatch: EditorDispatch) {
   const checks = getRequirementsToCheck().postParse
   notifyOperationStarted(dispatch, {
     type: 'checkRequirementsPostParse',
-    children: Object.keys(checks).map((key) =>
-      importCheckRequirementAndFixPostParse(
-        key as ProjectRequirement,
-        checks[key as PostParseValidationRequirement].initialText,
-      ),
+    children: objectKeys(checks).map((key) =>
+      importCheckRequirementAndFixPostParse(key, checks[key].initialText),
     ),
   })
 }
