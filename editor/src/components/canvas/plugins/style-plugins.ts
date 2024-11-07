@@ -214,7 +214,7 @@ export function runStyleUpdateForStrategy(
   editorState: EditorState,
   elementPath: ElementPath,
   updates: StyleUpdate[],
-) {
+): EditorStateWithPatches {
   switch (commandLifecycle) {
     case 'mid-interaction':
       return runStyleUpdateMidInteraction(editorState, elementPath, updates)
