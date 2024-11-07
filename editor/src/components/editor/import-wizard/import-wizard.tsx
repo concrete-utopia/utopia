@@ -78,7 +78,7 @@ export const ImportWizard = React.memo(() => {
             boxShadow: UtopiaStyles.popup.boxShadow,
             borderRadius: 10,
             width: 600,
-            height: 450,
+            height: 480,
             position: 'relative',
             display: 'flex',
             flexDirection: 'column',

@@ -3,7 +3,6 @@ import { Global, css } from '@emotion/react'
 import { useColorTheme } from '../../uuiui'
 import { useEditorState } from '../editor/store/store-hook'
 import { Substores } from '../editor/store/store-hook'
-import cx from 'classnames'
 
 export const CanvasLoadingScreen = React.memo(() => {
   const colorTheme = useColorTheme()
@@ -18,9 +17,18 @@ export const CanvasLoadingScreen = React.memo(() => {
     'CanvasLoadingScreen importWizardOpen',
   )
 
-  const importingStopped =
-    (importWizardOpen && importState.importStatus.status === 'done') ||
-    importState.importStatus.status === 'paused'
+  const importingStoppedStyleOverride = React.useMemo(
+    () =>
+      // if the importing was stopped, we want to pause the shimmer animation
+      (importWizardOpen && importState.importStatus.status === 'done') ||
+      importState.importStatus.status === 'paused'
+        ? {
+            background: colorTheme.codeEditorShimmerPrimary.value,
+            animation: 'none',
+          }
+        : {},
+    [importWizardOpen, importState.importStatus.status, colorTheme.codeEditorShimmerPrimary.value],
+  )
 
   return (
     <React.Fragment>
@@ -64,13 +72,14 @@ export const CanvasLoadingScreen = React.memo(() => {
         style={{ height: '100%', width: '100%', backgroundColor: colorTheme.bg1.value }}
       >
         <div
-          className={cx('shimmer', { 'no-shimmer': importingStopped })}
+          className='shimmer'
           style={{
             position: 'absolute',
             left: 0,
             top: 0,
             width: '100vw',
             height: '100vh',
+            ...importingStoppedStyleOverride,
           }}
         ></div>
       </div>
