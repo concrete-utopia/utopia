@@ -10,6 +10,7 @@ import type {
   GridElementProperties,
   DomElementMetadata,
   GridAutoOrTemplateBase,
+  BorderWidths,
 } from '../../core/shared/element-template'
 import {
   specialSizeMeasurements,
@@ -803,7 +804,7 @@ function getSpecialMeasurements(
   const borderRightWidth = parseCSSLength(computedStyle.borderRightWidth)
   const borderBottomWidth = parseCSSLength(computedStyle.borderBottomWidth)
   const borderLeftWidth = parseCSSLength(computedStyle.borderLeftWidth)
-  const border = {
+  const border: BorderWidths = {
     top: isRight(borderTopWidth) ? borderTopWidth.value.value : 0,
     right: isRight(borderRightWidth) ? borderRightWidth.value.value : 0,
     bottom: isRight(borderBottomWidth) ? borderBottomWidth.value.value : 0,
@@ -1015,6 +1016,7 @@ function getSpecialMeasurements(
     parentGridCellGlobalFrames,
     justifySelf,
     alignSelf,
+    border,
   )
 }
 

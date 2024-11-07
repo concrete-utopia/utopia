@@ -46,7 +46,7 @@ import {
 } from '../../../../core/shared/optics/optic-creators'
 import { getJSXAttributesAtPath } from '../../../..//core/shared/jsx-attribute-utils'
 
-export const gridMoveRearrangeStrategy: CanvasStrategyFactory = (
+export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ) => {
@@ -102,9 +102,9 @@ export const gridMoveRearrangeStrategy: CanvasStrategyFactory = (
   }
 
   return {
-    id: 'rearrange-grid-move-strategy',
-    name: 'Grid rearrange',
-    descriptiveLabel: 'Grid rearrange',
+    id: 'grid-change-element-location-strategy',
+    name: 'Change Location',
+    descriptiveLabel: 'Change Location',
     icon: {
       category: 'tools',
       type: 'pointer',
@@ -121,7 +121,7 @@ export const gridMoveRearrangeStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      const { commands, elementsToRerender } = getCommandsAndPatchForGridRearrange(
+      const { commands, elementsToRerender } = getCommandsAndPatchForGridChangeElementLocation(
         canvasState,
         interactionSession.interactionData,
         selectedElement,
@@ -135,6 +135,7 @@ export const gridMoveRearrangeStrategy: CanvasStrategyFactory = (
         parentGridPath,
         initialTemplates,
       )
+
       return strategyApplicationResult(
         [...midInteractionCommands, ...onCompleteCommands, ...commands],
         elementsToRerender,
@@ -143,7 +144,7 @@ export const gridMoveRearrangeStrategy: CanvasStrategyFactory = (
   }
 }
 
-function getCommandsAndPatchForGridRearrange(
+function getCommandsAndPatchForGridChangeElementLocation(
   canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
   selectedElement: ElementPath,
@@ -170,7 +171,7 @@ function getCommandsAndPatchForGridRearrange(
     return { commands: [], elementsToRerender: [] }
   }
 
-  const commands = runGridMoveRearrange(
+  const commands = runGridChangeElementLocation(
     canvasState.startingMetadata,
     interactionData,
     selectedElementMetadata,
@@ -186,7 +187,7 @@ function getCommandsAndPatchForGridRearrange(
   }
 }
 
-export function runGridMoveRearrange(
+export function runGridChangeElementLocation(
   jsxMetadata: ElementInstanceMetadataMap,
   interactionData: DragInteractionData,
   selectedElementMetadata: ElementInstanceMetadata,
@@ -306,7 +307,7 @@ export function runGridMoveRearrange(
     })
     .sort(sortElementsByGridPosition(templateColumnsCount))
 
-  const indexInSortedCellsForRearrange = cellsSortedByPosition.findIndex((s) =>
+  const indexInSortedCellsForChangeLocation = cellsSortedByPosition.findIndex((s) =>
     EP.pathsEqual(selectedElementMetadata.elementPath, s.path),
   )
 
@@ -322,7 +323,7 @@ export function runGridMoveRearrange(
     reorderElement(
       'always',
       pathForCommands,
-      absolute(Math.max(indexInSortedCellsForRearrange, 0)),
+      absolute(Math.max(indexInSortedCellsForChangeLocation, 0)),
     ),
     updateGridControlsCommand,
   ]

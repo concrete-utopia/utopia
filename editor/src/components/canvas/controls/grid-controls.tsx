@@ -929,7 +929,7 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
             countedColumn === currentHoveredCell?.column &&
             countedRow === currentHoveredCell?.row
 
-          const activePositioningTarget = isActiveCell && !dontShowActiveCellHighlight // TODO: move the logic into runGridRearrangeMove and do not set targetCell prop in these cases
+          const activePositioningTarget = isActiveCell && !dontShowActiveCellHighlight // TODO: move the logic into runGridChangeElementLocation and do not set targetCell prop in these cases
 
           const borderColor = activePositioningTarget
             ? colorTheme.brandNeonPink.value

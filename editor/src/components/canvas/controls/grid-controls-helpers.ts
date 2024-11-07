@@ -21,6 +21,10 @@ export function getGridHelperStyleMatchingTargetGrid(
       grid.padding == null
         ? 0
         : `${grid.padding.top}px ${grid.padding.right}px ${grid.padding.bottom}px ${grid.padding.left}px`,
+    borderTop: `${grid.border?.top}px solid transparent`,
+    borderLeft: `${grid.border?.left}px solid transparent`,
+    borderBottom: `${grid.border?.bottom}px solid transparent`,
+    borderRight: `${grid.border?.right}px solid transparent`,
   }
 
   // Gap needs to be set only if the other two are not present or we'll have rendering issues

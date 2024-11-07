@@ -23,9 +23,9 @@ import {
   getParentGridTemplatesFromChildMeasurements,
   gridMoveStrategiesExtraCommands,
 } from './grid-helpers'
-import { runGridMoveRearrange } from './grid-move-rearrange-strategy'
+import { runGridChangeElementLocation } from './grid-change-element-location-strategy'
 
-export const gridMoveRearrangeDuplicateStrategy: CanvasStrategyFactory = (
+export const gridChangeElementLocationDuplicateStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   customState: CustomStrategyState,
@@ -79,9 +79,9 @@ export const gridMoveRearrangeDuplicateStrategy: CanvasStrategyFactory = (
   }
 
   return {
-    id: 'rearrange-grid-move-duplicate-strategy',
-    name: 'Grid Rearrange (Duplicate)',
-    descriptiveLabel: 'Grid Rearrange (Duplicate)',
+    id: 'grid-change-element-location-duplicate-strategy',
+    name: 'Change Location (Duplicate)',
+    descriptiveLabel: 'Change Location (Duplicate)',
     icon: {
       category: 'tools',
       type: 'pointer',
@@ -115,7 +115,7 @@ export const gridMoveRearrangeDuplicateStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
-      const moveCommands = runGridMoveRearrange(
+      const moveCommands = runGridChangeElementLocation(
         canvasState.startingMetadata,
         interactionSession.interactionData,
         selectedElementMetadata,
