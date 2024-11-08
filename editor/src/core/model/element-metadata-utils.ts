@@ -385,6 +385,16 @@ export const MetadataUtils = {
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
     return elementMetadata?.specialSizeMeasurements.parentLayoutSystem === 'grid'
   },
+  isGridItemWithLayoutProvidingGridParent(
+    metadata: ElementInstanceMetadataMap,
+    path: ElementPath,
+  ): boolean {
+    const elementMetadata = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(path))
+    return (
+      elementMetadata?.specialSizeMeasurements.layoutSystemForChildren === 'grid' &&
+      elementMetadata?.specialSizeMeasurements.providesBoundsForAbsoluteChildren
+    )
+  },
   isGridItemWithPositioning(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     return (

@@ -222,6 +222,8 @@ export const GridMeasurementHelpersKey = (gridPath: ElementPath) =>
   `grid-measurement-helpers-${EP.toString(gridPath)}`
 export const GridMeasurementHelperKey = (gridPath: ElementPath) =>
   `grid-measurement-helper-${EP.toString(gridPath)}`
+export const GridElementContainingBlockKey = (gridPath: ElementPath) =>
+  `grid-measurement-containing-block-${EP.toString(gridPath)}`
 
 export interface GridControlProps {
   grid: GridData
