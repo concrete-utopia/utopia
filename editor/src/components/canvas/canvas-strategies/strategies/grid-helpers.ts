@@ -1,39 +1,39 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type {
   ElementInstanceMetadataMap,
+  GridAutoOrTemplateBase,
   GridPositionValue,
+  SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
 import {
-  gridPositionValue,
   type ElementInstanceMetadata,
   type GridContainerProperties,
   type GridElementProperties,
   type GridPosition,
 } from '../../../../core/shared/element-template'
 import type { CanvasRectangle } from '../../../../core/shared/math-utils'
-import {
-  canvasPoint,
-  canvasVector,
-  isInfinityRectangle,
-  offsetPoint,
-} from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
-import { absolute } from '../../../../utils/utils'
+import { assertNever } from '../../../../core/shared/utils'
 import type { GridDimension } from '../../../inspector/common/css-utils'
 import {
-  cssNumber,
   gridCSSRepeat,
   isCSSKeyword,
   isGridCSSRepeat,
   isStaticGridRepeat,
+  printGridAutoOrTemplateBase,
 } from '../../../inspector/common/css-utils'
 import type { CanvasCommand } from '../../commands/commands'
 import { deleteProperties } from '../../commands/delete-properties-command'
-import { reorderElement } from '../../commands/reorder-element-command'
-import { setCssLengthProperty } from '../../commands/set-css-length-command'
-import { setProperty } from '../../commands/set-property-command'
+import type { PropertyToUpdate } from '../../commands/set-property-command'
+import {
+  propertyToDelete,
+  propertyToSet,
+  setProperty,
+  updateBulkProperties,
+} from '../../commands/set-property-command'
 import type { DragInteractionData } from '../interaction-state'
 import type { GridCellCoordinates } from './grid-cell-bounds'
 import {
@@ -41,174 +41,6 @@ import {
   getGridChildCellCoordBoundsFromCanvas,
   gridCellCoordinates,
 } from './grid-cell-bounds'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { assertNever } from '../../../../core/shared/utils'
-import { showGridControls } from '../../commands/show-grid-controls-command'
-
-export function runGridRearrangeMove(
-  targetElement: ElementPath,
-  selectedElement: ElementPath,
-  jsxMetadata: ElementInstanceMetadataMap,
-  interactionData: DragInteractionData,
-  gridCellGlobalFrames: GridCellGlobalFrames,
-  gridTemplate: GridContainerProperties,
-  newPathAfterReparent?: ElementPath,
-): CanvasCommand[] {
-  if (interactionData.drag == null) {
-    return []
-  }
-
-  const originalElement = MetadataUtils.findElementByElementPath(jsxMetadata, selectedElement)
-  if (originalElement == null) {
-    return []
-  }
-
-  const isReparent = newPathAfterReparent != null
-
-  const mousePos = offsetPoint(interactionData.dragStart, interactionData.drag)
-  const targetCellData = getClosestGridCellToPoint(gridCellGlobalFrames, mousePos)
-  const targetCellCoords = targetCellData?.gridCellCoordinates
-  if (targetCellCoords == null) {
-    return []
-  }
-
-  const originalElementGridConfiguration = isReparent
-    ? {
-        originalCellBounds: { width: 1, height: 1 }, //when reparenting, we just put it in a single cell
-        mouseCellPosInOriginalElement: { row: 0, column: 0 },
-      }
-    : getOriginalElementGridConfiguration(gridCellGlobalFrames, interactionData, originalElement)
-  if (originalElementGridConfiguration == null) {
-    return []
-  }
-
-  const { originalCellBounds, mouseCellPosInOriginalElement } = originalElementGridConfiguration
-
-  // get the new adjusted row
-  const row = Math.max(targetCellCoords.row - mouseCellPosInOriginalElement.row, 1)
-  // get the new adjusted column
-  const column = Math.max(targetCellCoords.column - mouseCellPosInOriginalElement.column, 1)
-
-  const pathForCommands = newPathAfterReparent ?? targetElement // when reparenting, we want to use the new path for commands
-  const gridPath = EP.parentPath(pathForCommands)
-
-  const gridCellMoveCommands = setGridPropsCommands(pathForCommands, gridTemplate, {
-    gridColumnStart: gridPositionValue(column),
-    gridColumnEnd: gridPositionValue(column + originalCellBounds.height),
-    gridRowStart: gridPositionValue(row),
-    gridRowEnd: gridPositionValue(row + originalCellBounds.width),
-  })
-
-  const gridTemplateColumns =
-    gridTemplate.gridTemplateColumns?.type === 'DIMENSIONS'
-      ? gridTemplate.gridTemplateColumns.dimensions.length
-      : 1
-
-  // The "pure" index in the grid children for the cell under mouse
-  const possiblyReorderIndex = getGridPositionIndex({
-    row: targetCellCoords.row,
-    column: targetCellCoords.column,
-    gridTemplateColumns: gridTemplateColumns,
-  })
-
-  // The siblings of the grid element being moved
-  const siblings = MetadataUtils.getChildrenUnordered(jsxMetadata, gridPath)
-    .filter((s) => !EP.pathsEqual(s.elementPath, selectedElement))
-    .map(
-      (s, index): SortableGridElementProperties => ({
-        ...s.specialSizeMeasurements.elementGridProperties,
-        index: index,
-        path: s.elementPath,
-      }),
-    )
-
-  // Sort the siblings and the cell under mouse ascending based on their grid coordinates, so that
-  // the indexes grow left-right, top-bottom.
-  const cellsSortedByPosition = siblings
-    .concat({
-      ...{
-        gridColumnStart: gridPositionValue(targetCellCoords.column),
-        gridColumnEnd: gridPositionValue(targetCellCoords.column),
-        gridRowStart: gridPositionValue(targetCellCoords.row),
-        gridRowEnd: gridPositionValue(targetCellCoords.row),
-      },
-      path: selectedElement,
-      index: siblings.length + 1,
-    })
-    .sort(sortElementsByGridPosition(gridTemplateColumns))
-
-  // If rearranging, reorder to the index based on the sorted cells arrays.
-  const indexInSortedCellsForRearrange = cellsSortedByPosition.findIndex((s) =>
-    EP.pathsEqual(selectedElement, s.path),
-  )
-
-  const moveType = getGridMoveType({
-    elementPath: targetElement,
-    originalElementMetadata: originalElement,
-    possiblyReorderIndex: possiblyReorderIndex,
-    cellsSortedByPosition: cellsSortedByPosition,
-    isReparent: isReparent,
-  })
-
-  const updateGridControlsCommand = showGridControls(
-    'mid-interaction',
-    gridPath,
-    targetCellData?.gridCellCoordinates ?? null,
-    gridCellCoordinates(row, column),
-  )
-
-  switch (moveType) {
-    case 'absolute': {
-      if (isReparent) {
-        return []
-      }
-      const absoluteMoveCommands = gridChildAbsoluteMoveCommands(
-        MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
-        MetadataUtils.getFrameOrZeroRectInCanvasCoords(gridPath, jsxMetadata),
-        interactionData,
-      )
-      return [...absoluteMoveCommands, updateGridControlsCommand]
-    }
-    case 'rearrange': {
-      const targetRootCell = gridCellCoordinates(row, column)
-      const canvasRect = getGlobalFrameOfGridCell(gridCellGlobalFrames, targetRootCell)
-      const absoluteMoveCommands =
-        canvasRect == null || isReparent
-          ? []
-          : gridChildAbsoluteMoveCommands(
-              MetadataUtils.findElementByElementPath(jsxMetadata, targetElement),
-              canvasRect,
-              interactionData,
-            )
-      return [
-        ...gridCellMoveCommands,
-        ...absoluteMoveCommands,
-        reorderElement(
-          'always',
-          pathForCommands,
-          absolute(Math.max(indexInSortedCellsForRearrange, 0)),
-        ),
-        updateGridControlsCommand,
-      ]
-    }
-    case 'reorder': {
-      return [
-        reorderElement('always', pathForCommands, absolute(possiblyReorderIndex)),
-        deleteProperties('always', pathForCommands, [
-          PP.create('style', 'gridColumn'),
-          PP.create('style', 'gridRow'),
-          PP.create('style', 'gridColumnStart'),
-          PP.create('style', 'gridColumnEnd'),
-          PP.create('style', 'gridRowStart'),
-          PP.create('style', 'gridRowEnd'),
-        ]),
-        updateGridControlsCommand,
-      ]
-    }
-    default:
-      assertNever(moveType)
-  }
-}
 
 export function gridPositionToValue(p: GridPosition | null | undefined): string | number | null {
   if (p == null) {
@@ -365,62 +197,12 @@ function asMaybeNamedLineOrValue(
   return value
 }
 
-function gridChildAbsoluteMoveCommands(
-  targetMetadata: ElementInstanceMetadata | null,
-  containingRect: CanvasRectangle,
-  dragInteractionData: DragInteractionData,
-): CanvasCommand[] {
-  if (
-    targetMetadata == null ||
-    targetMetadata.globalFrame == null ||
-    isInfinityRectangle(targetMetadata.globalFrame) ||
-    !MetadataUtils.isPositionAbsolute(targetMetadata)
-  ) {
-    return []
-  }
-
-  const offsetInTarget = canvasPoint({
-    x: dragInteractionData.originalDragStart.x - targetMetadata.globalFrame.x,
-    y: dragInteractionData.originalDragStart.y - targetMetadata.globalFrame.y,
-  })
-
-  const dragOffset = offsetPoint(
-    dragInteractionData.originalDragStart,
-    dragInteractionData.drag ?? canvasPoint({ x: 0, y: 0 }),
-  )
-
-  const offset = canvasVector({
-    x: dragOffset.x - containingRect.x - offsetInTarget.x,
-    y: dragOffset.y - containingRect.y - offsetInTarget.y,
-  })
-
-  return [
-    deleteProperties('always', targetMetadata.elementPath, [
-      PP.create('style', 'top'),
-      PP.create('style', 'left'),
-      PP.create('style', 'right'),
-      PP.create('style', 'bottom'),
-    ]),
-    setCssLengthProperty(
-      'always',
-      targetMetadata.elementPath,
-      PP.create('style', 'top'),
-      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(offset.y, null) },
-      null,
-    ),
-    setCssLengthProperty(
-      'always',
-      targetMetadata.elementPath,
-      PP.create('style', 'left'),
-      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(offset.x, null) },
-      null,
-    ),
-  ]
+export type SortableGridElementProperties = GridElementProperties & {
+  path: ElementPath
+  index: number
 }
 
-type SortableGridElementProperties = GridElementProperties & { path: ElementPath; index: number }
-
-function sortElementsByGridPosition(gridTemplateColumns: number) {
+export function sortElementsByGridPosition(gridTemplateColumns: number) {
   return function (a: SortableGridElementProperties, b: SortableGridElementProperties): number {
     function getPosition(index: number, e: GridElementProperties) {
       if (
@@ -442,80 +224,11 @@ function sortElementsByGridPosition(gridTemplateColumns: number) {
   }
 }
 
-type GridMoveType =
-  | 'reorder' // reorder the element in the code based on the ascending position, and remove explicit positioning props
-  | 'rearrange' // set explicit positioning props, and reorder based on the visual location
-  | 'absolute' // a regular absolute move, relative to the grid
-
-function getGridMoveType(params: {
-  elementPath: ElementPath
-  originalElementMetadata: ElementInstanceMetadata | null
-  possiblyReorderIndex: number
-  cellsSortedByPosition: SortableGridElementProperties[]
-  isReparent: boolean
-}): GridMoveType {
-  const specialSizeMeasurements = params.originalElementMetadata?.specialSizeMeasurements
-  if (
-    !params.isReparent &&
-    specialSizeMeasurements != null &&
-    MetadataUtils.isPositionAbsolute(params.originalElementMetadata)
-  ) {
-    return MetadataUtils.hasNoGridCellPositioning(specialSizeMeasurements)
-      ? 'absolute'
-      : 'rearrange'
-  }
-  if (params.possiblyReorderIndex >= params.cellsSortedByPosition.length) {
-    return 'rearrange'
-  }
-
-  const elementGridProperties = specialSizeMeasurements?.elementGridProperties
-  const gridRowStart = gridPositionNumberValue(elementGridProperties?.gridRowStart ?? null)
-  const gridColumnStart = gridPositionNumberValue(elementGridProperties?.gridColumnStart ?? null)
-  const gridRowEnd = gridPositionNumberValue(elementGridProperties?.gridRowEnd ?? null)
-  const gridColumnEnd = gridPositionNumberValue(elementGridProperties?.gridColumnEnd ?? null)
-
-  const isMultiCellChild =
-    (gridRowEnd != null && gridRowStart != null && gridRowEnd > gridRowStart + 1) ||
-    (gridColumnEnd != null && gridColumnStart != null && gridColumnEnd > gridColumnStart + 1)
-
-  if (isMultiCellChild) {
-    return 'rearrange'
-  }
-
-  // The first element is intrinsically in order, so try to adjust for that
-  if (params.possiblyReorderIndex === 0) {
-    const isTheOnlyChild = params.cellsSortedByPosition.length === 1
-    const isAlreadyTheFirstChild =
-      EP.toUid(params.cellsSortedByPosition[0].path) === EP.toUid(params.elementPath)
-
-    const isAlreadyAtOrigin = gridRowStart === 1 && gridColumnStart === 1
-
-    if (isTheOnlyChild || isAlreadyTheFirstChild || isAlreadyAtOrigin) {
-      return 'reorder'
-    }
-  }
-
-  const previousElement = params.cellsSortedByPosition.at(params.possiblyReorderIndex - 1)
-  if (previousElement == null) {
-    return 'rearrange'
-  }
-  const previousElementColumn = previousElement.gridColumnStart ?? null
-  const previousElementRow = previousElement.gridRowStart ?? null
-  return isGridPositionNumericValue(previousElementColumn) &&
-    isGridPositionNumericValue(previousElementRow)
-    ? 'rearrange'
-    : 'reorder'
-}
-
 function isGridPositionNumericValue(p: GridPosition | null): p is GridPositionValue {
   return p != null && !(isCSSKeyword(p) && p.value === 'auto')
 }
 
-function gridPositionNumberValue(p: GridPosition | null): number | null {
-  return isGridPositionNumericValue(p) ? p.numericalPosition : null
-}
-
-function getGridPositionIndex(props: {
+export function getGridPositionIndex(props: {
   row: number
   column: number
   gridTemplateColumns: number
@@ -718,7 +431,7 @@ export function getGridRelatedIndexes(params: {
   return expandedRelatedIndexes[params.index] ?? []
 }
 
-function getOriginalElementGridConfiguration(
+export function getOriginalElementGridConfiguration(
   gridCellGlobalFrames: GridCellGlobalFrames,
   interactionData: DragInteractionData,
   originalElement: ElementInstanceMetadata,
@@ -787,4 +500,132 @@ export function isJustAutoGridDimension(dimensions: GridDimension[]): boolean {
     dimensions[0].type === 'KEYWORD' &&
     dimensions[0].value.value === 'auto'
   )
+}
+
+type GridElementPinState = 'not-pinned' | 'auto-pinned' | 'pinned'
+
+export function getGridElementPinState(
+  elementGridPropertiesFromProps: GridElementProperties | null,
+): GridElementPinState {
+  if (
+    elementGridPropertiesFromProps?.gridColumnEnd == null ||
+    elementGridPropertiesFromProps?.gridColumnStart == null ||
+    elementGridPropertiesFromProps?.gridRowEnd == null ||
+    elementGridPropertiesFromProps?.gridRowStart == null
+  ) {
+    return 'not-pinned'
+  }
+  if (
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridColumnEnd ?? null) ||
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridColumnStart ?? null) ||
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridRowEnd ?? null) ||
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridRowStart ?? null)
+  ) {
+    return 'pinned'
+  }
+  return 'auto-pinned'
+}
+
+export function isFlowGridChild(child: ElementInstanceMetadata) {
+  return (
+    getGridElementPinState(child.specialSizeMeasurements.elementGridPropertiesFromProps) !==
+    'pinned'
+  )
+}
+
+function restoreGridTemplateFromProps(params: {
+  columns: GridAutoOrTemplateBase
+  rows: GridAutoOrTemplateBase
+}): PropertyToUpdate[] {
+  let properties: PropertyToUpdate[] = []
+  const newCols = printGridAutoOrTemplateBase(params.columns)
+  const newRows = printGridAutoOrTemplateBase(params.rows)
+  if (newCols === '') {
+    properties.push(propertyToDelete(PP.create('style', 'gridTemplateColumns')))
+  } else {
+    properties.push(propertyToSet(PP.create('style', 'gridTemplateColumns'), newCols))
+  }
+  if (newRows === '') {
+    properties.push(propertyToDelete(PP.create('style', 'gridTemplateRows')))
+  } else {
+    properties.push(propertyToSet(PP.create('style', 'gridTemplateRows'), newRows))
+  }
+  return properties
+}
+
+type GridInitialTemplates = {
+  calculated: {
+    columns: GridAutoOrTemplateBase
+    rows: GridAutoOrTemplateBase
+  }
+  fromProps: {
+    columns: GridAutoOrTemplateBase
+    rows: GridAutoOrTemplateBase
+  }
+}
+
+export function getParentGridTemplatesFromChildMeasurements(
+  specialSizeMeasurements: SpecialSizeMeasurements,
+): GridInitialTemplates | null {
+  const parentTemplateCalculated = specialSizeMeasurements.parentContainerGridProperties
+  const parentTemplateFromProps = specialSizeMeasurements.parentContainerGridPropertiesFromProps
+
+  const templateColsCalculated = parentTemplateCalculated.gridTemplateColumns
+  if (templateColsCalculated == null) {
+    return null
+  }
+  const templateRowsCalculated = parentTemplateCalculated.gridTemplateRows
+  if (templateRowsCalculated == null) {
+    return null
+  }
+
+  const templateColsFromProps = parentTemplateFromProps.gridTemplateColumns
+  if (templateColsFromProps == null) {
+    return null
+  }
+  const templateRowsFromProps = parentTemplateFromProps.gridTemplateRows
+  if (templateRowsFromProps == null) {
+    return null
+  }
+
+  return {
+    calculated: {
+      columns: templateColsCalculated,
+      rows: templateRowsCalculated,
+    },
+    fromProps: {
+      columns: templateColsFromProps,
+      rows: templateRowsFromProps,
+    },
+  }
+}
+
+export function gridMoveStrategiesExtraCommands(
+  parentGridPath: ElementPath,
+  initialTemplates: GridInitialTemplates,
+) {
+  const midInteractionCommands = [
+    // during the interaction, freeze the template with the calculated values…
+    updateBulkProperties('mid-interaction', parentGridPath, [
+      propertyToSet(
+        PP.create('style', 'gridTemplateColumns'),
+        printGridAutoOrTemplateBase(initialTemplates.calculated.columns),
+      ),
+      propertyToSet(
+        PP.create('style', 'gridTemplateRows'),
+        printGridAutoOrTemplateBase(initialTemplates.calculated.rows),
+      ),
+    ]),
+  ]
+
+  const onCompleteCommands = [
+    // …eventually, restore the grid template on complete.
+    updateBulkProperties(
+      'on-complete',
+      parentGridPath,
+      restoreGridTemplateFromProps(initialTemplates.fromProps),
+    ),
+  ]
+
+  return { midInteractionCommands, onCompleteCommands }
 }

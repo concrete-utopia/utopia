@@ -109,7 +109,7 @@ export function flexResizeStrategy(
     elementParentBounds.width !== 0 &&
     elementParentBounds.height !== 0
 
-  if (MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElements[0])) {
+  if (MetadataUtils.isGridItem(canvasState.startingMetadata, selectedElements[0])) {
     return null
   }
 

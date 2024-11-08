@@ -7,14 +7,16 @@ type ImportOperationData = {
   timeStarted?: number | null
   timeDone?: number | null
   result?: ImportOperationResult
-  error?: string
   children?: ImportOperation[]
 }
 
 export const ImportOperationResult = {
   Success: 'success',
-  Error: 'error',
   Warn: 'warn',
+  // an error that shows "continue anyway" button
+  Error: 'error',
+  // an error that we can't recover from
+  CriticalError: 'criticalError',
 } as const
 
 export type ImportOperationResult =
@@ -41,26 +43,48 @@ type ImportParseFiles = {
   type: 'parseFiles'
 } & ImportOperationData
 
-export type ImportCheckRequirementAndFix = ImportOperationData & {
-  type: 'checkRequirementAndFix'
+export type ImportCheckRequirementAndFixPostParse = ImportOperationData & {
+  type: 'checkRequirementAndFixPostParse'
   resolution?: RequirementResolutionResult
   text: string
   id: string
 }
 
-export function importCheckRequirementAndFix(
+export function importCheckRequirementAndFixPostParse(
   id: string,
   text: string,
-): ImportCheckRequirementAndFix {
+): ImportCheckRequirementAndFixPostParse {
   return {
-    type: 'checkRequirementAndFix',
+    type: 'checkRequirementAndFixPostParse',
     text: text,
     id: id,
   }
 }
 
-type ImportCheckRequirements = ImportOperationData & {
-  type: 'checkRequirements'
+export type ImportCheckRequirementAndFixPreParse = ImportOperationData & {
+  type: 'checkRequirementAndFixPreParse'
+  resolution?: RequirementResolutionResult
+  text: string
+  id: string
+}
+
+export function importCheckRequirementAndFixPreParse(
+  id: string,
+  text: string,
+): ImportCheckRequirementAndFixPreParse {
+  return {
+    type: 'checkRequirementAndFixPreParse',
+    text: text,
+    id: id,
+  }
+}
+
+type ImportCheckRequirementsPostParse = ImportOperationData & {
+  type: 'checkRequirementsPostParse'
+}
+
+type ImportCheckRequirementsPreParse = ImportOperationData & {
+  type: 'checkRequirementsPreParse'
 }
 
 export type ImportOperation =
@@ -68,10 +92,39 @@ export type ImportOperation =
   | ImportRefreshDependencies
   | ImportParseFiles
   | ImportFetchDependency
-  | ImportCheckRequirementAndFix
-  | ImportCheckRequirements
+  | ImportCheckRequirementAndFixPreParse
+  | ImportCheckRequirementAndFixPostParse
+  | ImportCheckRequirementsPreParse
+  | ImportCheckRequirementsPostParse
 
 export type ImportOperationType = ImportOperation['type']
+
+export type ImportState = {
+  importStatus: ImportStatus
+  importOperations: ImportOperation[]
+}
+
+export function newImportState(importStatus: ImportStatus, importOperations: ImportOperation[]) {
+  return {
+    importStatus: importStatus,
+    importOperations: importOperations,
+  }
+}
+
+export function emptyImportState(): ImportState {
+  return newImportState({ status: 'not-started' }, [])
+}
+
+export type ImportStatus =
+  | ImportStatusNotStarted
+  | ImportStatusInProgress
+  | ImportStatusDone
+  | ImportStatusPaused
+
+export type ImportStatusNotStarted = { status: 'not-started' }
+export type ImportStatusInProgress = { status: 'in-progress' }
+export type ImportStatusDone = { status: 'done' }
+export type ImportStatusPaused = { status: 'paused'; onResume: () => void }
 
 export const ImportOperationAction = {
   Add: 'add',
@@ -82,3 +135,8 @@ export const ImportOperationAction = {
 
 export type ImportOperationAction =
   (typeof ImportOperationAction)[keyof typeof ImportOperationAction]
+
+export type TotalImportResult = {
+  importStatus: ImportStatus
+  result: ImportOperationResult
+}

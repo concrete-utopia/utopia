@@ -13,6 +13,7 @@ import { codeFile } from '../../../../../core/shared/project-file-types'
 import { addStoryboardFileToProject } from '../../../../../core/model/storyboard-utils'
 
 export default class CheckStoryboard implements RequirementCheck {
+  initialText = 'Checking storyboard.js'
   check(projectContents: ProjectContentTreeRoot): RequirementCheckResult {
     return createStoryboardFileIfNecessaryInner(projectContents)
   }

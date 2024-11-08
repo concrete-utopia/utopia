@@ -162,6 +162,12 @@ Object {
       "alignItems": null,
       "alignSelf": null,
       "borderRadius": null,
+      "borderWidths": Object {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+      },
       "clientHeight": 0,
       "clientWidth": 0,
       "closestOffsetParentPath": Object {
@@ -328,6 +334,12 @@ Object {
       "alignItems": null,
       "alignSelf": null,
       "borderRadius": null,
+      "borderWidths": Object {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+      },
       "clientHeight": 0,
       "clientWidth": 0,
       "closestOffsetParentPath": Object {

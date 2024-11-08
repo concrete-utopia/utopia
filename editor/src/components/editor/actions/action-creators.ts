@@ -240,6 +240,7 @@ import type {
   SetImportWizardOpen,
   UpdateImportOperations,
   UpdateProjectRequirements,
+  UpdateImportStatus,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -274,6 +275,7 @@ import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type {
   ImportOperation,
   ImportOperationAction,
+  ImportStatus,
 } from '../../../core/shared/import/import-operation-types'
 import type { ProjectRequirements } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
@@ -1607,6 +1609,13 @@ export function updateImportOperations(
     action: 'UPDATE_IMPORT_OPERATIONS',
     operations: operations,
     type: type,
+  }
+}
+
+export function updateImportStatus(importStatus: ImportStatus): UpdateImportStatus {
+  return {
+    action: 'UPDATE_IMPORT_STATUS',
+    importStatus: importStatus,
   }
 }
 

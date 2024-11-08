@@ -222,6 +222,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_GITHUB_OPERATIONS(action, state)
     case 'UPDATE_IMPORT_OPERATIONS':
       return UPDATE_FNS.UPDATE_IMPORT_OPERATIONS(action, state)
+    case 'UPDATE_IMPORT_STATUS':
+      return UPDATE_FNS.UPDATE_IMPORT_STATUS(action, state)
     case 'SET_IMPORT_WIZARD_OPEN':
       return UPDATE_FNS.SET_IMPORT_WIZARD_OPEN(action, state)
     case 'UPDATE_PROJECT_REQUIREMENTS':
