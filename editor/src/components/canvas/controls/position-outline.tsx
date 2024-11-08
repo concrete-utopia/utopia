@@ -213,26 +213,30 @@ export const PinOutline = React.memo((props: PinOutlineProps): JSX.Element => {
     ? 'none'
     : `${PinOutlineUnscaledSize / props.scale}px dashed ${colorTheme.primary.value}`
 
-  const lineLeft =
-    props.startX == null
-      ? undefined
-      : `calc(${numberOrStringToSize(props.startX)} - ${
-          PinOutlineUnscaledSize / 2 / props.scale
-        }px)`
-  const lineTop =
-    props.startY == null
-      ? undefined
-      : `calc(${numberOrStringToSize(props.startY)} - ${
-          PinOutlineUnscaledSize / 2 / props.scale
-        }px)`
-  const lineRight =
-    props.endX == null
-      ? undefined
-      : `calc(${numberOrStringToSize(props.endX)} - ${PinOutlineUnscaledSize / 2 / props.scale}px)`
-  const lineBottom =
-    props.endY == null
-      ? undefined
-      : `calc(${numberOrStringToSize(props.endY)} - ${PinOutlineUnscaledSize / 2 / props.scale}px)`
+  function lineStart(startValue?: number | string): string | undefined {
+    if (startValue == null) {
+      return undefined
+    } else {
+      return `calc(${numberOrStringToSize(startValue)} - ${
+        PinOutlineUnscaledSize / 2 / props.scale
+      }px)`
+    }
+  }
+
+  function lineEnd(endValue?: number | string): string | undefined {
+    if (endValue == null) {
+      return undefined
+    } else {
+      return `calc(${numberOrStringToSize(endValue)} - ${
+        PinOutlineUnscaledSize / 2 / props.scale
+      }px)`
+    }
+  }
+
+  const lineLeft = lineStart(props.startX)
+  const lineTop = lineStart(props.startY)
+  const lineRight = lineEnd(props.endX)
+  const lineBottom = lineEnd(props.endY)
 
   return (
     <div
