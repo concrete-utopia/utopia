@@ -41,6 +41,69 @@ describe('grid element change location strategy', () => {
     })
   })
 
+  describe('component items', () => {
+    it('can change the location of components on a grid when component takes style prop', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeProjectCodeWithItemComponent(`export function Item(props) {
+  return (
+    <div
+      style={{...props.style}}
+      data-testid={props['data-testid']}
+    />
+  )
+}`),
+        'await-first-dom-report',
+      )
+      const testId = 'aaa'
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest(
+        editor,
+        {
+          scale: 1,
+          pathString: `sb/scene/grid/${testId}`,
+          testId: testId,
+        },
+      )
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: '7',
+        gridColumnStart: '3',
+        gridRowEnd: '4',
+        gridRowStart: '2',
+      })
+    })
+
+    it('can not change the location of components on a grid when component doesnt take style prop', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeProjectCodeWithItemComponent(`export function Item(props) {
+  return (
+    <div data-testid={props['data-testid']} />
+  )
+}`),
+        'await-first-dom-report',
+      )
+
+      const testId = 'aaa'
+      await runMoveTest(
+        editor,
+        {
+          scale: 1,
+          pathString: `sb/scene/grid/${testId}`,
+          testId: testId,
+        },
+        (ed) => {
+          const strategies = ed.getEditorState().strategyState.sortedApplicableStrategies
+          const changeLocationStrategy = strategies?.find(
+            (s) => s.strategy.id === 'grid-change-element-location-strategy',
+          )
+          expect(changeLocationStrategy).toBeUndefined()
+          const reorderStrategy = strategies?.find(
+            (s) => s.strategy.id === 'reorder-grid-move-strategy',
+          )
+          expect(reorderStrategy).not.toBeUndefined()
+        },
+      )
+    })
+  })
+
   it('can change the location of elements in a grid component', async () => {
     const editor = await renderTestEditorWithCode(
       ProjectCodeGridComponent,
@@ -626,6 +689,23 @@ export var storyboard = (
 
       expect(cells).toEqual(['pink', 'cyan', 'orange', 'blue'])
     })
+    it('reorders a component (which does not take style props) inside contiguous area', async () => {
+      const editor = await renderTestEditorWithCode(
+        ProjectCodeReorderWithComponentItem,
+        'await-first-dom-report',
+      )
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd, cells } =
+        await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 1, column: 3 })
+
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: '',
+        gridColumnStart: '',
+        gridRowEnd: '',
+        gridRowStart: '',
+      })
+
+      expect(cells).toEqual(['pink', 'cyan', 'orange', 'blue'])
+    })
     it('reorders an element without setting positioning (edge of contiguous area)', async () => {
       const editor = await renderTestEditorWithCode(ProjectCodeReorder, 'await-first-dom-report')
 
@@ -797,6 +877,7 @@ async function runMoveTest(
     draggedCell?: GridCellCoordinates
     tab?: boolean
   },
+  midDragCallback?: (editor: EditorRenderResult) => void,
 ) {
   const elementPathToDrag = EP.fromString(props.pathString)
 
@@ -844,6 +925,10 @@ async function runMoveTest(
   if (props.tab) {
     await keyDown('Tab')
   }
+  if (midDragCallback != null) {
+    midDragCallback(editor)
+  }
+
   await mouseUpAtPoint(editor.renderedDOM.getByTestId(CanvasControlsContainerID), endPoint)
 
   return editor.renderedDOM.getByTestId(props.testId).style
@@ -962,6 +1047,90 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )
+`
+
+const makeProjectCodeWithItemComponent = (
+  itemComponentCode: string,
+) => `import * as React from 'react'
+import { Scene, Storyboard, Placeholder } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 847,
+        height: 895,
+        position: 'absolute',
+        left: 46,
+        top: 131,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateRows: '75px 75px 75px 75px',
+          gridTemplateColumns:
+            '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
+          gridGap: 16,
+          height: 482,
+          width: 786,
+          position: 'absolute',
+          left: 31,
+          top: 0,
+        }}
+        data-uid='grid'
+      >
+        <Item
+          style={{
+            minHeight: 0,
+            backgroundColor: '#f3785f',
+            gridColumnEnd: 5,
+            gridColumnStart: 1,
+            gridRowEnd: 3,
+            gridRowStart: 1,
+          }}
+          data-uid='aaa'
+          data-testid='aaa'
+        />
+        <Item
+          style={{
+            minHeight: 0,
+            backgroundColor: '#23565b',
+          }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+        <Placeholder
+          style={{
+            minHeight: 0,
+            gridColumnEnd: 5,
+            gridRowEnd: 4,
+            gridColumnStart: 1,
+            gridRowStart: 3,
+            backgroundColor: '#0074ff',
+          }}
+          data-uid='ccc'
+        />
+        <Placeholder
+          style={{
+            minHeight: 0,
+            gridColumnEnd: 9,
+            gridRowEnd: 4,
+            gridColumnStart: 5,
+            gridRowStart: 3,
+          }}
+          data-uid='ddd'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+
+${itemComponentCode}
 `
 
 const ProjectCodeGridComponent = `import * as React from 'react'
@@ -1139,6 +1308,83 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )
+`
+
+const ProjectCodeReorderWithComponentItem = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 600,
+        height: 600,
+        position: 'absolute',
+        left: 0,
+        top: 0,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 500,
+          height: 500,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gridTemplateRows: '1fr 1fr 1fr',
+          gridGap: 10,
+          padding: 10,
+        }}
+        data-testid='grid'
+        data-uid='grid'
+      >
+        <Item
+          backgroundColor='#f09'
+          data-uid='pink'
+          data-testid='pink'
+          data-label='pink'
+        />
+        <Item
+          backgroundColor='#f90'
+          data-uid='orange'
+          data-testid='orange'
+          data-label='orange'
+        />
+        <Item
+          backgroundColor='#0f9'
+          data-uid='cyan'
+          data-testid='cyan'
+          data-label='cyan'
+        />
+        <Item
+          backgroundColor='#09f'
+          data-uid='blue'
+          data-testid='blue'
+          data-label='blue'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+
+export function Item(props) {
+  return (
+    <div
+      style={{
+        backgroundColor: props.backgroundColor,
+        width: '100%',
+        height: '100%',
+      }}
+      data-uid={props['data-uid']}
+      data-testid={props['data-testid']}
+      data-label={props['data-label']}
+    />
+  )
+}
 `
 
 const ProjectCodeReorderwithMultiCellChild = `import * as React from 'react'

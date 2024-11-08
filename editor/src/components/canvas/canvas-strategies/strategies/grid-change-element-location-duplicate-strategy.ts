@@ -51,7 +51,17 @@ export const gridChangeElementLocationDuplicateStrategy: CanvasStrategyFactory =
     canvasState.startingMetadata,
     selectedElement,
   )
-  if (selectedElementMetadata == null) {
+  if (
+    selectedElementMetadata == null ||
+    !MetadataUtils.targetRegisteredStyleControlsOrHonoursStyleProps(
+      canvasState.projectContents,
+      selectedElementMetadata,
+      canvasState.propertyControlsInfo,
+      'layout',
+      ['gridRow', 'gridColumn', 'gridRowStart', 'gridColumnStart', 'gridRowEnd', 'gridColumnEnd'],
+      'some',
+    )
+  ) {
     return null
   }
 

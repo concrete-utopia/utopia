@@ -71,9 +71,20 @@ export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
     canvasState.startingMetadata,
     selectedElement,
   )
-  if (selectedElementMetadata == null) {
+  if (
+    selectedElementMetadata == null ||
+    !MetadataUtils.targetRegisteredStyleControlsOrHonoursStyleProps(
+      canvasState.projectContents,
+      selectedElementMetadata,
+      canvasState.propertyControlsInfo,
+      'layout',
+      ['gridRow', 'gridColumn', 'gridRowStart', 'gridColumnStart', 'gridRowEnd', 'gridColumnEnd'],
+      'every',
+    )
+  ) {
     return null
   }
+
   const initialTemplates = getParentGridTemplatesFromChildMeasurements(
     selectedElementMetadata.specialSizeMeasurements,
   )
