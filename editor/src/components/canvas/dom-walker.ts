@@ -152,7 +152,12 @@ function isElementAContainingBlockForAbsolute(computedStyle: CSSStyleDeclaration
   return false
 }
 
-const applicativeSidesPxTransform = (t: CSSNumber, r: CSSNumber, b: CSSNumber, l: CSSNumber) =>
+export const applicativeSidesPxTransform = (
+  t: CSSNumber,
+  r: CSSNumber,
+  b: CSSNumber,
+  l: CSSNumber,
+) =>
   sides(
     t.unit === 'px' ? t.value : undefined,
     r.unit === 'px' ? r.value : undefined,
@@ -559,7 +564,7 @@ export function collectDomElementMetadataForElement(
   )
 }
 
-function getGridContainerProperties(
+export function getGridContainerProperties(
   elementStyle: CSSStyleDeclaration | null,
   options?: {
     dynamicCols: boolean
@@ -1020,7 +1025,7 @@ function getSpecialMeasurements(
   )
 }
 
-function isDynamicGridTemplate(template: GridAutoOrTemplateBase | null) {
+export function isDynamicGridTemplate(template: GridAutoOrTemplateBase | null) {
   return template?.type === 'DIMENSIONS' && template.dimensions.some((d) => isDynamicGridRepeat(d))
 }
 

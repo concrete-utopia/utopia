@@ -366,12 +366,6 @@ interface GridResizingProps {
 }
 
 const GridResizing = React.memo((props: GridResizingProps) => {
-  const canvasScale = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.scale,
-    'GridResizing canvasScale',
-  )
-
   const fromProps = React.useMemo((): GridAutoOrTemplateDimensions | null => {
     if (props.fromPropsAxisValues?.type !== 'DIMENSIONS') {
       return null
@@ -1058,7 +1052,6 @@ export interface GridMeasurementHelperProps {
 
 const GridMeasurementHelper = React.memo<{ elementPath: ElementPath }>(({ elementPath }) => {
   const gridData = useGridMeasurentHelperData(elementPath)
-
   if (gridData == null) {
     return null
   }

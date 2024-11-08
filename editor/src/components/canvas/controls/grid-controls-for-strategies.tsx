@@ -1,9 +1,13 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import fastDeepEqual from 'fast-deep-equal'
-import type { Sides } from 'utopia-api/core'
+import { sides, type Sides } from 'utopia-api/core'
 import type { ElementPath } from 'utopia-shared/src/types'
-import { isStaticGridRepeat, printGridAutoOrTemplateBase } from '../../inspector/common/css-utils'
+import {
+  isStaticGridRepeat,
+  parseCSSLength,
+  printGridAutoOrTemplateBase,
+} from '../../inspector/common/css-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -21,6 +25,7 @@ import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy
 import type { GridResizeEdge } from '../canvas-strategies/interaction-state'
 import type { EdgePosition } from '../canvas-types'
 import {
+  CanvasContainerID,
   EdgePositionBottom,
   EdgePositionLeft,
   EdgePositionRight,
@@ -33,7 +38,21 @@ import {
 } from './grid-controls'
 import { isEdgePositionOnSide } from '../canvas-utils'
 import { findOriginalGrid } from '../canvas-strategies/strategies/grid-helpers'
-import type { AlignContent, FlexJustifyContent } from '../../inspector/inspector-common'
+import {
+  getAlignContent,
+  getFlexJustifyContent,
+  type AlignContent,
+  type FlexJustifyContent,
+} from '../../inspector/inspector-common'
+import { getComputedStyleAndBoundingRectFromElement } from '../direct-dom-lookups'
+import {
+  applicativeSidesPxTransform,
+  getGridContainerProperties,
+  isDynamicGridTemplate,
+} from '../dom-walker'
+import { applicative4Either, defaultEither, isRight, mapEither } from '../../../core/shared/either'
+import { domRectToScaledCanvasRectangle, getRoundingFn } from '../../../core/shared/dom-utils'
+import Utils from '../../../utils/utils'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -82,6 +101,96 @@ export type GridMeasurementHelperData = {
 export function useGridMeasurentHelperData(
   elementPath: ElementPath,
 ): GridMeasurementHelperData | null {
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => 1 / store.editor.canvas.scale,
+    'useGridMeasurentHelperData scale',
+  )
+
+  const canvasRootContainer = document.getElementById(CanvasContainerID)
+  if (canvasRootContainer == null) {
+    return null
+  }
+
+  const computedStyleAndBoundingRect = getComputedStyleAndBoundingRectFromElement(elementPath)
+  if (computedStyleAndBoundingRect == null) {
+    return null
+  }
+  const { computedStyle, boundingRectangle } = computedStyleAndBoundingRect
+
+  // FIXME.
+  const containerGridProperties = getGridContainerProperties(computedStyle, {
+    dynamicCols: true,
+    dynamicRows: true,
+  })
+  const columns = getCellsCount(containerGridProperties.gridTemplateColumns)
+  const rows = getCellsCount(containerGridProperties.gridTemplateRows)
+  const borderTopWidth = parseCSSLength(computedStyle.borderTopWidth)
+  const borderRightWidth = parseCSSLength(computedStyle.borderRightWidth)
+  const borderBottomWidth = parseCSSLength(computedStyle.borderBottomWidth)
+  const borderLeftWidth = parseCSSLength(computedStyle.borderLeftWidth)
+  const border: BorderWidths = {
+    top: isRight(borderTopWidth) ? borderTopWidth.value.value : 0,
+    right: isRight(borderRightWidth) ? borderRightWidth.value.value : 0,
+    bottom: isRight(borderBottomWidth) ? borderBottomWidth.value.value : 0,
+    left: isRight(borderLeftWidth) ? borderLeftWidth.value.value : 0,
+  }
+  const justifyContent = getFlexJustifyContent(computedStyle.justifyContent)
+  const alignContent = getAlignContent(computedStyle.alignContent)
+  const padding = defaultEither(
+    sides(undefined, undefined, undefined, undefined),
+    applicative4Either(
+      applicativeSidesPxTransform,
+      parseCSSLength(computedStyle.paddingTop),
+      parseCSSLength(computedStyle.paddingRight),
+      parseCSSLength(computedStyle.paddingBottom),
+      parseCSSLength(computedStyle.paddingLeft),
+    ),
+  )
+
+  const gap = defaultEither(
+    null,
+    mapEither((n) => n.value, parseCSSLength(computedStyle.gap)),
+  )
+
+  const rowGap = defaultEither(
+    null,
+    mapEither((n) => n.value, parseCSSLength(computedStyle.rowGap)),
+  )
+
+  const columnGap = defaultEither(
+    null,
+    mapEither((n) => n.value, parseCSSLength(computedStyle.columnGap)),
+  )
+
+  const elementRect = domRectToScaledCanvasRectangle(
+    boundingRectangle,
+    scale,
+    getRoundingFn('nearest-half'),
+  )
+  const parentRect = domRectToScaledCanvasRectangle(
+    canvasRootContainer.getBoundingClientRect(),
+    scale,
+    getRoundingFn('nearest-half'),
+  )
+  const frame = Utils.offsetRect(elementRect, Utils.negate(parentRect))
+
+  return {
+    frame: frame,
+    gridTemplateColumns: containerGridProperties.gridTemplateColumns,
+    gridTemplateRows: containerGridProperties.gridTemplateRows,
+    gap: gap,
+    rowGap: rowGap,
+    columnGap: columnGap,
+    justifyContent: justifyContent,
+    alignContent: alignContent,
+    padding: padding,
+    columns: columns,
+    cells: columns * rows,
+    border: border,
+  }
+
+  /*
   return useEditorState(
     Substores.metadata,
     (store) => {
@@ -124,6 +233,7 @@ export function useGridMeasurentHelperData(
     'useGridMeasurentHelperData',
     fastDeepEqual, //TODO: this should not be needed, but it seems EditorStateKeepDeepEquality is not running, and metadata reference is always updated
   )
+  */
 }
 
 export type GridData = GridMeasurementHelperData & {
