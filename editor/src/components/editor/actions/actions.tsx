@@ -631,6 +631,8 @@ import { styleP } from '../../inspector/inspector-common'
 import { getUpdateOperationResult } from '../../../core/shared/import/import-operation-service'
 import { updateRequirements } from '../../../core/shared/import/project-health-check/utopia-requirements-service'
 import { applyValuesAtPath, deleteValuesAtPath } from '../../canvas/commands/utils/property-utils'
+import type { HuggingElementContentsStatus } from '../../../components/canvas/hugging-utils'
+import { getHuggingElementContentsStatus } from '../../../components/canvas/hugging-utils'
 import { createStoryboardFileIfNecessary } from '../../../core/shared/import/project-health-check/requirements/requirement-storyboard'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
@@ -1087,6 +1089,7 @@ function deleteElements(
     console.error(`Attempted to delete element(s) with no UI file open.`)
     return editor
   } else {
+    const targetStaticUIDs = targets.map(EP.toStaticUid)
     const updatedEditor = targets.reduce((working, targetPath) => {
       const underlyingTarget = normalisePathToUnderlyingTarget(working.projectContents, targetPath)
 
@@ -1146,6 +1149,8 @@ function deleteElements(
           ? right(metadata.element.value.props)
           : null
 
+        const children = MetadataUtils.getChildrenUnordered(editor.jsxMetadata, path)
+
         const childrenFrame =
           boundingRectangleArray(
             mapDropNulls((child) => {
@@ -1154,7 +1159,7 @@ function deleteElements(
                 return null
               }
               return childFrame
-            }, MetadataUtils.getChildrenUnordered(editor.jsxMetadata, path)),
+            }, children),
           ) ?? canvasRectangle(zeroRectangle)
 
         const hasHorizontalPosition =
@@ -1174,7 +1179,14 @@ function deleteElements(
             height: main.height !== 0 ? main.height : backup.height,
           })
         }
-        return trueUpHuggingElement(path, combineFrames(canvasRectangle(frame), childrenFrame))
+        const huggingElementContentsStatus: HuggingElementContentsStatus =
+          getHuggingElementContentsStatus(editor.jsxMetadata, path)
+        return trueUpHuggingElement(
+          path,
+          canvasRectangle(frame),
+          combineFrames(canvasRectangle(frame), childrenFrame),
+          huggingElementContentsStatus,
+        )
       }, uniqBy(targets.map(EP.parentPath), EP.pathsEqual))
       trueUps.push(...trueUpHuggingElements)
     }

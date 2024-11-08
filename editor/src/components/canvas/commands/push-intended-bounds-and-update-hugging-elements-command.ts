@@ -1,3 +1,5 @@
+import type { CanvasRectangle } from '../../../core/shared/math-utils'
+import { isFiniteRectangle, sizesEqual } from '../../../core/shared/math-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
@@ -14,16 +16,23 @@ import type { CanvasFrameAndTarget } from '../canvas-types'
 import type { BaseCommand, CanvasCommand, CommandFunctionResult } from './commands'
 import { foldAndApplyCommandsSimple } from './commands'
 import { setCssLengthProperty, setExplicitCssValue } from './set-css-length-command'
-import { setProperty } from './set-property-command'
 import { showToastCommand } from './show-toast-command'
+import { isZeroSizedElement } from '../controls/outline-utils'
+import type { HuggingElementContentsStatus } from '../hugging-utils'
+import { getHuggingElementContentsStatus } from '../hugging-utils'
+
+export interface IntendedBoundsAndChildrenState extends CanvasFrameAndTarget {
+  elementFrame: CanvasRectangle
+  huggingElementContentsStatus: HuggingElementContentsStatus
+}
 
 export interface PushIntendedBoundsAndUpdateHuggingElements extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING_ELEMENTS'
-  value: Array<CanvasFrameAndTarget>
+  value: Array<IntendedBoundsAndChildrenState>
 }
 
 export function pushIntendedBoundsAndUpdateHuggingElements(
-  value: Array<CanvasFrameAndTarget>,
+  value: Array<IntendedBoundsAndChildrenState>,
 ): PushIntendedBoundsAndUpdateHuggingElements {
   return {
     type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING_ELEMENTS',
@@ -60,23 +69,6 @@ export const runPushIntendedBoundsAndUpdateHuggingElements = (
   }
 }
 
-function getHuggingElementContentsStatus(
-  jsxMetadata: ElementInstanceMetadataMap,
-  path: ElementPath,
-): 'empty' | 'contains-only-absolute' | 'contains-some-absolute' | 'non-empty' {
-  const children = MetadataUtils.getChildrenUnordered(jsxMetadata, path)
-  const absoluteChildren = children.filter(MetadataUtils.isPositionAbsolute).length
-  if (children.length === 0) {
-    return 'empty'
-  } else if (absoluteChildren === children.length) {
-    return 'contains-only-absolute'
-  } else if (absoluteChildren > 0) {
-    return 'contains-some-absolute'
-  } else {
-    return 'non-empty'
-  }
-}
-
 function applyUpdateResizeHuggingElementsCommands(
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateHuggingElements,
@@ -89,14 +81,27 @@ function applyUpdateResizeHuggingElementsCommands(
       editor.jsxMetadata,
       frameAndTarget.target,
     )
+
+    // If the element isn't hugging its parent in either direction, skip this case.
     if (
       metadata == null ||
       !(isHuggingParent(metadata, 'width') || isHuggingParent(metadata, 'height'))
     ) {
       continue
     }
+
+    // If the element still has non-absolute children, skip this case.
     const status = getHuggingElementContentsStatus(editor.jsxMetadata, frameAndTarget.target)
     if (status === 'non-empty') {
+      continue
+    }
+
+    // If the element is now empty, but used to contain only absolute children, and is zero-sized, skip this case.
+    if (
+      status === 'empty' &&
+      frameAndTarget.huggingElementContentsStatus === 'contains-only-absolute' &&
+      isZeroSizedElement(frameAndTarget.elementFrame)
+    ) {
       continue
     }
 
@@ -128,39 +133,8 @@ function applyUpdateResizeHuggingElementsCommands(
           'height',
           frameAndTarget.frame.height,
         ),
+        showToastCommand('Added fixed width and height', 'NOTICE', 'added-width-height'),
       )
-
-      const parentPath = EP.parentPath(frameAndTarget.target)
-      const parentElement = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
-      const parentIsHugging =
-        parentElement != null &&
-        (isHuggingParent(parentElement, 'width') || isHuggingParent(parentElement, 'height'))
-      const shouldSetAbsolutePosition =
-        EP.isStoryboardPath(parentPath) || parentElement == null || parentIsHugging
-      if (shouldSetAbsolutePosition) {
-        commands.push(
-          setProperty('always', frameAndTarget.target, PP.create('style', 'position'), 'absolute'),
-          setCSSDimension(
-            metadata.specialSizeMeasurements.flexDirection,
-            'left',
-            frameAndTarget.frame.x,
-          ),
-          setCSSDimension(
-            metadata.specialSizeMeasurements.flexDirection,
-            'top',
-            frameAndTarget.frame.y,
-          ),
-          showToastCommand(
-            'Converted to fixed size and absolute position',
-            'NOTICE',
-            'convert-to-fixed-size',
-          ),
-        )
-      } else {
-        commands.push(
-          showToastCommand('Added fixed width and height', 'NOTICE', 'added-width-height'),
-        )
-      }
     }
   }
   return {

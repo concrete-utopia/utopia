@@ -189,6 +189,7 @@ import type { OnlineState } from '../online-status'
 import type { NavigatorRow } from '../../navigator/navigator-row'
 import type { FancyError } from '../../../core/shared/code-exec-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
+import type { HuggingElementContentsStatus } from '../../../components/canvas/hugging-utils'
 import {
   emptyImportState,
   type ImportState,
@@ -1366,17 +1367,23 @@ export function trueUpChildrenOfGroupChanged(
 export interface TrueUpHuggingElement {
   type: 'TRUE_UP_HUGGING_ELEMENT'
   target: ElementPath
+  elementFrame: CanvasRectangle
   frame: CanvasRectangle
+  huggingElementContentsStatus: HuggingElementContentsStatus
 }
 
 export function trueUpHuggingElement(
   target: ElementPath,
+  elementFrame: CanvasRectangle,
   frame: CanvasRectangle,
+  huggingElementContentsStatus: HuggingElementContentsStatus,
 ): TrueUpHuggingElement {
   return {
     type: 'TRUE_UP_HUGGING_ELEMENT',
     target: target,
+    elementFrame: elementFrame,
     frame: frame,
+    huggingElementContentsStatus: huggingElementContentsStatus,
   }
 }
 

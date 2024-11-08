@@ -5125,12 +5125,17 @@ export const TrueUpChildrenOfGroupChangedKeepDeepEquality: KeepDeepEqualityCall<
   )
 
 export const TrueUpHuggingElementKeepDeepEquality: KeepDeepEqualityCall<TrueUpHuggingElement> =
-  combine2EqualityCalls(
+  combine4EqualityCalls(
     (value) => value.target,
     ElementPathKeepDeepEquality,
+    (value) => value.elementFrame,
+    CanvasRectangleKeepDeepEquality,
     (value) => value.frame,
     CanvasRectangleKeepDeepEquality,
-    (target, frame) => trueUpHuggingElement(target, frame),
+    (value) => value.huggingElementContentsStatus,
+    createCallWithTripleEquals(),
+    (target, elementFrame, frame, huggingElementContentsStatus) =>
+      trueUpHuggingElement(target, elementFrame, frame, huggingElementContentsStatus),
   )
 
 export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = (
