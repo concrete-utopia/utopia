@@ -411,11 +411,15 @@ export class Editor {
   }
 
   resetStateOnBlur = (): void => {
+    const currentMode = this.storedState.patchedEditor.mode
+
     this.boundDispatch(
       [
         EditorActions.clearHighlightedViews(),
         CanvasActions.clearInteractionSession(false),
-        EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none')),
+        ...(currentMode.type === 'insert'
+          ? [EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none'))]
+          : []),
         EditorActions.updateKeys({}),
         EditorActions.closePopup(),
         EditorActions.clearPostActionData(),

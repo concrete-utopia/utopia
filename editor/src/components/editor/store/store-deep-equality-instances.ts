@@ -151,6 +151,7 @@ import type {
   GridAutoOrTemplateBase,
   GridAutoOrTemplateDimensions,
   GridAutoOrTemplateFallback,
+  BorderWidths,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -643,7 +644,11 @@ import type {
 } from '../../../core/property-controls/component-descriptor-parser'
 import type { Axis } from '../../../components/canvas/gap-utils'
 import type { GridCellCoordinates } from '../../canvas/canvas-strategies/strategies/grid-cell-bounds'
-import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
+import {
+  newImportState,
+  type ImportOperation,
+  type ImportState,
+} from '../../../core/shared/import/import-operation-types'
 import type {
   ProjectRequirements,
   RequirementResolution,
@@ -2174,6 +2179,20 @@ export function GridElementPropertiesKeepDeepEquality(): KeepDeepEqualityCall<Gr
   )
 }
 
+export function BorderWidthsKeepDeepEquality(): KeepDeepEqualityCall<BorderWidths> {
+  return combine4EqualityCalls(
+    (p) => p.bottom,
+    NumberKeepDeepEquality,
+    (p) => p.left,
+    NumberKeepDeepEquality,
+    (p) => p.right,
+    NumberKeepDeepEquality,
+    (p) => p.top,
+    NumberKeepDeepEquality,
+    (bottom, left, right, top) => ({ bottom, left, right, top }),
+  )
+}
+
 export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<SpecialSizeMeasurements> {
   return (oldSize, newSize) => {
     const offsetResult = LocalPointKeepDeepEquality(oldSize.offset, newSize.offset)
@@ -2294,6 +2313,11 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       arrayDeepEquality(arrayDeepEquality(CanvasRectangleKeepDeepEquality)),
     )(oldSize.gridCellGlobalFrames, newSize.gridCellGlobalFrames).areEqual
 
+    const borderWidthsEqual = BorderWidthsKeepDeepEquality()(
+      oldSize.borderWidths,
+      newSize.borderWidths,
+    ).areEqual
+
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -2348,7 +2372,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       justifySelfEquals &&
       alignSelfEquals &&
       gridCellGlobalFramesEqual &&
-      parentGridCellGlobalFramesEqual
+      parentGridCellGlobalFramesEqual &&
+      borderWidthsEqual
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -2408,6 +2433,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.parentGridCellGlobalFrames,
         newSize.justifySelf,
         newSize.alignSelf,
+        newSize.borderWidths,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
@@ -4904,6 +4930,14 @@ export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperati
 export const GithubOperationsKeepDeepEquality: KeepDeepEqualityCall<Array<GithubOperation>> =
   arrayDeepEquality(GithubOperationKeepDeepEquality)
 
+export const ImportStateKeepDeepEquality: KeepDeepEqualityCall<ImportState> = combine2EqualityCalls(
+  (importState) => importState.importStatus,
+  createCallWithTripleEquals(),
+  (importState) => importState.importOperations,
+  arrayDeepEquality(ImportOperationKeepDeepEquality),
+  newImportState,
+)
+
 export const ColorSwatchDeepEquality: KeepDeepEqualityCall<ColorSwatch> = combine2EqualityCalls(
   (c) => c.id,
   StringKeepDeepEquality,
@@ -5091,12 +5125,17 @@ export const TrueUpChildrenOfGroupChangedKeepDeepEquality: KeepDeepEqualityCall<
   )
 
 export const TrueUpHuggingElementKeepDeepEquality: KeepDeepEqualityCall<TrueUpHuggingElement> =
-  combine2EqualityCalls(
+  combine4EqualityCalls(
     (value) => value.target,
     ElementPathKeepDeepEquality,
+    (value) => value.elementFrame,
+    CanvasRectangleKeepDeepEquality,
     (value) => value.frame,
     CanvasRectangleKeepDeepEquality,
-    (target, frame) => trueUpHuggingElement(target, frame),
+    (value) => value.huggingElementContentsStatus,
+    createCallWithTripleEquals(),
+    (target, elementFrame, frame, huggingElementContentsStatus) =>
+      trueUpHuggingElement(target, elementFrame, frame, huggingElementContentsStatus),
   )
 
 export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = (
@@ -5434,10 +5473,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.githubOperations,
   )
 
-  const importOperationsResults = arrayDeepEquality(ImportOperationKeepDeepEquality)(
-    oldValue.importOperations,
-    newValue.importOperations,
-  )
+  const importStateResults = ImportStateKeepDeepEquality(oldValue.importState, newValue.importState)
 
   const importWizardOpenResults = BooleanKeepDeepEquality(
     oldValue.importWizardOpen,
@@ -5570,7 +5606,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubSettingsResults.areEqual &&
     imageDragSessionStateEqual.areEqual &&
     githubOperationsResults.areEqual &&
-    importOperationsResults.areEqual &&
+    importStateResults.areEqual &&
     importWizardOpenResults.areEqual &&
     projectRequirementsResults.areEqual &&
     branchContentsResults.areEqual &&
@@ -5659,7 +5695,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,
-      importOperationsResults.value,
+      importStateResults.value,
       importWizardOpenResults.value,
       projectRequirementsResults.value,
       branchContentsResults.value,

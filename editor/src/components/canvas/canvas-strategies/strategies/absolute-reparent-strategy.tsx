@@ -3,9 +3,13 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import {
+  metadataHasPositionAbsoluteOrNull,
+  type ElementInstanceMetadataMap,
+} from '../../../../core/shared/element-template'
 import type { ElementPath, NodeModules } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
+import { assertNever } from '../../../../core/shared/utils'
 import type { IndexPosition } from '../../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import type { AllElementProps } from '../../../editor/store/editor-state'
@@ -75,10 +79,18 @@ export function baseAbsoluteReparentStrategy(
         element,
       )
 
-      return (
-        elementMetadata?.specialSizeMeasurements.position === 'absolute' &&
-        honoursPropsPosition(canvasState, element)
-      )
+      const honoursPosition = honoursPropsPosition(canvasState, element)
+
+      switch (honoursPosition) {
+        case 'does-not-honour':
+          return false
+        case 'absolute-position-and-honours-numeric-props':
+          return metadataHasPositionAbsoluteOrNull(elementMetadata)
+        case 'honours-numeric-props-only':
+          return elementMetadata?.specialSizeMeasurements.position === 'absolute'
+        default:
+          assertNever(honoursPosition)
+      }
     })
     if (!isApplicable) {
       return null
@@ -164,7 +176,6 @@ export function applyAbsoluteReparent(
 
         const allowedToReparent = selectedElements.every((selectedElement) => {
           return isAllowedToReparent(
-            canvasState.projectContents,
             canvasState.startingMetadata,
             selectedElement,
             newParent.intendedParentPath,

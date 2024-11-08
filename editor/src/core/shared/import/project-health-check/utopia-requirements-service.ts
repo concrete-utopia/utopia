@@ -1,4 +1,8 @@
-import { importCheckRequirementAndFix, ImportOperationResult } from '../import-operation-types'
+import {
+  importCheckRequirementAndFixPostParse,
+  importCheckRequirementAndFixPreParse,
+  ImportOperationResult,
+} from '../import-operation-types'
 import { notifyOperationFinished, notifyOperationStarted } from '../import-operation-service'
 import type { EditorDispatch } from '../../../../components/editor/action-types'
 import { updateProjectRequirements } from '../../../../components/editor/actions/action-creators'
@@ -9,14 +13,8 @@ import {
   RequirementResolutionStatus,
 } from './utopia-requirements-types'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
-
-export const initialTexts: Record<ProjectRequirement, string> = {
-  storyboard: 'Checking storyboard.js',
-  packageJsonEntries: 'Checking for a valid package.json',
-  language: 'Checking project language',
-  reactVersion: 'Checking React version',
-  serverPackages: 'Checking for server packages',
-}
+import { getRequirementStage, getRequirementsToCheck } from './check-utopia-requirements'
+import { objectFilter, objectKeys } from '../../object-utils'
 
 export function updateProjectRequirementsStatus(
   dispatch: EditorDispatch,
@@ -33,13 +31,24 @@ export function updateProjectRequirementsStatus(
 export function resetRequirementsResolutions(dispatch: EditorDispatch) {
   let projectRequirements = emptyProjectRequirements()
   updateProjectRequirementsStatus(dispatch, projectRequirements)
+}
+
+export function startPreParseValidation(dispatch: EditorDispatch) {
+  const checks = getRequirementsToCheck().preParse
   notifyOperationStarted(dispatch, {
-    type: 'checkRequirements',
-    children: Object.keys(projectRequirements).map((key) =>
-      importCheckRequirementAndFix(
-        key as ProjectRequirement,
-        initialTexts[key as ProjectRequirement],
-      ),
+    type: 'checkRequirementsPreParse',
+    children: objectKeys(checks).map((key) =>
+      importCheckRequirementAndFixPreParse(key, checks[key].initialText),
+    ),
+  })
+}
+
+export function startPostParseValidation(dispatch: EditorDispatch) {
+  const checks = getRequirementsToCheck().postParse
+  notifyOperationStarted(dispatch, {
+    type: 'checkRequirementsPostParse',
+    children: objectKeys(checks).map((key) =>
+      importCheckRequirementAndFixPostParse(key, checks[key].initialText),
     ),
   })
 }
@@ -49,13 +58,15 @@ export function notifyCheckingRequirement(
   requirement: ProjectRequirement,
   text: string,
 ) {
+  const stage = getRequirementStage(requirement)
   updateProjectRequirementsStatus(dispatch, {
     [requirement]: {
       status: RequirementResolutionStatus.Pending,
     },
   })
   notifyOperationStarted(dispatch, {
-    type: 'checkRequirementAndFix',
+    type:
+      stage === 'preParse' ? 'checkRequirementAndFixPreParse' : 'checkRequirementAndFixPostParse',
     id: requirement,
     text: text,
   })
@@ -68,6 +79,7 @@ export function notifyResolveRequirement(
   text: string,
   value?: string,
 ) {
+  const stage = getRequirementStage(requirementName)
   updateProjectRequirementsStatus(dispatch, {
     [requirementName]: {
       status: RequirementResolutionStatus.Done,
@@ -85,7 +97,8 @@ export function notifyResolveRequirement(
   notifyOperationFinished(
     dispatch,
     {
-      type: 'checkRequirementAndFix',
+      type:
+        stage === 'preParse' ? 'checkRequirementAndFixPreParse' : 'checkRequirementAndFixPostParse',
       id: requirementName,
       text: text,
       resolution: resolution,
@@ -99,35 +112,63 @@ export function updateRequirements(
   existingRequirements: ProjectRequirements,
   incomingRequirements: Partial<ProjectRequirements>,
 ): ProjectRequirements {
-  let result = { ...existingRequirements }
+  let requirements = { ...existingRequirements }
   for (const incomingRequirement of Object.keys(incomingRequirements)) {
     const incomingRequirementName = incomingRequirement as ProjectRequirement
-    result[incomingRequirementName] = {
-      ...result[incomingRequirementName],
+    requirements[incomingRequirementName] = {
+      ...requirements[incomingRequirementName],
       ...incomingRequirements[incomingRequirementName],
     }
   }
 
-  const aggregatedDoneStatus = getAggregatedStatus(result)
-  if (aggregatedDoneStatus != null) {
-    notifyOperationFinished(dispatch, { type: 'checkRequirements' }, aggregatedDoneStatus)
+  notifyAggregatedResult(dispatch, incomingRequirements)
+
+  return requirements
+}
+
+function notifyAggregatedResult(
+  dispatch: EditorDispatch,
+  incomingRequirements: Partial<ProjectRequirements>,
+): void {
+  const incomingPreParseRequirements = objectFilter(
+    (_, key) => getRequirementStage(key as ProjectRequirement) === 'preParse',
+    incomingRequirements,
+  )
+  if (Object.keys(incomingPreParseRequirements).length > 0) {
+    const aggregatedStatus = getAggregatedStatus(incomingPreParseRequirements)
+    if (aggregatedStatus != null) {
+      notifyOperationFinished(dispatch, { type: 'checkRequirementsPreParse' }, aggregatedStatus)
+    }
   }
 
-  return result
+  const incomingPostParseRequirements = objectFilter(
+    (_, key) => getRequirementStage(key as ProjectRequirement) === 'postParse',
+    incomingRequirements,
+  )
+  if (Object.keys(incomingPostParseRequirements).length > 0) {
+    const aggregatedStatus = getAggregatedStatus(incomingPostParseRequirements)
+    if (aggregatedStatus != null) {
+      notifyOperationFinished(dispatch, { type: 'checkRequirementsPostParse' }, aggregatedStatus)
+    }
+  }
 }
 
 function getAggregatedStatus(
-  requirementsResolutions: ProjectRequirements,
+  requirementsResolutions: Partial<ProjectRequirements>,
 ): ImportOperationResult | null {
   for (const resolution of Object.values(requirementsResolutions)) {
-    if (resolution.status != RequirementResolutionStatus.Done) {
-      return null
-    }
     if (resolution.resolution == RequirementResolutionResult.Critical) {
       return ImportOperationResult.Error
     }
+  }
+  for (const resolution of Object.values(requirementsResolutions)) {
     if (resolution.resolution == RequirementResolutionResult.Partial) {
       return ImportOperationResult.Warn
+    }
+  }
+  for (const resolution of Object.values(requirementsResolutions)) {
+    if (resolution.status != RequirementResolutionStatus.Done) {
+      return null
     }
   }
   return ImportOperationResult.Success

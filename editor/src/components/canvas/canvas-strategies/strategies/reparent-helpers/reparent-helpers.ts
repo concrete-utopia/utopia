@@ -78,7 +78,6 @@ import { assertNever } from '../../../../../core/shared/utils'
 export type ShouldAddContainLayout = 'add-contain-layout' | 'dont-add-contain-layout'
 
 export function isAllowedToReparent(
-  projectContents: ProjectContentTreeRoot,
   startingMetadata: ElementInstanceMetadataMap,
   elementToReparent: ElementPath,
   targetParentPath: ElementPath,
@@ -114,15 +113,12 @@ export function isAllowedToReparent(
 
   return foldEither(
     (_) => true,
-    (elementFromMetadata) =>
-      !elementReferencesElsewhere(elementFromMetadata) &&
-      MetadataUtils.targetHonoursPropsPosition(projectContents, metadata) !== 'does-not-honour',
+    (elementFromMetadata) => !elementReferencesElsewhere(elementFromMetadata),
     metadata.element,
   )
 }
 
 export function isAllowedToNavigatorReparent(
-  projectContents: ProjectContentTreeRoot,
   startingMetadata: ElementInstanceMetadataMap,
   target: ElementPath,
 ): boolean {
@@ -137,14 +133,8 @@ export function isAllowedToNavigatorReparent(
         return maybeBranchConditionalCase(parentPath, conditional, target) != null
       }
       return false
-    } else {
-      return foldEither(
-        (_) => true,
-        (elementFromMetadata) =>
-          MetadataUtils.targetHonoursPropsPosition(projectContents, metadata) !== 'does-not-honour',
-        metadata.element,
-      )
     }
+    return true
   }
 }
 
@@ -241,12 +231,7 @@ export function ifAllowedToReparent(
   ifAllowed: () => StrategyApplicationResult,
 ): StrategyApplicationResult {
   const allowed = elementsToReparent.every((elementToReparent) => {
-    return isAllowedToReparent(
-      canvasState.projectContents,
-      startingMetadata,
-      elementToReparent,
-      targetParentPath,
-    )
+    return isAllowedToReparent(startingMetadata, elementToReparent, targetParentPath)
   })
   if (allowed) {
     return ifAllowed()
