@@ -163,6 +163,29 @@ describe('grid element change location strategy', () => {
     })
   })
 
+  it('can change the location of a multicell element (shorthand)', async () => {
+    const editor = await renderTestEditorWithCode(
+      ProjectCodeReorderwithMultiCellChildShorthand,
+      'await-first-dom-report',
+    )
+
+    const testId = 'orange'
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest(editor, {
+      scale: 1,
+      pathString: `sb/scene/grid/${testId}`,
+      testId: testId,
+      tab: true,
+      targetCell: { row: 3, column: 1 },
+    })
+
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnStart: '1',
+      gridColumnEnd: '3',
+      gridRowStart: '3',
+      gridRowEnd: 'auto',
+    })
+  })
+
   it('can change the location of elements on a grid (zoom out)', async () => {
     const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
@@ -1271,7 +1294,7 @@ export var storyboard = (
             height: '100%',
           }}
           data-uid='pink'
-		      data-testid='pink'
+          data-testid='pink'
           data-label='pink'
         />
         <div
@@ -1281,7 +1304,7 @@ export var storyboard = (
             height: '100%',
           }}
           data-uid='orange'
-		      data-testid='orange'
+          data-testid='orange'
           data-label='orange'
         />
         <div
@@ -1291,7 +1314,7 @@ export var storyboard = (
             height: '100%',
           }}
           data-uid='cyan'
-		      data-testid='cyan'
+          data-testid='cyan'
           data-label='cyan'
         />
         <div
@@ -1301,7 +1324,7 @@ export var storyboard = (
             height: '100%',
           }}
           data-uid='blue'
-		      data-testid='blue'
+          data-testid='blue'
           data-label='blue'
         />
       </div>
@@ -1436,6 +1459,85 @@ export var storyboard = (
             height: '100%',
             gridColumnStart: 2,
             gridColumnEnd: 4,
+          }}
+          data-uid='orange'
+		  data-testid='orange'
+          data-label='orange'
+        />
+        <div
+          style={{
+            backgroundColor: '#0f9',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='cyan'
+		  data-testid='cyan'
+          data-label='cyan'
+        />
+        <div
+          style={{
+            backgroundColor: '#09f',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='blue'
+		  data-testid='blue'
+          data-label='blue'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+
+const ProjectCodeReorderwithMultiCellChildShorthand = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 600,
+        height: 600,
+        position: 'absolute',
+        left: 0,
+        top: 0,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 500,
+          height: 500,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gridTemplateRows: '1fr 1fr 1fr',
+          gridGap: 10,
+          padding: 10,
+        }}
+        data-testid='grid'
+        data-uid='grid'
+      >
+        <div
+          style={{
+            backgroundColor: '#f09',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='pink'
+		  data-testid='pink'
+          data-label='pink'
+        />
+        <div
+          style={{
+            backgroundColor: '#f90',
+            width: '100%',
+            height: '100%',
+            gridColumn: '2 / 4',
           }}
           data-uid='orange'
 		  data-testid='orange'
