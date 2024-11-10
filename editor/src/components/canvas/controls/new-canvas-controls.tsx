@@ -75,7 +75,7 @@ import { NO_OP } from '../../../core/shared/utils'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
-import { GridMeasurementHelpers } from './grid-controls'
+import { GridElementContainingBlocks, GridMeasurementHelpers } from './grid-controls'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -618,6 +618,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                     {when(
                       isSelectMode(editorMode) || isInsertMode(editorMode),
                       <GridMeasurementHelpers />,
+                    )}
+                    {when(
+                      isSelectMode(editorMode) || isInsertMode(editorMode),
+                      <GridElementContainingBlocks />,
                     )}
                     {middleStrategyControls.map((c) => (
                       <RenderControlMemoized

@@ -1208,9 +1208,7 @@ export function parseGridRange(
       const startParsed = parseGridPosition(container, axis, 'start', null, input)
       return mapEither((start) => {
         const end =
-          !isCSSKeyword(start) && start.numericalPosition != null
-            ? gridPositionValue(start.numericalPosition + 1)
-            : null
+          !isCSSKeyword(start) && start.numericalPosition != null ? cssKeyword('auto') : null
         return gridRange(start, end)
       }, startParsed)
     }

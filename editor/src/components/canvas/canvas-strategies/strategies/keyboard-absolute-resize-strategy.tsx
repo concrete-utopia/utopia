@@ -145,7 +145,7 @@ export function keyboardAbsoluteResizeStrategy(
     return null
   }
 
-  if (MetadataUtils.isGridCell(canvasState.startingMetadata, selectedElements[0])) {
+  if (MetadataUtils.isGridItem(canvasState.startingMetadata, selectedElements[0])) {
     return null
   }
 

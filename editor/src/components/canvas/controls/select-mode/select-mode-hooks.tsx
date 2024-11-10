@@ -724,7 +724,7 @@ function useSelectOrLiveModeSelectAndHover(
           foundTarget != null &&
           draggingAllowed &&
           // grid has its own drag handling
-          !MetadataUtils.isGridCell(
+          !MetadataUtils.isGridItem(
             editorStoreRef.current.editor.jsxMetadata,
             foundTarget.elementPath,
           )

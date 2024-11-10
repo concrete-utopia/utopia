@@ -1,5 +1,4 @@
 import React from 'react'
-import { createSelector } from 'reselect'
 import { mapDropNulls, pushUniquelyBy, sortBy } from '../../../core/shared/array-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { arrayEqualsByReference, assertNever } from '../../../core/shared/utils'
@@ -68,11 +67,10 @@ import type { InsertionSubject, InsertionSubjectWrapper } from '../../editor/edi
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './strategies/fragment-like-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { gridRearrangeMoveStrategy } from './strategies/grid-rearrange-move-strategy'
+import { gridChangeElementLocationStrategy } from './strategies/grid-change-element-location-strategy'
 import { resizeGridStrategy } from './strategies/resize-grid-strategy'
-import { rearrangeGridSwapStrategy } from './strategies/rearrange-grid-swap-strategy'
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
-import { gridRearrangeMoveDuplicateStrategy } from './strategies/grid-rearrange-move-duplicate-strategy'
+import { gridChangeElementLocationDuplicateStrategy } from './strategies/grid-change-element-location-duplicate-strategy'
 import { setGridGapStrategy } from './strategies/set-grid-gap-strategy'
 import type { CanvasCommand } from '../commands/commands'
 import { foldAndApplyCommandsInner } from '../commands/commands'
@@ -81,7 +79,7 @@ import { wrapInContainerCommand } from '../commands/wrap-in-container-command'
 import type { ElementPath } from 'utopia-shared/src/types'
 import { reparentSubjectsForInteractionTarget } from './strategies/reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
-import { gridRearrangeResizeKeyboardStrategy } from './strategies/grid-rearrange-keyboard-strategy'
+import { gridChangeElementLocationResizeKeyboardStrategy } from './strategies/grid-change-element-location-keyboard-strategy'
 import createCachedSelector from 're-reselect'
 import { getActivePlugin } from '../plugins/style-plugins'
 import {
@@ -89,6 +87,8 @@ import {
   GridControls,
   isGridControlsProps,
 } from '../controls/grid-controls-for-strategies'
+import { gridReorderStrategy } from './strategies/grid-reorder-strategy'
+import { gridMoveAbsoluteStrategy } from './strategies/grid-move-absolute'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -116,10 +116,11 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       convertToAbsoluteAndMoveStrategy,
       convertToAbsoluteAndMoveAndSetParentFixedStrategy,
       reorderSliderStategy,
-      gridRearrangeMoveStrategy,
-      rearrangeGridSwapStrategy,
-      gridRearrangeMoveDuplicateStrategy,
-      gridRearrangeResizeKeyboardStrategy,
+      gridChangeElementLocationStrategy,
+      gridChangeElementLocationDuplicateStrategy,
+      gridReorderStrategy,
+      gridChangeElementLocationResizeKeyboardStrategy,
+      gridMoveAbsoluteStrategy,
     ],
   )
 }

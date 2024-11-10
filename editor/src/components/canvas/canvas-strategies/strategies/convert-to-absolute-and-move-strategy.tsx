@@ -180,7 +180,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
       originalTargets,
     ).filter(
       // don't show the siblings control for grid cells
-      (sibling) => !MetadataUtils.isGridCell(canvasState.startingMetadata, sibling.elementPath),
+      (sibling) => !MetadataUtils.isGridItem(canvasState.startingMetadata, sibling.elementPath),
     )
 
     const showSiblingsControl = autoLayoutSiblingsExceptGridCells.length > 1

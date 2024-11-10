@@ -10,11 +10,11 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { setGridPropsCommands } from './grid-helpers'
+import { findOriginalGrid, setGridPropsCommands } from './grid-helpers'
 import { getGridChildCellCoordBoundsFromCanvas } from './grid-cell-bounds'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 
-export function gridRearrangeResizeKeyboardStrategy(
+export function gridChangeElementLocationResizeKeyboardStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
@@ -32,7 +32,7 @@ export function gridRearrangeResizeKeyboardStrategy(
 
   const target = selectedElements[0]
 
-  if (!MetadataUtils.isGridCell(canvasState.startingMetadata, target)) {
+  if (!MetadataUtils.isGridItem(canvasState.startingMetadata, target)) {
     return null
   }
 
@@ -41,7 +41,10 @@ export function gridRearrangeResizeKeyboardStrategy(
     return null
   }
 
-  const parentGridPath = EP.parentPath(target)
+  const parentGridPath = findOriginalGrid(canvasState.startingMetadata, EP.parentPath(target)) // TODO don't use EP.parentPath
+  if (parentGridPath == null) {
+    return null
+  }
 
   const gridTemplate = cell.specialSizeMeasurements.parentContainerGridProperties
   const gridCellGlobalFrames = cell.specialSizeMeasurements.parentGridCellGlobalFrames
@@ -59,10 +62,10 @@ export function gridRearrangeResizeKeyboardStrategy(
       interactionSession.interactionData.keyStates.length - 1,
     )?.modifiers.shift ?? false
 
-  const label = resizing ? 'Grid resize' : 'Grid rearrange'
+  const label = resizing ? 'Grid resize' : 'Change Location'
 
   return {
-    id: 'GRID_KEYBOARD_REARRANGE_RESIZE',
+    id: 'GRID_KEYBOARD_CHANGE_ELEMENT_LOCATION_RESIZE',
     name: label,
     descriptiveLabel: label,
     icon: {

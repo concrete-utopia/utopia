@@ -3,36 +3,30 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import type {
-  ImportCheckRequirementAndFix,
   ImportFetchDependency,
   ImportOperation,
 } from '../../../core/shared/import/import-operation-types'
 import { ImportOperationResult } from '../../../core/shared/import/import-operation-types'
 import { assertNever } from '../../../core/shared/utils'
-import { Icons } from '../../../uuiui'
+import { Icn, Icons, useColorTheme } from '../../../uuiui'
 import { GithubSpinner } from '../../../components/navigator/left-pane/github-pane/github-spinner'
-import { RequirementResolutionResult } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
 
 export function OperationLine({ operation }: { operation: ImportOperation }) {
   const operationRunningStatus = React.useMemo(() => {
-    return operation.timeStarted == null
-      ? 'waiting'
-      : operation.timeDone == null
-      ? 'running'
-      : 'done'
+    if (operation.timeDone != null) {
+      return 'done'
+    }
+    return operation.timeStarted == null ? 'waiting' : 'running'
   }, [operation.timeStarted, operation.timeDone])
-
-  const textColor = React.useMemo(
-    () => getTextColor(operationRunningStatus, operation),
-    [operationRunningStatus, operation],
-  )
+  const colorTheme = useColorTheme()
+  const textColor = operationRunningStatus === 'waiting' ? 'gray' : colorTheme.fg0.value
 
   const [childrenShown, serChildrenShown] = React.useState(false)
   const shouldShowChildren = React.useMemo(
     () =>
       childrenShown ||
       operation.timeDone == null ||
-      operation.result == ImportOperationResult.Error,
+      operation.result != ImportOperationResult.Success,
     [childrenShown, operation.timeDone, operation.result],
   )
   const hasChildren = React.useMemo(
@@ -62,7 +56,18 @@ export function OperationLine({ operation }: { operation: ImportOperation }) {
           </div>
         ) : null}
       </OperationLineContent>
-      {shouldShowChildren && hasChildren ? <OperationChildrenList operation={operation} /> : null}
+      {shouldShowChildren && hasChildren ? (
+        <div
+          className='import-wizard-operation-children'
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 15,
+          }}
+        >
+          <OperationChildrenList operation={operation} />
+        </div>
+      ) : null}
     </OperationLineWrapper>
   )
 }
@@ -71,39 +76,31 @@ function OperationChildrenList({ operation }: { operation: ImportOperation }) {
   if (operation.children == null || operation.children.length === 0) {
     return null
   }
+  // this is a special case where we don't list all of the children
+  // but we collapse the successful ones to a single line
+  if (operation.type === 'refreshDependencies') {
+    return (
+      <AggregatedChildrenStatus
+        childOperations={operation.children as ImportFetchDependency[]}
+        successFn={dependenciesSuccessFn}
+        successTextFn={dependenciesSuccessTextFn}
+      />
+    )
+  }
+  // otherwise, we list all of the children
   return (
-    <div
-      className='import-wizard-operation-children'
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 10,
-      }}
-    >
-      {operation.type === 'refreshDependencies' ? (
-        <AggregatedChildrenStatus
-          childOperations={operation.children as ImportFetchDependency[]}
-          successFn={dependenciesSuccessFn}
-          successTextFn={dependenciesSuccessTextFn}
-        />
-      ) : operation.type === 'checkRequirements' ? (
-        operation.children.map((childOperation) => (
-          <OperationLine
-            key={childOperation.id ?? childOperation.type}
-            operation={childOperation}
-          />
-        ))
-      ) : null}
-    </div>
+    <React.Fragment>
+      {operation.children?.map((childOperation) => (
+        <OperationLine key={childOperation.id ?? childOperation.type} operation={childOperation} />
+      ))}
+    </React.Fragment>
   )
 }
+
 const dependenciesSuccessFn = (op: ImportFetchDependency) =>
   op.result === ImportOperationResult.Success
 const dependenciesSuccessTextFn = (successCount: number) =>
   `${successCount} dependencies fetched successfully`
-const requirementsSuccessFn = (op: ImportCheckRequirementAndFix) =>
-  op.resolution === RequirementResolutionResult.Passed
-const requirementsSuccessTextFn = (successCount: number) => `${successCount} requirements met`
 
 function AggregatedChildrenStatus<T extends ImportOperation>({
   childOperations,
@@ -114,14 +111,15 @@ function AggregatedChildrenStatus<T extends ImportOperation>({
   successFn: (operation: T) => boolean
   successTextFn: (successCount: number) => string
 }) {
+  const colorTheme = useColorTheme()
   const doneDependencies = childOperations.filter(successFn)
   const restOfDependencies = childOperations.filter((op) => !successFn(op))
   return (
     <React.Fragment>
       {doneDependencies.length > 0 ? (
         <OperationLineWrapper className='operation-done'>
-          <OperationLineContent textColor='black'>
-            <Icons.Checkmark style={getIconColorStyle(ImportOperationResult.Success)} />
+          <OperationLineContent textColor={colorTheme.fg0.value}>
+            <Icn color='green' type='checkmark' />
             <div>{successTextFn(doneDependencies.length)}</div>
           </OperationLineContent>
         </OperationLineWrapper>
@@ -140,20 +138,16 @@ function OperationIcon({
   runningStatus: 'waiting' | 'running' | 'done'
   result?: ImportOperationResult
 }) {
-  const iconColorStyle = React.useMemo(
-    () => (result != null ? getIconColorStyle(result) : {}),
-    [result],
-  )
   if (runningStatus === 'running') {
     return <GithubSpinner />
   } else if (runningStatus === 'done' && result === 'success') {
-    return <Icons.Checkmark style={iconColorStyle} />
+    return <Icn color='green' type='checkmark' />
   } else if (runningStatus === 'done' && result === 'warn') {
-    return <Icons.WarningTriangle style={iconColorStyle} />
+    return <Icn color='component-orange' type='warningtriangle' category='navigator-element' />
   } else if (runningStatus === 'waiting') {
     return <Icons.Dot />
   } else {
-    return <Icons.Cross style={iconColorStyle} />
+    return <Icn color='error' type='cross' />
   }
 }
 
@@ -164,6 +158,7 @@ function TimeFromInSeconds({
   operation: ImportOperation
   runningStatus: 'waiting' | 'running' | 'done'
 }) {
+  const colorTheme = useColorTheme()
   const [currentTime, setCurrentTime] = React.useState(Date.now())
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -188,7 +183,7 @@ function TimeFromInSeconds({
     <div
       data-short-time={operationTime < 100}
       style={{
-        color: runningStatus === 'running' ? 'black' : 'gray',
+        color: runningStatus === 'running' ? colorTheme.fg0.value : 'gray',
         fontSize: runningStatus === 'running' ? undefined : 12,
       }}
     >
@@ -212,16 +207,11 @@ function OperationLineWrapper({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 10,
+        gap: 15,
       }}
       css={{
         '.import-wizard-operation-children > &': {
           paddingLeft: 26,
-          fontSize: 12,
-          img: {
-            width: 12,
-            height: 12,
-          },
         },
         '.import-wizard-operation-children .operation-done [data-short-time=true]': {
           visibility: 'hidden',
@@ -263,61 +253,41 @@ function getImportOperationText(operation: ImportOperation): React.ReactNode {
   }
   switch (operation.type) {
     case 'loadBranch':
-      return (
-        <span>
-          Loading branch{' '}
-          <strong>
-            {operation.githubRepo?.owner}/{operation.githubRepo?.repository}@{operation.branchName}
-          </strong>
-        </span>
-      )
+      if (operation.branchName != null) {
+        return (
+          <span>
+            Fetching branch{' '}
+            <strong>
+              {operation.githubRepo?.owner}/{operation.githubRepo?.repository}@
+              {operation.branchName}
+            </strong>
+          </span>
+        )
+      } else {
+        return (
+          <span>
+            Fetching repository{' '}
+            <strong>
+              {operation.githubRepo?.owner}/{operation.githubRepo?.repository}
+            </strong>
+          </span>
+        )
+      }
     case 'fetchDependency':
       return `Fetching ${operation.dependencyName}@${operation.dependencyVersion}`
     case 'parseFiles':
       return 'Parsing files'
     case 'refreshDependencies':
       return 'Fetching dependencies'
-    case 'checkRequirements':
+    case 'checkRequirementsPreParse':
+      return 'Validating code'
+    case 'checkRequirementsPostParse':
       return 'Checking Utopia requirements'
-    case 'checkRequirementAndFix':
+    case 'checkRequirementAndFixPreParse':
+      return operation.text
+    case 'checkRequirementAndFixPostParse':
       return operation.text
     default:
       assertNever(operation)
   }
-}
-
-function getTextColor(
-  operationRunningStatus: 'waiting' | 'running' | 'done',
-  operation: ImportOperation,
-) {
-  if (operationRunningStatus === 'waiting') {
-    return 'gray'
-  } else {
-    return 'black'
-  }
-}
-
-function getIconColorStyle(result: ImportOperationResult) {
-  // temp solution since we currently only have black icons
-  // https://codepen.io/sosuke/pen/Pjoqqp
-  if (result === ImportOperationResult.Error) {
-    return {
-      // our error red
-      filter:
-        'invert(14%) sepia(99%) saturate(4041%) hue-rotate(328deg) brightness(101%) contrast(115%)',
-    }
-  } else if (result === ImportOperationResult.Warn) {
-    return {
-      // orange
-      filter:
-        'invert(72%) sepia(90%) saturate(3088%) hue-rotate(1deg) brightness(105%) contrast(104%)',
-    }
-  } else if (result === ImportOperationResult.Success) {
-    return {
-      // green
-      filter:
-        'invert(72%) sepia(60%) saturate(3628%) hue-rotate(126deg) brightness(104%) contrast(76%)',
-    }
-  }
-  return {}
 }

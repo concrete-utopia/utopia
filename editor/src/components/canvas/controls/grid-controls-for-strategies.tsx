@@ -7,7 +7,7 @@ import { isStaticGridRepeat, printGridAutoOrTemplateBase } from '../../inspector
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import type { ElementInstanceMetadata } from '../../../core/shared/element-template'
+import type { BorderWidths, ElementInstanceMetadata } from '../../../core/shared/element-template'
 import { type GridAutoOrTemplateBase } from '../../../core/shared/element-template'
 import type { CanvasRectangle } from '../../../core/shared/math-utils'
 import { isFiniteRectangle } from '../../../core/shared/math-utils'
@@ -76,6 +76,7 @@ export type GridMeasurementHelperData = {
   padding: Sides
   columns: number
   cells: number
+  border: BorderWidths
 }
 
 export function useGridMeasurentHelperData(
@@ -117,6 +118,7 @@ export function useGridMeasurentHelperData(
         padding: targetGridContainer.specialSizeMeasurements.padding,
         columns: columns,
         cells: rows * columns,
+        border: targetGridContainer.specialSizeMeasurements.borderWidths,
       }
     },
     'useGridMeasurentHelperData',
@@ -194,6 +196,7 @@ export function useGridData(elementPaths: ElementPath[]): GridData[] {
           rows: rows,
           columns: columns,
           cells: rows * columns,
+          border: targetGridContainer.specialSizeMeasurements.borderWidths,
         }
       }, elementPaths)
     },
@@ -219,6 +222,8 @@ export const GridMeasurementHelpersKey = (gridPath: ElementPath) =>
   `grid-measurement-helpers-${EP.toString(gridPath)}`
 export const GridMeasurementHelperKey = (gridPath: ElementPath) =>
   `grid-measurement-helper-${EP.toString(gridPath)}`
+export const GridElementContainingBlockKey = (gridPath: ElementPath) =>
+  `grid-measurement-containing-block-${EP.toString(gridPath)}`
 
 export interface GridControlProps {
   grid: GridData

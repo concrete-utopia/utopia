@@ -11,6 +11,7 @@ import builtinModules from './builtin-modules.json'
 const serverPackagesRestrictionList: RegExp[] = [/^next/, /^remix/, /^astro/, /^svelte/]
 
 export default class CheckServerPackages implements RequirementCheck {
+  initialText = 'Checking for server packages'
   check(projectContents: ProjectContentTreeRoot): RequirementCheckResult {
     const projectDependencies = getProjectDependencies(projectContents) ?? {}
 
@@ -21,7 +22,7 @@ export default class CheckServerPackages implements RequirementCheck {
     if (serverPackages.length > 0) {
       return {
         resolution: RequirementResolutionResult.Critical,
-        resultText: 'Server packages found',
+        resultText: 'Unsupported server packages found',
         resultValue: serverPackages.join(', '),
       }
     }

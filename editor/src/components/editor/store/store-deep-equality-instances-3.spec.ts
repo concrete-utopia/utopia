@@ -341,6 +341,12 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     parentGridCellGlobalFrames: null,
     justifySelf: null,
     alignSelf: null,
+    borderWidths: {
+      top: 0,
+      left: 0,
+      bottom: 0,
+      right: 0,
+    },
   }
 
   const newDifferentValue: SpecialSizeMeasurements = {
@@ -479,6 +485,12 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     parentGridCellGlobalFrames: null,
     justifySelf: null,
     alignSelf: null,
+    borderWidths: {
+      top: 0,
+      left: 0,
+      bottom: 0,
+      right: 0,
+    },
   }
 
   it('same reference returns the same reference', () => {
@@ -672,6 +684,12 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       parentGridCellGlobalFrames: null,
       justifySelf: null,
       alignSelf: null,
+      borderWidths: {
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+      },
     },
     computedStyle: {
       a: 'a',
@@ -842,6 +860,12 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       parentGridCellGlobalFrames: null,
       justifySelf: null,
       alignSelf: null,
+      borderWidths: {
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+      },
     },
     computedStyle: {
       a: 'a',
@@ -1037,6 +1061,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         parentGridCellGlobalFrames: null,
         justifySelf: null,
         alignSelf: null,
+        borderWidths: {
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+        },
       },
       computedStyle: {
         a: 'a',
@@ -1209,6 +1239,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         parentGridCellGlobalFrames: null,
         justifySelf: null,
         alignSelf: null,
+        borderWidths: {
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+        },
       },
       computedStyle: {
         a: 'a',
@@ -1381,6 +1417,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         parentGridCellGlobalFrames: null,
         justifySelf: null,
         alignSelf: null,
+        borderWidths: {
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+        },
       },
       computedStyle: {
         a: 'a',
