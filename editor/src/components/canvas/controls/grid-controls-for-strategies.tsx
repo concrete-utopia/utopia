@@ -44,7 +44,7 @@ import {
   type AlignContent,
   type FlexJustifyContent,
 } from '../../inspector/inspector-common'
-import { getComputedStyleAndBoundingRectFromElement } from '../direct-dom-lookups'
+import { getFromElement } from '../direct-dom-lookups'
 import {
   applicativeSidesPxTransform,
   getGridContainerProperties,
@@ -53,6 +53,7 @@ import {
 import { applicative4Either, defaultEither, isRight, mapEither } from '../../../core/shared/either'
 import { domRectToScaledCanvasRectangle, getRoundingFn } from '../../../core/shared/dom-utils'
 import Utils from '../../../utils/utils'
+import { useMonitorChangesToElements } from '../../../components/editor/store/store-monitor'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -87,227 +88,170 @@ export type GridMeasurementHelperData = {
   frame: CanvasRectangle
   gridTemplateColumns: GridAutoOrTemplateBase | null
   gridTemplateRows: GridAutoOrTemplateBase | null
+  gridTemplateColumnsFromProps: GridAutoOrTemplateBase | null
+  gridTemplateRowsFromProps: GridAutoOrTemplateBase | null
   gap: number | null
   rowGap: number | null
   columnGap: number | null
   justifyContent: FlexJustifyContent | null
   alignContent: AlignContent | null
   padding: Sides
+  rows: number
   columns: number
   cells: number
   border: BorderWidths
 }
 
+export function getGridMeasurementHelperData(
+  elementPath: ElementPath,
+  scale: number,
+): GridMeasurementHelperData | undefined {
+  return getFromElement(elementPath, gridMeasurementHelperDataFromElement(scale))
+}
+
+export function gridMeasurementHelperDataFromElement(
+  scale: number,
+): (element: HTMLElement) => GridMeasurementHelperData | undefined {
+  return (element) => {
+    const canvasRootContainer = document.getElementById(CanvasContainerID)
+    if (canvasRootContainer == null) {
+      return undefined
+    }
+
+    const computedStyle = getComputedStyle(element)
+    const boundingRectangle = element.getBoundingClientRect()
+
+    const containerGridProperties = getGridContainerProperties(computedStyle)
+    const containerGridPropertiesFromProps = getGridContainerProperties(element.style)
+
+    const columns = getCellsCount(containerGridProperties.gridTemplateColumns)
+    const rows = getCellsCount(containerGridProperties.gridTemplateRows)
+    const borderTopWidth = parseCSSLength(computedStyle.borderTopWidth)
+    const borderRightWidth = parseCSSLength(computedStyle.borderRightWidth)
+    const borderBottomWidth = parseCSSLength(computedStyle.borderBottomWidth)
+    const borderLeftWidth = parseCSSLength(computedStyle.borderLeftWidth)
+    const border: BorderWidths = {
+      top: isRight(borderTopWidth) ? borderTopWidth.value.value : 0,
+      right: isRight(borderRightWidth) ? borderRightWidth.value.value : 0,
+      bottom: isRight(borderBottomWidth) ? borderBottomWidth.value.value : 0,
+      left: isRight(borderLeftWidth) ? borderLeftWidth.value.value : 0,
+    }
+    const justifyContent = getFlexJustifyContent(computedStyle.justifyContent)
+    const alignContent = getAlignContent(computedStyle.alignContent)
+    const padding = defaultEither(
+      sides(undefined, undefined, undefined, undefined),
+      applicative4Either(
+        applicativeSidesPxTransform,
+        parseCSSLength(computedStyle.paddingTop),
+        parseCSSLength(computedStyle.paddingRight),
+        parseCSSLength(computedStyle.paddingBottom),
+        parseCSSLength(computedStyle.paddingLeft),
+      ),
+    )
+
+    const gap = defaultEither(
+      null,
+      mapEither((n) => n.value, parseCSSLength(computedStyle.gap)),
+    )
+
+    const rowGap = defaultEither(
+      null,
+      mapEither((n) => n.value, parseCSSLength(computedStyle.rowGap)),
+    )
+
+    const columnGap = defaultEither(
+      null,
+      mapEither((n) => n.value, parseCSSLength(computedStyle.columnGap)),
+    )
+
+    const elementRect = domRectToScaledCanvasRectangle(
+      boundingRectangle,
+      1 / scale,
+      getRoundingFn('nearest-half'),
+    )
+    const parentRect = domRectToScaledCanvasRectangle(
+      canvasRootContainer.getBoundingClientRect(),
+      1 / scale,
+      getRoundingFn('nearest-half'),
+    )
+    const frame = Utils.offsetRect(elementRect, Utils.negate(parentRect))
+
+    return {
+      frame: frame,
+      gridTemplateColumns: containerGridProperties.gridTemplateColumns,
+      gridTemplateRows: containerGridProperties.gridTemplateRows,
+      gridTemplateColumnsFromProps: containerGridPropertiesFromProps.gridTemplateColumns,
+      gridTemplateRowsFromProps: containerGridPropertiesFromProps.gridTemplateRows,
+      gap: gap,
+      rowGap: rowGap,
+      columnGap: columnGap,
+      justifyContent: justifyContent,
+      alignContent: alignContent,
+      padding: padding,
+      rows: rows,
+      columns: columns,
+      cells: columns * rows,
+      border: border,
+    }
+  }
+}
+
 export function useGridMeasurentHelperData(
   elementPath: ElementPath,
-): GridMeasurementHelperData | null {
+): GridMeasurementHelperData | undefined {
   const scale = useEditorState(
     Substores.canvas,
-    (store) => 1 / store.editor.canvas.scale,
+    (store) => store.editor.canvas.scale,
     'useGridMeasurentHelperData scale',
   )
 
-  const canvasRootContainer = document.getElementById(CanvasContainerID)
-  if (canvasRootContainer == null) {
-    return null
-  }
+  useMonitorChangesToElements([elementPath])
 
-  const computedStyleAndBoundingRect = getComputedStyleAndBoundingRectFromElement(elementPath)
-  if (computedStyleAndBoundingRect == null) {
-    return null
-  }
-  const { computedStyle, boundingRectangle } = computedStyleAndBoundingRect
-
-  // FIXME.
-  const containerGridProperties = getGridContainerProperties(computedStyle, {
-    dynamicCols: true,
-    dynamicRows: true,
-  })
-  const columns = getCellsCount(containerGridProperties.gridTemplateColumns)
-  const rows = getCellsCount(containerGridProperties.gridTemplateRows)
-  const borderTopWidth = parseCSSLength(computedStyle.borderTopWidth)
-  const borderRightWidth = parseCSSLength(computedStyle.borderRightWidth)
-  const borderBottomWidth = parseCSSLength(computedStyle.borderBottomWidth)
-  const borderLeftWidth = parseCSSLength(computedStyle.borderLeftWidth)
-  const border: BorderWidths = {
-    top: isRight(borderTopWidth) ? borderTopWidth.value.value : 0,
-    right: isRight(borderRightWidth) ? borderRightWidth.value.value : 0,
-    bottom: isRight(borderBottomWidth) ? borderBottomWidth.value.value : 0,
-    left: isRight(borderLeftWidth) ? borderLeftWidth.value.value : 0,
-  }
-  const justifyContent = getFlexJustifyContent(computedStyle.justifyContent)
-  const alignContent = getAlignContent(computedStyle.alignContent)
-  const padding = defaultEither(
-    sides(undefined, undefined, undefined, undefined),
-    applicative4Either(
-      applicativeSidesPxTransform,
-      parseCSSLength(computedStyle.paddingTop),
-      parseCSSLength(computedStyle.paddingRight),
-      parseCSSLength(computedStyle.paddingBottom),
-      parseCSSLength(computedStyle.paddingLeft),
-    ),
-  )
-
-  const gap = defaultEither(
-    null,
-    mapEither((n) => n.value, parseCSSLength(computedStyle.gap)),
-  )
-
-  const rowGap = defaultEither(
-    null,
-    mapEither((n) => n.value, parseCSSLength(computedStyle.rowGap)),
-  )
-
-  const columnGap = defaultEither(
-    null,
-    mapEither((n) => n.value, parseCSSLength(computedStyle.columnGap)),
-  )
-
-  const elementRect = domRectToScaledCanvasRectangle(
-    boundingRectangle,
-    scale,
-    getRoundingFn('nearest-half'),
-  )
-  const parentRect = domRectToScaledCanvasRectangle(
-    canvasRootContainer.getBoundingClientRect(),
-    scale,
-    getRoundingFn('nearest-half'),
-  )
-  const frame = Utils.offsetRect(elementRect, Utils.negate(parentRect))
-
-  return {
-    frame: frame,
-    gridTemplateColumns: containerGridProperties.gridTemplateColumns,
-    gridTemplateRows: containerGridProperties.gridTemplateRows,
-    gap: gap,
-    rowGap: rowGap,
-    columnGap: columnGap,
-    justifyContent: justifyContent,
-    alignContent: alignContent,
-    padding: padding,
-    columns: columns,
-    cells: columns * rows,
-    border: border,
-  }
-
-  /*
-  return useEditorState(
-    Substores.metadata,
-    (store) => {
-      const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath)
-
-      const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element) ? element : null
-
-      if (
-        targetGridContainer == null ||
-        targetGridContainer.globalFrame == null ||
-        !isFiniteRectangle(targetGridContainer.globalFrame)
-      ) {
-        return null
-      }
-
-      const columns = getCellsCount(
-        targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
-      )
-      const rows = getCellsCount(
-        targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
-      )
-
-      return {
-        frame: targetGridContainer.globalFrame,
-        gridTemplateColumns:
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
-        gridTemplateRows:
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
-        gap: targetGridContainer.specialSizeMeasurements.gap,
-        rowGap: targetGridContainer.specialSizeMeasurements.rowGap,
-        columnGap: targetGridContainer.specialSizeMeasurements.columnGap,
-        justifyContent: targetGridContainer.specialSizeMeasurements.justifyContent,
-        alignContent: targetGridContainer.specialSizeMeasurements.alignContent,
-        padding: targetGridContainer.specialSizeMeasurements.padding,
-        columns: columns,
-        cells: rows * columns,
-        border: targetGridContainer.specialSizeMeasurements.borderWidths,
-      }
-    },
-    'useGridMeasurentHelperData',
-    fastDeepEqual, //TODO: this should not be needed, but it seems EditorStateKeepDeepEquality is not running, and metadata reference is always updated
-  )
-  */
+  return getGridMeasurementHelperData(elementPath, scale)
 }
 
 export type GridData = GridMeasurementHelperData & {
   elementPath: ElementPath
-  gridTemplateColumnsFromProps: GridAutoOrTemplateBase | null
-  gridTemplateRowsFromProps: GridAutoOrTemplateBase | null
-  rows: number
-  cells: number
-  metadata: ElementInstanceMetadata
 }
 
 export function useGridData(elementPaths: ElementPath[]): GridData[] {
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'useGridData scale',
+  )
+
+  useMonitorChangesToElements(elementPaths)
+
   const grids = useEditorState(
     Substores.metadata,
     (store) => {
       return mapDropNulls((view) => {
         const originalGridPath = findOriginalGrid(store.editor.jsxMetadata, view)
+        if (originalGridPath == null) {
+          return null
+        }
+
         const element = MetadataUtils.findElementByElementPath(
           store.editor.jsxMetadata,
           originalGridPath,
         )
 
         const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element) ? element : null
-
-        if (
-          targetGridContainer == null ||
-          targetGridContainer.globalFrame == null ||
-          !isFiniteRectangle(targetGridContainer.globalFrame)
-        ) {
+        if (targetGridContainer == null) {
           return null
         }
 
-        const gap = targetGridContainer.specialSizeMeasurements.gap
-        const rowGap = targetGridContainer.specialSizeMeasurements.rowGap
-        const columnGap = targetGridContainer.specialSizeMeasurements.columnGap
-        const padding = targetGridContainer.specialSizeMeasurements.padding
-
-        const gridTemplateColumns =
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
-        const gridTemplateRows =
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows
-        const gridTemplateColumnsFromProps =
-          targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
-            .gridTemplateColumns
-        const gridTemplateRowsFromProps =
-          targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
-            .gridTemplateRows
-
-        const columns = getCellsCount(
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
-        )
-        const rows = getCellsCount(
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
-        )
-
-        return {
-          elementPath: view,
-          metadata: targetGridContainer,
-          frame: targetGridContainer.globalFrame,
-          gridTemplateColumns: gridTemplateColumns,
-          gridTemplateRows: gridTemplateRows,
-          gridTemplateColumnsFromProps: gridTemplateColumnsFromProps,
-          gridTemplateRowsFromProps: gridTemplateRowsFromProps,
-          gap: gap,
-          rowGap: rowGap,
-          columnGap: columnGap,
-          justifyContent: targetGridContainer.specialSizeMeasurements.justifyContent,
-          alignContent: targetGridContainer.specialSizeMeasurements.alignContent,
-          padding: padding,
-          rows: rows,
-          columns: columns,
-          cells: rows * columns,
-          border: targetGridContainer.specialSizeMeasurements.borderWidths,
+        const helperData = getGridMeasurementHelperData(originalGridPath, scale)
+        if (helperData == null) {
+          return null
         }
+
+        const gridData: GridData = {
+          ...helperData,
+          elementPath: view,
+        }
+        return gridData
       }, elementPaths)
     },
     'useGridData',

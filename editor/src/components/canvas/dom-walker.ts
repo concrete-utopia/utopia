@@ -921,8 +921,6 @@ function getSpecialMeasurements(
     globalFrame,
   )
 
-  const parentContainerGridProperties = getGridContainerProperties(parentElementStyle)
-
   const paddingValue = isRight(padding)
     ? padding.value
     : sides(undefined, undefined, undefined, undefined)
@@ -954,6 +952,7 @@ function getSpecialMeasurements(
     dynamicRows: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateRows),
   })
 
+  const parentContainerGridProperties = getGridContainerProperties(parentElementStyle)
   const containerElementPropertiesFromProps = getGridElementProperties(
     parentContainerGridProperties,
     element.style,
