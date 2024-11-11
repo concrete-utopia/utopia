@@ -3,6 +3,8 @@ import { Global, css } from '@emotion/react'
 import { useColorTheme } from '../../uuiui'
 import { useEditorState } from '../editor/store/store-hook'
 import { Substores } from '../editor/store/store-hook'
+import { getTotalImportStatusAndResult } from '../../core/shared/import/import-operation-service'
+import type { TotalImportResult } from '../../core/shared/import/import-operation-types'
 
 export const CanvasLoadingScreen = React.memo(() => {
   const colorTheme = useColorTheme()
@@ -17,17 +19,26 @@ export const CanvasLoadingScreen = React.memo(() => {
     'CanvasLoadingScreen importWizardOpen',
   )
 
+  const totalImportResult: TotalImportResult = React.useMemo(
+    () => getTotalImportStatusAndResult(importState),
+    [importState],
+  )
+
   const importingStoppedStyleOverride = React.useMemo(
     () =>
       // if the importing was stopped, we want to pause the shimmer animation
-      (importWizardOpen && importState.importStatus.status === 'done') ||
-      importState.importStatus.status === 'paused'
+      (importWizardOpen && totalImportResult.importStatus.status === 'done') ||
+      totalImportResult.importStatus.status === 'paused'
         ? {
             background: colorTheme.codeEditorShimmerPrimary.value,
             animation: 'none',
           }
         : {},
-    [importWizardOpen, importState.importStatus.status, colorTheme.codeEditorShimmerPrimary.value],
+    [
+      importWizardOpen,
+      totalImportResult.importStatus.status,
+      colorTheme.codeEditorShimmerPrimary.value,
+    ],
   )
 
   return (

@@ -97,6 +97,9 @@ import {
   navigatorTargetsSelectorNavigatorTargets,
 } from '../navigator/navigator-utils'
 import { ImportWizard } from './import-wizard/import-wizard'
+import { getImportOperationText } from './import-wizard/import-wizard-helpers'
+import { getTotalImportStatusAndResult } from '../../core/shared/import/import-operation-service'
+import type { TotalImportResult } from '../../core/shared/import/import-operation-types'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -578,6 +581,175 @@ const ModalComponent = React.memo((): React.ReactElement<any> | null => {
   }
   return null
 })
+
+export function LoadingEditorComponent() {
+  const importState = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.importState,
+    'LoadingEditorComponent importState',
+  )
+
+  const totalImportResult: TotalImportResult = React.useMemo(
+    () => getTotalImportStatusAndResult(importState),
+    [importState],
+  )
+
+  const keysAppeared = React.useRef(new Set<string>())
+  const cleared = React.useRef(false)
+
+  const [, setTime] = React.useState(Date.now())
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(Date.now())
+    }, 100)
+    return () => clearInterval(interval)
+  }, [])
+
+  const flatOngoingImportOperations = React.useMemo(() => {
+    const operations: {
+      text: React.ReactNode
+      id: string
+      timeDone: number | null | undefined
+      appeared: boolean
+    }[] = []
+    if (totalImportResult.importStatus.status == 'not-started') {
+      operations.push({
+        text: 'Loading Project...',
+        id: 'loading-editor',
+        timeDone: null,
+        appeared: false,
+      })
+    }
+    for (const op of importState.importOperations) {
+      if (op?.children?.length == 0 || op.type == 'refreshDependencies') {
+        if (op.timeStarted != null) {
+          operations.push({
+            text: getImportOperationText(op),
+            id: op.id ?? op.type,
+            timeDone: op.timeDone,
+            appeared: keysAppeared.current.has(op.id ?? op.type),
+          })
+          keysAppeared.current.add(op.id ?? op.type)
+        }
+      }
+      if (op.type !== 'refreshDependencies') {
+        for (const child of op.children ?? []) {
+          if (child.timeStarted != null) {
+            operations.push({
+              text: getImportOperationText(child),
+              id: child.id ?? child.type,
+              timeDone: child.timeDone,
+              appeared: keysAppeared.current.has(child.id ?? child.type),
+            })
+            keysAppeared.current.add(child.id ?? child.type)
+          }
+        }
+      }
+    }
+    return operations
+  }, [totalImportResult, importState.importOperations])
+  if (
+    cleared.current ||
+    totalImportResult.importStatus.status == 'done' ||
+    totalImportResult.importStatus.status == 'paused'
+  ) {
+    cleared.current = true
+    return null
+  }
+
+  return (
+    <div
+      id='utopia-editor-root-loading'
+      style={{
+        position: 'fixed',
+        left: '0px',
+        top: '0px',
+        bottom: '0px',
+        right: '0px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        backgroundColor: 'white',
+      }}
+    >
+      <img
+        src='/editor/pyramid_dark.png'
+        height='78px'
+        alt='Utopia Logo'
+        className='utopia-logo-pyramid dark'
+      />
+      <img
+        src='/editor/pyramid_light.png'
+        height='78px'
+        alt='Utopia Logo'
+        className='utopia-logo-pyramid light'
+      />
+
+      <div
+        className='progress-bar-shell'
+        style={{
+          marginTop: '64px',
+          width: '212px',
+          height: '11px',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          boxSizing: 'border-box',
+        }}
+      >
+        <div
+          className='progress-bar-progress animation-progress'
+          style={{
+            borderRadius: '6px',
+            height: '9px',
+            transform: 'translateX(-212px)',
+          }}
+        ></div>
+      </div>
+      <div className='import-operations'>
+        <ul
+          style={{
+            height: 150,
+            overflow: 'hidden',
+            width: 'auto',
+            display: 'flex',
+            listStyle: 'none',
+            flexDirection: 'column',
+            alignItems: 'center',
+            margin: 0,
+            padding: 0,
+            gap: 2,
+            marginTop: 10,
+          }}
+        >
+          {flatOngoingImportOperations.map((op) => {
+            const opacity = !op.appeared
+              ? 1
+              : op.timeDone != null && Date.now() - op.timeDone > 800
+              ? 0
+              : 1
+            if (op.timeDone != null && Date.now() - op.timeDone > 1700) {
+              return null
+            }
+            return (
+              <li
+                style={{
+                  listStyle: 'none',
+                  opacity: opacity,
+                  transition: 'opacity 1.5s ease-in-out',
+                }}
+                key={op.id}
+              >
+                {op.text}
+              </li>
+            )
+          })}
+        </ul>
+      </div>
+    </div>
+  )
+}
 
 export function EditorComponent(props: EditorProps) {
   const indexedDBFailed = useEditorState(

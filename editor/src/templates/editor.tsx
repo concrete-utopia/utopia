@@ -25,7 +25,7 @@ import type {
 } from '../components/editor/action-types'
 import { actionActionsOptic, isLoggedIn } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
-import { EditorComponent } from '../components/editor/editor-component'
+import { EditorComponent, LoadingEditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'
 import {
   getLoginState,
@@ -753,6 +753,7 @@ export const EditorRoot: React.FunctionComponent<{
                       <AnimationContext.Provider
                         value={{ animate: animate, scope: animationScope }}
                       >
+                        <LoadingEditorComponent />
                         <EditorComponent />
                       </AnimationContext.Provider>
                     </UiJsxCanvasCtxAtom.Provider>

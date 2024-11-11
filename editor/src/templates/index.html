@@ -15,6 +15,11 @@
       as="image"
     />
 
+    <link
+      rel="stylesheet"
+      href="<%- UTOPIA_DOMAIN %>/editor/css/initial-load.css?hash=<%- UTOPIA_SHA %>"
+    />
+
     <!--editorScript-->
 
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="use-credentials" />
@@ -154,13 +159,13 @@
           "
         >
           <img
-            src="<%- UTOPIA_DOMAIN %>/editor/pyramid_dark.png?hash=<%- UTOPIA_SHA %>"
+            src="<%- UTOPIA_DOMAIN %>/editor/pyramid_dark.png"
             height="78px"
             alt="Utopia Logo"
             class="utopia-logo-pyramid dark"
           />
           <img
-            src="<%- UTOPIA_DOMAIN %>/editor/pyramid_light.png?hash=<%- UTOPIA_SHA %>"
+            src="<%- UTOPIA_DOMAIN %>/editor/pyramid_light.png"
             height="78px"
             alt="Utopia Logo"
             class="utopia-logo-pyramid light"
@@ -182,6 +187,24 @@
               style="border-radius: 6px; height: 9px; transform: translateX(-212px)"
             ></div>
           </div>
+          <ul
+            style="
+              height: 150px;
+              overflow: hidden;
+              width: auto;
+              display: flex;
+              list-style: none;
+              flex-direction: column;
+              align-items: center;
+              margin: 0;
+              padding: 0;
+              gap: 2px;
+              margin-top: 10px;
+              font-family: utopian-inter, 'sans-serif';
+            "
+          >
+            <li style="list-style: none">Loading Editor...</li>
+          </ul>
 
           <!-- ends loading content-->
         </div>
