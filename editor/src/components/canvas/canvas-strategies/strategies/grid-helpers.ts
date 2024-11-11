@@ -67,11 +67,7 @@ export function gridPositionToValue(
     return p.value
   }
 
-  if (p.numericalPosition == null) {
-    return offset
-  }
-
-  return p.numericalPosition + offset
+  return p.numericalPosition
 }
 
 export function setGridPropsCommands(
