@@ -15,17 +15,19 @@ import * as PP from '../../../core/shared/property-path'
 import { updateClassListCommand } from './../commands/update-class-list-command'
 import * as UCL from './../commands/update-class-list-command'
 import type { StylePlugin } from './style-plugins'
-import type { WithPropertyTag } from '../canvas-types'
-import { withPropertyTag } from '../canvas-types'
 import type { Config } from 'tailwindcss/types/config'
 import type { PropertiesWithElementPath } from '../../editor/actions/action-utils'
+import { cssStyleProperty, type CSSStyleProperty } from '../canvas-types'
 
-function parseTailwindProperty<T>(value: unknown, parse: Parser<T>): WithPropertyTag<T> | null {
+function parseTailwindProperty<T>(
+  value: unknown,
+  parse: Parser<T>,
+): CSSStyleProperty<NonNullable<T>> | null {
   const parsed = parse(value, null)
-  if (isLeft(parsed)) {
+  if (isLeft(parsed) || parsed.value == null) {
     return null
   }
-  return withPropertyTag(parsed.value)
+  return cssStyleProperty(parsed.value)
 }
 
 const TailwindPropertyMapping = {

@@ -537,19 +537,38 @@ export type SelectionLocked = 'locked' | 'locked-hierarchy' | 'selectable'
 
 export type PropertyTag = { type: 'hover' } | { type: 'breakpoint'; name: string }
 
-export interface WithPropertyTag<T> {
-  tag: PropertyTag | null
-  value: T
+export type CSSStyleProperty<T> =
+  | { type: 'not-found' }
+  | { type: 'not-editable' }
+  | {
+      type: 'property'
+
+      tags: PropertyTag[]
+      value: T
+    }
+
+export function cssStylePropertyNotFound(): CSSStyleProperty<never> {
+  return { type: 'not-found' }
 }
 
-export const withPropertyTag = <T>(value: T): WithPropertyTag<T> => ({
-  tag: null,
-  value: value,
-})
+export function cssStylePropertyNotEditable(): CSSStyleProperty<never> {
+  return { type: 'not-editable' }
+}
 
-export type FlexGapInfo = WithPropertyTag<CSSNumber>
+export function cssStyleProperty<T>(value: T): CSSStyleProperty<T> {
+  return { type: 'property', tags: [], value: value }
+}
 
-export type FlexDirectionInfo = WithPropertyTag<FlexDirection>
+export function maybePropertyValue<T>(property: CSSStyleProperty<T>): T | null {
+  if (property.type === 'property') {
+    return property.value
+  }
+  return null
+}
+
+export type FlexGapInfo = CSSStyleProperty<CSSNumber>
+
+export type FlexDirectionInfo = CSSStyleProperty<FlexDirection>
 
 export interface StyleInfo {
   gap: FlexGapInfo | null
