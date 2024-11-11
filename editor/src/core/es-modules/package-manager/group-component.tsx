@@ -105,7 +105,7 @@ function getGroupSize(children: NodeListOf<ChildNode>): Size {
 }
 
 export const UtopiaApiGroup: React.FunctionComponent<
-  React.PropsWithChildren<{ style?: CSSProperties }>
+  React.PropsWithChildren<{ style?: CSSProperties; className?: string }>
 > = (props) => {
   const groupRef = React.useRef<HTMLDivElement>(null)
   const latestPropsRef = React.useRef(props)
@@ -169,6 +169,7 @@ export const UtopiaApiGroup: React.FunctionComponent<
         flex: '0 0 auto',
         contain: 'layout',
       }}
+      className={props.className}
     >
       {props.children}
     </div>

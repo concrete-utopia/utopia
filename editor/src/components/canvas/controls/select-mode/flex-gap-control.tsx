@@ -47,7 +47,7 @@ import {
   reverseJustifyContent,
 } from '../../../../core/model/flex-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { getActivePlugin } from '../../plugins/style-plugins'
+import { getActivePluginFromEditorState } from '../../plugins/style-plugins'
 
 interface FlexGapControlProps {
   selectedElement: ElementPath
@@ -137,7 +137,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     Substores.fullStore,
     (store) =>
       maybeFlexGapData(
-        getActivePlugin(store.editor).styleInfoFactory({
+        getActivePluginFromEditorState(store.editor).styleInfoFactory({
           projectContents: store.editor.projectContents,
           metadata: metadata,
           elementPathTree: store.editor.elementPathTree,

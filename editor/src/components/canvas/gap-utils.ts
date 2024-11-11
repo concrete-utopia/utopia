@@ -17,7 +17,7 @@ import { canvasRectangle, isInfinityRectangle } from '../../core/shared/math-uti
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import type { StyleInfo } from './canvas-types'
-import { CSSCursor } from './canvas-types'
+import { CSSCursor, maybePropertyValue } from './canvas-types'
 import type { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
 import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
 import type { Sides } from 'utopia-api/core'
@@ -34,6 +34,7 @@ import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragm
 import type { AllElementProps } from '../editor/store/editor-state'
 import type { GridData } from './controls/grid-controls-for-strategies'
 import { getNullableAutoOrTemplateBaseString } from './controls/grid-controls-for-strategies'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -238,7 +239,7 @@ export function maybeFlexGapData(
   }
 
   const gap = element.specialSizeMeasurements.gap ?? 0
-  const gapFromReader = info.gap?.value
+  const gapFromReader = optionalMap(maybePropertyValue, info.gap)
 
   const flexDirection = element.specialSizeMeasurements.flexDirection ?? 'row'
 

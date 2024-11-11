@@ -75,12 +75,16 @@ import { addImport } from '../../../core/workers/common/project-file-utils'
 import { printCode, printCodeOptions } from '../../../core/workers/parser-printer/parser-printer'
 import {
   complexDefaultProjectPreParsed,
+  createModifiedProject,
   parseProjectContents,
 } from '../../../sample-projects/sample-project-utils.test-utils'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { deepFreeze } from '../../../utils/deep-freeze'
 import Utils from '../../../utils/utils'
-import { createFakeMetadataForComponents } from '../../../utils/utils.test-utils'
+import {
+  createFakeMetadataForComponents,
+  setFeatureForUnitTestsUseInDescribeBlockOnly,
+} from '../../../utils/utils.test-utils'
 import {
   contentsToTree,
   getProjectFileByFilePath,
@@ -119,6 +123,7 @@ import { getUidMappings } from '../../../core/model/get-uid-mappings'
 import { simpleDefaultProject } from '../../../sample-projects/sample-project-utils'
 import { InjectedCSSFilePrefix } from '../../../core/webpack-loaders/css-loader'
 import { renderTestEditorWithModel } from '../../../components/canvas/ui-jsx.test-utils'
+import { TailwindConfigPath } from '../../../core/tailwind/tailwind-config'
 
 const chaiExpect = Chai.expect
 
@@ -274,6 +279,64 @@ describe('SET_PROP', () => {
     chaiExpect(mapEither(clearModifiableAttributeUniqueIDs, updatedTestProp)).to.deep.equal(
       right(clearExpressionUniqueIDs(jsExpressionValue(100, emptyComments))),
     )
+  })
+
+  const TailwindProject = createModifiedProject({
+    [StoryboardFilePath]: `
+  import React from 'react'
+  import { Scene, Storyboard } from 'utopia-api'
+  export var storyboard = (
+    <Storyboard data-uid='sb'>
+      <Scene
+        id='scene'
+        commentId='scene'
+        data-uid='scene'
+        className='w-[700px] h-[750px] absolute left-[200px] top-[128px]'
+      >
+        <div
+          data-uid='mydiv'
+          data-testid='mydiv'
+          className='top-10 left-10 absolute flex flex-row'
+        >
+          <div className='bg-red-500 w-10 h-10' data-uid='child-1' />
+          <div className='bg-red-500 w-10 h-10' data-uid='child-2' />
+        </div>  
+      </Scene>
+    </Storyboard>
+  )
+  
+  `,
+    [TailwindConfigPath]: `
+      const TailwindConfig = { }
+      export default TailwindConfig
+  `,
+    'app.css': `
+      @tailwind base;
+      @tailwind components;
+      @tailwind utilities;`,
+  })
+
+  describe('Tailwind', () => {
+    setFeatureForUnitTestsUseInDescribeBlockOnly('Tailwind', true)
+
+    it('updates `top`', async () => {
+      const editor = await renderTestEditorWithModel(TailwindProject, 'await-first-dom-report')
+      await editor.dispatch(
+        [
+          setProp_UNSAFE(
+            EP.fromString('sb/scene/mydiv'),
+            PP.create('style', 'top'),
+            jsExpressionValue(42, emptyComments),
+          ),
+        ],
+        true,
+      )
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const { className } = editor.renderedDOM.getByTestId('mydiv')
+      expect(className).toEqual('top-[42px] left-10 absolute flex flex-row')
+    })
   })
 })
 

@@ -81,7 +81,7 @@ import { reparentSubjectsForInteractionTarget } from './strategies/reparent-help
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
 import { gridChangeElementLocationResizeKeyboardStrategy } from './strategies/grid-change-element-location-keyboard-strategy'
 import createCachedSelector from 're-reselect'
-import { getActivePlugin } from '../plugins/style-plugins'
+import { getActivePluginFromEditorState, patchRemovedProperties } from '../plugins/style-plugins'
 import {
   controlsForGridPlaceholders,
   GridControls,
@@ -210,7 +210,7 @@ export function pickCanvasStateFromEditorState(
   editorState: EditorState,
   builtInDependencies: BuiltInDependencies,
 ): InteractionCanvasState {
-  const activePlugin = getActivePlugin(editorState)
+  const activePlugin = getActivePluginFromEditorState(editorState)
   return {
     builtInDependencies: builtInDependencies,
     interactionTarget: getInteractionTargetFromEditorState(editorState, localSelectedViews),
@@ -238,7 +238,7 @@ export function pickCanvasStateFromEditorStateWithMetadata(
   metadata: ElementInstanceMetadataMap,
   allElementProps?: AllElementProps,
 ): InteractionCanvasState {
-  const activePlugin = getActivePlugin(editorState)
+  const activePlugin = getActivePluginFromEditorState(editorState)
 
   return {
     builtInDependencies: builtInDependencies,
@@ -494,6 +494,16 @@ export function applyCanvasStrategy(
   strategyLifecycle: InteractionLifecycle,
 ): StrategyApplicationResult {
   return strategy.apply(strategyLifecycle)
+}
+
+export function applyElementsToRerenderFromStrategyResultAndZeroProps(
+  editorState: EditorState,
+  strategyResult: StrategyApplicationResult,
+): EditorState {
+  return applyElementsToRerenderFromStrategyResult(
+    patchRemovedProperties(editorState),
+    strategyResult,
+  )
 }
 
 export function applyElementsToRerenderFromStrategyResult(

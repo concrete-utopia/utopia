@@ -295,7 +295,7 @@ export function setJSXValueAtPath(
   return setJSXValueAtPathParts(attributes, PP.getElements(path), 0, value)
 }
 
-function setJSXValueAtPathParts(
+export function setJSXValueAtPathParts(
   attributes: JSXAttributes,
   path: Array<PropertyPathPart>,
   pathIndex: number,

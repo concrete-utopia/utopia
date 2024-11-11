@@ -56,7 +56,6 @@ import type { LocalRectangle, MaybeInfinityCanvasRectangle } from '../../core/sh
 import { inlineHtmlElements } from '../../utils/html-elements'
 import { intersection } from '../../core/shared/set-utils'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
-import { parseFlex } from '../../printer-parsers/css/css-parser-flex'
 import type { LayoutPinnedProp } from '../../core/layout/layout-helpers-new'
 import { isLayoutPinnedProp, LayoutPinnedProps } from '../../core/layout/layout-helpers-new'
 import { getLayoutLengthValueOrKeyword } from '../../core/layout/getLayoutProperty'
@@ -75,6 +74,7 @@ import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
 import { hugPropertiesFromStyleMap } from '../../core/shared/dom-utils'
 import { setHugContentForAxis } from './inspector-strategies/hug-contents-strategy'
+import { getActivePlugin } from '../canvas/plugins/style-plugins'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -735,16 +735,22 @@ export function detectFillHugFixedState(
     return { fixedHugFill: null, controlStatus: 'off' }
   }
 
-  const width = foldEither(
-    () => null,
-    (value) => defaultEither(null, parseCSSNumber(value, 'Unitless')),
-    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'width')),
-  )
-  const height = foldEither(
-    () => null,
-    (value) => defaultEither(null, parseCSSNumber(value, 'Unitless')),
-    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'height')),
-  )
+  const { props } = element.element.value
+
+  const cssNumberPropReader = (prop: 'width' | 'height') => {
+    const valueFromProps = getActivePlugin().readStyleFromElementProps(right(props), prop)
+    return valueFromProps == null || valueFromProps.type !== 'property'
+      ? null
+      : valueFromProps.value
+  }
+
+  const width = cssNumberPropReader('width')
+  const height = cssNumberPropReader('height')
+  const flexFromProps = getActivePlugin().readStyleFromElementProps(right(props), 'flex')
+  const flexGrowFromFlex =
+    flexFromProps == null || flexFromProps.type !== 'property'
+      ? null
+      : cssNumber(flexFromProps.value.flexGrow)
 
   if (MetadataUtils.isGridItem(metadata, elementPath)) {
     const isStretchingExplicitly =
@@ -768,25 +774,16 @@ export function detectFillHugFixedState(
     }
   }
 
-  const flexGrowLonghand = foldEither(
-    () => null,
-    (value) => defaultEither(null, parseCSSNumber(value, 'Unitless')),
-    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'flexGrow')),
+  const flexGrowLonghandFromProps = getActivePlugin().readStyleFromElementProps(
+    right(props),
+    'flexGrow',
   )
+  const flexGrowLonghand =
+    flexGrowLonghandFromProps == null || flexGrowLonghandFromProps.type !== 'property'
+      ? null
+      : cssNumber(flexGrowLonghandFromProps.value)
 
-  const flexGrow =
-    flexGrowLonghand ??
-    foldEither(
-      () => null,
-      (value) => {
-        return foldEither(
-          () => null,
-          (parsedFlexProp) => cssNumber(parsedFlexProp.flexGrow),
-          parseFlex(value),
-        )
-      },
-      getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', 'flex')),
-    )
+  const flexGrow = flexGrowLonghand ?? flexGrowFromFlex
 
   const flexGrowStatus = getFallbackControlStatusForProperty(
     'flexGrow',
@@ -827,10 +824,7 @@ export function detectFillHugFixedState(
 
   const property = widthHeightFromAxis(axis)
 
-  const simpleAttribute = defaultEither(
-    null,
-    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', property)),
-  )
+  const simpleAttribute = cssNumberPropReader(property)
 
   const detectedHugType = element.specialSizeMeasurements.computedHugProperty[property]
   if (detectedHugType != null) {
@@ -856,7 +850,7 @@ export function detectFillHugFixedState(
 
   const isGroupLike = treatElementAsGroupLike(metadata, elementPath)
 
-  const parsed = defaultEither(null, parseCSSLengthPercent(simpleAttribute))
+  const parsed = simpleAttribute
   if (parsed != null && parsed.unit === '%') {
     const type = (() => {
       if (isGroupLike) {
