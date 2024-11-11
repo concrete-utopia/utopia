@@ -5,7 +5,9 @@ import * as EP from '../../../../core/shared/element-path'
 import type {
   ElementInstanceMetadataMap,
   GridAutoOrTemplateBase,
+  GridPositionOrSpan,
   GridPositionValue,
+  GridSpan,
   SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
 import {
@@ -13,7 +15,6 @@ import {
   type ElementInstanceMetadata,
   type GridContainerProperties,
   type GridElementProperties,
-  type GridPosition,
 } from '../../../../core/shared/element-template'
 import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
@@ -43,15 +44,34 @@ import {
   gridCellCoordinates,
 } from './grid-cell-bounds'
 
-export function gridPositionToValue(p: GridPosition | null | undefined): string | number | null {
+export function gridPositionToValue(
+  p: GridPositionOrSpan | null | undefined,
+  spanOffset: GridPositionOrSpan | null,
+): string | number | null {
   if (p == null) {
     return null
   }
+
+  const offset = isGridSpan(spanOffset) && spanOffset.type === 'SPAN_NUMERIC' ? spanOffset.value : 0
+
+  if (isGridSpan(p)) {
+    switch (p.type) {
+      case 'SPAN_AREA':
+        return null // # TODO fill this in once we support grid areas
+      case 'SPAN_NUMERIC':
+        return p.value + offset
+    }
+  }
+
   if (isCSSKeyword(p)) {
     return p.value
   }
 
-  return p.numericalPosition
+  if (p.numericalPosition == null) {
+    return offset
+  }
+
+  return p.numericalPosition + offset
 }
 
 export function setGridPropsCommands(
@@ -70,10 +90,10 @@ export function setGridPropsCommands(
       PP.create('style', 'gridRowEnd'),
     ]),
   ]
-  const columnStart = gridPositionToValue(gridProps.gridColumnStart)
-  const columnEnd = gridPositionToValue(gridProps.gridColumnEnd)
-  const rowStart = gridPositionToValue(gridProps.gridRowStart)
-  const rowEnd = gridPositionToValue(gridProps.gridRowEnd)
+  const columnStart = gridPositionToValue(gridProps.gridColumnStart, null)
+  const columnEnd = gridPositionToValue(gridProps.gridColumnEnd, gridProps.gridColumnStart ?? null)
+  const rowStart = gridPositionToValue(gridProps.gridRowStart, null)
+  const rowEnd = gridPositionToValue(gridProps.gridRowEnd, gridProps.gridRowStart ?? null)
 
   const lineColumnStart = asMaybeNamedLineOrValue(gridTemplate, 'column', columnStart)
   const lineColumnEnd = asMaybeNamedLineOrValue(gridTemplate, 'column', columnEnd)
@@ -216,8 +236,19 @@ export function sortElementsByGridPosition(gridTemplateColumns: number) {
         return index
       }
 
-      const row = e.gridRowStart.numericalPosition ?? 1
-      const column = e.gridColumnStart.numericalPosition ?? 1
+      function maybeNumericalValue(dim: GridSpan | GridPositionValue) {
+        return isGridSpan(dim)
+          ? dim.type === 'SPAN_NUMERIC'
+            ? dim.value
+            : null
+          : dim.numericalPosition
+      }
+
+      const start = maybeNumericalValue(e.gridRowStart)
+      const end = maybeNumericalValue(e.gridColumnStart)
+
+      const row = start ?? 1
+      const column = end ?? 1
 
       return (row - 1) * gridTemplateColumns + column - 1
     }
@@ -226,8 +257,8 @@ export function sortElementsByGridPosition(gridTemplateColumns: number) {
   }
 }
 
-function isGridPositionNumericValue(p: GridPosition | null): p is GridPositionValue {
-  return p != null && !(isCSSKeyword(p) && p.value === 'auto')
+function isGridPositionNumericValue(p: GridPositionOrSpan | null): p is GridPositionValue {
+  return p != null && !(isCSSKeyword(p) && !isGridSpan(p) && p.value === 'auto')
 }
 
 export function getGridPositionIndex(props: {
