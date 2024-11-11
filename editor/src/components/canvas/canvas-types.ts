@@ -537,25 +537,34 @@ export type SelectionLocked = 'locked' | 'locked-hierarchy' | 'selectable'
 
 export type PropertyTag = { type: 'hover' } | { type: 'breakpoint'; name: string }
 
+interface CSSStylePropertyNotFound {
+  type: 'not-found'
+}
+
+interface CSSStylePropertyNotParsable {
+  type: 'not-parsable'
+}
+
+interface ParsedCSSStyleProperty<T> {
+  type: 'property'
+  tags: PropertyTag[]
+  value: T
+}
+
 export type CSSStyleProperty<T> =
-  | { type: 'not-found' }
-  | { type: 'not-editable' }
-  | {
-      type: 'property'
+  | CSSStylePropertyNotFound
+  | CSSStylePropertyNotParsable
+  | ParsedCSSStyleProperty<T>
 
-      tags: PropertyTag[]
-      value: T
-    }
-
-export function cssStylePropertyNotFound(): CSSStyleProperty<never> {
+export function cssStylePropertyNotFound(): CSSStylePropertyNotFound {
   return { type: 'not-found' }
 }
 
-export function cssStylePropertyNotEditable(): CSSStyleProperty<never> {
-  return { type: 'not-editable' }
+export function cssStylePropertyNotParsable(): CSSStylePropertyNotParsable {
+  return { type: 'not-parsable' }
 }
 
-export function cssStyleProperty<T>(value: T): CSSStyleProperty<T> {
+export function cssStyleProperty<T>(value: T): ParsedCSSStyleProperty<T> {
   return { type: 'property', tags: [], value: value }
 }
 

@@ -12,7 +12,7 @@ import { stylePropPathMappingFn } from '../../inspector/common/property-path-hoo
 import type { CSSStyleProperty } from '../canvas-types'
 import {
   cssStyleProperty,
-  cssStylePropertyNotEditable,
+  cssStylePropertyNotParsable,
   cssStylePropertyNotFound,
 } from '../canvas-types'
 import { mapDropNulls } from '../../../core/shared/array-utils'
@@ -39,12 +39,12 @@ function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSPropert
   }
   const simpleValue = jsxSimpleAttributeToValue(attribute)
   if (Either.isLeft(simpleValue)) {
-    return cssStylePropertyNotEditable()
+    return cssStylePropertyNotParsable()
   }
   const parser = cssParsers[prop] as (value: unknown) => Either.Either<string, T>
   const parsed = parser(simpleValue.value)
   if (Either.isLeft(parsed) || parsed.value == null) {
-    return cssStylePropertyNotEditable()
+    return cssStylePropertyNotParsable()
   }
   return cssStyleProperty(parsed.value)
 }
