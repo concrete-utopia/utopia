@@ -703,7 +703,8 @@ export function LoadingEditorComponent() {
           style={{
             borderRadius: '6px',
             height: '9px',
-            transform: 'translateX(-212px)',
+            transform: 'translateX(-198px)',
+            animationName: 'animation-keyframes-2',
           }}
         ></div>
       </div>
