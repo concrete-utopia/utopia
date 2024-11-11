@@ -5946,14 +5946,15 @@ export function maybeParseGridLine(
   if (nodes.length !== 1) {
     return null
   }
-  const first = nodes[0]
-  switch (first.type) {
+
+  const firstNode = nodes[0]
+  switch (firstNode.type) {
     case 'Number':
-      return gridPositionValue(parseInt(first.value))
+      return gridPositionValue(parseInt(firstNode.value))
     case 'Identifier':
       // the identifier can either be a keyword…
-      if (isValidGridDimensionKeyword(first.name)) {
-        return cssKeyword(first.name)
+      if (isValidGridDimensionKeyword(firstNode.name)) {
+        return cssKeyword(firstNode.name)
       }
 
       // …or a line name, in which case look it up in the template and return its index
@@ -5961,7 +5962,7 @@ export function maybeParseGridLine(
         axis === 'column' ? container.gridTemplateColumns : container.gridTemplateRows
       const maybeLineFromName =
         targetTracks?.type === 'DIMENSIONS'
-          ? targetTracks.dimensions.findIndex((dim) => dim.lineName === first.name)
+          ? targetTracks.dimensions.findIndex((dim) => dim.lineName === firstNode.name)
           : null
       if (maybeLineFromName == null || maybeLineFromName < 0) {
         // line name not found
