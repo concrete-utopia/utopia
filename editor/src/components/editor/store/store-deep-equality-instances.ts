@@ -155,6 +155,7 @@ import type {
   GridSpan,
   GridSpanArea,
   GridSpanNumeric,
+  GridPositionOrSpan,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -226,6 +227,7 @@ import {
   gridPositionValue,
   gridAutoOrTemplateFallback,
   gridAutoOrTemplateDimensions,
+  isGridSpan,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -2200,20 +2202,34 @@ export const GridSpanKeepDeepEquality: KeepDeepEqualityCall<GridSpan> = (oldValu
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const GridPositionOrSpanKeepDeepEquality: KeepDeepEqualityCall<GridPositionOrSpan> = (
+  oldValue,
+  newValue,
+) => {
+  if (isGridSpan(oldValue)) {
+    if (isGridSpan(newValue)) {
+      return GridSpanKeepDeepEquality(oldValue, newValue)
+    } else {
+      return keepDeepEqualityResult(newValue, false)
+    }
+  } else {
+    if (isGridSpan(newValue)) {
+      return keepDeepEqualityResult(newValue, false)
+    }
+    return GridPositionKeepDeepEquality(oldValue, newValue)
+  }
+}
+
 export function GridElementPropertiesKeepDeepEquality(): KeepDeepEqualityCall<GridElementProperties> {
-  return combine6EqualityCalls(
+  return combine4EqualityCalls(
     (properties) => properties.gridColumnStart,
-    nullableDeepEquality(GridPositionKeepDeepEquality),
+    nullableDeepEquality(GridPositionOrSpanKeepDeepEquality),
     (properties) => properties.gridColumnEnd,
-    nullableDeepEquality(GridPositionKeepDeepEquality),
-    (properties) => properties.gridColumnSpan,
-    nullableDeepEquality(GridSpanKeepDeepEquality),
+    nullableDeepEquality(GridPositionOrSpanKeepDeepEquality),
     (properties) => properties.gridRowStart,
-    nullableDeepEquality(GridPositionKeepDeepEquality),
+    nullableDeepEquality(GridPositionOrSpanKeepDeepEquality),
     (properties) => properties.gridRowEnd,
-    nullableDeepEquality(GridPositionKeepDeepEquality),
-    (properties) => properties.gridRowSpan,
-    nullableDeepEquality(GridSpanKeepDeepEquality),
+    nullableDeepEquality(GridPositionOrSpanKeepDeepEquality),
     gridElementProperties,
   )
 }

@@ -2691,10 +2691,10 @@ export function gridRange(start: GridPositionOrSpan, end: GridPositionOrSpan | n
   }
 }
 
-export type GridColumnStart = GridPosition
-export type GridColumnEnd = GridPosition
-export type GridRowStart = GridPosition
-export type GridRowEnd = GridPosition
+export type GridColumnStart = GridPositionOrSpan
+export type GridColumnEnd = GridPositionOrSpan
+export type GridRowStart = GridPositionOrSpan
+export type GridRowEnd = GridPositionOrSpan
 
 export interface GridAutoOrTemplateFallback {
   type: 'FALLBACK'
@@ -2765,27 +2765,21 @@ export function gridContainerProperties(
 export interface GridElementProperties {
   gridColumnStart: GridColumnStart | null
   gridColumnEnd: GridColumnEnd | null
-  gridColumnSpan: GridSpan | null
   gridRowStart: GridRowStart | null
   gridRowEnd: GridRowEnd | null
-  gridRowSpan: GridSpan | null
 }
 
 export function gridElementProperties(
   gridColumnStart: GridColumnStart | null,
   gridColumnEnd: GridColumnEnd | null,
-  gridColumnSpan: GridSpan | null,
   gridRowStart: GridRowStart | null,
   gridRowEnd: GridRowEnd | null,
-  gridRowSpan: GridSpan | null,
 ): GridElementProperties {
   return {
     gridColumnStart: gridColumnStart,
     gridColumnEnd: gridColumnEnd,
-    gridColumnSpan: gridColumnSpan,
     gridRowStart: gridRowStart,
     gridRowEnd: gridRowEnd,
-    gridRowSpan: gridRowSpan,
   }
 }
 
@@ -3037,10 +3031,8 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   {
     gridColumnStart: null,
     gridColumnEnd: null,
-    gridColumnSpan: null,
     gridRowStart: null,
     gridRowEnd: null,
-    gridRowSpan: null,
   },
   {
     gridTemplateColumns: null,
@@ -3059,10 +3051,8 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   {
     gridColumnStart: null,
     gridColumnEnd: null,
-    gridColumnSpan: null,
     gridRowStart: null,
     gridRowEnd: null,
-    gridRowSpan: null,
   },
   null,
   null,

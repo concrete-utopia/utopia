@@ -714,10 +714,8 @@ function getGridElementProperties(
   const result = gridElementProperties(
     gridColumnStart,
     adjustedColumnEnd,
-    columnSpan,
     gridRowStart,
     adjustedRowEnd,
-    rowSpan,
   )
   return result
 }
