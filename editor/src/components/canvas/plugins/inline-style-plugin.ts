@@ -12,32 +12,36 @@ import type { CSSStyleProperty, StyleInfo } from '../canvas-types'
 import { applyValuesAtPath, deleteValuesAtPath } from '../commands/utils/property-utils'
 import type { StylePlugin, StyleUpdate } from './style-plugins'
 import {
-  getModifiableJSXAttributeAtPath,
+  getJSXAttributesAtPath,
   jsxSimpleAttributeToValue,
   setJSXValueAtPathParts,
 } from '../../../core/shared/jsx-attribute-utils'
+import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import { unsetJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import Utils from '../../../utils/utils'
+import { assertNever } from '../../../core/shared/utils'
 
 function getPropValue(
   propsOrAttributes: PropsOrJSXAttributes,
   path: PropertyPath,
-): Either.Either<string, any> {
-  return Either.foldEither(
-    (props) => {
-      const possibleValue = Utils.path(PP.getElements(path), props)
-      if (possibleValue == null) {
-        return Either.right(undefined)
-      } else {
-        return Either.right(possibleValue)
-      }
-    },
-    (attributes) => {
-      const getAttrResult = getModifiableJSXAttributeAtPath(attributes, path)
-      return Either.flatMapEither((attr) => jsxSimpleAttributeToValue(attr), getAttrResult)
-    },
-    propsOrAttributes,
-  )
+): ModifiableAttribute {
+  if (Either.isLeft(propsOrAttributes)) {
+    const possibleValue = Utils.path(PP.getElements(path), propsOrAttributes.value)
+    if (typeof possibleValue === 'undefined') {
+      return { type: 'ATTRIBUTE_NOT_FOUND' }
+    }
+    return jsExpressionValue(possibleValue, emptyComments)
+  }
+
+  if (Either.isRight(propsOrAttributes)) {
+    const result = getJSXAttributesAtPath(propsOrAttributes.value, path)
+    if (result.remainingPath != null) {
+      return { type: 'ATTRIBUTE_NOT_FOUND' }
+    }
+    return result.attribute
+  }
+
+  assertNever(propsOrAttributes)
 }
 
 function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(
@@ -45,11 +49,15 @@ function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSPropert
   propsOrAttributes: PropsOrJSXAttributes,
 ): CSSStyleProperty<NonNullable<T>> | null {
   const attribute = getPropValue(propsOrAttributes, stylePropPathMappingFn(prop, ['style']))
-  if (Either.isLeft(attribute) || attribute.value == null) {
+  if (attribute.type === 'ATTRIBUTE_NOT_FOUND') {
     return { type: 'not-found' }
   }
+  const simpleValue = jsxSimpleAttributeToValue(attribute)
+  if (Either.isLeft(simpleValue)) {
+    return { type: 'not-editable' }
+  }
   const parser = cssParsers[prop] as (value: unknown) => Either.Either<string, T>
-  const parsed = parser(attribute.value)
+  const parsed = parser(simpleValue.value)
   if (Either.isLeft(parsed) || parsed.value == null) {
     return { type: 'not-editable' }
   }
