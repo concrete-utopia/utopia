@@ -8,11 +8,7 @@ import type {
   GridContainerProperties,
   GridElementProperties,
 } from '../../../../core/shared/element-template'
-import {
-  getJSXAttribute,
-  gridPositionValue,
-  isJSXElement,
-} from '../../../../core/shared/element-template'
+import { gridPositionValue, isJSXElement } from '../../../../core/shared/element-template'
 import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { absolute } from '../../../../utils/utils'
 import type { CanvasCommand } from '../../commands/commands'
@@ -241,9 +237,9 @@ export function runGridChangeElementLocation(
 
   const gridProps: Partial<GridElementProperties> = {
     gridColumnStart: gridPositionValue(targetRootCell.column),
-    gridColumnEnd: gridPositionValue(targetRootCell.column + originalCellBounds.height),
+    gridColumnEnd: gridPositionValue(targetRootCell.column + originalCellBounds.width),
     gridRowStart: gridPositionValue(targetRootCell.row),
-    gridRowEnd: gridPositionValue(targetRootCell.row + originalCellBounds.width),
+    gridRowEnd: gridPositionValue(targetRootCell.row + originalCellBounds.height),
   }
 
   // TODO: Remove this logic once there is a fix for the handling of the track end fields.
@@ -256,17 +252,30 @@ export function runGridChangeElementLocation(
       .compose(fromField('props')),
     selectedElementMetadata,
     (elementProperties) => {
-      const gridColumnEnd = getJSXAttributesAtPath(
-        elementProperties,
-        PP.create('style', 'gridColumnEnd'),
-      )
-      if (gridColumnEnd.attribute.type === 'ATTRIBUTE_NOT_FOUND') {
-        keepGridColumnEnd = false
+      function shouldKeep(shorthandProp: 'gridColumn' | 'gridRow'): boolean {
+        const longhandProp = shorthandProp === 'gridColumn' ? 'gridColumnEnd' : 'gridRowEnd'
+
+        const shorthand = getJSXAttributesAtPath(
+          elementProperties,
+          PP.create('style', shorthandProp),
+        )
+        if (
+          shorthand.attribute.type === 'ATTRIBUTE_VALUE' &&
+          typeof shorthand.attribute.value === 'string' &&
+          shorthand.attribute.value.includes('/')
+        ) {
+          return true
+        }
+
+        const longhand = getJSXAttributesAtPath(elementProperties, PP.create('style', longhandProp))
+        if (longhand.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
+          return true
+        }
+
+        return false
       }
-      const gridRowEnd = getJSXAttributesAtPath(elementProperties, PP.create('style', 'gridRowEnd'))
-      if (gridRowEnd.attribute.type === 'ATTRIBUTE_NOT_FOUND') {
-        keepGridRowEnd = false
-      }
+      keepGridColumnEnd = shouldKeep('gridColumn')
+      keepGridRowEnd = shouldKeep('gridRow')
     },
   )
 
