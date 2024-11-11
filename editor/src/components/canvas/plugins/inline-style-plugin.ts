@@ -15,6 +15,10 @@ import {
   cssStylePropertyNotEditable,
   cssStylePropertyNotFound,
 } from '../canvas-types'
+import { mapDropNulls } from '../../../core/shared/array-utils'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
+import * as PP from '../../../core/shared/property-path'
+import { applyValuesAtPath, deleteValuesAtPath } from '../commands/utils/property-utils'
 import type { StylePlugin } from './style-plugins'
 
 function getPropValue(attributes: JSXAttributes, path: PropertyPath): ModifiableAttribute {
@@ -63,5 +67,29 @@ export const InlineStylePlugin: StylePlugin = {
         flexDirection: flexDirection,
       }
     },
-  normalizeFromInlineStyle: (editor) => editor,
+  updateStyles: (editorState, elementPath, updates) => {
+    const propsToDelete = mapDropNulls(
+      (update) => (update.type === 'delete' ? PP.create('style', update.property) : null),
+      updates,
+    )
+
+    const propsToSet = mapDropNulls(
+      (update) =>
+        update.type === 'set'
+          ? {
+              path: PP.create('style', update.property),
+              value: jsExpressionValue(update.value, emptyComments),
+            }
+          : null,
+      updates,
+    )
+
+    const { editorStateWithChanges: withValuesDeleted } = deleteValuesAtPath(
+      editorState,
+      elementPath,
+      propsToDelete,
+    )
+
+    return applyValuesAtPath(withValuesDeleted, elementPath, propsToSet)
+  },
 }

@@ -81,7 +81,7 @@ import { reparentSubjectsForInteractionTarget } from './strategies/reparent-help
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
 import { gridChangeElementLocationResizeKeyboardStrategy } from './strategies/grid-change-element-location-keyboard-strategy'
 import createCachedSelector from 're-reselect'
-import { getActivePlugin } from '../plugins/style-plugins'
+import { getActivePlugin, patchRemovedProperties } from '../plugins/style-plugins'
 import {
   controlsForGridPlaceholders,
   GridControls,
@@ -494,6 +494,16 @@ export function applyCanvasStrategy(
   strategyLifecycle: InteractionLifecycle,
 ): StrategyApplicationResult {
   return strategy.apply(strategyLifecycle)
+}
+
+export function applyElementsToRerenderFromStrategyResultAndPatchRemovedProps(
+  editorState: EditorState,
+  strategyResult: StrategyApplicationResult,
+): EditorState {
+  return applyElementsToRerenderFromStrategyResult(
+    patchRemovedProperties(editorState),
+    strategyResult,
+  )
 }
 
 export function applyElementsToRerenderFromStrategyResult(

@@ -198,6 +198,7 @@ import {
   emptyProjectRequirements,
   type ProjectRequirements,
 } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
+import type { UpdatedProperties } from '../../canvas/plugins/style-plugins'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 const ObjectPathImmutable: any = OPI
@@ -1484,6 +1485,7 @@ export interface EditorState {
   collaborators: Collaborator[]
   sharingDialogOpen: boolean
   editorRemixConfig: EditorRemixConfig
+  propertiesUpdatedDuringInteraction: UpdatedProperties
 }
 
 export function editorState(
@@ -1571,6 +1573,7 @@ export function editorState(
   collaborators: Collaborator[],
   sharingDialogOpen: boolean,
   remixConfig: EditorRemixConfig,
+  propertiesUpdatedDuringInteraction: UpdatedProperties,
 ): EditorState {
   return {
     id: id,
@@ -1657,6 +1660,7 @@ export function editorState(
     collaborators: collaborators,
     sharingDialogOpen: sharingDialogOpen,
     editorRemixConfig: remixConfig,
+    propertiesUpdatedDuringInteraction: propertiesUpdatedDuringInteraction,
   }
 }
 
@@ -2743,6 +2747,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     editorRemixConfig: {
       errorBoundaryHandling: 'ignore-error-boundaries',
     },
+    propertiesUpdatedDuringInteraction: {},
   }
 }
 
@@ -3113,6 +3118,7 @@ export function editorModelFromPersistentModel(
     editorRemixConfig: {
       errorBoundaryHandling: 'ignore-error-boundaries',
     },
+    propertiesUpdatedDuringInteraction: {},
   }
   return editor
 }

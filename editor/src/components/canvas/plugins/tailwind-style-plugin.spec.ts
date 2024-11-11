@@ -10,9 +10,8 @@ import { createModifiedProject } from '../../../sample-projects/sample-project-u
 import { TailwindConfigPath } from '../../../core/tailwind/tailwind-config'
 import { getTailwindConfigCached } from '../../../core/tailwind/tailwind-compilation'
 
-const Project = (style: Record<string, unknown>) =>
-  createModifiedProject({
-    [StoryboardFilePath]: `
+const Project = createModifiedProject({
+  [StoryboardFilePath]: `
 import React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 export var storyboard = (
@@ -31,83 +30,62 @@ export var storyboard = (
     >
       <div
         data-uid='div'
-        style={${JSON.stringify(style)}}
+        className='flex flex-row gap-[12px]'
       />
     </Scene>
   </Storyboard>
 )
 
 `,
-    [TailwindConfigPath]: `
+  [TailwindConfigPath]: `
     const TailwindConfig = {
         content: [],
         theme: { extend: { gap: { enormous: '222px' } } }
     }
     export default TailwindConfig
 `,
-  })
+})
 
 describe('tailwind style plugin', () => {
-  it('can normalize inline style', async () => {
-    const editor = await renderTestEditorWithModel(
-      Project({
-        top: 2,
-        left: 2,
-        width: 100,
-        height: 100,
-        backgroundColor: 'blue',
-        display: 'flex',
-        flexDirection: 'row',
-        gap: '12px',
-      }),
-      'await-first-dom-report',
-    )
+  it('can set Tailwind class', async () => {
+    const editor = await renderTestEditorWithModel(Project, 'await-first-dom-report')
     const target = EP.fromString('sb/scene/div')
-    const normalizedEditor = TailwindPlugin(null).normalizeFromInlineStyle(
+    const updatedEditor = TailwindPlugin(null).updateStyles(
       editor.getEditorState().editor,
-      [target],
-      [],
+      target,
+      [
+        { type: 'set', property: 'gap', value: '222px' },
+        { type: 'set', property: 'display', value: 'flex' },
+        { type: 'set', property: 'flexDirection', value: 'column' },
+      ],
     )
-
     const normalizedElement = getJSXElementFromProjectContents(
       target,
-      normalizedEditor.projectContents,
+      updatedEditor.editorStateWithChanges.projectContents,
     )!
-
     expect(formatJSXAttributes(normalizedElement.props)).toEqual({
-      className: 'flex-row gap-[12px]',
+      className: 'flex flex-col gap-[222px]',
       'data-uid': 'div',
-      style: { backgroundColor: 'blue', display: 'flex', height: 100, left: 2, top: 2, width: 100 },
     })
   })
-  it('can normalize inline style with custom Tailwind config', async () => {
-    const editor = await renderTestEditorWithModel(
-      Project({
-        top: 2,
-        left: 2,
-        width: 100,
-        height: 100,
-        backgroundColor: 'blue',
-        display: 'flex',
-        flexDirection: 'row',
-        gap: '222px',
-      }),
-      'await-first-dom-report',
-    )
-    const target = EP.fromString('sb/scene/div')
-    const normalizedEditor = TailwindPlugin(
-      getTailwindConfigCached(editor.getEditorState().editor),
-    ).normalizeFromInlineStyle(editor.getEditorState().editor, [target], [])
 
+  it('can set Tailwind class, with custom values in the Tailwind config', async () => {
+    const editor = await renderTestEditorWithModel(Project, 'await-first-dom-report')
+    const target = EP.fromString('sb/scene/div')
+    const updatedEditor = TailwindPlugin(
+      getTailwindConfigCached(editor.getEditorState().editor),
+    ).updateStyles(editor.getEditorState().editor, target, [
+      { type: 'set', property: 'gap', value: '222px' },
+      { type: 'set', property: 'display', value: 'flex' },
+      { type: 'set', property: 'flexDirection', value: 'column' },
+    ])
     const normalizedElement = getJSXElementFromProjectContents(
       target,
-      normalizedEditor.projectContents,
+      updatedEditor.editorStateWithChanges.projectContents,
     )!
-
     expect(formatJSXAttributes(normalizedElement.props)).toEqual({
-      className: 'flex-row gap-enormous',
+      className: 'flex flex-col gap-enormous',
       'data-uid': 'div',
-      style: { backgroundColor: 'blue', display: 'flex', height: 100, left: 2, top: 2, width: 100 },
     })
   })
 })

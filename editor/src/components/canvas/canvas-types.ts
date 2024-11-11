@@ -574,3 +574,10 @@ export interface StyleInfo {
   gap: FlexGapInfo | null
   flexDirection: FlexDirectionInfo | null
 }
+
+const emptyStyleInfo: StyleInfo = {
+  gap: null,
+  flexDirection: null,
+}
+
+export const isStyleInfoKey = (key: string): key is keyof StyleInfo => key in emptyStyleInfo

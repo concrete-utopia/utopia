@@ -1052,6 +1052,7 @@ export function restoreEditorState(
     collaborators: currentEditor.collaborators,
     sharingDialogOpen: currentEditor.sharingDialogOpen,
     editorRemixConfig: currentEditor.editorRemixConfig,
+    propertiesUpdatedDuringInteraction: {},
   }
 }
 
