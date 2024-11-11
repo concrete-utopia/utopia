@@ -657,6 +657,10 @@ import {
   newProjectRequirements,
   requirementResolution,
 } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
+import type {
+  StylePropsUpdatedDuringInteraction,
+  UpdatedProperties,
+} from '../../canvas/plugins/style-plugins'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -5220,6 +5224,21 @@ export const RemixConfigKeepDeepEquality: KeepDeepEqualityCall<EditorRemixConfig
     },
   )
 
+export const StylePropsUpdatedDuringInteractionKeepDeepEquality: KeepDeepEqualityCall<StylePropsUpdatedDuringInteraction> =
+  combine2EqualityCalls(
+    (data) => data.propertiesDeleted,
+    arrayDeepEquality(StringKeepDeepEquality),
+    (data) => data.propertiesUpdated,
+    arrayDeepEquality(StringKeepDeepEquality),
+    (propertiesDeleted, propertiesUpdated) => ({
+      propertiesDeleted,
+      propertiesUpdated,
+    }),
+  )
+
+export const PropertiesUpdatedDuringInteractionKeepDeepEquality: KeepDeepEqualityCall<UpdatedProperties> =
+  objectDeepEquality(StylePropsUpdatedDuringInteractionKeepDeepEquality)
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -5537,6 +5556,12 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.editorRemixConfig,
   )
 
+  const propertiesUpdatedDuringInteractionResults =
+    PropertiesUpdatedDuringInteractionKeepDeepEquality(
+      oldValue.propertiesUpdatedDuringInteraction,
+      newValue.propertiesUpdatedDuringInteraction,
+    )
+
   const areEqual =
     idResult.areEqual &&
     forkedFromProjectIdResult.areEqual &&
@@ -5620,7 +5645,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     forkingResults.areEqual &&
     collaboratorsResults.areEqual &&
     sharingDialogOpenResults.areEqual &&
-    remixConfigResults.areEqual
+    remixConfigResults.areEqual &&
+    propertiesUpdatedDuringInteractionResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -5710,6 +5736,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       collaboratorsResults.value,
       sharingDialogOpenResults.value,
       remixConfigResults.value,
+      propertiesUpdatedDuringInteractionResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)
