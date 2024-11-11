@@ -9,6 +9,7 @@ import type {
   SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
 import {
+  isGridSpan,
   type ElementInstanceMetadata,
   type GridContainerProperties,
   type GridElementProperties,
@@ -149,7 +150,7 @@ function getGridChildCellCoordBoundsFromProps(
   // get the grid fixtures (start and end for column and row) from the element metadata
   function getGridProperty(field: keyof GridElementProperties, innerFallback: number) {
     const propValue = element.specialSizeMeasurements.elementGridProperties[field]
-    if (propValue == null || isCSSKeyword(propValue)) {
+    if (propValue == null || isCSSKeyword(propValue) || isGridSpan(propValue)) {
       return innerFallback
     }
     return propValue.numericalPosition ?? innerFallback

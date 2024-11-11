@@ -2680,11 +2680,11 @@ export const isValidGridPositionKeyword =
   }
 
 export interface GridRange {
-  start: GridPosition
-  end: GridPosition | null
+  start: GridPositionOrSpan
+  end: GridPositionOrSpan | null
 }
 
-export function gridRange(start: GridPosition, end: GridPosition | null): GridRange {
+export function gridRange(start: GridPositionOrSpan, end: GridPositionOrSpan | null): GridRange {
   return {
     start: start,
     end: end,
@@ -2765,21 +2765,27 @@ export function gridContainerProperties(
 export interface GridElementProperties {
   gridColumnStart: GridColumnStart | null
   gridColumnEnd: GridColumnEnd | null
+  gridColumnSpan: GridSpan | null
   gridRowStart: GridRowStart | null
   gridRowEnd: GridRowEnd | null
+  gridRowSpan: GridSpan | null
 }
 
 export function gridElementProperties(
   gridColumnStart: GridColumnStart | null,
   gridColumnEnd: GridColumnEnd | null,
+  gridColumnSpan: GridSpan | null,
   gridRowStart: GridRowStart | null,
   gridRowEnd: GridRowEnd | null,
+  gridRowSpan: GridSpan | null,
 ): GridElementProperties {
   return {
     gridColumnStart: gridColumnStart,
     gridColumnEnd: gridColumnEnd,
+    gridColumnSpan: gridColumnSpan,
     gridRowStart: gridRowStart,
     gridRowEnd: gridRowEnd,
+    gridRowSpan: gridRowSpan,
   }
 }
 
@@ -3031,8 +3037,10 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   {
     gridColumnStart: null,
     gridColumnEnd: null,
+    gridColumnSpan: null,
     gridRowStart: null,
     gridRowEnd: null,
+    gridRowSpan: null,
   },
   {
     gridTemplateColumns: null,
@@ -3051,8 +3059,10 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   {
     gridColumnStart: null,
     gridColumnEnd: null,
+    gridColumnSpan: null,
     gridRowStart: null,
     gridRowEnd: null,
+    gridRowSpan: null,
   },
   null,
   null,
@@ -3228,4 +3238,51 @@ export function clearJSArbitraryStatementSourceMaps(
     default:
       assertNever(statement)
   }
+}
+
+export type GridPositionOrSpan = GridPosition | GridSpan
+
+export type GridSpan = GridSpanNumeric | GridSpanArea
+
+export function isGridSpan(u: unknown): u is GridSpan {
+  const maybe = u as GridSpan
+  return (
+    maybe != null && typeof u === 'object' && (isGridSpanNumeric(maybe) || isGridSpanArea(maybe))
+  )
+}
+
+export function stringifyGridSpan(span: GridSpan): string {
+  return `span ${span.value}`
+}
+
+export type GridSpanNumeric = {
+  type: 'SPAN_NUMERIC'
+  value: number
+}
+
+export function gridSpanNumeric(value: number): GridSpanNumeric {
+  return {
+    type: 'SPAN_NUMERIC',
+    value: value,
+  }
+}
+
+function isGridSpanNumeric(span: GridSpan): span is GridSpanNumeric {
+  return span.type === 'SPAN_NUMERIC'
+}
+
+export type GridSpanArea = {
+  type: 'SPAN_AREA'
+  value: string
+}
+
+export function gridSpanArea(areaName: string): GridSpanArea {
+  return {
+    type: 'SPAN_AREA',
+    value: areaName,
+  }
+}
+
+function isGridSpanArea(span: GridSpan): span is GridSpanArea {
+  return span.type === 'SPAN_AREA'
 }

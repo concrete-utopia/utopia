@@ -11,6 +11,7 @@ import type {
   DomElementMetadata,
   GridAutoOrTemplateBase,
   BorderWidths,
+  GridSpan,
 } from '../../core/shared/element-template'
 import {
   specialSizeMeasurements,
@@ -19,6 +20,7 @@ import {
   gridAutoOrTemplateFallback,
   domElementMetadata,
   gridAutoOrTemplateDimensions,
+  isGridSpan,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import type { ElementCanvasRectangleCache } from '../../core/shared/dom-utils'
@@ -635,63 +637,87 @@ function getGridElementProperties(
     parseGridRange(container, 'column', elementStyle.gridColumn),
   )
 
-  const gridColumnStart =
-    gridColumn?.start ??
-    defaultEither(
-      null,
-      parseGridPosition(
-        container,
-        'column',
-        'start',
-        gridColumn?.start ?? null,
-        elementStyle.gridColumnStart,
-      ),
-    ) ??
-    null
-  const gridColumnEnd =
-    gridColumn?.end ??
-    defaultEither(
-      null,
-      parseGridPosition(
-        container,
-        'column',
-        'end',
-        gridColumn?.end ?? null,
-        elementStyle.gridColumnEnd,
-      ),
-    ) ??
-    null
-  const adjustedColumnEnd =
-    isCSSKeyword(gridColumnEnd) && gridColumn?.end != null ? gridColumn.end : gridColumnEnd
+  const columnSpan: GridSpan | null = isGridSpan(gridColumn?.start)
+    ? gridColumn.start
+    : isGridSpan(gridColumn?.end)
+    ? gridColumn.end
+    : null
+
+  const gridColumnStart = isGridSpan(gridColumn?.start)
+    ? null
+    : gridColumn?.start ??
+      defaultEither(
+        null,
+        parseGridPosition(
+          container,
+          'column',
+          'start',
+          gridColumn?.start ?? null,
+          elementStyle.gridColumnStart,
+        ),
+      ) ??
+      null
+  const gridColumnEnd = isGridSpan(gridColumn?.end)
+    ? null
+    : gridColumn?.end ??
+      defaultEither(
+        null,
+        parseGridPosition(
+          container,
+          'column',
+          'end',
+          gridColumn?.end ?? null,
+          elementStyle.gridColumnEnd,
+        ),
+      ) ??
+      null
+  const adjustedColumnEnd = isGridSpan(gridColumn?.end)
+    ? null
+    : isCSSKeyword(gridColumnEnd) && gridColumn?.end != null
+    ? gridColumn.end
+    : gridColumnEnd
 
   const gridRow = defaultEither(null, parseGridRange(container, 'row', elementStyle.gridRow))
-  const gridRowStart =
-    gridRow?.start ??
-    defaultEither(
-      null,
-      parseGridPosition(
-        container,
-        'row',
-        'start',
-        gridRow?.start ?? null,
-        elementStyle.gridRowStart,
-      ),
-    ) ??
-    null
-  const gridRowEnd =
-    gridRow?.end ??
-    defaultEither(
-      null,
-      parseGridPosition(container, 'row', 'end', gridRow?.end ?? null, elementStyle.gridRowEnd),
-    ) ??
-    null
-  const adjustedRowEnd = isCSSKeyword(gridRowEnd) && gridRow?.end != null ? gridRow.end : gridRowEnd
+  const rowSpan: GridSpan | null = isGridSpan(gridRow?.start)
+    ? gridRow.start
+    : isGridSpan(gridRow?.end)
+    ? gridRow.end
+    : null
+  const gridRowStart = isGridSpan(gridRow?.start)
+    ? null
+    : gridRow?.start ??
+      defaultEither(
+        null,
+        parseGridPosition(
+          container,
+          'row',
+          'start',
+          gridRow?.start ?? null,
+          elementStyle.gridRowStart,
+        ),
+      ) ??
+      null
+  const gridRowEnd = isGridSpan(gridRow?.end)
+    ? null
+    : gridRow?.end ??
+      defaultEither(
+        null,
+        parseGridPosition(container, 'row', 'end', gridRow?.end ?? null, elementStyle.gridRowEnd),
+      ) ??
+      null
+  const adjustedRowEnd = isGridSpan(gridRow?.end)
+    ? null
+    : isCSSKeyword(gridRowEnd) && gridRow?.end != null
+    ? gridRow.end
+    : gridRowEnd
 
   const result = gridElementProperties(
     gridColumnStart,
     adjustedColumnEnd,
+    columnSpan,
     gridRowStart,
     adjustedRowEnd,
+    rowSpan,
   )
   return result
 }

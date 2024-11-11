@@ -319,8 +319,10 @@ export function runGridChangeElementLocation(
       ...{
         gridColumnStart: gridPositionValue(targetCellCoords.column),
         gridColumnEnd: gridPositionValue(targetCellCoords.column),
+        gridColumnSpan: null,
         gridRowStart: gridPositionValue(targetCellCoords.row),
         gridRowEnd: gridPositionValue(targetCellCoords.row),
+        gridRowSpan: null,
       },
       path: selectedElementMetadata.elementPath,
       index: siblings.length + 1,

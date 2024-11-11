@@ -152,6 +152,9 @@ import type {
   GridAutoOrTemplateDimensions,
   GridAutoOrTemplateFallback,
   BorderWidths,
+  GridSpan,
+  GridSpanArea,
+  GridSpanNumeric,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -2165,16 +2168,52 @@ export const GridPositionKeepDeepEquality: KeepDeepEqualityCall<GridPosition> = 
   }
 }
 
+export const GridSpanAreaKeepDeepEquality: KeepDeepEqualityCall<GridSpanArea> =
+  combine1EqualityCall(
+    (p) => p.value,
+    StringKeepDeepEquality,
+    (value) => ({ type: 'SPAN_AREA', value: value }),
+  )
+
+export const GridSpanNumericKeepDeepEquality: KeepDeepEqualityCall<GridSpanNumeric> =
+  combine1EqualityCall(
+    (p) => p.value,
+    NumberKeepDeepEquality,
+    (value) => ({ type: 'SPAN_NUMERIC', value: value }),
+  )
+
+export const GridSpanKeepDeepEquality: KeepDeepEqualityCall<GridSpan> = (oldValue, newValue) => {
+  switch (oldValue.type) {
+    case 'SPAN_AREA':
+      if (newValue.type === oldValue.type) {
+        return GridSpanAreaKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'SPAN_NUMERIC':
+      if (newValue.type === oldValue.type) {
+        return GridSpanNumericKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export function GridElementPropertiesKeepDeepEquality(): KeepDeepEqualityCall<GridElementProperties> {
-  return combine4EqualityCalls(
+  return combine6EqualityCalls(
     (properties) => properties.gridColumnStart,
     nullableDeepEquality(GridPositionKeepDeepEquality),
     (properties) => properties.gridColumnEnd,
     nullableDeepEquality(GridPositionKeepDeepEquality),
+    (properties) => properties.gridColumnSpan,
+    nullableDeepEquality(GridSpanKeepDeepEquality),
     (properties) => properties.gridRowStart,
     nullableDeepEquality(GridPositionKeepDeepEquality),
     (properties) => properties.gridRowEnd,
     nullableDeepEquality(GridPositionKeepDeepEquality),
+    (properties) => properties.gridRowSpan,
+    nullableDeepEquality(GridSpanKeepDeepEquality),
     gridElementProperties,
   )
 }

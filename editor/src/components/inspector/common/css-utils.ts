@@ -14,7 +14,6 @@ import type { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/
 import { findLastIndex } from '../../../core/shared/array-utils'
 import type { Either, Right as EitherRight } from '../../../core/shared/either'
 import {
-  applicative2Either,
   bimapEither,
   eitherToMaybe,
   flatMapEither,
@@ -34,6 +33,7 @@ import type {
   GridRange,
   GridAutoOrTemplateBase,
   GridContainerProperties,
+  GridSpan,
 } from '../../../core/shared/element-template'
 import {
   emptyComments,
@@ -45,6 +45,8 @@ import {
   jsExpressionValue,
   gridPositionValue,
   gridRange,
+  gridSpanArea,
+  gridSpanNumeric,
 } from '../../../core/shared/element-template'
 import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import {
@@ -1198,23 +1200,34 @@ export function parseGridRange(
   axis: 'row' | 'column',
   input: unknown,
 ): Either<string, GridRange> {
-  if (typeof input === 'string') {
-    if (input.includes('/')) {
-      const splitInput = input.split('/')
-      const startParsed = parseGridPosition(container, axis, 'start', null, splitInput[0])
-      const endParsed = parseGridPosition(container, axis, 'end', null, splitInput[1])
-      return applicative2Either(gridRange, startParsed, endParsed)
-    } else {
-      const startParsed = parseGridPosition(container, axis, 'start', null, input)
-      return mapEither((start) => {
-        const end =
-          !isCSSKeyword(start) && start.numericalPosition != null ? cssKeyword('auto') : null
-        return gridRange(start, end)
-      }, startParsed)
-    }
-  } else {
-    return left('Not a valid grid range.')
+  if (typeof input !== 'string') {
+    return left('invalid grid item')
   }
+
+  const parsed = csstree.parse(input, { context: 'value' })
+  if (parsed.type !== 'Value') {
+    return left('invalid grid item value')
+  }
+
+  const children = parsed.children.toArray()
+  const slashIndex = children.findIndex((c) => c.type === 'Operator' && c.value === '/')
+
+  const isRange = slashIndex >= 0
+  const start = isRange ? children.slice(0, slashIndex) : children
+  const end = isRange ? children.slice(slashIndex + 1) : []
+
+  if (start.length === 0) {
+    return left('invalid grid item start')
+  }
+
+  const maybeStart = maybeParseGridSpan(start) ?? maybeParseGridLine(start, axis, container)
+  if (maybeStart == null) {
+    return left('missing grid item start')
+  }
+
+  const maybeEnd = maybeParseGridSpan(end) ?? maybeParseGridLine(end, axis, container)
+
+  return right(gridRange(maybeStart, maybeEnd))
 }
 
 export function parseGridAutoOrTemplateBase(
@@ -5898,6 +5911,64 @@ function parseRepeatTimes(firstChild: csstree.CssNode) {
       return firstChild.name === 'auto-fill' || firstChild.name === 'auto-fit'
         ? cssKeyword(firstChild.name)
         : null
+    default:
+      return null
+  }
+}
+
+export function maybeParseGridSpan(nodes: csstree.CssNode[]): GridSpan | null {
+  if (nodes.length !== 2) {
+    return null
+  }
+
+  const [identifier, value] = nodes
+
+  const isSpan = identifier.type === 'Identifier' && identifier.name === 'span'
+  if (!isSpan) {
+    return null
+  }
+
+  switch (value.type) {
+    case 'Number':
+      return gridSpanNumeric(parseInt(value.value))
+    case 'Identifier':
+      return gridSpanArea(value.name)
+    default:
+      return null
+  }
+}
+
+export function maybeParseGridLine(
+  nodes: csstree.CssNode[],
+  axis: 'row' | 'column',
+  container: GridContainerProperties,
+): GridPosition | null {
+  if (nodes.length !== 1) {
+    return null
+  }
+  const first = nodes[0]
+  switch (first.type) {
+    case 'Number':
+      return gridPositionValue(parseInt(first.value))
+    case 'Identifier':
+      // the identifier can either be a keyword…
+      if (isValidGridDimensionKeyword(first.name)) {
+        return cssKeyword(first.name)
+      }
+
+      // …or a line name, in which case look it up in the template and return its index
+      const targetTracks =
+        axis === 'column' ? container.gridTemplateColumns : container.gridTemplateRows
+      const maybeLineFromName =
+        targetTracks?.type === 'DIMENSIONS'
+          ? targetTracks.dimensions.findIndex((dim) => dim.lineName === first.name)
+          : null
+      if (maybeLineFromName == null || maybeLineFromName < 0) {
+        // line name not found
+        return null
+      }
+
+      return gridPositionValue(maybeLineFromName + 1) // tracks are 1-indexed
     default:
       return null
   }
