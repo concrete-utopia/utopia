@@ -537,19 +537,47 @@ export type SelectionLocked = 'locked' | 'locked-hierarchy' | 'selectable'
 
 export type PropertyTag = { type: 'hover' } | { type: 'breakpoint'; name: string }
 
-export interface WithPropertyTag<T> {
-  tag: PropertyTag | null
+interface CSSStylePropertyNotFound {
+  type: 'not-found'
+}
+
+interface CSSStylePropertyNotParsable {
+  type: 'not-parsable'
+}
+
+interface ParsedCSSStyleProperty<T> {
+  type: 'property'
+  tags: PropertyTag[]
   value: T
 }
 
-export const withPropertyTag = <T>(value: T): WithPropertyTag<T> => ({
-  tag: null,
-  value: value,
-})
+export type CSSStyleProperty<T> =
+  | CSSStylePropertyNotFound
+  | CSSStylePropertyNotParsable
+  | ParsedCSSStyleProperty<T>
 
-export type FlexGapInfo = WithPropertyTag<CSSNumber>
+export function cssStylePropertyNotFound(): CSSStylePropertyNotFound {
+  return { type: 'not-found' }
+}
 
-export type FlexDirectionInfo = WithPropertyTag<FlexDirection>
+export function cssStylePropertyNotParsable(): CSSStylePropertyNotParsable {
+  return { type: 'not-parsable' }
+}
+
+export function cssStyleProperty<T>(value: T): ParsedCSSStyleProperty<T> {
+  return { type: 'property', tags: [], value: value }
+}
+
+export function maybePropertyValue<T>(property: CSSStyleProperty<T>): T | null {
+  if (property.type === 'property') {
+    return property.value
+  }
+  return null
+}
+
+export type FlexGapInfo = CSSStyleProperty<CSSNumber>
+
+export type FlexDirectionInfo = CSSStyleProperty<FlexDirection>
 
 export interface StyleInfo {
   gap: FlexGapInfo | null

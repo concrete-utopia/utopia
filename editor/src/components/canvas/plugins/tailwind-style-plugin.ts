@@ -6,18 +6,20 @@ import type { Parser } from '../../inspector/common/css-utils'
 import { cssParsers } from '../../inspector/common/css-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import type { StylePlugin } from './style-plugins'
-import type { WithPropertyTag } from '../canvas-types'
-import { withPropertyTag } from '../canvas-types'
 import type { Config } from 'tailwindcss/types/config'
+import { cssStyleProperty, type CSSStyleProperty } from '../canvas-types'
 import * as UCL from './tailwind-style-plugin-utils/update-class-list'
 import { assertNever } from '../../../core/shared/utils'
 
-function parseTailwindProperty<T>(value: unknown, parse: Parser<T>): WithPropertyTag<T> | null {
+function parseTailwindProperty<T>(
+  value: unknown,
+  parse: Parser<T>,
+): CSSStyleProperty<NonNullable<T>> | null {
   const parsed = parse(value, null)
-  if (isLeft(parsed)) {
+  if (isLeft(parsed) || parsed.value == null) {
     return null
   }
-  return withPropertyTag(parsed.value)
+  return cssStyleProperty(parsed.value)
 }
 
 const TailwindPropertyMapping: Record<string, string> = {
