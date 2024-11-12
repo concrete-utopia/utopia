@@ -60,9 +60,13 @@ import {
   setProperty,
 } from '../canvas/commands/set-property-command'
 import * as PP from '../../core/shared/property-path'
-import type { GridContainerProperties, GridPosition } from '../../core/shared/element-template'
+import type {
+  GridContainerProperties,
+  GridPositionOrSpan,
+} from '../../core/shared/element-template'
 import {
   gridPositionValue,
+  isGridSpan,
   type ElementInstanceMetadata,
   type GridElementProperties,
 } from '../../core/shared/element-template'
@@ -322,9 +326,10 @@ const TemplateDimensionControl = React.memo(
             ...child.specialSizeMeasurements.elementGridPropertiesFromProps,
           }
 
-          function needsAdjusting(pos: GridPosition | null, bound: number) {
+          function needsAdjusting(pos: GridPositionOrSpan | null, bound: number) {
             return pos != null &&
               !isCSSKeyword(pos) &&
+              !isGridSpan(pos) && // TODO support grid spans
               pos.numericalPosition != null &&
               pos.numericalPosition >= bound
               ? pos.numericalPosition

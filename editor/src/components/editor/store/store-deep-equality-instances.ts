@@ -152,6 +152,10 @@ import type {
   GridAutoOrTemplateDimensions,
   GridAutoOrTemplateFallback,
   BorderWidths,
+  GridSpan,
+  GridSpanArea,
+  GridSpanNumeric,
+  GridPositionOrSpan,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -223,6 +227,7 @@ import {
   gridPositionValue,
   gridAutoOrTemplateFallback,
   gridAutoOrTemplateDimensions,
+  isGridSpan,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -2169,16 +2174,66 @@ export const GridPositionKeepDeepEquality: KeepDeepEqualityCall<GridPosition> = 
   }
 }
 
+export const GridSpanAreaKeepDeepEquality: KeepDeepEqualityCall<GridSpanArea> =
+  combine1EqualityCall(
+    (p) => p.value,
+    StringKeepDeepEquality,
+    (value) => ({ type: 'SPAN_AREA', value: value }),
+  )
+
+export const GridSpanNumericKeepDeepEquality: KeepDeepEqualityCall<GridSpanNumeric> =
+  combine1EqualityCall(
+    (p) => p.value,
+    NumberKeepDeepEquality,
+    (value) => ({ type: 'SPAN_NUMERIC', value: value }),
+  )
+
+export const GridSpanKeepDeepEquality: KeepDeepEqualityCall<GridSpan> = (oldValue, newValue) => {
+  switch (oldValue.type) {
+    case 'SPAN_AREA':
+      if (newValue.type === oldValue.type) {
+        return GridSpanAreaKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'SPAN_NUMERIC':
+      if (newValue.type === oldValue.type) {
+        return GridSpanNumericKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const GridPositionOrSpanKeepDeepEquality: KeepDeepEqualityCall<GridPositionOrSpan> = (
+  oldValue,
+  newValue,
+) => {
+  if (isGridSpan(oldValue)) {
+    if (isGridSpan(newValue)) {
+      return GridSpanKeepDeepEquality(oldValue, newValue)
+    } else {
+      return keepDeepEqualityResult(newValue, false)
+    }
+  } else {
+    if (isGridSpan(newValue)) {
+      return keepDeepEqualityResult(newValue, false)
+    }
+    return GridPositionKeepDeepEquality(oldValue, newValue)
+  }
+}
+
 export function GridElementPropertiesKeepDeepEquality(): KeepDeepEqualityCall<GridElementProperties> {
   return combine4EqualityCalls(
     (properties) => properties.gridColumnStart,
-    nullableDeepEquality(GridPositionKeepDeepEquality),
+    nullableDeepEquality(GridPositionOrSpanKeepDeepEquality),
     (properties) => properties.gridColumnEnd,
-    nullableDeepEquality(GridPositionKeepDeepEquality),
+    nullableDeepEquality(GridPositionOrSpanKeepDeepEquality),
     (properties) => properties.gridRowStart,
-    nullableDeepEquality(GridPositionKeepDeepEquality),
+    nullableDeepEquality(GridPositionOrSpanKeepDeepEquality),
     (properties) => properties.gridRowEnd,
-    nullableDeepEquality(GridPositionKeepDeepEquality),
+    nullableDeepEquality(GridPositionOrSpanKeepDeepEquality),
     gridElementProperties,
   )
 }

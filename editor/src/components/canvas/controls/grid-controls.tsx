@@ -16,9 +16,11 @@ import * as EP from '../../../core/shared/element-path'
 import type {
   ElementInstanceMetadataMap,
   GridAutoOrTemplateDimensions,
+  GridPositionOrSpan,
 } from '../../../core/shared/element-template'
 import {
   isGridAutoOrTemplateDimensions,
+  isGridSpan,
   type GridAutoOrTemplateBase,
 } from '../../../core/shared/element-template'
 import type { CanvasPoint, CanvasRectangle, LocalRectangle } from '../../../core/shared/math-utils'
@@ -30,7 +32,6 @@ import {
   pointsEqual,
   scaleRect,
   windowPoint,
-  zeroCanvasRect,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import {
@@ -47,19 +48,9 @@ import { Modifier } from '../../../utils/modifiers'
 import { when } from '../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { useDispatch } from '../../editor/store/dispatch-context'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import type { GridDimension, GridDiscreteDimension } from '../../inspector/common/css-utils'
 import {
-  Substores,
-  useEditorState,
-  useRefEditorState,
-  useSelectorWithCallback,
-} from '../../editor/store/store-hook'
-import type {
-  CSSNumber,
-  GridDimension,
-  GridDiscreteDimension,
-} from '../../inspector/common/css-utils'
-import {
-  cssNumberToString,
   isCSSKeyword,
   isDynamicGridRepeat,
   isGridCSSRepeat,
@@ -111,7 +102,7 @@ import { useResizeEdges } from './select-mode/use-resize-edges'
 import { getGridHelperStyleMatchingTargetGrid } from './grid-controls-helpers'
 import { isFillOrStretchModeAppliedOnSpecificSide } from '../../inspector/inspector-common'
 import type { PinOutlineProps } from './position-outline'
-import { PinOutline, PositionOutline, usePropsOrJSXAttributes } from './position-outline'
+import { PinOutline, usePropsOrJSXAttributes } from './position-outline'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { styleStringInArray } from '../../../utils/common-constants'
 
@@ -755,22 +746,24 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
 
       const columnFromProps = cell.specialSizeMeasurements.elementGridProperties.gridColumnStart
       const rowFromProps = cell.specialSizeMeasurements.elementGridProperties.gridRowStart
+
+      function getAxisValue(value: GridPositionOrSpan | null, counted: number): number {
+        if (
+          value == null ||
+          isCSSKeyword(value) ||
+          isGridSpan(value) ||
+          value.numericalPosition == null
+        ) {
+          return counted
+        }
+        return value.numericalPosition
+      }
       return {
         elementPath: cell.elementPath,
         globalFrame: cell.globalFrame,
         borderRadius: cell.specialSizeMeasurements.borderRadius,
-        column:
-          columnFromProps == null
-            ? countedColumn
-            : isCSSKeyword(columnFromProps)
-            ? countedColumn
-            : columnFromProps.numericalPosition ?? countedColumn,
-        row:
-          rowFromProps == null
-            ? countedRow
-            : isCSSKeyword(rowFromProps)
-            ? countedRow
-            : rowFromProps.numericalPosition ?? countedRow,
+        column: getAxisValue(columnFromProps, countedColumn),
+        row: getAxisValue(rowFromProps, countedRow),
         index: index,
       }
     }, children)
@@ -1933,15 +1926,23 @@ const GridElementContainingBlock = React.memo<GridElementContainingBlockProps>((
       const gridComputed = childMetadata.specialSizeMeasurements.elementGridProperties
       return {
         gridColumnStart:
-          gridPositionToValue(gridFromProps.gridColumnStart ?? gridComputed.gridColumnStart) ??
-          undefined,
+          gridPositionToValue(
+            gridFromProps.gridColumnStart ?? gridComputed.gridColumnStart,
+            null,
+          ) ?? undefined,
         gridColumnEnd:
-          gridPositionToValue(gridFromProps.gridColumnEnd ?? gridComputed.gridColumnEnd) ??
-          undefined,
+          gridPositionToValue(
+            gridFromProps.gridColumnEnd ?? gridComputed.gridColumnEnd,
+            gridFromProps.gridColumnStart ?? gridComputed.gridColumnStart,
+          ) ?? undefined,
         gridRowStart:
-          gridPositionToValue(gridFromProps.gridRowStart ?? gridComputed.gridRowStart) ?? undefined,
+          gridPositionToValue(gridFromProps.gridRowStart ?? gridComputed.gridRowStart, null) ??
+          undefined,
         gridRowEnd:
-          gridPositionToValue(gridFromProps.gridRowEnd ?? gridComputed.gridRowEnd) ?? undefined,
+          gridPositionToValue(
+            gridFromProps.gridRowEnd ?? gridComputed.gridRowEnd,
+            gridFromProps.gridRowStart ?? gridComputed.gridRowStart,
+          ) ?? undefined,
         position: childMetadata.specialSizeMeasurements.position ?? undefined,
       }
     },
