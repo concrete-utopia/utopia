@@ -15,15 +15,19 @@ import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-
 
 export type CreateIfNotExistant = 'create-if-not-existing' | 'do-not-create-if-doesnt-exist'
 
+type LengthProperty = 'left' | 'right' | 'bottom' | 'top' | 'width' | 'height' | 'flexBasis'
+
+type LengthPropertyPath = PropertyPath<['style', LengthProperty]>
+
 export interface LengthPropertyToAdjust {
-  property: PropertyPath
+  property: LengthPropertyPath
   valuePx: number
   parentDimensionPx: number | undefined
   createIfNonExistant: CreateIfNotExistant
 }
 
 export function lengthPropertyToAdjust(
-  property: PropertyPath,
+  property: LengthPropertyPath,
   valuePx: number,
   parentDimensionPx: number | undefined,
   createIfNonExistant: CreateIfNotExistant,
