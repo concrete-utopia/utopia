@@ -18,6 +18,16 @@ export function useMonitorChangesToElements(elementPaths: Array<ElementPath>): v
         )
       }, elementPaths)
     },
-    'useMonitorChangesToElements elements',
+    'useMonitorChangesToElements',
+  )
+}
+
+export function useMonitorChangesToEditor(): void {
+  useEditorState(
+    Substores.fullStore,
+    (store) => {
+      return { editor: store.editor, derived: store.derived }
+    },
+    'useMonitorChangesToEditor',
   )
 }

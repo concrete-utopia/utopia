@@ -104,7 +104,7 @@ import {
   GridMeasurementHelperKey,
   GridMeasurementHelpersKey,
   useGridData,
-  useGridMeasurentHelperData,
+  useGridMeasurementHelperData,
 } from './grid-controls-for-strategies'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { useResizeEdges } from './select-mode/use-resize-edges'
@@ -1051,7 +1051,7 @@ export interface GridMeasurementHelperProps {
 }
 
 const GridMeasurementHelper = React.memo<{ elementPath: ElementPath }>(({ elementPath }) => {
-  const gridData = useGridMeasurentHelperData(elementPath)
+  const gridData = useGridMeasurementHelperData(elementPath)
   if (gridData == null) {
     return null
   }
@@ -1895,7 +1895,7 @@ export interface GridElementContainingBlockProps {
 }
 
 const GridElementContainingBlock = React.memo<GridElementContainingBlockProps>((props) => {
-  const gridData = useGridMeasurentHelperData(props.gridPath)
+  const gridData = useGridMeasurementHelperData(props.gridPath)
   const scale = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.scale,

@@ -53,7 +53,11 @@ import {
 import { applicative4Either, defaultEither, isRight, mapEither } from '../../../core/shared/either'
 import { domRectToScaledCanvasRectangle, getRoundingFn } from '../../../core/shared/dom-utils'
 import Utils from '../../../utils/utils'
-import { useMonitorChangesToElements } from '../../../components/editor/store/store-monitor'
+import {
+  useMonitorChangesToEditor,
+  useMonitorChangesToElements,
+} from '../../../components/editor/store/store-monitor'
+import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -196,18 +200,18 @@ export function gridMeasurementHelperDataFromElement(
   }
 }
 
-export function useGridMeasurentHelperData(
+export function useGridMeasurementHelperData(
   elementPath: ElementPath,
 ): GridMeasurementHelperData | undefined {
   const scale = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.scale,
-    'useGridMeasurentHelperData scale',
+    'useGridMeasurementHelperData scale',
   )
 
-  useMonitorChangesToElements([elementPath])
+  useMonitorChangesToEditor()
 
-  return getGridMeasurementHelperData(elementPath, scale)
+  return useKeepReferenceEqualityIfPossible(getGridMeasurementHelperData(elementPath, scale))
 }
 
 export type GridData = GridMeasurementHelperData & {
@@ -220,8 +224,6 @@ export function useGridData(elementPaths: ElementPath[]): GridData[] {
     (store) => store.editor.canvas.scale,
     'useGridData scale',
   )
-
-  useMonitorChangesToElements(elementPaths)
 
   const grids = useEditorState(
     Substores.metadata,
@@ -257,7 +259,7 @@ export function useGridData(elementPaths: ElementPath[]): GridData[] {
     'useGridData',
   )
 
-  return grids
+  return useKeepReferenceEqualityIfPossible(grids)
 }
 
 interface GridRowColumnResizingControlsProps {
