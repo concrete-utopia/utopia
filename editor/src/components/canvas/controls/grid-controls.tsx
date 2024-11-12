@@ -361,8 +361,8 @@ interface GridResizingProps {
   axis: Axis
   gap: number | null
   padding: Sides | null
-  justifyContent: string | null
-  alignContent: string | null
+  justifyContent: string | undefined
+  alignContent: string | undefined
 }
 
 const GridResizing = React.memo((props: GridResizingProps) => {
@@ -588,8 +588,8 @@ export const GridRowColumnResizingControlsComponent = ({
               getStripedAreaLength(grid.gridTemplateRows, grid.rowGap ?? grid.gap ?? 0) ??
               grid.frame.height
             }
-            alignContent={grid.justifyContent}
-            justifyContent={grid.alignContent}
+            alignContent={grid.computedStyling.justifyContent}
+            justifyContent={grid.computedStyling.alignContent}
           />
         )
       })}
@@ -608,8 +608,8 @@ export const GridRowColumnResizingControlsComponent = ({
               getStripedAreaLength(grid.gridTemplateColumns, grid.columnGap ?? grid.gap ?? 0) ??
               grid.frame.width
             }
-            alignContent={grid.alignContent}
-            justifyContent={grid.justifyContent}
+            alignContent={grid.computedStyling.alignContent}
+            justifyContent={grid.computedStyling.justifyContent}
           />
         )
       })}

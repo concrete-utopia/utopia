@@ -198,8 +198,8 @@ export const GridPaddingOutlineForDimension = (props: {
             beingDragged={beingDragged}
             onMouseOver={onMouseOver}
             elementHovered={elementHovered}
-            gridJustifyContent={grid.justifyContent}
-            gridAlignContent={grid.alignContent}
+            gridJustifyContent={grid.computedStyling.justifyContent}
+            gridAlignContent={grid.computedStyling.alignContent}
             draggedOutlineColor={draggedOutlineColor}
           />
         )
@@ -220,8 +220,8 @@ const GridRowOrColumnHighlight = (props: {
   beingDragged: boolean
   onMouseOver: () => void
   elementHovered: boolean
-  gridJustifyContent: FlexJustifyContent | null
-  gridAlignContent: AlignContent | null
+  gridJustifyContent: string | undefined
+  gridAlignContent: string | undefined
   draggedOutlineColor?: UtopiColor
 }) => {
   const {

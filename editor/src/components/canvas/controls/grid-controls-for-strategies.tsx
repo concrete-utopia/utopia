@@ -53,11 +53,9 @@ import {
 import { applicative4Either, defaultEither, isRight, mapEither } from '../../../core/shared/either'
 import { domRectToScaledCanvasRectangle, getRoundingFn } from '../../../core/shared/dom-utils'
 import Utils from '../../../utils/utils'
-import {
-  useMonitorChangesToEditor,
-  useMonitorChangesToElements,
-} from '../../../components/editor/store/store-monitor'
+import { useMonitorChangesToEditor } from '../../../components/editor/store/store-monitor'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import type { CSSProperties } from 'react'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -90,20 +88,19 @@ export function getNullableAutoOrTemplateBaseString(
 
 export type GridMeasurementHelperData = {
   frame: CanvasRectangle
+  rows: number
+  columns: number
+  cells: number
+  computedStyling: CSSProperties
   gridTemplateColumns: GridAutoOrTemplateBase | null
   gridTemplateRows: GridAutoOrTemplateBase | null
   gridTemplateColumnsFromProps: GridAutoOrTemplateBase | null
   gridTemplateRowsFromProps: GridAutoOrTemplateBase | null
+  border: BorderWidths
   gap: number | null
   rowGap: number | null
   columnGap: number | null
-  justifyContent: FlexJustifyContent | null
-  alignContent: AlignContent | null
   padding: Sides
-  rows: number
-  columns: number
-  cells: number
-  border: BorderWidths
 }
 
 export function getGridMeasurementHelperData(
@@ -111,6 +108,33 @@ export function getGridMeasurementHelperData(
   scale: number,
 ): GridMeasurementHelperData | undefined {
   return getFromElement(elementPath, gridMeasurementHelperDataFromElement(scale))
+}
+
+function getStylingSubset(styling: CSSStyleDeclaration): CSSProperties {
+  // Fields chosen to not overlap with any others, so as to not make React complain.
+  return {
+    gridAutoFlow: styling.gridAutoFlow,
+    gridAutoColumns: styling.gridAutoColumns,
+    gridAutoRows: styling.gridAutoRows,
+    gridTemplateColumns: styling.gridTemplateColumns,
+    gridTemplateRows: styling.gridTemplateRows,
+    gridColumn: styling.gridColumn,
+    gridRow: styling.gridRow,
+    gap: styling.gap,
+    rowGap: styling.rowGap,
+    columnGap: styling.columnGap,
+    justifyContent: styling.justifyContent,
+    alignContent: styling.alignContent,
+    padding: styling.padding,
+    paddingTop: styling.paddingTop,
+    paddingLeft: styling.paddingLeft,
+    paddingBottom: styling.paddingBottom,
+    paddingRight: styling.paddingRight,
+    borderTop: styling.borderTopWidth,
+    borderLeft: styling.borderLeftWidth,
+    borderBottom: styling.borderBottomWidth,
+    borderRight: styling.borderRightWidth,
+  }
 }
 
 export function gridMeasurementHelperDataFromElement(
@@ -124,6 +148,8 @@ export function gridMeasurementHelperDataFromElement(
 
     const computedStyle = getComputedStyle(element)
     const boundingRectangle = element.getBoundingClientRect()
+
+    const computedStyling: CSSProperties = getStylingSubset(computedStyle)
 
     const containerGridProperties = getGridContainerProperties(computedStyle)
     const containerGridPropertiesFromProps = getGridContainerProperties(element.style)
@@ -140,8 +166,6 @@ export function gridMeasurementHelperDataFromElement(
       bottom: isRight(borderBottomWidth) ? borderBottomWidth.value.value : 0,
       left: isRight(borderLeftWidth) ? borderLeftWidth.value.value : 0,
     }
-    const justifyContent = getFlexJustifyContent(computedStyle.justifyContent)
-    const alignContent = getAlignContent(computedStyle.alignContent)
     const padding = defaultEither(
       sides(undefined, undefined, undefined, undefined),
       applicative4Either(
@@ -152,7 +176,6 @@ export function gridMeasurementHelperDataFromElement(
         parseCSSLength(computedStyle.paddingLeft),
       ),
     )
-
     const gap = defaultEither(
       null,
       mapEither((n) => n.value, parseCSSLength(computedStyle.gap)),
@@ -186,16 +209,15 @@ export function gridMeasurementHelperDataFromElement(
       gridTemplateRows: containerGridProperties.gridTemplateRows,
       gridTemplateColumnsFromProps: containerGridPropertiesFromProps.gridTemplateColumns,
       gridTemplateRowsFromProps: containerGridPropertiesFromProps.gridTemplateRows,
+      border: border,
+      padding: padding,
       gap: gap,
       rowGap: rowGap,
       columnGap: columnGap,
-      justifyContent: justifyContent,
-      alignContent: alignContent,
-      padding: padding,
       rows: rows,
       columns: columns,
       cells: columns * rows,
-      border: border,
+      computedStyling: computedStyling,
     }
   }
 }
