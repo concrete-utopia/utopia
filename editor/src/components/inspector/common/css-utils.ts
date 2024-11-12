@@ -5921,20 +5921,24 @@ export function maybeParseGridSpan(nodes: csstree.CssNode[]): GridSpan | null {
     return null
   }
 
-  const [identifier, value] = nodes
-
-  const isSpan = identifier.type === 'Identifier' && identifier.name === 'span'
-  if (!isSpan) {
+  const spanIndex = nodes.findIndex((node) => node.type === 'Identifier' && node.name === 'span')
+  if (spanIndex < 0) {
     return null
   }
 
-  switch (value.type) {
-    case 'Number':
-      return gridSpanNumeric(parseInt(value.value))
-    case 'Identifier':
-      return gridSpanArea(value.name)
-    default:
-      return null
+  const valueNodes = nodes.slice(0, spanIndex).concat(nodes.slice(spanIndex + 1))
+
+  const numericValue: csstree.NumberNode | null =
+    valueNodes.find((node) => node.type === 'Number') ?? null
+  const areaValue: csstree.Identifier | null =
+    valueNodes.find((node) => node.type === 'Identifier') ?? null
+
+  if (numericValue != null) {
+    return gridSpanNumeric(parseInt(numericValue.value))
+  } else if (areaValue != null) {
+    return gridSpanArea(areaValue.name)
+  } else {
+    return null
   }
 }
 

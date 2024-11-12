@@ -2081,8 +2081,16 @@ describe('parseGridRange', () => {
     const got = parseGridRange(testGridContainerProperties([], []), 'row', 'span 2')
     expect(got).toEqual(right(gridRange(gridSpanNumeric(2), null)))
   })
+  it('can parse a numerical span (flipped)', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', '2 span')
+    expect(got).toEqual(right(gridRange(gridSpanNumeric(2), null)))
+  })
   it('can parse an area span', async () => {
     const got = parseGridRange(testGridContainerProperties([], []), 'row', 'span some-area')
+    expect(got).toEqual(right(gridRange(gridSpanArea('some-area'), null)))
+  })
+  it('can parse an area span (flipped)', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', 'some-area span')
     expect(got).toEqual(right(gridRange(gridSpanArea('some-area'), null)))
   })
   it('can parse a span numerical range', async () => {
