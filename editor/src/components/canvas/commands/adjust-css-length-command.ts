@@ -12,6 +12,7 @@ import { getCSSNumberFromStyleInfo, maybeCssPropertyFromInlineStyle } from './ut
 import type { StyleUpdate } from '../plugins/style-plugins'
 import { getActivePlugin, runStyleUpdateForStrategy } from '../plugins/style-plugins'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
+import type { StyleInfo } from '../canvas-types'
 
 export type CreateIfNotExistant = 'create-if-not-existing' | 'do-not-create-if-doesnt-exist'
 
@@ -94,7 +95,7 @@ export const runAdjustCssLengthProperties = (
   let commandDescriptions: Array<string> = []
 
   const propsToUpdate: StyleUpdate[] = mapDropNulls((propertyUpdate) => {
-    const property = maybeCssPropertyFromInlineStyle(propertyUpdate.property)
+    const property = maybeCssPropertyFromLengthProperty(propertyUpdate.property)
     if (property == null) {
       commandDescriptions.push(
         `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
@@ -190,9 +191,19 @@ export const runAdjustCssLengthProperties = (
   }
 }
 
+function maybeCssPropertyFromLengthProperty(property: LengthPropertyPath) {
+  const [maybeStyle, prop] = property.propertyElements
+  if (maybeStyle !== 'style' || prop == null || typeof prop !== 'string') {
+    return null
+  }
+  return prop
+}
+
+type TargetProperty = keyof StyleInfo
+
 function setPixelValue(
   targetElement: ElementPath,
-  targetProperty: string,
+  targetProperty: TargetProperty,
   value: number,
 ): { commandDescription: string; styleUpdate: StyleUpdate } {
   const newValueCssNumber: CSSNumber = {
@@ -211,7 +222,7 @@ function setPixelValue(
 
 function updatePixelValueByPixel(
   targetElement: ElementPath,
-  targetProperty: string,
+  targetProperty: TargetProperty,
   currentValue: CSSNumber,
   byValue: number,
 ): { commandDescription: string; styleUpdate: StyleUpdate } {
@@ -235,7 +246,7 @@ function updatePixelValueByPixel(
 
 function updatePercentageValueByPixel(
   targetElement: ElementPath,
-  targetProperty: string,
+  targetProperty: TargetProperty,
   parentDimensionPx: number | undefined,
   currentValue: CSSNumber, // TODO restrict to percentage numbers
   byValue: number,
