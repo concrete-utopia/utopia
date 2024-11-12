@@ -5964,6 +5964,8 @@ export function maybeParseGridLine(
       // …or a line name, in which case look it up in the template and return its index
       const targetTracks =
         axis === 'column' ? container.gridTemplateColumns : container.gridTemplateRows
+      // TODO important! this behavior is currently incorrect, as this needs to find the _first_ lineName (in case of repeats)
+      // or otherwise relative (even backwards).
       const maybeLineFromName =
         targetTracks?.type === 'DIMENSIONS'
           ? targetTracks.dimensions.findIndex((dim) => dim.lineName === firstNode.name)
