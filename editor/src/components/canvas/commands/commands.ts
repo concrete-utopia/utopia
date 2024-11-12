@@ -143,7 +143,7 @@ export function runCanvasCommand(
     case 'STRATEGY_SWITCHED':
       return runStrategySwitchedCommand(command)
     case 'ADJUST_CSS_LENGTH_PROPERTY':
-      return runAdjustCssLengthProperties(editorState, command)
+      return runAdjustCssLengthProperties(editorState, command, commandLifecycle)
     case 'REPARENT_ELEMENT':
       return runReparentElement(editorState, command)
     case 'DUPLICATE_ELEMENT':
@@ -157,7 +157,7 @@ export function runCanvasCommand(
     case 'CONVERT_TO_ABSOLUTE':
       return runConvertToAbsolute(editorState, command)
     case 'SET_CSS_LENGTH_PROPERTY':
-      return runSetCssLengthProperty(editorState, command)
+      return runSetCssLengthProperty(editorState, command, commandLifecycle)
     case 'REORDER_ELEMENT':
       return runReorderElement(editorState, command)
     case 'SHOW_OUTLINE_HIGHLIGHT':
