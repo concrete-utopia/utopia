@@ -100,6 +100,7 @@ import { ImportWizard } from './import-wizard/import-wizard'
 import { getImportOperationText } from './import-wizard/import-wizard-helpers'
 import { getTotalImportStatusAndResult } from '../../core/shared/import/import-operation-service'
 import type { TotalImportResult } from '../../core/shared/import/import-operation-types'
+import { AnimatePresence, motion } from 'framer-motion'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -601,7 +602,7 @@ export function LoadingEditorComponent() {
   React.useEffect(() => {
     const interval = setInterval(() => {
       setTime(Date.now())
-    }, 100)
+    }, 50)
     return () => clearInterval(interval)
   }, [])
 
@@ -610,6 +611,7 @@ export function LoadingEditorComponent() {
       text: React.ReactNode
       id: string
       timeDone: number | null | undefined
+      timeStarted: number | null | undefined
       appeared: boolean
     }[] = []
     if (totalImportResult.importStatus.status == 'not-started') {
@@ -617,6 +619,7 @@ export function LoadingEditorComponent() {
         text: 'Loading Project...',
         id: 'loading-editor',
         timeDone: null,
+        timeStarted: null,
         appeared: false,
       })
     }
@@ -627,6 +630,7 @@ export function LoadingEditorComponent() {
             text: getImportOperationText(op),
             id: op.id ?? op.type,
             timeDone: op.timeDone,
+            timeStarted: op.timeStarted,
             appeared: keysAppeared.current.has(op.id ?? op.type),
           })
           keysAppeared.current.add(op.id ?? op.type)
@@ -639,6 +643,7 @@ export function LoadingEditorComponent() {
               text: getImportOperationText(child),
               id: child.id ?? child.type,
               timeDone: child.timeDone,
+              timeStarted: child.timeStarted,
               appeared: keysAppeared.current.has(child.id ?? child.type),
             })
             keysAppeared.current.add(child.id ?? child.type)
@@ -724,28 +729,27 @@ export function LoadingEditorComponent() {
             marginTop: 10,
           }}
         >
-          {flatOngoingImportOperations.map((op) => {
-            const opacity = !op.appeared
-              ? 1
-              : op.timeDone != null && Date.now() - op.timeDone > 800
-              ? 0
-              : 1
-            if (op.timeDone != null && Date.now() - op.timeDone > 1700) {
-              return null
-            }
-            return (
-              <li
-                style={{
-                  listStyle: 'none',
-                  opacity: opacity,
-                  transition: 'opacity 1.5s ease-in-out',
-                }}
-                key={op.id}
-              >
-                {op.text}
-              </li>
-            )
-          })}
+          <AnimatePresence>
+            {flatOngoingImportOperations.map((op) => {
+              if (op.timeDone != null) {
+                return null
+              }
+              return (
+                <motion.li
+                  style={{
+                    listStyle: 'none',
+                  }}
+                  key={op.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {op.text}
+                </motion.li>
+              )
+            })}
+          </AnimatePresence>
         </ul>
       </div>
     </div>
