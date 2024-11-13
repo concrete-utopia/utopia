@@ -310,7 +310,7 @@ export function isGridControlsProps(props: unknown): props is GridControlsProps 
 export const GridControls = controlForStrategyMemoized<GridControlsProps>(GridControlsComponent)
 
 interface GridResizeControlProps {
-  target: ElementPath
+  target: GridIdentifier
 }
 
 export const GridResizeControls = controlForStrategyMemoized<GridResizeControlProps>(
