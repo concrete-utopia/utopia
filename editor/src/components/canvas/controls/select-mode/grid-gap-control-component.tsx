@@ -27,6 +27,7 @@ import type { CSSNumberWithRenderedValue } from './controls-common'
 import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
 import { startGapControlInteraction } from './grid-gap-control-helpers'
 import type { AlignContent, FlexJustifyContent } from '../../../inspector/inspector-common'
+import { gridContainerIdentifier } from '../../../editor/store/editor-state'
 
 export interface GridGapControlProps {
   selectedElement: ElementPath
@@ -67,7 +68,7 @@ export const GridGapControlComponent = React.memo<GridGapControlProps>((props) =
       'GridGapControlComponent elementHovered',
     ) ?? false
 
-  const grid = useGridData([selectedElement]).at(0)
+  const grid = useGridData([gridContainerIdentifier(selectedElement)]).at(0)
 
   const activeDraggingAxis = useEditorState(
     Substores.canvas,

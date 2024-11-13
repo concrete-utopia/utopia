@@ -368,6 +368,9 @@ import type {
   EditorRemixConfig,
   ErrorBoundaryHandling,
   GridControlData,
+  GridIdentifier,
+  GridContainerIdentifier,
+  GridItemIdentifier,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -380,6 +383,8 @@ import {
   newGithubData,
   renderedAtPropertyPath,
   renderedAtChildNode,
+  gridContainerIdentifier,
+  gridItemIdentifier,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -2849,10 +2854,46 @@ export const GridCellCoordinatesKeepDeepEquality: KeepDeepEqualityCall<GridCellC
     (row, column) => ({ row, column }),
   )
 
-export const GridControlDataKeepDeepEquality: KeepDeepEqualityCall<GridControlData> =
+export const GridContainerIdentifierKeepDeepEquality: KeepDeepEqualityCall<GridContainerIdentifier> =
+  combine1EqualityCall(
+    (identifier) => identifier.path,
+    ElementPathKeepDeepEquality,
+    gridContainerIdentifier,
+  )
+
+export const GridItemIdentifierKeepDeepEquality: KeepDeepEqualityCall<GridItemIdentifier> =
+  combine1EqualityCall(
+    (identifier) => identifier.path,
+    ElementPathKeepDeepEquality,
+    gridItemIdentifier,
+  )
+
+export const GridIdentifierKeepDeepEquality: KeepDeepEqualityCall<GridIdentifier> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'GRID_CONTAINER':
+      if (newValue.type === oldValue.type) {
+        return GridContainerIdentifierKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'GRID_ITEM':
+      if (newValue.type === oldValue.type) {
+        return GridItemIdentifierKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      const _exhaustiveCheck: never = oldValue
+      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+const GridControlDataKeepDeepEquality: KeepDeepEqualityCall<GridControlData> =
   combine3EqualityCalls(
     (data) => data.grid,
-    ElementPathKeepDeepEquality,
+    GridIdentifierKeepDeepEquality,
     (data) => data.targetCell,
     nullableDeepEquality(GridCellCoordinatesKeepDeepEquality),
     (data) => data.rootCell,

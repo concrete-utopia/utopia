@@ -822,8 +822,34 @@ export interface DragToMoveIndicatorFlags {
   ancestor: boolean
 }
 
+export type GridIdentifier = GridContainerIdentifier | GridItemIdentifier
+
+export interface GridContainerIdentifier {
+  type: 'GRID_CONTAINER'
+  path: ElementPath
+}
+
+export function gridContainerIdentifier(path: ElementPath): GridContainerIdentifier {
+  return {
+    type: 'GRID_CONTAINER',
+    path: path,
+  }
+}
+
+export interface GridItemIdentifier {
+  type: 'GRID_ITEM'
+  path: ElementPath
+}
+
+export function gridItemIdentifier(path: ElementPath): GridItemIdentifier {
+  return {
+    type: 'GRID_ITEM',
+    path: path,
+  }
+}
+
 export interface GridControlData {
-  grid: ElementPath
+  grid: GridIdentifier
   targetCell: GridCellCoordinates | null // the cell under the mouse
   rootCell: GridCellCoordinates | null // the top-left cell of the target child
 }
