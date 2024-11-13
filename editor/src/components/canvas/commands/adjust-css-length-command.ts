@@ -78,8 +78,6 @@ export const runAdjustCssLengthProperties = (
 
   const styleInfoReader = getActivePlugin(withConflictingPropertiesRemoved).styleInfoFactory({
     projectContents: withConflictingPropertiesRemoved.projectContents,
-    metadata: withConflictingPropertiesRemoved.jsxMetadata,
-    elementPathTree: withConflictingPropertiesRemoved.elementPathTree,
   })
 
   const styleInfo = styleInfoReader(command.target)

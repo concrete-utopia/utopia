@@ -225,8 +225,6 @@ export function pickCanvasStateFromEditorState(
     propertyControlsInfo: editorState.propertyControlsInfo,
     styleInfoReader: activePlugin.styleInfoFactory({
       projectContents: editorState.projectContents,
-      metadata: editorState.jsxMetadata,
-      elementPathTree: editorState.elementPathTree,
     }),
   }
 }
@@ -254,8 +252,6 @@ export function pickCanvasStateFromEditorStateWithMetadata(
     propertyControlsInfo: editorState.propertyControlsInfo,
     styleInfoReader: activePlugin.styleInfoFactory({
       projectContents: editorState.projectContents,
-      metadata: metadata,
-      elementPathTree: editorState.elementPathTree,
     }),
   }
 }
