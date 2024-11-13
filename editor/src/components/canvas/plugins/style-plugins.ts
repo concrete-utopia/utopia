@@ -177,7 +177,9 @@ function getPropertiesToZero(
 ): ValueAtPath[] {
   return updatedProperties.propertiesDeleted.flatMap((prop): ValueAtPath[] => {
     if (!isStyleInfoKey(prop)) {
-      console.error("Trying to zero prop that's not a handled by StyleInfo:", prop)
+      if (isFeatureEnabled('Tailwind')) {
+        console.error("Trying to zero prop that's not a handled by StyleInfo:", prop)
+      }
       return []
     }
 
