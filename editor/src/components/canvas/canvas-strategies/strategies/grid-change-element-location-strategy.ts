@@ -282,7 +282,7 @@ export function runGridChangeElementLocation(
   // The siblings of the grid element being moved
   const siblings = MetadataUtils.getSiblingsUnordered(
     jsxMetadata,
-    selectedElementMetadata.elementPath,
+    newPathAfterReparent ?? selectedElementMetadata.elementPath,
   )
     .filter((s) => !EP.pathsEqual(s.elementPath, selectedElementMetadata.elementPath))
     .map(
