@@ -230,8 +230,8 @@ export function runGridChangeElementLocation(
   }
   const { targetCellCoords, targetRootCell } = targetGridCellData
 
-  const elementGridPropertiesFromProps =
-    selectedElementMetadata.specialSizeMeasurements.elementGridPropertiesFromProps
+  const elementGridProperties =
+    selectedElementMetadata.specialSizeMeasurements.elementGridProperties
 
   function getUpdatedPins(
     start: GridPositionOrSpan | null,
@@ -280,15 +280,15 @@ export function runGridChangeElementLocation(
   }
 
   const columnBounds = getUpdatedPins(
-    elementGridPropertiesFromProps.gridColumnStart,
-    elementGridPropertiesFromProps.gridColumnEnd,
+    elementGridProperties.gridColumnStart,
+    elementGridProperties.gridColumnEnd,
     'column',
     originalCellBounds.width,
   )
 
   const rowBounds = getUpdatedPins(
-    elementGridPropertiesFromProps.gridRowStart,
-    elementGridPropertiesFromProps.gridRowEnd,
+    elementGridProperties.gridRowStart,
+    elementGridProperties.gridRowEnd,
     'row',
     originalCellBounds.height,
   )

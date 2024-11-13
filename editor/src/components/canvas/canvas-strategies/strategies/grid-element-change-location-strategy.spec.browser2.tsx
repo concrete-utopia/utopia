@@ -174,7 +174,6 @@ describe('grid element change location strategy', () => {
       scale: 1,
       pathString: `sb/scene/grid/${testId}`,
       testId: testId,
-      tab: true,
       targetCell: { row: 3, column: 1 },
     })
 
@@ -594,9 +593,9 @@ export var storyboard = (
             child.style
           expect({ top, left, gridColumnStart, gridColumnEnd, gridRowStart, gridRowEnd }).toEqual({
             gridColumnStart: '1',
-            gridColumnEnd: '',
+            gridColumnEnd: 'auto',
             gridRowStart: '1',
-            gridRowEnd: '',
+            gridRowEnd: 'auto',
             left: '59px',
             top: '59.5px',
           })
@@ -866,13 +865,7 @@ export var storyboard = (
         'await-first-dom-report',
       )
 
-      const result = await runReorderTest(
-        editor,
-        'sb/scene/grid',
-        'orange',
-        { row: 1, column: 1 },
-        { tab: true },
-      )
+      const result = await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 1, column: 1 })
       expect({
         gridRowStart: result.gridRowStart,
         gridRowEnd: result.gridRowEnd,

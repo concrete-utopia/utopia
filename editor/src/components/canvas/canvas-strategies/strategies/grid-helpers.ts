@@ -116,7 +116,16 @@ export function setGridPropsCommands(
     startPosition: GridPositionOrSpan,
     endPosition: GridPositionOrSpan,
     axis: 'row' | 'column',
-  ): { property: string; value: string | number } {
+  ): {
+    property:
+      | 'gridColumn'
+      | 'gridColumnStart'
+      | 'gridColumnEnd'
+      | 'gridRow'
+      | 'gridRowStart'
+      | 'gridRowEnd'
+    value: string | number
+  } {
     const startValue = printPin(startPosition, axis)
     const endValue = printPin(endPosition, axis)
 
@@ -136,7 +145,7 @@ export function setGridPropsCommands(
       startValue === endValue
     ) {
       return {
-        property: axis === 'column' ? 'gridColumnStart' : 'gridRowStart',
+        property: axis === 'column' ? 'gridColumn' : 'gridRow',
         value: startValue,
       }
     }
@@ -251,7 +260,7 @@ export function sortElementsByGridPosition(gridTemplateColumns: number) {
 }
 
 function isGridPositionNumericValue(p: GridPositionOrSpan | null): p is GridPositionValue {
-  return p != null && !(isCSSKeyword(p) && !isGridSpan(p) && p.value === 'auto')
+  return p != null && !isGridSpan(p) && !(isCSSKeyword(p) && p.value === 'auto')
 }
 
 export function getGridPositionIndex(props: {
@@ -534,18 +543,22 @@ export function getGridElementPinState(
   elementGridPropertiesFromProps: GridElementProperties | null,
 ): GridElementPinState {
   if (
-    elementGridPropertiesFromProps?.gridColumnEnd == null ||
-    elementGridPropertiesFromProps?.gridColumnStart == null ||
-    elementGridPropertiesFromProps?.gridRowEnd == null ||
+    elementGridPropertiesFromProps?.gridColumnEnd == null &&
+    elementGridPropertiesFromProps?.gridColumnStart == null &&
+    elementGridPropertiesFromProps?.gridRowEnd == null &&
     elementGridPropertiesFromProps?.gridRowStart == null
   ) {
     return 'not-pinned'
   }
   if (
-    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridColumnEnd ?? null) ||
-    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridColumnStart ?? null) ||
-    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridRowEnd ?? null) ||
-    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridRowStart ?? null)
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridColumnEnd) ||
+    isGridSpan(elementGridPropertiesFromProps?.gridColumnEnd) ||
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridColumnStart) ||
+    isGridSpan(elementGridPropertiesFromProps?.gridColumnStart) ||
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridRowEnd) ||
+    isGridSpan(elementGridPropertiesFromProps?.gridRowEnd) ||
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridRowStart) ||
+    isGridSpan(elementGridPropertiesFromProps?.gridRowStart)
   ) {
     return 'pinned'
   }
@@ -553,10 +566,7 @@ export function getGridElementPinState(
 }
 
 export function isFlowGridChild(child: ElementInstanceMetadata) {
-  return (
-    getGridElementPinState(child.specialSizeMeasurements.elementGridPropertiesFromProps) !==
-    'pinned'
-  )
+  return getGridElementPinState(child.specialSizeMeasurements.elementGridProperties) !== 'pinned'
 }
 
 function restoreGridTemplateFromProps(params: {
