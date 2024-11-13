@@ -61,10 +61,24 @@ export const InlineStylePlugin: StylePlugin = {
 
       const gap = getPropertyFromInstance('gap', element.props)
       const flexDirection = getPropertyFromInstance('flexDirection', element.props)
+      const left = getPropertyFromInstance('left', element.props)
+      const right = getPropertyFromInstance('right', element.props)
+      const top = getPropertyFromInstance('top', element.props)
+      const bottom = getPropertyFromInstance('bottom', element.props)
+      const width = getPropertyFromInstance('width', element.props)
+      const height = getPropertyFromInstance('height', element.props)
+      const flexBasis = getPropertyFromInstance('flexBasis', element.props)
 
       return {
         gap: gap,
         flexDirection: flexDirection,
+        left: left,
+        right: right,
+        top: top,
+        bottom: bottom,
+        width: width,
+        height: height,
+        flexBasis: flexBasis,
       }
     },
   updateStyles: (editorState, elementPath, updates) => {
