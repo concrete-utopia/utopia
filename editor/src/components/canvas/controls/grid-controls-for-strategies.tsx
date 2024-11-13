@@ -53,9 +53,10 @@ import {
 import { applicative4Either, defaultEither, isRight, mapEither } from '../../../core/shared/either'
 import { domRectToScaledCanvasRectangle, getRoundingFn } from '../../../core/shared/dom-utils'
 import Utils from '../../../utils/utils'
-import { useMonitorChangesToEditor } from '../../../components/editor/store/store-monitor'
+import { useMonitorChangesToElements } from '../../../components/editor/store/store-monitor'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import type { CSSProperties } from 'react'
+import * as React from 'react'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -222,6 +223,60 @@ export function gridMeasurementHelperDataFromElement(
   }
 }
 
+export function useObserversToWatch(elementPaths: Array<ElementPath>): number {
+  const mutationObserverRefs = React.useRef<Array<MutationObserver> | null>(null)
+  const resizeObserverRefs = React.useRef<Array<ResizeObserver> | null>(null)
+
+  // Used to trigger extra renders.
+  const [counter, setCounter] = React.useState(0)
+
+  // Initialise the observers once and only once.
+  if (mutationObserverRefs.current == null && resizeObserverRefs.current == null) {
+    let mutationObservers: Array<MutationObserver> = []
+    let resizeObservers: Array<ResizeObserver> = []
+    // Connect the observers to the elements.
+    for (const elementPath of elementPaths) {
+      const mutationObserver = new MutationObserver((entries) => {
+        setCounter((value) => value + 1)
+      })
+      const resizeObserver = new ResizeObserver((entries) => {
+        setCounter((value) => value + 1)
+      })
+
+      getFromElement(elementPath, (element) => {
+        mutationObserver.observe(element, { attributes: true, childList: true, subtree: true })
+        resizeObserver.observe(element, { box: 'content-box' })
+      })
+
+      mutationObservers.push(mutationObserver)
+      resizeObservers.push(resizeObserver)
+    }
+    // Put the observers in their respective refs.
+    mutationObserverRefs.current = mutationObservers
+    resizeObserverRefs.current = resizeObservers
+  }
+
+  React.useEffect(() => {
+    const mutationObservers = mutationObserverRefs.current
+    const resizeObservers = resizeObserverRefs.current
+    // Perform cleanup.
+    return () => {
+      if (mutationObservers != null) {
+        for (const mutationObserver of mutationObservers) {
+          mutationObserver.disconnect()
+        }
+      }
+      if (resizeObservers != null) {
+        for (const resizeObserver of resizeObservers) {
+          resizeObserver.disconnect()
+        }
+      }
+    }
+  }, [])
+
+  return counter
+}
+
 export function useGridMeasurementHelperData(
   elementPath: ElementPath,
 ): GridMeasurementHelperData | undefined {
@@ -231,7 +286,9 @@ export function useGridMeasurementHelperData(
     'useGridMeasurementHelperData scale',
   )
 
-  useMonitorChangesToEditor()
+  useMonitorChangesToElements([elementPath])
+
+  useObserversToWatch([elementPath])
 
   return useKeepReferenceEqualityIfPossible(getGridMeasurementHelperData(elementPath, scale))
 }

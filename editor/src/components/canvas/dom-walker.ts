@@ -1,6 +1,5 @@
 import React from 'react'
 import { sides } from 'utopia-api/core'
-import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 import * as EP from '../../core/shared/element-path'
 import type {
   DetectedLayoutSystem,
@@ -84,12 +83,9 @@ import { CanvasContainerOuterId } from './canvas-component-entry'
 import { ElementsToRerenderGLOBAL } from './ui-jsx-canvas'
 import type { GridCellGlobalFrames } from './canvas-strategies/strategies/grid-helpers'
 import { GridMeasurementHelperKey } from './controls/grid-controls-for-strategies'
-
-export const ResizeObserver =
-  window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
+import { ObserversAvailable, ResizeObserver } from './observers'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
-const ObserversAvailable = window.MutationObserver != null && ResizeObserver != null
 
 function elementLayoutSystem(computedStyle: CSSStyleDeclaration | null): DetectedLayoutSystem {
   if (computedStyle == null) {
