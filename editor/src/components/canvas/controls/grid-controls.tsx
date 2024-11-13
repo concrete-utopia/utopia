@@ -1599,15 +1599,16 @@ function useMouseMove(activelyDraggingOrResizingCell: string | null) {
 }
 
 interface GridResizeControlProps {
-  target: ElementPath
+  target: GridIdentifier
 }
 
 export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) => {
+  const gridTarget = target.type === 'GRID_CONTAINER' ? target.path : EP.parentPath(target.path)
   const colorTheme = useColorTheme()
 
   const element = useEditorState(
     Substores.metadata,
-    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
+    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, gridTarget),
     'GridResizeControls element',
   )
 
@@ -1720,7 +1721,7 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
     [element, startResizeInteraction],
   )
 
-  const resizeEdges = useResizeEdges([target], {
+  const resizeEdges = useResizeEdges([gridTarget], {
     onEdgeDoubleClick: () => NO_OP,
     onEdgeMouseMove: NO_OP,
     onEdgeMouseDown: onEdgeMouseDown,
