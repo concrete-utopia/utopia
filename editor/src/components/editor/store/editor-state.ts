@@ -848,6 +848,14 @@ export function gridItemIdentifier(path: ElementPath): GridItemIdentifier {
   }
 }
 
+export function gridIdentifierSimilar(a: GridIdentifier, b: GridIdentifier): boolean {
+  return (
+    (a.type === b.type && EP.pathsEqual(a.path, b.path)) ||
+    (a.type === 'GRID_ITEM' && b.type === 'GRID_CONTAINER' && EP.isParentOf(b.path, a.path)) ||
+    (a.type === 'GRID_CONTAINER' && b.type === 'GRID_ITEM' && EP.isParentOf(a.path, b.path))
+  )
+}
+
 export interface GridControlData {
   grid: GridIdentifier
   targetCell: GridCellCoordinates | null // the cell under the mouse

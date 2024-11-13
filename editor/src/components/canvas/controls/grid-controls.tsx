@@ -105,7 +105,11 @@ import type { PinOutlineProps } from './position-outline'
 import { PinOutline, usePropsOrJSXAttributes } from './position-outline'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { styleStringInArray } from '../../../utils/common-constants'
-import { gridContainerIdentifier, type GridIdentifier } from '../../editor/store/editor-state'
+import {
+  gridContainerIdentifier,
+  gridIdentifierSimilar,
+  type GridIdentifier,
+} from '../../editor/store/editor-state'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -1125,13 +1129,7 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
   // With the lowest depth grid at the end so that it renders on top and catches the events
   // before those above it in the hierarchy.
   const grids = useGridData(
-    uniqBy(
-      [...gridsWithVisibleControls, ...ancestorGrids],
-      (a, b) =>
-        (a.type === b.type && EP.pathsEqual(a.path, b.path)) ||
-        (a.type === 'GRID_ITEM' && b.type === 'GRID_CONTAINER' && EP.isParentOf(b.path, a.path)) ||
-        (a.type === 'GRID_CONTAINER' && b.type === 'GRID_ITEM' && EP.isParentOf(a.path, b.path)),
-    ).sort((a, b) => {
+    uniqBy([...gridsWithVisibleControls, ...ancestorGrids], gridIdentifierSimilar).sort((a, b) => {
       const aDepth = a.type === 'GRID_CONTAINER' ? EP.fullDepth(a.path) : EP.fullDepth(a.path) - 1
       const bDepth = a.type === 'GRID_CONTAINER' ? EP.fullDepth(b.path) : EP.fullDepth(b.path) - 1
       return aDepth - bDepth
