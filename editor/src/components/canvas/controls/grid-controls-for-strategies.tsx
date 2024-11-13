@@ -242,7 +242,7 @@ export function useGridData(gridIdentifiers: GridIdentifier[]): GridData[] {
       return mapDropNulls((view) => {
         const originalGridPath = findOriginalGrid(
           store.editor.jsxMetadata,
-          view.type === 'GRID_ITEM' ? EP.parentPath(view.path) : view.path,
+          view.type === 'GRID_ITEM' ? EP.parentPath(view.path) : view.path, // TODO: this is temporary, we will need to handle showing a grid control on the parent dom element of a grid item
         )
         if (originalGridPath == null) {
           return null
