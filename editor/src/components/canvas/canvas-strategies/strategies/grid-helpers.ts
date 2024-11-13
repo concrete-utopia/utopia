@@ -93,7 +93,7 @@ export function setGridPropsCommands(
     ]),
   ]
 
-  function stringifyPin(pin: GridPositionOrSpan, axis: 'row' | 'column') {
+  function printPin(pin: GridPositionOrSpan, axis: 'row' | 'column'): string | number {
     if (isGridSpan(pin)) {
       return stringifyGridSpan(pin)
     }
@@ -109,16 +109,16 @@ export function setGridPropsCommands(
     if (maybeLineName != null) {
       return maybeLineName
     }
-    return `${pin.numericalPosition}`
+    return pin.numericalPosition ?? 'auto'
   }
 
   function serializeAxis(
     startPosition: GridPositionOrSpan,
     endPosition: GridPositionOrSpan,
     axis: 'row' | 'column',
-  ): { property: string; value: string } {
-    const startValue = stringifyPin(startPosition, axis)
-    const endValue = stringifyPin(endPosition, axis)
+  ): { property: string; value: string | number } {
+    const startValue = printPin(startPosition, axis)
+    const endValue = printPin(endPosition, axis)
 
     if (isAutoGridPin(startPosition) && !isAutoGridPin(endPosition)) {
       return {
@@ -129,6 +129,10 @@ export function setGridPropsCommands(
 
     const shorthand = !(
       (isCSSKeyword(endPosition) && endPosition.value === 'auto') ||
+      (isGridPositionNumericValue(endPosition) &&
+        isGridPositionNumericValue(startPosition) &&
+        (endPosition.numericalPosition ?? 0) >= (startPosition.numericalPosition ?? 0) &&
+        (endPosition.numericalPosition ?? 0) - (startPosition.numericalPosition ?? 0) <= 1) ||
       startValue === endValue
     )
       ? `${startValue} / ${endValue}`
@@ -203,26 +207,6 @@ function getCellCoordsDelta(
   const columnDiff = dragFrom.column - rootCell.column
 
   return gridCellCoordinates(rowDiff, columnDiff)
-}
-
-function asMaybeNamedLineOrValue(
-  grid: GridContainerProperties,
-  axis: 'row' | 'column',
-  value: number | string | null,
-): string | number {
-  if (value == null) {
-    return 1
-  } else if (typeof value === 'number') {
-    const template = axis === 'row' ? grid.gridTemplateRows : grid.gridTemplateColumns
-    if (template?.type === 'DIMENSIONS') {
-      const maybeLineStart = template.dimensions.at(value - 1)
-      if (maybeLineStart != null && maybeLineStart.lineName != null) {
-        return maybeLineStart.lineName
-      }
-    }
-    return value === 0 ? 1 : value
-  }
-  return value
 }
 
 export type SortableGridElementProperties = GridElementProperties & {
