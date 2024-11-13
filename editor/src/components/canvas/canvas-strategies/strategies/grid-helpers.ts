@@ -127,20 +127,23 @@ export function setGridPropsCommands(
       }
     }
 
-    const shorthand = !(
+    if (
       (isCSSKeyword(endPosition) && endPosition.value === 'auto') ||
       (isGridPositionNumericValue(endPosition) &&
         isGridPositionNumericValue(startPosition) &&
         (endPosition.numericalPosition ?? 0) >= (startPosition.numericalPosition ?? 0) &&
         (endPosition.numericalPosition ?? 0) - (startPosition.numericalPosition ?? 0) <= 1) ||
       startValue === endValue
-    )
-      ? `${startValue} / ${endValue}`
-      : startValue
+    ) {
+      return {
+        property: axis === 'column' ? 'gridColumnStart' : 'gridRowStart',
+        value: startValue,
+      }
+    }
 
     return {
       property: axis === 'column' ? 'gridColumn' : 'gridRow',
-      value: shorthand,
+      value: `${startValue} / ${endValue}`,
     }
   }
 
