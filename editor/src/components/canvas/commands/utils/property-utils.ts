@@ -7,7 +7,7 @@ import { modifyUnderlyingElementForOpenFile } from '../../../editor/store/editor
 import { patchParseSuccessAtElementPath } from '../patch-utils'
 import type { CSSNumber } from '../../../inspector/common/css-utils'
 import { isCSSNumber } from '../../../inspector/common/css-utils'
-import type { StyleInfo, CSSStyleProperty } from '../../canvas-types'
+import { type StyleInfo, isStyleInfoKey } from '../../canvas-types'
 
 export interface EditorStateWithPatch {
   editorStateWithChanges: EditorState
@@ -112,8 +112,11 @@ export function getCSSNumberFromStyleInfo(
   styleInfo: StyleInfo,
   property: string,
 ): GetCSSNumberFromStyleInfoResult {
-  let styleInfoUntyped = styleInfo as any as Record<string, CSSStyleProperty<unknown>>
-  const prop = styleInfoUntyped[property]
+  if (!isStyleInfoKey(property)) {
+    return { type: 'not-found' }
+  }
+
+  const prop = styleInfo[property]
   if (prop == null || prop.type === 'not-found') {
     return { type: 'not-found' }
   }
