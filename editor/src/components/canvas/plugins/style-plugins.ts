@@ -192,8 +192,6 @@ function getPropertiesToZero(
 export function patchRemovedProperties(editorState: EditorState): EditorState {
   const styleInfoReader = getActivePlugin(editorState).styleInfoFactory({
     projectContents: editorState.projectContents,
-    metadata: editorState.jsxMetadata,
-    elementPathTree: editorState.elementPathTree,
   })
 
   const propertiesUpdatedDuringInteraction = getPropertiesUpdatedDuringInteraction(editorState)

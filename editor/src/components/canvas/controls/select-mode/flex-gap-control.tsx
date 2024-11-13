@@ -139,8 +139,6 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
       maybeFlexGapData(
         getActivePlugin(store.editor).styleInfoFactory({
           projectContents: store.editor.projectContents,
-          metadata: metadata,
-          elementPathTree: store.editor.elementPathTree,
         })(selectedElement),
         MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, selectedElement),
       ),
