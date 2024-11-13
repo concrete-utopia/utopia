@@ -177,9 +177,7 @@ function getPropertiesToZero(
 ): ValueAtPath[] {
   return updatedProperties.propertiesDeleted.flatMap((prop): ValueAtPath[] => {
     if (!isStyleInfoKey(prop)) {
-      if (isFeatureEnabled('Tailwind')) {
-        console.error("Trying to zero prop that's not a handled by StyleInfo:", prop)
-      }
+      console.error("Trying to zero prop that's not a handled by StyleInfo:", prop)
       return []
     }
 
@@ -192,7 +190,12 @@ function getPropertiesToZero(
 }
 
 export function patchRemovedProperties(editorState: EditorState): EditorState {
-  const styleInfoReader = getActivePlugin(editorState).styleInfoFactory({
+  const activePlugin = getActivePlugin(editorState)
+  if (activePlugin.name === InlineStylePlugin.name) {
+    return editorState
+  }
+
+  const styleInfoReader = activePlugin.styleInfoFactory({
     projectContents: editorState.projectContents,
     metadata: editorState.jsxMetadata,
     elementPathTree: editorState.elementPathTree,
