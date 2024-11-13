@@ -32,11 +32,11 @@ import {
   paddingPropForEdge,
   paddingToPaddingString,
   printCssNumberWithDefaultUnit,
-  simplePaddingFromMetadata,
+  simplePaddingFromStyleInfo,
 } from '../../padding-utils'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
-import type { InteractionCanvasState } from '../canvas-strategy-types'
+import type { InteractionCanvasState, StyleInfoReader } from '../canvas-strategy-types'
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
@@ -114,6 +114,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       canvasState.startingMetadata,
       canvasState.startingElementPathTree,
       selectedElements[0],
+      canvasState.styleInfoReader,
     )
   ) {
     return null
@@ -123,6 +124,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     canvasState,
     interactionSession,
     selectedElements[0],
+    canvasState.styleInfoReader,
   )
 
   const resizeControl = controlWithProps({
@@ -172,7 +174,12 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       }
 
       const selectedElement = filteredSelectedElements[0]
-      const delta = calculateAdjustDelta(canvasState, interactionSession, selectedElement)
+      const delta = calculateAdjustDelta(
+        canvasState,
+        interactionSession,
+        selectedElement,
+        canvasState.styleInfoReader,
+      )
 
       if (delta == null) {
         return emptyStrategyApplicationResult
@@ -180,7 +187,11 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
 
       const edgePiece = interactionSession.activeControl.edgePiece
       const drag = interactionSession.interactionData.drag ?? canvasVector({ x: 0, y: 0 })
-      const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
+      const padding = simplePaddingFromStyleInfo(
+        canvasState.startingMetadata,
+        selectedElement,
+        canvasState.styleInfoReader(selectedElement),
+      )
       const paddingPropInteractedWith = paddingPropForEdge(edgePiece)
       const currentPadding = padding[paddingPropInteractedWith]?.renderedValuePx ?? 0
       const rawDelta = deltaFromEdge(drag, edgePiece)
@@ -347,6 +358,7 @@ function supportsPaddingControls(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   path: ElementPath,
+  styleInfoReader: StyleInfoReader,
 ): boolean {
   const element = MetadataUtils.findElementByElementPath(metadata, path)
   if (element == null) {
@@ -361,7 +373,7 @@ function supportsPaddingControls(
     return false
   }
 
-  const padding = simplePaddingFromMetadata(metadata, path)
+  const padding = simplePaddingFromStyleInfo(metadata, path, styleInfoReader(path))
   const { top, right, bottom, left } = element.specialSizeMeasurements.padding
   const elementHasNonzeroPaddingFromMeasurements = [top, right, bottom, left].some(
     (s) => s != null && s > 0,
@@ -410,6 +422,7 @@ function paddingValueIndicatorProps(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   selectedElement: ElementPath,
+  styleInfoReader: StyleInfoReader,
 ): FloatingIndicatorProps | null {
   const filteredSelectedElements = flattenSelection([selectedElement])
 
@@ -426,14 +439,20 @@ function paddingValueIndicatorProps(
 
   const edgePiece = interactionSession.activeControl.edgePiece
 
-  const padding = simplePaddingFromMetadata(
+  const padding = simplePaddingFromStyleInfo(
     canvasState.startingMetadata,
     filteredSelectedElements[0],
+    styleInfoReader(filteredSelectedElements[0]),
   )
   const currentPadding =
     padding[paddingPropForEdge(edgePiece)] ?? unitlessCSSNumberWithRenderedValue(0)
 
-  const delta = calculateAdjustDelta(canvasState, interactionSession, selectedElement)
+  const delta = calculateAdjustDelta(
+    canvasState,
+    interactionSession,
+    selectedElement,
+    styleInfoReader,
+  )
   if (delta == null) {
     return null
   }
@@ -543,6 +562,7 @@ function calculateAdjustDelta(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   selectedElement: ElementPath,
+  styleInfoReader: StyleInfoReader,
 ): number | null {
   if (
     interactionSession == null ||
@@ -554,7 +574,11 @@ function calculateAdjustDelta(
 
   const edgePiece = interactionSession.activeControl.edgePiece
   const drag = interactionSession.interactionData.drag ?? canvasVector({ x: 0, y: 0 })
-  const padding = simplePaddingFromMetadata(canvasState.startingMetadata, selectedElement)
+  const padding = simplePaddingFromStyleInfo(
+    canvasState.startingMetadata,
+    selectedElement,
+    styleInfoReader(selectedElement),
+  )
   const paddingPropInteractedWith = paddingPropForEdge(edgePiece)
   const currentPadding = padding[paddingPropForEdge(edgePiece)]?.renderedValuePx ?? 0
   const rawDelta = deltaFromEdge(drag, edgePiece)

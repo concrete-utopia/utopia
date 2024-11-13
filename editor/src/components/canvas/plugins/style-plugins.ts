@@ -169,7 +169,25 @@ const genericPropPatcher =
     return [makeZeroProp(prop, zeroValue)]
   }
 
-const patchers: PropPatcher[] = [{ matches: (p) => p === 'gap', patch: genericPropPatcher('0px') }]
+const PaddingLonghands = ['paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight']
+
+const patchers: PropPatcher[] = [
+  { matches: (p) => p === 'gap', patch: genericPropPatcher('0px') },
+  {
+    matches: (p) => p === 'padding',
+    patch: (_, styleInfo, updatedProperties) => {
+      const propIsSetOnElement = styleInfo?.padding != null
+
+      if (!propIsSetOnElement) {
+        return []
+      }
+
+      return PaddingLonghands.filter((p) => !updatedProperties.propertiesUpdated.includes(p)).map(
+        (p) => makeZeroProp(p),
+      )
+    },
+  },
+]
 
 function getPropertiesToZero(
   styleInfo: StyleInfo | null,
