@@ -150,7 +150,7 @@ specifiers:
   '@vercel/stega': 0.1.0
   '@vitejs/plugin-react': 4.0.4
   '@welldone-software/why-did-you-render': 5.0.0-rc.1
-  '@xengine/tailwindcss-class-parser': 1.1.17
+  '@xengine/tailwindcss-class-parser': 1.1.18
   ajv: 6.4.0
   anser: 2.1.0
   antd: 4.3.5
@@ -390,7 +390,7 @@ dependencies:
   '@types/w3c-css-typed-object-model-level-1': 20180410.0.5
   '@use-it/interval': 0.1.3_react@18.1.0
   '@vercel/stega': 0.1.0
-  '@xengine/tailwindcss-class-parser': 1.1.17_tailwindcss@3.4.13
+  '@xengine/tailwindcss-class-parser': 1.1.18_tailwindcss@3.4.13
   ajv: 6.4.0
   anser: 2.1.0
   antd: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
@@ -6002,8 +6002,8 @@ packages:
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: true
 
-  /@xengine/tailwindcss-class-parser/1.1.17_tailwindcss@3.4.13:
-    resolution: {integrity: sha512-LRod5tEDSpr3T2I8R3U0bRH4O18MDfAdybxQRLSbcIta4AboQEeIUrNVsz6wRmJcsrBXtQYbwP4k9zsE+QnKAg==}
+  /@xengine/tailwindcss-class-parser/1.1.18_tailwindcss@3.4.13:
+    resolution: {integrity: sha512-BUH8MY4cAV7H1mHXIF1cny63VOiI4HXQD5z2q3SJ2seE1dcMWpUH7PvJ3cq8iO8cJ1q81qDTKUp9nlmRU7Gn6A==}
     peerDependencies:
       tailwindcss: '*'
     dependencies:
