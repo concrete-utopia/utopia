@@ -95,7 +95,7 @@ import {
   GridMeasurementHelperKey,
   GridMeasurementHelpersKey,
   useGridData,
-  useGridMeasurentHelperData,
+  useGridMeasurementHelperData,
 } from './grid-controls-for-strategies'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { useResizeEdges } from './select-mode/use-resize-edges'
@@ -352,17 +352,11 @@ interface GridResizingProps {
   axis: Axis
   gap: number | null
   padding: Sides | null
-  justifyContent: string | null
-  alignContent: string | null
+  justifyContent: string | undefined
+  alignContent: string | undefined
 }
 
 const GridResizing = React.memo((props: GridResizingProps) => {
-  const canvasScale = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.scale,
-    'GridResizing canvasScale',
-  )
-
   const fromProps = React.useMemo((): GridAutoOrTemplateDimensions | null => {
     if (props.fromPropsAxisValues?.type !== 'DIMENSIONS') {
       return null
@@ -585,8 +579,8 @@ export const GridRowColumnResizingControlsComponent = ({
               getStripedAreaLength(grid.gridTemplateRows, grid.rowGap ?? grid.gap ?? 0) ??
               grid.frame.height
             }
-            alignContent={grid.justifyContent}
-            justifyContent={grid.alignContent}
+            alignContent={grid.computedStyling.justifyContent}
+            justifyContent={grid.computedStyling.alignContent}
           />
         )
       })}
@@ -605,8 +599,8 @@ export const GridRowColumnResizingControlsComponent = ({
               getStripedAreaLength(grid.gridTemplateColumns, grid.columnGap ?? grid.gap ?? 0) ??
               grid.frame.width
             }
-            alignContent={grid.alignContent}
-            justifyContent={grid.justifyContent}
+            alignContent={grid.computedStyling.alignContent}
+            justifyContent={grid.computedStyling.justifyContent}
           />
         )
       })}
@@ -1050,8 +1044,7 @@ export interface GridMeasurementHelperProps {
 }
 
 const GridMeasurementHelper = React.memo<{ elementPath: ElementPath }>(({ elementPath }) => {
-  const gridData = useGridMeasurentHelperData(elementPath)
-
+  const gridData = useGridMeasurementHelperData(elementPath)
   if (gridData == null) {
     return null
   }
@@ -1895,7 +1888,7 @@ export interface GridElementContainingBlockProps {
 }
 
 const GridElementContainingBlock = React.memo<GridElementContainingBlockProps>((props) => {
-  const gridData = useGridMeasurentHelperData(props.gridPath)
+  const gridData = useGridMeasurementHelperData(props.gridPath)
   const scale = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.scale,
