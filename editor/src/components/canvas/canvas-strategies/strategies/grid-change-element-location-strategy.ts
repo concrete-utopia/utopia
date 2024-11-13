@@ -1,14 +1,14 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import * as PP from '../../../../core/shared/property-path'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   GridContainerProperties,
   GridElementProperties,
+  GridPositionOrSpan,
 } from '../../../../core/shared/element-template'
-import { gridPositionValue, isJSXElement } from '../../../../core/shared/element-template'
+import { gridPositionValue, isGridSpan } from '../../../../core/shared/element-template'
 import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { absolute } from '../../../../utils/utils'
 import type { CanvasCommand } from '../../commands/commands'
@@ -30,17 +30,12 @@ import {
   getOriginalElementGridConfiguration,
   getParentGridTemplatesFromChildMeasurements,
   gridMoveStrategiesExtraCommands,
+  isAutoGridPin,
   setGridPropsCommands,
   sortElementsByGridPosition,
 } from './grid-helpers'
 import { getTargetGridCellData } from '../../../inspector/grid-helpers'
-import { forEachOf } from '../../../../core/shared/optics/optic-utilities'
-import {
-  eitherRight,
-  fromField,
-  fromTypeGuard,
-} from '../../../../core/shared/optics/optic-creators'
-import { getJSXAttributesAtPath } from '../../../..//core/shared/jsx-attribute-utils'
+import { cssKeyword } from '../../../inspector/common/css-utils'
 
 export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -235,67 +230,77 @@ export function runGridChangeElementLocation(
   }
   const { targetCellCoords, targetRootCell } = targetGridCellData
 
-  const gridProps: Partial<GridElementProperties> = {
-    gridColumnStart: gridPositionValue(targetRootCell.column),
-    gridColumnEnd: gridPositionValue(targetRootCell.column + originalCellBounds.width),
-    gridRowStart: gridPositionValue(targetRootCell.row),
-    gridRowEnd: gridPositionValue(targetRootCell.row + originalCellBounds.height),
-  }
+  const elementGridPropertiesFromProps =
+    selectedElementMetadata.specialSizeMeasurements.elementGridPropertiesFromProps
 
-  // TODO: Remove this logic once there is a fix for the handling of the track end fields.
-  let keepGridColumnEnd: boolean = true
-  let keepGridRowEnd: boolean = true
-  forEachOf(
-    fromField<ElementInstanceMetadata, 'element'>('element')
-      .compose(eitherRight())
-      .compose(fromTypeGuard(isJSXElement))
-      .compose(fromField('props')),
-    selectedElementMetadata,
-    (elementProperties) => {
-      function shouldKeep(shorthandProp: 'gridColumn' | 'gridRow'): boolean {
-        const longhandProp = shorthandProp === 'gridColumn' ? 'gridColumnEnd' : 'gridRowEnd'
+  function getUpdatedPins(
+    start: GridPositionOrSpan | null,
+    end: GridPositionOrSpan | null,
+    axis: 'row' | 'column',
+    dimension: number,
+  ): {
+    start: GridPositionOrSpan
+    end: GridPositionOrSpan
+  } {
+    let result: {
+      start: GridPositionOrSpan
+      end: GridPositionOrSpan
+    } = {
+      start: cssKeyword('auto'),
+      end: cssKeyword('auto'),
+    }
 
-        const shorthand = getJSXAttributesAtPath(
-          elementProperties,
-          PP.create('style', shorthandProp),
-        )
-        if (
-          shorthand.attribute.type === 'ATTRIBUTE_VALUE' &&
-          typeof shorthand.attribute.value === 'string' &&
-          shorthand.attribute.value.includes('/')
-        ) {
-          return true
+    const isSpanning = isGridSpan(start) || isGridSpan(end)
+    if (isSpanning) {
+      if (isGridSpan(start)) {
+        const isEndGridSpanArea = isGridSpan(end) || start.type === 'SPAN_AREA'
+        if (!isEndGridSpanArea) {
+          if (isAutoGridPin(end ?? cssKeyword('auto'))) {
+            result.start = start
+            result.end = gridPositionValue(start.value + targetRootCell[axis])
+          } else {
+            result.start = start
+            result.end = gridPositionValue(start.value + targetRootCell[axis])
+          }
         }
-
-        const longhand = getJSXAttributesAtPath(elementProperties, PP.create('style', longhandProp))
-        if (longhand.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
-          return true
-        }
-
-        return false
-      }
-      keepGridColumnEnd = shouldKeep('gridColumn')
-      keepGridRowEnd = shouldKeep('gridRow')
-    },
-  )
-
-  const gridCellMoveCommands = setGridPropsCommands(
-    pathForCommands,
-    gridTemplate,
-    gridProps,
-  ).filter((command) => {
-    if (command.type === 'SET_PROPERTY') {
-      if (PP.pathsEqual(command.property, PP.create('style', 'gridColumnEnd'))) {
-        return keepGridColumnEnd
-      } else if (PP.pathsEqual(command.property, PP.create('style', 'gridRowEnd'))) {
-        return keepGridRowEnd
-      } else {
-        return true
+      } else if (isGridSpan(end)) {
+        result.start = gridPositionValue(targetRootCell[axis])
+        result.end = end
       }
     } else {
-      return true
+      result.start = gridPositionValue(targetRootCell[axis])
+      const shouldSetEndPosition = end != null && !isAutoGridPin(end)
+      if (shouldSetEndPosition) {
+        result.end =
+          dimension === 1 ? cssKeyword('auto') : gridPositionValue(targetRootCell[axis] + dimension)
+      }
     }
-  })
+
+    return result
+  }
+
+  const columnBounds = getUpdatedPins(
+    elementGridPropertiesFromProps.gridColumnStart,
+    elementGridPropertiesFromProps.gridColumnEnd,
+    'column',
+    originalCellBounds.width,
+  )
+
+  const rowBounds = getUpdatedPins(
+    elementGridPropertiesFromProps.gridRowStart,
+    elementGridPropertiesFromProps.gridRowEnd,
+    'row',
+    originalCellBounds.height,
+  )
+
+  const gridProps: GridElementProperties = {
+    gridColumnStart: columnBounds.start,
+    gridColumnEnd: columnBounds.end,
+    gridRowStart: rowBounds.start,
+    gridRowEnd: rowBounds.end,
+  }
+
+  const gridCellMoveCommands = setGridPropsCommands(pathForCommands, gridTemplate, gridProps)
 
   // The siblings of the grid element being moved
   const siblings = MetadataUtils.getChildrenUnordered(jsxMetadata, gridPath)
