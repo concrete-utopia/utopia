@@ -95,15 +95,7 @@ export const runAdjustCssLengthProperties = (
   let commandDescriptions: Array<string> = []
 
   const propsToUpdate: StyleUpdate[] = mapDropNulls((propertyUpdate) => {
-    const property = maybeCssPropertyFromLengthProperty(propertyUpdate.property)
-    if (property == null) {
-      commandDescriptions.push(
-        `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
-          propertyUpdate.property,
-        )} not found.`,
-      )
-      return null
-    }
+    const property = propertyUpdate.property.propertyElements[1] // the safety of propertyElements[1] is guaranteed by the LengthPropertyPath type
 
     const currentValue = getCSSNumberFromStyleInfo(styleInfo, property)
     if (currentValue.type === 'not-css-number') {
@@ -189,14 +181,6 @@ export const runAdjustCssLengthProperties = (
     editorStatePatches: editorStatePatches,
     commandDescription: commandDescriptions.join('\n'),
   }
-}
-
-function maybeCssPropertyFromLengthProperty(property: LengthPropertyPath) {
-  const [maybeStyle, prop] = property.propertyElements
-  if (maybeStyle !== 'style' || prop == null || typeof prop !== 'string') {
-    return null
-  }
-  return prop
 }
 
 type TargetProperty = keyof StyleInfo
