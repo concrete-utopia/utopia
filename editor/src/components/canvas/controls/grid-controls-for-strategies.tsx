@@ -43,7 +43,11 @@ import Utils from '../../../utils/utils'
 import { useMonitorChangesToElements } from '../../../components/editor/store/store-monitor'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import type { CSSProperties } from 'react'
-import { gridContainerIdentifier, type GridIdentifier } from '../../editor/store/editor-state'
+import {
+  gridContainerIdentifier,
+  pathOfGridFromGridIdentifier,
+  type GridIdentifier,
+} from '../../editor/store/editor-state'
 import { findOriginalGrid } from '../canvas-strategies/strategies/grid-helpers'
 import * as React from 'react'
 import { addChangeCallback, removeChangeCallback } from '../observers'
@@ -213,7 +217,7 @@ export function gridMeasurementHelperDataFromElement(
   }
 }
 
-export function useObserversToWatch(elementPathOrPaths: Array<ElementPath> | ElementPath): number {
+function useObserversToWatch(elementPathOrPaths: Array<ElementPath> | ElementPath): number {
   // Used to trigger extra renders.
   const [counter, setCounter] = React.useState(0)
   const bumpCounter = React.useCallback(() => {
@@ -280,11 +284,7 @@ export function useGridData(gridIdentifiers: GridIdentifier[]): GridData[] {
   )
 
   const elementPaths = React.useMemo(() => {
-    return gridIdentifiers.map((gridIdentifier) =>
-      gridIdentifier.type === 'GRID_ITEM'
-        ? EP.parentPath(gridIdentifier.path)
-        : gridIdentifier.path,
-    )
+    return gridIdentifiers.map(pathOfGridFromGridIdentifier)
   }, [gridIdentifiers])
 
   useMonitorChangesToElements(elementPaths)
@@ -297,7 +297,7 @@ export function useGridData(gridIdentifiers: GridIdentifier[]): GridData[] {
       return mapDropNulls((view) => {
         const originalGridPath = findOriginalGrid(
           store.editor.jsxMetadata,
-          view.type === 'GRID_ITEM' ? EP.parentPath(view.path) : view.path, // TODO: this is temporary, we will need to handle showing a grid control on the parent dom element of a grid item
+          pathOfGridFromGridIdentifier(view), // TODO: this is temporary, we will need to handle showing a grid control on the parent dom element of a grid item
         )
         if (originalGridPath == null) {
           return null

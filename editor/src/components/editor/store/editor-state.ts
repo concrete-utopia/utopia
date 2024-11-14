@@ -848,6 +848,17 @@ export function gridItemIdentifier(path: ElementPath): GridItemIdentifier {
   }
 }
 
+export function pathOfGridFromGridIdentifier(identifier: GridIdentifier): ElementPath {
+  switch (identifier.type) {
+    case 'GRID_ITEM':
+      return EP.parentPath(identifier.path)
+    case 'GRID_CONTAINER':
+      return identifier.path
+    default:
+      assertNever(identifier)
+  }
+}
+
 export function gridIdentifierSimilar(a: GridIdentifier, b: GridIdentifier): boolean {
   return (
     (a.type === b.type && EP.pathsEqual(a.path, b.path)) ||
