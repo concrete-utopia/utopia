@@ -187,6 +187,7 @@ const patchers: PropPatcher[] = [
       )
     },
   },
+  { matches: (p) => p.startsWith('padding'), patch: genericPropPatcher('0px') },
 ]
 
 function getPropertiesToZero(
