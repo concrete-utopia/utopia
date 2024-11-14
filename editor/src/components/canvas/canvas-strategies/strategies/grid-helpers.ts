@@ -76,7 +76,7 @@ export function isAutoGridPin(v: GridPositionOrSpan): boolean {
   return isCSSKeyword(v) && v.value === 'auto'
 }
 
-export function setGridPropsCommands(
+export function getCommandsForGridItemPlacement(
   elementPath: ElementPath,
   gridTemplate: GridContainerProperties,
   gridProps: Partial<GridElementProperties>,

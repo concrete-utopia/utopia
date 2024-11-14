@@ -21,7 +21,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { findOriginalGrid, setGridPropsCommands } from './grid-helpers'
+import { findOriginalGrid, getCommandsForGridItemPlacement } from './grid-helpers'
 import { resizeBoundingBoxFromSide } from './resize-helpers'
 
 export const gridResizeElementStrategy: CanvasStrategyFactory = (
@@ -114,7 +114,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         selectedElementMetadata.specialSizeMeasurements.parentContainerGridProperties
 
       return strategyApplicationResult(
-        setGridPropsCommands(selectedElement, gridTemplate, gridProps),
+        getCommandsForGridItemPlacement(selectedElement, gridTemplate, gridProps),
         [EP.parentPath(selectedElement)],
       )
     },

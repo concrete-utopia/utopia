@@ -43,7 +43,7 @@ import {
   getStyleAttributesForFrameInAbsolutePosition,
   updateInsertionSubjectWithAttributes,
 } from './draw-to-insert-metastrategy'
-import { setGridPropsCommands } from './grid-helpers'
+import { getCommandsForGridItemPlacement } from './grid-helpers'
 import { newReparentSubjects } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
 import { getGridCellUnderMouseFromMetadata } from './grid-cell-bounds'
@@ -212,7 +212,7 @@ const gridDrawToInsertStrategyInner =
           [
             insertionCommand,
             ...nukeAllAbsolutePositioningPropsCommands(insertedElementPath), // do not use absolute positioning in grid cells
-            ...setGridPropsCommands(insertedElementPath, gridTemplate, {
+            ...getCommandsForGridItemPlacement(insertedElementPath, gridTemplate, {
               gridRowStart: { numericalPosition: gridCellCoordinates.row },
               gridColumnStart: { numericalPosition: gridCellCoordinates.column },
               gridRowEnd: { numericalPosition: gridCellCoordinates.row + 1 },

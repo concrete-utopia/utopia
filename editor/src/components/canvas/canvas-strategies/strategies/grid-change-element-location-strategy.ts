@@ -32,7 +32,7 @@ import {
   getParentGridTemplatesFromChildMeasurements,
   gridMoveStrategiesExtraCommands,
   isAutoGridPin,
-  setGridPropsCommands,
+  getCommandsForGridItemPlacement,
   sortElementsByGridPosition,
 } from './grid-helpers'
 
@@ -281,7 +281,11 @@ export function runGridChangeElementLocation(
     gridRowEnd: rowBounds.end,
   }
 
-  const gridCellMoveCommands = setGridPropsCommands(pathForCommands, gridTemplate, gridProps)
+  const gridCellMoveCommands = getCommandsForGridItemPlacement(
+    pathForCommands,
+    gridTemplate,
+    gridProps,
+  )
 
   // The siblings of the grid element being moved
   const siblings = MetadataUtils.getSiblingsUnordered(
