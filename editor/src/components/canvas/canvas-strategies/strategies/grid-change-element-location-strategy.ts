@@ -223,41 +223,43 @@ export function runGridChangeElementLocation(
     start: GridPositionOrSpan
     end: GridPositionOrSpan
   } {
-    let result: {
-      start: GridPositionOrSpan
-      end: GridPositionOrSpan
-    } = {
-      start: cssKeyword('auto'),
-      end: cssKeyword('auto'),
-    }
-
     const isSpanning = isGridSpan(start) || isGridSpan(end)
     if (isSpanning) {
       if (isGridSpan(start)) {
         const isEndGridSpanArea = isGridSpan(end) || start.type === 'SPAN_AREA'
         if (!isEndGridSpanArea) {
-          if (isAutoGridPin(end ?? cssKeyword('auto'))) {
-            result.start = start
-            result.end = gridPositionValue(start.value + targetRootCell[axis])
-          } else {
-            result.start = start
-            result.end = gridPositionValue(start.value + targetRootCell[axis])
+          return {
+            start: start,
+            end: gridPositionValue(start.value + targetRootCell[axis]),
           }
         }
       } else if (isGridSpan(end)) {
-        result.start = gridPositionValue(targetRootCell[axis])
-        result.end = end
+        return {
+          start: gridPositionValue(targetRootCell[axis]),
+          end: end,
+        }
       }
     } else {
-      result.start = gridPositionValue(targetRootCell[axis])
       const shouldSetEndPosition = end != null && !isAutoGridPin(end)
       if (shouldSetEndPosition) {
-        result.end =
-          dimension === 1 ? cssKeyword('auto') : gridPositionValue(targetRootCell[axis] + dimension)
+        return {
+          start: gridPositionValue(targetRootCell[axis]),
+          end:
+            dimension === 1
+              ? cssKeyword('auto')
+              : gridPositionValue(targetRootCell[axis] + dimension),
+        }
+      }
+      return {
+        start: gridPositionValue(targetRootCell[axis]),
+        end: cssKeyword('auto'),
       }
     }
 
-    return result
+    return {
+      start: cssKeyword('auto'),
+      end: cssKeyword('auto'),
+    }
   }
 
   const columnBounds = getUpdatedPins(
