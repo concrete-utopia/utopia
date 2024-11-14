@@ -195,7 +195,7 @@ describe('grid reorder', () => {
 
   it('reordering a spanning element keeps its size', async () => {
     const editor = await renderTestEditorWithCode(
-      ProjectCodeReorderWithMultiCellChild,
+      ProjectCodeReorderWithSpanningChild,
       'await-first-dom-report',
     )
 
@@ -203,7 +203,7 @@ describe('grid reorder', () => {
       editor,
       'sb/scene/grid',
       'orange',
-      { row: 3, column: 1 },
+      { row: 3, column: 2 },
       { tab: true },
     )
 
@@ -214,7 +214,7 @@ describe('grid reorder', () => {
       gridColumnEnd: result.gridColumnEnd,
     }).toEqual({
       gridColumnEnd: 'auto',
-      gridColumnStart: 'span 2',
+      gridColumnStart: 'span 3',
       gridRowEnd: '',
       gridRowStart: '',
     })
@@ -543,7 +543,7 @@ export var storyboard = (
             backgroundColor: '#f90',
             width: '100%',
             height: '100%',
-            gridColumn: 'span 2',
+            gridColumn: 'span 3',
           }}
           data-uid='orange'
 		  data-testid='orange'
