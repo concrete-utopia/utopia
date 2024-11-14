@@ -12,6 +12,7 @@ import type {
 } from '../../../../core/shared/element-template'
 import {
   isGridSpan,
+  stringifyGridSpan,
   type ElementInstanceMetadata,
   type GridContainerProperties,
   type GridElementProperties,
@@ -21,6 +22,7 @@ import * as PP from '../../../../core/shared/property-path'
 import { assertNever } from '../../../../core/shared/utils'
 import type { GridDimension } from '../../../inspector/common/css-utils'
 import {
+  cssKeyword,
   gridCSSRepeat,
   isCSSKeyword,
   isGridCSSRepeat,
@@ -70,7 +72,11 @@ export function gridPositionToValue(
   return p.numericalPosition
 }
 
-export function setGridPropsCommands(
+export function isAutoGridPin(v: GridPositionOrSpan): boolean {
+  return isCSSKeyword(v) && v.value === 'auto'
+}
+
+export function getCommandsForGridItemPlacement(
   elementPath: ElementPath,
   gridTemplate: GridContainerProperties,
   gridProps: Partial<GridElementProperties>,
@@ -86,65 +92,104 @@ export function setGridPropsCommands(
       PP.create('style', 'gridRowEnd'),
     ]),
   ]
-  const columnStart = gridPositionToValue(gridProps.gridColumnStart, null)
-  const columnEnd = gridPositionToValue(gridProps.gridColumnEnd, gridProps.gridColumnStart ?? null)
-  const rowStart = gridPositionToValue(gridProps.gridRowStart, null)
-  const rowEnd = gridPositionToValue(gridProps.gridRowEnd, gridProps.gridRowStart ?? null)
 
-  const lineColumnStart = asMaybeNamedLineOrValue(gridTemplate, 'column', columnStart)
-  const lineColumnEnd = asMaybeNamedLineOrValue(gridTemplate, 'column', columnEnd)
-  const lineRowStart = asMaybeNamedLineOrValue(gridTemplate, 'row', rowStart)
-  const lineRowEnd = asMaybeNamedLineOrValue(gridTemplate, 'row', rowEnd)
-
-  if (columnStart != null && columnStart === columnEnd) {
-    commands.push(
-      setProperty('always', elementPath, PP.create('style', 'gridColumn'), lineColumnStart),
-    )
-  } else if (
-    columnStart != null &&
-    typeof columnStart === 'number' &&
-    columnEnd != null &&
-    typeof columnEnd === 'number' &&
-    columnStart === columnEnd - 1
-  ) {
-    commands.push(
-      setProperty('always', elementPath, PP.create('style', 'gridColumn'), lineColumnStart),
-    )
-  } else {
-    if (columnStart != null) {
-      commands.push(
-        setProperty('always', elementPath, PP.create('style', 'gridColumnStart'), lineColumnStart),
-      )
+  function printPin(pin: GridPositionOrSpan, axis: 'row' | 'column'): string | number {
+    if (isGridSpan(pin)) {
+      return stringifyGridSpan(pin)
     }
-    if (columnEnd != null) {
-      commands.push(
-        setProperty('always', elementPath, PP.create('style', 'gridColumnEnd'), lineColumnEnd),
-      )
+    if (isCSSKeyword(pin)) {
+      return pin.value
+    }
+    const tracks =
+      axis === 'column' ? gridTemplate.gridTemplateColumns : gridTemplate.gridTemplateRows
+    const maybeLineName =
+      tracks?.type === 'DIMENSIONS'
+        ? tracks.dimensions.find((_, index) => index + 1 === pin.numericalPosition)?.lineName
+        : null
+    if (maybeLineName != null) {
+      return maybeLineName
+    }
+    return pin.numericalPosition ?? 'auto'
+  }
+
+  function serializeAxis(
+    startPosition: GridPositionOrSpan,
+    endPosition: GridPositionOrSpan,
+    axis: 'row' | 'column',
+  ): {
+    property:
+      | 'gridColumn'
+      | 'gridColumnStart'
+      | 'gridColumnEnd'
+      | 'gridRow'
+      | 'gridRowStart'
+      | 'gridRowEnd'
+    value: string | number
+  } {
+    const startValue = printPin(startPosition, axis)
+    const endValue = printPin(endPosition, axis)
+
+    if (isAutoGridPin(startPosition) && !isAutoGridPin(endPosition)) {
+      return {
+        property: axis === 'column' ? 'gridColumnEnd' : 'gridRowEnd',
+        value: endValue,
+      }
+    }
+
+    function shouldReturnSingleValue(): boolean {
+      const isAutoPin = isAutoGridPin(endPosition)
+      if (isAutoPin) {
+        return true
+      }
+
+      const printedValuedEqual = startValue === endValue
+      if (printedValuedEqual) {
+        return true
+      }
+
+      const positionsAreNumeric =
+        isGridPositionNumericValue(endPosition) && isGridPositionNumericValue(startPosition)
+      if (positionsAreNumeric) {
+        const startNumericPosition = startPosition.numericalPosition ?? 0
+        const endNumericPosition = endPosition.numericalPosition ?? 0
+        const positionsDeltaAtMostOne =
+          endNumericPosition >= startNumericPosition &&
+          endNumericPosition - startNumericPosition <= 1
+        if (positionsDeltaAtMostOne) {
+          return true
+        }
+      }
+
+      return false
+    }
+    if (shouldReturnSingleValue()) {
+      return {
+        property: axis === 'column' ? 'gridColumn' : 'gridRow',
+        value: startValue,
+      }
+    }
+
+    return {
+      property: axis === 'column' ? 'gridColumn' : 'gridRow',
+      value: `${startValue} / ${endValue}`,
     }
   }
 
-  if (rowStart != null && rowStart === rowEnd) {
-    commands.push(setProperty('always', elementPath, PP.create('style', 'gridRow'), lineRowStart))
-  } else if (
-    rowStart != null &&
-    typeof rowStart === 'number' &&
-    rowEnd != null &&
-    typeof rowEnd === 'number' &&
-    rowStart === rowEnd - 1
-  ) {
-    commands.push(setProperty('always', elementPath, PP.create('style', 'gridRow'), lineRowStart))
-  } else {
-    if (rowStart != null) {
-      commands.push(
-        setProperty('always', elementPath, PP.create('style', 'gridRowStart'), lineRowStart),
-      )
-    }
-    if (rowEnd != null) {
-      commands.push(
-        setProperty('always', elementPath, PP.create('style', 'gridRowEnd'), lineRowEnd),
-      )
-    }
-  }
+  const gridColumn = serializeAxis(
+    gridProps.gridColumnStart ?? cssKeyword('auto'),
+    gridProps.gridColumnEnd ?? cssKeyword('auto'),
+    'column',
+  )
+  const gridColumnProp = PP.create('style', gridColumn.property)
+  commands.push(setProperty('always', elementPath, gridColumnProp, gridColumn.value))
+
+  const gridRow = serializeAxis(
+    gridProps.gridRowStart ?? cssKeyword('auto'),
+    gridProps.gridRowEnd ?? cssKeyword('auto'),
+    'row',
+  )
+  const gridRowProp = PP.create('style', gridRow.property)
+  commands.push(setProperty('always', elementPath, gridRowProp, gridRow.value))
 
   return commands
 }
@@ -195,26 +240,6 @@ function getCellCoordsDelta(
   return gridCellCoordinates(rowDiff, columnDiff)
 }
 
-function asMaybeNamedLineOrValue(
-  grid: GridContainerProperties,
-  axis: 'row' | 'column',
-  value: number | string | null,
-): string | number {
-  if (value == null) {
-    return 1
-  } else if (typeof value === 'number') {
-    const template = axis === 'row' ? grid.gridTemplateRows : grid.gridTemplateColumns
-    if (template?.type === 'DIMENSIONS') {
-      const maybeLineStart = template.dimensions.at(value - 1)
-      if (maybeLineStart != null && maybeLineStart.lineName != null) {
-        return maybeLineStart.lineName
-      }
-    }
-    return value === 0 ? 1 : value
-  }
-  return value
-}
-
 export type SortableGridElementProperties = GridElementProperties & {
   path: ElementPath
   index: number
@@ -254,7 +279,7 @@ export function sortElementsByGridPosition(gridTemplateColumns: number) {
 }
 
 function isGridPositionNumericValue(p: GridPositionOrSpan | null): p is GridPositionValue {
-  return p != null && !(isCSSKeyword(p) && !isGridSpan(p) && p.value === 'auto')
+  return p != null && !isGridSpan(p) && !(isCSSKeyword(p) && p.value === 'auto')
 }
 
 export function getGridPositionIndex(props: {
@@ -537,18 +562,22 @@ export function getGridElementPinState(
   elementGridPropertiesFromProps: GridElementProperties | null,
 ): GridElementPinState {
   if (
-    elementGridPropertiesFromProps?.gridColumnEnd == null ||
-    elementGridPropertiesFromProps?.gridColumnStart == null ||
-    elementGridPropertiesFromProps?.gridRowEnd == null ||
+    elementGridPropertiesFromProps?.gridColumnEnd == null &&
+    elementGridPropertiesFromProps?.gridColumnStart == null &&
+    elementGridPropertiesFromProps?.gridRowEnd == null &&
     elementGridPropertiesFromProps?.gridRowStart == null
   ) {
     return 'not-pinned'
   }
   if (
-    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridColumnEnd ?? null) ||
-    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridColumnStart ?? null) ||
-    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridRowEnd ?? null) ||
-    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridRowStart ?? null)
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridColumnEnd) ||
+    isGridSpan(elementGridPropertiesFromProps?.gridColumnEnd) ||
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridColumnStart) ||
+    isGridSpan(elementGridPropertiesFromProps?.gridColumnStart) ||
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridRowEnd) ||
+    isGridSpan(elementGridPropertiesFromProps?.gridRowEnd) ||
+    isGridPositionNumericValue(elementGridPropertiesFromProps?.gridRowStart) ||
+    isGridSpan(elementGridPropertiesFromProps?.gridRowStart)
   ) {
     return 'pinned'
   }
@@ -556,10 +585,7 @@ export function getGridElementPinState(
 }
 
 export function isFlowGridChild(child: ElementInstanceMetadata) {
-  return (
-    getGridElementPinState(child.specialSizeMeasurements.elementGridPropertiesFromProps) !==
-    'pinned'
-  )
+  return getGridElementPinState(child.specialSizeMeasurements.elementGridProperties) !== 'pinned'
 }
 
 function restoreGridTemplateFromProps(params: {

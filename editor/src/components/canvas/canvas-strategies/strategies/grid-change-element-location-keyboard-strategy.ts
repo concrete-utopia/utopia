@@ -10,7 +10,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { setGridPropsCommands } from './grid-helpers'
+import { getCommandsForGridItemPlacement } from './grid-helpers'
 import { getGridChildCellCoordBoundsFromCanvas } from './grid-cell-bounds'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 import { gridItemIdentifier } from '../../../editor/store/editor-state'
@@ -121,7 +121,7 @@ export function gridChangeElementLocationResizeKeyboardStrategy(
       }
 
       return strategyApplicationResult(
-        setGridPropsCommands(target, gridTemplate, {
+        getCommandsForGridItemPlacement(target, gridTemplate, {
           gridColumnStart,
           gridColumnEnd,
           gridRowStart,

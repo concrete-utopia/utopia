@@ -27,7 +27,7 @@ import {
 } from '../../../../../uuiui'
 import type { KeywordForControl } from '../../../../../uuiui/inputs/number-or-keyword-control'
 import { NumberOrKeywordControl } from '../../../../../uuiui/inputs/number-or-keyword-control'
-import { setGridPropsCommands } from '../../../../canvas/canvas-strategies/strategies/grid-helpers'
+import { getCommandsForGridItemPlacement } from '../../../../canvas/canvas-strategies/strategies/grid-helpers'
 import { applyCommandsAction } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../../../editor/store/store-hook'
@@ -97,7 +97,7 @@ export const GridPlacementSubsection = React.memo(() => {
       return
     }
 
-    const commands = setGridPropsCommands(
+    const commands = getCommandsForGridItemPlacement(
       cell.elementPath,
       gridTemplate,
       cell.specialSizeMeasurements.elementGridProperties,
@@ -271,7 +271,11 @@ const DimensionsControls = React.memo(
               }
               break
           }
-          const commands = setGridPropsCommands(cell.elementPath, gridTemplate, newValues)
+          const commands = getCommandsForGridItemPlacement(
+            cell.elementPath,
+            gridTemplate,
+            newValues,
+          )
 
           dispatch([applyCommandsAction(commands)])
         },
@@ -395,7 +399,11 @@ const BoundariesControls = React.memo(
             ...cell.specialSizeMeasurements.elementGridProperties,
             [dimension]: value,
           }
-          const commands = setGridPropsCommands(cell.elementPath, gridTemplate, newValues)
+          const commands = getCommandsForGridItemPlacement(
+            cell.elementPath,
+            gridTemplate,
+            newValues,
+          )
 
           dispatch([applyCommandsAction(commands)])
         },
