@@ -46,6 +46,7 @@ import type { CSSProperties } from 'react'
 import { gridContainerIdentifier, type GridIdentifier } from '../../editor/store/editor-state'
 import { findOriginalGrid } from '../canvas-strategies/strategies/grid-helpers'
 import * as React from 'react'
+import { addChangeCallback, removeChangeCallback } from '../observers'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -212,56 +213,41 @@ export function gridMeasurementHelperDataFromElement(
   }
 }
 
-export function useObserversToWatch(elementPaths: Array<ElementPath>): number {
-  const mutationObserverRefs = React.useRef<Array<MutationObserver> | null>(null)
-  const resizeObserverRefs = React.useRef<Array<ResizeObserver> | null>(null)
-
+export function useObserversToWatch(elementPathOrPaths: Array<ElementPath> | ElementPath): number {
   // Used to trigger extra renders.
   const [counter, setCounter] = React.useState(0)
+  const bumpCounter = React.useCallback(() => {
+    setCounter((value) => value + 1)
+  }, [])
 
-  // Initialise the observers once and only once.
-  if (mutationObserverRefs.current == null && resizeObserverRefs.current == null) {
-    let mutationObservers: Array<MutationObserver> = []
-    let resizeObservers: Array<ResizeObserver> = []
-    // Connect the observers to the elements.
-    for (const elementPath of elementPaths) {
-      const mutationObserver = new MutationObserver((entries) => {
-        setCounter((value) => value + 1)
-      })
-      const resizeObserver = new ResizeObserver((entries) => {
-        setCounter((value) => value + 1)
-      })
-
-      getFromElement(elementPath, (element) => {
-        mutationObserver.observe(element, { attributes: true, childList: true, subtree: true })
-        resizeObserver.observe(element, { box: 'content-box' })
-      })
-
-      mutationObservers.push(mutationObserver)
-      resizeObservers.push(resizeObserver)
-    }
-    // Put the observers in their respective refs.
-    mutationObserverRefs.current = mutationObservers
-    resizeObserverRefs.current = resizeObservers
-  }
+  // Need to use the mount count for the callback trigger.
+  const mountCount = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.mountCount,
+    'useObserversToWatch mountCount',
+  )
 
   React.useEffect(() => {
-    const mutationObservers = mutationObserverRefs.current
-    const resizeObservers = resizeObserverRefs.current
-    // Perform cleanup.
-    return () => {
-      if (mutationObservers != null) {
-        for (const mutationObserver of mutationObservers) {
-          mutationObserver.disconnect()
-        }
+    // Add the change callback(s) for the element path or paths.
+    if (Array.isArray(elementPathOrPaths)) {
+      for (const elementPath of elementPathOrPaths) {
+        addChangeCallback(mountCount, elementPath, bumpCounter)
       }
-      if (resizeObservers != null) {
-        for (const resizeObserver of resizeObservers) {
-          resizeObserver.disconnect()
+    } else {
+      addChangeCallback(mountCount, elementPathOrPaths, bumpCounter)
+    }
+
+    // Cleanup to remove the callback(s) for the element path or paths.
+    return () => {
+      if (Array.isArray(elementPathOrPaths)) {
+        for (const elementPath of elementPathOrPaths) {
+          removeChangeCallback(elementPath, bumpCounter)
         }
+      } else {
+        removeChangeCallback(elementPathOrPaths, bumpCounter)
       }
     }
-  }, [])
+  }, [mountCount, elementPathOrPaths, bumpCounter])
 
   return counter
 }
@@ -277,7 +263,7 @@ export function useGridMeasurementHelperData(
 
   useMonitorChangesToElements([elementPath])
 
-  useObserversToWatch([elementPath])
+  useObserversToWatch(elementPath)
 
   return useKeepReferenceEqualityIfPossible(getGridMeasurementHelperData(elementPath, scale))
 }
@@ -292,6 +278,18 @@ export function useGridData(gridIdentifiers: GridIdentifier[]): GridData[] {
     (store) => store.editor.canvas.scale,
     'useGridData scale',
   )
+
+  const elementPaths = React.useMemo(() => {
+    return gridIdentifiers.map((gridIdentifier) =>
+      gridIdentifier.type === 'GRID_ITEM'
+        ? EP.parentPath(gridIdentifier.path)
+        : gridIdentifier.path,
+    )
+  }, [gridIdentifiers])
+
+  useMonitorChangesToElements(elementPaths)
+
+  useObserversToWatch(elementPaths)
 
   const grids = useEditorState(
     Substores.metadata,
