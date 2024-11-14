@@ -141,6 +141,7 @@ export function getCommandsForGridItemPlacement(
       if (isAutoPin) {
         return true
       }
+
       const printedValuedEqual = startValue === endValue
       if (printedValuedEqual) {
         return true
@@ -158,6 +159,7 @@ export function getCommandsForGridItemPlacement(
           return true
         }
       }
+
       return false
     }
     if (shouldReturnSingleValue()) {
