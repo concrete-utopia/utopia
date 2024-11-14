@@ -4,7 +4,7 @@ import { isJSXElement } from '../../../../core/shared/element-template'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import type { GridCellCoordinates } from './grid-cell-bounds'
-import { runGridMoveTest } from './grid-test-utils'
+import { runGridMoveTest } from './grid.test-utils'
 import * as EP from '../../../../core/shared/element-path'
 
 describe('grid reorder', () => {

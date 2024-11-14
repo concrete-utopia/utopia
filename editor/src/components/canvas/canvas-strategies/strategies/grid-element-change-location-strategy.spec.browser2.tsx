@@ -11,7 +11,7 @@ import { GridCellTestId } from '../../controls/grid-controls-for-strategies'
 import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { gridCellTargetId } from './grid-cell-bounds'
-import { runGridMoveTest } from './grid-test-utils'
+import { runGridMoveTest } from './grid.test-utils'
 
 describe('grid element change location strategy', () => {
   it('can change the location of elements on a grid', async () => {
