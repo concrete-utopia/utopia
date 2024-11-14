@@ -66,7 +66,6 @@ function getTailwindClassMapping(classes: string[], config: Config | null): Reco
   return mapping
 }
 
-// TODO
 const underscoresToSpaces = (s: string | undefined) => s?.replace(/[-_]/g, ' ')
 
 export const TailwindPlugin = (config: Config | null): StylePlugin => ({
