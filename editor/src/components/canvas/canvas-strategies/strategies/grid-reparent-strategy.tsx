@@ -9,7 +9,7 @@ import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
-import type { AllElementProps } from '../../../editor/store/editor-state'
+import { gridContainerIdentifier, type AllElementProps } from '../../../editor/store/editor-state'
 import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { CSSCursor } from '../../canvas-types'
 import { setCursorCommand } from '../../commands/set-cursor-command'
@@ -130,7 +130,9 @@ export function controlsForGridReparent(reparentTarget: ReparentTarget): Control
       key: 'zero-size-control',
       show: 'visible-only-while-active',
     }),
-    controlsForGridPlaceholders(reparentTarget.newParent.intendedParentPath),
+    controlsForGridPlaceholders(
+      gridContainerIdentifier(reparentTarget.newParent.intendedParentPath),
+    ),
   ]
 }
 
@@ -287,7 +289,6 @@ function gridReparentCommands(
     jsxMetadata,
     interactionData,
     targetElement,
-    targetParent.elementPath,
     gridCellGlobalFrames,
     gridTemplate,
     newPath,

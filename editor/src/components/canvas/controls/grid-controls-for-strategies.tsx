@@ -1,6 +1,5 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import fastDeepEqual from 'fast-deep-equal'
 import { sides, type Sides } from 'utopia-api/core'
 import type { ElementPath } from 'utopia-shared/src/types'
 import {
@@ -11,10 +10,9 @@ import {
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import type { BorderWidths, ElementInstanceMetadata } from '../../../core/shared/element-template'
+import type { BorderWidths } from '../../../core/shared/element-template'
 import { type GridAutoOrTemplateBase } from '../../../core/shared/element-template'
 import type { CanvasRectangle } from '../../../core/shared/math-utils'
-import { isFiniteRectangle } from '../../../core/shared/math-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import type {
@@ -37,25 +35,16 @@ import {
   GridRowColumnResizingControlsComponent,
 } from './grid-controls'
 import { isEdgePositionOnSide } from '../canvas-utils'
-import { findOriginalGrid } from '../canvas-strategies/strategies/grid-helpers'
-import {
-  getAlignContent,
-  getFlexJustifyContent,
-  type AlignContent,
-  type FlexJustifyContent,
-} from '../../inspector/inspector-common'
 import { getFromElement } from '../direct-dom-lookups'
-import {
-  applicativeSidesPxTransform,
-  getGridContainerProperties,
-  isDynamicGridTemplate,
-} from '../dom-walker'
+import { applicativeSidesPxTransform, getGridContainerProperties } from '../dom-walker'
 import { applicative4Either, defaultEither, isRight, mapEither } from '../../../core/shared/either'
 import { domRectToScaledCanvasRectangle, getRoundingFn } from '../../../core/shared/dom-utils'
 import Utils from '../../../utils/utils'
 import { useMonitorChangesToEditor } from '../../../components/editor/store/store-monitor'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import type { CSSProperties } from 'react'
+import { gridContainerIdentifier, type GridIdentifier } from '../../editor/store/editor-state'
+import { findOriginalGrid } from '../canvas-strategies/strategies/grid-helpers'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -237,10 +226,10 @@ export function useGridMeasurementHelperData(
 }
 
 export type GridData = GridMeasurementHelperData & {
-  elementPath: ElementPath
+  identifier: GridIdentifier
 }
 
-export function useGridData(elementPaths: ElementPath[]): GridData[] {
+export function useGridData(gridIdentifiers: GridIdentifier[]): GridData[] {
   const scale = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.scale,
@@ -251,11 +240,13 @@ export function useGridData(elementPaths: ElementPath[]): GridData[] {
     Substores.metadata,
     (store) => {
       return mapDropNulls((view) => {
-        const originalGridPath = findOriginalGrid(store.editor.jsxMetadata, view)
+        const originalGridPath = findOriginalGrid(
+          store.editor.jsxMetadata,
+          view.type === 'GRID_ITEM' ? EP.parentPath(view.path) : view.path, // TODO: this is temporary, we will need to handle showing a grid control on the parent dom element of a grid item
+        )
         if (originalGridPath == null) {
           return null
         }
-
         const element = MetadataUtils.findElementByElementPath(
           store.editor.jsxMetadata,
           originalGridPath,
@@ -273,10 +264,10 @@ export function useGridData(elementPaths: ElementPath[]): GridData[] {
 
         const gridData: GridData = {
           ...helperData,
-          elementPath: view,
+          identifier: gridContainerIdentifier(originalGridPath),
         }
         return gridData
-      }, elementPaths)
+      }, gridIdentifiers)
     },
     'useGridData',
   )
@@ -285,7 +276,7 @@ export function useGridData(elementPaths: ElementPath[]): GridData[] {
 }
 
 interface GridRowColumnResizingControlsProps {
-  target: ElementPath
+  target: GridIdentifier
 }
 
 export const GridRowColumnResizingControls =
@@ -309,7 +300,7 @@ export interface GridControlProps {
 
 export interface GridControlsProps {
   type: 'GRID_CONTROLS_PROPS'
-  targets: ElementPath[]
+  targets: GridIdentifier[]
 }
 
 export function isGridControlsProps(props: unknown): props is GridControlsProps {
@@ -319,7 +310,7 @@ export function isGridControlsProps(props: unknown): props is GridControlsProps 
 export const GridControls = controlForStrategyMemoized<GridControlsProps>(GridControlsComponent)
 
 interface GridResizeControlProps {
-  target: ElementPath
+  target: GridIdentifier
 }
 
 export const GridResizeControls = controlForStrategyMemoized<GridResizeControlProps>(
@@ -358,7 +349,7 @@ export function edgePositionToGridResizeEdge(position: EdgePosition): GridResize
 }
 
 export function controlsForGridPlaceholders(
-  gridPath: ElementPath | Array<ElementPath>,
+  gridPath: GridIdentifier | Array<GridIdentifier>,
   whenToShow: WhenToShowControl = 'always-visible',
   suffix: string | null = null,
 ): ControlWithProps<any> {

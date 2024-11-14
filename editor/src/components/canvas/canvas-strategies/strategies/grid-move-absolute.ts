@@ -13,6 +13,7 @@ import {
   offsetPoint,
   pointDifference,
   zeroRectangle,
+  zeroRectIfNullOrInfinity,
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { cssNumber } from '../../../inspector/common/css-utils'
@@ -32,7 +33,6 @@ import {
 import type { DragInteractionData, InteractionSession } from '../interaction-state'
 import type { GridCellGlobalFrames } from './grid-helpers'
 import {
-  findOriginalGrid,
   getGlobalFrameOfGridCell,
   getOriginalElementGridConfiguration,
   getParentGridTemplatesFromChildMeasurements,
@@ -40,6 +40,7 @@ import {
 } from './grid-helpers'
 import { runGridChangeElementLocation } from './grid-change-element-location-strategy'
 import { getTargetGridCellData } from '../../../inspector/grid-helpers'
+import { gridItemIdentifier } from '../../../editor/store/editor-state'
 
 export const gridMoveAbsoluteStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -76,22 +77,6 @@ export const gridMoveAbsoluteStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const parentGridPath = findOriginalGrid(
-    canvasState.startingMetadata,
-    EP.parentPath(selectedElement),
-  ) // TODO don't use EP.parentPath
-  if (parentGridPath == null) {
-    return null
-  }
-
-  const gridFrame = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
-    parentGridPath,
-  )?.globalFrame
-  if (gridFrame == null || isInfinityRectangle(gridFrame)) {
-    return null
-  }
-
   if (!MetadataUtils.isPositionAbsolute(selectedElementMetadata)) {
     return null
   }
@@ -104,7 +89,9 @@ export const gridMoveAbsoluteStrategy: CanvasStrategyFactory = (
       category: 'tools',
       type: 'pointer',
     },
-    controlsToRender: [controlsForGridPlaceholders(parentGridPath, 'visible-only-while-active')],
+    controlsToRender: [
+      controlsForGridPlaceholders(gridItemIdentifier(selectedElement), 'visible-only-while-active'),
+    ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 2),
     apply: () => {
       if (
@@ -120,14 +107,13 @@ export const gridMoveAbsoluteStrategy: CanvasStrategyFactory = (
         canvasState,
         interactionSession.interactionData,
         selectedElement,
-        parentGridPath,
       )
       if (commands.length === 0) {
         return emptyStrategyApplicationResult
       }
 
       const { midInteractionCommands, onCompleteCommands } = gridMoveStrategiesExtraCommands(
-        parentGridPath,
+        EP.parentPath(selectedElement), // TODO: don't use EP.parentPath
         initialTemplates,
       )
       return strategyApplicationResult(
@@ -142,7 +128,6 @@ function getCommandsAndPatchForGridAbsoluteMove(
   canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
   selectedElement: ElementPath,
-  gridPath: ElementPath,
 ): {
   commands: CanvasCommand[]
   elementsToRerender: ElementPath[]
@@ -169,14 +154,13 @@ function getCommandsAndPatchForGridAbsoluteMove(
     canvasState.startingMetadata,
     interactionData,
     selectedElementMetadata,
-    gridPath,
     parentGridCellGlobalFrames,
     parentContainerGridProperties,
   )
 
   return {
     commands: commands,
-    elementsToRerender: [gridPath, selectedElement],
+    elementsToRerender: [EP.parentPath(selectedElement), selectedElement],
   }
 }
 
@@ -184,7 +168,6 @@ function runGridMoveAbsolute(
   jsxMetadata: ElementInstanceMetadataMap,
   interactionData: DragInteractionData,
   selectedElementMetadata: ElementInstanceMetadata,
-  gridPath: ElementPath,
   gridCellGlobalFrames: GridCellGlobalFrames,
   gridTemplate: GridContainerProperties,
 ): CanvasCommand[] {
@@ -216,10 +199,17 @@ function runGridMoveAbsolute(
   // props, do not set them at all.
   if (MetadataUtils.hasNoGridItemPositioning(selectedElementMetadata.specialSizeMeasurements)) {
     return [
-      showGridControls('mid-interaction', gridPath, targetCellCoords, targetRootCell),
+      showGridControls(
+        'mid-interaction',
+        gridItemIdentifier(selectedElementMetadata.elementPath),
+        targetCellCoords,
+        targetRootCell,
+      ),
       ...gridChildAbsoluteMoveCommands(
         selectedElementMetadata,
-        MetadataUtils.getFrameOrZeroRectInCanvasCoords(gridPath, jsxMetadata),
+        zeroRectIfNullOrInfinity(
+          selectedElementMetadata.specialSizeMeasurements.immediateParentBounds,
+        ),
         interactionData,
       ),
     ]
@@ -231,7 +221,6 @@ function runGridMoveAbsolute(
       jsxMetadata,
       interactionData,
       selectedElementMetadata,
-      gridPath,
       gridCellGlobalFrames,
       gridTemplate,
       null,

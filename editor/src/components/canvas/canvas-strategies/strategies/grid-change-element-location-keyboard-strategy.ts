@@ -10,9 +10,10 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { findOriginalGrid, setGridPropsCommands } from './grid-helpers'
+import { setGridPropsCommands } from './grid-helpers'
 import { getGridChildCellCoordBoundsFromCanvas } from './grid-cell-bounds'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
+import { gridItemIdentifier } from '../../../editor/store/editor-state'
 
 export function gridChangeElementLocationResizeKeyboardStrategy(
   canvasState: InteractionCanvasState,
@@ -38,11 +39,6 @@ export function gridChangeElementLocationResizeKeyboardStrategy(
 
   const cell = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, target)
   if (cell == null) {
-    return null
-  }
-
-  const parentGridPath = findOriginalGrid(canvasState.startingMetadata, EP.parentPath(target)) // TODO don't use EP.parentPath
-  if (parentGridPath == null) {
     return null
   }
 
@@ -72,7 +68,7 @@ export function gridChangeElementLocationResizeKeyboardStrategy(
       category: 'modalities',
       type: 'reorder-large',
     },
-    controlsToRender: [controlsForGridPlaceholders(parentGridPath)],
+    controlsToRender: [controlsForGridPlaceholders(gridItemIdentifier(target))],
     fitness: fitness(interactionSession),
     apply: () => {
       if (interactionSession == null || interactionSession.interactionData.type !== 'KEYBOARD') {
@@ -131,7 +127,7 @@ export function gridChangeElementLocationResizeKeyboardStrategy(
           gridRowStart,
           gridRowEnd,
         }),
-        [parentGridPath],
+        [EP.parentPath(target)],
       )
     },
   }
