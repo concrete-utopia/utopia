@@ -1,16 +1,14 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import type {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-  GridContainerProperties,
+import {
+  type ElementInstanceMetadata,
+  type ElementInstanceMetadataMap,
+  type GridContainerProperties,
 } from '../../../../core/shared/element-template'
-import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { absolute } from '../../../../utils/utils'
 import type { CanvasCommand } from '../../commands/commands'
-import { deleteProperties } from '../../commands/delete-properties-command'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { showGridControls } from '../../commands/show-grid-controls-command'
 import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
@@ -34,6 +32,12 @@ import {
 } from './grid-helpers'
 import { getTargetGridCellData } from '../../../inspector/grid-helpers'
 import { gridItemIdentifier } from '../../../editor/store/editor-state'
+import type { PropertyToUpdate } from '../../commands/set-property-command'
+import {
+  propertyToDelete,
+  propertyToSet,
+  updateBulkProperties,
+} from '../../commands/set-property-command'
 
 export const gridReorderStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -226,16 +230,31 @@ function runGridReorder(
     canReorderToIndex ? targetRootCell : null,
   )
 
+  const gridConfig = getOriginalElementGridConfiguration(
+    gridCellGlobalFrames,
+    interactionData,
+    selectedElementMetadata,
+  )
+
+  const width = gridConfig?.originalCellBounds.width ?? 1
+  const height = gridConfig?.originalCellBounds.height ?? 1
+
+  const propsToUpdate: PropertyToUpdate[] = [
+    propertyToDelete(PP.create('style', 'gridColumnStart')),
+    propertyToDelete(PP.create('style', 'gridColumnEnd')),
+    propertyToDelete(PP.create('style', 'gridRowStart')),
+    propertyToDelete(PP.create('style', 'gridRowEnd')),
+    ...(width > 1
+      ? [propertyToSet(PP.create('style', 'gridColumn'), `span ${width}`)]
+      : [propertyToDelete(PP.create('style', 'gridColumn'))]),
+    ...(height > 1
+      ? [propertyToSet(PP.create('style', 'gridRow'), `span ${height}`)]
+      : [propertyToDelete(PP.create('style', 'gridRow'))]),
+  ]
+
   return [
     reorderElement('always', selectedElementMetadata.elementPath, absolute(possiblyReorderIndex)),
-    deleteProperties('always', selectedElementMetadata.elementPath, [
-      PP.create('style', 'gridColumn'),
-      PP.create('style', 'gridRow'),
-      PP.create('style', 'gridColumnStart'),
-      PP.create('style', 'gridColumnEnd'),
-      PP.create('style', 'gridRowStart'),
-      PP.create('style', 'gridRowEnd'),
-    ]),
+    updateBulkProperties('always', selectedElementMetadata.elementPath, propsToUpdate),
     updateGridControlsCommand,
   ]
 }
