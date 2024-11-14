@@ -99,15 +99,17 @@ export type GridMeasurementHelperData = {
   element: HTMLElement
 }
 
+export type GridMeasurementHelperSourceElement = 'parent' | 'element'
+
 export function getGridMeasurementHelperData(
   elementPath: ElementPath,
   scale: number,
-  fromParent: 'fromParent' | 'fromElement' = 'fromElement',
+  source: GridMeasurementHelperSourceElement,
 ): GridMeasurementHelperData | undefined {
-  switch (fromParent) {
-    case 'fromElement':
+  switch (source) {
+    case 'element':
       return getFromElement(elementPath, gridMeasurementHelperDataFromElement(scale))
-    case 'fromParent':
+    case 'parent':
       return getFromParent(elementPath, gridMeasurementHelperDataFromElement(scale))
   }
 }
@@ -227,7 +229,7 @@ export function gridMeasurementHelperDataFromElement(
 
 export function useGridMeasurementHelperData(
   elementPath: ElementPath,
-  fromParent: 'fromParent' | 'fromElement' = 'fromElement',
+  source: GridMeasurementHelperSourceElement,
 ): GridMeasurementHelperData | undefined {
   const scale = useEditorState(
     Substores.canvas,
@@ -238,7 +240,7 @@ export function useGridMeasurementHelperData(
   useMonitorChangesToEditor()
 
   return useKeepReferenceEqualityIfPossible(
-    getGridMeasurementHelperData(elementPath, scale, fromParent),
+    getGridMeasurementHelperData(elementPath, scale, source),
   )
 }
 
@@ -275,7 +277,7 @@ export function useGridData(gridIdentifiers: GridIdentifier[]): GridData[] {
               return null
             }
 
-            const helperData = getGridMeasurementHelperData(originalGridPath, scale)
+            const helperData = getGridMeasurementHelperData(originalGridPath, scale, 'element')
             if (helperData == null) {
               return null
             }
@@ -294,7 +296,7 @@ export function useGridData(gridIdentifiers: GridIdentifier[]): GridData[] {
               return null
             }
 
-            const helperData = getGridMeasurementHelperData(view.path, scale, 'fromParent')
+            const helperData = getGridMeasurementHelperData(view.path, scale, 'parent')
             if (helperData == null) {
               return null
             }

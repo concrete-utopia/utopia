@@ -1045,14 +1045,14 @@ export const GridMeasurementHelpers = React.memo(() => {
         <GridMeasurementHelper
           key={GridMeasurementHelpersKey(grid)}
           elementPath={grid}
-          fromParent='fromElement'
+          source='element'
         />
       ))}
       {gridItems.map((gridItem) => (
         <GridMeasurementHelper
           key={GridMeasurementHelpersKey(gridItem)}
           elementPath={gridItem}
-          fromParent='fromParent'
+          source='parent'
         />
       ))}
     </CanvasOffsetWrapper>
@@ -1062,12 +1062,12 @@ GridMeasurementHelpers.displayName = 'GridMeasurementHelpers'
 
 export interface GridMeasurementHelperProps {
   elementPath: ElementPath
-  fromParent: 'fromParent' | 'fromElement'
+  source: 'parent' | 'element'
 }
 
 export const GridMeasurementHelper = React.memo<GridMeasurementHelperProps>(
-  ({ elementPath, fromParent }) => {
-    const gridData = useGridMeasurementHelperData(elementPath, fromParent)
+  ({ elementPath, source }) => {
+    const gridData = useGridMeasurementHelperData(elementPath, source)
     if (gridData == null) {
       return null
     }
@@ -1918,7 +1918,7 @@ export interface GridElementContainingBlockProps {
 }
 
 const GridElementContainingBlock = React.memo<GridElementContainingBlockProps>((props) => {
-  const gridData = useGridMeasurementHelperData(props.gridPath)
+  const gridData = useGridMeasurementHelperData(props.gridPath, 'element')
   const scale = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.scale,
