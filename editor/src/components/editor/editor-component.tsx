@@ -616,7 +616,7 @@ export function LoadingEditorComponent() {
     }[] = []
     if (totalImportResult.importStatus.status == 'not-started') {
       operations.push({
-        text: 'Loading Project...',
+        text: 'Loading Editor...',
         id: 'loading-editor',
         timeDone: null,
         timeStarted: null,
@@ -708,7 +708,7 @@ export function LoadingEditorComponent() {
           style={{
             borderRadius: '6px',
             height: '9px',
-            transform: 'translateX(-198px)',
+            transform: 'translateX(-180px)',
             animationName: 'animation-keyframes-2',
           }}
         ></div>
@@ -740,7 +740,7 @@ export function LoadingEditorComponent() {
                     listStyle: 'none',
                   }}
                   key={op.id}
-                  initial={{ opacity: 0 }}
+                  // initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}

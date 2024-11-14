@@ -53,13 +53,13 @@
             transform: translateX(-212px);
           }
           to {
-            transform: translateX(0px);
+            transform: translateX(-180px);
           }
         }
 
         @keyframes animation-keyframes-2 {
           from {
-            transform: translateX(-198);
+            transform: translateX(-180px);
           }
           to {
             transform: translateX(0px);
@@ -193,7 +193,12 @@
           >
             <div
               class="progress-bar-progress animation-progress"
-              style="border-radius: 6px; height: 9px; transform: translateX(-212px)"
+              style="
+                border-radius: 6px;
+                height: 9px;
+                transform: translateX(-212px);
+                animation-duration: 10s;
+              "
             ></div>
           </div>
           <ul
