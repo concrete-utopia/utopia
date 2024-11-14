@@ -136,14 +136,31 @@ export function getCommandsForGridItemPlacement(
       }
     }
 
-    if (
-      (isCSSKeyword(endPosition) && endPosition.value === 'auto') ||
-      (isGridPositionNumericValue(endPosition) &&
-        isGridPositionNumericValue(startPosition) &&
-        (endPosition.numericalPosition ?? 0) >= (startPosition.numericalPosition ?? 0) &&
-        (endPosition.numericalPosition ?? 0) - (startPosition.numericalPosition ?? 0) <= 1) ||
-      startValue === endValue
-    ) {
+    function shouldReturnSingleValue(): boolean {
+      const isAutoPin = isAutoGridPin(endPosition)
+      if (isAutoPin) {
+        return true
+      }
+      const printedValuedEqual = startValue === endValue
+      if (printedValuedEqual) {
+        return true
+      }
+
+      const positionsAreNumeric =
+        isGridPositionNumericValue(endPosition) && isGridPositionNumericValue(startPosition)
+      if (positionsAreNumeric) {
+        const startNumericPosition = startPosition.numericalPosition ?? 0
+        const endNumericPosition = endPosition.numericalPosition ?? 0
+        const positionsDeltaAtMostOne =
+          endNumericPosition >= startNumericPosition &&
+          endNumericPosition - startNumericPosition <= 1
+        if (positionsDeltaAtMostOne) {
+          return true
+        }
+      }
+      return false
+    }
+    if (shouldReturnSingleValue()) {
       return {
         property: axis === 'column' ? 'gridColumn' : 'gridRow',
         value: startValue,
