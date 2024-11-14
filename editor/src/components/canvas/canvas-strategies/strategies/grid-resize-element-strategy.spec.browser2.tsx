@@ -527,8 +527,7 @@ describe('grid resize element strategy', () => {
       ['backgroundColor', '#db48f6'],
       ['width', '100%'],
       ['height', '100%'],
-      ['gridColumnStart', 7],
-      ['gridColumnEnd', 11],
+      ['gridColumn', '7 / 11'],
       ['gridRow', 2],
     ])
   })

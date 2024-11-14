@@ -174,7 +174,6 @@ describe('grid element change location strategy', () => {
       scale: 1,
       pathString: `sb/scene/grid/${testId}`,
       testId: testId,
-      tab: true,
       targetCell: { row: 3, column: 1 },
     })
 
@@ -216,6 +215,112 @@ describe('grid element change location strategy', () => {
       gridColumnEnd: '7',
       gridColumnStart: '3',
       gridRowEnd: '4',
+      gridRowStart: '2',
+    })
+  })
+
+  it('can change the location of an element with span (from start, implicit end)', async () => {
+    const editor = await renderTestEditorWithCode(
+      ProjectCodeWithSpanningItems,
+      'await-first-dom-report',
+    )
+
+    const testId = 'pink'
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest(editor, {
+      scale: 1,
+      pathString: `sb/scene/grid/${testId}`,
+      testId: testId,
+    })
+
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnEnd: '5',
+      gridColumnStart: 'span 2',
+      gridRowEnd: 'auto',
+      gridRowStart: '2',
+    })
+  })
+
+  it('can change the location of an element with span (from start, explicit end)', async () => {
+    const editor = await renderTestEditorWithCode(
+      ProjectCodeWithSpanningItems,
+      'await-first-dom-report',
+    )
+
+    const testId = 'cyan'
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest(editor, {
+      scale: 1,
+      pathString: `sb/scene/grid/${testId}`,
+      testId: testId,
+    })
+
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnEnd: '5',
+      gridColumnStart: 'span 2',
+      gridRowEnd: 'auto',
+      gridRowStart: '2',
+    })
+  })
+
+  it('can change the location of an element with span (from end, explicit start)', async () => {
+    const editor = await renderTestEditorWithCode(
+      ProjectCodeWithSpanningItems,
+      'await-first-dom-report',
+    )
+
+    const testId = 'orange'
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest(editor, {
+      scale: 1,
+      pathString: `sb/scene/grid/${testId}`,
+      testId: testId,
+      targetCell: { row: 3, column: 2 },
+    })
+
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnEnd: 'span 3',
+      gridColumnStart: '2',
+      gridRowEnd: 'auto',
+      gridRowStart: '3',
+    })
+  })
+
+  it('can change the location of an element with span (longhand start)', async () => {
+    const editor = await renderTestEditorWithCode(
+      ProjectCodeWithSpanningItems,
+      'await-first-dom-report',
+    )
+
+    const testId = 'blue'
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest(editor, {
+      scale: 1,
+      pathString: `sb/scene/grid/${testId}`,
+      testId: testId,
+    })
+
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnEnd: '5',
+      gridColumnStart: 'span 2',
+      gridRowEnd: 'auto',
+      gridRowStart: '2',
+    })
+  })
+
+  it('can change the location of an element with span (longhand end)', async () => {
+    const editor = await renderTestEditorWithCode(
+      ProjectCodeWithSpanningItems,
+      'await-first-dom-report',
+    )
+
+    const testId = 'purple'
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runMoveTest(editor, {
+      scale: 1,
+      pathString: `sb/scene/grid/${testId}`,
+      testId: testId,
+    })
+
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnEnd: 'span 2',
+      gridColumnStart: '3',
+      gridRowEnd: 'auto',
       gridRowStart: '2',
     })
   })
@@ -594,9 +699,9 @@ export var storyboard = (
             child.style
           expect({ top, left, gridColumnStart, gridColumnEnd, gridRowStart, gridRowEnd }).toEqual({
             gridColumnStart: '1',
-            gridColumnEnd: '',
+            gridColumnEnd: 'auto',
             gridRowStart: '1',
-            gridRowEnd: '',
+            gridRowEnd: 'auto',
             left: '59px',
             top: '59.5px',
           })
@@ -866,13 +971,7 @@ export var storyboard = (
         'await-first-dom-report',
       )
 
-      const result = await runReorderTest(
-        editor,
-        'sb/scene/grid',
-        'orange',
-        { row: 1, column: 1 },
-        { tab: true },
-      )
+      const result = await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 1, column: 1 })
       expect({
         gridRowStart: result.gridRowStart,
         gridRowEnd: result.gridRowEnd,
@@ -1562,6 +1661,102 @@ export var storyboard = (
           data-uid='blue'
 		  data-testid='blue'
           data-label='blue'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+
+const ProjectCodeWithSpanningItems = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 600,
+        height: 600,
+        position: 'absolute',
+        left: 0,
+        top: 0,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 500,
+          height: 500,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr 1fr',
+          gridTemplateRows: '1fr 1fr 1fr 1fr',
+          gridGap: 10,
+          padding: 10,
+        }}
+        data-testid='grid'
+        data-uid='grid'
+      >
+        <div
+          style={{
+            backgroundColor: '#f09',
+            width: '100%',
+            height: '100%',
+            gridColumn: 'span 2',
+          }}
+          data-uid='pink'
+          data-testid='pink'
+          data-label='pink'
+        />
+        <div
+          style={{
+            backgroundColor: '#f90',
+            width: '100%',
+            height: '100%',
+            gridColumn: '2 / span 3',
+          }}
+          data-uid='orange'
+          data-testid='orange'
+          data-label='orange'
+        />
+        <div
+          style={{
+            backgroundColor: '#0f9',
+            width: '100%',
+            height: '100%',
+            gridColumn: 'span 2 / 4',
+            gridRow: 3,
+          }}
+          data-uid='cyan'
+          data-testid='cyan'
+          data-label='cyan'
+        />
+        <div
+          style={{
+            backgroundColor: '#09f',
+            width: '100%',
+            height: '100%',
+            gridColumnStart: 'span 2',
+            gridRow: 4,
+          }}
+          data-uid='blue'
+          data-testid='blue'
+          data-label='blue'
+        />
+        <div
+          style={{
+            backgroundColor: '#90f',
+            width: '100%',
+            height: '100%',
+            gridColumnEnd: 'span 2',
+            gridRow: 4,
+          }}
+          data-uid='purple'
+          data-testid='purple'
+          data-label='purple'
         />
       </div>
     </Scene>

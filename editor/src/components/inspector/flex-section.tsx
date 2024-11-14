@@ -72,7 +72,7 @@ import {
 } from '../../core/shared/element-template'
 import {
   isJustAutoGridDimension,
-  setGridPropsCommands,
+  getCommandsForGridItemPlacement,
 } from '../canvas/canvas-strategies/strategies/grid-helpers'
 import { type CanvasCommand } from '../canvas/commands/commands'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
@@ -357,7 +357,9 @@ const TemplateDimensionControl = React.memo(
             }
           }
 
-          commands.push(...setGridPropsCommands(child.elementPath, adjustedGridTemplate, updated))
+          commands.push(
+            ...getCommandsForGridItemPlacement(child.elementPath, adjustedGridTemplate, updated),
+          )
         }
 
         dispatch([applyCommandsAction(commands)])
@@ -434,7 +436,7 @@ const TemplateDimensionControl = React.memo(
         const children = MetadataUtils.getChildrenUnordered(metadataRef.current, grid.elementPath)
         for (const child of children) {
           commands.push(
-            ...setGridPropsCommands(
+            ...getCommandsForGridItemPlacement(
               child.elementPath,
               adjustedGridTemplate,
               child.specialSizeMeasurements.elementGridPropertiesFromProps,

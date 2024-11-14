@@ -5,6 +5,7 @@ import {
   isInfinityRectangle,
   rectangleIntersection,
 } from '../../../../core/shared/math-utils'
+import { gridContainerIdentifier, gridItemIdentifier } from '../../../editor/store/editor-state'
 import { isFillOrStretchModeAppliedOnAnySide } from '../../../inspector/inspector-common'
 import {
   controlsForGridPlaceholders,
@@ -20,7 +21,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { findOriginalGrid, setGridPropsCommands } from './grid-helpers'
+import { findOriginalGrid, getCommandsForGridItemPlacement } from './grid-helpers'
 import { resizeBoundingBoxFromSide } from './resize-helpers'
 
 export const gridResizeElementStrategy: CanvasStrategyFactory = (
@@ -60,14 +61,6 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const parentGridPath = findOriginalGrid(
-    canvasState.startingMetadata,
-    EP.parentPath(selectedElement),
-  ) // TODO don't use EP.parentPath
-  if (parentGridPath == null) {
-    return null
-  }
-
   return {
     id: 'GRID-CELL-RESIZE-STRATEGY',
     name: 'Resize Grid Cell',
@@ -79,11 +72,11 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
     controlsToRender: [
       {
         control: GridResizeControls,
-        props: { target: selectedElement },
+        props: { target: gridContainerIdentifier(selectedElement) },
         key: `grid-resize-controls-${EP.toString(selectedElement)}`,
         show: 'always-visible',
       },
-      controlsForGridPlaceholders(parentGridPath),
+      controlsForGridPlaceholders(gridItemIdentifier(selectedElement)),
     ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_RESIZE_HANDLE', 1),
     apply: () => {
@@ -121,8 +114,8 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         selectedElementMetadata.specialSizeMeasurements.parentContainerGridProperties
 
       return strategyApplicationResult(
-        setGridPropsCommands(selectedElement, gridTemplate, gridProps),
-        [parentGridPath],
+        getCommandsForGridItemPlacement(selectedElement, gridTemplate, gridProps),
+        [EP.parentPath(selectedElement)],
       )
     },
   }

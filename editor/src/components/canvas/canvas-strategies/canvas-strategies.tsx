@@ -7,6 +7,7 @@ import type {
   EditorState,
   EditorStatePatch,
   EditorStorePatched,
+  GridIdentifier,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import type {
@@ -676,7 +677,7 @@ export function combineApplicableControls(
   }
 
   // Sift the instances of `GridControls`, storing their targets by when they should be shown.
-  let gridControlsTargets: Map<WhenToShowControl, Array<ElementPath>> = new Map()
+  let gridControlsTargets: Map<WhenToShowControl, Array<GridIdentifier>> = new Map()
   for (const control of gridControlsInstances) {
     if (isGridControlsProps(control.props)) {
       const possibleTargets = gridControlsTargets.get(control.show)

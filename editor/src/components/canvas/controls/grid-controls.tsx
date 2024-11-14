@@ -105,6 +105,11 @@ import type { PinOutlineProps } from './position-outline'
 import { PinOutline, usePropsOrJSXAttributes } from './position-outline'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { styleStringInArray } from '../../../utils/common-constants'
+import {
+  gridContainerIdentifier,
+  gridIdentifierSimilar,
+  type GridIdentifier,
+} from '../../editor/store/editor-state'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -497,7 +502,7 @@ const GridResizing = React.memo((props: GridResizingProps) => {
 GridResizing.displayName = 'GridResizing'
 
 interface GridRowColumnResizingControlsProps {
-  target: ElementPath
+  target: GridIdentifier
 }
 
 export const GridRowColumnResizingControlsComponent = ({
@@ -567,7 +572,7 @@ export const GridRowColumnResizingControlsComponent = ({
       {gridsWithVisibleResizeControls.flatMap((grid) => {
         return (
           <GridResizing
-            key={`grid-resizing-column-${EP.toString(grid.elementPath)}`}
+            key={`grid-resizing-column-${EP.toString(grid.identifier.path)}`}
             targetGrid={grid}
             axisValues={grid.gridTemplateColumns}
             fromPropsAxisValues={grid.gridTemplateColumnsFromProps}
@@ -587,7 +592,7 @@ export const GridRowColumnResizingControlsComponent = ({
       {gridsWithVisibleResizeControls.flatMap((grid) => {
         return (
           <GridResizing
-            key={`grid-resizing-row-${EP.toString(grid.elementPath)}`}
+            key={`grid-resizing-row-${EP.toString(grid.identifier.path)}`}
             targetGrid={grid}
             axisValues={grid.gridTemplateRows}
             fromPropsAxisValues={grid.gridTemplateRowsFromProps}
@@ -730,7 +735,10 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
   )
 
   const cells = React.useMemo(() => {
-    const children = MetadataUtils.getChildrenUnordered(jsxMetadata, grid.elementPath)
+    const children =
+      grid.identifier.type === 'GRID_CONTAINER'
+        ? MetadataUtils.getChildrenUnordered(jsxMetadata, grid.identifier.path)
+        : MetadataUtils.getSiblingsUnordered(jsxMetadata, grid.identifier.path)
     return mapDropNulls((cell, index) => {
       if (cell == null || cell.globalFrame == null || !isFiniteRectangle(cell.globalFrame)) {
         return null
@@ -892,25 +900,25 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
   const dontShowActiveCellHighlight =
     (!targetsAreCellsWithPositioning && anyTargetAbsolute) ||
     (anyTargetNotPinned && !targetRootCellIsValidTarget)
-
   return (
     <React.Fragment>
       {/* grid lines */}
       <div
-        key={gridKeyFromPath(grid.elementPath)}
-        id={gridKeyFromPath(grid.elementPath)}
-        data-grid-path={EP.toString(grid.elementPath)}
+        key={gridKeyFromPath(grid.identifier.path)}
+        id={gridKeyFromPath(grid.identifier.path)}
+        data-grid-path={EP.toString(grid.identifier.path)}
         style={style}
       >
         {placeholders.map((cell) => {
           const countedRow = Math.floor(cell / grid.columns) + 1
           const countedColumn = Math.floor(cell % grid.columns) + 1
-          const id = gridCellTargetId(grid.elementPath, countedRow, countedColumn)
+          const id = gridCellTargetId(grid.identifier.path, countedRow, countedColumn)
           const borderID = `${id}-border`
 
           const isActiveGrid =
-            (dragging != null && EP.isParentOf(grid.elementPath, dragging)) ||
-            (currentHoveredGrid != null && EP.pathsEqual(grid.elementPath, currentHoveredGrid))
+            (dragging != null && EP.isParentOf(grid.identifier.path, dragging)) ||
+            (currentHoveredGrid != null &&
+              EP.pathsEqual(grid.identifier.path, currentHoveredGrid.path))
           const isActiveCell =
             isActiveGrid &&
             countedColumn === currentHoveredCell?.column &&
@@ -1085,18 +1093,20 @@ GridMeasurementHelper.displayName = 'GridMeasurementHelper'
 
 export const GridControlsComponent = ({ targets }: GridControlsProps) => {
   const ancestorPaths = React.useMemo(() => {
-    return targets.flatMap((target) => EP.getAncestors(target))
+    return targets.flatMap((target) => EP.getAncestors(target.path))
   }, [targets])
-  const ancestorGrids: Array<ElementPath> = useEditorState(
+  const ancestorGrids: Array<GridIdentifier> = useEditorState(
     Substores.metadata,
     (store) => {
-      return ancestorPaths.filter((ancestorPath) => {
-        const ancestorMetadata = MetadataUtils.findElementByElementPath(
-          store.editor.jsxMetadata,
-          ancestorPath,
-        )
-        return MetadataUtils.isGridLayoutedContainer(ancestorMetadata)
-      })
+      return ancestorPaths
+        .filter((ancestorPath) => {
+          const ancestorMetadata = MetadataUtils.findElementByElementPath(
+            store.editor.jsxMetadata,
+            ancestorPath,
+          )
+          return MetadataUtils.isGridLayoutedContainer(ancestorMetadata)
+        })
+        .map((p) => gridContainerIdentifier(p))
     },
     'GridControlsComponent ancestorGrids',
   )
@@ -1113,17 +1123,17 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
     'GridControlsComponent hoveredGrids',
   )
 
-  const gridsWithVisibleControls: Array<ElementPath> = [...targets, ...hoveredGrids]
+  const gridsWithVisibleControls: Array<GridIdentifier> = [...targets, ...hoveredGrids]
 
   // Uniqify the grid paths, and then sort them by depth.
   // With the lowest depth grid at the end so that it renders on top and catches the events
   // before those above it in the hierarchy.
   const grids = useGridData(
-    uniqBy([...gridsWithVisibleControls, ...ancestorGrids], (a, b) => EP.pathsEqual(a, b)).sort(
-      (a, b) => {
-        return EP.fullDepth(a) - EP.fullDepth(b)
-      },
-    ),
+    uniqBy([...gridsWithVisibleControls, ...ancestorGrids], gridIdentifierSimilar).sort((a, b) => {
+      const aDepth = a.type === 'GRID_CONTAINER' ? EP.fullDepth(a.path) : EP.fullDepth(a.path) - 1
+      const bDepth = a.type === 'GRID_CONTAINER' ? EP.fullDepth(b.path) : EP.fullDepth(b.path) - 1
+      return aDepth - bDepth
+    }),
   )
 
   if (grids.length === 0) {
@@ -1134,13 +1144,18 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
     <div id={'grid-controls'}>
       <CanvasOffsetWrapper>
         {grids.map((grid) => {
-          const shouldHaveVisibleControls = EP.containsPath(
-            grid.elementPath,
-            gridsWithVisibleControls,
-          )
+          const gridPath =
+            grid.identifier.type === 'GRID_CONTAINER'
+              ? grid.identifier.path
+              : EP.parentPath(grid.identifier.path)
+          const shouldHaveVisibleControls = gridsWithVisibleControls.some((g) => {
+            const visibleControlPath = g.type === 'GRID_CONTAINER' ? g.path : EP.parentPath(g.path)
+            return EP.pathsEqual(gridPath, visibleControlPath)
+          })
+
           return (
             <GridControl
-              key={GridControlKey(grid.elementPath)}
+              key={GridControlKey(grid.identifier.path)}
               grid={grid}
               controlsVisible={shouldHaveVisibleControls ? 'visible' : 'not-visible'}
             />
@@ -1582,15 +1597,16 @@ function useMouseMove(activelyDraggingOrResizingCell: string | null) {
 }
 
 interface GridResizeControlProps {
-  target: ElementPath
+  target: GridIdentifier
 }
 
 export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) => {
+  const gridTarget = target.type === 'GRID_CONTAINER' ? target.path : EP.parentPath(target.path)
   const colorTheme = useColorTheme()
 
   const element = useEditorState(
     Substores.metadata,
-    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target),
+    (store) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, gridTarget),
     'GridResizeControls element',
   )
 
@@ -1703,7 +1719,7 @@ export const GridResizeControlsComponent = ({ target }: GridResizeControlProps) 
     [element, startResizeInteraction],
   )
 
-  const resizeEdges = useResizeEdges([target], {
+  const resizeEdges = useResizeEdges([gridTarget], {
     onEdgeDoubleClick: () => NO_OP,
     onEdgeMouseMove: NO_OP,
     onEdgeMouseDown: onEdgeMouseDown,
