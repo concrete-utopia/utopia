@@ -190,7 +190,12 @@ function getPropertiesToZero(
 }
 
 export function patchRemovedProperties(editorState: EditorState): EditorState {
-  const styleInfoReader = getActivePlugin(editorState).styleInfoFactory({
+  const activePlugin = getActivePlugin(editorState)
+  if (activePlugin.name === InlineStylePlugin.name) {
+    return editorState
+  }
+
+  const styleInfoReader = activePlugin.styleInfoFactory({
     projectContents: editorState.projectContents,
   })
 
