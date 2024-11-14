@@ -2,6 +2,7 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
+import { v4 as UUID } from 'uuid'
 import type { AnimationControls } from 'framer-motion'
 import { motion, useAnimationControls } from 'framer-motion'
 import type { CSSProperties } from 'react'
@@ -93,6 +94,7 @@ import {
   gridEdgeToEdgePosition,
   GridElementContainingBlockKey,
   GridMeasurementHelperKey,
+  GridMeasurementHelperMap,
   GridMeasurementHelpersKey,
   useGridData,
   useGridMeasurementHelperData,
@@ -1035,13 +1037,24 @@ export const GridMeasurementHelpers = React.memo(() => {
     'GridMeasurementHelpers metadata',
   )
 
-  const grids = useAllGrids(metadata)
+  const { grids, gridItems } = useAllGrids(metadata)
 
   return (
     <CanvasOffsetWrapper>
-      {grids.map((grid) => {
-        return <GridMeasurementHelper key={GridMeasurementHelpersKey(grid)} elementPath={grid} />
-      })}
+      {grids.map((grid) => (
+        <GridMeasurementHelper
+          key={GridMeasurementHelpersKey(grid)}
+          elementPath={grid}
+          fromParent='fromElement'
+        />
+      ))}
+      {gridItems.map((gridItem) => (
+        <GridMeasurementHelper
+          key={GridMeasurementHelpersKey(gridItem)}
+          elementPath={gridItem}
+          fromParent='fromParent'
+        />
+      ))}
     </CanvasOffsetWrapper>
   )
 })
@@ -1049,46 +1062,47 @@ GridMeasurementHelpers.displayName = 'GridMeasurementHelpers'
 
 export interface GridMeasurementHelperProps {
   elementPath: ElementPath
+  fromParent: 'fromParent' | 'fromElement'
 }
 
-const GridMeasurementHelper = React.memo<{ elementPath: ElementPath }>(({ elementPath }) => {
-  const gridData = useGridMeasurementHelperData(elementPath)
-  if (gridData == null) {
-    return null
-  }
+export const GridMeasurementHelper = React.memo<GridMeasurementHelperProps>(
+  ({ elementPath, fromParent }) => {
+    const gridData = useGridMeasurementHelperData(elementPath, fromParent)
+    if (gridData == null) {
+      return null
+    }
 
-  const placeholders = range(0, gridData.cells)
+    const placeholders = range(0, gridData.cells)
 
-  const style: CSSProperties = {
-    ...getGridHelperStyleMatchingTargetGrid(gridData),
-    opacity: 1,
-  }
+    const style: CSSProperties = {
+      ...getGridHelperStyleMatchingTargetGrid(gridData),
+      opacity: 1,
+    }
 
-  return (
-    <div
-      id={GridMeasurementHelperKey(elementPath)}
-      data-grid-path={EP.toString(elementPath)}
-      style={style}
-    >
-      {placeholders.map((cell) => {
-        const countedRow = Math.floor(cell / gridData.columns) + 1
-        const countedColumn = Math.floor(cell % gridData.columns) + 1
-        const id = `${GridMeasurementHelperKey(elementPath)}-${countedRow}-${countedColumn}`
-        return (
-          <div
-            key={id}
-            style={{
-              position: 'relative',
-              pointerEvents: 'none',
-            }}
-            data-grid-row={countedRow}
-            data-grid-column={countedColumn}
-          />
-        )
-      })}
-    </div>
-  )
-})
+    const uid = UUID()
+    GridMeasurementHelperMap.current.set(gridData.element, uid)
+    return (
+      <div id={uid} data-grid-path={EP.toString(elementPath)} style={style}>
+        {placeholders.map((cell) => {
+          const countedRow = Math.floor(cell / gridData.columns) + 1
+          const countedColumn = Math.floor(cell % gridData.columns) + 1
+          const id = `${GridMeasurementHelperKey(elementPath)}-${countedRow}-${countedColumn}`
+          return (
+            <div
+              key={id}
+              style={{
+                position: 'relative',
+                pointerEvents: 'none',
+              }}
+              data-grid-row={countedRow}
+              data-grid-column={countedColumn}
+            />
+          )
+        })}
+      </div>
+    )
+  },
+)
 GridMeasurementHelper.displayName = 'GridMeasurementHelper'
 
 export const GridControlsComponent = ({ targets }: GridControlsProps) => {
@@ -2075,6 +2089,14 @@ function gridPlaceholderWidthOrHeight(scale: number): string {
 
 function useAllGrids(metadata: ElementInstanceMetadataMap) {
   return React.useMemo(() => {
-    return MetadataUtils.getAllGrids(metadata)
+    const gridPaths = MetadataUtils.getAllGrids(metadata)
+    const gridItemPaths = MetadataUtils.getAllGridItems(metadata)
+    const gridItemPathsWithoutGridPaths = gridItemPaths.filter(
+      (path) => !gridPaths.some((gridPath) => EP.isParentOf(gridPath, path)),
+    )
+    return {
+      grids: gridPaths,
+      gridItems: gridItemPathsWithoutGridPaths,
+    }
   }, [metadata])
 }

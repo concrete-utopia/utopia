@@ -67,7 +67,7 @@ import {
   getPathsOnDomElement,
   getPathStringsOnDomElement,
 } from '../../core/shared/uid-utils'
-import { forceNotNull } from '../../core/shared/optional-utils'
+import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import type { EditorState, EditorStorePatched } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
@@ -83,7 +83,7 @@ import { runDOMWalker } from '../editor/actions/action-creators'
 import { CanvasContainerOuterId } from './canvas-component-entry'
 import { ElementsToRerenderGLOBAL } from './ui-jsx-canvas'
 import type { GridCellGlobalFrames } from './canvas-strategies/strategies/grid-helpers'
-import { GridMeasurementHelperKey } from './controls/grid-controls-for-strategies'
+import { GridMeasurementHelperMap } from './controls/grid-controls-for-strategies'
 
 export const ResizeObserver =
   window.ResizeObserver ?? ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -1079,18 +1079,12 @@ function measureGlobalFramesOfGridCells(
   containerRectLazy: CanvasPoint | (() => CanvasPoint),
   elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): GridCellGlobalFrames | null {
-  const paths = getPathsOnDomElement(element)
-
   let gridCellGlobalFrames: GridCellGlobalFrames | null = null
-  const gridControlElement = (() => {
-    for (let p of paths) {
-      const maybeGridControlElement = document.getElementById(GridMeasurementHelperKey(p))
-      if (maybeGridControlElement != null) {
-        return maybeGridControlElement
-      }
-    }
-    return null
-  })()
+
+  const gridMeasurementHelperId = GridMeasurementHelperMap.current.get(element)
+
+  const gridControlElement =
+    gridMeasurementHelperId != null ? document.getElementById(gridMeasurementHelperId) : null
 
   if (gridControlElement != null) {
     gridCellGlobalFrames = []

@@ -50,6 +50,8 @@ import {
 } from '../../editor/store/editor-state'
 import { findOriginalGrid } from '../canvas-strategies/strategies/grid-helpers'
 
+export const GridMeasurementHelperMap = { current: new WeakMap<HTMLElement, string>() }
+
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
 function getCellsCount(template: GridAutoOrTemplateBase | null): number {
@@ -94,6 +96,7 @@ export type GridMeasurementHelperData = {
   rowGap: number | null
   columnGap: number | null
   padding: Sides
+  element: HTMLElement
 }
 
 export function getGridMeasurementHelperData(
@@ -217,12 +220,14 @@ export function gridMeasurementHelperDataFromElement(
       columns: columns,
       cells: columns * rows,
       computedStyling: computedStyling,
+      element: element,
     }
   }
 }
 
 export function useGridMeasurementHelperData(
   elementPath: ElementPath,
+  fromParent: 'fromParent' | 'fromElement' = 'fromElement',
 ): GridMeasurementHelperData | undefined {
   const scale = useEditorState(
     Substores.canvas,
@@ -232,7 +237,9 @@ export function useGridMeasurementHelperData(
 
   useMonitorChangesToEditor()
 
-  return useKeepReferenceEqualityIfPossible(getGridMeasurementHelperData(elementPath, scale))
+  return useKeepReferenceEqualityIfPossible(
+    getGridMeasurementHelperData(elementPath, scale, fromParent),
+  )
 }
 
 export type GridData = GridMeasurementHelperData & {
