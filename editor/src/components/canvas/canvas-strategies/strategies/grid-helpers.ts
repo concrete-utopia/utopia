@@ -45,6 +45,7 @@ import {
   getGridChildCellCoordBoundsFromCanvas,
   gridCellCoordinates,
 } from './grid-cell-bounds'
+import type { GridIdentifier } from '../../../editor/store/editor-state'
 
 export function gridPositionToValue(
   p: GridPositionOrSpan | null | undefined,
@@ -683,4 +684,27 @@ export function gridMoveStrategiesExtraCommands(
   ]
 
   return { midInteractionCommands, onCompleteCommands }
+}
+
+export function getGridIdentifierContainerOrComponentPath(identifier: GridIdentifier): ElementPath {
+  switch (identifier.type) {
+    case 'GRID_CONTAINER':
+      return identifier.path
+    case 'GRID_ITEM':
+      return EP.parentPath(identifier.path)
+    default:
+      assertNever(identifier)
+  }
+}
+
+export function gridIdentifiersSimilar(a: GridIdentifier, b: GridIdentifier): boolean {
+  return (
+    (a.type === b.type && EP.pathsEqual(a.path, b.path)) ||
+    (a.type === 'GRID_ITEM' && b.type === 'GRID_CONTAINER' && EP.isParentOf(b.path, a.path)) ||
+    (a.type === 'GRID_CONTAINER' && b.type === 'GRID_ITEM' && EP.isParentOf(a.path, b.path))
+  )
+}
+
+export function gridIdentifierToString(identifier: GridIdentifier): string {
+  return `${identifier.type}-${EP.toString(identifier.path)}`
 }
