@@ -30,7 +30,6 @@ import type {
   ExecutePostActionMenuChoice as ExecutePostActionMenuChoice,
   StartPostActionSession,
 } from '../action-types'
-import { SelectComponents } from '../action-types'
 import {
   isClearInteractionSession,
   isCreateOrUpdateInteractionSession,
@@ -49,6 +48,7 @@ import type {
   CustomStrategyState,
   CustomStrategyStatePatch,
   InteractionCanvasState,
+  InteractionLifecycle,
   StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { strategyApplicationResult } from '../../canvas/canvas-strategies/canvas-strategy-types'
@@ -58,11 +58,101 @@ import { isInsertMode } from '../editor-modes'
 import { patchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 import { allowedToEditProject } from './collaborative-editing'
 import { canMeasurePerformance } from '../../../core/performance/performance-utils'
+import { getActivePlugin } from '../../canvas/plugins/style-plugins'
+import { InlineStylePlugin } from '../../canvas/plugins/inline-style-plugin'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
   patchedEditorState: EditorState
   newStrategyState: StrategyState
+}
+
+/**
+ * PLAN
+ * - [ ] if inline style plugin is active: do nothing, early return
+ *
+ * - [x] apply results in mid-interaction mode (adds zeroed props)
+ * - [x] apply results in end-interaction mode (adds tailwind classes to compile)
+ *
+ * - [ ] wait for compiler to finish and put the classes into the DOM
+ *
+ * - [ ] re-apply the strategy in end-interaction mode
+ */
+
+function applyStrategy(
+  strategy: StrategyWithFitness | null,
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession,
+  newEditorState: EditorState,
+  result: EditorStoreUnpatched,
+  storedState: EditorStoreFull,
+  interactionLifecycle: InteractionLifecycle,
+) {
+  const midInteractionStrategyResult: StrategyApplicationResult =
+    strategy != null
+      ? applyCanvasStrategy(
+          strategy.strategy,
+          canvasState,
+          interactionSession,
+          result.strategyState.customStrategyState,
+          interactionLifecycle,
+        )
+      : strategyApplicationResult([], [])
+
+  const { editorState: midInteractionEditorState } = foldAndApplyCommands(
+    newEditorState,
+    storedState.patchedEditor,
+    [],
+    midInteractionStrategyResult.commands,
+    interactionLifecycle,
+  )
+
+  return { editorState: midInteractionEditorState, result: midInteractionStrategyResult }
+}
+
+function applyStrategyTwice(
+  strategy: StrategyWithFitness | null,
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession,
+  newEditorState: EditorState,
+  result: EditorStoreUnpatched,
+  storedState: EditorStoreFull,
+): { editorState: EditorState; endInteractionResult: StrategyApplicationResult } {
+  const activePlugin = getActivePlugin(newEditorState)
+  if (activePlugin.name === InlineStylePlugin.name) {
+    const { editorState, result: interactionResult } = applyStrategy(
+      strategy,
+      canvasState,
+      interactionSession,
+      newEditorState,
+      result,
+      storedState,
+      'end-interaction',
+    )
+    return { editorState: editorState, endInteractionResult: interactionResult }
+  }
+
+  const { editorState: editorState1 } = applyStrategy(
+    strategy,
+    canvasState,
+    interactionSession,
+    newEditorState,
+    result,
+    storedState,
+    'mid-interaction',
+  )
+
+  const { editorState, result: endInteractionResult } = applyStrategy(
+    strategy,
+    canvasState,
+    interactionSession,
+    editorState1,
+    result,
+    storedState,
+    'end-interaction',
+  )
+
+  return { editorState, endInteractionResult }
 }
 
 export function interactionFinished(
@@ -94,58 +184,13 @@ export function interactionFinished(
       result.strategyState.currentStrategy,
     )
 
-    /**
-     * PLAN
-     * - [ ] if inline style plugin is active: do nothing, early return
-     *
-     * - [x] apply results in mid-interaction mode (adds zeroed props)
-     * - [x] apply results in end-interaction mode (adds tailwind classes to compile)
-     *
-     * - [ ] wait for compiler to finish and put the classes into the DOM
-     *
-     * - [ ] re-apply the strategy in end-interaction mode
-     */
-
-    const midInteractionStrategyResult: StrategyApplicationResult =
-      strategy != null
-        ? applyCanvasStrategy(
-            strategy.strategy,
-            canvasState,
-            interactionSession,
-            result.strategyState.customStrategyState,
-            'mid-interaction',
-          )
-        : strategyApplicationResult([], [])
-
-    const { editorState: midInteractionEditorState } = foldAndApplyCommands(
+    const { editorState, endInteractionResult } = applyStrategyTwice(
+      strategy,
+      canvasState,
+      interactionSession,
       newEditorState,
-      storedState.patchedEditor,
-      [],
-      midInteractionStrategyResult.commands,
-      'mid-interaction',
-    )
-
-    const endInteractionResult: StrategyApplicationResult =
-      strategy == null
-        ? strategyApplicationResult([], [])
-        : applyCanvasStrategy(
-            strategy.strategy,
-            pickCanvasStateFromEditorState(
-              newEditorState.selectedViews,
-              midInteractionEditorState,
-              result.builtInDependencies,
-            ),
-            interactionSession,
-            result.strategyState.customStrategyState,
-            'end-interaction',
-          )
-
-    const { editorState } = foldAndApplyCommands(
-      midInteractionEditorState,
-      storedState.patchedEditor,
-      [],
-      endInteractionResult.commands,
-      'end-interaction',
+      result,
+      storedState,
     )
 
     const finalEditor: EditorState = applyElementsToRerenderFromStrategyResult(
@@ -156,7 +201,7 @@ export function interactionFinished(
         domMetadata: {},
         spyMetadata: {},
       },
-      midInteractionStrategyResult,
+      endInteractionResult,
     )
 
     return {
