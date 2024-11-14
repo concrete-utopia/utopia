@@ -1,7 +1,6 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { CSSCursor } from '../../../../uuiui-deps'
 import { duplicateElement } from '../../commands/duplicate-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
@@ -19,11 +18,11 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import {
-  findOriginalGrid,
   getParentGridTemplatesFromChildMeasurements,
   gridMoveStrategiesExtraCommands,
 } from './grid-helpers'
 import { runGridChangeElementLocation } from './grid-change-element-location-strategy'
+import { gridItemIdentifier } from '../../../editor/store/editor-state'
 
 export const gridChangeElementLocationDuplicateStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -72,22 +71,6 @@ export const gridChangeElementLocationDuplicateStrategy: CanvasStrategyFactory =
     return null
   }
 
-  const parentGridPath = findOriginalGrid(
-    canvasState.startingMetadata,
-    EP.parentPath(selectedElement),
-  ) // TODO don't use EP.parentPath
-  if (parentGridPath == null) {
-    return null
-  }
-
-  const gridFrame = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
-    parentGridPath,
-  )?.globalFrame
-  if (gridFrame == null || isInfinityRectangle(gridFrame)) {
-    return null
-  }
-
   return {
     id: 'grid-change-element-location-duplicate-strategy',
     name: 'Change Location (Duplicate)',
@@ -96,7 +79,7 @@ export const gridChangeElementLocationDuplicateStrategy: CanvasStrategyFactory =
       category: 'tools',
       type: 'pointer',
     },
-    controlsToRender: [controlsForGridPlaceholders(parentGridPath)],
+    controlsToRender: [controlsForGridPlaceholders(gridItemIdentifier(selectedElement))],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 3),
     apply: () => {
       if (
@@ -117,8 +100,7 @@ export const gridChangeElementLocationDuplicateStrategy: CanvasStrategyFactory =
         duplicatedElementNewUids[oldUid] = newUid
       }
 
-      const targetElement = EP.appendToPath(parentGridPath, newUid)
-
+      const targetElement = EP.appendToPath(EP.parentPath(selectedElement), newUid)
       const { parentGridCellGlobalFrames, parentContainerGridProperties } =
         selectedElementMetadata.specialSizeMeasurements
       if (parentGridCellGlobalFrames == null) {
@@ -129,14 +111,13 @@ export const gridChangeElementLocationDuplicateStrategy: CanvasStrategyFactory =
         canvasState.startingMetadata,
         interactionSession.interactionData,
         selectedElementMetadata,
-        parentGridPath,
         parentGridCellGlobalFrames,
         parentContainerGridProperties,
         null,
       )
 
       const { midInteractionCommands, onCompleteCommands } = gridMoveStrategiesExtraCommands(
-        parentGridPath,
+        EP.parentPath(selectedElement), // TODO: don't use EP.parentPath
         initialTemplates,
       )
 

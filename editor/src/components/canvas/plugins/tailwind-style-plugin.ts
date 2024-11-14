@@ -25,6 +25,13 @@ function parseTailwindProperty<T>(
 const TailwindPropertyMapping: Record<string, string> = {
   gap: 'gap',
   flexDirection: 'flexDirection',
+  left: 'positionLeft',
+  right: 'positionRight',
+  top: 'positionTop',
+  bottom: 'positionBottom',
+  width: 'width',
+  height: 'height',
+  flexBasis: 'flexBasis',
 }
 
 function isSupportedTailwindProperty(prop: unknown): prop is keyof typeof TailwindPropertyMapping {
@@ -74,6 +81,16 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         flexDirection: parseTailwindProperty(
           mapping[TailwindPropertyMapping.flexDirection],
           cssParsers.flexDirection,
+        ),
+        left: parseTailwindProperty(mapping[TailwindPropertyMapping.left], cssParsers.left),
+        right: parseTailwindProperty(mapping[TailwindPropertyMapping.right], cssParsers.right),
+        top: parseTailwindProperty(mapping[TailwindPropertyMapping.top], cssParsers.top),
+        bottom: parseTailwindProperty(mapping[TailwindPropertyMapping.bottom], cssParsers.bottom),
+        width: parseTailwindProperty(mapping[TailwindPropertyMapping.width], cssParsers.width),
+        height: parseTailwindProperty(mapping[TailwindPropertyMapping.height], cssParsers.height),
+        flexBasis: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.flexBasis],
+          cssParsers.flexBasis,
         ),
       }
     },

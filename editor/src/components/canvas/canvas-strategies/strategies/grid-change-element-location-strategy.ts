@@ -9,8 +9,10 @@ import type {
   GridPositionOrSpan,
 } from '../../../../core/shared/element-template'
 import { gridPositionValue, isGridSpan } from '../../../../core/shared/element-template'
-import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { absolute } from '../../../../utils/utils'
+import { gridItemIdentifier } from '../../../editor/store/editor-state'
+import { cssKeyword } from '../../../inspector/common/css-utils'
+import { getTargetGridCellData } from '../../../inspector/grid-helpers'
 import type { CanvasCommand } from '../../commands/commands'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { showGridControls } from '../../commands/show-grid-controls-command'
@@ -26,7 +28,6 @@ import {
 import type { DragInteractionData, InteractionSession } from '../interaction-state'
 import type { GridCellGlobalFrames, SortableGridElementProperties } from './grid-helpers'
 import {
-  findOriginalGrid,
   getOriginalElementGridConfiguration,
   getParentGridTemplatesFromChildMeasurements,
   gridMoveStrategiesExtraCommands,
@@ -34,8 +35,6 @@ import {
   setGridPropsCommands,
   sortElementsByGridPosition,
 } from './grid-helpers'
-import { getTargetGridCellData } from '../../../inspector/grid-helpers'
-import { cssKeyword } from '../../../inspector/common/css-utils'
 
 export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -83,22 +82,6 @@ export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const parentGridPath = findOriginalGrid(
-    canvasState.startingMetadata,
-    EP.parentPath(selectedElement),
-  ) // TODO don't use EP.parentPath
-  if (parentGridPath == null) {
-    return null
-  }
-
-  const gridFrame = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
-    parentGridPath,
-  )?.globalFrame
-  if (gridFrame == null || isInfinityRectangle(gridFrame)) {
-    return null
-  }
-
   if (MetadataUtils.isPositionAbsolute(selectedElementMetadata)) {
     return null
   }
@@ -111,7 +94,9 @@ export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
       category: 'tools',
       type: 'pointer',
     },
-    controlsToRender: [controlsForGridPlaceholders(parentGridPath, 'visible-only-while-active')],
+    controlsToRender: [
+      controlsForGridPlaceholders(gridItemIdentifier(selectedElement), 'visible-only-while-active'),
+    ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 2),
     apply: () => {
       if (
@@ -127,14 +112,13 @@ export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
         canvasState,
         interactionSession.interactionData,
         selectedElement,
-        parentGridPath,
       )
       if (commands.length === 0) {
         return emptyStrategyApplicationResult
       }
 
       const { midInteractionCommands, onCompleteCommands } = gridMoveStrategiesExtraCommands(
-        parentGridPath,
+        EP.parentPath(selectedElement), // TODO: don't use EP.parentPath
         initialTemplates,
       )
 
@@ -150,7 +134,6 @@ function getCommandsAndPatchForGridChangeElementLocation(
   canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
   selectedElement: ElementPath,
-  gridPath: ElementPath,
 ): {
   commands: CanvasCommand[]
   elementsToRerender: ElementPath[]
@@ -177,7 +160,6 @@ function getCommandsAndPatchForGridChangeElementLocation(
     canvasState.startingMetadata,
     interactionData,
     selectedElementMetadata,
-    gridPath,
     parentGridCellGlobalFrames,
     parentContainerGridProperties,
     null,
@@ -185,7 +167,7 @@ function getCommandsAndPatchForGridChangeElementLocation(
 
   return {
     commands: commands,
-    elementsToRerender: [gridPath, selectedElement],
+    elementsToRerender: [EP.parentPath(selectedElement), selectedElement],
   }
 }
 
@@ -193,7 +175,6 @@ export function runGridChangeElementLocation(
   jsxMetadata: ElementInstanceMetadataMap,
   interactionData: DragInteractionData,
   selectedElementMetadata: ElementInstanceMetadata,
-  gridPath: ElementPath,
   gridCellGlobalFrames: GridCellGlobalFrames,
   gridTemplate: GridContainerProperties,
   newPathAfterReparent: ElementPath | null,
@@ -303,7 +284,10 @@ export function runGridChangeElementLocation(
   const gridCellMoveCommands = setGridPropsCommands(pathForCommands, gridTemplate, gridProps)
 
   // The siblings of the grid element being moved
-  const siblings = MetadataUtils.getChildrenUnordered(jsxMetadata, gridPath)
+  const siblings = MetadataUtils.getSiblingsUnordered(
+    jsxMetadata,
+    newPathAfterReparent ?? selectedElementMetadata.elementPath,
+  )
     .filter((s) => !EP.pathsEqual(s.elementPath, selectedElementMetadata.elementPath))
     .map(
       (s, index): SortableGridElementProperties => ({
@@ -338,7 +322,7 @@ export function runGridChangeElementLocation(
 
   const updateGridControlsCommand = showGridControls(
     'mid-interaction',
-    gridPath,
+    gridItemIdentifier(selectedElementMetadata.elementPath),
     targetCellCoords,
     targetRootCell,
   )

@@ -96,9 +96,7 @@ function getStyleInfoFromInlineStyle(editor: EditorRenderResult) {
   const { jsxMetadata, projectContents, elementPathTree } = editor.getEditorState().editor
 
   const styleInfoReader = InlineStylePlugin.styleInfoFactory({
-    metadata: jsxMetadata,
     projectContents: projectContents,
-    elementPathTree: elementPathTree,
   })
   const styleInfo = styleInfoReader(EP.fromString('sb/scene/div'))
   return styleInfo

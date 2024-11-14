@@ -48,6 +48,7 @@ import { newReparentSubjects } from './reparent-helpers/reparent-strategy-helper
 import { getReparentTargetUnified } from './reparent-helpers/reparent-strategy-parent-lookup'
 import { getGridCellUnderMouseFromMetadata } from './grid-cell-bounds'
 import { nukeAllAbsolutePositioningPropsCommands } from '../../../inspector/inspector-common'
+import { gridContainerIdentifier } from '../../../editor/store/editor-state'
 
 export const gridDrawToInsertText: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -149,7 +150,7 @@ const gridDrawToInsertStrategyInner =
         category: 'tools',
         type: 'pointer',
       },
-      controlsToRender: [controlsForGridPlaceholders(targetParent)],
+      controlsToRender: [controlsForGridPlaceholders(gridContainerIdentifier(targetParent))],
       fitness: 5,
       apply: (strategyLifecycle) => {
         const canvasPointToUse =
@@ -165,7 +166,7 @@ const gridDrawToInsertStrategyInner =
               }),
               showGridControls(
                 'mid-interaction',
-                targetParent,
+                gridContainerIdentifier(targetParent),
                 newTargetCell?.gridCellCoordinates ?? null,
                 null,
               ),

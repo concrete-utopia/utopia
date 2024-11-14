@@ -45,6 +45,7 @@ import { GridGapControl } from '../../controls/select-mode/grid-gap-control'
 import type { GridControlsProps } from '../../controls/grid-controls-for-strategies'
 import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
 import { getComponentDescriptorForTarget } from '../../../../core/property-controls/property-controls-utils'
+import { gridContainerIdentifier } from '../../../editor/store/editor-state'
 
 const SetGridGapStrategyId = 'SET_GRID_GAP_STRATEGY'
 
@@ -152,7 +153,7 @@ export const setGridGapStrategy: CanvasStrategyFactory = (
 
   // when the drag is ongoing, keep showing the grid cells
   if (isDragOngoing(interactionSession)) {
-    controlsToRender.push(controlsForGridPlaceholders(selectedElement))
+    controlsToRender.push(controlsForGridPlaceholders(gridContainerIdentifier(selectedElement)))
   }
 
   return {

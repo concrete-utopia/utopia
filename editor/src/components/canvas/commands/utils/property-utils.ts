@@ -5,6 +5,9 @@ import { setJSXValuesAtPaths, unsetJSXValuesAtPaths } from '../../../../core/sha
 import type { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { modifyUnderlyingElementForOpenFile } from '../../../editor/store/editor-state'
 import { patchParseSuccessAtElementPath } from '../patch-utils'
+import type { CSSNumber } from '../../../inspector/common/css-utils'
+import { isCSSNumber } from '../../../inspector/common/css-utils'
+import { type StyleInfo, isStyleInfoKey } from '../../canvas-types'
 
 export interface EditorStateWithPatch {
   editorStateWithChanges: EditorState
@@ -98,4 +101,28 @@ export function maybeCssPropertyFromInlineStyle(property: PropertyPath): string 
     return null
   }
   return prop
+}
+
+export type GetCSSNumberFromStyleInfoResult =
+  | { type: 'not-found' }
+  | { type: 'not-css-number' }
+  | { type: 'css-number'; number: CSSNumber }
+
+export function getCSSNumberFromStyleInfo(
+  styleInfo: StyleInfo,
+  property: string,
+): GetCSSNumberFromStyleInfoResult {
+  if (!isStyleInfoKey(property)) {
+    return { type: 'not-found' }
+  }
+
+  const prop = styleInfo[property]
+  if (prop == null || prop.type === 'not-found') {
+    return { type: 'not-found' }
+  }
+
+  if (prop.type === 'not-parsable' || !isCSSNumber(prop.value)) {
+    return { type: 'not-css-number' }
+  }
+  return { type: 'css-number', number: prop.value }
 }

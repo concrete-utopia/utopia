@@ -49,6 +49,7 @@ import { CSSCursor } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
 import type { Axis } from '../../gap-utils'
 import { getComponentDescriptorForTarget } from '../../../../core/property-controls/property-controls-utils'
+import { gridContainerIdentifier } from '../../../editor/store/editor-state'
 
 export const resizeGridStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -105,11 +106,11 @@ export const resizeGridStrategy: CanvasStrategyFactory = (
     controlsToRender: [
       {
         control: GridRowColumnResizingControls,
-        props: { target: gridPath },
+        props: { target: gridContainerIdentifier(gridPath) },
         key: `grid-row-col-resize-controls-${EP.toString(gridPath)}`,
         show: 'always-visible',
       },
-      controlsForGridPlaceholders(gridPath),
+      controlsForGridPlaceholders(gridContainerIdentifier(gridPath)),
     ],
     fitness: supportsStyleProp
       ? onlyFitWhenDraggingThisControl(interactionSession, 'GRID_AXIS_HANDLE', 1)

@@ -576,17 +576,37 @@ export function maybePropertyValue<T>(property: CSSStyleProperty<T>): T | null {
 }
 
 export type FlexGapInfo = CSSStyleProperty<CSSNumber>
-
 export type FlexDirectionInfo = CSSStyleProperty<FlexDirection>
+export type LeftInfo = CSSStyleProperty<CSSNumber>
+export type RightInfo = CSSStyleProperty<CSSNumber>
+export type TopInfo = CSSStyleProperty<CSSNumber>
+export type BottomInfo = CSSStyleProperty<CSSNumber>
+export type WidthInfo = CSSStyleProperty<CSSNumber>
+export type HeightInfo = CSSStyleProperty<CSSNumber>
+export type FlexBasisInfo = CSSStyleProperty<CSSNumber>
 
 export interface StyleInfo {
   gap: FlexGapInfo | null
   flexDirection: FlexDirectionInfo | null
+  left: LeftInfo | null
+  right: RightInfo | null
+  top: TopInfo | null
+  bottom: BottomInfo | null
+  width: WidthInfo | null
+  height: HeightInfo | null
+  flexBasis: FlexBasisInfo | null
 }
 
 const emptyStyleInfo: StyleInfo = {
   gap: null,
   flexDirection: null,
+  left: null,
+  right: null,
+  top: null,
+  bottom: null,
+  width: null,
+  height: null,
+  flexBasis: null,
 }
 
 export const isStyleInfoKey = (key: string): key is keyof StyleInfo => key in emptyStyleInfo
