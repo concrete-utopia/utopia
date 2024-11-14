@@ -124,7 +124,6 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     canvasState,
     interactionSession,
     selectedElements[0],
-    canvasState.styleInfoReader,
   )
 
   const resizeControl = controlWithProps({
@@ -174,12 +173,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
       }
 
       const selectedElement = filteredSelectedElements[0]
-      const delta = calculateAdjustDelta(
-        canvasState,
-        interactionSession,
-        selectedElement,
-        canvasState.styleInfoReader,
-      )
+      const delta = calculateAdjustDelta(canvasState, interactionSession, selectedElement)
 
       if (delta == null) {
         return emptyStrategyApplicationResult
@@ -422,7 +416,6 @@ function paddingValueIndicatorProps(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   selectedElement: ElementPath,
-  styleInfoReader: StyleInfoReader,
 ): FloatingIndicatorProps | null {
   const filteredSelectedElements = flattenSelection([selectedElement])
 
@@ -442,17 +435,12 @@ function paddingValueIndicatorProps(
   const padding = simplePaddingFromStyleInfo(
     canvasState.startingMetadata,
     filteredSelectedElements[0],
-    styleInfoReader(filteredSelectedElements[0]),
+    canvasState.styleInfoReader(filteredSelectedElements[0]),
   )
   const currentPadding =
     padding[paddingPropForEdge(edgePiece)] ?? unitlessCSSNumberWithRenderedValue(0)
 
-  const delta = calculateAdjustDelta(
-    canvasState,
-    interactionSession,
-    selectedElement,
-    styleInfoReader,
-  )
+  const delta = calculateAdjustDelta(canvasState, interactionSession, selectedElement)
   if (delta == null) {
     return null
   }
@@ -562,7 +550,6 @@ function calculateAdjustDelta(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
   selectedElement: ElementPath,
-  styleInfoReader: StyleInfoReader,
 ): number | null {
   if (
     interactionSession == null ||
@@ -577,7 +564,7 @@ function calculateAdjustDelta(
   const padding = simplePaddingFromStyleInfo(
     canvasState.startingMetadata,
     selectedElement,
-    styleInfoReader(selectedElement),
+    canvasState.styleInfoReader(selectedElement),
   )
   const paddingPropInteractedWith = paddingPropForEdge(edgePiece)
   const currentPadding = padding[paddingPropForEdge(edgePiece)]?.renderedValuePx ?? 0
