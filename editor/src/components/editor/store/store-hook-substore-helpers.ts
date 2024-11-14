@@ -179,4 +179,5 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   editorRemixConfig: {
     errorBoundaryHandling: 'ignore-error-boundaries',
   },
+  propertiesUpdatedDuringInteraction: {},
 }

@@ -793,6 +793,19 @@ export const MetadataUtils = {
     }
     return result
   },
+  getSiblingsUnordered(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath | null,
+  ): ElementInstanceMetadata[] {
+    if (target == null) {
+      return []
+    }
+    const parentPath = EP.parentPath(target)
+    const siblings = EP.isRootElementOfInstance(target)
+      ? MetadataUtils.getRootViewsUnordered(metadata, parentPath)
+      : MetadataUtils.getChildrenUnordered(metadata, parentPath)
+    return siblings
+  },
   getChildrenOrdered(
     elements: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,

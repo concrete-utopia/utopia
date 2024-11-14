@@ -2680,21 +2680,21 @@ export const isValidGridPositionKeyword =
   }
 
 export interface GridRange {
-  start: GridPosition
-  end: GridPosition | null
+  start: GridPositionOrSpan
+  end: GridPositionOrSpan | null
 }
 
-export function gridRange(start: GridPosition, end: GridPosition | null): GridRange {
+export function gridRange(start: GridPositionOrSpan, end: GridPositionOrSpan | null): GridRange {
   return {
     start: start,
     end: end,
   }
 }
 
-export type GridColumnStart = GridPosition
-export type GridColumnEnd = GridPosition
-export type GridRowStart = GridPosition
-export type GridRowEnd = GridPosition
+export type GridColumnStart = GridPositionOrSpan
+export type GridColumnEnd = GridPositionOrSpan
+export type GridRowStart = GridPositionOrSpan
+export type GridRowEnd = GridPositionOrSpan
 
 export interface GridAutoOrTemplateFallback {
   type: 'FALLBACK'
@@ -3228,4 +3228,51 @@ export function clearJSArbitraryStatementSourceMaps(
     default:
       assertNever(statement)
   }
+}
+
+export type GridPositionOrSpan = GridPosition | GridSpan
+
+export type GridSpan = GridSpanNumeric | GridSpanArea
+
+export function isGridSpan(u: unknown): u is GridSpan {
+  const maybe = u as GridSpan
+  return (
+    maybe != null && typeof u === 'object' && (isGridSpanNumeric(maybe) || isGridSpanArea(maybe))
+  )
+}
+
+export function stringifyGridSpan(span: GridSpan): string {
+  return `span ${span.value}`
+}
+
+export type GridSpanNumeric = {
+  type: 'SPAN_NUMERIC'
+  value: number
+}
+
+export function gridSpanNumeric(value: number): GridSpanNumeric {
+  return {
+    type: 'SPAN_NUMERIC',
+    value: value,
+  }
+}
+
+function isGridSpanNumeric(span: GridSpan): span is GridSpanNumeric {
+  return span.type === 'SPAN_NUMERIC'
+}
+
+export type GridSpanArea = {
+  type: 'SPAN_AREA'
+  value: string
+}
+
+export function gridSpanArea(areaName: string): GridSpanArea {
+  return {
+    type: 'SPAN_AREA',
+    value: areaName,
+  }
+}
+
+function isGridSpanArea(span: GridSpan): span is GridSpanArea {
+  return span.type === 'SPAN_AREA'
 }

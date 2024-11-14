@@ -198,6 +198,7 @@ import {
   emptyProjectRequirements,
   type ProjectRequirements,
 } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
+import type { UpdatedProperties } from '../../canvas/plugins/style-plugins'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 const ObjectPathImmutable: any = OPI
@@ -821,8 +822,42 @@ export interface DragToMoveIndicatorFlags {
   ancestor: boolean
 }
 
+export type GridIdentifier = GridContainerIdentifier | GridItemIdentifier
+
+export interface GridContainerIdentifier {
+  type: 'GRID_CONTAINER'
+  path: ElementPath
+}
+
+export function gridContainerIdentifier(path: ElementPath): GridContainerIdentifier {
+  return {
+    type: 'GRID_CONTAINER',
+    path: path,
+  }
+}
+
+export interface GridItemIdentifier {
+  type: 'GRID_ITEM'
+  path: ElementPath
+}
+
+export function gridItemIdentifier(path: ElementPath): GridItemIdentifier {
+  return {
+    type: 'GRID_ITEM',
+    path: path,
+  }
+}
+
+export function gridIdentifierSimilar(a: GridIdentifier, b: GridIdentifier): boolean {
+  return (
+    (a.type === b.type && EP.pathsEqual(a.path, b.path)) ||
+    (a.type === 'GRID_ITEM' && b.type === 'GRID_CONTAINER' && EP.isParentOf(b.path, a.path)) ||
+    (a.type === 'GRID_CONTAINER' && b.type === 'GRID_ITEM' && EP.isParentOf(a.path, b.path))
+  )
+}
+
 export interface GridControlData {
-  grid: ElementPath
+  grid: GridIdentifier
   targetCell: GridCellCoordinates | null // the cell under the mouse
   rootCell: GridCellCoordinates | null // the top-left cell of the target child
 }
@@ -1484,6 +1519,7 @@ export interface EditorState {
   collaborators: Collaborator[]
   sharingDialogOpen: boolean
   editorRemixConfig: EditorRemixConfig
+  propertiesUpdatedDuringInteraction: UpdatedProperties
 }
 
 export function editorState(
@@ -1571,6 +1607,7 @@ export function editorState(
   collaborators: Collaborator[],
   sharingDialogOpen: boolean,
   remixConfig: EditorRemixConfig,
+  propertiesUpdatedDuringInteraction: UpdatedProperties,
 ): EditorState {
   return {
     id: id,
@@ -1657,6 +1694,7 @@ export function editorState(
     collaborators: collaborators,
     sharingDialogOpen: sharingDialogOpen,
     editorRemixConfig: remixConfig,
+    propertiesUpdatedDuringInteraction: propertiesUpdatedDuringInteraction,
   }
 }
 
@@ -2743,6 +2781,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     editorRemixConfig: {
       errorBoundaryHandling: 'ignore-error-boundaries',
     },
+    propertiesUpdatedDuringInteraction: {},
   }
 }
 
@@ -3113,6 +3152,7 @@ export function editorModelFromPersistentModel(
     editorRemixConfig: {
       errorBoundaryHandling: 'ignore-error-boundaries',
     },
+    propertiesUpdatedDuringInteraction: {},
   }
   return editor
 }

@@ -25,7 +25,6 @@ import {
 import type { DragInteractionData, InteractionSession } from '../interaction-state'
 import type { GridCellGlobalFrames } from './grid-helpers'
 import {
-  findOriginalGrid,
   getGridElementPinState,
   getGridPositionIndex,
   getOriginalElementGridConfiguration,
@@ -34,6 +33,7 @@ import {
   isFlowGridChild,
 } from './grid-helpers'
 import { getTargetGridCellData } from '../../../inspector/grid-helpers'
+import { gridItemIdentifier } from '../../../editor/store/editor-state'
 
 export const gridReorderStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -75,22 +75,6 @@ export const gridReorderStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const parentGridPath = findOriginalGrid(
-    canvasState.startingMetadata,
-    EP.parentPath(selectedElement),
-  ) // TODO don't use EP.parentPath
-  if (parentGridPath == null) {
-    return null
-  }
-
-  const gridFrame = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
-    parentGridPath,
-  )?.globalFrame
-  if (gridFrame == null || isInfinityRectangle(gridFrame)) {
-    return null
-  }
-
   const elementGridPropertiesFromProps =
     selectedElementMetadata.specialSizeMeasurements.elementGridPropertiesFromProps
 
@@ -105,7 +89,9 @@ export const gridReorderStrategy: CanvasStrategyFactory = (
       category: 'tools',
       type: 'pointer',
     },
-    controlsToRender: [controlsForGridPlaceholders(parentGridPath, 'visible-only-while-active')],
+    controlsToRender: [
+      controlsForGridPlaceholders(gridItemIdentifier(selectedElement), 'visible-only-while-active'),
+    ],
     fitness: onlyFitWhenDraggingThisControl(
       interactionSession,
       'GRID_CELL_HANDLE',
@@ -125,14 +111,13 @@ export const gridReorderStrategy: CanvasStrategyFactory = (
         canvasState,
         interactionSession.interactionData,
         selectedElement,
-        parentGridPath,
       )
       if (commands.length === 0) {
         return emptyStrategyApplicationResult
       }
 
       const { midInteractionCommands, onCompleteCommands } = gridMoveStrategiesExtraCommands(
-        parentGridPath,
+        EP.parentPath(selectedElement), // TODO: don't use EP.parentPath
         initialTemplates,
       )
 
@@ -148,7 +133,6 @@ function getCommandsAndPatchForGridReorder(
   canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
   selectedElement: ElementPath,
-  gridPath: ElementPath,
 ): {
   commands: CanvasCommand[]
   elementsToRerender: ElementPath[]
@@ -175,14 +159,13 @@ function getCommandsAndPatchForGridReorder(
     canvasState.startingMetadata,
     interactionData,
     selectedElementMetadata,
-    gridPath,
     parentGridCellGlobalFrames,
     parentContainerGridProperties,
   )
 
   return {
     commands: commands,
-    elementsToRerender: [gridPath, selectedElement],
+    elementsToRerender: [EP.parentPath(selectedElement), selectedElement],
   }
 }
 
@@ -190,7 +173,6 @@ function runGridReorder(
   jsxMetadata: ElementInstanceMetadataMap,
   interactionData: DragInteractionData,
   selectedElementMetadata: ElementInstanceMetadata,
-  gridPath: ElementPath,
   gridCellGlobalFrames: GridCellGlobalFrames,
   gridTemplate: GridContainerProperties,
 ): CanvasCommand[] {
@@ -222,7 +204,10 @@ function runGridReorder(
       ? gridTemplate.gridTemplateColumns.dimensions.length
       : 1
 
-  const gridChildren = MetadataUtils.getChildrenUnordered(jsxMetadata, gridPath)
+  const gridChildren = MetadataUtils.getSiblingsUnordered(
+    jsxMetadata,
+    selectedElementMetadata.elementPath,
+  )
   const gridFlowChildrenCount = gridChildren.filter(isFlowGridChild).length
 
   // The "pure" index in the grid children for the cell under mouse
@@ -236,7 +221,7 @@ function runGridReorder(
 
   const updateGridControlsCommand = showGridControls(
     'mid-interaction',
-    gridPath,
+    gridItemIdentifier(selectedElementMetadata.elementPath),
     targetCellCoords,
     canReorderToIndex ? targetRootCell : null,
   )

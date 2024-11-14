@@ -152,6 +152,10 @@ import type {
   GridAutoOrTemplateDimensions,
   GridAutoOrTemplateFallback,
   BorderWidths,
+  GridSpan,
+  GridSpanArea,
+  GridSpanNumeric,
+  GridPositionOrSpan,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -223,6 +227,7 @@ import {
   gridPositionValue,
   gridAutoOrTemplateFallback,
   gridAutoOrTemplateDimensions,
+  isGridSpan,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -363,6 +368,9 @@ import type {
   EditorRemixConfig,
   ErrorBoundaryHandling,
   GridControlData,
+  GridIdentifier,
+  GridContainerIdentifier,
+  GridItemIdentifier,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -375,6 +383,8 @@ import {
   newGithubData,
   renderedAtPropertyPath,
   renderedAtChildNode,
+  gridContainerIdentifier,
+  gridItemIdentifier,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -657,6 +667,10 @@ import {
   newProjectRequirements,
   requirementResolution,
 } from '../../../core/shared/import/project-health-check/utopia-requirements-types'
+import type {
+  StylePropsUpdatedDuringInteraction,
+  UpdatedProperties,
+} from '../../canvas/plugins/style-plugins'
 
 export function ElementPropertyPathKeepDeepEquality(): KeepDeepEqualityCall<ElementPropertyPath> {
   return combine2EqualityCalls(
@@ -2165,16 +2179,66 @@ export const GridPositionKeepDeepEquality: KeepDeepEqualityCall<GridPosition> = 
   }
 }
 
+export const GridSpanAreaKeepDeepEquality: KeepDeepEqualityCall<GridSpanArea> =
+  combine1EqualityCall(
+    (p) => p.value,
+    StringKeepDeepEquality,
+    (value) => ({ type: 'SPAN_AREA', value: value }),
+  )
+
+export const GridSpanNumericKeepDeepEquality: KeepDeepEqualityCall<GridSpanNumeric> =
+  combine1EqualityCall(
+    (p) => p.value,
+    NumberKeepDeepEquality,
+    (value) => ({ type: 'SPAN_NUMERIC', value: value }),
+  )
+
+export const GridSpanKeepDeepEquality: KeepDeepEqualityCall<GridSpan> = (oldValue, newValue) => {
+  switch (oldValue.type) {
+    case 'SPAN_AREA':
+      if (newValue.type === oldValue.type) {
+        return GridSpanAreaKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'SPAN_NUMERIC':
+      if (newValue.type === oldValue.type) {
+        return GridSpanNumericKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const GridPositionOrSpanKeepDeepEquality: KeepDeepEqualityCall<GridPositionOrSpan> = (
+  oldValue,
+  newValue,
+) => {
+  if (isGridSpan(oldValue)) {
+    if (isGridSpan(newValue)) {
+      return GridSpanKeepDeepEquality(oldValue, newValue)
+    } else {
+      return keepDeepEqualityResult(newValue, false)
+    }
+  } else {
+    if (isGridSpan(newValue)) {
+      return keepDeepEqualityResult(newValue, false)
+    }
+    return GridPositionKeepDeepEquality(oldValue, newValue)
+  }
+}
+
 export function GridElementPropertiesKeepDeepEquality(): KeepDeepEqualityCall<GridElementProperties> {
   return combine4EqualityCalls(
     (properties) => properties.gridColumnStart,
-    nullableDeepEquality(GridPositionKeepDeepEquality),
+    nullableDeepEquality(GridPositionOrSpanKeepDeepEquality),
     (properties) => properties.gridColumnEnd,
-    nullableDeepEquality(GridPositionKeepDeepEquality),
+    nullableDeepEquality(GridPositionOrSpanKeepDeepEquality),
     (properties) => properties.gridRowStart,
-    nullableDeepEquality(GridPositionKeepDeepEquality),
+    nullableDeepEquality(GridPositionOrSpanKeepDeepEquality),
     (properties) => properties.gridRowEnd,
-    nullableDeepEquality(GridPositionKeepDeepEquality),
+    nullableDeepEquality(GridPositionOrSpanKeepDeepEquality),
     gridElementProperties,
   )
 }
@@ -2790,10 +2854,46 @@ export const GridCellCoordinatesKeepDeepEquality: KeepDeepEqualityCall<GridCellC
     (row, column) => ({ row, column }),
   )
 
-export const GridControlDataKeepDeepEquality: KeepDeepEqualityCall<GridControlData> =
+export const GridContainerIdentifierKeepDeepEquality: KeepDeepEqualityCall<GridContainerIdentifier> =
+  combine1EqualityCall(
+    (identifier) => identifier.path,
+    ElementPathKeepDeepEquality,
+    gridContainerIdentifier,
+  )
+
+export const GridItemIdentifierKeepDeepEquality: KeepDeepEqualityCall<GridItemIdentifier> =
+  combine1EqualityCall(
+    (identifier) => identifier.path,
+    ElementPathKeepDeepEquality,
+    gridItemIdentifier,
+  )
+
+export const GridIdentifierKeepDeepEquality: KeepDeepEqualityCall<GridIdentifier> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'GRID_CONTAINER':
+      if (newValue.type === oldValue.type) {
+        return GridContainerIdentifierKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'GRID_ITEM':
+      if (newValue.type === oldValue.type) {
+        return GridItemIdentifierKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      const _exhaustiveCheck: never = oldValue
+      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+const GridControlDataKeepDeepEquality: KeepDeepEqualityCall<GridControlData> =
   combine3EqualityCalls(
     (data) => data.grid,
-    ElementPathKeepDeepEquality,
+    GridIdentifierKeepDeepEquality,
     (data) => data.targetCell,
     nullableDeepEquality(GridCellCoordinatesKeepDeepEquality),
     (data) => data.rootCell,
@@ -5220,6 +5320,21 @@ export const RemixConfigKeepDeepEquality: KeepDeepEqualityCall<EditorRemixConfig
     },
   )
 
+export const StylePropsUpdatedDuringInteractionKeepDeepEquality: KeepDeepEqualityCall<StylePropsUpdatedDuringInteraction> =
+  combine2EqualityCalls(
+    (data) => data.propertiesDeleted,
+    arrayDeepEquality(StringKeepDeepEquality),
+    (data) => data.propertiesUpdated,
+    arrayDeepEquality(StringKeepDeepEquality),
+    (propertiesDeleted, propertiesUpdated) => ({
+      propertiesDeleted,
+      propertiesUpdated,
+    }),
+  )
+
+export const PropertiesUpdatedDuringInteractionKeepDeepEquality: KeepDeepEqualityCall<UpdatedProperties> =
+  objectDeepEquality(StylePropsUpdatedDuringInteractionKeepDeepEquality)
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -5537,6 +5652,12 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.editorRemixConfig,
   )
 
+  const propertiesUpdatedDuringInteractionResults =
+    PropertiesUpdatedDuringInteractionKeepDeepEquality(
+      oldValue.propertiesUpdatedDuringInteraction,
+      newValue.propertiesUpdatedDuringInteraction,
+    )
+
   const areEqual =
     idResult.areEqual &&
     forkedFromProjectIdResult.areEqual &&
@@ -5620,7 +5741,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     forkingResults.areEqual &&
     collaboratorsResults.areEqual &&
     sharingDialogOpenResults.areEqual &&
-    remixConfigResults.areEqual
+    remixConfigResults.areEqual &&
+    propertiesUpdatedDuringInteractionResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -5710,6 +5832,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       collaboratorsResults.value,
       sharingDialogOpenResults.value,
       remixConfigResults.value,
+      propertiesUpdatedDuringInteractionResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

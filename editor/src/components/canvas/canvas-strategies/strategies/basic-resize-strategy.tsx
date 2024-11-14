@@ -13,7 +13,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { styleStringInArray } from '../../../../utils/common-constants'
-import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
+import { gridItemIdentifier, trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { isFillOrStretchModeApplied } from '../../../inspector/inspector-common'
 import type { EdgePosition } from '../../canvas-types'
@@ -122,7 +122,7 @@ export function basicResizeStrategy(
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
-      ...(isGridCell ? [controlsForGridPlaceholders(EP.parentPath(selectedElement))] : []),
+      ...(isGridCell ? [controlsForGridPlaceholders(gridItemIdentifier(selectedElement))] : []),
     ],
     fitness:
       interactionSession != null &&

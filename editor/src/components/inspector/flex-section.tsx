@@ -60,15 +60,19 @@ import {
   setProperty,
 } from '../canvas/commands/set-property-command'
 import * as PP from '../../core/shared/property-path'
-import type { GridContainerProperties, GridPosition } from '../../core/shared/element-template'
+import type {
+  GridContainerProperties,
+  GridPositionOrSpan,
+} from '../../core/shared/element-template'
 import {
   gridPositionValue,
+  isGridSpan,
   type ElementInstanceMetadata,
   type GridElementProperties,
 } from '../../core/shared/element-template'
 import {
   isJustAutoGridDimension,
-  setGridPropsCommands,
+  getCommandsForGridItemPlacement,
 } from '../canvas/canvas-strategies/strategies/grid-helpers'
 import { type CanvasCommand } from '../canvas/commands/commands'
 import type { DropdownMenuItem } from '../../uuiui/radix-components'
@@ -322,9 +326,10 @@ const TemplateDimensionControl = React.memo(
             ...child.specialSizeMeasurements.elementGridPropertiesFromProps,
           }
 
-          function needsAdjusting(pos: GridPosition | null, bound: number) {
+          function needsAdjusting(pos: GridPositionOrSpan | null, bound: number) {
             return pos != null &&
               !isCSSKeyword(pos) &&
+              !isGridSpan(pos) && // TODO support grid spans
               pos.numericalPosition != null &&
               pos.numericalPosition >= bound
               ? pos.numericalPosition
@@ -352,7 +357,9 @@ const TemplateDimensionControl = React.memo(
             }
           }
 
-          commands.push(...setGridPropsCommands(child.elementPath, adjustedGridTemplate, updated))
+          commands.push(
+            ...getCommandsForGridItemPlacement(child.elementPath, adjustedGridTemplate, updated),
+          )
         }
 
         dispatch([applyCommandsAction(commands)])
@@ -429,7 +436,7 @@ const TemplateDimensionControl = React.memo(
         const children = MetadataUtils.getChildrenUnordered(metadataRef.current, grid.elementPath)
         for (const child of children) {
           commands.push(
-            ...setGridPropsCommands(
+            ...getCommandsForGridItemPlacement(
               child.elementPath,
               adjustedGridTemplate,
               child.specialSizeMeasurements.elementGridPropertiesFromProps,

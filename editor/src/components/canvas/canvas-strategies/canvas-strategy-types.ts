@@ -110,8 +110,6 @@ export type StyleInfoReader = (elementPath: ElementPath) => StyleInfo | null
 
 export type StyleInfoFactory = (context: {
   projectContents: ProjectContentTreeRoot
-  metadata: ElementInstanceMetadataMap
-  elementPathTree: ElementPathTrees
 }) => StyleInfoReader
 
 export interface InteractionCanvasState {

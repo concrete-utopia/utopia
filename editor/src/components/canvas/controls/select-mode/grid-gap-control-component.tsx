@@ -27,6 +27,7 @@ import type { CSSNumberWithRenderedValue } from './controls-common'
 import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
 import { startGapControlInteraction } from './grid-gap-control-helpers'
 import type { AlignContent, FlexJustifyContent } from '../../../inspector/inspector-common'
+import { gridContainerIdentifier } from '../../../editor/store/editor-state'
 
 export interface GridGapControlProps {
   selectedElement: ElementPath
@@ -67,7 +68,7 @@ export const GridGapControlComponent = React.memo<GridGapControlProps>((props) =
       'GridGapControlComponent elementHovered',
     ) ?? false
 
-  const grid = useGridData([selectedElement]).at(0)
+  const grid = useGridData([gridContainerIdentifier(selectedElement)]).at(0)
 
   const activeDraggingAxis = useEditorState(
     Substores.canvas,
@@ -198,8 +199,8 @@ export const GridPaddingOutlineForDimension = (props: {
             beingDragged={beingDragged}
             onMouseOver={onMouseOver}
             elementHovered={elementHovered}
-            gridJustifyContent={grid.justifyContent}
-            gridAlignContent={grid.alignContent}
+            gridJustifyContent={grid.computedStyling.justifyContent}
+            gridAlignContent={grid.computedStyling.alignContent}
             draggedOutlineColor={draggedOutlineColor}
           />
         )
@@ -220,8 +221,8 @@ const GridRowOrColumnHighlight = (props: {
   beingDragged: boolean
   onMouseOver: () => void
   elementHovered: boolean
-  gridJustifyContent: FlexJustifyContent | null
-  gridAlignContent: AlignContent | null
+  gridJustifyContent: string | undefined
+  gridAlignContent: string | undefined
   draggedOutlineColor?: UtopiColor
 }) => {
   const {

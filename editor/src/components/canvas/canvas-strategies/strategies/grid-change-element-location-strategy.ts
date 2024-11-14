@@ -1,16 +1,18 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import * as PP from '../../../../core/shared/property-path'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   GridContainerProperties,
   GridElementProperties,
+  GridPositionOrSpan,
 } from '../../../../core/shared/element-template'
-import { gridPositionValue, isJSXElement } from '../../../../core/shared/element-template'
-import { isInfinityRectangle } from '../../../../core/shared/math-utils'
+import { gridPositionValue, isGridSpan } from '../../../../core/shared/element-template'
 import { absolute } from '../../../../utils/utils'
+import { gridItemIdentifier } from '../../../editor/store/editor-state'
+import { cssKeyword } from '../../../inspector/common/css-utils'
+import { getTargetGridCellData } from '../../../inspector/grid-helpers'
 import type { CanvasCommand } from '../../commands/commands'
 import { reorderElement } from '../../commands/reorder-element-command'
 import { showGridControls } from '../../commands/show-grid-controls-command'
@@ -26,21 +28,13 @@ import {
 import type { DragInteractionData, InteractionSession } from '../interaction-state'
 import type { GridCellGlobalFrames, SortableGridElementProperties } from './grid-helpers'
 import {
-  findOriginalGrid,
   getOriginalElementGridConfiguration,
   getParentGridTemplatesFromChildMeasurements,
   gridMoveStrategiesExtraCommands,
-  setGridPropsCommands,
+  isAutoGridPin,
+  getCommandsForGridItemPlacement,
   sortElementsByGridPosition,
 } from './grid-helpers'
-import { getTargetGridCellData } from '../../../inspector/grid-helpers'
-import { forEachOf } from '../../../../core/shared/optics/optic-utilities'
-import {
-  eitherRight,
-  fromField,
-  fromTypeGuard,
-} from '../../../../core/shared/optics/optic-creators'
-import { getJSXAttributesAtPath } from '../../../..//core/shared/jsx-attribute-utils'
 
 export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -88,22 +82,6 @@ export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const parentGridPath = findOriginalGrid(
-    canvasState.startingMetadata,
-    EP.parentPath(selectedElement),
-  ) // TODO don't use EP.parentPath
-  if (parentGridPath == null) {
-    return null
-  }
-
-  const gridFrame = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
-    parentGridPath,
-  )?.globalFrame
-  if (gridFrame == null || isInfinityRectangle(gridFrame)) {
-    return null
-  }
-
   if (MetadataUtils.isPositionAbsolute(selectedElementMetadata)) {
     return null
   }
@@ -116,7 +94,9 @@ export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
       category: 'tools',
       type: 'pointer',
     },
-    controlsToRender: [controlsForGridPlaceholders(parentGridPath, 'visible-only-while-active')],
+    controlsToRender: [
+      controlsForGridPlaceholders(gridItemIdentifier(selectedElement), 'visible-only-while-active'),
+    ],
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'GRID_CELL_HANDLE', 2),
     apply: () => {
       if (
@@ -132,14 +112,13 @@ export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
         canvasState,
         interactionSession.interactionData,
         selectedElement,
-        parentGridPath,
       )
       if (commands.length === 0) {
         return emptyStrategyApplicationResult
       }
 
       const { midInteractionCommands, onCompleteCommands } = gridMoveStrategiesExtraCommands(
-        parentGridPath,
+        EP.parentPath(selectedElement), // TODO: don't use EP.parentPath
         initialTemplates,
       )
 
@@ -155,7 +134,6 @@ function getCommandsAndPatchForGridChangeElementLocation(
   canvasState: InteractionCanvasState,
   interactionData: DragInteractionData,
   selectedElement: ElementPath,
-  gridPath: ElementPath,
 ): {
   commands: CanvasCommand[]
   elementsToRerender: ElementPath[]
@@ -182,7 +160,6 @@ function getCommandsAndPatchForGridChangeElementLocation(
     canvasState.startingMetadata,
     interactionData,
     selectedElementMetadata,
-    gridPath,
     parentGridCellGlobalFrames,
     parentContainerGridProperties,
     null,
@@ -190,7 +167,7 @@ function getCommandsAndPatchForGridChangeElementLocation(
 
   return {
     commands: commands,
-    elementsToRerender: [gridPath, selectedElement],
+    elementsToRerender: [EP.parentPath(selectedElement), selectedElement],
   }
 }
 
@@ -198,7 +175,6 @@ export function runGridChangeElementLocation(
   jsxMetadata: ElementInstanceMetadataMap,
   interactionData: DragInteractionData,
   selectedElementMetadata: ElementInstanceMetadata,
-  gridPath: ElementPath,
   gridCellGlobalFrames: GridCellGlobalFrames,
   gridTemplate: GridContainerProperties,
   newPathAfterReparent: ElementPath | null,
@@ -235,70 +211,89 @@ export function runGridChangeElementLocation(
   }
   const { targetCellCoords, targetRootCell } = targetGridCellData
 
-  const gridProps: Partial<GridElementProperties> = {
-    gridColumnStart: gridPositionValue(targetRootCell.column),
-    gridColumnEnd: gridPositionValue(targetRootCell.column + originalCellBounds.width),
-    gridRowStart: gridPositionValue(targetRootCell.row),
-    gridRowEnd: gridPositionValue(targetRootCell.row + originalCellBounds.height),
+  const elementGridProperties =
+    selectedElementMetadata.specialSizeMeasurements.elementGridProperties
+
+  function getUpdatedPins(
+    start: GridPositionOrSpan | null,
+    end: GridPositionOrSpan | null,
+    axis: 'row' | 'column',
+    dimension: number,
+  ): {
+    start: GridPositionOrSpan
+    end: GridPositionOrSpan
+  } {
+    const isSpanning = isGridSpan(start) || isGridSpan(end)
+    if (isSpanning) {
+      if (isGridSpan(start)) {
+        const isEndGridSpanArea = isGridSpan(end) || start.type === 'SPAN_AREA'
+        if (!isEndGridSpanArea) {
+          return {
+            start: start,
+            end: gridPositionValue(start.value + targetRootCell[axis]),
+          }
+        }
+      } else if (isGridSpan(end)) {
+        return {
+          start: gridPositionValue(targetRootCell[axis]),
+          end: end,
+        }
+      }
+    } else {
+      const shouldSetEndPosition = end != null && !isAutoGridPin(end)
+      if (shouldSetEndPosition) {
+        return {
+          start: gridPositionValue(targetRootCell[axis]),
+          end:
+            dimension === 1
+              ? cssKeyword('auto')
+              : gridPositionValue(targetRootCell[axis] + dimension),
+        }
+      }
+      return {
+        start: gridPositionValue(targetRootCell[axis]),
+        end: cssKeyword('auto'),
+      }
+    }
+
+    return {
+      start: cssKeyword('auto'),
+      end: cssKeyword('auto'),
+    }
   }
 
-  // TODO: Remove this logic once there is a fix for the handling of the track end fields.
-  let keepGridColumnEnd: boolean = true
-  let keepGridRowEnd: boolean = true
-  forEachOf(
-    fromField<ElementInstanceMetadata, 'element'>('element')
-      .compose(eitherRight())
-      .compose(fromTypeGuard(isJSXElement))
-      .compose(fromField('props')),
-    selectedElementMetadata,
-    (elementProperties) => {
-      function shouldKeep(shorthandProp: 'gridColumn' | 'gridRow'): boolean {
-        const longhandProp = shorthandProp === 'gridColumn' ? 'gridColumnEnd' : 'gridRowEnd'
-
-        const shorthand = getJSXAttributesAtPath(
-          elementProperties,
-          PP.create('style', shorthandProp),
-        )
-        if (
-          shorthand.attribute.type === 'ATTRIBUTE_VALUE' &&
-          typeof shorthand.attribute.value === 'string' &&
-          shorthand.attribute.value.includes('/')
-        ) {
-          return true
-        }
-
-        const longhand = getJSXAttributesAtPath(elementProperties, PP.create('style', longhandProp))
-        if (longhand.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
-          return true
-        }
-
-        return false
-      }
-      keepGridColumnEnd = shouldKeep('gridColumn')
-      keepGridRowEnd = shouldKeep('gridRow')
-    },
+  const columnBounds = getUpdatedPins(
+    elementGridProperties.gridColumnStart,
+    elementGridProperties.gridColumnEnd,
+    'column',
+    originalCellBounds.width,
   )
 
-  const gridCellMoveCommands = setGridPropsCommands(
+  const rowBounds = getUpdatedPins(
+    elementGridProperties.gridRowStart,
+    elementGridProperties.gridRowEnd,
+    'row',
+    originalCellBounds.height,
+  )
+
+  const gridProps: GridElementProperties = {
+    gridColumnStart: columnBounds.start,
+    gridColumnEnd: columnBounds.end,
+    gridRowStart: rowBounds.start,
+    gridRowEnd: rowBounds.end,
+  }
+
+  const gridCellMoveCommands = getCommandsForGridItemPlacement(
     pathForCommands,
     gridTemplate,
     gridProps,
-  ).filter((command) => {
-    if (command.type === 'SET_PROPERTY') {
-      if (PP.pathsEqual(command.property, PP.create('style', 'gridColumnEnd'))) {
-        return keepGridColumnEnd
-      } else if (PP.pathsEqual(command.property, PP.create('style', 'gridRowEnd'))) {
-        return keepGridRowEnd
-      } else {
-        return true
-      }
-    } else {
-      return true
-    }
-  })
+  )
 
   // The siblings of the grid element being moved
-  const siblings = MetadataUtils.getChildrenUnordered(jsxMetadata, gridPath)
+  const siblings = MetadataUtils.getSiblingsUnordered(
+    jsxMetadata,
+    newPathAfterReparent ?? selectedElementMetadata.elementPath,
+  )
     .filter((s) => !EP.pathsEqual(s.elementPath, selectedElementMetadata.elementPath))
     .map(
       (s, index): SortableGridElementProperties => ({
@@ -333,7 +328,7 @@ export function runGridChangeElementLocation(
 
   const updateGridControlsCommand = showGridControls(
     'mid-interaction',
-    gridPath,
+    gridItemIdentifier(selectedElementMetadata.elementPath),
     targetCellCoords,
     targetRootCell,
   )

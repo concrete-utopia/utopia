@@ -1,6 +1,7 @@
 import { clearModifiableAttributeUniqueIDs } from '../../../core/shared/jsx-attributes'
 import type { Either } from '../../../core/shared/either'
-import { isLeft, isRight, right } from '../../../core/shared/either'
+import { isLeft, isRight, left, right } from '../../../core/shared/either'
+import type { GridContainerProperties } from '../../../core/shared/element-template'
 import {
   emptyComments,
   jsExpressionFunctionCall,
@@ -10,6 +11,12 @@ import {
   jsxTestElement,
   clearExpressionUniqueIDs,
   clearJSXElementChildUniqueIDs,
+  gridContainerProperties,
+  gridAutoOrTemplateDimensions,
+  gridPositionValue,
+  gridRange,
+  gridSpanNumeric,
+  gridSpanArea,
 } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import type {
@@ -19,6 +26,7 @@ import type {
   CSSColor,
   CSSTextShadows,
   CSSTransforms,
+  GridDimension,
 } from './css-utils'
 import {
   cssAngle,
@@ -64,6 +72,7 @@ import {
   parseConicGradient,
   parseCSSURLFunction,
   parsedCurlyBrace,
+  parseGridRange,
   parseLinearGradient,
   parseRadialGradient,
   parseTextShadow,
@@ -1983,5 +1992,146 @@ describe('printGridDimensionCSS', () => {
         ),
       ),
     ).toBe('[the-area] minmax(auto, min-content)')
+  })
+})
+
+function testGridContainerProperties(
+  cols: GridDimension[],
+  rows: GridDimension[],
+): GridContainerProperties {
+  return gridContainerProperties(
+    gridAutoOrTemplateDimensions(cols),
+    gridAutoOrTemplateDimensions(rows),
+    gridAutoOrTemplateDimensions([]),
+    gridAutoOrTemplateDimensions([]),
+    null,
+  )
+}
+
+describe('parseGridRange', () => {
+  it('can parse a numerical unit', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', '3')
+    expect(got).toEqual(right(gridRange(gridPositionValue(3), null)))
+  })
+  it('can parse a numerical range', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', '3 / 4')
+    expect(got).toEqual(right(gridRange(gridPositionValue(3), gridPositionValue(4))))
+  })
+  it('can parse a line', async () => {
+    const got = parseGridRange(
+      testGridContainerProperties(
+        [],
+        [
+          gridCSSNumber(cssNumber(1, 'fr'), 'foo'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'bar'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'baz'),
+        ],
+      ),
+      'row',
+      'bar',
+    )
+    expect(got).toEqual(right(gridRange(gridPositionValue(2), null)))
+  })
+  it('errors if the line is not found in the template', async () => {
+    const got = parseGridRange(
+      testGridContainerProperties(
+        [],
+        [
+          gridCSSNumber(cssNumber(1, 'fr'), 'foo'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'bar'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'baz'),
+        ],
+      ),
+      'row',
+      'WRONG',
+    )
+    expect(got).toEqual(left('missing grid item start'))
+  })
+  it('can parse a line range', async () => {
+    const got = parseGridRange(
+      testGridContainerProperties(
+        [],
+        [
+          gridCSSNumber(cssNumber(1, 'fr'), 'foo'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'bar'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'baz'),
+        ],
+      ),
+      'row',
+      'bar / baz',
+    )
+    expect(got).toEqual(right(gridRange(gridPositionValue(2), gridPositionValue(3))))
+  })
+  it('can parse a line / unit mixed range', async () => {
+    const got = parseGridRange(
+      testGridContainerProperties(
+        [],
+        [
+          gridCSSNumber(cssNumber(1, 'fr'), 'foo'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'bar'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'baz'),
+        ],
+      ),
+      'row',
+      'bar / 3',
+    )
+    expect(got).toEqual(right(gridRange(gridPositionValue(2), gridPositionValue(3))))
+  })
+  it('can parse a numerical span', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', 'span 2')
+    expect(got).toEqual(right(gridRange(gridSpanNumeric(2), null)))
+  })
+  it('can parse a numerical span (flipped)', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', '2 span')
+    expect(got).toEqual(right(gridRange(gridSpanNumeric(2), null)))
+  })
+  it('can parse an area span', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', 'span some-area')
+    expect(got).toEqual(right(gridRange(gridSpanArea('some-area'), null)))
+  })
+  it('can parse an area span (flipped)', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', 'some-area span')
+    expect(got).toEqual(right(gridRange(gridSpanArea('some-area'), null)))
+  })
+  it('can parse a span numerical range', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', 'span 2 / span 3')
+    expect(got).toEqual(right(gridRange(gridSpanNumeric(2), gridSpanNumeric(3))))
+  })
+  it('can parse an area span range', async () => {
+    const got = parseGridRange(
+      testGridContainerProperties([], []),
+      'row',
+      'span some-area / span some-other-area',
+    )
+    expect(got).toEqual(
+      right(gridRange(gridSpanArea('some-area'), gridSpanArea('some-other-area'))),
+    )
+  })
+  it('can parse a mixed span range', async () => {
+    const got = parseGridRange(
+      testGridContainerProperties([], []),
+      'row',
+      'span some-area / span 3',
+    )
+    expect(got).toEqual(right(gridRange(gridSpanArea('some-area'), gridSpanNumeric(3))))
+  })
+  it('can parse a mixed span and numerical range', async () => {
+    const got = parseGridRange(testGridContainerProperties([], []), 'row', 'span some-area / 3')
+    expect(got).toEqual(right(gridRange(gridSpanArea('some-area'), gridPositionValue(3))))
+  })
+  it('can parse a mixed span and line range', async () => {
+    const got = parseGridRange(
+      testGridContainerProperties(
+        [],
+        [
+          gridCSSNumber(cssNumber(1, 'fr'), 'foo'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'bar'),
+          gridCSSNumber(cssNumber(1, 'fr'), 'baz'),
+        ],
+      ),
+      'row',
+      'span some-area / bar',
+    )
+    expect(got).toEqual(right(gridRange(gridSpanArea('some-area'), gridPositionValue(2))))
   })
 })

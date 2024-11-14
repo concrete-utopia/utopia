@@ -78,8 +78,6 @@ import {
   runShowGridControlsCommand,
   type ShowGridControlsCommand,
 } from './show-grid-controls-command'
-import type { UpdateClassList } from './update-class-list-command'
-import { runUpdateClassList } from './update-class-list-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -131,7 +129,6 @@ export type CanvasCommand =
   | SetActiveFrames
   | UpdateBulkProperties
   | ShowGridControlsCommand
-  | UpdateClassList
 
 export function runCanvasCommand(
   editorState: EditorState,
@@ -146,7 +143,7 @@ export function runCanvasCommand(
     case 'STRATEGY_SWITCHED':
       return runStrategySwitchedCommand(command)
     case 'ADJUST_CSS_LENGTH_PROPERTY':
-      return runAdjustCssLengthProperties(editorState, command)
+      return runAdjustCssLengthProperties(editorState, command, commandLifecycle)
     case 'REPARENT_ELEMENT':
       return runReparentElement(editorState, command)
     case 'DUPLICATE_ELEMENT':
@@ -160,7 +157,7 @@ export function runCanvasCommand(
     case 'CONVERT_TO_ABSOLUTE':
       return runConvertToAbsolute(editorState, command)
     case 'SET_CSS_LENGTH_PROPERTY':
-      return runSetCssLengthProperty(editorState, command)
+      return runSetCssLengthProperty(editorState, command, commandLifecycle)
     case 'REORDER_ELEMENT':
       return runReorderElement(editorState, command)
     case 'SHOW_OUTLINE_HIGHLIGHT':
@@ -174,9 +171,9 @@ export function runCanvasCommand(
     case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING_ELEMENTS':
       return runPushIntendedBoundsAndUpdateHuggingElements(editorState, command)
     case 'DELETE_PROPERTIES':
-      return runDeleteProperties(editorState, command)
+      return runDeleteProperties(editorState, command, commandLifecycle)
     case 'SET_PROPERTY':
-      return runSetProperty(editorState, command)
+      return runSetProperty(editorState, command, commandLifecycle)
     case 'UPDATE_BULK_PROPERTIES':
       return runBulkUpdateProperties(editorState, command)
     case 'ADD_IMPORTS_TO_FILE':
@@ -211,8 +208,6 @@ export function runCanvasCommand(
       return runSetActiveFrames(editorState, command)
     case 'SHOW_GRID_CONTROLS':
       return runShowGridControlsCommand(editorState, command)
-    case 'UPDATE_CLASS_LIST':
-      return runUpdateClassList(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

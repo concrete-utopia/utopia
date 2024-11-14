@@ -11,6 +11,7 @@ import type {
   DomElementMetadata,
   GridAutoOrTemplateBase,
   BorderWidths,
+  GridPositionOrSpan,
 } from '../../core/shared/element-template'
 import {
   specialSizeMeasurements,
@@ -19,6 +20,7 @@ import {
   gridAutoOrTemplateFallback,
   domElementMetadata,
   gridAutoOrTemplateDimensions,
+  isGridSpan,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import type { ElementCanvasRectangleCache } from '../../core/shared/dom-utils'
@@ -152,7 +154,12 @@ function isElementAContainingBlockForAbsolute(computedStyle: CSSStyleDeclaration
   return false
 }
 
-const applicativeSidesPxTransform = (t: CSSNumber, r: CSSNumber, b: CSSNumber, l: CSSNumber) =>
+export const applicativeSidesPxTransform = (
+  t: CSSNumber,
+  r: CSSNumber,
+  b: CSSNumber,
+  l: CSSNumber,
+) =>
   sides(
     t.unit === 'px' ? t.value : undefined,
     r.unit === 'px' ? r.value : undefined,
@@ -559,7 +566,7 @@ export function collectDomElementMetadataForElement(
   )
 }
 
-function getGridContainerProperties(
+export function getGridContainerProperties(
   elementStyle: CSSStyleDeclaration | null,
   options?: {
     dynamicCols: boolean
@@ -630,62 +637,51 @@ function getGridElementProperties(
   container: GridContainerProperties,
   elementStyle: CSSStyleDeclaration,
 ): GridElementProperties {
+  function getPlacementPin(
+    value: GridPositionOrSpan | null,
+    axis: 'row' | 'column',
+    pin: 'start' | 'end',
+    style: string,
+  ) {
+    if (isGridSpan(value) || value != null) {
+      return value
+    }
+    return defaultEither(null, parseGridPosition(container, axis, pin, value ?? null, style))
+  }
+
   const gridColumn = defaultEither(
     null,
     parseGridRange(container, 'column', elementStyle.gridColumn),
   )
-
-  const gridColumnStart =
-    gridColumn?.start ??
-    defaultEither(
-      null,
-      parseGridPosition(
-        container,
-        'column',
-        'start',
-        gridColumn?.start ?? null,
-        elementStyle.gridColumnStart,
-      ),
-    ) ??
-    null
-  const gridColumnEnd =
-    gridColumn?.end ??
-    defaultEither(
-      null,
-      parseGridPosition(
-        container,
-        'column',
-        'end',
-        gridColumn?.end ?? null,
-        elementStyle.gridColumnEnd,
-      ),
-    ) ??
-    null
+  const gridColumnStart = getPlacementPin(
+    gridColumn?.start ?? null,
+    'column',
+    'start',
+    elementStyle.gridColumnStart,
+  )
+  const gridColumnEnd = getPlacementPin(
+    gridColumn?.end ?? null,
+    'column',
+    'end',
+    elementStyle.gridColumnEnd,
+  )
   const adjustedColumnEnd =
-    isCSSKeyword(gridColumnEnd) && gridColumn?.end != null ? gridColumn.end : gridColumnEnd
+    isGridSpan(gridColumn?.end) || (isCSSKeyword(gridColumnEnd) && gridColumn?.end != null)
+      ? gridColumn.end
+      : gridColumnEnd
 
   const gridRow = defaultEither(null, parseGridRange(container, 'row', elementStyle.gridRow))
-  const gridRowStart =
-    gridRow?.start ??
-    defaultEither(
-      null,
-      parseGridPosition(
-        container,
-        'row',
-        'start',
-        gridRow?.start ?? null,
-        elementStyle.gridRowStart,
-      ),
-    ) ??
-    null
-  const gridRowEnd =
-    gridRow?.end ??
-    defaultEither(
-      null,
-      parseGridPosition(container, 'row', 'end', gridRow?.end ?? null, elementStyle.gridRowEnd),
-    ) ??
-    null
-  const adjustedRowEnd = isCSSKeyword(gridRowEnd) && gridRow?.end != null ? gridRow.end : gridRowEnd
+  const gridRowStart = getPlacementPin(
+    gridRow?.start ?? null,
+    'row',
+    'start',
+    elementStyle.gridRowStart,
+  )
+  const gridRowEnd = getPlacementPin(gridRow?.end ?? null, 'row', 'end', elementStyle.gridRowEnd)
+  const adjustedRowEnd =
+    isGridSpan(gridRow?.end) || (isCSSKeyword(gridRowEnd) && gridRow?.end != null)
+      ? gridRow.end
+      : gridRowEnd
 
   const result = gridElementProperties(
     gridColumnStart,
@@ -916,8 +912,6 @@ function getSpecialMeasurements(
     globalFrame,
   )
 
-  const parentContainerGridProperties = getGridContainerProperties(parentElementStyle)
-
   const paddingValue = isRight(padding)
     ? padding.value
     : sides(undefined, undefined, undefined, undefined)
@@ -949,6 +943,7 @@ function getSpecialMeasurements(
     dynamicRows: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateRows),
   })
 
+  const parentContainerGridProperties = getGridContainerProperties(parentElementStyle)
   const containerElementPropertiesFromProps = getGridElementProperties(
     parentContainerGridProperties,
     element.style,
@@ -1020,7 +1015,7 @@ function getSpecialMeasurements(
   )
 }
 
-function isDynamicGridTemplate(template: GridAutoOrTemplateBase | null) {
+export function isDynamicGridTemplate(template: GridAutoOrTemplateBase | null) {
   return template?.type === 'DIMENSIONS' && template.dimensions.some((d) => isDynamicGridRepeat(d))
 }
 

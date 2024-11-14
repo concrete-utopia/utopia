@@ -7,6 +7,7 @@ import type {
   EditorState,
   EditorStatePatch,
   EditorStorePatched,
+  GridIdentifier,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import type {
@@ -81,7 +82,7 @@ import { reparentSubjectsForInteractionTarget } from './strategies/reparent-help
 import { getReparentTargetUnified } from './strategies/reparent-helpers/reparent-strategy-parent-lookup'
 import { gridChangeElementLocationResizeKeyboardStrategy } from './strategies/grid-change-element-location-keyboard-strategy'
 import createCachedSelector from 're-reselect'
-import { getActivePlugin } from '../plugins/style-plugins'
+import { getActivePlugin, patchRemovedProperties } from '../plugins/style-plugins'
 import {
   controlsForGridPlaceholders,
   GridControls,
@@ -225,8 +226,6 @@ export function pickCanvasStateFromEditorState(
     propertyControlsInfo: editorState.propertyControlsInfo,
     styleInfoReader: activePlugin.styleInfoFactory({
       projectContents: editorState.projectContents,
-      metadata: editorState.jsxMetadata,
-      elementPathTree: editorState.elementPathTree,
     }),
   }
 }
@@ -254,8 +253,6 @@ export function pickCanvasStateFromEditorStateWithMetadata(
     propertyControlsInfo: editorState.propertyControlsInfo,
     styleInfoReader: activePlugin.styleInfoFactory({
       projectContents: editorState.projectContents,
-      metadata: metadata,
-      elementPathTree: editorState.elementPathTree,
     }),
   }
 }
@@ -496,6 +493,16 @@ export function applyCanvasStrategy(
   return strategy.apply(strategyLifecycle)
 }
 
+export function applyElementsToRerenderFromStrategyResultAndPatchRemovedProps(
+  editorState: EditorState,
+  strategyResult: StrategyApplicationResult,
+): EditorState {
+  return applyElementsToRerenderFromStrategyResult(
+    patchRemovedProperties(editorState),
+    strategyResult,
+  )
+}
+
 export function applyElementsToRerenderFromStrategyResult(
   editorState: EditorState,
   strategyResult: StrategyApplicationResult,
@@ -670,7 +677,7 @@ export function combineApplicableControls(
   }
 
   // Sift the instances of `GridControls`, storing their targets by when they should be shown.
-  let gridControlsTargets: Map<WhenToShowControl, Array<ElementPath>> = new Map()
+  let gridControlsTargets: Map<WhenToShowControl, Array<GridIdentifier>> = new Map()
   for (const control of gridControlsInstances) {
     if (isGridControlsProps(control.props)) {
       const possibleTargets = gridControlsTargets.get(control.show)

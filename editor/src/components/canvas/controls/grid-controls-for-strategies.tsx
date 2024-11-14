@@ -1,16 +1,18 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import fastDeepEqual from 'fast-deep-equal'
-import type { Sides } from 'utopia-api/core'
+import { sides, type Sides } from 'utopia-api/core'
 import type { ElementPath } from 'utopia-shared/src/types'
-import { isStaticGridRepeat, printGridAutoOrTemplateBase } from '../../inspector/common/css-utils'
+import {
+  isStaticGridRepeat,
+  parseCSSLength,
+  printGridAutoOrTemplateBase,
+} from '../../inspector/common/css-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
-import type { BorderWidths, ElementInstanceMetadata } from '../../../core/shared/element-template'
+import type { BorderWidths } from '../../../core/shared/element-template'
 import { type GridAutoOrTemplateBase } from '../../../core/shared/element-template'
 import type { CanvasRectangle } from '../../../core/shared/math-utils'
-import { isFiniteRectangle } from '../../../core/shared/math-utils'
 import { assertNever } from '../../../core/shared/utils'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import type {
@@ -21,6 +23,7 @@ import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy
 import type { GridResizeEdge } from '../canvas-strategies/interaction-state'
 import type { EdgePosition } from '../canvas-types'
 import {
+  CanvasContainerID,
   EdgePositionBottom,
   EdgePositionLeft,
   EdgePositionRight,
@@ -32,8 +35,16 @@ import {
   GridRowColumnResizingControlsComponent,
 } from './grid-controls'
 import { isEdgePositionOnSide } from '../canvas-utils'
+import { getFromElement } from '../direct-dom-lookups'
+import { applicativeSidesPxTransform, getGridContainerProperties } from '../dom-walker'
+import { applicative4Either, defaultEither, isRight, mapEither } from '../../../core/shared/either'
+import { domRectToScaledCanvasRectangle, getRoundingFn } from '../../../core/shared/dom-utils'
+import Utils from '../../../utils/utils'
+import { useMonitorChangesToEditor } from '../../../components/editor/store/store-monitor'
+import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import type { CSSProperties } from 'react'
+import { gridContainerIdentifier, type GridIdentifier } from '../../editor/store/editor-state'
 import { findOriginalGrid } from '../canvas-strategies/strategies/grid-helpers'
-import type { AlignContent, FlexJustifyContent } from '../../inspector/inspector-common'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -66,148 +77,206 @@ export function getNullableAutoOrTemplateBaseString(
 
 export type GridMeasurementHelperData = {
   frame: CanvasRectangle
+  rows: number
+  columns: number
+  cells: number
+  computedStyling: CSSProperties
   gridTemplateColumns: GridAutoOrTemplateBase | null
   gridTemplateRows: GridAutoOrTemplateBase | null
+  gridTemplateColumnsFromProps: GridAutoOrTemplateBase | null
+  gridTemplateRowsFromProps: GridAutoOrTemplateBase | null
+  border: BorderWidths
   gap: number | null
   rowGap: number | null
   columnGap: number | null
-  justifyContent: FlexJustifyContent | null
-  alignContent: AlignContent | null
   padding: Sides
-  columns: number
-  cells: number
-  border: BorderWidths
 }
 
-export function useGridMeasurentHelperData(
+export function getGridMeasurementHelperData(
   elementPath: ElementPath,
-): GridMeasurementHelperData | null {
-  return useEditorState(
-    Substores.metadata,
-    (store) => {
-      const element = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath)
+  scale: number,
+): GridMeasurementHelperData | undefined {
+  return getFromElement(elementPath, gridMeasurementHelperDataFromElement(scale))
+}
 
-      const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element) ? element : null
+function getStylingSubset(styling: CSSStyleDeclaration): CSSProperties {
+  // Fields chosen to not overlap with any others, so as to not make React complain.
+  return {
+    gridAutoFlow: styling.gridAutoFlow,
+    gridAutoColumns: styling.gridAutoColumns,
+    gridAutoRows: styling.gridAutoRows,
+    gridTemplateColumns: styling.gridTemplateColumns,
+    gridTemplateRows: styling.gridTemplateRows,
+    gridColumn: styling.gridColumn,
+    gridRow: styling.gridRow,
+    gap: styling.gap,
+    rowGap: styling.rowGap,
+    columnGap: styling.columnGap,
+    justifyContent: styling.justifyContent,
+    alignContent: styling.alignContent,
+    padding: styling.padding,
+    paddingTop: styling.paddingTop,
+    paddingLeft: styling.paddingLeft,
+    paddingBottom: styling.paddingBottom,
+    paddingRight: styling.paddingRight,
+    borderTop: styling.borderTopWidth,
+    borderLeft: styling.borderLeftWidth,
+    borderBottom: styling.borderBottomWidth,
+    borderRight: styling.borderRightWidth,
+  }
+}
 
-      if (
-        targetGridContainer == null ||
-        targetGridContainer.globalFrame == null ||
-        !isFiniteRectangle(targetGridContainer.globalFrame)
-      ) {
-        return null
-      }
+export function gridMeasurementHelperDataFromElement(
+  scale: number,
+): (element: HTMLElement) => GridMeasurementHelperData | undefined {
+  return (element) => {
+    const canvasRootContainer = document.getElementById(CanvasContainerID)
+    if (canvasRootContainer == null) {
+      return undefined
+    }
 
-      const columns = getCellsCount(
-        targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
-      )
-      const rows = getCellsCount(
-        targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
-      )
+    const computedStyle = getComputedStyle(element)
+    const boundingRectangle = element.getBoundingClientRect()
 
-      return {
-        frame: targetGridContainer.globalFrame,
-        gridTemplateColumns:
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
-        gridTemplateRows:
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
-        gap: targetGridContainer.specialSizeMeasurements.gap,
-        rowGap: targetGridContainer.specialSizeMeasurements.rowGap,
-        columnGap: targetGridContainer.specialSizeMeasurements.columnGap,
-        justifyContent: targetGridContainer.specialSizeMeasurements.justifyContent,
-        alignContent: targetGridContainer.specialSizeMeasurements.alignContent,
-        padding: targetGridContainer.specialSizeMeasurements.padding,
-        columns: columns,
-        cells: rows * columns,
-        border: targetGridContainer.specialSizeMeasurements.borderWidths,
-      }
-    },
-    'useGridMeasurentHelperData',
-    fastDeepEqual, //TODO: this should not be needed, but it seems EditorStateKeepDeepEquality is not running, and metadata reference is always updated
+    const computedStyling: CSSProperties = getStylingSubset(computedStyle)
+
+    const containerGridProperties = getGridContainerProperties(computedStyle)
+    const containerGridPropertiesFromProps = getGridContainerProperties(element.style)
+
+    const columns = getCellsCount(containerGridProperties.gridTemplateColumns)
+    const rows = getCellsCount(containerGridProperties.gridTemplateRows)
+    const borderTopWidth = parseCSSLength(computedStyle.borderTopWidth)
+    const borderRightWidth = parseCSSLength(computedStyle.borderRightWidth)
+    const borderBottomWidth = parseCSSLength(computedStyle.borderBottomWidth)
+    const borderLeftWidth = parseCSSLength(computedStyle.borderLeftWidth)
+    const border: BorderWidths = {
+      top: isRight(borderTopWidth) ? borderTopWidth.value.value : 0,
+      right: isRight(borderRightWidth) ? borderRightWidth.value.value : 0,
+      bottom: isRight(borderBottomWidth) ? borderBottomWidth.value.value : 0,
+      left: isRight(borderLeftWidth) ? borderLeftWidth.value.value : 0,
+    }
+    const padding = defaultEither(
+      sides(undefined, undefined, undefined, undefined),
+      applicative4Either(
+        applicativeSidesPxTransform,
+        parseCSSLength(computedStyle.paddingTop),
+        parseCSSLength(computedStyle.paddingRight),
+        parseCSSLength(computedStyle.paddingBottom),
+        parseCSSLength(computedStyle.paddingLeft),
+      ),
+    )
+    const gap = defaultEither(
+      null,
+      mapEither((n) => n.value, parseCSSLength(computedStyle.gap)),
+    )
+
+    const rowGap = defaultEither(
+      null,
+      mapEither((n) => n.value, parseCSSLength(computedStyle.rowGap)),
+    )
+
+    const columnGap = defaultEither(
+      null,
+      mapEither((n) => n.value, parseCSSLength(computedStyle.columnGap)),
+    )
+
+    const elementRect = domRectToScaledCanvasRectangle(
+      boundingRectangle,
+      1 / scale,
+      getRoundingFn('nearest-half'),
+    )
+    const parentRect = domRectToScaledCanvasRectangle(
+      canvasRootContainer.getBoundingClientRect(),
+      1 / scale,
+      getRoundingFn('nearest-half'),
+    )
+    const frame = Utils.offsetRect(elementRect, Utils.negate(parentRect))
+
+    return {
+      frame: frame,
+      gridTemplateColumns: containerGridProperties.gridTemplateColumns,
+      gridTemplateRows: containerGridProperties.gridTemplateRows,
+      gridTemplateColumnsFromProps: containerGridPropertiesFromProps.gridTemplateColumns,
+      gridTemplateRowsFromProps: containerGridPropertiesFromProps.gridTemplateRows,
+      border: border,
+      padding: padding,
+      gap: gap,
+      rowGap: rowGap,
+      columnGap: columnGap,
+      rows: rows,
+      columns: columns,
+      cells: columns * rows,
+      computedStyling: computedStyling,
+    }
+  }
+}
+
+export function useGridMeasurementHelperData(
+  elementPath: ElementPath,
+): GridMeasurementHelperData | undefined {
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'useGridMeasurementHelperData scale',
   )
+
+  useMonitorChangesToEditor()
+
+  return useKeepReferenceEqualityIfPossible(getGridMeasurementHelperData(elementPath, scale))
 }
 
 export type GridData = GridMeasurementHelperData & {
-  elementPath: ElementPath
-  gridTemplateColumnsFromProps: GridAutoOrTemplateBase | null
-  gridTemplateRowsFromProps: GridAutoOrTemplateBase | null
-  rows: number
-  cells: number
-  metadata: ElementInstanceMetadata
+  identifier: GridIdentifier
 }
 
-export function useGridData(elementPaths: ElementPath[]): GridData[] {
+export function useGridData(gridIdentifiers: GridIdentifier[]): GridData[] {
+  const scale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'useGridData scale',
+  )
+
   const grids = useEditorState(
     Substores.metadata,
     (store) => {
       return mapDropNulls((view) => {
-        const originalGridPath = findOriginalGrid(store.editor.jsxMetadata, view)
+        const originalGridPath = findOriginalGrid(
+          store.editor.jsxMetadata,
+          view.type === 'GRID_ITEM' ? EP.parentPath(view.path) : view.path, // TODO: this is temporary, we will need to handle showing a grid control on the parent dom element of a grid item
+        )
+        if (originalGridPath == null) {
+          return null
+        }
         const element = MetadataUtils.findElementByElementPath(
           store.editor.jsxMetadata,
           originalGridPath,
         )
 
         const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element) ? element : null
-
-        if (
-          targetGridContainer == null ||
-          targetGridContainer.globalFrame == null ||
-          !isFiniteRectangle(targetGridContainer.globalFrame)
-        ) {
+        if (targetGridContainer == null) {
           return null
         }
 
-        const gap = targetGridContainer.specialSizeMeasurements.gap
-        const rowGap = targetGridContainer.specialSizeMeasurements.rowGap
-        const columnGap = targetGridContainer.specialSizeMeasurements.columnGap
-        const padding = targetGridContainer.specialSizeMeasurements.padding
-
-        const gridTemplateColumns =
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns
-        const gridTemplateRows =
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows
-        const gridTemplateColumnsFromProps =
-          targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
-            .gridTemplateColumns
-        const gridTemplateRowsFromProps =
-          targetGridContainer.specialSizeMeasurements.containerGridPropertiesFromProps
-            .gridTemplateRows
-
-        const columns = getCellsCount(
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateColumns,
-        )
-        const rows = getCellsCount(
-          targetGridContainer.specialSizeMeasurements.containerGridProperties.gridTemplateRows,
-        )
-
-        return {
-          elementPath: view,
-          metadata: targetGridContainer,
-          frame: targetGridContainer.globalFrame,
-          gridTemplateColumns: gridTemplateColumns,
-          gridTemplateRows: gridTemplateRows,
-          gridTemplateColumnsFromProps: gridTemplateColumnsFromProps,
-          gridTemplateRowsFromProps: gridTemplateRowsFromProps,
-          gap: gap,
-          rowGap: rowGap,
-          columnGap: columnGap,
-          justifyContent: targetGridContainer.specialSizeMeasurements.justifyContent,
-          alignContent: targetGridContainer.specialSizeMeasurements.alignContent,
-          padding: padding,
-          rows: rows,
-          columns: columns,
-          cells: rows * columns,
-          border: targetGridContainer.specialSizeMeasurements.borderWidths,
+        const helperData = getGridMeasurementHelperData(originalGridPath, scale)
+        if (helperData == null) {
+          return null
         }
-      }, elementPaths)
+
+        const gridData: GridData = {
+          ...helperData,
+          identifier: gridContainerIdentifier(originalGridPath),
+        }
+        return gridData
+      }, gridIdentifiers)
     },
     'useGridData',
   )
 
-  return grids
+  return useKeepReferenceEqualityIfPossible(grids)
 }
 
 interface GridRowColumnResizingControlsProps {
-  target: ElementPath
+  target: GridIdentifier
 }
 
 export const GridRowColumnResizingControls =
@@ -231,7 +300,7 @@ export interface GridControlProps {
 
 export interface GridControlsProps {
   type: 'GRID_CONTROLS_PROPS'
-  targets: ElementPath[]
+  targets: GridIdentifier[]
 }
 
 export function isGridControlsProps(props: unknown): props is GridControlsProps {
@@ -241,7 +310,7 @@ export function isGridControlsProps(props: unknown): props is GridControlsProps 
 export const GridControls = controlForStrategyMemoized<GridControlsProps>(GridControlsComponent)
 
 interface GridResizeControlProps {
-  target: ElementPath
+  target: GridIdentifier
 }
 
 export const GridResizeControls = controlForStrategyMemoized<GridResizeControlProps>(
@@ -280,7 +349,7 @@ export function edgePositionToGridResizeEdge(position: EdgePosition): GridResize
 }
 
 export function controlsForGridPlaceholders(
-  gridPath: ElementPath | Array<ElementPath>,
+  gridPath: GridIdentifier | Array<GridIdentifier>,
   whenToShow: WhenToShowControl = 'always-visible',
   suffix: string | null = null,
 ): ControlWithProps<any> {
