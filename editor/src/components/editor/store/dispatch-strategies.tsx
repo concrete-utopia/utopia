@@ -94,22 +94,57 @@ export function interactionFinished(
       result.strategyState.currentStrategy,
     )
 
-    const strategyResult: StrategyApplicationResult =
+    /**
+     * PLAN
+     * - [ ] if inline style plugin is active: do nothing, early return
+     *
+     * - [x] apply results in mid-interaction mode (adds zeroed props)
+     * - [x] apply results in end-interaction mode (adds tailwind classes to compile)
+     *
+     * - [ ] wait for compiler to finish and put the classes into the DOM
+     *
+     * - [ ] re-apply the strategy in end-interaction mode
+     */
+
+    const midInteractionStrategyResult: StrategyApplicationResult =
       strategy != null
         ? applyCanvasStrategy(
             strategy.strategy,
             canvasState,
             interactionSession,
             result.strategyState.customStrategyState,
-            'end-interaction',
+            'mid-interaction',
           )
         : strategyApplicationResult([], [])
 
-    const { editorState } = foldAndApplyCommands(
+    const { editorState: midInteractionEditorState } = foldAndApplyCommands(
       newEditorState,
       storedState.patchedEditor,
       [],
-      strategyResult.commands,
+      midInteractionStrategyResult.commands,
+      'mid-interaction',
+    )
+
+    const endInteractionResult: StrategyApplicationResult =
+      strategy == null
+        ? strategyApplicationResult([], [])
+        : applyCanvasStrategy(
+            strategy.strategy,
+            pickCanvasStateFromEditorState(
+              newEditorState.selectedViews,
+              midInteractionEditorState,
+              result.builtInDependencies,
+            ),
+            interactionSession,
+            result.strategyState.customStrategyState,
+            'end-interaction',
+          )
+
+    const { editorState } = foldAndApplyCommands(
+      midInteractionEditorState,
+      storedState.patchedEditor,
+      [],
+      endInteractionResult.commands,
       'end-interaction',
     )
 
@@ -121,7 +156,7 @@ export function interactionFinished(
         domMetadata: {},
         spyMetadata: {},
       },
-      strategyResult,
+      midInteractionStrategyResult,
     )
 
     return {
