@@ -76,6 +76,29 @@ export function isAutoGridPin(v: GridPositionOrSpan): boolean {
   return isCSSKeyword(v) && v.value === 'auto'
 }
 
+export function printPin(
+  gridTemplate: GridContainerProperties,
+  pin: GridPositionOrSpan,
+  axis: 'row' | 'column',
+): string | number {
+  if (isGridSpan(pin)) {
+    return stringifyGridSpan(pin)
+  }
+  if (isCSSKeyword(pin)) {
+    return pin.value
+  }
+  const tracks =
+    axis === 'column' ? gridTemplate.gridTemplateColumns : gridTemplate.gridTemplateRows
+  const maybeLineName =
+    tracks?.type === 'DIMENSIONS'
+      ? tracks.dimensions.find((_, index) => index + 1 === pin.numericalPosition)?.lineName
+      : null
+  if (maybeLineName != null) {
+    return maybeLineName
+  }
+  return pin.numericalPosition ?? 'auto'
+}
+
 export function getCommandsForGridItemPlacement(
   elementPath: ElementPath,
   gridTemplate: GridContainerProperties,
@@ -93,25 +116,6 @@ export function getCommandsForGridItemPlacement(
     ]),
   ]
 
-  function printPin(pin: GridPositionOrSpan, axis: 'row' | 'column'): string | number {
-    if (isGridSpan(pin)) {
-      return stringifyGridSpan(pin)
-    }
-    if (isCSSKeyword(pin)) {
-      return pin.value
-    }
-    const tracks =
-      axis === 'column' ? gridTemplate.gridTemplateColumns : gridTemplate.gridTemplateRows
-    const maybeLineName =
-      tracks?.type === 'DIMENSIONS'
-        ? tracks.dimensions.find((_, index) => index + 1 === pin.numericalPosition)?.lineName
-        : null
-    if (maybeLineName != null) {
-      return maybeLineName
-    }
-    return pin.numericalPosition ?? 'auto'
-  }
-
   function serializeAxis(
     startPosition: GridPositionOrSpan,
     endPosition: GridPositionOrSpan,
@@ -126,8 +130,8 @@ export function getCommandsForGridItemPlacement(
       | 'gridRowEnd'
     value: string | number
   } {
-    const startValue = printPin(startPosition, axis)
-    const endValue = printPin(endPosition, axis)
+    const startValue = printPin(gridTemplate, startPosition, axis)
+    const endValue = printPin(gridTemplate, endPosition, axis)
 
     if (isAutoGridPin(startPosition) && !isAutoGridPin(endPosition)) {
       return {
