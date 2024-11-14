@@ -35,7 +35,7 @@ import {
   GridRowColumnResizingControlsComponent,
 } from './grid-controls'
 import { isEdgePositionOnSide } from '../canvas-utils'
-import { getFromElement } from '../direct-dom-lookups'
+import { getFromElement, getFromParent } from '../direct-dom-lookups'
 import { applicativeSidesPxTransform, getGridContainerProperties } from '../dom-walker'
 import { applicative4Either, defaultEither, isRight, mapEither } from '../../../core/shared/either'
 import { domRectToScaledCanvasRectangle, getRoundingFn } from '../../../core/shared/dom-utils'
@@ -43,7 +43,11 @@ import Utils from '../../../utils/utils'
 import { useMonitorChangesToEditor } from '../../../components/editor/store/store-monitor'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import type { CSSProperties } from 'react'
-import { gridContainerIdentifier, type GridIdentifier } from '../../editor/store/editor-state'
+import {
+  gridContainerIdentifier,
+  gridItemIdentifier,
+  type GridIdentifier,
+} from '../../editor/store/editor-state'
 import { findOriginalGrid } from '../canvas-strategies/strategies/grid-helpers'
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
@@ -95,8 +99,14 @@ export type GridMeasurementHelperData = {
 export function getGridMeasurementHelperData(
   elementPath: ElementPath,
   scale: number,
+  fromParent: 'fromParent' | 'fromElement' = 'fromElement',
 ): GridMeasurementHelperData | undefined {
-  return getFromElement(elementPath, gridMeasurementHelperDataFromElement(scale))
+  switch (fromParent) {
+    case 'fromElement':
+      return getFromElement(elementPath, gridMeasurementHelperDataFromElement(scale))
+    case 'fromParent':
+      return getFromParent(elementPath, gridMeasurementHelperDataFromElement(scale))
+  }
 }
 
 function getStylingSubset(styling: CSSStyleDeclaration): CSSProperties {
@@ -240,33 +250,56 @@ export function useGridData(gridIdentifiers: GridIdentifier[]): GridData[] {
     Substores.metadata,
     (store) => {
       return mapDropNulls((view) => {
-        const originalGridPath = findOriginalGrid(
-          store.editor.jsxMetadata,
-          view.type === 'GRID_ITEM' ? EP.parentPath(view.path) : view.path, // TODO: this is temporary, we will need to handle showing a grid control on the parent dom element of a grid item
-        )
-        if (originalGridPath == null) {
-          return null
-        }
-        const element = MetadataUtils.findElementByElementPath(
-          store.editor.jsxMetadata,
-          originalGridPath,
-        )
+        switch (view.type) {
+          case 'GRID_CONTAINER': {
+            const originalGridPath = findOriginalGrid(store.editor.jsxMetadata, view.path)
+            if (originalGridPath == null) {
+              return null
+            }
+            const element = MetadataUtils.findElementByElementPath(
+              store.editor.jsxMetadata,
+              originalGridPath,
+            )
 
-        const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element) ? element : null
-        if (targetGridContainer == null) {
-          return null
-        }
+            const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element)
+              ? element
+              : null
+            if (targetGridContainer == null) {
+              return null
+            }
 
-        const helperData = getGridMeasurementHelperData(originalGridPath, scale)
-        if (helperData == null) {
-          return null
-        }
+            const helperData = getGridMeasurementHelperData(originalGridPath, scale)
+            if (helperData == null) {
+              return null
+            }
 
-        const gridData: GridData = {
-          ...helperData,
-          identifier: gridContainerIdentifier(originalGridPath),
+            const gridData: GridData = {
+              ...helperData,
+              identifier: gridContainerIdentifier(originalGridPath),
+            }
+            return gridData
+          }
+          case 'GRID_ITEM':
+            const item = MetadataUtils.isGridItem(store.editor.jsxMetadata, view.path)
+              ? MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view.path)
+              : null
+            if (item == null) {
+              return null
+            }
+
+            const helperData = getGridMeasurementHelperData(view.path, scale, 'fromParent')
+            if (helperData == null) {
+              return null
+            }
+
+            const gridData: GridData = {
+              ...helperData,
+              identifier: gridItemIdentifier(view.path),
+            }
+            return gridData
+          default:
+            assertNever(view)
         }
-        return gridData
       }, gridIdentifiers)
     },
     'useGridData',
