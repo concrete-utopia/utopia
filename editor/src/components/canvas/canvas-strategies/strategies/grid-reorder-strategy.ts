@@ -239,22 +239,18 @@ function runGridReorder(
   const width = gridConfig?.originalCellBounds.width ?? 1
   const height = gridConfig?.originalCellBounds.height ?? 1
 
-  let propsToUpdate: PropertyToUpdate[] = []
-  propsToUpdate.push(propertyToDelete(PP.create('style', 'gridColumnStart')))
-  propsToUpdate.push(propertyToDelete(PP.create('style', 'gridColumnEnd')))
-  if (width > 1) {
-    propsToUpdate.push(propertyToSet(PP.create('style', 'gridColumn'), `span ${width}`))
-  } else {
-    propsToUpdate.push(propertyToDelete(PP.create('style', 'gridColumn')))
-  }
-
-  propsToUpdate.push(propertyToDelete(PP.create('style', 'gridRowStart')))
-  propsToUpdate.push(propertyToDelete(PP.create('style', 'gridRowEnd')))
-  if (height > 1) {
-    propsToUpdate.push(propertyToSet(PP.create('style', 'gridRow'), `span ${height}`))
-  } else {
-    propsToUpdate.push(propertyToDelete(PP.create('style', 'gridRow')))
-  }
+  const propsToUpdate: PropertyToUpdate[] = [
+    propertyToDelete(PP.create('style', 'gridColumnStart')),
+    propertyToDelete(PP.create('style', 'gridColumnEnd')),
+    propertyToDelete(PP.create('style', 'gridRowStart')),
+    propertyToDelete(PP.create('style', 'gridRowEnd')),
+    ...(width > 1
+      ? [propertyToSet(PP.create('style', 'gridColumn'), `span ${width}`)]
+      : [propertyToDelete(PP.create('style', 'gridColumn'))]),
+    ...(height > 1
+      ? [propertyToSet(PP.create('style', 'gridRow'), `span ${height}`)]
+      : [propertyToDelete(PP.create('style', 'gridRow'))]),
+  ]
 
   return [
     reorderElement('always', selectedElementMetadata.elementPath, absolute(possiblyReorderIndex)),
