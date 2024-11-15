@@ -6,6 +6,7 @@ import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import type { GridCellCoordinates } from './grid-cell-bounds'
 import { runGridMoveTest } from './grid.test-utils'
 import * as EP from '../../../../core/shared/element-path'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 
 describe('grid reorder', () => {
   it('reorders an element without setting positioning (inside contiguous area)', async () => {
@@ -93,6 +94,8 @@ describe('grid reorder', () => {
     })
 
     expect(first.cells).toEqual(['pink', 'cyan', 'blue', 'orange'])
+
+    await selectComponentsForTest(editor, [])
 
     const second = await runReorderTest(
       editor,
@@ -225,7 +228,7 @@ describe('grid reorder', () => {
 
 async function runReorderTest(
   editor: EditorRenderResult,
-  gridTestId: string,
+  gridPath: string,
   testId: string,
   targetCell: GridCellCoordinates,
   options?: { tab?: boolean },
@@ -234,22 +237,22 @@ async function runReorderTest(
     editor,
     {
       scale: 1,
-      pathString: `${gridTestId}/${testId}`,
+      gridPath: gridPath,
       testId: testId,
       targetCell: targetCell,
       tab: options?.tab,
     },
   )
 
-  const element = editor.getEditorState().editor.jsxMetadata[gridTestId]
-  if (isLeft(element.element) || !isJSXElement(element.element.value)) {
+  const grid = editor.getEditorState().editor.jsxMetadata[gridPath]
+  if (isLeft(grid.element) || !isJSXElement(grid.element.value)) {
     throw new Error('expected jsx element')
   }
 
   const cells = MetadataUtils.getChildrenOrdered(
     editor.getEditorState().editor.jsxMetadata,
     editor.getEditorState().editor.elementPathTree,
-    element.elementPath,
+    EP.fromString(gridPath),
   )
 
   return {

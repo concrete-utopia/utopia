@@ -1,16 +1,10 @@
 import * as EP from '../../../../core/shared/element-path'
-import {
-  getRectCenter,
-  localRectangle,
-  offsetPoint,
-  windowPoint,
-} from '../../../../core/shared/math-utils'
+import { offsetPoint, windowPoint } from '../../../../core/shared/math-utils'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import CanvasActions from '../../canvas-actions'
 import { GridCellTestId } from '../../controls/grid-controls-for-strategies'
 import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
-import { gridCellTargetId } from './grid-cell-bounds'
 import { runGridMoveTest } from './grid.test-utils'
 
 describe('grid element change location strategy', () => {
@@ -22,7 +16,7 @@ describe('grid element change location strategy', () => {
       editor,
       {
         scale: 1,
-        pathString: `sb/scene/grid/${testId}`,
+        gridPath: 'sb/scene/grid',
         testId: testId,
       },
     )
@@ -52,7 +46,7 @@ describe('grid element change location strategy', () => {
         editor,
         {
           scale: 1,
-          pathString: `sb/scene/grid/${testId}`,
+          gridPath: 'sb/scene/grid',
           testId: testId,
         },
       )
@@ -79,7 +73,7 @@ describe('grid element change location strategy', () => {
         editor,
         {
           scale: 1,
-          pathString: `sb/scene/grid/${testId}`,
+          gridPath: 'sb/scene/grid',
           testId: testId,
         },
         (ed) => {
@@ -108,7 +102,7 @@ describe('grid element change location strategy', () => {
       editor,
       {
         scale: 1,
-        pathString: `sb/scene/grid/${testId}`,
+        gridPath: 'sb/scene/grid',
         testId: testId,
       },
     )
@@ -129,7 +123,7 @@ describe('grid element change location strategy', () => {
       editor,
       {
         scale: 1,
-        pathString: `sb/scene/grid/${testId}`,
+        gridPath: 'sb/scene/grid',
         testId: testId,
         targetCell: { row: 2, column: 1 },
         draggedCell: { row: 2, column: 2 },
@@ -151,7 +145,7 @@ describe('grid element change location strategy', () => {
       editor,
       {
         scale: 1,
-        pathString: `sb/scene/grid/${testId}`,
+        gridPath: 'sb/scene/grid',
         testId: testId,
         tab: true,
       },
@@ -176,7 +170,7 @@ describe('grid element change location strategy', () => {
       editor,
       {
         scale: 1,
-        pathString: `sb/scene/grid/${testId}`,
+        gridPath: 'sb/scene/grid',
         testId: testId,
         targetCell: { row: 3, column: 1 },
       },
@@ -198,7 +192,7 @@ describe('grid element change location strategy', () => {
       editor,
       {
         scale: 0.5,
-        pathString: `sb/scene/grid/${testId}`,
+        gridPath: 'sb/scene/grid',
         testId: testId,
       },
     )
@@ -218,7 +212,7 @@ describe('grid element change location strategy', () => {
       editor,
       {
         scale: 2,
-        pathString: `sb/scene/grid/${testId}`,
+        gridPath: 'sb/scene/grid',
         testId: testId,
       },
     )
@@ -241,7 +235,7 @@ describe('grid element change location strategy', () => {
       editor,
       {
         scale: 1,
-        pathString: `sb/scene/grid/${testId}`,
+        gridPath: 'sb/scene/grid',
         testId: testId,
       },
     )
@@ -265,7 +259,7 @@ describe('grid element change location strategy', () => {
       editor,
       {
         scale: 1,
-        pathString: `sb/scene/grid/${testId}`,
+        gridPath: 'sb/scene/grid',
         testId: testId,
       },
     )
@@ -289,7 +283,7 @@ describe('grid element change location strategy', () => {
       editor,
       {
         scale: 1,
-        pathString: `sb/scene/grid/${testId}`,
+        gridPath: 'sb/scene/grid',
         testId: testId,
         targetCell: { row: 3, column: 2 },
       },
@@ -314,7 +308,7 @@ describe('grid element change location strategy', () => {
       editor,
       {
         scale: 1,
-        pathString: `sb/scene/grid/${testId}`,
+        gridPath: 'sb/scene/grid',
         testId: testId,
       },
     )
@@ -338,7 +332,7 @@ describe('grid element change location strategy', () => {
       editor,
       {
         scale: 1,
-        pathString: `sb/scene/grid/${testId}`,
+        gridPath: 'sb/scene/grid',
         testId: testId,
       },
     )
@@ -364,8 +358,6 @@ export var storyboard = (
       data-testid='grid'
       style={{
         position: 'absolute',
-        left: -94,
-        top: 698,
         display: 'grid',
         gap: 10,
         width: 600,
@@ -426,33 +418,11 @@ export var storyboard = (
       )
 
       const testId = 'grid-inside-grid'
-      const elementPathToDrag = EP.fromString(`sb/grid/${testId}`)
-
-      await selectComponentsForTest(editor, [elementPathToDrag])
-
-      const sourceGridCell = editor.renderedDOM.getByTestId(GridCellTestId(elementPathToDrag))
-      const targetGridCell = editor.renderedDOM.getByTestId(
-        gridCellTargetId(EP.fromString('sb/grid'), 2, 3),
-      )
-
-      const sourceRect = sourceGridCell.getBoundingClientRect()
-      const targetRect = targetGridCell.getBoundingClientRect()
-
-      const dragFrom = {
-        x: sourceRect.x + 10,
-        y: sourceRect.y + 10,
-      }
-      const dragTo = getRectCenter(
-        localRectangle({
-          x: targetRect.x,
-          y: targetRect.y,
-          width: targetRect.width,
-          height: targetRect.height,
-        }),
-      )
-      await mouseDownAtPoint(sourceGridCell, dragFrom)
-      await mouseMoveToPoint(sourceGridCell, dragTo)
-      await mouseUpAtPoint(sourceGridCell, dragTo)
+      await runGridMoveTest(editor, {
+        scale: 1,
+        gridPath: 'sb/grid',
+        testId: testId,
+      })
 
       const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
         editor.renderedDOM.getByTestId(testId).style
