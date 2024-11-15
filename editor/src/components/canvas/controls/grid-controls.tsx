@@ -1136,6 +1136,26 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
     }),
   )
 
+  const isItemInteractionActive = useEditorState(
+    Substores.canvas,
+    (store) => {
+      if (store.editor.canvas.interactionSession == null) {
+        return false
+      }
+      return (
+        // movement
+        store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE' ||
+        // resize (cell)
+        store.editor.canvas.interactionSession.activeControl.type === 'GRID_RESIZE_HANDLE' ||
+        // resize (abs)
+        store.editor.canvas.interactionSession.activeControl.type === 'RESIZE_HANDLE'
+      )
+    },
+    'GridControlsComponent isItemInteractionActive',
+  )
+
+  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+
   if (grids.length === 0) {
     return null
   }
@@ -1144,20 +1164,34 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
     <div id={'grid-controls'}>
       <CanvasOffsetWrapper>
         {grids.map((grid) => {
+          const gridItemSelected = selectedViewsRef.current.some((path) =>
+            EP.isDescendantOf(path, grid.identifier.path),
+          )
+
           const gridPath =
             grid.identifier.type === 'GRID_CONTAINER'
               ? grid.identifier.path
               : EP.parentPath(grid.identifier.path)
-          const shouldHaveVisibleControls = gridsWithVisibleControls.some((g) => {
-            const visibleControlPath = g.type === 'GRID_CONTAINER' ? g.path : EP.parentPath(g.path)
-            return EP.pathsEqual(gridPath, visibleControlPath)
-          })
+
+          function shouldHaveVisibleControls(): boolean {
+            const isGridChildSelectedWihtoutInteraction =
+              gridItemSelected && !isItemInteractionActive
+            if (isGridChildSelectedWihtoutInteraction) {
+              return false
+            }
+
+            return gridsWithVisibleControls.some((g) => {
+              const visibleControlPath =
+                g.type === 'GRID_CONTAINER' ? g.path : EP.parentPath(g.path)
+              return EP.pathsEqual(gridPath, visibleControlPath)
+            })
+          }
 
           return (
             <GridControl
               key={GridControlKey(grid.identifier.path)}
               grid={grid}
-              controlsVisible={shouldHaveVisibleControls ? 'visible' : 'not-visible'}
+              controlsVisible={shouldHaveVisibleControls() ? 'visible' : 'not-visible'}
             />
           )
         })}
