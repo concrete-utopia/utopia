@@ -535,6 +535,8 @@ export const GridRowColumnResizingControlsComponent = ({
     'GridRowColumnResizingControls scale',
   )
 
+  const selectedGridItemWithoutInteraction = useSelectedGridItemWithoutInteraction()
+
   const gridsWithVisibleResizeControls = React.useMemo(() => {
     return grids.filter((grid) => {
       if (
@@ -570,6 +572,9 @@ export const GridRowColumnResizingControlsComponent = ({
   return (
     <CanvasOffsetWrapper>
       {gridsWithVisibleResizeControls.flatMap((grid) => {
+        if (selectedGridItemWithoutInteraction(grid)) {
+          return null
+        }
         return (
           <GridResizing
             key={`grid-resizing-column-${EP.toString(grid.identifier.path)}`}
@@ -590,6 +595,9 @@ export const GridRowColumnResizingControlsComponent = ({
         )
       })}
       {gridsWithVisibleResizeControls.flatMap((grid) => {
+        if (selectedGridItemWithoutInteraction(grid)) {
+          return null
+        }
         return (
           <GridResizing
             key={`grid-resizing-row-${EP.toString(grid.identifier.path)}`}
@@ -1125,6 +1133,8 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
 
   const gridsWithVisibleControls: Array<GridIdentifier> = [...targets, ...hoveredGrids]
 
+  const selectedGridItemWithoutInteraction = useSelectedGridItemWithoutInteraction()
+
   // Uniqify the grid paths, and then sort them by depth.
   // With the lowest depth grid at the end so that it renders on top and catches the events
   // before those above it in the hierarchy.
@@ -1136,26 +1146,6 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
     }),
   )
 
-  const isItemInteractionActive = useEditorState(
-    Substores.canvas,
-    (store) => {
-      if (store.editor.canvas.interactionSession == null) {
-        return false
-      }
-      return (
-        // movement
-        store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE' ||
-        // resize (cell)
-        store.editor.canvas.interactionSession.activeControl.type === 'GRID_RESIZE_HANDLE' ||
-        // resize (abs)
-        store.editor.canvas.interactionSession.activeControl.type === 'RESIZE_HANDLE'
-      )
-    },
-    'GridControlsComponent isItemInteractionActive',
-  )
-
-  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-
   if (grids.length === 0) {
     return null
   }
@@ -1164,34 +1154,25 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
     <div id={'grid-controls'}>
       <CanvasOffsetWrapper>
         {grids.map((grid) => {
-          const gridItemSelected = selectedViewsRef.current.some((path) =>
-            EP.isDescendantOf(path, grid.identifier.path),
-          )
-
-          const gridPath =
-            grid.identifier.type === 'GRID_CONTAINER'
-              ? grid.identifier.path
-              : EP.parentPath(grid.identifier.path)
-
-          function shouldHaveVisibleControls(): boolean {
-            const isGridChildSelectedWihtoutInteraction =
-              gridItemSelected && !isItemInteractionActive
-            if (isGridChildSelectedWihtoutInteraction) {
-              return false
-            }
-
-            return gridsWithVisibleControls.some((g) => {
-              const visibleControlPath =
-                g.type === 'GRID_CONTAINER' ? g.path : EP.parentPath(g.path)
-              return EP.pathsEqual(gridPath, visibleControlPath)
-            })
-          }
-
           return (
             <GridControl
               key={GridControlKey(grid.identifier.path)}
               grid={grid}
-              controlsVisible={shouldHaveVisibleControls() ? 'visible' : 'not-visible'}
+              controlsVisible={
+                !selectedGridItemWithoutInteraction(grid) &&
+                gridsWithVisibleControls.some((g) => {
+                  const gridPath =
+                    grid.identifier.type === 'GRID_CONTAINER'
+                      ? grid.identifier.path
+                      : EP.parentPath(grid.identifier.path)
+
+                  const visibleControlPath =
+                    g.type === 'GRID_CONTAINER' ? g.path : EP.parentPath(g.path)
+                  return EP.pathsEqual(gridPath, visibleControlPath)
+                })
+                  ? 'visible'
+                  : 'not-visible'
+              }
             />
           )
         })}
@@ -2111,4 +2092,37 @@ function useAllGrids(metadata: ElementInstanceMetadataMap) {
   return React.useMemo(() => {
     return MetadataUtils.getAllGrids(metadata)
   }, [metadata])
+}
+
+function useSelectedGridItemWithoutInteraction() {
+  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+
+  const isItemInteractionActive = useEditorState(
+    Substores.canvas,
+    (store) => {
+      if (store.editor.canvas.interactionSession == null) {
+        return false
+      }
+      return (
+        // movement
+        store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE' ||
+        // resize (cell)
+        store.editor.canvas.interactionSession.activeControl.type === 'GRID_RESIZE_HANDLE' ||
+        // resize (abs)
+        store.editor.canvas.interactionSession.activeControl.type === 'RESIZE_HANDLE'
+      )
+    },
+    'useShouldHaveVisibleControls isItemInteractionActive',
+  )
+
+  return React.useCallback(
+    (grid: GridData) => {
+      const gridItemSelected = selectedViewsRef.current.some((path) =>
+        EP.isDescendantOf(path, grid.identifier.path),
+      )
+
+      return gridItemSelected && !isItemInteractionActive
+    },
+    [isItemInteractionActive, selectedViewsRef],
+  )
 }
