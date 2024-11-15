@@ -1154,25 +1154,24 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
     <div id={'grid-controls'}>
       <CanvasOffsetWrapper>
         {grids.map((grid) => {
+          const shouldHaveVisibleControls =
+            !selectedGridItemWithoutInteraction(grid) &&
+            gridsWithVisibleControls.some((g) => {
+              const gridPath =
+                grid.identifier.type === 'GRID_CONTAINER'
+                  ? grid.identifier.path
+                  : EP.parentPath(grid.identifier.path)
+
+              const visibleControlPath =
+                g.type === 'GRID_CONTAINER' ? g.path : EP.parentPath(g.path)
+              return EP.pathsEqual(gridPath, visibleControlPath)
+            })
+
           return (
             <GridControl
               key={GridControlKey(grid.identifier.path)}
               grid={grid}
-              controlsVisible={
-                !selectedGridItemWithoutInteraction(grid) &&
-                gridsWithVisibleControls.some((g) => {
-                  const gridPath =
-                    grid.identifier.type === 'GRID_CONTAINER'
-                      ? grid.identifier.path
-                      : EP.parentPath(grid.identifier.path)
-
-                  const visibleControlPath =
-                    g.type === 'GRID_CONTAINER' ? g.path : EP.parentPath(g.path)
-                  return EP.pathsEqual(gridPath, visibleControlPath)
-                })
-                  ? 'visible'
-                  : 'not-visible'
-              }
+              controlsVisible={shouldHaveVisibleControls ? 'visible' : 'not-visible'}
             />
           )
         })}
