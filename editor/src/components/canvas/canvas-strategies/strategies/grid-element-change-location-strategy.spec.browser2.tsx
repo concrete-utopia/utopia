@@ -120,29 +120,6 @@ describe('grid element change location strategy', () => {
         gridRowStart: '2',
       })
     })
-
-    it('can change the location of elements in a grid component with non-root grid inside', async () => {
-      const editor = await renderTestEditorWithCode(
-        ProjectCodeComponentNonRootGrid,
-        'await-first-dom-report',
-      )
-
-      const testId = 'aaa'
-      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runGridMoveTest(
-        editor,
-        {
-          scale: 1,
-          pathString: `sb/scene/grid/${testId}`,
-          testId: testId,
-        },
-      )
-      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
-        gridColumnEnd: '7',
-        gridColumnStart: '3',
-        gridRowEnd: '4',
-        gridRowStart: '2',
-      })
-    })
   })
 
   it('can not change location of a multicell element out of the grid', async () => {
@@ -1019,104 +996,6 @@ ${itemComponentCode}
 `
 
 const ProjectCodeGridComponent = `import * as React from 'react'
-import { Scene, Storyboard, Placeholder } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <Scene
-      id='playground-scene'
-      commentId='playground-scene'
-      style={{
-        width: 847,
-        height: 895,
-        position: 'absolute',
-        left: 46,
-        top: 131,
-      }}
-      data-label='Playground'
-      data-uid='scene'
-    >
-      <Grid
-        style={{
-          display: 'grid',
-          gridTemplateRows: '75px 75px 75px 75px',
-          gridTemplateColumns:
-            '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
-          gridGap: 16,
-          height: 482,
-          width: 786,
-          position: 'absolute',
-          left: 31,
-          top: 0,
-        }}
-        data-uid='grid'
-      >
-        <div
-          style={{
-            minHeight: 0,
-            backgroundColor: '#f3785f',
-            gridColumnEnd: 5,
-            gridColumnStart: 1,
-            gridRowEnd: 3,
-            gridRowStart: 1,
-          }}
-          data-uid='aaa'
-          data-testid='aaa'
-        />
-        <div
-          style={{
-            minHeight: 0,
-            backgroundColor: '#23565b',
-          }}
-          data-uid='bbb'
-          data-testid='bbb'
-        />
-        <Placeholder
-          style={{
-            minHeight: 0,
-            gridColumnEnd: 5,
-            gridRowEnd: 4,
-            gridColumnStart: 1,
-            gridRowStart: 3,
-            backgroundColor: '#0074ff',
-          }}
-          data-uid='ccc'
-        />
-        <Placeholder
-          style={{
-            minHeight: 0,
-            gridColumnEnd: 9,
-            gridRowEnd: 4,
-            gridColumnStart: 5,
-            gridRowStart: 3,
-          }}
-          data-uid='ddd'
-        />
-      </Grid>
-    </Scene>
-  </Storyboard>
-)
-
-export function Grid(props) {
-  return (
-    <div
-      style={{
-        ...props.style,
-        display: 'grid',
-        gridTemplateRows: '75px 75px 75px 75px',
-        gridTemplateColumns:
-          '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
-        gridGap: 16,
-      }}
-      data-uid='f84914f31dbc6c5d9b44c11ae54139ef'
-    >
-      {props.children}
-    </div>
-  )
-}
-`
-
-const ProjectCodeComponentNonRootGrid = `import * as React from 'react'
 import { Scene, Storyboard, Placeholder } from 'utopia-api'
 
 export var storyboard = (
