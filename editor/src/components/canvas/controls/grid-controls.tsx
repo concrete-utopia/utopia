@@ -535,7 +535,7 @@ export const GridRowColumnResizingControlsComponent = ({
     'GridRowColumnResizingControls scale',
   )
 
-  const selectedGridItemWithoutInteraction = useSelectedGridItemWithoutInteraction()
+  const isSelectedGridItemWithoutInteraction = useIsSelectedGridItemWithoutInteraction()
 
   const gridsWithVisibleResizeControls = React.useMemo(() => {
     return grids.filter((grid) => {
@@ -572,7 +572,7 @@ export const GridRowColumnResizingControlsComponent = ({
   return (
     <CanvasOffsetWrapper>
       {gridsWithVisibleResizeControls.flatMap((grid) => {
-        if (selectedGridItemWithoutInteraction(grid)) {
+        if (isSelectedGridItemWithoutInteraction(grid)) {
           return null
         }
         return (
@@ -595,7 +595,7 @@ export const GridRowColumnResizingControlsComponent = ({
         )
       })}
       {gridsWithVisibleResizeControls.flatMap((grid) => {
-        if (selectedGridItemWithoutInteraction(grid)) {
+        if (isSelectedGridItemWithoutInteraction(grid)) {
           return null
         }
         return (
@@ -1133,7 +1133,7 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
 
   const gridsWithVisibleControls: Array<GridIdentifier> = [...targets, ...hoveredGrids]
 
-  const selectedGridItemWithoutInteraction = useSelectedGridItemWithoutInteraction()
+  const isSelectedGridItemWithoutInteraction = useIsSelectedGridItemWithoutInteraction()
 
   // Uniqify the grid paths, and then sort them by depth.
   // With the lowest depth grid at the end so that it renders on top and catches the events
@@ -1155,7 +1155,7 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
       <CanvasOffsetWrapper>
         {grids.map((grid) => {
           const shouldHaveVisibleControls =
-            !selectedGridItemWithoutInteraction(grid) &&
+            !isSelectedGridItemWithoutInteraction(grid) &&
             gridsWithVisibleControls.some((g) => {
               const gridPath =
                 grid.identifier.type === 'GRID_CONTAINER'
@@ -2093,7 +2093,7 @@ function useAllGrids(metadata: ElementInstanceMetadataMap) {
   }, [metadata])
 }
 
-function useSelectedGridItemWithoutInteraction() {
+function useIsSelectedGridItemWithoutInteraction() {
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
 
   const isItemInteractionActive = useEditorState(
