@@ -256,7 +256,7 @@ export function useGridData(gridIdentifiers: GridIdentifier[]): GridData[] {
       return mapDropNulls((view) => {
         switch (view.type) {
           case 'GRID_CONTAINER': {
-            const originalGridPath = findOriginalGrid(store.editor.jsxMetadata, view.path)
+            const originalGridPath = findOriginalGrid(store.editor.jsxMetadata, view.container)
             if (originalGridPath == null) {
               return null
             }
@@ -284,21 +284,21 @@ export function useGridData(gridIdentifiers: GridIdentifier[]): GridData[] {
             return gridData
           }
           case 'GRID_ITEM':
-            const item = MetadataUtils.isGridItem(store.editor.jsxMetadata, view.path)
-              ? MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view.path)
+            const item = MetadataUtils.isGridItem(store.editor.jsxMetadata, view.item)
+              ? MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view.item)
               : null
             if (item == null) {
               return null
             }
 
-            const helperData = getGridMeasurementHelperData(view.path, scale, 'parent')
+            const helperData = getGridMeasurementHelperData(view.item, scale, 'parent')
             if (helperData == null) {
               return null
             }
 
             const gridData: GridData = {
               ...helperData,
-              identifier: gridItemIdentifier(view.path),
+              identifier: gridItemIdentifier(view.item),
             }
             return gridData
           default:

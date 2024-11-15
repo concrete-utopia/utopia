@@ -826,25 +826,25 @@ export type GridIdentifier = GridContainerIdentifier | GridItemIdentifier
 
 export interface GridContainerIdentifier {
   type: 'GRID_CONTAINER'
-  path: ElementPath
+  container: ElementPath
 }
 
 export function gridContainerIdentifier(path: ElementPath): GridContainerIdentifier {
   return {
     type: 'GRID_CONTAINER',
-    path: path,
+    container: path,
   }
 }
 
 export interface GridItemIdentifier {
   type: 'GRID_ITEM'
-  path: ElementPath
+  item: ElementPath
 }
 
 export function gridItemIdentifier(path: ElementPath): GridItemIdentifier {
   return {
     type: 'GRID_ITEM',
-    path: path,
+    item: path,
   }
 }
 

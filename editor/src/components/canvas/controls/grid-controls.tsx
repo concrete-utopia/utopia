@@ -739,9 +739,9 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
     const children = (() => {
       switch (grid.identifier.type) {
         case 'GRID_CONTAINER':
-          return MetadataUtils.getChildrenUnordered(jsxMetadata, grid.identifier.path)
+          return MetadataUtils.getChildrenUnordered(jsxMetadata, grid.identifier.container)
         case 'GRID_ITEM':
-          return MetadataUtils.getSiblingsUnordered(jsxMetadata, grid.identifier.path)
+          return MetadataUtils.getSiblingsUnordered(jsxMetadata, grid.identifier.item)
         default:
           assertNever(grid.identifier)
       }
@@ -927,7 +927,7 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
           const isActiveGrid =
             (dragging != null && EP.isParentOf(gridContainerOrComponentPath, dragging)) ||
             (currentHoveredGrid != null &&
-              EP.pathsEqual(gridContainerOrComponentPath, currentHoveredGrid.path))
+              gridIdentifiersSimilar(grid.identifier, currentHoveredGrid))
           const isActiveCell =
             isActiveGrid &&
             countedColumn === currentHoveredCell?.column &&
@@ -1114,7 +1114,9 @@ GridMeasurementHelper.displayName = 'GridMeasurementHelper'
 
 export const GridControlsComponent = ({ targets }: GridControlsProps) => {
   const ancestorPaths = React.useMemo(() => {
-    return targets.flatMap((target) => EP.getAncestors(target.path))
+    return targets.flatMap((target) =>
+      EP.getAncestors(getGridIdentifierContainerOrComponentPath(target)),
+    )
   }, [targets])
   const ancestorGrids: Array<GridIdentifier> = useEditorState(
     Substores.metadata,
@@ -1151,8 +1153,10 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
   // before those above it in the hierarchy.
   const grids = useGridData(
     uniqBy([...gridsWithVisibleControls, ...ancestorGrids], gridIdentifiersSimilar).sort((a, b) => {
-      const aDepth = a.type === 'GRID_CONTAINER' ? EP.fullDepth(a.path) : EP.fullDepth(a.path) - 1
-      const bDepth = a.type === 'GRID_CONTAINER' ? EP.fullDepth(b.path) : EP.fullDepth(b.path) - 1
+      const aDepth =
+        a.type === 'GRID_CONTAINER' ? EP.fullDepth(a.container) : EP.fullDepth(a.item) - 1
+      const bDepth =
+        b.type === 'GRID_CONTAINER' ? EP.fullDepth(b.container) : EP.fullDepth(b.item) - 1
       return aDepth - bDepth
     }),
   )

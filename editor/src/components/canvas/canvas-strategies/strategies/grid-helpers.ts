@@ -689,22 +689,36 @@ export function gridMoveStrategiesExtraCommands(
 export function getGridIdentifierContainerOrComponentPath(identifier: GridIdentifier): ElementPath {
   switch (identifier.type) {
     case 'GRID_CONTAINER':
-      return identifier.path
+      return identifier.container
     case 'GRID_ITEM':
-      return EP.parentPath(identifier.path)
+      return EP.parentPath(identifier.item)
     default:
       assertNever(identifier)
   }
 }
 
 export function gridIdentifiersSimilar(a: GridIdentifier, b: GridIdentifier): boolean {
-  return (
-    (a.type === b.type && EP.pathsEqual(a.path, b.path)) ||
-    (a.type === 'GRID_ITEM' && b.type === 'GRID_CONTAINER' && EP.isParentOf(b.path, a.path)) ||
-    (a.type === 'GRID_CONTAINER' && b.type === 'GRID_ITEM' && EP.isParentOf(a.path, b.path))
-  )
+  switch (a.type) {
+    case 'GRID_CONTAINER':
+      return b.type === 'GRID_CONTAINER'
+        ? EP.pathsEqual(a.container, b.container)
+        : EP.isParentOf(a.container, b.item)
+    case 'GRID_ITEM':
+      return b.type === 'GRID_ITEM'
+        ? EP.pathsEqual(a.item, b.item)
+        : EP.isParentOf(b.container, a.item)
+    default:
+      assertNever(a)
+  }
 }
 
 export function gridIdentifierToString(identifier: GridIdentifier): string {
-  return `${identifier.type}-${EP.toString(identifier.path)}`
+  switch (identifier.type) {
+    case 'GRID_CONTAINER':
+      return `${identifier.type}-${EP.toString(identifier.container)}`
+    case 'GRID_ITEM':
+      return `${identifier.type}-${EP.toString(identifier.item)}`
+    default:
+      assertNever(identifier)
+  }
 }
