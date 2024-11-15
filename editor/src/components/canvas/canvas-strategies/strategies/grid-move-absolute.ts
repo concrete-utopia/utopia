@@ -215,6 +215,19 @@ function runGridMoveAbsolute(
     ]
   }
 
+  function getContainingRect(): CanvasRectangle {
+    if (selectedElementMetadata.specialSizeMeasurements.immediateParentProvidesLayout) {
+      const gridCellGlobalFrame = getGlobalFrameOfGridCell(gridCellGlobalFrames, targetRootCell)
+      return zeroRectIfNullOrInfinity(gridCellGlobalFrame)
+    } else {
+      const closestOffsetGlobalFrame = MetadataUtils.findElementByElementPath(
+        jsxMetadata,
+        selectedElementMetadata.specialSizeMeasurements.closestOffsetParentPath,
+      )?.globalFrame
+      return zeroRectIfNullOrInfinity(closestOffsetGlobalFrame)
+    }
+  }
+
   // otherwise, return a change location + absolute adjustment
   return [
     ...runGridChangeElementLocation(
@@ -225,12 +238,7 @@ function runGridMoveAbsolute(
       gridTemplate,
       null,
     ),
-    ...gridChildAbsoluteMoveCommands(
-      selectedElementMetadata,
-      getGlobalFrameOfGridCell(gridCellGlobalFrames, targetRootCell) ??
-        canvasRectangle(zeroRectangle),
-      interactionData,
-    ),
+    ...gridChildAbsoluteMoveCommands(selectedElementMetadata, getContainingRect(), interactionData),
   ]
 }
 
