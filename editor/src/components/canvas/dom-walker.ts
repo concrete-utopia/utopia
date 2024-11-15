@@ -62,12 +62,8 @@ import {
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
 import { UTOPIA_SCENE_ID_KEY, UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
 import { emptySet } from '../../core/shared/set-utils'
-import {
-  getDeepestPathOnDomElement,
-  getPathsOnDomElement,
-  getPathStringsOnDomElement,
-} from '../../core/shared/uid-utils'
-import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
+import { getDeepestPathOnDomElement, getPathStringsOnDomElement } from '../../core/shared/uid-utils'
+import { forceNotNull } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import type { EditorState, EditorStorePatched } from '../editor/store/editor-state'
 import { shallowEqual } from '../../core/shared/equality-utils'
