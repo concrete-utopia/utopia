@@ -15,7 +15,7 @@ import {
   offsetPoint,
 } from '../../../../core/shared/math-utils'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
-import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
+import { mouseDownAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import type { GridResizeEdge } from '../interaction-state'
@@ -34,6 +34,9 @@ async function runCellResizeTest(
   const resizeControl = editor.renderedDOM.getByTestId(
     ResizePointTestId(gridEdgeToEdgePosition(edge)),
   )
+
+  const resizeControlBox = resizeControl.getBoundingClientRect()
+  await mouseDownAtPoint(resizeControl, { x: resizeControlBox.x + 5, y: resizeControlBox.y + 5 })
   const targetGridCell = editor.renderedDOM.getByTestId(dragToCellTestId)
 
   await mouseDragFromPointToPoint(
