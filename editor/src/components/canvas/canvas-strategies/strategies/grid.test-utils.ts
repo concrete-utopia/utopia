@@ -43,6 +43,14 @@ export async function runGridMoveTest(
           props.draggedCell.column,
         ),
   )
+
+  const sourceRect = sourceGridCell.getBoundingClientRect()
+  const dragFrom = {
+    x: sourceRect.x + 10,
+    y: sourceRect.y + 10,
+  }
+  await mouseDownAtPoint(sourceGridCell, dragFrom)
+
   const targetGridCell = editor.renderedDOM.getByTestId(
     gridCellTargetId(
       EP.fromString('sb/scene/grid'),
@@ -51,13 +59,8 @@ export async function runGridMoveTest(
     ),
   )
 
-  const sourceRect = sourceGridCell.getBoundingClientRect()
   const targetRect = targetGridCell.getBoundingClientRect()
 
-  const dragFrom = {
-    x: sourceRect.x + 10,
-    y: sourceRect.y + 10,
-  }
   const endPoint = getRectCenter(
     localRectangle({
       x: targetRect.x,
@@ -67,7 +70,6 @@ export async function runGridMoveTest(
     }),
   )
 
-  await mouseDownAtPoint(sourceGridCell, dragFrom)
   await mouseMoveToPoint(sourceGridCell, endPoint)
   if (props.tab) {
     await keyDown('Tab')
