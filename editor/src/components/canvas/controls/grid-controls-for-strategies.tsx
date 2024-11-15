@@ -35,7 +35,7 @@ import {
   GridRowColumnResizingControlsComponent,
 } from './grid-controls'
 import { isEdgePositionOnSide } from '../canvas-utils'
-import { getFromElement, getFromParent } from '../direct-dom-lookups'
+import { getFromElement } from '../direct-dom-lookups'
 import { applicativeSidesPxTransform, getGridContainerProperties } from '../dom-walker'
 import { applicative4Either, defaultEither, isRight, mapEither } from '../../../core/shared/either'
 import { domRectToScaledCanvasRectangle, getRoundingFn } from '../../../core/shared/dom-utils'
@@ -99,19 +99,14 @@ export type GridMeasurementHelperData = {
   element: HTMLElement
 }
 
-export type GridMeasurementHelperSourceElement = 'parent' | 'element'
+export type ElementOrParent = 'parent' | 'element'
 
 export function getGridMeasurementHelperData(
   elementPath: ElementPath,
   scale: number,
-  source: GridMeasurementHelperSourceElement,
+  source: ElementOrParent,
 ): GridMeasurementHelperData | undefined {
-  switch (source) {
-    case 'element':
-      return getFromElement(elementPath, gridMeasurementHelperDataFromElement(scale))
-    case 'parent':
-      return getFromParent(elementPath, gridMeasurementHelperDataFromElement(scale))
-  }
+  return getFromElement(elementPath, gridMeasurementHelperDataFromElement(scale), source)
 }
 
 function getStylingSubset(styling: CSSStyleDeclaration): CSSProperties {
@@ -229,7 +224,7 @@ export function gridMeasurementHelperDataFromElement(
 
 export function useGridMeasurementHelperData(
   elementPath: ElementPath,
-  source: GridMeasurementHelperSourceElement,
+  source: ElementOrParent,
 ): GridMeasurementHelperData | undefined {
   const scale = useEditorState(
     Substores.canvas,
