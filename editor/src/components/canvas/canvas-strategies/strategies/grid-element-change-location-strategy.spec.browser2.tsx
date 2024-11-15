@@ -5,7 +5,7 @@ import {
   offsetPoint,
   windowPoint,
 } from '../../../../core/shared/math-utils'
-import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import CanvasActions from '../../canvas-actions'
 import { GridCellTestId } from '../../controls/grid-controls-for-strategies'
 import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
@@ -97,26 +97,51 @@ describe('grid element change location strategy', () => {
     })
   })
 
-  it('can change the location of elements in a grid component', async () => {
-    const editor = await renderTestEditorWithCode(
-      ProjectCodeGridComponent,
-      'await-first-dom-report',
-    )
+  describe('grid component', () => {
+    it('can change the location of elements in a grid component', async () => {
+      const editor = await renderTestEditorWithCode(
+        ProjectCodeGridComponent,
+        'await-first-dom-report',
+      )
 
-    const testId = 'aaa'
-    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runGridMoveTest(
-      editor,
-      {
-        scale: 1,
-        pathString: `sb/scene/grid/${testId}`,
-        testId: testId,
-      },
-    )
-    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
-      gridColumnEnd: '7',
-      gridColumnStart: '3',
-      gridRowEnd: '4',
-      gridRowStart: '2',
+      const testId = 'aaa'
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runGridMoveTest(
+        editor,
+        {
+          scale: 1,
+          pathString: `sb/scene/grid/${testId}`,
+          testId: testId,
+        },
+      )
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: '7',
+        gridColumnStart: '3',
+        gridRowEnd: '4',
+        gridRowStart: '2',
+      })
+    })
+
+    it('can change the location of elements in a grid component with non-root grid inside', async () => {
+      const editor = await renderTestEditorWithCode(
+        ProjectCodeComponentNonRootGrid,
+        'await-first-dom-report',
+      )
+
+      const testId = 'aaa'
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runGridMoveTest(
+        editor,
+        {
+          scale: 1,
+          pathString: `sb/scene/grid/${testId}`,
+          testId: testId,
+        },
+      )
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: '7',
+        gridColumnStart: '3',
+        gridRowEnd: '4',
+        gridRowStart: '2',
+      })
     })
   })
 
@@ -1075,7 +1100,6 @@ export var storyboard = (
 export function Grid(props) {
   return (
     <div
-      {...props}
       style={{
         ...props.style,
         display: 'grid',
@@ -1087,6 +1111,104 @@ export function Grid(props) {
       data-uid='f84914f31dbc6c5d9b44c11ae54139ef'
     >
       {props.children}
+    </div>
+  )
+}
+`
+
+const ProjectCodeComponentNonRootGrid = `import * as React from 'react'
+import { Scene, Storyboard, Placeholder } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 847,
+        height: 895,
+        position: 'absolute',
+        left: 46,
+        top: 131,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <Grid
+        style={{
+          position: 'absolute',
+          left: 31,
+          top: 0,
+        }}
+        data-uid='grid'
+      >
+        <div
+          style={{
+            minHeight: 0,
+            backgroundColor: '#23565b',
+          }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+        <div
+          style={{
+            minHeight: 0,
+            backgroundColor: '#f3785f',
+            gridColumn: '1 / 5',
+            gridRow: '1 / 3',
+          }}
+          data-uid='aaa'
+          data-testid='aaa'
+        />
+        <Placeholder
+          style={{
+            minHeight: 0,
+            gridColumnEnd: 5,
+            gridRowEnd: 4,
+            gridColumnStart: 1,
+            gridRowStart: 3,
+            backgroundColor: '#0074ff',
+          }}
+          data-uid='ccc'
+        />
+        <Placeholder
+          style={{
+            minHeight: 0,
+            gridColumnEnd: 9,
+            gridRowEnd: 4,
+            gridColumnStart: 5,
+            gridRowStart: 3,
+          }}
+          data-uid='ddd'
+        />
+      </Grid>
+    </Scene>
+  </Storyboard>
+)
+
+export function Grid(props) {
+  return (
+    <div
+      style={{
+        ...props.style,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateRows: '75px 75px 75px 75px',
+          gridTemplateColumns:
+            '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
+          gridGap: 16,
+        }}
+      >
+        {props.children}
+      </div>
+      <div
+        style={{ height: 100 }}
+      />
     </div>
   )
 }
