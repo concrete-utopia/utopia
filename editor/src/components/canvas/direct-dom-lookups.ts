@@ -25,18 +25,18 @@ export function getFromElement<T>(
         !EP.isRootElementOfInstance(pathFromElement)) ||
       EP.isRootElementOf(pathFromElement, path)
     ) {
-      if (element instanceof HTMLElement) {
+      const realElement = (() => {
         switch (elementOrParent) {
           case 'element':
-            if (element.parentElement != null) {
-              return fromElement(element.parentElement)
-            }
-            break
+            return element
           case 'parent':
-            return fromElement(element)
+            return element.parentElement
           default:
             assertNever(elementOrParent)
         }
+      })()
+      if (realElement instanceof HTMLElement) {
+        return fromElement(realElement)
       }
     }
   }
