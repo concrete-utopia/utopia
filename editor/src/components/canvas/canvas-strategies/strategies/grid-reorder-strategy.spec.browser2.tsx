@@ -23,6 +23,23 @@ describe('grid reorder', () => {
 
     expect(cells).toEqual(['pink', 'cyan', 'orange', 'blue'])
   })
+  it('reorders an element in a grid component without setting positioning (inside contiguous area)', async () => {
+    const editor = await renderTestEditorWithCode(
+      ProjectCodeReorderGridComponent,
+      'await-first-dom-report',
+    )
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd, cells } =
+      await runReorderTest(editor, 'sb/scene/grid', 'orange', { row: 1, column: 3 })
+
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnEnd: '',
+      gridColumnStart: '',
+      gridRowEnd: '',
+      gridRowStart: '',
+    })
+
+    expect(cells).toEqual(['pink', 'cyan', 'orange', 'blue'])
+  })
   it('reorders a component (which does not take style props) inside contiguous area', async () => {
     const editor = await renderTestEditorWithCode(
       ProjectCodeReorderWithComponentItem,
@@ -340,6 +357,109 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )
+`
+
+const ProjectCodeReorderGridComponent = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 600,
+        height: 600,
+        position: 'absolute',
+        left: 0,
+        top: 0,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <Grid
+        style={{
+          backgroundColor: '#aaaaaa33',
+        }}
+        data-testid='grid'
+        data-uid='grid'
+      >
+        <div
+          style={{
+            backgroundColor: '#f09',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='pink'
+          data-testid='pink'
+          data-label='pink'
+        />
+        <div
+          style={{
+            backgroundColor: '#f90',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='orange'
+          data-testid='orange'
+          data-label='orange'
+        />
+        <div
+          style={{
+            backgroundColor: '#0f9',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='cyan'
+          data-testid='cyan'
+          data-label='cyan'
+        />
+        <div
+          style={{
+            backgroundColor: '#09f',
+            width: '100%',
+            height: '100%',
+          }}
+          data-uid='blue'
+          data-testid='blue'
+          data-label='blue'
+        />
+      </Grid>
+    </Scene>
+  </Storyboard>
+)
+
+export function Grid(props) {
+  return (
+    <div
+      style={{
+        ...props.style,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+      data-uid='43adc9c0cf5a0bbf66c67e2e37466c18'
+    >
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gridTemplateRows: '1fr 1fr 1fr',
+          gridGap: 10,
+          width: 500,
+          height: 500,
+          padding: 10,
+        }}
+        data-uid='f84914f31dbc6c5d9b44c11ae54139ef'
+      >
+        {props.children}
+      </div>
+      <div
+        style={{ height: 100 }}
+        data-uid='f5827ce0f04916c792a1da2bd69b6cad'
+      />
+    </div>
+  )
+}
 `
 
 const ProjectCodeReorderWithComponentItem = `import * as React from 'react'

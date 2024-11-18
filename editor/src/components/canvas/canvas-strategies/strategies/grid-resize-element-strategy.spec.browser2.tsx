@@ -870,18 +870,26 @@ export var storyboard = (
 export function Grid(props) {
   return (
     <div
-      {...props}
       style={{
         ...props.style,
-        display: 'grid',
-        gridTemplateRows: '75px 75px 75px 75px',
-        gridTemplateColumns:
-          '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
-        gridGap: 16,
+        display: 'flex',
+        flexDirection: 'column',
       }}
-      data-uid='f84914f31dbc6c5d9b44c11ae54139ef'
     >
-      {props.children}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateRows: '75px 75px 75px 75px',
+          gridTemplateColumns:
+            '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
+          gridGap: 16,
+        }}
+      >
+        {props.children}
+      </div>
+      <div
+        style={{ height: 100 }}
+      />
     </div>
   )
 }
