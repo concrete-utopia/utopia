@@ -15,7 +15,7 @@ import {
   offsetPoint,
 } from '../../../../core/shared/math-utils'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
-import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
+import { mouseDownAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import type { GridResizeEdge } from '../interaction-state'
@@ -34,6 +34,9 @@ async function runCellResizeTest(
   const resizeControl = editor.renderedDOM.getByTestId(
     ResizePointTestId(gridEdgeToEdgePosition(edge)),
   )
+
+  const resizeControlBox = resizeControl.getBoundingClientRect()
+  await mouseDownAtPoint(resizeControl, { x: resizeControlBox.x + 5, y: resizeControlBox.y + 5 })
   const targetGridCell = editor.renderedDOM.getByTestId(dragToCellTestId)
 
   await mouseDragFromPointToPoint(
@@ -867,18 +870,26 @@ export var storyboard = (
 export function Grid(props) {
   return (
     <div
-      {...props}
       style={{
         ...props.style,
-        display: 'grid',
-        gridTemplateRows: '75px 75px 75px 75px',
-        gridTemplateColumns:
-          '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
-        gridGap: 16,
+        display: 'flex',
+        flexDirection: 'column',
       }}
-      data-uid='f84914f31dbc6c5d9b44c11ae54139ef'
     >
-      {props.children}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateRows: '75px 75px 75px 75px',
+          gridTemplateColumns:
+            '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
+          gridGap: 16,
+        }}
+      >
+        {props.children}
+      </div>
+      <div
+        style={{ height: 100 }}
+      />
     </div>
   )
 }

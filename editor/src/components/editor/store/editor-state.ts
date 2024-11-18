@@ -826,34 +826,37 @@ export type GridIdentifier = GridContainerIdentifier | GridItemIdentifier
 
 export interface GridContainerIdentifier {
   type: 'GRID_CONTAINER'
-  path: ElementPath
+  container: ElementPath
 }
 
 export function gridContainerIdentifier(path: ElementPath): GridContainerIdentifier {
   return {
     type: 'GRID_CONTAINER',
-    path: path,
+    container: path,
   }
 }
 
 export interface GridItemIdentifier {
   type: 'GRID_ITEM'
-  path: ElementPath
+  item: ElementPath
 }
 
 export function gridItemIdentifier(path: ElementPath): GridItemIdentifier {
   return {
     type: 'GRID_ITEM',
-    path: path,
+    item: path,
   }
 }
 
-export function gridIdentifierSimilar(a: GridIdentifier, b: GridIdentifier): boolean {
-  return (
-    (a.type === b.type && EP.pathsEqual(a.path, b.path)) ||
-    (a.type === 'GRID_ITEM' && b.type === 'GRID_CONTAINER' && EP.isParentOf(b.path, a.path)) ||
-    (a.type === 'GRID_CONTAINER' && b.type === 'GRID_ITEM' && EP.isParentOf(a.path, b.path))
-  )
+export function pathOfGridFromGridIdentifier(identifier: GridIdentifier): ElementPath {
+  switch (identifier.type) {
+    case 'GRID_ITEM':
+      return EP.parentPath(identifier.item)
+    case 'GRID_CONTAINER':
+      return identifier.container
+    default:
+      assertNever(identifier)
+  }
 }
 
 export interface GridControlData {

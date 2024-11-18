@@ -416,6 +416,11 @@ export const MetadataUtils = {
       .filter((m) => MetadataUtils.isGridLayoutedContainer(m))
       .map((m) => m.elementPath)
   },
+  getAllGridItems(metadata: ElementInstanceMetadataMap): Array<ElementPath> {
+    return Object.values(metadata)
+      .filter((m) => MetadataUtils.isGridItem(metadata, m.elementPath))
+      .map((m) => m.elementPath)
+  },
   isComponentInstanceFromMetadata(
     metadata: ElementInstanceMetadataMap,
     path: ElementPath,

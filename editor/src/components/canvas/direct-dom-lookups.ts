@@ -3,10 +3,16 @@ import { CanvasContainerID } from './canvas-types'
 import { getDeepestPathOnDomElement } from '../../core/shared/uid-utils'
 import * as EP from '../../core/shared/element-path'
 import type { ElementPath } from 'utopia-shared/src/types'
+import type { ElementOrParent } from './controls/grid-controls-for-strategies'
+import { assertNever } from '../../core/shared/utils'
 
 export type FromElement<T> = (element: HTMLElement) => T
 
-export function getFromElement<T>(path: ElementPath, fromElement: FromElement<T>): T | undefined {
+export function getFromElement<T>(
+  path: ElementPath,
+  fromElement: FromElement<T>,
+  elementOrParent: ElementOrParent,
+): T | undefined {
   const pathString = EP.toString(path)
   const elements = document.querySelectorAll(
     `#${CanvasContainerID} [${UTOPIA_PATH_KEY}^="${pathString}"]`,
@@ -19,8 +25,18 @@ export function getFromElement<T>(path: ElementPath, fromElement: FromElement<T>
         !EP.isRootElementOfInstance(pathFromElement)) ||
       EP.isRootElementOf(pathFromElement, path)
     ) {
-      if (element instanceof HTMLElement) {
-        return fromElement(element)
+      const realElement = (() => {
+        switch (elementOrParent) {
+          case 'element':
+            return element
+          case 'parent':
+            return element.parentElement
+          default:
+            assertNever(elementOrParent)
+        }
+      })()
+      if (realElement instanceof HTMLElement) {
+        return fromElement(realElement)
       }
     }
   }
