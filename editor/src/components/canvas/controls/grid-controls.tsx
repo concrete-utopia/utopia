@@ -536,6 +536,8 @@ export const GridRowColumnResizingControlsComponent = ({
     'GridRowColumnResizingControls scale',
   )
 
+  const isGridItemSelected = useIsGridItemSelected()
+
   const gridsWithVisibleResizeControls = React.useMemo(() => {
     return grids.filter((grid) => {
       if (
@@ -571,6 +573,9 @@ export const GridRowColumnResizingControlsComponent = ({
   return (
     <CanvasOffsetWrapper>
       {gridsWithVisibleResizeControls.flatMap((grid) => {
+        if (isGridItemSelected) {
+          return null
+        }
         return (
           <GridResizing
             key={`grid-resizing-column-${gridIdentifierToString(grid.identifier)}}`}
@@ -591,6 +596,9 @@ export const GridRowColumnResizingControlsComponent = ({
         )
       })}
       {gridsWithVisibleResizeControls.flatMap((grid) => {
+        if (isGridItemSelected) {
+          return null
+        }
         return (
           <GridResizing
             key={`grid-resizing-row-${gridIdentifierToString(grid.identifier)}}`}
@@ -1148,6 +1156,9 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
 
   const gridsWithVisibleControls: Array<GridIdentifier> = [...targets, ...hoveredGrids]
 
+  const isGridItemSelected = useIsGridItemSelected()
+  const isGridItemInteractionActive = useIsGridItemInteractionActive()
+
   // Uniqify the grid paths, and then sort them by depth.
   // With the lowest depth grid at the end so that it renders on top and catches the events
   // before those above it in the hierarchy.
@@ -1161,6 +1172,8 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
     }),
   )
 
+  const isGridItemSelectedWithoutInteraction = isGridItemSelected && !isGridItemInteractionActive
+
   if (grids.length === 0) {
     return null
   }
@@ -1173,6 +1186,10 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
             grid.identifier,
           )
           const shouldHaveVisibleControls = gridsWithVisibleControls.some((g) => {
+            if (isGridItemSelectedWithoutInteraction) {
+              return false
+            }
+
             const visibleControlPath = getGridIdentifierContainerOrComponentPath(g)
             return EP.pathsEqual(gridContainerOrComponentPath, visibleControlPath)
           })
@@ -2109,4 +2126,32 @@ function useAllGrids(metadata: ElementInstanceMetadataMap) {
       gridItems: gridItemPathsWithoutGridPaths,
     }
   }, [metadata])
+}
+
+function useIsGridItemInteractionActive() {
+  return useEditorState(
+    Substores.canvas,
+    (store) => {
+      if (store.editor.canvas.interactionSession == null) {
+        return false
+      }
+      return (
+        // movement
+        store.editor.canvas.interactionSession.activeControl.type === 'GRID_CELL_HANDLE' ||
+        // resize (cell)
+        store.editor.canvas.interactionSession.activeControl.type === 'GRID_RESIZE_HANDLE' ||
+        // resize (abs)
+        store.editor.canvas.interactionSession.activeControl.type === 'RESIZE_HANDLE'
+      )
+    },
+    'useIsGridItemInteractionActive isItemInteractionActive',
+  )
+}
+
+function useIsGridItemSelected() {
+  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  return selectedViewsRef.current.some((selected) =>
+    MetadataUtils.isGridItem(jsxMetadataRef.current, selected),
+  )
 }
