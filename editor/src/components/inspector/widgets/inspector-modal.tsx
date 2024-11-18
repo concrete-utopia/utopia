@@ -3,7 +3,6 @@ import * as ReactDOM from 'react-dom'
 import { useHandleCloseOnESCOrEnter } from '../common/inspector-utils'
 import { EditorID, PortalTargetID } from '../../../core/shared/utils'
 import { OnClickOutsideHOC } from '../../../uuiui'
-import { ResizeObserver } from '../../canvas/dom-walker'
 
 export type InspectorModalProps = {
   offsetX: number

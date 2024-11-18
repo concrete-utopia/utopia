@@ -40,15 +40,18 @@ import { applicativeSidesPxTransform, getGridContainerProperties } from '../dom-
 import { applicative4Either, defaultEither, isRight, mapEither } from '../../../core/shared/either'
 import { domRectToScaledCanvasRectangle, getRoundingFn } from '../../../core/shared/dom-utils'
 import Utils from '../../../utils/utils'
-import { useMonitorChangesToEditor } from '../../../components/editor/store/store-monitor'
+import { useMonitorChangesToElements } from '../../../components/editor/store/store-monitor'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import type { CSSProperties } from 'react'
 import {
   gridContainerIdentifier,
   gridItemIdentifier,
+  pathOfGridFromGridIdentifier,
   type GridIdentifier,
 } from '../../editor/store/editor-state'
 import { findOriginalGrid } from '../canvas-strategies/strategies/grid-helpers'
+import * as React from 'react'
+import { addChangeCallback, removeChangeCallback } from '../observers'
 
 export const GridMeasurementHelperMap = { current: new WeakMap<HTMLElement, string>() }
 
@@ -222,6 +225,44 @@ export function gridMeasurementHelperDataFromElement(
   }
 }
 
+function useObserversToWatch(elementPathOrPaths: Array<ElementPath> | ElementPath): number {
+  // Used to trigger extra renders.
+  const [counter, setCounter] = React.useState(0)
+  const bumpCounter = React.useCallback(() => {
+    setCounter((value) => value + 1)
+  }, [])
+
+  // Need to use the mount count for the callback trigger.
+  const mountCount = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.mountCount,
+    'useObserversToWatch mountCount',
+  )
+
+  React.useEffect(() => {
+    // Add the change callback(s) for the element path or paths.
+    if (Array.isArray(elementPathOrPaths)) {
+      for (const elementPath of elementPathOrPaths) {
+        addChangeCallback(mountCount, elementPath, bumpCounter)
+      }
+    } else {
+      addChangeCallback(mountCount, elementPathOrPaths, bumpCounter)
+    }
+
+    return function cleanup() {
+      if (Array.isArray(elementPathOrPaths)) {
+        for (const elementPath of elementPathOrPaths) {
+          removeChangeCallback(elementPath, bumpCounter)
+        }
+      } else {
+        removeChangeCallback(elementPathOrPaths, bumpCounter)
+      }
+    }
+  }, [mountCount, elementPathOrPaths, bumpCounter])
+
+  return counter
+}
+
 export function useGridMeasurementHelperData(
   elementPath: ElementPath,
   source: ElementOrParent,
@@ -232,7 +273,9 @@ export function useGridMeasurementHelperData(
     'useGridMeasurementHelperData scale',
   )
 
-  useMonitorChangesToEditor()
+  useMonitorChangesToElements([elementPath])
+
+  useObserversToWatch(elementPath)
 
   return useKeepReferenceEqualityIfPossible(
     getGridMeasurementHelperData(elementPath, scale, source),
@@ -249,6 +292,14 @@ export function useGridData(gridIdentifiers: GridIdentifier[]): GridData[] {
     (store) => store.editor.canvas.scale,
     'useGridData scale',
   )
+
+  const elementPaths = React.useMemo(() => {
+    return gridIdentifiers.map(pathOfGridFromGridIdentifier)
+  }, [gridIdentifiers])
+
+  useMonitorChangesToElements(elementPaths)
+
+  useObserversToWatch(elementPaths)
 
   const grids = useEditorState(
     Substores.metadata,

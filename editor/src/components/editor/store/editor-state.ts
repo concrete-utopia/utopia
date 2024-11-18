@@ -848,6 +848,17 @@ export function gridItemIdentifier(path: ElementPath): GridItemIdentifier {
   }
 }
 
+export function pathOfGridFromGridIdentifier(identifier: GridIdentifier): ElementPath {
+  switch (identifier.type) {
+    case 'GRID_ITEM':
+      return EP.parentPath(identifier.item)
+    case 'GRID_CONTAINER':
+      return identifier.container
+    default:
+      assertNever(identifier)
+  }
+}
+
 export interface GridControlData {
   grid: GridIdentifier
   targetCell: GridCellCoordinates | null // the cell under the mouse
