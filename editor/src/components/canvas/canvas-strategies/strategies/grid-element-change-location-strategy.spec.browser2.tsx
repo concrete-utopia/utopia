@@ -97,26 +97,28 @@ describe('grid element change location strategy', () => {
     })
   })
 
-  it('can change the location of elements in a grid component', async () => {
-    const editor = await renderTestEditorWithCode(
-      ProjectCodeGridComponent,
-      'await-first-dom-report',
-    )
+  describe('grid component', () => {
+    it('can change the location of elements in a grid component', async () => {
+      const editor = await renderTestEditorWithCode(
+        ProjectCodeGridComponent,
+        'await-first-dom-report',
+      )
 
-    const testId = 'aaa'
-    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runGridMoveTest(
-      editor,
-      {
-        scale: 1,
-        pathString: `sb/scene/grid/${testId}`,
-        testId: testId,
-      },
-    )
-    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
-      gridColumnEnd: '7',
-      gridColumnStart: '3',
-      gridRowEnd: '4',
-      gridRowStart: '2',
+      const testId = 'aaa'
+      const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runGridMoveTest(
+        editor,
+        {
+          scale: 1,
+          pathString: `sb/scene/grid/${testId}`,
+          testId: testId,
+        },
+      )
+      expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+        gridColumnEnd: '7',
+        gridColumnStart: '3',
+        gridRowEnd: '4',
+        gridRowStart: '2',
+      })
     })
   })
 
@@ -1013,13 +1015,6 @@ export var storyboard = (
     >
       <Grid
         style={{
-          display: 'grid',
-          gridTemplateRows: '75px 75px 75px 75px',
-          gridTemplateColumns:
-            '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
-          gridGap: 16,
-          height: 482,
-          width: 786,
           position: 'absolute',
           left: 31,
           top: 0,
@@ -1029,22 +1024,20 @@ export var storyboard = (
         <div
           style={{
             minHeight: 0,
-            backgroundColor: '#f3785f',
-            gridColumnEnd: 5,
-            gridColumnStart: 1,
-            gridRowEnd: 3,
-            gridRowStart: 1,
-          }}
-          data-uid='aaa'
-          data-testid='aaa'
-        />
-        <div
-          style={{
-            minHeight: 0,
             backgroundColor: '#23565b',
           }}
           data-uid='bbb'
           data-testid='bbb'
+        />
+        <div
+          style={{
+            minHeight: 0,
+            backgroundColor: '#f3785f',
+            gridColumn: '1 / 5',
+            gridRow: '1 / 3',
+          }}
+          data-uid='aaa'
+          data-testid='aaa'
         />
         <Placeholder
           style={{
@@ -1075,18 +1068,26 @@ export var storyboard = (
 export function Grid(props) {
   return (
     <div
-      {...props}
       style={{
         ...props.style,
-        display: 'grid',
-        gridTemplateRows: '75px 75px 75px 75px',
-        gridTemplateColumns:
-          '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
-        gridGap: 16,
+        display: 'flex',
+        flexDirection: 'column',
       }}
-      data-uid='f84914f31dbc6c5d9b44c11ae54139ef'
     >
-      {props.children}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateRows: '75px 75px 75px 75px',
+          gridTemplateColumns:
+            '50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px',
+          gridGap: 16,
+        }}
+      >
+        {props.children}
+      </div>
+      <div
+        style={{ height: 100 }}
+      />
     </div>
   )
 }

@@ -2856,14 +2856,14 @@ export const GridCellCoordinatesKeepDeepEquality: KeepDeepEqualityCall<GridCellC
 
 export const GridContainerIdentifierKeepDeepEquality: KeepDeepEqualityCall<GridContainerIdentifier> =
   combine1EqualityCall(
-    (identifier) => identifier.path,
+    (identifier) => identifier.container,
     ElementPathKeepDeepEquality,
     gridContainerIdentifier,
   )
 
 export const GridItemIdentifierKeepDeepEquality: KeepDeepEqualityCall<GridItemIdentifier> =
   combine1EqualityCall(
-    (identifier) => identifier.path,
+    (identifier) => identifier.item,
     ElementPathKeepDeepEquality,
     gridItemIdentifier,
   )

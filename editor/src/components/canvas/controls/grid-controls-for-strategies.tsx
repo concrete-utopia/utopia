@@ -45,12 +45,15 @@ import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-perform
 import type { CSSProperties } from 'react'
 import {
   gridContainerIdentifier,
+  gridItemIdentifier,
   pathOfGridFromGridIdentifier,
   type GridIdentifier,
 } from '../../editor/store/editor-state'
 import { findOriginalGrid } from '../canvas-strategies/strategies/grid-helpers'
 import * as React from 'react'
 import { addChangeCallback, removeChangeCallback } from '../observers'
+
+export const GridMeasurementHelperMap = { current: new WeakMap<HTMLElement, string>() }
 
 export const GridCellTestId = (elementPath: ElementPath) => `grid-cell-${EP.toString(elementPath)}`
 
@@ -96,13 +99,17 @@ export type GridMeasurementHelperData = {
   rowGap: number | null
   columnGap: number | null
   padding: Sides
+  element: HTMLElement
 }
+
+export type ElementOrParent = 'parent' | 'element'
 
 export function getGridMeasurementHelperData(
   elementPath: ElementPath,
   scale: number,
+  source: ElementOrParent,
 ): GridMeasurementHelperData | undefined {
-  return getFromElement(elementPath, gridMeasurementHelperDataFromElement(scale))
+  return getFromElement(elementPath, gridMeasurementHelperDataFromElement(scale), source)
 }
 
 function getStylingSubset(styling: CSSStyleDeclaration): CSSProperties {
@@ -213,6 +220,7 @@ export function gridMeasurementHelperDataFromElement(
       columns: columns,
       cells: columns * rows,
       computedStyling: computedStyling,
+      element: element,
     }
   }
 }
@@ -257,6 +265,7 @@ function useObserversToWatch(elementPathOrPaths: Array<ElementPath> | ElementPat
 
 export function useGridMeasurementHelperData(
   elementPath: ElementPath,
+  source: ElementOrParent,
 ): GridMeasurementHelperData | undefined {
   const scale = useEditorState(
     Substores.canvas,
@@ -268,7 +277,9 @@ export function useGridMeasurementHelperData(
 
   useObserversToWatch(elementPath)
 
-  return useKeepReferenceEqualityIfPossible(getGridMeasurementHelperData(elementPath, scale))
+  return useKeepReferenceEqualityIfPossible(
+    getGridMeasurementHelperData(elementPath, scale, source),
+  )
 }
 
 export type GridData = GridMeasurementHelperData & {
@@ -294,33 +305,56 @@ export function useGridData(gridIdentifiers: GridIdentifier[]): GridData[] {
     Substores.metadata,
     (store) => {
       return mapDropNulls((view) => {
-        const originalGridPath = findOriginalGrid(
-          store.editor.jsxMetadata,
-          pathOfGridFromGridIdentifier(view), // TODO: this is temporary, we will need to handle showing a grid control on the parent dom element of a grid item
-        )
-        if (originalGridPath == null) {
-          return null
-        }
-        const element = MetadataUtils.findElementByElementPath(
-          store.editor.jsxMetadata,
-          originalGridPath,
-        )
+        switch (view.type) {
+          case 'GRID_CONTAINER': {
+            const originalGridPath = findOriginalGrid(store.editor.jsxMetadata, view.container)
+            if (originalGridPath == null) {
+              return null
+            }
+            const element = MetadataUtils.findElementByElementPath(
+              store.editor.jsxMetadata,
+              originalGridPath,
+            )
 
-        const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element) ? element : null
-        if (targetGridContainer == null) {
-          return null
-        }
+            const targetGridContainer = MetadataUtils.isGridLayoutedContainer(element)
+              ? element
+              : null
+            if (targetGridContainer == null) {
+              return null
+            }
 
-        const helperData = getGridMeasurementHelperData(originalGridPath, scale)
-        if (helperData == null) {
-          return null
-        }
+            const helperData = getGridMeasurementHelperData(originalGridPath, scale, 'element')
+            if (helperData == null) {
+              return null
+            }
 
-        const gridData: GridData = {
-          ...helperData,
-          identifier: gridContainerIdentifier(originalGridPath),
+            const gridData: GridData = {
+              ...helperData,
+              identifier: gridContainerIdentifier(originalGridPath),
+            }
+            return gridData
+          }
+          case 'GRID_ITEM':
+            const item = MetadataUtils.isGridItem(store.editor.jsxMetadata, view.item)
+              ? MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view.item)
+              : null
+            if (item == null) {
+              return null
+            }
+
+            const helperData = getGridMeasurementHelperData(view.item, scale, 'parent')
+            if (helperData == null) {
+              return null
+            }
+
+            const gridData: GridData = {
+              ...helperData,
+              identifier: gridItemIdentifier(view.item),
+            }
+            return gridData
+          default:
+            assertNever(view)
         }
-        return gridData
       }, gridIdentifiers)
     },
     'useGridData',

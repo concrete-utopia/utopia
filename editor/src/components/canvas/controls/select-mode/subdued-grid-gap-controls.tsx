@@ -9,6 +9,7 @@ import { NO_OP } from '../../../../core/shared/utils'
 import * as EP from '../../../../core/shared/element-path'
 import { GridPaddingOutlineForDimension } from './grid-gap-control-component'
 import { gridContainerIdentifier } from '../../../editor/store/editor-state'
+import { getGridIdentifierContainerOrComponentPath } from '../../canvas-strategies/strategies/grid-helpers'
 
 export interface SubduedGridGapControlProps {
   hoveredOrFocused: 'hovered' | 'focused'
@@ -33,8 +34,11 @@ export const SubduedGridGapControl = React.memo<SubduedGridGapControlProps>((pro
   return (
     <CanvasOffsetWrapper>
       {gridRowColumnInfo.map((gridData) => {
+        const gridContainerOrComponent = getGridIdentifierContainerOrComponentPath(
+          gridData.identifier,
+        )
         return (
-          <React.Fragment key={`grid-gap-${EP.toString(gridData.identifier.path)}`}>
+          <React.Fragment key={`grid-gap-${EP.toString(gridContainerOrComponent)}`}>
             <GridPaddingOutlineForDimension
               grid={gridData}
               dimension={'rows'}

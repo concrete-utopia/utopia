@@ -61,11 +61,7 @@ import {
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
 import { UTOPIA_SCENE_ID_KEY, UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
 import { emptySet } from '../../core/shared/set-utils'
-import {
-  getDeepestPathOnDomElement,
-  getPathsOnDomElement,
-  getPathStringsOnDomElement,
-} from '../../core/shared/uid-utils'
+import { getDeepestPathOnDomElement, getPathStringsOnDomElement } from '../../core/shared/uid-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import type { EditorState, EditorStorePatched } from '../editor/store/editor-state'
@@ -82,7 +78,7 @@ import { runDOMWalker } from '../editor/actions/action-creators'
 import { CanvasContainerOuterId } from './canvas-component-entry'
 import { ElementsToRerenderGLOBAL } from './ui-jsx-canvas'
 import type { GridCellGlobalFrames } from './canvas-strategies/strategies/grid-helpers'
-import { GridMeasurementHelperKey } from './controls/grid-controls-for-strategies'
+import { GridMeasurementHelperMap } from './controls/grid-controls-for-strategies'
 import { ObserversAvailable, ResizeObserver } from './observers'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
@@ -1075,18 +1071,12 @@ function measureGlobalFramesOfGridCells(
   containerRectLazy: CanvasPoint | (() => CanvasPoint),
   elementCanvasRectangleCache: ElementCanvasRectangleCache,
 ): GridCellGlobalFrames | null {
-  const paths = getPathsOnDomElement(element)
-
   let gridCellGlobalFrames: GridCellGlobalFrames | null = null
-  const gridControlElement = (() => {
-    for (let p of paths) {
-      const maybeGridControlElement = document.getElementById(GridMeasurementHelperKey(p))
-      if (maybeGridControlElement != null) {
-        return maybeGridControlElement
-      }
-    }
-    return null
-  })()
+
+  const gridMeasurementHelperId = GridMeasurementHelperMap.current.get(element)
+
+  const gridControlElement =
+    gridMeasurementHelperId != null ? document.getElementById(gridMeasurementHelperId) : null
 
   if (gridControlElement != null) {
     gridCellGlobalFrames = []
