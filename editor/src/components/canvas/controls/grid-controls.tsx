@@ -535,7 +535,7 @@ export const GridRowColumnResizingControlsComponent = ({
     'GridRowColumnResizingControls scale',
   )
 
-  const isSelectedGridItemWithoutInteraction = useIsSelectedGridItemWithoutInteraction()
+  const isGridItemSelected = useIsGridItemSelected()
 
   const gridsWithVisibleResizeControls = React.useMemo(() => {
     return grids.filter((grid) => {
@@ -572,7 +572,7 @@ export const GridRowColumnResizingControlsComponent = ({
   return (
     <CanvasOffsetWrapper>
       {gridsWithVisibleResizeControls.flatMap((grid) => {
-        if (isSelectedGridItemWithoutInteraction(grid)) {
+        if (isGridItemSelected(grid)) {
           return null
         }
         return (
@@ -595,7 +595,7 @@ export const GridRowColumnResizingControlsComponent = ({
         )
       })}
       {gridsWithVisibleResizeControls.flatMap((grid) => {
-        if (isSelectedGridItemWithoutInteraction(grid)) {
+        if (isGridItemSelected(grid)) {
           return null
         }
         return (
@@ -1133,7 +1133,8 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
 
   const gridsWithVisibleControls: Array<GridIdentifier> = [...targets, ...hoveredGrids]
 
-  const isSelectedGridItemWithoutInteraction = useIsSelectedGridItemWithoutInteraction()
+  const isGridItemSelected = useIsGridItemSelected()
+  const isGridItemInteractionActive = useIsGridItemInteractionActive()
 
   // Uniqify the grid paths, and then sort them by depth.
   // With the lowest depth grid at the end so that it renders on top and catches the events
@@ -1154,8 +1155,10 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
     <div id={'grid-controls'}>
       <CanvasOffsetWrapper>
         {grids.map((grid) => {
+          const isGridItemSelectedWithoutInteraction =
+            isGridItemSelected(grid) && !isGridItemInteractionActive
           const shouldHaveVisibleControls =
-            !isSelectedGridItemWithoutInteraction(grid) &&
+            !isGridItemSelectedWithoutInteraction &&
             gridsWithVisibleControls.some((g) => {
               const gridPath =
                 grid.identifier.type === 'GRID_CONTAINER'
@@ -2093,10 +2096,8 @@ function useAllGrids(metadata: ElementInstanceMetadataMap) {
   }, [metadata])
 }
 
-function useIsSelectedGridItemWithoutInteraction() {
-  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-
-  const isItemInteractionActive = useEditorState(
+function useIsGridItemInteractionActive() {
+  return useEditorState(
     Substores.canvas,
     (store) => {
       if (store.editor.canvas.interactionSession == null) {
@@ -2111,17 +2112,17 @@ function useIsSelectedGridItemWithoutInteraction() {
         store.editor.canvas.interactionSession.activeControl.type === 'RESIZE_HANDLE'
       )
     },
-    'useShouldHaveVisibleControls isItemInteractionActive',
+    'useIsGridItemInteractionActive isItemInteractionActive',
   )
+}
+
+function useIsGridItemSelected() {
+  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
 
   return React.useCallback(
     (grid: GridData) => {
-      const gridItemSelected = selectedViewsRef.current.some((path) =>
-        EP.isDescendantOf(path, grid.identifier.path),
-      )
-
-      return gridItemSelected && !isItemInteractionActive
+      return selectedViewsRef.current.some((path) => EP.isDescendantOf(path, grid.identifier.path))
     },
-    [isItemInteractionActive, selectedViewsRef],
+    [selectedViewsRef],
   )
 }
