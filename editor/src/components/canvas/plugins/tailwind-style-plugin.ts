@@ -37,6 +37,7 @@ const TailwindPropertyMapping: Record<string, string> = {
   paddingRight: 'paddingRight',
   paddingBottom: 'paddingBottom',
   paddingLeft: 'paddingLeft',
+  zIndex: 'zIndex',
 }
 
 function isSupportedTailwindProperty(prop: unknown): prop is keyof typeof TailwindPropertyMapping {
@@ -119,6 +120,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
           mapping[TailwindPropertyMapping.paddingLeft],
           cssParsers.paddingLeft,
         ),
+        zIndex: parseTailwindProperty(mapping[TailwindPropertyMapping.zIndex], cssParsers.zIndex),
       }
     },
   updateStyles: (editorState, elementPath, updates) => {
