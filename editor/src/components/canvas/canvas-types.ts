@@ -26,7 +26,13 @@ import type {
 import { InteractionSession } from './canvas-strategies/interaction-state'
 import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import type { MouseButtonsPressed } from '../../utils/mouse'
-import type { CSSNumber, CSSPadding, FlexDirection } from '../inspector/common/css-utils'
+import type {
+  CSSBorderRadius,
+  CSSBorderRadiusIndividual,
+  CSSNumber,
+  CSSPadding,
+  FlexDirection,
+} from '../inspector/common/css-utils'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -586,6 +592,8 @@ export type HeightInfo = CSSStyleProperty<CSSNumber>
 export type FlexBasisInfo = CSSStyleProperty<CSSNumber>
 export type PaddingInfo = CSSStyleProperty<CSSPadding>
 export type PaddingSideInfo = CSSStyleProperty<CSSNumber>
+export type BorderRadiusInfo = CSSStyleProperty<CSSBorderRadius>
+export type BorderRadiusSideInfo = CSSStyleProperty<CSSBorderRadiusIndividual>
 
 export interface StyleInfo {
   gap: FlexGapInfo | null
@@ -602,6 +610,11 @@ export interface StyleInfo {
   paddingRight: PaddingSideInfo | null
   paddingBottom: PaddingSideInfo | null
   paddingLeft: PaddingSideInfo | null
+  borderRadius: BorderRadiusInfo | null
+  borderTopLeftRadius: BorderRadiusSideInfo | null
+  borderTopRightRadius: BorderRadiusSideInfo | null
+  borderBottomRightRadius: BorderRadiusSideInfo | null
+  borderBottomLeftRadius: BorderRadiusSideInfo | null
 }
 
 const emptyStyleInfo: StyleInfo = {
@@ -619,6 +632,11 @@ const emptyStyleInfo: StyleInfo = {
   paddingRight: null,
   paddingBottom: null,
   paddingLeft: null,
+  borderRadius: null,
+  borderTopLeftRadius: null,
+  borderTopRightRadius: null,
+  borderBottomRightRadius: null,
+  borderBottomLeftRadius: null,
 }
 
 export const isStyleInfoKey = (key: string): key is keyof StyleInfo => key in emptyStyleInfo

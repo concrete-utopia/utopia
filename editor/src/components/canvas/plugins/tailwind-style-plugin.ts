@@ -37,6 +37,11 @@ const TailwindPropertyMapping: Record<string, string> = {
   paddingRight: 'paddingRight',
   paddingBottom: 'paddingBottom',
   paddingLeft: 'paddingLeft',
+  borderRadius: 'borderRadius',
+  borderTopLeftRadius: 'borderTopLeftRadius',
+  borderTopRightRadius: 'borderTopRightRadius',
+  borderBottomRightRadius: 'borderBottomRightRadius',
+  borderBottomLeftRadius: 'borderBottomLeftRadius',
 }
 
 function isSupportedTailwindProperty(prop: unknown): prop is keyof typeof TailwindPropertyMapping {
@@ -118,6 +123,26 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         paddingLeft: parseTailwindProperty(
           mapping[TailwindPropertyMapping.paddingLeft],
           cssParsers.paddingLeft,
+        ),
+        borderRadius: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.borderRadius],
+          cssParsers.borderRadius,
+        ),
+        borderTopLeftRadius: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.borderTopLeftRadius],
+          cssParsers.borderTopLeftRadius,
+        ),
+        borderTopRightRadius: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.borderTopRightRadius],
+          cssParsers.borderTopRightRadius,
+        ),
+        borderBottomRightRadius: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.borderBottomRightRadius],
+          cssParsers.borderBottomRightRadius,
+        ),
+        borderBottomLeftRadius: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.borderBottomLeftRadius],
+          cssParsers.borderBottomLeftRadius,
         ),
       }
     },
