@@ -10,13 +10,14 @@ import {
   printCSSNumber,
   printCSSNumberOrKeyword,
 } from '../../inspector/common/css-utils'
+import type { LengthProperty } from './adjust-css-length-command'
 import {
   deleteConflictingPropsForWidthHeight,
   type CreateIfNotExistant,
 } from './adjust-css-length-command'
 import type { BaseCommand, CommandFunctionResult, WhenToRun } from './commands'
 import { addToastPatch } from './show-toast-command'
-import { getCSSNumberFromStyleInfo, maybeCssPropertyFromInlineStyle } from './utils/property-utils'
+import { getCSSNumberFromStyleInfo } from './utils/property-utils'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import type { StyleUpdate } from '../plugins/style-plugins'
 import { getActivePlugin, runStyleUpdateForStrategy } from '../plugins/style-plugins'
@@ -36,10 +37,13 @@ export function setValueKeepingOriginalUnit(
   return { type: 'KEEP_ORIGINAL_UNIT', valuePx: valuePx, parentDimensionPx: parentDimensionPx }
 }
 
+type CSSLengthProperty = LengthProperty | 'zIndex'
+type CSSLengthPropertyPath = PropertyPath<['style', CSSLengthProperty]>
+
 export interface SetCssLengthProperty extends BaseCommand {
   type: 'SET_CSS_LENGTH_PROPERTY'
   target: ElementPath
-  property: PropertyPath
+  property: CSSLengthPropertyPath
   value: CssNumberOrKeepOriginalUnit
   parentFlexDirection: FlexDirection | null
   createIfNonExistant: CreateIfNotExistant
@@ -49,7 +53,7 @@ export interface SetCssLengthProperty extends BaseCommand {
 export function setCssLengthProperty(
   whenToRun: WhenToRun,
   target: ElementPath,
-  property: PropertyPath,
+  property: CSSLengthPropertyPath,
   value: CssNumberOrKeepOriginalUnit,
   parentFlexDirection: FlexDirection | null,
   createIfNonExistant: CreateIfNotExistant = 'create-if-not-existing', // TODO remove the default value and set it explicitly everywhere
@@ -92,14 +96,7 @@ export const runSetCssLengthProperty = (
     }
   }
 
-  const property = maybeCssPropertyFromInlineStyle(command.property)
-
-  if (property == null) {
-    return {
-      editorStatePatches: [],
-      commandDescription: `Set Css Length Prop: Element not found at ${EP.toUid(command.target)}`,
-    }
-  }
+  const property = command.property.propertyElements[1] // the safety of propertyElements[1] is guaranteed by the LengthPropertyPath type
 
   const currentValue = getCSSNumberFromStyleInfo(styleInfo, property)
   if (
