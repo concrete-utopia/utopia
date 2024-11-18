@@ -2,6 +2,18 @@ import { TailwindConfigPath } from '../../../core/tailwind/tailwind-config'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 
+export const JustifyContentClassMapping = {
+  'flex-start': 'justify-start',
+  center: 'justify-center',
+  'flex-end': 'justify-end',
+} as const
+
+export const AlignItemsClassMapping = {
+  'flex-start': 'items-start',
+  center: 'items-center',
+  'flex-end': 'items-end',
+} as const
+
 export const TailwindProject = (classes: string) =>
   createModifiedProject({
     [StoryboardFilePath]: `

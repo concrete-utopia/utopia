@@ -4,7 +4,6 @@ import {
   hoverControlWithCheck,
   selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
-  wait,
 } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
@@ -13,7 +12,11 @@ import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import { renderTestEditorWithCode, renderTestEditorWithModel } from '../canvas/ui-jsx.test-utils'
 import type { StartCenterEnd } from './inspector-common'
 import { NineBlockControlTestId, NineBlockSectors, NineBlockTestId } from './nine-block-controls'
-import { TailwindProject } from './sections/flex-section.test-utils'
+import {
+  AlignItemsClassMapping,
+  JustifyContentClassMapping,
+  TailwindProject,
+} from './sections/flex-section.test-utils'
 
 describe('Nine-block control', () => {
   describe('in flex row', () => {
@@ -56,37 +59,22 @@ describe('Nine-block control', () => {
   describe('Tailwind', () => {
     setFeatureForBrowserTestsUseInDescribeBlockOnly('Tailwind', true)
 
-    const justifyContentClassMapping = {
-      'flex-start': 'justify-start',
-      center: 'justify-center',
-      'flex-end': 'justify-end',
-    } as const
+    for (const [justifyContent, alignItems] of NineBlockSectors) {
+      it(`set ${justifyContent} and ${alignItems} via the nine-block control`, async () => {
+        const editor = await renderTestEditorWithModel(
+          TailwindProject('flex flex-row'),
+          'await-first-dom-report',
+        )
 
-    const alignItemsClassMapping = {
-      'flex-start': 'items-start',
-      center: 'items-center',
-      'flex-end': 'items-end',
-    } as const
+        const div = await doTest(editor, alignItems, justifyContent)
 
-    describe('in flex row', () => {
-      for (const [justifyContent, alignItems] of NineBlockSectors) {
-        it(`set ${justifyContent} and ${alignItems} via the nine-block control`, async () => {
-          const editor = await renderTestEditorWithModel(
-            TailwindProject('flex flex-row'),
-            'await-first-dom-report',
-          )
-
-          const div = await doTest(editor, alignItems, justifyContent)
-
-          expect(getComputedStyle(div).justifyContent).toEqual(justifyContent)
-          expect(
-            classListContains(div.className, justifyContentClassMapping[justifyContent]),
-          ).toEqual(true)
-          expect(getComputedStyle(div).alignItems).toEqual(alignItems)
-          expect(classListContains(div.className, alignItemsClassMapping[alignItems])).toEqual(true)
-        })
-      }
-    })
+        expect(getComputedStyle(div).justifyContent).toEqual(justifyContent)
+        expect(getComputedStyle(div).alignItems).toEqual(alignItems)
+        expect(div.className).toEqual(
+          `top-10 left-10 w-64 h-64 bg-slate-100 absolute flex flex-row ${AlignItemsClassMapping[alignItems]} ${JustifyContentClassMapping[justifyContent]}`,
+        )
+      })
+    }
   })
 })
 
@@ -114,10 +102,6 @@ async function doTest(
   })
 
   return div
-}
-
-function classListContains(classList: string, className: string): boolean {
-  return classList.split(' ').includes(className)
 }
 
 function projectFlexRow(): string {
