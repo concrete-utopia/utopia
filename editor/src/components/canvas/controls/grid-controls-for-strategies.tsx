@@ -249,7 +249,7 @@ function useObserversToWatch(elementPathOrPaths: Array<ElementPath> | ElementPat
       addChangeCallback(mountCount, elementPathOrPaths, bumpCounter)
     }
 
-    return function cleanup {
+    return function cleanup() {
       if (Array.isArray(elementPathOrPaths)) {
         for (const elementPath of elementPathOrPaths) {
           removeChangeCallback(elementPath, bumpCounter)
