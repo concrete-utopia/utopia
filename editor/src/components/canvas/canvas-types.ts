@@ -593,7 +593,7 @@ export type FlexBasisInfo = CSSStyleProperty<CSSNumber>
 export type PaddingInfo = CSSStyleProperty<CSSPadding>
 export type PaddingSideInfo = CSSStyleProperty<CSSNumber>
 export type BorderRadiusInfo = CSSStyleProperty<CSSBorderRadius>
-export type BorderRadiusSideInfo = CSSStyleProperty<CSSBorderRadiusIndividual>
+export type BorderRadiusCornerInfo = CSSStyleProperty<CSSNumber>
 
 export interface StyleInfo {
   gap: FlexGapInfo | null
@@ -611,10 +611,10 @@ export interface StyleInfo {
   paddingBottom: PaddingSideInfo | null
   paddingLeft: PaddingSideInfo | null
   borderRadius: BorderRadiusInfo | null
-  borderTopLeftRadius: BorderRadiusSideInfo | null
-  borderTopRightRadius: BorderRadiusSideInfo | null
-  borderBottomRightRadius: BorderRadiusSideInfo | null
-  borderBottomLeftRadius: BorderRadiusSideInfo | null
+  borderTopLeftRadius: BorderRadiusCornerInfo | null
+  borderTopRightRadius: BorderRadiusCornerInfo | null
+  borderBottomRightRadius: BorderRadiusCornerInfo | null
+  borderBottomLeftRadius: BorderRadiusCornerInfo | null
 }
 
 const emptyStyleInfo: StyleInfo = {
