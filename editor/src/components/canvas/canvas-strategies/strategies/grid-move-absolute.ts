@@ -220,11 +220,9 @@ function runGridMoveAbsolute(
       const gridCellGlobalFrame = getGlobalFrameOfGridCell(gridCellGlobalFrames, targetRootCell)
       return zeroRectIfNullOrInfinity(gridCellGlobalFrame)
     } else {
-      const closestOffsetGlobalFrame = MetadataUtils.findElementByElementPath(
-        jsxMetadata,
-        selectedElementMetadata.specialSizeMeasurements.closestOffsetParentPath,
-      )?.globalFrame
-      return zeroRectIfNullOrInfinity(closestOffsetGlobalFrame)
+      return zeroRectIfNullOrInfinity(
+        selectedElementMetadata.specialSizeMeasurements.coordinateSystemBounds,
+      )
     }
   }
 
