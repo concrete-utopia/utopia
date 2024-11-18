@@ -140,7 +140,7 @@ describe('resize a grid', () => {
       makeTestProject({ columns: '2.4fr 1fr 1fr', rows: '99px 109px 90px', shorthand: null }),
       'await-first-dom-report',
     )
-    const target = EP.fromString(`sb/grid/row-1-column-2`)
+    const target = EP.fromString(`sb/grid`)
     await renderResult.dispatch(selectComponents([target], false), true)
     await renderResult.getDispatchFollowUpActionsFinished()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -316,7 +316,7 @@ export var storyboard = (
       makeTestProject({ columns: '2.4fr 1fr 1fr', rows: '99px 109px 90px', shorthand: null }),
       'await-first-dom-report',
     )
-    const target = EP.fromString(`sb/grid/row-1-column-2`)
+    const target = EP.fromString(`sb/grid`)
     await renderResult.dispatch(selectComponents([target], false), true)
     await renderResult.getDispatchFollowUpActionsFinished()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -431,7 +431,7 @@ export var storyboard = (
       makeTestProject({ columns: 'repeat(3, 1fr)', rows: '99px 109px 90px', shorthand: null }),
       'await-first-dom-report',
     )
-    const target = EP.fromString(`sb/grid/row-1-column-2`)
+    const target = EP.fromString(`sb/grid`)
     await renderResult.dispatch(selectComponents([target], false), true)
     await renderResult.getDispatchFollowUpActionsFinished()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -551,7 +551,7 @@ export var storyboard = (
         }),
         'await-first-dom-report',
       )
-      const target = EP.fromString(`sb/grid/row-1-column-2`)
+      const target = EP.fromString(`sb/grid`)
       await renderResult.dispatch(selectComponents([target], false), true)
       await renderResult.getDispatchFollowUpActionsFinished()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -670,7 +670,7 @@ export var storyboard = (
         }),
         'await-first-dom-report',
       )
-      const target = EP.fromString(`sb/grid/row-1-column-2`)
+      const target = EP.fromString(`sb/grid`)
       await renderResult.dispatch(selectComponents([target], false), true)
       await renderResult.getDispatchFollowUpActionsFinished()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -788,7 +788,7 @@ export var storyboard = (
         }),
         'await-first-dom-report',
       )
-      const target = EP.fromString(`sb/grid/row-1-column-2`)
+      const target = EP.fromString(`sb/grid`)
       await renderResult.dispatch(selectComponents([target], false), true)
       await renderResult.getDispatchFollowUpActionsFinished()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)

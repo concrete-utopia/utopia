@@ -32,6 +32,11 @@ const TailwindPropertyMapping: Record<string, string> = {
   width: 'width',
   height: 'height',
   flexBasis: 'flexBasis',
+  padding: 'padding',
+  paddingTop: 'paddingTop',
+  paddingRight: 'paddingRight',
+  paddingBottom: 'paddingBottom',
+  paddingLeft: 'paddingLeft',
 }
 
 function isSupportedTailwindProperty(prop: unknown): prop is keyof typeof TailwindPropertyMapping {
@@ -60,6 +65,8 @@ function getTailwindClassMapping(classes: string[], config: Config | null): Reco
   })
   return mapping
 }
+
+const underscoresToSpaces = (s: string | undefined) => s?.replace(/[-_]/g, ' ')
 
 export const TailwindPlugin = (config: Config | null): StylePlugin => ({
   name: 'Tailwind',
@@ -91,6 +98,26 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         flexBasis: parseTailwindProperty(
           mapping[TailwindPropertyMapping.flexBasis],
           cssParsers.flexBasis,
+        ),
+        padding: parseTailwindProperty(
+          underscoresToSpaces(mapping[TailwindPropertyMapping.padding]),
+          cssParsers.padding,
+        ),
+        paddingTop: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.paddingTop],
+          cssParsers.paddingTop,
+        ),
+        paddingRight: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.paddingRight],
+          cssParsers.paddingRight,
+        ),
+        paddingBottom: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.paddingBottom],
+          cssParsers.paddingBottom,
+        ),
+        paddingLeft: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.paddingLeft],
+          cssParsers.paddingLeft,
         ),
       }
     },

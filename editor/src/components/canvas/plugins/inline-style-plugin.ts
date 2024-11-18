@@ -68,6 +68,11 @@ export const InlineStylePlugin: StylePlugin = {
       const width = getPropertyFromInstance('width', element.props)
       const height = getPropertyFromInstance('height', element.props)
       const flexBasis = getPropertyFromInstance('flexBasis', element.props)
+      const padding = getPropertyFromInstance('padding', element.props)
+      const paddingTop = getPropertyFromInstance('paddingTop', element.props)
+      const paddingBottom = getPropertyFromInstance('paddingBottom', element.props)
+      const paddingLeft = getPropertyFromInstance('paddingLeft', element.props)
+      const paddingRight = getPropertyFromInstance('paddingRight', element.props)
 
       return {
         gap: gap,
@@ -79,6 +84,11 @@ export const InlineStylePlugin: StylePlugin = {
         width: width,
         height: height,
         flexBasis: flexBasis,
+        padding: padding,
+        paddingTop: paddingTop,
+        paddingBottom: paddingBottom,
+        paddingLeft: paddingLeft,
+        paddingRight: paddingRight,
       }
     },
   updateStyles: (editorState, elementPath, updates) => {
