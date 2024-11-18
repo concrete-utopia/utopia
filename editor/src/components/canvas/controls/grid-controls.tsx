@@ -573,7 +573,7 @@ export const GridRowColumnResizingControlsComponent = ({
   return (
     <CanvasOffsetWrapper>
       {gridsWithVisibleResizeControls.flatMap((grid) => {
-        if (isGridItemSelected(grid)) {
+        if (isGridItemSelected) {
           return null
         }
         return (
@@ -596,7 +596,7 @@ export const GridRowColumnResizingControlsComponent = ({
         )
       })}
       {gridsWithVisibleResizeControls.flatMap((grid) => {
-        if (isGridItemSelected(grid)) {
+        if (isGridItemSelected) {
           return null
         }
         return (
@@ -1172,6 +1172,8 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
     }),
   )
 
+  const isGridItemSelectedWithoutInteraction = isGridItemSelected && !isGridItemInteractionActive
+
   if (grids.length === 0) {
     return null
   }
@@ -1184,8 +1186,6 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
             grid.identifier,
           )
           const shouldHaveVisibleControls = gridsWithVisibleControls.some((g) => {
-            const isGridItemSelectedWithoutInteraction =
-              isGridItemSelected(grid) && !isGridItemInteractionActive
             if (isGridItemSelectedWithoutInteraction) {
               return false
             }
@@ -2150,11 +2150,8 @@ function useIsGridItemInteractionActive() {
 
 function useIsGridItemSelected() {
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-
-  return React.useCallback(
-    (grid: GridData) => {
-      return selectedViewsRef.current.some((path) => EP.isDescendantOf(path, grid.identifier.path))
-    },
-    [selectedViewsRef],
+  const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  return selectedViewsRef.current.some((selected) =>
+    MetadataUtils.isGridItem(jsxMetadataRef.current, selected),
   )
 }
