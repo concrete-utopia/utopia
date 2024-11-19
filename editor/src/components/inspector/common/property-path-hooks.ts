@@ -517,12 +517,12 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
   pathMappingFn: PathMappingFn<P>,
 ): InspectorInfo<T> {
   const propKeys = useMemoizedPropKeys(propKeysIn)
-  const multiselectAtProps: MultiselectAtProps<P> = useGetMultiselectedProps<P>(
+  const multiselectAtProps: MultiselectAtProps<P> = useGetMultiselectedProps<P>( // this gets the actual prop value
     pathMappingFn,
     propKeys,
   )
 
-  const selectedProps = useGetSpiedProps<P>(pathMappingFn, propKeys)
+  const selectedProps = useGetSpiedProps<P>(pathMappingFn, propKeys) // this gets the spied props, won't be applicable for Tailwind
 
   const selectedComputedStyles = useGetSelectedComputedStyles<P>(pathMappingFn, propKeys)
 
