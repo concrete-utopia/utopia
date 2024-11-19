@@ -23,20 +23,30 @@ function parseTailwindProperty<T>(
 }
 
 const TailwindPropertyMapping: Record<string, string> = {
-  gap: 'gap',
-  flexDirection: 'flexDirection',
   left: 'positionLeft',
   right: 'positionRight',
   top: 'positionTop',
   bottom: 'positionBottom',
+
   width: 'width',
   height: 'height',
-  flexBasis: 'flexBasis',
+
   padding: 'padding',
   paddingTop: 'paddingTop',
   paddingRight: 'paddingRight',
   paddingBottom: 'paddingBottom',
   paddingLeft: 'paddingLeft',
+
+  justifyContent: 'justifyContent',
+  alignItems: 'alignItems',
+  flex: 'flex',
+  flexDirection: 'flexDirection',
+  flexGrow: 'flexGrow',
+  flexShrink: 'flexShrink',
+  flexBasis: 'flexBasis',
+  flexWrap: 'flexWrap',
+  gap: 'gap',
+
   zIndex: 'zIndex',
 }
 
