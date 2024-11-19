@@ -17,6 +17,7 @@ import * as EP from '../../../core/shared/element-path'
 import type {
   ElementInstanceMetadataMap,
   GridAutoOrTemplateDimensions,
+  GridContainerProperties,
   GridPositionOrSpan,
 } from '../../../core/shared/element-template'
 import {
@@ -73,6 +74,7 @@ import {
   getGridRelatedIndexes,
   getGridElementPinState,
   gridPositionToValue,
+  printPin,
   getGridIdentifierContainerOrComponentPath,
   gridIdentifierToString,
   gridIdentifiersSimilar,
@@ -1944,6 +1946,17 @@ export interface GridElementContainingBlockProps {
   gridChild: ElementPath
 }
 
+function nullHandlingPrintPin(
+  gridTemplate: GridContainerProperties | null | undefined,
+  pin: GridPositionOrSpan | null | undefined,
+  axis: 'row' | 'column',
+): string | number | undefined {
+  if (gridTemplate == null || pin == null) {
+    return undefined
+  }
+  return printPin(gridTemplate, pin, axis)
+}
+
 const GridElementContainingBlock = React.memo<GridElementContainingBlockProps>((props) => {
   const gridData = useGridMeasurementHelperData(props.gridPath, 'element')
   const scale = useEditorState(
@@ -1975,24 +1988,26 @@ const GridElementContainingBlock = React.memo<GridElementContainingBlockProps>((
       const gridFromProps = childMetadata.specialSizeMeasurements.elementGridPropertiesFromProps
       const gridComputed = childMetadata.specialSizeMeasurements.elementGridProperties
       return {
-        gridColumnStart:
-          gridPositionToValue(
-            gridFromProps.gridColumnStart ?? gridComputed.gridColumnStart,
-            null,
-          ) ?? undefined,
-        gridColumnEnd:
-          gridPositionToValue(
-            gridFromProps.gridColumnEnd ?? gridComputed.gridColumnEnd,
-            gridFromProps.gridColumnStart ?? gridComputed.gridColumnStart,
-          ) ?? undefined,
-        gridRowStart:
-          gridPositionToValue(gridFromProps.gridRowStart ?? gridComputed.gridRowStart, null) ??
-          undefined,
-        gridRowEnd:
-          gridPositionToValue(
-            gridFromProps.gridRowEnd ?? gridComputed.gridRowEnd,
-            gridFromProps.gridRowStart ?? gridComputed.gridRowStart,
-          ) ?? undefined,
+        gridColumnStart: nullHandlingPrintPin(
+          childMetadata.specialSizeMeasurements.containerGridProperties,
+          gridFromProps.gridColumnStart ?? gridComputed.gridColumnStart,
+          'column',
+        ),
+        gridColumnEnd: nullHandlingPrintPin(
+          childMetadata.specialSizeMeasurements.containerGridProperties,
+          gridFromProps.gridColumnEnd ?? gridComputed.gridColumnEnd,
+          'column',
+        ),
+        gridRowStart: nullHandlingPrintPin(
+          childMetadata.specialSizeMeasurements.containerGridProperties,
+          gridFromProps.gridRowStart ?? gridComputed.gridRowStart,
+          'row',
+        ),
+        gridRowEnd: nullHandlingPrintPin(
+          childMetadata.specialSizeMeasurements.containerGridProperties,
+          gridFromProps.gridRowEnd ?? gridComputed.gridRowEnd,
+          'row',
+        ),
         position: childMetadata.specialSizeMeasurements.position ?? undefined,
       }
     },
