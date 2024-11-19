@@ -1,19 +1,9 @@
-import { emptyComments } from 'utopia-shared/src/types'
 import * as EP from '../../../core/shared/element-path'
 import { cssNumber } from '../../inspector/common/css-utils'
-import {
-  cssStyleProperty,
-  cssStylePropertyNotFound,
-  cssStylePropertyNotParsable,
-} from '../canvas-types'
+import { cssStylePropertyNotFound } from '../canvas-types'
 import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { InlineStylePlugin } from './inline-style-plugin'
-import {
-  clearJSXMapExpressionUniqueIDs,
-  jsExpressionValue,
-  jsIdentifier,
-} from '../../../core/shared/element-template'
 
 describe('inline style plugin', () => {
   it('can parse style info from element', async () => {
