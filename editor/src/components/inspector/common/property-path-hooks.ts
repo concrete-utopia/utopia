@@ -93,9 +93,9 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { eitherRight, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { getActivePlugin } from '../../canvas/plugins/style-plugins'
-import type { StyleInfo } from '../../canvas/canvas-types'
-import { isStyleInfoKey } from '../../canvas/canvas-types'
+import { isStyleInfoKey, type StyleInfo } from '../../canvas/canvas-types'
 import { assertNever } from '../../../core/shared/utils'
+import { maybeCssPropertyFromInlineStyle } from '../../canvas/commands/utils/property-utils'
 
 export interface InspectorPropsContextData {
   selectedViews: Array<ElementPath>
@@ -748,6 +748,14 @@ const getModifiableAttributeResultToExpressionOptic = eitherRight<
   ModifiableAttribute
 >().compose(fromTypeGuard(isRegularJSXAttribute))
 
+function maybeStyleInfoKeyFromPropertyPath(propertyPath: PropertyPath): keyof StyleInfo | null {
+  const maybeCSSProp = maybeCssPropertyFromInlineStyle(propertyPath)
+  if (maybeCSSProp == null || !isStyleInfoKey(maybeCSSProp)) {
+    return null
+  }
+  return maybeCSSProp
+}
+
 export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
   pathMappingFn: PathMappingFn<P>,
   propKeys: P[],
@@ -756,10 +764,12 @@ export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
     (store) =>
       (props: JSXAttributes, prop: keyof StyleInfo): GetModifiableAttributeResult => {
         const elementStyle = getActivePlugin(store.editor).readStyleFromElementProps(props, prop)
-        if (elementStyle == null || elementStyle.type === 'not-found') {
-          return right({ type: 'ATTRIBUTE_NOT_FOUND' })
+        if (elementStyle == null) {
+          return left('not found')
         }
         switch (elementStyle.type) {
+          case 'not-found':
+            return right({ type: 'ATTRIBUTE_NOT_FOUND' })
           case 'not-parsable':
             return right(elementStyle.originalValue)
           case 'property':
@@ -777,16 +787,13 @@ export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
         const keyFn = (propKey: P) => propKey
         const mapFn = (propKey: P) => {
           return contextData.editedMultiSelectedProps.map((props) => {
-            // const result = isStyleInfoKey(propKey)
-            //   ? styleInfoReaderRef.current(props, propKey)
-            //   : getModifiableJSXAttributeAtPath(
-            //       props,
-            //       pathMappingFn(propKey, contextData.targetPath),
-            //     )
-            const result = getModifiableJSXAttributeAtPath(
-              props,
-              pathMappingFn(propKey, contextData.targetPath),
-            )
+            const targetPath = pathMappingFn(propKey, contextData.targetPath)
+            const maybeStyleInfoKey = maybeStyleInfoKeyFromPropertyPath(targetPath)
+            const result =
+              maybeStyleInfoKey != null
+                ? styleInfoReaderRef.current(props, maybeStyleInfoKey)
+                : getModifiableJSXAttributeAtPath(props, targetPath)
+
             // This wipes the uid from any `JSExpression` values we may have retrieved,
             // as that can cause the deep equality check to fail for different elements
             // with the same value for a given property.
