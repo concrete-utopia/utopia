@@ -1,12 +1,8 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
 import type { Sides } from 'utopia-api/core'
-import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { defaultEither, foldEither, right } from '../../../../core/shared/either'
-import type {
-  ElementInstanceMetadata,
-  JSXAttributes,
-} from '../../../../core/shared/element-template'
+import { foldEither } from '../../../../core/shared/either'
+import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import {
   isIntrinsicElement,
   isJSXElement,
@@ -43,7 +39,7 @@ import {
   BorderRadiusControlMinimumForDisplay,
   maxBorderRadius,
 } from '../../border-radius-control-utils'
-import { type CSSCursor, maybePropertyValue, type StyleInfo } from '../../canvas-types'
+import { CSSCursor, maybePropertyValue, type StyleInfo } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 
