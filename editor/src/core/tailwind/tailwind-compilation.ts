@@ -99,11 +99,7 @@ function runTailwindClassGenerationOnDOMMutation(
       m.addedNodes.length > 0 || // new DOM element was added with potentially new classes
       m.attributeName === 'class', // potentially new classes were added to the class attribute of an element
   )
-  if (
-    !updateHasNewTailwindData ||
-    isInteractionActive ||
-    ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' // implies that an interaction is in progress)
-  ) {
+  if (!updateHasNewTailwindData || isInteractionActive) {
     return
   }
   generateTailwindClasses(projectContents, requireFn)

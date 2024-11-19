@@ -171,6 +171,13 @@ const genericPropPatcher =
 
 const PaddingLonghands = ['paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight']
 
+const BorderRadiusLonghands = [
+  'borderTopLeftRadius',
+  'borderTopRightRadius',
+  'borderBottomLeftRadius',
+  'borderBottomRightRadius',
+]
+
 const patchers: PropPatcher[] = [
   { matches: (p) => p === 'gap', patch: genericPropPatcher('0px') },
   {
@@ -187,7 +194,25 @@ const patchers: PropPatcher[] = [
       )
     },
   },
+  {
+    matches: (p) => p === 'borderRadius',
+    patch: (_, styleInfo, updatedProperties) => {
+      const propIsSetOnElement = styleInfo?.padding != null
+
+      if (!propIsSetOnElement) {
+        return []
+      }
+
+      return BorderRadiusLonghands.filter(
+        (p) => !updatedProperties.propertiesUpdated.includes(p),
+      ).map((p) => makeZeroProp(p))
+    },
+  },
   { matches: (p) => PaddingLonghands.includes(p), patch: genericPropPatcher('0px') },
+  {
+    matches: (p) => BorderRadiusLonghands.includes(p),
+    patch: genericPropPatcher('0px'),
+  },
 ]
 
 function getPropertiesToZero(

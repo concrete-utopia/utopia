@@ -1,6 +1,5 @@
 import createCachedSelector from 're-reselect'
 import React from 'react'
-import { createSelector } from 'reselect'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { CanvasVector, Size } from '../../../../core/shared/math-utils'
@@ -24,7 +23,6 @@ import {
   BorderRadiusCorners,
   BorderRadiusHandleHitArea,
   BorderRadiusHandleSize,
-  BorderRadiusSides,
   handlePosition,
 } from '../../border-radius-control-utils'
 import CanvasActions from '../../canvas-actions'
@@ -41,6 +39,8 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import type { CSSNumberWithRenderedValue } from './controls-common'
 import { CanvasLabel, fallbackEmptyValue } from './controls-common'
+import { getActivePlugin } from '../../plugins/style-plugins'
+import type { EditorStorePatched } from '../../../editor/store/editor-state'
 
 export const CircularHandleTestId = (corner: BorderRadiusCorner): string =>
   `circular-handle-${corner}`
@@ -59,13 +59,17 @@ const isDraggingSelector = (store: CanvasSubstate): boolean => {
 
 const borderRadiusSelector = createCachedSelector(
   metadataSelector,
+  (store: EditorStorePatched) =>
+    getActivePlugin(store.editor).styleInfoFactory({
+      projectContents: store.editor.projectContents,
+    }),
   (_: MetadataSubstate, x: ElementPath) => x,
-  (metadata, selectedElement) => {
+  (metadata, styleInfoReader, selectedElement) => {
     const element = MetadataUtils.findElementByElementPath(metadata, selectedElement)
     if (element == null) {
       return null
     }
-    return borderRadiusFromElement(element)
+    return borderRadiusFromElement(element, styleInfoReader(selectedElement))
   },
 )((_, x) => EP.toString(x))
 
@@ -117,7 +121,7 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
   )
 
   const borderRadius = useEditorState(
-    Substores.metadata,
+    Substores.fullStore,
     (store) => borderRadiusSelector(store, selectedElement),
     'BorderRadiusControl borderRadius',
   )
