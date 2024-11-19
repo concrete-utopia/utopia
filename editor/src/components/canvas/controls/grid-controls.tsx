@@ -2375,6 +2375,10 @@ function getCellCanvasWidthFromBounds(
   index: number,
   cells: number,
 ): number {
+  if (grid.length <= index) {
+    return 0
+  }
+
   const currentRow = grid[index]
 
   if (cells <= 1) {
@@ -2400,6 +2404,10 @@ function getCellCanvasHeightFromBounds(
   cells: number,
 ): number {
   const columns = grid.map((row) => row[0])
+  if (columns.length <= index) {
+    return 0
+  }
+
   const currentColumn = columns[index]
 
   if (cells <= 1) {
