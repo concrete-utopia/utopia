@@ -2168,68 +2168,34 @@ function useSelectedGridItems(): ElementPath[] {
 
 const rulerMarkerIconSize = 12 // px
 
-const RulerMarkerIndicator = React.memo(
-  (props: {
-    top: number
-    left: number
-    position: GridPositionOrSpan | null
-    counterpart: GridPositionOrSpan | null
-    axis: 'row' | 'column'
-    bound: 'start' | 'end'
-  }) => {
-    const colorTheme = useColorTheme()
+type RulerMarkerData = {
+  columnStart: RulerMarkerPositionData
+  columnEnd: RulerMarkerPositionData
+  rowStart: RulerMarkerPositionData
+  rowEnd: RulerMarkerPositionData
+}
 
-    const markerType = getMarkerType({
-      position: props.position,
-      counterpart: props.counterpart,
-      bound: props.bound,
-    })
-    const markerIcon = markerIcons[markerType][props.axis]
+type RulerMarkerPositionData = {
+  top: number
+  left: number
+  position: GridPositionOrSpan | null
+  counterpart: GridPositionOrSpan | null
+  bound: 'start' | 'end'
+}
 
-    const canvasScale = useEditorState(
-      Substores.canvasOffset,
-      (store) => store.editor.canvas.scale,
-      'RulerMarkerIndicator canvasScale',
-    )
+type RulerMarkerType = 'span-start' | 'span-end' | 'auto' | 'pinned'
 
-    function skewMarkerPosition(axis: 'column' | 'row') {
-      return props.axis === axis
-        ? rulerMarkerIconSize
-        : markerType === 'span-end'
-        ? rulerMarkerIconSize - 3 // adjust span end position so it just touches the grid line
-        : rulerMarkerIconSize / 2
-    }
-
-    const scaledTop = props.top * canvasScale
-    const top = scaledTop - skewMarkerPosition('column')
-
-    const scaledLeft = props.left * canvasScale
-    const left = scaledLeft - skewMarkerPosition('row')
-
-    return (
-      <div
-        style={{
-          position: 'absolute',
-          top: top,
-          left: left,
-          color: colorTheme.primary.value,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: rulerMarkerIconSize,
-          width: rulerMarkerIconSize,
-          zoom: 1 / canvasScale,
-        }}
-      >
-        {markerIcon}
-      </div>
-    )
-  },
-)
-RulerMarkerIndicator.displayName = 'RulerMarkerIndicator'
+const rulerMarkerIcons: {
+  [key in RulerMarkerType]: { column: string; row: string }
+} = {
+  'span-start': { column: '▶', row: '▼' },
+  'span-end': { column: '◀', row: '▲' },
+  auto: { column: '┃', row: '━' },
+  pinned: { column: '▼', row: '▶' },
+}
 
 const RulerMarkers = React.memo((props: { path: ElementPath }) => {
-  const markers = useEditorState(
+  const markers: RulerMarkerData | null = useEditorState(
     Substores.metadata,
     (store) => {
       const elementMetadata = MetadataUtils.findElementByElementPath(
@@ -2267,7 +2233,7 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
       const cellBoundsColumnIndex = cellBounds.column - 1
       const firstRow = parentGridCellGlobalFrames[0]
       const left = firstRow[cellBoundsColumnIndex].x
-      const width = getCanvasWidthFromBounds(
+      const width = getCellCanvasWidthFromBounds(
         parentGridCellGlobalFrames,
         cellBoundsColumnIndex,
         cellBounds.width,
@@ -2276,7 +2242,7 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
       const cellBoundsRowIndex = cellBounds.row - 1
       const firstColumn = parentGridCellGlobalFrames[cellBoundsRowIndex][0]
       const top = firstColumn.y
-      const height = getCanvasHeightFromBounds(
+      const height = getCellCanvasHeightFromBounds(
         parentGridCellGlobalFrames,
         cellBoundsRowIndex,
         cellBounds.height,
@@ -2327,50 +2293,73 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
 
   return (
     <React.Fragment>
-      <RulerMarkerIndicator
-        top={markers.columnStart.top}
-        left={markers.columnStart.left}
-        position={markers.columnStart.position}
-        counterpart={markers.columnStart.counterpart}
-        axis={'column'}
-        bound={markers.columnStart.bound as any}
-      />
-      <RulerMarkerIndicator
-        top={markers.columnEnd.top}
-        left={markers.columnEnd.left}
-        position={markers.columnEnd.position}
-        counterpart={markers.columnEnd.counterpart}
-        axis={'column'}
-        bound={markers.columnEnd.bound as any}
-      />
-      <RulerMarkerIndicator
-        top={markers.rowStart.top}
-        left={markers.rowStart.left}
-        position={markers.rowStart.position}
-        counterpart={markers.rowStart.counterpart}
-        axis={'row'}
-        bound={markers.rowStart.bound as any}
-      />
-      <RulerMarkerIndicator
-        top={markers.rowEnd.top}
-        left={markers.rowEnd.left}
-        position={markers.rowEnd.position}
-        counterpart={markers.rowEnd.counterpart}
-        axis={'row'}
-        bound={markers.rowEnd.bound as any}
-      />
+      <RulerMarkerIndicator marker={markers.columnStart} axis={'column'} />
+      <RulerMarkerIndicator marker={markers.columnEnd} axis={'column'} />
+      <RulerMarkerIndicator marker={markers.rowStart} axis={'row'} />
+      <RulerMarkerIndicator marker={markers.rowEnd} axis={'row'} />
     </React.Fragment>
   )
 })
 RulerMarkers.displayName = 'RulerMarkers'
 
-type MarkerType = 'span-start' | 'span-end' | 'auto' | 'pinned'
+const RulerMarkerIndicator = React.memo(
+  (props: { marker: RulerMarkerPositionData; axis: 'row' | 'column' }) => {
+    const colorTheme = useColorTheme()
 
-function getMarkerType(props: {
+    const markerType = getRulerMarkerType({
+      position: props.marker.position,
+      counterpart: props.marker.counterpart,
+      bound: props.marker.bound,
+    })
+    const markerIcon = rulerMarkerIcons[markerType][props.axis]
+
+    const canvasScale = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.scale,
+      'RulerMarkerIndicator canvasScale',
+    )
+
+    function skewMarkerPosition(axis: 'column' | 'row') {
+      return props.axis === axis
+        ? rulerMarkerIconSize
+        : markerType === 'span-end'
+        ? rulerMarkerIconSize - 3 // adjust span end position so it just touches the grid line
+        : rulerMarkerIconSize / 2
+    }
+
+    const scaledTop = props.marker.top * canvasScale
+    const top = scaledTop - skewMarkerPosition('column')
+
+    const scaledLeft = props.marker.left * canvasScale
+    const left = scaledLeft - skewMarkerPosition('row')
+
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: top,
+          left: left,
+          color: colorTheme.primary.value,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: rulerMarkerIconSize,
+          width: rulerMarkerIconSize,
+          zoom: 1 / canvasScale,
+        }}
+      >
+        {markerIcon}
+      </div>
+    )
+  },
+)
+RulerMarkerIndicator.displayName = 'RulerMarkerIndicator'
+
+function getRulerMarkerType(props: {
   position: GridPositionOrSpan | null
   counterpart: GridPositionOrSpan | null
   bound: 'start' | 'end'
-}): MarkerType {
+}): RulerMarkerType {
   const isAuto =
     isAutoGridPin(props.position) ||
     (props.bound === 'start' && isGridSpan(props.position) && isAutoGridPin(props.counterpart))
@@ -2390,14 +2379,11 @@ function getMarkerType(props: {
   }
 }
 
-const markerIcons = {
-  'span-start': { column: '▶', row: '▼' },
-  'span-end': { column: '◀', row: '▲' },
-  auto: { column: '┃', row: '━' },
-  pinned: { column: '▼', row: '▶' },
-}
-
-function getCanvasWidthFromBounds(grid: CanvasRectangle[][], index: number, cells: number): number {
+function getCellCanvasWidthFromBounds(
+  grid: CanvasRectangle[][],
+  index: number,
+  cells: number,
+): number {
   const currentRow = grid[index]
 
   if (cells <= 1) {
@@ -2417,7 +2403,7 @@ function getCanvasWidthFromBounds(grid: CanvasRectangle[][], index: number, cell
   }, currentRow[index].width)
 }
 
-function getCanvasHeightFromBounds(
+function getCellCanvasHeightFromBounds(
   grid: CanvasRectangle[][],
   index: number,
   cells: number,
