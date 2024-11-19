@@ -521,12 +521,12 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
   pathMappingFn: PathMappingFn<P>,
 ): InspectorInfo<T> {
   const propKeys = useMemoizedPropKeys(propKeysIn)
-  const multiselectAtProps: MultiselectAtProps<P> = useGetMultiselectedProps<P>( // this gets the actual prop value
+  const multiselectAtProps: MultiselectAtProps<P> = useGetMultiselectedProps<P>(
     pathMappingFn,
     propKeys,
   )
 
-  const selectedProps = useGetSpiedProps<P>(pathMappingFn, propKeys) // this gets the spied props, won't be applicable for Tailwind
+  const selectedProps = useGetSpiedProps<P>(pathMappingFn, propKeys)
 
   const selectedComputedStyles = useGetSelectedComputedStyles<P>(pathMappingFn, propKeys)
 
@@ -777,12 +777,16 @@ export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
         const keyFn = (propKey: P) => propKey
         const mapFn = (propKey: P) => {
           return contextData.editedMultiSelectedProps.map((props) => {
-            const result = isStyleInfoKey(propKey)
-              ? styleInfoReaderRef.current(props, propKey)
-              : getModifiableJSXAttributeAtPath(
-                  props,
-                  pathMappingFn(propKey, contextData.targetPath),
-                )
+            // const result = isStyleInfoKey(propKey)
+            //   ? styleInfoReaderRef.current(props, propKey)
+            //   : getModifiableJSXAttributeAtPath(
+            //       props,
+            //       pathMappingFn(propKey, contextData.targetPath),
+            //     )
+            const result = getModifiableJSXAttributeAtPath(
+              props,
+              pathMappingFn(propKey, contextData.targetPath),
+            )
             // This wipes the uid from any `JSExpression` values we may have retrieved,
             // as that can cause the deep equality check to fail for different elements
             // with the same value for a given property.

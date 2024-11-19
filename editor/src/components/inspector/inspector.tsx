@@ -679,7 +679,7 @@ export const InspectorContextProvider = React.memo<{
                 : []
             return replaceFirstChildAndDeleteSiblings(elem, children, newValue)
           }
-          return [setProp_UNSAFE(elem, path, newValue)] // TODO: use command here
+          return [setProp_UNSAFE(elem, path, newValue)]
         }),
       ]
       const actions: EditorAction[] = transient
@@ -726,10 +726,10 @@ export const InspectorContextProvider = React.memo<{
       Utils.fastForEach(refElementsToTargetForUpdates.current, (elem) => {
         if (Array.isArray(property)) {
           Utils.fastForEach(property, (p) => {
-            actionsArray.push(unsetProperty(elem, p)) // use command here
+            actionsArray.push(unsetProperty(elem, p))
           })
         } else {
-          actionsArray.push(unsetProperty(elem, property)) // use command here
+          actionsArray.push(unsetProperty(elem, property))
         }
       })
 
