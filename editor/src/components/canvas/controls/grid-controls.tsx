@@ -2190,8 +2190,8 @@ const RulerMarkerIndicator = React.memo(
       <div
         style={{
           position: 'absolute',
-          top: props.top - (props.axis === 'column' ? markerIconSize : 0),
-          left: props.left - (props.axis === 'row' ? markerIconSize : 0),
+          top: props.top - (props.axis === 'column' ? markerIconSize : markerIconSize / 2),
+          left: props.left - (props.axis === 'row' ? markerIconSize : markerIconSize / 2),
           color: '#09f',
           height: markerIconSize,
           width: markerIconSize,
@@ -2279,7 +2279,7 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
         },
         columnEnd: {
           top: gridRect.y,
-          left: left + width - markerIconSize,
+          left: left + width,
           position: elementGridProperties.gridColumnEnd,
         },
         rowStart: {
@@ -2288,7 +2288,7 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
           position: elementGridProperties.gridRowStart,
         },
         rowEnd: {
-          top: top + height - markerIconSize,
+          top: top + height,
           left: gridRect.x,
           position: elementGridProperties.gridRowEnd,
         },
