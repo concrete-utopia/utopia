@@ -925,7 +925,7 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
       <div
         key={gridKeyFromPath(gridContainerOrComponentPath)}
         id={gridKeyFromPath(gridContainerOrComponentPath)}
-        data-grid-path={gridContainerOrComponentPath}
+        data-grid-path={EP.toString(gridContainerOrComponentPath)}
         style={style}
       >
         {placeholders.map((cell) => {
