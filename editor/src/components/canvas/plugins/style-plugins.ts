@@ -1,4 +1,4 @@
-import type { ElementPath } from 'utopia-shared/src/types'
+import type { ElementPath, JSXAttributes } from 'utopia-shared/src/types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type {
   InteractionLifecycle,
@@ -51,6 +51,10 @@ export type StyleUpdate = UpdateCSSProp | DeleteCSSProp
 export interface StylePlugin {
   name: string
   styleInfoFactory: StyleInfoFactory
+  readStyleFromElementProps: <T extends keyof StyleInfo>(
+    props: JSXAttributes,
+    cssProp: T,
+  ) => StyleInfo[T] | null
   updateStyles: (
     editorState: EditorState,
     elementPath: ElementPath,

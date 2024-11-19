@@ -9,7 +9,7 @@ import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import { getJSXElementFromProjectContents } from '../../editor/store/editor-state'
 import { cssParsers, type ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import type { CSSStyleProperty } from '../canvas-types'
+import type { CSSStyleProperty, StyleInfo } from '../canvas-types'
 import {
   cssStyleProperty,
   cssStylePropertyNotParsable,
@@ -34,23 +34,26 @@ function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSPropert
   attributes: JSXAttributes,
 ): CSSStyleProperty<NonNullable<T>> | null {
   const attribute = getPropValue(attributes, stylePropPathMappingFn(prop, ['style']))
-  if (attribute.type === 'ATTRIBUTE_NOT_FOUND') {
+  if (attribute.type === 'ATTRIBUTE_NOT_FOUND' || attribute.type === 'PART_OF_ATTRIBUTE_VALUE') {
     return cssStylePropertyNotFound()
   }
   const simpleValue = jsxSimpleAttributeToValue(attribute)
   if (Either.isLeft(simpleValue)) {
-    return cssStylePropertyNotParsable()
+    return cssStylePropertyNotParsable(attribute)
   }
   const parser = cssParsers[prop] as (value: unknown) => Either.Either<string, T>
   const parsed = parser(simpleValue.value)
   if (Either.isLeft(parsed) || parsed.value == null) {
-    return cssStylePropertyNotParsable()
+    return cssStylePropertyNotParsable(attribute)
   }
-  return cssStyleProperty(parsed.value)
+  return cssStyleProperty(parsed.value, attribute)
 }
 
 export const InlineStylePlugin: StylePlugin = {
   name: 'Inline Style',
+  readStyleFromElementProps: <T extends keyof StyleInfo>(props: JSXAttributes, key: T) => {
+    return getPropertyFromInstance(key, props) as StyleInfo[T]
+  },
   styleInfoFactory:
     ({ projectContents }) =>
     (elementPath) => {

@@ -1,5 +1,5 @@
 import * as TailwindClassParser from '@xengine/tailwindcss-class-parser'
-import { isLeft } from '../../../core/shared/either'
+import { defaultEither, flatMapEither, isLeft } from '../../../core/shared/either'
 import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import type { Parser } from '../../inspector/common/css-utils'
@@ -7,19 +7,27 @@ import { cssParsers } from '../../inspector/common/css-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import type { StylePlugin } from './style-plugins'
 import type { Config } from 'tailwindcss/types/config'
+import type { StyleInfo } from '../canvas-types'
 import { cssStyleProperty, type CSSStyleProperty } from '../canvas-types'
 import * as UCL from './tailwind-style-plugin-utils/update-class-list'
 import { assertNever } from '../../../core/shared/utils'
+import {
+  jsxSimpleAttributeToValue,
+  getModifiableJSXAttributeAtPath,
+} from '../../../core/shared/jsx-attribute-utils'
+import { emptyComments, type JSXAttributes } from 'utopia-shared/src/types'
+import * as PP from '../../../core/shared/property-path'
+import { jsExpressionValue } from '../../../core/shared/element-template'
 
 function parseTailwindProperty<T>(
-  value: unknown,
+  value: string | number | undefined,
   parse: Parser<T>,
 ): CSSStyleProperty<NonNullable<T>> | null {
   const parsed = parse(value, null)
   if (isLeft(parsed) || parsed.value == null) {
     return null
   }
-  return cssStyleProperty(parsed.value)
+  return cssStyleProperty(parsed.value, jsExpressionValue(value, emptyComments))
 }
 
 const TailwindPropertyMapping: Record<string, string> = {
@@ -71,6 +79,29 @@ const underscoresToSpaces = (s: string | undefined) => s?.replace(/[-_]/g, ' ')
 
 export const TailwindPlugin = (config: Config | null): StylePlugin => ({
   name: 'Tailwind',
+  readStyleFromElementProps: <T extends keyof StyleInfo>(props: JSXAttributes, key: T) => {
+    if (TailwindPropertyMapping[key] == null) {
+      return null
+    }
+
+    const classNameAttribute = defaultEither(
+      null,
+      flatMapEither(
+        (attr) => jsxSimpleAttributeToValue(attr),
+        getModifiableJSXAttributeAtPath(props, PP.create('className')),
+      ),
+    )
+
+    if (typeof classNameAttribute !== 'string') {
+      return null
+    }
+
+    const mapping = getTailwindClassMapping(classNameAttribute.split(' '), config)
+    return parseTailwindProperty(
+      mapping[TailwindPropertyMapping[key]],
+      cssParsers[key],
+    ) as StyleInfo[T]
+  },
   styleInfoFactory:
     ({ projectContents }) =>
     (elementPath) => {
