@@ -48,7 +48,7 @@ import type { StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { isHTMLComponent, isUtopiaAPIComponent } from '../../../core/model/project-file-utils'
 import { stripNulls } from '../../../core/shared/array-utils'
 import type { Either } from '../../../core/shared/either'
-import { eitherToMaybe, flatMapEither, isRight, left } from '../../../core/shared/either'
+import { eitherToMaybe, flatMapEither, isRight, left, right } from '../../../core/shared/either'
 import type {
   JSXAttributes,
   ComputedStyle,
@@ -92,6 +92,10 @@ import type { EditorAction } from '../../editor/action-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { eitherRight, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { modify } from '../../../core/shared/optics/optic-utilities'
+import { getActivePlugin } from '../../canvas/plugins/style-plugins'
+import type { StyleInfo } from '../../canvas/canvas-types'
+import { isStyleInfoKey } from '../../canvas/canvas-types'
+import { assertNever } from '../../../core/shared/utils'
 
 export interface InspectorPropsContextData {
   selectedViews: Array<ElementPath>
@@ -748,6 +752,24 @@ export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
   pathMappingFn: PathMappingFn<P>,
   propKeys: P[],
 ): MultiselectAtProps<P> {
+  const styleInfoReaderRef = useRefEditorState(
+    (store) =>
+      (props: JSXAttributes, prop: keyof StyleInfo): GetModifiableAttributeResult => {
+        const elementStyle = getActivePlugin(store.editor).readStyleFromElementProps(props, prop)
+        if (elementStyle == null || elementStyle.type === 'not-found') {
+          return right({ type: 'ATTRIBUTE_NOT_FOUND' })
+        }
+        switch (elementStyle.type) {
+          case 'not-parsable':
+            return right(elementStyle.originalValue)
+          case 'property':
+            return right(elementStyle.propertyValue)
+          default:
+            assertNever(elementStyle)
+        }
+      },
+  )
+
   return useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
@@ -755,10 +777,12 @@ export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
         const keyFn = (propKey: P) => propKey
         const mapFn = (propKey: P) => {
           return contextData.editedMultiSelectedProps.map((props) => {
-            const result = getModifiableJSXAttributeAtPath(
-              props,
-              pathMappingFn(propKey, contextData.targetPath),
-            )
+            const result = isStyleInfoKey(propKey)
+              ? styleInfoReaderRef.current(props, propKey)
+              : getModifiableJSXAttributeAtPath(
+                  props,
+                  pathMappingFn(propKey, contextData.targetPath),
+                )
             // This wipes the uid from any `JSExpression` values we may have retrieved,
             // as that can cause the deep equality check to fail for different elements
             // with the same value for a given property.

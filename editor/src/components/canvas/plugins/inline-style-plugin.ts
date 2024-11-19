@@ -34,7 +34,7 @@ function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSPropert
   attributes: JSXAttributes,
 ): CSSStyleProperty<NonNullable<T>> | null {
   const attribute = getPropValue(attributes, stylePropPathMappingFn(prop, ['style']))
-  if (attribute.type === 'ATTRIBUTE_NOT_FOUND' || attribute.type === 'PART_OF_ATTRIBUTE_VALUE') {
+  if (attribute.type === 'ATTRIBUTE_NOT_FOUND') {
     return cssStylePropertyNotFound()
   }
   const simpleValue = jsxSimpleAttributeToValue(attribute)
