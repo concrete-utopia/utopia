@@ -86,6 +86,8 @@ export const InlineStylePlugin: StylePlugin = {
       )
       const zIndex = getPropertyFromInstance('zIndex', element.props)
 
+      const overflow = getPropertyFromInstance('overflow', element.props)
+
       return {
         gap: gap,
         flexDirection: flexDirection,
@@ -107,6 +109,7 @@ export const InlineStylePlugin: StylePlugin = {
         borderBottomRightRadius: borderBottomRightRadius,
         borderBottomLeftRadius: borderBottomLeftRadius,
         zIndex: zIndex,
+        overflow: overflow,
       }
     },
   updateStyles: (editorState, elementPath, updates) => {

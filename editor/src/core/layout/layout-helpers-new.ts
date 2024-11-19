@@ -109,6 +109,7 @@ export type StyleLayoutProp =
   | 'zIndex'
   | 'rowGap'
   | 'columnGap'
+  | 'overflow'
 
 export function framePointForPinnedProp(pinnedProp: LayoutPinnedProp): FramePoint {
   switch (pinnedProp) {

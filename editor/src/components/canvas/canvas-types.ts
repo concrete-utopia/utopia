@@ -30,6 +30,7 @@ import type {
   CSSBorderRadius,
   CSSBorderRadiusIndividual,
   CSSNumber,
+  CSSOverflow,
   CSSPadding,
   FlexDirection,
 } from '../inspector/common/css-utils'
@@ -595,6 +596,7 @@ export type PaddingSideInfo = CSSStyleProperty<CSSNumber>
 export type BorderRadiusInfo = CSSStyleProperty<CSSBorderRadius>
 export type BorderRadiusCornerInfo = CSSStyleProperty<CSSNumber>
 export type ZIndexInfo = CSSStyleProperty<CSSNumber>
+export type OverflowInfo = CSSStyleProperty<CSSOverflow>
 
 export interface StyleInfo {
   gap: FlexGapInfo | null
@@ -617,6 +619,7 @@ export interface StyleInfo {
   borderBottomRightRadius: BorderRadiusCornerInfo | null
   borderBottomLeftRadius: BorderRadiusCornerInfo | null
   zIndex: ZIndexInfo | null
+  overflow: OverflowInfo | null
 }
 
 const emptyStyleInfo: StyleInfo = {
@@ -640,6 +643,7 @@ const emptyStyleInfo: StyleInfo = {
   borderBottomRightRadius: null,
   borderBottomLeftRadius: null,
   zIndex: null,
+  overflow: null,
 }
 
 export const isStyleInfoKey = (key: string): key is keyof StyleInfo => key in emptyStyleInfo

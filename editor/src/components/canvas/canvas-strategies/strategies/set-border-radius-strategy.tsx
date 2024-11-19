@@ -156,7 +156,10 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
         [
           setCursorCommand(CSSCursor.Radius),
           ...commands(selectedElement),
-          ...getAddOverflowHiddenCommands(selectedElement, canvasState.projectContents),
+          ...getAddOverflowHiddenCommands(
+            selectedElement,
+            canvasState.styleInfoReader(selectedElement),
+          ),
           setActiveFrames(
             selectedElements.map((path) => ({
               action: 'set-radius',
@@ -588,27 +591,15 @@ const setShorthandStylePropertyCommand =
 
 function getAddOverflowHiddenCommands(
   target: ElementPath,
-  projectContents: ProjectContentTreeRoot,
+  styleInfo: StyleInfo | null,
 ): Array<CanvasCommand> {
-  const overflowProp = PP.create('style', 'overflow')
-
-  const propertyExists = withUnderlyingTarget(target, projectContents, false, (_, element) => {
-    if (isJSXElement(element)) {
-      return foldEither(
-        () => false,
-        (value) => !modifiableAttributeIsAttributeNotFound(value),
-        getModifiableJSXAttributeAtPath(element.props, overflowProp),
-      )
-    } else {
-      return false
-    }
-  })
-
+  const propertyExists = styleInfo?.overflow != null
   if (propertyExists) {
     return []
   }
+
   return [
     showToastCommand('Element now hides overflowing content', 'NOTICE', 'property-added'),
-    setProperty('always', target, overflowProp, 'hidden'),
+    setProperty('always', target, StyleProp('overflow'), 'hidden'),
   ]
 }

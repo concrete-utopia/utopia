@@ -53,6 +53,8 @@ const TailwindPropertyMapping: Record<string, string> = {
   flexWrap: 'flexWrap',
   gap: 'gap',
 
+  overflow: 'overflow',
+
   zIndex: 'zIndex',
 }
 
@@ -157,6 +159,10 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
           cssParsers.borderBottomLeftRadius,
         ),
         zIndex: parseTailwindProperty(mapping[TailwindPropertyMapping.zIndex], cssParsers.zIndex),
+        overflow: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.overflow],
+          cssParsers.overflow,
+        ),
       }
     },
   updateStyles: (editorState, elementPath, updates) => {

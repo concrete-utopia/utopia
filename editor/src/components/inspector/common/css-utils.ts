@@ -2483,7 +2483,7 @@ function printTransformOrigin(transformOrigin: CSSTransformOrigin): JSExpression
   )
 }
 
-type CSSOverflow = boolean
+export type CSSOverflow = boolean
 
 function parseOverflow(overflow: unknown): Either<string, CSSOverflow> {
   if (typeof overflow === 'string') {
