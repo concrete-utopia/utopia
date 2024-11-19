@@ -14,6 +14,7 @@ import { Substores, useEditorState, useRefEditorState } from '../../../editor/st
 import type {
   CanvasSubstate,
   MetadataSubstate,
+  StyleInfoSubstate,
 } from '../../../editor/store/store-hook-substore-types'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { metadataSelector } from '../../../inspector/inpector-selectors'
@@ -59,7 +60,7 @@ const isDraggingSelector = (store: CanvasSubstate): boolean => {
 
 const borderRadiusSelector = createCachedSelector(
   metadataSelector,
-  (store: EditorStorePatched) =>
+  (store: StyleInfoSubstate) =>
     getActivePlugin(store.editor).styleInfoFactory({
       projectContents: store.editor.projectContents,
     }),
@@ -121,7 +122,7 @@ export const BorderRadiusControl = controlForStrategyMemoized<BorderRadiusContro
   )
 
   const borderRadius = useEditorState(
-    Substores.fullStore,
+    Substores.styleInfo,
     (store) => borderRadiusSelector(store, selectedElement),
     'BorderRadiusControl borderRadius',
   )

@@ -13,15 +13,16 @@ import { importDefault } from '../es-modules/commonjs-interop'
 import { rescopeCSSToTargetCanvasOnly } from '../shared/css-utils'
 import type { RequireFn } from '../shared/npm-dependency-types'
 import { TailwindConfigPath } from './tailwind-config'
-import { ElementsToRerenderGLOBAL } from '../../components/canvas/ui-jsx-canvas'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { Config } from 'tailwindcss/types/config'
-import type { EditorState } from '../../components/editor/store/editor-state'
 import { createSelector } from 'reselect'
-import type { ProjectContentSubstate } from '../../components/editor/store/store-hook-substore-types'
+import type {
+  ProjectContentSubstate,
+  StyleInfoSubEditorState,
+} from '../../components/editor/store/store-hook-substore-types'
 
 const LatestConfig: { current: { code: string; config: Config } | null } = { current: null }
-export function getTailwindConfigCached(editorState: EditorState): Config | null {
+export function getTailwindConfigCached(editorState: StyleInfoSubEditorState): Config | null {
   const tailwindConfig = getProjectFileByFilePath(editorState.projectContents, TailwindConfigPath)
   if (tailwindConfig == null || tailwindConfig.type !== 'TEXT_FILE') {
     return null

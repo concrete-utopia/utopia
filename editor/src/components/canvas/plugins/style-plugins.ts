@@ -19,6 +19,7 @@ import { applyValuesAtPath } from '../commands/utils/property-utils'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import { isStyleInfoKey, type StyleInfo } from '../canvas-types'
+import type { StyleInfoSubEditorState } from '../../editor/store/store-hook-substore-types'
 
 export interface UpdateCSSProp {
   type: 'set'
@@ -58,7 +59,7 @@ export interface StylePlugin {
   ) => EditorStateWithPatch
 }
 
-export function getActivePlugin(editorState: EditorState): StylePlugin {
+export function getActivePlugin(editorState: StyleInfoSubEditorState): StylePlugin {
   if (isFeatureEnabled('Tailwind') && isTailwindEnabled()) {
     return TailwindPlugin(getTailwindConfigCached(editorState))
   }
