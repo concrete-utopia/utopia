@@ -82,11 +82,11 @@ export function getClosestGridCellToPoint(
   for (let i = 0; i < gridCellGlobalFrames.length; i++) {
     for (let j = 0; j < gridCellGlobalFrames[i].length; j++) {
       const currentDistance = distanceFromPointToRectangle(point, gridCellGlobalFrames[i][j])
-      const condition =
+      const closeEnough =
         distanceMatch === 'inclusive'
           ? currentDistance <= closestDistance
           : currentDistance < closestDistance
-      if (condition) {
+      if (closeEnough) {
         closestCell = {
           gridCellCoordinates: gridCellCoordinates(i + 1, j + 1),
           cellCanvasRectangle: gridCellGlobalFrames[i][j],
