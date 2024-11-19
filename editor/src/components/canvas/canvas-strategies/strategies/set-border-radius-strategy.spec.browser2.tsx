@@ -641,30 +641,6 @@ describe('set border radius strategy', () => {
           'top-28 left-28 w-28 h-28 bg-black absolute rounded-tl-[24px] rounded-tr-[15px] rounded-br-[16px] rounded-bl-[17px] overflow-visible',
         )
       })
-
-      // it('can remove tailwind padding', async () => {
-      //   const editor = await renderTestEditorWithModel(
-      //     TailwindProject('p-4'),
-      //     'await-first-dom-report',
-      //   )
-      //   await selectComponentsForTest(editor, [EP.fromString('sb/scene/mydiv')])
-      //   await testPaddingResizeForEdge(editor, -150, 'top', 'precise')
-      //   await editor.getDispatchFollowUpActionsFinished()
-      //   const div = editor.renderedDOM.getByTestId('mydiv')
-      //   expect(div.className).toEqual('top-10 left-10 absolute flex flex-row pb-4 pl-4 pr-4')
-      // })
-
-      // it('can set tailwind padding longhand', async () => {
-      //   const editor = await renderTestEditorWithModel(
-      //     TailwindProject('pt-12'),
-      //     'await-first-dom-report',
-      //   )
-      //   await selectComponentsForTest(editor, [EP.fromString('sb/scene/mydiv')])
-      //   await testPaddingResizeForEdge(editor, 50, 'top', 'precise')
-      //   await editor.getDispatchFollowUpActionsFinished()
-      //   const div = editor.renderedDOM.getByTestId('mydiv')
-      //   expect(div.className).toEqual('top-10 left-10 absolute flex flex-row pt-24')
-      // })
     })
   })
 })
