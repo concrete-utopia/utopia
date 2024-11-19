@@ -2166,7 +2166,7 @@ function useSelectedGridItems(): ElementPath[] {
   )
 }
 
-const markerIconSize = 12
+const rulerMarkerIconSize = 12 // px
 
 const RulerMarkerIndicator = React.memo(
   (props: {
@@ -2175,6 +2175,8 @@ const RulerMarkerIndicator = React.memo(
     position: GridPositionOrSpan | null
     axis: 'row' | 'column'
   }) => {
+    const colorTheme = useColorTheme()
+
     function getIcon() {
       const isAuto = isAutoGridPin(props.position)
       const isSpanStart = isGridSpan(props.position)
@@ -2186,18 +2188,32 @@ const RulerMarkerIndicator = React.memo(
       }
     }
 
+    const canvasScale = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.scale,
+      'RulerMarkerIndicator canvasScale',
+    )
+
+    const top =
+      props.top * canvasScale -
+      (props.axis === 'column' ? rulerMarkerIconSize : rulerMarkerIconSize / 2)
+    const left =
+      props.left * canvasScale -
+      (props.axis === 'row' ? rulerMarkerIconSize : rulerMarkerIconSize / 2)
+
     return (
       <div
         style={{
           position: 'absolute',
-          top: props.top - (props.axis === 'column' ? markerIconSize : markerIconSize / 2),
-          left: props.left - (props.axis === 'row' ? markerIconSize : markerIconSize / 2),
-          color: '#09f',
-          height: markerIconSize,
-          width: markerIconSize,
+          top: top,
+          left: left,
+          color: colorTheme.primary.value,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          height: rulerMarkerIconSize,
+          width: rulerMarkerIconSize,
+          zoom: 1 / canvasScale,
         }}
       >
         {getIcon()}
