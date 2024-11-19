@@ -3,14 +3,16 @@ import {
   expectSingleUndo2Saves,
   hoverControlWithCheck,
   selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
 } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
-import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import { renderTestEditorWithCode, renderTestEditorWithModel } from '../canvas/ui-jsx.test-utils'
 import type { FlexDirection } from './common/css-utils'
 import { FlexDirectionControlTestId, FlexDirectionToggleTestId } from './flex-direction-control'
+import { TailwindProject } from './sections/flex-section.test-utils'
 
 describe('set flex direction', () => {
   it('set flex direction to row from not set', async () => {
@@ -109,6 +111,62 @@ describe('set flex direction', () => {
       ].flatMap((id) => editor.renderedDOM.queryAllByTestId(id))
 
       expect(controls.length).toEqual(4)
+    })
+  })
+
+  describe('Tailwind', () => {
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Tailwind', true)
+
+    it('set flex direction to column from not set', async () => {
+      const editor = await renderTestEditorWithModel(
+        TailwindProject('flex'),
+        'await-first-dom-report',
+      )
+      await selectDiv(editor)
+      await expectSingleUndo2Saves(editor, () => clickOn(editor, 'column'))
+      const div = editor.renderedDOM.getByTestId('mydiv')
+      expect(div.className).toEqual(
+        'top-10 left-10 w-64 h-64 bg-slate-100 absolute flex flex-col', // flex-col is set by the control
+      )
+    })
+
+    it('set flex direction to row-reverse from not set', async () => {
+      const editor = await renderTestEditorWithModel(
+        TailwindProject('flex'),
+        'await-first-dom-report',
+      )
+      await selectDiv(editor)
+      await expectSingleUndo2Saves(editor, () => clickOn(editor, 'row-reverse'))
+      const div = editor.renderedDOM.getByTestId('mydiv')
+      expect(div.className).toEqual(
+        'top-10 left-10 w-64 h-64 bg-slate-100 absolute flex flex-row-reverse', // flex-row-reverse is set by the control
+      )
+    })
+
+    it('set flex direction to column-reverse from not set', async () => {
+      const editor = await renderTestEditorWithModel(
+        TailwindProject('flex'),
+        'await-first-dom-report',
+      )
+      await selectDiv(editor)
+      await expectSingleUndo2Saves(editor, () => clickOn(editor, 'column-reverse'))
+      const div = editor.renderedDOM.getByTestId('mydiv')
+      expect(div.className).toEqual(
+        'top-10 left-10 w-64 h-64 bg-slate-100 absolute flex flex-col-reverse', // flex-row-reverse is set by the control
+      )
+    })
+
+    it('set flex direction to row from column', async () => {
+      const editor = await renderTestEditorWithModel(
+        TailwindProject('flex flex-col'),
+        'await-first-dom-report',
+      )
+      await selectDiv(editor)
+      await expectSingleUndo2Saves(editor, () => clickOn(editor, 'row'))
+      const div = editor.renderedDOM.getByTestId('mydiv')
+      expect(div.className).toEqual(
+        'top-10 left-10 w-64 h-64 bg-slate-100 absolute flex flex-row', // flex-row is set by the control
+      )
     })
   })
 })

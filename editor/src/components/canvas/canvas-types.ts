@@ -594,6 +594,7 @@ export type PaddingInfo = CSSStyleProperty<CSSPadding>
 export type PaddingSideInfo = CSSStyleProperty<CSSNumber>
 export type BorderRadiusInfo = CSSStyleProperty<CSSBorderRadius>
 export type BorderRadiusCornerInfo = CSSStyleProperty<CSSNumber>
+export type ZIndexInfo = CSSStyleProperty<CSSNumber>
 
 export interface StyleInfo {
   gap: FlexGapInfo | null
@@ -615,6 +616,7 @@ export interface StyleInfo {
   borderTopRightRadius: BorderRadiusCornerInfo | null
   borderBottomRightRadius: BorderRadiusCornerInfo | null
   borderBottomLeftRadius: BorderRadiusCornerInfo | null
+  zIndex: ZIndexInfo | null
 }
 
 const emptyStyleInfo: StyleInfo = {
@@ -637,6 +639,7 @@ const emptyStyleInfo: StyleInfo = {
   borderTopRightRadius: null,
   borderBottomRightRadius: null,
   borderBottomLeftRadius: null,
+  zIndex: null,
 }
 
 export const isStyleInfoKey = (key: string): key is keyof StyleInfo => key in emptyStyleInfo

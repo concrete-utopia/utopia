@@ -84,6 +84,7 @@ export const InlineStylePlugin: StylePlugin = {
         'borderBottomLeftRadius',
         element.props,
       )
+      const zIndex = getPropertyFromInstance('zIndex', element.props)
 
       return {
         gap: gap,
@@ -105,6 +106,7 @@ export const InlineStylePlugin: StylePlugin = {
         borderTopRightRadius: borderTopRightRadius,
         borderBottomRightRadius: borderBottomRightRadius,
         borderBottomLeftRadius: borderBottomLeftRadius,
+        zIndex: zIndex,
       }
     },
   updateStyles: (editorState, elementPath, updates) => {

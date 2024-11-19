@@ -23,25 +23,37 @@ function parseTailwindProperty<T>(
 }
 
 const TailwindPropertyMapping: Record<string, string> = {
-  gap: 'gap',
-  flexDirection: 'flexDirection',
   left: 'positionLeft',
   right: 'positionRight',
   top: 'positionTop',
   bottom: 'positionBottom',
+
   width: 'width',
   height: 'height',
-  flexBasis: 'flexBasis',
+
   padding: 'padding',
   paddingTop: 'paddingTop',
   paddingRight: 'paddingRight',
   paddingBottom: 'paddingBottom',
   paddingLeft: 'paddingLeft',
+
   borderRadius: 'borderRadius',
   borderTopLeftRadius: 'borderTopLeftRadius',
   borderTopRightRadius: 'borderTopRightRadius',
   borderBottomRightRadius: 'borderBottomRightRadius',
   borderBottomLeftRadius: 'borderBottomLeftRadius',
+
+  justifyContent: 'justifyContent',
+  alignItems: 'alignItems',
+  flex: 'flex',
+  flexDirection: 'flexDirection',
+  flexGrow: 'flexGrow',
+  flexShrink: 'flexShrink',
+  flexBasis: 'flexBasis',
+  flexWrap: 'flexWrap',
+  gap: 'gap',
+
+  zIndex: 'zIndex',
 }
 
 function isSupportedTailwindProperty(prop: unknown): prop is keyof typeof TailwindPropertyMapping {
@@ -144,6 +156,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
           mapping[TailwindPropertyMapping.borderBottomLeftRadius],
           cssParsers.borderBottomLeftRadius,
         ),
+        zIndex: parseTailwindProperty(mapping[TailwindPropertyMapping.zIndex], cssParsers.zIndex),
       }
     },
   updateStyles: (editorState, elementPath, updates) => {
