@@ -478,9 +478,20 @@ describe('set border radius strategy', () => {
 
     it('border radius controls show up for elements that have tailwind border radius set', async () => {
       const editor = await renderTestEditorWithModel(
-        TailwindProject('rounded-[10px]'),
+        TailwindProject('rounded-2xl'),
         'await-first-dom-report',
       )
+      await selectComponentsForTest(editor, [fromString('sb/scene/mydiv')])
+
+      const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
+        editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),
+      )
+
+      expect(borderRadiusControls.length).toEqual(4)
+    })
+
+    it('border radius controls show up for elements that dont have tailwind border radius set', async () => {
+      const editor = await renderTestEditorWithModel(TailwindProject(''), 'await-first-dom-report')
       await selectComponentsForTest(editor, [fromString('sb/scene/mydiv')])
 
       const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
@@ -542,105 +553,211 @@ describe('set border radius strategy', () => {
           'top-28 left-28 w-28 h-28 bg-black absolute rounded-[22px] overflow-hidden',
         )
       })
-      describe('adjust border radius via handles, individually', () => {
-        it('top left', async () => {
-          const editor = await renderTestEditorWithModel(
-            TailwindProject('rounded-[10px]'),
-            'await-first-dom-report',
-          )
-          await doDragTest(editor, 'tl', 10, cmdModifier)
-          await editor.getDispatchFollowUpActionsFinished()
-          const div = editor.renderedDOM.getByTestId('mydiv')
-          expect(div.className).toEqual(
-            'top-28 left-28 w-28 h-28 bg-black absolute rounded-tl-[22px] rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px] overflow-hidden',
-          )
-        })
-
-        it('top right', async () => {
-          const editor = await renderTestEditorWithModel(
-            TailwindProject('rounded-[10px]'),
-            'await-first-dom-report',
-          )
-          await doDragTest(editor, 'tr', 10, cmdModifier)
-          await editor.getDispatchFollowUpActionsFinished()
-          const div = editor.renderedDOM.getByTestId('mydiv')
-          expect(div.className).toEqual(
-            'top-28 left-28 w-28 h-28 bg-black absolute rounded-tl-[10px] rounded-tr-[22px] rounded-br-[10px] rounded-bl-[10px] overflow-hidden',
-          )
-        })
-
-        it('bottom left', async () => {
-          const editor = await renderTestEditorWithModel(
-            TailwindProject('rounded-[10px]'),
-            'await-first-dom-report',
-          )
-          await doDragTest(editor, 'bl', 10, cmdModifier)
-          await editor.getDispatchFollowUpActionsFinished()
-          const div = editor.renderedDOM.getByTestId('mydiv')
-          expect(div.className).toEqual(
-            'top-28 left-28 w-28 h-28 bg-black absolute rounded-tl-[10px] rounded-tr-[10px] rounded-br-[10px] rounded-bl-[22px] overflow-hidden',
-          )
-        })
-
-        it('bottom right', async () => {
-          const editor = await renderTestEditorWithModel(
-            TailwindProject('rounded-[10px]'),
-            'await-first-dom-report',
-          )
-          await doDragTest(editor, 'br', 10, cmdModifier)
-          await editor.getDispatchFollowUpActionsFinished()
-          const div = editor.renderedDOM.getByTestId('mydiv')
-          expect(div.className).toEqual(
-            'top-28 left-28 w-28 h-28 bg-black absolute rounded-tl-[10px] rounded-tr-[10px] rounded-br-[22px] rounded-bl-[10px] overflow-hidden',
-          )
-        })
-      })
-
-      describe('Overflow property handling', () => {
-        it('does not overwrite existing overflow property', async () => {
-          const editor = await renderTestEditorWithModel(
-            TailwindProject('rounded-[10px] overflow-visible'),
-            'await-first-dom-report',
-          )
-          await doDragTest(editor, 'tl', 10, cmdModifier)
-          await editor.getDispatchFollowUpActionsFinished()
-          const div = editor.renderedDOM.getByTestId('mydiv')
-          expect(div.className).toEqual(
-            'top-28 left-28 w-28 h-28 bg-black absolute overflow-visible rounded-tl-[22px] rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]',
-          )
-        })
-
-        it('shows toast message', async () => {
-          const editor = await renderTestEditorWithModel(
-            TailwindProject('rounded-[10px]'),
-            'await-first-dom-report',
-          )
-          await doDragTest(editor, 'tl', 10, cmdModifier)
-          expect(editor.getEditorState().editor.toasts).toHaveLength(1)
-          expect(editor.getEditorState().editor.toasts[0]).toEqual({
-            id: 'property-added',
-            level: 'NOTICE',
-            message: 'Element now hides overflowing content',
-            persistent: false,
-          })
-        })
-      })
-
-      it('can handle 4-value syntax', async () => {
+    })
+    describe('adjust border radius via handles with non-arbitrary tailwind classes', () => {
+      it('top left', async () => {
         const editor = await renderTestEditorWithModel(
-          TailwindProject(
-            'rounded-tl-[14px] rounded-tr-[15px] rounded-br-[16px] rounded-bl-[17px] overflow-visible',
-          ),
+          TailwindProject('rounded-2xl'),
           'await-first-dom-report',
         )
-
         await doDragTest(editor, 'tl', 10, emptyModifiers)
         await editor.getDispatchFollowUpActionsFinished()
         const div = editor.renderedDOM.getByTestId('mydiv')
         expect(div.className).toEqual(
-          'top-28 left-28 w-28 h-28 bg-black absolute rounded-tl-[24px] rounded-tr-[15px] rounded-br-[16px] rounded-bl-[17px] overflow-visible',
+          'top-28 left-28 w-28 h-28 bg-black absolute rounded-[2rem] overflow-hidden',
         )
       })
+
+      it('top right', async () => {
+        const editor = await renderTestEditorWithModel(
+          TailwindProject('rounded-2xl'),
+          'await-first-dom-report',
+        )
+        await doDragTest(editor, 'tr', 10, emptyModifiers)
+        await editor.getDispatchFollowUpActionsFinished()
+        const div = editor.renderedDOM.getByTestId('mydiv')
+        expect(div.className).toEqual(
+          'top-28 left-28 w-28 h-28 bg-black absolute rounded-[2rem] overflow-hidden',
+        )
+      })
+
+      it('bottom left', async () => {
+        const editor = await renderTestEditorWithModel(
+          TailwindProject('rounded-2xl'),
+          'await-first-dom-report',
+        )
+        await doDragTest(editor, 'tl', 10, emptyModifiers)
+        await editor.getDispatchFollowUpActionsFinished()
+        const div = editor.renderedDOM.getByTestId('mydiv')
+        expect(div.className).toEqual(
+          'top-28 left-28 w-28 h-28 bg-black absolute rounded-[2rem] overflow-hidden',
+        )
+      })
+
+      it('bottom right', async () => {
+        const editor = await renderTestEditorWithModel(
+          TailwindProject('rounded-2xl'),
+          'await-first-dom-report',
+        )
+        await doDragTest(editor, 'tl', 10, emptyModifiers)
+        await editor.getDispatchFollowUpActionsFinished()
+        const div = editor.renderedDOM.getByTestId('mydiv')
+        expect(div.className).toEqual(
+          'top-28 left-28 w-28 h-28 bg-black absolute rounded-[2rem] overflow-hidden',
+        )
+      })
+    })
+    describe('adjust border radius via handles, individually', () => {
+      it('top left', async () => {
+        const editor = await renderTestEditorWithModel(
+          TailwindProject('rounded-[10px]'),
+          'await-first-dom-report',
+        )
+        await doDragTest(editor, 'tl', 10, cmdModifier)
+        await editor.getDispatchFollowUpActionsFinished()
+        const div = editor.renderedDOM.getByTestId('mydiv')
+        expect(div.className).toEqual(
+          'top-28 left-28 w-28 h-28 bg-black absolute rounded-tl-[22px] rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px] overflow-hidden',
+        )
+      })
+
+      it('top right', async () => {
+        const editor = await renderTestEditorWithModel(
+          TailwindProject('rounded-[10px]'),
+          'await-first-dom-report',
+        )
+        await doDragTest(editor, 'tr', 10, cmdModifier)
+        await editor.getDispatchFollowUpActionsFinished()
+        const div = editor.renderedDOM.getByTestId('mydiv')
+        expect(div.className).toEqual(
+          'top-28 left-28 w-28 h-28 bg-black absolute rounded-tl-[10px] rounded-tr-[22px] rounded-br-[10px] rounded-bl-[10px] overflow-hidden',
+        )
+      })
+
+      it('bottom left', async () => {
+        const editor = await renderTestEditorWithModel(
+          TailwindProject('rounded-[10px]'),
+          'await-first-dom-report',
+        )
+        await doDragTest(editor, 'bl', 10, cmdModifier)
+        await editor.getDispatchFollowUpActionsFinished()
+        const div = editor.renderedDOM.getByTestId('mydiv')
+        expect(div.className).toEqual(
+          'top-28 left-28 w-28 h-28 bg-black absolute rounded-tl-[10px] rounded-tr-[10px] rounded-br-[10px] rounded-bl-[22px] overflow-hidden',
+        )
+      })
+
+      it('bottom right', async () => {
+        const editor = await renderTestEditorWithModel(
+          TailwindProject('rounded-[10px]'),
+          'await-first-dom-report',
+        )
+        await doDragTest(editor, 'br', 10, cmdModifier)
+        await editor.getDispatchFollowUpActionsFinished()
+        const div = editor.renderedDOM.getByTestId('mydiv')
+        expect(div.className).toEqual(
+          'top-28 left-28 w-28 h-28 bg-black absolute rounded-tl-[10px] rounded-tr-[10px] rounded-br-[22px] rounded-bl-[10px] overflow-hidden',
+        )
+      })
+    })
+    describe('adjust border radius via handles, individually, with non-arbitrary tailwind classes', () => {
+      it('top left', async () => {
+        const editor = await renderTestEditorWithModel(
+          TailwindProject('rounded-2xl'),
+          'await-first-dom-report',
+        )
+        await doDragTest(editor, 'tl', 10, cmdModifier)
+        await editor.getDispatchFollowUpActionsFinished()
+        const div = editor.renderedDOM.getByTestId('mydiv')
+        expect(div.className).toEqual(
+          'top-28 left-28 w-28 h-28 bg-black absolute rounded-tl-[2rem] rounded-tr-2xl rounded-br-2xl rounded-bl-2xl overflow-hidden',
+        )
+      })
+
+      it('top right', async () => {
+        const editor = await renderTestEditorWithModel(
+          TailwindProject('rounded-2xl'),
+          'await-first-dom-report',
+        )
+        await doDragTest(editor, 'tr', 10, cmdModifier)
+        await editor.getDispatchFollowUpActionsFinished()
+        const div = editor.renderedDOM.getByTestId('mydiv')
+        expect(div.className).toEqual(
+          'top-28 left-28 w-28 h-28 bg-black absolute rounded-tl-2xl rounded-tr-[2rem] rounded-br-2xl rounded-bl-2xl overflow-hidden',
+        )
+      })
+
+      it('bottom left', async () => {
+        const editor = await renderTestEditorWithModel(
+          TailwindProject('rounded-2xl'),
+          'await-first-dom-report',
+        )
+        await doDragTest(editor, 'bl', 10, cmdModifier)
+        await editor.getDispatchFollowUpActionsFinished()
+        const div = editor.renderedDOM.getByTestId('mydiv')
+        expect(div.className).toEqual(
+          'top-28 left-28 w-28 h-28 bg-black absolute rounded-tl-2xl rounded-tr-2xl rounded-br-2xl rounded-bl-[2rem] overflow-hidden',
+        )
+      })
+
+      it('bottom right', async () => {
+        const editor = await renderTestEditorWithModel(
+          TailwindProject('rounded-2xl'),
+          'await-first-dom-report',
+        )
+        await doDragTest(editor, 'br', 10, cmdModifier)
+        await editor.getDispatchFollowUpActionsFinished()
+        const div = editor.renderedDOM.getByTestId('mydiv')
+        expect(div.className).toEqual(
+          'top-28 left-28 w-28 h-28 bg-black absolute rounded-tl-2xl rounded-tr-2xl rounded-br-[2rem] rounded-bl-2xl overflow-hidden',
+        )
+      })
+    })
+
+    describe('Overflow property handling', () => {
+      it('does not overwrite existing overflow property', async () => {
+        const editor = await renderTestEditorWithModel(
+          TailwindProject('rounded-[10px] overflow-visible'),
+          'await-first-dom-report',
+        )
+        await doDragTest(editor, 'tl', 10, cmdModifier)
+        await editor.getDispatchFollowUpActionsFinished()
+        const div = editor.renderedDOM.getByTestId('mydiv')
+        expect(div.className).toEqual(
+          'top-28 left-28 w-28 h-28 bg-black absolute overflow-visible rounded-tl-[22px] rounded-tr-[10px] rounded-br-[10px] rounded-bl-[10px]',
+        )
+      })
+
+      it('shows toast message', async () => {
+        const editor = await renderTestEditorWithModel(
+          TailwindProject('rounded-[10px]'),
+          'await-first-dom-report',
+        )
+        await doDragTest(editor, 'tl', 10, cmdModifier)
+        expect(editor.getEditorState().editor.toasts).toHaveLength(1)
+        expect(editor.getEditorState().editor.toasts[0]).toEqual({
+          id: 'property-added',
+          level: 'NOTICE',
+          message: 'Element now hides overflowing content',
+          persistent: false,
+        })
+      })
+    })
+
+    it('can handle 4-value syntax', async () => {
+      const editor = await renderTestEditorWithModel(
+        TailwindProject(
+          'rounded-tl-[14px] rounded-tr-[15px] rounded-br-[16px] rounded-bl-[17px] overflow-visible',
+        ),
+        'await-first-dom-report',
+      )
+
+      await doDragTest(editor, 'tl', 10, emptyModifiers)
+      await editor.getDispatchFollowUpActionsFinished()
+      const div = editor.renderedDOM.getByTestId('mydiv')
+      expect(div.className).toEqual(
+        'top-28 left-28 w-28 h-28 bg-black absolute rounded-tl-[24px] rounded-tr-[15px] rounded-br-[16px] rounded-bl-[17px] overflow-visible',
+      )
     })
   })
 })
