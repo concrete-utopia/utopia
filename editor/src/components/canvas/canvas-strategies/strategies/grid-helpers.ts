@@ -73,7 +73,7 @@ export function gridPositionToValue(
   return p.numericalPosition
 }
 
-export function isAutoGridPin(v: GridPositionOrSpan): boolean {
+export function isAutoGridPin(v: GridPositionOrSpan | null): boolean {
   return isCSSKeyword(v) && v.value === 'auto'
 }
 

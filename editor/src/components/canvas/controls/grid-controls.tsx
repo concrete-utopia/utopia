@@ -67,7 +67,10 @@ import {
   gridResizeHandle,
 } from '../canvas-strategies/interaction-state'
 import type { GridCellCoordinates } from '../canvas-strategies/strategies/grid-cell-bounds'
-import { gridCellTargetId } from '../canvas-strategies/strategies/grid-cell-bounds'
+import {
+  getGridChildCellCoordBoundsFromCanvas,
+  gridCellTargetId,
+} from '../canvas-strategies/strategies/grid-cell-bounds'
 import {
   getGlobalFrameOfGridCellFromMetadata,
   getGridRelatedIndexes,
@@ -76,6 +79,8 @@ import {
   getGridIdentifierContainerOrComponentPath,
   gridIdentifierToString,
   gridIdentifiersSimilar,
+  findOriginalGrid,
+  isAutoGridPin,
 } from '../canvas-strategies/strategies/grid-helpers'
 import { canResizeGridTemplate } from '../canvas-strategies/strategies/resize-grid-strategy'
 import { resizeBoundingBoxFromSide } from '../canvas-strategies/strategies/resize-helpers'
@@ -536,7 +541,7 @@ export const GridRowColumnResizingControlsComponent = ({
     'GridRowColumnResizingControls scale',
   )
 
-  const isGridItemSelected = useIsGridItemSelected()
+  const selectedGridItems = useSelectedGridItems()
 
   const gridsWithVisibleResizeControls = React.useMemo(() => {
     return grids.filter((grid) => {
@@ -573,7 +578,7 @@ export const GridRowColumnResizingControlsComponent = ({
   return (
     <CanvasOffsetWrapper>
       {gridsWithVisibleResizeControls.flatMap((grid) => {
-        if (isGridItemSelected) {
+        if (selectedGridItems.length > 0) {
           return null
         }
         return (
@@ -596,7 +601,7 @@ export const GridRowColumnResizingControlsComponent = ({
         )
       })}
       {gridsWithVisibleResizeControls.flatMap((grid) => {
-        if (isGridItemSelected) {
+        if (selectedGridItems.length > 0) {
           return null
         }
         return (
@@ -1156,7 +1161,7 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
 
   const gridsWithVisibleControls: Array<GridIdentifier> = [...targets, ...hoveredGrids]
 
-  const isGridItemSelected = useIsGridItemSelected()
+  const selectedGridItems = useSelectedGridItems()
   const isGridItemInteractionActive = useIsGridItemInteractionActive()
 
   // Uniqify the grid paths, and then sort them by depth.
@@ -1172,7 +1177,8 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
     }),
   )
 
-  const isGridItemSelectedWithoutInteraction = isGridItemSelected && !isGridItemInteractionActive
+  const isGridItemSelectedWithoutInteraction =
+    selectedGridItems.length > 0 && !isGridItemInteractionActive
 
   if (grids.length === 0) {
     return null
@@ -1201,6 +1207,10 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
               controlsVisible={shouldHaveVisibleControls ? 'visible' : 'not-visible'}
             />
           )
+        })}
+        {/* Ruler markers */}
+        {selectedGridItems.map((path) => {
+          return <RulerMarkers key={`ruler-markers-${EP.toString(path)}`} path={path} />
         })}
         <AbsoluteDistanceIndicators targetRootCell={targetRootCell} />
       </CanvasOffsetWrapper>
@@ -2148,10 +2158,176 @@ function useIsGridItemInteractionActive() {
   )
 }
 
-function useIsGridItemSelected() {
+function useSelectedGridItems(): ElementPath[] {
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-  return selectedViewsRef.current.some((selected) =>
+  return selectedViewsRef.current.filter((selected) =>
     MetadataUtils.isGridItem(jsxMetadataRef.current, selected),
   )
 }
+
+const markerIconSize = 12
+
+const RulerMarkerIndicator = React.memo(
+  (props: {
+    top: number
+    left: number
+    position: GridPositionOrSpan | null
+    axis: 'row' | 'column'
+  }) => {
+    function getIcon() {
+      const isAuto = isAutoGridPin(props.position)
+      const isSpanStart = isGridSpan(props.position)
+      const isSpanEnd = isGridSpan(props.position)
+      if (props.axis === 'column') {
+        return isAuto ? '┃' : isSpanStart ? '▶' : isSpanEnd ? '◀' : '▼'
+      } else {
+        return isAuto ? '━' : isSpanStart ? '▼' : isSpanEnd ? '▲' : '▶'
+      }
+    }
+
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: props.top - (props.axis === 'column' ? markerIconSize : 0),
+          left: props.left - (props.axis === 'row' ? markerIconSize : 0),
+          color: '#09f',
+          height: markerIconSize,
+          width: markerIconSize,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {getIcon()}
+      </div>
+    )
+  },
+)
+RulerMarkerIndicator.displayName = 'RulerMarkerIndicator'
+
+const RulerMarkers = React.memo((props: { path: ElementPath }) => {
+  const markers = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        props.path,
+      )
+      if (elementMetadata == null) {
+        return null
+      }
+
+      const elementGridProperties = elementMetadata.specialSizeMeasurements.elementGridProperties
+      if (elementGridProperties == null) {
+        return null
+      }
+
+      const originalGrid = findOriginalGrid(store.editor.jsxMetadata, EP.parentPath(props.path))
+      if (originalGrid == null) {
+        return null
+      }
+
+      const parentGridCellGlobalFrames =
+        elementMetadata.specialSizeMeasurements.parentGridCellGlobalFrames
+      if (parentGridCellGlobalFrames == null) {
+        return null
+      }
+
+      const cellBounds = getGridChildCellCoordBoundsFromCanvas(
+        elementMetadata,
+        parentGridCellGlobalFrames,
+      )
+      if (cellBounds == null) {
+        return null
+      }
+
+      const cellBoundsColumnIndex = cellBounds.column - 1
+      const firstRow = parentGridCellGlobalFrames[0]
+      const left = firstRow[cellBoundsColumnIndex].x
+      let width = firstRow[cellBoundsColumnIndex].width
+      const horizPadding =
+        firstRow.length > 1 ? firstRow[1].x - (firstRow[0].x + firstRow[0].width) : 0
+      for (let i = 1; i < cellBounds.width; i++) {
+        width += firstRow[cellBoundsColumnIndex + i].width + horizPadding
+      }
+
+      const cellBoundsRowIndex = cellBounds.row - 1
+      const firstColumn = parentGridCellGlobalFrames[cellBoundsRowIndex][0]
+      const top = firstColumn.y
+      let height = firstColumn.height
+      const vertPadding =
+        parentGridCellGlobalFrames.length > 1
+          ? parentGridCellGlobalFrames[1][0].y -
+            (parentGridCellGlobalFrames[0][0].y + parentGridCellGlobalFrames[0][0].height)
+          : 0
+      for (let i = 1; i < cellBounds.height; i++) {
+        height += firstColumn.height + vertPadding
+      }
+
+      const gridRect = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+        originalGrid,
+        store.editor.jsxMetadata,
+      )
+
+      return {
+        columnStart: {
+          top: gridRect.y,
+          left: left,
+          position: elementGridProperties.gridColumnStart,
+        },
+        columnEnd: {
+          top: gridRect.y,
+          left: left + width - markerIconSize,
+          position: elementGridProperties.gridColumnEnd,
+        },
+        rowStart: {
+          top: top,
+          left: gridRect.x,
+          position: elementGridProperties.gridRowStart,
+        },
+        rowEnd: {
+          top: top + height - markerIconSize,
+          left: gridRect.x,
+          position: elementGridProperties.gridRowEnd,
+        },
+      }
+    },
+    'RulerMarkers markers',
+  )
+
+  if (markers == null) {
+    return null
+  }
+
+  return (
+    <React.Fragment>
+      <RulerMarkerIndicator
+        top={markers.columnStart.top}
+        left={markers.columnStart.left}
+        position={markers.columnStart.position}
+        axis={'column'}
+      />
+      <RulerMarkerIndicator
+        top={markers.columnEnd.top}
+        left={markers.columnEnd.left}
+        position={markers.columnEnd.position}
+        axis={'column'}
+      />
+      <RulerMarkerIndicator
+        top={markers.rowStart.top}
+        left={markers.rowStart.left}
+        position={markers.rowStart.position}
+        axis={'row'}
+      />
+      <RulerMarkerIndicator
+        top={markers.rowEnd.top}
+        left={markers.rowEnd.left}
+        position={markers.rowEnd.position}
+        axis={'row'}
+      />
+    </React.Fragment>
+  )
+})
+RulerMarkers.displayName = 'RulerMarkers'
