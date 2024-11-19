@@ -494,6 +494,7 @@ export function getOriginalElementGridConfiguration(
   const draggingFromCellCoords = getClosestGridCellToPoint(
     gridCellGlobalFrames,
     interactionData.dragStart,
+    'exclusive',
   )?.gridCellCoordinates
   if (draggingFromCellCoords == null) {
     return null
