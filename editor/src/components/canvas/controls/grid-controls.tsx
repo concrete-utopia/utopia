@@ -116,6 +116,8 @@ import { PinOutline, usePropsOrJSXAttributes } from './position-outline'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { gridContainerIdentifier, type GridIdentifier } from '../../editor/store/editor-state'
+import type { RulerMarkerType } from './grid-controls-ruler-markers'
+import { rulerMarkerIcons } from './grid-controls-ruler-markers'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -2183,17 +2185,6 @@ type RulerMarkerPositionData = {
   bound: 'start' | 'end'
 }
 
-type RulerMarkerType = 'span-start' | 'span-end' | 'auto' | 'pinned'
-
-const rulerMarkerIcons: {
-  [key in RulerMarkerType]: { column: string; row: string }
-} = {
-  'span-start': { column: '▶', row: '▼' },
-  'span-end': { column: '◀', row: '▲' },
-  auto: { column: '┃', row: '━' },
-  pinned: { column: '▼', row: '▶' },
-}
-
 const RulerMarkers = React.memo((props: { path: ElementPath }) => {
   const markers: RulerMarkerData | null = useEditorState(
     Substores.metadata,
@@ -2323,7 +2314,7 @@ const RulerMarkerIndicator = React.memo(
       return props.axis === axis
         ? rulerMarkerIconSize
         : markerType === 'span-end'
-        ? rulerMarkerIconSize - 3 // adjust span end position so it just touches the grid line
+        ? rulerMarkerIconSize - 1 // adjust span end position so it just touches the grid line
         : rulerMarkerIconSize / 2
     }
 
