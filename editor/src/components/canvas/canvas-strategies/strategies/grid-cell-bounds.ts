@@ -68,13 +68,13 @@ export function getClosestGridCellToPointFromMetadata(
     return null
   }
 
-  return getClosestGridCellToPoint(gridCellGlobalFrames, point)
+  return getClosestGridCellToPoint(gridCellGlobalFrames, point, 'exclusive')
 }
 
 export function getClosestGridCellToPoint(
   gridCellGlobalFrames: GridCellGlobalFrames,
   point: CanvasPoint,
-  inclusive?: boolean,
+  distanceMatch: 'inclusive' | 'exclusive',
 ): TargetGridCellData | null {
   let closestCell: TargetGridCellData | null = null
   let closestDistance = Infinity
@@ -82,9 +82,10 @@ export function getClosestGridCellToPoint(
   for (let i = 0; i < gridCellGlobalFrames.length; i++) {
     for (let j = 0; j < gridCellGlobalFrames[i].length; j++) {
       const currentDistance = distanceFromPointToRectangle(point, gridCellGlobalFrames[i][j])
-      const condition = inclusive
-        ? currentDistance <= closestDistance
-        : currentDistance < closestDistance
+      const condition =
+        distanceMatch === 'inclusive'
+          ? currentDistance <= closestDistance
+          : currentDistance < closestDistance
       if (condition) {
         closestCell = {
           gridCellCoordinates: gridCellCoordinates(i + 1, j + 1),
@@ -106,7 +107,7 @@ export function getGridChildCellCoordBoundsFromCanvas(
     return null
   }
 
-  const cellOrigin = getClosestGridCellToPoint(gridCellGlobalFrames, cellFrame, true)
+  const cellOrigin = getClosestGridCellToPoint(gridCellGlobalFrames, cellFrame, 'inclusive')
   if (cellOrigin == null) {
     return null
   }
@@ -118,7 +119,7 @@ export function getGridChildCellCoordBoundsFromCanvas(
       y: cellFrame.height,
     }),
   )
-  const cellEnd = getClosestGridCellToPoint(gridCellGlobalFrames, cellEndPoint, false)
+  const cellEnd = getClosestGridCellToPoint(gridCellGlobalFrames, cellEndPoint, 'exclusive')
   if (cellEnd == null) {
     return null
   }
