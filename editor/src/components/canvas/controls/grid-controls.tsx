@@ -2173,20 +2173,18 @@ const RulerMarkerIndicator = React.memo(
     top: number
     left: number
     position: GridPositionOrSpan | null
+    counterpart: GridPositionOrSpan | null
     axis: 'row' | 'column'
+    bound: 'start' | 'end'
   }) => {
     const colorTheme = useColorTheme()
 
-    function getIcon() {
-      const isAuto = isAutoGridPin(props.position)
-      const isSpanStart = isGridSpan(props.position)
-      const isSpanEnd = isGridSpan(props.position)
-      if (props.axis === 'column') {
-        return isAuto ? '┃' : isSpanStart ? '▶' : isSpanEnd ? '◀' : '▼'
-      } else {
-        return isAuto ? '━' : isSpanStart ? '▼' : isSpanEnd ? '▲' : '▶'
-      }
-    }
+    const markerType = getMarkerType({
+      position: props.position,
+      counterpart: props.counterpart,
+      bound: props.bound,
+    })
+    const markerIcon = markerIcons[markerType][props.axis]
 
     const canvasScale = useEditorState(
       Substores.canvasOffset,
@@ -2194,12 +2192,19 @@ const RulerMarkerIndicator = React.memo(
       'RulerMarkerIndicator canvasScale',
     )
 
-    const top =
-      props.top * canvasScale -
-      (props.axis === 'column' ? rulerMarkerIconSize : rulerMarkerIconSize / 2)
-    const left =
-      props.left * canvasScale -
-      (props.axis === 'row' ? rulerMarkerIconSize : rulerMarkerIconSize / 2)
+    function skewMarkerPosition(axis: 'column' | 'row') {
+      return props.axis === axis
+        ? rulerMarkerIconSize
+        : markerType === 'span-end'
+        ? rulerMarkerIconSize - 3 // adjust span end position so it just touches the grid line
+        : rulerMarkerIconSize / 2
+    }
+
+    const scaledTop = props.top * canvasScale
+    const top = scaledTop - skewMarkerPosition('column')
+
+    const scaledLeft = props.left * canvasScale
+    const left = scaledLeft - skewMarkerPosition('row')
 
     return (
       <div
@@ -2216,7 +2221,7 @@ const RulerMarkerIndicator = React.memo(
           zoom: 1 / canvasScale,
         }}
       >
-        {getIcon()}
+        {markerIcon}
       </div>
     )
   },
@@ -2262,25 +2267,20 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
       const cellBoundsColumnIndex = cellBounds.column - 1
       const firstRow = parentGridCellGlobalFrames[0]
       const left = firstRow[cellBoundsColumnIndex].x
-      let width = firstRow[cellBoundsColumnIndex].width
-      const horizPadding =
-        firstRow.length > 1 ? firstRow[1].x - (firstRow[0].x + firstRow[0].width) : 0
-      for (let i = 1; i < cellBounds.width; i++) {
-        width += firstRow[cellBoundsColumnIndex + i].width + horizPadding
-      }
+      const width = getCanvasWidthFromBounds(
+        parentGridCellGlobalFrames,
+        cellBoundsColumnIndex,
+        cellBounds.width,
+      )
 
       const cellBoundsRowIndex = cellBounds.row - 1
       const firstColumn = parentGridCellGlobalFrames[cellBoundsRowIndex][0]
       const top = firstColumn.y
-      let height = firstColumn.height
-      const vertPadding =
-        parentGridCellGlobalFrames.length > 1
-          ? parentGridCellGlobalFrames[1][0].y -
-            (parentGridCellGlobalFrames[0][0].y + parentGridCellGlobalFrames[0][0].height)
-          : 0
-      for (let i = 1; i < cellBounds.height; i++) {
-        height += firstColumn.height + vertPadding
-      }
+      const height = getCanvasHeightFromBounds(
+        parentGridCellGlobalFrames,
+        cellBoundsRowIndex,
+        cellBounds.height,
+      )
 
       const gridRect = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
         originalGrid,
@@ -2292,21 +2292,29 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
           top: gridRect.y,
           left: left,
           position: elementGridProperties.gridColumnStart,
+          counterpart: elementGridProperties.gridColumnEnd,
+          bound: 'start',
         },
         columnEnd: {
           top: gridRect.y,
           left: left + width,
           position: elementGridProperties.gridColumnEnd,
+          counterpart: elementGridProperties.gridColumnStart,
+          bound: 'end',
         },
         rowStart: {
           top: top,
           left: gridRect.x,
           position: elementGridProperties.gridRowStart,
+          counterpart: elementGridProperties.gridRowEnd,
+          bound: 'start',
         },
         rowEnd: {
           top: top + height,
           left: gridRect.x,
           position: elementGridProperties.gridRowEnd,
+          counterpart: elementGridProperties.gridRowStart,
+          bound: 'end',
         },
       }
     },
@@ -2323,27 +2331,113 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
         top={markers.columnStart.top}
         left={markers.columnStart.left}
         position={markers.columnStart.position}
+        counterpart={markers.columnStart.counterpart}
         axis={'column'}
+        bound={markers.columnStart.bound as any}
       />
       <RulerMarkerIndicator
         top={markers.columnEnd.top}
         left={markers.columnEnd.left}
         position={markers.columnEnd.position}
+        counterpart={markers.columnEnd.counterpart}
         axis={'column'}
+        bound={markers.columnEnd.bound as any}
       />
       <RulerMarkerIndicator
         top={markers.rowStart.top}
         left={markers.rowStart.left}
         position={markers.rowStart.position}
+        counterpart={markers.rowStart.counterpart}
         axis={'row'}
+        bound={markers.rowStart.bound as any}
       />
       <RulerMarkerIndicator
         top={markers.rowEnd.top}
         left={markers.rowEnd.left}
         position={markers.rowEnd.position}
+        counterpart={markers.rowEnd.counterpart}
         axis={'row'}
+        bound={markers.rowEnd.bound as any}
       />
     </React.Fragment>
   )
 })
 RulerMarkers.displayName = 'RulerMarkers'
+
+type MarkerType = 'span-start' | 'span-end' | 'auto' | 'pinned'
+
+function getMarkerType(props: {
+  position: GridPositionOrSpan | null
+  counterpart: GridPositionOrSpan | null
+  bound: 'start' | 'end'
+}): MarkerType {
+  const isAuto =
+    isAutoGridPin(props.position) ||
+    (props.bound === 'start' && isGridSpan(props.position) && isAutoGridPin(props.counterpart))
+  const isSpanStart =
+    props.bound === 'start' && isGridSpan(props.position) && isGridSpan(props.counterpart)
+  const isSpanEnd =
+    props.bound === 'end' && (isGridSpan(props.position) || isGridSpan(props.counterpart))
+
+  if (isSpanStart) {
+    return 'span-start'
+  } else if (isSpanEnd) {
+    return 'span-end'
+  } else if (isAuto) {
+    return 'auto'
+  } else {
+    return 'pinned'
+  }
+}
+
+const markerIcons = {
+  'span-start': { column: '▶', row: '▼' },
+  'span-end': { column: '◀', row: '▲' },
+  auto: { column: '┃', row: '━' },
+  pinned: { column: '▼', row: '▶' },
+}
+
+function getCanvasWidthFromBounds(grid: CanvasRectangle[][], index: number, cells: number): number {
+  const currentRow = grid[index]
+
+  if (cells <= 1) {
+    return currentRow[index].width
+  }
+
+  function getPadding() {
+    if (currentRow.length <= 1) {
+      return 0
+    }
+    return currentRow[1].x - (currentRow[0].x + currentRow[0].width)
+  }
+  const padding = getPadding()
+
+  return currentRow.slice(index + 1, index + cells).reduce((acc, curr) => {
+    return acc + curr.width + padding
+  }, currentRow[index].width)
+}
+
+function getCanvasHeightFromBounds(
+  grid: CanvasRectangle[][],
+  index: number,
+  cells: number,
+): number {
+  const columns = grid.map((row) => row[0])
+  const currentColumn = columns[index]
+
+  if (cells <= 1) {
+    return currentColumn.height
+  }
+
+  function getPadding() {
+    if (grid.length <= 1) {
+      return 0
+    }
+    return grid[1][0].y - (grid[0][0].y + grid[0][0].height)
+  }
+  const padding = getPadding()
+
+  return columns.slice(index + 1, index + cells).reduce((acc, curr) => {
+    return acc + curr.height + padding
+  }, currentColumn.height)
+}
