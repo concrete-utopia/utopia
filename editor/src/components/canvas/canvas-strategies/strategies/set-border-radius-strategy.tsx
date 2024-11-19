@@ -8,7 +8,6 @@ import {
   isJSXElement,
   jsxElementName,
   jsxElementNameEquals,
-  modifiableAttributeIsAttributeNotFound,
 } from '../../../../core/shared/element-template'
 import type { CanvasPoint, CanvasVector, Size } from '../../../../core/shared/math-utils'
 import {
@@ -65,10 +64,6 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { deleteProperties } from '../../commands/delete-properties-command'
-import * as PP from '../../../../core/shared/property-path'
-import { withUnderlyingTarget } from '../../../editor/store/editor-state'
-import type { ProjectContentTreeRoot } from '../../../assets'
-import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attribute-utils'
 import { showToastCommand } from '../../commands/show-toast-command'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
 
@@ -593,7 +588,7 @@ function getAddOverflowHiddenCommands(
   target: ElementPath,
   styleInfo: StyleInfo | null,
 ): Array<CanvasCommand> {
-  const propertyExists = styleInfo?.overflow != null
+  const propertyExists = styleInfo?.overflow != null && styleInfo.overflow.type !== 'not-found'
   if (propertyExists) {
     return []
   }
