@@ -15,6 +15,8 @@ import type {
 } from './import-operation-types'
 import { ImportOperationResult } from './import-operation-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { sendDiscordMessage } from '../../../components/editor/server'
+import type { DiscordMessage, DiscordMessageType } from 'utopia-shared/src/types'
 
 export function startImportProcess(dispatch: EditorDispatch) {
   const actions: EditorAction[] = [
@@ -195,4 +197,52 @@ export function pauseImport(dispatch: EditorDispatch): Promise<void> {
   return new Promise((resolve) =>
     updateProjectImportStatus(dispatch, { status: 'paused', onResume: resolve }),
   )
+}
+
+export function notifyImportStatusToDiscord(importState: ImportState) {
+  const totalImportStateAndResult = getTotalImportStatusAndResult(importState)
+  if (
+    totalImportStateAndResult.importStatus.status != 'done' &&
+    totalImportStateAndResult.importStatus.status != 'paused'
+  ) {
+    return
+  }
+
+  let messageType: DiscordMessageType
+  let message: DiscordMessage
+
+  switch (totalImportStateAndResult.result) {
+    case ImportOperationResult.CriticalError:
+      messageType = 'error'
+      message = {
+        title: 'Critical Error',
+        description: 'The import process encountered a critical error and was aborted.',
+      }
+      break
+    case ImportOperationResult.Error:
+      messageType = 'error'
+      message = {
+        title: 'Error',
+        description: 'The import process encountered an error.',
+      }
+      break
+    case ImportOperationResult.Warn:
+      messageType = 'warning'
+      message = {
+        title: 'Warning',
+        description: 'The import process encountered a warning.',
+      }
+      break
+    case ImportOperationResult.Success:
+      messageType = 'success'
+      message = {
+        title: 'Success',
+        description: 'The import process completed successfully.',
+      }
+      break
+    default:
+      assertNever(totalImportStateAndResult.result)
+  }
+
+  void sendDiscordMessage('SITE_IMPORT', messageType, message)
 }
