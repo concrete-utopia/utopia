@@ -1,4 +1,4 @@
-import type { ElementPath } from 'utopia-shared/src/types'
+import type { ElementPath, JSXAttributes } from 'utopia-shared/src/types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type {
   InteractionLifecycle,
@@ -18,7 +18,9 @@ import type { EditorStateWithPatch } from '../commands/utils/property-utils'
 import { applyValuesAtPath } from '../commands/utils/property-utils'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
+import type { CSSStyleProperty } from '../canvas-types'
 import { isStyleInfoKey, type StyleInfo } from '../canvas-types'
+import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
 
 export interface UpdateCSSProp {
   type: 'set'
@@ -51,6 +53,10 @@ export type StyleUpdate = UpdateCSSProp | DeleteCSSProp
 export interface StylePlugin {
   name: string
   styleInfoFactory: StyleInfoFactory
+  readStyleFromElementProps: <T extends keyof StyleInfo>(
+    attributes: JSXAttributes,
+    prop: T,
+  ) => CSSStyleProperty<NonNullable<ParsedCSSProperties[T]>> | null
   updateStyles: (
     editorState: EditorState,
     elementPath: ElementPath,
@@ -169,7 +175,26 @@ const genericPropPatcher =
     return [makeZeroProp(prop, zeroValue)]
   }
 
-const patchers: PropPatcher[] = [{ matches: (p) => p === 'gap', patch: genericPropPatcher('0px') }]
+const PaddingLonghands = ['paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight']
+
+const patchers: PropPatcher[] = [
+  { matches: (p) => p === 'gap', patch: genericPropPatcher('0px') },
+  {
+    matches: (p) => p === 'padding',
+    patch: (_, styleInfo, updatedProperties) => {
+      const propIsSetOnElement = styleInfo?.padding != null
+
+      if (!propIsSetOnElement) {
+        return []
+      }
+
+      return PaddingLonghands.filter((p) => !updatedProperties.propertiesUpdated.includes(p)).map(
+        (p) => makeZeroProp(p),
+      )
+    },
+  },
+  { matches: (p) => PaddingLonghands.includes(p), patch: genericPropPatcher('0px') },
+]
 
 function getPropertiesToZero(
   styleInfo: StyleInfo | null,

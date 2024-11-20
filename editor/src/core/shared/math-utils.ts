@@ -183,7 +183,7 @@ export function windowRectangle(
 }
 
 export function zeroRectIfNullOrInfinity<C extends CoordinateMarker>(
-  r: MaybeInfinityRectangle<C> | null,
+  r: MaybeInfinityRectangle<C> | null | undefined,
 ): Rectangle<C> {
   return r == null || isInfinityRectangle(r) ? (zeroRectangle as Rectangle<C>) : r
 }

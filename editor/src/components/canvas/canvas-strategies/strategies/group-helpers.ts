@@ -5,7 +5,7 @@ import {
   trueUpChildrenOfGroupChanged,
 } from '../../../../components/editor/store/editor-state'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
-import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
+import type { LayoutPinnedProp, StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
 import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
 import {
   MetadataUtils,
@@ -551,7 +551,7 @@ export function isEmptyGroup(metadata: ElementInstanceMetadataMap, path: Element
   )
 }
 
-function fixLengthCommand(path: ElementPath, prop: StyleLayoutProp, size: number): CanvasCommand {
+function fixLengthCommand(path: ElementPath, prop: LayoutPinnedProp, size: number): CanvasCommand {
   return setCssLengthProperty(
     'always',
     path,

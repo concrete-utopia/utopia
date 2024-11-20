@@ -119,7 +119,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_INTERACTION_SESSION':
     case 'UPDATE_DRAG_INTERACTION_DATA':
     case 'SET_USERS_PREFERRED_STRATEGY':
-    case 'SET_ELEMENTS_TO_RERENDER':
     case 'TOGGLE_SELECTION_LOCK':
     case 'UPDATE_GITHUB_OPERATIONS':
     case 'SET_REFRESHING_DEPENDENCIES':

@@ -1,5 +1,4 @@
 import type { JSXAttributes, PropertyPath } from 'utopia-shared/src/types'
-import type { StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import * as Either from '../../../core/shared/either'
 import {
   getJSXAttributesAtPath,
@@ -9,7 +8,7 @@ import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import { getJSXElementFromProjectContents } from '../../editor/store/editor-state'
 import { cssParsers, type ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import type { CSSStyleProperty } from '../canvas-types'
+import type { CSSStyleProperty, StyleInfo } from '../canvas-types'
 import {
   cssStyleProperty,
   cssStylePropertyNotParsable,
@@ -29,7 +28,7 @@ function getPropValue(attributes: JSXAttributes, path: PropertyPath): Modifiable
   return result.attribute
 }
 
-function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(
+function getPropertyFromInstance<P extends keyof StyleInfo, T = ParsedCSSProperties[P]>(
   prop: P,
   attributes: JSXAttributes,
 ): CSSStyleProperty<NonNullable<T>> | null {
@@ -39,18 +38,24 @@ function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSPropert
   }
   const simpleValue = jsxSimpleAttributeToValue(attribute)
   if (Either.isLeft(simpleValue)) {
-    return cssStylePropertyNotParsable()
+    return cssStylePropertyNotParsable(attribute)
   }
   const parser = cssParsers[prop] as (value: unknown) => Either.Either<string, T>
   const parsed = parser(simpleValue.value)
   if (Either.isLeft(parsed) || parsed.value == null) {
-    return cssStylePropertyNotParsable()
+    return cssStylePropertyNotParsable(attribute)
   }
-  return cssStyleProperty(parsed.value)
+  return cssStyleProperty(parsed.value, attribute)
 }
 
 export const InlineStylePlugin: StylePlugin = {
   name: 'Inline Style',
+  readStyleFromElementProps: <T extends keyof StyleInfo>(
+    attributes: JSXAttributes,
+    prop: T,
+  ): CSSStyleProperty<NonNullable<ParsedCSSProperties[T]>> | null => {
+    return getPropertyFromInstance(prop, attributes)
+  },
   styleInfoFactory:
     ({ projectContents }) =>
     (elementPath) => {
@@ -68,6 +73,12 @@ export const InlineStylePlugin: StylePlugin = {
       const width = getPropertyFromInstance('width', element.props)
       const height = getPropertyFromInstance('height', element.props)
       const flexBasis = getPropertyFromInstance('flexBasis', element.props)
+      const padding = getPropertyFromInstance('padding', element.props)
+      const paddingTop = getPropertyFromInstance('paddingTop', element.props)
+      const paddingBottom = getPropertyFromInstance('paddingBottom', element.props)
+      const paddingLeft = getPropertyFromInstance('paddingLeft', element.props)
+      const paddingRight = getPropertyFromInstance('paddingRight', element.props)
+      const zIndex = getPropertyFromInstance('zIndex', element.props)
 
       return {
         gap: gap,
@@ -79,6 +90,12 @@ export const InlineStylePlugin: StylePlugin = {
         width: width,
         height: height,
         flexBasis: flexBasis,
+        padding: padding,
+        paddingTop: paddingTop,
+        paddingBottom: paddingBottom,
+        paddingLeft: paddingLeft,
+        paddingRight: paddingRight,
+        zIndex: zIndex,
       }
     },
   updateStyles: (editorState, elementPath, updates) => {

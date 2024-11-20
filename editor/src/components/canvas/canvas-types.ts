@@ -1,4 +1,5 @@
 import type { ReactElement } from 'react'
+import type { JSExpression, PartOfJSXAttributeValue } from '../../core/shared/element-template'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import type { PropertyPath, ElementPath } from '../../core/shared/project-file-types'
 import type { KeysPressed } from '../../utils/keyboard'
@@ -26,7 +27,7 @@ import type {
 import { InteractionSession } from './canvas-strategies/interaction-state'
 import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import type { MouseButtonsPressed } from '../../utils/mouse'
-import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
+import type { CSSNumber, CSSPadding, FlexDirection } from '../inspector/common/css-utils'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -543,11 +544,13 @@ interface CSSStylePropertyNotFound {
 
 interface CSSStylePropertyNotParsable {
   type: 'not-parsable'
+  originalValue: JSExpression | PartOfJSXAttributeValue
 }
 
 interface ParsedCSSStyleProperty<T> {
   type: 'property'
   tags: PropertyTag[]
+  propertyValue: JSExpression | PartOfJSXAttributeValue
   value: T
 }
 
@@ -560,12 +563,17 @@ export function cssStylePropertyNotFound(): CSSStylePropertyNotFound {
   return { type: 'not-found' }
 }
 
-export function cssStylePropertyNotParsable(): CSSStylePropertyNotParsable {
-  return { type: 'not-parsable' }
+export function cssStylePropertyNotParsable(
+  originalValue: JSExpression | PartOfJSXAttributeValue,
+): CSSStylePropertyNotParsable {
+  return { type: 'not-parsable', originalValue: originalValue }
 }
 
-export function cssStyleProperty<T>(value: T): ParsedCSSStyleProperty<T> {
-  return { type: 'property', tags: [], value: value }
+export function cssStyleProperty<T>(
+  value: T,
+  propertyValue: JSExpression | PartOfJSXAttributeValue,
+): ParsedCSSStyleProperty<T> {
+  return { type: 'property', tags: [], value: value, propertyValue: propertyValue }
 }
 
 export function maybePropertyValue<T>(property: CSSStyleProperty<T>): T | null {
@@ -584,6 +592,9 @@ export type BottomInfo = CSSStyleProperty<CSSNumber>
 export type WidthInfo = CSSStyleProperty<CSSNumber>
 export type HeightInfo = CSSStyleProperty<CSSNumber>
 export type FlexBasisInfo = CSSStyleProperty<CSSNumber>
+export type PaddingInfo = CSSStyleProperty<CSSPadding>
+export type PaddingSideInfo = CSSStyleProperty<CSSNumber>
+export type ZIndexInfo = CSSStyleProperty<CSSNumber>
 
 export interface StyleInfo {
   gap: FlexGapInfo | null
@@ -595,6 +606,12 @@ export interface StyleInfo {
   width: WidthInfo | null
   height: HeightInfo | null
   flexBasis: FlexBasisInfo | null
+  padding: PaddingInfo | null
+  paddingTop: PaddingSideInfo | null
+  paddingRight: PaddingSideInfo | null
+  paddingBottom: PaddingSideInfo | null
+  paddingLeft: PaddingSideInfo | null
+  zIndex: ZIndexInfo | null
 }
 
 const emptyStyleInfo: StyleInfo = {
@@ -607,6 +624,12 @@ const emptyStyleInfo: StyleInfo = {
   width: null,
   height: null,
   flexBasis: null,
+  padding: null,
+  paddingTop: null,
+  paddingRight: null,
+  paddingBottom: null,
+  paddingLeft: null,
+  zIndex: null,
 }
 
 export const isStyleInfoKey = (key: string): key is keyof StyleInfo => key in emptyStyleInfo

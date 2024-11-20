@@ -16,7 +16,7 @@ import type { StyleInfo } from '../canvas-types'
 
 export type CreateIfNotExistant = 'create-if-not-existing' | 'do-not-create-if-doesnt-exist'
 
-type LengthProperty = 'left' | 'right' | 'bottom' | 'top' | 'width' | 'height' | 'flexBasis'
+export type LengthProperty = 'left' | 'right' | 'bottom' | 'top' | 'width' | 'height' | 'flexBasis'
 
 type LengthPropertyPath = PropertyPath<['style', LengthProperty]>
 

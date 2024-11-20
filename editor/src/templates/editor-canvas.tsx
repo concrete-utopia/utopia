@@ -104,9 +104,9 @@ import { CursorComponent } from '../components/canvas/controls/select-mode/curso
 import { isFeatureEnabled } from '../utils/feature-switches'
 import { getCanvasViewportCenter } from './paste-helpers'
 import { DataPasteHandler, isPasteHandler } from '../utils/paste-handler'
-import { ResizeObserver } from '../components/canvas/dom-walker'
 import { isInsideColorPicker } from '../components/inspector/controls/color-picker-utils'
 import { addMouseUpHandler, removeMouseUpHandler } from './global-handlers'
+import { ResizeObserver } from '../components/canvas/observers'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 

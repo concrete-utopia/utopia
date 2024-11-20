@@ -1,34 +1,26 @@
 import { notice } from '../../../components/common/notice'
-import { isLeft, isRight, left } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import {
-  emptyComments,
-  isJSXElement,
-  jsExpressionValue,
-} from '../../../core/shared/element-template'
-import type { GetModifiableAttributeResult, ValueAtPath } from '../../../core/shared/jsx-attributes'
-import {
-  getModifiableJSXAttributeAtPath,
-  jsxSimpleAttributeToValue,
-} from '../../../core/shared/jsx-attribute-utils'
 import { roundTo } from '../../../core/shared/math-utils'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import type { EditorState } from '../../editor/store/editor-state'
 import type { CSSKeyword, CSSNumber, FlexDirection } from '../../inspector/common/css-utils'
 import {
   cssPixelLength,
-  parseCSSPercent,
   printCSSNumber,
   printCSSNumberOrKeyword,
 } from '../../inspector/common/css-utils'
-import type { CreateIfNotExistant } from './adjust-css-length-command'
-import { deleteConflictingPropsForWidthHeight } from './adjust-css-length-command'
+import type { LengthProperty } from './adjust-css-length-command'
+import {
+  deleteConflictingPropsForWidthHeight,
+  type CreateIfNotExistant,
+} from './adjust-css-length-command'
 import type { BaseCommand, CommandFunctionResult, WhenToRun } from './commands'
 import { addToastPatch } from './show-toast-command'
-import { applyValuesAtPath } from './utils/property-utils'
+import { getCSSNumberFromStyleInfo } from './utils/property-utils'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
+import type { StyleUpdate } from '../plugins/style-plugins'
+import { getActivePlugin, runStyleUpdateForStrategy } from '../plugins/style-plugins'
 
 type CssNumberOrKeepOriginalUnit =
   | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber | CSSKeyword }
@@ -45,10 +37,13 @@ export function setValueKeepingOriginalUnit(
   return { type: 'KEEP_ORIGINAL_UNIT', valuePx: valuePx, parentDimensionPx: parentDimensionPx }
 }
 
+type CSSLengthProperty = LengthProperty | 'zIndex'
+type CSSLengthPropertyPath = PropertyPath<['style', CSSLengthProperty]>
+
 export interface SetCssLengthProperty extends BaseCommand {
   type: 'SET_CSS_LENGTH_PROPERTY'
   target: ElementPath
-  property: PropertyPath
+  property: CSSLengthPropertyPath
   value: CssNumberOrKeepOriginalUnit
   parentFlexDirection: FlexDirection | null
   createIfNonExistant: CreateIfNotExistant
@@ -58,7 +53,7 @@ export interface SetCssLengthProperty extends BaseCommand {
 export function setCssLengthProperty(
   whenToRun: WhenToRun,
   target: ElementPath,
-  property: PropertyPath,
+  property: CSSLengthPropertyPath,
   value: CssNumberOrKeepOriginalUnit,
   parentFlexDirection: FlexDirection | null,
   createIfNonExistant: CreateIfNotExistant = 'create-if-not-existing', // TODO remove the default value and set it explicitly everywhere
@@ -90,33 +85,22 @@ export const runSetCssLengthProperty = (
     command.parentFlexDirection,
   )
 
-  // Identify the current value, whatever that may be.
-  const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
-    command.target,
-    editorState,
-    left(`no target element was found at path ${EP.toString(command.target)}`),
-    (_, element) => {
-      if (isJSXElement(element)) {
-        return getModifiableJSXAttributeAtPath(element.props, command.property)
-      } else {
-        return left(`No JSXElement was found at path ${EP.toString(command.target)}`)
-      }
-    },
-  )
-  if (isLeft(currentValue)) {
+  const styleInfo = getActivePlugin(editorStateWithPropsDeleted).styleInfoFactory({
+    projectContents: editorStateWithPropsDeleted.projectContents,
+  })(command.target)
+
+  if (styleInfo == null) {
     return {
       editorStatePatches: [],
-      commandDescription: `Set Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
-        command.property,
-      )} not applied as value is not writeable.`,
+      commandDescription: `Set Css Length Prop: Element not found at ${EP.toUid(command.target)}`,
     }
   }
-  const currentModifiableValue = currentValue.value
-  const simpleValueResult = jsxSimpleAttributeToValue(currentModifiableValue)
 
-  const targetPropertyNonExistant: boolean = currentModifiableValue.type === 'ATTRIBUTE_NOT_FOUND'
+  const property = command.property.propertyElements[1] // the safety of propertyElements[1] is guaranteed by the LengthPropertyPath type
+
+  const currentValue = getCSSNumberFromStyleInfo(styleInfo, property)
   if (
-    targetPropertyNonExistant &&
+    currentValue.type === 'not-found' &&
     command.createIfNonExistant === 'do-not-create-if-doesnt-exist'
   ) {
     return {
@@ -127,18 +111,18 @@ export const runSetCssLengthProperty = (
     }
   }
 
-  let propsToUpdate: Array<ValueAtPath> = []
+  let propsToUpdate: Array<StyleUpdate> = []
 
   let percentageValueWasReplaced: boolean = false
-  const javascriptExpressionValueWasReplaced: boolean = isLeft(simpleValueResult) // Left for jsxSimpleAttributeToValue means "not simple" which means a javascript expression like `5 + props.hello`
+  const javascriptExpressionValueWasReplaced = currentValue.type === 'not-css-number'
 
-  const parsePercentResult = parseCSSPercent(simpleValueResult.value)
   if (
-    isRight(parsePercentResult) &&
+    currentValue.type === 'css-number' &&
+    currentValue.number.unit === '%' &&
     command.value.type === 'KEEP_ORIGINAL_UNIT' &&
     command.value.parentDimensionPx != null
   ) {
-    const currentValuePercent = parsePercentResult.value
+    const currentValuePercent = currentValue.number
     const valueInPercent = roundTo(
       (command.value.valuePx / command.value.parentDimensionPx) * 100,
       2,
@@ -150,8 +134,9 @@ export const runSetCssLengthProperty = (
     const newValue = printCSSNumber(newValueCssNumber, null)
 
     propsToUpdate.push({
-      path: command.property,
-      value: jsExpressionValue(newValue, emptyComments),
+      type: 'set',
+      property: property,
+      value: newValue,
     })
   } else {
     const newCssValue =
@@ -161,7 +146,8 @@ export const runSetCssLengthProperty = (
 
     if (
       command.whenReplacingPercentageValues === 'warn-about-replacement' &&
-      isRight(parsePercentResult)
+      currentValue.type === 'css-number' &&
+      currentValue.number.unit === '%'
     ) {
       percentageValueWasReplaced = true
     }
@@ -169,13 +155,15 @@ export const runSetCssLengthProperty = (
     const printedValue = printCSSNumberOrKeyword(newCssValue, 'px')
 
     propsToUpdate.push({
-      path: command.property,
-      value: jsExpressionValue(printedValue, emptyComments),
+      type: 'set',
+      property: property,
+      value: printedValue,
     })
   }
 
   // Apply the update to the properties.
-  const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
+  const { editorStatePatches } = runStyleUpdateForStrategy(
+    interactionLifecycle,
     editorStateWithPropsDeleted,
     command.target,
     propsToUpdate,
@@ -183,7 +171,6 @@ export const runSetCssLengthProperty = (
 
   // Always include the property update patch, but potentially also include a warning
   // that a percentage based property was replaced with a pixel based one.
-  let editorStatePatches: Array<EditorStatePatch> = [propertyUpdatePatch]
   if (percentageValueWasReplaced) {
     editorStatePatches.push(
       addToastPatch(

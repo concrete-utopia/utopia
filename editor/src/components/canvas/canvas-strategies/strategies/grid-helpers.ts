@@ -45,6 +45,7 @@ import {
   getGridChildCellCoordBoundsFromCanvas,
   gridCellCoordinates,
 } from './grid-cell-bounds'
+import type { GridIdentifier } from '../../../editor/store/editor-state'
 
 export function gridPositionToValue(
   p: GridPositionOrSpan | null | undefined,
@@ -72,8 +73,31 @@ export function gridPositionToValue(
   return p.numericalPosition
 }
 
-export function isAutoGridPin(v: GridPositionOrSpan): boolean {
+export function isAutoGridPin(v: GridPositionOrSpan | null): boolean {
   return isCSSKeyword(v) && v.value === 'auto'
+}
+
+export function printPin(
+  gridTemplate: GridContainerProperties,
+  pin: GridPositionOrSpan,
+  axis: 'row' | 'column',
+): string | number {
+  if (isGridSpan(pin)) {
+    return stringifyGridSpan(pin)
+  }
+  if (isCSSKeyword(pin)) {
+    return pin.value
+  }
+  const tracks =
+    axis === 'column' ? gridTemplate.gridTemplateColumns : gridTemplate.gridTemplateRows
+  const maybeLineName =
+    tracks?.type === 'DIMENSIONS'
+      ? tracks.dimensions.find((_, index) => index + 1 === pin.numericalPosition)?.lineName
+      : null
+  if (maybeLineName != null) {
+    return maybeLineName
+  }
+  return pin.numericalPosition ?? 'auto'
 }
 
 export function getCommandsForGridItemPlacement(
@@ -93,25 +117,6 @@ export function getCommandsForGridItemPlacement(
     ]),
   ]
 
-  function printPin(pin: GridPositionOrSpan, axis: 'row' | 'column'): string | number {
-    if (isGridSpan(pin)) {
-      return stringifyGridSpan(pin)
-    }
-    if (isCSSKeyword(pin)) {
-      return pin.value
-    }
-    const tracks =
-      axis === 'column' ? gridTemplate.gridTemplateColumns : gridTemplate.gridTemplateRows
-    const maybeLineName =
-      tracks?.type === 'DIMENSIONS'
-        ? tracks.dimensions.find((_, index) => index + 1 === pin.numericalPosition)?.lineName
-        : null
-    if (maybeLineName != null) {
-      return maybeLineName
-    }
-    return pin.numericalPosition ?? 'auto'
-  }
-
   function serializeAxis(
     startPosition: GridPositionOrSpan,
     endPosition: GridPositionOrSpan,
@@ -126,8 +131,8 @@ export function getCommandsForGridItemPlacement(
       | 'gridRowEnd'
     value: string | number
   } {
-    const startValue = printPin(startPosition, axis)
-    const endValue = printPin(endPosition, axis)
+    const startValue = printPin(gridTemplate, startPosition, axis)
+    const endValue = printPin(gridTemplate, endPosition, axis)
 
     if (isAutoGridPin(startPosition) && !isAutoGridPin(endPosition)) {
       return {
@@ -493,6 +498,7 @@ export function getOriginalElementGridConfiguration(
   const draggingFromCellCoords = getClosestGridCellToPoint(
     gridCellGlobalFrames,
     interactionData.dragStart,
+    'exclusive',
   )?.gridCellCoordinates
   if (draggingFromCellCoords == null) {
     return null
@@ -683,4 +689,41 @@ export function gridMoveStrategiesExtraCommands(
   ]
 
   return { midInteractionCommands, onCompleteCommands }
+}
+
+export function getGridIdentifierContainerOrComponentPath(identifier: GridIdentifier): ElementPath {
+  switch (identifier.type) {
+    case 'GRID_CONTAINER':
+      return identifier.container
+    case 'GRID_ITEM':
+      return EP.parentPath(identifier.item)
+    default:
+      assertNever(identifier)
+  }
+}
+
+export function gridIdentifiersSimilar(a: GridIdentifier, b: GridIdentifier): boolean {
+  switch (a.type) {
+    case 'GRID_CONTAINER':
+      return b.type === 'GRID_CONTAINER'
+        ? EP.pathsEqual(a.container, b.container)
+        : EP.isParentOf(a.container, b.item)
+    case 'GRID_ITEM':
+      return b.type === 'GRID_ITEM'
+        ? EP.pathsEqual(a.item, b.item)
+        : EP.isParentOf(b.container, a.item)
+    default:
+      assertNever(a)
+  }
+}
+
+export function gridIdentifierToString(identifier: GridIdentifier): string {
+  switch (identifier.type) {
+    case 'GRID_CONTAINER':
+      return `${identifier.type}-${EP.toString(identifier.container)}`
+    case 'GRID_ITEM':
+      return `${identifier.type}-${EP.toString(identifier.item)}`
+    default:
+      assertNever(identifier)
+  }
 }
