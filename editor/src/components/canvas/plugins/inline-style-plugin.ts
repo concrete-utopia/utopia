@@ -1,5 +1,4 @@
 import type { JSXAttributes, PropertyPath } from 'utopia-shared/src/types'
-import type { StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import * as Either from '../../../core/shared/either'
 import {
   getJSXAttributesAtPath,
@@ -29,7 +28,7 @@ function getPropValue(attributes: JSXAttributes, path: PropertyPath): Modifiable
   return result.attribute
 }
 
-function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSProperties[P]>(
+function getPropertyFromInstance<P extends keyof StyleInfo, T = ParsedCSSProperties[P]>(
   prop: P,
   attributes: JSXAttributes,
 ): CSSStyleProperty<NonNullable<T>> | null {
@@ -51,8 +50,11 @@ function getPropertyFromInstance<P extends StyleLayoutProp, T = ParsedCSSPropert
 
 export const InlineStylePlugin: StylePlugin = {
   name: 'Inline Style',
-  readStyleFromElementProps: <T extends keyof StyleInfo>(props: JSXAttributes, key: T) => {
-    return getPropertyFromInstance(key, props) as StyleInfo[T]
+  readStyleFromElementProps: <T extends keyof StyleInfo>(
+    attributes: JSXAttributes,
+    prop: T,
+  ): CSSStyleProperty<NonNullable<ParsedCSSProperties[T]>> | null => {
+    return getPropertyFromInstance(prop, attributes)
   },
   styleInfoFactory:
     ({ projectContents }) =>

@@ -18,7 +18,9 @@ import type { EditorStateWithPatch } from '../commands/utils/property-utils'
 import { applyValuesAtPath } from '../commands/utils/property-utils'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
+import type { CSSStyleProperty } from '../canvas-types'
 import { isStyleInfoKey, type StyleInfo } from '../canvas-types'
+import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
 
 export interface UpdateCSSProp {
   type: 'set'
@@ -52,9 +54,9 @@ export interface StylePlugin {
   name: string
   styleInfoFactory: StyleInfoFactory
   readStyleFromElementProps: <T extends keyof StyleInfo>(
-    props: JSXAttributes,
-    cssProp: T,
-  ) => StyleInfo[T] | null
+    attributes: JSXAttributes,
+    prop: T,
+  ) => CSSStyleProperty<NonNullable<ParsedCSSProperties[T]>> | null
   updateStyles: (
     editorState: EditorState,
     elementPath: ElementPath,
