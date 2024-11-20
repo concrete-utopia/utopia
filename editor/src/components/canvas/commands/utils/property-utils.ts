@@ -7,7 +7,7 @@ import { modifyUnderlyingElementForOpenFile } from '../../../editor/store/editor
 import { patchParseSuccessAtElementPath } from '../patch-utils'
 import type { CSSNumber } from '../../../inspector/common/css-utils'
 import { isCSSNumber } from '../../../inspector/common/css-utils'
-import { type StyleInfo, isStyleInfoKey } from '../../canvas-types'
+import type { StyleInfo } from '../../canvas-types'
 
 export interface EditorStateWithPatch {
   editorStateWithChanges: EditorState
