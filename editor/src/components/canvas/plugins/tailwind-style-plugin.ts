@@ -155,6 +155,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
           'paddingLeft',
         ),
         zIndex: parseTailwindProperty(mapping[TailwindPropertyMapping.zIndex], 'zIndex'),
+        flexWrap: parseTailwindProperty(mapping[TailwindPropertyMapping.flexWrap], 'flexWrap'),
       }
     },
   updateStyles: (editorState, elementPath, updates) => {

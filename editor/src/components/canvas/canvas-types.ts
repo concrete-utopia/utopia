@@ -1,10 +1,8 @@
 import type { ReactElement } from 'react'
 import type { JSExpression, PartOfJSXAttributeValue } from '../../core/shared/element-template'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import type { PropertyPath, ElementPath } from '../../core/shared/project-file-types'
 import type { KeysPressed } from '../../utils/keyboard'
 import type { Modifiers } from '../../utils/modifiers'
-import { keepDeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import type {
   CanvasPoint,
   CanvasRectangle,
@@ -16,18 +14,16 @@ import type {
 import type { EditorPanel } from '../common/actions/index'
 import type { Mode } from '../editor/editor-modes'
 import type { EditorState } from '../editor/store/editor-state'
-import { OriginalCanvasAndLocalFrame } from '../editor/store/editor-state'
-import { isFeatureEnabled } from '../../utils/feature-switches'
-import { assertNever, xor } from '../../core/shared/utils'
+import { assertNever } from '../../core/shared/utils'
 import type { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import type {
   DragInteractionData,
   InteractionSessionWithoutMetadata,
 } from './canvas-strategies/interaction-state'
-import { InteractionSession } from './canvas-strategies/interaction-state'
-import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
+import type { CanvassStrategyId } from './canvas-strategies/canvas-strategy-types'
 import type { MouseButtonsPressed } from '../../utils/mouse'
 import type { CSSNumber, CSSPadding, FlexDirection } from '../inspector/common/css-utils'
+import type { FlexWrap } from 'utopia-api/core'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -595,6 +591,7 @@ export type FlexBasisInfo = CSSStyleProperty<CSSNumber>
 export type PaddingInfo = CSSStyleProperty<CSSPadding>
 export type PaddingSideInfo = CSSStyleProperty<CSSNumber>
 export type ZIndexInfo = CSSStyleProperty<CSSNumber>
+export type FlexWrapInfo = CSSStyleProperty<FlexWrap>
 
 export interface StyleInfo {
   gap: FlexGapInfo | null
@@ -612,6 +609,7 @@ export interface StyleInfo {
   paddingBottom: PaddingSideInfo | null
   paddingLeft: PaddingSideInfo | null
   zIndex: ZIndexInfo | null
+  flexWrap: FlexWrapInfo | null
 }
 
 const emptyStyleInfo: StyleInfo = {
@@ -630,6 +628,7 @@ const emptyStyleInfo: StyleInfo = {
   paddingBottom: null,
   paddingLeft: null,
   zIndex: null,
+  flexWrap: null,
 }
 
 export const isStyleInfoKey = (key: string): key is keyof StyleInfo => key in emptyStyleInfo
