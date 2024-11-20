@@ -47,6 +47,12 @@ import { assertNever } from '../../core/shared/utils'
 import { checkOnlineState } from './online-status'
 import type { GithubOperationContext } from '../../core/shared/github/operations/github-operation-context'
 import { GithubEndpoints } from '../../core/shared/github/endpoints'
+import type {
+  DiscordMessage,
+  DiscordMessageType,
+  DiscordWebhookBody,
+} from 'utopia-shared/src/types'
+import type { DiscordWebhookType } from 'utopia-shared/src/types'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -759,5 +765,23 @@ export function getBranchProjectContents(operationContext: GithubOperationContex
       }
     }
     return response.json()
+  }
+}
+
+export async function sendDiscordMessage(
+  webhookType: DiscordWebhookType,
+  messageType: DiscordMessageType,
+  message: DiscordMessage,
+) {
+  const url = urljoin(`/internal/discord/webhook`)
+  const body: DiscordWebhookBody = { webhookType, messageType, message }
+  const response = await fetch(url, {
+    method: 'POST',
+    credentials: 'include',
+    mode: MODE,
+    body: JSON.stringify(body),
+  })
+  if (!response.ok) {
+    console.error(`Send Discord message failed (${response.status}): ${response.statusText}`)
   }
 }
