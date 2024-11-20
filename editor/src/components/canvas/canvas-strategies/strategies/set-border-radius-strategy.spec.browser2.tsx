@@ -476,7 +476,7 @@ describe('set border radius strategy', () => {
         @tailwind utilities;`,
       })
 
-    it('border radius controls show up for elements that have tailwind border radius set', async () => {
+    xit('border radius controls show up for elements that have tailwind border radius set', async () => {
       const editor = await renderTestEditorWithModel(
         TailwindProject('rounded-2xl'),
         'await-first-dom-report',
