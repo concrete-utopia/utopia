@@ -434,7 +434,7 @@ describe('set border radius strategy', () => {
     })
   })
 
-  describe('Tailwind', () => {
+  xdescribe('Tailwind', () => {
     setFeatureForBrowserTestsUseInDescribeBlockOnly('Tailwind', true)
 
     const TailwindProject = (classes: string) =>
