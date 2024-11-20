@@ -100,7 +100,6 @@ import { ImportWizard } from './import-wizard/import-wizard'
 import { getImportOperationText } from './import-wizard/import-wizard-helpers'
 import { getTotalImportStatusAndResult } from '../../core/shared/import/import-operation-service'
 import type { TotalImportResult } from '../../core/shared/import/import-operation-types'
-import { AnimatePresence, motion } from 'framer-motion'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -729,27 +728,24 @@ export function LoadingEditorComponent() {
             marginTop: 10,
           }}
         >
-          <AnimatePresence>
-            {flatOngoingImportOperations.map((op) => {
+          {flatOngoingImportOperations
+            .filter((op) => op.timeDone == null)
+            .slice(0, 1)
+            .map((op) => {
               if (op.timeDone != null) {
                 return null
               }
               return (
-                <motion.li
+                <li
                   style={{
                     listStyle: 'none',
                   }}
                   key={op.id}
-                  // initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
                 >
                   {op.text}
-                </motion.li>
+                </li>
               )
             })}
-          </AnimatePresence>
         </ul>
       </div>
     </div>
