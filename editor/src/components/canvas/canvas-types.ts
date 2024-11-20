@@ -26,7 +26,13 @@ import type {
 import { InteractionSession } from './canvas-strategies/interaction-state'
 import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import type { MouseButtonsPressed } from '../../utils/mouse'
-import type { CSSNumber, CSSPadding, FlexDirection } from '../inspector/common/css-utils'
+import {
+  printCSSNumber,
+  type CSSNumber,
+  type CSSPadding,
+  type FlexDirection,
+} from '../inspector/common/css-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -625,3 +631,55 @@ const emptyStyleInfo: StyleInfo = {
 }
 
 export const isStyleInfoKey = (key: string): key is keyof StyleInfo => key in emptyStyleInfo
+
+function mapCSSStyleProperty<T, U>(
+  property: CSSStyleProperty<T> | null,
+  map: (value: T) => U,
+): U | null {
+  if (property === null || property.type !== 'property') {
+    return null
+  }
+  return map(property.value)
+}
+
+export function stringifyStyleInfo(
+  styleInfo: StyleInfo,
+): Record<keyof StyleInfo, string | number | null> {
+  return {
+    gap: mapCSSStyleProperty(styleInfo.gap, (gap) => printCSSNumber(gap, null)),
+    flexDirection: mapCSSStyleProperty(styleInfo.flexDirection, (flexDirection) => flexDirection),
+    left: mapCSSStyleProperty(styleInfo.left, (left) => printCSSNumber(left, null)),
+    right: mapCSSStyleProperty(styleInfo.right, (right) => printCSSNumber(right, null)),
+    top: mapCSSStyleProperty(styleInfo.top, (top) => printCSSNumber(top, null)),
+    bottom: mapCSSStyleProperty(styleInfo.bottom, (bottom) => printCSSNumber(bottom, null)),
+    width: mapCSSStyleProperty(styleInfo.width, (width) => printCSSNumber(width, null)),
+    height: mapCSSStyleProperty(styleInfo.height, (height) => printCSSNumber(height, null)),
+    flexBasis: mapCSSStyleProperty(styleInfo.flexBasis, (flexBasis) =>
+      printCSSNumber(flexBasis, null),
+    ),
+    padding: mapCSSStyleProperty(
+      styleInfo.padding,
+      (padding) =>
+        `${printCSSNumber(padding.paddingTop, null)} ${printCSSNumber(
+          padding.paddingRight,
+          null,
+        )} ${printCSSNumber(padding.paddingBottom, null)} ${printCSSNumber(
+          padding.paddingLeft,
+          null,
+        )}`,
+    ),
+    paddingTop: mapCSSStyleProperty(styleInfo.paddingTop, (paddingTop) =>
+      printCSSNumber(paddingTop, null),
+    ),
+    paddingRight: mapCSSStyleProperty(styleInfo.paddingRight, (paddingRight) =>
+      printCSSNumber(paddingRight, null),
+    ),
+    paddingBottom: mapCSSStyleProperty(styleInfo.paddingBottom, (paddingBottom) =>
+      printCSSNumber(paddingBottom, null),
+    ),
+    paddingLeft: mapCSSStyleProperty(styleInfo.paddingLeft, (paddingLeft) =>
+      printCSSNumber(paddingLeft, null),
+    ),
+    zIndex: mapCSSStyleProperty(styleInfo.zIndex, (zIndex) => printCSSNumber(zIndex, null)),
+  }
+}
