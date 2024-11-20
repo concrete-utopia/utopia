@@ -1069,7 +1069,7 @@ export const GridMeasurementHelpers = React.memo(() => {
   const { grids, gridItems } = useAllGrids(metadata)
 
   return (
-    <EditorStateContext.Provider value={helperControlsStore == null ? null : helperControlsStore}>
+    <EditorStateContext.Provider value={helperControlsStore}>
       <CanvasOffsetWrapper>
         {grids.map((grid) => (
           <GridMeasurementHelper
@@ -2069,7 +2069,7 @@ export const GridElementContainingBlocks = React.memo<GridElementContainingBlock
   )
 
   return (
-    <EditorStateContext.Provider value={helperControlsStore == null ? null : helperControlsStore}>
+    <EditorStateContext.Provider value={helperControlsStore}>
       <CanvasOffsetWrapper>
         {selectedGridChildElements.map((selectedGridChildElement) => {
           return (
