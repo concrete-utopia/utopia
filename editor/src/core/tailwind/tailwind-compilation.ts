@@ -60,6 +60,8 @@ function ensureElementExists({ type, id }: { type: string; id: string }) {
   return tag
 }
 
+const TailwindStylesElementID = 'utopia-tailwind-jit-styles'
+
 async function generateTailwindStyles(tailwindCss: Tailwindcss, allCSSFiles: string) {
   const contentElement = document.getElementById(CanvasContainerID)
   if (contentElement == null) {
@@ -67,8 +69,15 @@ async function generateTailwindStyles(tailwindCss: Tailwindcss, allCSSFiles: str
   }
   const content = contentElement.outerHTML
   const styleString = await tailwindCss.generateStylesFromContent(allCSSFiles, [content])
-  const style = ensureElementExists({ type: 'style', id: 'utopia-tailwind-jit-styles' })
+  const style = ensureElementExists({ type: 'style', id: TailwindStylesElementID })
   style.textContent = rescopeCSSToTargetCanvasOnly(styleString)
+}
+
+function removeTailwindStyles() {
+  const style = ensureElementExists({ type: 'style', id: TailwindStylesElementID })
+  if (style != null) {
+    style.remove()
+  }
 }
 
 function getCssFilesFromProjectContents(projectContents: ProjectContentTreeRoot) {
@@ -158,6 +167,7 @@ export const useTailwindCompilation = () => {
     generateTailwindClasses(projectContentsRef.current, requireFnRef.current)
 
     return () => {
+      removeTailwindStyles()
       observer.disconnect()
     }
   }, [isInteractionActiveRef, projectContentsRef, requireFnRef, tailwindConfig])
