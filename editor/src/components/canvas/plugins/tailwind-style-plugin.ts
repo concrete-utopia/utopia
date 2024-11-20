@@ -30,21 +30,31 @@ function parseTailwindProperty<T extends keyof StyleInfo>(
   return cssStyleProperty(parsed.value, jsExpressionValue(value, emptyComments))
 }
 
-const TailwindPropertyMapping: Record<keyof StyleInfo, string> = {
-  gap: 'gap',
-  flexDirection: 'flexDirection',
+const TailwindPropertyMapping: Record<string, string> = {
   left: 'positionLeft',
   right: 'positionRight',
   top: 'positionTop',
   bottom: 'positionBottom',
+
   width: 'width',
   height: 'height',
-  flexBasis: 'flexBasis',
+
   padding: 'padding',
   paddingTop: 'paddingTop',
   paddingRight: 'paddingRight',
   paddingBottom: 'paddingBottom',
   paddingLeft: 'paddingLeft',
+
+  justifyContent: 'justifyContent',
+  alignItems: 'alignItems',
+  flex: 'flex',
+  flexDirection: 'flexDirection',
+  flexGrow: 'flexGrow',
+  flexShrink: 'flexShrink',
+  flexBasis: 'flexBasis',
+  flexWrap: 'flexWrap',
+  gap: 'gap',
+
   zIndex: 'zIndex',
 }
 
@@ -150,7 +160,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
   updateStyles: (editorState, elementPath, updates) => {
     const propsToDelete = mapDropNulls(
       (update) =>
-        update.type !== 'delete' || !isStyleInfoKey(update.property) // TODO: make this type-safe
+        update.type !== 'delete' || TailwindPropertyMapping[update.property] == null // TODO: make this type-safe
           ? null
           : UCL.remove(TailwindPropertyMapping[update.property]),
       updates,
@@ -158,7 +168,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
 
     const propsToSet = mapDropNulls(
       (update) =>
-        update.type !== 'set' || !isStyleInfoKey(update.property) // TODO: make this type-safe
+        update.type !== 'set' || TailwindPropertyMapping[update.property] == null // TODO: make this type-safe
           ? null
           : UCL.add({
               property: TailwindPropertyMapping[update.property],

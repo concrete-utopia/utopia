@@ -615,4 +615,125 @@ describe('Grid Pin Outlines', () => {
       bottom: { x: 1781.5, y: 555.5, width: 1, height: 5 },
     })
   })
+
+  it('pinned top and left, grid rows and columns fully specified and not absolutely positioned, with a row start span', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
+      top: 5,
+      left: 12,
+      gridRowStart: 'span 2',
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({})
+  })
+  it('pinned top and left, grid rows and columns fully specified and absolutely positioned, with a row start span', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
+      position: 'absolute',
+      top: 5,
+      left: 12,
+      gridRowStart: 'span 2',
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({
+      left: { x: 688.5, y: 190.5, width: 12, height: 1 },
+      top: { x: 725.5, y: 160.5, width: 1, height: 5 },
+    })
+  })
+  it('pinned bottom and right, grid rows and columns fully specified and not absolutely positioned, with a row start span', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
+      bottom: 5,
+      right: 12,
+      gridRowStart: 'span 2',
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({})
+  })
+  it('pinned bottom and right, grid rows and columns fully specified and absolutely positioned, with a row start span', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
+      position: 'absolute',
+      bottom: 5,
+      right: 12,
+      gridRowStart: 'span 2',
+      gridColumnStart: 3,
+      gridRowEnd: 2,
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({
+      right: { x: 777.5, y: 240.5, width: 12, height: 1 },
+      bottom: { x: 751.5, y: 266.5, width: 1, height: 5 },
+    })
+  })
+  it('pinned top and left, grid rows and columns fully specified and not absolutely positioned, with a row end span', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
+      top: 5,
+      left: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 'span 2',
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({})
+  })
+  it('pinned top and left, grid rows and columns fully specified and absolutely positioned, with a row end span', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
+      position: 'absolute',
+      top: 5,
+      left: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 'span 2',
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({
+      left: { x: 688.5, y: 315.5, width: 12, height: 1 },
+      top: { x: 725.5, y: 285.5, width: 1, height: 5 },
+    })
+  })
+  it('pinned bottom and right, grid rows and columns fully specified and not absolutely positioned, with a row end span', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
+      bottom: 5,
+      right: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 'span 2',
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({})
+  })
+  it('pinned bottom and right, grid rows and columns fully specified and absolutely positioned, with a row end span', async () => {
+    const result = await testGridOutlines('storyboard/scene/grid/grid-child', {
+      position: 'absolute',
+      bottom: 5,
+      right: 12,
+      gridRowStart: 2,
+      gridColumnStart: 3,
+      gridRowEnd: 'span 2',
+      gridColumnEnd: 3,
+      width: 50,
+      height: 50,
+    })
+    expect(result).toEqual({
+      right: { x: 777.5, y: 470.5, width: 12, height: 1 },
+      bottom: { x: 751.5, y: 496.5, width: 1, height: 5 },
+    })
+  })
 })
