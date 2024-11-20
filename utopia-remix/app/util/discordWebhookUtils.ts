@@ -7,6 +7,7 @@ import type {
 import { Status } from './statusCodes'
 import { ApiError } from './errors'
 import type { UserDetails } from 'prisma-client'
+import { ServerEnvironment } from '../env.server'
 
 // these need to be decimal colors (for 'discord-webhook-node')
 const colors: Record<DiscordMessageType, number> = {
@@ -17,8 +18,7 @@ const colors: Record<DiscordMessageType, number> = {
 }
 
 const webhooksUrls: Record<DiscordWebhookType, string> = {
-  SITE_IMPORT:
-    'https://discord.com/api/webhooks/1308453828064055326/TIBbcLICvff22v6Qm5RY_UVf8oN0A6Em2akQIqQgZ5KU0GCkNvBeOwARMp4LD_RV-afi',
+  SITE_IMPORT: ServerEnvironment.DISCORD_WEBHOOK_SITE_IMPORT,
 }
 
 const webhooks: Partial<Record<DiscordWebhookType, Webhook>> = {}
@@ -57,7 +57,7 @@ export function sendDiscordMessage(
 }
 
 function hasWebhookUrl(type: DiscordWebhookType) {
-  return webhooksUrls[type] !== undefined
+  return webhooksUrls[type] != undefined && webhooksUrls[type] != ''
 }
 
 function createDiscordWebhook(url: string) {
