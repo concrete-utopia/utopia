@@ -79,7 +79,7 @@ export function getTargetGridCellData(
     return null
   }
   const mousePos = offsetPoint(interactionData.dragStart, interactionData.drag)
-  const targetCellData = getClosestGridCellToPoint(gridCellGlobalFrames, mousePos)
+  const targetCellData = getClosestGridCellToPoint(gridCellGlobalFrames, mousePos, 'exclusive')
   if (targetCellData == null) {
     return null
   }
