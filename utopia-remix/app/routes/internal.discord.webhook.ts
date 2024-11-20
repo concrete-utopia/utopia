@@ -23,8 +23,8 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 export async function handleDiscordWebhook(req: Request) {
-  await requireUser(req)
+  const user = await requireUser(req)
   const { webhookType, messageType, message } = (await req.json()) as DiscordWebhookBody
-  await sendDiscordMessage(webhookType, messageType, message)
+  await sendDiscordMessage(webhookType, messageType, message, user)
   return json({ success: true }, { status: Status.OK })
 }

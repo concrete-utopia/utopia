@@ -6,7 +6,9 @@ import type {
 } from 'utopia-shared/src/types'
 import { Status } from './statusCodes'
 import { ApiError } from './errors'
+import type { UserDetails } from 'prisma-client'
 
+// these need to be decimal colors (for 'discord-webhook-node')
 const colors: Record<DiscordMessageType, number> = {
   info: 4037805,
   success: 65340,
@@ -25,6 +27,7 @@ export function sendDiscordMessage(
   type: DiscordWebhookType,
   messageType: DiscordMessageType,
   messageDescriptor: DiscordMessage,
+  user: UserDetails,
 ): Promise<void> {
   if (!hasWebhookUrl(type)) {
     throw new ApiError(`Webhook URL for ${type} not found`, Status.NOT_FOUND)
@@ -41,11 +44,14 @@ export function sendDiscordMessage(
     message = message.setURL(messageDescriptor.url)
   }
 
-  if (messageDescriptor.fields != null) {
-    Object.entries(messageDescriptor.fields).forEach(([key, value]) => {
-      message = message.addField(key, value)
-    })
+  const fields: Record<string, string> = {
+    User: `${user.name ?? 'Unknown User'} (${user.email ?? 'Unknown Email'})`,
+    ...(messageDescriptor.fields ?? {}),
   }
+
+  Object.entries(fields).forEach(([key, value]) => {
+    message = message.addField(key, value)
+  })
 
   return webhook.send(message)
 }

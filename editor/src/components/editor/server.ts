@@ -775,13 +775,17 @@ export async function sendDiscordMessage(
 ) {
   const url = urljoin(`/internal/discord/webhook`)
   const body: DiscordWebhookBody = { webhookType, messageType, message }
-  const response = await fetch(url, {
-    method: 'POST',
-    credentials: 'include',
-    mode: MODE,
-    body: JSON.stringify(body),
-  })
-  if (!response.ok) {
-    console.error(`Send Discord message failed (${response.status}): ${response.statusText}`)
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      mode: MODE,
+      body: JSON.stringify(body),
+    })
+    if (!response.ok) {
+      console.error(`Send Discord message failed (${response.status}): ${response.statusText}`)
+    }
+  } catch (e) {
+    console.error(`Send Discord message failed: ${e}`)
   }
 }

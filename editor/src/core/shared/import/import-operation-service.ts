@@ -17,6 +17,7 @@ import { ImportOperationResult } from './import-operation-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { sendDiscordMessage } from '../../../components/editor/server'
 import type { DiscordMessage, DiscordMessageType } from 'utopia-shared/src/types'
+import { getImportOperationText } from '../../../components/editor/import-wizard/import-wizard-helpers'
 
 export function startImportProcess(dispatch: EditorDispatch) {
   const actions: EditorAction[] = [
@@ -73,6 +74,11 @@ export function notifyOperationFinished(
   setTimeout(() => {
     dispatch([updateImportOperations([operationWithTime], ImportOperationAction.Update)])
   }, 0)
+}
+
+export function notifyOperationCriticalError(dispatch: EditorDispatch, operation: ImportOperation) {
+  notifyOperationFinished(dispatch, operation, ImportOperationResult.CriticalError)
+  setTimeout(() => updateProjectImportStatus(dispatch, { status: 'done' }), 0)
 }
 
 export function areSameOperation(existing: ImportOperation, incoming: ImportOperation): boolean {
@@ -199,17 +205,43 @@ export function pauseImport(dispatch: EditorDispatch): Promise<void> {
   )
 }
 
-export function notifyImportStatusToDiscord(importState: ImportState) {
+export function notifyImportStatusToDiscord(
+  importState: ImportState,
+  projectName: string,
+  // this is for cases when the import was paused and the user left the wizard
+  forceNotify: boolean = false,
+) {
   const totalImportStateAndResult = getTotalImportStatusAndResult(importState)
-  if (
-    totalImportStateAndResult.importStatus.status != 'done' &&
-    totalImportStateAndResult.importStatus.status != 'paused'
-  ) {
+  if (totalImportStateAndResult.importStatus.status != 'done' && !forceNotify) {
     return
   }
 
   let messageType: DiscordMessageType
   let message: DiscordMessage
+
+  const importBranchOp = importState.importOperations.find((op) => op.type == 'loadBranch')
+  const githubRepo = importBranchOp?.githubRepo
+  const githubBranch = importBranchOp?.branchName
+
+  const operationsWithErrorsOrWarnings = importState.importOperations
+    .flatMap((op) => [op, ...(op.children ?? [])])
+    .filter((op) => op.result != null && op.result != ImportOperationResult.Success)
+    .reduce((acc, op) => {
+      if (op.result == null) {
+        return acc
+      }
+      acc[op.result] = acc[op.result] ?? ''
+      acc[op.result] += `- ${getImportOperationText(op)}\n`
+      return acc
+    }, {} as Record<ImportOperationResult, string>)
+
+  const fields = {
+    'Project Name': projectName,
+    'Github URL':
+      githubRepo != null ? `https://github.com/${githubRepo.owner}/${githubRepo.repository}` : '',
+    'Github Branch': githubBranch ?? '',
+    ...operationsWithErrorsOrWarnings,
+  }
 
   switch (totalImportStateAndResult.result) {
     case ImportOperationResult.CriticalError:
@@ -223,26 +255,28 @@ export function notifyImportStatusToDiscord(importState: ImportState) {
       messageType = 'error'
       message = {
         title: 'Error',
-        description: 'The import process encountered an error.',
+        description:
+          totalImportStateAndResult.importStatus.status == 'done'
+            ? 'The import process was completed with errors.'
+            : 'The import process encountered an error and was aborted by the user.',
       }
       break
     case ImportOperationResult.Warn:
       messageType = 'warning'
       message = {
         title: 'Warning',
-        description: 'The import process encountered a warning.',
+        description: 'The import process was completed with warnings.',
       }
       break
     case ImportOperationResult.Success:
-      messageType = 'success'
-      message = {
-        title: 'Success',
-        description: 'The import process completed successfully.',
-      }
-      break
+      // no message
+      return
     default:
       assertNever(totalImportStateAndResult.result)
   }
 
-  void sendDiscordMessage('SITE_IMPORT', messageType, message)
+  void sendDiscordMessage('SITE_IMPORT', messageType, {
+    ...message,
+    fields: fields,
+  })
 }
