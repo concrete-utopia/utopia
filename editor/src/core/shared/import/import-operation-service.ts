@@ -208,7 +208,7 @@ export function pauseImport(dispatch: EditorDispatch): Promise<void> {
 export function notifyImportStatusToDiscord(
   importState: ImportState,
   projectName: string,
-  // this is for cases when the import was paused, but the user left the wizard mid-import
+  // this is for cases when the import was paused, but the user left the wizard mid-process
   forceNotify: boolean = false,
 ) {
   const totalImportStateAndResult = getTotalImportStatusAndResult(importState)
