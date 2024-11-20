@@ -251,7 +251,6 @@ import type {
   SetCodeEditorVisibility,
   SetCurrentTheme,
   SetCursorOverlay,
-  SetElementsToRerender,
   SetFilebrowserDropTarget,
   SetFilebrowserRenamingTarget,
   SetFocusedElement,
@@ -5754,15 +5753,6 @@ export const UPDATE_FNS = {
       return foldAndApplyCommandsSimple(editor, commands)
     } else {
       return editor
-    }
-  },
-  SET_ELEMENTS_TO_RERENDER: (action: SetElementsToRerender, editor: EditorModel): EditorModel => {
-    return {
-      ...editor,
-      canvas: {
-        ...editor.canvas,
-        elementsToRerender: action.value,
-      },
     }
   },
   TOGGLE_SELECTION_LOCK: (action: ToggleSelectionLock, editor: EditorModel): EditorModel => {
