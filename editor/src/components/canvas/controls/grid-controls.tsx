@@ -2236,8 +2236,11 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
         return null
       }
 
-      const cellBoundsColumnIndex = cellBounds.column - 1
+      if (parentGridCellGlobalFrames.length === 0) {
+        return null
+      }
       const firstRow = parentGridCellGlobalFrames[0]
+      const cellBoundsColumnIndex = cellBounds.column - 1
       const left = firstRow[cellBoundsColumnIndex].x
       const width = getCellCanvasWidthFromBounds(
         parentGridCellGlobalFrames,
@@ -2246,6 +2249,12 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
       )
 
       const cellBoundsRowIndex = cellBounds.row - 1
+      if (
+        parentGridCellGlobalFrames.length <= cellBoundsRowIndex ||
+        parentGridCellGlobalFrames[cellBoundsRowIndex].length === 0
+      ) {
+        return null
+      }
       const firstColumn = parentGridCellGlobalFrames[cellBoundsRowIndex][0]
       const top = firstColumn.y
       const height = getCellCanvasHeightFromBounds(
