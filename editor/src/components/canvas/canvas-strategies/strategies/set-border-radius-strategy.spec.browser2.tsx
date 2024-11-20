@@ -434,7 +434,7 @@ describe('set border radius strategy', () => {
     })
   })
 
-  xdescribe('Tailwind', () => {
+  describe('Tailwind', () => {
     setFeatureForBrowserTestsUseInDescribeBlockOnly('Tailwind', true)
 
     const TailwindProject = (classes: string) =>
@@ -501,7 +501,7 @@ describe('set border radius strategy', () => {
       expect(borderRadiusControls.length).toEqual(4)
     })
 
-    describe('adjust border radius via handles', () => {
+    xdescribe('adjust border radius via handles', () => {
       it('top left', async () => {
         const editor = await renderTestEditorWithModel(
           TailwindProject('rounded-[10px]'),
@@ -554,7 +554,7 @@ describe('set border radius strategy', () => {
         )
       })
     })
-    describe('adjust border radius via handles with non-arbitrary tailwind classes', () => {
+    xdescribe('adjust border radius via handles with non-arbitrary tailwind classes', () => {
       it('top left', async () => {
         const editor = await renderTestEditorWithModel(
           TailwindProject('rounded-2xl'),
@@ -607,7 +607,7 @@ describe('set border radius strategy', () => {
         )
       })
     })
-    describe('adjust border radius via handles, individually', () => {
+    xdescribe('adjust border radius via handles, individually', () => {
       it('top left', async () => {
         const editor = await renderTestEditorWithModel(
           TailwindProject('rounded-[10px]'),
@@ -660,7 +660,7 @@ describe('set border radius strategy', () => {
         )
       })
     })
-    describe('adjust border radius via handles, individually, with non-arbitrary tailwind classes', () => {
+    xdescribe('adjust border radius via handles, individually, with non-arbitrary tailwind classes', () => {
       it('top left', async () => {
         const editor = await renderTestEditorWithModel(
           TailwindProject('rounded-2xl'),
@@ -714,7 +714,7 @@ describe('set border radius strategy', () => {
       })
     })
 
-    describe('Overflow property handling', () => {
+    xdescribe('Overflow property handling', () => {
       it('does not overwrite existing overflow property', async () => {
         const editor = await renderTestEditorWithModel(
           TailwindProject('rounded-[10px] overflow-visible'),
