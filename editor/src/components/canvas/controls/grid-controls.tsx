@@ -2406,6 +2406,9 @@ function getCellCanvasWidthFromBounds(
   }
 
   const currentRow = grid[index]
+  if (currentRow.length <= index) {
+    return 0
+  }
 
   if (cells <= 1) {
     return currentRow[index].width
