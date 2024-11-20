@@ -20,7 +20,7 @@ import type {
   DragInteractionData,
   InteractionSessionWithoutMetadata,
 } from './canvas-strategies/interaction-state'
-import type { CanvassStrategyId } from './canvas-strategies/canvas-strategy-types'
+import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import type { MouseButtonsPressed } from '../../utils/mouse'
 import type { CSSNumber, CSSPadding, FlexDirection } from '../inspector/common/css-utils'
 import type { FlexWrap } from 'utopia-api/core'
