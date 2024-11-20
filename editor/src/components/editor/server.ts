@@ -773,10 +773,9 @@ export async function sendDiscordMessage(
   messageType: DiscordMessageType,
   message: DiscordMessage,
 ) {
-  const url = urljoin(`/internal/discord/webhook`)
   const body: DiscordWebhookBody = { webhookType, messageType, message }
   try {
-    const response = await fetch(url, {
+    const response = await fetch(`/internal/discord/webhook`, {
       method: 'POST',
       credentials: 'include',
       mode: MODE,
