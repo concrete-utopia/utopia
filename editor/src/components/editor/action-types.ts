@@ -1104,11 +1104,6 @@ export interface RunEscapeHatch {
   setHuggingParentToFixed: SetHuggingParentToFixed
 }
 
-export interface SetElementsToRerender {
-  action: 'SET_ELEMENTS_TO_RERENDER'
-  value: ElementsToRerender
-}
-
 export type ToggleSelectionLock = {
   action: 'TOGGLE_SELECTION_LOCK'
   targets: Array<ElementPath>
@@ -1376,7 +1371,6 @@ export type EditorAction =
   | SetResizeOptionsTargetOptions
   | ForceParseFile
   | RunEscapeHatch
-  | SetElementsToRerender
   | ToggleSelectionLock
   | UpdateAgainstGithub
   | SetImageDragSessionState

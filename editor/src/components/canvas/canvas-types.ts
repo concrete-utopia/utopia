@@ -1,4 +1,5 @@
 import type { ReactElement } from 'react'
+import type { JSExpression, PartOfJSXAttributeValue } from '../../core/shared/element-template'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import type { PropertyPath, ElementPath } from '../../core/shared/project-file-types'
 import type { KeysPressed } from '../../utils/keyboard'
@@ -543,11 +544,13 @@ interface CSSStylePropertyNotFound {
 
 interface CSSStylePropertyNotParsable {
   type: 'not-parsable'
+  originalValue: JSExpression | PartOfJSXAttributeValue
 }
 
 interface ParsedCSSStyleProperty<T> {
   type: 'property'
   tags: PropertyTag[]
+  propertyValue: JSExpression | PartOfJSXAttributeValue
   value: T
 }
 
@@ -560,12 +563,17 @@ export function cssStylePropertyNotFound(): CSSStylePropertyNotFound {
   return { type: 'not-found' }
 }
 
-export function cssStylePropertyNotParsable(): CSSStylePropertyNotParsable {
-  return { type: 'not-parsable' }
+export function cssStylePropertyNotParsable(
+  originalValue: JSExpression | PartOfJSXAttributeValue,
+): CSSStylePropertyNotParsable {
+  return { type: 'not-parsable', originalValue: originalValue }
 }
 
-export function cssStyleProperty<T>(value: T): ParsedCSSStyleProperty<T> {
-  return { type: 'property', tags: [], value: value }
+export function cssStyleProperty<T>(
+  value: T,
+  propertyValue: JSExpression | PartOfJSXAttributeValue,
+): ParsedCSSStyleProperty<T> {
+  return { type: 'property', tags: [], value: value, propertyValue: propertyValue }
 }
 
 export function maybePropertyValue<T>(property: CSSStyleProperty<T>): T | null {
