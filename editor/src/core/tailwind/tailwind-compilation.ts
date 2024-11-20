@@ -74,7 +74,7 @@ async function generateTailwindStyles(tailwindCss: Tailwindcss, allCSSFiles: str
 }
 
 function removeTailwindStyles() {
-  const style = ensureElementExists({ type: 'style', id: TailwindStylesElementID })
+  const style = document.getElementById(TailwindStylesElementID)
   if (style != null) {
     style.remove()
   }
