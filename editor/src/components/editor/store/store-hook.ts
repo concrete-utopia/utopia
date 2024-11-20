@@ -80,6 +80,8 @@ export const EditorStateContext = React.createContext<UtopiaStoreAPI | null>(nul
 EditorStateContext.displayName = 'EditorStateContext'
 export const CanvasStateContext = React.createContext<UtopiaStoreAPI | null>(null)
 CanvasStateContext.displayName = 'CanvasStateContext'
+export const HelperControlsStateContext = React.createContext<UtopiaStoreAPI | null>(null)
+HelperControlsStateContext.displayName = 'HelperControlsStateContext'
 export const LowPriorityStateContext = React.createContext<UtopiaStoreAPI | null>(null)
 LowPriorityStateContext.displayName = 'LowPriorityStateContext'
 
