@@ -29,10 +29,7 @@ export function sendDiscordMessage(
   messageDescriptor: DiscordMessage,
   user: UserDetails,
 ): Promise<void> {
-  if (!hasWebhookUrl(type)) {
-    throw new ApiError(`Webhook URL for ${type} not found`, Status.NOT_FOUND)
-  }
-  const webhook = webhooks[type] || createDiscordWebhook(webhooksUrls[type])
+  const webhook = getWebhook(type)
 
   let message = new MessageBuilder()
     .setTitle(messageDescriptor.title)
@@ -58,6 +55,16 @@ export function sendDiscordMessage(
 
 function hasWebhookUrl(type: DiscordWebhookType) {
   return webhooksUrls[type] != undefined && webhooksUrls[type] != ''
+}
+
+function getWebhook(type: DiscordWebhookType) {
+  if (!hasWebhookUrl(type)) {
+    throw new ApiError(`Webhook URL for ${type} not found`, Status.NOT_FOUND)
+  }
+  if (webhooks[type] == null) {
+    webhooks[type] = createDiscordWebhook(webhooksUrls[type])
+  }
+  return webhooks[type]
 }
 
 function createDiscordWebhook(url: string) {
