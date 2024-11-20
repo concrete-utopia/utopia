@@ -2335,11 +2335,13 @@ const RulerMarkerIndicator = React.memo(
     )
 
     function skewMarkerPosition(axis: 'column' | 'row') {
-      return props.axis === axis
-        ? rulerMarkerIconSize
-        : markerType === 'span-end'
-        ? rulerMarkerIconSize - 1 // adjust span end position so it just touches the grid line
-        : rulerMarkerIconSize / 2
+      if (props.axis === axis) {
+        return rulerMarkerIconSize
+      } else if (markerType === 'span-end') {
+        return rulerMarkerIconSize - 1 // adjust span end position so it just touches the grid line
+      } else {
+        return rulerMarkerIconSize / 2
+      }
     }
 
     const scaledTop = props.marker.top * canvasScale
