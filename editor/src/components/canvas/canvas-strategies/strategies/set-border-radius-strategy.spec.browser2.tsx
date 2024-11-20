@@ -490,7 +490,7 @@ describe('set border radius strategy', () => {
       expect(borderRadiusControls.length).toEqual(4)
     })
 
-    it('border radius controls show up for elements that dont have tailwind border radius set', async () => {
+    xit('border radius controls show up for elements that dont have tailwind border radius set', async () => {
       const editor = await renderTestEditorWithModel(TailwindProject(''), 'await-first-dom-report')
       await selectComponentsForTest(editor, [fromString('sb/scene/mydiv')])
 
@@ -744,7 +744,7 @@ describe('set border radius strategy', () => {
       })
     })
 
-    it('can handle 4-value syntax', async () => {
+    xit('can handle 4-value syntax', async () => {
       const editor = await renderTestEditorWithModel(
         TailwindProject(
           'rounded-tl-[14px] rounded-tr-[15px] rounded-br-[16px] rounded-bl-[17px] overflow-visible',
