@@ -1732,6 +1732,7 @@ export const UPDATE_FNS = {
   },
   UNSET_PROPERTY: (action: UnsetProperty, editor: EditorModel): EditorModel => {
     // TODO also queue group true up, just like for SET_PROP
+    // TODO this used to fire a toast if the prop couldn't be removed
     return foldAndApplyCommandsSimple(editor, [
       deleteProperties('always', action.element, [action.property]),
     ])
