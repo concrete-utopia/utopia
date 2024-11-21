@@ -22,7 +22,7 @@ import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
 import { getMetadata } from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import type { FixedHugFill } from '../../../inspector/inspector-common'
+import type { DetectedFillHugFixedState, FixedHugFill } from '../../../inspector/inspector-common'
 import { detectFillHugFixedState } from '../../../inspector/inspector-common'
 import { getAllTargetsUnderAreaAABB } from '../../dom-lookup'
 import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
@@ -112,6 +112,31 @@ function sizeLabelChildren(h: string, v: string): SizeLabelChildren {
 
 export type SizeLabelContents = SizeLabelSize | SizeLabelGroup | SizeLabelChildren
 
+function detectedStateToOutputValue(
+  detectedState: DetectedFillHugFixedState | null,
+): FixedHugFill['type'] | CSSNumber | null {
+  if (detectedState == null || detectedState.fixedHugFill == null) {
+    return null
+  }
+  switch (detectedState.fixedHugFill.type) {
+    case 'hug':
+    case 'squeeze':
+    case 'collapsed':
+    case 'stretch':
+      return detectedState.fixedHugFill.type
+    case 'hug-group':
+      return 'hug'
+    case 'fixed':
+    case 'fill':
+    case 'computed':
+    case 'detected':
+    case 'scaled':
+      return detectedState.fixedHugFill.value
+    default:
+      assertNever(detectedState.fixedHugFill)
+  }
+}
+
 function sizeLabelContents(
   metadata: ElementInstanceMetadataMap,
   selectedElements: Array<ElementPath>,
@@ -146,28 +171,16 @@ function sizeLabelContents(
       return null
     }
 
-    const width = flatMapEither(
-      (value) => parseCSSNumber(value, 'AnyValid'),
-      getSimpleAttributeAtPath(right(element.props), PP.create('style', 'width')),
-    )
-    const height = flatMapEither(
-      (value) => parseCSSNumber(value, 'AnyValid'),
-      getSimpleAttributeAtPath(right(element.props), PP.create('style', 'height')),
-    )
-
     const globalFrame = elementMetadata.globalFrame
     if (globalFrame == null || isInfinityRectangle(globalFrame)) {
       return null
     }
 
-    const horizontal =
-      defaultEither(null, width) ??
-      detectFillHugFixedState('horizontal', metadata, selectedElement).fixedHugFill?.type ??
-      'fixed'
-    const vertical =
-      defaultEither(null, height) ??
-      detectFillHugFixedState('vertical', metadata, selectedElement).fixedHugFill?.type ??
-      'fixed'
+    const horizontalState = detectFillHugFixedState('horizontal', metadata, selectedElement)
+    const verticalState = detectFillHugFixedState('vertical', metadata, selectedElement)
+
+    const horizontal = detectedStateToOutputValue(horizontalState) ?? 'fixed'
+    const vertical = detectedStateToOutputValue(verticalState) ?? 'fixed'
 
     if (pathsWereReplaced) {
       return sizeLabelChildren(
