@@ -28,12 +28,14 @@ import {
 import type { CanvasPoint, CanvasRectangle, LocalRectangle } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
+  canvasRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
   nullIfInfinity,
   pointsEqual,
   scaleRect,
   windowPoint,
+  windowRectangle,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import {
@@ -120,6 +122,12 @@ import { gridContainerIdentifier, type GridIdentifier } from '../../editor/store
 import type { RulerMarkerType } from './grid-controls-ruler-markers'
 import { rulerMarkerIcons } from './grid-controls-ruler-markers'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import {
+  getCanvasBounds,
+  useGetFrameWhenOutsideBounds,
+} from './elements-outside-visible-area-hooks'
+import { useSetAtom } from 'jotai'
+import { showRulersAtom } from '../../editor/canvas-toolbar'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -2203,7 +2211,16 @@ type RulerMarkerPositionData = {
   bound: 'start' | 'end'
 }
 
+const navigatorWidth = 265
+const topbarHeight = 40
+
 const RulerMarkers = React.memo((props: { path: ElementPath }) => {
+  const canvasOffset = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.roundedCanvasOffset,
+    'GridResizingControl canvasOffset',
+  )
+
   const markers: RulerMarkerData | null = useEditorState(
     Substores.metadata,
     (store) => {
@@ -2304,28 +2321,139 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
     'RulerMarkers markers',
   )
 
+  const isNavigatorOpen = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.leftMenu.visible,
+    'RulerMarkers isNavigatorOpen',
+  )
+  const canvasBounds = getCanvasBounds()
+
+  const isOutsideBounds = useGetFrameWhenOutsideBounds(
+    canvasBounds != null
+      ? windowRectangle({
+          x: canvasBounds.x + (isNavigatorOpen ? navigatorWidth + 10 : 0),
+          y: canvasBounds.y + topbarHeight,
+          width: canvasBounds.width,
+          height: canvasBounds.height,
+        })
+      : null,
+  )
+
+  const stickyColumnStart =
+    isOutsideBounds(
+      canvasRectangle({
+        y: (markers?.columnStart.top ?? 0) - rulerMarkerIconSize * 2,
+        x: (markers?.columnStart.left ?? 0) - rulerMarkerIconSize * 2,
+        width: rulerMarkerIconSize,
+        height: rulerMarkerIconSize,
+      }),
+    ) != null
+  const stickyColumnEnd =
+    isOutsideBounds(
+      canvasRectangle({
+        y: (markers?.columnEnd.top ?? 0) - rulerMarkerIconSize * 2,
+        x: (markers?.columnEnd.left ?? 0) - rulerMarkerIconSize * 2,
+        width: rulerMarkerIconSize,
+        height: rulerMarkerIconSize,
+      }),
+    ) != null
+  const stickyRowStart =
+    isOutsideBounds(
+      canvasRectangle({
+        y: (markers?.rowStart.top ?? 0) - rulerMarkerIconSize * 2,
+        x: (markers?.rowStart.left ?? 0) - rulerMarkerIconSize * 2,
+        width: rulerMarkerIconSize,
+        height: rulerMarkerIconSize,
+      }),
+    ) != null
+  const stickyRowEnd =
+    isOutsideBounds(
+      canvasRectangle({
+        y: (markers?.rowEnd.top ?? 0) - rulerMarkerIconSize * 2,
+        x: (markers?.rowEnd.left ?? 0) - rulerMarkerIconSize * 2,
+        width: rulerMarkerIconSize,
+        height: rulerMarkerIconSize,
+      }),
+    ) != null
+
+  const showRulers = useSetAtom(showRulersAtom)
+  React.useEffect(() => {
+    if (!isFeatureEnabled('Grid Ruler Markers sticky (window)')) {
+      return
+    }
+    // horrible hack
+    showRulers(stickyColumnEnd || stickyColumnStart)
+  }, [stickyColumnEnd, stickyColumnStart, showRulers])
+
   if (markers == null) {
     return null
   }
 
   return (
     <React.Fragment>
+      {when(
+        isFeatureEnabled('Grid Ruler Markers sticky (window)') &&
+          (stickyColumnStart || stickyColumnEnd),
+        <div
+          style={{
+            position: 'absolute',
+            top: -canvasOffset.y,
+            left: -canvasOffset.x,
+            width: '100vw',
+            height: 20,
+            background: 'white',
+            borderBottom: '1px solid #ccc',
+            boxShadow: '0px 2px 3px #00000022',
+            display: 'flex',
+            justifyContent: 'space-evenly',
+          }}
+          css={{
+            opacity: 0.5,
+          }}
+        />,
+      )}
+      {when(
+        isFeatureEnabled('Grid Ruler Markers sticky (window)') && (stickyRowStart || stickyRowEnd),
+        <div
+          style={{
+            position: 'absolute',
+            top: -canvasOffset.y,
+            left: -canvasOffset.x + (isNavigatorOpen ? 263 : 0),
+            height: '100vw',
+            width: 20,
+            background: 'white',
+            borderRight: '1px solid #ccc',
+            boxShadow: '2px 0px 3px #00000022',
+          }}
+          css={{
+            opacity: 0.5,
+          }}
+        />,
+      )}
       <RulerMarkerIndicator
         parentGrid={markers.parentGrid}
         marker={markers.columnStart}
         axis={'column'}
+        sticky={stickyColumnStart}
       />
       <RulerMarkerIndicator
         parentGrid={markers.parentGrid}
         marker={markers.columnEnd}
         axis={'column'}
+        sticky={stickyColumnEnd}
       />
       <RulerMarkerIndicator
         parentGrid={markers.parentGrid}
         marker={markers.rowStart}
         axis={'row'}
+        sticky={stickyRowStart}
       />
-      <RulerMarkerIndicator parentGrid={markers.parentGrid} marker={markers.rowEnd} axis={'row'} />
+      <RulerMarkerIndicator
+        parentGrid={markers.parentGrid}
+        marker={markers.rowEnd}
+        axis={'row'}
+        sticky={stickyRowEnd}
+      />
     </React.Fragment>
   )
 })
@@ -2336,8 +2464,17 @@ const RulerMarkerIndicator = React.memo(
     parentGrid: GridContainerProperties
     marker: RulerMarkerPositionData
     axis: 'row' | 'column'
+    sticky: boolean
   }) => {
     const colorTheme = useColorTheme()
+
+    const sticky = isFeatureEnabled('Grid Ruler Markers sticky (window)') && props.sticky
+
+    const canvasOffset = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.roundedCanvasOffset,
+      'GridResizingControl canvasOffset',
+    )
 
     const markerType = getRulerMarkerType({
       position: props.marker.position,
@@ -2370,12 +2507,21 @@ const RulerMarkerIndicator = React.memo(
 
     const labelClass = 'ruler-marker-label'
 
+    const isNavigatorOpen = useEditorState(
+      Substores.restOfEditor,
+      (store) => store.editor.leftMenu.visible,
+      'RulerMarkerIndicator isNavigatorOpen',
+    )
+
     return (
       <div
         style={{
-          position: 'absolute',
-          top: top,
-          left: left,
+          position: 'fixed',
+          top: sticky && props.axis === 'column' ? -canvasOffset.y + 5 : top,
+          left:
+            sticky && props.axis === 'row'
+              ? -canvasOffset.x + (isNavigatorOpen ? navigatorWidth : 0) + 5
+              : left,
           color: colorTheme.primary.value,
           maxHeight: rulerMarkerIconSize,
           maxWidth: rulerMarkerIconSize,

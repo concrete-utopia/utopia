@@ -25,6 +25,7 @@ export type FeatureName =
   | 'Import Wizard'
   | 'Show Debug Features'
   | 'Grid Ruler Markers'
+  | 'Grid Ruler Markers sticky (window)'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -50,6 +51,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Tailwind',
   'Import Wizard',
   'Grid Ruler Markers',
+  'Grid Ruler Markers sticky (window)',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -75,6 +77,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Import Wizard': !IS_TEST_ENVIRONMENT,
   'Show Debug Features': false,
   'Grid Ruler Markers': false,
+  'Grid Ruler Markers sticky (window)': false,
 }
 
 export const STEGANOGRAPHY_ENABLED = false

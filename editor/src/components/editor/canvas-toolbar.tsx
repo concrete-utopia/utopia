@@ -4,8 +4,7 @@
 import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
-import { Button, Icons, LargerIcons, SmallerIcons, Tile, UtopiaStyles, opacity } from '../../uuiui'
-import { UtopiaTheme } from '../../uuiui'
+import { Button, Tile, UtopiaStyles } from '../../uuiui'
 import {
   colorTheme,
   FlexColumn,
@@ -38,19 +37,12 @@ import { useToolbarMode } from './canvas-toolbar-states'
 import { unless, when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
 import { stopPropagation } from '../inspector/common/inspector-utils'
-import { useWrapInDiv } from './wrap-in-callbacks'
 import { RemixNavigationBar } from './remix-navigation-bar'
-import {
-  type InsertableComponent,
-  fragmentComponentInfo,
-  fragmentElementsDescriptors,
-  insertableComponentGroupFragment,
-} from '../shared/project-components'
+import { type InsertableComponent } from '../shared/project-components'
 import { setFocus } from '../common/actions'
 import type { CanvasStrategyIcon } from '../canvas/canvas-strategies/canvas-strategy-types'
 import { isLoggedIn } from './action-types'
 import type { EditorDispatch } from './action-types'
-import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
 import { useGetInsertableComponents } from '../canvas/ui/floating-insert-menu'
 import { RightMenuTab } from './store/editor-state'
 import { useStatus, useThreads } from '../../../liveblocks.config'
@@ -60,7 +52,7 @@ import { pluck } from '../../core/shared/array-utils'
 import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
 import { ComponentPicker } from '../navigator/navigator-item/component-picker'
 import { insertComponentPickerItem } from '../navigator/navigator-item/component-picker-context-menu'
-import { useAtom } from 'jotai'
+import { atom, useAtom } from 'jotai'
 import { ActiveRemixSceneAtom } from '../canvas/remix/utopia-remix-root-component'
 import * as EP from '../../core/shared/element-path'
 import { NO_OP } from '../../core/shared/utils'
@@ -74,6 +66,8 @@ import {
   shortcutDetailsWithDefaults,
 } from './shortcut-definitions'
 import { LowPriorityStoreProvider } from './store/store-context-providers'
+
+export const showRulersAtom = atom(false)
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertOrEditTextButtonTestId = 'insert-or-edit-text-button'
@@ -405,6 +399,8 @@ export const CanvasToolbar = React.memo(() => {
     [commentButtonTestId],
   )
 
+  const [showRulers] = useAtom(showRulersAtom)
+
   return (
     <FlexColumn
       style={{ alignItems: 'start', justifySelf: 'center' }}
@@ -412,6 +408,13 @@ export const CanvasToolbar = React.memo(() => {
       onClick={stopPropagation}
       onMouseDown={focusCanvasOnMouseDown}
       onMouseUp={stopPropagation}
+      css={{
+        opacity: showRulers ? 0.15 : 1,
+        transition: 'opacity .2s ease-out',
+        ':hover': {
+          opacity: 1,
+        },
+      }}
     >
       <div
         id={CanvasToolbarId}
