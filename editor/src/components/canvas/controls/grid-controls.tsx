@@ -128,6 +128,7 @@ import {
   useGridMeasurementHelperData,
 } from './grid-measurements'
 import type { Property } from 'csstype'
+import { isInsertMode, isSelectMode } from '../../editor/editor-modes'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -1059,7 +1060,6 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
 GridControl.displayName = 'GridControl'
 
 export const GridMeasurementHelpers = React.memo(() => {
-  const helperControlsStore = React.useContext(HelperControlsStateContext)
   const metadata = useEditorState(
     Substores.metadata,
     (store) => store.editor.jsxMetadata,
@@ -1069,24 +1069,22 @@ export const GridMeasurementHelpers = React.memo(() => {
   const { grids, gridItems } = useAllGrids(metadata)
 
   return (
-    <EditorStateContext.Provider value={helperControlsStore}>
-      <CanvasOffsetWrapper>
-        {grids.map((grid) => (
-          <GridMeasurementHelper
-            key={GridMeasurementHelpersKey(grid)}
-            elementPath={grid}
-            source='element'
-          />
-        ))}
-        {gridItems.map((gridItem) => (
-          <GridMeasurementHelper
-            key={GridMeasurementHelpersKey(gridItem)}
-            elementPath={gridItem}
-            source='parent'
-          />
-        ))}
-      </CanvasOffsetWrapper>
-    </EditorStateContext.Provider>
+    <CanvasOffsetWrapper>
+      {grids.map((grid) => (
+        <GridMeasurementHelper
+          key={GridMeasurementHelpersKey(grid)}
+          elementPath={grid}
+          source='element'
+        />
+      ))}
+      {gridItems.map((gridItem) => (
+        <GridMeasurementHelper
+          key={GridMeasurementHelpersKey(gridItem)}
+          elementPath={gridItem}
+          source='parent'
+        />
+      ))}
+    </CanvasOffsetWrapper>
   )
 })
 GridMeasurementHelpers.displayName = 'GridMeasurementHelpers'
@@ -2054,7 +2052,6 @@ GridElementContainingBlock.displayName = 'GridElementContainingBlock'
 export interface GridElementContainingBlocksProps {}
 
 export const GridElementContainingBlocks = React.memo<GridElementContainingBlocksProps>((props) => {
-  const helperControlsStore = React.useContext(HelperControlsStateContext)
   const selectedGridChildElements = useEditorState(
     Substores.metadata,
     (store) => {
@@ -2069,19 +2066,17 @@ export const GridElementContainingBlocks = React.memo<GridElementContainingBlock
   )
 
   return (
-    <EditorStateContext.Provider value={helperControlsStore}>
-      <CanvasOffsetWrapper>
-        {selectedGridChildElements.map((selectedGridChildElement) => {
-          return (
-            <GridElementContainingBlock
-              key={GridElementContainingBlockKey(selectedGridChildElement)}
-              gridPath={EP.parentPath(selectedGridChildElement)}
-              gridChild={selectedGridChildElement}
-            />
-          )
-        })}
-      </CanvasOffsetWrapper>
-    </EditorStateContext.Provider>
+    <CanvasOffsetWrapper>
+      {selectedGridChildElements.map((selectedGridChildElement) => {
+        return (
+          <GridElementContainingBlock
+            key={GridElementContainingBlockKey(selectedGridChildElement)}
+            gridPath={EP.parentPath(selectedGridChildElement)}
+            gridChild={selectedGridChildElement}
+          />
+        )
+      })}
+    </CanvasOffsetWrapper>
   )
 })
 
@@ -2429,3 +2424,14 @@ function getCellCanvasHeightFromBounds(
     return acc + curr.height + padding
   }, currentColumn.height)
 }
+
+export const GridHelperControls = () => {
+  const helperControlsStore = React.useContext(HelperControlsStateContext)
+  return (
+    <EditorStateContext.Provider value={helperControlsStore}>
+      <GridMeasurementHelpers />
+      <GridElementContainingBlocks />
+    </EditorStateContext.Provider>
+  )
+}
+GridHelperControls.displayName = 'GridHelperControls'
