@@ -119,6 +119,7 @@ import { styleStringInArray } from '../../../utils/common-constants'
 import { gridContainerIdentifier, type GridIdentifier } from '../../editor/store/editor-state'
 import type { RulerMarkerType } from './grid-controls-ruler-markers'
 import { rulerMarkerIcons } from './grid-controls-ruler-markers'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
@@ -1212,9 +1213,12 @@ export const GridControlsComponent = ({ targets }: GridControlsProps) => {
           )
         })}
         {/* Ruler markers */}
-        {selectedGridItems.map((path) => {
-          return <RulerMarkers key={`ruler-markers-${EP.toString(path)}`} path={path} />
-        })}
+        {when(
+          isFeatureEnabled('Grid Ruler Markers'),
+          selectedGridItems.map((path) => {
+            return <RulerMarkers key={`ruler-markers-${EP.toString(path)}`} path={path} />
+          }),
+        )}
         <AbsoluteDistanceIndicators targetRootCell={targetRootCell} />
       </CanvasOffsetWrapper>
     </div>
