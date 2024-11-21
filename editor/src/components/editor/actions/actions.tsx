@@ -627,7 +627,10 @@ import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { styleP } from '../../inspector/inspector-common'
-import { getUpdateOperationResult } from '../../../core/shared/import/import-operation-service'
+import {
+  getUpdateOperationResult,
+  notifyImportStatusToDiscord,
+} from '../../../core/shared/import/import-operation-service'
 import { updateRequirements } from '../../../core/shared/import/project-health-check/utopia-requirements-service'
 import {
   applyValuesAtPath,
@@ -2191,12 +2194,15 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_IMPORT_STATUS: (action: UpdateImportStatus, editor: EditorModel): EditorModel => {
+    const newImportState = {
+      ...editor.importState,
+      importStatus: action.importStatus,
+    }
+    // side effect ☢️
+    notifyImportStatusToDiscord(newImportState, editor.projectName)
     return {
       ...editor,
-      importState: {
-        ...editor.importState,
-        importStatus: action.importStatus,
-      },
+      importState: newImportState,
     }
   },
   UPDATE_PROJECT_REQUIREMENTS: (
