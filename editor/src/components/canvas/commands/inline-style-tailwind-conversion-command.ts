@@ -40,6 +40,8 @@ export function inlineStyleTailwindConversionCommand(
  * from tailwind to inline style:
  * - convert tailwind to css:
  * - convert css to react: https://github.com/transform-it/transform-css-to-js
+ * - [ ] check out whether tailwind can help with this
+ * - [ ] check out whether we can glean this info from the tailwind jit lib
  */
 
 function getStyleInfoUpdates(styleInfo: StyleInfo): {
