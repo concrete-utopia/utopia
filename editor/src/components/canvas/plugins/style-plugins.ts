@@ -104,7 +104,7 @@ function ensureElementPathInUpdatedPropertiesGlobal(
   return updatedPropertiesToExtend
 }
 
-interface EditorStateWithPatches {
+export interface EditorStateWithPatches {
   editorStateWithChanges: EditorState
   editorStatePatches: EditorStatePatch[]
 }

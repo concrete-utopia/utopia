@@ -172,6 +172,7 @@ specifiers:
   concurrently: 3.5.1
   create-react-class: 15.6.3
   css-loader: 0.28.4
+  css-to-tailwind-translator: 1.2.8
   css-tree: 2.3.1
   csstype: 3.0.3
   dependency-cruiser: 13.1.5
@@ -320,6 +321,7 @@ specifiers:
   string-replace-loader: 2.2.0
   strip-ansi: 6.0.0
   style-loader: 0.18.2
+  style-object-to-css-string: 1.1.3
   tailwindcss: ^3.4.13
   tar: 6.0.5
   terser-webpack-plugin: 5.3.9
@@ -403,6 +405,7 @@ dependencies:
   classnames: 2.2.6
   clipboard-polyfill: 2.4.6
   create-react-class: 15.6.3
+  css-to-tailwind-translator: 1.2.8
   css-tree: 2.3.1
   eslint-config-utopia: link:../eslint-config-utopia
   eslint-plugin-import: 2.25.3_xoh4mdbbxtgv4pgsofz5xwre24
@@ -495,6 +498,7 @@ dependencies:
   stream-browserify: 3.0.0
   string-hash: 1.1.3
   strip-ansi: 6.0.0
+  style-object-to-css-string: 1.1.3
   tippy.js: 6.2.6
   typescript: 5.5.4
   typescript-for-the-editor: /typescript/4.6.4
@@ -712,7 +716,7 @@ packages:
       '@ant-design/icons-svg': 4.2.1
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
@@ -8394,6 +8398,10 @@ packages:
       fastparse: 1.1.2
     dev: true
 
+  /css-to-tailwind-translator/1.2.8:
+    resolution: {integrity: sha512-4hGXc4En6aVHlQdGZuSL9IS4rmLUJ3rKFnkx9u03/SW6jbEjgrV/l3u7cc36nv43zEu7NDGLpJgAsX4K/9HhrQ==}
+    dev: false
+
   /css-tree/2.3.1:
     resolution: {integrity: sha512-6Fv1DV/TYw//QF5IzQdqsNDjx/wc8TrMBZsqjL9eW01tWb7R7k/mq+/VXfJCl7SoD5emsJop9cOByJZfs8hYIw==}
     engines: {node: ^10 || ^12.20.0 || ^14.13.0 || >=15.0.0}
@@ -15878,7 +15886,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       dom-align: 1.12.4
-      prop-types: 15.6.2
+      prop-types: 15.8.1
       rc-util: 4.21.1
     dev: false
 
@@ -15906,7 +15914,7 @@ packages:
       babel-runtime: 6.26.0
       classnames: 2.2.6
       css-animation: 1.6.1
-      prop-types: 15.6.2
+      prop-types: 15.8.1
       raf: 3.4.1
       rc-util: 4.21.1
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
@@ -15933,7 +15941,7 @@ packages:
     dependencies:
       array-tree-filter: 2.1.0
       rc-trigger: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       warning: 4.0.3
     transitivePeerDependencies:
       - react
@@ -15953,7 +15961,7 @@ packages:
       '@ant-design/css-animation': 1.7.3
       classnames: 2.2.6
       rc-animate: 3.1.1_ef5jwxihqo6n7gxfmzogljlgcm
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       shallowequal: 1.1.0
     transitivePeerDependencies:
       - react
@@ -15965,7 +15973,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       rc-animate: 3.1.1_ef5jwxihqo6n7gxfmzogljlgcm
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
     transitivePeerDependencies:
       - react
       - react-dom
@@ -15978,7 +15986,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
     transitivePeerDependencies:
       - react-dom
@@ -16005,7 +16013,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.20.13
       async-validator: 3.5.2
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
     transitivePeerDependencies:
       - react-dom
@@ -16015,7 +16023,7 @@ packages:
     resolution: {integrity: sha512-4GgnJCjllAVNsZ9fPA+3LnoIgwUqM8QAWpyoKiTkPDN1UWapXYsPiKJCXOhnmiR0X8xpEoYHiobUaiquMliWiQ==}
     dependencies:
       classnames: 2.2.6
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
     transitivePeerDependencies:
       - react
       - react-dom
@@ -16030,7 +16038,7 @@ packages:
       classnames: 2.2.6
       rc-menu: 8.3.1_ef5jwxihqo6n7gxfmzogljlgcm
       rc-trigger: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
     transitivePeerDependencies:
       - react-dom
@@ -16044,7 +16052,7 @@ packages:
       mini-store: 3.0.6_ef5jwxihqo6n7gxfmzogljlgcm
       rc-animate: 3.1.1_ef5jwxihqo6n7gxfmzogljlgcm
       rc-trigger: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       resize-observer-polyfill: 1.5.1
       shallowequal: 1.1.0
     transitivePeerDependencies:
@@ -16089,7 +16097,7 @@ packages:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
       rc-animate: 3.1.1_ef5jwxihqo6n7gxfmzogljlgcm
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
@@ -16118,7 +16126,7 @@ packages:
       classnames: 2.2.6
       moment: 2.29.1
       rc-trigger: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       shallowequal: 1.1.0
@@ -16136,7 +16144,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
     transitivePeerDependencies:
       - react
       - react-dom
@@ -16150,7 +16158,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       resize-observer-polyfill: 1.5.1
@@ -16181,7 +16189,7 @@ packages:
       classnames: 2.2.6
       rc-motion: 1.1.2_ef5jwxihqo6n7gxfmzogljlgcm
       rc-trigger: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       rc-virtual-list: 1.1.6_ef5jwxihqo6n7gxfmzogljlgcm
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
@@ -16198,7 +16206,7 @@ packages:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
       rc-tooltip: 4.2.3_ef5jwxihqo6n7gxfmzogljlgcm
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       shallowequal: 1.1.0
@@ -16213,7 +16221,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
@@ -16226,7 +16234,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
@@ -16259,7 +16267,7 @@ packages:
       rc-menu: 8.3.1_ef5jwxihqo6n7gxfmzogljlgcm
       rc-resize-observer: 0.2.6_ef5jwxihqo6n7gxfmzogljlgcm
       rc-trigger: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
     transitivePeerDependencies:
       - react
       - react-dom
@@ -16269,7 +16277,7 @@ packages:
     resolution: {integrity: sha512-dE2ibukxxkrde7wH9W8ozHKUO4aQnPZ6qBHtrTH9LoO836PjDdiaWO73fgPB05VfJs9FbZdmGPVEbXCeOP99Ww==}
     dependencies:
       babel-runtime: 6.26.0
-      prop-types: 15.6.2
+      prop-types: 15.8.1
       rc-trigger: 2.6.5_ef5jwxihqo6n7gxfmzogljlgcm
     transitivePeerDependencies:
       - react
@@ -16296,7 +16304,7 @@ packages:
       classnames: 2.2.6
       rc-select: 11.0.13_ef5jwxihqo6n7gxfmzogljlgcm
       rc-tree: 3.11.0_ef5jwxihqo6n7gxfmzogljlgcm
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
@@ -16327,7 +16335,7 @@ packages:
       '@babel/runtime': 7.20.13
       classnames: 2.2.6
       rc-animate: 3.1.1_ef5jwxihqo6n7gxfmzogljlgcm
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
       rc-virtual-list: 1.1.6_ef5jwxihqo6n7gxfmzogljlgcm
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
@@ -16338,7 +16346,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       classnames: 2.2.6
-      prop-types: 15.6.2
+      prop-types: 15.8.1
       rc-align: 2.4.5
       rc-animate: 2.11.1_ef5jwxihqo6n7gxfmzogljlgcm
       rc-util: 4.21.1
@@ -16357,7 +16365,7 @@ packages:
       raf: 3.4.1
       rc-align: 4.0.15_ef5jwxihqo6n7gxfmzogljlgcm
       rc-animate: 3.1.1_ef5jwxihqo6n7gxfmzogljlgcm
-      rc-util: 5.14.0_ef5jwxihqo6n7gxfmzogljlgcm
+      rc-util: 5.43.0_ef5jwxihqo6n7gxfmzogljlgcm
     transitivePeerDependencies:
       - react
       - react-dom
@@ -16373,7 +16381,7 @@ packages:
     resolution: {integrity: sha512-Z+vlkSQVc1l8O2UjR3WQ+XdWlhj5q9BMQNLk2iOBch75CqPfrJyGtcWMcnhRlNuDu0Ndtt4kLVO8JI8BrABobg==}
     dependencies:
       add-dom-event-listener: 1.1.0
-      prop-types: 15.6.2
+      prop-types: 15.8.1
       react-is: 16.13.1
       react-lifecycles-compat: 3.0.4
       shallowequal: 1.1.0
@@ -18483,6 +18491,10 @@ packages:
       schema-utils: 0.3.0
     dev: true
 
+  /style-object-to-css-string/1.1.3:
+    resolution: {integrity: sha512-bISQoUsir/qGfo7vY8rw00ia9nnyE1jvYt3zZ2jhdkcXZ6dAEi74inMzQ6On57vFI+I4Fck6wOv5UI9BEwJDgw==}
+    dev: false
+
   /style-to-object/0.3.0:
     resolution: {integrity: sha512-CzFnRRXhzWIdItT3OmF8SQfWyahHhjq3HwcMNCNLn+N7klOOqPjMeG/4JSu77D7ypZdGvSzvkrbyeTMizz2VrA==}
     dependencies:
@@ -20311,7 +20323,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       classnames: 2.2.6
-      prop-types: 15.6.2
+      prop-types: 15.8.1
       rc-tooltip: 3.7.3_ef5jwxihqo6n7gxfmzogljlgcm
       rc-util: 4.21.1
       shallowequal: 1.1.0

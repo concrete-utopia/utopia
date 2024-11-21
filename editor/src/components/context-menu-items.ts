@@ -54,6 +54,7 @@ import {
   type ShowComponentPickerContextMenuCallback,
   renderPropTarget,
 } from './navigator/navigator-item/component-picker-context-menu'
+import { inlineStyleTailwindConversionCommand } from './canvas/commands/inline-style-tailwind-conversion-command'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -561,5 +562,33 @@ export const escapeHatch: ContextMenuItem<CanvasData> = {
         'everyone',
       )
     }
+  },
+}
+
+export const convertInlineStyleToTailwindStyle: ContextMenuItem<CanvasData> = {
+  name: 'Convert Inline Style to Tailwind Style',
+
+  enabled: true,
+
+  action: (data, dispatch?: EditorDispatch) => {
+    dispatch?.([
+      EditorActions.applyCommandsAction([
+        inlineStyleTailwindConversionCommand('always', 'TO_TAILWIND', data.selectedViews),
+      ]),
+    ])
+  },
+}
+
+export const convertTailwindStyleToInlineStyle: ContextMenuItem<CanvasData> = {
+  name: 'Convert Tailwind Style to Inline Style',
+
+  enabled: true,
+
+  action: (data, dispatch?: EditorDispatch) => {
+    dispatch?.([
+      EditorActions.applyCommandsAction([
+        inlineStyleTailwindConversionCommand('always', 'TO_INLINE_STYLE', data.selectedViews),
+      ]),
+    ])
   },
 }

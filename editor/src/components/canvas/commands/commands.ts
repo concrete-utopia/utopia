@@ -78,6 +78,8 @@ import {
   runShowGridControlsCommand,
   type ShowGridControlsCommand,
 } from './show-grid-controls-command'
+import type { InlineStyleTailwindConversionCommand } from './inline-style-tailwind-conversion-command'
+import { runInlineStyleTailwindConversionCommand } from './inline-style-tailwind-conversion-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -129,6 +131,7 @@ export type CanvasCommand =
   | SetActiveFrames
   | UpdateBulkProperties
   | ShowGridControlsCommand
+  | InlineStyleTailwindConversionCommand
 
 export function runCanvasCommand(
   editorState: EditorState,
@@ -208,6 +211,8 @@ export function runCanvasCommand(
       return runSetActiveFrames(editorState, command)
     case 'SHOW_GRID_CONTROLS':
       return runShowGridControlsCommand(editorState, command)
+    case 'INLINE_STYLE_TAILWIND_CONVERSION':
+      return runInlineStyleTailwindConversionCommand(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
