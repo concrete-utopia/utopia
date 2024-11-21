@@ -7,6 +7,7 @@ export type ParsedTailwindClass = {
   value: string
   variants: unknown[]
   negative: boolean
+  valueDef: { class: string[]; value: string }
 } & Record<string, unknown>
 
 export type TailwindClassParserResult =

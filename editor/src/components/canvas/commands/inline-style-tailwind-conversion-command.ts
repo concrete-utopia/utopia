@@ -1,14 +1,28 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import type { BaseCommand, CommandFunctionResult } from './commands'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import type { DeleteCSSProp, EditorStateWithPatches, UpdateCSSProp } from '../plugins/style-plugins'
+import type { EditorStateWithPatches } from '../plugins/style-plugins'
 import { InlineStylePlugin } from '../plugins/inline-style-plugin'
-import type { StyleInfo } from '../canvas-types'
-import { stringifyStyleInfo } from '../canvas-types'
 import { TailwindPlugin } from '../plugins/tailwind-style-plugin'
 import { getTailwindConfigCached } from '../../../core/tailwind/tailwind-compilation'
-import { mapDropNulls } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
+import { CssToTailwindTranslator } from 'css-to-tailwind-translator'
+import styleObjectToCSSString from 'style-object-to-css-string'
+import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { getParsedClassList } from '../../../core/tailwind/tailwind-class-list-utils'
+import { applyValuesAtPath, deleteValuesAtPath } from './utils/property-utils'
+import * as PP from '../../../core/shared/property-path'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
+
+export function convertInlineStyleToTailwindInner(
+  inlineStyle: Record<string, number | string>,
+): string {
+  const styleString = styleObjectToCSSString(inlineStyle)
+  const cssString = `body { ${styleString} }`
+  const { data } = CssToTailwindTranslator(cssString)
+  return data[0].resultVal
+}
 
 export interface InlineStyleTailwindConversionCommand extends BaseCommand {
   type: 'INLINE_STYLE_TAILWIND_CONVERSION'
@@ -30,46 +44,7 @@ export function inlineStyleTailwindConversionCommand(
   }
 }
 
-/**
- * wholesale conversion
- *
- * from inline style to tailwind:
- * - convert inline style to css: https://www.npmjs.com/package/style-object-to-css-string
- * - convert css to tailwind https://github.com/hymhub/css-to-tailwind
- *
- * from tailwind to inline style:
- * - convert tailwind to css:
- * - convert css to react: https://github.com/transform-it/transform-css-to-js
- * - [ ] check out whether tailwind can help with this
- * - [ ] check out whether we can glean this info from the tailwind jit lib
- */
-
-function getStyleInfoUpdates(styleInfo: StyleInfo): {
-  stylesToAdd: UpdateCSSProp[]
-  stylesToRemove: DeleteCSSProp[]
-} {
-  const styleInfoString = stringifyStyleInfo(styleInfo)
-  const stylesToAdd: UpdateCSSProp[] = mapDropNulls(
-    ([property, value]) =>
-      value == null
-        ? null
-        : {
-            property: property,
-            value: value,
-            type: 'set',
-          },
-    Object.entries(styleInfoString),
-  )
-
-  const stylesToRemove: DeleteCSSProp[] = stylesToAdd.map((style) => ({
-    property: style.property,
-    type: 'delete',
-  }))
-
-  return { stylesToAdd, stylesToRemove }
-}
-
-function convertInlineStyleToTailwindViaStyleInfo(
+function convertInlineStyleToTailwind(
   editorState: EditorState,
   elementPaths: ElementPath[],
 ): EditorStateWithPatches {
@@ -101,7 +76,14 @@ function convertInlineStyleToTailwindViaStyleInfo(
   }
 }
 
-function convertTailwindToInlineStyleViaStyleInfo(
+function toCamelCase(str: string): string {
+  return str
+    .toLowerCase()
+    .replace(/([-_][a-z])/g, (ltr) => ltr.toUpperCase())
+    .replace(/[^a-zA-Z]/g, '')
+}
+
+function convertTailwindToInlineStyle(
   editorState: EditorState,
   elementPaths: ElementPath[],
 ): EditorStateWithPatches {
@@ -109,29 +91,39 @@ function convertTailwindToInlineStyleViaStyleInfo(
   let editorStateWithChanges: EditorState = editorState
 
   elementPaths.forEach((elementPath) => {
-    const styleInfo = TailwindPlugin(
-      getTailwindConfigCached(editorStateWithChanges),
-    ).styleInfoFactory({
-      projectContents: editorStateWithChanges.projectContents,
-    })(elementPath)
-
-    if (styleInfo == null) {
+    const { value: className } = getClassNameAttribute(
+      MetadataUtils.getJSXElementFromMetadata(editorState.jsxMetadata, elementPath),
+    )
+    if (className == null) {
       return
     }
 
-    const { stylesToAdd, stylesToRemove } = getStyleInfoUpdates(styleInfo)
+    const parsedClassList = getParsedClassList(className, getTailwindConfigCached(editorState))
+    const styleObject = parsedClassList.reduce((style, prop) => {
+      if (prop.type === 'unparsed') {
+        return style
+      }
 
-    const { editorStateWithChanges: updatedEditorState } = InlineStylePlugin.updateStyles(
-      editorStateWithChanges,
+      prop.ast.valueDef.class.forEach((c) => {
+        style[toCamelCase(c)] = prop.ast.value
+      })
+      return style
+    }, {} as Record<string, string>)
+
+    const { editorStateWithChanges: updatedEditorState } = applyValuesAtPath(
+      editorState,
       elementPath,
-      stylesToAdd,
+      [
+        {
+          path: PP.create('style'),
+          value: jsExpressionValue(styleObject, emptyComments),
+        },
+      ],
     )
-    const { editorStatePatch: editorStatePatchToRemove, editorStateWithChanges: finalEditorState } =
-      TailwindPlugin(getTailwindConfigCached(updatedEditorState)).updateStyles(
-        updatedEditorState,
-        elementPath,
-        stylesToRemove,
-      )
+
+    const { editorStateWithChanges: finalEditorState, editorStatePatch: editorStatePatchToRemove } =
+      deleteValuesAtPath(updatedEditorState, elementPath, [PP.create('className')])
+
     patches.push(editorStatePatchToRemove)
     editorStateWithChanges = finalEditorState
   })
@@ -149,9 +141,9 @@ function runConversionWithStylePluginsViaStyleInfo(
 ): EditorStateWithPatches {
   switch (direction) {
     case 'TO_INLINE_STYLE':
-      return convertTailwindToInlineStyleViaStyleInfo(editorState, elementPaths)
+      return convertTailwindToInlineStyle(editorState, elementPaths)
     case 'TO_TAILWIND':
-      return convertInlineStyleToTailwindViaStyleInfo(editorState, elementPaths)
+      return convertInlineStyleToTailwind(editorState, elementPaths)
     default:
       assertNever(direction)
   }
