@@ -1,4 +1,4 @@
-import type { ElementPath } from 'utopia-shared/src/types'
+import type { ElementPath, JSXAttributes } from 'utopia-shared/src/types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type {
   InteractionLifecycle,
@@ -18,8 +18,10 @@ import type { EditorStateWithPatch } from '../commands/utils/property-utils'
 import { applyValuesAtPath } from '../commands/utils/property-utils'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
+import type { CSSStyleProperty } from '../canvas-types'
 import { isStyleInfoKey, type StyleInfo } from '../canvas-types'
 import type { StyleInfoSubEditorState } from '../../editor/store/store-hook-substore-types'
+import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
 
 export interface UpdateCSSProp {
   type: 'set'
@@ -52,6 +54,10 @@ export type StyleUpdate = UpdateCSSProp | DeleteCSSProp
 export interface StylePlugin {
   name: string
   styleInfoFactory: StyleInfoFactory
+  readStyleFromElementProps: <T extends keyof StyleInfo>(
+    attributes: JSXAttributes,
+    prop: T,
+  ) => CSSStyleProperty<NonNullable<ParsedCSSProperties[T]>> | null
   updateStyles: (
     editorState: EditorState,
     elementPath: ElementPath,

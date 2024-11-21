@@ -1,10 +1,6 @@
 import * as EP from '../../../core/shared/element-path'
 import { cssNumber } from '../../inspector/common/css-utils'
-import {
-  cssStyleProperty,
-  cssStylePropertyNotFound,
-  cssStylePropertyNotParsable,
-} from '../canvas-types'
+import { cssStylePropertyNotFound } from '../canvas-types'
 import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { InlineStylePlugin } from './inline-style-plugin'
@@ -45,8 +41,18 @@ export var storyboard = (
 
     expect(styleInfo).not.toBeNull()
     const { flexDirection, gap } = styleInfo!
-    expect(flexDirection).toEqual(cssStyleProperty('column'))
-    expect(gap).toEqual(cssStyleProperty(cssNumber(2, 'rem')))
+    expect(flexDirection).toMatchObject({
+      type: 'property',
+      tags: [],
+      value: 'column',
+      propertyValue: { value: 'column' },
+    })
+    expect(gap).toMatchObject({
+      type: 'property',
+      tags: [],
+      value: cssNumber(2, 'rem'),
+      propertyValue: { value: '2rem' },
+    })
   })
 
   it('can parse style info with missing/unparsable props', async () => {
@@ -88,7 +94,14 @@ export var storyboard = (
     expect(styleInfo).not.toBeNull()
     const { flexDirection, gap } = styleInfo!
     expect(flexDirection).toEqual(cssStylePropertyNotFound())
-    expect(gap).toEqual(cssStylePropertyNotParsable())
+    expect(gap).toMatchObject({
+      type: 'not-parsable',
+      originalValue: {
+        type: 'JS_PROPERTY_ACCESS',
+        onValue: { type: 'JS_IDENTIFIER', name: 'gap' },
+        property: 'small',
+      },
+    })
   })
 })
 
