@@ -16,7 +16,7 @@ import type {
 import { ImportOperationResult } from './import-operation-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { sendDiscordMessage } from '../../../components/editor/server'
-import type { DiscordMessage, DiscordMessageType } from 'utopia-shared/src/types'
+import type { DiscordEndpointSiteImport, DiscordMessageType } from 'utopia-shared/src/types'
 import { getImportOperationText } from '../../../components/editor/import-wizard/import-wizard-helpers'
 
 export function startImportProcess(dispatch: EditorDispatch) {
@@ -208,75 +208,60 @@ export function pauseImport(dispatch: EditorDispatch): Promise<void> {
 export function notifyImportStatusToDiscord(
   importState: ImportState,
   projectName: string,
-  // this is for cases when the import was paused, but the user left the wizard mid-process
+  // for cases when the import was paused, but the user left the wizard mid-process
   forceNotify: boolean = false,
 ) {
   const totalImportStateAndResult = getTotalImportStatusAndResult(importState)
-  if (totalImportStateAndResult.importStatus.status != 'done' && !forceNotify) {
+  const importResult = totalImportStateAndResult.result
+  // don't notify if the import is not done
+  const importDone = totalImportStateAndResult.importStatus.status == 'done'
+  if (!importDone && !forceNotify) {
+    return
+  }
+  let messageType: DiscordMessageType = 'info'
+  if (importResult == 'criticalError' || importResult == 'error') {
+    messageType = 'error'
+  } else if (importResult == 'warn') {
+    messageType = 'warning'
+  } else {
+    // we only notify errors and warnings
     return
   }
 
-  let messageType: DiscordMessageType
-  let message: DiscordMessage
-
-  const importBranchOp = importState.importOperations.find((op) => op.type == 'loadBranch')
-  const githubRepo = importBranchOp?.githubRepo
-  const githubBranch = importBranchOp?.branchName
-
-  const operationsWithErrorsOrWarnings = importState.importOperations
+  // collect errors, warnings, critical errors
+  const errors: string[] = []
+  const warnings: string[] = []
+  const criticalErrors: string[] = []
+  importState.importOperations
     .flatMap((op) => [op, ...(op.children ?? [])])
-    .filter((op) => op.result != null && op.result != ImportOperationResult.Success)
-    .reduce((acc, op) => {
-      if (op.result == null) {
-        return acc
+    .forEach((op) => {
+      if (op.result == ImportOperationResult.Error) {
+        errors.push(getImportOperationText(op))
+      } else if (op.result == ImportOperationResult.Warn) {
+        warnings.push(getImportOperationText(op))
+      } else if (op.result == ImportOperationResult.CriticalError) {
+        criticalErrors.push(getImportOperationText(op))
       }
-      acc[op.result] = acc[op.result] ?? ''
-      acc[op.result] += `- ${getImportOperationText(op)}\n`
-      return acc
-    }, {} as Record<ImportOperationResult, string>)
+    })
 
-  const fields = {
-    'Project Name': projectName,
-    'Github URL':
-      githubRepo != null ? `https://github.com/${githubRepo.owner}/${githubRepo.repository}` : '',
-    'Github Branch': githubBranch ?? '',
-    ...operationsWithErrorsOrWarnings,
+  // get the repo and branch name
+  const importBranchOp = importState.importOperations.find((op) => op.type == 'loadBranch')
+
+  // build specific payload for our discord endpoint
+  const importSitePayload: DiscordEndpointSiteImport = {
+    webhookType: 'SITE_IMPORT',
+    messageType: messageType,
+    messageData: {
+      importResult: totalImportStateAndResult.result,
+      importDone: importDone,
+      githubRepo: importBranchOp?.githubRepo,
+      branchName: importBranchOp?.branchName,
+      projectName: projectName,
+      errors: errors,
+      warnings: warnings,
+      criticalErrors: criticalErrors,
+    },
   }
 
-  switch (totalImportStateAndResult.result) {
-    case ImportOperationResult.CriticalError:
-      messageType = 'error'
-      message = {
-        title: 'Critical Error',
-        description: 'The import process encountered a critical error and was aborted.',
-      }
-      break
-    case ImportOperationResult.Error:
-      messageType = 'error'
-      message = {
-        title: 'Error',
-        description:
-          totalImportStateAndResult.importStatus.status == 'done'
-            ? 'The import process was completed with errors.'
-            : 'The import process encountered an error and was aborted by the user.',
-      }
-      break
-    case ImportOperationResult.Warn:
-      messageType = 'warning'
-      message = {
-        title: 'Warning',
-        description: 'The import process was completed with warnings.',
-      }
-      break
-    case ImportOperationResult.Success:
-      // no message
-      return
-    default:
-      assertNever(totalImportStateAndResult.result)
-  }
-
-  void sendDiscordMessage('SITE_IMPORT', messageType, {
-    ...message,
-    fields: fields,
-  })
+  void sendDiscordMessage(importSitePayload)
 }
