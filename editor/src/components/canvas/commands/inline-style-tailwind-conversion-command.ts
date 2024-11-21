@@ -67,7 +67,7 @@ function getStyleInfoUpdates(styleInfo: StyleInfo): {
   return { stylesToAdd, stylesToRemove }
 }
 
-function convertInlineStyleToTailwind(
+function convertInlineStyleToTailwindViaStyleInfo(
   editorState: EditorState,
   elementPaths: ElementPath[],
 ): EditorStateWithPatches {
@@ -99,7 +99,7 @@ function convertInlineStyleToTailwind(
   }
 }
 
-function convertTailwindToInlineStyle(
+function convertTailwindToInlineStyleViaStyleInfo(
   editorState: EditorState,
   elementPaths: ElementPath[],
 ): EditorStateWithPatches {
@@ -140,16 +140,16 @@ function convertTailwindToInlineStyle(
   }
 }
 
-function runConversionWithStylePlugins(
+function runConversionWithStylePluginsViaStyleInfo(
   editorState: EditorState,
   elementPaths: ElementPath[],
   direction: 'TO_INLINE_STYLE' | 'TO_TAILWIND',
 ): EditorStateWithPatches {
   switch (direction) {
     case 'TO_INLINE_STYLE':
-      return convertTailwindToInlineStyle(editorState, elementPaths)
+      return convertTailwindToInlineStyleViaStyleInfo(editorState, elementPaths)
     case 'TO_TAILWIND':
-      return convertInlineStyleToTailwind(editorState, elementPaths)
+      return convertInlineStyleToTailwindViaStyleInfo(editorState, elementPaths)
     default:
       assertNever(direction)
   }
@@ -159,7 +159,7 @@ export function runInlineStyleTailwindConversionCommand(
   editorState: EditorState,
   command: InlineStyleTailwindConversionCommand,
 ): CommandFunctionResult {
-  const { editorStatePatches } = runConversionWithStylePlugins(
+  const { editorStatePatches } = runConversionWithStylePluginsViaStyleInfo(
     editorState,
     command.elementPaths,
     command.direction,
