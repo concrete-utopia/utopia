@@ -16,11 +16,11 @@ import type {
 import { ImportOperationResult } from './import-operation-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 
-export function startImportProcess(dispatch: EditorDispatch) {
+export function startImportProcess(dispatch: EditorDispatch, customSteps?: ImportOperation[]) {
   const actions: EditorAction[] = [
     updateImportStatus({ status: 'in-progress' }),
     updateImportOperations(
-      [
+      customSteps ?? [
         { type: 'loadBranch' },
         { type: 'checkRequirementsPreParse' },
         { type: 'parseFiles' },

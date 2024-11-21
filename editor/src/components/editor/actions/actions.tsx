@@ -520,6 +520,7 @@ import {
 import { addToastToState, includeToast, removeToastFromState } from './toast-helpers'
 import { AspectRatioLockedProp } from '../../aspect-ratio'
 import {
+  getDependenciesStatus,
   refreshDependencies,
   removeModulesFromNodeModules,
 } from '../../../core/shared/dependencies'
@@ -627,7 +628,11 @@ import { canCondenseJSXElementChild } from '../../../utils/can-condense'
 import { getNavigatorTargetsFromEditorState } from '../../navigator/navigator-utils'
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { styleP } from '../../inspector/inspector-common'
-import { getUpdateOperationResult } from '../../../core/shared/import/import-operation-service'
+import {
+  getUpdateOperationResult,
+  notifyOperationFinished,
+  notifyOperationStarted,
+} from '../../../core/shared/import/import-operation-service'
 import { updateRequirements } from '../../../core/shared/import/project-health-check/utopia-requirements-service'
 import {
   applyValuesAtPath,
@@ -6313,6 +6318,7 @@ export async function load(
   // this action is now async!
   const migratedModel = applyMigrations(model)
   const npmDependencies = dependenciesWithEditorRequirements(migratedModel.projectContents)
+  notifyOperationStarted(dispatch, { type: 'refreshDependencies' })
   const fetchNodeModulesResult = await fetchNodeModules(
     dispatch,
     npmDependencies,
@@ -6325,6 +6331,12 @@ export async function load(
     npmDependencies,
     fetchNodeModulesResult.dependenciesWithError,
     fetchNodeModulesResult.dependenciesNotFound,
+  )
+
+  notifyOperationFinished(
+    dispatch,
+    { type: 'refreshDependencies' },
+    getDependenciesStatus(packageResult),
   )
 
   const codeResultCache: CodeResultCache = generateCodeResultCache(

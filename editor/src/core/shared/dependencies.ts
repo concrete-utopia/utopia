@@ -120,7 +120,9 @@ function isPackageMissing(status: PackageDetails): boolean {
   return status.status === 'error' || status.status === 'not-found'
 }
 
-function getDependenciesStatus(loadedPackagesStatus: PackageStatusMap): ImportOperationResult {
+export function getDependenciesStatus(
+  loadedPackagesStatus: PackageStatusMap,
+): ImportOperationResult {
   if (Object.values(loadedPackagesStatus).every(isPackageMissing)) {
     return ImportOperationResult.Error
   }

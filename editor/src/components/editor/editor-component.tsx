@@ -589,6 +589,12 @@ export function LoadingEditorComponent() {
     'LoadingEditorComponent importState',
   )
 
+  const githubRepo = useEditorState(
+    Substores.userState,
+    (store) => store.userState.githubState.gitRepoToLoad,
+    'LoadingEditorComponent githubRepoToLoad',
+  )
+
   const totalImportResult: TotalImportResult = React.useMemo(
     () => getTotalImportStatusAndResult(importState),
     [importState],
@@ -654,7 +660,7 @@ export function LoadingEditorComponent() {
   }, [totalImportResult, importState.importOperations])
   if (
     cleared.current ||
-    totalImportResult.importStatus.status == 'done' ||
+    (totalImportResult.importStatus.status == 'done' && githubRepo == null) ||
     totalImportResult.importStatus.status == 'paused'
   ) {
     cleared.current = true
