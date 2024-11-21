@@ -36,6 +36,7 @@ import { gatherParentAndSiblingTargets } from '../../controls/guideline-helpers'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
+import { StrategySizeLabel } from '../../controls/select-mode/size-label'
 import { ZeroSizeResizeControlWrapper } from '../../controls/zero-sized-element-controls'
 import {
   getDescriptiveStrategyLabelWithRetargetedPaths,
@@ -119,6 +120,13 @@ export function absoluteResizeBoundingBoxStrategy(
         control: AbsoluteResizeControl,
         props: { targets: originalTargets, pathsWereReplaced: pathsWereReplaced },
         key: 'absolute-resize-control',
+        show: 'visible-except-when-other-strategy-is-active',
+        priority: 'top',
+      }),
+      controlWithProps({
+        control: StrategySizeLabel,
+        props: { targets: originalTargets, pathsWereReplaced: pathsWereReplaced },
+        key: 'size-label',
         show: 'visible-except-when-other-strategy-is-active',
         priority: 'top',
       }),

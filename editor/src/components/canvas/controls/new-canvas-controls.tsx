@@ -76,6 +76,7 @@ import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
 import { GridElementContainingBlocks, GridMeasurementHelpers } from './grid-controls'
+import { SizeLabel, StrategySizeLabel } from './select-mode/size-label'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -287,6 +288,16 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const colorTheme = useColorTheme()
   const { bottomStrategyControls, middleStrategyControls, topStrategyControls } =
     useGetApplicableStrategyControls(localSelectedViews)
+  const sizeLabelInStrategyControls =
+    topStrategyControls.some((control) => {
+      return control.control === StrategySizeLabel
+    }) ||
+    middleStrategyControls.some((control) => {
+      return control.control === StrategySizeLabel
+    }) ||
+    bottomStrategyControls.some((control) => {
+      return control.control === StrategySizeLabel
+    })
   const [inspectorHoveredControls] = useAtom(InspectorHoveredCanvasControls)
   const [inspectorFocusedControls] = useAtom(InspectorFocusedCanvasControls)
 
@@ -640,6 +651,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                   </>,
                 )}
                 {when(isSelectMode(editorMode), <DistanceGuidelineControl />)}
+                {unless(
+                  sizeLabelInStrategyControls,
+                  <SizeLabel targets={localSelectedViews} pathsWereReplaced={false} />,
+                )}
                 <GuidelineControls />
               </>,
             )}
