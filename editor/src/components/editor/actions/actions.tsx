@@ -2198,6 +2198,7 @@ export const UPDATE_FNS = {
       ...editor.importState,
       importStatus: action.importStatus,
     }
+    // side effect ☢️
     notifyImportStatusToDiscord(newImportState, editor.projectName)
     return {
       ...editor,
