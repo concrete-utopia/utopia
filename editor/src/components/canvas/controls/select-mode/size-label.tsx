@@ -1,9 +1,5 @@
 import React from 'react'
-import {
-  getSimpleAttributeAtPath,
-  MetadataUtils,
-} from '../../../../core/model/element-metadata-utils'
-import * as PP from '../../../../core/shared/property-path'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import {
   isJSXElement,
@@ -26,9 +22,9 @@ import type { DetectedFillHugFixedState, FixedHugFill } from '../../../inspector
 import { detectFillHugFixedState } from '../../../inspector/inspector-common'
 import { getAllTargetsUnderAreaAABB } from '../../dom-lookup'
 import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
-import { defaultEither, flatMapEither, right } from '../../../../core/shared/either'
+import { defaultEither } from '../../../../core/shared/either'
 import type { CSSNumber } from '../../../inspector/common/css-utils'
-import { isCSSNumber, parseCSSNumber, printCSSNumber } from '../../../inspector/common/css-utils'
+import { isCSSNumber, printCSSNumber } from '../../../inspector/common/css-utils'
 import { toFirst } from '../../../../core/shared/optics/optic-utilities'
 import {
   eitherRight,
