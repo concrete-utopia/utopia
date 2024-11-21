@@ -28,7 +28,7 @@ export interface UpdateCSSProp {
   value: string | number
 }
 
-interface DeleteCSSProp {
+export interface DeleteCSSProp {
   type: 'delete'
   property: string
 }

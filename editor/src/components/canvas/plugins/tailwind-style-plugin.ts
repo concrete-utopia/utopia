@@ -8,21 +8,24 @@ import { mapDropNulls } from '../../../core/shared/array-utils'
 import type { StylePlugin } from './style-plugins'
 import type { Config } from 'tailwindcss/types/config'
 import type { StyleInfo } from '../canvas-types'
-import { cssStyleProperty, isStyleInfoKey, type CSSStyleProperty } from '../canvas-types'
+import { cssStyleProperty, type CSSStyleProperty } from '../canvas-types'
 import * as UCL from './tailwind-style-plugin-utils/update-class-list'
 import { assertNever } from '../../../core/shared/utils'
+import type { JSXAttributes } from 'utopia-shared/src/types'
 import {
   jsxSimpleAttributeToValue,
   getModifiableJSXAttributeAtPath,
 } from '../../../core/shared/jsx-attribute-utils'
-import { emptyComments, type JSXAttributes } from 'utopia-shared/src/types'
 import * as PP from '../../../core/shared/property-path'
-import { jsExpressionValue } from '../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 
-function parseTailwindProperty<T extends keyof StyleInfo>(
-  value: string | number | undefined,
-  prop: T,
-): CSSStyleProperty<NonNullable<ParsedCSSProperties[T]>> | null {
+const underscoresToSpaces = (s: string | undefined) => s?.replace(/[-_]/g, ' ')
+
+function parseTailwindProperty<P extends keyof StyleInfo>(
+  mapping: Record<string, string>,
+  prop: P,
+): CSSStyleProperty<NonNullable<ParsedCSSProperties[P]>> | null {
+  const value = prop === 'padding' ? underscoresToSpaces(mapping[prop]) : mapping[prop]
   const parsed = cssParsers[prop](value, null)
   if (isLeft(parsed) || parsed.value == null) {
     return null
@@ -58,8 +61,11 @@ const TailwindPropertyMapping: Record<string, string> = {
   zIndex: 'zIndex',
 }
 
-function isSupportedTailwindProperty(prop: unknown): prop is keyof typeof TailwindPropertyMapping {
-  return typeof prop === 'string' && prop in TailwindPropertyMapping
+function toCamelCase(str: string): string {
+  return str
+    .toLowerCase()
+    .replace(/([-_][a-z])/g, (ltr) => ltr.toUpperCase())
+    .replace(/[^a-zA-Z]/g, '')
 }
 
 function stringifyPropertyValue(value: string | number): string {
@@ -77,15 +83,15 @@ function getTailwindClassMapping(classes: string[], config: Config | null): Reco
   const mapping: Record<string, string> = {}
   classes.forEach((className) => {
     const parsed = TailwindClassParser.parse(className, config ?? undefined)
-    if (parsed.kind === 'error' || !isSupportedTailwindProperty(parsed.property)) {
+    if (parsed.kind === 'error') {
       return
     }
-    mapping[parsed.property] = parsed.value
+    parsed.valueDef.class.forEach((cls: string) => {
+      mapping[toCamelCase(cls)] = parsed.value
+    })
   })
   return mapping
 }
-
-const underscoresToSpaces = (s: string | undefined) => s?.replace(/[-_]/g, ' ')
 
 export const TailwindPlugin = (config: Config | null): StylePlugin => ({
   name: 'Tailwind',
@@ -106,7 +112,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
     }
 
     const mapping = getTailwindClassMapping(classNameAttribute.split(' '), config)
-    return parseTailwindProperty(mapping[TailwindPropertyMapping[prop]], prop)
+    return parseTailwindProperty(mapping, prop)
   },
   styleInfoFactory:
     ({ projectContents }) =>
@@ -122,45 +128,27 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
       const mapping = getTailwindClassMapping(classList.split(' '), config)
 
       return {
-        gap: parseTailwindProperty(mapping[TailwindPropertyMapping.gap], 'gap'),
-        flexDirection: parseTailwindProperty(
-          mapping[TailwindPropertyMapping.flexDirection],
-          'flexDirection',
-        ),
-        left: parseTailwindProperty(mapping[TailwindPropertyMapping.left], 'left'),
-        right: parseTailwindProperty(mapping[TailwindPropertyMapping.right], 'right'),
-        top: parseTailwindProperty(mapping[TailwindPropertyMapping.top], 'top'),
-        bottom: parseTailwindProperty(mapping[TailwindPropertyMapping.bottom], 'bottom'),
-        width: parseTailwindProperty(mapping[TailwindPropertyMapping.width], 'width'),
-        height: parseTailwindProperty(mapping[TailwindPropertyMapping.height], 'height'),
-        flexBasis: parseTailwindProperty(mapping[TailwindPropertyMapping.flexBasis], 'flexBasis'),
-        padding: parseTailwindProperty(
-          underscoresToSpaces(mapping[TailwindPropertyMapping.padding]),
-          'padding',
-        ),
-        paddingTop: parseTailwindProperty(
-          mapping[TailwindPropertyMapping.paddingTop],
-          'paddingTop',
-        ),
-        paddingRight: parseTailwindProperty(
-          mapping[TailwindPropertyMapping.paddingRight],
-          'paddingRight',
-        ),
-        paddingBottom: parseTailwindProperty(
-          mapping[TailwindPropertyMapping.paddingBottom],
-          'paddingBottom',
-        ),
-        paddingLeft: parseTailwindProperty(
-          mapping[TailwindPropertyMapping.paddingLeft],
-          'paddingLeft',
-        ),
-        zIndex: parseTailwindProperty(mapping[TailwindPropertyMapping.zIndex], 'zIndex'),
+        gap: parseTailwindProperty(mapping, 'gap'),
+        flexDirection: parseTailwindProperty(mapping, 'flexDirection'),
+        left: parseTailwindProperty(mapping, 'left'),
+        right: parseTailwindProperty(mapping, 'right'),
+        top: parseTailwindProperty(mapping, 'top'),
+        bottom: parseTailwindProperty(mapping, 'bottom'),
+        width: parseTailwindProperty(mapping, 'width'),
+        height: parseTailwindProperty(mapping, 'height'),
+        flexBasis: parseTailwindProperty(mapping, 'flexBasis'),
+        padding: parseTailwindProperty(mapping, 'padding'),
+        paddingTop: parseTailwindProperty(mapping, 'paddingTop'),
+        paddingRight: parseTailwindProperty(mapping, 'paddingRight'),
+        paddingBottom: parseTailwindProperty(mapping, 'paddingBottom'),
+        paddingLeft: parseTailwindProperty(mapping, 'paddingLeft'),
+        zIndex: parseTailwindProperty(mapping, 'zIndex'),
       }
     },
   updateStyles: (editorState, elementPath, updates) => {
     const propsToDelete = mapDropNulls(
       (update) =>
-        update.type !== 'delete' || TailwindPropertyMapping[update.property] == null // TODO: make this type-safe
+        update.type !== 'delete' || TailwindPropertyMapping[update.property] == null
           ? null
           : UCL.remove(TailwindPropertyMapping[update.property]),
       updates,
@@ -168,7 +156,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
 
     const propsToSet = mapDropNulls(
       (update) =>
-        update.type !== 'set' || TailwindPropertyMapping[update.property] == null // TODO: make this type-safe
+        update.type !== 'set' || TailwindPropertyMapping[update.property] == null
           ? null
           : UCL.add({
               property: TailwindPropertyMapping[update.property],

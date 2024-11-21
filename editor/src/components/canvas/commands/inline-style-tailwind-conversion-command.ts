@@ -1,8 +1,9 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import type { BaseCommand, CommandFunctionResult } from './commands'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import type { EditorStateWithPatches, StyleUpdate } from '../plugins/style-plugins'
+import type { DeleteCSSProp, EditorStateWithPatches, UpdateCSSProp } from '../plugins/style-plugins'
 import { InlineStylePlugin } from '../plugins/inline-style-plugin'
+import type { StyleInfo } from '../canvas-types'
 import { stringifyStyleInfo } from '../canvas-types'
 import { TailwindPlugin } from '../plugins/tailwind-style-plugin'
 import { getTailwindConfigCached } from '../../../core/tailwind/tailwind-compilation'
@@ -41,6 +42,31 @@ export function inlineStyleTailwindConversionCommand(
  * - convert css to react: https://github.com/transform-it/transform-css-to-js
  */
 
+function getStyleInfoUpdates(styleInfo: StyleInfo): {
+  stylesToAdd: UpdateCSSProp[]
+  stylesToRemove: DeleteCSSProp[]
+} {
+  const styleInfoString = stringifyStyleInfo(styleInfo)
+  const stylesToAdd: UpdateCSSProp[] = mapDropNulls(
+    ([property, value]) =>
+      value == null
+        ? null
+        : {
+            property: property,
+            value: value,
+            type: 'set',
+          },
+    Object.entries(styleInfoString),
+  )
+
+  const stylesToRemove: DeleteCSSProp[] = stylesToAdd.map((style) => ({
+    property: style.property,
+    type: 'delete',
+  }))
+
+  return { stylesToAdd, stylesToRemove }
+}
+
 function convertInlineStyleToTailwind(
   editorState: EditorState,
   elementPaths: ElementPath[],
@@ -51,26 +77,12 @@ function convertInlineStyleToTailwind(
     const styleInfo = InlineStylePlugin.styleInfoFactory({
       projectContents: editorState.projectContents,
     })(elementPath)
+
     if (styleInfo == null) {
       return
     }
-    const styleInfoString = stringifyStyleInfo(styleInfo)
-    const stylesToAdd: StyleUpdate[] = mapDropNulls(
-      ([property, value]) =>
-        value == null
-          ? null
-          : {
-              property: property,
-              value: value,
-              type: 'set',
-            },
-      Object.entries(styleInfoString),
-    )
 
-    const stylesToRemove: StyleUpdate[] = stylesToAdd.map((style) => ({
-      property: style.property,
-      type: 'delete',
-    }))
+    const { stylesToAdd, stylesToRemove } = getStyleInfoUpdates(styleInfo)
 
     const { editorStateWithChanges: updatedEditorState } = TailwindPlugin(
       getTailwindConfigCached(editorStateWithChanges),
@@ -104,23 +116,8 @@ function convertTailwindToInlineStyle(
     if (styleInfo == null) {
       return
     }
-    const styleInfoString = stringifyStyleInfo(styleInfo)
-    const stylesToAdd: StyleUpdate[] = mapDropNulls(
-      ([property, value]) =>
-        value == null
-          ? null
-          : {
-              property: property,
-              value: value,
-              type: 'set',
-            },
-      Object.entries(styleInfoString),
-    )
 
-    const stylesToRemove: StyleUpdate[] = stylesToAdd.map((style) => ({
-      property: style.property,
-      type: 'delete',
-    }))
+    const { stylesToAdd, stylesToRemove } = getStyleInfoUpdates(styleInfo)
 
     const { editorStateWithChanges: updatedEditorState } = InlineStylePlugin.updateStyles(
       editorStateWithChanges,
@@ -138,8 +135,8 @@ function convertTailwindToInlineStyle(
   })
 
   return {
-    editorStateWithChanges: editorState,
-    editorStatePatches: [],
+    editorStateWithChanges: editorStateWithChanges,
+    editorStatePatches: patches,
   }
 }
 
