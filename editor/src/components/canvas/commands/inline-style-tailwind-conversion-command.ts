@@ -30,20 +30,6 @@ export function inlineStyleTailwindConversionCommand(
   }
 }
 
-/**
- * wholesale conversion
- *
- * from inline style to tailwind:
- * - convert inline style to css: https://www.npmjs.com/package/style-object-to-css-string
- * - convert css to tailwind https://github.com/hymhub/css-to-tailwind
- *
- * from tailwind to inline style:
- * - convert tailwind to css:
- * - convert css to react: https://github.com/transform-it/transform-css-to-js
- * - [ ] check out whether tailwind can help with this
- * - [ ] check out whether we can glean this info from the tailwind jit lib
- */
-
 function getStyleInfoUpdates(styleInfo: StyleInfo): {
   stylesToAdd: UpdateCSSProp[]
   stylesToRemove: DeleteCSSProp[]
@@ -75,6 +61,7 @@ function convertInlineStyleToTailwindViaStyleInfo(
 ): EditorStateWithPatches {
   let patches: EditorStatePatch[] = []
   let editorStateWithChanges: EditorState = editorState
+
   elementPaths.forEach((elementPath) => {
     const styleInfo = InlineStylePlugin.styleInfoFactory({
       projectContents: editorState.projectContents,
@@ -89,9 +76,11 @@ function convertInlineStyleToTailwindViaStyleInfo(
     const { editorStateWithChanges: updatedEditorState } = TailwindPlugin(
       getTailwindConfigCached(editorStateWithChanges),
     ).updateStyles(editorStateWithChanges, elementPath, stylesToAdd)
+
     const { editorStatePatch: editorStatePatchToRemove, editorStateWithChanges: finalEditorState } =
       InlineStylePlugin.updateStyles(updatedEditorState, elementPath, stylesToRemove)
-    patches.push(editorStatePatchToRemove)
+
+    patches = [editorStatePatchToRemove]
     editorStateWithChanges = finalEditorState
   })
 
@@ -132,7 +121,7 @@ function convertTailwindToInlineStyleViaStyleInfo(
         elementPath,
         stylesToRemove,
       )
-    patches.push(editorStatePatchToRemove)
+    patches = [editorStatePatchToRemove]
     editorStateWithChanges = finalEditorState
   })
 
