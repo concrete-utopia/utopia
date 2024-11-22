@@ -22,7 +22,7 @@ export const ImportOperationResult = {
 export type ImportOperationResult =
   (typeof ImportOperationResult)[keyof typeof ImportOperationResult]
 
-type ImportLoadBranch = {
+export type ImportLoadBranch = {
   type: 'loadBranch'
   branchName?: string
   githubRepo?: GithubRepo

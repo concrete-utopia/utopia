@@ -158,6 +158,18 @@ const propertyControlsInfoSubstate = {
 } as const
 export type PropertyControlsInfoSubstate = typeof propertyControlsInfoSubstate
 
+// StyleInfoSubstate
+export const styleInfoSubstateKeys = [
+  ...metadataSubstateKeys,
+  ...projectContentsKeys,
+  'codeResultCache',
+] as const
+const emptyStyleInfoSubstate = {
+  editor: pick(styleInfoSubstateKeys, EmptyEditorStateForKeysOnly),
+} as const
+export type StyleInfoSubstate = typeof emptyStyleInfoSubstate
+export type StyleInfoSubEditorState = StyleInfoSubstate['editor']
+
 export type MetadataAndPropertyControlsInfoSubstate = MetadataSubstate &
   PropertyControlsInfoSubstate
 

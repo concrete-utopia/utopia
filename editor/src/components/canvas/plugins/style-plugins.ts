@@ -20,6 +20,7 @@ import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import type { CSSStyleProperty } from '../canvas-types'
 import { isStyleInfoKey, type StyleInfo } from '../canvas-types'
+import type { StyleInfoSubEditorState } from '../../editor/store/store-hook-substore-types'
 import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
 
 export interface UpdateCSSProp {
@@ -64,7 +65,7 @@ export interface StylePlugin {
   ) => EditorStateWithPatch
 }
 
-export function getActivePlugin(editorState: EditorState): StylePlugin {
+export function getActivePlugin(editorState: StyleInfoSubEditorState): StylePlugin {
   if (isFeatureEnabled('Tailwind') && isTailwindEnabled()) {
     return TailwindPlugin(getTailwindConfigCached(editorState))
   }
@@ -177,6 +178,13 @@ const genericPropPatcher =
 
 const PaddingLonghands = ['paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight']
 
+const BorderRadiusLonghands = [
+  'borderTopLeftRadius',
+  'borderTopRightRadius',
+  'borderBottomLeftRadius',
+  'borderBottomRightRadius',
+]
+
 const patchers: PropPatcher[] = [
   { matches: (p) => p === 'gap', patch: genericPropPatcher('0px') },
   {
@@ -193,7 +201,25 @@ const patchers: PropPatcher[] = [
       )
     },
   },
+  {
+    matches: (p) => p === 'borderRadius',
+    patch: (_, styleInfo, updatedProperties) => {
+      const propIsSetOnElement = styleInfo?.padding != null
+
+      if (!propIsSetOnElement) {
+        return []
+      }
+
+      return BorderRadiusLonghands.filter(
+        (p) => !updatedProperties.propertiesUpdated.includes(p),
+      ).map((p) => makeZeroProp(p))
+    },
+  },
   { matches: (p) => PaddingLonghands.includes(p), patch: genericPropPatcher('0px') },
+  {
+    matches: (p) => BorderRadiusLonghands.includes(p),
+    patch: genericPropPatcher('0px'),
+  },
 ]
 
 function getPropertiesToZero(
