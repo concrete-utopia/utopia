@@ -2341,25 +2341,25 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
       />
       <RulerMarkerIndicator parentGrid={markers.parentGrid} marker={markers.rowEnd} axis={'row'} />
       {/* Offset lines */}
-      <GridOffsetLine
+      <GridCellOffsetLine
         top={markers.columnStart.top}
         left={markers.columnStart.left}
         size={markers.cellRect.y - markers.gridRect.y}
         orientation='vertical'
       />
-      <GridOffsetLine
+      <GridCellOffsetLine
         top={markers.columnEnd.top}
         left={markers.columnEnd.left}
         size={markers.cellRect.y - markers.gridRect.y}
         orientation='vertical'
       />
-      <GridOffsetLine
+      <GridCellOffsetLine
         top={markers.rowStart.top}
         left={markers.rowStart.left}
         size={markers.cellRect.x - markers.gridRect.x}
         orientation='horizontal'
       />
-      <GridOffsetLine
+      <GridCellOffsetLine
         top={markers.rowEnd.top}
         left={markers.rowEnd.left}
         size={markers.cellRect.x - markers.gridRect.x}
@@ -2614,7 +2614,7 @@ function skewMarkerPosition(
   return 0
 }
 
-const GridOffsetLine = React.memo(
+const GridCellOffsetLine = React.memo(
   (props: { top: number; left: number; size: number; orientation: 'vertical' | 'horizontal' }) => {
     const colorTheme = useColorTheme()
 
@@ -2638,7 +2638,7 @@ const GridOffsetLine = React.memo(
     )
   },
 )
-GridOffsetLine.displayName = 'GridOffsetLine'
+GridCellOffsetLine.displayName = 'GridCellOffsetLine'
 
 const GridCellOutline = React.memo(
   (props: { top: number; left: number; width: number; height: number }) => {
