@@ -50,7 +50,13 @@ import { Modifier } from '../../../utils/modifiers'
 import { when } from '../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import {
+  EditorStateContext,
+  HelperControlsStateContext,
+  Substores,
+  useEditorState,
+  useRefEditorState,
+} from '../../editor/store/store-hook'
 import type { GridDimension, GridDiscreteDimension } from '../../inspector/common/css-utils'
 import {
   isCSSKeyword,
@@ -91,11 +97,7 @@ import { windowToCanvasCoordinates } from '../dom-lookup'
 import type { Axis } from '../gap-utils'
 import { useCanvasAnimation } from '../ui-jsx-canvas-renderer/animation-context'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import type {
-  GridControlsProps,
-  GridData,
-  GridMeasurementHelperData,
-} from './grid-controls-for-strategies'
+import type { GridControlsProps } from './grid-controls-for-strategies'
 import {
   edgePositionToGridResizeEdge,
   GridCellTestId,
@@ -106,7 +108,6 @@ import {
   GridMeasurementHelperMap,
   GridMeasurementHelpersKey,
   useGridData,
-  useGridMeasurementHelperData,
 } from './grid-controls-for-strategies'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { useResizeEdges } from './select-mode/use-resize-edges'
@@ -119,6 +120,14 @@ import { styleStringInArray } from '../../../utils/common-constants'
 import { gridContainerIdentifier, type GridIdentifier } from '../../editor/store/editor-state'
 import type { RulerMarkerType } from './grid-controls-ruler-markers'
 import { rulerMarkerIcons } from './grid-controls-ruler-markers'
+import type { GridData, GridMeasurementHelperData } from './grid-measurements'
+import {
+  getGridElementMeasurementHelperData,
+  useGridElementMeasurementHelperData,
+  useGridMeasurementHelperData,
+} from './grid-measurements'
+import type { Property } from 'csstype'
+import { isInsertMode, isSelectMode } from '../../editor/editor-modes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
@@ -227,7 +236,7 @@ const GridTrackSizeLabel = React.memo((props: GridResizingControlProps) => {
     [maybeClearHighlightsOnHoverEnd],
   )
 
-  const labelId = `grid-${props.axis}-handle-${props.dimensionIndex}`
+  const labelId = `grid-track-size-${props.axis}-handle-${props.dimensionIndex}`
   const containerId = `${labelId}-container`
 
   const cssProp = React.useMemo(
@@ -296,7 +305,7 @@ const GridResizingStripedIndicator = React.memo((props: GridResizingControlProps
   )
   const colorTheme = useColorTheme()
 
-  const labelId = `grid-${props.axis}-handle-${props.dimensionIndex}`
+  const labelId = `grid-resizing-${props.axis}-handle-${props.dimensionIndex}`
   const containerId = `${labelId}-container`
 
   return (
@@ -706,23 +715,23 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
     'GridControl anyTargetAbsolute',
   )
 
-  const anyTargetNotPinned = useEditorState(
-    Substores.metadata,
-    (store) =>
-      store.editor.selectedViews.some(
-        (elementPath) =>
-          getGridElementPinState(
-            MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, elementPath)
-              ?.specialSizeMeasurements.elementGridPropertiesFromProps ?? null,
-          ) !== 'pinned',
-      ),
-    'GridControl anyTargetNotPinned',
-  )
-
   const scale = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.scale,
     'GridControl scale',
+  )
+
+  const anyTargetNotPinned = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.some((elementPath) => {
+        return (
+          getGridElementPinState(
+            getGridElementMeasurementHelperData(elementPath, scale)?.gridElementProperties ?? null,
+          ) !== 'pinned'
+        )
+      }),
+    'GridControl anyTargetNotPinned',
   )
 
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
@@ -770,30 +779,32 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
       const countedRow = Math.floor(index / grid.columns) + 1
       const countedColumn = Math.floor(index % grid.columns) + 1
 
-      const columnFromProps = cell.specialSizeMeasurements.elementGridProperties.gridColumnStart
-      const rowFromProps = cell.specialSizeMeasurements.elementGridProperties.gridRowStart
+      const gridElementData = getGridElementMeasurementHelperData(cell.elementPath, scale)
+      if (gridElementData == null) {
+        return null
+      }
+      const columnFromProps = gridElementData.computedStyling.gridColumnStart
+      const rowFromProps = gridElementData.computedStyling.gridRowStart
 
-      function getAxisValue(value: GridPositionOrSpan | null, counted: number): number {
-        if (
-          value == null ||
-          isCSSKeyword(value) ||
-          isGridSpan(value) ||
-          value.numericalPosition == null
-        ) {
+      function getAxisValue(
+        value: Property.GridColumnStart | Property.GridRowStart | undefined,
+        counted: number,
+      ): number {
+        if (value == null || typeof value !== 'number') {
           return counted
         }
-        return value.numericalPosition
+        return value
       }
       return {
         elementPath: cell.elementPath,
-        globalFrame: cell.globalFrame,
-        borderRadius: cell.specialSizeMeasurements.borderRadius,
+        globalFrame: gridElementData.frame,
+        borderRadius: gridElementData.computedStyling.borderRadius,
         column: getAxisValue(columnFromProps, countedColumn),
         row: getAxisValue(rowFromProps, countedRow),
         index: index,
       }
     }, children)
-  }, [grid, jsxMetadata])
+  }, [grid.columns, grid.identifier, jsxMetadata, scale])
 
   const dragging = useEditorState(
     Substores.canvas,
@@ -1015,10 +1026,7 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
                 controlsVisible === 'visible'
                   ? '#ffffff66'
                   : 'transparent',
-              borderRadius:
-                cell.borderRadius != null
-                  ? `${cell.borderRadius.top}px ${cell.borderRadius.right}px ${cell.borderRadius.bottom}px ${cell.borderRadius.left}px`
-                  : 0,
+              borderRadius: cell.borderRadius ?? 0,
             }}
           />
         )
@@ -1037,10 +1045,7 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
             position: 'absolute',
             width: shadow.globalFrame.width,
             height: shadow.globalFrame.height,
-            borderRadius:
-              shadow.borderRadius != null
-                ? `${shadow.borderRadius.top}px ${shadow.borderRadius.right}px ${shadow.borderRadius.bottom}px ${shadow.borderRadius.left}px`
-                : 0,
+            borderRadius: shadow.borderRadius ?? 0,
             backgroundColor: 'black',
             opacity: 0.1,
             border: '1px solid white',
@@ -1105,6 +1110,7 @@ export const GridMeasurementHelper = React.memo<GridMeasurementHelperProps>(
 
     const uid = UUID()
     GridMeasurementHelperMap.current.set(gridData.element, uid)
+
     return (
       <div id={uid} data-grid-path={EP.toString(elementPath)} style={style}>
         {placeholders.map((cell) => {
@@ -1961,19 +1967,9 @@ export interface GridElementContainingBlockProps {
   gridChild: ElementPath
 }
 
-function nullHandlingPrintPin(
-  gridTemplate: GridContainerProperties | null | undefined,
-  pin: GridPositionOrSpan | null | undefined,
-  axis: 'row' | 'column',
-): string | number | undefined {
-  if (gridTemplate == null || pin == null) {
-    return undefined
-  }
-  return printPin(gridTemplate, pin, axis)
-}
-
 const GridElementContainingBlock = React.memo<GridElementContainingBlockProps>((props) => {
   const gridData = useGridMeasurementHelperData(props.gridPath, 'element')
+  const gridChildData = useGridElementMeasurementHelperData(props.gridChild)
   const scale = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.scale,
@@ -1990,44 +1986,18 @@ const GridElementContainingBlock = React.memo<GridElementContainingBlockProps>((
     },
     'GridElementContainingBlock position',
   )
-  const gridChildStyle: CSSProperties = useEditorState(
-    Substores.metadata,
-    (store) => {
-      const childMetadata = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        props.gridChild,
-      )
-      if (childMetadata == null) {
-        return {}
-      }
-      const gridFromProps = childMetadata.specialSizeMeasurements.elementGridPropertiesFromProps
-      const gridComputed = childMetadata.specialSizeMeasurements.elementGridProperties
-      return {
-        gridColumnStart: nullHandlingPrintPin(
-          childMetadata.specialSizeMeasurements.containerGridProperties,
-          gridFromProps.gridColumnStart ?? gridComputed.gridColumnStart,
-          'column',
-        ),
-        gridColumnEnd: nullHandlingPrintPin(
-          childMetadata.specialSizeMeasurements.containerGridProperties,
-          gridFromProps.gridColumnEnd ?? gridComputed.gridColumnEnd,
-          'column',
-        ),
-        gridRowStart: nullHandlingPrintPin(
-          childMetadata.specialSizeMeasurements.containerGridProperties,
-          gridFromProps.gridRowStart ?? gridComputed.gridRowStart,
-          'row',
-        ),
-        gridRowEnd: nullHandlingPrintPin(
-          childMetadata.specialSizeMeasurements.containerGridProperties,
-          gridFromProps.gridRowEnd ?? gridComputed.gridRowEnd,
-          'row',
-        ),
-        position: childMetadata.specialSizeMeasurements.position ?? undefined,
-      }
-    },
-    'GridElementContainingBlock gridChildStyle',
-  )
+  const gridChildStyle: CSSProperties = React.useMemo(() => {
+    if (gridChildData == null) {
+      return {}
+    }
+    return {
+      gridColumnStart: gridChildData.computedStyling.gridColumnStart,
+      gridColumnEnd: gridChildData.computedStyling.gridColumnEnd,
+      gridRowStart: gridChildData.computedStyling.gridRowStart,
+      gridRowEnd: gridChildData.computedStyling.gridRowEnd,
+      position: gridChildData.computedStyling.position,
+    }
+  }, [gridChildData])
   const gridChildFrame = useEditorState(
     Substores.metadata,
     (store) => {
@@ -2499,6 +2469,17 @@ function getCellCanvasHeightFromBounds(
     return acc + curr.height + padding
   }, currentColumn.height)
 }
+
+export const GridHelperControls = () => {
+  const helperControlsStore = React.useContext(HelperControlsStateContext)
+  return (
+    <EditorStateContext.Provider value={helperControlsStore}>
+      <GridMeasurementHelpers />
+      <GridElementContainingBlocks />
+    </EditorStateContext.Provider>
+  )
+}
+GridHelperControls.displayName = 'GridHelperControls'
 
 // This function returns the amount of pixels used to adjust the position of
 // individual ruler markers, which need specific skews based on their shape.

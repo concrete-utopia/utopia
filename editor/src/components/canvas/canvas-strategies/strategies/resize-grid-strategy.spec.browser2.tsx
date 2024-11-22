@@ -144,7 +144,7 @@ describe('resize a grid', () => {
     await renderResult.dispatch(selectComponents([target], false), true)
     await renderResult.getDispatchFollowUpActionsFinished()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const resizeControl = renderResult.renderedDOM.getByTestId(`grid-column-handle-1`)
+    const resizeControl = renderResult.renderedDOM.getByTestId(`grid-track-size-column-handle-1`)
     const resizeControlRect = resizeControl.getBoundingClientRect()
     const startPoint = canvasPoint({
       x: resizeControlRect.x + resizeControlRect.width / 2,
@@ -259,7 +259,7 @@ export var storyboard = (
     await renderResult.dispatch(selectComponents([target], false), true)
     await renderResult.getDispatchFollowUpActionsFinished()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const resizeControl = renderResult.renderedDOM.getByTestId(`grid-column-handle-1`)
+    const resizeControl = renderResult.renderedDOM.getByTestId(`grid-track-size-column-handle-1`)
     const resizeControlRect = resizeControl.getBoundingClientRect()
     const startPoint = canvasPoint({
       x: resizeControlRect.x + resizeControlRect.width / 2,
@@ -320,7 +320,7 @@ export var storyboard = (
     await renderResult.dispatch(selectComponents([target], false), true)
     await renderResult.getDispatchFollowUpActionsFinished()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const resizeControl = renderResult.renderedDOM.getByTestId(`grid-row-handle-1`)
+    const resizeControl = renderResult.renderedDOM.getByTestId(`grid-track-size-row-handle-1`)
     const resizeControlRect = resizeControl.getBoundingClientRect()
     const startPoint = canvasPoint({
       x: resizeControlRect.x + resizeControlRect.width / 2,
@@ -435,7 +435,7 @@ export var storyboard = (
     await renderResult.dispatch(selectComponents([target], false), true)
     await renderResult.getDispatchFollowUpActionsFinished()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const resizeControl = renderResult.renderedDOM.getByTestId(`grid-column-handle-1`)
+    const resizeControl = renderResult.renderedDOM.getByTestId(`grid-track-size-column-handle-1`)
     const resizeControlRect = resizeControl.getBoundingClientRect()
     const startPoint = canvasPoint({
       x: resizeControlRect.x + resizeControlRect.width / 2,
@@ -555,7 +555,7 @@ export var storyboard = (
       await renderResult.dispatch(selectComponents([target], false), true)
       await renderResult.getDispatchFollowUpActionsFinished()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const resizeControl = renderResult.renderedDOM.getByTestId(`grid-column-handle-1`)
+      const resizeControl = renderResult.renderedDOM.getByTestId(`grid-track-size-column-handle-1`)
       const resizeControlRect = resizeControl.getBoundingClientRect()
       const startPoint = canvasPoint({
         x: resizeControlRect.x + resizeControlRect.width / 2,
@@ -674,7 +674,7 @@ export var storyboard = (
       await renderResult.dispatch(selectComponents([target], false), true)
       await renderResult.getDispatchFollowUpActionsFinished()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const resizeControl = renderResult.renderedDOM.getByTestId(`grid-column-handle-1`)
+      const resizeControl = renderResult.renderedDOM.getByTestId(`grid-track-size-column-handle-1`)
       const resizeControlRect = resizeControl.getBoundingClientRect()
       const startPoint = canvasPoint({
         x: resizeControlRect.x + resizeControlRect.width / 2,
@@ -792,7 +792,7 @@ export var storyboard = (
       await renderResult.dispatch(selectComponents([target], false), true)
       await renderResult.getDispatchFollowUpActionsFinished()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const resizeControl = renderResult.renderedDOM.getByTestId(`grid-column-handle-1`)
+      const resizeControl = renderResult.renderedDOM.getByTestId(`grid-track-size-column-handle-1`)
       const resizeControlRect = resizeControl.getBoundingClientRect()
       const startPoint = canvasPoint({
         x: resizeControlRect.x + resizeControlRect.width / 2,

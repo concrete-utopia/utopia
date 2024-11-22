@@ -494,7 +494,7 @@ export type EditorStoreFull = EditorStoreShared & {
   patchedDerived: DerivedState
 }
 
-type StoreName = 'editor-store' | 'canvas-store' | 'low-priority-store'
+type StoreName = 'editor-store' | 'canvas-store' | 'helper-controls-store' | 'low-priority-store'
 
 export type EditorStorePatched = EditorStoreShared & {
   storeName: StoreName
