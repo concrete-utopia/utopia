@@ -78,7 +78,20 @@ export const InlineStylePlugin: StylePlugin = {
       const paddingBottom = getPropertyFromInstance('paddingBottom', element.props)
       const paddingLeft = getPropertyFromInstance('paddingLeft', element.props)
       const paddingRight = getPropertyFromInstance('paddingRight', element.props)
+      const borderRadius = getPropertyFromInstance('borderRadius', element.props)
+      const borderTopLeftRadius = getPropertyFromInstance('borderTopLeftRadius', element.props)
+      const borderTopRightRadius = getPropertyFromInstance('borderTopRightRadius', element.props)
+      const borderBottomRightRadius = getPropertyFromInstance(
+        'borderBottomRightRadius',
+        element.props,
+      )
+      const borderBottomLeftRadius = getPropertyFromInstance(
+        'borderBottomLeftRadius',
+        element.props,
+      )
       const zIndex = getPropertyFromInstance('zIndex', element.props)
+
+      const overflow = getPropertyFromInstance('overflow', element.props)
 
       return {
         gap: gap,
@@ -95,7 +108,13 @@ export const InlineStylePlugin: StylePlugin = {
         paddingBottom: paddingBottom,
         paddingLeft: paddingLeft,
         paddingRight: paddingRight,
+        borderRadius: borderRadius,
+        borderTopLeftRadius: borderTopLeftRadius,
+        borderTopRightRadius: borderTopRightRadius,
+        borderBottomRightRadius: borderBottomRightRadius,
+        borderBottomLeftRadius: borderBottomLeftRadius,
         zIndex: zIndex,
+        overflow: overflow,
       }
     },
   updateStyles: (editorState, elementPath, updates) => {

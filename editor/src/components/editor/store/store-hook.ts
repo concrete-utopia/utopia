@@ -40,6 +40,7 @@ import type {
   RestOfEditorState,
   SelectedViewsSubstate,
   StoreKey,
+  StyleInfoSubstate,
   Substates,
   ThemeSubstate,
   UserStateSubstate,
@@ -58,6 +59,7 @@ import {
   restOfEditorStateKeys,
   restOfStoreKeys,
   selectedViewsSubstateKeys,
+  styleInfoSubstateKeys,
   variablesInScopeSubstateKeys,
 } from './store-hook-substore-types'
 import { Getter } from '../hook-utils'
@@ -80,6 +82,8 @@ export const EditorStateContext = React.createContext<UtopiaStoreAPI | null>(nul
 EditorStateContext.displayName = 'EditorStateContext'
 export const CanvasStateContext = React.createContext<UtopiaStoreAPI | null>(null)
 CanvasStateContext.displayName = 'CanvasStateContext'
+export const HelperControlsStateContext = React.createContext<UtopiaStoreAPI | null>(null)
+HelperControlsStateContext.displayName = 'HelperControlsStateContext'
 export const LowPriorityStateContext = React.createContext<UtopiaStoreAPI | null>(null)
 LowPriorityStateContext.displayName = 'LowPriorityStateContext'
 
@@ -354,6 +358,9 @@ export const Substores = {
       a.editor,
       b.editor,
     )
+  },
+  styleInfo: (a: StyleInfoSubstate, b: StyleInfoSubstate) => {
+    return keysEquality(styleInfoSubstateKeys, a.editor, b.editor)
   },
 } as const
 

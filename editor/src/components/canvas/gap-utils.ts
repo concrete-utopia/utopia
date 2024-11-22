@@ -32,8 +32,6 @@ import { isReversedFlexDirection } from '../../core/model/flex-utils'
 import * as EP from '../../core/shared/element-path'
 import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragment-like-helpers'
 import type { AllElementProps } from '../editor/store/editor-state'
-import type { GridData } from './controls/grid-controls-for-strategies'
-import { getNullableAutoOrTemplateBaseString } from './controls/grid-controls-for-strategies'
 import { optionalMap } from '../../core/shared/optional-utils'
 
 export interface PathWithBounds {
