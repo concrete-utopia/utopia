@@ -28,6 +28,7 @@ import {
 import type { CanvasPoint, CanvasRectangle, LocalRectangle } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
+  canvasRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
   nullIfInfinity,
@@ -2190,6 +2191,8 @@ const rulerMarkerIconSize = 12 // px
 
 type RulerMarkerData = {
   parentGrid: GridContainerProperties
+  cellRect: CanvasRectangle
+  gridRect: CanvasRectangle
   columnStart: RulerMarkerPositionData
   columnEnd: RulerMarkerPositionData
   rowStart: RulerMarkerPositionData
@@ -2273,8 +2276,18 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
         store.editor.jsxMetadata,
       )
 
+      const cellRect = parentGridCellGlobalFrames[cellBounds.row - 1][cellBounds.column - 1]
+      const cellRectResized = canvasRectangle({
+        x: cellRect.x,
+        y: cellRect.y,
+        width: width,
+        height: height,
+      })
+
       return {
         parentGrid: parentGrid,
+        cellRect: cellRectResized,
+        gridRect: gridRect,
         columnStart: {
           top: gridRect.y,
           left: left,
@@ -2310,6 +2323,7 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
 
   return (
     <React.Fragment>
+      {/* Indicators */}
       <RulerMarkerIndicator
         parentGrid={markers.parentGrid}
         marker={markers.columnStart}
@@ -2326,6 +2340,38 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
         axis={'row'}
       />
       <RulerMarkerIndicator parentGrid={markers.parentGrid} marker={markers.rowEnd} axis={'row'} />
+      {/* Offset lines */}
+      <GridOffsetLine
+        top={markers.columnStart.top}
+        left={markers.columnStart.left}
+        size={markers.cellRect.y - markers.gridRect.y}
+        orientation='vertical'
+      />
+      <GridOffsetLine
+        top={markers.columnEnd.top}
+        left={markers.columnEnd.left}
+        size={markers.cellRect.y - markers.gridRect.y}
+        orientation='vertical'
+      />
+      <GridOffsetLine
+        top={markers.rowStart.top}
+        left={markers.rowStart.left}
+        size={markers.cellRect.x - markers.gridRect.x}
+        orientation='horizontal'
+      />
+      <GridOffsetLine
+        top={markers.rowEnd.top}
+        left={markers.rowEnd.left}
+        size={markers.cellRect.x - markers.gridRect.x}
+        orientation='horizontal'
+      />
+      {/* Cell outline */}
+      <GridCellOutline
+        top={markers.cellRect.y}
+        left={markers.cellRect.x}
+        width={markers.cellRect.width + 1}
+        height={markers.cellRect.height + 1}
+      />
     </React.Fragment>
   )
 })
@@ -2562,3 +2608,50 @@ function skewMarkerPosition(
 
   return 0
 }
+
+const GridOffsetLine = React.memo(
+  (props: { top: number; left: number; size: number; orientation: 'vertical' | 'horizontal' }) => {
+    const colorTheme = useColorTheme()
+
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: props.top,
+          left: props.left,
+          width: props.orientation === 'horizontal' ? props.size : 1,
+          height: props.orientation === 'vertical' ? props.size : 1,
+          borderLeft:
+            props.orientation === 'vertical' ? `1px dashed ${colorTheme.primary.value}` : undefined,
+          borderTop:
+            props.orientation === 'horizontal'
+              ? `1px dashed ${colorTheme.primary.value}`
+              : undefined,
+          pointerEvents: 'none',
+        }}
+      />
+    )
+  },
+)
+GridOffsetLine.displayName = 'GridOffsetLine'
+
+const GridCellOutline = React.memo(
+  (props: { top: number; left: number; width: number; height: number }) => {
+    const colorTheme = useColorTheme()
+
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: props.top,
+          left: props.left,
+          width: props.width,
+          height: props.height,
+          border: `1px dashed ${colorTheme.primary.value}`,
+          pointerEvents: 'none',
+        }}
+      />
+    )
+  },
+)
+GridCellOutline.displayName = 'GridCellOutline'
