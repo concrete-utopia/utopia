@@ -2561,16 +2561,17 @@ function skewMarkerPosition(
   // span-end triangle, on the column
   const spanEndColumn = axis === 'column' && markerType === 'span-end'
   if (spanEndColumn) {
-    return 10
+    return 9
   }
-  const pinnedEndColumn = axis === 'column' && markerType === 'pinned'
+  // pinned triangle, on the column
+  const pinnedEndColumn = axis === 'column' && markerType === 'pinned' && bound === 'end'
   if (pinnedEndColumn) {
     return 5
   }
   // any other ending marker, on the column
   const endColumn = bound === 'end' && axis === 'column'
   if (endColumn) {
-    return 2
+    return 1
   }
 
   // span-end triangle, on the row
@@ -2581,7 +2582,7 @@ function skewMarkerPosition(
   // any other ending marker, on the row
   const endRow = bound === 'end' && axis === 'row'
   if (endRow) {
-    return 6
+    return 4
   }
 
   // span-start triangle, on the column
@@ -2589,10 +2590,14 @@ function skewMarkerPosition(
   if (spanStartColumn) {
     return 0
   }
+  const pinnedStartColumn = axis === 'column' && markerType === 'pinned' && bound === 'start'
+  if (pinnedStartColumn) {
+    return 5
+  }
   // any starting marker, on the column
   const startColumn = bound === 'start' && axis === 'column'
   if (startColumn) {
-    return 5
+    return 1
   }
 
   // span-start starting triangle, on the row
