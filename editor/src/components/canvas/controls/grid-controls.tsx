@@ -28,6 +28,7 @@ import {
 import type { CanvasPoint, CanvasRectangle, LocalRectangle } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
+  canvasRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
   nullIfInfinity,
@@ -2160,6 +2161,8 @@ const rulerMarkerIconSize = 12 // px
 
 type RulerMarkerData = {
   parentGrid: GridContainerProperties
+  cellRect: CanvasRectangle
+  gridRect: CanvasRectangle
   columnStart: RulerMarkerPositionData
   columnEnd: RulerMarkerPositionData
   rowStart: RulerMarkerPositionData
@@ -2243,8 +2246,18 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
         store.editor.jsxMetadata,
       )
 
+      const cellRect = parentGridCellGlobalFrames[cellBounds.row - 1][cellBounds.column - 1]
+      const cellRectResized = canvasRectangle({
+        x: cellRect.x,
+        y: cellRect.y,
+        width: width,
+        height: height,
+      })
+
       return {
         parentGrid: parentGrid,
+        cellRect: cellRectResized,
+        gridRect: gridRect,
         columnStart: {
           top: gridRect.y,
           left: left,
@@ -2280,6 +2293,7 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
 
   return (
     <React.Fragment>
+      {/* Indicators */}
       <RulerMarkerIndicator
         parentGrid={markers.parentGrid}
         marker={markers.columnStart}
@@ -2296,6 +2310,38 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
         axis={'row'}
       />
       <RulerMarkerIndicator parentGrid={markers.parentGrid} marker={markers.rowEnd} axis={'row'} />
+      {/* Offset lines */}
+      <GridCellOffsetLine
+        top={markers.columnStart.top}
+        left={markers.columnStart.left}
+        size={markers.cellRect.y - markers.gridRect.y}
+        orientation='vertical'
+      />
+      <GridCellOffsetLine
+        top={markers.columnEnd.top}
+        left={markers.columnEnd.left}
+        size={markers.cellRect.y - markers.gridRect.y}
+        orientation='vertical'
+      />
+      <GridCellOffsetLine
+        top={markers.rowStart.top}
+        left={markers.rowStart.left}
+        size={markers.cellRect.x - markers.gridRect.x}
+        orientation='horizontal'
+      />
+      <GridCellOffsetLine
+        top={markers.rowEnd.top}
+        left={markers.rowEnd.left}
+        size={markers.cellRect.x - markers.gridRect.x}
+        orientation='horizontal'
+      />
+      {/* Cell outline */}
+      <GridCellOutline
+        top={markers.cellRect.y}
+        left={markers.cellRect.x}
+        width={markers.cellRect.width + 1}
+        height={markers.cellRect.height + 1}
+      />
     </React.Fragment>
   )
 })
@@ -2496,16 +2542,17 @@ function skewMarkerPosition(
   // span-end triangle, on the column
   const spanEndColumn = axis === 'column' && markerType === 'span-end'
   if (spanEndColumn) {
-    return 10
+    return 9
   }
-  const pinnedEndColumn = axis === 'column' && markerType === 'pinned'
+  // pinned triangle, on the column
+  const pinnedEndColumn = axis === 'column' && markerType === 'pinned' && bound === 'end'
   if (pinnedEndColumn) {
     return 5
   }
   // any other ending marker, on the column
   const endColumn = bound === 'end' && axis === 'column'
   if (endColumn) {
-    return 2
+    return 1
   }
 
   // span-end triangle, on the row
@@ -2516,7 +2563,7 @@ function skewMarkerPosition(
   // any other ending marker, on the row
   const endRow = bound === 'end' && axis === 'row'
   if (endRow) {
-    return 6
+    return 4
   }
 
   // span-start triangle, on the column
@@ -2524,10 +2571,14 @@ function skewMarkerPosition(
   if (spanStartColumn) {
     return 0
   }
+  const pinnedStartColumn = axis === 'column' && markerType === 'pinned' && bound === 'start'
+  if (pinnedStartColumn) {
+    return 5
+  }
   // any starting marker, on the column
   const startColumn = bound === 'start' && axis === 'column'
   if (startColumn) {
-    return 5
+    return 1
   }
 
   // span-start starting triangle, on the row
@@ -2543,3 +2594,50 @@ function skewMarkerPosition(
 
   return 0
 }
+
+const GridCellOffsetLine = React.memo(
+  (props: { top: number; left: number; size: number; orientation: 'vertical' | 'horizontal' }) => {
+    const colorTheme = useColorTheme()
+
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: props.top,
+          left: props.left,
+          width: props.orientation === 'horizontal' ? props.size : 1,
+          height: props.orientation === 'vertical' ? props.size : 1,
+          borderLeft:
+            props.orientation === 'vertical' ? `1px dashed ${colorTheme.primary.value}` : undefined,
+          borderTop:
+            props.orientation === 'horizontal'
+              ? `1px dashed ${colorTheme.primary.value}`
+              : undefined,
+          pointerEvents: 'none',
+        }}
+      />
+    )
+  },
+)
+GridCellOffsetLine.displayName = 'GridCellOffsetLine'
+
+const GridCellOutline = React.memo(
+  (props: { top: number; left: number; width: number; height: number }) => {
+    const colorTheme = useColorTheme()
+
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: props.top,
+          left: props.left,
+          width: props.width,
+          height: props.height,
+          border: `1px dashed ${colorTheme.primary.value}`,
+          pointerEvents: 'none',
+        }}
+      />
+    )
+  },
+)
+GridCellOutline.displayName = 'GridCellOutline'
