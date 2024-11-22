@@ -175,8 +175,17 @@ export const optionalProp = <T>(
   parser: PropertyParserFn<T>,
 ): { optional: PropertyParserFn<T> } => ({ optional: parser })
 
+interface ObjectParserOptions {
+  allowUnknownKeys: boolean
+}
+
+const DefaultObjectParserOptions: ObjectParserOptions = {
+  allowUnknownKeys: false,
+}
+
 export function objectParser<Type>(
   spec: ObjectParserSpec<Type>,
+  options: Partial<ObjectParserOptions> = DefaultObjectParserOptions,
 ): (v: unknown) => ParseResult<Type> {
   return (value: unknown) => {
     if (typeof value !== 'object') {
@@ -216,7 +225,8 @@ export function objectParser<Type>(
 
     const unknownProps = [...difference(allProps, checkedProps)]
 
-    if (unknownProps.length > 0) {
+    const allowUnknownKeys = options != null && options.allowUnknownKeys
+    if (!allowUnknownKeys && unknownProps.length > 0) {
       return left(descriptionParseError(`Found unknown props: ${unknownProps.join(', ')}`))
     }
 
