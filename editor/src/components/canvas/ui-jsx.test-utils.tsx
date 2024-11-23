@@ -428,6 +428,9 @@ export async function renderTestEditorWithModel(
 
     flushSync(() => {
       canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
+      helperControlsStoreHook.setState(
+        patchedStoreFromFullStore(workingEditorState, 'helper-controls-store'),
+      )
     })
 
     // run dom SAMPLER
@@ -612,6 +615,10 @@ export async function renderTestEditorWithModel(
     patchedStoreFromFullStore(initialEditorStore, 'canvas-store'),
   )
 
+  const helperControlsStoreHook: UtopiaStoreAPI = createStoresAndState(
+    patchedStoreFromFullStore(initialEditorStore, 'helper-controls-store'),
+  )
+
   prevDomWalkerMutableState?.resizeObserver.disconnect()
   prevDomWalkerMutableState?.mutationObserver.disconnect()
   const domWalkerMutableState = createDomWalkerMutableState(canvasStoreHook, asyncTestDispatch)
@@ -673,6 +680,7 @@ label {
           dispatch={asyncTestDispatch as EditorDispatch}
           mainStore={storeHook}
           canvasStore={canvasStoreHook}
+          helperControlsStore={helperControlsStoreHook}
           spyCollector={spyCollector}
           lowPriorityStore={lowPriorityStoreHook}
           domWalkerMutableState={domWalkerMutableState}

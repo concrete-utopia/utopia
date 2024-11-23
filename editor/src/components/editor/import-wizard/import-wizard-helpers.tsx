@@ -1,32 +1,25 @@
 import * as React from 'react'
-import type { ImportOperation } from '../../../core/shared/import/import-operation-types'
+import {
+  ImportOperationResult,
+  type ImportOperation,
+} from '../../../core/shared/import/import-operation-types'
 import { assertNever } from '../../../core/shared/utils'
 
-export function getImportOperationText(operation: ImportOperation): React.ReactNode {
+export function getImportOperationText(operation: ImportOperation): string {
   if (operation.text != null) {
     return operation.text
   }
   switch (operation.type) {
     case 'loadBranch':
+      const action =
+        operation.result == ImportOperationResult.Error ||
+        operation.result == ImportOperationResult.CriticalError
+          ? 'Error Fetching'
+          : 'Fetching'
       if (operation.branchName != null) {
-        return (
-          <span>
-            Fetching branch{' '}
-            <strong>
-              {operation.githubRepo?.owner}/{operation.githubRepo?.repository}@
-              {operation.branchName}
-            </strong>
-          </span>
-        )
+        return `${action} branch **${operation.githubRepo?.owner}/${operation.githubRepo?.repository}@${operation.branchName}**`
       } else {
-        return (
-          <span>
-            Fetching repository{' '}
-            <strong>
-              {operation.githubRepo?.owner}/{operation.githubRepo?.repository}
-            </strong>
-          </span>
-        )
+        return `${action} repository **${operation.githubRepo?.owner}/${operation.githubRepo?.repository}**`
       }
     case 'fetchDependency':
       return `Fetching ${operation.dependencyName}@${operation.dependencyVersion}`
@@ -45,4 +38,12 @@ export function getImportOperationText(operation: ImportOperation): React.ReactN
     default:
       assertNever(operation)
   }
+}
+
+export function getImportOperationTextAsJsx(operation: ImportOperation): React.ReactNode {
+  const text = getImportOperationText(operation)
+  const nodes = text.split('**').map((part, index) => {
+    return index % 2 == 0 ? part : <strong key={part}>{part}</strong>
+  })
+  return <span>{nodes}</span>
 }

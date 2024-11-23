@@ -20,6 +20,7 @@ import {
   domElementMetadata,
   gridAutoOrTemplateDimensions,
   isGridSpan,
+  isGridAutoOrTemplateDimensions,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import type { ElementCanvasRectangleCache } from '../../core/shared/dom-utils'
@@ -625,7 +626,7 @@ function trimDynamicEmptyDimensions(
   return gridAutoOrTemplateDimensions(template.dimensions.slice(0, lastNonEmptyColumn + 1))
 }
 
-function getGridElementProperties(
+export function getGridElementProperties(
   container: GridContainerProperties,
   elementStyle: CSSStyleDeclaration,
 ): GridElementProperties {

@@ -58,6 +58,7 @@ import {
   CanvasStateContext,
   createStoresAndState,
   EditorStateContext,
+  HelperControlsStateContext,
   LowPriorityStateContext,
   OriginalMainEditorStateContext,
 } from '../components/editor/store/store-hook'
@@ -222,6 +223,7 @@ export class Editor {
   storedState: EditorStoreFull
   utopiaStoreHook: UtopiaStoreAPI
   canvasStore: UtopiaStoreAPI
+  helperControlsStore: UtopiaStoreAPI
   lowPriorityStore: UtopiaStoreAPI
   spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
   domWalkerMutableState: DomWalkerMutableStateData
@@ -248,6 +250,7 @@ export class Editor {
         this.boundDispatch,
         this.utopiaStoreHook,
         this.canvasStore,
+        this.helperControlsStore,
         this.lowPriorityStore,
         this.spyCollector,
         this.domWalkerMutableState,
@@ -303,6 +306,10 @@ export class Editor {
       patchedStoreFromFullStore(this.storedState, 'canvas-store'),
     )
 
+    const helperControlsStore = createStoresAndState(
+      patchedStoreFromFullStore(this.storedState, 'helper-controls-store'),
+    )
+
     const lowPriorityStore = createStoresAndState(
       patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
     )
@@ -310,6 +317,8 @@ export class Editor {
     this.utopiaStoreHook = store
 
     this.canvasStore = canvasStore
+
+    this.helperControlsStore = helperControlsStore
 
     this.lowPriorityStore = lowPriorityStore
 
@@ -495,6 +504,9 @@ export class Editor {
           ReactDOM.flushSync(() => {
             ReactDOM.unstable_batchedUpdates(() => {
               this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
+              this.helperControlsStore.setState(
+                patchedStoreFromFullStore(this.storedState, 'helper-controls-store'),
+              )
             })
           })
         })
@@ -732,6 +744,7 @@ export const EditorRoot: React.FunctionComponent<{
   dispatch: EditorDispatch
   mainStore: UtopiaStoreAPI
   canvasStore: UtopiaStoreAPI
+  helperControlsStore: UtopiaStoreAPI
   lowPriorityStore: UtopiaStoreAPI
   spyCollector: UiJsxCanvasContextData
   domWalkerMutableState: DomWalkerMutableStateData
@@ -739,6 +752,7 @@ export const EditorRoot: React.FunctionComponent<{
   dispatch,
   mainStore,
   canvasStore,
+  helperControlsStore,
   lowPriorityStore,
   spyCollector,
   domWalkerMutableState,
@@ -753,16 +767,18 @@ export const EditorRoot: React.FunctionComponent<{
             <EditorStateContext.Provider value={mainStore}>
               <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
                 <CanvasStateContext.Provider value={canvasStore}>
-                  <LowPriorityStateContext.Provider value={lowPriorityStore}>
-                    <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-                      <AnimationContext.Provider
-                        value={{ animate: animate, scope: animationScope }}
-                      >
-                        <LoadingEditorComponent />
-                        <EditorComponent />
-                      </AnimationContext.Provider>
-                    </UiJsxCanvasCtxAtom.Provider>
-                  </LowPriorityStateContext.Provider>
+                  <HelperControlsStateContext.Provider value={helperControlsStore}>
+                    <LowPriorityStateContext.Provider value={lowPriorityStore}>
+                      <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
+                        <AnimationContext.Provider
+                          value={{ animate: animate, scope: animationScope }}
+                        >
+                          <LoadingEditorComponent />
+                          <EditorComponent />
+                        </AnimationContext.Provider>
+                      </UiJsxCanvasCtxAtom.Provider>
+                    </LowPriorityStateContext.Provider>
+                  </HelperControlsStateContext.Provider>
                 </CanvasStateContext.Provider>
               </DomWalkerMutableStateCtx.Provider>
             </EditorStateContext.Provider>
@@ -779,17 +795,27 @@ export const HotRoot: React.FunctionComponent<{
   dispatch: EditorDispatch
   mainStore: UtopiaStoreAPI
   canvasStore: UtopiaStoreAPI
+  helperControlsStore: UtopiaStoreAPI
   lowPriorityStore: UtopiaStoreAPI
   spyCollector: UiJsxCanvasContextData
   domWalkerMutableState: DomWalkerMutableStateData
 }> = hot(
-  ({ dispatch, mainStore, canvasStore, lowPriorityStore, spyCollector, domWalkerMutableState }) => {
+  ({
+    dispatch,
+    mainStore,
+    canvasStore,
+    helperControlsStore,
+    lowPriorityStore,
+    spyCollector,
+    domWalkerMutableState,
+  }) => {
     return (
       <EditorRoot
         dispatch={dispatch}
         spyCollector={spyCollector}
         mainStore={mainStore}
         canvasStore={canvasStore}
+        helperControlsStore={helperControlsStore}
         lowPriorityStore={lowPriorityStore}
         domWalkerMutableState={domWalkerMutableState}
       />
@@ -802,6 +828,7 @@ async function renderRootComponent(
   dispatch: EditorDispatch,
   mainStore: UtopiaStoreAPI,
   canvasStore: UtopiaStoreAPI,
+  helperControlsStore: UtopiaStoreAPI,
   lowPriorityStore: UtopiaStoreAPI,
   spyCollector: UiJsxCanvasContextData,
   domWalkerMutableState: DomWalkerMutableStateData,
@@ -819,6 +846,7 @@ async function renderRootComponent(
             mainStore={mainStore}
             spyCollector={spyCollector}
             canvasStore={canvasStore}
+            helperControlsStore={helperControlsStore}
             lowPriorityStore={lowPriorityStore}
             domWalkerMutableState={domWalkerMutableState}
           />,
@@ -830,6 +858,7 @@ async function renderRootComponent(
             spyCollector={spyCollector}
             mainStore={mainStore}
             canvasStore={canvasStore}
+            helperControlsStore={helperControlsStore}
             lowPriorityStore={lowPriorityStore}
             domWalkerMutableState={domWalkerMutableState}
           />,

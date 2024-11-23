@@ -24,6 +24,7 @@ export type FeatureName =
   | 'Tailwind'
   | 'Import Wizard'
   | 'Show Debug Features'
+  | 'Grid Ruler Markers'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -48,6 +49,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Canvas Fast Selection Hack',
   'Tailwind',
   'Import Wizard',
+  'Grid Ruler Markers',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -72,6 +74,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Canvas Fast Selection Hack': true,
   'Import Wizard': !IS_TEST_ENVIRONMENT,
   'Show Debug Features': false,
+  'Grid Ruler Markers': false,
 }
 
 export const STEGANOGRAPHY_ENABLED = false

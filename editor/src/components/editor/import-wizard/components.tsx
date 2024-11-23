@@ -7,10 +7,9 @@ import type {
   ImportOperation,
 } from '../../../core/shared/import/import-operation-types'
 import { ImportOperationResult } from '../../../core/shared/import/import-operation-types'
-import { assertNever } from '../../../core/shared/utils'
 import { Icn, Icons, useColorTheme } from '../../../uuiui'
 import { GithubSpinner } from '../../../components/navigator/left-pane/github-pane/github-spinner'
-import { getImportOperationText } from './import-wizard-helpers'
+import { getImportOperationTextAsJsx } from './import-wizard-helpers'
 
 export function OperationLine({ operation }: { operation: ImportOperation }) {
   const operationRunningStatus = React.useMemo(() => {
@@ -47,7 +46,7 @@ export function OperationLine({ operation }: { operation: ImportOperation }) {
     >
       <OperationLineContent textColor={textColor}>
         <OperationIcon runningStatus={operationRunningStatus} result={operation.result} />
-        <div>{getImportOperationText(operation)}</div>
+        <div>{getImportOperationTextAsJsx(operation)}</div>
         <div>
           <TimeFromInSeconds operation={operation} runningStatus={operationRunningStatus} />
         </div>

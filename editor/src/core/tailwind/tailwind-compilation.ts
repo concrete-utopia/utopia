@@ -13,15 +13,16 @@ import { importDefault } from '../es-modules/commonjs-interop'
 import { rescopeCSSToTargetCanvasOnly } from '../shared/css-utils'
 import type { RequireFn } from '../shared/npm-dependency-types'
 import { TailwindConfigPath } from './tailwind-config'
-import { ElementsToRerenderGLOBAL } from '../../components/canvas/ui-jsx-canvas'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { Config } from 'tailwindcss/types/config'
-import type { EditorState } from '../../components/editor/store/editor-state'
 import { createSelector } from 'reselect'
-import type { ProjectContentSubstate } from '../../components/editor/store/store-hook-substore-types'
+import type {
+  ProjectContentSubstate,
+  StyleInfoSubEditorState,
+} from '../../components/editor/store/store-hook-substore-types'
 
 const LatestConfig: { current: { code: string; config: Config } | null } = { current: null }
-export function getTailwindConfigCached(editorState: EditorState): Config | null {
+export function getTailwindConfigCached(editorState: StyleInfoSubEditorState): Config | null {
   const tailwindConfig = getProjectFileByFilePath(editorState.projectContents, TailwindConfigPath)
   if (tailwindConfig == null || tailwindConfig.type !== 'TEXT_FILE') {
     return null
@@ -59,6 +60,8 @@ function ensureElementExists({ type, id }: { type: string; id: string }) {
   return tag
 }
 
+const TailwindStylesElementID = 'utopia-tailwind-jit-styles'
+
 async function generateTailwindStyles(tailwindCss: Tailwindcss, allCSSFiles: string) {
   const contentElement = document.getElementById(CanvasContainerID)
   if (contentElement == null) {
@@ -66,8 +69,15 @@ async function generateTailwindStyles(tailwindCss: Tailwindcss, allCSSFiles: str
   }
   const content = contentElement.outerHTML
   const styleString = await tailwindCss.generateStylesFromContent(allCSSFiles, [content])
-  const style = ensureElementExists({ type: 'style', id: 'utopia-tailwind-jit-styles' })
+  const style = ensureElementExists({ type: 'style', id: TailwindStylesElementID })
   style.textContent = rescopeCSSToTargetCanvasOnly(styleString)
+}
+
+function removeTailwindStyles() {
+  const style = document.getElementById(TailwindStylesElementID)
+  if (style != null) {
+    style.remove()
+  }
 }
 
 function getCssFilesFromProjectContents(projectContents: ProjectContentTreeRoot) {
@@ -99,11 +109,7 @@ function runTailwindClassGenerationOnDOMMutation(
       m.addedNodes.length > 0 || // new DOM element was added with potentially new classes
       m.attributeName === 'class', // potentially new classes were added to the class attribute of an element
   )
-  if (
-    !updateHasNewTailwindData ||
-    isInteractionActive ||
-    ElementsToRerenderGLOBAL.current !== 'rerender-all-elements' // implies that an interaction is in progress)
-  ) {
+  if (!updateHasNewTailwindData || isInteractionActive) {
     return
   }
   generateTailwindClasses(projectContents, requireFn)
@@ -161,6 +167,7 @@ export const useTailwindCompilation = () => {
     generateTailwindClasses(projectContentsRef.current, requireFnRef.current)
 
     return () => {
+      removeTailwindStyles()
       observer.disconnect()
     }
   }, [isInteractionActiveRef, projectContentsRef, requireFnRef, tailwindConfig])

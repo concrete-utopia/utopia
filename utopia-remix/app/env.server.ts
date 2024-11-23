@@ -40,6 +40,8 @@ export const ServerEnvironment = {
   AWS_REGION: mustEnvOrLocalFallback('AWS_REGION', ''),
   // Local assets
   LOCAL_ASSETS_FOLDER: mustEnvOrLocalFallback('LOCAL_ASSETS_FOLDER', '../server/utopia-local'),
+  // Discord webhooks
+  DISCORD_WEBHOOK_SITE_IMPORT: mustEnvOrLocalFallback('DISCORD_WEBHOOK_SITE_IMPORT', ''),
 }
 
 export type BrowserEnvironmentType = {

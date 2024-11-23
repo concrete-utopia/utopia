@@ -632,6 +632,7 @@ import {
   getUpdateOperationResult,
   notifyOperationFinished,
   notifyOperationStarted,
+  notifyImportStatusToDiscord,
 } from '../../../core/shared/import/import-operation-service'
 import { updateRequirements } from '../../../core/shared/import/project-health-check/utopia-requirements-service'
 import {
@@ -2196,12 +2197,15 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_IMPORT_STATUS: (action: UpdateImportStatus, editor: EditorModel): EditorModel => {
+    const newImportState = {
+      ...editor.importState,
+      importStatus: action.importStatus,
+    }
+    // side effect ☢️
+    notifyImportStatusToDiscord(newImportState, editor.projectName)
     return {
       ...editor,
-      importState: {
-        ...editor.importState,
-        importStatus: action.importStatus,
-      },
+      importState: newImportState,
     }
   },
   UPDATE_PROJECT_REQUIREMENTS: (
