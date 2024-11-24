@@ -75,6 +75,18 @@
           }
         }
 
+        .editor-loading-screen {
+          position: fixed;
+          left: 0px;
+          top: 0px;
+          bottom: 0px;
+          right: 0px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+        }
+
         .animation-progress {
           animation-name: animation-keyframes;
           animation-duration: 30s;
@@ -92,10 +104,34 @@
 
         .progress-bar-shell {
           border: 1px solid black;
+          margin-top: 64px;
+          width: 212px;
+          height: 11px;
+          border-radius: 8px;
+          overflow: hidden;
+          box-sizing: border-box !important;
         }
 
         .progress-bar-progress {
           background-color: black;
+          border-radius: 6px;
+          height: 9px;
+        }
+
+        .loading-screen-import-operations {
+          color: black;
+          height: 150px;
+          overflow: hidden;
+          width: auto;
+          display: flex;
+          list-style: none;
+          flex-direction: column;
+          align-items: center;
+          margin: 0;
+          padding: 0;
+          gap: 2px;
+          margin-top: 10px;
+          font-family: utopian-inter, 'sans-serif';
         }
 
         .utopia-logo-pyramid.light {
@@ -108,6 +144,15 @@
         @media (prefers-color-scheme: dark) {
           body {
             background-color: #1a1a1a;
+          }
+
+          .editor-loading-screen {
+            background-color: #1a1a1a;
+          }
+
+          .loading-screen-import-operations,
+          .loading-screen-import-operations li {
+            color: white;
           }
 
           .progress-bar-shell {
@@ -154,19 +199,7 @@
       >
         <!-- loading content-->
 
-        <div
-          style="
-            position: fixed;
-            left: 0px;
-            top: 0px;
-            bottom: 0px;
-            right: 0px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-          "
-        >
+        <div class="editor-loading-screen">
           <img
             src="<%- UTOPIA_DOMAIN %>/editor/pyramid_dark.png"
             height="78px"
@@ -180,43 +213,13 @@
             class="utopia-logo-pyramid light"
           />
 
-          <div
-            class="progress-bar-shell"
-            style="
-              margin-top: 64px;
-              width: 212px;
-              height: 11px;
-              border-radius: 8px;
-              overflow: hidden;
-              box-sizing: border-box !important;
-            "
-          >
+          <div class="progress-bar-shell" style="">
             <div
               class="progress-bar-progress animation-progress"
-              style="
-                border-radius: 6px;
-                height: 9px;
-                transform: translateX(-212px);
-                animation-duration: 10s;
-              "
+              style="transform: translateX(-212px); animation-duration: 10s"
             ></div>
           </div>
-          <ul
-            style="
-              height: 150px;
-              overflow: hidden;
-              width: auto;
-              display: flex;
-              list-style: none;
-              flex-direction: column;
-              align-items: center;
-              margin: 0;
-              padding: 0;
-              gap: 2px;
-              margin-top: 10px;
-              font-family: utopian-inter, 'sans-serif';
-            "
-          >
+          <ul class="loading-screen-import-operations">
             <li style="list-style: none">Loading Editor...</li>
           </ul>
 

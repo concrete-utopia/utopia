@@ -25,7 +25,7 @@ import type {
 } from '../components/editor/action-types'
 import { actionActionsOptic, isLoggedIn } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
-import { EditorComponent, LoadingEditorComponent } from '../components/editor/editor-component'
+import { EditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'
 import {
   getLoginState,
@@ -138,6 +138,7 @@ import { canMeasurePerformance } from '../core/performance/performance-utils'
 import { getChildGroupsForNonGroupParents } from '../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { EditorModes } from '../components/editor/editor-modes'
 import { startImportProcess } from '../core/shared/import/import-operation-service'
+import { LoadingEditorComponent } from '../components/editor/loading-screen'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
