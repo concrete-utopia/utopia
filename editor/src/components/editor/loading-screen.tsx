@@ -106,7 +106,7 @@ export function LoadingEditorComponent() {
       className='editor-loading-screen'
       style={{
         zIndex: 1000,
-        backgroundColor: colorTheme.bg0.value,
+        backgroundColor: colorTheme.bg6.value,
         color: colorTheme.fg0.value,
       }}
     >
