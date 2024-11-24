@@ -100,7 +100,8 @@ export function LoadingEditorComponent() {
   }, [totalImportResult, importState.importOperations, projectId])
   if (
     cleared.current ||
-    (totalImportResult.importStatus.status == 'done' && githubRepo == null) ||
+    (totalImportResult.importStatus.status == 'done' &&
+      (githubRepo == null || totalImportResult.result == 'criticalError')) ||
     totalImportResult.importStatus.status == 'paused'
   ) {
     cleared.current = true
