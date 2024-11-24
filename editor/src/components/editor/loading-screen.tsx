@@ -6,6 +6,7 @@ import type { TotalImportResult } from '../../core/shared/import/import-operatio
 import type { Theme } from '../../uuiui'
 import { useColorTheme } from '../../uuiui'
 import { getCurrentTheme } from './store/editor-state'
+import ReactDOM from 'react-dom'
 
 export function LoadingEditorComponent() {
   const colorTheme = useColorTheme()
@@ -41,14 +42,6 @@ export function LoadingEditorComponent() {
 
   const cleared = React.useRef(false)
 
-  const [, setTime] = React.useState(Date.now())
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setTime(Date.now())
-    }, 50)
-    return () => clearInterval(interval)
-  }, [])
-
   const currentOperationToShow: {
     text: React.ReactNode
     id: string
@@ -65,7 +58,7 @@ export function LoadingEditorComponent() {
         }
       } else {
         return {
-          text: `Parsing files...`,
+          text: `Parsing files`,
           id: 'parseFiles',
           timeDone: null,
           timeStarted: null,
@@ -96,35 +89,60 @@ export function LoadingEditorComponent() {
         }
       }
     }
-    return null
+    return {
+      text: 'Loading Editor...',
+      id: 'loading-editor',
+      timeDone: null,
+      timeStarted: null,
+    }
   }, [totalImportResult, importState.importOperations, projectId])
-  if (
-    cleared.current ||
-    (totalImportResult.importStatus.status == 'done' &&
-      (githubRepo == null || totalImportResult.result == 'criticalError')) ||
-    totalImportResult.importStatus.status == 'paused'
-  ) {
+
+  const shouldBeCleared = React.useMemo(() => {
+    return (
+      cleared.current ||
+      (totalImportResult.importStatus.status == 'done' &&
+        (githubRepo == null || totalImportResult.result == 'criticalError')) ||
+      totalImportResult.importStatus.status == 'paused'
+    )
+  }, [totalImportResult, githubRepo])
+
+  React.useEffect(() => {
+    if (shouldBeCleared) {
+      const loadingScreenWrapper = document.getElementById('loading-screen-wrapper')
+      if (loadingScreenWrapper != null) {
+        loadingScreenWrapper.remove()
+      }
+    }
+  }, [shouldBeCleared])
+
+  const portal = React.useRef(document.getElementById('loading-screen-progress-bar-portal')).current
+  const hasMounted = React.useRef(false)
+  if (portal == null) {
+    return null
+  }
+
+  if (shouldBeCleared) {
     cleared.current = true
     return null
   }
 
-  return (
-    <div
-      id='utopia-editor-root-loading'
-      className='editor-loading-screen'
-      style={{
-        zIndex: 1000,
-        backgroundColor: colorTheme.bg6.value,
-        color: colorTheme.fg0.value,
-      }}
-    >
-      <img
-        src={currentTheme === 'dark' ? '/editor/pyramid_dark.png' : '/editor/pyramid_light.png'}
-        height='78px'
-        alt='Utopia Logo'
-        className='utopia-logo-pyramid'
-      />
+  if (!hasMounted.current) {
+    portal.innerHTML = ''
+    hasMounted.current = true
+  }
 
+  const themeStyle =
+    currentTheme === 'dark'
+      ? `
+    .editor-loading-screen { background-color: ${colorTheme.bg6.value} }
+    .utopia-logo-pyramid.light { display: none; }
+    .utopia-logo-pyramid.dark { display: block; }
+  `
+      : ''
+
+  return ReactDOM.createPortal(
+    <React.Fragment>
+      <style>{themeStyle}</style>
       <div className='progress-bar-shell' style={{ borderColor: colorTheme.fg0.value }}>
         <div
           className='progress-bar-progress animation-progress'
@@ -150,6 +168,7 @@ export function LoadingEditorComponent() {
           ) : null}
         </ul>
       </div>
-    </div>
+    </React.Fragment>,
+    portal,
   )
 }

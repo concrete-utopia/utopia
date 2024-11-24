@@ -85,6 +85,8 @@
           flex-direction: column;
           align-items: center;
           justify-content: center;
+          background-color: white;
+          z-index: 1000;
         }
 
         .animation-progress {
@@ -139,6 +141,13 @@
         }
         .utopia-logo-pyramid.dark {
           display: none;
+        }
+
+        .loading-screen-wrapper {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -196,24 +205,27 @@
           justify-content: stretch;
           pointer-events: initial;
         "
-      >
-        <!-- loading content-->
+      ></div>
+      <!-- loading content-->
 
-        <div class="editor-loading-screen">
-          <img
-            src="<%- UTOPIA_DOMAIN %>/editor/pyramid_dark.png"
-            height="78px"
-            alt="Utopia Logo"
-            class="utopia-logo-pyramid dark"
-          />
-          <img
-            src="<%- UTOPIA_DOMAIN %>/editor/pyramid_light.png"
-            height="78px"
-            alt="Utopia Logo"
-            class="utopia-logo-pyramid light"
-          />
-
-          <div class="progress-bar-shell" style="">
+      <div id="loading-screen-wrapper" class="editor-loading-screen">
+        <img
+          src="<%- UTOPIA_DOMAIN %>/editor/pyramid_dark.png"
+          height="78px"
+          alt="Utopia Logo"
+          class="utopia-logo-pyramid dark"
+        />
+        <img
+          src="<%- UTOPIA_DOMAIN %>/editor/pyramid_light.png"
+          height="78px"
+          alt="Utopia Logo"
+          class="utopia-logo-pyramid light"
+        />
+        <div
+          id="loading-screen-progress-bar-portal"
+          style="display: flex; flex-direction: column; align-items: center"
+        >
+          <div class="progress-bar-shell">
             <div
               class="progress-bar-progress animation-progress"
               style="transform: translateX(-212px); animation-duration: 10s"
@@ -222,9 +234,9 @@
           <ul class="loading-screen-import-operations">
             <li style="list-style: none">Loading Editor...</li>
           </ul>
-
-          <!-- ends loading content-->
         </div>
+
+        <!-- ends loading content-->
       </div>
     </div>
   </body>
