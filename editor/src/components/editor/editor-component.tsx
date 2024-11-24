@@ -97,7 +97,7 @@ import {
   navigatorTargetsSelectorNavigatorTargets,
 } from '../navigator/navigator-utils'
 import { ImportWizard } from './import-wizard/import-wizard'
-import { getImportOperationText } from './import-wizard/import-wizard-helpers'
+import { getImportOperationTextAsJsx } from './import-wizard/import-wizard-helpers'
 import { getTotalImportStatusAndResult } from '../../core/shared/import/import-operation-service'
 import type { TotalImportResult } from '../../core/shared/import/import-operation-types'
 
@@ -632,7 +632,7 @@ export function LoadingEditorComponent() {
       if (op?.children?.length == 0 || op.type == 'refreshDependencies') {
         if (op.timeStarted != null) {
           operations.push({
-            text: getImportOperationText(op),
+            text: getImportOperationTextAsJsx(op),
             id: op.id ?? op.type,
             timeDone: op.timeDone,
             timeStarted: op.timeStarted,
@@ -645,7 +645,7 @@ export function LoadingEditorComponent() {
         for (const child of op.children ?? []) {
           if (child.timeStarted != null) {
             operations.push({
-              text: getImportOperationText(child),
+              text: getImportOperationTextAsJsx(child),
               id: child.id ?? child.type,
               timeDone: child.timeDone,
               timeStarted: child.timeStarted,
