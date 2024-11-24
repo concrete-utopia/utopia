@@ -33,7 +33,12 @@ export function LoadingEditorComponent() {
     [importState],
   )
 
-  const keysAppeared = React.useRef(new Set<string>())
+  const projectId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.id,
+    'LoadingEditorComponent projectId',
+  )
+
   const cleared = React.useRef(false)
 
   const [, setTime] = React.useState(Date.now())
@@ -44,53 +49,55 @@ export function LoadingEditorComponent() {
     return () => clearInterval(interval)
   }, [])
 
-  const flatOngoingImportOperations = React.useMemo(() => {
-    const operations: {
-      text: React.ReactNode
-      id: string
-      timeDone: number | null | undefined
-      timeStarted: number | null | undefined
-      appeared: boolean
-    }[] = []
+  const currentOperationToShow: {
+    text: React.ReactNode
+    id: string
+    timeDone: number | null | undefined
+    timeStarted: number | null | undefined
+  } | null = React.useMemo(() => {
     if (totalImportResult.importStatus.status == 'not-started') {
-      operations.push({
-        text: 'Loading Editor...',
-        id: 'loading-editor',
-        timeDone: null,
-        timeStarted: null,
-        appeared: false,
-      })
+      if (projectId == null) {
+        return {
+          text: 'Loading Editor...',
+          id: 'loading-editor',
+          timeDone: null,
+          timeStarted: null,
+        }
+      } else {
+        return {
+          text: `Parsing files...`,
+          id: 'parseFiles',
+          timeDone: null,
+          timeStarted: null,
+        }
+      }
     }
     for (const op of importState.importOperations) {
       if (op?.children?.length == 0 || op.type == 'refreshDependencies') {
-        if (op.timeStarted != null) {
-          operations.push({
+        if (op.timeStarted != null && op.timeDone == null) {
+          return {
             text: getImportOperationTextAsJsx(op),
             id: op.id ?? op.type,
             timeDone: op.timeDone,
             timeStarted: op.timeStarted,
-            appeared: keysAppeared.current.has(op.id ?? op.type),
-          })
-          keysAppeared.current.add(op.id ?? op.type)
+          }
         }
       }
       if (op.type !== 'refreshDependencies') {
         for (const child of op.children ?? []) {
-          if (child.timeStarted != null) {
-            operations.push({
+          if (child.timeStarted != null && child.timeDone == null) {
+            return {
               text: getImportOperationTextAsJsx(child),
               id: child.id ?? child.type,
               timeDone: child.timeDone,
               timeStarted: child.timeStarted,
-              appeared: keysAppeared.current.has(child.id ?? child.type),
-            })
-            keysAppeared.current.add(child.id ?? child.type)
+            }
           }
         }
       }
     }
-    return operations
-  }, [totalImportResult, importState.importOperations])
+    return null
+  }, [totalImportResult, importState.importOperations, projectId])
   if (
     cleared.current ||
     (totalImportResult.importStatus.status == 'done' && githubRepo == null) ||
@@ -129,22 +136,17 @@ export function LoadingEditorComponent() {
       </div>
       <div>
         <ul className='loading-screen-import-operations'>
-          {flatOngoingImportOperations
-            .filter((op) => op.timeDone == null)
-            .slice(0, 1)
-            .map((op) => {
-              return (
-                <li
-                  style={{
-                    listStyle: 'none',
-                    color: colorTheme.fg0.value,
-                  }}
-                  key={op.id}
-                >
-                  {op.text}
-                </li>
-              )
-            })}
+          {currentOperationToShow != null ? (
+            <li
+              style={{
+                listStyle: 'none',
+                color: colorTheme.fg0.value,
+              }}
+              key={currentOperationToShow.id}
+            >
+              {currentOperationToShow.text}
+            </li>
+          ) : null}
         </ul>
       </div>
     </div>
