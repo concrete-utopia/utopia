@@ -49,7 +49,6 @@ import {
   notifyOperationStarted,
   pauseImport,
   startImportProcess,
-  updateProjectImportStatus,
 } from '../../import/import-operation-service'
 import {
   RequirementResolutionResult,

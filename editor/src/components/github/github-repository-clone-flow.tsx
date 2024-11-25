@@ -29,11 +29,8 @@ import { notice } from '../common/notice'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import {
   notifyOperationCriticalError,
-  notifyOperationFinished,
   startImportProcess,
-  updateProjectImportStatus,
 } from '../../core/shared/import/import-operation-service'
-import { ImportOperationResult } from '../../core/shared/import/import-operation-types'
 
 export const LoadActionsDispatched = 'loadActionDispatched'
 

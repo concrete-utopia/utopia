@@ -520,6 +520,7 @@ import {
 import { addToastToState, includeToast, removeToastFromState } from './toast-helpers'
 import { AspectRatioLockedProp } from '../../aspect-ratio'
 import {
+  getDependenciesStatus,
   refreshDependencies,
   removeModulesFromNodeModules,
 } from '../../../core/shared/dependencies'
@@ -629,6 +630,8 @@ import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { styleP } from '../../inspector/inspector-common'
 import {
   getUpdateOperationResult,
+  notifyOperationFinished,
+  notifyOperationStarted,
   notifyImportStatusToDiscord,
 } from '../../../core/shared/import/import-operation-service'
 import { updateRequirements } from '../../../core/shared/import/project-health-check/utopia-requirements-service'
@@ -6319,6 +6322,8 @@ export async function load(
   // this action is now async!
   const migratedModel = applyMigrations(model)
   const npmDependencies = dependenciesWithEditorRequirements(migratedModel.projectContents)
+  // side effect ☢️
+  notifyOperationStarted(dispatch, { type: 'refreshDependencies' })
   const fetchNodeModulesResult = await fetchNodeModules(
     dispatch,
     npmDependencies,
@@ -6331,6 +6336,13 @@ export async function load(
     npmDependencies,
     fetchNodeModulesResult.dependenciesWithError,
     fetchNodeModulesResult.dependenciesNotFound,
+  )
+
+  // side effect ☢️
+  notifyOperationFinished(
+    dispatch,
+    { type: 'refreshDependencies' },
+    getDependenciesStatus(packageResult),
   )
 
   const codeResultCache: CodeResultCache = generateCodeResultCache(

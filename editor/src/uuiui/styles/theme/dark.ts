@@ -59,6 +59,7 @@ const darkBase = {
   bg3: createUtopiColor('#393d49'),
   bg4: createUtopiColor('#55575f'),
   bg5: createUtopiColor('#848998'),
+  bg6: createUtopiColor('#1a1a1a'),
   fg0: createUtopiColor('#ffffff'),
   fg1: createUtopiColor('#D9DCE3'),
   fg2: createUtopiColor('#c9cCc3'),

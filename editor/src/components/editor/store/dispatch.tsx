@@ -89,6 +89,12 @@ import {
 } from '../../../core/performance/performance-utils'
 import { getParseCacheOptions } from '../../../core/shared/parse-cache-utils'
 import { resetUpdatedProperties } from '../../canvas/plugins/style-plugins'
+import {
+  notifyOperationFinished,
+  notifyOperationStarted,
+} from '../../../core/shared/import/import-operation-service'
+import { ImportOperationResult } from '../../../core/shared/import/import-operation-types'
+import { updateImportStatus } from '../actions/action-creators'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -327,6 +333,7 @@ function maybeRequestModelUpdate(
   // Should anything need to be sent across, do so here.
   if (filesToUpdate.length > 0) {
     const { endMeasure } = startPerformanceMeasure('file-parse', { uniqueId: true })
+    notifyOperationStarted(dispatch, { type: 'parseFiles' })
     const parseFinished = getParseResult(
       workers,
       filesToUpdate,
@@ -337,6 +344,7 @@ function maybeRequestModelUpdate(
       getParseCacheOptions(),
     )
       .then((parseResult) => {
+        notifyOperationFinished(dispatch, { type: 'parseFiles' }, ImportOperationResult.Success)
         const duration = endMeasure()
         if (isConcurrencyLoggingEnabled() && filesToUpdate.length > 1) {
           console.info(
@@ -364,12 +372,19 @@ function maybeRequestModelUpdate(
           )
         }
 
-        dispatch([EditorActions.mergeWithPrevUndo(actionsToDispatch)])
+        dispatch([
+          EditorActions.mergeWithPrevUndo(actionsToDispatch),
+          updateImportStatus({ status: 'done' }),
+        ])
         return true
       })
       .catch((e) => {
         console.error('error during parse', e)
-        dispatch([EditorActions.clearParseOrPrintInFlight()])
+        notifyOperationFinished(dispatch, { type: 'parseFiles' }, ImportOperationResult.Error)
+        dispatch([
+          EditorActions.clearParseOrPrintInFlight(),
+          updateImportStatus({ status: 'done' }),
+        ])
         return true
       })
     return {

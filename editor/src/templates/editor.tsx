@@ -137,6 +137,8 @@ import { getParserWorkerCount } from '../core/workers/common/concurrency-utils'
 import { canMeasurePerformance } from '../core/performance/performance-utils'
 import { getChildGroupsForNonGroupParents } from '../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { EditorModes } from '../components/editor/editor-modes'
+import { startImportProcess } from '../core/shared/import/import-operation-service'
+import { LoadingEditorComponent } from '../components/editor/loading-screen'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -267,6 +269,10 @@ export class Editor {
       projectName: string,
       project: PersistentModel,
     ) => {
+      startImportProcess(this.boundDispatch, [
+        { type: 'parseFiles' },
+        { type: 'refreshDependencies' },
+      ])
       await load(this.boundDispatch, project, projectName, projectId, builtInDependencies)
       PubSub.publish(LoadActionsDispatched, { projectId: projectId })
     }
@@ -768,6 +774,7 @@ export const EditorRoot: React.FunctionComponent<{
                         <AnimationContext.Provider
                           value={{ animate: animate, scope: animationScope }}
                         >
+                          <LoadingEditorComponent />
                           <EditorComponent />
                         </AnimationContext.Provider>
                       </UiJsxCanvasCtxAtom.Provider>

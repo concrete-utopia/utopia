@@ -15,6 +15,11 @@
       as="image"
     />
 
+    <link
+      rel="stylesheet"
+      href="<%- UTOPIA_DOMAIN %>/editor/css/initial-load.css?hash=<%- UTOPIA_SHA %>"
+    />
+
     <!--editorScript-->
 
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="use-credentials" />
@@ -48,6 +53,15 @@
             transform: translateX(-212px);
           }
           to {
+            transform: translateX(-180px);
+          }
+        }
+
+        @keyframes animation-keyframes-2 {
+          from {
+            transform: translateX(-180px);
+          }
+          to {
             transform: translateX(0px);
           }
         }
@@ -61,9 +75,23 @@
           }
         }
 
+        .editor-loading-screen {
+          position: fixed;
+          left: 0px;
+          top: 0px;
+          bottom: 0px;
+          right: 0px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background-color: white;
+          z-index: 1000;
+        }
+
         .animation-progress {
           animation-name: animation-keyframes;
-          animation-duration: 10s;
+          animation-duration: 30s;
           animation-iteration-count: infinite;
           animation-direction: alternate;
         }
@@ -78,10 +106,34 @@
 
         .progress-bar-shell {
           border: 1px solid black;
+          margin-top: 64px;
+          width: 212px;
+          height: 11px;
+          border-radius: 8px;
+          overflow: hidden;
+          box-sizing: border-box !important;
         }
 
         .progress-bar-progress {
           background-color: black;
+          border-radius: 6px;
+          height: 9px;
+        }
+
+        .loading-screen-import-operations {
+          color: black;
+          height: 150px;
+          overflow: hidden;
+          width: auto;
+          display: flex;
+          list-style: none;
+          flex-direction: column;
+          align-items: center;
+          margin: 0;
+          padding: 0;
+          gap: 2px;
+          margin-top: 10px;
+          font-family: utopian-inter, 'sans-serif';
         }
 
         .utopia-logo-pyramid.light {
@@ -91,9 +143,25 @@
           display: none;
         }
 
+        .loading-screen-wrapper {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+        }
+
         @media (prefers-color-scheme: dark) {
           body {
             background-color: #1a1a1a;
+          }
+
+          .editor-loading-screen {
+            background-color: #1a1a1a;
+          }
+
+          .loading-screen-import-operations,
+          .loading-screen-import-operations li {
+            color: white;
           }
 
           .progress-bar-shell {
@@ -137,54 +205,38 @@
           justify-content: stretch;
           pointer-events: initial;
         "
-      >
-        <!-- loading content-->
+      ></div>
+      <!-- loading content-->
 
+      <div id="loading-screen-wrapper" class="editor-loading-screen">
+        <img
+          src="<%- UTOPIA_DOMAIN %>/editor/pyramid_dark.png"
+          height="78px"
+          alt="Utopia Logo"
+          class="utopia-logo-pyramid dark"
+        />
+        <img
+          src="<%- UTOPIA_DOMAIN %>/editor/pyramid_light.png"
+          height="78px"
+          alt="Utopia Logo"
+          class="utopia-logo-pyramid light"
+        />
         <div
-          style="
-            position: fixed;
-            left: 0px;
-            top: 0px;
-            bottom: 0px;
-            right: 0px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-          "
+          id="loading-screen-progress-bar-portal"
+          style="display: flex; flex-direction: column; align-items: center"
         >
-          <img
-            src="<%- UTOPIA_DOMAIN %>/editor/pyramid_dark.png?hash=<%- UTOPIA_SHA %>"
-            height="78px"
-            alt="Utopia Logo"
-            class="utopia-logo-pyramid dark"
-          />
-          <img
-            src="<%- UTOPIA_DOMAIN %>/editor/pyramid_light.png?hash=<%- UTOPIA_SHA %>"
-            height="78px"
-            alt="Utopia Logo"
-            class="utopia-logo-pyramid light"
-          />
-
-          <div
-            class="progress-bar-shell"
-            style="
-              margin-top: 64px;
-              width: 212px;
-              height: 11px;
-              border-radius: 8px;
-              overflow: hidden;
-              box-sizing: border-box !important;
-            "
-          >
+          <div class="progress-bar-shell">
             <div
               class="progress-bar-progress animation-progress"
-              style="border-radius: 6px; height: 9px; transform: translateX(-212px)"
+              style="transform: translateX(-212px); animation-duration: 10s"
             ></div>
           </div>
-
-          <!-- ends loading content-->
+          <ul class="loading-screen-import-operations">
+            <li style="list-style: none">Loading Editor...</li>
+          </ul>
         </div>
+
+        <!-- ends loading content-->
       </div>
     </div>
   </body>
