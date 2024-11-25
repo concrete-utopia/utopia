@@ -1,13 +1,10 @@
-import * as TailwindClassParser from '@xengine/tailwindcss-class-parser'
 import type { Config } from 'tailwindcss/types/config'
 import { mapDropNulls } from '../shared/array-utils'
-
-export type ParsedTailwindClass = {
-  property: string
-  value: string
-  variants: unknown[]
-  negative: boolean
-} & Record<string, unknown>
+import {
+  getTailwindClassName,
+  parseTailwindClass,
+  type ParsedTailwindClass,
+} from './tailwind-parsing-utils'
 
 export type TailwindClassParserResult =
   | { type: 'unparsed'; className: string }
@@ -18,7 +15,7 @@ export function getParsedClassList(
   config: Config | null,
 ): TailwindClassParserResult[] {
   return classList.split(' ').map((c) => {
-    const result = TailwindClassParser.parse(c, config ?? undefined)
+    const result = parseTailwindClass(c, config)
     if (result.kind === 'error') {
       return { type: 'unparsed', className: c }
     }
@@ -35,10 +32,7 @@ export function getClassListFromParsedClassList(
       if (c.type === 'unparsed') {
         return c.className
       }
-      return TailwindClassParser.classname(
-        c.ast as any, // FIXME the types are not exported from @xengine/tailwindcss-class-parser
-        config ?? undefined,
-      )
+      return getTailwindClassName(c.ast, config)
     })
     .filter((part) => part != null && part.length > 0)
     .join(' ')
@@ -65,7 +59,13 @@ export const addNewClasses =
           ? null
           : {
               type: 'parsed',
-              ast: { property: prop, value: value, variants: [], negative: false },
+              ast: {
+                property: prop,
+                value: value,
+                variants: [],
+                negative: false,
+                valueDef: { value: value, class: [] }, // dummy values
+              },
             },
       Object.entries(propertiesToAdd),
     )
@@ -87,7 +87,13 @@ export const updateExistingClasses =
       }
       return {
         type: 'parsed',
-        ast: { property: cls.ast.property, value: updatedProperty, variants: [], negative: false },
+        ast: {
+          property: cls.ast.property,
+          value: updatedProperty,
+          variants: [],
+          negative: false,
+          valueDef: cls.ast.valueDef,
+        },
       }
     })
     return classListWithUpdatedClasses
