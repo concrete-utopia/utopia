@@ -22,7 +22,6 @@ import type {
 } from './canvas-strategies/interaction-state'
 import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import type { MouseButtonsPressed } from '../../utils/mouse'
-import { printCSSNumber } from '../inspector/common/css-utils'
 import type { FlexWrap } from 'utopia-api/core'
 import type {
   CSSNumber,
@@ -667,6 +666,15 @@ function mapCSSStyleProperty<T, U>(
     return null
   }
   return map(property.value)
+}
+
+function printCSSNumber(input: CSSNumber, defaultUnitToSkip: string | null): string | number {
+  const { value, unit } = input
+  if (unit == null || unit === defaultUnitToSkip) {
+    return Number(value.toFixed(11))
+  } else {
+    return `${Number(value.toFixed(11))}${unit}`
+  }
 }
 
 export function stringifyStyleInfo(
