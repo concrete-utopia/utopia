@@ -1,82 +1,116 @@
 import React from 'react'
-import { colorTheme } from '../../../uuiui'
+import type { UtopiColor } from '../../../uuiui'
 
-export type RulerMarkerType = 'span-start' | 'span-end' | 'auto' | 'pinned'
+export type RulerMarkerType = 'span-start' | 'span-end' | 'auto' | 'auto-short' | 'pinned'
 
-const upFacingTriangle = (
-  <svg width='11' height='11' xmlns='http://www.w3.org/2000/svg'>
-    <polygon
-      points='5,1 10,10 0,10'
-      fill={colorTheme.primary.value}
-      stroke={colorTheme.white.value}
-      strokeWidth='0.5'
-    />
-  </svg>
-)
+function upFacingTriangle(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <svg
+      width={`${11 / scale}`}
+      height={`${11 / scale}`}
+      viewBox={`0 0 11 11`}
+      xmlns='http://www.w3.org/2000/svg'
+    >
+      <polygon points='5.5,0 11,11 0,11' fill={fillColor.value} />
+    </svg>
+  )
+}
 
-const rightFacingTriangle = (
-  <svg width='11' height='11' xmlns='http://www.w3.org/2000/svg'>
-    <polygon
-      points='10,5 0,0 0,10'
-      fill={colorTheme.primary.value}
-      stroke={colorTheme.white.value}
-      strokeWidth='0.5'
-    />
-  </svg>
-)
+function rightFacingTriangle(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <svg
+      width={`${11 / scale}`}
+      height={`${11 / scale}`}
+      viewBox={`0 0 11 11`}
+      xmlns='http://www.w3.org/2000/svg'
+    >
+      <polygon points='11,5.5 0,0 0,11' fill={fillColor.value} />
+    </svg>
+  )
+}
 
-const downFacingTriangle = (
-  <svg width='11' height='11' xmlns='http://www.w3.org/2000/svg'>
-    <polygon
-      points='5,10 0,0 10,0'
-      fill={colorTheme.primary.value}
-      stroke={colorTheme.white.value}
-      strokeWidth='0.5'
-    />
-  </svg>
-)
+function downFacingTriangle(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <svg
+      width={`${11 / scale}`}
+      height={`${11 / scale}`}
+      viewBox={`0 0 11 11`}
+      xmlns='http://www.w3.org/2000/svg'
+    >
+      <polygon points='5.5,11 0,0 11,0' fill={fillColor.value} />
+    </svg>
+  )
+}
 
-const leftFacingTriangle = (
-  <svg width='11' height='11' xmlns='http://www.w3.org/2000/svg'>
-    <polygon
-      points='0,5 10,0 10,10'
-      fill={colorTheme.primary.value}
-      stroke={colorTheme.white.value}
-      strokeWidth='0.5'
-    />
-  </svg>
-)
+function leftFacingTriangle(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <svg
+      width={`${11 / scale}`}
+      height={`${11 / scale}`}
+      viewBox={`0 0 11 11`}
+      xmlns='http://www.w3.org/2000/svg'
+    >
+      <polygon points='0,5.5 11,0 11,11' fill={fillColor.value} />
+    </svg>
+  )
+}
 
-const verticalPipe = (
-  <svg width='4' height='11' xmlns='http://www.w3.org/2000/svg'>
-    <rect
-      x='0.25'
-      y='0.25'
-      width='3'
-      height='10'
-      fill={colorTheme.primary.value}
-      stroke={colorTheme.white.value}
-      strokeWidth='0.5'
-    />
-  </svg>
-)
+function regularVerticalPipe(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <svg
+      width={`${11 / scale}`}
+      height={`${11 / scale}`}
+      viewBox={`0 0 11 11`}
+      xmlns='http://www.w3.org/2000/svg'
+    >
+      <rect x='4' y='0' width='3' height='11' fill={fillColor.value} />
+    </svg>
+  )
+}
 
-const horizontalPipe = (
-  <svg width='11' height='11' xmlns='http://www.w3.org/2000/svg'>
-    <rect
-      x='0.25'
-      y='3.50'
-      width='10'
-      height='3'
-      fill={colorTheme.primary.value}
-      stroke={colorTheme.white.value}
-      strokeWidth='0.5'
-    />
-  </svg>
-)
+function regularHorizontalPipe(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <svg
+      width={`${11 / scale}`}
+      height={`${11 / scale}`}
+      viewBox={`0 0 11 11`}
+      xmlns='http://www.w3.org/2000/svg'
+    >
+      <rect x='0' y='4' width='11' height='3' fill={fillColor.value} />
+    </svg>
+  )
+}
+
+function shortVerticalPipe(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <svg
+      width={`${11 / scale}`}
+      height={`${11 / scale}`}
+      viewBox={`0 0 11 11`}
+      xmlns='http://www.w3.org/2000/svg'
+    >
+      <rect x='4' y='2' width='3' height='9' fill={fillColor.value} />
+    </svg>
+  )
+}
+
+function shortHorizontalPipe(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <svg
+      width={`${11 / scale}`}
+      height={`${11 / scale}`}
+      viewBox={`0 0 11 11`}
+      xmlns='http://www.w3.org/2000/svg'
+    >
+      <rect x='2' y='4' width='9' height='3' fill={fillColor.value} />
+    </svg>
+  )
+}
+
+type ColorToReactNode = (fillColor: UtopiColor, scale: number) => React.ReactNode
 
 export const rulerMarkerIcons: {
-  [key in RulerMarkerType]: { column: React.ReactNode; row: React.ReactNode }
+  [key in RulerMarkerType]: { column: ColorToReactNode; row: ColorToReactNode }
 } = {
   'span-start': {
     column: rightFacingTriangle,
@@ -87,8 +121,12 @@ export const rulerMarkerIcons: {
     row: upFacingTriangle,
   },
   auto: {
-    column: verticalPipe,
-    row: horizontalPipe,
+    column: regularVerticalPipe,
+    row: regularHorizontalPipe,
+  },
+  'auto-short': {
+    column: shortVerticalPipe,
+    row: shortHorizontalPipe,
   },
   pinned: {
     column: downFacingTriangle,
