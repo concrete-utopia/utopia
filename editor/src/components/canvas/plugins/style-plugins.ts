@@ -1,4 +1,4 @@
-import type { ElementPath, JSXAttributes } from 'utopia-shared/src/types'
+import type { ElementPath, JSXAttributes, ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type {
   InteractionLifecycle,
@@ -18,7 +18,7 @@ import type { EditorStateWithPatch } from '../commands/utils/property-utils'
 import { applyValuesAtPath } from '../commands/utils/property-utils'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
-import type { CSSStyleProperty } from '../canvas-types'
+import type { CSSStyleProperty, UntypedStyleInfo } from '../canvas-types'
 import { isStyleInfoKey, type StyleInfo } from '../canvas-types'
 import type { StyleInfoSubEditorState } from '../../editor/store/store-hook-substore-types'
 import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
@@ -58,6 +58,10 @@ export interface StylePlugin {
     attributes: JSXAttributes,
     prop: T,
   ) => CSSStyleProperty<NonNullable<ParsedCSSProperties[T]>> | null
+  readUntypedStyleInfo: (
+    projectContents: ProjectContentTreeRoot,
+    elementPath: ElementPath,
+  ) => UntypedStyleInfo | null
   updateStyles: (
     editorState: EditorState,
     elementPath: ElementPath,

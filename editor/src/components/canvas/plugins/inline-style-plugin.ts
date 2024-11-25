@@ -1,14 +1,12 @@
-import type { JSXAttributes, PropertyPath } from 'utopia-shared/src/types'
+import type { JSXAttributes } from 'utopia-shared/src/types'
 import * as Either from '../../../core/shared/either'
 import {
   getJSXAttributesAtPath,
   jsxSimpleAttributeToValue,
 } from '../../../core/shared/jsx-attribute-utils'
-import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import { getJSXElementFromProjectContents } from '../../editor/store/editor-state'
 import { cssParsers, type ParsedCSSProperties } from '../../inspector/common/css-utils'
-import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import type { CSSStyleProperty, StyleInfo } from '../canvas-types'
+import type { CSSStyleProperty, StyleInfo, UntypedStyleInfo } from '../canvas-types'
 import {
   cssStyleProperty,
   cssStylePropertyNotParsable,
@@ -20,79 +18,126 @@ import * as PP from '../../../core/shared/property-path'
 import { applyValuesAtPath, deleteValuesAtPath } from '../commands/utils/property-utils'
 import type { StylePlugin } from './style-plugins'
 
-function getPropValue(attributes: JSXAttributes, path: PropertyPath): ModifiableAttribute {
-  const result = getJSXAttributesAtPath(attributes, path)
-  if (result.remainingPath != null) {
-    return { type: 'ATTRIBUTE_NOT_FOUND' }
+function getUntypedStyleInfo(jsxElementProps: JSXAttributes): UntypedStyleInfo | null {
+  const styleProp = getJSXAttributesAtPath(jsxElementProps, PP.create('style'))
+  if (
+    styleProp.attribute.type === 'ATTRIBUTE_NOT_FOUND' ||
+    styleProp.remainingPath != null ||
+    styleProp.attribute.type === 'PART_OF_ATTRIBUTE_VALUE'
+  ) {
+    return null
   }
-  return result.attribute
+
+  if (
+    styleProp.attribute.type === 'ATTRIBUTE_VALUE' &&
+    typeof styleProp.attribute.value === 'object'
+  ) {
+    return styleProp.attribute.value
+  }
+
+  if (styleProp.attribute.type === 'ATTRIBUTE_NESTED_OBJECT') {
+    let result: UntypedStyleInfo = {}
+    styleProp.attribute.content.forEach((assignment) => {
+      if (assignment.type === 'SPREAD_ASSIGNMENT') {
+        return
+      }
+
+      if (typeof assignment.key !== 'string') {
+        return
+      }
+
+      if (assignment.value.type !== 'ATTRIBUTE_VALUE') {
+        result[assignment.key] = cssStylePropertyNotParsable(assignment.value)
+        return
+      }
+
+      result[assignment.key] = cssStyleProperty(assignment.value.value, assignment.value)
+    })
+    return result
+  }
+
+  return null
 }
 
 function getPropertyFromInstance<P extends keyof StyleInfo, T = ParsedCSSProperties[P]>(
   prop: P,
-  attributes: JSXAttributes,
+  untypedStyleInfo: UntypedStyleInfo,
 ): CSSStyleProperty<NonNullable<T>> | null {
-  const attribute = getPropValue(attributes, stylePropPathMappingFn(prop, ['style']))
-  if (attribute.type === 'ATTRIBUTE_NOT_FOUND') {
+  const attribute = untypedStyleInfo[prop]
+  if (attribute === undefined || attribute.type === 'not-found') {
     return cssStylePropertyNotFound()
   }
-  const simpleValue = jsxSimpleAttributeToValue(attribute)
+  if (attribute.type === 'not-parsable') {
+    return attribute
+  }
+  const simpleValue = jsxSimpleAttributeToValue(attribute.propertyValue)
   if (Either.isLeft(simpleValue)) {
-    return cssStylePropertyNotParsable(attribute)
+    return cssStylePropertyNotParsable(attribute.propertyValue)
   }
   const parser = cssParsers[prop] as (value: unknown) => Either.Either<string, T>
   const parsed = parser(simpleValue.value)
   if (Either.isLeft(parsed) || parsed.value == null) {
-    return cssStylePropertyNotParsable(attribute)
+    return cssStylePropertyNotParsable(attribute.propertyValue)
   }
-  return cssStyleProperty(parsed.value, attribute)
+  return cssStyleProperty(parsed.value, attribute.propertyValue)
 }
 
 export const InlineStylePlugin: StylePlugin = {
   name: 'Inline Style',
+  readUntypedStyleInfo: (projectContents, elementPath) => {
+    const element = getJSXElementFromProjectContents(elementPath, projectContents)
+    if (element == null) {
+      return null
+    }
+
+    return getUntypedStyleInfo(element.props)
+  },
   readStyleFromElementProps: <T extends keyof StyleInfo>(
     attributes: JSXAttributes,
     prop: T,
   ): CSSStyleProperty<NonNullable<ParsedCSSProperties[T]>> | null => {
-    return getPropertyFromInstance(prop, attributes)
+    const untypedStyleInfo = getUntypedStyleInfo(attributes)
+    if (untypedStyleInfo == null) {
+      return null
+    }
+    return getPropertyFromInstance(prop, untypedStyleInfo)
   },
   styleInfoFactory:
     ({ projectContents }) =>
     (elementPath) => {
-      const element = getJSXElementFromProjectContents(elementPath, projectContents)
-      if (element == null) {
+      const untypedStyleInfo = InlineStylePlugin.readUntypedStyleInfo(projectContents, elementPath)
+      if (untypedStyleInfo == null) {
         return null
       }
 
-      const gap = getPropertyFromInstance('gap', element.props)
-      const flexDirection = getPropertyFromInstance('flexDirection', element.props)
-      const left = getPropertyFromInstance('left', element.props)
-      const right = getPropertyFromInstance('right', element.props)
-      const top = getPropertyFromInstance('top', element.props)
-      const bottom = getPropertyFromInstance('bottom', element.props)
-      const width = getPropertyFromInstance('width', element.props)
-      const height = getPropertyFromInstance('height', element.props)
-      const flexBasis = getPropertyFromInstance('flexBasis', element.props)
-      const padding = getPropertyFromInstance('padding', element.props)
-      const paddingTop = getPropertyFromInstance('paddingTop', element.props)
-      const paddingBottom = getPropertyFromInstance('paddingBottom', element.props)
-      const paddingLeft = getPropertyFromInstance('paddingLeft', element.props)
-      const paddingRight = getPropertyFromInstance('paddingRight', element.props)
-      const borderRadius = getPropertyFromInstance('borderRadius', element.props)
-      const borderTopLeftRadius = getPropertyFromInstance('borderTopLeftRadius', element.props)
-      const borderTopRightRadius = getPropertyFromInstance('borderTopRightRadius', element.props)
+      const gap = getPropertyFromInstance('gap', untypedStyleInfo)
+      const flexDirection = getPropertyFromInstance('flexDirection', untypedStyleInfo)
+      const left = getPropertyFromInstance('left', untypedStyleInfo)
+      const right = getPropertyFromInstance('right', untypedStyleInfo)
+      const top = getPropertyFromInstance('top', untypedStyleInfo)
+      const bottom = getPropertyFromInstance('bottom', untypedStyleInfo)
+      const width = getPropertyFromInstance('width', untypedStyleInfo)
+      const height = getPropertyFromInstance('height', untypedStyleInfo)
+      const flexBasis = getPropertyFromInstance('flexBasis', untypedStyleInfo)
+      const padding = getPropertyFromInstance('padding', untypedStyleInfo)
+      const paddingTop = getPropertyFromInstance('paddingTop', untypedStyleInfo)
+      const paddingBottom = getPropertyFromInstance('paddingBottom', untypedStyleInfo)
+      const paddingLeft = getPropertyFromInstance('paddingLeft', untypedStyleInfo)
+      const paddingRight = getPropertyFromInstance('paddingRight', untypedStyleInfo)
+      const borderRadius = getPropertyFromInstance('borderRadius', untypedStyleInfo)
+      const borderTopLeftRadius = getPropertyFromInstance('borderTopLeftRadius', untypedStyleInfo)
+      const borderTopRightRadius = getPropertyFromInstance('borderTopRightRadius', untypedStyleInfo)
       const borderBottomRightRadius = getPropertyFromInstance(
         'borderBottomRightRadius',
-        element.props,
+        untypedStyleInfo,
       )
       const borderBottomLeftRadius = getPropertyFromInstance(
         'borderBottomLeftRadius',
-        element.props,
+        untypedStyleInfo,
       )
-      const zIndex = getPropertyFromInstance('zIndex', element.props)
-      const flexWrap = getPropertyFromInstance('flexWrap', element.props)
-
-      const overflow = getPropertyFromInstance('overflow', element.props)
+      const zIndex = getPropertyFromInstance('zIndex', untypedStyleInfo)
+      const flexWrap = getPropertyFromInstance('flexWrap', untypedStyleInfo)
+      const overflow = getPropertyFromInstance('overflow', untypedStyleInfo)
 
       return {
         gap: gap,

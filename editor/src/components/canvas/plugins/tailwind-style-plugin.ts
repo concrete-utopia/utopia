@@ -1,4 +1,3 @@
-import * as TailwindClassParser from '@xengine/tailwindcss-class-parser'
 import { defaultEither, flatMapEither, isLeft } from '../../../core/shared/either'
 import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
@@ -18,6 +17,7 @@ import {
 } from '../../../core/shared/jsx-attribute-utils'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
+import { getParsedClassList } from '../../../core/tailwind/tailwind-class-list-utils'
 
 const underscoresToSpaces = (s: string | undefined) => s?.replace(/[-_]/g, ' ')
 
@@ -87,15 +87,18 @@ function stringifyPropertyValue(value: string | number): string {
   }
 }
 
-function getTailwindClassMapping(classes: string[], config: Config | null): Record<string, string> {
+function getTailwindClassMapping(
+  classNameAttribute: string,
+  config: Config | null,
+): Record<string, string> {
+  const classes = getParsedClassList(classNameAttribute, config)
   const mapping: Record<string, string> = {}
   classes.forEach((className) => {
-    const parsed = TailwindClassParser.parse(className, config ?? undefined)
-    if (parsed.kind === 'error') {
+    if (className.type === 'unparsed') {
       return
     }
-    parsed.valueDef.class.forEach((cls: string) => {
-      mapping[toCamelCase(cls)] = parsed.value
+    className.ast.valueDef.class.forEach((cls: string) => {
+      mapping[toCamelCase(cls)] = className.ast.valueDef.value
     })
   })
   return mapping
@@ -103,6 +106,7 @@ function getTailwindClassMapping(classes: string[], config: Config | null): Reco
 
 export const TailwindPlugin = (config: Config | null): StylePlugin => ({
   name: 'Tailwind',
+  readUntypedStyleInfo: () => null, // TODO
   readStyleFromElementProps: <P extends keyof StyleInfo>(
     attributes: JSXAttributes,
     prop: P,
@@ -119,7 +123,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
       return null
     }
 
-    const mapping = getTailwindClassMapping(classNameAttribute.split(' '), config)
+    const mapping = getTailwindClassMapping(classNameAttribute, config)
     return parseTailwindProperty(mapping, prop)
   },
   styleInfoFactory:
@@ -133,7 +137,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         return null
       }
 
-      const mapping = getTailwindClassMapping(classList.split(' '), config)
+      const mapping = getTailwindClassMapping(classList, config)
 
       return {
         gap: parseTailwindProperty(mapping, 'gap'),
