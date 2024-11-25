@@ -586,6 +586,10 @@ export function maybePropertyValue<T>(property: CSSStyleProperty<T>): T | null {
   return null
 }
 
+export interface UntypedStyleInfo {
+  [cssProperty: string]: CSSStyleProperty<unknown> | undefined
+}
+
 export type FlexGapInfo = CSSStyleProperty<CSSNumber>
 export type FlexDirectionInfo = CSSStyleProperty<FlexDirection>
 export type LeftInfo = CSSStyleProperty<CSSNumber>
@@ -704,5 +708,40 @@ export function stringifyStyleInfo(
       printCSSNumber(paddingLeft, null),
     ),
     zIndex: mapCSSStyleProperty(styleInfo.zIndex, (zIndex) => printCSSNumber(zIndex, null)),
+    borderRadius: mapCSSStyleProperty(styleInfo.borderRadius, (borderRadius) => {
+      switch (borderRadius.type) {
+        case 'LEFT':
+          return printCSSNumber(borderRadius.value, null)
+        case 'RIGHT':
+          return `${printCSSNumber(borderRadius.value.tl, null)} ${printCSSNumber(
+            borderRadius.value.tr,
+            null,
+          )} ${printCSSNumber(borderRadius.value.br, null)} ${printCSSNumber(
+            borderRadius.value.bl,
+            null,
+          )}`
+        default:
+          assertNever(borderRadius)
+      }
+    }),
+    borderTopLeftRadius: mapCSSStyleProperty(styleInfo.borderTopLeftRadius, (borderTopLeftRadius) =>
+      printCSSNumber(borderTopLeftRadius, null),
+    ),
+    borderTopRightRadius: mapCSSStyleProperty(
+      styleInfo.borderTopRightRadius,
+      (borderTopRightRadius) => printCSSNumber(borderTopRightRadius, null),
+    ),
+    borderBottomRightRadius: mapCSSStyleProperty(
+      styleInfo.borderBottomRightRadius,
+      (borderBottomRightRadius) => printCSSNumber(borderBottomRightRadius, null),
+    ),
+    borderBottomLeftRadius: mapCSSStyleProperty(
+      styleInfo.borderBottomLeftRadius,
+      (borderBottomLeftRadius) => printCSSNumber(borderBottomLeftRadius, null),
+    ),
+    flexWrap: mapCSSStyleProperty(styleInfo.flexWrap, (flexWrap) => flexWrap),
+    overflow: mapCSSStyleProperty(styleInfo.overflow, (overflow) =>
+      overflow ? 'visible' : 'hidden',
+    ),
   }
 }
