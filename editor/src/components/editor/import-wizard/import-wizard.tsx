@@ -9,6 +9,7 @@ import { unless, when } from '../../../utils/react-conditionals'
 import {
   getTotalImportStatusAndResult,
   hideImportWizard,
+  notifyImportStatusToDiscord,
   updateProjectImportStatus,
 } from '../../../core/shared/import/import-operation-service'
 import { OperationLine } from './components'
@@ -44,11 +45,6 @@ export const ImportWizard = React.memo(() => {
   const stopPropagation = React.useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
   }, [])
-
-  const totalImportResult: TotalImportResult = React.useMemo(
-    () => getTotalImportStatusAndResult(importState),
-    [importState],
-  )
 
   if (projectId == null) {
     return null
@@ -100,7 +96,7 @@ export const ImportWizard = React.memo(() => {
               flex: 'none',
             }}
           >
-            <div css={{ fontSize: 16, fontWeight: 400 }}>Cloning Project</div>
+            <Header />
           </FlexRow>
           <div
             className='import-wizard-body'
@@ -123,14 +119,14 @@ export const ImportWizard = React.memo(() => {
             className='import-wizard-footer'
             css={{
               display: 'flex',
-              justifyContent: 'space-between',
+              justifyContent: 'flex-end',
               alignItems: 'center',
               width: '100%',
               marginTop: 20,
               gap: 10,
             }}
           >
-            <ActionButtons importResult={totalImportResult} />
+            <ActionButtons />
           </div>
         </div>,
       )}
@@ -139,26 +135,25 @@ export const ImportWizard = React.memo(() => {
 })
 ImportWizard.displayName = 'ImportWizard'
 
-function ActionButtons({ importResult }: { importResult: TotalImportResult }) {
+function ActionButtons() {
+  const importState = useEditorState(
+    Substores.github,
+    (store) => store.editor.importState,
+    'ImportWizard importState',
+  )
+
+  const projectName = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.projectName,
+    'ImportWizard projectName',
+  )
+
+  const importResult: TotalImportResult = React.useMemo(
+    () => getTotalImportStatusAndResult(importState),
+    [importState],
+  )
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
-  const result = importResult.result
-  const textColor = React.useMemo(() => {
-    switch (result) {
-      case ImportOperationResult.Success:
-        return colorTheme.green.value
-      case ImportOperationResult.Warn:
-        return colorTheme.warningOrange.value
-      case ImportOperationResult.Error:
-        return colorTheme.error.value
-      case ImportOperationResult.CriticalError:
-        return colorTheme.error.value
-      case null:
-        return colorTheme.fg0.value
-      default:
-        assertNever(result)
-    }
-  }, [colorTheme, result])
   const hideWizard = React.useCallback(() => {
     hideImportWizard(dispatch)
   }, [dispatch])
@@ -174,6 +169,10 @@ function ActionButtons({ importResult }: { importResult: TotalImportResult }) {
     }
   }, [dispatch, hideWizard, importResult.importStatus])
   const importADifferentProject = React.useCallback(() => {
+    if (importResult.importStatus.status !== 'done') {
+      // force a notification to discord that the import was exited in the middle
+      notifyImportStatusToDiscord(importState, projectName, true)
+    }
     dispatch(
       [
         setImportWizardOpen(false),
@@ -182,11 +181,7 @@ function ActionButtons({ importResult }: { importResult: TotalImportResult }) {
       ],
       'everyone',
     )
-  }, [dispatch])
-  const textStyle = {
-    color: textColor,
-    fontSize: 14,
-  }
+  }, [dispatch, importResult.importStatus.status, importState, projectName])
   const buttonStyle = {
     backgroundColor: colorTheme.buttonBackground.value,
     padding: 20,
@@ -203,7 +198,6 @@ function ActionButtons({ importResult }: { importResult: TotalImportResult }) {
     case ImportOperationResult.Success:
       return (
         <React.Fragment>
-          <div style={textStyle}>Project Imported Successfully</div>
           <Button onClick={hideWizard} style={buttonStyle}>
             Continue To Editor
           </Button>
@@ -212,7 +206,6 @@ function ActionButtons({ importResult }: { importResult: TotalImportResult }) {
     case ImportOperationResult.Warn:
       return (
         <React.Fragment>
-          <div style={textStyle}>Project Imported With Warnings</div>
           <Button onClick={hideWizard} style={buttonStyle}>
             Continue To Editor
           </Button>
@@ -221,8 +214,7 @@ function ActionButtons({ importResult }: { importResult: TotalImportResult }) {
     case ImportOperationResult.CriticalError:
       return (
         <React.Fragment>
-          <div style={textStyle}>Error Importing Project</div>
-          <Button style={{ ...buttonStyle, marginLeft: 'auto' }} onClick={importADifferentProject}>
+          <Button style={buttonStyle} onClick={importADifferentProject}>
             Cancel
           </Button>
         </React.Fragment>
@@ -230,17 +222,11 @@ function ActionButtons({ importResult }: { importResult: TotalImportResult }) {
     case ImportOperationResult.Error:
       return (
         <React.Fragment>
-          <div style={textStyle}>
-            {importResult.importStatus.status !== 'done'
-              ? 'Error While Importing Project'
-              : 'Project Imported With Errors'}
-          </div>
           {when(
             importResult.importStatus.status !== 'done',
             <Button
               style={{
                 cursor: 'pointer',
-                marginLeft: 'auto',
               }}
               onClick={continueAnyway}
             >
@@ -248,11 +234,11 @@ function ActionButtons({ importResult }: { importResult: TotalImportResult }) {
             </Button>,
           )}
           {importResult.importStatus.status === 'done' ? (
-            <Button style={{ ...buttonStyle }} onClick={hideWizard}>
+            <Button style={buttonStyle} onClick={hideWizard}>
               Continue To Editor
             </Button>
           ) : (
-            <Button style={{ ...buttonStyle }} onClick={importADifferentProject}>
+            <Button style={buttonStyle} onClick={importADifferentProject}>
               Cancel
             </Button>
           )}
@@ -261,4 +247,70 @@ function ActionButtons({ importResult }: { importResult: TotalImportResult }) {
     default:
       assertNever(importResult.result)
   }
+}
+
+function Header() {
+  const importState = useEditorState(
+    Substores.github,
+    (store) => store.editor.importState,
+    'ImportWizard importState',
+  )
+  const totalImportResult: TotalImportResult = React.useMemo(
+    () => getTotalImportStatusAndResult(importState),
+    [importState],
+  )
+  const colorTheme = useColorTheme()
+  const importResult = totalImportResult.result
+  const importStatus = totalImportResult.importStatus.status
+  const textColor = React.useMemo(() => {
+    if (importStatus !== 'done' && importStatus !== 'paused') {
+      return colorTheme.fg0.value
+    }
+    switch (importResult) {
+      case ImportOperationResult.Success:
+        return colorTheme.green.value
+      case ImportOperationResult.Warn:
+        return colorTheme.warningOrange.value
+      case ImportOperationResult.Error:
+        return colorTheme.error.value
+      case ImportOperationResult.CriticalError:
+        return colorTheme.error.value
+      case null:
+        return colorTheme.fg0.value
+      default:
+        assertNever(importResult)
+    }
+  }, [
+    colorTheme.error.value,
+    colorTheme.fg0.value,
+    colorTheme.green.value,
+    colorTheme.warningOrange.value,
+    importStatus,
+    importResult,
+  ])
+
+  const getStatusText = () => {
+    if (importStatus !== 'done' && importStatus !== 'paused') {
+      return 'Cloning Project'
+    }
+
+    switch (importResult) {
+      case ImportOperationResult.Success:
+        return 'Project Imported Successfully'
+      case ImportOperationResult.Warn:
+        return 'Project Imported With Warnings'
+      case ImportOperationResult.CriticalError:
+        return 'Error Importing Project'
+      case ImportOperationResult.Error:
+        return importStatus !== 'done'
+          ? 'Error While Importing Project'
+          : 'Project Imported With Errors'
+      case null:
+        return 'Cloning Project'
+      default:
+        assertNever(importResult)
+    }
+  }
+
+  return <div style={{ color: textColor, fontSize: 16, fontWeight: 400 }}>{getStatusText()}</div>
 }

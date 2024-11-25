@@ -765,7 +765,7 @@ export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
       (props: JSXAttributes, prop: keyof StyleInfo): GetModifiableAttributeResult => {
         const elementStyle = getActivePlugin(store.editor).readStyleFromElementProps(props, prop)
         if (elementStyle == null) {
-          return left('not found')
+          return right({ type: 'ATTRIBUTE_NOT_FOUND' })
         }
         switch (elementStyle.type) {
           case 'not-found':

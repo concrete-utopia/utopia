@@ -131,6 +131,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     props: { targets: selectedElements },
     key: 'padding-resize-control',
     show: 'visible-except-when-other-strategy-is-active',
+    priority: 'bottom',
   })
 
   const controlsToRender = optionalMap(
