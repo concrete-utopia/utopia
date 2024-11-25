@@ -8,6 +8,7 @@ import { Status } from './statusCodes'
 import { ApiError } from './errors'
 import type { UserDetails } from 'prisma-client'
 import { ServerEnvironment } from '../env.server'
+import { assertNever } from './assertNever'
 
 // these need to be decimal colors (for 'discord-webhook-node')
 const colors: Record<DiscordMessageType, number> = {
@@ -43,6 +44,7 @@ export function sendDiscordMessage(
 
   const fields: Record<string, string> = {
     User: `${user.name ?? 'Unknown User'} (${user.email ?? 'Unknown Email'})`,
+    Environment: getEnvironmentText(),
     ...(messageDescriptor.fields ?? {}),
   }
 
@@ -69,4 +71,19 @@ function getWebhook(type: DiscordWebhookType) {
 
 function createDiscordWebhook(url: string) {
   return new Webhook(url)
+}
+
+function getEnvironmentText() {
+  switch (ServerEnvironment.environment) {
+    case 'local':
+      return 'Local'
+    case 'stage':
+      return 'Staging'
+    case 'prod':
+      return 'Production'
+    case 'test':
+      return 'Test'
+    default:
+      assertNever(ServerEnvironment.environment)
+  }
 }

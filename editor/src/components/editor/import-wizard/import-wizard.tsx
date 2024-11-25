@@ -96,7 +96,7 @@ export const ImportWizard = React.memo(() => {
               flex: 'none',
             }}
           >
-            <div css={{ fontSize: 16, fontWeight: 400 }}>Cloning Project</div>
+            <Header />
           </FlexRow>
           <div
             className='import-wizard-body'
@@ -119,7 +119,7 @@ export const ImportWizard = React.memo(() => {
             className='import-wizard-footer'
             css={{
               display: 'flex',
-              justifyContent: 'space-between',
+              justifyContent: 'flex-end',
               alignItems: 'center',
               width: '100%',
               marginTop: 20,
@@ -154,23 +154,6 @@ function ActionButtons() {
   )
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
-  const result = importResult.result
-  const textColor = React.useMemo(() => {
-    switch (result) {
-      case ImportOperationResult.Success:
-        return colorTheme.green.value
-      case ImportOperationResult.Warn:
-        return colorTheme.warningOrange.value
-      case ImportOperationResult.Error:
-        return colorTheme.error.value
-      case ImportOperationResult.CriticalError:
-        return colorTheme.error.value
-      case null:
-        return colorTheme.fg0.value
-      default:
-        assertNever(result)
-    }
-  }, [colorTheme, result])
   const hideWizard = React.useCallback(() => {
     hideImportWizard(dispatch)
   }, [dispatch])
@@ -199,10 +182,6 @@ function ActionButtons() {
       'everyone',
     )
   }, [dispatch, importResult.importStatus.status, importState, projectName])
-  const textStyle = {
-    color: textColor,
-    fontSize: 14,
-  }
   const buttonStyle = {
     backgroundColor: colorTheme.buttonBackground.value,
     padding: 20,
@@ -227,7 +206,6 @@ function ActionButtons() {
     case ImportOperationResult.Success:
       return (
         <React.Fragment>
-          <div style={textStyle}>Project Imported Successfully</div>
           <Button onClick={hideWizard} style={buttonStyle}>
             Continue To Editor
           </Button>
@@ -236,7 +214,6 @@ function ActionButtons() {
     case ImportOperationResult.Warn:
       return (
         <React.Fragment>
-          <div style={textStyle}>Project Imported With Warnings</div>
           <Button onClick={hideWizard} style={buttonStyle}>
             Continue To Editor
           </Button>
@@ -245,8 +222,7 @@ function ActionButtons() {
     case ImportOperationResult.CriticalError:
       return (
         <React.Fragment>
-          <div style={textStyle}>Error Importing Project</div>
-          <Button style={{ ...buttonStyle, marginLeft: 'auto' }} onClick={importADifferentProject}>
+          <Button style={buttonStyle} onClick={importADifferentProject}>
             Cancel
           </Button>
         </React.Fragment>
@@ -254,17 +230,11 @@ function ActionButtons() {
     case ImportOperationResult.Error:
       return (
         <React.Fragment>
-          <div style={textStyle}>
-            {importResult.importStatus.status !== 'done'
-              ? 'Error While Importing Project'
-              : 'Project Imported With Errors'}
-          </div>
           {when(
             importResult.importStatus.status !== 'done',
             <Button
               style={{
                 cursor: 'pointer',
-                marginLeft: 'auto',
               }}
               onClick={continueAnyway}
             >
@@ -272,11 +242,11 @@ function ActionButtons() {
             </Button>,
           )}
           {importResult.importStatus.status === 'done' ? (
-            <Button style={{ ...buttonStyle }} onClick={hideWizard}>
+            <Button style={buttonStyle} onClick={hideWizard}>
               Continue To Editor
             </Button>
           ) : (
-            <Button style={{ ...buttonStyle }} onClick={importADifferentProject}>
+            <Button style={buttonStyle} onClick={importADifferentProject}>
               Cancel
             </Button>
           )}
@@ -285,4 +255,70 @@ function ActionButtons() {
     default:
       assertNever(importResult.result)
   }
+}
+
+function Header() {
+  const importState = useEditorState(
+    Substores.github,
+    (store) => store.editor.importState,
+    'ImportWizard importState',
+  )
+  const totalImportResult: TotalImportResult = React.useMemo(
+    () => getTotalImportStatusAndResult(importState),
+    [importState],
+  )
+  const colorTheme = useColorTheme()
+  const importResult = totalImportResult.result
+  const importStatus = totalImportResult.importStatus.status
+  const textColor = React.useMemo(() => {
+    if (importStatus !== 'done' && importStatus !== 'paused') {
+      return colorTheme.fg0.value
+    }
+    switch (importResult) {
+      case ImportOperationResult.Success:
+        return colorTheme.green.value
+      case ImportOperationResult.Warn:
+        return colorTheme.warningOrange.value
+      case ImportOperationResult.Error:
+        return colorTheme.error.value
+      case ImportOperationResult.CriticalError:
+        return colorTheme.error.value
+      case null:
+        return colorTheme.fg0.value
+      default:
+        assertNever(importResult)
+    }
+  }, [
+    colorTheme.error.value,
+    colorTheme.fg0.value,
+    colorTheme.green.value,
+    colorTheme.warningOrange.value,
+    importStatus,
+    importResult,
+  ])
+
+  const getStatusText = () => {
+    if (importStatus !== 'done' && importStatus !== 'paused') {
+      return 'Cloning Project'
+    }
+
+    switch (importResult) {
+      case ImportOperationResult.Success:
+        return 'Project Imported Successfully'
+      case ImportOperationResult.Warn:
+        return 'Project Imported With Warnings'
+      case ImportOperationResult.CriticalError:
+        return 'Error Importing Project'
+      case ImportOperationResult.Error:
+        return importStatus !== 'done'
+          ? 'Error While Importing Project'
+          : 'Project Imported With Errors'
+      case null:
+        return 'Cloning Project'
+      default:
+        assertNever(importResult)
+    }
+  }
+
+  return <div style={{ color: textColor, fontSize: 16, fontWeight: 400 }}>{getStatusText()}</div>
 }
