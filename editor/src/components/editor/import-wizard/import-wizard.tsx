@@ -9,6 +9,7 @@ import { unless, when } from '../../../utils/react-conditionals'
 import {
   getTotalImportStatusAndResult,
   hideImportWizard,
+  notifyImportStatusToDiscord,
   updateProjectImportStatus,
 } from '../../../core/shared/import/import-operation-service'
 import { OperationLine } from './components'
@@ -44,11 +45,6 @@ export const ImportWizard = React.memo(() => {
   const stopPropagation = React.useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
   }, [])
-
-  const totalImportResult: TotalImportResult = React.useMemo(
-    () => getTotalImportStatusAndResult(importState),
-    [importState],
-  )
 
   if (projectId == null) {
     return null
@@ -130,7 +126,7 @@ export const ImportWizard = React.memo(() => {
               gap: 10,
             }}
           >
-            <ActionButtons importResult={totalImportResult} />
+            <ActionButtons />
           </div>
         </div>,
       )}
@@ -139,7 +135,23 @@ export const ImportWizard = React.memo(() => {
 })
 ImportWizard.displayName = 'ImportWizard'
 
-function ActionButtons({ importResult }: { importResult: TotalImportResult }) {
+function ActionButtons() {
+  const importState = useEditorState(
+    Substores.github,
+    (store) => store.editor.importState,
+    'ImportWizard importState',
+  )
+
+  const projectName = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.projectName,
+    'ImportWizard projectName',
+  )
+
+  const importResult: TotalImportResult = React.useMemo(
+    () => getTotalImportStatusAndResult(importState),
+    [importState],
+  )
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
   const result = importResult.result
@@ -174,6 +186,10 @@ function ActionButtons({ importResult }: { importResult: TotalImportResult }) {
     }
   }, [dispatch, hideWizard, importResult.importStatus])
   const importADifferentProject = React.useCallback(() => {
+    if (importResult.importStatus.status !== 'done') {
+      // force a notification to discord that the import was exited in the middle
+      notifyImportStatusToDiscord(importState, projectName, true)
+    }
     dispatch(
       [
         setImportWizardOpen(false),
@@ -182,7 +198,7 @@ function ActionButtons({ importResult }: { importResult: TotalImportResult }) {
       ],
       'everyone',
     )
-  }, [dispatch])
+  }, [dispatch, importResult.importStatus.status, importState, projectName])
   const textStyle = {
     color: textColor,
     fontSize: 14,

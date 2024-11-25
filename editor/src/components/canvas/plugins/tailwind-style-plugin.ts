@@ -2,13 +2,13 @@ import * as TailwindClassParser from '@xengine/tailwindcss-class-parser'
 import { defaultEither, flatMapEither, isLeft } from '../../../core/shared/either'
 import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
-import type { ParsedCSSProperties, Parser } from '../../inspector/common/css-utils'
+import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { cssParsers } from '../../inspector/common/css-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import type { StylePlugin } from './style-plugins'
 import type { Config } from 'tailwindcss/types/config'
 import type { StyleInfo } from '../canvas-types'
-import { cssStyleProperty, isStyleInfoKey, type CSSStyleProperty } from '../canvas-types'
+import { cssStyleProperty, type CSSStyleProperty } from '../canvas-types'
 import * as UCL from './tailwind-style-plugin-utils/update-class-list'
 import { assertNever } from '../../../core/shared/utils'
 import {
@@ -45,6 +45,12 @@ const TailwindPropertyMapping: Record<string, string> = {
   paddingBottom: 'paddingBottom',
   paddingLeft: 'paddingLeft',
 
+  borderRadius: 'borderRadius',
+  borderTopLeftRadius: 'borderTopLeftRadius',
+  borderTopRightRadius: 'borderTopRightRadius',
+  borderBottomRightRadius: 'borderBottomRightRadius',
+  borderBottomLeftRadius: 'borderBottomLeftRadius',
+
   justifyContent: 'justifyContent',
   alignItems: 'alignItems',
   flex: 'flex',
@@ -54,6 +60,8 @@ const TailwindPropertyMapping: Record<string, string> = {
   flexBasis: 'flexBasis',
   flexWrap: 'flexWrap',
   gap: 'gap',
+
+  overflow: 'overflow',
 
   zIndex: 'zIndex',
 }
@@ -154,8 +162,29 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
           mapping[TailwindPropertyMapping.paddingLeft],
           'paddingLeft',
         ),
+        borderRadius: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.borderRadius],
+          'borderRadius',
+        ),
+        borderTopLeftRadius: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.borderTopLeftRadius],
+          'borderTopLeftRadius',
+        ),
+        borderTopRightRadius: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.borderTopRightRadius],
+          'borderTopRightRadius',
+        ),
+        borderBottomRightRadius: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.borderBottomRightRadius],
+          'borderBottomRightRadius',
+        ),
+        borderBottomLeftRadius: parseTailwindProperty(
+          mapping[TailwindPropertyMapping.borderBottomLeftRadius],
+          'borderBottomLeftRadius',
+        ),
         zIndex: parseTailwindProperty(mapping[TailwindPropertyMapping.zIndex], 'zIndex'),
         flexWrap: parseTailwindProperty(mapping[TailwindPropertyMapping.flexWrap], 'flexWrap'),
+        overflow: parseTailwindProperty(mapping[TailwindPropertyMapping.overflow], 'overflow'),
       }
     },
   updateStyles: (editorState, elementPath, updates) => {

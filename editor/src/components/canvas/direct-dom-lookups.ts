@@ -3,8 +3,8 @@ import { CanvasContainerID } from './canvas-types'
 import { getDeepestPathOnDomElement } from '../../core/shared/uid-utils'
 import * as EP from '../../core/shared/element-path'
 import type { ElementPath } from 'utopia-shared/src/types'
-import type { ElementOrParent } from './controls/grid-controls-for-strategies'
 import { assertNever } from '../../core/shared/utils'
+import type { ElementOrParent } from './controls/grid-measurements'
 
 export type FromElement<T> = (element: HTMLElement) => T
 

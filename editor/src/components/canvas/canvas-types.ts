@@ -22,8 +22,14 @@ import type {
 } from './canvas-strategies/interaction-state'
 import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types'
 import type { MouseButtonsPressed } from '../../utils/mouse'
-import type { CSSNumber, CSSPadding, FlexDirection } from '../inspector/common/css-utils'
 import type { FlexWrap } from 'utopia-api/core'
+import type {
+  CSSBorderRadius,
+  CSSNumber,
+  CSSOverflow,
+  CSSPadding,
+  FlexDirection,
+} from '../inspector/common/css-utils'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -590,8 +596,11 @@ export type HeightInfo = CSSStyleProperty<CSSNumber>
 export type FlexBasisInfo = CSSStyleProperty<CSSNumber>
 export type PaddingInfo = CSSStyleProperty<CSSPadding>
 export type PaddingSideInfo = CSSStyleProperty<CSSNumber>
+export type BorderRadiusInfo = CSSStyleProperty<CSSBorderRadius>
+export type BorderRadiusCornerInfo = CSSStyleProperty<CSSNumber>
 export type ZIndexInfo = CSSStyleProperty<CSSNumber>
 export type FlexWrapInfo = CSSStyleProperty<FlexWrap>
+export type OverflowInfo = CSSStyleProperty<CSSOverflow>
 
 export interface StyleInfo {
   gap: FlexGapInfo | null
@@ -608,8 +617,14 @@ export interface StyleInfo {
   paddingRight: PaddingSideInfo | null
   paddingBottom: PaddingSideInfo | null
   paddingLeft: PaddingSideInfo | null
+  borderRadius: BorderRadiusInfo | null
+  borderTopLeftRadius: BorderRadiusCornerInfo | null
+  borderTopRightRadius: BorderRadiusCornerInfo | null
+  borderBottomRightRadius: BorderRadiusCornerInfo | null
+  borderBottomLeftRadius: BorderRadiusCornerInfo | null
   zIndex: ZIndexInfo | null
   flexWrap: FlexWrapInfo | null
+  overflow: OverflowInfo | null
 }
 
 const emptyStyleInfo: StyleInfo = {
@@ -627,8 +642,14 @@ const emptyStyleInfo: StyleInfo = {
   paddingRight: null,
   paddingBottom: null,
   paddingLeft: null,
+  borderRadius: null,
+  borderTopLeftRadius: null,
+  borderTopRightRadius: null,
+  borderBottomRightRadius: null,
+  borderBottomLeftRadius: null,
   zIndex: null,
   flexWrap: null,
+  overflow: null,
 }
 
 export const isStyleInfoKey = (key: string): key is keyof StyleInfo => key in emptyStyleInfo

@@ -15,6 +15,9 @@ import type {
 } from './import-operation-types'
 import { ImportOperationResult } from './import-operation-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { sendDiscordMessage } from '../../../components/editor/server'
+import type { DiscordEndpointSiteImport, DiscordMessageType } from 'utopia-shared/src/types'
+import { getImportOperationText } from '../../../components/editor/import-wizard/import-wizard-helpers'
 
 export function startImportProcess(dispatch: EditorDispatch) {
   const actions: EditorAction[] = [
@@ -71,6 +74,11 @@ export function notifyOperationFinished(
   setTimeout(() => {
     dispatch([updateImportOperations([operationWithTime], ImportOperationAction.Update)])
   }, 0)
+}
+
+export function notifyOperationCriticalError(dispatch: EditorDispatch, operation: ImportOperation) {
+  notifyOperationFinished(dispatch, operation, ImportOperationResult.CriticalError)
+  setTimeout(() => updateProjectImportStatus(dispatch, { status: 'done' }), 0)
 }
 
 export function areSameOperation(existing: ImportOperation, incoming: ImportOperation): boolean {
@@ -195,4 +203,65 @@ export function pauseImport(dispatch: EditorDispatch): Promise<void> {
   return new Promise((resolve) =>
     updateProjectImportStatus(dispatch, { status: 'paused', onResume: resolve }),
   )
+}
+
+export function notifyImportStatusToDiscord(
+  importState: ImportState,
+  projectName: string,
+  // for cases when the import was paused, but the user left the wizard mid-process
+  forceNotify: boolean = false,
+) {
+  const totalImportStateAndResult = getTotalImportStatusAndResult(importState)
+  const importResult = totalImportStateAndResult.result
+  // don't notify if the import is not done
+  const importDone = totalImportStateAndResult.importStatus.status == 'done'
+  if (!importDone && !forceNotify) {
+    return
+  }
+  let messageType: DiscordMessageType = 'info'
+  if (importResult == 'criticalError' || importResult == 'error') {
+    messageType = 'error'
+  } else if (importResult == 'warn') {
+    messageType = 'warning'
+  } else {
+    // we only notify errors and warnings
+    return
+  }
+
+  // collect errors, warnings, critical errors
+  const errors: string[] = []
+  const warnings: string[] = []
+  const criticalErrors: string[] = []
+  importState.importOperations
+    .flatMap((op) => [op, ...(op.children ?? [])])
+    .forEach((op) => {
+      if (op.result == ImportOperationResult.Error) {
+        errors.push(getImportOperationText(op))
+      } else if (op.result == ImportOperationResult.Warn) {
+        warnings.push(getImportOperationText(op))
+      } else if (op.result == ImportOperationResult.CriticalError) {
+        criticalErrors.push(getImportOperationText(op))
+      }
+    })
+
+  // get the repo and branch name
+  const importBranchOp = importState.importOperations.find((op) => op.type == 'loadBranch')
+
+  // build specific payload for our discord endpoint
+  const importSitePayload: DiscordEndpointSiteImport = {
+    webhookType: 'SITE_IMPORT',
+    messageType: messageType,
+    messageData: {
+      importResult: totalImportStateAndResult.result,
+      importDone: importDone,
+      githubRepo: importBranchOp?.githubRepo,
+      branchName: importBranchOp?.branchName,
+      projectName: projectName,
+      errors: errors,
+      warnings: warnings,
+      criticalErrors: criticalErrors,
+    },
+  }
+
+  void sendDiscordMessage(importSitePayload)
 }

@@ -1,18 +1,13 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
 import type { Sides } from 'utopia-api/core'
-import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { defaultEither, foldEither, right } from '../../../../core/shared/either'
-import type {
-  ElementInstanceMetadata,
-  JSXAttributes,
-} from '../../../../core/shared/element-template'
+import { foldEither } from '../../../../core/shared/either'
+import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import {
   isIntrinsicElement,
   isJSXElement,
   jsxElementName,
   jsxElementNameEquals,
-  modifiableAttributeIsAttributeNotFound,
 } from '../../../../core/shared/element-template'
 import type { CanvasPoint, CanvasVector, Size } from '../../../../core/shared/math-utils'
 import {
@@ -32,7 +27,7 @@ import type {
   CSSNumber,
   ParsedCSSPropertiesKeys,
 } from '../../../inspector/common/css-utils'
-import { cssNumber, ParsedCSSProperties, printCSSNumber } from '../../../inspector/common/css-utils'
+import { cssNumber, printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import type {
   BorderRadiusAdjustMode,
@@ -43,7 +38,7 @@ import {
   BorderRadiusControlMinimumForDisplay,
   maxBorderRadius,
 } from '../../border-radius-control-utils'
-import { CSSCursor } from '../../canvas-types'
+import { CSSCursor, maybePropertyValue, type StyleInfo } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 
@@ -58,7 +53,6 @@ import {
   measurementBasedOnOtherMeasurement,
   precisionFromModifiers,
   shouldShowControls,
-  unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
@@ -70,11 +64,6 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { deleteProperties } from '../../commands/delete-properties-command'
-import { allElemsEqual } from '../../../../core/shared/array-utils'
-import * as PP from '../../../../core/shared/property-path'
-import { withUnderlyingTarget } from '../../../editor/store/editor-state'
-import type { ProjectContentTreeRoot } from '../../../assets'
-import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attribute-utils'
 import { showToastCommand } from '../../commands/show-toast-command'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
 
@@ -112,7 +101,10 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  const borderRadius = borderRadiusFromElement(element)
+  const borderRadius = borderRadiusFromElement(
+    element,
+    canvasState.styleInfoReader(selectedElement),
+  )
   if (borderRadius == null) {
     return null
   }
@@ -159,7 +151,10 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
         [
           setCursorCommand(CSSCursor.Radius),
           ...commands(selectedElement),
-          ...getAddOverflowHiddenCommands(selectedElement, canvasState.projectContents),
+          ...getAddOverflowHiddenCommands(
+            selectedElement,
+            canvasState.styleInfoReader(selectedElement),
+          ),
           setActiveFrames(
             selectedElements.map((path) => ({
               action: 'set-radius',
@@ -222,6 +217,7 @@ interface BorderRadiusData<T> {
 
 export function borderRadiusFromElement(
   element: ElementInstanceMetadata,
+  styleInfo: StyleInfo | null,
 ): BorderRadiusData<CSSNumberWithRenderedValue> | null {
   return foldEither(
     () => null,
@@ -232,7 +228,7 @@ export function borderRadiusFromElement(
           return null
         }
 
-        const fromProps = borderRadiusFromProps(jsxElement.props)
+        const fromStyleInfo = borderRadiusFromStyleInfo(styleInfo)
         const measurementsNonZero = AllSides.some((c) => {
           const measurement = renderedValueSides[c]
           if (measurement == null) {
@@ -250,7 +246,7 @@ export function borderRadiusFromElement(
         if (
           !(
             elementIsIntrinsicElementOrScene ||
-            shouldShowControls(fromProps != null, measurementsNonZero)
+            shouldShowControls(fromStyleInfo != null, measurementsNonZero)
           )
         ) {
           return null
@@ -258,7 +254,7 @@ export function borderRadiusFromElement(
 
         const borderRadius = optionalMap(
           (radius) => measurementFromBorderRadius(renderedValueSides, radius),
-          fromProps,
+          fromStyleInfo,
         )
 
         const defaultBorderRadiusSides = borderRadiusSidesFromValue(
@@ -281,7 +277,7 @@ export function borderRadiusFromElement(
 
         const borderRadiusMinMax = { min: 0, max: borderRadiusUpperLimit }
         return {
-          mode: fromProps?.type === 'sides' ? 'individual' : 'all',
+          mode: fromStyleInfo?.type === 'sides' ? 'individual' : 'all',
           borderRadius: mapBorderRadiusSides(
             (n) => adjustBorderRadius(borderRadiusMinMax, n),
             borderRadius ?? defaultBorderRadiusSides,
@@ -300,36 +296,20 @@ interface BorderRadiusFromProps {
   sides: BorderRadiusSides<CSSNumber>
 }
 
-function borderRadiusFromProps(props: JSXAttributes): BorderRadiusFromProps | null {
-  const wrappedProps = right(props)
+function borderRadiusFromStyleInfo(styleInfo: StyleInfo | null): BorderRadiusFromProps | null {
+  const borderRadius = optionalMap(maybePropertyValue, styleInfo?.borderRadius)
 
-  const borderRadius = getLayoutProperty('borderRadius', wrappedProps, styleStringInArray)
-  const simpleBorderRadius = foldEither(
-    () => null,
-    (radius) => {
-      if (radius == null) {
-        return null
-      } else {
-        return foldEither(borderRadiusSidesFromValue, (value) => value, radius)
-      }
-    },
+  const simpleBorderRadius = optionalMap(
+    (radius) => foldEither(borderRadiusSidesFromValue, (value) => value, radius),
     borderRadius,
   )
-  const borderTopLeftRadius = defaultEither(
-    null,
-    getLayoutProperty('borderTopLeftRadius', wrappedProps, styleStringInArray),
-  )
-  const borderTopRightRadius = defaultEither(
-    null,
-    getLayoutProperty('borderTopRightRadius', wrappedProps, styleStringInArray),
-  )
-  const borderBottomLeftRadius = defaultEither(
-    null,
-    getLayoutProperty('borderBottomLeftRadius', wrappedProps, styleStringInArray),
-  )
-  const borderBottomRightRadius = defaultEither(
-    null,
-    getLayoutProperty('borderBottomRightRadius', wrappedProps, styleStringInArray),
+
+  const borderTopLeftRadius = optionalMap(maybePropertyValue, styleInfo?.borderTopLeftRadius)
+  const borderTopRightRadius = optionalMap(maybePropertyValue, styleInfo?.borderTopRightRadius)
+  const borderBottomLeftRadius = optionalMap(maybePropertyValue, styleInfo?.borderBottomLeftRadius)
+  const borderBottomRightRadius = optionalMap(
+    maybePropertyValue,
+    styleInfo?.borderBottomRightRadius,
   )
 
   if (
@@ -606,27 +586,15 @@ const setShorthandStylePropertyCommand =
 
 function getAddOverflowHiddenCommands(
   target: ElementPath,
-  projectContents: ProjectContentTreeRoot,
+  styleInfo: StyleInfo | null,
 ): Array<CanvasCommand> {
-  const overflowProp = PP.create('style', 'overflow')
-
-  const propertyExists = withUnderlyingTarget(target, projectContents, false, (_, element) => {
-    if (isJSXElement(element)) {
-      return foldEither(
-        () => false,
-        (value) => !modifiableAttributeIsAttributeNotFound(value),
-        getModifiableJSXAttributeAtPath(element.props, overflowProp),
-      )
-    } else {
-      return false
-    }
-  })
-
+  const propertyExists = styleInfo?.overflow != null && styleInfo.overflow.type !== 'not-found'
   if (propertyExists) {
     return []
   }
+
   return [
     showToastCommand('Element now hides overflowing content', 'NOTICE', 'property-added'),
-    setProperty('always', target, overflowProp, 'hidden'),
+    setProperty('always', target, StyleProp('overflow'), 'hidden'),
   ]
 }

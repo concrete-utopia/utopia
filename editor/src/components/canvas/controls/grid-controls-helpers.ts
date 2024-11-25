@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import type { GridMeasurementHelperData } from './grid-controls-for-strategies'
+import type { GridMeasurementHelperData } from './grid-measurements'
 
 export function getGridHelperStyleMatchingTargetGrid(
   grid: GridMeasurementHelperData,

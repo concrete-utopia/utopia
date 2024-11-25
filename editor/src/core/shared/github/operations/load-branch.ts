@@ -44,10 +44,12 @@ import { GithubOperations } from '.'
 import { assertNever } from '../../utils'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
 import {
+  notifyOperationCriticalError,
   notifyOperationFinished,
   notifyOperationStarted,
   pauseImport,
   startImportProcess,
+  updateProjectImportStatus,
 } from '../../import/import-operation-service'
 import {
   RequirementResolutionResult,
@@ -165,21 +167,13 @@ export const updateProjectWithBranchContent =
         switch (responseBody.type) {
           case 'FAILURE':
             if (isFeatureEnabled('Import Wizard')) {
-              notifyOperationFinished(
-                dispatch,
-                { type: 'loadBranch' },
-                ImportOperationResult.CriticalError,
-              )
+              notifyOperationCriticalError(dispatch, { type: 'loadBranch' })
             }
             throw githubAPIError(operation, responseBody.failureReason)
           case 'SUCCESS':
             if (responseBody.branch == null) {
               if (isFeatureEnabled('Import Wizard')) {
-                notifyOperationFinished(
-                  dispatch,
-                  { type: 'loadBranch' },
-                  ImportOperationResult.CriticalError,
-                )
+                notifyOperationCriticalError(dispatch, { type: 'loadBranch' })
               }
               throw githubAPIError(operation, `Could not find branch ${branchName}`)
             }

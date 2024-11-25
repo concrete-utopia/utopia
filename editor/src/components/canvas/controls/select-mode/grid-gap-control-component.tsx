@@ -20,7 +20,6 @@ import {
 import type { Axis } from '../../gap-utils'
 import { maybeGridGapData } from '../../gap-utils'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
-import type { GridData } from '../grid-controls-for-strategies'
 import { getNullableAutoOrTemplateBaseString, useGridData } from '../grid-controls-for-strategies'
 import { getGridHelperStyleMatchingTargetGrid } from '../grid-controls-helpers'
 import type { CSSNumberWithRenderedValue } from './controls-common'
@@ -28,6 +27,7 @@ import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
 import { startGapControlInteraction } from './grid-gap-control-helpers'
 import type { AlignContent, FlexJustifyContent } from '../../../inspector/inspector-common'
 import { gridContainerIdentifier } from '../../../editor/store/editor-state'
+import type { GridData } from '../grid-measurements'
 
 export interface GridGapControlProps {
   selectedElement: ElementPath
