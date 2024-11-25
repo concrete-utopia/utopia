@@ -1,31 +1,38 @@
-import { defaultEither, flatMapEither, isLeft } from '../../../core/shared/either'
-import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
-import { getElementFromProjectContents } from '../../editor/store/editor-state'
+import { getJSXElementFromProjectContents } from '../../editor/store/editor-state'
 import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { cssParsers } from '../../inspector/common/css-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import type { StylePlugin } from './style-plugins'
 import type { Config } from 'tailwindcss/types/config'
-import type { StyleInfo } from '../canvas-types'
+import type { StyleInfo, UntypedStyleInfo } from '../canvas-types'
 import { cssStyleProperty, type CSSStyleProperty } from '../canvas-types'
 import * as UCL from './tailwind-style-plugin-utils/update-class-list'
 import { assertNever } from '../../../core/shared/utils'
 import type { JSXAttributes } from 'utopia-shared/src/types'
-import {
-  jsxSimpleAttributeToValue,
-  getModifiableJSXAttributeAtPath,
-} from '../../../core/shared/jsx-attribute-utils'
+import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attribute-utils'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import { getParsedClassList } from '../../../core/tailwind/tailwind-class-list-utils'
+import { isLeft } from '../../../core/shared/either'
 
 const underscoresToSpaces = (s: string | undefined) => s?.replace(/[-_]/g, ' ')
 
 function parseTailwindProperty<P extends keyof StyleInfo>(
-  mapping: Record<string, string>,
+  mapping: UntypedStyleInfo,
   prop: P,
 ): CSSStyleProperty<NonNullable<ParsedCSSProperties[P]>> | null {
-  const value = prop === 'padding' ? underscoresToSpaces(mapping[prop]) : mapping[prop]
+  const property = mapping[prop]
+  if (property == null) {
+    return null
+  }
+  if (property.type === 'not-found' || property.type === 'not-parsable') {
+    return property
+  }
+
+  const value =
+    prop === 'padding' && typeof property.value === 'string'
+      ? underscoresToSpaces(property.value)
+      : mapping[prop]
   const parsed = cssParsers[prop](value, null)
   if (isLeft(parsed) || parsed.value == null) {
     return null
@@ -104,64 +111,81 @@ function getTailwindClassMapping(
   return mapping
 }
 
+function getUntypedStyleInfoFromAttributes(
+  attributes: JSXAttributes,
+  config: Config | null,
+): UntypedStyleInfo | null {
+  const classNameAttribute = getModifiableJSXAttributeAtPath(attributes, PP.create('className'))
+  if (
+    classNameAttribute.type === 'LEFT' ||
+    classNameAttribute.value.type !== 'ATTRIBUTE_VALUE' ||
+    typeof classNameAttribute.value.value !== 'string'
+  ) {
+    return null
+  }
+
+  const mapping = getTailwindClassMapping(classNameAttribute.value.value, config)
+  const result: UntypedStyleInfo = {}
+  Object.entries(mapping).forEach(([key, value]) => {
+    result[key] = cssStyleProperty(value, jsExpressionValue(value, emptyComments))
+  })
+  return result
+}
+
 export const TailwindPlugin = (config: Config | null): StylePlugin => ({
   name: 'Tailwind',
-  readUntypedStyleInfo: () => null, // TODO
+  readUntypedStyleInfo: (projectContents, elementPath) => {
+    const element = getJSXElementFromProjectContents(elementPath, projectContents)
+    if (element == null) {
+      return null
+    }
+    return getUntypedStyleInfoFromAttributes(element.props, config)
+  },
   readStyleFromElementProps: <P extends keyof StyleInfo>(
     attributes: JSXAttributes,
     prop: P,
   ): CSSStyleProperty<NonNullable<ParsedCSSProperties[P]>> | null => {
-    const classNameAttribute = defaultEither(
-      null,
-      flatMapEither(
-        (attr) => jsxSimpleAttributeToValue(attr),
-        getModifiableJSXAttributeAtPath(attributes, PP.create('className')),
-      ),
-    )
-
-    if (typeof classNameAttribute !== 'string') {
+    const mapping = getUntypedStyleInfoFromAttributes(attributes, config)
+    if (mapping == null) {
       return null
     }
-
-    const mapping = getTailwindClassMapping(classNameAttribute, config)
     return parseTailwindProperty(mapping, prop)
   },
   styleInfoFactory:
     ({ projectContents }) =>
     (elementPath) => {
-      const classList = getClassNameAttribute(
-        getElementFromProjectContents(elementPath, projectContents),
-      )?.value
-
-      if (classList == null || typeof classList !== 'string') {
+      const element = getJSXElementFromProjectContents(elementPath, projectContents)
+      if (element == null) {
+        return null
+      }
+      const untypedStyleInfo = getUntypedStyleInfoFromAttributes(element.props, config)
+      if (untypedStyleInfo == null) {
         return null
       }
 
-      const mapping = getTailwindClassMapping(classList, config)
-
       return {
-        gap: parseTailwindProperty(mapping, 'gap'),
-        flexDirection: parseTailwindProperty(mapping, 'flexDirection'),
-        left: parseTailwindProperty(mapping, 'left'),
-        right: parseTailwindProperty(mapping, 'right'),
-        top: parseTailwindProperty(mapping, 'top'),
-        bottom: parseTailwindProperty(mapping, 'bottom'),
-        width: parseTailwindProperty(mapping, 'width'),
-        height: parseTailwindProperty(mapping, 'height'),
-        flexBasis: parseTailwindProperty(mapping, 'flexBasis'),
-        padding: parseTailwindProperty(mapping, 'padding'),
-        paddingTop: parseTailwindProperty(mapping, 'paddingTop'),
-        paddingRight: parseTailwindProperty(mapping, 'paddingRight'),
-        paddingBottom: parseTailwindProperty(mapping, 'paddingBottom'),
-        paddingLeft: parseTailwindProperty(mapping, 'paddingLeft'),
-        zIndex: parseTailwindProperty(mapping, 'zIndex'),
-        borderRadius: parseTailwindProperty(mapping, 'borderRadius'),
-        borderTopLeftRadius: parseTailwindProperty(mapping, 'borderTopLeftRadius'),
-        borderTopRightRadius: parseTailwindProperty(mapping, 'borderTopRightRadius'),
-        borderBottomRightRadius: parseTailwindProperty(mapping, 'borderBottomRightRadius'),
-        borderBottomLeftRadius: parseTailwindProperty(mapping, 'borderBottomLeftRadius'),
-        flexWrap: parseTailwindProperty(mapping, 'flexWrap'),
-        overflow: parseTailwindProperty(mapping, 'overflow'),
+        gap: parseTailwindProperty(untypedStyleInfo, 'gap'),
+        flexDirection: parseTailwindProperty(untypedStyleInfo, 'flexDirection'),
+        left: parseTailwindProperty(untypedStyleInfo, 'left'),
+        right: parseTailwindProperty(untypedStyleInfo, 'right'),
+        top: parseTailwindProperty(untypedStyleInfo, 'top'),
+        bottom: parseTailwindProperty(untypedStyleInfo, 'bottom'),
+        width: parseTailwindProperty(untypedStyleInfo, 'width'),
+        height: parseTailwindProperty(untypedStyleInfo, 'height'),
+        flexBasis: parseTailwindProperty(untypedStyleInfo, 'flexBasis'),
+        padding: parseTailwindProperty(untypedStyleInfo, 'padding'),
+        paddingTop: parseTailwindProperty(untypedStyleInfo, 'paddingTop'),
+        paddingRight: parseTailwindProperty(untypedStyleInfo, 'paddingRight'),
+        paddingBottom: parseTailwindProperty(untypedStyleInfo, 'paddingBottom'),
+        paddingLeft: parseTailwindProperty(untypedStyleInfo, 'paddingLeft'),
+        zIndex: parseTailwindProperty(untypedStyleInfo, 'zIndex'),
+        borderRadius: parseTailwindProperty(untypedStyleInfo, 'borderRadius'),
+        borderTopLeftRadius: parseTailwindProperty(untypedStyleInfo, 'borderTopLeftRadius'),
+        borderTopRightRadius: parseTailwindProperty(untypedStyleInfo, 'borderTopRightRadius'),
+        borderBottomRightRadius: parseTailwindProperty(untypedStyleInfo, 'borderBottomRightRadius'),
+        borderBottomLeftRadius: parseTailwindProperty(untypedStyleInfo, 'borderBottomLeftRadius'),
+        flexWrap: parseTailwindProperty(untypedStyleInfo, 'flexWrap'),
+        overflow: parseTailwindProperty(untypedStyleInfo, 'overflow'),
       }
     },
   updateStyles: (editorState, elementPath, updates) => {
