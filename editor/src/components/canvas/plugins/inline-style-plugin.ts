@@ -32,7 +32,11 @@ function getUntypedStyleInfo(jsxElementProps: JSXAttributes): UntypedStyleInfo |
     styleProp.attribute.type === 'ATTRIBUTE_VALUE' &&
     typeof styleProp.attribute.value === 'object'
   ) {
-    return styleProp.attribute.value
+    let result: UntypedStyleInfo = {}
+    for (const [key, value] of Object.entries(styleProp.attribute.value)) {
+      result[key] = cssStyleProperty(value, jsExpressionValue(value, emptyComments))
+    }
+    return result
   }
 
   if (styleProp.attribute.type === 'ATTRIBUTE_NESTED_OBJECT') {
@@ -64,22 +68,21 @@ function getPropertyFromInstance<P extends keyof StyleInfo, T = ParsedCSSPropert
   untypedStyleInfo: UntypedStyleInfo,
 ): CSSStyleProperty<NonNullable<T>> | null {
   const attribute = untypedStyleInfo[prop]
-  if (attribute === undefined || attribute.type === 'not-found') {
+  if (attribute == null) {
     return cssStylePropertyNotFound()
   }
-  if (attribute.type === 'not-parsable') {
-    return attribute
-  }
-  const simpleValue = jsxSimpleAttributeToValue(attribute.propertyValue)
+  const expression =
+    attribute.type === 'not-parsable' ? attribute.originalValue : attribute.propertyValue
+  const simpleValue = jsxSimpleAttributeToValue(expression)
   if (Either.isLeft(simpleValue)) {
-    return cssStylePropertyNotParsable(attribute.propertyValue)
+    return cssStylePropertyNotParsable(expression)
   }
   const parser = cssParsers[prop] as (value: unknown) => Either.Either<string, T>
   const parsed = parser(simpleValue.value)
   if (Either.isLeft(parsed) || parsed.value == null) {
-    return cssStylePropertyNotParsable(attribute.propertyValue)
+    return cssStylePropertyNotParsable(expression)
   }
-  return cssStyleProperty(parsed.value, attribute.propertyValue)
+  return cssStyleProperty(parsed.value, expression)
 }
 
 export const InlineStylePlugin: StylePlugin = {

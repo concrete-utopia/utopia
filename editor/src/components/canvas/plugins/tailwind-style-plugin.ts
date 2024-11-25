@@ -25,7 +25,7 @@ function parseTailwindProperty<P extends keyof StyleInfo>(
   if (property == null) {
     return null
   }
-  if (property.type === 'not-found' || property.type === 'not-parsable') {
+  if (property.type === 'not-parsable') {
     return property
   }
 
