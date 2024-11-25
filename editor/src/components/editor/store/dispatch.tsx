@@ -92,9 +92,9 @@ import { resetUpdatedProperties } from '../../canvas/plugins/style-plugins'
 import {
   notifyOperationFinished,
   notifyOperationStarted,
-  updateProjectImportStatus,
 } from '../../../core/shared/import/import-operation-service'
 import { ImportOperationResult } from '../../../core/shared/import/import-operation-types'
+import { updateImportStatus } from '../actions/action-creators'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -372,17 +372,20 @@ function maybeRequestModelUpdate(
           )
         }
 
-        dispatch([EditorActions.mergeWithPrevUndo(actionsToDispatch)])
+        dispatch([
+          EditorActions.mergeWithPrevUndo(actionsToDispatch),
+          updateImportStatus({ status: 'done' }),
+        ])
         return true
       })
       .catch((e) => {
         console.error('error during parse', e)
         notifyOperationFinished(dispatch, { type: 'parseFiles' }, ImportOperationResult.Error)
-        dispatch([EditorActions.clearParseOrPrintInFlight()])
+        dispatch([
+          EditorActions.clearParseOrPrintInFlight(),
+          updateImportStatus({ status: 'done' }),
+        ])
         return true
-      })
-      .finally(() => {
-        updateProjectImportStatus(dispatch, { status: 'done' })
       })
     return {
       modelUpdateRequested: true,
