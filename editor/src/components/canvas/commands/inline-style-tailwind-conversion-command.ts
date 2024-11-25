@@ -1,9 +1,12 @@
-import type { ElementPath } from 'utopia-shared/src/types'
+import type { ElementPath, ProjectContentTreeRoot } from 'utopia-shared/src/types'
 import type { BaseCommand, CommandFunctionResult } from './commands'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import {
+  getJSXElementFromProjectContents,
+  type EditorState,
+  type EditorStatePatch,
+} from '../../editor/store/editor-state'
 import type { EditorStateWithPatches } from '../plugins/style-plugins'
 import { InlineStylePlugin } from '../plugins/inline-style-plugin'
-import { TailwindPlugin } from '../plugins/tailwind-style-plugin'
 import { getTailwindConfigCached } from '../../../core/tailwind/tailwind-compilation'
 import { assertNever } from '../../../core/shared/utils'
 import { CssToTailwindTranslator } from 'css-to-tailwind-translator'
@@ -14,10 +17,10 @@ import { getParsedClassList } from '../../../core/tailwind/tailwind-class-list-u
 import { applyValuesAtPath, deleteValuesAtPath } from './utils/property-utils'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
+import { getJSXAttributesAtPath } from '../../../core/shared/jsx-attribute-utils'
+import { safeParseInt } from '../../../core/shared/math-utils'
 
-export function convertInlineStyleToTailwindInner(
-  inlineStyle: Record<string, number | string>,
-): string {
+function convertInlineStyleToTailwindInner(inlineStyle: Record<string, number | string>): string {
   const styleString = styleObjectToCSSString(inlineStyle)
   const cssString = `body { ${styleString} }`
   const { data } = CssToTailwindTranslator(cssString)
@@ -44,6 +47,57 @@ export function inlineStyleTailwindConversionCommand(
   }
 }
 
+const isStringOrNumber = (value: unknown): value is string | number =>
+  typeof value === 'string' || typeof value === 'number'
+
+const printValue = (value: string | number): string =>
+  typeof value === 'number' ? `${value}px` : value
+
+function getInlineStyles(
+  projectContents: ProjectContentTreeRoot,
+  elementPath: ElementPath,
+): Record<string, number | string> | null {
+  const jsxElement = getJSXElementFromProjectContents(elementPath, projectContents)
+  if (jsxElement == null) {
+    return null
+  }
+
+  const styleProp = getJSXAttributesAtPath(jsxElement.props, PP.create('style'))
+  if (
+    styleProp.attribute.type === 'ATTRIBUTE_NOT_FOUND' ||
+    styleProp.remainingPath != null ||
+    styleProp.attribute.type === 'PART_OF_ATTRIBUTE_VALUE'
+  ) {
+    return null
+  }
+
+  if (
+    styleProp.attribute.type === 'ATTRIBUTE_VALUE' &&
+    typeof styleProp.attribute.value === 'object'
+  ) {
+    return styleProp.attribute.value
+  }
+
+  if (styleProp.attribute.type === 'ATTRIBUTE_NESTED_OBJECT') {
+    let result: Record<string, number | string> = {}
+    styleProp.attribute.content.forEach((assignment) => {
+      if (
+        assignment.type === 'SPREAD_ASSIGNMENT' ||
+        typeof assignment.key !== 'string' ||
+        assignment.value.type !== 'ATTRIBUTE_VALUE' ||
+        !isStringOrNumber(assignment.value.value)
+      ) {
+        return
+      }
+
+      result[assignment.key] = printValue(assignment.value.value)
+    })
+    return result
+  }
+
+  return null
+}
+
 function convertInlineStyleToTailwind(
   editorState: EditorState,
   elementPaths: ElementPath[],
@@ -59,14 +113,22 @@ function convertInlineStyleToTailwind(
       return
     }
 
-    const { stylesToAdd, stylesToRemove } = getStyleInfoUpdates(styleInfo)
+    const styleObject = getInlineStyles(editorState.projectContents, elementPath)
+    if (styleObject == null) {
+      return
+    }
 
-    const { editorStateWithChanges: updatedEditorState } = TailwindPlugin(
-      getTailwindConfigCached(editorStateWithChanges),
-    ).updateStyles(editorStateWithChanges, elementPath, stylesToAdd)
-    const { editorStatePatch: editorStatePatchToRemove, editorStateWithChanges: finalEditorState } =
-      InlineStylePlugin.updateStyles(updatedEditorState, elementPath, stylesToRemove)
-    patches.push(editorStatePatchToRemove)
+    const tailwindString = convertInlineStyleToTailwindInner(styleObject)
+
+    const { editorStateWithChanges: updatedEditorState } = applyValuesAtPath(
+      editorStateWithChanges,
+      elementPath,
+      [{ path: PP.create('className'), value: jsExpressionValue(tailwindString, emptyComments) }],
+    )
+    const { editorStateWithChanges: finalEditorState, editorStatePatch: editorStatePatchToRemove } =
+      deleteValuesAtPath(updatedEditorState, elementPath, [PP.create('style')])
+
+    patches = [editorStatePatchToRemove]
     editorStateWithChanges = finalEditorState
   })
 
@@ -92,26 +154,29 @@ function convertTailwindToInlineStyle(
 
   elementPaths.forEach((elementPath) => {
     const { value: className } = getClassNameAttribute(
-      MetadataUtils.getJSXElementFromMetadata(editorState.jsxMetadata, elementPath),
+      MetadataUtils.getJSXElementFromMetadata(editorStateWithChanges.jsxMetadata, elementPath),
     )
     if (className == null) {
       return
     }
 
-    const parsedClassList = getParsedClassList(className, getTailwindConfigCached(editorState))
+    const parsedClassList = getParsedClassList(
+      className,
+      getTailwindConfigCached(editorStateWithChanges),
+    )
     const styleObject = parsedClassList.reduce((style, prop) => {
       if (prop.type === 'unparsed') {
         return style
       }
 
       prop.ast.valueDef.class.forEach((c) => {
-        style[toCamelCase(c)] = prop.ast.value
+        style[toCamelCase(c)] = safeParseInt(prop.ast.value) ?? prop.ast.value
       })
       return style
-    }, {} as Record<string, string>)
+    }, {} as Record<string, string | number>)
 
     const { editorStateWithChanges: updatedEditorState } = applyValuesAtPath(
-      editorState,
+      editorStateWithChanges,
       elementPath,
       [
         {
@@ -124,7 +189,7 @@ function convertTailwindToInlineStyle(
     const { editorStateWithChanges: finalEditorState, editorStatePatch: editorStatePatchToRemove } =
       deleteValuesAtPath(updatedEditorState, elementPath, [PP.create('className')])
 
-    patches.push(editorStatePatchToRemove)
+    patches = [editorStatePatchToRemove]
     editorStateWithChanges = finalEditorState
   })
 
