@@ -183,6 +183,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
           'borderBottomLeftRadius',
         ),
         zIndex: parseTailwindProperty(mapping[TailwindPropertyMapping.zIndex], 'zIndex'),
+        flexWrap: parseTailwindProperty(mapping[TailwindPropertyMapping.flexWrap], 'flexWrap'),
         overflow: parseTailwindProperty(mapping[TailwindPropertyMapping.overflow], 'overflow'),
       }
     },

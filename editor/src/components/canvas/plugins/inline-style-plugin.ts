@@ -90,6 +90,7 @@ export const InlineStylePlugin: StylePlugin = {
         element.props,
       )
       const zIndex = getPropertyFromInstance('zIndex', element.props)
+      const flexWrap = getPropertyFromInstance('flexWrap', element.props)
 
       const overflow = getPropertyFromInstance('overflow', element.props)
 
@@ -114,6 +115,7 @@ export const InlineStylePlugin: StylePlugin = {
         borderBottomRightRadius: borderBottomRightRadius,
         borderBottomLeftRadius: borderBottomLeftRadius,
         zIndex: zIndex,
+        flexWrap: flexWrap,
         overflow: overflow,
       }
     },
