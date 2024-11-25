@@ -6322,6 +6322,7 @@ export async function load(
   // this action is now async!
   const migratedModel = applyMigrations(model)
   const npmDependencies = dependenciesWithEditorRequirements(migratedModel.projectContents)
+  // side effect ☢️
   notifyOperationStarted(dispatch, { type: 'refreshDependencies' })
   const fetchNodeModulesResult = await fetchNodeModules(
     dispatch,
@@ -6337,6 +6338,7 @@ export async function load(
     fetchNodeModulesResult.dependenciesNotFound,
   )
 
+  // side effect ☢️
   notifyOperationFinished(
     dispatch,
     { type: 'refreshDependencies' },
