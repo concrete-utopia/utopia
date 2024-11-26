@@ -58,6 +58,7 @@ export interface StylePlugin {
     attributes: JSXAttributes,
     prop: T,
   ) => CSSStyleProperty<NonNullable<ParsedCSSProperties[T]>> | null
+  getOrderedPropertyKeys: (attributes: JSXAttributes) => Array<string>
   updateStyles: (
     editorState: EditorState,
     elementPath: ElementPath,

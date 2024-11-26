@@ -1,7 +1,11 @@
 import deepEqual from 'fast-deep-equal'
 import { useContextSelector } from 'use-context-selector'
 import { flatMapArray, last, mapArrayToDictionary } from '../../../core/shared/array-utils'
-import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
+import {
+  emptyComments,
+  isJSXElement,
+  jsExpressionValue,
+} from '../../../core/shared/element-template'
 import { objectMap } from '../../../core/shared/object-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { arrayEqualsByReference, NO_OP } from '../../../core/shared/utils'
@@ -12,7 +16,7 @@ import {
   unsetProperty,
 } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import type { PropertyStatus } from './control-status'
 import { getControlStatusFromPropertyStatus } from './control-status'
 import { getControlStyles } from './control-styles'
@@ -27,6 +31,9 @@ import {
   useInspectorContext,
   useInspectorInfo,
 } from './property-path-hooks'
+import { getActivePlugin } from '../../canvas/plugins/style-plugins'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { isLeft, isRight } from '../../../core/shared/either'
 
 function getShadowedLonghandShorthandValue<
   LonghandKey extends ParsedPropertiesKeys,
@@ -113,6 +120,13 @@ export function useInspectorInfoLonghandShorthand<
   )
   const { selectedViewsRef } = useInspectorContext()
 
+  const selectedElements = useEditorState(
+    Substores.metadata,
+    (store) =>
+      MetadataUtils.findElementsByElementPath(store.editor.jsxMetadata, selectedViewsRef.current),
+    'useInspectorInfoLonghandShorthand selectedElements',
+  )
+
   const shorthandInfo = useInspectorInfo(
     [shorthand],
     (v) => v[shorthand],
@@ -121,8 +135,17 @@ export function useInspectorInfoLonghandShorthand<
     },
     pathMappingFn,
   )
+  const stylePluginRef = useRefEditorState((store) => getActivePlugin(store.editor))
 
-  const allOrderedPropKeys = useGetOrderedPropertyKeys(pathMappingFn, [...longhands, shorthand])
+  const allOrderedPropKeys = selectedElements.map((element) =>
+    stylePluginRef.current
+      .getOrderedPropertyKeys(
+        isRight(element.element) && isJSXElement(element.element.value)
+          ? element.element.value.props
+          : [],
+      )
+      .filter((key): key is LonghandKey | ShorthandKey => key in longhands || key === shorthand),
+  )
 
   const longhandResults = longhands.map((longhand) => {
     // we follow the Rules of Hooks because we know that the length of the longhands array is stable during the lifecycle of this hook
@@ -136,9 +159,19 @@ export function useInspectorInfoLonghandShorthand<
       pathMappingFn,
     )
 
+    const orderedPropKeys = selectedElements.map((element) =>
+      stylePluginRef.current
+        .getOrderedPropertyKeys(
+          isRight(element.element) && isJSXElement(element.element.value)
+            ? element.element.value.props
+            : [],
+        )
+        .filter((key): key is LonghandKey | ShorthandKey => key === longhand || key === shorthand),
+    )
+
     // we follow the Rules of Hooks because we know that the length of the longhands array is stable during the lifecycle of this hook
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const orderedPropKeys = useGetOrderedPropertyKeys(pathMappingFn, [longhand, shorthand])
+    // const orderedPropKeys = useGetOrderedPropertyKeys(pathMappingFn, [longhand, shorthand])
 
     const { value, propertyStatus } = getShadowedLonghandShorthandValue(
       longhand,

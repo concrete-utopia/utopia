@@ -4,7 +4,10 @@ import {
   getJSXAttributesAtPath,
   jsxSimpleAttributeToValue,
 } from '../../../core/shared/jsx-attribute-utils'
-import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
+import {
+  getAllPathsFromAttributes,
+  type ModifiableAttribute,
+} from '../../../core/shared/jsx-attributes'
 import { getJSXElementFromProjectContents } from '../../editor/store/editor-state'
 import { cssParsers, type ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
@@ -14,7 +17,7 @@ import {
   cssStylePropertyNotParsable,
   cssStylePropertyNotFound,
 } from '../canvas-types'
-import { mapDropNulls } from '../../../core/shared/array-utils'
+import { mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import { applyValuesAtPath, deleteValuesAtPath } from '../commands/utils/property-utils'
@@ -119,6 +122,13 @@ export const InlineStylePlugin: StylePlugin = {
         overflow: overflow,
       }
     },
+  getOrderedPropertyKeys: (attributes: JSXAttributes) => {
+    return stripNulls(
+      getAllPathsFromAttributes(attributes)
+        .filter((path) => PP.firstPartToString(path) === 'style')
+        .map((path) => path.propertyElements[1] as keyof StyleInfo),
+    )
+  },
   updateStyles: (editorState, elementPath, updates) => {
     const propsToDelete = mapDropNulls(
       (update) => (update.type === 'delete' ? PP.create('style', update.property) : null),

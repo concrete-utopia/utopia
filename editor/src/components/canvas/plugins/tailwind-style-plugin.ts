@@ -66,6 +66,31 @@ const TailwindPropertyMapping: Record<string, string> = {
   zIndex: 'zIndex',
 }
 
+const OrderedTailwindProperties: Array<keyof StyleInfo> = [
+  'gap',
+  'flexDirection',
+  'left',
+  'right',
+  'top',
+  'bottom',
+  'width',
+  'height',
+  'flexBasis',
+  'padding',
+  'paddingTop',
+  'paddingRight',
+  'paddingBottom',
+  'paddingLeft',
+  'borderRadius',
+  'borderTopLeftRadius',
+  'borderTopRightRadius',
+  'borderBottomRightRadius',
+  'borderBottomLeftRadius',
+  'zIndex',
+  'flexWrap',
+  'overflow',
+]
+
 function isSupportedTailwindProperty(prop: unknown): prop is keyof typeof TailwindPropertyMapping {
   return typeof prop === 'string' && prop in TailwindPropertyMapping
 }
@@ -187,6 +212,9 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         overflow: parseTailwindProperty(mapping[TailwindPropertyMapping.overflow], 'overflow'),
       }
     },
+  getOrderedPropertyKeys: (_: JSXAttributes) => {
+    return OrderedTailwindProperties
+  },
   updateStyles: (editorState, elementPath, updates) => {
     const propsToDelete = mapDropNulls(
       (update) =>
