@@ -65,8 +65,11 @@ function getUntypedStyleInfo(jsxElementProps: JSXAttributes): UntypedStyleInfo |
 
 function getPropertyFromInstance<P extends keyof StyleInfo, T = ParsedCSSProperties[P]>(
   prop: P,
-  untypedStyleInfo: UntypedStyleInfo,
+  untypedStyleInfo: UntypedStyleInfo | null,
 ): CSSStyleProperty<NonNullable<T>> | null {
+  if (untypedStyleInfo == null) {
+    return cssStylePropertyNotFound()
+  }
   const attribute = untypedStyleInfo[prop]
   if (attribute == null) {
     return cssStylePropertyNotFound()
@@ -109,9 +112,6 @@ export const InlineStylePlugin: StylePlugin = {
     ({ projectContents }) =>
     (elementPath) => {
       const untypedStyleInfo = InlineStylePlugin.readUntypedStyleInfo(projectContents, elementPath)
-      if (untypedStyleInfo == null) {
-        return null
-      }
 
       const gap = getPropertyFromInstance('gap', untypedStyleInfo)
       const flexDirection = getPropertyFromInstance('flexDirection', untypedStyleInfo)
