@@ -4,13 +4,10 @@ import { getImportOperationTextAsJsx } from './import-wizard/import-wizard-helpe
 import { getTotalImportStatusAndResult } from '../../core/shared/import/import-operation-service'
 import type { TotalImportResult } from '../../core/shared/import/import-operation-types'
 import type { Theme } from '../../uuiui'
-import { useColorTheme } from '../../uuiui'
 import { getCurrentTheme } from './store/editor-state'
 import ReactDOM from 'react-dom'
 
 export function LoadingEditorComponent() {
-  const colorTheme = useColorTheme()
-
   const currentTheme: Theme = useEditorState(
     Substores.theme,
     (store) => getCurrentTheme(store.userState),
@@ -41,6 +38,11 @@ export function LoadingEditorComponent() {
   )
 
   const cleared = React.useRef(false)
+
+  React.useEffect(() => {
+    document.body.classList.remove('utopia-theme-light', 'utopia-theme-dark')
+    document.body.classList.add(`utopia-theme-${currentTheme}`)
+  }, [currentTheme])
 
   const currentOperationToShow: {
     text: React.ReactNode
@@ -131,25 +133,14 @@ export function LoadingEditorComponent() {
     hasMounted.current = true
   }
 
-  const themeStyle =
-    currentTheme === 'dark'
-      ? `
-    .editor-loading-screen { background-color: ${colorTheme.bg6.value} }
-    .utopia-logo-pyramid.light { display: none; }
-    .utopia-logo-pyramid.dark { display: block; }
-  `
-      : ''
-
   return ReactDOM.createPortal(
     <React.Fragment>
-      <style>{themeStyle}</style>
-      <div className='progress-bar-shell' style={{ borderColor: colorTheme.fg0.value }}>
+      <div className='progress-bar-shell'>
         <div
           className='progress-bar-progress animation-progress'
           style={{
             transform: 'translateX(-180px)',
             animationName: 'animation-keyframes-2',
-            backgroundColor: colorTheme.fg0.value,
           }}
         ></div>
       </div>
@@ -159,7 +150,6 @@ export function LoadingEditorComponent() {
             <li
               style={{
                 listStyle: 'none',
-                color: colorTheme.fg0.value,
               }}
               key={currentOperationToShow.id}
             >
