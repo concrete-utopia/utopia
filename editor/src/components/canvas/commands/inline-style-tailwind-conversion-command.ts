@@ -3,8 +3,7 @@ import type { BaseCommand, CommandFunctionResult } from './commands'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type { DeleteCSSProp, EditorStateWithPatches, UpdateCSSProp } from '../plugins/style-plugins'
 import { InlineStylePlugin } from '../plugins/inline-style-plugin'
-import type { StyleInfo } from '../canvas-types'
-import { stringifyStyleInfo } from '../canvas-types'
+import type { UntypedStyleInfo } from '../canvas-types'
 import { TailwindPlugin } from '../plugins/tailwind-style-plugin'
 import { getTailwindConfigCached } from '../../../core/tailwind/tailwind-compilation'
 import { mapDropNulls } from '../../../core/shared/array-utils'
@@ -30,21 +29,23 @@ export function inlineStyleTailwindConversionCommand(
   }
 }
 
-function getStyleInfoUpdates(styleInfo: StyleInfo): {
+const stringify = (value: unknown): string =>
+  typeof value === 'string' ? value : typeof value === 'number' ? `${value}px` : `${value}`
+
+function getStyleUpdates(untypedStyleInfo: UntypedStyleInfo): {
   stylesToAdd: UpdateCSSProp[]
   stylesToRemove: DeleteCSSProp[]
 } {
-  const styleInfoString = stringifyStyleInfo(styleInfo)
   const stylesToAdd: UpdateCSSProp[] = mapDropNulls(
     ([property, value]) =>
-      value == null
+      value?.type !== 'property'
         ? null
         : {
             property: property,
-            value: value,
+            value: stringify(value.value),
             type: 'set',
           },
-    Object.entries(styleInfoString),
+    Object.entries(untypedStyleInfo),
   )
 
   const stylesToRemove: DeleteCSSProp[] = stylesToAdd.map((style) => ({
@@ -63,15 +64,16 @@ function convertInlineStyleToTailwindViaStyleInfo(
   let editorStateWithChanges: EditorState = editorState
 
   elementPaths.forEach((elementPath) => {
-    const styleInfo = InlineStylePlugin.styleInfoFactory({
-      projectContents: editorState.projectContents,
-    })(elementPath)
+    const styleInfo = InlineStylePlugin.readUntypedStyleInfo(
+      editorState.projectContents,
+      elementPath,
+    )
 
     if (styleInfo == null) {
       return
     }
 
-    const { stylesToAdd, stylesToRemove } = getStyleInfoUpdates(styleInfo)
+    const { stylesToAdd, stylesToRemove } = getStyleUpdates(styleInfo)
 
     const { editorStateWithChanges: updatedEditorState } = TailwindPlugin(
       getTailwindConfigCached(editorStateWithChanges),
@@ -100,15 +102,13 @@ function convertTailwindToInlineStyleViaStyleInfo(
   elementPaths.forEach((elementPath) => {
     const styleInfo = TailwindPlugin(
       getTailwindConfigCached(editorStateWithChanges),
-    ).styleInfoFactory({
-      projectContents: editorStateWithChanges.projectContents,
-    })(elementPath)
+    ).readUntypedStyleInfo(editorState.projectContents, elementPath)
 
     if (styleInfo == null) {
       return
     }
 
-    const { stylesToAdd, stylesToRemove } = getStyleInfoUpdates(styleInfo)
+    const { stylesToAdd, stylesToRemove } = getStyleUpdates(styleInfo)
 
     const { editorStateWithChanges: updatedEditorState } = InlineStylePlugin.updateStyles(
       editorStateWithChanges,

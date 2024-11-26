@@ -45,6 +45,7 @@ const TailwindPropertyMapping: Record<string, string> = {
   right: 'positionRight',
   top: 'positionTop',
   bottom: 'positionBottom',
+  position: 'position',
 
   width: 'width',
   height: 'height',
@@ -74,6 +75,8 @@ const TailwindPropertyMapping: Record<string, string> = {
   overflow: 'overflow',
 
   zIndex: 'zIndex',
+
+  backgroundColor: 'backgroundColor',
 }
 
 function toCamelCase(str: string): string {

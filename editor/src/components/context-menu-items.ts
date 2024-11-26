@@ -565,8 +565,10 @@ export const escapeHatch: ContextMenuItem<CanvasData> = {
   },
 }
 
+export const ConvertInlineStyleToTailwindOptionText = 'Convert Inline Style to Tailwind Style'
+
 export const convertInlineStyleToTailwindStyle: ContextMenuItem<CanvasData> = {
-  name: 'Convert Inline Style to Tailwind Style',
+  name: ConvertInlineStyleToTailwindOptionText,
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     dispatch?.([
@@ -577,8 +579,10 @@ export const convertInlineStyleToTailwindStyle: ContextMenuItem<CanvasData> = {
   },
 }
 
+export const ConvertTailwindToInlineStyleOptionText = 'Convert Tailwind Style to Inline Style'
+
 export const convertTailwindStyleToInlineStyle: ContextMenuItem<CanvasData> = {
-  name: 'Convert Tailwind Style to Inline Style',
+  name: ConvertTailwindToInlineStyleOptionText,
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     dispatch?.([
