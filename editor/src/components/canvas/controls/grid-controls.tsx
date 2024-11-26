@@ -63,6 +63,7 @@ import {
   isCSSKeyword,
   isDynamicGridRepeat,
   isGridCSSRepeat,
+  printCSSNumber,
   printCSSNumberWithDefaultUnit,
   printGridCSSNumber,
 } from '../../inspector/common/css-utils'
@@ -2167,6 +2168,8 @@ type RulerMarkerData = {
   columnEnd: RulerMarkerPositionData
   rowStart: RulerMarkerPositionData
   rowEnd: RulerMarkerPositionData
+  columns: CanvasRectangle[]
+  rows: CanvasRectangle[]
 }
 
 type RulerMarkerPositionData = {
@@ -2255,6 +2258,8 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
       })
 
       return {
+        columns: parentGridCellGlobalFrames[0],
+        rows: parentGridCellGlobalFrames.map((r) => r[0]),
         parentGrid: parentGrid,
         cellRect: cellRectResized,
         gridRect: gridRect,
@@ -2287,53 +2292,176 @@ const RulerMarkers = React.memo((props: { path: ElementPath }) => {
     'RulerMarkers markers',
   )
 
+  const resizeControlRef = useRefEditorState((store) =>
+    store.editor.canvas.interactionSession?.activeControl.type !== 'GRID_RESIZE_HANDLE'
+      ? null
+      : store.editor.canvas.interactionSession.activeControl,
+  )
+
   if (markers == null) {
     return null
   }
 
+  const columnNotches: CanvasPoint[] = (markers.columns as CanvasPoint[]).concat(
+    canvasPoint({
+      x:
+        markers.columns[markers.columns.length - 1].x +
+        markers.columns[markers.columns.length - 1].width,
+      y: markers.columns[markers.columns.length - 1].y,
+    }),
+  )
+  const rowNotches: CanvasPoint[] = (markers.rows as CanvasPoint[]).concat(
+    canvasPoint({
+      y:
+        markers.columns[markers.columns.length - 1].y +
+        markers.columns[markers.columns.length - 1].height,
+      x: markers.columns[markers.columns.length - 1].x,
+    }),
+  )
+
+  const showRulerColumn =
+    resizeControlRef.current != null &&
+    (resizeControlRef.current.edge === 'column-start' ||
+      resizeControlRef.current.edge === 'column-end')
+  const showRulerRow =
+    resizeControlRef.current != null &&
+    (resizeControlRef.current.edge === 'row-start' || resizeControlRef.current.edge === 'row-end')
   return (
     <React.Fragment>
+      {/* Grid rulers */}
+      {when(
+        showRulerColumn,
+        <>
+          <div
+            style={{
+              position: 'absolute',
+              top: markers.gridRect.y - 20,
+              left: markers.gridRect.x,
+              height: 20,
+              width: markers.gridRect.width,
+              background: 'white',
+              border: '1px solid #000',
+            }}
+          />
+          {columnNotches.map((dim, index) => {
+            return (
+              <div
+                key={index}
+                style={{
+                  height: 20,
+                  width: 1,
+                  background: '#000',
+                  left: dim.x,
+                  top: dim.y - 20,
+                  position: 'absolute',
+                }}
+              />
+            )
+          })}
+        </>,
+      )}
+      {when(
+        showRulerRow,
+        <>
+          <div
+            style={{
+              position: 'absolute',
+              top: markers.gridRect.y,
+              left: markers.gridRect.x - 20,
+              width: 20,
+              height: markers.gridRect.height,
+              background: 'white',
+              border: '1px solid #000',
+            }}
+          />
+          {rowNotches.map((dim, index) => {
+            return (
+              <div
+                key={index}
+                style={{
+                  height: 1,
+                  width: 20,
+                  background: '#000',
+                  left: dim.x - 20,
+                  top: dim.y,
+                  position: 'absolute',
+                }}
+              />
+            )
+          })}
+        </>,
+      )}
       {/* Indicators */}
       <RulerMarkerIndicator
+        path={props.path}
+        cellRect={markers.cellRect}
         parentGrid={markers.parentGrid}
         marker={markers.columnStart}
         axis={'column'}
+        containerSize={markers.gridRect.height}
       />
       <RulerMarkerIndicator
+        path={props.path}
+        cellRect={markers.cellRect}
         parentGrid={markers.parentGrid}
         marker={markers.columnEnd}
         axis={'column'}
+        containerSize={markers.gridRect.height}
       />
       <RulerMarkerIndicator
+        path={props.path}
+        cellRect={markers.cellRect}
         parentGrid={markers.parentGrid}
         marker={markers.rowStart}
         axis={'row'}
+        containerSize={markers.gridRect.width}
       />
-      <RulerMarkerIndicator parentGrid={markers.parentGrid} marker={markers.rowEnd} axis={'row'} />
+      <RulerMarkerIndicator
+        path={props.path}
+        cellRect={markers.cellRect}
+        parentGrid={markers.parentGrid}
+        marker={markers.rowEnd}
+        axis={'row'}
+        containerSize={markers.gridRect.width}
+      />
       {/* Offset lines */}
       <GridCellOffsetLine
         top={markers.columnStart.top}
         left={markers.columnStart.left}
         size={markers.cellRect.y - markers.gridRect.y}
         orientation='vertical'
+        highlight={
+          resizeControlRef.current != null && resizeControlRef.current.edge === 'column-start'
+        }
+        containerSize={markers.gridRect.height}
       />
       <GridCellOffsetLine
         top={markers.columnEnd.top}
         left={markers.columnEnd.left}
         size={markers.cellRect.y - markers.gridRect.y}
         orientation='vertical'
+        highlight={
+          resizeControlRef.current != null && resizeControlRef.current.edge === 'column-end'
+        }
+        containerSize={markers.gridRect.height}
       />
       <GridCellOffsetLine
         top={markers.rowStart.top}
         left={markers.rowStart.left}
         size={markers.cellRect.x - markers.gridRect.x}
         orientation='horizontal'
+        highlight={
+          resizeControlRef.current != null && resizeControlRef.current.edge === 'row-start'
+        }
+        containerSize={markers.gridRect.width}
       />
       <GridCellOffsetLine
         top={markers.rowEnd.top}
         left={markers.rowEnd.left}
         size={markers.cellRect.x - markers.gridRect.x}
         orientation='horizontal'
+        highlight={resizeControlRef.current != null && resizeControlRef.current.edge === 'row-end'}
+        containerSize={markers.gridRect.width}
       />
       {/* Cell outline */}
       <GridCellOutline
@@ -2349,9 +2477,12 @@ RulerMarkers.displayName = 'RulerMarkers'
 
 const RulerMarkerIndicator = React.memo(
   (props: {
+    path: ElementPath
     parentGrid: GridContainerProperties
+    cellRect: CanvasRectangle
     marker: RulerMarkerPositionData
     axis: 'row' | 'column'
+    containerSize: number
   }) => {
     const colorTheme = useColorTheme()
 
@@ -2367,15 +2498,31 @@ const RulerMarkerIndicator = React.memo(
       'RulerMarkerIndicator canvasScale',
     )
 
+    const [mp, setMp] = React.useState<CanvasPoint | null>(null)
+    const resizeControlRef = useRefEditorState((store) =>
+      store.editor.canvas.interactionSession?.activeControl.type !== 'GRID_RESIZE_HANDLE'
+        ? null
+        : store.editor.canvas.interactionSession.activeControl,
+    )
+
     const scaledTop = props.marker.top * canvasScale
     const top =
-      scaledTop -
-      skewMarkerPosition(props.axis === 'column', props.axis, props.marker.bound, markerType)
+      mp?.y != null &&
+      resizeControlRef.current != null &&
+      (resizeControlRef.current.edge === 'row-start' || resizeControlRef.current.edge === 'row-end')
+        ? mp.y
+        : scaledTop -
+          skewMarkerPosition(props.axis === 'column', props.axis, props.marker.bound, markerType)
 
     const scaledLeft = props.marker.left * canvasScale
     const left =
-      scaledLeft -
-      skewMarkerPosition(props.axis === 'row', props.axis, props.marker.bound, markerType)
+      mp?.x != null &&
+      resizeControlRef.current != null &&
+      (resizeControlRef.current.edge === 'column-start' ||
+        resizeControlRef.current.edge === 'column-end')
+        ? mp.x - (markerType === 'pinned' ? 7 : 0)
+        : scaledLeft -
+          skewMarkerPosition(props.axis === 'row', props.axis, props.marker.bound, markerType)
 
     const labelText = React.useMemo(() => {
       if (props.marker.position == null) {
@@ -2385,6 +2532,110 @@ const RulerMarkerIndicator = React.memo(
     }, [props.marker, props.parentGrid, props.axis])
 
     const labelClass = 'ruler-marker-label'
+
+    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+
+    const dispatch = useDispatch()
+    const [startingBounds, setStartingBounds] = React.useState<CanvasRectangle | null>(null)
+
+    const startResizeInteraction = React.useCallback(
+      (uid: string, edge: GridResizeEdge) => (event: React.MouseEvent) => {
+        event.stopPropagation()
+        const frame = props.cellRect
+        setStartingBounds(frame)
+        const start = windowToCanvasCoordinates(
+          canvasScale,
+          canvasOffsetRef.current,
+          windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
+        )
+        dispatch([
+          CanvasActions.createInteractionSession(
+            createInteractionViaMouse(
+              start.canvasPositionRounded,
+              Modifier.modifiersForEvent(event),
+              gridResizeHandle(uid, edge),
+              'zero-drag-not-permitted',
+            ),
+          ),
+        ])
+      },
+      [canvasOffsetRef, dispatch, canvasScale, props.cellRect],
+    )
+
+    const dragRef = useRefEditorState((store) =>
+      store.editor.canvas.interactionSession?.interactionData.type !== 'DRAG'
+        ? null
+        : store.editor.canvas.interactionSession?.interactionData.drag,
+    )
+
+    const [bounds, setBounds] = React.useState<CanvasRectangle | null>(null)
+
+    const edge: GridResizeEdge =
+      props.axis === 'column'
+        ? props.marker.bound === 'start'
+          ? 'column-start'
+          : 'column-end'
+        : props.marker.bound === 'start'
+        ? 'row-start'
+        : 'row-end'
+
+    const onMouseDown = React.useCallback(
+      (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+
+        startResizeInteraction(EP.toUid(props.path), edge)(e)
+
+        const mousemove = (move: MouseEvent) => {
+          setMp(
+            windowToCanvasCoordinates(
+              canvasScale,
+              canvasOffsetRef.current,
+              windowPoint({
+                x: move.clientX,
+                y: move.clientY,
+              }),
+            ).canvasPositionRaw,
+          )
+
+          if (resizeControlRef.current == null || dragRef.current == null) {
+            return
+          }
+
+          if (startingBounds == null) {
+            return
+          }
+
+          setBounds(
+            resizeBoundingBoxFromSide(
+              startingBounds,
+              dragRef.current,
+              gridEdgeToEdgePosition(resizeControlRef.current.edge),
+              'non-center-based',
+              null,
+            ),
+          )
+        }
+        const mouseup = () => {
+          setMp(null)
+          window.removeEventListener('mouseup', mouseup)
+          window.removeEventListener('mousemove', mousemove)
+        }
+
+        window.addEventListener('mouseup', mouseup)
+        window.addEventListener('mousemove', mousemove)
+      },
+      [
+        dragRef,
+        resizeControlRef,
+        startingBounds,
+        props.path,
+        startResizeInteraction,
+        edge,
+        canvasOffsetRef,
+        canvasScale,
+      ],
+    )
 
     return (
       <div
@@ -2397,10 +2648,15 @@ const RulerMarkerIndicator = React.memo(
           maxWidth: rulerMarkerIconSize,
           display: 'flex',
           zoom: 1 / canvasScale,
+          pointerEvents: resizeControlRef.current != null ? 'none' : undefined,
         }}
+        onMouseDown={onMouseDown}
         css={{
           [`> .${labelClass}`]: {
-            visibility: 'hidden',
+            visibility:
+              resizeControlRef.current != null && resizeControlRef.current.edge === edge
+                ? 'visible'
+                : 'hidden',
           },
           ':hover': {
             [`> .${labelClass}`]: {
@@ -2410,6 +2666,19 @@ const RulerMarkerIndicator = React.memo(
         }}
       >
         {markerIcon}
+        {when(
+          resizeControlRef.current != null && resizeControlRef.current.edge === edge,
+          <div
+            style={{
+              position: 'absolute',
+              left: 5,
+              top: 10,
+              width: props.axis === 'column' ? 1 : props.containerSize,
+              height: props.axis === 'row' ? 1 : props.containerSize,
+              borderLeft: `1px dashed ${colorTheme.primary.value}`,
+            }}
+          />,
+        )}
         {when(
           labelText != null,
           <div
@@ -2596,7 +2865,14 @@ function skewMarkerPosition(
 }
 
 const GridCellOffsetLine = React.memo(
-  (props: { top: number; left: number; size: number; orientation: 'vertical' | 'horizontal' }) => {
+  (props: {
+    top: number
+    left: number
+    size: number
+    containerSize: number
+    orientation: 'vertical' | 'horizontal'
+    highlight: boolean
+  }) => {
     const colorTheme = useColorTheme()
 
     return (
@@ -2605,13 +2881,29 @@ const GridCellOffsetLine = React.memo(
           position: 'absolute',
           top: props.top,
           left: props.left,
-          width: props.orientation === 'horizontal' ? props.size : 1,
-          height: props.orientation === 'vertical' ? props.size : 1,
+          width:
+            props.orientation === 'horizontal'
+              ? props.highlight
+                ? props.containerSize
+                : props.size
+              : 1,
+          height:
+            props.orientation === 'vertical'
+              ? props.highlight
+                ? props.containerSize
+                : props.size
+              : 1,
           borderLeft:
-            props.orientation === 'vertical' ? `1px dashed ${colorTheme.primary.value}` : undefined,
+            props.orientation === 'vertical'
+              ? `1px ${props.highlight ? 'solid' : 'dashed'} ${
+                  props.highlight ? colorTheme.brandNeonPink.value : colorTheme.primary.value
+                }`
+              : undefined,
           borderTop:
             props.orientation === 'horizontal'
-              ? `1px dashed ${colorTheme.primary.value}`
+              ? `1px ${props.highlight ? 'solid' : 'dashed'} ${
+                  props.highlight ? colorTheme.brandNeonPink.value : colorTheme.primary.value
+                }`
               : undefined,
           pointerEvents: 'none',
         }}

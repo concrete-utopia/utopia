@@ -1,6 +1,7 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import {
+  canvasRectangle,
   type CanvasRectangle,
   isInfinityRectangle,
   rectangleIntersection,
@@ -21,6 +22,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
+import { getGridChildCellCoordBoundsFromCanvas } from './grid-cell-bounds'
 import { findOriginalGrid, getCommandsForGridItemPlacement } from './grid-helpers'
 import { resizeBoundingBoxFromSide } from './resize-helpers'
 
@@ -104,10 +106,42 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         null,
       )
 
+      const columns = allCellBounds[0]
+      let closestHorizontal: number | null = null
+      let minDist = Infinity
+      const ccc = columns.concat(
+        canvasRectangle({
+          x: columns[columns.length - 1].x + columns[columns.length - 1].width,
+          y: columns[columns.length - 1].y,
+          width: 0,
+          height: 0,
+        }),
+      )
+      for (let i = 0; i < ccc.length; i++) {
+        const c = ccc[i]
+        const k = Math.abs(
+          c.x -
+            (interactionSession.interactionData.drag.x +
+              interactionSession.interactionData.dragStart.x),
+        )
+        if (k < minDist) {
+          minDist = k
+          closestHorizontal = i + 1
+        }
+      }
+
+      const c = getGridChildCellCoordBoundsFromCanvas(selectedElementMetadata, allCellBounds)
+      if (c == null) {
+        return emptyStrategyApplicationResult
+      }
+
       const gridProps = getNewGridPropsFromResizeBox(resizeBoundingBox, allCellBounds)
 
       if (gridProps == null) {
         return emptyStrategyApplicationResult
+      }
+      if (closestHorizontal != null) {
+        gridProps.gridColumnEnd.numericalPosition = closestHorizontal
       }
 
       const gridTemplate =
