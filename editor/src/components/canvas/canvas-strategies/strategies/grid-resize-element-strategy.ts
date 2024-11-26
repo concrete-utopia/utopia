@@ -1,11 +1,18 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
+import type {
+  GridElementProperties,
+  GridPositionOrSpan,
+  GridPositionValue,
+} from '../../../../core/shared/element-template'
+import { gridSpanNumeric, isGridSpan } from '../../../../core/shared/element-template'
 import {
   type CanvasRectangle,
   isInfinityRectangle,
   rectangleIntersection,
 } from '../../../../core/shared/math-utils'
 import { gridContainerIdentifier, gridItemIdentifier } from '../../../editor/store/editor-state'
+import { cssKeyword } from '../../../inspector/common/css-utils'
 import { isFillOrStretchModeAppliedOnAnySide } from '../../../inspector/inspector-common'
 import {
   controlsForGridPlaceholders,
@@ -21,7 +28,7 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { findOriginalGrid, getCommandsForGridItemPlacement } from './grid-helpers'
+import { getCommandsForGridItemPlacement } from './grid-helpers'
 import { resizeBoundingBoxFromSide } from './resize-helpers'
 
 export const gridResizeElementStrategy: CanvasStrategyFactory = (
@@ -104,14 +111,59 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         null,
       )
 
-      const gridProps = getNewGridPropsFromResizeBox(resizeBoundingBox, allCellBounds)
+      const gridPropsNumeric = getNewGridPropsFromResizeBox(resizeBoundingBox, allCellBounds)
 
-      if (gridProps == null) {
+      if (gridPropsNumeric == null) {
         return emptyStrategyApplicationResult
       }
 
       const gridTemplate =
         selectedElementMetadata.specialSizeMeasurements.parentContainerGridProperties
+
+      const elementGridPropertiesFromProps =
+        selectedElementMetadata.specialSizeMeasurements.elementGridPropertiesFromProps
+
+      const width =
+        gridPropsNumeric.gridColumnEnd.numericalPosition -
+        gridPropsNumeric.gridColumnStart.numericalPosition
+      const height =
+        gridPropsNumeric.gridRowEnd.numericalPosition -
+        gridPropsNumeric.gridRowStart.numericalPosition
+
+      const gridProps: GridElementProperties = {
+        gridColumnStart: normalizePositionAfterResize(
+          elementGridPropertiesFromProps.gridColumnStart,
+          gridPropsNumeric.gridColumnStart,
+          width,
+          'start',
+          elementGridPropertiesFromProps.gridColumnEnd,
+          gridPropsNumeric.gridColumnEnd,
+        ),
+        gridColumnEnd: normalizePositionAfterResize(
+          elementGridPropertiesFromProps.gridColumnEnd,
+          gridPropsNumeric.gridColumnEnd,
+          width,
+          'end',
+          elementGridPropertiesFromProps.gridColumnStart,
+          gridPropsNumeric.gridColumnStart,
+        ),
+        gridRowStart: normalizePositionAfterResize(
+          elementGridPropertiesFromProps.gridRowStart,
+          gridPropsNumeric.gridRowStart,
+          height,
+          'start',
+          elementGridPropertiesFromProps.gridRowEnd,
+          gridPropsNumeric.gridRowEnd,
+        ),
+        gridRowEnd: normalizePositionAfterResize(
+          elementGridPropertiesFromProps.gridRowEnd,
+          gridPropsNumeric.gridRowEnd,
+          height,
+          'end',
+          elementGridPropertiesFromProps.gridRowStart,
+          gridPropsNumeric.gridRowStart,
+        ),
+      }
 
       return strategyApplicationResult(
         getCommandsForGridItemPlacement(selectedElement, gridTemplate, gridProps),
@@ -157,4 +209,31 @@ function getNewGridPropsFromResizeBox(
     gridColumnStart: { numericalPosition: newColumnStart },
     gridColumnEnd: { numericalPosition: newColumnEnd },
   }
+}
+
+// After a resize happens and we know the numerical grid positioning of the new bounds,
+// return a normalized version of the new position so that it respects any spans that
+// may have been there before the resize, and/or default it to 'auto' when it would become redundant.
+function normalizePositionAfterResize(
+  position: GridPositionOrSpan | null,
+  resizedPosition: GridPositionValue,
+  size: number,
+  bound: 'start' | 'end',
+  counterpart: GridPositionOrSpan | null,
+  counterpartResizedPosition: GridPositionValue,
+): GridPositionOrSpan | null {
+  if (isGridSpan(position)) {
+    if (size === 1) {
+      return cssKeyword('auto')
+    }
+    return gridSpanNumeric(size)
+  }
+  if (
+    isGridSpan(counterpart) &&
+    counterpartResizedPosition.numericalPosition === 1 &&
+    bound === 'end'
+  ) {
+    return cssKeyword('auto')
+  }
+  return resizedPosition
 }
