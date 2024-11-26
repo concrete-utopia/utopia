@@ -1239,6 +1239,77 @@ export var storyboard = (props) => {
       const className = element.className
       expect(className).toEqual('btn-big shadow-shiny')
     })
+
+    it('does not affect calculated styles when converting to tailwind', async () => {
+      const editor = await renderTestEditorWithModel(
+        createModifiedProject({
+          [StoryboardFilePath]: `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const height = 100
+export var storyboard = (props) => {
+  return (
+    <Storyboard>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        commentId='9f32e7b6afc9765fbe5cacf487bf0e85'
+      >
+        <div
+          data-testid='bbb'
+          data-uid='bbb'
+          style={{
+            width: 100 + 'px',
+            height: height,
+            padding: '0.25rem',
+          }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}`,
+          [TailwindConfigPath]: `
+        const TailwindConfig = { }
+        export default TailwindConfig
+    `,
+          'app.css': `
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;`,
+        }),
+        'await-first-dom-report',
+      )
+
+      await openContextMenuOnElement(editor, {
+        testId: 'bbb',
+        contextMenuItemLabel: ConvertInlineStyleToTailwindOptionText,
+      })
+
+      const element = editor.renderedDOM.getByTestId('bbb')
+      expect(element.className).toEqual('p-1')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const height = 100
+export var storyboard = (props) => {
+  return (
+    <Storyboard data-uid='d07'>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        commentId='9f32e7b6afc9765fbe5cacf487bf0e85'
+        data-uid='0bb'
+      >
+        <div
+          data-testid='bbb'
+          data-uid='bbb'
+          style={{ width: 100 + 'px', height: height }}
+          className='p-1'
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`)
+    })
   })
 })
 
