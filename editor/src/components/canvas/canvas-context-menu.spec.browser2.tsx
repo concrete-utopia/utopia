@@ -980,6 +980,79 @@ describe('canvas context menu', () => {
 
   describe('Inline style <> Tailwind conversion', () => {
     setFeatureForBrowserTestsUseInDescribeBlockOnly('Tailwind', true)
+
+    const supportedElementStyles: Array<[keyof React.CSSProperties, string | number, string]> = [
+      // TODO: not supported by tailwind-class-parser
+      // ['objectFit', 'contain', 'object-contain'],
+      // ['justifyItems', 'center', '],
+      // ['mixBlendMode', 'multiply', ''],
+      // ['textDecorationStyle', 'solid', ''],
+      // ['textShadow', '0 0 #0000', ''],
+      // ['transform', 'rotate(0deg)', 'rotate-0'],
+      // ['transformOrigin', 'center', ''],
+      // ['alignContent', 'center', ''],
+      // ['gridAutoFlow', 'row', ''],
+      // ['alignSelf', 'center', ''],
+      // ['flexBasis', 'auto', ''],
+
+      // TODO: tailwind-class-parser cannot turn this into class names
+      // ['flexGrow', 0, 'flex-grow-0'],
+      // ['flexShrink', 0, 'flex-shrink-0'],
+
+      ['backgroundColor', 'red', ''],
+      ['borderRadius', '4px', 'rounded-[4px]'],
+      ['borderTopLeftRadius', '5rem', 'rounded-tl-[5rem]'],
+      ['borderTopRightRadius', '1vh', 'rounded-tr-[1vh]'],
+      ['borderBottomLeftRadius', '10%', 'rounded-bl-[10%]'],
+      ['borderBottomRightRadius', '2px', 'rounded-br-[2px]'],
+      ['boxShadow', '0 0 #0000', 'shadow-[0_0_#0000]'],
+      ['color', '#334455', 'text-[#334455]'],
+      ['fontFamily', 'mono', 'font-mono'],
+      ['fontSize', '30px', 'text-[30px]'],
+      ['fontStyle', 'italic', 'italic'],
+      ['fontWeight', 'bold', 'font-bold'],
+      ['letterSpacing', '0em', 'tracking-normal'],
+      ['lineHeight', '1rem', 'leading-4'],
+      ['opacity', '0.4', 'opacity-40'],
+      ['overflow', 'hidden', 'overflow-hidden'],
+      ['textAlign', 'center', 'text-center'],
+      ['textDecorationColor', '#334455', 'decoration-[#334455]'],
+      ['textDecorationLine', 'underline', 'underline'],
+
+      ['flexWrap', 'wrap', 'flex-wrap'],
+      ['flexDirection', 'row', 'flex-row'],
+      ['alignItems', 'center', 'items-center'],
+      ['justifyContent', 'center', 'justify-center'],
+      ['padding', '0.5rem', 'p-2'],
+      ['paddingTop', '0.5rem', 'pt-2'],
+      ['paddingRight', '0.5rem', 'pr-2'],
+      ['paddingBottom', '0.5rem', 'pb-2'],
+      ['paddingLeft', '0.5rem', 'pl-2'],
+
+      ['position', 'absolute', 'absolute'],
+      ['left', '0.5rem', 'left-2'],
+      ['top', '0.5rem', 'top-2'],
+      ['right', '0.5rem', 'right-2'],
+      ['bottom', '0.5rem', 'bottom-2'],
+      ['width', '100%', 'w-full'],
+      ['height', '100%', 'h-full'],
+      ['minWidth', '100%', 'min-w-full'],
+      ['maxWidth', 'none', 'max-w-none'],
+      ['minHeight', '100%', 'min-h-full'],
+      ['maxHeight', 'none', 'max-h-none'],
+      ['margin', '20px', 'm-[20px]'],
+      ['marginTop', 20, 'mt-[20px]'],
+      ['marginRight', '2rem', 'mr-8'],
+      ['marginBottom', '20%', 'mb-[20%]'],
+      ['marginLeft', '0px', 'ml-0'],
+      ['flex', '0 0 auto', 'flex-[0_0_auto]'],
+      ['display', 'block', 'block'],
+      ['gap', '0', 'gap-0'],
+      ['zIndex', 0, 'z-[0px]'],
+      ['rowGap', 0, 'gap-x-0'],
+      ['columnGap', 0, 'gap-y-0'],
+    ]
+
     it('can convert element styles from Tailwind to inline style', async () => {
       const editor = await renderTestEditorWithModel(
         createModifiedProject({
@@ -1051,6 +1124,19 @@ export var storyboard = (props) => {
     })
 
     it('can convert element styles from inline style to Tailwind', async () => {
+      const styleProp = supportedElementStyles.reduce(
+        (acc: Record<string, string | number>, [prop, value]) => {
+          acc[prop] = value
+          return acc
+        },
+        {},
+      )
+
+      const expectedTailwindClasses = supportedElementStyles
+        .map(([_, __, tailwindClass]) => tailwindClass)
+        .filter((className) => className.length > 0)
+        .join(' ')
+
       const editor = await renderTestEditorWithModel(
         createModifiedProject({
           [StoryboardFilePath]: `import * as React from 'react'
@@ -1067,14 +1153,7 @@ export var storyboard = (props) => {
         <div
           data-testid='bbb'
           data-uid='bbb'
-          style={{
-            position: 'absolute',
-            bottom: '0.25rem',
-            left: '0.25rem',
-            top: '0.25rem',
-            right: '0.25rem',
-            backgroundColor: '#fee2e2',
-          }}
+          style={${JSON.stringify(styleProp)}}
         />
       </Scene>
     </Storyboard>
@@ -1112,7 +1191,7 @@ export var storyboard = (props) => {
           data-testid='bbb'
           data-uid='bbb'
           style={{}}
-          className='absolute bottom-1 left-1 top-1 right-1 bg-red-100'
+          className='${expectedTailwindClasses}'
         />
       </Scene>
     </Storyboard>
