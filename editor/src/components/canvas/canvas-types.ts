@@ -24,11 +24,11 @@ import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types
 import type { MouseButtonsPressed } from '../../utils/mouse'
 import type { FlexWrap } from 'utopia-api/core'
 import type {
+  CSSBorderRadius,
   CSSNumber,
+  CSSOverflow,
   CSSPadding,
   FlexDirection,
-  CSSBorderRadius,
-  CSSOverflow,
 } from '../inspector/common/css-utils'
 
 export const CanvasContainerID = 'canvas-container'

@@ -1,6 +1,7 @@
 import * as TailwindClassParser from '@xengine/tailwindcss-class-parser'
 import type { Config } from 'tailwindcss'
 
+// taken from `@xengine/tailwindcss-class-parser`
 type ParsedTailwindClassVariant = { value: string } & Record<string, unknown>
 type ParsedTailwindValueDef = { value: string; class: Array<string> } & Record<string, unknown>
 
