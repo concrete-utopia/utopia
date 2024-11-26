@@ -32,7 +32,7 @@ function parseTailwindProperty<P extends keyof StyleInfo>(
   const value =
     prop === 'padding' && typeof property.value === 'string'
       ? underscoresToSpaces(property.value)
-      : mapping[prop]
+      : property.value
   const parsed = cssParsers[prop](value, null)
   if (isLeft(parsed) || parsed.value == null) {
     return null
