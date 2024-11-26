@@ -10,7 +10,7 @@ import {
   useRefEditorState,
 } from '../../components/editor/store/store-hook'
 import { importDefault } from '../es-modules/commonjs-interop'
-import { rescopeCSSToTargetCanvasOnly } from '../shared/css-utils'
+import { convertCssToUtopia } from '../shared/css-utils'
 import type { RequireFn } from '../shared/npm-dependency-types'
 import { TailwindConfigPath } from './tailwind-config'
 import { isFeatureEnabled } from '../../utils/feature-switches'
@@ -70,7 +70,7 @@ async function generateTailwindStyles(tailwindCss: Tailwindcss, allCSSFiles: str
   const content = contentElement.outerHTML
   const styleString = await tailwindCss.generateStylesFromContent(allCSSFiles, [content])
   const style = ensureElementExists({ type: 'style', id: TailwindStylesElementID })
-  style.textContent = rescopeCSSToTargetCanvasOnly(styleString)
+  style.textContent = convertCssToUtopia(styleString)
 }
 
 function removeTailwindStyles() {

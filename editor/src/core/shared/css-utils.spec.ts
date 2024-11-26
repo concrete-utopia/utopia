@@ -1,11 +1,11 @@
-import { rescopeCSSToTargetCanvasOnly } from './css-utils'
+import { convertCssToUtopia } from './css-utils'
 import * as prettier from 'prettier'
 
 function formatCss(css: string): string {
   return prettier.format(css, { parser: 'css' })
 }
 
-describe('rescopeCSSToTargetCanvasOnly', () => {
+describe('convertCssToUtopia', () => {
   it('Handles the default project CSS', () => {
     const input = `
       body {
@@ -46,7 +46,7 @@ describe('rescopeCSSToTargetCanvasOnly', () => {
       }
     `
 
-    const output = formatCss(rescopeCSSToTargetCanvasOnly(input))
+    const output = formatCss(convertCssToUtopia(input))
     expect(output).toEqual(
       formatCss(`
       @scope (#canvas-container) {
@@ -143,7 +143,7 @@ describe('rescopeCSSToTargetCanvasOnly', () => {
       }
     `
 
-    const output = formatCss(rescopeCSSToTargetCanvasOnly(input))
+    const output = formatCss(convertCssToUtopia(input))
     expect(output).toEqual(
       formatCss(`
       @scope (#canvas-container) {

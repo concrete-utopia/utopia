@@ -20,7 +20,7 @@ function isSelectorToChange(node: csstree.CssNode): boolean {
   }
 }
 
-export function rescopeCSSToTargetCanvasOnly(input: string): string {
+export function convertCssToUtopia(input: string): string {
   // First wrap it in an @scope
   const scopedInput = `@scope (#${CanvasContainerID}) {
     ${input}
@@ -29,27 +29,70 @@ export function rescopeCSSToTargetCanvasOnly(input: string): string {
   let ast = csstree.parse(scopedInput)
 
   csstree.walk(ast, function (node, item, list) {
-    // As we are wrapping in an @scope, we need to redirect certain selectors to :scope
-    if (isSelectorToChange(node) && list != null) {
-      list.insertData(scopePseudoClassSelector(), item)
-      list.remove(item)
-      // we need to remove dimensions since they now apply to our canvas
-      if (this.rule != null) {
-        removeDimensionsFromCssRule(this.rule)
-      }
-    }
-    // if it's a media query, convert it to a container query
-    if (node.type === 'Atrule' && node.name === 'media') {
-      node.name = 'container'
-      // remove "screen and " and add "scene"
-      const queryText = csstree.generate(node.prelude as csstree.CssNode)
-      node.prelude = csstree.parse(convertMediaToContainerQueries(queryText), {
-        context: 'mediaQueryList',
-      }) as csstree.AtrulePrelude
-    }
+    rescopeCSSToTargetCanvasOnly(node, item, list, this.rule)
+    changeMediaQueryToContainer(node)
   })
 
   return csstree.generate(ast)
+}
+
+function rescopeCSSToTargetCanvasOnly(
+  node: csstree.CssNode,
+  item: any,
+  list: any,
+  rule: csstree.Rule | null,
+) {
+  if (isSelectorToChange(node) && list != null) {
+    list.insertData(scopePseudoClassSelector(), item)
+    list.remove(item)
+    // we need to remove dimensions since they now apply to our canvas
+    if (rule != null) {
+      removeDimensionsFromCssRule(rule)
+    }
+  }
+}
+
+function changeMediaQueryToContainer(node: csstree.CssNode) {
+  if (node.type === 'Atrule' && node.name === 'media') {
+    const queryText = csstree.generate(node.prelude as csstree.CssNode)
+    const widthConditions = queryText.match(/\([^()]*?(min-width|max-width|width)[^()]*?\)/g) ?? []
+
+    if (widthConditions.length > 0) {
+      // Get non-width conditions
+      const nonWidthConditions = queryText
+        .split(/\s+and\s+/)
+        .filter((condition) => condition.match(/(min-width|max-width|width)/) === null)
+        .join(' and ')
+        .trim()
+
+      if (nonWidthConditions != '') {
+        // Keep the media query and nest a container query inside
+        const containerQuery = csstree.parse(
+          `@container scene ${widthConditions.join(' and ')}
+                ${csstree.generate(node.block as csstree.CssNode)}
+            `,
+          { context: 'stylesheet' },
+        )
+
+        node.prelude = csstree.parse(nonWidthConditions, {
+          context: 'mediaQueryList',
+        }) as csstree.AtrulePrelude
+        // Create a new block containing the container query
+        node.block = csstree.parse(
+          `{
+         ${csstree.generate(containerQuery)}
+          }`,
+          { context: 'block' },
+        ) as csstree.Block
+      } else {
+        // If there are only width conditions, convert directly to container query
+        node.name = 'container'
+        node.prelude = csstree.parse(`scene ${widthConditions.join(' and ')}`, {
+          context: 'mediaQueryList',
+        }) as csstree.AtrulePrelude
+      }
+    }
+  }
 }
 
 const propertiesToRemove = ['width', 'height', 'max-width', 'max-height', 'min-width', 'min-height']
@@ -61,14 +104,4 @@ function removeDimensionsFromCssRule(rule: csstree.Rule): void {
       }
     }
   })
-}
-
-function convertMediaToContainerQueries(queryText: string): string {
-  // Extract only width-related conditions
-  // (min-width: 768px), (max-width: 1024px), (width < 1024px)
-  const widthConditions = queryText.match(/\([^()]*?(min-width|max-width|width)[^()]*?\)/g) ?? []
-  const cleanedQuery = widthConditions.join(' and ')
-
-  // Add 'scene' name (need to be more generic)
-  return `scene ${cleanedQuery}`
 }
