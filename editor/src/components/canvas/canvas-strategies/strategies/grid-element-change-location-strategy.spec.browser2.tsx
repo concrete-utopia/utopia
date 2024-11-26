@@ -1,6 +1,6 @@
 import * as EP from '../../../../core/shared/element-path'
 import { offsetPoint, windowPoint } from '../../../../core/shared/math-utils'
-import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import CanvasActions from '../../canvas-actions'
 import { GridCellTestId } from '../../controls/grid-controls-for-strategies'
 import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
@@ -26,6 +26,34 @@ describe('grid element change location strategy', () => {
       gridRowEnd: '4',
       gridRowStart: '2',
     })
+  })
+
+  it('does not alter the grid template', async () => {
+    const editor = await renderTestEditorWithCode(
+      ProjectCodeFractionalTemplate,
+      'await-first-dom-report',
+    )
+
+    const testId = 'aaa'
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runGridMoveTest(
+      editor,
+      {
+        scale: 1,
+        gridPath: 'sb/scene/grid',
+        testId: testId,
+      },
+    )
+
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnEnd: '7',
+      gridColumnStart: '3',
+      gridRowEnd: '4',
+      gridRowStart: '2',
+    })
+
+    const grid = await editor.renderedDOM.findByTestId('grid')
+    expect(grid.style.gridTemplateColumns).toEqual('1fr 1fr 2fr 2fr 1fr 1fr')
+    expect(grid.style.gridTemplateRows).toEqual('1fr 1fr 2fr 1fr')
   })
 
   describe('component items', () => {
@@ -833,6 +861,87 @@ export var storyboard = (
           top: 0,
         }}
         data-uid='grid'
+      >
+        <div
+          style={{
+            minHeight: 0,
+            backgroundColor: '#f3785f',
+            gridColumnEnd: 5,
+            gridColumnStart: 1,
+            gridRowEnd: 3,
+            gridRowStart: 1,
+          }}
+          data-uid='aaa'
+          data-testid='aaa'
+        />
+        <div
+          style={{
+            minHeight: 0,
+            backgroundColor: '#23565b',
+          }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+        <Placeholder
+          style={{
+            minHeight: 0,
+            gridColumnEnd: 5,
+            gridRowEnd: 4,
+            gridColumnStart: 1,
+            gridRowStart: 3,
+            backgroundColor: '#0074ff',
+          }}
+          data-uid='ccc'
+        />
+        <Placeholder
+          style={{
+            minHeight: 0,
+            gridColumnEnd: 9,
+            gridRowEnd: 4,
+            gridColumnStart: 5,
+            gridRowStart: 3,
+          }}
+          data-uid='ddd'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+
+const ProjectCodeFractionalTemplate = `import * as React from 'react'
+import { Scene, Storyboard, Placeholder } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 847,
+        height: 895,
+        position: 'absolute',
+        left: 46,
+        top: 131,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateRows: '1fr 1fr 2fr 1fr',
+          gridTemplateColumns:
+            '1fr 1fr 2fr 2fr 1fr 1fr',
+          gridGap: 16,
+          height: 482,
+          width: 786,
+          position: 'absolute',
+          left: 31,
+          top: 0,
+        }}
+        data-uid='grid'
+		data-testid='grid'
       >
         <div
           style={{
