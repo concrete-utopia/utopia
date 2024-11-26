@@ -14,6 +14,7 @@ import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import { getParsedClassList } from '../../../core/tailwind/tailwind-class-list-utils'
 import { isLeft } from '../../../core/shared/either'
+import { textDecorationLine } from '../../../uuiui'
 
 const underscoresToSpaces = (s: string | undefined) => s?.replace(/[-_]/g, ' ')
 
@@ -49,12 +50,24 @@ const TailwindPropertyMapping: Record<string, string> = {
 
   width: 'width',
   height: 'height',
+  minWidth: 'minWidth',
+  maxWidth: 'maxWidth',
+  minHeight: 'minHeight',
+  maxHeight: 'maxHeight',
+
+  display: 'display',
 
   padding: 'padding',
   paddingTop: 'paddingTop',
   paddingRight: 'paddingRight',
   paddingBottom: 'paddingBottom',
   paddingLeft: 'paddingLeft',
+
+  margin: 'margin',
+  marginTop: 'marginTop',
+  marginRight: 'marginRight',
+  marginBottom: 'marginBottom',
+  marginLeft: 'marginLeft',
 
   borderRadius: 'borderRadius',
   borderTopLeftRadius: 'borderTopLeftRadius',
@@ -64,6 +77,9 @@ const TailwindPropertyMapping: Record<string, string> = {
 
   justifyContent: 'justifyContent',
   alignItems: 'alignItems',
+  alignSelf: 'alignSelf',
+  justifySelf: 'justifySelf',
+  justifyItems: 'justifyItems',
   flex: 'flex',
   flexDirection: 'flexDirection',
   flexGrow: 'flexGrow',
@@ -74,9 +90,29 @@ const TailwindPropertyMapping: Record<string, string> = {
 
   overflow: 'overflow',
 
+  opacity: 'opacity',
+
   zIndex: 'zIndex',
 
   backgroundColor: 'backgroundColor',
+
+  fontSize: 'fontSize',
+  fontStyle: 'fontStyle',
+  fontFamily: 'fontFamily',
+  fontWeight: 'fontWeight',
+  letterSpacing: 'letterSpacing',
+  lineHeight: 'lineHeight',
+  color: 'textColor',
+  textDecoration: 'textDecoration',
+  textDecorationColor: 'textDecorationColor',
+  textDecorationStyle: 'textDecorationStyle',
+  textDecorationLine: 'textDecoration',
+  textAlign: 'textAlign',
+
+  rowGap: 'gapX',
+  columnGap: 'gapY',
+
+  boxShadow: 'boxShadow',
 }
 
 function toCamelCase(str: string): string {
@@ -200,16 +236,14 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
       updates,
     )
 
-    const propsToSet = mapDropNulls(
-      (update) =>
-        update.type !== 'set' || TailwindPropertyMapping[update.property] == null
-          ? null
-          : UCL.add({
-              property: TailwindPropertyMapping[update.property],
-              value: stringifyPropertyValue(update.value),
-            }),
-      updates,
-    )
+    const propsToSet = mapDropNulls((update) => {
+      return update.type !== 'set' || TailwindPropertyMapping[update.property] == null
+        ? null
+        : UCL.add({
+            property: TailwindPropertyMapping[update.property],
+            value: stringifyPropertyValue(update.value),
+          })
+    }, updates)
     return UCL.runUpdateClassList(
       editorState,
       elementPath,
