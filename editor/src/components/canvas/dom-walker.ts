@@ -930,7 +930,9 @@ function getSpecialMeasurements(
       : null
 
   const containerGridPropertiesFromProps = getGridContainerProperties(element.style)
-  const parentContainerGridPropertiesFromProps = getGridContainerProperties(parentElementStyle)
+  const parentContainerGridPropertiesFromProps = getGridContainerProperties(
+    element.parentElement?.style ?? parentElementStyle,
+  )
   const containerGridProperties = getGridContainerProperties(computedStyle, {
     dynamicCols: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateColumns),
     dynamicRows: isDynamicGridTemplate(containerGridPropertiesFromProps.gridTemplateRows),
