@@ -8,7 +8,7 @@ import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
 import { altCmdModifier, cmdModifier } from '../../utils/modifiers'
 import { selectComponents } from '../editor/actions/meta-actions'
-import { navigatorEntryToKey } from '../editor/store/editor-state'
+import { navigatorEntryToKey, StoryboardFilePath } from '../editor/store/editor-state'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import {
   mouseClickAtPoint,
@@ -22,6 +22,7 @@ import {
   makeTestProjectCodeWithSnippet,
   makeTestProjectCodeWithSnippetWithoutUIDs,
   renderTestEditorWithCode,
+  renderTestEditorWithModel,
   TestAppUID,
   TestSceneUID,
 } from './ui-jsx.test-utils'
@@ -29,11 +30,18 @@ import {
   expectNoAction,
   searchInComponentPicker,
   selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
 } from '../../utils/utils.test-utils'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
 import { getNavigatorTargetsFromEditorState } from '../navigator/navigator-utils'
+import {
+  ConvertInlineStyleToTailwindOptionText,
+  ConvertTailwindToInlineStyleOptionText,
+} from '../context-menu-items'
+import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
+import { TailwindConfigPath } from '../../core/tailwind/tailwind-config'
 
 function expectAllSelectedViewsToHaveMetadata(editor: EditorRenderResult) {
   const selectedViews = editor.getEditorState().editor.selectedViews
@@ -969,7 +977,170 @@ describe('canvas context menu', () => {
       )
     })
   })
+
+  describe('Inline style <> Tailwind conversion', () => {
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Tailwind', true)
+    it('can convert element styles from Tailwind to inline style', async () => {
+      const editor = await renderTestEditorWithModel(
+        createModifiedProject({
+          [StoryboardFilePath]: `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (props) => {
+  return (
+    <Storyboard>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        commentId='9f32e7b6afc9765fbe5cacf487bf0e85'
+      >
+        <div
+          data-testid='bbb'
+          data-uid='bbb'
+          className='absolute bottom-1 left-1 top-1 right-1 bg-red-100'
+        />
+      </Scene>
+    </Storyboard>
+  )
+}`,
+          [TailwindConfigPath]: `
+        const TailwindConfig = { }
+        export default TailwindConfig
+    `,
+          'app.css': `
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;`,
+        }),
+        'await-first-dom-report',
+      )
+
+      await openContextMenuOnElement(editor, {
+        testId: 'bbb',
+        contextMenuItemLabel: ConvertTailwindToInlineStyleOptionText,
+      })
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (props) => {
+  return (
+    <Storyboard data-uid='0ae'>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        commentId='9f32e7b6afc9765fbe5cacf487bf0e85'
+        data-uid='92f'
+      >
+        <div
+          data-testid='bbb'
+          data-uid='bbb'
+          className=''
+          style={{
+            position: 'absolute',
+            bottom: '0.25rem',
+            left: '0.25rem',
+            top: '0.25rem',
+            right: '0.25rem',
+            backgroundColor: '#fee2e2',
+          }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`)
+    })
+
+    it('can convert element styles from inline style to Tailwind', async () => {
+      const editor = await renderTestEditorWithModel(
+        createModifiedProject({
+          [StoryboardFilePath]: `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (props) => {
+  return (
+    <Storyboard data-uid='sb'>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        commentId='9f32e7b6afc9765fbe5cacf487bf0e85'
+        data-uid='scene'
+      >
+        <div
+          data-testid='bbb'
+          data-uid='bbb'
+          style={{
+            position: 'absolute',
+            bottom: '0.25rem',
+            left: '0.25rem',
+            top: '0.25rem',
+            right: '0.25rem',
+            backgroundColor: '#fee2e2',
+          }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}`,
+          [TailwindConfigPath]: `
+        const TailwindConfig = { }
+        export default TailwindConfig
+    `,
+          'app.css': `
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;`,
+        }),
+        'await-first-dom-report',
+      )
+
+      await openContextMenuOnElement(editor, {
+        testId: 'bbb',
+        contextMenuItemLabel: ConvertInlineStyleToTailwindOptionText,
+      })
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (props) => {
+  return (
+    <Storyboard data-uid='sb'>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        commentId='9f32e7b6afc9765fbe5cacf487bf0e85'
+        data-uid='scene'
+      >
+        <div
+          data-testid='bbb'
+          data-uid='bbb'
+          style={{}}
+          className='absolute bottom-1 left-1 top-1 right-1 bg-red-100'
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`)
+    })
+  })
 })
+
+async function openContextMenuOnElement(
+  editor: EditorRenderResult,
+  { testId, contextMenuItemLabel }: { testId: string; contextMenuItemLabel: string },
+) {
+  const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+  const element = editor.renderedDOM.getByTestId(testId)
+  const elementCenter = getDomRectCenter(element.getBoundingClientRect())
+  await mouseClickAtPoint(canvasControlsLayer, elementCenter)
+  await editor.getDispatchFollowUpActionsFinished()
+
+  await openContextMenuAndClickOnItem(
+    editor,
+    canvasControlsLayer,
+    elementCenter,
+    contextMenuItemLabel,
+  )
+  await editor.getDispatchFollowUpActionsFinished()
+}
 
 async function wrapInElement(renderResult: EditorRenderResult, query: string) {
   await pressKey('w') // open the wrap menu
