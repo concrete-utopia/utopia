@@ -24,6 +24,9 @@ export const RemixSceneComponent = React.memo((props: React.PropsWithChildren<Re
   const { style, getLoadContext, startingRoute, ...remainingProps } = props
 
   const sceneStyle: React.CSSProperties = {
+    // eslint-disable-next-line
+    // @ts-ignore
+    container: 'scene / inline-size',
     position: 'relative',
     backgroundColor: colorTheme.emphasizedBackground.value,
     boxShadow: UtopiaStyles.shadowStyles.grounded.boxShadow,

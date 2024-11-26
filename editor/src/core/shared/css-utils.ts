@@ -38,6 +38,15 @@ export function rescopeCSSToTargetCanvasOnly(input: string): string {
         removeDimensionsFromCssRule(this.rule)
       }
     }
+    // if it's a media query, convert it to a container query
+    if (node.type === 'Atrule' && node.name === 'media') {
+      node.name = 'container'
+      // remove "screen and " and add "scene"
+      const queryText = csstree.generate(node.prelude as csstree.CssNode)
+      node.prelude = csstree.parse(convertMediaToContainerQueries(queryText), {
+        context: 'mediaQueryList',
+      }) as csstree.AtrulePrelude
+    }
   })
 
   return csstree.generate(ast)
@@ -52,4 +61,14 @@ function removeDimensionsFromCssRule(rule: csstree.Rule): void {
       }
     }
   })
+}
+
+function convertMediaToContainerQueries(queryText: string): string {
+  // Extract only width-related conditions
+  // (min-width: 768px), (max-width: 1024px), (width < 1024px)
+  const widthConditions = queryText.match(/\([^()]*?(min-width|max-width|width)[^()]*?\)/g) ?? []
+  const cleanedQuery = widthConditions.join(' and ')
+
+  // Add 'scene' name and cleaned conditions
+  return `scene ${cleanedQuery}`
 }

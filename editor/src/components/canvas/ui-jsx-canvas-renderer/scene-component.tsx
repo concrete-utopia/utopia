@@ -20,6 +20,9 @@ export const SceneComponent = React.memo(
     const { style, ...remainingProps } = props
 
     const sceneStyle: React.CSSProperties = {
+      // eslint-disable-next-line
+      // @ts-ignore
+      container: 'scene / inline-size',
       position: 'relative',
       backgroundColor: colorTheme.emphasizedBackground.value,
       boxShadow: UtopiaStyles.shadowStyles.grounded.boxShadow,
