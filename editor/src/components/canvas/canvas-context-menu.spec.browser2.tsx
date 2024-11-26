@@ -1189,6 +1189,56 @@ export var storyboard = (props) => {
 }
 `)
     })
+
+    it('does not affect non-tailwind classes when converting to inline style', async () => {
+      const editor = await renderTestEditorWithModel(
+        createModifiedProject({
+          [StoryboardFilePath]: `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (props) => {
+  return (
+    <Storyboard>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        commentId='9f32e7b6afc9765fbe5cacf487bf0e85'
+      >
+        <div
+          data-testid='bbb'
+          data-uid='bbb'
+          className='btn-big shadow-shiny w-5 h-2 rounded-md'
+        />
+      </Scene>
+    </Storyboard>
+  )
+}`,
+          [TailwindConfigPath]: `
+        const TailwindConfig = { }
+        export default TailwindConfig
+    `,
+          'app.css': `
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;`,
+        }),
+        'await-first-dom-report',
+      )
+
+      await openContextMenuOnElement(editor, {
+        testId: 'bbb',
+        contextMenuItemLabel: ConvertTailwindToInlineStyleOptionText,
+      })
+
+      const element = editor.renderedDOM.getByTestId('bbb')
+      const { width, height, borderRadius } = element.style
+      expect({ width, height, borderRadius }).toEqual({
+        width: '1.25rem',
+        height: '0.5rem',
+        borderRadius: '0.375rem',
+      })
+      const className = element.className
+      expect(className).toEqual('btn-big shadow-shiny')
+    })
   })
 })
 
