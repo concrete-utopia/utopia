@@ -999,24 +999,24 @@ describe('canvas context menu', () => {
       // ['flexGrow', 0, 'flex-grow-0'],
       // ['flexShrink', 0, 'flex-shrink-0'],
 
-      ['backgroundColor', 'red', ''],
+      ['backgroundColor', '#334455', 'bg-[#334455]'],
       ['borderRadius', '4px', 'rounded-[4px]'],
-      ['borderTopLeftRadius', '5rem', 'rounded-tl-[5rem]'],
-      ['borderTopRightRadius', '1vh', 'rounded-tr-[1vh]'],
-      ['borderBottomLeftRadius', '10%', 'rounded-bl-[10%]'],
-      ['borderBottomRightRadius', '2px', 'rounded-br-[2px]'],
+      ['borderTopLeftRadius', '4px', 'rounded-tl-[4px]'],
+      ['borderTopRightRadius', '4px', 'rounded-tr-[4px]'],
+      ['borderBottomLeftRadius', '4px', 'rounded-bl-[4px]'],
+      ['borderBottomRightRadius', '4px', 'rounded-br-[4px]'],
       ['boxShadow', '0 0 #0000', 'shadow-[0_0_#0000]'],
-      ['color', '#334455', 'text-[#334455]'],
+      ['color', 'rgb(51, 68, 85)', 'text-[#334455]'],
       ['fontFamily', 'mono', 'font-mono'],
       ['fontSize', '30px', 'text-[30px]'],
       ['fontStyle', 'italic', 'italic'],
-      ['fontWeight', 'bold', 'font-bold'],
+      ['fontWeight', '700', 'font-bold'],
       ['letterSpacing', '0em', 'tracking-normal'],
       ['lineHeight', '1rem', 'leading-4'],
       ['opacity', '0.4', 'opacity-40'],
       ['overflow', 'hidden', 'overflow-hidden'],
       ['textAlign', 'center', 'text-center'],
-      ['textDecorationColor', '#334455', 'decoration-[#334455]'],
+      ['textDecorationColor', 'rgb(51, 68, 85)', 'decoration-[#334455]'],
       ['textDecorationLine', 'underline', 'underline'],
 
       ['flexWrap', 'wrap', 'flex-wrap'],
@@ -1041,19 +1041,31 @@ describe('canvas context menu', () => {
       ['minHeight', '100%', 'min-h-full'],
       ['maxHeight', 'none', 'max-h-none'],
       ['margin', '20px', 'm-[20px]'],
-      ['marginTop', 20, 'mt-[20px]'],
-      ['marginRight', '2rem', 'mr-8'],
-      ['marginBottom', '20%', 'mb-[20%]'],
-      ['marginLeft', '0px', 'ml-0'],
+      ['marginTop', '20px', 'mt-[20px]'],
+      ['marginRight', '20px', 'mr-[20px]'],
+      ['marginBottom', '20px', 'mb-[20px]'],
+      ['marginLeft', '20px', 'ml-[20px]'],
       ['flex', '0 0 auto', 'flex-[0_0_auto]'],
       ['display', 'block', 'block'],
-      ['gap', '0', 'gap-0'],
-      ['zIndex', 0, 'z-[0px]'],
-      ['rowGap', 0, 'gap-x-0'],
-      ['columnGap', 0, 'gap-y-0'],
+      ['gap', '0px', 'gap-0'],
+      ['zIndex', '0', 'z-0'],
+      ['rowGap', '0px', 'gap-x-0'],
+      ['columnGap', '0px', 'gap-y-0'],
     ]
 
     it('can convert element styles from Tailwind to inline style', async () => {
+      const tailwindStyles = supportedElementStyles
+        .map(([_, __, tailwindClass]) => tailwindClass)
+        .filter((className) => className.length > 0)
+        .join(' ')
+
+      const inlineStyles = supportedElementStyles.reduce(
+        (acc: Record<string, string | number>, [prop, value]) => {
+          acc[prop] = value
+          return acc
+        },
+        {},
+      )
       const editor = await renderTestEditorWithModel(
         createModifiedProject({
           [StoryboardFilePath]: `import * as React from 'react'
@@ -1069,7 +1081,7 @@ export var storyboard = (props) => {
         <div
           data-testid='bbb'
           data-uid='bbb'
-          className='absolute bottom-1 left-1 top-1 right-1 bg-red-100'
+          className='${tailwindStyles}'
         />
       </Scene>
     </Storyboard>
@@ -1092,35 +1104,13 @@ export var storyboard = (props) => {
         contextMenuItemLabel: ConvertTailwindToInlineStyleOptionText,
       })
 
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+      inlineStyles['backgroundColor'] = 'rgb(51, 68, 85)'
+      inlineStyles['boxShadow'] = 'rgba(0, 0, 0, 0) 0px 0px'
+      inlineStyles['fontFamily'] =
+        'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
 
-export var storyboard = (props) => {
-  return (
-    <Storyboard data-uid='0ae'>
-      <Scene
-        style={{ left: 0, top: 0, width: 400, height: 400 }}
-        commentId='9f32e7b6afc9765fbe5cacf487bf0e85'
-        data-uid='92f'
-      >
-        <div
-          data-testid='bbb'
-          data-uid='bbb'
-          className=''
-          style={{
-            position: 'absolute',
-            bottom: '0.25rem',
-            left: '0.25rem',
-            top: '0.25rem',
-            right: '0.25rem',
-            backgroundColor: '#fee2e2',
-          }}
-        />
-      </Scene>
-    </Storyboard>
-  )
-}
-`)
+      const elementStyles = editor.renderedDOM.getByTestId('bbb').style
+      expect(elementStyles).toMatchObject(inlineStyles)
     })
 
     it('can convert element styles from inline style to Tailwind', async () => {
