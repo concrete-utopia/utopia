@@ -39,11 +39,6 @@ export function LoadingEditorComponent() {
 
   const cleared = React.useRef(false)
 
-  React.useEffect(() => {
-    document.body.classList.remove('utopia-theme-light', 'utopia-theme-dark')
-    document.body.classList.add(`utopia-theme-${currentTheme}`)
-  }, [currentTheme])
-
   const currentOperationToShow: {
     text: React.ReactNode
     id: string
