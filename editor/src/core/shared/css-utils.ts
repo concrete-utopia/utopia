@@ -69,6 +69,6 @@ function convertMediaToContainerQueries(queryText: string): string {
   const widthConditions = queryText.match(/\([^()]*?(min-width|max-width|width)[^()]*?\)/g) ?? []
   const cleanedQuery = widthConditions.join(' and ')
 
-  // Add 'scene' name and cleaned conditions
+  // Add 'scene' name (need to be more generic)
   return `scene ${cleanedQuery}`
 }
