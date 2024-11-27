@@ -246,7 +246,7 @@ describe('changeMediaQueryToContainer', () => {
   })
   it('converts a @media with conditions that are not only width to @container', () => {
     const css = `
-    @media (prefers-color-scheme: dark) and (min-height: 500px) {
+    @media (prefers-color-scheme: dark) and (min-width: 500px) {
       .my-class {
         color: red;
       }
@@ -258,7 +258,7 @@ describe('changeMediaQueryToContainer', () => {
     expect(output).toEqual(
       formatCss(`
       @media (prefers-color-scheme: dark) {
-        @container ${SceneContainerName} (min-height: 500px) {
+        @container ${SceneContainerName} (min-width: 500px) {
           .my-class {
             color: red;
           }
