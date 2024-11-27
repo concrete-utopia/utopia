@@ -1,6 +1,7 @@
 import { convertCssToUtopia, changeMediaQueryToContainer } from './css-utils'
 import * as csstree from 'css-tree'
 import * as prettier from 'prettier'
+import { SceneContainerName } from '../../components/canvas/canvas-types'
 
 function formatCss(css: string): string {
   return prettier.format(css, { parser: 'css' })
@@ -27,7 +28,7 @@ describe('rescopeCSSToTargetCanvasOnly', () => {
         container-type: inline-size;
       }
 
-      @container (min-width: 700px) {
+      @container (min-width:700px) {
         .apptitle {
             font-size: 3.5em;
         }
@@ -40,7 +41,7 @@ describe('rescopeCSSToTargetCanvasOnly', () => {
         }   
       }
 
-      @container (max-width: 700px) {
+      @container (max-width:700px) {
         .gridcard {
             height: 215px
         }   
@@ -64,7 +65,7 @@ describe('rescopeCSSToTargetCanvasOnly', () => {
         .appheadercontainer,  .listcardcontainer,  .gridcardcontainer {
           container-type: inline-size;
         }
-        @container (min-width: 700px) {
+        @container (min-width:700px) {
           .apptitle {
               font-size: 3.5em;
           }
@@ -75,7 +76,7 @@ describe('rescopeCSSToTargetCanvasOnly', () => {
               height: 325px
           }   
         }
-        @container (max-width: 700px) {
+        @container (max-width:700px) {
           .gridcard {
               height: 215px
           }   
@@ -209,12 +210,55 @@ describe('changeMediaQueryToContainer', () => {
     }
     `
     const ast = csstree.parse(css) as csstree.StyleSheet
-    changeMediaQueryToContainer(ast.children.first as csstree.Rule)
+    changeMediaQueryToContainer(ast.children.first as csstree.Rule, SceneContainerName)
     const output = formatCss(csstree.generate(ast))
     expect(output).toEqual(
       formatCss(`
-      @scope (#canvas-container) {
-        @container (max-width: 700px) {
+      @container ${SceneContainerName} (max-width:700px) {
+        .my-class {
+          color: red;
+        }
+      }
+    `),
+    )
+  })
+
+  it('converts a @media with multiple conditions to @container', () => {
+    const css = `
+    @media (max-width: 700px) and (min-width: 500px) {
+      .my-class {
+        color: red;
+      }
+    }
+    `
+    const ast = csstree.parse(css) as csstree.StyleSheet
+    changeMediaQueryToContainer(ast.children.first as csstree.Rule, SceneContainerName)
+    const output = formatCss(csstree.generate(ast))
+    expect(output).toEqual(
+      formatCss(`
+      @container ${SceneContainerName} (max-width:700px) and (min-width:500px) {
+        .my-class {
+          color: red;
+        }
+      }
+    `),
+    )
+  })
+  it('converts a @media with conditions that are not only width to @container', () => {
+    const css = `
+    @media (prefers-color-scheme: dark) and (min-height: 500px) {
+      .my-class {
+        color: red;
+      }
+    }
+    `
+    const ast = csstree.parse(css) as csstree.StyleSheet
+    changeMediaQueryToContainer(ast.children.first as csstree.Rule, SceneContainerName)
+    const output = formatCss(csstree.generate(ast))
+    expect(output).toEqual(
+      formatCss(`
+      @media (prefers-color-scheme: dark) {
+        @container ${SceneContainerName} (min-height: 500px) {
           .my-class {
             color: red;
           }
