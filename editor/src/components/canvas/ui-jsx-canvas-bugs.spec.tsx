@@ -82,6 +82,7 @@ export var storyboard = (
             data-path=\\"sb/scene\\"
             style=\\"
               overflow: hidden;
+              container: scene / inline-size;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
               box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -156,6 +157,7 @@ export default function App(props) {
             data-path=\\"sb/scene\\"
             style=\\"
               overflow: hidden;
+              container: scene / inline-size;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
               box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -238,6 +240,7 @@ export default App`,
             data-path=\\"sb/scene\\"
             style=\\"
               overflow: hidden;
+              container: scene / inline-size;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
               box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -351,6 +354,7 @@ export default function App(props) {
             data-path=\\"storyboard-entity/scene-1-entity\\"
             style=\\"
               overflow: hidden;
+              container: scene / inline-size;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
               box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -388,6 +392,7 @@ export default function App(props) {
             data-path=\\"storyboard-entity/scene-2-entity\\"
             style=\\"
               overflow: hidden;
+              container: scene / inline-size;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
               box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -531,6 +536,7 @@ export default function () {
             data-path=\\"storyboard-entity/scene-1-entity\\"
             style=\\"
               overflow: hidden;
+              container: scene / inline-size;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
               box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
