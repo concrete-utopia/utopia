@@ -51,7 +51,7 @@ function rescopeCSSToTargetCanvasOnly(
     }
   }
 }
-const WIDTH_CONDITIONS_REGEX = /\([^()]*?(min-width|max-width|width)[^()]*?\)/g
+const WIDTH_CONDITIONS_REGEX = /\([^()]*?\b(min-width|max-width|width)\b[^()]*?\)/g
 export function changeMediaQueryToContainer(node: csstree.CssNode, containerName?: string) {
   if (node.type === 'Atrule' && node.name === 'media') {
     const queryText = csstree.generate(node.prelude as csstree.CssNode)
