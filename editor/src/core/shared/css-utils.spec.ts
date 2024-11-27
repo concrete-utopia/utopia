@@ -1,11 +1,12 @@
-import { convertCssToUtopia } from './css-utils'
+import { convertCssToUtopia, changeMediaQueryToContainer } from './css-utils'
+import * as csstree from 'css-tree'
 import * as prettier from 'prettier'
 
 function formatCss(css: string): string {
   return prettier.format(css, { parser: 'css' })
 }
 
-describe('convertCssToUtopia', () => {
+describe('rescopeCSSToTargetCanvasOnly', () => {
   it('Handles the default project CSS', () => {
     const input = `
       body {
@@ -194,6 +195,32 @@ describe('convertCssToUtopia', () => {
         }
       }
       `),
+    )
+  })
+})
+
+describe('changeMediaQueryToContainer', () => {
+  it('converts a simple @media to @container', () => {
+    const css = `
+    @media (max-width: 700px) {
+      .my-class {
+        color: red;
+      }
+    }
+    `
+    const ast = csstree.parse(css) as csstree.StyleSheet
+    changeMediaQueryToContainer(ast.children.first as csstree.Rule)
+    const output = formatCss(csstree.generate(ast))
+    expect(output).toEqual(
+      formatCss(`
+      @scope (#canvas-container) {
+        @container (max-width: 700px) {
+          .my-class {
+            color: red;
+          }
+        }
+      }
+    `),
     )
   })
 })

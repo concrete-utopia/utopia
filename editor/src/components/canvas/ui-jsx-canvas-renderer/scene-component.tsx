@@ -6,6 +6,7 @@ import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { DomWalkerInvalidatePathsCtxAtom } from '../ui-jsx-canvas'
 import type { UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
 import { AlwaysTrue, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
+import { SceneContainerName } from '../canvas-types'
 
 type ExtendedSceneProps = SceneProps & { [UTOPIA_SCENE_ID_KEY]: string }
 
@@ -22,7 +23,7 @@ export const SceneComponent = React.memo(
     const sceneStyle: React.CSSProperties = {
       // eslint-disable-next-line
       // @ts-ignore
-      container: 'scene / inline-size',
+      container: `${SceneContainerName} / inline-size`,
       position: 'relative',
       backgroundColor: colorTheme.emphasizedBackground.value,
       boxShadow: UtopiaStyles.shadowStyles.grounded.boxShadow,

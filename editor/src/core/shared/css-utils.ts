@@ -1,5 +1,5 @@
 import * as csstree from 'css-tree'
-import { CanvasContainerID } from '../../components/canvas/canvas-types'
+import { CanvasContainerID, SceneContainerName } from '../../components/canvas/canvas-types'
 
 function scopePseudoClassSelector(): csstree.PseudoClassSelector {
   return csstree.fromPlainObject({
@@ -30,7 +30,7 @@ export function convertCssToUtopia(input: string): string {
 
   csstree.walk(ast, function (node, item, list) {
     rescopeCSSToTargetCanvasOnly(node, item, list, this.rule)
-    changeMediaQueryToContainer(node)
+    changeMediaQueryToContainer(node, SceneContainerName)
   })
 
   return csstree.generate(ast)
@@ -52,7 +52,7 @@ function rescopeCSSToTargetCanvasOnly(
   }
 }
 
-function changeMediaQueryToContainer(node: csstree.CssNode) {
+export function changeMediaQueryToContainer(node: csstree.CssNode, containerName?: string) {
   if (node.type === 'Atrule' && node.name === 'media') {
     const queryText = csstree.generate(node.prelude as csstree.CssNode)
     const widthConditions = queryText.match(/\([^()]*?(min-width|max-width|width)[^()]*?\)/g) ?? []
@@ -68,7 +68,7 @@ function changeMediaQueryToContainer(node: csstree.CssNode) {
       if (nonWidthConditions != '') {
         // Keep the media query and nest a container query inside
         const containerQuery = csstree.parse(
-          `@container scene ${widthConditions.join(' and ')}
+          `@container ${containerName ?? ''} ${widthConditions.join(' and ')}
                 ${csstree.generate(node.block as csstree.CssNode)}
             `,
           { context: 'stylesheet' },
@@ -87,7 +87,7 @@ function changeMediaQueryToContainer(node: csstree.CssNode) {
       } else {
         // If there are only width conditions, convert directly to container query
         node.name = 'container'
-        node.prelude = csstree.parse(`scene ${widthConditions.join(' and ')}`, {
+        node.prelude = csstree.parse(`${containerName ?? ''} ${widthConditions.join(' and ')}`, {
           context: 'mediaQueryList',
         }) as csstree.AtrulePrelude
       }
