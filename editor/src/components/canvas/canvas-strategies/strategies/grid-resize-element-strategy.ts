@@ -123,10 +123,10 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
       const elementGridPropertiesFromProps =
         selectedElementMetadata.specialSizeMeasurements.elementGridPropertiesFromProps
 
-      const width =
+      const columnCount =
         gridPropsNumeric.gridColumnEnd.numericalPosition -
         gridPropsNumeric.gridColumnStart.numericalPosition
-      const height =
+      const rowCount =
         gridPropsNumeric.gridRowEnd.numericalPosition -
         gridPropsNumeric.gridRowStart.numericalPosition
 
@@ -134,7 +134,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         gridColumnStart: normalizePositionAfterResize(
           elementGridPropertiesFromProps.gridColumnStart,
           gridPropsNumeric.gridColumnStart,
-          width,
+          columnCount,
           'start',
           elementGridPropertiesFromProps.gridColumnEnd,
           gridPropsNumeric.gridColumnEnd,
@@ -142,7 +142,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         gridColumnEnd: normalizePositionAfterResize(
           elementGridPropertiesFromProps.gridColumnEnd,
           gridPropsNumeric.gridColumnEnd,
-          width,
+          columnCount,
           'end',
           elementGridPropertiesFromProps.gridColumnStart,
           gridPropsNumeric.gridColumnStart,
@@ -150,7 +150,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         gridRowStart: normalizePositionAfterResize(
           elementGridPropertiesFromProps.gridRowStart,
           gridPropsNumeric.gridRowStart,
-          height,
+          rowCount,
           'start',
           elementGridPropertiesFromProps.gridRowEnd,
           gridPropsNumeric.gridRowEnd,
@@ -158,7 +158,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         gridRowEnd: normalizePositionAfterResize(
           elementGridPropertiesFromProps.gridRowEnd,
           gridPropsNumeric.gridRowEnd,
-          height,
+          rowCount,
           'end',
           elementGridPropertiesFromProps.gridRowStart,
           gridPropsNumeric.gridRowStart,
@@ -217,7 +217,7 @@ function getNewGridPropsFromResizeBox(
 function normalizePositionAfterResize(
   position: GridPositionOrSpan | null,
   resizedPosition: GridPositionValue,
-  size: number,
+  size: number, // the number of cols/rows the cell occupies
   bound: 'start' | 'end',
   counterpart: GridPositionOrSpan | null,
   counterpartResizedPosition: GridPositionValue,
