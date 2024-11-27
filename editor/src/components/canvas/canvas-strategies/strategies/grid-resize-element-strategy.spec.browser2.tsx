@@ -849,6 +849,107 @@ export var storyboard = (
         })
       }
     })
+    it('uses spans for flow elements', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeProjectCodeWithCustomPlacement({ gridColumn: 'auto', gridRow: 'auto' }),
+        'await-first-dom-report',
+      )
+
+      // enlarge to the right, spans in flow
+      {
+        await runCellResizeTest(
+          editor,
+          'column-end',
+          gridCellTargetId(EP.fromString('sb/grid'), 1, 3),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: 'span 3',
+          gridRowEnd: 'auto',
+          gridRowStart: 'auto',
+        })
+      }
+
+      // enlarge to the bottom, still spans in flow
+      {
+        await runCellResizeTest(
+          editor,
+          'row-end',
+          gridCellTargetId(EP.fromString('sb/grid'), 4, 3),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: 'span 3',
+          gridRowEnd: 'auto',
+          gridRowStart: 'span 4',
+        })
+      }
+
+      // shrink from the right, still spans in flow
+      {
+        await runCellResizeTest(
+          editor,
+          'column-end',
+          gridCellTargetId(EP.fromString('sb/grid'), 4, 2),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: 'span 2',
+          gridRowEnd: 'auto',
+          gridRowStart: 'span 4',
+        })
+      }
+
+      // shrink from the bottom, still spans in flow
+      {
+        await runCellResizeTest(
+          editor,
+          'row-end',
+          gridCellTargetId(EP.fromString('sb/grid'), 3, 2),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: 'span 2',
+          gridRowEnd: 'auto',
+          gridRowStart: 'span 3',
+        })
+      }
+
+      // shrink from the top, it spans but now is pinned
+      {
+        await runCellResizeTest(
+          editor,
+          'row-start',
+          gridCellTargetId(EP.fromString('sb/grid'), 2, 2),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: 'span 2',
+          gridRowEnd: '4',
+          gridRowStart: 'span 2',
+        })
+      }
+    })
   })
 })
 
