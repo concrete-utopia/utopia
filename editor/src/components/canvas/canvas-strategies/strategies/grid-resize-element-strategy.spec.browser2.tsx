@@ -675,7 +675,7 @@ export var storyboard = (
   describe('spans', () => {
     it('respects column start spans', async () => {
       const editor = await renderTestEditorWithCode(
-        makeProjectCodeWithSpan({ gridColumn: 'span 2', gridRow: '2' }),
+        makeProjectCodeWithCustomPlacement({ gridColumn: 'span 2', gridRow: '2' }),
         'await-first-dom-report',
       )
 
@@ -738,7 +738,7 @@ export var storyboard = (
     })
     it('respects column end spans', async () => {
       const editor = await renderTestEditorWithCode(
-        makeProjectCodeWithSpan({ gridColumn: '2 / span 2', gridRow: '2' }),
+        makeProjectCodeWithCustomPlacement({ gridColumn: '2 / span 2', gridRow: '2' }),
         'await-first-dom-report',
       )
 
@@ -763,7 +763,7 @@ export var storyboard = (
     })
     it('respects row start spans', async () => {
       const editor = await renderTestEditorWithCode(
-        makeProjectCodeWithSpan({ gridColumn: '2', gridRow: 'span 2' }),
+        makeProjectCodeWithCustomPlacement({ gridColumn: '2', gridRow: 'span 2' }),
         'await-first-dom-report',
       )
 
@@ -826,7 +826,7 @@ export var storyboard = (
     })
     it('respects row end spans', async () => {
       const editor = await renderTestEditorWithCode(
-        makeProjectCodeWithSpan({ gridColumn: '2', gridRow: '2 / span 2' }),
+        makeProjectCodeWithCustomPlacement({ gridColumn: '2', gridRow: '2 / span 2' }),
         'await-first-dom-report',
       )
 
@@ -1128,7 +1128,10 @@ function unsafeCast<T>(a: unknown): T {
   return a as T
 }
 
-function makeProjectCodeWithSpan(params: { gridColumn: string; gridRow: string }): string {
+function makeProjectCodeWithCustomPlacement(params: {
+  gridColumn: string
+  gridRow: string
+}): string {
   return `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
