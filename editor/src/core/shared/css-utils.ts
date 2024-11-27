@@ -51,17 +51,17 @@ function rescopeCSSToTargetCanvasOnly(
     }
   }
 }
-
+const WIDTH_CONDITIONS_REGEX = /\([^()]*?(min-width|max-width|width)[^()]*?\)/g
 export function changeMediaQueryToContainer(node: csstree.CssNode, containerName?: string) {
   if (node.type === 'Atrule' && node.name === 'media') {
     const queryText = csstree.generate(node.prelude as csstree.CssNode)
-    const widthConditions = queryText.match(/\([^()]*?(min-width|max-width|width)[^()]*?\)/g) ?? []
+    const widthConditions = queryText.match(WIDTH_CONDITIONS_REGEX) ?? []
 
     if (widthConditions.length > 0) {
       // Get non-width conditions
       const nonWidthConditions = queryText
         .split(/\s+and\s+/)
-        .filter((condition) => condition.match(/(min-width|max-width|width)/) === null)
+        .filter((condition) => condition.match(WIDTH_CONDITIONS_REGEX) == null)
         .join(' and ')
         .trim()
 
