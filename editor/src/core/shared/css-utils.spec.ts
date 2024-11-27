@@ -258,7 +258,7 @@ describe('changeMediaQueryToContainer', () => {
     expect(output).toEqual(
       formatCss(`
       @media (prefers-color-scheme: dark) {
-        @container ${SceneContainerName} (min-width: 500px) {
+        @container ${SceneContainerName} (min-width:500px) {
           .my-class {
             color: red;
           }
