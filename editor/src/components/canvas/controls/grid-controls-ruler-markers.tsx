@@ -1,82 +1,110 @@
 import React from 'react'
-import { colorTheme } from '../../../uuiui'
+import type { UtopiColor } from '../../../uuiui'
+import { RulerMarkerIconSize } from './grid-controls'
 
-export type RulerMarkerType = 'span-start' | 'span-end' | 'auto' | 'pinned'
+export type RulerMarkerType = 'span-start' | 'span-end' | 'auto' | 'auto-short' | 'pinned'
 
-const upFacingTriangle = (
-  <svg width='11' height='11' xmlns='http://www.w3.org/2000/svg'>
-    <polygon
-      points='5,1 10,10 0,10'
-      fill={colorTheme.primary.value}
-      stroke={colorTheme.white.value}
-      strokeWidth='0.5'
-    />
-  </svg>
-)
+interface MarkerSVGProps {
+  scale: number
+}
 
-const rightFacingTriangle = (
-  <svg width='11' height='11' xmlns='http://www.w3.org/2000/svg'>
-    <polygon
-      points='10,5 0,0 0,10'
-      fill={colorTheme.primary.value}
-      stroke={colorTheme.white.value}
-      strokeWidth='0.5'
-    />
-  </svg>
-)
+function MarkerSVG({ scale, children }: React.PropsWithChildren<MarkerSVGProps>) {
+  return (
+    <svg
+      width={`${RulerMarkerIconSize / scale}`}
+      height={`${RulerMarkerIconSize / scale}`}
+      viewBox={`0 0 ${RulerMarkerIconSize} ${RulerMarkerIconSize}`}
+      xmlns='http://www.w3.org/2000/svg'
+    >
+      {children}
+    </svg>
+  )
+}
 
-const downFacingTriangle = (
-  <svg width='11' height='11' xmlns='http://www.w3.org/2000/svg'>
-    <polygon
-      points='5,10 0,0 10,0'
-      fill={colorTheme.primary.value}
-      stroke={colorTheme.white.value}
-      strokeWidth='0.5'
-    />
-  </svg>
-)
+function upFacingTriangle(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <MarkerSVG scale={scale}>
+      <polygon
+        points={`${
+          RulerMarkerIconSize / 2
+        },0 ${RulerMarkerIconSize},${RulerMarkerIconSize} 0,${RulerMarkerIconSize}`}
+        fill={fillColor.value}
+      />
+    </MarkerSVG>
+  )
+}
 
-const leftFacingTriangle = (
-  <svg width='11' height='11' xmlns='http://www.w3.org/2000/svg'>
-    <polygon
-      points='0,5 10,0 10,10'
-      fill={colorTheme.primary.value}
-      stroke={colorTheme.white.value}
-      strokeWidth='0.5'
-    />
-  </svg>
-)
+function rightFacingTriangle(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <MarkerSVG scale={scale}>
+      <polygon
+        points={`${RulerMarkerIconSize},${RulerMarkerIconSize / 2} 0,0 0,${RulerMarkerIconSize}`}
+        fill={fillColor.value}
+      />
+    </MarkerSVG>
+  )
+}
 
-const verticalPipe = (
-  <svg width='4' height='11' xmlns='http://www.w3.org/2000/svg'>
-    <rect
-      x='0.25'
-      y='0.25'
-      width='3'
-      height='10'
-      fill={colorTheme.primary.value}
-      stroke={colorTheme.white.value}
-      strokeWidth='0.5'
-    />
-  </svg>
-)
+function downFacingTriangle(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <MarkerSVG scale={scale}>
+      <polygon
+        points={`${RulerMarkerIconSize / 2},${RulerMarkerIconSize} 0,0 ${RulerMarkerIconSize},0`}
+        fill={fillColor.value}
+      />
+    </MarkerSVG>
+  )
+}
 
-const horizontalPipe = (
-  <svg width='11' height='11' xmlns='http://www.w3.org/2000/svg'>
-    <rect
-      x='0.25'
-      y='3.50'
-      width='10'
-      height='3'
-      fill={colorTheme.primary.value}
-      stroke={colorTheme.white.value}
-      strokeWidth='0.5'
-    />
-  </svg>
-)
+function leftFacingTriangle(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <MarkerSVG scale={scale}>
+      <polygon
+        points={`0,${
+          RulerMarkerIconSize / 2
+        } ${RulerMarkerIconSize},0 ${RulerMarkerIconSize},${RulerMarkerIconSize}`}
+        fill={fillColor.value}
+      />
+    </MarkerSVG>
+  )
+}
+
+function regularVerticalPipe(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <MarkerSVG scale={scale}>
+      <rect x='4' y='0' width='3' height={`${RulerMarkerIconSize}`} fill={fillColor.value} />
+    </MarkerSVG>
+  )
+}
+
+function regularHorizontalPipe(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <MarkerSVG scale={scale}>
+      <rect x='0' y='4' width={`${RulerMarkerIconSize}`} height='3' fill={fillColor.value} />
+    </MarkerSVG>
+  )
+}
+
+function shortVerticalPipe(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <MarkerSVG scale={scale}>
+      <rect x='4' y='2' width='3' height='9' fill={fillColor.value} />
+    </MarkerSVG>
+  )
+}
+
+function shortHorizontalPipe(fillColor: UtopiColor, scale: number): React.ReactNode {
+  return (
+    <MarkerSVG scale={scale}>
+      <rect x='2' y='4' width='9' height='3' fill={fillColor.value} />
+    </MarkerSVG>
+  )
+}
+
+type ColorToReactNode = (fillColor: UtopiColor, scale: number) => React.ReactNode
 
 export const rulerMarkerIcons: {
-  [key in RulerMarkerType]: { column: React.ReactNode; row: React.ReactNode }
+  [key in RulerMarkerType]: { column: ColorToReactNode; row: ColorToReactNode }
 } = {
   'span-start': {
     column: rightFacingTriangle,
@@ -87,8 +115,12 @@ export const rulerMarkerIcons: {
     row: upFacingTriangle,
   },
   auto: {
-    column: verticalPipe,
-    row: horizontalPipe,
+    column: regularVerticalPipe,
+    row: regularHorizontalPipe,
+  },
+  'auto-short': {
+    column: shortVerticalPipe,
+    row: shortHorizontalPipe,
   },
   pinned: {
     column: downFacingTriangle,

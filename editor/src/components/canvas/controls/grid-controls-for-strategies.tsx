@@ -217,6 +217,5 @@ export function controlsForGridPlaceholders(
     },
     key: `GridControls${suffix == null ? '' : suffix}`,
     show: whenToShow,
-    priority: 'bottom',
   }
 }
