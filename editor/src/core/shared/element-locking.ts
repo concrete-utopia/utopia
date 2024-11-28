@@ -1,10 +1,24 @@
-import { isJSXElement, type ElementInstanceMetadataMap } from './element-template'
+import {
+  type JSXAttributesEntry,
+  type JSXAttributesPart,
+  type JSXElementChild,
+  emptyComments,
+  isJSXAttributeValue,
+  isJSXAttributesEntry,
+  isJSXElement,
+  jsExpressionValue,
+  jsxAttributesEntry,
+  type ElementInstanceMetadataMap,
+} from './element-template'
 import type { ElementPath } from './project-file-types'
 import * as EP from './element-path'
 import type { LockedElements } from '../../components/editor/store/editor-state'
 import type { ElementPathTrees } from './element-path-tree'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { isRight } from './either'
+
+export const DataSimpleLocked = 'data-simple-locked'
+export const DataHierarchyLocked = 'data-hierarchy-locked'
 
 export function updateSimpleLocks(
   priorMetadata: ElementInstanceMetadataMap,
@@ -46,15 +60,37 @@ export function getAllLockedElementPaths(
   elementPathTree: ElementPathTrees,
   lockedElements: LockedElements,
 ): Array<ElementPath> {
+  const allPaths = MetadataUtils.getAllPaths(componentMetadata, elementPathTree)
+  const simpleLockedElementsFromMetadata = allPaths.filter(
+    (p) =>
+      dataSimpleLockedFromMetadata(componentMetadata, p) &&
+      lockedElements.simpleLock.find((e) => EP.pathsEqual(e, p)) == null,
+  )
+  const hierarchyLockedElementsFromMetadata = allPaths.filter(
+    (p) =>
+      dataSimpleLockedFromMetadata(componentMetadata, p) &&
+      lockedElements.hierarchyLock.find((e) => EP.pathsEqual(e, p)) == null,
+  )
   const descendantsOfHierarchyLocked = MetadataUtils.getAllPaths(
     componentMetadata,
     elementPathTree,
-  ).filter((path) => MetadataUtils.isDescendantOfHierarchyLockedElement(path, lockedElements))
-  return [
+  ).filter((path) =>
+    MetadataUtils.isDescendantOfHierarchyLockedElement(path, [
+      ...hierarchyLockedElementsFromMetadata,
+      ...lockedElements.hierarchyLock,
+    ]),
+  )
+
+  const foo = [
     ...lockedElements.simpleLock,
+    ...simpleLockedElementsFromMetadata,
     ...lockedElements.hierarchyLock,
+    ...hierarchyLockedElementsFromMetadata,
     ...descendantsOfHierarchyLocked,
-  ]
+  ].map(EP.toString)
+
+  const fooSet = new Set(foo)
+  return Array.from(fooSet).map(EP.fromString)
 }
 
 export function unlockedParent(
@@ -80,4 +116,88 @@ export function unlockedParent(
   }
 
   return null
+}
+
+export function dataSimpleLockedFromMetadata(
+  metadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+): boolean {
+  const target = MetadataUtils.findElementByElementPath(metadata, path)
+  return (
+    target != null &&
+    isRight(target.element) &&
+    isJSXElement(target.element.value) &&
+    isSimpleLockedJSXElementChild(target.element.value)
+  )
+}
+
+export function isSimpleLockedJSXElementChild(element: JSXElementChild) {
+  return (
+    isJSXElement(element) &&
+    element.props.some(
+      (prop) =>
+        isDataSimpleLockedProp(prop) &&
+        isJSXAttributeValue(prop.value) &&
+        prop.value.value === true,
+    )
+  )
+}
+
+interface DataSimpleLockedProp extends JSXAttributesEntry {
+  key: typeof DataSimpleLocked
+}
+
+export function isDataSimpleLockedProp(prop: JSXAttributesPart): prop is DataSimpleLockedProp {
+  return isJSXAttributesEntry(prop) && (prop as DataSimpleLockedProp).key === DataSimpleLocked
+}
+
+export function dataSimpleLockedProp(value: boolean): JSXAttributesEntry {
+  return jsxAttributesEntry(
+    DataSimpleLocked,
+    jsExpressionValue(value, emptyComments),
+    emptyComments,
+  )
+}
+
+export function dataHierarchyLockedFromMetadata(
+  metadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+): boolean {
+  const target = MetadataUtils.findElementByElementPath(metadata, path)
+  return (
+    target != null &&
+    isRight(target.element) &&
+    isJSXElement(target.element.value) &&
+    isHierarchyLockedJSXElementChild(target.element.value)
+  )
+}
+
+export function isHierarchyLockedJSXElementChild(element: JSXElementChild) {
+  return (
+    isJSXElement(element) &&
+    element.props.some(
+      (prop) =>
+        isDataHierarchyLockedProp(prop) &&
+        isJSXAttributeValue(prop.value) &&
+        prop.value.value === true,
+    )
+  )
+}
+
+interface DataHierarchyLockedProp extends JSXAttributesEntry {
+  key: typeof DataHierarchyLocked
+}
+
+export function isDataHierarchyLockedProp(
+  prop: JSXAttributesPart,
+): prop is DataHierarchyLockedProp {
+  return isJSXAttributesEntry(prop) && (prop as DataHierarchyLockedProp).key === DataHierarchyLocked
+}
+
+export function dataHierarchyLockedProp(value: boolean): JSXAttributesEntry {
+  return jsxAttributesEntry(
+    DataHierarchyLocked,
+    jsExpressionValue(value, emptyComments),
+    emptyComments,
+  )
 }
