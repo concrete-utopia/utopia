@@ -38,6 +38,7 @@ import {
 } from './text-editor-shortcut-helpers'
 import { useColorTheme } from '../../uuiui'
 import { mapArrayToDictionary } from '../../core/shared/array-utils'
+import type { TextRelatedCssProperties } from '../../core/properties/css-properties'
 import { TextRelatedProperties } from '../../core/properties/css-properties'
 import { assertNever } from '../../core/shared/utils'
 import { notice } from '../common/notice'
@@ -527,7 +528,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     style: {
       // Ensure that font and text settings are inherited from
       // the containing element:
-      ...mapArrayToDictionary<keyof CSSProperties, 'inherit', keyof CSSProperties>(
+      ...mapArrayToDictionary<
+        keyof TextRelatedCssProperties,
+        'inherit',
+        keyof TextRelatedCssProperties
+      >(
         TextRelatedProperties,
         (key) => key,
         () => 'inherit',
