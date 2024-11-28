@@ -725,11 +725,16 @@ export function isHuggingFixedHugFill(fixedHugFillMode: FixedHugFillMode | null 
   )
 }
 
+export interface DetectedFillHugFixedState {
+  fixedHugFill: FixedHugFill | null
+  controlStatus: ControlStatus
+}
+
 export function detectFillHugFixedState(
   axis: Axis,
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): { fixedHugFill: FixedHugFill | null; controlStatus: ControlStatus } {
+): DetectedFillHugFixedState {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
     return { fixedHugFill: null, controlStatus: 'off' }
