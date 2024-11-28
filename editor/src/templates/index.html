@@ -39,6 +39,31 @@
 
       @scope (:root) to (#canvas-container) {
         body {
+          /* handle system preferences and utopia theme */
+          --theme-bg-color: white;
+          --theme-fg-color: black;
+          --theme-light-png-visibility: block;
+          --theme-dark-png-visibility: none;
+        }
+
+        @media (prefers-color-scheme: dark) {
+          body:not(.utopia-theme-light) {
+            --theme-bg-color: #1a1a1a;
+            --theme-fg-color: white;
+            --theme-light-png-visibility: none;
+            --theme-dark-png-visibility: block;
+          }
+        }
+
+        /* utopia preferences should override system preferences */
+        body.utopia-theme-dark {
+          --theme-bg-color: #1a1a1a;
+          --theme-fg-color: white;
+          --theme-light-png-visibility: none;
+          --theme-dark-png-visibility: block;
+        }
+
+        body {
           margin: 0;
           font-size: 11px !important;
           overflow: hidden;
@@ -46,6 +71,8 @@
           outline: none;
           overscroll-behavior-x: contain;
           --loadscreen-accent: rgba(46, 255, 109, 0.5);
+          background-color: var(--theme-bg-color);
+          transition: background-color 0.1s ease-in-out;
         }
 
         @keyframes animation-keyframes {
@@ -85,7 +112,8 @@
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          background-color: white;
+          background-color: var(--theme-bg-color);
+          transition: background-color 0.1s ease-in-out;
           z-index: 1000;
         }
 
@@ -105,7 +133,8 @@
         }
 
         .progress-bar-shell {
-          border: 1px solid black;
+          border: 1px solid var(--theme-fg-color);
+          transition: border-color 0.1s ease-in-out;
           margin-top: 64px;
           width: 212px;
           height: 11px;
@@ -115,13 +144,13 @@
         }
 
         .progress-bar-progress {
-          background-color: black;
+          background-color: var(--theme-fg-color);
+          transition: background-color 0.1s ease-in-out;
           border-radius: 6px;
           height: 9px;
         }
 
         .loading-screen-import-operations {
-          color: black;
           height: 150px;
           overflow: hidden;
           width: auto;
@@ -136,11 +165,17 @@
           font-family: utopian-inter, 'sans-serif';
         }
 
+        .loading-screen-import-operations,
+        .loading-screen-import-operations li {
+          color: var(--theme-fg-color);
+          transition: color 0.1s ease-in-out;
+        }
+
         .utopia-logo-pyramid.light {
-          display: block;
+          display: var(--theme-light-png-visibility);
         }
         .utopia-logo-pyramid.dark {
-          display: none;
+          display: var(--theme-dark-png-visibility);
         }
 
         .loading-screen-wrapper {
@@ -148,36 +183,6 @@
           flex-direction: column;
           align-items: center;
           justify-content: center;
-        }
-
-        @media (prefers-color-scheme: dark) {
-          body {
-            background-color: #1a1a1a;
-          }
-
-          .editor-loading-screen {
-            background-color: #1a1a1a;
-          }
-
-          .loading-screen-import-operations,
-          .loading-screen-import-operations li {
-            color: white;
-          }
-
-          .progress-bar-shell {
-            border: 1px solid white;
-          }
-
-          .progress-bar-progress {
-            background-color: white;
-          }
-
-          .utopia-logo-pyramid.light {
-            display: none;
-          }
-          .utopia-logo-pyramid.dark {
-            display: block;
-          }
         }
       }
     </style>

@@ -1451,6 +1451,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             data-path=\\"utopia-storyboard-uid/scene-aaa\\"
             style=\\"
               overflow: hidden;
+              container: scene / inline-size;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
               box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -1560,6 +1561,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             data-path=\\"utopia-storyboard-uid/scene-aaa\\"
             style=\\"
               overflow: hidden;
+              container: scene / inline-size;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
               box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -2062,6 +2064,7 @@ describe('UiJsxCanvas render multifile projects', () => {
             data-path=\\"utopia-storyboard-uid/scene-aaa\\"
             style=\\"
               overflow: hidden;
+              container: scene / inline-size;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
               box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -2157,6 +2160,7 @@ describe('UiJsxCanvas render multifile projects', () => {
             data-path=\\"utopia-storyboard-uid/scene-aaa\\"
             style=\\"
               overflow: hidden;
+              container: scene / inline-size;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
               box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -2254,6 +2258,7 @@ describe('UiJsxCanvas render multifile projects', () => {
             data-path=\\"utopia-storyboard-uid/scene-aaa\\"
             style=\\"
               overflow: hidden;
+              container: scene / inline-size;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
               box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -2336,6 +2341,7 @@ describe('UiJsxCanvas render multifile projects', () => {
             data-path=\\"utopia-storyboard-uid/scene-aaa\\"
             style=\\"
               overflow: hidden;
+              container: scene / inline-size;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
               box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -2431,6 +2437,7 @@ describe('UiJsxCanvas render multifile projects', () => {
             data-path=\\"utopia-storyboard-uid/scene-aaa\\"
             style=\\"
               overflow: hidden;
+              container: scene / inline-size;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
               box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),

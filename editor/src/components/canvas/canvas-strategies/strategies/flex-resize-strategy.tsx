@@ -67,6 +67,7 @@ import { treatElementAsGroupLike } from './group-helpers'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
+import { StrategySizeLabel } from '../../controls/select-mode/size-label'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
 
@@ -127,6 +128,13 @@ export function flexResizeStrategy(
         props: { targets: selectedElements, pathsWereReplaced: false },
         key: 'absolute-resize-control',
         show: 'always-visible',
+        priority: 'top',
+      }),
+      controlWithProps({
+        control: StrategySizeLabel,
+        props: { targets: selectedElements, pathsWereReplaced: false },
+        key: 'size-label',
+        show: 'visible-except-when-other-strategy-is-active',
         priority: 'top',
       }),
       controlWithProps({

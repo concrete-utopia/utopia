@@ -38,6 +38,7 @@ import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { treatElementAsGroupLike } from './group-helpers'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
+import { StrategySizeLabel } from '../../controls/select-mode/size-label'
 
 export function flexResizeBasicStrategy(
   canvasState: InteractionCanvasState,
@@ -107,6 +108,13 @@ export function flexResizeBasicStrategy(
         props: { targets: selectedElements, pathsWereReplaced: false },
         key: 'absolute-resize-control',
         show: 'always-visible',
+        priority: 'top',
+      }),
+      controlWithProps({
+        control: StrategySizeLabel,
+        props: { targets: selectedElements, pathsWereReplaced: false },
+        key: 'size-label',
+        show: 'visible-except-when-other-strategy-is-active',
         priority: 'top',
       }),
       controlWithProps({

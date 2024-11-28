@@ -57,7 +57,7 @@ jest.mock('../../../components/editor/npm-dependency/npm-dependency', () => ({
 }))
 
 jest.mock('../../shared/css-utils', () => ({
-  rescopeCSSToTargetCanvasOnly: (input: string): string => input,
+  convertCssToUtopia: (input: string): string => input,
 }))
 
 describe('ES Dependency Package Manager', () => {

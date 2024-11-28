@@ -55,7 +55,6 @@ import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import type { CSSProperties } from 'react'
 import { MaxContent } from '../../../inspector/inspector-common'
 import {
-  SizeLabelTestId,
   ResizePointTestId,
   AbsoluteResizeControlTestId,
 } from '../../controls/select-mode/absolute-resize-control'
@@ -78,6 +77,7 @@ import {
 } from '../../controls/bounding-box-hooks'
 import { act } from 'react-dom/test-utils'
 import { ComponentsHonouringPropsStylesProject } from './common-projects.test-utils'
+import { SizeLabelTestId } from '../../controls/select-mode/size-label'
 
 // no mouseup here! it starts the interaction and resizes with drag delta
 async function startDragUsingActions(
@@ -678,7 +678,7 @@ describe('Absolute Resize Strategy', () => {
       EP.appendNewElementPath(TestScenePath, ['root', 'sizeless']),
     ])
     const sizeLabel = await editor.renderedDOM.findByTestId(SizeLabelTestId)
-    expect(sizeLabel.textContent).toEqual('(Children) 188 x 161')
+    expect(sizeLabel.textContent).toEqual('(Children) 188 × 161')
   })
   it('resizes component instances that honour the size properties', async () => {
     const renderResult = await renderTestEditorWithCode(

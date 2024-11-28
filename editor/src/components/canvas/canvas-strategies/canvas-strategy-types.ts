@@ -85,8 +85,12 @@ export interface ControlForStrategy<P> {
   control: React.FC<P>
 }
 
+export function controlForStrategy<P>(control: React.FC<P>): ControlForStrategy<P> {
+  return { type: 'ControlForStrategy', control: control }
+}
+
 export function controlForStrategyMemoized<P>(control: React.FC<P>): ControlForStrategy<P> {
-  return { type: 'ControlForStrategy', control: React.memo<any>(control) }
+  return controlForStrategy(React.memo<any>(control))
 }
 
 export type WhenToShowControl =

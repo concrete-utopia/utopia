@@ -671,6 +671,286 @@ export var storyboard = (
       gridRowEnd: 'auto',
     })
   })
+
+  describe('spans', () => {
+    it('respects column start spans', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeProjectCodeWithCustomPlacement({ gridColumn: 'span 2', gridRow: '2' }),
+        'await-first-dom-report',
+      )
+
+      // enlarge to the right
+      {
+        await runCellResizeTest(
+          editor,
+          'column-end',
+          gridCellTargetId(EP.fromString('sb/grid'), 2, 3),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: 'span 3',
+          gridRowEnd: 'auto',
+          gridRowStart: '2',
+        })
+      }
+
+      // shrink from the left
+      {
+        await runCellResizeTest(
+          editor,
+          'column-start',
+          gridCellTargetId(EP.fromString('sb/grid'), 2, 2),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: '4',
+          gridColumnStart: 'span 2',
+          gridRowEnd: 'auto',
+          gridRowStart: '2',
+        })
+      }
+
+      // enlarge back from the left
+      {
+        await runCellResizeTest(
+          editor,
+          'column-start',
+          gridCellTargetId(EP.fromString('sb/grid'), 2, 1),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: 'span 3',
+          gridRowEnd: 'auto',
+          gridRowStart: '2',
+        })
+      }
+    })
+    it('respects column end spans', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeProjectCodeWithCustomPlacement({ gridColumn: '2 / span 2', gridRow: '2' }),
+        'await-first-dom-report',
+      )
+
+      // enlarge to the right
+      {
+        await runCellResizeTest(
+          editor,
+          'column-end',
+          gridCellTargetId(EP.fromString('sb/grid'), 2, 4),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'span 3',
+          gridColumnStart: '2',
+          gridRowEnd: 'auto',
+          gridRowStart: '2',
+        })
+      }
+    })
+    it('respects row start spans', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeProjectCodeWithCustomPlacement({ gridColumn: '2', gridRow: 'span 2' }),
+        'await-first-dom-report',
+      )
+
+      // enlarge to the bottom
+      {
+        await runCellResizeTest(
+          editor,
+          'row-end',
+          gridCellTargetId(EP.fromString('sb/grid'), 3, 2),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: '2',
+          gridRowEnd: 'auto',
+          gridRowStart: 'span 3',
+        })
+      }
+
+      // shrink from the top
+      {
+        await runCellResizeTest(
+          editor,
+          'row-start',
+          gridCellTargetId(EP.fromString('sb/grid'), 2, 2),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: '2',
+          gridRowEnd: '4',
+          gridRowStart: 'span 2',
+        })
+      }
+
+      // enlarge back from the top
+      {
+        await runCellResizeTest(
+          editor,
+          'row-start',
+          gridCellTargetId(EP.fromString('sb/grid'), 1, 2),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: '2',
+          gridRowEnd: 'auto',
+          gridRowStart: 'span 3',
+        })
+      }
+    })
+    it('respects row end spans', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeProjectCodeWithCustomPlacement({ gridColumn: '2', gridRow: '2 / span 2' }),
+        'await-first-dom-report',
+      )
+
+      // enlarge to the bottom
+      {
+        await runCellResizeTest(
+          editor,
+          'row-end',
+          gridCellTargetId(EP.fromString('sb/grid'), 4, 2),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: '2',
+          gridRowEnd: 'span 3',
+          gridRowStart: '2',
+        })
+      }
+    })
+    it('uses spans for flow elements', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeProjectCodeWithCustomPlacement({ gridColumn: 'auto', gridRow: 'auto' }),
+        'await-first-dom-report',
+      )
+
+      // enlarge to the right, spans in flow
+      {
+        await runCellResizeTest(
+          editor,
+          'column-end',
+          gridCellTargetId(EP.fromString('sb/grid'), 1, 3),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: 'span 3',
+          gridRowEnd: 'auto',
+          gridRowStart: 'auto',
+        })
+      }
+
+      // enlarge to the bottom, still spans in flow
+      {
+        await runCellResizeTest(
+          editor,
+          'row-end',
+          gridCellTargetId(EP.fromString('sb/grid'), 4, 3),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: 'span 3',
+          gridRowEnd: 'auto',
+          gridRowStart: 'span 4',
+        })
+      }
+
+      // shrink from the right, still spans in flow
+      {
+        await runCellResizeTest(
+          editor,
+          'column-end',
+          gridCellTargetId(EP.fromString('sb/grid'), 4, 2),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: 'span 2',
+          gridRowEnd: 'auto',
+          gridRowStart: 'span 4',
+        })
+      }
+
+      // shrink from the bottom, still spans in flow
+      {
+        await runCellResizeTest(
+          editor,
+          'row-end',
+          gridCellTargetId(EP.fromString('sb/grid'), 3, 2),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: 'span 2',
+          gridRowEnd: 'auto',
+          gridRowStart: 'span 3',
+        })
+      }
+
+      // shrink from the top, it spans but now is pinned
+      {
+        await runCellResizeTest(
+          editor,
+          'row-start',
+          gridCellTargetId(EP.fromString('sb/grid'), 2, 2),
+          EP.fromString('sb/grid/cell'),
+        )
+
+        const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } =
+          editor.renderedDOM.getByTestId('cell').style
+        expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+          gridColumnEnd: 'auto',
+          gridColumnStart: 'span 2',
+          gridRowEnd: '4',
+          gridRowStart: 'span 2',
+        })
+      }
+    })
+  })
 })
 
 const ProjectCode = `import * as React from 'react'
@@ -947,4 +1227,43 @@ export var storyboard = (
 
 function unsafeCast<T>(a: unknown): T {
   return a as T
+}
+
+function makeProjectCodeWithCustomPlacement(params: {
+  gridColumn: string
+  gridRow: string
+}): string {
+  return `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        width: 600,
+        height: 400,
+        display: 'grid',
+        gap: 10,
+        gridTemplateColumns: '1fr 1fr 1fr 1fr',
+        gridTemplateRows: '1fr 1fr 1fr 1fr',
+      }}
+      data-uid='grid'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          alignSelf: 'stretch',
+          justifySelf: 'stretch',
+          gridColumn: '${params.gridColumn}',
+          gridRow: '${params.gridRow}',
+        }}
+        data-uid='cell'
+		data-testid='cell'
+      />
+    </div>
+  </Storyboard>
+)
+`
 }
