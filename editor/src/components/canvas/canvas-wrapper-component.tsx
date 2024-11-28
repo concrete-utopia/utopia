@@ -76,13 +76,14 @@ export const CanvasWrapperComponent = React.memo(() => {
     <FlexColumn
       className='CanvasWrapperComponent'
       style={{
-        position: 'relative',
+        position: 'absolute',
         overflowX: 'hidden',
         justifyContent: 'stretch',
         alignItems: 'stretch',
-        flexGrow: 1,
-        height: '100%',
-        // ^ prevents Monaco from pushing the inspector out
+        left: 200,
+        right: 200,
+        bottom: 0,
+        top: 50,
       }}
     >
       <EditorCanvas

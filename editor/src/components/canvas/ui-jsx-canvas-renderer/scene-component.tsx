@@ -27,6 +27,11 @@ export const SceneComponent = React.memo(
       boxShadow: UtopiaStyles.shadowStyles.grounded.boxShadow,
       ...UtopiaStyles.backgrounds.checkerboardBackground,
       ...style,
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      overflow: 'scroll',
     }
 
     // TODO right now we don't actually change the invalidated paths, just let the dom-walker know it should walk again

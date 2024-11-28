@@ -93,6 +93,8 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
         ref={containerRef}
         style={{
           position: 'absolute',
+          width: '100%',
+          height: '100%',
           transition: canvasScrollAnimation ? 'transform 0.3s ease-in-out' : 'initial',
           transform: 'translate3d(0px, 0px, 0px)',
         }}
