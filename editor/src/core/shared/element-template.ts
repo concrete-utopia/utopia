@@ -16,12 +16,12 @@ import { sides } from 'utopia-api/core'
 import { assertNever, fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { objectMap } from './object-utils'
-import type {
-  CSSKeyword,
-  CSSPosition,
-  FlexDirection,
-  GridAutoFlow,
-  GridDimension,
+import {
+  type CSSKeyword,
+  type CSSPosition,
+  type FlexDirection,
+  type GridAutoFlow,
+  type GridDimension,
 } from '../../components/inspector/common/css-utils'
 import type { ModifiableAttribute } from './jsx-attributes'
 import * as EP from './element-path'
@@ -2653,6 +2653,11 @@ export type SettableLayoutSystem = 'flex' | 'flow' | 'grid' | LayoutSystem
 
 export interface GridPositionValue {
   numericalPosition: number | null
+}
+
+export function isGridPositionValue(p: GridPositionOrSpan): p is GridPositionValue {
+  const maybe = p as GridPositionValue
+  return p != null && typeof p === 'object' && maybe.numericalPosition !== undefined
 }
 
 export function gridPositionValue(numericalPosition: number | null): GridPositionValue {
