@@ -2,6 +2,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { GridElementProperties } from '../../../../core/shared/element-template'
 import { gridPositionValue } from '../../../../core/shared/element-template'
+import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import { canvasRectangle, isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { gridContainerIdentifier, gridItemIdentifier } from '../../../editor/store/editor-state'
 import { isCSSKeyword } from '../../../inspector/common/css-utils'
@@ -100,52 +101,40 @@ export const gridResizeElementRulerStrategy: CanvasStrategyFactory = (
       }
 
       const columns = allCellBounds[0]
-      let closestHorizontal: number | null = null
-      let minDistHoriz = Infinity
-      const columnsWithAddition = columns.concat(
-        canvasRectangle({
-          x: columns[columns.length - 1].x + columns[columns.length - 1].width,
-          y: columns[columns.length - 1].y,
-          width: 0,
-          height: 0,
-        }),
-      )
-      for (let i = 0; i < columnsWithAddition.length; i++) {
-        const column = columnsWithAddition[i]
-        const dist = Math.abs(
-          column.x -
-            (interactionSession.interactionData.drag.x +
-              interactionSession.interactionData.dragStart.x),
+      const columnsWithAddition =
+        // count one extra column so we correctly find the eastmost bound
+        columns.concat(
+          canvasRectangle({
+            x: columns[columns.length - 1].x + columns[columns.length - 1].width,
+            y: columns[columns.length - 1].y,
+            width: 0,
+            height: 0,
+          }),
         )
-        if (dist < minDistHoriz) {
-          minDistHoriz = dist
-          closestHorizontal = i + 1
-        }
-      }
+      const closestHorizontal = getClosestCell(
+        columnsWithAddition,
+        'x',
+        interactionSession.interactionData.drag,
+        interactionSession.interactionData.dragStart,
+      )
 
       const rows = allCellBounds.map((r) => r[0])
-      let closestVertical: number | null = null
-      let minDistVert = Infinity
-      const rowsWithAddition = rows.concat(
-        canvasRectangle({
-          x: rows[rows.length - 1].x,
-          y: rows[rows.length - 1].y + rows[rows.length - 1].height,
-          width: 0,
-          height: 0,
-        }),
-      )
-      for (let i = 0; i < rowsWithAddition.length; i++) {
-        const row = rowsWithAddition[i]
-        const dist = Math.abs(
-          row.y -
-            (interactionSession.interactionData.drag.y +
-              interactionSession.interactionData.dragStart.y),
+      const rowsWithAddition =
+        // count one extra row so we correctly find the southmost bound
+        rows.concat(
+          canvasRectangle({
+            x: rows[rows.length - 1].x,
+            y: rows[rows.length - 1].y + rows[rows.length - 1].height,
+            width: 0,
+            height: 0,
+          }),
         )
-        if (dist < minDistVert) {
-          minDistVert = dist
-          closestVertical = i + 1
-        }
-      }
+      const closestVertical = getClosestCell(
+        rowsWithAddition,
+        'y',
+        interactionSession.interactionData.drag,
+        interactionSession.interactionData.dragStart,
+      )
 
       let gridProps: GridElementProperties = {
         ...selectedElementMetadata.specialSizeMeasurements.elementGridProperties,
@@ -195,4 +184,24 @@ export const gridResizeElementRulerStrategy: CanvasStrategyFactory = (
       )
     },
   }
+}
+
+function getClosestCell(
+  cells: CanvasRectangle[],
+  axis: 'x' | 'y',
+  drag: CanvasVector,
+  dragStart: CanvasPoint,
+): number | null {
+  let closest: number | null = null
+  let minDist = Infinity
+  for (let i = 0; i < cells.length; i++) {
+    const cell = cells[i]
+    const position = drag[axis] + dragStart[axis]
+    const dist = Math.abs(cell[axis] - position)
+    if (dist < minDist) {
+      minDist = dist
+      closest = i + 1 // plus one because it's a grid pin, so it's 1-indexed
+    }
+  }
+  return closest
 }
