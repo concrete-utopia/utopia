@@ -13,7 +13,11 @@ export const BackgroundPrefixedProperties: Array<keyof CSSProperties> = [
   'backgroundSize',
 ]
 
-export const TextRelatedProperties: Array<keyof CSSProperties> = [
+type CSSPropertiesWithObsolete = CSSProperties & {
+  textDecorationWidth?: string
+}
+
+export const TextRelatedProperties: Array<keyof CSSPropertiesWithObsolete> = [
   'font',
   'fontFamily',
   'fontFeatureSettings',
