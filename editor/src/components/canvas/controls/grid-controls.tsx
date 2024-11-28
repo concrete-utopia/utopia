@@ -27,6 +27,7 @@ import {
 } from '../../../core/shared/element-template'
 import type { CanvasPoint, CanvasRectangle, LocalRectangle } from '../../../core/shared/math-utils'
 import {
+  boundingRectangleArray,
   canvasPoint,
   canvasRectangle,
   isFiniteRectangle,
@@ -2168,7 +2169,7 @@ function useSelectedGridItems(): ElementPath[] {
   )
 }
 
-const rulerMarkerIconSize = 11 // px
+export const RulerMarkerIconSize = 11 // px
 
 type RulerMarkerData = {
   parentGrid: GridContainerProperties
@@ -2302,6 +2303,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
 
       let otherColumnMarkers: Array<RulerMarkerPositionData> = []
       let otherRowMarkers: Array<RulerMarkerPositionData> = []
+
       function addOtherMarker(
         rowOrColumn: RulerMarkerPositionData['rowOrColumn'],
         bound: RulerMarkerPositionData['bound'],
@@ -2319,20 +2321,27 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         const addTo = rowOrColumn === 'row' ? otherRowMarkers : otherColumnMarkers
         addTo.push(otherMarker)
       }
-      for (let columnIndex = 0; columnIndex < parentGridCellGlobalFrames[0].length; columnIndex++) {
-        if (
-          columnIndex < cellBounds.column - 1 ||
-          columnIndex >= cellBounds.column - 1 + cellBounds.width
-        ) {
-          const cell = parentGridCellGlobalFrames[0][columnIndex]
+
+      // Add the additional markers for columns.
+      const lastColumnIndex = parentGridCellGlobalFrames[0].length - 1
+      for (let columnIndex = 0; columnIndex <= lastColumnIndex; columnIndex++) {
+        const cell = parentGridCellGlobalFrames[0][columnIndex]
+        if (left !== cell.x) {
           addOtherMarker('column', 'start', cell.x, gridRect.y)
+        }
+        if (left + width !== cell.x + cell.width) {
           addOtherMarker('column', 'end', cell.x + cell.width, gridRect.y)
         }
       }
-      for (let rowIndex = 0; rowIndex < parentGridCellGlobalFrames.length; rowIndex++) {
-        if (rowIndex < cellBounds.row - 1 || rowIndex >= cellBounds.row - 1 + cellBounds.height) {
-          const cell = parentGridCellGlobalFrames[rowIndex][0]
+
+      // Add the additional markers for rows.
+      const lastRowIndex = parentGridCellGlobalFrames.length - 1
+      for (let rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++) {
+        const cell = parentGridCellGlobalFrames[rowIndex][0]
+        if (top !== cell.y) {
           addOtherMarker('row', 'start', gridRect.x, cell.y)
+        }
+        if (top + height !== cell.y + cell.height) {
           addOtherMarker('row', 'end', gridRect.x, cell.y + cell.height)
         }
       }
@@ -2429,6 +2438,20 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         cellFrames={parentGridCellGlobalFrames}
         rulerVisible={showExtraMarkers === 'column' ? 'visible' : 'not-visible'}
       >
+        {/* Other markers for unselected tracks */}
+        {rulerMarkerData.otherColumnMarkers.map((marker, index) => {
+          return (
+            <RulerMarkerIndicator
+              key={`ruler-marker-${index}`}
+              gridRect={rulerMarkerData.gridRect}
+              parentGrid={rulerMarkerData.parentGrid}
+              marker={marker}
+              axis={marker.rowOrColumn}
+              testID={`ruler-marker-${marker.rowOrColumn}-${index}`}
+              visible={showExtraMarkers == marker.rowOrColumn ? 'visible' : 'not-visible'}
+            />
+          )
+        })}
         {/* Selected item markers */}
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
@@ -2448,8 +2471,16 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
           onMouseDown={columnMarkerMouseDown}
           testID={'ruler-marker-column-end'}
         />
+      </GridRuler>
+
+      <GridRuler
+        axis='row'
+        gridRect={gridRect}
+        cellFrames={parentGridCellGlobalFrames}
+        rulerVisible={showExtraMarkers === 'row' ? 'visible' : 'not-visible'}
+      >
         {/* Other markers for unselected tracks */}
-        {rulerMarkerData.otherColumnMarkers.map((marker, index) => {
+        {rulerMarkerData.otherRowMarkers.map((marker, index) => {
           return (
             <RulerMarkerIndicator
               key={`ruler-marker-${index}`}
@@ -2462,14 +2493,6 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
             />
           )
         })}
-      </GridRuler>
-
-      <GridRuler
-        axis='row'
-        gridRect={gridRect}
-        cellFrames={parentGridCellGlobalFrames}
-        rulerVisible={showExtraMarkers === 'row' ? 'visible' : 'not-visible'}
-      >
         {/* Selected item markers */}
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
@@ -2489,20 +2512,6 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
           onMouseDown={rowMarkerMouseDown}
           testID={'ruler-marker-row-end'}
         />
-        {/* Other markers for unselected tracks */}
-        {rulerMarkerData.otherRowMarkers.map((marker, index) => {
-          return (
-            <RulerMarkerIndicator
-              key={`ruler-marker-${index}`}
-              gridRect={rulerMarkerData.gridRect}
-              parentGrid={rulerMarkerData.parentGrid}
-              marker={marker}
-              axis={marker.rowOrColumn}
-              testID={`ruler-marker-${marker.rowOrColumn}-${index}`}
-              visible={showExtraMarkers == marker.rowOrColumn ? 'visible' : 'not-visible'}
-            />
-          )
-        })}
       </GridRuler>
 
       {/* Offset lines */}
@@ -2559,30 +2568,21 @@ const GridRuler = React.memo<React.PropsWithChildren<GridRulerProps>>(
       'GridRuler scale',
     )
 
+    // Make sure the ruler extends to cover all the cells and not just the grid dimensions.
     const cellMaxRect = React.useMemo(() => {
-      let maxWidth: number = gridRect.width
-      let maxHeight: number = gridRect.height
-      if (cellFrames != null) {
-        for (const row of cellFrames) {
-          for (const cell of row) {
-            maxWidth = Math.max(maxWidth, cell.x + cell.width)
-            maxHeight = Math.max(maxHeight, cell.y + cell.height)
-          }
-        }
-      }
-      return canvasRectangle({ x: 0, y: 0, width: maxWidth, height: maxHeight })
-    }, [cellFrames, gridRect.height, gridRect.width])
+      return boundingRectangleArray([gridRect, ...(cellFrames?.flat() ?? [])]) ?? gridRect
+    }, [cellFrames, gridRect])
 
     const columnLeft = gridRect.x
-    const rowLeft = gridRect.x - rulerMarkerIconSize / scale
+    const rowLeft = gridRect.x - RulerMarkerIconSize / scale
     const left = axis === 'row' ? rowLeft : columnLeft
 
-    const columnTop = gridRect.y - rulerMarkerIconSize / scale
+    const columnTop = gridRect.y - RulerMarkerIconSize / scale
     const rowTop = gridRect.y
     const top = axis === 'row' ? rowTop : columnTop
 
-    const width = axis === 'row' ? rulerMarkerIconSize / scale : cellMaxRect.width
-    const height = axis === 'row' ? cellMaxRect.height : rulerMarkerIconSize / scale
+    const width = axis === 'row' ? RulerMarkerIconSize / scale : cellMaxRect.width
+    const height = axis === 'row' ? cellMaxRect.height : RulerMarkerIconSize / scale
 
     return (
       <div
@@ -2615,7 +2615,6 @@ const RulerMarkerIndicator = React.memo(
     testID: string
     visible: 'visible' | 'not-visible'
     onMouseDown?: (event: React.MouseEvent) => void
-    onMouseUp?: (event: React.MouseEvent) => void
   }) => {
     const colorTheme = useColorTheme()
 
@@ -2631,12 +2630,12 @@ const RulerMarkerIndicator = React.memo(
 
     const scaledTop =
       props.axis === 'row'
-        ? props.marker.top - props.gridRect.y - rulerMarkerIconSize / canvasScale / 2 + 0.5
+        ? props.marker.top - props.gridRect.y - RulerMarkerIconSize / canvasScale / 2 + 0.5
         : 0
 
     const scaledLeft =
       props.axis === 'column'
-        ? props.marker.left - props.gridRect.x - rulerMarkerIconSize / canvasScale / 2 + 0.5
+        ? props.marker.left - props.gridRect.x - RulerMarkerIconSize / canvasScale / 2 + 0.5
         : 0
 
     const labelText = React.useMemo(() => {
@@ -2656,12 +2655,11 @@ const RulerMarkerIndicator = React.memo(
           top: scaledTop,
           left: scaledLeft,
           color: colorTheme.primary.value,
-          height: rulerMarkerIconSize / canvasScale,
-          width: rulerMarkerIconSize / canvasScale,
+          height: RulerMarkerIconSize / canvasScale,
+          width: RulerMarkerIconSize / canvasScale,
           display: props.visible === 'visible' ? 'flex' : 'none',
         }}
         onMouseDown={props.onMouseDown}
-        onMouseUp={props.onMouseUp}
         css={{
           [`> .${labelClass}`]: {
             visibility: 'hidden',
@@ -2690,7 +2688,7 @@ const RulerMarkerIndicator = React.memo(
               justifyContent: 'center',
               top: props.axis === 'column' ? -23 / canvasScale : 0,
               left: props.axis === 'column' ? 0 : undefined,
-              right: props.axis === 'row' ? (rulerMarkerIconSize + 1) / canvasScale : undefined,
+              right: props.axis === 'row' ? (RulerMarkerIconSize + 1) / canvasScale : undefined,
               fontSize: 11 / canvasScale,
             }}
           >
