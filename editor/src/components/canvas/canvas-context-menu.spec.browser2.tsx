@@ -1310,6 +1310,58 @@ export var storyboard = (props) => {
 }
 `)
     })
+
+    it('can convert Tailwind class that translates to multiple CSS properties', async () => {
+      const editor = await renderTestEditorWithModel(
+        createModifiedProject({
+          [StoryboardFilePath]: `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (props) => {
+  return (
+    <Storyboard>
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        commentId='9f32e7b6afc9765fbe5cacf487bf0e85'
+      >
+        <div
+          data-testid='bbb'
+          data-uid='bbb'
+          className='bg-red-100 inset-x-2 w-5 h-5'
+        />
+      </Scene>
+    </Storyboard>
+  )
+}`,
+          [TailwindConfigPath]: `
+        const TailwindConfig = { }
+        export default TailwindConfig
+    `,
+          'app.css': `
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;`,
+        }),
+        'await-first-dom-report',
+      )
+
+      await openContextMenuOnElement(editor, {
+        testId: 'bbb',
+        contextMenuItemLabel: ConvertTailwindToInlineStyleOptionText,
+      })
+
+      const elementStyles = editor.renderedDOM.getByTestId('bbb').style
+
+      // this should set left and right, but due to a bug in
+      // @xengine/tailwind-class-parser top and bottom are set. This is fixed in
+      // @xengine/tailwind-class-parser in
+      // https://github.com/XEngine/tailwindcss-class-parser/pull/9
+      expect(elementStyles).toMatchObject({
+        top: '0.5rem',
+        bottom: '0.5rem',
+        backgroundColor: 'rgb(254, 226, 226)',
+      })
+    })
   })
 })
 
