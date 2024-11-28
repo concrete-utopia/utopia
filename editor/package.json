@@ -371,7 +371,7 @@
     "clean-webpack-plugin": "4.0.0",
     "concurrently": "3.5.1",
     "css-loader": "0.28.4",
-    "csstype": "3.0.3",
+    "csstype": "3.1.3",
     "dependency-cruiser": "13.1.5",
     "diff": "5.0.0",
     "enzyme": "3.3.0",

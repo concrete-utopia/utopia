@@ -173,7 +173,7 @@ specifiers:
   create-react-class: 15.6.3
   css-loader: 0.28.4
   css-tree: 3.0.1
-  csstype: 3.0.3
+  csstype: 3.1.3
   dependency-cruiser: 13.1.5
   diff: 5.0.0
   enzyme: 3.3.0
@@ -593,7 +593,7 @@ devDependencies:
   clean-webpack-plugin: 4.0.0_webpack@5.88.2
   concurrently: 3.5.1
   css-loader: 0.28.4
-  csstype: 3.0.3
+  csstype: 3.1.3
   dependency-cruiser: 13.1.5
   diff: 5.0.0
   enzyme: 3.3.0
@@ -2352,7 +2352,7 @@ packages:
       '@emotion/memoize': 0.7.5
       '@emotion/unitless': 0.7.5
       '@emotion/utils': 1.0.0
-      csstype: 3.0.3
+      csstype: 3.1.3
     dev: false
 
   /@emotion/sheet/0.9.4:
@@ -5472,7 +5472,7 @@ packages:
     dependencies:
       '@types/prop-types': 15.5.6
       '@types/scheduler': 0.16.1
-      csstype: 3.1.2
+      csstype: 3.1.3
     dev: false
 
   /@types/react/18.0.9:
@@ -5480,7 +5480,7 @@ packages:
     dependencies:
       '@types/prop-types': 15.5.6
       '@types/scheduler': 0.16.1
-      csstype: 3.0.9
+      csstype: 3.1.3
 
   /@types/resolve/1.17.1:
     resolution: {integrity: sha512-yy7HuzQhj0dhGpD8RLXSZWEkLsV9ibvxvi6EiJ3bkqLAO1RGo0WbkWQiwpRlSFymTJRz0d3k5LM3kkx8ArDbLw==}
@@ -8486,15 +8486,12 @@ packages:
     resolution: {integrity: sha512-RSU6Hyeg14am3Ah4VZEmeX8H7kLwEEirXe6aU2IPfKNvhXwTflK5HQRDNI0ypQXoqmm+QPyG2IaPuQE5zMwSIQ==}
     dev: false
 
-  /csstype/3.0.3:
-    resolution: {integrity: sha512-jPl+wbWPOWJ7SXsWyqGRk3lGecbar0Cb0OvZF/r/ZU011R4YqiRehgkQ9p4eQfo9DSDLqLL3wHwfxeJiuIsNag==}
-
   /csstype/3.0.9:
     resolution: {integrity: sha512-rpw6JPxK6Rfg1zLOYCSwle2GFOOsnjmDYDaBwEcwoOg4qlsIVCN789VkBZDJAGi4T07gI4YSutR43t9Zz4Lzuw==}
-
-  /csstype/3.1.2:
-    resolution: {integrity: sha512-I7K1Uu0MBPzaFKg4nI5Q7Vs2t+3gWWW648spaF+Rg7pI9ds18Ugn+lvg4SHczUdKlHI5LWBXyqfS8+DufyBsgQ==}
     dev: false
+
+  /csstype/3.1.3:
+    resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
 
   /custom-event/1.0.1:
     resolution: {integrity: sha512-GAj5FOq0Hd+RsCGVJxZuKaIDXDf3h6GQoNEjFgbLLI/trgtavwUbSnZ5pVfg27DVCaWjIohryS0JFwIJyT2cMg==}
@@ -8975,7 +8972,7 @@ packages:
     resolution: {integrity: sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA==}
     dependencies:
       '@babel/runtime': 7.20.13
-      csstype: 3.1.2
+      csstype: 3.1.3
     dev: false
 
   /dom-serialize/2.2.1:
@@ -16459,7 +16456,7 @@ packages:
       '@types/lodash': 4.14.198
       base16: 1.0.0
       color: 3.2.1
-      csstype: 3.1.2
+      csstype: 3.1.3
       lodash.curry: 4.1.1
     dev: false
 

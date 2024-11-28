@@ -24,8 +24,6 @@ export const RemixSceneComponent = React.memo((props: React.PropsWithChildren<Re
   const { style, getLoadContext, startingRoute, ...remainingProps } = props
 
   const sceneStyle: React.CSSProperties = {
-    // eslint-disable-next-line
-    // @ts-ignore
     container: `${SceneContainerName} / inline-size`,
     position: 'relative',
     backgroundColor: colorTheme.emphasizedBackground.value,
