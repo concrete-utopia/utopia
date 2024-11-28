@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import type { CSSProperties } from '@emotion/serialize'
+import type { CSSProperties, CSSInterpolation } from '@emotion/serialize'
 
 interface CommonSenseUtopiaProps {
   flexGrow?: CSSProperties['flexGrow']
@@ -8,4 +8,4 @@ interface CommonSenseUtopiaProps {
 export const commonSenseUtopiaLayoutShorthands = (props: CommonSenseUtopiaProps) =>
   css({
     flexGrow: props.flexGrow,
-  })
+  } as CSSInterpolation)
