@@ -27,8 +27,8 @@ import {
   emptyStrategyApplicationResult,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import type { InteractionSession } from '../interaction-state'
-import { getCommandsForGridItemPlacement } from './grid-helpers'
+import type { GridResizeEdge, InteractionSession } from '../interaction-state'
+import { getCommandsForGridItemPlacement, isAutoGridPin } from './grid-helpers'
 import { resizeBoundingBoxFromSide } from './resize-helpers'
 
 export const gridResizeElementStrategy: CanvasStrategyFactory = (
@@ -138,6 +138,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
           'start',
           elementGridPropertiesFromProps.gridColumnEnd,
           gridPropsNumeric.gridColumnEnd,
+          interactionSession.activeControl.edge,
         ),
         gridColumnEnd: normalizePositionAfterResize(
           elementGridPropertiesFromProps.gridColumnEnd,
@@ -146,6 +147,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
           'end',
           elementGridPropertiesFromProps.gridColumnStart,
           gridPropsNumeric.gridColumnStart,
+          interactionSession.activeControl.edge,
         ),
         gridRowStart: normalizePositionAfterResize(
           elementGridPropertiesFromProps.gridRowStart,
@@ -154,6 +156,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
           'start',
           elementGridPropertiesFromProps.gridRowEnd,
           gridPropsNumeric.gridRowEnd,
+          interactionSession.activeControl.edge,
         ),
         gridRowEnd: normalizePositionAfterResize(
           elementGridPropertiesFromProps.gridRowEnd,
@@ -162,6 +165,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
           'end',
           elementGridPropertiesFromProps.gridRowStart,
           gridPropsNumeric.gridRowStart,
+          interactionSession.activeControl.edge,
         ),
       }
 
@@ -211,9 +215,12 @@ function getNewGridPropsFromResizeBox(
   }
 }
 
-// After a resize happens and we know the numerical grid positioning of the new bounds,
-// return a normalized version of the new position so that it respects any spans that
-// may have been there before the resize, and/or default it to 'auto' when it would become redundant.
+/*
+    After a resize happens and we know the numerical grid positioning of the new bounds,
+    return a normalized version of the new position so that it respects any spans that
+    may have been there before the resize, and/or default it to 'auto' when it would become redundant.
+    If the positions match a flow configuration, give priority to span notation.
+*/
 function normalizePositionAfterResize(
   position: GridPositionOrSpan | null,
   resizedPosition: GridPositionValue,
@@ -221,13 +228,34 @@ function normalizePositionAfterResize(
   bound: 'start' | 'end',
   counterpart: GridPositionOrSpan | null,
   counterpartResizedPosition: GridPositionValue,
+  edge: GridResizeEdge,
 ): GridPositionOrSpan | null {
-  if (isGridSpan(position)) {
+  function isFlowResizeOnBound(
+    wantedBound: 'start' | 'end',
+    flowStart: GridPositionOrSpan | null,
+    flowEnd: GridPositionOrSpan | null,
+  ): boolean {
+    return (
+      (edge === 'column-end' || edge === 'row-end') &&
+      bound === wantedBound &&
+      (isGridSpan(flowStart) || isAutoGridPin(flowStart) || flowStart == null) &&
+      (isAutoGridPin(flowEnd) || flowEnd == null)
+    )
+  }
+
+  const isFlowStart = isFlowResizeOnBound('start', position, counterpart)
+  if (isFlowStart || isGridSpan(position)) {
     if (size === 1) {
       return cssKeyword('auto')
     }
     return gridSpanNumeric(size)
   }
+
+  const isFlowEnd = isFlowResizeOnBound('end', counterpart, position)
+  if (isFlowEnd) {
+    return cssKeyword('auto')
+  }
+
   if (
     isGridSpan(counterpart) &&
     counterpartResizedPosition.numericalPosition === 1 &&
