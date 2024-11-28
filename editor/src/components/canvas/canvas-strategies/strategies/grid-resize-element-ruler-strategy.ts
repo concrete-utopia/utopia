@@ -4,6 +4,7 @@ import type { GridElementProperties } from '../../../../core/shared/element-temp
 import { gridPositionValue } from '../../../../core/shared/element-template'
 import { canvasRectangle, isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { gridContainerIdentifier, gridItemIdentifier } from '../../../editor/store/editor-state'
+import { isCSSKeyword } from '../../../inspector/common/css-utils'
 import { isFillOrStretchModeAppliedOnAnySide } from '../../../inspector/inspector-common'
 import {
   controlsForGridPlaceholders,
@@ -151,16 +152,37 @@ export const gridResizeElementRulerStrategy: CanvasStrategyFactory = (
       }
       if (closestHorizontal != null) {
         if (interactionSession.activeControl.edge === 'column-end') {
-          gridProps.gridColumnEnd = gridPositionValue(closestHorizontal)
+          gridProps.gridColumnEnd = gridPositionValue(
+            Math.max(bounds.column + 1, closestHorizontal),
+          )
+          if (
+            isCSSKeyword(gridProps.gridColumnStart) &&
+            gridProps.gridColumnStart.value === 'auto'
+          ) {
+            gridProps.gridColumnStart = gridPositionValue(bounds.column)
+          }
         } else if (interactionSession.activeControl.edge === 'column-start') {
-          gridProps.gridColumnStart = gridPositionValue(closestHorizontal)
+          gridProps.gridColumnStart = gridPositionValue(
+            Math.min(bounds.column + bounds.width - 1, closestHorizontal),
+          )
+          if (isCSSKeyword(gridProps.gridColumnEnd) && gridProps.gridColumnEnd.value === 'auto') {
+            gridProps.gridColumnEnd = gridPositionValue(bounds.column + bounds.width)
+          }
         }
       }
       if (closestVertical != null) {
         if (interactionSession.activeControl.edge === 'row-end') {
-          gridProps.gridRowEnd = gridPositionValue(closestVertical)
+          gridProps.gridRowEnd = gridPositionValue(Math.max(bounds.row + 1, closestVertical))
+          if (isCSSKeyword(gridProps.gridRowStart) && gridProps.gridRowStart.value === 'auto') {
+            gridProps.gridRowStart = gridPositionValue(bounds.row)
+          }
         } else if (interactionSession.activeControl.edge === 'row-start') {
-          gridProps.gridRowStart = gridPositionValue(closestVertical)
+          gridProps.gridRowStart = gridPositionValue(
+            Math.min(bounds.row + bounds.height - 1, closestVertical),
+          )
+          if (isCSSKeyword(gridProps.gridRowEnd) && gridProps.gridRowEnd.value === 'auto') {
+            gridProps.gridRowEnd = gridPositionValue(bounds.row + bounds.height)
+          }
         }
       }
 
