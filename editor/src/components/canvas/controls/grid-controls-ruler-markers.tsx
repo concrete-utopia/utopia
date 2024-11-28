@@ -11,7 +11,7 @@ import type {
   GridPositionOrSpan,
 } from '../../../core/shared/element-template'
 import { isGridPositionValue, isGridSpan } from '../../../core/shared/element-template'
-import type { CanvasRectangle } from '../../../core/shared/math-utils'
+import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import { canvasRectangle, offsetPoint, windowPoint } from '../../../core/shared/math-utils'
 import { Modifier } from '../../../utils/modifiers'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -357,6 +357,7 @@ export const RulerMarkers = React.memo((props: { path: ElementPath }) => {
         containerSize={markers.gridRect.width}
         onMouseDown={onMouseDownMarker('row-end')}
       />
+
       {/* Offset lines */}
       <GridCellOffsetLine
         top={markers.columnStart.top}
@@ -382,6 +383,7 @@ export const RulerMarkers = React.memo((props: { path: ElementPath }) => {
         size={markers.cellRect.x - markers.gridRect.x}
         orientation='horizontal'
       />
+
       {/* Cell outline */}
       <GridCellOutline
         top={markers.cellRect.y}
@@ -389,6 +391,7 @@ export const RulerMarkers = React.memo((props: { path: ElementPath }) => {
         width={markers.cellRect.width + 1}
         height={markers.cellRect.height + 1}
       />
+
       {/* Snap line during resize */}
       <SnapLine
         gridTemplate={markers.parentGrid}
@@ -398,10 +401,47 @@ export const RulerMarkers = React.memo((props: { path: ElementPath }) => {
         markers={markers}
         frozenMarkers={frozenMarkers}
       />
+
+      {/* Offset line during resize, following the mouse */}
+      <ResizeOffsetLine
+        edge={resizeControlRef.current?.edge ?? null}
+        drag={dragRef.current}
+        container={markers.gridRect}
+      />
     </React.Fragment>
   )
 })
 RulerMarkers.displayName = 'RulerMarkers'
+
+const ResizeOffsetLine = React.memo(
+  (props: {
+    edge: GridResizeEdge | null
+    drag: CanvasPoint | null
+    container: CanvasRectangle
+  }) => {
+    const colorTheme = useColorTheme()
+
+    if (props.edge == null || props.drag == null) {
+      return null
+    }
+    const isColumn = props.edge === 'column-start' || props.edge === 'column-end'
+
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          width: isColumn ? 1 : props.container.width,
+          height: !isColumn ? 1 : props.container.height,
+          top: isColumn ? props.container.y : props.drag.y,
+          left: !isColumn ? props.container.x : props.drag.x,
+          borderLeft: isColumn ? `1px dashed ${colorTheme.primary.value}` : undefined,
+          borderTop: !isColumn ? `1px dashed ${colorTheme.primary.value}` : undefined,
+        }}
+      />
+    )
+  },
+)
+ResizeOffsetLine.displayName = 'LiveOffsetLine'
 
 const SnapLine = React.memo(
   (props: {
