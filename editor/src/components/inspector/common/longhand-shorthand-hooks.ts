@@ -143,7 +143,7 @@ export function useInspectorInfoLonghandShorthand<
     const elementPropKeys = useGetElementPropertyKeys(pathMappingFn, [longhand, shorthand])
     const orderedPropKeys = elementPropKeys.map((propertyKeys) => {
       const stylePropertyKeys = propertyKeys.filter((p) => isStyleInfoKey(p))
-      // if there are fewere style property keys than property keys, there are
+      // if there are fewer style property keys than property keys, there are
       // some property keys that aren't style property keys. If this is the
       // case, return the original property key array, since the plugins can
       // only tell the order of known style property keys

@@ -67,37 +67,30 @@ const TailwindPropertyMapping: Record<string, string> = {
   zIndex: 'zIndex',
 }
 
-/**
- * This is an object so that exhaustiveness over `keyof StyleInfo` is
- * guaranteed. JS objects keep the order of keys in the order they were inserted
- * in, and because of this, we can get a correctly ordered list from this by
- * calling `Object.keys`
- */
-const TailwindPropertyDefaultValues: Record<keyof StyleInfo, 0> = {
-  gap: 0,
-  flexDirection: 0,
-  left: 0,
-  right: 0,
-  top: 0,
-  bottom: 0,
-  width: 0,
-  height: 0,
-  flexBasis: 0,
-  padding: 0,
-  paddingTop: 0,
-  paddingRight: 0,
-  paddingBottom: 0,
-  paddingLeft: 0,
-  borderRadius: 0,
-  borderTopLeftRadius: 0,
-  borderTopRightRadius: 0,
-  borderBottomRightRadius: 0,
-  borderBottomLeftRadius: 0,
-  zIndex: 0,
-  flexWrap: 0,
-  overflow: 0,
+const OrderedTailwindProperties: Record<keyof StyleInfo, number> = {
+  gap: 1,
+  flexDirection: 2,
+  left: 3,
+  right: 4,
+  top: 5,
+  bottom: 6,
+  width: 7,
+  height: 8,
+  flexBasis: 9,
+  padding: 10,
+  paddingTop: 11,
+  paddingRight: 12,
+  paddingBottom: 13,
+  paddingLeft: 14,
+  borderRadius: 15,
+  borderTopLeftRadius: 16,
+  borderTopRightRadius: 17,
+  borderBottomRightRadius: 18,
+  borderBottomLeftRadius: 19,
+  zIndex: 20,
+  flexWrap: 21,
+  overflow: 22,
 }
-const OrderedTailwindProperties: Array<keyof StyleInfo> = objectKeys(TailwindPropertyDefaultValues)
 
 function isSupportedTailwindProperty(prop: unknown): prop is keyof typeof TailwindPropertyMapping {
   return typeof prop === 'string' && prop in TailwindPropertyMapping
@@ -221,9 +214,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
       }
     },
   getOrderedStylePropertyKeys: (properties) => {
-    return properties.sort(
-      (a, b) => OrderedTailwindProperties.indexOf(a) - OrderedTailwindProperties.indexOf(b),
-    )
+    return properties.sort((a, b) => OrderedTailwindProperties[a] - OrderedTailwindProperties[b])
   },
   updateStyles: (editorState, elementPath, updates) => {
     const propsToDelete = mapDropNulls(
