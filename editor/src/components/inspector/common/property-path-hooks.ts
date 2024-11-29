@@ -46,7 +46,7 @@ import {
 } from '../../../components/inspector/common/css-utils'
 import type { StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { isHTMLComponent, isUtopiaAPIComponent } from '../../../core/model/project-file-utils'
-import { stripNulls } from '../../../core/shared/array-utils'
+import { mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import type { Either } from '../../../core/shared/either'
 import { eitherToMaybe, flatMapEither, isRight, left, right } from '../../../core/shared/either'
 import type {
@@ -93,9 +93,9 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { eitherRight, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { getActivePlugin } from '../../canvas/plugins/style-plugins'
-import { isStyleInfoKey, type StyleInfo } from '../../canvas/canvas-types'
+import type { StyleInfo } from '../../canvas/canvas-types'
 import { assertNever } from '../../../core/shared/utils'
-import { maybeCssPropertyFromInlineStyle } from '../../canvas/commands/utils/property-utils'
+import { maybeStyleInfoKeyFromPropertyPath } from '../../canvas/commands/utils/property-utils'
 
 export interface InspectorPropsContextData {
   selectedViews: Array<ElementPath>
@@ -748,14 +748,6 @@ const getModifiableAttributeResultToExpressionOptic = eitherRight<
   ModifiableAttribute
 >().compose(fromTypeGuard(isRegularJSXAttribute))
 
-function maybeStyleInfoKeyFromPropertyPath(propertyPath: PropertyPath): keyof StyleInfo | null {
-  const maybeCSSProp = maybeCssPropertyFromInlineStyle(propertyPath)
-  if (maybeCSSProp == null || !isStyleInfoKey(maybeCSSProp)) {
-    return null
-  }
-  return maybeCSSProp
-}
-
 export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
   pathMappingFn: PathMappingFn<P>,
   propKeys: P[],
@@ -1229,23 +1221,51 @@ export function useRefSelectedViews(): ReadonlyRef<ElementPath[]> {
   return selectedViewsRef
 }
 
-export function useGetElementPropertyKeys<P>(
+export function useGetOrderedPropertyKeys<P>(
   pathMappingFn: PathMappingFn<P>,
   propKeys: Readonly<Array<P>>,
 ): Array<Array<P>> {
+  const stylePluginRef = useRefEditorState((store) => getActivePlugin(store.editor))
+
+  const targetPath = useContextSelector(
+    InspectorPropsContext,
+    (contextData) => contextData.targetPath,
+  )
+
+  const getPropertyKeys = React.useCallback(
+    (props: JSXAttributes) => {
+      return stripNulls(
+        getAllPathsFromAttributes(props).map((path) =>
+          propKeys.find((propKey) => PP.pathsEqual(path, pathMappingFn(propKey, targetPath))),
+        ),
+      )
+    },
+    [pathMappingFn, propKeys, targetPath],
+  )
+
   return useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
       (contextData) => {
-        return contextData.editedMultiSelectedProps.map((props) =>
-          stripNulls(
-            getAllPathsFromAttributes(props).map((path) =>
-              propKeys.find((propKey) =>
-                PP.pathsEqual(path, pathMappingFn(propKey, contextData.targetPath)),
-              ),
-            ),
-          ),
-        )
+        const stylePropertyKeys = mapDropNulls((propKey) => {
+          const path = pathMappingFn(propKey, targetPath)
+          const styleInfoKey = maybeStyleInfoKeyFromPropertyPath(path)
+          return styleInfoKey == null ? null : (propKey as keyof StyleInfo & P)
+        }, propKeys)
+
+        return contextData.editedMultiSelectedProps.map((props) => {
+          // if there are fewer style property keys than property keys, there are
+          // some property keys that aren't style property keys. If this is the
+          // case, return the original property key array, since the plugins can
+          // only tell the order of known style property keys
+          if (stylePropertyKeys.length < propKeys.length) {
+            return getPropertyKeys(props)
+          }
+          return stylePluginRef.current.getOrderedStylePropertyKeysFromElementProps(
+            props,
+            stylePropertyKeys,
+          )
+        })
       },
       deepEqual,
     ),

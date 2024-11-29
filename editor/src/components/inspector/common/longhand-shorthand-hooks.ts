@@ -12,7 +12,6 @@ import {
   unsetProperty,
 } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { useRefEditorState } from '../../editor/store/store-hook'
 import type { PropertyStatus } from './control-status'
 import { getControlStatusFromPropertyStatus } from './control-status'
 import { getControlStyles } from './control-styles'
@@ -22,12 +21,10 @@ import type { ReadonlyRef } from './inspector-utils'
 import type { InspectorInfo, PathMappingFn } from './property-path-hooks'
 import {
   InspectorPropsContext,
-  useGetElementPropertyKeys,
+  useGetOrderedPropertyKeys,
   useInspectorContext,
   useInspectorInfo,
 } from './property-path-hooks'
-import { getActivePlugin } from '../../canvas/plugins/style-plugins'
-import { isStyleInfoKey } from '../../canvas/canvas-types'
 
 function getShadowedLonghandShorthandValue<
   LonghandKey extends ParsedPropertiesKeys,
@@ -122,9 +119,8 @@ export function useInspectorInfoLonghandShorthand<
     },
     pathMappingFn,
   )
-  const stylePluginRef = useRefEditorState((store) => getActivePlugin(store.editor))
 
-  const allOrderedPropKeys = useGetElementPropertyKeys(pathMappingFn, [...longhands, shorthand])
+  const allOrderedPropKeys = useGetOrderedPropertyKeys(pathMappingFn, [...longhands, shorthand])
 
   const longhandResults = longhands.map((longhand) => {
     // we follow the Rules of Hooks because we know that the length of the longhands array is stable during the lifecycle of this hook
@@ -140,19 +136,7 @@ export function useInspectorInfoLonghandShorthand<
 
     // we follow the Rules of Hooks because we know that the length of the longhands array is stable during the lifecycle of this hook
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const elementPropKeys = useGetElementPropertyKeys(pathMappingFn, [longhand, shorthand])
-    const orderedPropKeys = elementPropKeys.map((propertyKeys) => {
-      const stylePropertyKeys = propertyKeys.filter((p) => isStyleInfoKey(p))
-      // if there are fewer style property keys than property keys, there are
-      // some property keys that aren't style property keys. If this is the
-      // case, return the original property key array, since the plugins can
-      // only tell the order of known style property keys
-      if (stylePropertyKeys.length < propertyKeys.length) {
-        return propertyKeys
-      }
-
-      return stylePluginRef.current.getOrderedStylePropertyKeys(stylePropertyKeys)
-    })
+    const orderedPropKeys = useGetOrderedPropertyKeys(pathMappingFn, [longhand, shorthand])
 
     const { value, propertyStatus } = getShadowedLonghandShorthandValue(
       longhand,

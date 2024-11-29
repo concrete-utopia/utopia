@@ -122,8 +122,15 @@ export const InlineStylePlugin: StylePlugin = {
         overflow: overflow,
       }
     },
-  getOrderedStylePropertyKeys: (props) => {
-    return props
+  getOrderedStylePropertyKeysFromElementProps: <T extends keyof StyleInfo>(
+    properties: JSXAttributes,
+    props: Array<T>,
+  ): Array<T> => {
+    return stripNulls(
+      getAllPathsFromAttributes(properties).map((path) =>
+        props.find((propKey) => PP.pathsEqual(path, PP.create('style', propKey))),
+      ),
+    )
   },
   updateStyles: (editorState, elementPath, updates) => {
     const propsToDelete = mapDropNulls(

@@ -7,7 +7,7 @@ import { modifyUnderlyingElementForOpenFile } from '../../../editor/store/editor
 import { patchParseSuccessAtElementPath } from '../patch-utils'
 import type { CSSNumber } from '../../../inspector/common/css-utils'
 import { isCSSNumber } from '../../../inspector/common/css-utils'
-import type { StyleInfo } from '../../canvas-types'
+import { isStyleInfoKey, type StyleInfo } from '../../canvas-types'
 
 export interface EditorStateWithPatch {
   editorStateWithChanges: EditorState
@@ -101,6 +101,16 @@ export function maybeCssPropertyFromInlineStyle(property: PropertyPath): string 
     return null
   }
   return prop
+}
+
+export function maybeStyleInfoKeyFromPropertyPath(
+  propertyPath: PropertyPath,
+): keyof StyleInfo | null {
+  const maybeCSSProp = maybeCssPropertyFromInlineStyle(propertyPath)
+  if (maybeCSSProp == null || !isStyleInfoKey(maybeCSSProp)) {
+    return null
+  }
+  return maybeCSSProp
 }
 
 export type GetCSSNumberFromStyleInfoResult =

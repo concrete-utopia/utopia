@@ -213,8 +213,14 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         overflow: parseTailwindProperty(mapping[TailwindPropertyMapping.overflow], 'overflow'),
       }
     },
-  getOrderedStylePropertyKeys: (properties) => {
-    return properties.sort((a, b) => OrderedTailwindProperties[a] - OrderedTailwindProperties[b])
+  getOrderedStylePropertyKeysFromElementProps: (props, properties) => {
+    return mapDropNulls((prop) => {
+      const property = TailwindPlugin(config).readStyleFromElementProps(props, prop)
+      if (property == null || property.type === 'not-found') {
+        return null
+      }
+      return prop
+    }, properties).sort((a, b) => OrderedTailwindProperties[a] - OrderedTailwindProperties[b])
   },
   updateStyles: (editorState, elementPath, updates) => {
     const propsToDelete = mapDropNulls(
