@@ -1,6 +1,10 @@
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import {
+  getSimpleAttributeAtPath,
+  MetadataUtils,
+} from '../../../../core/model/element-metadata-utils'
+import { defaultEither, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { nullIfInfinity } from '../../../../core/shared/math-utils'
+import { nullIfInfinity, rectanglesEqual } from '../../../../core/shared/math-utils'
 import { CSSCursor } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
 import { highlightElementsCommand } from '../../commands/highlight-element-command'

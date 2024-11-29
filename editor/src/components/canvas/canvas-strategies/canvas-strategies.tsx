@@ -682,8 +682,8 @@ export function combineApplicableControls(
   let gridControlsTargets: Map<WhenToShowControl, Array<GridIdentifier>> = new Map()
   for (const control of gridControlsInstances) {
     if (isGridControlsProps(control.props)) {
-      let possibleTargets: GridIdentifier[] = [...(gridControlsTargets.get(control.show) ?? [])]
-      if (possibleTargets.length === 0) {
+      let possibleTargets = gridControlsTargets.get(control.show)
+      if (possibleTargets == null) {
         gridControlsTargets.set(control.show, control.props.targets)
       } else {
         possibleTargets.push(...control.props.targets)
