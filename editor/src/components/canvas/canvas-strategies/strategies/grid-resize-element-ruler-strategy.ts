@@ -60,10 +60,6 @@ export const gridResizeElementRulerStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  if (interactionSession?.activeControl.type !== 'GRID_RESIZE_RULER_HANDLE') {
-    return null
-  }
-
   return {
     id: 'GRID-CELL-RESIZE-RULER-STRATEGY',
     name: 'Resize Grid Cell (ruler)',

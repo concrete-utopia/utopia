@@ -204,12 +204,10 @@ export const RulerMarkers = React.memo((props: RulerMarkersProps) => {
   const gridRect: CanvasRectangle | null = useEditorState(
     Substores.metadata,
     (store) => {
-      const originalGrid = findOriginalGrid(store.editor.jsxMetadata, EP.parentPath(props.path))
-      if (originalGrid == null) {
-        return null
-      }
-
-      return MetadataUtils.getFrameOrZeroRectInCanvasCoords(originalGrid, store.editor.jsxMetadata)
+      return (
+        MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, props.path)
+          ?.specialSizeMeasurements.parentGridFrame ?? null
+      )
     },
     'RulerMarkers gridRect',
   )
@@ -255,11 +253,6 @@ export const RulerMarkers = React.memo((props: RulerMarkersProps) => {
       }
 
       const parentGrid = elementMetadata.specialSizeMeasurements.parentContainerGridProperties
-
-      const originalGrid = findOriginalGrid(store.editor.jsxMetadata, EP.parentPath(props.path))
-      if (originalGrid == null) {
-        return null
-      }
 
       const cellBounds = getGridChildCellCoordBoundsFromCanvas(
         elementMetadata,

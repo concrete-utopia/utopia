@@ -2852,6 +2852,7 @@ export interface SpecialSizeMeasurements {
   gridCellGlobalFrames: GridCellGlobalFrames | null
   parentGridCellGlobalFrames: GridCellGlobalFrames | null
   borderWidths: BorderWidths
+  parentGridFrame: CanvasRectangle | null
 }
 
 export function specialSizeMeasurements(
@@ -2911,6 +2912,7 @@ export function specialSizeMeasurements(
   justifySelf: SelfAlignment | null,
   alignSelf: SelfAlignment | null,
   borderWidths: BorderWidths,
+  parentGridFrame: CanvasRectangle | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -2969,6 +2971,7 @@ export function specialSizeMeasurements(
     justifySelf,
     alignSelf,
     borderWidths,
+    parentGridFrame,
   }
 }
 
@@ -3071,6 +3074,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     right: 0,
     bottom: 0,
   },
+  null,
 )
 
 export function walkElement(

@@ -2500,6 +2500,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.justifySelf,
         newSize.alignSelf,
         newSize.borderWidths,
+        newSize.parentGridFrame,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
