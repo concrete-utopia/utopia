@@ -92,6 +92,7 @@ import type { EditorAction } from '../../editor/action-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { eitherRight, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { modify } from '../../../core/shared/optics/optic-utilities'
+import type { StylePlugin } from '../../canvas/plugins/style-plugins'
 import { getActivePlugin } from '../../canvas/plugins/style-plugins'
 import type { StyleInfo } from '../../canvas/canvas-types'
 import { assertNever } from '../../../core/shared/utils'
@@ -1224,9 +1225,8 @@ export function useRefSelectedViews(): ReadonlyRef<ElementPath[]> {
 export function useGetOrderedPropertyKeys<P>(
   pathMappingFn: PathMappingFn<P>,
   propKeys: Readonly<Array<P>>,
+  stylePlugin: StylePlugin,
 ): Array<Array<P>> {
-  const stylePluginRef = useRefEditorState((store) => getActivePlugin(store.editor))
-
   const targetPath = useContextSelector(
     InspectorPropsContext,
     (contextData) => contextData.targetPath,
@@ -1261,10 +1261,7 @@ export function useGetOrderedPropertyKeys<P>(
           if (stylePropertyKeys.length < propKeys.length) {
             return getPropertyKeys(props)
           }
-          return stylePluginRef.current.getOrderedStylePropertyKeysFromElementProps(
-            props,
-            stylePropertyKeys,
-          )
+          return stylePlugin.getOrderedStylePropertyKeysFromElementProps(props, stylePropertyKeys)
         })
       },
       deepEqual,
