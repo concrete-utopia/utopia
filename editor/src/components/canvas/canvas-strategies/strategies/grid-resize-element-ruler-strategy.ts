@@ -6,7 +6,6 @@ import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../cor
 import { canvasRectangle, isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { gridContainerIdentifier, gridItemIdentifier } from '../../../editor/store/editor-state'
 import { isCSSKeyword } from '../../../inspector/common/css-utils'
-import { isFillOrStretchModeAppliedOnAnySide } from '../../../inspector/inspector-common'
 import {
   controlsForGridPlaceholders,
   GridResizeControls,
@@ -53,10 +52,6 @@ export const gridResizeElementRulerStrategy: CanvasStrategyFactory = (
     canvasState.startingMetadata,
   )
   if (selectedElementBounds == null || isInfinityRectangle(selectedElementBounds)) {
-    return null
-  }
-
-  if (!isFillOrStretchModeAppliedOnAnySide(canvasState.startingMetadata, selectedElement)) {
     return null
   }
 

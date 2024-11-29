@@ -25,11 +25,7 @@ import { useColorTheme } from '../../../uuiui'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { getGridChildCellCoordBoundsFromCanvas } from '../canvas-strategies/strategies/grid-cell-bounds'
 import type { GridCellGlobalFrames } from '../canvas-strategies/strategies/grid-helpers'
-import {
-  printPin,
-  findOriginalGrid,
-  isAutoGridPin,
-} from '../canvas-strategies/strategies/grid-helpers'
+import { printPin, isAutoGridPin } from '../canvas-strategies/strategies/grid-helpers'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Modifier } from '../../../utils/modifiers'
@@ -441,6 +437,7 @@ export const RulerMarkers = React.memo((props: RulerMarkersProps) => {
       setShowExtraMarkers(null)
       setFrozenMarkers(null)
       props.setShowGridCellOutlines(false)
+
       window.removeEventListener('mouseup', markerMouseUp)
     },
     [props],
@@ -450,13 +447,13 @@ export const RulerMarkers = React.memo((props: RulerMarkersProps) => {
     (edge: GridResizeEdge) => (event: React.MouseEvent) => {
       event.preventDefault()
       event.stopPropagation()
+
       setShowExtraMarkers('row')
       props.setShowGridCellOutlines(true)
-      window.addEventListener('mouseup', markerMouseUp)
-
       setFrozenMarkers(rulerMarkerData)
-
       startResizeInteraction(EP.toUid(props.path), edge)(event)
+
+      window.addEventListener('mouseup', markerMouseUp)
     },
     [markerMouseUp, props, startResizeInteraction, rulerMarkerData],
   )
@@ -465,13 +462,13 @@ export const RulerMarkers = React.memo((props: RulerMarkersProps) => {
     (edge: GridResizeEdge) => (event: React.MouseEvent) => {
       event.preventDefault()
       event.stopPropagation()
+
       setShowExtraMarkers('column')
       props.setShowGridCellOutlines(true)
-      window.addEventListener('mouseup', markerMouseUp)
-
       setFrozenMarkers(rulerMarkerData)
-
       startResizeInteraction(EP.toUid(props.path), edge)(event)
+
+      window.addEventListener('mouseup', markerMouseUp)
     },
     [markerMouseUp, props, startResizeInteraction, rulerMarkerData],
   )
