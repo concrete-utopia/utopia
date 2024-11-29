@@ -1229,7 +1229,7 @@ export function useRefSelectedViews(): ReadonlyRef<ElementPath[]> {
   return selectedViewsRef
 }
 
-export function useGetOrderedPropertyKeys<P>(
+export function useGetElementPropertyKeys<P>(
   pathMappingFn: PathMappingFn<P>,
   propKeys: Readonly<Array<P>>,
 ): Array<Array<P>> {

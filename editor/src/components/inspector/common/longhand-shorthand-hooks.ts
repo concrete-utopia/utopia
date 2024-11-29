@@ -1,11 +1,7 @@
 import deepEqual from 'fast-deep-equal'
 import { useContextSelector } from 'use-context-selector'
 import { flatMapArray, last, mapArrayToDictionary } from '../../../core/shared/array-utils'
-import {
-  emptyComments,
-  isJSXElement,
-  jsExpressionValue,
-} from '../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import { objectMap } from '../../../core/shared/object-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { arrayEqualsByReference, NO_OP } from '../../../core/shared/utils'
@@ -16,7 +12,7 @@ import {
   unsetProperty,
 } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { useRefEditorState } from '../../editor/store/store-hook'
 import type { PropertyStatus } from './control-status'
 import { getControlStatusFromPropertyStatus } from './control-status'
 import { getControlStyles } from './control-styles'
@@ -26,14 +22,12 @@ import type { ReadonlyRef } from './inspector-utils'
 import type { InspectorInfo, PathMappingFn } from './property-path-hooks'
 import {
   InspectorPropsContext,
-  ParsedValues,
-  useGetOrderedPropertyKeys,
+  useGetElementPropertyKeys,
   useInspectorContext,
   useInspectorInfo,
 } from './property-path-hooks'
 import { getActivePlugin } from '../../canvas/plugins/style-plugins'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isLeft, isRight } from '../../../core/shared/either'
+import { isStyleInfoKey } from '../../canvas/canvas-types'
 
 function getShadowedLonghandShorthandValue<
   LonghandKey extends ParsedPropertiesKeys,
@@ -120,13 +114,6 @@ export function useInspectorInfoLonghandShorthand<
   )
   const { selectedViewsRef } = useInspectorContext()
 
-  const selectedElements = useEditorState(
-    Substores.metadata,
-    (store) =>
-      MetadataUtils.findElementsByElementPath(store.editor.jsxMetadata, selectedViewsRef.current),
-    'useInspectorInfoLonghandShorthand selectedElements',
-  )
-
   const shorthandInfo = useInspectorInfo(
     [shorthand],
     (v) => v[shorthand],
@@ -137,15 +124,7 @@ export function useInspectorInfoLonghandShorthand<
   )
   const stylePluginRef = useRefEditorState((store) => getActivePlugin(store.editor))
 
-  const allOrderedPropKeys = selectedElements.map((element) =>
-    stylePluginRef.current
-      .getOrderedPropertyKeys(
-        isRight(element.element) && isJSXElement(element.element.value)
-          ? element.element.value.props
-          : [],
-      )
-      .filter((key): key is LonghandKey | ShorthandKey => key in longhands || key === shorthand),
-  )
+  const allOrderedPropKeys = useGetElementPropertyKeys(pathMappingFn, [...longhands, shorthand])
 
   const longhandResults = longhands.map((longhand) => {
     // we follow the Rules of Hooks because we know that the length of the longhands array is stable during the lifecycle of this hook
@@ -159,19 +138,21 @@ export function useInspectorInfoLonghandShorthand<
       pathMappingFn,
     )
 
-    const orderedPropKeys = selectedElements.map((element) =>
-      stylePluginRef.current
-        .getOrderedPropertyKeys(
-          isRight(element.element) && isJSXElement(element.element.value)
-            ? element.element.value.props
-            : [],
-        )
-        .filter((key): key is LonghandKey | ShorthandKey => key === longhand || key === shorthand),
-    )
-
     // we follow the Rules of Hooks because we know that the length of the longhands array is stable during the lifecycle of this hook
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    // const orderedPropKeys = useGetOrderedPropertyKeys(pathMappingFn, [longhand, shorthand])
+    const elementPropKeys = useGetElementPropertyKeys(pathMappingFn, [longhand, shorthand])
+    const orderedPropKeys = elementPropKeys.map((propertyKeys) => {
+      const stylePropertyKeys = propertyKeys.filter((p) => isStyleInfoKey(p))
+      // if there are fewere style property keys than property keys, there are
+      // some property keys that aren't style property keys. If this is the
+      // case, return the original property key array, since the plugins can
+      // only tell the order of known style property keys
+      if (stylePropertyKeys.length < propertyKeys.length) {
+        return propertyKeys
+      }
+
+      return stylePluginRef.current.getOrderedStylePropertyKeys(stylePropertyKeys)
+    })
 
     const { value, propertyStatus } = getShadowedLonghandShorthandValue(
       longhand,

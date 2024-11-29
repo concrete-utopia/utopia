@@ -48,7 +48,7 @@ import {
   InspectorPropsContext,
   stylePropPathMappingFn,
   useCallbackFactory,
-  useGetOrderedPropertyKeys,
+  useGetElementPropertyKeys,
   useInspectorInfo,
   useInspectorStyleInfo,
 } from './property-path-hooks'
@@ -1029,7 +1029,7 @@ describe('useGetOrderedPropertyKeys', () => {
     )
 
     const { result } = renderHook(
-      () => useGetOrderedPropertyKeys<P>(stylePropPathMappingFn, propsKeys),
+      () => useGetElementPropertyKeys<P>(stylePropPathMappingFn, propsKeys),
       {
         wrapper: contextProvider,
       },
