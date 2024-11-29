@@ -71,6 +71,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { gridChangeElementLocationStrategy } from './strategies/grid-change-element-location-strategy'
 import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
+import { gridResizeElementRulerStrategy } from './strategies/grid-resize-element-ruler-strategy'
 import { gridChangeElementLocationDuplicateStrategy } from './strategies/grid-change-element-location-duplicate-strategy'
 import { setGridGapStrategy } from './strategies/set-grid-gap-strategy'
 import type { CanvasCommand } from '../commands/commands'
@@ -90,7 +91,6 @@ import {
 } from '../controls/grid-controls-for-strategies'
 import { gridReorderStrategy } from './strategies/grid-reorder-strategy'
 import { gridMoveAbsoluteStrategy } from './strategies/grid-move-absolute'
-import { gridResizeElementRulerStrategy } from './strategies/grid-resize-element-ruler-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
