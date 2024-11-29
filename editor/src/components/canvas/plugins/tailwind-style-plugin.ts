@@ -66,30 +66,37 @@ const TailwindPropertyMapping: Record<string, string> = {
   zIndex: 'zIndex',
 }
 
-const OrderedTailwindProperties: Array<keyof StyleInfo> = [
-  'gap',
-  'flexDirection',
-  'left',
-  'right',
-  'top',
-  'bottom',
-  'width',
-  'height',
-  'flexBasis',
-  'padding',
-  'paddingTop',
-  'paddingRight',
-  'paddingBottom',
-  'paddingLeft',
-  'borderRadius',
-  'borderTopLeftRadius',
-  'borderTopRightRadius',
-  'borderBottomRightRadius',
-  'borderBottomLeftRadius',
-  'zIndex',
-  'flexWrap',
-  'overflow',
-]
+/**
+ * This is an object so that exhaustiveness over `keyof StyleInfo` is
+ * guaranteed. JS objects keep the order of keys in the order they were inserted
+ * in, and because of this, we can get a correctly ordered list from this by
+ * calling `Object.keys`
+ */
+const TailwindPropertyDefaultValues: Record<keyof StyleInfo, 0> = {
+  gap: 0,
+  flexDirection: 0,
+  left: 0,
+  right: 0,
+  top: 0,
+  bottom: 0,
+  width: 0,
+  height: 0,
+  flexBasis: 0,
+  padding: 0,
+  paddingTop: 0,
+  paddingRight: 0,
+  paddingBottom: 0,
+  paddingLeft: 0,
+  borderRadius: 0,
+  borderTopLeftRadius: 0,
+  borderTopRightRadius: 0,
+  borderBottomRightRadius: 0,
+  borderBottomLeftRadius: 0,
+  zIndex: 0,
+  flexWrap: 0,
+  overflow: 0,
+}
+const OrderedTailwindProperties = Object.keys(TailwindPropertyDefaultValues)
 
 function isSupportedTailwindProperty(prop: unknown): prop is keyof typeof TailwindPropertyMapping {
   return typeof prop === 'string' && prop in TailwindPropertyMapping
