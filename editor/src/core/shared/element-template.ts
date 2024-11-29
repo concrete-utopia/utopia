@@ -2661,6 +2661,11 @@ export function gridPositionValue(numericalPosition: number | null): GridPositio
   }
 }
 
+export function isGridPositionValue(p: GridPositionOrSpan): p is GridPositionValue {
+  const maybe = p as GridPositionValue
+  return p != null && typeof p === 'object' && maybe.numericalPosition !== undefined
+}
+
 export const validGridPositionKeywords = ['auto']
 
 export type ValidGridPositionKeyword = string // using <string> because valid keywords are also line names we cannot know in advance

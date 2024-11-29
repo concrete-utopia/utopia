@@ -90,6 +90,7 @@ import {
 } from '../controls/grid-controls-for-strategies'
 import { gridReorderStrategy } from './strategies/grid-reorder-strategy'
 import { gridMoveAbsoluteStrategy } from './strategies/grid-move-absolute'
+import { gridResizeElementRulerStrategy } from './strategies/grid-resize-element-ruler-strategy'
 
 export type CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -141,6 +142,7 @@ const resizeStrategies: MetaCanvasStrategy = (
       basicResizeStrategy,
       resizeGridStrategy,
       gridResizeElementStrategy,
+      gridResizeElementRulerStrategy,
     ],
   )
 }
@@ -680,8 +682,8 @@ export function combineApplicableControls(
   let gridControlsTargets: Map<WhenToShowControl, Array<GridIdentifier>> = new Map()
   for (const control of gridControlsInstances) {
     if (isGridControlsProps(control.props)) {
-      const possibleTargets = gridControlsTargets.get(control.show)
-      if (possibleTargets == null) {
+      let possibleTargets: GridIdentifier[] = [...(gridControlsTargets.get(control.show) ?? [])]
+      if (possibleTargets.length === 0) {
         gridControlsTargets.set(control.show, control.props.targets)
       } else {
         possibleTargets.push(...control.props.targets)
