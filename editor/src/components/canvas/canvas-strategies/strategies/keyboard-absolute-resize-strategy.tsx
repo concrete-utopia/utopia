@@ -44,6 +44,7 @@ import type { ElementInstanceMetadataMap } from '../../../../core/shared/element
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { StrategySizeLabel } from '../../controls/select-mode/size-label'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -165,6 +166,13 @@ export function keyboardAbsoluteResizeStrategy(
         control: AbsoluteResizeControl,
         props: { targets: selectedElements, pathsWereReplaced: pathsWereReplaced },
         key: 'absolute-resize-control',
+        show: 'visible-except-when-other-strategy-is-active',
+        priority: 'top',
+      }),
+      controlWithProps({
+        control: StrategySizeLabel,
+        props: { targets: selectedElements, pathsWereReplaced: pathsWereReplaced },
+        key: 'size-label',
         show: 'visible-except-when-other-strategy-is-active',
         priority: 'top',
       }),

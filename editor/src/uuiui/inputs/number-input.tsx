@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
-import type { Interpolation } from '@emotion/react'
+import type { Interpolation, Theme } from '@emotion/react'
 import { jsx } from '@emotion/react'
 import type { MouseEventHandler } from 'react'
 import React from 'react'
@@ -747,30 +747,32 @@ export const NumberInput = React.memo<NumberInputProps>(
         </div>
         <div
           className='number-input-container'
-          css={{
-            color: controlStyles.mainColor,
-            zIndex: isFocused ? 3 : undefined,
-            position: 'relative',
-            borderRadius: UtopiaTheme.inputBorderRadius,
-            display: 'flex',
-            flexDirection: 'row',
-            gap: 5,
-            alignItems: 'center',
-            boxShadow: 'inset 0px 0px 0px 1px transparent',
-            ...chainedStyles,
-            '&:hover': {
-              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
-            },
-            '&:focus-within': {
-              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
-            },
-            '&:hover input': {
+          css={
+            {
               color: controlStyles.mainColor,
-            },
-            '&:focus-within input': {
-              color: controlStyles.mainColor,
-            },
-          }}
+              zIndex: isFocused ? 3 : undefined,
+              position: 'relative',
+              borderRadius: UtopiaTheme.inputBorderRadius,
+              display: 'flex',
+              flexDirection: 'row',
+              gap: 5,
+              alignItems: 'center',
+              boxShadow: 'inset 0px 0px 0px 1px transparent',
+              ...chainedStyles,
+              '&:hover': {
+                boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
+              },
+              '&:focus-within': {
+                boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
+              },
+              '&:hover input': {
+                color: controlStyles.mainColor,
+              },
+              '&:focus-within input': {
+                color: controlStyles.mainColor,
+              },
+            } as Interpolation<Theme>
+          }
         >
           {incrementControls && !disabled ? (
             <div

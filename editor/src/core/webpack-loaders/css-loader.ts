@@ -1,4 +1,4 @@
-import { rescopeCSSToTargetCanvasOnly } from '../shared/css-utils'
+import { convertCssToUtopia } from '../shared/css-utils'
 import type { LoadModule, MatchFile, ModuleLoader } from './loader-types'
 import { loadModuleResult } from './loader-types'
 
@@ -9,7 +9,7 @@ const matchFile: MatchFile = (filename: string) => {
 }
 
 const loadModule: LoadModule = (filename: string, contents: string) => {
-  const canvasScopedCSS = rescopeCSSToTargetCanvasOnly(contents)
+  const canvasScopedCSS = convertCssToUtopia(contents)
 
   const loadedContents = `
     Object.defineProperty(module, 'exports', {
