@@ -889,6 +889,12 @@ const SnapLine = React.memo(
 
     const axis = props.edge === 'column-end' || props.edge === 'column-start' ? 'column' : 'row'
 
+    const canvasScale = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.scale,
+      'SnapLine canvasScale',
+    )
+
     if (
       props.edge == null ||
       targetMarker == null ||
@@ -900,6 +906,9 @@ const SnapLine = React.memo(
     }
 
     const showLabel = !gridPositionOrSpanEquals(targetMarker.position, targetFrozenMarker.position)
+
+    const labelWidth = 50
+    const labelHeight = 20
 
     const isColumn = props.edge === 'column-start' || props.edge === 'column-end'
     return (
@@ -922,12 +931,14 @@ const SnapLine = React.memo(
           <div
             style={{
               position: 'absolute',
-              top: axis === 'column' ? -32 : -10,
-              left: axis === 'row' ? -(50 + 20) : 0,
+              top: axis === 'column' ? -labelHeight - RulerMarkerIconSize - 5 : -10,
+              left: axis === 'row' ? -(labelWidth - RulerMarkerIconSize + 30) : 0,
               color: colorTheme.brandNeonPink.value,
               fontWeight: 700,
               textAlign: axis === 'row' ? 'right' : undefined,
-              width: 50,
+              width: labelWidth,
+              height: labelHeight,
+              zoom: 1 / canvasScale,
             }}
           >
             {printPin(props.gridTemplate, targetMarker.position, axis)}
