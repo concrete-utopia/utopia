@@ -1,3 +1,4 @@
+import type * as csstree from 'css-tree'
 import type { DataRouteObject } from 'react-router'
 import type { LayoutPinnedProp, LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import {
@@ -128,6 +129,7 @@ import type {
   DuplicateNewUID,
   EdgePosition,
   PinOrFlexFrameChange,
+  ScreenSize,
 } from './canvas-types'
 import { flexResizeChange, pinFrameChange } from './canvas-types'
 import {
@@ -2259,4 +2261,105 @@ export function projectContentsSameForRefreshRequire(
 
   // If nothing differs, return true.
   return true
+}
+
+export interface MediaQuery {
+  type: 'MediaQuery'
+  loc: null
+  modifier: null
+  mediaType: null
+  condition?: {
+    type: 'Condition'
+    loc: null
+    kind: 'media'
+    children: Array<FeatureRange | Feature | csstree.Identifier>
+  }
+}
+
+interface FeatureRange {
+  type: 'FeatureRange'
+  loc: null
+  kind: 'media'
+  left?: csstree.Dimension
+  leftComparison: '<' | '>'
+  middle: csstree.Identifier
+  rightComparison: '<' | '>'
+  right?: csstree.Dimension
+}
+
+interface Feature {
+  type: 'Feature'
+  loc: null
+  kind: 'media'
+  name: 'min-width' | 'max-width'
+  value?: csstree.Dimension
+}
+
+export function mediaQueryToScreenSize(mediaQuery: MediaQuery): ScreenSize {
+  const result: ScreenSize = {}
+
+  if (mediaQuery.condition?.type === 'Condition') {
+    // Handle FeatureRange case
+    const featureRange = mediaQuery.condition.children.find(
+      (child): child is FeatureRange => child.type === 'FeatureRange',
+    )
+
+    if (featureRange?.middle?.type === 'Identifier' && featureRange.middle.name === 'width') {
+      const leftValue =
+        featureRange.left?.type === 'Dimension'
+          ? {
+              value: Number(featureRange.left.value),
+              unit: featureRange.left.unit,
+            }
+          : null
+
+      const rightValue =
+        featureRange.right?.type === 'Dimension'
+          ? {
+              value: Number(featureRange.right.value),
+              unit: featureRange.right.unit,
+            }
+          : null
+
+      // Left value determines if it's min (<) or max (>)
+      if (leftValue != null) {
+        if (featureRange.leftComparison === '<') {
+          result.min = leftValue
+        } else {
+          result.max = leftValue
+        }
+      }
+
+      // Right value determines if it's max (<) or min (>)
+      if (rightValue != null) {
+        if (featureRange.rightComparison === '<') {
+          result.max = rightValue
+        } else {
+          result.min = rightValue
+        }
+      }
+    }
+
+    // Handle Feature case (min-width/max-width)
+    const features = mediaQuery.condition.children.filter(
+      (child): child is Feature => child.type === 'Feature',
+    )
+    features.forEach((feature) => {
+      if (feature.value?.type === 'Dimension') {
+        if (feature.name === 'min-width') {
+          result.min = {
+            value: Number(feature.value.value),
+            unit: feature.value.unit,
+          }
+        } else if (feature.name === 'max-width') {
+          result.max = {
+            value: Number(feature.value.value),
+            unit: feature.value.unit,
+          }
+        }
+      }
+    })
+  }
+
+  return result
 }

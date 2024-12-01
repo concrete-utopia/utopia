@@ -5,11 +5,13 @@ import {
   testPrintCodeFromEditorState,
   getEditorState,
 } from './ui-jsx.test-utils'
-import type { EdgePosition } from './canvas-types'
+import type { EdgePosition, ScreenSize } from './canvas-types'
 import { singleResizeChange, pinMoveChange, pinFrameChange } from './canvas-types'
 import type { CanvasVector } from '../../core/shared/math-utils'
 import { canvasRectangle } from '../../core/shared/math-utils'
-import { updateFramesOfScenesAndComponents } from './canvas-utils'
+import type { MediaQuery } from './canvas-utils'
+import { mediaQueryToScreenSize, updateFramesOfScenesAndComponents } from './canvas-utils'
+import * as csstree from 'css-tree'
 import { NO_OP } from '../../core/shared/utils'
 import { editorModelFromPersistentModel } from '../editor/store/editor-state'
 import { complexDefaultProjectPreParsed } from '../../sample-projects/sample-project-utils.test-utils'
@@ -487,5 +489,28 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       </View>`,
       ),
     )
+  })
+})
+
+describe('mediaQueryToScreenSize', () => {
+  it('converts simple screen size queries', () => {
+    const testCases: { input: string; expected: ScreenSize }[] = [
+      {
+        input: '@media (100px <width < 500px)',
+        expected: { min: { value: 100, unit: 'px' }, max: { value: 500, unit: 'px' } },
+      },
+      {
+        input: '@media (min-width: 100px) and (max-width: 500px)',
+        expected: { min: { value: 100, unit: 'px' }, max: { value: 500, unit: 'px' } },
+      },
+    ]
+    testCases.forEach((testCase) => {
+      csstree.walk(csstree.parse(testCase.input), (node) => {
+        if (node.type === 'MediaQuery') {
+          const result = mediaQueryToScreenSize(node as unknown as MediaQuery)
+          expect(result).toEqual(testCase.expected)
+        }
+      })
+    })
   })
 })
