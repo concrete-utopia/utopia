@@ -2661,6 +2661,11 @@ export function gridPositionValue(numericalPosition: number | null): GridPositio
   }
 }
 
+export function isGridPositionValue(p: GridPositionOrSpan | null): p is GridPositionValue {
+  const maybe = p as GridPositionValue
+  return p != null && typeof p === 'object' && maybe.numericalPosition !== undefined
+}
+
 export const validGridPositionKeywords = ['auto']
 
 export type ValidGridPositionKeyword = string // using <string> because valid keywords are also line names we cannot know in advance
@@ -2847,6 +2852,7 @@ export interface SpecialSizeMeasurements {
   gridCellGlobalFrames: GridCellGlobalFrames | null
   parentGridCellGlobalFrames: GridCellGlobalFrames | null
   borderWidths: BorderWidths
+  parentGridFrame: CanvasRectangle | null
 }
 
 export function specialSizeMeasurements(
@@ -2906,6 +2912,7 @@ export function specialSizeMeasurements(
   justifySelf: SelfAlignment | null,
   alignSelf: SelfAlignment | null,
   borderWidths: BorderWidths,
+  parentGridFrame: CanvasRectangle | null,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -2964,6 +2971,7 @@ export function specialSizeMeasurements(
     justifySelf,
     alignSelf,
     borderWidths,
+    parentGridFrame,
   }
 }
 
@@ -3066,6 +3074,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
     right: 0,
     bottom: 0,
   },
+  null,
 )
 
 export function walkElement(

@@ -22,6 +22,7 @@ import type {
 } from '../../../core/shared/element-template'
 import {
   isGridAutoOrTemplateDimensions,
+  isGridPositionValue,
   isGridSpan,
   type GridAutoOrTemplateBase,
 } from '../../../core/shared/element-template'
@@ -33,6 +34,7 @@ import {
   isFiniteRectangle,
   isInfinityRectangle,
   nullIfInfinity,
+  offsetPoint,
   pointsEqual,
   scaleRect,
   windowPoint,
@@ -62,6 +64,7 @@ import {
 } from '../../editor/store/store-hook'
 import type { GridDimension, GridDiscreteDimension } from '../../inspector/common/css-utils'
 import {
+  isCSSKeyword,
   isDynamicGridRepeat,
   isGridCSSRepeat,
   printCSSNumberWithDefaultUnit,
@@ -74,6 +77,7 @@ import {
   gridAxisHandle,
   gridCellHandle,
   gridResizeHandle,
+  gridResizeRulerHandle,
 } from '../canvas-strategies/interaction-state'
 import type { GridCellCoordinates } from '../canvas-strategies/strategies/grid-cell-bounds'
 import {
@@ -2197,7 +2201,17 @@ interface RulerMarkersProps {
   path: ElementPath
 }
 
+export const RulerMarkerColumnStartTestId = 'ruler-marker-column-start'
+export const RulerMarkerColumnEndTestId = 'ruler-marker-column-end'
+export const RulerMarkerRowStartTestId = 'ruler-marker-row-start'
+export const RulerMarkerRowEndTestId = 'ruler-marker-row-end'
+
 const RulerMarkers = React.memo((props: RulerMarkersProps) => {
+  const dispatch = useDispatch()
+
+  const [frozenMarkers, setFrozenMarkers] = React.useState<RulerMarkerData | null>(null)
+  const [showExtraMarkers, setShowExtraMarkers] = React.useState<'row' | 'column' | null>(null)
+
   const gridRect: CanvasRectangle | null = useEditorState(
     Substores.metadata,
     (store) => {
@@ -2394,36 +2408,95 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
     'RulerMarkers markers',
   )
 
-  const [showExtraMarkers, setShowExtraMarkers] = React.useState<'row' | 'column' | null>(null)
+  const canvasScale = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.scale,
+    'RulerMarkers canvasScale',
+  )
+
+  const dragRef = useRefEditorState((store) =>
+    store.editor.canvas.interactionSession?.activeControl.type === 'GRID_RESIZE_RULER_HANDLE' &&
+    store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
+    store.editor.canvas.interactionSession?.interactionData.drag != null
+      ? offsetPoint(
+          store.editor.canvas.interactionSession?.interactionData.dragStart,
+          store.editor.canvas.interactionSession?.interactionData.drag,
+        )
+      : null,
+  )
+
+  const resizeControlRef = useRefEditorState((store) =>
+    store.editor.canvas.interactionSession?.activeControl.type !== 'GRID_RESIZE_RULER_HANDLE'
+      ? null
+      : store.editor.canvas.interactionSession.activeControl,
+  )
+
+  const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+
+  const startResizeInteraction = React.useCallback(
+    (uid: string, edge: GridResizeEdge) => (e: React.MouseEvent) => {
+      e.stopPropagation()
+
+      const start = windowToCanvasCoordinates(
+        canvasScale,
+        canvasOffsetRef.current,
+        windowPoint({ x: e.nativeEvent.x, y: e.nativeEvent.y }),
+      )
+      dispatch([
+        CanvasActions.createInteractionSession(
+          createInteractionViaMouse(
+            start.canvasPositionRounded,
+            Modifier.modifiersForEvent(e),
+            gridResizeRulerHandle(uid, edge),
+            'zero-drag-not-permitted',
+          ),
+        ),
+      ])
+    },
+    [canvasOffsetRef, dispatch, canvasScale],
+  )
+
   const markerMouseUp = React.useCallback(
     (event: MouseEvent) => {
       event.preventDefault()
       event.stopPropagation()
       setShowExtraMarkers(null)
+      setFrozenMarkers(null)
       props.setShowGridCellOutlines(false)
+
       window.removeEventListener('mouseup', markerMouseUp)
     },
     [props],
   )
+
   const rowMarkerMouseDown = React.useCallback(
-    (event: React.MouseEvent) => {
+    (edge: GridResizeEdge) => (event: React.MouseEvent) => {
       event.preventDefault()
       event.stopPropagation()
+
       setShowExtraMarkers('row')
       props.setShowGridCellOutlines(true)
+      setFrozenMarkers(rulerMarkerData)
+      startResizeInteraction(EP.toUid(props.path), edge)(event)
+
       window.addEventListener('mouseup', markerMouseUp)
     },
-    [markerMouseUp, props],
+    [markerMouseUp, props, startResizeInteraction, rulerMarkerData],
   )
+
   const columnMarkerMouseDown = React.useCallback(
-    (event: React.MouseEvent) => {
+    (edge: GridResizeEdge) => (event: React.MouseEvent) => {
       event.preventDefault()
       event.stopPropagation()
+
       setShowExtraMarkers('column')
       props.setShowGridCellOutlines(true)
+      setFrozenMarkers(rulerMarkerData)
+      startResizeInteraction(EP.toUid(props.path), edge)(event)
+
       window.addEventListener('mouseup', markerMouseUp)
     },
-    [markerMouseUp, props],
+    [markerMouseUp, props, startResizeInteraction, rulerMarkerData],
   )
 
   if (rulerMarkerData == null || gridRect == null) {
@@ -2459,8 +2532,8 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
           marker={rulerMarkerData.columnStart}
           axis={'column'}
           visible={'visible'}
-          onMouseDown={columnMarkerMouseDown}
-          testID={'ruler-marker-column-start'}
+          onMouseDown={columnMarkerMouseDown('column-start')}
+          testID={RulerMarkerColumnStartTestId}
         />
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
@@ -2468,8 +2541,8 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
           marker={rulerMarkerData.columnEnd}
           axis={'column'}
           visible={'visible'}
-          onMouseDown={columnMarkerMouseDown}
-          testID={'ruler-marker-column-end'}
+          onMouseDown={columnMarkerMouseDown('column-end')}
+          testID={RulerMarkerColumnEndTestId}
         />
       </GridRuler>
 
@@ -2500,8 +2573,8 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
           marker={rulerMarkerData.rowStart}
           axis={'row'}
           visible={'visible'}
-          onMouseDown={rowMarkerMouseDown}
-          testID={'ruler-marker-row-start'}
+          onMouseDown={rowMarkerMouseDown('row-start')}
+          testID={RulerMarkerRowStartTestId}
         />
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
@@ -2509,8 +2582,8 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
           marker={rulerMarkerData.rowEnd}
           axis={'row'}
           visible={'visible'}
-          onMouseDown={rowMarkerMouseDown}
-          testID={'ruler-marker-row-end'}
+          onMouseDown={rowMarkerMouseDown('row-end')}
+          testID={RulerMarkerRowEndTestId}
         />
       </GridRuler>
 
@@ -2547,10 +2620,149 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         width={rulerMarkerData.cellRect.width + 1}
         height={rulerMarkerData.cellRect.height + 1}
       />
+
+      {/* Snap line during resize */}
+      <SnapLine
+        gridTemplate={rulerMarkerData.parentGrid}
+        container={rulerMarkerData.gridRect}
+        edge={resizeControlRef.current?.edge ?? null}
+        target={rulerMarkerData.cellRect}
+        markers={rulerMarkerData}
+        frozenMarkers={frozenMarkers}
+      />
+
+      {/* Offset line during resize, following the mouse */}
+      <ResizeOffsetLine
+        edge={resizeControlRef.current?.edge ?? null}
+        drag={dragRef.current}
+        container={rulerMarkerData.gridRect}
+      />
     </React.Fragment>
   )
 })
 RulerMarkers.displayName = 'RulerMarkers'
+
+const ResizeOffsetLine = React.memo(
+  (props: {
+    edge: GridResizeEdge | null
+    drag: CanvasPoint | null
+    container: CanvasRectangle
+  }) => {
+    const colorTheme = useColorTheme()
+
+    if (props.edge == null || props.drag == null) {
+      return null
+    }
+    const isColumn = props.edge === 'column-start' || props.edge === 'column-end'
+
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          width: isColumn ? 1 : props.container.width,
+          height: !isColumn ? 1 : props.container.height,
+          top: isColumn ? props.container.y : props.drag.y,
+          left: !isColumn ? props.container.x : props.drag.x,
+          borderLeft: isColumn ? `1px dashed ${colorTheme.primary.value}` : undefined,
+          borderTop: !isColumn ? `1px dashed ${colorTheme.primary.value}` : undefined,
+        }}
+      />
+    )
+  },
+)
+ResizeOffsetLine.displayName = 'ResizeOffsetLine'
+
+const SnapLine = React.memo(
+  (props: {
+    gridTemplate: GridContainerProperties
+    edge: GridResizeEdge | null
+    container: CanvasRectangle
+    target: CanvasRectangle
+    markers: RulerMarkerData
+    frozenMarkers: RulerMarkerData | null
+  }) => {
+    const colorTheme = useColorTheme()
+
+    const [targetMarker, targetFrozenMarker] = React.useMemo(() => {
+      if (props.edge == null || props.frozenMarkers == null) {
+        return []
+      }
+      switch (props.edge) {
+        case 'column-end':
+          return [props.markers.columnEnd, props.frozenMarkers.columnEnd]
+        case 'column-start':
+          return [props.markers.columnStart, props.frozenMarkers.columnStart]
+        case 'row-end':
+          return [props.markers.rowEnd, props.frozenMarkers.rowEnd]
+        case 'row-start':
+          return [props.markers.rowStart, props.frozenMarkers.rowStart]
+        default:
+          assertNever(props.edge)
+      }
+    }, [props.edge, props.markers, props.frozenMarkers])
+
+    const axis = props.edge === 'column-end' || props.edge === 'column-start' ? 'column' : 'row'
+
+    const canvasScale = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.scale,
+      'SnapLine canvasScale',
+    )
+
+    if (
+      props.edge == null ||
+      targetMarker == null ||
+      targetMarker.position == null ||
+      targetFrozenMarker == null ||
+      targetFrozenMarker.position == null
+    ) {
+      return null
+    }
+
+    const showLabel = !gridPositionOrSpanEquals(targetMarker.position, targetFrozenMarker.position)
+
+    const labelWidth = 50
+    const labelHeight = 20
+
+    const isColumn = props.edge === 'column-start' || props.edge === 'column-end'
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          width: isColumn ? 1 : props.container.width,
+          height: !isColumn ? 1 : props.container.height,
+          top: isColumn
+            ? props.container.y
+            : props.target.y + (props.edge === 'row-end' ? props.target.height : 0),
+          left: !isColumn
+            ? props.container.x
+            : props.target.x + (props.edge === 'column-end' ? props.target.width : 0),
+          backgroundColor: colorTheme.brandNeonPink.value,
+        }}
+      >
+        {when(
+          showLabel,
+          <div
+            style={{
+              position: 'absolute',
+              top: axis === 'column' ? -labelHeight - RulerMarkerIconSize - 5 : -10,
+              left: axis === 'row' ? -(labelWidth - RulerMarkerIconSize + 30) : 0,
+              color: colorTheme.brandNeonPink.value,
+              fontWeight: 700,
+              textAlign: axis === 'row' ? 'right' : undefined,
+              width: labelWidth,
+              height: labelHeight,
+              zoom: 1 / canvasScale,
+            }}
+          >
+            {printPin(props.gridTemplate, targetMarker.position, axis)}
+          </div>,
+        )}
+      </div>
+    )
+  },
+)
+SnapLine.displayName = 'SnapLine'
 
 interface GridRulerProps {
   axis: 'row' | 'column'
@@ -2848,3 +3060,22 @@ const GridCellOutline = React.memo(
   },
 )
 GridCellOutline.displayName = 'GridCellOutline'
+
+function gridPositionOrSpanEquals(a: GridPositionOrSpan, b: GridPositionOrSpan): boolean {
+  if (isGridSpan(a)) {
+    if (!isGridSpan(b)) {
+      return false
+    }
+    return a.value === b.value
+  }
+  if (isCSSKeyword(a)) {
+    if (!isCSSKeyword(b)) {
+      return false
+    }
+    return a.value === b.value
+  }
+  if (!isGridPositionValue(b)) {
+    return false
+  }
+  return a.numericalPosition === b.numericalPosition
+}

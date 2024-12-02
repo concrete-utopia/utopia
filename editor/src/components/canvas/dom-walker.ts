@@ -929,6 +929,18 @@ function getSpecialMeasurements(
         )
       : null
 
+  const parentGridFrame =
+    element.parentElement != null && elementLayoutSystem(parentElementStyle) === 'grid'
+      ? globalFrameForElement(
+          element.parentElement,
+          scale,
+          containerRectLazy,
+          'without-text-content',
+          'nearest-half',
+          elementCanvasRectangleCache,
+        )
+      : null
+
   const containerGridPropertiesFromProps = getGridContainerProperties(element.style)
   const parentContainerGridPropertiesFromProps = getGridContainerProperties(
     element.parentElement?.style ?? parentElementStyle,
@@ -1007,6 +1019,7 @@ function getSpecialMeasurements(
     justifySelf,
     alignSelf,
     border,
+    parentGridFrame,
   )
 }
 
