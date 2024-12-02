@@ -174,7 +174,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
 
       return strategyApplicationResult(
         getCommandsForGridItemPlacement(selectedElement, gridTemplate, gridProps),
-        [EP.parentPath(selectedElement)],
+        [EP.parentPath(selectedElement), selectedElement],
       )
     },
   }
