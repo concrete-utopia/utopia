@@ -1,4 +1,5 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type {
   GridElementProperties,
@@ -107,6 +108,9 @@ export const gridResizeElementRulerStrategy: CanvasStrategyFactory = (
         return emptyStrategyApplicationResult
       }
 
+      if (allCellBounds.length < 1) {
+        return emptyStrategyApplicationResult
+      }
       const columns = allCellBounds[0]
       const columnsWithAddition =
         // count one extra column so we correctly find the eastmost bound
@@ -125,7 +129,15 @@ export const gridResizeElementRulerStrategy: CanvasStrategyFactory = (
         interactionSession.interactionData.dragStart,
       )
 
-      const rows = allCellBounds.map((r) => r[0])
+      const rows = mapDropNulls((r) => {
+        if (r.length < 1) {
+          return null
+        }
+        return r[0]
+      }, allCellBounds)
+      if (rows.length < 1) {
+        return emptyStrategyApplicationResult
+      }
       const rowsWithAddition =
         // count one extra row so we correctly find the southmost bound
         rows.concat(
