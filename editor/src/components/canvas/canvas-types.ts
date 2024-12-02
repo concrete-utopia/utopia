@@ -557,14 +557,18 @@ interface ParsedCSSStyleProperty<T> {
   value: T
 }
 
-type StyleModifier = HoverModifier | MediaSizeModifier
+export type StyleModifier = HoverModifier | MediaSizeModifier
 type HoverModifier = { type: 'hover' }
 type MediaSizeModifier = { type: 'media-size'; size: ScreenSize }
+export type CompValue = {
+  value: number
+  unit: string
+}
 
 // @media (min-width: 100px) and (max-width: 200em) => { min: { value: 100, unit: 'px' }, max: { value: 200, unit: 'em' } }
 export type ScreenSize = {
-  min?: { value: number; unit: string }
-  max?: { value: number; unit: string }
+  min?: CompValue
+  max?: CompValue
 }
 
 export type CSSStyleProperty<T> =
@@ -585,9 +589,14 @@ export function cssStylePropertyNotParsable(
 export function cssStyleProperty<T>(
   value: T,
   propertyValue: JSExpression | PartOfJSXAttributeValue,
-  modifiers: StyleModifier[],
+  modifiers?: StyleModifier[],
 ): ParsedCSSStyleProperty<T> {
-  return { type: 'property', modifiers: [], value: value, propertyValue: propertyValue }
+  return {
+    type: 'property',
+    modifiers: modifiers ?? [],
+    value: value,
+    propertyValue: propertyValue,
+  }
 }
 
 export function screenSizeModifier(size: ScreenSize): MediaSizeModifier {

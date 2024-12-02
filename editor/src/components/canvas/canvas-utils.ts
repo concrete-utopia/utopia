@@ -126,6 +126,7 @@ import * as EP from '../../core/shared/element-path'
 import * as PP from '../../core/shared/property-path'
 import type {
   CanvasFrameAndTarget,
+  CompValue,
   DuplicateNewUID,
   EdgePosition,
   PinOrFlexFrameChange,
@@ -2295,10 +2296,6 @@ interface Feature {
   value?: csstree.Dimension
 }
 
-type CompValue = {
-  value: number
-  unit: string
-}
 function extractFromFeatureRange(featureRange: FeatureRange): {
   leftValue: CompValue | null
   rightValue: CompValue | null
