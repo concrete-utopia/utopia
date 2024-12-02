@@ -1,27 +1,30 @@
 import type { ElementPath } from 'utopia-shared/src/types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
+import type { JSXElementChild } from '../../../../core/shared/element-template'
 import {
+  isJSXElement,
   type ElementInstanceMetadata,
   type ElementInstanceMetadataMap,
   type GridContainerProperties,
 } from '../../../../core/shared/element-template'
-import type { CanvasRectangle } from '../../../../core/shared/math-utils'
+import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasRectangle,
-  isInfinityRectangle,
-  offsetPoint,
-  pointDifference,
-  zeroRectangle,
+  canvasRectangleToLocalRectangle,
+  nullIfInfinity,
+  offsetRect,
+  windowPoint,
+  zeroCanvasRect,
   zeroRectIfNullOrInfinity,
+  zeroSize,
 } from '../../../../core/shared/math-utils'
-import * as PP from '../../../../core/shared/property-path'
-import { cssNumber } from '../../../inspector/common/css-utils'
 import type { CanvasCommand } from '../../commands/commands'
-import { deleteProperties } from '../../commands/delete-properties-command'
-import { setCssLengthProperty } from '../../commands/set-css-length-command'
 import { showGridControls } from '../../commands/show-grid-controls-command'
-import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-strategies'
+import {
+  controlsForGridPlaceholders,
+  GridElementChildContainingBlockKey,
+} from '../../controls/grid-controls-for-strategies'
 import type { CanvasStrategyFactory } from '../canvas-strategies'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
@@ -33,14 +36,24 @@ import {
 import type { DragInteractionData, InteractionSession } from '../interaction-state'
 import type { GridCellGlobalFrames } from './grid-helpers'
 import {
-  getGlobalFrameOfGridCell,
+  findOriginalGrid,
+  getGridRelativeContainingBlock,
   getOriginalElementGridConfiguration,
   getParentGridTemplatesFromChildMeasurements,
   gridMoveStrategiesExtraCommands,
 } from './grid-helpers'
-import { runGridChangeElementLocation } from './grid-change-element-location-strategy'
+import {
+  getNewGridElementProps,
+  runGridChangeElementLocation,
+} from './grid-change-element-location-strategy'
 import { getTargetGridCellData } from '../../../inspector/grid-helpers'
 import { gridItemIdentifier } from '../../../editor/store/editor-state'
+import { getMoveCommandsForDrag } from './shared-move-strategies-helpers'
+import { toFirst } from '../../../../core/shared/optics/optic-utilities'
+import { eitherRight, fromTypeGuard } from '../../../../core/shared/optics/optic-creators'
+import { defaultEither } from '../../../../core/shared/either'
+import { forceNotNull } from '../../../..//core/shared/optional-utils'
+import { windowToCanvasCoordinates } from '../../dom-lookup'
 
 export const gridMoveAbsoluteStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -152,6 +165,8 @@ function getCommandsAndPatchForGridAbsoluteMove(
 
   const commands = runGridMoveAbsolute(
     canvasState.startingMetadata,
+    canvasState.scale,
+    canvasState.canvasOffset,
     interactionData,
     selectedElementMetadata,
     parentGridCellGlobalFrames,
@@ -166,6 +181,8 @@ function getCommandsAndPatchForGridAbsoluteMove(
 
 function runGridMoveAbsolute(
   jsxMetadata: ElementInstanceMetadataMap,
+  scale: number,
+  canvasOffset: CanvasVector,
   interactionData: DragInteractionData,
   selectedElementMetadata: ElementInstanceMetadata,
   gridCellGlobalFrames: GridCellGlobalFrames,
@@ -194,6 +211,32 @@ function runGridMoveAbsolute(
     return []
   }
   const { targetCellCoords, targetRootCell } = targetGridCellData
+  const element = defaultEither(
+    null,
+    toFirst(
+      eitherRight<string, JSXElementChild>().compose(fromTypeGuard(isJSXElement)),
+      selectedElementMetadata.element,
+    ),
+  )
+  if (element == null) {
+    return []
+  }
+
+  const globalFrame = nullIfInfinity(
+    MetadataUtils.getFrameInCanvasCoords(selectedElementMetadata.elementPath, jsxMetadata),
+  )
+
+  if (globalFrame == null) {
+    return []
+  }
+
+  const localFrame = nullIfInfinity(
+    MetadataUtils.getLocalFrame(
+      selectedElementMetadata.elementPath,
+      jsxMetadata,
+      EP.parentPath(selectedElementMetadata.elementPath),
+    ),
+  )
 
   // if moving an absolutely-positioned child which does not have pinning
   // props, do not set them at all.
@@ -205,26 +248,61 @@ function runGridMoveAbsolute(
         targetCellCoords,
         targetRootCell,
       ),
-      ...gridChildAbsoluteMoveCommands(
-        selectedElementMetadata,
+      ...getMoveCommandsForDrag(
         zeroRectIfNullOrInfinity(
           selectedElementMetadata.specialSizeMeasurements.immediateParentBounds,
         ),
-        interactionData,
-      ),
+        element,
+        selectedElementMetadata.elementPath,
+        selectedElementMetadata.elementPath,
+        interactionData.drag,
+        globalFrame,
+        localFrame,
+        null,
+        false,
+      ).commands,
     ]
   }
 
-  function getContainingRect(): CanvasRectangle {
-    if (selectedElementMetadata.specialSizeMeasurements.immediateParentProvidesLayout) {
-      const gridCellGlobalFrame = getGlobalFrameOfGridCell(gridCellGlobalFrames, targetRootCell)
-      return zeroRectIfNullOrInfinity(gridCellGlobalFrame)
-    } else {
-      return zeroRectIfNullOrInfinity(
-        selectedElementMetadata.specialSizeMeasurements.coordinateSystemBounds,
-      )
-    }
+  // The element may be moving to a different grid position, which is then used
+  // to calculate the potentially new containing block.
+  const newGridElementProps = getNewGridElementProps(
+    interactionData,
+    selectedElementMetadata,
+    gridCellGlobalFrames,
+    null,
+  )
+
+  const coordinateSystemBounds =
+    selectedElementMetadata.specialSizeMeasurements.immediateParentBounds ?? zeroCanvasRect
+
+  // Get the metadata of the original grid.
+  const originalGridPath = findOriginalGrid(
+    jsxMetadata,
+    EP.parentPath(selectedElementMetadata.elementPath),
+  )
+  if (originalGridPath == null) {
+    return []
   }
+  const originalGrid = MetadataUtils.findElementByElementPath(jsxMetadata, originalGridPath)
+  if (originalGrid == null) {
+    return []
+  }
+
+  // Get the containing block of the grid child.
+  const containingBlockRectangle = getGridRelativeContainingBlock(
+    originalGrid,
+    selectedElementMetadata,
+    newGridElementProps?.gridElementProperties ??
+      selectedElementMetadata.specialSizeMeasurements.elementGridProperties,
+  )
+
+  // Get the appropriately shifted and typed local frame value to use.
+  const containingRect = offsetRect(
+    canvasRectangle(containingBlockRectangle),
+    coordinateSystemBounds,
+  )
+  const adjustedLocalFrame = canvasRectangleToLocalRectangle(globalFrame, containingRect)
 
   // otherwise, return a change location + absolute adjustment
   return [
@@ -236,46 +314,16 @@ function runGridMoveAbsolute(
       gridTemplate,
       null,
     ),
-    ...gridChildAbsoluteMoveCommands(selectedElementMetadata, getContainingRect(), interactionData),
-  ]
-}
-
-function gridChildAbsoluteMoveCommands(
-  element: ElementInstanceMetadata,
-  containingRect: CanvasRectangle,
-  dragInteractionData: DragInteractionData,
-): CanvasCommand[] {
-  if (
-    element.globalFrame == null ||
-    isInfinityRectangle(element.globalFrame) ||
-    dragInteractionData.drag == null
-  ) {
-    return []
-  }
-
-  const offsetInTarget = pointDifference(containingRect, element.globalFrame)
-  const dragOffset = offsetPoint(offsetInTarget, dragInteractionData.drag)
-
-  return [
-    deleteProperties('always', element.elementPath, [
-      PP.create('style', 'top'),
-      PP.create('style', 'left'),
-      PP.create('style', 'right'),
-      PP.create('style', 'bottom'),
-    ]),
-    setCssLengthProperty(
-      'always',
-      element.elementPath,
-      PP.create('style', 'top'),
-      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(dragOffset.y, null) },
+    ...getMoveCommandsForDrag(
+      containingRect,
+      element,
+      selectedElementMetadata.elementPath,
+      selectedElementMetadata.elementPath,
+      interactionData.drag,
+      globalFrame,
+      adjustedLocalFrame,
       null,
-    ),
-    setCssLengthProperty(
-      'always',
-      element.elementPath,
-      PP.create('style', 'left'),
-      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(dragOffset.x, null) },
-      null,
-    ),
+      false,
+    ).commands,
   ]
 }
