@@ -2661,7 +2661,7 @@ export function gridPositionValue(numericalPosition: number | null): GridPositio
   }
 }
 
-export function isGridPositionValue(p: GridPositionOrSpan): p is GridPositionValue {
+export function isGridPositionValue(p: GridPositionOrSpan | null): p is GridPositionValue {
   const maybe = p as GridPositionValue
   return p != null && typeof p === 'object' && maybe.numericalPosition !== undefined
 }

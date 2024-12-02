@@ -98,10 +98,17 @@ export function getClosestGridCellToPoint(
   return closestCell
 }
 
+export type GridCellCoordBounds = {
+  column: number
+  row: number
+  width: number
+  height: number
+}
+
 export function getGridChildCellCoordBoundsFromCanvas(
   child: ElementInstanceMetadata,
   gridCellGlobalFrames: GridCellGlobalFrames,
-) {
+): GridCellCoordBounds | null {
   const cellFrame = child.globalFrame
   if (cellFrame == null || isInfinityRectangle(cellFrame) || gridCellGlobalFrames == null) {
     return null
