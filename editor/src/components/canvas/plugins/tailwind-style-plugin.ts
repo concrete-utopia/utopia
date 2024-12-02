@@ -1,5 +1,6 @@
 import * as TailwindClassParser from '@xengine/tailwindcss-class-parser'
-import { defaultEither, flatMapEither, isLeft } from '../../../core/shared/either'
+import type { Right } from '../../../core/shared/either'
+import { defaultEither, Either, flatMapEither, isLeft } from '../../../core/shared/either'
 import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
@@ -7,7 +8,7 @@ import { cssParsers } from '../../inspector/common/css-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import type { StylePlugin } from './style-plugins'
 import type { Config } from 'tailwindcss/types/config'
-import type { StyleInfo, StyleModifier } from '../canvas-types'
+import type { StyleInfo, StyleMediaSizeModifier, StyleModifier } from '../canvas-types'
 import { cssStyleProperty, type CSSStyleProperty } from '../canvas-types'
 import * as UCL from './tailwind-style-plugin-utils/update-class-list'
 import { assertNever } from '../../../core/shared/utils'
@@ -18,36 +19,137 @@ import {
 import { emptyComments, type JSXAttributes } from 'utopia-shared/src/types'
 import * as PP from '../../../core/shared/property-path'
 import { jsExpressionValue } from '../../../core/shared/element-template'
+import { extractMediaQueryFromCss, mediaQueryToScreenSize } from '../canvas-utils'
+
+type StyleValueVariants = {
+  value: string | number | undefined
+  modifiers?: TailwindGeneralModifier[]
+}[]
+export type TailwindMediaModifier = { type: 'media'; value: string }
+export type TailwindHoverModifier = { type: 'hover'; value: string }
+export type TailwindGeneralModifier = TailwindMediaModifier | TailwindHoverModifier
+type ParsedTailwindVariant<T extends keyof StyleInfo> = {
+  parsedValue: NonNullable<ParsedCSSProperties[T]>
+  originalValue: string | number | undefined
+  modifiers?: StyleModifier[]
+}
 
 const parseTailwindPropertyWithConfig =
   (config: Config | null) =>
   <T extends keyof StyleInfo>(
-    styleDefinition: TailwindStyleDefinition | undefined,
+    styleDefinition: StyleValueVariants | undefined,
     prop: T,
   ): CSSStyleProperty<NonNullable<ParsedCSSProperties[T]>> | null => {
     if (styleDefinition == null) {
       return null
     }
-    const parsed = cssParsers[prop](styleDefinition.value, null)
-    if (isLeft(parsed) || parsed.value == null) {
+    const parsed: ParsedTailwindVariant<T>[] = styleDefinition
+      .map((v) => ({
+        parsedValue: cssParsers[prop](v.value, null),
+        originalValue: v.value,
+        modifiers: getModifiers(v.modifiers ?? [], config),
+      }))
+      .filter((v) => v.parsedValue != null && !isLeft(v.parsedValue))
+      .map((v) => ({
+        ...v,
+        parsedValue: (v.parsedValue as Right<ParsedCSSProperties[T]>).value as NonNullable<
+          ParsedCSSProperties[T]
+        >,
+      }))
+
+    const result = selectValueByBreakpoint(parsed)
+    if (result == null) {
       return null
     }
-    const modifiers = getModifiers(styleDefinition.variants ?? [], config)
     return cssStyleProperty(
-      parsed.value,
-      jsExpressionValue(styleDefinition.value, emptyComments),
-      modifiers,
+      result.parsedValue,
+      jsExpressionValue(result.originalValue, emptyComments),
+      result.modifiers,
+      parsed.map((variant) => ({
+        value: variant.parsedValue,
+        modifiers: variant.modifiers,
+      })),
     )
   }
 
+function selectValueByBreakpoint<T extends keyof StyleInfo>(
+  parsedVariants: ParsedTailwindVariant<T>[],
+): {
+  parsedValue: NonNullable<ParsedCSSProperties[T]>
+  originalValue: string | number | undefined
+  modifiers?: StyleModifier[]
+} | null {
+  let chosen = parsedVariants[0] ?? null
+  for (const variant of parsedVariants) {
+    if (variant.modifiers?.length === 0) {
+      chosen = variant
+      break
+    }
+  }
+  if (chosen == null || chosen.parsedValue == null) {
+    return null
+  }
+  return {
+    parsedValue: chosen.parsedValue,
+    originalValue: chosen.originalValue,
+    modifiers: chosen.modifiers,
+  }
+}
+
+type TailwindScreen = string | { min: string; max: string }
+
+/**
+ * This function gets variants in the form of {type: 'media', value: 'sm'}
+ * and turns them into modifiers in the form of [{type: 'media-size', size: {min: {value: 0, unit: 'px'}, max: {value: 100, unit: 'em'}}}]
+ * according to the tailwind config
+ */
 function getModifiers(
   variants: { type: string; value: string }[],
   config: Config | null,
 ): StyleModifier[] {
   // media modifiers
   const mediaModifiers = variants.filter((v) => v.type === 'media')
-  const screenSizes = config?.theme?.screens ?? {}
-  return []
+  const screenSizes: Record<string, TailwindScreen> = (config?.theme?.screens as Record<
+    string,
+    TailwindScreen
+  >) ?? {
+    sm: '640px',
+    md: '768px',
+    lg: '1024px',
+    xl: '1280px',
+    '2xl': '1536px',
+    ...((config?.theme?.extend?.screens as Record<string, TailwindScreen>) ?? {}),
+  }
+  return mediaModifiers
+    .map((mediaModifier) => {
+      const size: string | { min: string; max: string } | undefined =
+        screenSizes[mediaModifier.value as keyof typeof screenSizes]
+      if (size == null) {
+        return null
+      }
+      const mediaString =
+        typeof size === 'string'
+          ? `@media (min-width: ${size})`
+          : `@media ${[
+              size.min != null ? `(min-width: ${size.min})` : '',
+              size.max != null ? `(max-width: ${size.max})` : '',
+            ]
+              .filter((s) => s != '')
+              .join(' and ')}`
+      const parsed = extractMediaQueryFromCss(mediaString)
+      if (parsed == null) {
+        return null
+      }
+      const asScreenSize = mediaQueryToScreenSize(parsed)
+      if (asScreenSize == null) {
+        return null
+      }
+      return {
+        type: 'media-size',
+        size: asScreenSize,
+      }
+    })
+    .filter((m): m is StyleMediaSizeModifier => m != null)
 }
 
 const TailwindPropertyMapping: Record<string, string> = {
@@ -100,11 +202,6 @@ function stringifyPropertyValue(value: string | number): string {
       assertNever(value)
   }
 }
-
-type TailwindStyleDefinition = {
-  value: string | number | undefined
-  variants?: { type: string; value: string }[]
-}
 type TailwindParsedStyle = {
   kind: string
   property: string
@@ -114,8 +211,8 @@ type TailwindParsedStyle = {
 function getTailwindClassMapping(
   classes: string[],
   config: Config | null,
-): Record<string, TailwindStyleDefinition | undefined> {
-  const mapping: Record<string, TailwindStyleDefinition | undefined> = {}
+): Record<string, StyleValueVariants> {
+  const mapping: Record<string, StyleValueVariants> = {}
   classes.forEach((className) => {
     const parsed: TailwindParsedStyle | undefined = TailwindClassParser.parse(
       className,
@@ -128,25 +225,28 @@ function getTailwindClassMapping(
     ) {
       return
     }
-    mapping[parsed.property] = {
+    mapping[parsed.property] = mapping[parsed.property] ?? []
+    const modifiers = (parsed.variants ?? []).filter(
+      (v): v is TailwindGeneralModifier => v.type === 'media' || v.type === 'hover',
+    )
+    mapping[parsed.property].push({
       value: parsed.value,
-      variants: parsed.variants,
-    }
+      modifiers: modifiers,
+    })
   })
   return mapping
 }
 
 const underscoresToSpaces = (
-  styleDef: TailwindStyleDefinition | undefined,
-): TailwindStyleDefinition | undefined => {
+  styleDef: StyleValueVariants | undefined,
+): StyleValueVariants | undefined => {
   if (styleDef == null) {
     return undefined
   }
-  return {
-    ...styleDef,
-    value:
-      typeof styleDef.value === 'string' ? styleDef.value.replace(/[-_]/g, ' ') : styleDef.value,
-  }
+  return styleDef.map((style) => ({
+    ...style,
+    value: typeof style.value === 'string' ? style.value.replace(/[-_]/g, ' ') : style.value,
+  }))
 }
 
 export const TailwindPlugin = (config: Config | null): StylePlugin => {

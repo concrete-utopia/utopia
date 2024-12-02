@@ -1,4 +1,4 @@
-import type * as csstree from 'css-tree'
+import * as csstree from 'css-tree'
 import type { DataRouteObject } from 'react-router'
 import type { LayoutPinnedProp, LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import {
@@ -2400,5 +2400,15 @@ export function mediaQueryToScreenSize(mediaQuery: MediaQuery): ScreenSize {
     })
   }
 
+  return result
+}
+
+export function extractMediaQueryFromCss(css: string): MediaQuery | null {
+  let result: MediaQuery | null = null
+  csstree.walk(csstree.parse(css), (node) => {
+    if (node.type === 'MediaQuery') {
+      result = node as unknown as MediaQuery
+    }
+  })
   return result
 }
