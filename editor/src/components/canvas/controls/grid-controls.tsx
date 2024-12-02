@@ -2205,6 +2205,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
   const dispatch = useDispatch()
 
   const [frozenMarkers, setFrozenMarkers] = React.useState<RulerMarkerData | null>(null)
+  const [showExtraMarkers, setShowExtraMarkers] = React.useState<'row' | 'column' | null>(null)
 
   const gridRect: CanvasRectangle | null = useEditorState(
     Substores.metadata,
@@ -2402,7 +2403,11 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
     'RulerMarkers markers',
   )
 
-  const [showExtraMarkers, setShowExtraMarkers] = React.useState<'row' | 'column' | null>(null)
+  const canvasScale = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.scale,
+    'RulerMarkers canvasScale',
+  )
 
   const dragRef = useRefEditorState((store) =>
     store.editor.canvas.interactionSession?.activeControl.type === 'GRID_RESIZE_RULER_HANDLE' &&
@@ -2415,10 +2420,10 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
       : null,
   )
 
-  const canvasScale = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.scale,
-    'RulerMarkers canvasScale',
+  const resizeControlRef = useRefEditorState((store) =>
+    store.editor.canvas.interactionSession?.activeControl.type !== 'GRID_RESIZE_RULER_HANDLE'
+      ? null
+      : store.editor.canvas.interactionSession.activeControl,
   )
 
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
@@ -2487,12 +2492,6 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
       window.addEventListener('mouseup', markerMouseUp)
     },
     [markerMouseUp, props, startResizeInteraction, rulerMarkerData],
-  )
-
-  const resizeControlRef = useRefEditorState((store) =>
-    store.editor.canvas.interactionSession?.activeControl.type !== 'GRID_RESIZE_RULER_HANDLE'
-      ? null
-      : store.editor.canvas.interactionSession.activeControl,
   )
 
   if (rulerMarkerData == null || gridRect == null) {
@@ -2666,7 +2665,7 @@ const ResizeOffsetLine = React.memo(
     )
   },
 )
-ResizeOffsetLine.displayName = 'LiveOffsetLine'
+ResizeOffsetLine.displayName = 'ResizeOffsetLine'
 
 const SnapLine = React.memo(
   (props: {
