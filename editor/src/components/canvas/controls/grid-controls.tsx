@@ -2201,6 +2201,11 @@ interface RulerMarkersProps {
   path: ElementPath
 }
 
+export const RulerMarkerColumnStartTestId = 'ruler-marker-column-start'
+export const RulerMarkerColumnEndTestId = 'ruler-marker-column-end'
+export const RulerMarkerRowStartTestId = 'ruler-marker-row-start'
+export const RulerMarkerRowEndTestId = 'ruler-marker-row-end'
+
 const RulerMarkers = React.memo((props: RulerMarkersProps) => {
   const dispatch = useDispatch()
 
@@ -2528,7 +2533,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
           axis={'column'}
           visible={'visible'}
           onMouseDown={columnMarkerMouseDown('column-start')}
-          testID={'ruler-marker-column-start'}
+          testID={RulerMarkerColumnStartTestId}
         />
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
@@ -2537,7 +2542,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
           axis={'column'}
           visible={'visible'}
           onMouseDown={columnMarkerMouseDown('column-end')}
-          testID={'ruler-marker-column-end'}
+          testID={RulerMarkerColumnEndTestId}
         />
       </GridRuler>
 
@@ -2569,7 +2574,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
           axis={'row'}
           visible={'visible'}
           onMouseDown={rowMarkerMouseDown('row-start')}
-          testID={'ruler-marker-row-start'}
+          testID={RulerMarkerRowStartTestId}
         />
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
@@ -2578,7 +2583,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
           axis={'row'}
           visible={'visible'}
           onMouseDown={rowMarkerMouseDown('row-end')}
-          testID={'ruler-marker-row-end'}
+          testID={RulerMarkerRowEndTestId}
         />
       </GridRuler>
 
