@@ -4,11 +4,16 @@ import { defaultEither, Either, flatMapEither, isLeft } from '../../../core/shar
 import { getClassNameAttribute } from '../../../core/tailwind/tailwind-options'
 import { getElementFromProjectContents } from '../../editor/store/editor-state'
 import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
-import { cssParsers } from '../../inspector/common/css-utils'
+import { cssParsers, selectValueByBreakpoint } from '../../inspector/common/css-utils'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import type { StylePlugin } from './style-plugins'
 import type { Config } from 'tailwindcss/types/config'
-import type { StyleInfo, StyleMediaSizeModifier, StyleModifier } from '../canvas-types'
+import type {
+  ParsedVariant,
+  StyleInfo,
+  StyleMediaSizeModifier,
+  StyleModifier,
+} from '../canvas-types'
 import { cssStyleProperty, type CSSStyleProperty } from '../canvas-types'
 import * as UCL from './tailwind-style-plugin-utils/update-class-list'
 import { assertNever } from '../../../core/shared/utils'
@@ -28,11 +33,6 @@ type StyleValueVariants = {
 export type TailwindMediaModifier = { type: 'media'; value: string }
 export type TailwindHoverModifier = { type: 'hover'; value: string }
 export type TailwindGeneralModifier = TailwindMediaModifier | TailwindHoverModifier
-type ParsedTailwindVariant<T extends keyof StyleInfo> = {
-  parsedValue: NonNullable<ParsedCSSProperties[T]>
-  originalValue: string | number | undefined
-  modifiers?: StyleModifier[]
-}
 
 const parseTailwindPropertyWithConfig =
   (config: Config | null) =>
@@ -43,7 +43,7 @@ const parseTailwindPropertyWithConfig =
     if (styleDefinition == null) {
       return null
     }
-    const parsed: ParsedTailwindVariant<T>[] = styleDefinition
+    const parsed: ParsedVariant<T>[] = styleDefinition
       .map((v) => ({
         parsedValue: cssParsers[prop](v.value, null),
         originalValue: v.value,
@@ -57,7 +57,12 @@ const parseTailwindPropertyWithConfig =
         >,
       }))
 
-    const result = selectValueByBreakpoint(parsed)
+    // to be passed somehow
+    const scene = document.querySelector('[data-testid=remix-scene]')
+    if (scene == null) {
+      return null
+    }
+    const result = selectValueByBreakpoint(parsed, parseFloat(getComputedStyle(scene).width))
     if (result == null) {
       return null
     }
@@ -71,30 +76,6 @@ const parseTailwindPropertyWithConfig =
       })),
     )
   }
-
-function selectValueByBreakpoint<T extends keyof StyleInfo>(
-  parsedVariants: ParsedTailwindVariant<T>[],
-): {
-  parsedValue: NonNullable<ParsedCSSProperties[T]>
-  originalValue: string | number | undefined
-  modifiers?: StyleModifier[]
-} | null {
-  let chosen = parsedVariants[0] ?? null
-  for (const variant of parsedVariants) {
-    if (variant.modifiers?.length === 0) {
-      chosen = variant
-      break
-    }
-  }
-  if (chosen == null || chosen.parsedValue == null) {
-    return null
-  }
-  return {
-    parsedValue: chosen.parsedValue,
-    originalValue: chosen.originalValue,
-    modifiers: chosen.modifiers,
-  }
-}
 
 type TailwindScreen = string | { min: string; max: string }
 

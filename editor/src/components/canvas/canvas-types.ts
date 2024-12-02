@@ -29,6 +29,7 @@ import type {
   CSSOverflow,
   CSSPadding,
   FlexDirection,
+  ParsedCSSProperties,
 } from '../inspector/common/css-utils'
 
 export const CanvasContainerID = 'canvas-container'
@@ -564,6 +565,13 @@ interface ParsedCSSStyleProperty<T> {
 type StyleHoverModifier = { type: 'hover' }
 export type StyleMediaSizeModifier = { type: 'media-size'; size: ScreenSize }
 export type StyleModifier = StyleHoverModifier | StyleMediaSizeModifier
+
+export type ParsedVariant<T extends keyof StyleInfo> = {
+  parsedValue: NonNullable<ParsedCSSProperties[T]>
+  originalValue: string | number | undefined
+  modifiers?: StyleModifier[]
+}
+
 export type CompValue = {
   value: number
   unit: string
