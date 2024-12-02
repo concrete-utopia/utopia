@@ -503,6 +503,18 @@ describe('mediaQueryToScreenSize', () => {
         input: '@media (min-width: 100px) and (max-width: 500px)',
         expected: { min: { value: 100, unit: 'px' }, max: { value: 500, unit: 'px' } },
       },
+      {
+        input: '@media screen and (min-width: 100px)',
+        expected: { min: { value: 100, unit: 'px' } },
+      },
+      {
+        input: '@media (100px < width) and (max-width: 500px)',
+        expected: { min: { value: 100, unit: 'px' }, max: { value: 500, unit: 'px' } },
+      },
+      {
+        input: '@media (width > 100px)',
+        expected: { min: { value: 100, unit: 'px' } },
+      },
     ]
     testCases.forEach((testCase) => {
       csstree.walk(csstree.parse(testCase.input), (node) => {

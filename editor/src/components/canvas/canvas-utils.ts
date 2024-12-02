@@ -2280,11 +2280,11 @@ interface FeatureRange {
   type: 'FeatureRange'
   loc: null
   kind: 'media'
-  left?: csstree.Dimension
+  left?: csstree.Dimension | csstree.Identifier
   leftComparison: '<' | '>'
-  middle: csstree.Identifier
+  middle: csstree.Dimension | csstree.Identifier
   rightComparison: '<' | '>'
-  right?: csstree.Dimension
+  right?: csstree.Dimension | csstree.Identifier
 }
 
 interface Feature {
@@ -2295,50 +2295,92 @@ interface Feature {
   value?: csstree.Dimension
 }
 
+type CompValue = {
+  value: number
+  unit: string
+}
+function extractFromFeatureRange(featureRange: FeatureRange): {
+  leftValue: CompValue | null
+  rightValue: CompValue | null
+  leftComparison: '<' | '>' | null
+  rightComparison: '<' | '>' | null
+} | null {
+  // 100px < width < 500px or 500px > width > 100px or 100px > width or 500px < width
+  if (featureRange?.middle?.type === 'Identifier' && featureRange.middle.name === 'width') {
+    const leftValue =
+      featureRange.left?.type === 'Dimension'
+        ? {
+            value: Number(featureRange.left.value),
+            unit: featureRange.left.unit,
+          }
+        : null
+
+    const rightValue =
+      featureRange.right?.type === 'Dimension'
+        ? {
+            value: Number(featureRange.right.value),
+            unit: featureRange.right.unit,
+          }
+        : null
+
+    return {
+      leftValue: leftValue,
+      rightValue: rightValue,
+      leftComparison: featureRange.leftComparison,
+      rightComparison: featureRange.rightComparison,
+    }
+  }
+  // width > 100px or width < 500px
+  if (featureRange?.left?.type === 'Identifier' && featureRange.left.name === 'width') {
+    const rightValue =
+      featureRange.middle?.type === 'Dimension'
+        ? {
+            value: Number(featureRange.middle.value),
+            unit: featureRange.middle.unit,
+          }
+        : null
+    // this is not a mistake, since we normalize the "width" to be in the middle
+    const rightComparison = featureRange.leftComparison
+
+    return {
+      leftValue: null,
+      leftComparison: null,
+      rightValue: rightValue,
+      rightComparison: rightComparison,
+    }
+  }
+  return null
+}
 export function mediaQueryToScreenSize(mediaQuery: MediaQuery): ScreenSize {
   const result: ScreenSize = {}
 
   if (mediaQuery.condition?.type === 'Condition') {
     // Handle FeatureRange case
-    const featureRange = mediaQuery.condition.children.find(
+    const featureRanges = mediaQuery.condition.children.filter(
       (child): child is FeatureRange => child.type === 'FeatureRange',
-    )
+    ) as Array<FeatureRange>
 
-    if (featureRange?.middle?.type === 'Identifier' && featureRange.middle.name === 'width') {
-      const leftValue =
-        featureRange.left?.type === 'Dimension'
-          ? {
-              value: Number(featureRange.left.value),
-              unit: featureRange.left.unit,
-            }
-          : null
-
-      const rightValue =
-        featureRange.right?.type === 'Dimension'
-          ? {
-              value: Number(featureRange.right.value),
-              unit: featureRange.right.unit,
-            }
-          : null
-
-      // Left value determines if it's min (<) or max (>)
+    featureRanges.forEach((featureRange) => {
+      const rangeData = extractFromFeatureRange(featureRange)
+      if (rangeData == null) {
+        return
+      }
+      const { leftValue, rightValue, leftComparison, rightComparison } = rangeData
       if (leftValue != null) {
-        if (featureRange.leftComparison === '<') {
+        if (leftComparison === '<') {
           result.min = leftValue
         } else {
           result.max = leftValue
         }
       }
-
-      // Right value determines if it's max (<) or min (>)
       if (rightValue != null) {
-        if (featureRange.rightComparison === '<') {
+        if (rightComparison === '<') {
           result.max = rightValue
         } else {
           result.min = rightValue
         }
       }
-    }
+    })
 
     // Handle Feature case (min-width/max-width)
     const features = mediaQuery.condition.children.filter(
