@@ -45,7 +45,7 @@ jobs:
           BASE_EDITOR_URL: 'https://utopia.app'
           HEADLESS: 'true'
         run: |
-          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run screenshot-test"
+          nix-shell --quiet --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run screenshot-test"
       - name: Build Discord Message
         env:
           TEMPLATE: >-

@@ -38,7 +38,7 @@ jobs:
           EDITOR_URL: https://utopia.pizza/p/?fakeUser=alice
           HEADLESS: 'true'
         run: |
-          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run system-test"
+          nix-shell --quiet --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run system-test"
 
   call-release:
     name: Trigger Tag and Release Workflow
