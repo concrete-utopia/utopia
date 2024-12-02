@@ -165,8 +165,6 @@ function getCommandsAndPatchForGridAbsoluteMove(
 
   const commands = runGridMoveAbsolute(
     canvasState.startingMetadata,
-    canvasState.scale,
-    canvasState.canvasOffset,
     interactionData,
     selectedElementMetadata,
     parentGridCellGlobalFrames,
@@ -181,8 +179,6 @@ function getCommandsAndPatchForGridAbsoluteMove(
 
 function runGridMoveAbsolute(
   jsxMetadata: ElementInstanceMetadataMap,
-  scale: number,
-  canvasOffset: CanvasVector,
   interactionData: DragInteractionData,
   selectedElementMetadata: ElementInstanceMetadata,
   gridCellGlobalFrames: GridCellGlobalFrames,
