@@ -324,6 +324,10 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           <div data-testid={RemixSceneLabelTestId(props.target)} style={{ gap: 20 }}>
             <span style={{ fontWeight: 600 }}>{scenelabel}</span>{' '}
             <span style={{ fontWeight: 400 }}>{sceneSize}</span>
+            <DeviceSizeButton name='Desktop' sizePx={1024} />
+            <DeviceSizeButton name='Tablet' sizePx={768} />
+            <DeviceSizeButton name='Mobile' sizePx={375} />
+            <DeviceSizeButton name='Reset' sizePx={0} />
           </div>
           <div
             data-testid={RemixSceneLabelPathTestId(props.target)}
@@ -382,3 +386,23 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
     </CanvasOffsetWrapper>
   )
 })
+
+const DeviceSizeButton = React.memo<{ name: string; sizePx: number }>((props) => (
+  <span
+    style={{ fontWeight: 400, cursor: 'pointer', marginLeft: 10 }}
+    onClick={(e) => {
+      const scene = document.querySelector('[data-testid=remix-scene]')
+      if (scene != null) {
+        ;(scene as HTMLElement).style.width = props.sizePx === 0 ? '' : `${props.sizePx}px`
+      }
+      e.preventDefault()
+      e.stopPropagation()
+      // eslint-disable-next-line
+      // @ts-ignore
+      e.stopImmediatePropagation()
+    }}
+    onMouseDown={(e) => e.stopPropagation()}
+  >
+    {props.name}
+  </span>
+))
