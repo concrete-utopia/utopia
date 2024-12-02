@@ -1,4 +1,4 @@
-import { act } from 'react-dom/test-utils'
+import { act } from '@testing-library/react'
 import { getDomRectCenter } from '../../../core/shared/dom-utils'
 import * as EP from '../../../core/shared/element-path'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'

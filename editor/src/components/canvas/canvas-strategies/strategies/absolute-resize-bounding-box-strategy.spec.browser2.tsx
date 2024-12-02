@@ -75,7 +75,7 @@ import {
   SafeGapSmallElementSize,
   SmallElementSize,
 } from '../../controls/bounding-box-hooks'
-import { act } from 'react-dom/test-utils'
+import { act } from '@testing-library/react'
 import { ComponentsHonouringPropsStylesProject } from './common-projects.test-utils'
 import { SizeLabelTestId } from '../../controls/select-mode/size-label'
 

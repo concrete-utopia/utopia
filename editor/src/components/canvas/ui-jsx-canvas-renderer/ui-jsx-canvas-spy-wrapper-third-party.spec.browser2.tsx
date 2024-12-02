@@ -1,6 +1,6 @@
 /* eslint-disable jest/expect-expect */
 import * as MockReactThreeFiber from '@react-three/fiber'
-import * as mockWithEditorPackageJSON from '../../../../package.json'
+import mockWithEditorPackageJSON from '../../../../package.json'
 
 import { DefaultStartingFeatureSwitches, renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import type { ParsedTextFile } from '../../../core/shared/project-file-types'
