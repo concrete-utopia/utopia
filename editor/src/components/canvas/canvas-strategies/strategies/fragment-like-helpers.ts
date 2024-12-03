@@ -21,6 +21,7 @@ export function retargetStrategyToChildrenOfFragmentLikeElements(
   const targetsWithoutDescedants = flattenSelection(targets)
 
   return replaceFragmentLikePathsWithTheirChildrenRecursiveFullReturnValue(
+    // TODO
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
     canvasState.startingElementPathTree,

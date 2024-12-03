@@ -271,17 +271,13 @@ export function getMoveCommandsForSelectedElement(
   commands: Array<SetCssLengthProperty | AdjustCssLengthProperties>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
-  const element: JSXElement | null = getJSXElementFromProjectContents(
-    selectedElement,
-    projectContents,
-  )
-
   const elementMetadata = MetadataUtils.findElementByElementPath(
     startingMetadata, // TODO should this be using the current metadata?
     selectedElement,
   )
 
   const closestNonFragmentParent = MetadataUtils.getClosestNonFragmentParent(
+    // TODO
     startingMetadata,
     startingAllElementProps,
     startingElementPathTree,
@@ -308,6 +304,11 @@ export function getMoveCommandsForSelectedElement(
 
   const localFrame = nullIfInfinity(
     MetadataUtils.getLocalFrame(selectedElement, startingMetadata, EP.parentPath(mappedPath)),
+  )
+
+  const element: JSXElement | null = getJSXElementFromProjectContents(
+    selectedElement,
+    projectContents,
   )
 
   if (element == null) {
@@ -447,7 +448,7 @@ export function createMoveCommandsForElementPositionRelative(
   commands: Array<AdjustCssLengthProperties>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
-  const { existingPins, extendedPins } = ensureAtLeastOnePinPerDimension(right(element.props))
+  const { existingPins, extendedPins } = ensureAtLeastOnePinPerDimension(right(element.props)) // TODO
 
   const adjustPinProperties = extendedPins.map((pin) => {
     const horizontal = isHorizontalPoint(
@@ -498,7 +499,7 @@ export function createMoveCommandsForElementCreatingMissingPins(
   commands: Array<SetCssLengthProperty>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
-  const { extendedPins } = ensureAtLeastOnePinPerDimension(right(element.props))
+  const { extendedPins } = ensureAtLeastOnePinPerDimension(right(element.props)) // TODO
   const pinsOnlyForDimensionThatChanged = (() => {
     const filteredPins: Array<AbsolutePin> = []
     if (drag.x !== 0) {

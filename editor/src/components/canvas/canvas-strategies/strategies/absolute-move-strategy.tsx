@@ -23,7 +23,6 @@ import {
   flattenSelection,
 } from './shared-move-strategies-helpers'
 import { metadataHasPositionAbsoluteOrNull } from '../../../../core/shared/element-template'
-import * as EP from '../../../../core/shared/element-path'
 
 export type ShouldRunApplicabilityCheck =
   | 'run-applicability-check'
@@ -39,7 +38,7 @@ export function absoluteMoveStrategy(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
   const { pathsWereReplaced, paths: retargetedTargets } =
-    retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+    retargetStrategyToChildrenOfFragmentLikeElements(canvasState) // TODO
 
   if (
     pathsWereReplaced &&
@@ -57,7 +56,7 @@ export function absoluteMoveStrategy(
         canvasState.startingMetadata,
         element,
       )
-      const honoursPosition = honoursPropsPosition(canvasState, element)
+      const honoursPosition = honoursPropsPosition(canvasState, element) // TODO
 
       switch (honoursPosition) {
         case 'does-not-honour':
