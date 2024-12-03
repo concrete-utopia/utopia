@@ -110,6 +110,7 @@ import {
   GridCellTestId,
   GridControlKey,
   gridEdgeToEdgePosition,
+  GridElementChildContainingBlockKey,
   GridElementContainingBlockKey,
   GridMeasurementHelperKey,
   GridMeasurementHelperMap,
@@ -2050,7 +2051,7 @@ const GridElementContainingBlock = React.memo<GridElementContainingBlockProps>((
       style={style}
     >
       <div
-        id={`${GridElementContainingBlockKey(props.gridPath)}-child`}
+        id={GridElementChildContainingBlockKey(props.gridPath)}
         style={{
           ...gridChildStyle,
           pointerEvents: 'none',
