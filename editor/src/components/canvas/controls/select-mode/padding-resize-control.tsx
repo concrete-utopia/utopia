@@ -362,6 +362,7 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
   const styleInfoReaderRef = useRefEditorState((store) =>
     getActivePlugin(store.editor).styleInfoFactory({
       projectContents: store.editor.projectContents,
+      jsxMetadata: store.editor.jsxMetadata,
     }),
   )
 

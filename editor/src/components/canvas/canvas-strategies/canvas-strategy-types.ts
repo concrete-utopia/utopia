@@ -114,6 +114,7 @@ export type StyleInfoReader = (elementPath: ElementPath) => StyleInfo | null
 
 export type StyleInfoFactory = (context: {
   projectContents: ProjectContentTreeRoot
+  jsxMetadata: ElementInstanceMetadataMap
 }) => StyleInfoReader
 
 export interface InteractionCanvasState {

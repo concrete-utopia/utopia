@@ -96,6 +96,7 @@ import { getActivePlugin } from '../../canvas/plugins/style-plugins'
 import { isStyleInfoKey, type StyleInfo } from '../../canvas/canvas-types'
 import { assertNever } from '../../../core/shared/utils'
 import { maybeCssPropertyFromInlineStyle } from '../../canvas/commands/utils/property-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 export interface InspectorPropsContextData {
   selectedViews: Array<ElementPath>
@@ -763,7 +764,15 @@ export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
   const styleInfoReaderRef = useRefEditorState(
     (store) =>
       (props: JSXAttributes, prop: keyof StyleInfo): GetModifiableAttributeResult => {
-        const elementStyle = getActivePlugin(store.editor).readStyleFromElementProps(props, prop)
+        // todo: support multiple selected elements
+        const selectedElement = store.editor.selectedViews[0]
+        const sceneMetadata = MetadataUtils.getParentSceneMetadata(
+          store.editor.jsxMetadata,
+          selectedElement,
+        )
+        const elementStyle = getActivePlugin(store.editor).readStyleFromElementProps(props, prop, {
+          sceneWidth: sceneMetadata?.specialSizeMeasurements?.clientWidth,
+        })
         if (elementStyle == null) {
           return right({ type: 'ATTRIBUTE_NOT_FOUND' })
         }

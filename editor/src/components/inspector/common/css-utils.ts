@@ -5997,7 +5997,7 @@ function getMediaModifier(
 
 export function selectValueByBreakpoint<T extends { modifiers?: StyleModifier[] }>(
   parsedVariants: T[],
-  sceneWidthInPx: number,
+  sceneWidthInPx?: number,
 ): T | null {
   const relevantModifiers = parsedVariants.filter((variant) => {
     // 1. filter out variants that don't have media modifiers, but keep variants with no modifiers at all
@@ -6008,6 +6008,11 @@ export function selectValueByBreakpoint<T extends { modifiers?: StyleModifier[] 
     const mediaModifier = getMediaModifier(variant.modifiers)
     if (mediaModifier == null) {
       // this means it only has other modifiers
+      return false
+    }
+
+    if (sceneWidthInPx == null) {
+      // filter out variants that require a scene width
       return false
     }
 

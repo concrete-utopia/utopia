@@ -25,6 +25,7 @@ import { emptyComments, type JSXAttributes } from 'utopia-shared/src/types'
 import * as PP from '../../../core/shared/property-path'
 import { jsExpressionValue } from '../../../core/shared/element-template'
 import { extractMediaQueryFromCss, mediaQueryToScreenSize } from '../canvas-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 type StyleValueVariants = {
   value: string | number | undefined
@@ -34,8 +35,13 @@ export type TailwindMediaModifier = { type: 'media'; value: string }
 export type TailwindHoverModifier = { type: 'hover'; value: string }
 export type TailwindGeneralModifier = TailwindMediaModifier | TailwindHoverModifier
 
-const parseTailwindPropertyWithConfig =
-  (config: Config | null) =>
+const parseTailwindPropertyFactory =
+  (
+    config: Config | null,
+    context: {
+      sceneWidth?: number
+    },
+  ) =>
   <T extends keyof StyleInfo>(
     styleDefinition: StyleValueVariants | undefined,
     prop: T,
@@ -57,12 +63,7 @@ const parseTailwindPropertyWithConfig =
         >,
       }))
 
-    // to be passed somehow
-    const scene = document.querySelector('[data-testid=remix-scene]')
-    if (scene == null) {
-      return null
-    }
-    const result = selectValueByBreakpoint(parsed, parseFloat(getComputedStyle(scene).width))
+    const result = selectValueByBreakpoint(parsed, context?.sceneWidth)
     if (result == null) {
       return null
     }
@@ -232,12 +233,14 @@ const underscoresToSpaces = (
 }
 
 export const TailwindPlugin = (config: Config | null): StylePlugin => {
-  const parseTailwindProperty = parseTailwindPropertyWithConfig(config)
   return {
     name: 'Tailwind',
     readStyleFromElementProps: <P extends keyof StyleInfo>(
       attributes: JSXAttributes,
       prop: P,
+      context?: {
+        sceneWidth?: number
+      },
     ): CSSStyleProperty<NonNullable<ParsedCSSProperties[P]>> | null => {
       const classNameAttribute = defaultEither(
         null,
@@ -252,10 +255,11 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => {
       }
 
       const mapping = getTailwindClassMapping(classNameAttribute.split(' '), config)
+      const parseTailwindProperty = parseTailwindPropertyFactory(config, context ?? {})
       return parseTailwindProperty(mapping[TailwindPropertyMapping[prop]], prop)
     },
     styleInfoFactory:
-      ({ projectContents }) =>
+      ({ projectContents, jsxMetadata }) =>
       (elementPath) => {
         const classList = getClassNameAttribute(
           getElementFromProjectContents(elementPath, projectContents),
@@ -266,7 +270,10 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => {
         }
 
         const mapping = getTailwindClassMapping(classList.split(' '), config)
-
+        const containingScene = MetadataUtils.getParentSceneMetadata(jsxMetadata, elementPath)
+        const parseTailwindProperty = parseTailwindPropertyFactory(config, {
+          sceneWidth: containingScene?.specialSizeMeasurements?.clientWidth,
+        })
         return {
           gap: parseTailwindProperty(mapping[TailwindPropertyMapping.gap], 'gap'),
           flexDirection: parseTailwindProperty(
