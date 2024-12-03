@@ -2859,6 +2859,21 @@ const RulerMarkerIndicator = React.memo(
 
     const labelClass = 'ruler-marker-label'
 
+    const edge: GridResizeEdge =
+      props.marker.bound === 'start'
+        ? props.axis === 'column'
+          ? 'column-start'
+          : 'row-start'
+        : props.axis === 'column'
+        ? 'column-end'
+        : 'row-end'
+
+    const resizeControlRef = useRefEditorState((store) =>
+      store.editor.canvas.interactionSession?.activeControl.type !== 'GRID_RESIZE_RULER_HANDLE'
+        ? null
+        : store.editor.canvas.interactionSession.activeControl,
+    )
+
     return (
       <div
         data-testid={props.testID}
@@ -2874,7 +2889,7 @@ const RulerMarkerIndicator = React.memo(
         onMouseDown={props.onMouseDown}
         css={{
           [`> .${labelClass}`]: {
-            visibility: 'hidden',
+            visibility: resizeControlRef.current?.edge === edge ? 'visible' : 'hidden',
           },
           ':hover': {
             [`> .${labelClass}`]: {
