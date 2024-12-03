@@ -128,7 +128,8 @@ function getModifiers(
       return {
         type: 'media-size',
         size: asScreenSize,
-      }
+        modifierOrigin: { type: 'tailwind', variant: mediaModifier.value },
+      } as StyleMediaSizeModifier
     })
     .filter((m): m is StyleMediaSizeModifier => m != null)
 }

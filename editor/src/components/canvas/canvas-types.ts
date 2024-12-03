@@ -562,9 +562,16 @@ interface ParsedCSSStyleProperty<T> {
   }[]
 }
 
-type StyleHoverModifier = { type: 'hover' }
-export type StyleMediaSizeModifier = { type: 'media-size'; size: ScreenSize }
+type StyleModifierMetadata = { type: string; modifierOrigin?: StyleModifierOrigin }
+type StyleHoverModifier = StyleModifierMetadata & { type: 'hover' }
+export type StyleMediaSizeModifier = StyleModifierMetadata & {
+  type: 'media-size'
+  size: ScreenSize
+}
 export type StyleModifier = StyleHoverModifier | StyleMediaSizeModifier
+type InlineModifierOrigin = { type: 'inline' }
+type TailwindModifierOrigin = { type: 'tailwind'; variant: string }
+export type StyleModifierOrigin = InlineModifierOrigin | TailwindModifierOrigin
 
 export type ParsedVariant<T extends keyof StyleInfo> = {
   parsedValue: NonNullable<ParsedCSSProperties[T]>
