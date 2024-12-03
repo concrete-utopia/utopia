@@ -2859,14 +2859,7 @@ const RulerMarkerIndicator = React.memo(
 
     const labelClass = 'ruler-marker-label'
 
-    const edge: GridResizeEdge =
-      props.marker.bound === 'start'
-        ? props.axis === 'column'
-          ? 'column-start'
-          : 'row-start'
-        : props.axis === 'column'
-        ? 'column-end'
-        : 'row-end'
+    const edge: GridResizeEdge = `${props.axis}-${props.marker.bound}`
 
     const resizeControlRef = useRefEditorState((store) =>
       store.editor.canvas.interactionSession?.activeControl.type !== 'GRID_RESIZE_RULER_HANDLE'
