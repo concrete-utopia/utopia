@@ -15,7 +15,7 @@ import {
   getTargetPathsFromInteractionTarget,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { honoursPropsPosition } from './absolute-utils'
+import { honoursPropsPositionFromStyleInfo } from './absolute-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import {
   applyMoveCommon,
@@ -38,7 +38,7 @@ export function absoluteMoveStrategy(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
   const { pathsWereReplaced, paths: retargetedTargets } =
-    retargetStrategyToChildrenOfFragmentLikeElements(canvasState) // TODO
+    retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
   if (
     pathsWereReplaced &&
@@ -56,7 +56,7 @@ export function absoluteMoveStrategy(
         canvasState.startingMetadata,
         element,
       )
-      const honoursPosition = honoursPropsPosition(canvasState, element) // TODO
+      const honoursPosition = honoursPropsPositionFromStyleInfo(canvasState, element)
 
       switch (honoursPosition) {
         case 'does-not-honour':

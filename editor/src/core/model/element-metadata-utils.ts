@@ -181,6 +181,7 @@ import { exists, toFirst } from '../shared/optics/optic-utilities'
 import { eitherRight, fromField, fromTypeGuard, notNull } from '../shared/optics/optic-creators'
 import { getComponentDescriptorForTarget } from '../property-controls/property-controls-utils'
 import { treatElementAsFragmentLike } from '../../components/canvas/canvas-strategies/strategies/fragment-like-helpers'
+import type { CSSStyleProperty, StyleInfo } from '../../components/canvas/canvas-types'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1323,6 +1324,30 @@ export const MetadataUtils = {
         return componentHonoursPropsPosition(underlyingComponent)
       }
     }
+  },
+  targetHonoursPropsPositionFromStyleInfo(styleInfo: StyleInfo | null): HonoursPosition {
+    if (styleInfo == null) {
+      return 'does-not-honour'
+    }
+
+    const horizontalPins = ['left', 'right'] as const
+    const verticalPins = ['top', 'bottom'] as const
+
+    const propertyHonoured = (p: CSSStyleProperty<unknown> | null) =>
+      p != null && p.type !== 'not-found'
+
+    const positionAbsolutePresent = propertyHonoured(styleInfo.position)
+    const numericPropsPresent =
+      verticalPins.some((p) => propertyHonoured(styleInfo[p])) &&
+      horizontalPins.some((p) => propertyHonoured(styleInfo[p]))
+
+    if (positionAbsolutePresent && numericPropsPresent) {
+      return 'absolute-position-and-honours-numeric-props'
+    }
+    if (numericPropsPresent) {
+      return 'honours-numeric-props-only'
+    }
+    return 'does-not-honour'
   },
   intrinsicElementThatSupportsChildren: (element: JSXElementChild) => {
     return (

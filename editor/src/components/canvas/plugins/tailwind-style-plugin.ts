@@ -69,7 +69,7 @@ const TailwindPropertyMapping: Record<string, string> = {
 }
 
 function isSupportedTailwindProperty(prop: unknown): prop is keyof typeof TailwindPropertyMapping {
-  return typeof prop === 'string' && prop in TailwindPropertyMapping
+  return typeof prop === 'string' && Object.values(TailwindPropertyMapping).some((v) => v === prop)
 }
 
 function stringifyPropertyValue(value: string | number): string {

@@ -57,6 +57,7 @@ import {
 } from '../../../inspector-strategies/inspector-strategy'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import * as EP from '../../../../../core/shared/element-path'
+import { getActivePlugin } from '../../../../canvas/plugins/style-plugins'
 
 type TLWH = 'top' | 'left' | 'width' | 'height'
 
@@ -100,6 +101,11 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
   const metadataRef = useRefEditorState(metadataSelector)
   const allElementPropsRef = useRefEditorState(allElementPropsSelector)
   const elementPathTreesRef = useRefEditorState(pathTreesSelector)
+  const styleInfoReaderRef = useRefEditorState((store) =>
+    getActivePlugin(store.editor).styleInfoFactory({
+      projectContents: store.editor.projectContents,
+    }),
+  )
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const originalGlobalFrame: CanvasRectangle = useEditorState(
@@ -226,6 +232,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
                 moveInspectorStrategy(
                   metadataRef.current,
                   allElementPropsRef.current,
+                  styleInfoReaderRef.current,
                   elementPathTreesRef.current,
                   selectedViewsRef.current,
                   projectContentsRef.current,
@@ -263,6 +270,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
                 directMoveInspectorStrategy(
                   metadataRef.current,
                   allElementPropsRef.current,
+                  styleInfoReaderRef.current,
                   elementPathTreesRef.current,
                   selectedViewsRef.current,
                   projectContentsRef.current,
@@ -302,6 +310,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
       originalGlobalFrame,
       projectContentsRef,
       selectedViewsRef,
+      styleInfoReaderRef,
     ],
   )
 
