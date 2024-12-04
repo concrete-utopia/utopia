@@ -14,7 +14,7 @@ import type {
   StyleMediaSizeModifier,
   StyleModifier,
 } from '../canvas-types'
-import { cssStyleProperty, type CSSStyleProperty } from '../canvas-types'
+import { cssStyleProperty, isStyleInfoKey, type CSSStyleProperty } from '../canvas-types'
 import * as UCL from './tailwind-style-plugin-utils/update-class-list'
 import { assertNever } from '../../../core/shared/utils'
 import {
@@ -35,7 +35,7 @@ export type TailwindMediaModifier = { type: 'media'; value: string }
 export type TailwindHoverModifier = { type: 'hover'; value: string }
 export type TailwindGeneralModifier = TailwindMediaModifier | TailwindHoverModifier
 
-const parseTailwindPropertyFactory =
+export const parseTailwindPropertyFactory =
   (
     config: Config | null,
     context: {
@@ -135,7 +135,7 @@ function getModifiers(
     .filter((m): m is StyleMediaSizeModifier => m != null)
 }
 
-const TailwindPropertyMapping: Record<string, string> = {
+export const TailwindPropertyMapping: Record<string, string> = {
   left: 'positionLeft',
   right: 'positionRight',
   top: 'positionTop',
@@ -191,7 +191,7 @@ type TailwindParsedStyle = {
   value: string
   variants?: { type: string; value: string }[]
 }
-function getTailwindClassMapping(
+export function getTailwindClassMapping(
   classes: string[],
   config: Config | null,
 ): Record<string, StyleValueVariants> {
@@ -333,6 +333,11 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => {
         }
       },
     updateStyles: (editorState, elementPath, updates) => {
+      const containingScene = MetadataUtils.getParentSceneMetadata(
+        editorState.jsxMetadata,
+        elementPath,
+      )
+      const sceneWidth = containingScene?.specialSizeMeasurements?.clientWidth
       const propsToDelete = mapDropNulls(
         (update) =>
           update.type !== 'delete' || TailwindPropertyMapping[update.property] == null // TODO: make this type-safe
@@ -356,7 +361,37 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => {
         elementPath,
         [...propsToDelete, ...propsToSet],
         config,
+        { sceneWidth: sceneWidth },
       )
     },
   }
+}
+
+export function getPropertiesToAppliedModifiersMap(
+  currentClassNameAttribute: string,
+  propertyNames: string[],
+  config: Config | null,
+  context: {
+    sceneWidth?: number
+  },
+): Record<string, StyleModifier[]> {
+  const parseTailwindProperty = parseTailwindPropertyFactory(config, context)
+  const classMapping = getTailwindClassMapping(currentClassNameAttribute.split(' '), config)
+  return propertyNames.reduce((acc, propertyName) => {
+    if (!isStyleInfoKey(propertyName)) {
+      return acc
+    }
+    const parsedProperty = parseTailwindProperty(
+      classMapping[TailwindPropertyMapping[propertyName]],
+      propertyName,
+    )
+    if (parsedProperty?.type == 'property' && parsedProperty.appliedModifiers != null) {
+      return {
+        ...acc,
+        [propertyName]: parsedProperty.appliedModifiers,
+      }
+    } else {
+      return acc
+    }
+  }, {} as Record<string, StyleModifier[]>)
 }

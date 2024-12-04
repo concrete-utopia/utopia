@@ -397,9 +397,6 @@ const DeviceSizeButton = React.memo<{ name: string; sizePx: number }>((props) =>
       }
       e.preventDefault()
       e.stopPropagation()
-      // eslint-disable-next-line
-      // @ts-ignore
-      e.stopImmediatePropagation()
     }}
     onMouseDown={(e) => e.stopPropagation()}
   >
