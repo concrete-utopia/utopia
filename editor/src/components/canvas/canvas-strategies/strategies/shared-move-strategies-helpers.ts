@@ -268,7 +268,7 @@ export function getDirectMoveCommandsForSelectedElement(
 
 export function getMoveCommandsForDrag(
   elementParentBounds: CanvasRectangle | null,
-  element: StyleInfo,
+  element: AbsolutePinsFromStyleInfo,
   selectedElement: ElementPath,
   mappedPath: ElementPath,
   drag: CanvasVector,
@@ -467,7 +467,7 @@ export function directMoveInspectorStrategy(
 }
 
 export function createMoveCommandsForElementPositionRelative(
-  styleInfo: StyleInfo,
+  styleInfo: AbsolutePinsFromStyleInfo,
   selectedElement: ElementPath,
   mappedPath: ElementPath,
   drag: CanvasVector,
@@ -517,7 +517,7 @@ export function createMoveCommandsForElementPositionRelative(
 }
 
 export function createMoveCommandsForElementCreatingMissingPins(
-  styleInfo: StyleInfo,
+  styleInfo: AbsolutePinsFromStyleInfo,
   selectedElement: ElementPath,
   mappedPath: ElementPath,
   drag: CanvasVector,
@@ -645,7 +645,9 @@ export function snapDrag(
 const horizontalPins: Array<AbsolutePin> = ['left', 'right']
 const verticalPins: Array<AbsolutePin> = ['top', 'bottom']
 
-function ensureAtLeastOnePinPerDimension(styleInfo: StyleInfo): {
+export type AbsolutePinsFromStyleInfo = Pick<StyleInfo, AbsolutePin>
+
+function ensureAtLeastOnePinPerDimension(styleInfo: AbsolutePinsFromStyleInfo): {
   existingPins: Array<AbsolutePin>
   extendedPins: Array<AbsolutePin>
 } {
