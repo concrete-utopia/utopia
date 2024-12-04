@@ -230,6 +230,11 @@ function getAppropriateLocalFrame(
     : MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(selectedElement, startingMetadata)
 }
 
+interface CommandsAndIntendedBounds {
+  commands: Array<SetCssLengthProperty | AdjustCssLengthProperties>
+  intendedBounds: Array<CanvasFrameAndTarget>
+}
+
 export function getDirectMoveCommandsForSelectedElement(
   projectContents: ProjectContentTreeRoot,
   startingMetadata: ElementInstanceMetadataMap,
@@ -241,10 +246,7 @@ export function getDirectMoveCommandsForSelectedElement(
   leftOrTop: 'left' | 'top',
   newPixelValue: number,
   options?: MoveCommandsOptions,
-): {
-  commands: Array<SetCssLengthProperty | AdjustCssLengthProperties>
-  intendedBounds: Array<CanvasFrameAndTarget>
-} {
+): CommandsAndIntendedBounds {
   const localFrame = getAppropriateLocalFrame(options, selectedElement, startingMetadata)
 
   const drag = canvasVector({
@@ -264,6 +266,45 @@ export function getDirectMoveCommandsForSelectedElement(
   )
 }
 
+export function getMoveCommandsForDrag(
+  elementParentBounds: CanvasRectangle | null,
+  element: StyleInfo,
+  selectedElement: ElementPath,
+  mappedPath: ElementPath,
+  drag: CanvasVector,
+  globalFrame: CanvasRectangle | null,
+  localFrame: LocalRectangle | null,
+  parentFlexDirection: FlexDirection | null,
+  ignoreLocalFrame: boolean,
+): CommandsAndIntendedBounds {
+  if (ignoreLocalFrame) {
+    return createMoveCommandsForElementPositionRelative(
+      element,
+      selectedElement,
+      mappedPath,
+      drag,
+      globalFrame,
+      elementParentBounds,
+      parentFlexDirection,
+    )
+  }
+
+  if (globalFrame == null || localFrame == null) {
+    return { commands: [], intendedBounds: [] }
+  }
+
+  return createMoveCommandsForElementCreatingMissingPins(
+    element,
+    selectedElement,
+    mappedPath,
+    drag,
+    globalFrame,
+    localFrame,
+    elementParentBounds,
+    parentFlexDirection,
+  )
+}
+
 export function getMoveCommandsForSelectedElement(
   projectContents: ProjectContentTreeRoot,
   startingMetadata: ElementInstanceMetadataMap,
@@ -274,10 +315,7 @@ export function getMoveCommandsForSelectedElement(
   mappedPath: ElementPath,
   drag: CanvasVector,
   options?: MoveCommandsOptions,
-): {
-  commands: Array<SetCssLengthProperty | AdjustCssLengthProperties>
-  intendedBounds: Array<CanvasFrameAndTarget>
-} {
+): CommandsAndIntendedBounds {
   const elementMetadata = MetadataUtils.findElementByElementPath(
     startingMetadata, // TODO should this be using the current metadata?
     selectedElement,
@@ -304,6 +342,11 @@ export function getMoveCommandsForSelectedElement(
       : null) ??
     null
 
+  const element = styleInfoReader(selectedElement)
+  if (element == null) {
+    return { commands: [], intendedBounds: [] }
+  }
+
   const globalFrame = nullIfInfinity(
     MetadataUtils.getFrameInCanvasCoords(selectedElement, startingMetadata),
   )
@@ -312,37 +355,16 @@ export function getMoveCommandsForSelectedElement(
     MetadataUtils.getLocalFrame(selectedElement, startingMetadata, EP.parentPath(mappedPath)),
   )
 
-  const element = styleInfoReader(selectedElement)
-
-  if (element == null) {
-    return { commands: [], intendedBounds: [] }
-  }
-
-  if (options?.ignoreLocalFrame === true) {
-    return createMoveCommandsForElementPositionRelative(
-      element,
-      selectedElement,
-      mappedPath,
-      drag,
-      globalFrame,
-      elementParentBounds,
-      elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null,
-    )
-  }
-
-  if (globalFrame == null || localFrame == null) {
-    return { commands: [], intendedBounds: [] }
-  }
-
-  return createMoveCommandsForElementCreatingMissingPins(
+  return getMoveCommandsForDrag(
+    elementParentBounds,
     element,
     selectedElement,
     mappedPath,
     drag,
     globalFrame,
     localFrame,
-    elementParentBounds,
     elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null,
+    options?.ignoreLocalFrame ?? false,
   )
 }
 

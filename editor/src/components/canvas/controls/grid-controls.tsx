@@ -110,6 +110,7 @@ import {
   GridCellTestId,
   GridControlKey,
   gridEdgeToEdgePosition,
+  GridElementChildContainingBlockKey,
   GridElementContainingBlockKey,
   GridMeasurementHelperKey,
   GridMeasurementHelperMap,
@@ -2050,7 +2051,7 @@ const GridElementContainingBlock = React.memo<GridElementContainingBlockProps>((
       style={style}
     >
       <div
-        id={`${GridElementContainingBlockKey(props.gridPath)}-child`}
+        id={GridElementChildContainingBlockKey(props.gridPath)}
         style={{
           ...gridChildStyle,
           pointerEvents: 'none',
@@ -2529,7 +2530,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
           parentGrid={rulerMarkerData.parentGrid}
-          marker={rulerMarkerData.columnStart}
+          marker={frozenMarkers?.columnStart ?? rulerMarkerData.columnStart}
           axis={'column'}
           visible={'visible'}
           onMouseDown={columnMarkerMouseDown('column-start')}
@@ -2538,7 +2539,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
           parentGrid={rulerMarkerData.parentGrid}
-          marker={rulerMarkerData.columnEnd}
+          marker={frozenMarkers?.columnEnd ?? rulerMarkerData.columnEnd}
           axis={'column'}
           visible={'visible'}
           onMouseDown={columnMarkerMouseDown('column-end')}
@@ -2570,7 +2571,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
           parentGrid={rulerMarkerData.parentGrid}
-          marker={rulerMarkerData.rowStart}
+          marker={frozenMarkers?.rowStart ?? rulerMarkerData.rowStart}
           axis={'row'}
           visible={'visible'}
           onMouseDown={rowMarkerMouseDown('row-start')}
@@ -2579,7 +2580,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
           parentGrid={rulerMarkerData.parentGrid}
-          marker={rulerMarkerData.rowEnd}
+          marker={frozenMarkers?.rowEnd ?? rulerMarkerData.rowEnd}
           axis={'row'}
           visible={'visible'}
           onMouseDown={rowMarkerMouseDown('row-end')}
@@ -2859,6 +2860,14 @@ const RulerMarkerIndicator = React.memo(
 
     const labelClass = 'ruler-marker-label'
 
+    const edge: GridResizeEdge = `${props.axis}-${props.marker.bound}`
+
+    const resizeControlRef = useRefEditorState((store) =>
+      store.editor.canvas.interactionSession?.activeControl.type !== 'GRID_RESIZE_RULER_HANDLE'
+        ? null
+        : store.editor.canvas.interactionSession.activeControl,
+    )
+
     return (
       <div
         data-testid={props.testID}
@@ -2874,7 +2883,7 @@ const RulerMarkerIndicator = React.memo(
         onMouseDown={props.onMouseDown}
         css={{
           [`> .${labelClass}`]: {
-            visibility: 'hidden',
+            visibility: resizeControlRef.current?.edge === edge ? 'visible' : 'hidden',
           },
           ':hover': {
             [`> .${labelClass}`]: {

@@ -35,6 +35,7 @@ import {
   getCommandsForGridItemPlacement,
   sortElementsByGridPosition,
 } from './grid-helpers'
+import type { GridCellCoordinates } from './grid-cell-bounds'
 
 export const gridChangeElementLocationStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -171,20 +172,23 @@ function getCommandsAndPatchForGridChangeElementLocation(
   }
 }
 
-export function runGridChangeElementLocation(
-  jsxMetadata: ElementInstanceMetadataMap,
+interface NewGridElementProps {
+  gridElementProperties: GridElementProperties
+  targetCellCoords: GridCellCoordinates
+  targetRootCell: GridCellCoordinates
+}
+
+export function getNewGridElementProps(
   interactionData: DragInteractionData,
   selectedElementMetadata: ElementInstanceMetadata,
   gridCellGlobalFrames: GridCellGlobalFrames,
-  gridTemplate: GridContainerProperties,
   newPathAfterReparent: ElementPath | null,
-): CanvasCommand[] {
+): NewGridElementProps | null {
   if (interactionData.drag == null) {
-    return []
+    return null
   }
 
   const isReparent = newPathAfterReparent != null
-  const pathForCommands = isReparent ? newPathAfterReparent : selectedElementMetadata.elementPath // when reparenting, we want to use the new path for commands
 
   const gridConfig = isReparent
     ? {
@@ -197,7 +201,7 @@ export function runGridChangeElementLocation(
         selectedElementMetadata,
       )
   if (gridConfig == null) {
-    return []
+    return null
   }
   const { mouseCellPosInOriginalElement, originalCellBounds } = gridConfig
 
@@ -207,7 +211,7 @@ export function runGridChangeElementLocation(
     mouseCellPosInOriginalElement,
   )
   if (targetGridCellData == null) {
-    return []
+    return null
   }
   const { targetCellCoords, targetRootCell } = targetGridCellData
 
@@ -283,10 +287,39 @@ export function runGridChangeElementLocation(
     gridRowEnd: rowBounds.end,
   }
 
+  return {
+    gridElementProperties: gridProps,
+    targetCellCoords: targetCellCoords,
+    targetRootCell: targetRootCell,
+  }
+}
+
+export function runGridChangeElementLocation(
+  jsxMetadata: ElementInstanceMetadataMap,
+  interactionData: DragInteractionData,
+  selectedElementMetadata: ElementInstanceMetadata,
+  gridCellGlobalFrames: GridCellGlobalFrames,
+  gridTemplate: GridContainerProperties,
+  newPathAfterReparent: ElementPath | null,
+): CanvasCommand[] {
+  const newGridElementProps = getNewGridElementProps(
+    interactionData,
+    selectedElementMetadata,
+    gridCellGlobalFrames,
+    newPathAfterReparent,
+  )
+  if (newGridElementProps == null) {
+    return []
+  }
+  const { gridElementProperties, targetCellCoords, targetRootCell } = newGridElementProps
+
+  const isReparent = newPathAfterReparent != null
+  const pathForCommands = isReparent ? newPathAfterReparent : selectedElementMetadata.elementPath // when reparenting, we want to use the new path for commands
+
   const gridCellMoveCommands = getCommandsForGridItemPlacement(
     pathForCommands,
     gridTemplate,
-    gridProps,
+    gridElementProperties,
   )
 
   // The siblings of the grid element being moved
