@@ -114,6 +114,7 @@ import {
   findJSXElementChildAtPath,
   elementChildSupportsChildrenAlsoText,
   componentHonoursStyleProps,
+  componentHonoursPropsPositionFromStyleInfo,
 } from './element-template-utils'
 import {
   isImportedComponent,
@@ -1325,29 +1326,25 @@ export const MetadataUtils = {
       }
     }
   },
-  targetHonoursPropsPositionFromStyleInfo(styleInfo: StyleInfo | null): HonoursPosition {
-    if (styleInfo == null) {
+  targetHonoursPropsPositionFromStyleInfo(
+    projectContents: ProjectContentTreeRoot,
+    metadata: ElementInstanceMetadata | null,
+    styleInfo: StyleInfo | null,
+  ): HonoursPosition {
+    if (styleInfo == null || metadata == null) {
       return 'does-not-honour'
     }
 
-    const horizontalPins = ['left', 'right'] as const
-    const verticalPins = ['top', 'bottom'] as const
-
-    const propertyHonoured = (p: CSSStyleProperty<unknown> | null) =>
-      p != null && p.type !== 'not-found'
-
-    const positionAbsolutePresent = propertyHonoured(styleInfo.position)
-    const numericPropsPresent =
-      verticalPins.some((p) => propertyHonoured(styleInfo[p])) &&
-      horizontalPins.some((p) => propertyHonoured(styleInfo[p]))
-
-    if (positionAbsolutePresent && numericPropsPresent) {
+    const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
+      projectContents,
+      metadata.importInfo,
+    )
+    if (underlyingComponent == null) {
+      // Could be an external third party component, assuming true for now.
       return 'absolute-position-and-honours-numeric-props'
     }
-    if (numericPropsPresent) {
-      return 'honours-numeric-props-only'
-    }
-    return 'does-not-honour'
+
+    return componentHonoursPropsPositionFromStyleInfo(styleInfo)
   },
   intrinsicElementThatSupportsChildren: (element: JSXElementChild) => {
     return (

@@ -30,7 +30,11 @@ export function honoursPropsPositionFromStyleInfo(
   canvasState: InteractionCanvasState,
   element: ElementPath,
 ): HonoursPosition {
-  return MetadataUtils.targetHonoursPropsPositionFromStyleInfo(canvasState.styleInfoReader(element))
+  return MetadataUtils.targetHonoursPropsPositionFromStyleInfo(
+    canvasState.projectContents,
+    MetadataUtils.findElementByElementPath(canvasState.startingMetadata, element),
+    canvasState.styleInfoReader(element),
+  )
 }
 
 export function honoursPropsPosition(
