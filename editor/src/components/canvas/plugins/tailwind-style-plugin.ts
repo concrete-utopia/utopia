@@ -395,3 +395,11 @@ export function getPropertiesToAppliedModifiersMap(
     }
   }, {} as Record<string, StyleModifier[]>)
 }
+
+export function getTailwindVariantFromAppliedModifier(
+  appliedModifier: StyleMediaSizeModifier | null,
+): string | null {
+  return appliedModifier?.modifierOrigin?.type === 'tailwind'
+    ? appliedModifier.modifierOrigin.variant
+    : null
+}

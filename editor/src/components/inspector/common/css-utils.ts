@@ -86,6 +86,7 @@ import { memoize } from '../../../core/shared/memoize'
 import * as csstree from 'css-tree'
 import type { IcnProps } from '../../../uuiui'
 import { cssNumberEqual } from '../../canvas/controls/select-mode/controls-common'
+import type { StyleInfo } from '../../canvas/canvas-types'
 import type { CompValue, StyleMediaSizeModifier, StyleModifier } from '../../canvas/canvas-types'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
@@ -6072,4 +6073,16 @@ export function selectValueByBreakpoint<T extends { modifiers?: StyleModifier[] 
     return null
   }
   return chosen
+}
+
+export function getAppliedMediaSizeModifierFromBreakpoint(
+  styleInfo: StyleInfo,
+  prop: keyof StyleInfo,
+): StyleMediaSizeModifier | null {
+  if (styleInfo == null) {
+    return null
+  }
+  return styleInfo[prop]?.type === 'property'
+    ? (styleInfo[prop].appliedModifiers ?? []).find((m) => m.type === 'media-size') ?? null
+    : null
 }
