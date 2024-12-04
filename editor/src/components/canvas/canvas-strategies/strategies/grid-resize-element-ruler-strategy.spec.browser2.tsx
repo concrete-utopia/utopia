@@ -197,11 +197,11 @@ export var storyboard = (
         data-uid='flow2'
         data-testid='flow2'
       />
-	  <div
+      <div
         style={{
           backgroundColor: '#f0f',
-		  width: 50,
-		  height: 50,
+          width: 50,
+          height: 50,
         }}
         data-uid='flow-fixed'
         data-testid='flow-fixed'
@@ -223,7 +223,7 @@ export var storyboard = (
           gridColumn: 1,
           gridRow: 2,
           width: 50,
-		  height: 50,
+          height: 50,
         }}
         data-uid='pinned-fixed'
         data-testid='pinned-fixed'
