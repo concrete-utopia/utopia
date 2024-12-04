@@ -140,7 +140,7 @@ describe('interactionCancel', () => {
         'zero-drag-not-permitted',
       ),
     )
-    const actualResult = interactionCancel(editorStore, dispatchResultFromEditorStore(editorStore))
+    const actualResult = interactionCancel(dispatchResultFromEditorStore(editorStore))
     expect(actualResult.newStrategyState.commandDescriptions).toHaveLength(0)
     expect(actualResult.newStrategyState.currentStrategyCommands).toHaveLength(0)
     expect(actualResult.newStrategyState.currentStrategy).toBeNull()

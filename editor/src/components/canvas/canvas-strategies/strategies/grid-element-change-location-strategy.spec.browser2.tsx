@@ -1,6 +1,6 @@
 import * as EP from '../../../../core/shared/element-path'
 import { offsetPoint, windowPoint } from '../../../../core/shared/math-utils'
-import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import CanvasActions from '../../canvas-actions'
 import { GridCellTestId } from '../../controls/grid-controls-for-strategies'
 import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
@@ -518,6 +518,101 @@ export var storyboard = (
   </Storyboard>
 )
 `
+
+      const ProjectCodeWithBRPins = `import { Scene, Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        data-uid='grid'
+        style={{
+          backgroundColor: '#fefefe',
+          position: 'absolute',
+          left: 123,
+          top: 133,
+          width: 461,
+          height: 448,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gridTemplateRows: '1fr 1fr',
+          gridGap: 0,
+        }}
+      >
+        <div
+          data-uid='child'
+          data-testid='child'
+          style={{
+            backgroundColor: '#59a6ed',
+            position: 'absolute',
+            right: 12,
+            bottom: 16,
+            width: 144,
+            height: 134,
+            gridColumn: 1,
+            gridRow: 1,
+          }}
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+
+      it('can move absolute element inside a grid cell maintaining right and bottom pins', async () => {
+        const editor = await renderTestEditorWithCode(
+          ProjectCodeWithBRPins,
+          'await-first-dom-report',
+        )
+
+        const child = editor.renderedDOM.getByTestId('child')
+
+        {
+          const { bottom, right, gridColumn, gridRow } = child.style
+          expect({ bottom, right, gridColumn, gridRow }).toEqual({
+            gridColumn: '1',
+            gridRow: '1',
+            right: '12px',
+            bottom: '16px',
+          })
+        }
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene/grid/child')])
+
+        const childBounds = child.getBoundingClientRect()
+        const childCenter = windowPoint({
+          x: Math.floor(childBounds.left + childBounds.width / 2),
+          y: Math.floor(childBounds.top + childBounds.height / 2),
+        })
+
+        const endPoint = offsetPoint(childCenter, windowPoint({ x: 20, y: 20 }))
+
+        const dragTarget = editor.renderedDOM.getByTestId(
+          GridCellTestId(EP.fromString('sb/scene/grid/child')),
+        )
+        await mouseDownAtPoint(dragTarget, childCenter)
+        await mouseMoveToPoint(dragTarget, endPoint)
+        await mouseUpAtPoint(dragTarget, endPoint)
+
+        const { bottom, right, gridColumn, gridRow } = child.style
+        expect({ bottom, right, gridColumn, gridRow }).toEqual({
+          gridColumn: '1',
+          gridRow: '1',
+          right: '-8px',
+          bottom: '-4px',
+        })
+      })
       it('can move absolute element inside a grid cell', async () => {
         const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
@@ -729,7 +824,7 @@ export var storyboard = (
             gridRowStart: '1',
             gridRowEnd: 'auto',
             left: '59px',
-            top: '59.5px',
+            top: '60px',
           })
         }
       })

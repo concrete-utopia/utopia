@@ -71,6 +71,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { gridChangeElementLocationStrategy } from './strategies/grid-change-element-location-strategy'
 import { resizeGridStrategy } from './strategies/resize-grid-strategy'
 import { gridResizeElementStrategy } from './strategies/grid-resize-element-strategy'
+import { gridResizeElementRulerStrategy } from './strategies/grid-resize-element-ruler-strategy'
 import { gridChangeElementLocationDuplicateStrategy } from './strategies/grid-change-element-location-duplicate-strategy'
 import { setGridGapStrategy } from './strategies/set-grid-gap-strategy'
 import type { CanvasCommand } from '../commands/commands'
@@ -141,6 +142,7 @@ const resizeStrategies: MetaCanvasStrategy = (
       basicResizeStrategy,
       resizeGridStrategy,
       gridResizeElementStrategy,
+      gridResizeElementRulerStrategy,
     ],
   )
 }
@@ -682,7 +684,7 @@ export function combineApplicableControls(
   let gridControlsTargets: Map<WhenToShowControl, Array<GridIdentifier>> = new Map()
   for (const control of gridControlsInstances) {
     if (isGridControlsProps(control.props)) {
-      const possibleTargets = gridControlsTargets.get(control.show)
+      let possibleTargets = gridControlsTargets.get(control.show)
       if (possibleTargets == null) {
         gridControlsTargets.set(control.show, control.props.targets)
       } else {

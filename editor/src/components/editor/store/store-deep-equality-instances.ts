@@ -461,6 +461,7 @@ import type {
   GridResizeHandle,
   GridResizeEdge,
   GridGapHandle,
+  GridResizeRulerHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import {
   boundingArea,
@@ -473,6 +474,7 @@ import {
   gridAxisHandle,
   gridResizeHandle,
   gridGapHandle,
+  gridResizeRulerHandle,
 } from '../../canvas/canvas-strategies/interaction-state'
 import type { Modifiers } from '../../../utils/modifiers'
 import type {
@@ -2498,6 +2500,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.justifySelf,
         newSize.alignSelf,
         newSize.borderWidths,
+        newSize.parentGridFrame,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
@@ -3179,6 +3182,15 @@ export const GridResizeHandleKeepDeepEquality: KeepDeepEqualityCall<GridResizeHa
     gridResizeHandle,
   )
 
+export const GridResizeMarkerHandleKeepDeepEquality: KeepDeepEqualityCall<GridResizeRulerHandle> =
+  combine2EqualityCalls(
+    (handle) => handle.id,
+    createCallWithTripleEquals<string>(),
+    (handle) => handle.edge,
+    createCallWithTripleEquals<GridResizeEdge>(),
+    gridResizeRulerHandle,
+  )
+
 export const GridGapHandleKeepDeepEquality: KeepDeepEqualityCall<GridGapHandle> =
   combine1EqualityCall((handle) => handle.axis, createCallWithTripleEquals<Axis>(), gridGapHandle)
 
@@ -3242,9 +3254,13 @@ export const CanvasControlTypeKeepDeepEquality: KeepDeepEqualityCall<CanvasContr
         return GridGapHandleKeepDeepEquality(oldValue, newValue)
       }
       break
+    case 'GRID_RESIZE_RULER_HANDLE':
+      if (newValue.type === oldValue.type) {
+        return GridResizeMarkerHandleKeepDeepEquality(oldValue, newValue)
+      }
+      break
     default:
-      const _exhaustiveCheck: never = oldValue
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+      assertNever(oldValue)
   }
   return keepDeepEqualityResult(newValue, false)
 }

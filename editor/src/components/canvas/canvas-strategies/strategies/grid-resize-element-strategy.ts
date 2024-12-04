@@ -3,9 +3,12 @@ import * as EP from '../../../../core/shared/element-path'
 import type {
   GridElementProperties,
   GridPositionOrSpan,
-  GridPositionValue,
 } from '../../../../core/shared/element-template'
-import { gridSpanNumeric, isGridSpan } from '../../../../core/shared/element-template'
+import {
+  gridSpanNumeric,
+  isGridPositionValue,
+  isGridSpan,
+} from '../../../../core/shared/element-template'
 import {
   type CanvasRectangle,
   isInfinityRectangle,
@@ -131,7 +134,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
         gridPropsNumeric.gridRowStart.numericalPosition
 
       const gridProps: GridElementProperties = {
-        gridColumnStart: normalizePositionAfterResize(
+        gridColumnStart: normalizeGridElementPositionAfterResize(
           elementGridPropertiesFromProps.gridColumnStart,
           gridPropsNumeric.gridColumnStart,
           columnCount,
@@ -140,7 +143,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
           gridPropsNumeric.gridColumnEnd,
           interactionSession.activeControl.edge,
         ),
-        gridColumnEnd: normalizePositionAfterResize(
+        gridColumnEnd: normalizeGridElementPositionAfterResize(
           elementGridPropertiesFromProps.gridColumnEnd,
           gridPropsNumeric.gridColumnEnd,
           columnCount,
@@ -149,7 +152,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
           gridPropsNumeric.gridColumnStart,
           interactionSession.activeControl.edge,
         ),
-        gridRowStart: normalizePositionAfterResize(
+        gridRowStart: normalizeGridElementPositionAfterResize(
           elementGridPropertiesFromProps.gridRowStart,
           gridPropsNumeric.gridRowStart,
           rowCount,
@@ -158,7 +161,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
           gridPropsNumeric.gridRowEnd,
           interactionSession.activeControl.edge,
         ),
-        gridRowEnd: normalizePositionAfterResize(
+        gridRowEnd: normalizeGridElementPositionAfterResize(
           elementGridPropertiesFromProps.gridRowEnd,
           gridPropsNumeric.gridRowEnd,
           rowCount,
@@ -171,7 +174,7 @@ export const gridResizeElementStrategy: CanvasStrategyFactory = (
 
       return strategyApplicationResult(
         getCommandsForGridItemPlacement(selectedElement, gridTemplate, gridProps),
-        [EP.parentPath(selectedElement)],
+        [EP.parentPath(selectedElement), selectedElement],
       )
     },
   }
@@ -221,13 +224,13 @@ function getNewGridPropsFromResizeBox(
     may have been there before the resize, and/or default it to 'auto' when it would become redundant.
     If the positions match a flow configuration, give priority to span notation.
 */
-function normalizePositionAfterResize(
+export function normalizeGridElementPositionAfterResize(
   position: GridPositionOrSpan | null,
-  resizedPosition: GridPositionValue,
+  resizedPosition: GridPositionOrSpan | null,
   size: number, // the number of cols/rows the cell occupies
   bound: 'start' | 'end',
   counterpart: GridPositionOrSpan | null,
-  counterpartResizedPosition: GridPositionValue,
+  counterpartResizedPosition: GridPositionOrSpan | null,
   edge: GridResizeEdge,
 ): GridPositionOrSpan | null {
   function isFlowResizeOnBound(
@@ -258,6 +261,7 @@ function normalizePositionAfterResize(
 
   if (
     isGridSpan(counterpart) &&
+    isGridPositionValue(counterpartResizedPosition) &&
     counterpartResizedPosition.numericalPosition === 1 &&
     bound === 'end'
   ) {
