@@ -64,6 +64,8 @@ const TailwindPropertyMapping: Record<string, string> = {
   overflow: 'overflow',
 
   zIndex: 'zIndex',
+
+  position: 'position',
 }
 
 function isSupportedTailwindProperty(prop: unknown): prop is keyof typeof TailwindPropertyMapping {
@@ -185,6 +187,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         zIndex: parseTailwindProperty(mapping[TailwindPropertyMapping.zIndex], 'zIndex'),
         flexWrap: parseTailwindProperty(mapping[TailwindPropertyMapping.flexWrap], 'flexWrap'),
         overflow: parseTailwindProperty(mapping[TailwindPropertyMapping.overflow], 'overflow'),
+        position: parseTailwindProperty(mapping[TailwindPropertyMapping.position], 'position'),
       }
     },
   updateStyles: (editorState, elementPath, updates) => {
