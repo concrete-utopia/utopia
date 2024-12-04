@@ -1,15 +1,15 @@
+import * as EP from '../../../../core/shared/element-path'
 import {
   selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
 } from '../../../../utils/utils.test-utils'
-import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
-import * as EP from '../../../../core/shared/element-path'
 import {
   RulerMarkerColumnEndTestId,
   RulerMarkerRowEndTestId,
   RulerMarkerRowStartTestId,
 } from '../../controls/grid-controls'
 import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from '../../event-helpers.test-utils'
+import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 
 describe('grid resize element ruler strategy', () => {
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Grid Ruler Markers', true)
@@ -119,6 +119,42 @@ describe('grid resize element ruler strategy', () => {
       expect(element.style.gridRowEnd).toBe('3')
     }
   })
+
+  it('can resize a non-stretching pinned element', async () => {
+    const renderResult = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
+
+    await selectComponentsForTest(renderResult, [EP.fromString('sb/grid/pinned-fixed')])
+
+    const control = await renderResult.renderedDOM.findByTestId(RulerMarkerColumnEndTestId)
+    const controlRect = control.getBoundingClientRect()
+    const startPoint = { x: controlRect.x + 5, y: controlRect.y + 5 }
+    const endPoint = { x: controlRect.x + 200, y: controlRect.y + 5 }
+    await mouseDownAtPoint(control, startPoint)
+    await mouseMoveToPoint(control, endPoint)
+    await mouseUpAtPoint(control, endPoint)
+
+    const element = await renderResult.renderedDOM.findByTestId('pinned-fixed')
+    expect(element.style.gridColumn).toBe('1 / 3')
+    expect(element.style.gridRow).toBe('2')
+  })
+
+  it('can resize a non-stretching flow element', async () => {
+    const renderResult = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
+
+    await selectComponentsForTest(renderResult, [EP.fromString('sb/grid/flow-fixed')])
+
+    const control = await renderResult.renderedDOM.findByTestId(RulerMarkerColumnEndTestId)
+    const controlRect = control.getBoundingClientRect()
+    const startPoint = { x: controlRect.x + 5, y: controlRect.y + 5 }
+    const endPoint = { x: controlRect.x + 200, y: controlRect.y + 5 }
+    await mouseDownAtPoint(control, startPoint)
+    await mouseMoveToPoint(control, endPoint)
+    await mouseUpAtPoint(control, endPoint)
+
+    const element = await renderResult.renderedDOM.findByTestId('flow-fixed')
+    expect(element.style.gridColumn).toBe('span 2')
+    expect(element.style.gridRow).toBe('auto')
+  })
 })
 
 const ProjectCode = `
@@ -161,6 +197,15 @@ export var storyboard = (
         data-uid='flow2'
         data-testid='flow2'
       />
+	  <div
+        style={{
+          backgroundColor: '#f0f',
+		  width: 50,
+		  height: 50,
+        }}
+        data-uid='flow-fixed'
+        data-testid='flow-fixed'
+      />
       <div
         style={{
           backgroundColor: '#f09',
@@ -171,6 +216,17 @@ export var storyboard = (
         }}
         data-uid='pinned'
         data-testid='pinned'
+      />
+      <div
+        style={{
+          backgroundColor: '#ff0',
+          gridColumn: 1,
+          gridRow: 2,
+          width: 50,
+		  height: 50,
+        }}
+        data-uid='pinned-fixed'
+        data-testid='pinned-fixed'
       />
     </div>
   </Storyboard>

@@ -11,7 +11,6 @@ import { canvasRectangle, isInfinityRectangle } from '../../../../core/shared/ma
 import { assertNever } from '../../../../core/shared/utils'
 import { gridContainerIdentifier, gridItemIdentifier } from '../../../editor/store/editor-state'
 import { isCSSKeyword } from '../../../inspector/common/css-utils'
-import { isFillOrStretchModeAppliedOnAnySide } from '../../../inspector/inspector-common'
 import {
   controlsForGridPlaceholders,
   GridResizeControls,
@@ -88,11 +87,6 @@ export const gridResizeElementRulerStrategy: CanvasStrategyFactory = (
         interactionSession.interactionData.drag == null ||
         interactionSession.activeControl.type !== 'GRID_RESIZE_RULER_HANDLE'
       ) {
-        return emptyStrategyApplicationResult
-      }
-
-      if (!isFillOrStretchModeAppliedOnAnySide(canvasState.startingMetadata, selectedElement)) {
-        // TODO this should be removed to support resizing cells that are not stretching
         return emptyStrategyApplicationResult
       }
 
