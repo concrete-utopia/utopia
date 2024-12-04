@@ -2253,10 +2253,6 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
       if (elementMetadata == null) {
         return null
       }
-      if (MetadataUtils.isPositionAbsolute(elementMetadata)) {
-        // disable markers for absolute positioning, we may revisit this in the future.
-        return null
-      }
 
       const elementGridProperties = elementMetadata.specialSizeMeasurements.elementGridProperties
       if (elementGridProperties == null) {

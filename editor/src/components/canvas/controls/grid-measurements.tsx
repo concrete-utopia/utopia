@@ -410,6 +410,9 @@ function getCellDimensions(
     gridMetadata,
     cellItemMetadata,
     cellItemMetadata.specialSizeMeasurements.elementGridProperties,
+    {
+      forcePositionRelative: true,
+    },
   )
   const cellRect = offsetRect(canvasRectangle(calculatedCellBounds), coordinateSystemBounds)
   const { width, height } = cellRect

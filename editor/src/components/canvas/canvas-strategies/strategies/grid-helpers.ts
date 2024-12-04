@@ -752,6 +752,9 @@ export function getGridRelativeContainingBlock(
   gridMetadata: ElementInstanceMetadata,
   cellMetadata: ElementInstanceMetadata,
   cellProperties: GridElementProperties,
+  options?: {
+    forcePositionRelative?: boolean
+  },
 ): LocalRectangle {
   const gridProperties = gridMetadata.specialSizeMeasurements.containerGridProperties
 
@@ -856,7 +859,9 @@ export function getGridRelativeContainingBlock(
       'row',
     )
   }
-  gridChildElement.style.position = cellMetadata.specialSizeMeasurements.position ?? 'initial'
+  gridChildElement.style.position = options?.forcePositionRelative
+    ? 'relative'
+    : cellMetadata.specialSizeMeasurements.position ?? 'initial'
   // Fill out the entire space available.
   gridChildElement.style.top = '0'
   gridChildElement.style.left = '0'
