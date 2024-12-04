@@ -407,22 +407,16 @@ export function interactionStart(
   }
 }
 
-export function interactionCancel(
-  storedState: EditorStoreFull,
-  result: EditorStoreUnpatched,
-): HandleStrategiesResult {
-  const interactionWasInProgress = interactionInProgress(
-    storedState.unpatchedEditor.canvas.interactionSession,
-  )
+export function interactionCancel(result: EditorStoreUnpatched): HandleStrategiesResult {
   const updatedEditorState: EditorState = {
     ...result.unpatchedEditor,
     canvas: {
       ...result.unpatchedEditor.canvas,
       interactionSession: null,
     },
-    jsxMetadata: interactionWasInProgress ? {} : result.unpatchedEditor.jsxMetadata,
-    domMetadata: interactionWasInProgress ? {} : result.unpatchedEditor.domMetadata,
-    spyMetadata: interactionWasInProgress ? {} : result.unpatchedEditor.spyMetadata,
+    jsxMetadata: result.unpatchedEditor.jsxMetadata,
+    domMetadata: result.unpatchedEditor.domMetadata,
+    spyMetadata: result.unpatchedEditor.spyMetadata,
   }
 
   return {
@@ -823,7 +817,7 @@ function handleStrategiesInner(
     }
   } else {
     if (cancelInteraction) {
-      return interactionCancel(storedState, result)
+      return interactionCancel(result)
     } else if (makeChangesPermanent) {
       return interactionFinished(strategies, storedState, result)
     } else {
