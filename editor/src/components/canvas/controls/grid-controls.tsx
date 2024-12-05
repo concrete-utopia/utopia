@@ -2697,7 +2697,7 @@ const SnapLine = React.memo(
             style={{
               position: 'absolute',
               top: axis === 'column' ? -labelHeight - RulerMarkerIconSize - 5 : -10,
-              left: axis === 'row' ? -(labelWidth - RulerMarkerIconSize + 30) : 0,
+              left: axis === 'row' ? -(labelWidth - RulerMarkerIconSize + 30) : -7,
               color: colorTheme.brandNeonPink.value,
               fontWeight: 700,
               textAlign: axis === 'row' ? 'right' : undefined,
@@ -2706,7 +2706,16 @@ const SnapLine = React.memo(
               zoom: 1 / canvasScale,
             }}
           >
-            {printPin(props.gridTemplate, targetMarker.position, axis)}
+            <span
+              style={{
+                backgroundColor: 'white',
+                padding: '2px 4px',
+                borderRadius: 2,
+                fontSize: 11 / canvasScale,
+              }}
+            >
+              {printPin(props.gridTemplate, targetMarker.position, axis)}
+            </span>
           </div>,
         )}
       </div>
