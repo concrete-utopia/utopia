@@ -8,12 +8,16 @@ import {
   type ElementInstanceMetadataMap,
   type GridContainerProperties,
 } from '../../../../core/shared/element-template'
-import type { CanvasVector } from '../../../../core/shared/math-utils'
+import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasRectangle,
   canvasRectangleToLocalRectangle,
+  isNotNullFiniteRectangle,
   nullIfInfinity,
+  offsetPoint,
   offsetRect,
+  rectangleContainsRectangleInclusive,
+  rectContainsPoint,
   windowPoint,
   zeroCanvasRect,
   zeroRectIfNullOrInfinity,
@@ -42,6 +46,7 @@ import {
   getParentGridTemplatesFromChildMeasurements,
   gridMoveStrategiesExtraCommands,
 } from './grid-helpers'
+import type { NewGridElementProps } from './grid-change-element-location-strategy'
 import {
   getNewGridElementProps,
   runGridChangeElementLocation,
@@ -177,6 +182,57 @@ function getCommandsAndPatchForGridAbsoluteMove(
   }
 }
 
+export function getNewGridElementPropsCheckingOriginalGrid(
+  originalGridMetadata: ElementInstanceMetadata,
+  interactionData: DragInteractionData,
+  selectedElementMetadata: ElementInstanceMetadata,
+  gridCellGlobalFrames: GridCellGlobalFrames,
+  coordinateSystemBounds: CanvasRectangle,
+  newPathAfterReparent: ElementPath | null,
+): NewGridElementProps | null {
+  if (interactionData.drag == null) {
+    return null
+  }
+
+  // Identify the containing block position and size.
+  const originalContainingBlockRectangle = getGridRelativeContainingBlock(
+    originalGridMetadata,
+    selectedElementMetadata,
+    selectedElementMetadata.specialSizeMeasurements.elementGridProperties,
+  )
+
+  // Capture the original position of the grid child.
+  const originalCanvasFrame = selectedElementMetadata.globalFrame
+  if (!isNotNullFiniteRectangle(originalCanvasFrame)) {
+    return null
+  }
+
+  // Identify if the new position of the grid child is wholly inside the containing block's
+  // global frame.
+  const containingBlockGlobalFrame = offsetRect(
+    canvasRectangle(originalContainingBlockRectangle),
+    coordinateSystemBounds,
+  )
+  const gridChildNewGlobalFrame = offsetRect(originalCanvasFrame, interactionData.drag)
+  const insideOriginalContainingBlock = rectangleContainsRectangleInclusive(
+    containingBlockGlobalFrame,
+    gridChildNewGlobalFrame,
+  )
+
+  // If the element is inside the containing block,
+  // then don't attempt to move it.
+  if (insideOriginalContainingBlock) {
+    return null
+  }
+
+  return getNewGridElementProps(
+    interactionData,
+    selectedElementMetadata,
+    gridCellGlobalFrames,
+    newPathAfterReparent,
+  )
+}
+
 function runGridMoveAbsolute(
   jsxMetadata: ElementInstanceMetadataMap,
   interactionData: DragInteractionData,
@@ -260,18 +316,6 @@ function runGridMoveAbsolute(
     ]
   }
 
-  // The element may be moving to a different grid position, which is then used
-  // to calculate the potentially new containing block.
-  const newGridElementProps = getNewGridElementProps(
-    interactionData,
-    selectedElementMetadata,
-    gridCellGlobalFrames,
-    null,
-  )
-
-  const coordinateSystemBounds =
-    selectedElementMetadata.specialSizeMeasurements.immediateParentBounds ?? zeroCanvasRect
-
   // Get the metadata of the original grid.
   const originalGridPath = findOriginalGrid(
     jsxMetadata,
@@ -284,6 +328,23 @@ function runGridMoveAbsolute(
   if (originalGrid == null) {
     return []
   }
+
+  const coordinateSystemBounds =
+    selectedElementMetadata.specialSizeMeasurements.immediateParentBounds
+  if (coordinateSystemBounds == null) {
+    return []
+  }
+
+  // The element may be moving to a different grid position, which is then used
+  // to calculate the potentially new containing block.
+  const newGridElementProps = getNewGridElementPropsCheckingOriginalGrid(
+    originalGrid,
+    interactionData,
+    selectedElementMetadata,
+    gridCellGlobalFrames,
+    coordinateSystemBounds,
+    null,
+  )
 
   // Get the containing block of the grid child.
   const containingBlockRectangle = getGridRelativeContainingBlock(
@@ -302,14 +363,16 @@ function runGridMoveAbsolute(
 
   // otherwise, return a change location + absolute adjustment
   return [
-    ...runGridChangeElementLocation(
-      jsxMetadata,
-      interactionData,
-      selectedElementMetadata,
-      gridCellGlobalFrames,
-      gridTemplate,
-      null,
-    ),
+    ...(newGridElementProps == null
+      ? []
+      : runGridChangeElementLocation(
+          jsxMetadata,
+          interactionData,
+          selectedElementMetadata,
+          gridCellGlobalFrames,
+          gridTemplate,
+          null,
+        )),
     ...getMoveCommandsForDrag(
       containingRect,
       element,
