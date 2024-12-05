@@ -2697,7 +2697,7 @@ const SnapLine = React.memo(
             style={{
               position: 'absolute',
               top: axis === 'column' ? -labelHeight - RulerMarkerIconSize - 5 : -10,
-              left: axis === 'row' ? -(labelWidth - RulerMarkerIconSize + 30) : 0,
+              left: axis === 'row' ? -(labelWidth - RulerMarkerIconSize + 30) : -7,
               color: colorTheme.brandNeonPink.value,
               fontWeight: 700,
               textAlign: axis === 'row' ? 'right' : undefined,
