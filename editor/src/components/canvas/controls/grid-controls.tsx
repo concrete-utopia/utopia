@@ -30,6 +30,7 @@ import type { CanvasPoint, CanvasRectangle, LocalRectangle } from '../../../core
 import {
   boundingRectangleArray,
   canvasPoint,
+  clamp,
   isFiniteRectangle,
   isInfinityRectangle,
   nullIfInfinity,
@@ -2606,14 +2607,21 @@ const ResizeOffsetLine = React.memo(
     }
     const isColumn = props.edge === 'column-start' || props.edge === 'column-end'
 
+    const top = isColumn
+      ? props.container.y
+      : clamp(props.container.y, props.container.y + props.container.height, props.drag.y)
+    const left = !isColumn
+      ? props.container.x
+      : clamp(props.container.x, props.container.x + props.container.width, props.drag.x)
+
     return (
       <div
         style={{
           position: 'absolute',
           width: isColumn ? 1 : props.container.width,
           height: !isColumn ? 1 : props.container.height,
-          top: isColumn ? props.container.y : props.drag.y,
-          left: !isColumn ? props.container.x : props.drag.x,
+          top: top,
+          left: left,
           borderLeft: isColumn ? `1px dashed ${colorTheme.primary.value}` : undefined,
           borderTop: !isColumn ? `1px dashed ${colorTheme.primary.value}` : undefined,
         }}
