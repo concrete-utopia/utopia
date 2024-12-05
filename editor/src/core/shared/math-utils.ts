@@ -322,6 +322,18 @@ export function rectangleContainsRectangle(
   )
 }
 
+export function rectangleContainsRectangleInclusive(
+  outer: CanvasRectangle,
+  inner: CanvasRectangle,
+): boolean {
+  return (
+    outer.x <= inner.x &&
+    inner.x + inner.width <= outer.x + outer.width &&
+    outer.y <= inner.y &&
+    inner.y + inner.height <= outer.y + outer.height
+  )
+}
+
 export function rectangleFromTLBR(
   topLeft: CanvasPoint,
   bottomRight: CanvasPoint,
