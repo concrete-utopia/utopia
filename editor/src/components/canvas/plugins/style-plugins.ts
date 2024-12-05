@@ -62,6 +62,10 @@ export interface StylePlugin {
     projectContents: ProjectContentTreeRoot,
     elementPath: ElementPath,
   ) => UntypedStyleInfo | null
+  getOrderedStylePropertyKeysFromElementProps: <T extends keyof StyleInfo>(
+    attributes: JSXAttributes,
+    properties: Array<T>,
+  ) => Array<T>
   updateStyles: (
     editorState: EditorState,
     elementPath: ElementPath,

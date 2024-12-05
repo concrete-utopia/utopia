@@ -15,6 +15,7 @@ import { emptyComments, jsExpressionValue } from '../../../core/shared/element-t
 import { getParsedClassList } from '../../../core/tailwind/tailwind-class-list-utils'
 import { isLeft } from '../../../core/shared/either'
 import { textDecorationLine } from '../../../uuiui'
+import { objectKeys } from '../../../core/shared/object-utils'
 
 const underscoresToSpaces = (s: string | undefined) => s?.replace(/[-_]/g, ' ')
 
@@ -122,6 +123,31 @@ function toCamelCase(str: string): string {
     .replace(/[^a-zA-Z]/g, '')
 }
 
+const OrderedTailwindProperties: Record<keyof StyleInfo, number> = {
+  gap: 1,
+  flexDirection: 2,
+  left: 3,
+  right: 4,
+  top: 5,
+  bottom: 6,
+  width: 7,
+  height: 8,
+  flexBasis: 9,
+  padding: 10,
+  paddingTop: 11,
+  paddingRight: 12,
+  paddingBottom: 13,
+  paddingLeft: 14,
+  borderRadius: 15,
+  borderTopLeftRadius: 16,
+  borderTopRightRadius: 17,
+  borderBottomRightRadius: 18,
+  borderBottomLeftRadius: 19,
+  zIndex: 20,
+  flexWrap: 21,
+  overflow: 22,
+}
+
 function stringifyPropertyValue(value: string | number): string {
   switch (typeof value) {
     case 'number':
@@ -227,6 +253,15 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         overflow: parseTailwindProperty(untypedStyleInfo, 'overflow'),
       }
     },
+  getOrderedStylePropertyKeysFromElementProps: (props, properties) => {
+    return mapDropNulls((prop) => {
+      const property = TailwindPlugin(config).readStyleFromElementProps(props, prop)
+      if (property == null || property.type === 'not-found') {
+        return null
+      }
+      return prop
+    }, properties).sort((a, b) => OrderedTailwindProperties[a] - OrderedTailwindProperties[b])
+  },
   updateStyles: (editorState, elementPath, updates) => {
     const propsToDelete = mapDropNulls(
       (update) =>
