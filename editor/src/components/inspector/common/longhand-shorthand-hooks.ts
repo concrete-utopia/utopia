@@ -12,7 +12,6 @@ import {
   unsetProperty,
 } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { useEditorState } from '../../editor/store/store-hook'
 import type { PropertyStatus } from './control-status'
 import { getControlStatusFromPropertyStatus } from './control-status'
 import { getControlStyles } from './control-styles'
@@ -22,11 +21,12 @@ import type { ReadonlyRef } from './inspector-utils'
 import type { InspectorInfo, PathMappingFn } from './property-path-hooks'
 import {
   InspectorPropsContext,
-  ParsedValues,
   useGetOrderedPropertyKeys,
   useInspectorContext,
   useInspectorInfo,
 } from './property-path-hooks'
+import { useRefEditorState } from '../../editor/store/store-hook'
+import { getActivePlugin } from '../../canvas/plugins/style-plugins'
 
 function getShadowedLonghandShorthandValue<
   LonghandKey extends ParsedPropertiesKeys,
@@ -122,7 +122,13 @@ export function useInspectorInfoLonghandShorthand<
     pathMappingFn,
   )
 
-  const allOrderedPropKeys = useGetOrderedPropertyKeys(pathMappingFn, [...longhands, shorthand])
+  const stylePluginRef = useRefEditorState((store) => getActivePlugin(store.editor))
+
+  const allOrderedPropKeys = useGetOrderedPropertyKeys(
+    pathMappingFn,
+    [...longhands, shorthand],
+    stylePluginRef.current,
+  )
 
   const longhandResults = longhands.map((longhand) => {
     // we follow the Rules of Hooks because we know that the length of the longhands array is stable during the lifecycle of this hook
@@ -138,7 +144,11 @@ export function useInspectorInfoLonghandShorthand<
 
     // we follow the Rules of Hooks because we know that the length of the longhands array is stable during the lifecycle of this hook
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const orderedPropKeys = useGetOrderedPropertyKeys(pathMappingFn, [longhand, shorthand])
+    const orderedPropKeys = useGetOrderedPropertyKeys(
+      pathMappingFn,
+      [longhand, shorthand],
+      stylePluginRef.current,
+    )
 
     const { value, propertyStatus } = getShadowedLonghandShorthandValue(
       longhand,
