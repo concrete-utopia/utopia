@@ -18,6 +18,7 @@ import {
 import { emptyComments, type JSXAttributes } from 'utopia-shared/src/types'
 import * as PP from '../../../core/shared/property-path'
 import { jsExpressionValue } from '../../../core/shared/element-template'
+import { objectKeys } from '../../../core/shared/object-utils'
 
 function parseTailwindProperty<T extends keyof StyleInfo>(
   value: string | number | undefined,
@@ -64,6 +65,31 @@ const TailwindPropertyMapping: Record<string, string> = {
   overflow: 'overflow',
 
   zIndex: 'zIndex',
+}
+
+const OrderedTailwindProperties: Record<keyof StyleInfo, number> = {
+  gap: 1,
+  flexDirection: 2,
+  left: 3,
+  right: 4,
+  top: 5,
+  bottom: 6,
+  width: 7,
+  height: 8,
+  flexBasis: 9,
+  padding: 10,
+  paddingTop: 11,
+  paddingRight: 12,
+  paddingBottom: 13,
+  paddingLeft: 14,
+  borderRadius: 15,
+  borderTopLeftRadius: 16,
+  borderTopRightRadius: 17,
+  borderBottomRightRadius: 18,
+  borderBottomLeftRadius: 19,
+  zIndex: 20,
+  flexWrap: 21,
+  overflow: 22,
 }
 
 function isSupportedTailwindProperty(prop: unknown): prop is keyof typeof TailwindPropertyMapping {
@@ -187,6 +213,15 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         overflow: parseTailwindProperty(mapping[TailwindPropertyMapping.overflow], 'overflow'),
       }
     },
+  getOrderedStylePropertyKeysFromElementProps: (props, properties) => {
+    return mapDropNulls((prop) => {
+      const property = TailwindPlugin(config).readStyleFromElementProps(props, prop)
+      if (property == null || property.type === 'not-found') {
+        return null
+      }
+      return prop
+    }, properties).sort((a, b) => OrderedTailwindProperties[a] - OrderedTailwindProperties[b])
+  },
   updateStyles: (editorState, elementPath, updates) => {
     const propsToDelete = mapDropNulls(
       (update) =>
