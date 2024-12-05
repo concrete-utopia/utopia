@@ -1944,7 +1944,7 @@ export var storyboard = (
       await editor.getDispatchFollowUpActionsFinished()
 
       const mydiv = editor.renderedDOM.getByTestId('mydiv')
-      expect(mydiv.className).toEqual('top-[115px] left-[115px] w-28 h-28 bg-black ')
+      expect(mydiv.className).toEqual('absolute top-[115px] left-[115px] w-28 h-28 bg-black')
     })
   })
 })
