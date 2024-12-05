@@ -17,7 +17,12 @@ import {
   type GridContainerProperties,
   type GridElementProperties,
 } from '../../../../core/shared/element-template'
-import type { CanvasRectangle } from '../../../../core/shared/math-utils'
+import {
+  localRectangle,
+  zeroRectIfNullOrInfinity,
+  type CanvasRectangle,
+  type LocalRectangle,
+} from '../../../../core/shared/math-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { assertNever } from '../../../../core/shared/utils'
 import type { GridDimension } from '../../../inspector/common/css-utils'
@@ -725,5 +730,164 @@ export function gridIdentifierToString(identifier: GridIdentifier): string {
       return `${identifier.type}-${EP.toString(identifier.item)}`
     default:
       assertNever(identifier)
+  }
+}
+
+function printPinAsString(
+  gridTemplate: GridContainerProperties,
+  pin: GridPositionOrSpan,
+  axis: 'row' | 'column',
+): string {
+  const printPinResult = printPin(gridTemplate, pin, axis)
+  if (typeof printPinResult === 'number') {
+    return `${printPinResult}`
+  } else {
+    return printPinResult
+  }
+}
+
+const TemporaryGridID = 'temporary-grid'
+
+export function getGridRelativeContainingBlock(
+  gridMetadata: ElementInstanceMetadata,
+  cellMetadata: ElementInstanceMetadata,
+  cellProperties: GridElementProperties,
+  options?: {
+    forcePositionRelative?: boolean
+  },
+): LocalRectangle {
+  const gridProperties = gridMetadata.specialSizeMeasurements.containerGridProperties
+
+  // Create containing fragment.
+  const fragment = document.createDocumentFragment()
+
+  // Create offset container that potentially provides the layout positioning.
+  const offsetContainer = document.createElement('div')
+  offsetContainer.id = TemporaryGridID
+  offsetContainer.style.position = 'absolute'
+  offsetContainer.style.left = '0'
+  offsetContainer.style.top = '0'
+  fragment.appendChild(offsetContainer)
+
+  // Create a grid element with the appropriate properties.
+  const gridElement = document.createElement('div')
+  gridElement.style.display = 'grid'
+  gridElement.style.position = gridMetadata.specialSizeMeasurements.position ?? 'initial'
+  const gridGlobalFrame = zeroRectIfNullOrInfinity(gridMetadata.globalFrame)
+  gridElement.style.left = `${gridGlobalFrame.x}px`
+  gridElement.style.top = `${gridGlobalFrame.y}px`
+  gridElement.style.width = `${gridGlobalFrame.width}px`
+  gridElement.style.height = `${gridGlobalFrame.height}px`
+
+  // Gap needs to be set only if the other two are not present or we'll have rendering issues
+  // due to how measurements are calculated.
+  const hasRowGap = gridMetadata.specialSizeMeasurements.rowGap != null
+  if (hasRowGap) {
+    const rowGap = gridMetadata.specialSizeMeasurements.rowGap
+    gridElement.style.rowGap = `${rowGap}px`
+  }
+  const hasColumnGap = gridMetadata.specialSizeMeasurements.columnGap != null
+  if (hasColumnGap) {
+    const columnGap = gridMetadata.specialSizeMeasurements.columnGap
+    gridElement.style.columnGap = `${columnGap}px`
+  }
+  if (!hasColumnGap && !hasRowGap) {
+    const gap = gridMetadata.specialSizeMeasurements.gap
+    gridElement.style.gap = gap == null ? 'initial' : `${gap}px`
+  }
+
+  // Include the padding.
+  const gridPadding = gridMetadata.specialSizeMeasurements.padding
+  gridElement.style.paddingLeft = gridPadding.left == null ? 'initial' : `${gridPadding.left}px`
+  gridElement.style.paddingTop = gridPadding.top == null ? 'initial' : `${gridPadding.top}px`
+  gridElement.style.paddingRight = gridPadding.right == null ? 'initial' : `${gridPadding.right}px`
+  gridElement.style.paddingBottom =
+    gridPadding.bottom == null ? 'initial' : `${gridPadding.bottom}px`
+
+  // Keep the grid hidden from view so that it doesn't flash visibly in the editor.
+  gridElement.style.visibility = 'hidden'
+
+  if (gridProperties.gridTemplateColumns != null) {
+    gridElement.style.gridTemplateColumns = printGridAutoOrTemplateBase(
+      gridProperties.gridTemplateColumns,
+    )
+  }
+  if (gridProperties.gridTemplateRows != null) {
+    gridElement.style.gridTemplateRows = printGridAutoOrTemplateBase(
+      gridProperties.gridTemplateRows,
+    )
+  }
+  if (gridProperties.gridAutoColumns != null) {
+    gridElement.style.gridAutoColumns = printGridAutoOrTemplateBase(gridProperties.gridAutoColumns)
+  }
+  if (gridProperties.gridAutoRows != null) {
+    gridElement.style.gridAutoRows = printGridAutoOrTemplateBase(gridProperties.gridAutoRows)
+  }
+  if (gridProperties.gridAutoFlow != null) {
+    gridElement.style.gridAutoFlow = gridProperties.gridAutoFlow
+  }
+  offsetContainer.appendChild(gridElement)
+
+  // Create a child of the grid element with the appropriate properties.
+  const gridChildElement = document.createElement('div')
+
+  if (cellProperties.gridColumnStart != null) {
+    gridChildElement.style.gridColumnStart = printPinAsString(
+      gridProperties,
+      cellProperties.gridColumnStart,
+      'column',
+    )
+  }
+  if (cellProperties.gridColumnEnd != null) {
+    gridChildElement.style.gridColumnEnd = printPinAsString(
+      gridProperties,
+      cellProperties.gridColumnEnd,
+      'column',
+    )
+  }
+  if (cellProperties.gridRowStart != null) {
+    gridChildElement.style.gridRowStart = printPinAsString(
+      gridProperties,
+      cellProperties.gridRowStart,
+      'row',
+    )
+  }
+  if (cellProperties.gridRowEnd != null) {
+    gridChildElement.style.gridRowEnd = printPinAsString(
+      gridProperties,
+      cellProperties.gridRowEnd,
+      'row',
+    )
+  }
+  gridChildElement.style.position = options?.forcePositionRelative
+    ? 'relative'
+    : cellMetadata.specialSizeMeasurements.position ?? 'initial'
+  // Fill out the entire space available.
+  gridChildElement.style.top = '0'
+  gridChildElement.style.left = '0'
+  gridChildElement.style.bottom = '0'
+  gridChildElement.style.right = '0'
+
+  gridElement.appendChild(gridChildElement)
+
+  // Get the result and cleanup the temporary elements.
+  try {
+    document.body.appendChild(fragment)
+    const gridProvidesBounds =
+      gridMetadata.specialSizeMeasurements.providesBoundsForAbsoluteChildren
+    const boundingRect = gridChildElement.getBoundingClientRect()
+    // If the grid provides the bounds, then we need to remove it's position, otherwise
+    // we need to include its position in the offset container.
+    return localRectangle({
+      x: boundingRect.left - (gridProvidesBounds ? gridGlobalFrame.x : 0),
+      y: boundingRect.top - (gridProvidesBounds ? gridGlobalFrame.y : 0),
+      width: boundingRect.width,
+      height: boundingRect.height,
+    })
+  } finally {
+    const gridElementFromDocument = document.getElementById(TemporaryGridID)
+    if (gridElementFromDocument != null) {
+      gridElementFromDocument.remove()
+    }
   }
 }

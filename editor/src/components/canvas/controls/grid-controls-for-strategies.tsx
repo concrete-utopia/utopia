@@ -149,6 +149,8 @@ export const GridMeasurementHelperKey = (gridPath: ElementPath) =>
   `grid-measurement-helper-${EP.toString(gridPath)}`
 export const GridElementContainingBlockKey = (gridPath: ElementPath) =>
   `grid-measurement-containing-block-${EP.toString(gridPath)}`
+export const GridElementChildContainingBlockKey = (gridPath: ElementPath) =>
+  `${GridElementContainingBlockKey(gridPath)}-child`
 
 export interface GridControlProps {
   grid: GridData
@@ -217,6 +219,5 @@ export function controlsForGridPlaceholders(
     },
     key: `GridControls${suffix == null ? '' : suffix}`,
     show: whenToShow,
-    priority: 'bottom',
   }
 }

@@ -188,6 +188,14 @@ function ActionButtons() {
     fontSize: 14,
     cursor: 'pointer',
   }
+  React.useEffect(() => {
+    if (
+      importResult.importStatus.status == 'done' &&
+      importResult.result == ImportOperationResult.Success
+    ) {
+      hideWizard()
+    }
+  }, [importResult, hideWizard])
   if (
     importResult.importStatus.status === 'in-progress' ||
     importResult.importStatus.status === 'not-started'

@@ -339,8 +339,13 @@ export const parseLexedColor: Parser<CSSColor> = (value) => {
     value.match.length === 1
   ) {
     if (value.match[0] != null) {
-      const leaf = value.match[0]
+      let leaf = value.match[0]
       if (isLexerMatch(leaf)) {
+        // a fix for css-tree@3 aligned color parsing to CSS Color Level 5 syntax
+        // https://drafts.csswg.org/css-color-5/#color-syntax
+        if (isNamedSyntaxType(leaf.syntax, ['color-base']) && isLexerMatch(leaf.match[0])) {
+          leaf = leaf.match[0]
+        }
         if (isNamedSyntaxType(leaf.syntax, ['rgb()', 'rgba()', 'hsl()', 'hsla()'])) {
           const parsed = parseAlternative<CSSColorRGB | CSSColorHSL>(
             [parseRGBColor, parseHSLColor],

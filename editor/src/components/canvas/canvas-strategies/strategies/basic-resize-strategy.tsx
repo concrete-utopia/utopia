@@ -40,6 +40,7 @@ import { controlsForGridPlaceholders } from '../../controls/grid-controls-for-st
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
+import { StrategySizeLabel } from '../../controls/select-mode/size-label'
 import { ZeroSizeResizeControlWrapper } from '../../controls/zero-sized-element-controls'
 import type {
   CanvasStrategy,
@@ -102,6 +103,13 @@ export function basicResizeStrategy(
         props: { targets: selectedElements, pathsWereReplaced: false },
         key: 'absolute-resize-control',
         show: 'always-visible',
+        priority: 'top',
+      }),
+      controlWithProps({
+        control: StrategySizeLabel,
+        props: { targets: selectedElements, pathsWereReplaced: false },
+        key: 'size-label',
+        show: 'visible-except-when-other-strategy-is-active',
         priority: 'top',
       }),
       controlWithProps({

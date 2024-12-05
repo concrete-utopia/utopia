@@ -32,6 +32,7 @@ import type {
 } from '../inspector/common/css-utils'
 
 export const CanvasContainerID = 'canvas-container'
+export const SceneContainerName = 'scene'
 
 // TODO: this should not be an enum but a const object
 export enum CSSCursor {

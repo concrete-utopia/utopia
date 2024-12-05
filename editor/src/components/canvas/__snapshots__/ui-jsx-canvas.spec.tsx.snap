@@ -14,6 +14,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -296,6 +297,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -491,6 +493,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -981,6 +984,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -1320,6 +1324,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -1514,6 +1519,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -1708,6 +1714,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -1902,6 +1909,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -1934,6 +1942,7 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -2201,6 +2210,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -2396,6 +2406,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -2697,6 +2708,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -2729,6 +2741,7 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -2995,6 +3008,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -3190,6 +3204,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -3365,6 +3380,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -3397,6 +3413,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -3681,6 +3698,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -3876,6 +3894,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -4278,6 +4297,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -4646,6 +4666,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -4869,6 +4890,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -5058,6 +5080,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -5281,6 +5304,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -5470,6 +5494,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -5693,6 +5718,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -5882,6 +5908,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -5914,6 +5941,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -6249,6 +6277,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -6444,6 +6473,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -7067,6 +7097,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -7656,6 +7687,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -8085,6 +8117,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -8480,6 +8513,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -8723,6 +8757,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -8932,6 +8967,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -9175,6 +9211,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -9384,6 +9421,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -9627,6 +9665,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -9836,6 +9875,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -10265,6 +10305,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -10660,6 +10701,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -10903,6 +10945,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -11112,6 +11155,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -11355,6 +11399,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -11564,6 +11609,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -11807,6 +11853,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -12016,6 +12063,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -12445,6 +12493,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -12840,6 +12889,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -13083,6 +13133,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -13292,6 +13343,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -13535,6 +13587,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -13744,6 +13797,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -13987,6 +14041,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -14196,6 +14251,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -14228,6 +14284,7 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -14506,6 +14563,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -14701,6 +14759,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -14937,6 +14996,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -15113,6 +15173,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -15289,6 +15350,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -15321,6 +15383,7 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -15587,6 +15650,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -15782,6 +15846,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -16070,6 +16135,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -16102,6 +16168,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -16386,6 +16453,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -16581,6 +16649,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -17000,6 +17069,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -17384,6 +17454,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -17627,6 +17698,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -17870,6 +17942,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -18113,6 +18186,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -18145,6 +18219,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -18429,6 +18504,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -18624,6 +18700,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -19043,6 +19120,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -19427,6 +19505,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -19670,6 +19749,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -19913,6 +19993,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -20156,6 +20237,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -20188,6 +20270,7 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -20466,6 +20549,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -20661,6 +20745,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -20897,6 +20982,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -21073,6 +21159,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -21249,6 +21336,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -21281,6 +21369,7 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -21559,6 +21648,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -21754,6 +21844,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -22095,6 +22186,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -22402,6 +22494,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -22579,6 +22672,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -22756,6 +22850,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -22788,6 +22883,7 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -23082,6 +23178,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -23292,6 +23389,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -23781,6 +23879,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -24089,6 +24188,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -24121,6 +24221,7 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -24414,6 +24515,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -24624,6 +24726,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -25113,6 +25216,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -25421,6 +25525,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -25453,6 +25558,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -25747,6 +25853,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -25957,6 +26064,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -26497,6 +26605,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -26856,6 +26965,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -26888,6 +26998,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -27182,6 +27293,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -27392,6 +27504,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -27932,6 +28045,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -28291,6 +28405,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -28323,6 +28438,7 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -28588,6 +28704,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -28783,6 +28900,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -28958,6 +29076,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -28990,6 +29109,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -29378,6 +29498,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -29573,6 +29694,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -31526,6 +31648,7 @@ export var storyboard = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -33025,6 +33148,7 @@ export var storyboard = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -34490,6 +34614,7 @@ export var storyboard = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -35137,6 +35262,7 @@ export var storyboard = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -35512,6 +35638,7 @@ export var storyboard = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -36159,6 +36286,7 @@ export var storyboard = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -36534,6 +36662,7 @@ export var storyboard = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -37181,6 +37310,7 @@ export var storyboard = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -37556,6 +37686,7 @@ export var storyboard = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -38241,6 +38372,7 @@ export var storyboard = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -38658,6 +38790,7 @@ export var storyboard = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -39343,6 +39476,7 @@ export var storyboard = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -39760,6 +39894,7 @@ export var storyboard = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -40445,6 +40580,7 @@ export var storyboard = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -40862,6 +40998,7 @@ export var storyboard = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -40904,6 +41041,7 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -41182,6 +41320,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -41377,6 +41516,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -41647,6 +41787,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -41840,6 +41981,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -42033,6 +42175,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -42065,6 +42208,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -42332,6 +42476,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -42527,6 +42672,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -42769,6 +42915,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -42801,6 +42948,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -43067,6 +43215,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -43262,6 +43411,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -43608,6 +43758,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -43640,6 +43791,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -43952,6 +44104,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -44147,6 +44300,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -44450,6 +44604,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -44702,6 +44857,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -44903,6 +45059,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -44935,6 +45092,7 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -45229,6 +45387,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -45439,6 +45598,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -45819,6 +45979,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -46021,6 +46182,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -46053,6 +46215,7 @@ exports[`UiJsxCanvas render renders a canvas reliant on another file that uses m
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -46500,6 +46663,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -46710,6 +46874,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -47092,6 +47257,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -47294,6 +47460,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -47326,6 +47493,7 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -47704,6 +47872,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -47898,6 +48067,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -48717,6 +48887,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -48894,6 +49065,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -49071,6 +49243,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -49248,6 +49421,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -49427,6 +49601,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -49604,6 +49779,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -49781,6 +49957,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -49958,6 +50135,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -50203,6 +50381,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -50409,6 +50588,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -50588,6 +50768,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -50765,6 +50946,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -50942,6 +51124,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -51119,6 +51302,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -51296,6 +51480,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -51473,6 +51658,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -51650,6 +51836,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -51827,6 +52014,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -52004,6 +52192,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -52181,6 +52370,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -52358,6 +52548,7 @@ export var App = (props) => {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -52390,6 +52581,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -52674,6 +52866,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -52869,6 +53062,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -53288,6 +53482,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -53672,6 +53867,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -53915,6 +54111,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -54158,6 +54355,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -54401,6 +54599,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -54433,6 +54632,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -54717,6 +54917,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -54912,6 +55113,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -55330,6 +55532,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -55713,6 +55916,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -55956,6 +56160,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -56199,6 +56404,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -56442,6 +56648,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -56474,6 +56681,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -56758,6 +56966,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -56953,6 +57162,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -57415,6 +57625,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -57842,6 +58053,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -58085,6 +58297,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -58328,6 +58541,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -58571,6 +58785,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -58603,6 +58818,7 @@ exports[`UiJsxCanvas render renders a component using the spread operator 1`] = 
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -58893,6 +59109,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -59103,6 +59320,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -59392,6 +59610,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -59594,6 +59813,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -59626,6 +59846,7 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -59894,6 +60115,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -60066,6 +60288,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -60286,6 +60509,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -60468,6 +60692,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -60650,6 +60875,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -60682,6 +60908,7 @@ exports[`UiJsxCanvas render renders correctly when a component is passed in via 
       data-path=\\"eee/fff\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -60937,6 +61164,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -61109,6 +61337,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -61387,6 +61616,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -61607,6 +61837,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -61790,6 +62021,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -61822,6 +62054,7 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
       data-path=\\"ccc/ddd\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -62065,6 +62298,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -62237,6 +62471,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -62525,6 +62760,7 @@ export var storyboard = (
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -62722,6 +62958,7 @@ export var storyboard = (
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -62754,6 +62991,7 @@ exports[`UiJsxCanvas render renders correctly with a nested context in another c
       data-path=\\"ccc/ddd\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -62997,6 +63235,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -63169,6 +63408,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -63344,6 +63584,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -63376,6 +63617,7 @@ exports[`UiJsxCanvas render renders fine with a valid registerModule call 1`] = 
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -63627,6 +63869,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -63799,6 +64042,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -64052,6 +64296,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -64254,6 +64499,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -64286,6 +64532,7 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
       data-path=\\"utopia-storyboard-uid/scene\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -64531,6 +64778,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -64703,6 +64951,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -65053,6 +65302,7 @@ export var storyboard = (
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -65269,6 +65519,7 @@ export var storyboard = (
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -65485,6 +65736,7 @@ export var storyboard = (
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -65517,6 +65769,7 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
       data-path=\\"utopia-storyboard-uid/scene\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -65761,6 +66014,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -65933,6 +66187,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -66125,6 +66380,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -66157,6 +66413,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
       data-path=\\"eee/fff\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -66446,6 +66703,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -66641,6 +66899,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -67173,6 +67432,7 @@ export var storyboard = (
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -67355,6 +67615,7 @@ export var storyboard = (
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -67651,6 +67912,7 @@ export var storyboard = (
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -67945,6 +68207,7 @@ export var storyboard = (
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -68163,6 +68426,7 @@ export var storyboard = (
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -68379,6 +68643,7 @@ export var storyboard = (
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -68411,6 +68676,7 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -68682,6 +68948,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -68877,6 +69144,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -69101,6 +69369,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -69294,6 +69563,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -69327,6 +69597,7 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
       data-factory-function-works=\\"true\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -69595,6 +69866,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -69790,6 +70062,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -69965,6 +70238,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -69997,6 +70271,7 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -70296,6 +70571,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -70491,6 +70767,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -70935,6 +71212,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -71344,6 +71622,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -71601,6 +71880,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -71828,6 +72108,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -72021,6 +72302,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -72278,6 +72560,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -72505,6 +72788,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -72698,6 +72982,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -72955,6 +73240,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -73182,6 +73468,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -73375,6 +73662,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -73407,6 +73695,7 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -73675,6 +73964,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -73870,6 +74160,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -74045,6 +74336,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -74077,6 +74369,7 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
       data-path=\\"utopia-storyboard-uid/scene-aaa\\"
       style=\\"
         overflow: hidden;
+        container: scene / inline-size;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
         box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
@@ -74355,6 +74648,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -74550,6 +74844,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -74793,6 +75088,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -75006,6 +75302,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",
@@ -75189,6 +75486,7 @@ Object {
       "parentFlexDirection": null,
       "parentFlexGap": 0,
       "parentGridCellGlobalFrames": null,
+      "parentGridFrame": null,
       "parentHugsOnMainAxis": false,
       "parentJustifyContent": null,
       "parentLayoutSystem": "flow",

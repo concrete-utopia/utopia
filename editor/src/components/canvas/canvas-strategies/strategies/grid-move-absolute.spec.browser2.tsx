@@ -158,12 +158,12 @@ export var storyboard = (
           style={{
             backgroundColor: '#f0f',
             position: 'absolute',
+            left: 300,
+            top: 300,
             width: 79,
             height: 86,
             gridColumn: 1,
             gridRow: 1,
-            top: 300,
-            left: 300,
           }}
           data-uid='dragme'
           data-testid='dragme'

@@ -689,6 +689,20 @@ export function gridResizeHandle(id: string, edge: GridResizeEdge): GridResizeHa
   }
 }
 
+export interface GridResizeRulerHandle {
+  type: 'GRID_RESIZE_RULER_HANDLE'
+  id: string
+  edge: GridResizeEdge
+}
+
+export function gridResizeRulerHandle(id: string, edge: GridResizeEdge): GridResizeRulerHandle {
+  return {
+    type: 'GRID_RESIZE_RULER_HANDLE',
+    id: id,
+    edge: edge,
+  }
+}
+
 export type CanvasControlType =
   | BoundingArea
   | ResizeHandle
@@ -701,6 +715,7 @@ export type CanvasControlType =
   | GridCellHandle
   | GridAxisHandle
   | GridResizeHandle
+  | GridResizeRulerHandle
 
 export function isDragToPan(
   interaction: InteractionSession | null,

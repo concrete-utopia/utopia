@@ -19,11 +19,11 @@ import { sendDiscordMessage } from '../../../components/editor/server'
 import type { DiscordEndpointSiteImport, DiscordMessageType } from 'utopia-shared/src/types'
 import { getImportOperationText } from '../../../components/editor/import-wizard/import-wizard-helpers'
 
-export function startImportProcess(dispatch: EditorDispatch) {
+export function startImportProcess(dispatch: EditorDispatch, customSteps?: ImportOperation[]) {
   const actions: EditorAction[] = [
     updateImportStatus({ status: 'in-progress' }),
     updateImportOperations(
-      [
+      customSteps ?? [
         { type: 'loadBranch' },
         { type: 'checkRequirementsPreParse' },
         { type: 'parseFiles' },

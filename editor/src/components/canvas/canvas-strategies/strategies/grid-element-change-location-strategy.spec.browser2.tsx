@@ -28,6 +28,34 @@ describe('grid element change location strategy', () => {
     })
   })
 
+  it('does not alter the grid template', async () => {
+    const editor = await renderTestEditorWithCode(
+      ProjectCodeFractionalTemplate,
+      'await-first-dom-report',
+    )
+
+    const testId = 'aaa'
+    const { gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd } = await runGridMoveTest(
+      editor,
+      {
+        scale: 1,
+        gridPath: 'sb/scene/grid',
+        testId: testId,
+      },
+    )
+
+    expect({ gridRowStart, gridRowEnd, gridColumnStart, gridColumnEnd }).toEqual({
+      gridColumnEnd: '7',
+      gridColumnStart: '3',
+      gridRowEnd: '4',
+      gridRowStart: '2',
+    })
+
+    const grid = await editor.renderedDOM.findByTestId('grid')
+    expect(grid.style.gridTemplateColumns).toEqual('1fr 1fr 2fr 2fr 1fr 1fr')
+    expect(grid.style.gridTemplateRows).toEqual('1fr 1fr 2fr 1fr')
+  })
+
   describe('component items', () => {
     it('can change the location of components on a grid when component takes style prop', async () => {
       const editor = await renderTestEditorWithCode(
@@ -490,6 +518,101 @@ export var storyboard = (
   </Storyboard>
 )
 `
+
+      const ProjectCodeWithBRPins = `import { Scene, Storyboard } from 'utopia-api'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        data-uid='grid'
+        style={{
+          backgroundColor: '#fefefe',
+          position: 'absolute',
+          left: 123,
+          top: 133,
+          width: 461,
+          height: 448,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gridTemplateRows: '1fr 1fr',
+          gridGap: 0,
+        }}
+      >
+        <div
+          data-uid='child'
+          data-testid='child'
+          style={{
+            backgroundColor: '#59a6ed',
+            position: 'absolute',
+            right: 12,
+            bottom: 16,
+            width: 144,
+            height: 134,
+            gridColumn: 1,
+            gridRow: 1,
+          }}
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+
+      it('can move absolute element inside a grid cell maintaining right and bottom pins', async () => {
+        const editor = await renderTestEditorWithCode(
+          ProjectCodeWithBRPins,
+          'await-first-dom-report',
+        )
+
+        const child = editor.renderedDOM.getByTestId('child')
+
+        {
+          const { bottom, right, gridColumn, gridRow } = child.style
+          expect({ bottom, right, gridColumn, gridRow }).toEqual({
+            gridColumn: '1',
+            gridRow: '1',
+            right: '12px',
+            bottom: '16px',
+          })
+        }
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene/grid/child')])
+
+        const childBounds = child.getBoundingClientRect()
+        const childCenter = windowPoint({
+          x: Math.floor(childBounds.left + childBounds.width / 2),
+          y: Math.floor(childBounds.top + childBounds.height / 2),
+        })
+
+        const endPoint = offsetPoint(childCenter, windowPoint({ x: 20, y: 20 }))
+
+        const dragTarget = editor.renderedDOM.getByTestId(
+          GridCellTestId(EP.fromString('sb/scene/grid/child')),
+        )
+        await mouseDownAtPoint(dragTarget, childCenter)
+        await mouseMoveToPoint(dragTarget, endPoint)
+        await mouseUpAtPoint(dragTarget, endPoint)
+
+        const { bottom, right, gridColumn, gridRow } = child.style
+        expect({ bottom, right, gridColumn, gridRow }).toEqual({
+          gridColumn: '1',
+          gridRow: '1',
+          right: '-8px',
+          bottom: '-4px',
+        })
+      })
       it('can move absolute element inside a grid cell', async () => {
         const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
@@ -701,7 +824,7 @@ export var storyboard = (
             gridRowStart: '1',
             gridRowEnd: 'auto',
             left: '59px',
-            top: '59.5px',
+            top: '60px',
           })
         }
       })
@@ -833,6 +956,87 @@ export var storyboard = (
           top: 0,
         }}
         data-uid='grid'
+      >
+        <div
+          style={{
+            minHeight: 0,
+            backgroundColor: '#f3785f',
+            gridColumnEnd: 5,
+            gridColumnStart: 1,
+            gridRowEnd: 3,
+            gridRowStart: 1,
+          }}
+          data-uid='aaa'
+          data-testid='aaa'
+        />
+        <div
+          style={{
+            minHeight: 0,
+            backgroundColor: '#23565b',
+          }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />
+        <Placeholder
+          style={{
+            minHeight: 0,
+            gridColumnEnd: 5,
+            gridRowEnd: 4,
+            gridColumnStart: 1,
+            gridRowStart: 3,
+            backgroundColor: '#0074ff',
+          }}
+          data-uid='ccc'
+        />
+        <Placeholder
+          style={{
+            minHeight: 0,
+            gridColumnEnd: 9,
+            gridRowEnd: 4,
+            gridColumnStart: 5,
+            gridRowStart: 3,
+          }}
+          data-uid='ddd'
+        />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`
+
+const ProjectCodeFractionalTemplate = `import * as React from 'react'
+import { Scene, Storyboard, Placeholder } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      id='playground-scene'
+      commentId='playground-scene'
+      style={{
+        width: 847,
+        height: 895,
+        position: 'absolute',
+        left: 46,
+        top: 131,
+      }}
+      data-label='Playground'
+      data-uid='scene'
+    >
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateRows: '1fr 1fr 2fr 1fr',
+          gridTemplateColumns:
+            '1fr 1fr 2fr 2fr 1fr 1fr',
+          gridGap: 16,
+          height: 482,
+          width: 786,
+          position: 'absolute',
+          left: 31,
+          top: 0,
+        }}
+        data-uid='grid'
+		data-testid='grid'
       >
         <div
           style={{

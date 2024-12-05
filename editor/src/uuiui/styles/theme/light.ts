@@ -59,6 +59,7 @@ const lightBase = {
   bg3: createUtopiColor('hsl(0,0%,94%)'),
   bg4: createUtopiColor('hsl(0,0%,92%)'),
   bg5: createUtopiColor('hsl(0,0%,90%)'),
+  bg6: createUtopiColor('#ffffff'),
   fg0: createUtopiColor('hsl(0,0%,0%)'),
   fg1: createUtopiColor('hsl(0,0%,10%)'),
   fg2: createUtopiColor('hsl(0,0%,20%)'),
