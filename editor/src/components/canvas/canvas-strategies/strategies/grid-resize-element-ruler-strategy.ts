@@ -5,7 +5,11 @@ import type {
   GridElementProperties,
   GridPositionOrSpan,
 } from '../../../../core/shared/element-template'
-import { gridPositionValue, isGridPositionValue } from '../../../../core/shared/element-template'
+import {
+  gridPositionValue,
+  isGridPositionValue,
+  isGridSpan,
+} from '../../../../core/shared/element-template'
 import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import { canvasRectangle, isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
@@ -160,8 +164,18 @@ export const gridResizeElementRulerStrategy: CanvasStrategyFactory = (
         closestVertical,
       )
 
-      const columnCount = getCellsCount(resizedProps.gridColumnStart, resizedProps.gridColumnEnd)
-      const rowCount = getCellsCount(resizedProps.gridRowStart, resizedProps.gridRowEnd)
+      const columnCount = getCellsCount(
+        resizedProps.gridColumnStart,
+        resizedProps.gridColumnEnd,
+        bounds.column,
+        bounds.width,
+      )
+      const rowCount = getCellsCount(
+        resizedProps.gridRowStart,
+        resizedProps.gridRowEnd,
+        bounds.row,
+        bounds.height,
+      )
 
       const normalizedGridProps: GridElementProperties = {
         gridColumnStart: normalizeGridElementPositionAfterResize(
@@ -295,12 +309,30 @@ function getResizedElementProperties(
 function getCellsCount(
   start: GridPositionOrSpan | null,
   end: GridPositionOrSpan | null,
+  originalStart: number,
+  originalSize: number,
 ): number | null {
+  // start is a number
   if (isGridPositionValue(start) && start.numericalPosition != null) {
+    // end is also a number, return the difference
     if (isGridPositionValue(end) && end.numericalPosition != null) {
       return end.numericalPosition - start.numericalPosition
     }
-    return start.numericalPosition
+
+    // end is a discrete span, recalculate the size as a shrink or an expansion of the original size
+    if (isGridSpan(end) && end.type === 'SPAN_NUMERIC') {
+      return originalSize + (originalStart - start.numericalPosition)
+    }
   }
+
+  // start is a discrete span
+  if (isGridSpan(start) && start.type === 'SPAN_NUMERIC') {
+    // end is a number, return the max between the span size and the start position
+    if (isGridPositionValue(end) && end.numericalPosition != null) {
+      return Math.max(end.numericalPosition, start.value) - 1
+    }
+  }
+
+  // nothing specific found, will be handled with a separate fallback
   return null
 }
