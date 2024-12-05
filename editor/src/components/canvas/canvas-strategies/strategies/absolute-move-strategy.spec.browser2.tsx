@@ -4,6 +4,7 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  renderTestEditorWithModel,
   TestAppUID,
   TestScenePath,
   TestSceneUID,
@@ -32,6 +33,8 @@ import {
   expectElementWithTestIdNotToBeRendered,
   expectElementWithTestIdToBeRendered,
   selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  wait,
 } from '../../../../utils/utils.test-utils'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
 import { AllFragmentLikeTypes, FragmentLikeType } from './fragment-like-helpers'
@@ -47,6 +50,9 @@ import { NO_OP } from '../../../../core/shared/utils'
 import { MoveReorderReparentIndicatorID } from '../../controls/select-mode/strategy-indicator'
 import { CanvasToolbarEditButtonID } from '../../../editor/canvas-toolbar'
 import { ComponentsHonouringPropsStylesProject } from './common-projects.test-utils'
+import { createModifiedProject } from '../../../../sample-projects/sample-project-utils.test-utils'
+import { StoryboardFilePath } from '../../../editor/store/editor-state'
+import { TailwindConfigPath } from '../../../../core/tailwind/tailwind-config'
 
 async function dragByPixels(
   editor: EditorRenderResult,
@@ -1885,6 +1891,60 @@ export var storyboard = (
           )
         },
       })
+    })
+  })
+
+  describe('Tailwind', () => {
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Tailwind', true)
+
+    const TailwindProject = (classes: string) =>
+      createModifiedProject({
+        [StoryboardFilePath]: `
+    import React from 'react'
+    import { Scene, Storyboard } from 'utopia-api'
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <Scene
+          id='scene'
+          commentId='scene'
+          data-uid='scene'
+          style={{
+            width: 700,
+            height: 759,
+            position: 'absolute',
+            left: 212,
+            top: 128,
+          }}
+        >
+          <div
+            data-uid='mydiv'
+            data-testid='mydiv'
+            className='absolute top-[100px] left-[100px] w-28 h-28 bg-black ${classes}'
+          />
+        </Scene>
+      </Storyboard>
+    )
+    
+    `,
+        [TailwindConfigPath]: `
+        const TailwindConfig = { }
+        export default TailwindConfig
+    `,
+        'app.css': `
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;`,
+      })
+
+    it('can move absolute positioned elements with tailwind props', async () => {
+      const editor = await renderTestEditorWithModel(TailwindProject(''), 'await-first-dom-report')
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/mydiv')])
+
+      await dragByPixels(editor, windowPoint({ x: 15, y: 15 }), 'mydiv')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      const mydiv = editor.renderedDOM.getByTestId('mydiv')
+      expect(mydiv.className).toEqual('top-[115px] left-[115px] w-28 h-28 bg-black ')
     })
   })
 })
