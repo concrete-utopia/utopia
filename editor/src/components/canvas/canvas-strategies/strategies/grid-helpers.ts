@@ -19,7 +19,6 @@ import {
 } from '../../../../core/shared/element-template'
 import {
   localRectangle,
-  Size,
   zeroRectIfNullOrInfinity,
   type CanvasRectangle,
   type LocalRectangle,
@@ -753,6 +752,9 @@ export function getGridRelativeContainingBlock(
   gridMetadata: ElementInstanceMetadata,
   cellMetadata: ElementInstanceMetadata,
   cellProperties: GridElementProperties,
+  options?: {
+    forcePositionRelative?: boolean
+  },
 ): LocalRectangle {
   const gridProperties = gridMetadata.specialSizeMeasurements.containerGridProperties
 
@@ -779,17 +781,19 @@ export function getGridRelativeContainingBlock(
 
   // Gap needs to be set only if the other two are not present or we'll have rendering issues
   // due to how measurements are calculated.
-  if (
-    gridMetadata.specialSizeMeasurements.rowGap != null &&
-    gridMetadata.specialSizeMeasurements.columnGap != null
-  ) {
+  const hasRowGap = gridMetadata.specialSizeMeasurements.rowGap != null
+  if (hasRowGap) {
+    const rowGap = gridMetadata.specialSizeMeasurements.rowGap
+    gridElement.style.rowGap = `${rowGap}px`
+  }
+  const hasColumnGap = gridMetadata.specialSizeMeasurements.columnGap != null
+  if (hasColumnGap) {
+    const columnGap = gridMetadata.specialSizeMeasurements.columnGap
+    gridElement.style.columnGap = `${columnGap}px`
+  }
+  if (!hasColumnGap && !hasRowGap) {
     const gap = gridMetadata.specialSizeMeasurements.gap
     gridElement.style.gap = gap == null ? 'initial' : `${gap}px`
-  } else {
-    const rowGap = gridMetadata.specialSizeMeasurements.rowGap
-    gridElement.style.rowGap = rowGap == null ? 'initial' : `${rowGap}px`
-    const columnGap = gridMetadata.specialSizeMeasurements.columnGap
-    gridElement.style.columnGap = columnGap == null ? 'initial' : `${columnGap}px`
   }
 
   // Include the padding.
@@ -855,7 +859,9 @@ export function getGridRelativeContainingBlock(
       'row',
     )
   }
-  gridChildElement.style.position = cellMetadata.specialSizeMeasurements.position ?? 'initial'
+  gridChildElement.style.position = options?.forcePositionRelative
+    ? 'relative'
+    : cellMetadata.specialSizeMeasurements.position ?? 'initial'
   // Fill out the entire space available.
   gridChildElement.style.top = '0'
   gridChildElement.style.left = '0'

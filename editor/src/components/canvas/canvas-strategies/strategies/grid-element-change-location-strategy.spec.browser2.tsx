@@ -698,7 +698,7 @@ export var storyboard = (
         }
       })
 
-      it('can move absolute element among grid cells', async () => {
+      it('can move absolute element among grid cells (within containing block)', async () => {
         const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
 
         const child = editor.renderedDOM.getByTestId('child')
@@ -733,10 +733,53 @@ export var storyboard = (
         {
           const { top, left, gridColumn, gridRow } = child.style
           expect({ top, left, gridColumn, gridRow }).toEqual({
+            gridColumn: '1',
+            gridRow: '1',
+            left: '252px',
+            top: '256px',
+          })
+        }
+      })
+
+      it('can move absolute element among grid cells', async () => {
+        const editor = await renderTestEditorWithCode(ProjectCode, 'await-first-dom-report')
+
+        const child = editor.renderedDOM.getByTestId('child')
+
+        {
+          const { top, left, gridColumn, gridRow } = child.style
+          expect({ top, left, gridColumn, gridRow }).toEqual({
+            gridColumn: '1',
+            gridRow: '1',
+            left: '12px',
+            top: '16px',
+          })
+        }
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene/grid/child')])
+
+        const childBounds = child.getBoundingClientRect()
+        const childCenter = windowPoint({
+          x: Math.floor(childBounds.left + childBounds.width / 2),
+          y: Math.floor(childBounds.top + childBounds.height / 2),
+        })
+
+        const endPoint = offsetPoint(childCenter, windowPoint({ x: 300, y: 300 }))
+        const dragTarget = editor.renderedDOM.getByTestId(
+          GridCellTestId(EP.fromString('sb/scene/grid/child')),
+        )
+
+        await mouseDownAtPoint(dragTarget, childCenter)
+        await mouseMoveToPoint(dragTarget, endPoint)
+        await mouseUpAtPoint(dragTarget, endPoint)
+
+        {
+          const { top, left, gridColumn, gridRow } = child.style
+          expect({ top, left, gridColumn, gridRow }).toEqual({
             gridColumn: '2',
             gridRow: '2',
-            left: '21.5px',
-            top: '32px',
+            left: '81.5px',
+            top: '92px',
           })
         }
       })

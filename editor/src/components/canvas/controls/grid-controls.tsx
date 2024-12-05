@@ -30,7 +30,7 @@ import type { CanvasPoint, CanvasRectangle, LocalRectangle } from '../../../core
 import {
   boundingRectangleArray,
   canvasPoint,
-  canvasRectangle,
+  clamp,
   isFiniteRectangle,
   isInfinityRectangle,
   nullIfInfinity,
@@ -80,10 +80,7 @@ import {
   gridResizeRulerHandle,
 } from '../canvas-strategies/interaction-state'
 import type { GridCellCoordinates } from '../canvas-strategies/strategies/grid-cell-bounds'
-import {
-  getGridChildCellCoordBoundsFromCanvas,
-  gridCellTargetId,
-} from '../canvas-strategies/strategies/grid-cell-bounds'
+import { gridCellTargetId } from '../canvas-strategies/strategies/grid-cell-bounds'
 import type { GridCellGlobalFrames } from '../canvas-strategies/strategies/grid-helpers'
 import {
   getGlobalFrameOfGridCellFromMetadata,
@@ -130,6 +127,7 @@ import type { RulerMarkerType } from './grid-controls-ruler-markers'
 import { rulerMarkerIcons } from './grid-controls-ruler-markers'
 import type { GridData, GridMeasurementHelperData } from './grid-measurements'
 import {
+  calculateGridCellRectangle,
   getGridElementMeasurementHelperData,
   useGridElementMeasurementHelperData,
   useGridMeasurementHelperData,
@@ -2245,11 +2243,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
   const rulerMarkerData: RulerMarkerData | null = useEditorState(
     Substores.metadata,
     (store) => {
-      if (gridRect == null) {
-        return null
-      }
-
-      if (parentGridCellGlobalFrames == null) {
+      if (gridRect == null || parentGridCellGlobalFrames == null) {
         return null
       }
 
@@ -2267,54 +2261,10 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
       }
 
       const parentGrid = elementMetadata.specialSizeMeasurements.parentContainerGridProperties
-
-      const originalGrid = findOriginalGrid(store.editor.jsxMetadata, EP.parentPath(props.path))
-      if (originalGrid == null) {
+      const cellRect = calculateGridCellRectangle(store.editor.jsxMetadata, props.path)
+      if (cellRect == null) {
         return null
       }
-
-      const cellBounds = getGridChildCellCoordBoundsFromCanvas(
-        elementMetadata,
-        parentGridCellGlobalFrames,
-      )
-      if (cellBounds == null) {
-        return null
-      }
-
-      if (parentGridCellGlobalFrames.length === 0) {
-        return null
-      }
-      const firstRow = parentGridCellGlobalFrames[0]
-      const cellBoundsColumnIndex = cellBounds.column - 1
-      const left = firstRow[cellBoundsColumnIndex].x
-      const width = getCellCanvasWidthFromBounds(
-        parentGridCellGlobalFrames,
-        cellBoundsColumnIndex,
-        cellBounds.width,
-      )
-
-      const cellBoundsRowIndex = cellBounds.row - 1
-      if (
-        parentGridCellGlobalFrames.length <= cellBoundsRowIndex ||
-        parentGridCellGlobalFrames[cellBoundsRowIndex].length === 0
-      ) {
-        return null
-      }
-      const firstColumn = parentGridCellGlobalFrames[cellBoundsRowIndex][0]
-      const top = firstColumn.y
-      const height = getCellCanvasHeightFromBounds(
-        parentGridCellGlobalFrames,
-        cellBoundsRowIndex,
-        cellBounds.height,
-      )
-
-      const cellRect = parentGridCellGlobalFrames[cellBounds.row - 1][cellBounds.column - 1]
-      const cellRectResized = canvasRectangle({
-        x: cellRect.x,
-        y: cellRect.y,
-        width: width,
-        height: height,
-      })
 
       let otherColumnMarkers: Array<RulerMarkerPositionData> = []
       let otherRowMarkers: Array<RulerMarkerPositionData> = []
@@ -2341,10 +2291,10 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
       const lastColumnIndex = parentGridCellGlobalFrames[0].length - 1
       for (let columnIndex = 0; columnIndex <= lastColumnIndex; columnIndex++) {
         const cell = parentGridCellGlobalFrames[0][columnIndex]
-        if (left !== cell.x) {
+        if (cellRect.x !== cell.x) {
           addOtherMarker('column', 'start', cell.x, gridRect.y)
         }
-        if (left + width !== cell.x + cell.width) {
+        if (cellRect.x + cellRect.width !== cell.x + cell.width) {
           addOtherMarker('column', 'end', cell.x + cell.width, gridRect.y)
         }
       }
@@ -2353,10 +2303,10 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
       const lastRowIndex = parentGridCellGlobalFrames.length - 1
       for (let rowIndex = 0; rowIndex <= lastRowIndex; rowIndex++) {
         const cell = parentGridCellGlobalFrames[rowIndex][0]
-        if (top !== cell.y) {
+        if (cellRect.y !== cell.y) {
           addOtherMarker('row', 'start', gridRect.x, cell.y)
         }
-        if (top + height !== cell.y + cell.height) {
+        if (cellRect.y + cellRect.height !== cell.y + cell.height) {
           addOtherMarker('row', 'end', gridRect.x, cell.y + cell.height)
         }
       }
@@ -2365,7 +2315,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         markerType: 'selected',
         rowOrColumn: 'column',
         top: gridRect.y,
-        left: left,
+        left: cellRect.x,
         position: elementGridProperties.gridColumnStart,
         bound: 'start',
       }
@@ -2373,14 +2323,14 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         markerType: 'selected',
         rowOrColumn: 'column',
         top: gridRect.y,
-        left: left + width,
+        left: cellRect.x + cellRect.width,
         position: elementGridProperties.gridColumnEnd,
         bound: 'end',
       }
       const rowStart: RulerMarkerPositionData = {
         markerType: 'selected',
         rowOrColumn: 'row',
-        top: top,
+        top: cellRect.y,
         left: gridRect.x,
         position: elementGridProperties.gridRowStart,
         bound: 'start',
@@ -2388,15 +2338,15 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
       const rowEnd: RulerMarkerPositionData = {
         markerType: 'selected',
         rowOrColumn: 'row',
-        top: top + height,
+        top: cellRect.y + cellRect.height,
         left: gridRect.x,
         position: elementGridProperties.gridRowEnd,
         bound: 'end',
       }
 
-      return {
+      const data: RulerMarkerData = {
         parentGrid: parentGrid,
-        cellRect: cellRectResized,
+        cellRect: cellRect,
         gridRect: gridRect,
         otherColumnMarkers: otherColumnMarkers,
         otherRowMarkers: otherRowMarkers,
@@ -2405,6 +2355,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         rowStart: rowStart,
         rowEnd: rowEnd,
       }
+      return data
     },
     'RulerMarkers markers',
   )
@@ -2656,14 +2607,21 @@ const ResizeOffsetLine = React.memo(
     }
     const isColumn = props.edge === 'column-start' || props.edge === 'column-end'
 
+    const top = isColumn
+      ? props.container.y
+      : clamp(props.container.y, props.container.y + props.container.height, props.drag.y)
+    const left = !isColumn
+      ? props.container.x
+      : clamp(props.container.x, props.container.x + props.container.width, props.drag.x)
+
     return (
       <div
         style={{
           position: 'absolute',
           width: isColumn ? 1 : props.container.width,
           height: !isColumn ? 1 : props.container.height,
-          top: isColumn ? props.container.y : props.drag.y,
-          left: !isColumn ? props.container.x : props.drag.x,
+          top: top,
+          left: left,
           borderLeft: isColumn ? `1px dashed ${colorTheme.primary.value}` : undefined,
           borderTop: !isColumn ? `1px dashed ${colorTheme.primary.value}` : undefined,
         }}
@@ -2747,7 +2705,7 @@ const SnapLine = React.memo(
             style={{
               position: 'absolute',
               top: axis === 'column' ? -labelHeight - RulerMarkerIconSize - 5 : -10,
-              left: axis === 'row' ? -(labelWidth - RulerMarkerIconSize + 30) : 0,
+              left: axis === 'row' ? -(labelWidth - RulerMarkerIconSize + 30) : -7,
               color: colorTheme.brandNeonPink.value,
               fontWeight: 700,
               textAlign: axis === 'row' ? 'right' : undefined,
@@ -2756,7 +2714,16 @@ const SnapLine = React.memo(
               zoom: 1 / canvasScale,
             }}
           >
-            {printPin(props.gridTemplate, targetMarker.position, axis)}
+            <span
+              style={{
+                backgroundColor: 'white',
+                padding: '2px 4px',
+                borderRadius: 2,
+                fontSize: 11 / canvasScale,
+              }}
+            >
+              {printPin(props.gridTemplate, targetMarker.position, axis)}
+            </span>
           </div>,
         )}
       </div>
@@ -2951,65 +2918,6 @@ function getRulerMarkerColor(colorTheme: ThemeObject, marker: RulerMarkerPositio
     default:
       assertNever(marker.markerType)
   }
-}
-
-function getCellCanvasWidthFromBounds(
-  grid: CanvasRectangle[][],
-  index: number,
-  cells: number,
-): number {
-  if (grid.length === 0) {
-    return 0
-  }
-
-  const currentRow = grid[0]
-  if (currentRow.length <= index) {
-    return 0
-  }
-  if (cells <= 1) {
-    return currentRow[index].width
-  }
-
-  function getPadding() {
-    if (currentRow.length <= 1) {
-      return 0
-    }
-    return currentRow[1].x - (currentRow[0].x + currentRow[0].width)
-  }
-  const padding = getPadding()
-
-  return currentRow.slice(index + 1, index + cells).reduce((acc, curr) => {
-    return acc + curr.width + padding
-  }, currentRow[index].width)
-}
-
-function getCellCanvasHeightFromBounds(
-  grid: CanvasRectangle[][],
-  index: number,
-  cells: number,
-): number {
-  const columns = grid.map((row) => row[0])
-  if (columns.length <= index) {
-    return 0
-  }
-
-  const currentColumn = columns[index]
-
-  if (cells <= 1) {
-    return currentColumn.height
-  }
-
-  function getPadding() {
-    if (grid.length <= 1) {
-      return 0
-    }
-    return grid[1][0].y - (grid[0][0].y + grid[0][0].height)
-  }
-  const padding = getPadding()
-
-  return columns.slice(index + 1, index + cells).reduce((acc, curr) => {
-    return acc + curr.height + padding
-  }, currentColumn.height)
 }
 
 export const GridHelperControls = () => {
