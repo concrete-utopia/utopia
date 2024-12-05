@@ -1,5 +1,5 @@
 import React from 'react'
-import type { UtopiColor } from '../../../uuiui'
+import { colorTheme, type UtopiColor } from '../../../uuiui'
 import { RulerMarkerIconSize } from './grid-controls'
 
 export type RulerMarkerType = 'span-start' | 'span-end' | 'auto' | 'auto-short' | 'pinned'
@@ -29,6 +29,7 @@ function upFacingTriangle(fillColor: UtopiColor, scale: number): React.ReactNode
           RulerMarkerIconSize / 2
         },0 ${RulerMarkerIconSize},${RulerMarkerIconSize} 0,${RulerMarkerIconSize}`}
         fill={fillColor.value}
+        stroke={colorTheme.white.value}
       />
     </MarkerSVG>
   )
@@ -40,6 +41,7 @@ function rightFacingTriangle(fillColor: UtopiColor, scale: number): React.ReactN
       <polygon
         points={`${RulerMarkerIconSize},${RulerMarkerIconSize / 2} 0,0 0,${RulerMarkerIconSize}`}
         fill={fillColor.value}
+        stroke={colorTheme.white.value}
       />
     </MarkerSVG>
   )
@@ -51,6 +53,7 @@ function downFacingTriangle(fillColor: UtopiColor, scale: number): React.ReactNo
       <polygon
         points={`${RulerMarkerIconSize / 2},${RulerMarkerIconSize} 0,0 ${RulerMarkerIconSize},0`}
         fill={fillColor.value}
+        stroke={colorTheme.white.value}
       />
     </MarkerSVG>
   )
@@ -64,6 +67,7 @@ function leftFacingTriangle(fillColor: UtopiColor, scale: number): React.ReactNo
           RulerMarkerIconSize / 2
         } ${RulerMarkerIconSize},0 ${RulerMarkerIconSize},${RulerMarkerIconSize}`}
         fill={fillColor.value}
+        stroke={colorTheme.white.value}
       />
     </MarkerSVG>
   )
@@ -72,7 +76,14 @@ function leftFacingTriangle(fillColor: UtopiColor, scale: number): React.ReactNo
 function regularVerticalPipe(fillColor: UtopiColor, scale: number): React.ReactNode {
   return (
     <MarkerSVG scale={scale}>
-      <rect x='4' y='0' width='3' height={`${RulerMarkerIconSize}`} fill={fillColor.value} />
+      <rect
+        x='4'
+        y='0'
+        width='3'
+        height={`${RulerMarkerIconSize}`}
+        fill={fillColor.value}
+        stroke={colorTheme.white.value}
+      />
     </MarkerSVG>
   )
 }
@@ -80,7 +91,14 @@ function regularVerticalPipe(fillColor: UtopiColor, scale: number): React.ReactN
 function regularHorizontalPipe(fillColor: UtopiColor, scale: number): React.ReactNode {
   return (
     <MarkerSVG scale={scale}>
-      <rect x='0' y='4' width={`${RulerMarkerIconSize}`} height='3' fill={fillColor.value} />
+      <rect
+        x='0'
+        y='4'
+        width={`${RulerMarkerIconSize}`}
+        height='3'
+        fill={fillColor.value}
+        stroke={colorTheme.white.value}
+      />
     </MarkerSVG>
   )
 }
@@ -88,7 +106,14 @@ function regularHorizontalPipe(fillColor: UtopiColor, scale: number): React.Reac
 function shortVerticalPipe(fillColor: UtopiColor, scale: number): React.ReactNode {
   return (
     <MarkerSVG scale={scale}>
-      <rect x='4' y='2' width='3' height='9' fill={fillColor.value} />
+      <rect
+        x='4'
+        y='2'
+        width='3'
+        height='9'
+        fill={fillColor.value}
+        stroke={colorTheme.white.value}
+      />
     </MarkerSVG>
   )
 }
@@ -96,7 +121,14 @@ function shortVerticalPipe(fillColor: UtopiColor, scale: number): React.ReactNod
 function shortHorizontalPipe(fillColor: UtopiColor, scale: number): React.ReactNode {
   return (
     <MarkerSVG scale={scale}>
-      <rect x='2' y='4' width='9' height='3' fill={fillColor.value} />
+      <rect
+        x='2'
+        y='4'
+        width='9'
+        height='3'
+        fill={fillColor.value}
+        stroke={colorTheme.white.value}
+      />
     </MarkerSVG>
   )
 }
