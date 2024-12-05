@@ -64,10 +64,12 @@ const TailwindPropertyMapping: Record<string, string> = {
   overflow: 'overflow',
 
   zIndex: 'zIndex',
+
+  position: 'position',
 }
 
 function isSupportedTailwindProperty(prop: unknown): prop is keyof typeof TailwindPropertyMapping {
-  return typeof prop === 'string' && prop in TailwindPropertyMapping
+  return typeof prop === 'string' && Object.values(TailwindPropertyMapping).some((v) => v === prop)
 }
 
 function stringifyPropertyValue(value: string | number): string {
@@ -185,6 +187,7 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => ({
         zIndex: parseTailwindProperty(mapping[TailwindPropertyMapping.zIndex], 'zIndex'),
         flexWrap: parseTailwindProperty(mapping[TailwindPropertyMapping.flexWrap], 'flexWrap'),
         overflow: parseTailwindProperty(mapping[TailwindPropertyMapping.overflow], 'overflow'),
+        position: parseTailwindProperty(mapping[TailwindPropertyMapping.position], 'position'),
       }
     },
   updateStyles: (editorState, elementPath, updates) => {

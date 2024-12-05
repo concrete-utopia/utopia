@@ -15,7 +15,7 @@ import {
   getTargetPathsFromInteractionTarget,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { honoursPropsPosition } from './absolute-utils'
+import { honoursPropsPositionFromStyleInfo } from './absolute-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import {
   applyMoveCommon,
@@ -23,7 +23,6 @@ import {
   flattenSelection,
 } from './shared-move-strategies-helpers'
 import { metadataHasPositionAbsoluteOrNull } from '../../../../core/shared/element-template'
-import * as EP from '../../../../core/shared/element-path'
 
 export type ShouldRunApplicabilityCheck =
   | 'run-applicability-check'
@@ -57,7 +56,7 @@ export function absoluteMoveStrategy(
         canvasState.startingMetadata,
         element,
       )
-      const honoursPosition = honoursPropsPosition(canvasState, element)
+      const honoursPosition = honoursPropsPositionFromStyleInfo(canvasState, element)
 
       switch (honoursPosition) {
         case 'does-not-honour':

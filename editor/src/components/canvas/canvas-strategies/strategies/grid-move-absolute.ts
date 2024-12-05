@@ -49,11 +49,7 @@ import {
 import { getTargetGridCellData } from '../../../inspector/grid-helpers'
 import { gridItemIdentifier } from '../../../editor/store/editor-state'
 import { getMoveCommandsForDrag } from './shared-move-strategies-helpers'
-import { toFirst } from '../../../../core/shared/optics/optic-utilities'
-import { eitherRight, fromTypeGuard } from '../../../../core/shared/optics/optic-creators'
-import { defaultEither } from '../../../../core/shared/either'
-import { forceNotNull } from '../../../..//core/shared/optional-utils'
-import { windowToCanvasCoordinates } from '../../dom-lookup'
+import type { StyleInfo } from '../../canvas-types'
 
 export const gridMoveAbsoluteStrategy: CanvasStrategyFactory = (
   canvasState: InteractionCanvasState,
@@ -167,6 +163,7 @@ function getCommandsAndPatchForGridAbsoluteMove(
     canvasState.startingMetadata,
     interactionData,
     selectedElementMetadata,
+    canvasState.styleInfoReader(selectedElement),
     parentGridCellGlobalFrames,
     parentContainerGridProperties,
   )
@@ -181,6 +178,7 @@ function runGridMoveAbsolute(
   jsxMetadata: ElementInstanceMetadataMap,
   interactionData: DragInteractionData,
   selectedElementMetadata: ElementInstanceMetadata,
+  styleInfo: StyleInfo | null,
   gridCellGlobalFrames: GridCellGlobalFrames,
   gridTemplate: GridContainerProperties,
 ): CanvasCommand[] {
@@ -207,14 +205,7 @@ function runGridMoveAbsolute(
     return []
   }
   const { targetCellCoords, targetRootCell } = targetGridCellData
-  const element = defaultEither(
-    null,
-    toFirst(
-      eitherRight<string, JSXElementChild>().compose(fromTypeGuard(isJSXElement)),
-      selectedElementMetadata.element,
-    ),
-  )
-  if (element == null) {
+  if (styleInfo == null) {
     return []
   }
 
@@ -248,7 +239,7 @@ function runGridMoveAbsolute(
         zeroRectIfNullOrInfinity(
           selectedElementMetadata.specialSizeMeasurements.immediateParentBounds,
         ),
-        element,
+        styleInfo,
         selectedElementMetadata.elementPath,
         selectedElementMetadata.elementPath,
         interactionData.drag,
@@ -312,7 +303,7 @@ function runGridMoveAbsolute(
     ),
     ...getMoveCommandsForDrag(
       containingRect,
-      element,
+      styleInfo,
       selectedElementMetadata.elementPath,
       selectedElementMetadata.elementPath,
       interactionData.drag,

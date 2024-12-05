@@ -35,7 +35,7 @@ import type { AllElementProps } from '../../../editor/store/editor-state'
 import { getJSXElementFromProjectContents } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { determineConstrainedDragAxis } from '../../canvas-controls-frame'
-import type { CanvasFrameAndTarget } from '../../canvas-types'
+import type { CanvasFrameAndTarget, StyleInfo } from '../../canvas-types'
 import { CSSCursor } from '../../canvas-types'
 import type { AdjustCssLengthProperties } from '../../commands/adjust-css-length-command'
 import {
@@ -58,7 +58,11 @@ import type {
   GuidelineWithRelevantPoints,
   GuidelineWithSnappingVectorAndPointsOfRelevance,
 } from '../../guideline'
-import type { InteractionCanvasState, StrategyApplicationResult } from '../canvas-strategy-types'
+import type {
+  InteractionCanvasState,
+  StrategyApplicationResult,
+  StyleInfoReader,
+} from '../canvas-strategy-types'
 import { emptyStrategyApplicationResult, strategyApplicationResult } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import type { AbsolutePin } from './resize-helpers'
@@ -235,6 +239,7 @@ export function getDirectMoveCommandsForSelectedElement(
   projectContents: ProjectContentTreeRoot,
   startingMetadata: ElementInstanceMetadataMap,
   startingAllElementProps: AllElementProps,
+  styleInfoReader: StyleInfoReader,
   startingElementPathTree: ElementPathTrees,
   selectedElement: ElementPath,
   mappedPath: ElementPath,
@@ -253,6 +258,7 @@ export function getDirectMoveCommandsForSelectedElement(
     projectContents,
     startingMetadata,
     startingAllElementProps,
+    styleInfoReader,
     startingElementPathTree,
     selectedElement,
     mappedPath,
@@ -262,7 +268,7 @@ export function getDirectMoveCommandsForSelectedElement(
 
 export function getMoveCommandsForDrag(
   elementParentBounds: CanvasRectangle | null,
-  element: JSXElement,
+  element: AbsolutePinsFromStyleInfo,
   selectedElement: ElementPath,
   mappedPath: ElementPath,
   drag: CanvasVector,
@@ -303,17 +309,13 @@ export function getMoveCommandsForSelectedElement(
   projectContents: ProjectContentTreeRoot,
   startingMetadata: ElementInstanceMetadataMap,
   startingAllElementProps: AllElementProps,
+  styleInfoReader: StyleInfoReader,
   startingElementPathTree: ElementPathTrees,
   selectedElement: ElementPath,
   mappedPath: ElementPath,
   drag: CanvasVector,
   options?: MoveCommandsOptions,
 ): CommandsAndIntendedBounds {
-  const element: JSXElement | null = getJSXElementFromProjectContents(
-    selectedElement,
-    projectContents,
-  )
-
   const elementMetadata = MetadataUtils.findElementByElementPath(
     startingMetadata, // TODO should this be using the current metadata?
     selectedElement,
@@ -340,6 +342,7 @@ export function getMoveCommandsForSelectedElement(
       : null) ??
     null
 
+  const element = styleInfoReader(selectedElement)
   if (element == null) {
     return { commands: [], intendedBounds: [] }
   }
@@ -382,6 +385,7 @@ export function getInteractionMoveCommandsForSelectedElement(
     canvasState.projectContents,
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
+    canvasState.styleInfoReader,
     canvasState.startingElementPathTree,
     selectedElement,
     mappedPath,
@@ -393,6 +397,7 @@ export function getInteractionMoveCommandsForSelectedElement(
 export function moveInspectorStrategy(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  styleInfoReader: StyleInfoReader,
   elementPathTree: ElementPathTrees,
   selectedElementPaths: ElementPath[],
   projectContents: ProjectContentTreeRoot,
@@ -408,6 +413,7 @@ export function moveInspectorStrategy(
           projectContents,
           metadata,
           allElementProps,
+          styleInfoReader,
           elementPathTree,
           selectedPath,
           selectedPath,
@@ -426,6 +432,7 @@ export function moveInspectorStrategy(
 export function directMoveInspectorStrategy(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  styleInfoReader: StyleInfoReader,
   elementPathTree: ElementPathTrees,
   selectedElementPaths: ElementPath[],
   projectContents: ProjectContentTreeRoot,
@@ -442,6 +449,7 @@ export function directMoveInspectorStrategy(
           projectContents,
           metadata,
           allElementProps,
+          styleInfoReader,
           elementPathTree,
           selectedPath,
           selectedPath,
@@ -459,7 +467,7 @@ export function directMoveInspectorStrategy(
 }
 
 export function createMoveCommandsForElementPositionRelative(
-  element: JSXElement,
+  styleInfo: AbsolutePinsFromStyleInfo,
   selectedElement: ElementPath,
   mappedPath: ElementPath,
   drag: CanvasVector,
@@ -470,7 +478,7 @@ export function createMoveCommandsForElementPositionRelative(
   commands: Array<AdjustCssLengthProperties>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
-  const { existingPins, extendedPins } = ensureAtLeastOnePinPerDimension(right(element.props))
+  const { extendedPins } = ensureAtLeastOnePinPerDimension(styleInfo)
 
   const adjustPinProperties = extendedPins.map((pin) => {
     const horizontal = isHorizontalPoint(
@@ -509,7 +517,7 @@ export function createMoveCommandsForElementPositionRelative(
 }
 
 export function createMoveCommandsForElementCreatingMissingPins(
-  element: JSXElement,
+  styleInfo: AbsolutePinsFromStyleInfo,
   selectedElement: ElementPath,
   mappedPath: ElementPath,
   drag: CanvasVector,
@@ -521,7 +529,7 @@ export function createMoveCommandsForElementCreatingMissingPins(
   commands: Array<SetCssLengthProperty>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
-  const { extendedPins } = ensureAtLeastOnePinPerDimension(right(element.props))
+  const { extendedPins } = ensureAtLeastOnePinPerDimension(styleInfo)
   const pinsOnlyForDimensionThatChanged = (() => {
     const filteredPins: Array<AbsolutePin> = []
     if (drag.x !== 0) {
@@ -637,17 +645,19 @@ export function snapDrag(
 const horizontalPins: Array<AbsolutePin> = ['left', 'right']
 const verticalPins: Array<AbsolutePin> = ['top', 'bottom']
 
-function ensureAtLeastOnePinPerDimension(props: PropsOrJSXAttributes): {
+export type AbsolutePinsFromStyleInfo = Pick<StyleInfo, AbsolutePin>
+
+function ensureAtLeastOnePinPerDimension(styleInfo: AbsolutePinsFromStyleInfo): {
   existingPins: Array<AbsolutePin>
   extendedPins: Array<AbsolutePin>
 } {
   const existingHorizontalPins = horizontalPins.filter((p) => {
-    const prop = getLayoutProperty(p, props, styleStringInArray)
-    return isRight(prop) && prop.value != null
+    const prop = styleInfo[p]
+    return prop != null && prop.type !== 'not-found'
   })
   const existingVerticalPins = verticalPins.filter((p) => {
-    const prop = getLayoutProperty(p, props, styleStringInArray)
-    return isRight(prop) && prop.value != null
+    const prop = styleInfo[p]
+    return prop != null && prop.type !== 'not-found'
   })
 
   const horizontalPinsToAdd: Array<AbsolutePin> = [...existingHorizontalPins]
