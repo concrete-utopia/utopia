@@ -2706,7 +2706,16 @@ const SnapLine = React.memo(
               zoom: 1 / canvasScale,
             }}
           >
-            {printPin(props.gridTemplate, targetMarker.position, axis)}
+            <span
+              style={{
+                backgroundColor: 'white',
+                padding: '2px 4px',
+                borderRadius: 2,
+                fontSize: 11 / canvasScale,
+              }}
+            >
+              {printPin(props.gridTemplate, targetMarker.position, axis)}
+            </span>
           </div>,
         )}
       </div>
