@@ -8,7 +8,7 @@ import {
   type ElementInstanceMetadataMap,
   type GridContainerProperties,
 } from '../../../../core/shared/element-template'
-import type { CanvasVector } from '../../../../core/shared/math-utils'
+import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasRectangle,
   canvasRectangleToLocalRectangle,
@@ -187,6 +187,7 @@ export function getNewGridElementPropsCheckingOriginalGrid(
   interactionData: DragInteractionData,
   selectedElementMetadata: ElementInstanceMetadata,
   gridCellGlobalFrames: GridCellGlobalFrames,
+  coordinateSystemBounds: CanvasRectangle,
   newPathAfterReparent: ElementPath | null,
 ): NewGridElementProps | null {
   if (interactionData.drag == null) {
@@ -203,13 +204,6 @@ export function getNewGridElementPropsCheckingOriginalGrid(
   // Capture the original position of the grid child.
   const originalCanvasFrame = selectedElementMetadata.globalFrame
   if (!isNotNullFiniteRectangle(originalCanvasFrame)) {
-    return null
-  }
-
-  // Capture the parent bounds of the grid child.
-  const coordinateSystemBounds =
-    selectedElementMetadata.specialSizeMeasurements.immediateParentBounds
-  if (coordinateSystemBounds == null) {
     return null
   }
 
@@ -336,7 +330,10 @@ function runGridMoveAbsolute(
   }
 
   const coordinateSystemBounds =
-    selectedElementMetadata.specialSizeMeasurements.immediateParentBounds ?? zeroCanvasRect
+    selectedElementMetadata.specialSizeMeasurements.immediateParentBounds
+  if (coordinateSystemBounds == null) {
+    return []
+  }
 
   // The element may be moving to a different grid position, which is then used
   // to calculate the potentially new containing block.
@@ -345,6 +342,7 @@ function runGridMoveAbsolute(
     interactionData,
     selectedElementMetadata,
     gridCellGlobalFrames,
+    coordinateSystemBounds,
     null,
   )
 
