@@ -85,9 +85,6 @@ export function basicResizeStrategy(
   const elementParentBounds = metadata?.specialSizeMeasurements.immediateParentBounds ?? null
 
   const isGridCell = MetadataUtils.isGridItem(canvasState.startingMetadata, selectedElement)
-  if (isGridCell && isFillOrStretchModeApplied(canvasState.startingMetadata, selectedElement)) {
-    return null
-  }
 
   return {
     id: BASIC_RESIZE_STRATEGY_ID,
