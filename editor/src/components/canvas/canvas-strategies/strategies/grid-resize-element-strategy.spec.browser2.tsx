@@ -20,8 +20,8 @@ import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import type { GridResizeEdge } from '../interaction-state'
 import { gridCellTargetId } from './grid-cell-bounds'
-import { ResizePointTestId } from '../../controls/select-mode/absolute-resize-control'
 import { gridEdgeToEdgePosition } from '../../controls/grid-controls-for-strategies'
+import { ResizePointTestId } from '../../controls/resize-control'
 
 async function runCellResizeTest(
   editor: EditorRenderResult,

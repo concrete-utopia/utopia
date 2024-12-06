@@ -1,6 +1,6 @@
 import React from 'react'
 import type { CSSCursor, EdgePosition } from '../../canvas-types'
-import { ResizePointTestId } from './absolute-resize-control'
+import { ResizePointTestId } from '../resize-control'
 
 interface ResizeEdgeProps {
   cursor: CSSCursor

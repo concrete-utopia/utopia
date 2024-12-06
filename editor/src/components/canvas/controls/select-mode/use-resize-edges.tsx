@@ -9,13 +9,14 @@ import { ResizeEdge } from './resize-edge'
 const RESIZE_MOUSE_AREA_SIZE = 10
 
 export function useResizeEdges(
-  targets: ElementPath[],
+  targets: Array<ElementPath>,
   params: {
-    onEdgeMouseDown: (position: EdgePosition) => (e: React.MouseEvent<HTMLDivElement>) => void
+    onEdgeMouseDown: (e: React.MouseEvent<HTMLDivElement>, position: EdgePosition) => void
     onEdgeMouseMove: (e: React.MouseEvent<HTMLDivElement>) => void
     onEdgeDoubleClick: (
+      e: React.MouseEvent<HTMLDivElement>,
       direction: 'horizontal' | 'vertical',
-    ) => (e: React.MouseEvent<HTMLDivElement>) => void
+    ) => void
     cursors?: {
       top?: CSSCursor
       left?: CSSCursor
@@ -80,6 +81,62 @@ export function useResizeEdges(
     ref.current.style.height = boundingBox.height + 'px'
   })
 
+  const topOnMouseDown = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      params.onEdgeMouseDown(e, { x: 0.5, y: 0 })
+    },
+    [params],
+  )
+
+  const leftOnMouseDown = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      params.onEdgeMouseDown(e, { x: 0, y: 0.5 })
+    },
+    [params],
+  )
+
+  const bottomOnMouseDown = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      params.onEdgeMouseDown(e, { x: 0.5, y: 1 })
+    },
+    [params],
+  )
+
+  const rightOnMouseDown = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      params.onEdgeMouseDown(e, { x: 1, y: 0.5 })
+    },
+    [params],
+  )
+
+  const topOnDoubleClick = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      params.onEdgeDoubleClick(e, 'horizontal')
+    },
+    [params],
+  )
+
+  const leftOnDoubleClick = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      params.onEdgeDoubleClick(e, 'vertical')
+    },
+    [params],
+  )
+
+  const bottomOnDoubleClick = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      params.onEdgeDoubleClick(e, 'horizontal')
+    },
+    [params],
+  )
+
+  const rightOnDoubleClick = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      params.onEdgeDoubleClick(e, 'vertical')
+    },
+    [params],
+  )
+
   return {
     top: (
       <ResizeEdge
@@ -87,9 +144,9 @@ export function useResizeEdges(
         position={{ x: 0.5, y: 0 }}
         cursor={params.cursors?.top ?? CSSCursor.ResizeNS}
         direction='horizontal'
-        onMouseDown={params.onEdgeMouseDown({ x: 0.5, y: 0 })}
+        onMouseDown={topOnMouseDown}
         onMouseMove={params.onEdgeMouseMove}
-        onDoubleClick={params.onEdgeDoubleClick('horizontal')}
+        onDoubleClick={topOnDoubleClick}
       />
     ),
     left: (
@@ -98,9 +155,9 @@ export function useResizeEdges(
         position={{ x: 0, y: 0.5 }}
         cursor={params.cursors?.left ?? CSSCursor.ResizeEW}
         direction='vertical'
-        onMouseDown={params.onEdgeMouseDown({ x: 0, y: 0.5 })}
+        onMouseDown={leftOnMouseDown}
         onMouseMove={params.onEdgeMouseMove}
-        onDoubleClick={params.onEdgeDoubleClick('vertical')}
+        onDoubleClick={leftOnDoubleClick}
       />
     ),
     bottom: (
@@ -109,9 +166,9 @@ export function useResizeEdges(
         position={{ x: 0.5, y: 1 }}
         cursor={params.cursors?.bottom ?? CSSCursor.ResizeNS}
         direction='horizontal'
-        onMouseDown={params.onEdgeMouseDown({ x: 0.5, y: 1 })}
+        onMouseDown={bottomOnMouseDown}
         onMouseMove={params.onEdgeMouseMove}
-        onDoubleClick={params.onEdgeDoubleClick('horizontal')}
+        onDoubleClick={bottomOnDoubleClick}
       />
     ),
     right: (
@@ -120,9 +177,9 @@ export function useResizeEdges(
         position={{ x: 1, y: 0.5 }}
         cursor={params.cursors?.right ?? CSSCursor.ResizeEW}
         direction='vertical'
-        onMouseDown={params.onEdgeMouseDown({ x: 1, y: 0.5 })}
+        onMouseDown={rightOnMouseDown}
         onMouseMove={params.onEdgeMouseMove}
-        onDoubleClick={params.onEdgeDoubleClick('vertical')}
+        onDoubleClick={rightOnDoubleClick}
       />
     ),
   }

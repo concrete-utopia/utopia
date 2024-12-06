@@ -146,7 +146,11 @@ export function keyboardAbsoluteResizeStrategy(
     return null
   }
 
-  if (MetadataUtils.isGridItem(canvasState.startingMetadata, selectedElements[0])) {
+  if (
+    selectedElements.some((selectedElement) => {
+      return MetadataUtils.isGridItem(canvasState.startingMetadata, selectedElement)
+    })
+  ) {
     return null
   }
 

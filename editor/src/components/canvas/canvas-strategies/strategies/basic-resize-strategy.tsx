@@ -95,13 +95,17 @@ export function basicResizeStrategy(
       type: 'resize',
     },
     controlsToRender: [
-      controlWithProps({
-        control: AbsoluteResizeControl,
-        props: { targets: selectedElements, pathsWereReplaced: false },
-        key: 'absolute-resize-control',
-        show: 'always-visible',
-        priority: 'top',
-      }),
+      ...(isGridCell
+        ? []
+        : [
+            controlWithProps({
+              control: AbsoluteResizeControl,
+              props: { targets: selectedElements, pathsWereReplaced: false },
+              key: 'absolute-resize-control',
+              show: 'always-visible',
+              priority: 'top',
+            }),
+          ]),
       controlWithProps({
         control: StrategySizeLabel,
         props: { targets: selectedElements, pathsWereReplaced: false },
