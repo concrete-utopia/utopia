@@ -75,6 +75,7 @@ const lightBase = {
   border2: createUtopiColor('hsl(0,0%,86%)'),
   border3: createUtopiColor('hsl(0,0%,83%)'),
   bg1transparentgradient: createUtopiColor('radial-gradient(circle, #ffffff 15%, #ffffff00 80%)'),
+  gridControlsPink: createUtopiColor('oklch(72.2% 0.36 331.7)'), // copy of brandNeonPink
 }
 
 const lightPrimitives = {
