@@ -135,7 +135,6 @@ import {
 import type { Property } from 'csstype'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
-import { light } from '../../../uuiui/styles/theme/light'
 
 const CELL_ANIMATION_DURATION = 0.15 // seconds
 
