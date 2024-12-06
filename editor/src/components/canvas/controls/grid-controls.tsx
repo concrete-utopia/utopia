@@ -2455,6 +2455,8 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
     return null
   }
 
+  const frozenOrRegularMarkerData = frozenMarkers ?? rulerMarkerData
+
   return (
     <React.Fragment>
       <GridRuler
@@ -2464,7 +2466,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         rulerVisible={showExtraMarkers === 'column' ? 'visible' : 'not-visible'}
       >
         {/* Other markers for unselected tracks */}
-        {rulerMarkerData.otherColumnMarkers.map((marker, index) => {
+        {frozenOrRegularMarkerData.otherColumnMarkers.map((marker, index) => {
           return (
             <RulerMarkerIndicator
               key={`ruler-marker-${index}`}
@@ -2481,7 +2483,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
           parentGrid={rulerMarkerData.parentGrid}
-          marker={frozenMarkers?.columnStart ?? rulerMarkerData.columnStart}
+          marker={frozenOrRegularMarkerData.columnStart}
           axis={'column'}
           visible={'visible'}
           onMouseDown={columnMarkerMouseDown('column-start')}
@@ -2490,7 +2492,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
           parentGrid={rulerMarkerData.parentGrid}
-          marker={frozenMarkers?.columnEnd ?? rulerMarkerData.columnEnd}
+          marker={frozenOrRegularMarkerData.columnEnd}
           axis={'column'}
           visible={'visible'}
           onMouseDown={columnMarkerMouseDown('column-end')}
@@ -2505,7 +2507,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         rulerVisible={showExtraMarkers === 'row' ? 'visible' : 'not-visible'}
       >
         {/* Other markers for unselected tracks */}
-        {rulerMarkerData.otherRowMarkers.map((marker, index) => {
+        {frozenOrRegularMarkerData.otherRowMarkers.map((marker, index) => {
           return (
             <RulerMarkerIndicator
               key={`ruler-marker-${index}`}
@@ -2522,7 +2524,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
           parentGrid={rulerMarkerData.parentGrid}
-          marker={frozenMarkers?.rowStart ?? rulerMarkerData.rowStart}
+          marker={frozenOrRegularMarkerData.rowStart}
           axis={'row'}
           visible={'visible'}
           onMouseDown={rowMarkerMouseDown('row-start')}
@@ -2531,7 +2533,7 @@ const RulerMarkers = React.memo((props: RulerMarkersProps) => {
         <RulerMarkerIndicator
           gridRect={rulerMarkerData.gridRect}
           parentGrid={rulerMarkerData.parentGrid}
-          marker={frozenMarkers?.rowEnd ?? rulerMarkerData.rowEnd}
+          marker={frozenOrRegularMarkerData.rowEnd}
           axis={'row'}
           visible={'visible'}
           onMouseDown={rowMarkerMouseDown('row-end')}
