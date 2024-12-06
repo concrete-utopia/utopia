@@ -2684,19 +2684,24 @@ const SnapLine = React.memo(
     const labelHeight = 20
 
     const isColumn = props.edge === 'column-start' || props.edge === 'column-end'
+
+    const top = isColumn
+      ? props.container.y
+      : props.target.y + (props.edge === 'row-end' ? props.target.height : 0)
+    const left = !isColumn
+      ? props.container.x
+      : props.target.x + (props.edge === 'column-end' ? props.target.width : 0)
+
     return (
       <div
         style={{
           position: 'absolute',
-          width: isColumn ? 1 : props.container.width,
-          height: !isColumn ? 1 : props.container.height,
-          top: isColumn
-            ? props.container.y
-            : props.target.y + (props.edge === 'row-end' ? props.target.height : 0),
-          left: !isColumn
-            ? props.container.x
-            : props.target.x + (props.edge === 'column-end' ? props.target.width : 0),
+          width: isColumn ? 1 : props.container.width * canvasScale,
+          height: !isColumn ? 1 : props.container.height * canvasScale,
+          top: top * canvasScale,
+          left: left * canvasScale,
           backgroundColor: colorTheme.brandNeonPink.value,
+          zoom: 1 / canvasScale,
         }}
       >
         {when(
@@ -2711,7 +2716,6 @@ const SnapLine = React.memo(
               textAlign: axis === 'row' ? 'right' : undefined,
               width: labelWidth,
               height: labelHeight,
-              zoom: 1 / canvasScale,
             }}
           >
             <span
@@ -2719,7 +2723,7 @@ const SnapLine = React.memo(
                 backgroundColor: 'white',
                 padding: '2px 4px',
                 borderRadius: 2,
-                fontSize: 11 / canvasScale,
+                fontSize: 11,
               }}
             >
               {printPin(props.gridTemplate, targetMarker.position, axis)}
