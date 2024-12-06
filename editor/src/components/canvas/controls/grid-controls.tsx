@@ -971,7 +971,7 @@ const GridControl = React.memo<GridControlProps>(({ grid, controlsVisible }) => 
           const activePositioningTarget = isActiveCell && !dontShowActiveCellHighlight // TODO: move the logic into runGridChangeElementLocation and do not set targetCell prop in these cases
 
           const borderColor = activePositioningTarget
-            ? light.brandNeonPink.cssValue
+            ? colorTheme.gridControlsPink.value
             : colorTheme.grey65.value
 
           return (
@@ -2703,7 +2703,7 @@ const SnapLine = React.memo(
           height: !isColumn ? 1 : props.container.height * canvasScale,
           top: top * canvasScale,
           left: left * canvasScale,
-          backgroundColor: light.brandNeonPink.cssValue,
+          backgroundColor: colorTheme.gridControlsPink.value,
           zoom: 1 / canvasScale,
         }}
       >
@@ -2714,7 +2714,7 @@ const SnapLine = React.memo(
               position: 'absolute',
               top: axis === 'column' ? -labelHeight - RulerMarkerIconSize - 5 : -10,
               left: axis === 'row' ? -(labelWidth - RulerMarkerIconSize + 30) : -7,
-              color: light.brandNeonPink.cssValue,
+              color: colorTheme.gridControlsPink.value,
               fontWeight: 700,
               textAlign: axis === 'row' ? 'right' : undefined,
               width: labelWidth,
