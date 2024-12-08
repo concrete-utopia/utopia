@@ -141,7 +141,10 @@ describe('tailwind class list utils', () => {
   describe('removing classes', () => {
     it('can remove property', () => {
       const classList = getParsedClassList('p-4 m-2 text-white w-4 flex flex-row', null)
-      const updatedClassList = removeClasses(['padding', 'textColor'])(classList)
+      const updatedClassList = removeClasses({
+        padding: { remove: true, modifiers: [] },
+        textColor: { remove: true, modifiers: [] },
+      })(classList)
       expect(getClassListFromParsedClassList(updatedClassList, null)).toMatchInlineSnapshot(
         `"m-2 w-4 flex flex-row"`,
       )
@@ -151,7 +154,10 @@ describe('tailwind class list utils', () => {
         'p-4 m-2 text-white hover:text-red-100 w-4 flex flex-row',
         null,
       )
-      const updatedClassList = removeClasses(['padding', 'textColor'])(classList)
+      const updatedClassList = removeClasses({
+        padding: { remove: true, modifiers: [] },
+        textColor: { remove: true, modifiers: [] },
+      })(classList)
       expect(getClassListFromParsedClassList(updatedClassList, null)).toMatchInlineSnapshot(
         `"m-2 hover:text-red-100 w-4 flex flex-row"`,
       )
@@ -162,8 +168,8 @@ describe('tailwind class list utils', () => {
     it('can update class in class list', () => {
       const classList = getParsedClassList('p-4 m-2 text-white w-4 flex flex-row', null)
       const updatedClassList = updateExistingClasses({
-        flexDirection: 'column',
-        width: '23px',
+        flexDirection: { newValue: 'column', modifiers: [] },
+        width: { newValue: '23px', modifiers: [] },
       })(classList)
       expect(getClassListFromParsedClassList(updatedClassList, null)).toMatchInlineSnapshot(
         `"p-4 m-2 text-white w-[23px] flex flex-col"`,
@@ -171,7 +177,9 @@ describe('tailwind class list utils', () => {
     })
     it('does not remove property with selector', () => {
       const classList = getParsedClassList('p-4 hover:p-6 m-2 text-white w-4 flex flex-row', null)
-      const updatedClassList = updateExistingClasses({ padding: '8rem' })(classList)
+      const updatedClassList = updateExistingClasses({
+        padding: { newValue: '8rem', modifiers: [] },
+      })(classList)
       expect(getClassListFromParsedClassList(updatedClassList, null)).toMatchInlineSnapshot(
         `"p-32 hover:p-6 m-2 text-white w-4 flex flex-row"`,
       )
@@ -182,9 +190,9 @@ describe('tailwind class list utils', () => {
     it('can add new class to class list', () => {
       const classList = getParsedClassList('p-4 m-2 text-white w-4 flex flex-row', null)
       const updatedClassList = addNewClasses({
-        backgroundColor: 'white',
-        justifyContent: 'space-between',
-        positionLeft: '-20px',
+        backgroundColor: { newValue: 'white', modifiers: [] },
+        justifyContent: { newValue: 'space-between', modifiers: [] },
+        positionLeft: { newValue: '-20px', modifiers: [] },
       })(classList)
       expect(getClassListFromParsedClassList(updatedClassList, null)).toMatchInlineSnapshot(
         `"p-4 m-2 text-white w-4 flex flex-row bg-white justify-between -left-[20px]"`,

@@ -29,6 +29,7 @@ import type {
   CSSOverflow,
   CSSPadding,
   FlexDirection,
+  ParsedCSSProperties,
 } from '../inspector/common/css-utils'
 
 export const CanvasContainerID = 'canvas-container'
@@ -552,9 +553,41 @@ interface CSSStylePropertyNotParsable {
 
 interface ParsedCSSStyleProperty<T> {
   type: 'property'
-  tags: PropertyTag[]
   propertyValue: JSExpression | PartOfJSXAttributeValue
   value: T
+  appliedModifiers?: StyleModifier[]
+  variants?: {
+    value: T
+    modifiers?: StyleModifier[]
+  }[]
+}
+
+type StyleModifierMetadata = { type: string; modifierOrigin?: StyleModifierOrigin }
+type StyleHoverModifier = StyleModifierMetadata & { type: 'hover' }
+export type StyleMediaSizeModifier = StyleModifierMetadata & {
+  type: 'media-size'
+  size: ScreenSize
+}
+export type StyleModifier = StyleHoverModifier | StyleMediaSizeModifier
+type InlineModifierOrigin = { type: 'inline' }
+type TailwindModifierOrigin = { type: 'tailwind'; variant: string }
+export type StyleModifierOrigin = InlineModifierOrigin | TailwindModifierOrigin
+
+export type ParsedVariant<T extends keyof StyleInfo> = {
+  parsedValue: NonNullable<ParsedCSSProperties[T]>
+  originalValue: string | number | undefined
+  modifiers?: StyleModifier[]
+}
+
+export type CompValue = {
+  value: number
+  unit: string
+}
+
+// @media (min-width: 100px) and (max-width: 200em) => { min: { value: 100, unit: 'px' }, max: { value: 200, unit: 'em' } }
+export type ScreenSize = {
+  min?: CompValue
+  max?: CompValue
 }
 
 export type CSSStyleProperty<T> =
@@ -575,8 +608,23 @@ export function cssStylePropertyNotParsable(
 export function cssStyleProperty<T>(
   value: T,
   propertyValue: JSExpression | PartOfJSXAttributeValue,
+  appliedModifiers?: StyleModifier[],
+  variants?: {
+    value: T
+    modifiers?: StyleModifier[]
+  }[],
 ): ParsedCSSStyleProperty<T> {
-  return { type: 'property', tags: [], value: value, propertyValue: propertyValue }
+  return {
+    type: 'property',
+    variants: variants ?? [],
+    value: value,
+    propertyValue: propertyValue,
+    appliedModifiers: appliedModifiers,
+  }
+}
+
+export function screenSizeModifier(size: ScreenSize): StyleMediaSizeModifier {
+  return { type: 'media-size', size: size }
 }
 
 export function maybePropertyValue<T>(property: CSSStyleProperty<T>): T | null {

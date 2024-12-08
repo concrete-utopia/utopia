@@ -3,6 +3,7 @@ import { useContextSelector } from 'use-context-selector'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { mapArrayToDictionary } from '../../../../../core/shared/array-utils'
 import type { PropertyPath } from '../../../../../core/shared/project-file-types'
+import type { IcnColor } from '../../../../../uuiui'
 import { Icons } from '../../../../../uuiui'
 import { useSetHoveredControlsHandlers } from '../../../../canvas/controls/select-mode/select-mode-hooks'
 import type { SubduedPaddingControlProps } from '../../../../canvas/controls/select-mode/subdued-padding-control'
@@ -47,6 +48,10 @@ import {
   longhandShorthandEventHandler,
   splitChainedEventValueForProp,
 } from '../../layout-section/layout-system-subsection/split-chained-number-input'
+import { getActivePlugin } from '../../../../canvas/plugins/style-plugins'
+import type { StyleInfo } from '../../../../canvas/canvas-types'
+import { getAppliedMediaSizeModifierFromBreakpoint } from '../../../common/css-utils'
+import { getTailwindVariantFromAppliedModifier } from '../../../../canvas/plugins/tailwind-style-plugin'
 
 function buildPaddingPropsToUnset(propertyTarget: ReadonlyArray<string>): Array<PropertyPath> {
   return [
@@ -132,6 +137,18 @@ const PaddingControl = React.memo(() => {
   const shorthand = useInspectorLayoutInfo('padding')
   const dispatch = useDispatch()
 
+  const styleInfo = useRefEditorState((store) => {
+    const getStyleInfo = getActivePlugin(store.editor).styleInfoFactory({
+      projectContents: store.editor.projectContents,
+      jsxMetadata: store.editor.jsxMetadata,
+    })
+    // TODO: support multiple selected views
+    return getStyleInfo(store.editor.selectedViews[0])
+  })
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const pathTreesRef = useRefEditorState((store) => store.editor.elementPathTree)
+  const breakpointColors = getBreakpointColors(styleInfo.current)
+
   const { selectedViewsRef } = useInspectorContext()
 
   const canvasControlsForSides = React.useMemo(() => {
@@ -177,8 +194,6 @@ const PaddingControl = React.memo(() => {
     return shorthand.controlStatus === 'simple' || allUnset
   }, [allUnset, shorthand.controlStatus])
 
-  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-  const pathTreesRef = useRefEditorState((store) => store.editor.elementPathTree)
   const startingFrame = MetadataUtils.getFrameOrZeroRect(
     selectedViewsRef.current[0],
     metadataRef.current,
@@ -325,13 +340,54 @@ const PaddingControl = React.memo(() => {
   return (
     <SplitChainedNumberInput
       labels={{
-        oneValue: <Icons.Padding color='on-highlight-secondary' />,
-        horizontal: <Icons.PaddingHorizontal color='on-highlight-secondary' />,
-        vertical: <Icons.PaddingVertical color='on-highlight-secondary' />,
-        top: <Icons.PaddingTop color='on-highlight-secondary' />,
-        left: <Icons.PaddingLeft color='on-highlight-secondary' />,
-        bottom: <Icons.PaddingBottom color='on-highlight-secondary' />,
-        right: <Icons.PaddingRight color='on-highlight-secondary' />,
+        oneValue: (
+          <Icons.Padding
+            color={breakpointColors.padding.color}
+            style={breakpointColors.padding.style}
+            tooltipText={breakpointColors.padding.tooltipText}
+          />
+        ),
+        horizontal: (
+          <Icons.PaddingHorizontal
+            color={breakpointColors.padding.color}
+            style={breakpointColors.padding.style}
+            tooltipText={breakpointColors.padding.tooltipText}
+          />
+        ),
+        vertical: (
+          <Icons.PaddingVertical
+            color={breakpointColors.padding.color}
+            style={breakpointColors.padding.style}
+            tooltipText={breakpointColors.padding.tooltipText}
+          />
+        ),
+        top: (
+          <Icons.PaddingTop
+            color={breakpointColors.paddingTop.color}
+            style={breakpointColors.paddingTop.style}
+            tooltipText={breakpointColors.paddingTop.tooltipText}
+          />
+        ),
+        left: (
+          <Icons.PaddingLeft
+            color={breakpointColors.paddingLeft.color}
+            style={breakpointColors.paddingLeft.style}
+          />
+        ),
+        bottom: (
+          <Icons.PaddingBottom
+            color={breakpointColors.paddingBottom.color}
+            style={breakpointColors.paddingBottom.style}
+            tooltipText={breakpointColors.paddingBottom.tooltipText}
+          />
+        ),
+        right: (
+          <Icons.PaddingRight
+            color={breakpointColors.paddingRight.color}
+            style={breakpointColors.paddingRight.style}
+            tooltipText={breakpointColors.paddingRight.tooltipText}
+          />
+        ),
       }}
       tooltips={{
         oneValue: 'Padding',
@@ -349,3 +405,38 @@ const PaddingControl = React.memo(() => {
     />
   )
 })
+
+function getBreakpointColors(styleInfo: StyleInfo | null) {
+  function getStyleFromBreakpoint(prop: keyof StyleInfo): {
+    color: IcnColor
+    style: React.CSSProperties
+    tooltipText?: string
+  } {
+    if (styleInfo == null) {
+      return { color: 'on-highlight-secondary', style: {} }
+    }
+    const appliedModifier = getAppliedMediaSizeModifierFromBreakpoint(styleInfo, prop)
+    const fromBreakpoint = getTailwindVariantFromAppliedModifier(appliedModifier)
+    if (appliedModifier != null) {
+      return {
+        color: 'green',
+        style: {
+          backgroundColor: '#90ee9063',
+          borderRadius: '2px',
+        },
+        tooltipText:
+          fromBreakpoint != null
+            ? `This value comes from the ':${fromBreakpoint}' breakpoint`
+            : undefined,
+      }
+    }
+    return { color: 'on-highlight-secondary', style: {} }
+  }
+  return {
+    padding: getStyleFromBreakpoint('padding'),
+    paddingTop: getStyleFromBreakpoint('paddingTop'),
+    paddingRight: getStyleFromBreakpoint('paddingRight'),
+    paddingBottom: getStyleFromBreakpoint('paddingBottom'),
+    paddingLeft: getStyleFromBreakpoint('paddingLeft'),
+  } as const
+}
