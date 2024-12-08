@@ -44,21 +44,15 @@ import {
 } from '../../shared/element-template'
 import { sampleCode } from '../../model/new-project-files'
 import { addImport, emptyImports } from '../common/project-file-utils'
-import { onlyImportReact, sampleImportsForTests } from '../../model/test-ui-js-file.test-utils'
-import type { ParseSuccess, ProjectContents } from '../../shared/project-file-types'
+import { sampleImportsForTests } from '../../model/test-ui-js-file.test-utils'
+import type { ParseSuccess } from '../../shared/project-file-types'
 import {
   isParseSuccess,
   importAlias,
   foldParsedTextFile,
-  EmptyExportsDetail,
   exportFunction,
   exportDefaultFunctionOrClass,
-  exportVariables,
-  exportVariable,
   parseSuccess,
-  textFileContents,
-  RevisionsState,
-  textFile,
 } from '../../shared/project-file-types'
 import { lintAndParse, parseCode, printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from 'utopia-vscode-common'
@@ -69,9 +63,7 @@ import {
   clearParseResultUniqueIDsAndEmptyBlocks,
   clearTopLevelElementUniqueIDsAndEmptyBlocks,
   elementsStructure,
-  ensureArbitraryBlocksHaveUID,
   ensureElementsHaveUID,
-  isWantedElement,
   JustImportViewAndReact,
   printedProjectContentArbitrary,
   simplifyParsedTextFileAttributes,
@@ -82,16 +74,13 @@ import { InfiniteLoopError, InfiniteLoopMaxIterations } from './transform-preven
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
 import { optionalMap } from '../../shared/optional-utils'
 import { StoryboardFilePath } from '../../../components/editor/store/editor-state'
-import { emptySet, setsEqual } from '../../shared/set-utils'
+import { emptySet } from '../../shared/set-utils'
 import {
   BLOCK_RAN_TO_END_FUNCTION_NAME,
   EARLY_RETURN_RESULT_FUNCTION_NAME,
   EARLY_RETURN_VOID_FUNCTION_NAME,
   JSX_CANVAS_LOOKUP_FUNCTION_NAME,
 } from '../../shared/dom-utils'
-import { assertNever } from '../../../core/shared/utils'
-import { contentsToTree } from '../../../components/assets'
-import { getUidMappings, getAllUniqueUidsFromMapping } from '../../model/get-uid-mappings'
 import {
   filtered,
   fromField,
@@ -6098,133 +6087,6 @@ export var whatever2 = (props) => <View data-uid='aaa'>
     const printedArbitrary = printedProjectContentArbitrary(false)
     const dataUIDProperty = FastCheck.property(printedArbitrary, checkDataUIDsPopulated)
     FastCheck.assert(dataUIDProperty, { verbose: true })
-  })
-  describe('check that the UIDs of everything in a file also align with the highlight bounds for that file', () => {
-    function checkElementUIDs(stripUIDs: boolean): void {
-      function checkElementUIDSMatchHighlightBounds(
-        printedArbitraryProjects: [ArbitraryProject, ArbitraryProject],
-      ): boolean {
-        const [firstPrintedProjectContent, secondPrintedProjectContent] = printedArbitraryProjects
-        const alreadyExistingUIDs: Set<string> = emptySet()
-
-        let fileCounter: number = 100
-        let projectContents: ProjectContents = {}
-
-        for (const { code: printedCode } of [
-          firstPrintedProjectContent,
-          secondPrintedProjectContent,
-        ]) {
-          const parseResult = testParseCode(printedCode, alreadyExistingUIDs)
-          foldParsedTextFile(
-            (failure) => {
-              throw new Error(`${JSON.stringify(failure)}`)
-            },
-            (success) => {
-              let uids: Array<string> = []
-              for (const topLevelElement of success.topLevelElements) {
-                switch (topLevelElement.type) {
-                  case 'UTOPIA_JSX_COMPONENT':
-                    ensureElementsHaveUID(
-                      topLevelElement.rootElement,
-                      uids,
-                      isWantedElement,
-                      'walk-attributes',
-                    )
-                    if (topLevelElement.arbitraryJSBlock != null) {
-                      ensureArbitraryBlocksHaveUID(
-                        topLevelElement.arbitraryJSBlock,
-                        uids,
-                        isWantedElement,
-                        'walk-attributes',
-                      )
-                    }
-                    break
-                  case 'ARBITRARY_JS_BLOCK':
-                    ensureArbitraryBlocksHaveUID(
-                      topLevelElement,
-                      uids,
-                      isWantedElement,
-                      'walk-attributes',
-                    )
-                    break
-                  case 'IMPORT_STATEMENT':
-                  case 'UNPARSED_CODE':
-                    break
-                  default:
-                    assertNever(topLevelElement)
-                }
-              }
-
-              // Check the UIDs for the elements, which excludes attributes.
-              const elementUIDS = new Set(uids)
-              const highlightBoundsUIDs = new Set(Object.keys(success.highlightBounds))
-              if (!setsEqual(elementUIDS, highlightBoundsUIDs)) {
-                throw new Error(
-                  `Element UIDs [${Array.from(
-                    elementUIDS,
-                  ).sort()}] do not match the highlight bounds UIDs: [${Array.from(
-                    highlightBoundsUIDs,
-                  ).sort()}]`,
-                )
-              }
-
-              const fileValue = textFile(
-                textFileContents(printedCode, success, RevisionsState.ParsedAhead),
-                null,
-                null,
-                0,
-              )
-              const singleFileUniqueIDsResult = getUidMappings(
-                contentsToTree({ '/index.js': fileValue }),
-              )
-
-              // Check the UIDs for anything and everything, including attributes.
-              const fullHighlightBoundsUIDs = new Set(Object.keys(success.fullHighlightBounds))
-              const allUIDsAreEqual = setsEqual(
-                fullHighlightBoundsUIDs,
-                new Set(getAllUniqueUidsFromMapping(singleFileUniqueIDsResult.filePathToUids)),
-              )
-              if (!allUIDsAreEqual) {
-                throw new Error(
-                  `All UIDs [${Array.from(
-                    getAllUniqueUidsFromMapping(singleFileUniqueIDsResult.filePathToUids),
-                  ).sort()}] do not match the full highlight bounds UIDs: [${Array.from(
-                    fullHighlightBoundsUIDs,
-                  ).sort()}]`,
-                )
-              }
-
-              projectContents[`/index${fileCounter++}.js`] = fileValue
-            },
-            (unparsed) => {
-              throw new Error(`${unparsed}`)
-            },
-            parseResult,
-          )
-        }
-
-        // Check that this parse has not surfaced any duplicates within itself.
-        const uniqueIDsResult = getUidMappings(contentsToTree(projectContents))
-        const anyDuplicates = Object.keys(uniqueIDsResult.duplicateIDs).length > 0
-        if (anyDuplicates) {
-          throw new Error(`Found duplicate UIDs: ${uniqueIDsResult.duplicateIDs}`)
-        }
-
-        return true
-      }
-      const printedArbitrary = printedProjectContentArbitrary(stripUIDs)
-      const dataUIDProperty = FastCheck.property(
-        FastCheck.tuple(printedArbitrary, printedArbitrary),
-        checkElementUIDSMatchHighlightBounds,
-      )
-      FastCheck.assert(dataUIDProperty, { verbose: false, numRuns: 100 })
-    }
-    it('with UIDs left in', () => {
-      checkElementUIDs(false)
-    })
-    it('with UIDs stripped', () => {
-      checkElementUIDs(true)
-    })
   })
   it('when react is not imported treat components as arbitrary blocks', () => {
     const code = `
