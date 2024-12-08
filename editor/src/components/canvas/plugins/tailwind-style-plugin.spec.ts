@@ -9,6 +9,7 @@ import { TailwindPlugin } from './tailwind-style-plugin'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { TailwindConfigPath } from '../../../core/tailwind/tailwind-config'
 import { getTailwindConfigCached } from '../../../core/tailwind/tailwind-compilation'
+import type { Config } from 'tailwindcss/types/config'
 
 const Project = createModifiedProject({
   [StoryboardFilePath]: `

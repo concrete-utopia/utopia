@@ -8,13 +8,8 @@ import { cssParsers, selectValueByBreakpoint } from '../../inspector/common/css-
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import type { StylePlugin } from './style-plugins'
 import type { Config } from 'tailwindcss/types/config'
-import type {
-  ParsedVariant,
-  StyleInfo,
-  StyleMediaSizeModifier,
-  StyleModifier,
-} from '../canvas-types'
-import { cssStyleProperty, isStyleInfoKey, type CSSStyleProperty } from '../canvas-types'
+import type { ParsedVariant, StyleInfo } from '../canvas-types'
+import { cssStyleProperty, type CSSStyleProperty } from '../canvas-types'
 import * as UCL from './tailwind-style-plugin-utils/update-class-list'
 import { assertNever } from '../../../core/shared/utils'
 import {
@@ -24,8 +19,8 @@ import {
 import { emptyComments, type JSXAttributes } from 'utopia-shared/src/types'
 import * as PP from '../../../core/shared/property-path'
 import { jsExpressionValue } from '../../../core/shared/element-template'
-import { extractMediaQueryFromCss, mediaQueryToScreenSize } from '../canvas-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { getModifiers } from './tailwind-style-plugin-utils/tailwind-media-query-utils'
 
 type StyleValueVariants = {
   value: string | number | undefined
@@ -77,63 +72,6 @@ export const parseTailwindPropertyFactory =
       })),
     )
   }
-
-type TailwindScreen = string | { min: string; max: string }
-
-/**
- * This function gets variants in the form of {type: 'media', value: 'sm'}
- * and turns them into modifiers in the form of [{type: 'media-size', size: {min: {value: 0, unit: 'px'}, max: {value: 100, unit: 'em'}}}]
- * according to the tailwind config
- */
-function getModifiers(
-  variants: { type: string; value: string }[],
-  config: Config | null,
-): StyleModifier[] {
-  // media modifiers
-  const mediaModifiers = variants.filter((v) => v.type === 'media')
-  const screenSizes: Record<string, TailwindScreen> = (config?.theme?.screens as Record<
-    string,
-    TailwindScreen
-  >) ?? {
-    sm: '640px',
-    md: '768px',
-    lg: '1024px',
-    xl: '1280px',
-    '2xl': '1536px',
-    ...((config?.theme?.extend?.screens as Record<string, TailwindScreen>) ?? {}),
-  }
-  return mediaModifiers
-    .map((mediaModifier) => {
-      const size: string | { min: string; max: string } | undefined =
-        screenSizes[mediaModifier.value as keyof typeof screenSizes]
-      if (size == null) {
-        return null
-      }
-      const mediaString =
-        typeof size === 'string'
-          ? `@media (min-width: ${size})`
-          : `@media ${[
-              size.min != null ? `(min-width: ${size.min})` : '',
-              size.max != null ? `(max-width: ${size.max})` : '',
-            ]
-              .filter((s) => s != '')
-              .join(' and ')}`
-      const parsed = extractMediaQueryFromCss(mediaString)
-      if (parsed == null) {
-        return null
-      }
-      const asScreenSize = mediaQueryToScreenSize(parsed)
-      if (asScreenSize == null) {
-        return null
-      }
-      return {
-        type: 'media-size',
-        size: asScreenSize,
-        modifierOrigin: { type: 'tailwind', variant: mediaModifier.value },
-      } as StyleMediaSizeModifier
-    })
-    .filter((m): m is StyleMediaSizeModifier => m != null)
-}
 
 export const TailwindPropertyMapping: Record<string, string> = {
   left: 'positionLeft',
@@ -365,41 +303,4 @@ export const TailwindPlugin = (config: Config | null): StylePlugin => {
       )
     },
   }
-}
-
-export function getPropertiesToAppliedModifiersMap(
-  currentClassNameAttribute: string,
-  propertyNames: string[],
-  config: Config | null,
-  context: {
-    sceneWidth?: number
-  },
-): Record<string, StyleModifier[]> {
-  const parseTailwindProperty = parseTailwindPropertyFactory(config, context)
-  const classMapping = getTailwindClassMapping(currentClassNameAttribute.split(' '), config)
-  return propertyNames.reduce((acc, propertyName) => {
-    if (!isStyleInfoKey(propertyName)) {
-      return acc
-    }
-    const parsedProperty = parseTailwindProperty(
-      classMapping[TailwindPropertyMapping[propertyName]],
-      propertyName,
-    )
-    if (parsedProperty?.type == 'property' && parsedProperty.appliedModifiers != null) {
-      return {
-        ...acc,
-        [propertyName]: parsedProperty.appliedModifiers,
-      }
-    } else {
-      return acc
-    }
-  }, {} as Record<string, StyleModifier[]>)
-}
-
-export function getTailwindVariantFromAppliedModifier(
-  appliedModifier: StyleMediaSizeModifier | null,
-): string | null {
-  return appliedModifier?.modifierOrigin?.type === 'tailwind'
-    ? appliedModifier.modifierOrigin.variant
-    : null
 }
